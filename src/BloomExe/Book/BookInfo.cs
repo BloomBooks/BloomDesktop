@@ -27,6 +27,7 @@ namespace Bloom.Book
 	{
 		private const string kTopicPrefix = "topic:";
 		private const string kBookshelfPrefix = "bookshelf:";
+		public const string BookOrderExtension = ".BloomBookOrder";
 
 		private BookMetaData _metadata;
 
@@ -40,6 +41,7 @@ namespace Bloom.Book
 		{
 
 		}
+
 		public BookInfo(string folderPath, bool isEditable)
 		{
 			FolderPath = folderPath;
@@ -81,6 +83,11 @@ namespace Bloom.Book
 		{
 			get { return MetaData.AllowUploadingToBloomLibrary; }
 			set { MetaData.AllowUploadingToBloomLibrary = value; }
+		}
+
+		public static string BookOrderPath(string bookFolder)
+		{
+			return Path.Combine(bookFolder, Path.GetFileName(bookFolder) + BookOrderExtension);
 		}
 
 		//there was a beta version that would introduce the .json files with the incorrect defaults
@@ -349,7 +356,7 @@ namespace Bloom.Book
 		{
 			get
 			{
-				return MetaData.Tags == null ? "" : string.Join(", ", MetaData.Tags.Where(TagIsTopic).Select(GetTopicNameFromTag));
+				return MetaData.Tags == null ? "" : String.Join(", ", MetaData.Tags.Where(TagIsTopic).Select(GetTopicNameFromTag));
 			}
 			set
 			{
@@ -512,6 +519,119 @@ namespace Bloom.Book
 					tagStrings[i] = prefix + tagStrings[i];
 			}
 		}
+
+		/// <summary>
+		/// Replace all occurrences of bookInstanceId with a fresh Guid, since this book is a manual duplicate.
+		/// - Update meta.json
+		/// - Delete bookName.bloombookorder (if present)
+		/// - Delete meta.bak (if present)
+		/// </summary>
+		/// <remarks>internal for testing</remarks>
+		internal static void InstallFreshInstanceGuid(string bookFolder)
+		{
+			var bookInfo = new BookInfo(bookFolder, true);
+			bookInfo.InstallFreshGuidInternal();
+		}
+
+		private void InstallFreshGuidInternal()
+		{
+			var freshGuidString = Guid.NewGuid().ToString();
+			Id = freshGuidString;
+			try
+			{
+				Save();
+				RobustFile.Delete(BookOrderPath(FolderPath));
+				RobustFile.Delete(BookMetaData.BackupFilePath(FolderPath));
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				// Don't display modal, always toast
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Failed to repair duplicate id",
+					"BookInfo.InstallFreshInstanceGuid() failed to repair duplicate id in locked meta.json file at " + FolderPath, e);
+			}
+		}
+
+		/// <summary>
+		/// In the past we've had problems with users copying folders manually and creating derivative books with
+		/// the same bookInstanceId guids. If they then try to upload both books with duplicate ids, the
+		/// duplicates overwrite whichever book got uploaded first.
+		/// This method recurses through the folders under 'pathToDirectory' and keeps track of all the unique bookInstanceId
+		/// guids. When a duplicate is found, we will call InstallFreshInstanceGuid().
+		/// </summary>
+		public static void RepairDuplicateInstanceIds(string pathToDirectory)
+		{
+			// Key is instanceId guid, Value is a SortedList of entries where the key is the LastEdited datetime of the
+			// meta.json file and the value is the filepath.
+			var idToSortedFilepathsMap = new Dictionary<string, SortedList<DateTime, string>>();
+			var currentFolder = pathToDirectory;
+
+			GatherInstanceIdsRecursively(currentFolder, idToSortedFilepathsMap);
+
+			// All the data is gathered, now to fix any problems. We assume that the first entry in the SortedList
+			// is the original and we change the guid Id in all the copies.
+			foreach (var kvp in idToSortedFilepathsMap)
+			{
+				var id = kvp.Key;
+				var sortedFilepaths = kvp.Value;
+				if (sortedFilepaths.Count < 2) // no problem here!
+					continue;
+
+				var filepathsExceptFirst = sortedFilepaths.Values.Skip(1);
+				Logger.WriteEvent($"***Fixing {filepathsExceptFirst.Count()} duplicate ids for: {id}");
+				foreach (var filepath in filepathsExceptFirst)
+				{
+					InstallFreshInstanceGuid(filepath);
+				}
+			}
+		}
+
+		private static void GatherInstanceIdsRecursively(string currentFolder,
+			IDictionary<string, SortedList<DateTime, string>> idToSortedFilepathsMap)
+		{
+			const string metaJsonFileName = "meta.json";
+
+			var metaJsonPath = Path.Combine(currentFolder, metaJsonFileName);
+			if (!File.Exists(metaJsonPath))
+			{
+				var subDirectories = Directory.GetDirectories(currentFolder);
+				foreach (var subDirectory in subDirectories)
+				{
+					GatherInstanceIdsRecursively(subDirectory, idToSortedFilepathsMap);
+				}
+				return;
+			}
+			// Leaf node; we're in a book folder
+			var metaFileLastWriteTime = File.GetLastWriteTimeUtc(metaJsonPath);
+			var bi = new BookInfo(currentFolder, false);
+			var id = bi.Id;
+			SafelyAddToIdSet(id, metaFileLastWriteTime, currentFolder, idToSortedFilepathsMap);
+		}
+
+		private static void SafelyAddToIdSet(string bookId, DateTime lastWriteTime, string bookFolder,
+			IDictionary<string, SortedList<DateTime, string>> idToSortedFilepathsMap)
+		{
+			SortedList<DateTime, string> sortedFilepaths;
+			
+			if (!idToSortedFilepathsMap.TryGetValue(bookId, out sortedFilepaths))
+			{
+				var list = new SortedList<DateTime, string> { { lastWriteTime, bookFolder } };
+				idToSortedFilepathsMap.Add(bookId, list);
+			}
+			else
+			{
+				// if lastWriteTime was totally reliable, I'd assume that 2 files couldn't have been written
+				// at the same time, but evidence in several places on the internet suggests otherwise, so
+				// we'll use what we have and if we find duplicates we have been defeated in our intent. We will
+				// then just add a few milliseconds to the lastWriteTime and try again.
+				var oneTick = new TimeSpan(1);
+				while (sortedFilepaths.ContainsKey(lastWriteTime))
+				{
+					// not good
+					lastWriteTime += oneTick;
+				}
+				sortedFilepaths.Add(lastWriteTime, bookFolder);
+			}
+		}
 	}
 
 	public class ErrorBookInfo : BookInfo
@@ -535,6 +655,8 @@ namespace Bloom.Book
 	/// </summary>
 	public class BookMetaData
 	{
+		internal const string BackupExtension = "bak";
+
 		public BookMetaData()
 		{
 			IsExperimental = false;
@@ -568,7 +690,7 @@ namespace Bloom.Book
 			if (TryReadMetaData(metaDataPath, out result))
 				return result;
 
-			var backupPath = Path.ChangeExtension(metaDataPath, "bak");
+			var backupPath = BackupFilePath(bookFolderPath);
 			if (RobustFile.Exists(backupPath) && TryReadMetaData(backupPath, out result))
 			{
 				RobustFile.Delete(metaDataPath); // Don't think it's worth saving the corrupt one
@@ -599,6 +721,11 @@ namespace Bloom.Book
 			return bookFolderPath.CombineForPath(BookInfo.MetaDataFileName);
 		}
 
+		public static string BackupFilePath(string bookFolderPath)
+		{
+			return Path.ChangeExtension(MetaDataPath(bookFolderPath), BackupExtension);
+		}
+
 		public void WriteToFolder(string bookFolderPath)
 		{
 			string tempFilePath;
@@ -609,7 +736,7 @@ namespace Bloom.Book
 			}
 			RobustFile.WriteAllText(tempFilePath, Json);
 			if (RobustFile.Exists(metaDataPath))
-				RobustFile.Replace(tempFilePath, metaDataPath, Path.ChangeExtension(metaDataPath, "bak"));
+				RobustFile.Replace(tempFilePath, metaDataPath, BackupFilePath(bookFolderPath));
 			else
 				RobustFile.Move(tempFilePath, metaDataPath);
 		}

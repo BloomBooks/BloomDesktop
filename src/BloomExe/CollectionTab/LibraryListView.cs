@@ -45,7 +45,7 @@ namespace Bloom.CollectionTab
 
 		enum ButtonManagementStage
 		{
-			LoadPrimary, ImprovePrimary, LoadSourceCollections, ImproveAndRefresh
+			LoadPrimary, ImprovePrimary, LoadSourceCollections, ImproveAndRefresh, FinalizeSetup
 		}
 
 		private ButtonManagementStage _buttonManagementStage = ButtonManagementStage.LoadPrimary;
@@ -278,11 +278,24 @@ namespace Bloom.CollectionTab
 					// source collections for new books. To undo, uncomment ImproveAndRefreshBookButtons()
 					// and comment out removing the event handler.
 					//ImproveAndRefreshBookButtons();
+					_buttonManagementStage = ButtonManagementStage.FinalizeSetup;
+					break;
+				case ButtonManagementStage.FinalizeSetup:
+					// If we repair duplicates and there is a reason to toast (e.g. locked meta.json file),
+					// The ongoing UI activity focuses Bloom over top of the toast after a brief flash.
+					// For that reason, we add a new stage for tasks that need to happen after the UI is updated.
+					RepairDuplicates();
 					Application.Idle -= ManageButtonsAtIdleTime; // stop running to this to do nothing.
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+		}
+
+		private void RepairDuplicates()
+		{
+			var collectionPath = _model.TheOneEditableCollection.PathToDirectory;
+			BookInfo.RepairDuplicateInstanceIds(collectionPath);
 		}
 
 		/// <summary>

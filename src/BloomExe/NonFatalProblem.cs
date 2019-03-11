@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
-using System.Reflection;
 using System.Windows.Forms;
-#if !__MonoCS__
-using System.Windows.Media;
-#endif
 using Bloom.MiscUI;
 using DesktopAnalytics;
 using SIL.Reporting;
