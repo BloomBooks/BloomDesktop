@@ -81,7 +81,7 @@ export default class AudioRecording {
     private levelCanvasWidth: number = 15;
     private levelCanvasHeight: number = 80;
     private hiddenSourceBubbles: JQuery;
-    private elementsToPlayConsecutivelyStack: Element[] = [];
+    private elementsToPlayConsecutivelyStack: Element[] = []; // When we are playing audio, this holds the segments we haven't yet finished playing, including the one currently playing. Thus, when it's empty we are not playing audio at all
     private nextElementIdToPlay: string;
     private awaitingNewRecording: boolean;
 
@@ -212,7 +212,7 @@ export default class AudioRecording {
     // Sets up member variables (e.g. audioRecordingMode) that updateMarkup...() depends on.
     //
     // Precondition: Assumes that all initialization of collection-depenedent settings has already been done.
-    public initializeForMarkup() {
+    public initializeAudioRecordingMode() {
         const currentTextBox = this.getCurrentTextBox();
 
         this.audioRecordingMode = this.getRecordingModeOfTextBox(
@@ -231,7 +231,7 @@ export default class AudioRecording {
         textBoxDiv: Element | null
     ): AudioRecordingMode {
         if (textBoxDiv) {
-            // First, attempt to assign it from the text box's explicitly specified value if possible.
+            // First, attempt to determine it from the text box's explicitly specified value if possible.
             const audioRecordingModeStr = textBoxDiv.getAttribute(
                 "data-audioRecordingMode"
             );
@@ -332,6 +332,10 @@ export default class AudioRecording {
             } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
                 this.recordingModeInput.checked = true;
                 this.displaySplitButton();
+            } else {
+                console.assert(
+                    "Unimplemented format: " + this.audioRecordingMode
+                );
             }
         }
     }
@@ -500,27 +504,24 @@ export default class AudioRecording {
     private moveToNextAudioElement(): void {
         toastr.clear();
 
-        var next = this.getNextAudioElement();
+        const next = this.getNextAudioElement();
         if (!next) return;
-        var current: JQuery = this.getPageDocBodyJQuery().find(
-            ".ui-audioCurrent"
-        );
-        this.setCurrentAudioElementFromJQuery(current, $(next));
+        this.setCurrentAudioElement(next);
         this.changeStateAndSetExpected("record");
     }
 
     private moveToPrevAudioElement(): void {
         toastr.clear();
-        var current: JQuery = this.getPageDocBodyJQuery().find(
+        const current: JQuery = this.getPageDocBodyJQuery().find(
             ".ui-audioCurrent"
         );
-        var audioElts = this.getAudioElements();
+        const audioElts = this.getAudioElements();
         if (current.length === 0 || audioElts.length === 0) return;
-        var currentIndex = audioElts.index(current);
+        const currentIndex = audioElts.index(current);
         if (currentIndex === 0) return;
-        var prev = this.getPreviousAudioElement();
+        const prev = this.getPreviousAudioElement();
         if (prev == null) return;
-        this.setCurrentAudioElementFromJQuery(current, $(prev));
+        this.setCurrentAudioElement(prev);
         this.changeStateAndSetExpected("record"); // Enhance: I think it'd actually be better to dynamically assign Expected based on what audio is available etc., instead of based on state transitions. Especially when doing Prev.
     }
 
@@ -613,7 +614,7 @@ export default class AudioRecording {
         const nextElement = audioElts[nextIndex];
 
         // Now find the text box of the next segment to be played.
-        const nextTextBox = this.getParentTextBoxOfElement(nextElement);
+        const nextTextBox = this.getTextBoxOfElement(nextElement);
         if (!nextTextBox) return null;
 
         if (currentTextBox == nextTextBox) {
@@ -629,6 +630,11 @@ export default class AudioRecording {
     }
 
     // Get the next recording segment when moving to the specified different text box. Depending on that box's mode, it may be the box itself, or its first or last segment.
+    //
+    // nextTextBox: The text box expected to contain the next recording segment. If no recording segment is contained within,
+    // isTraverseInReverseOn: false if going forwards, which implies next segment is the first segment within {nextTextBox}). True if going backwards (in reverse), which implies next segment is the last segment within {nextTextBox}
+    //
+    // Returns the next recording segment, or null if nextTextBox does not contain any recording segments.
     private getNextRecordingSegment(
         nextTextBox: Element,
         isTraverseInReverseOn: boolean
@@ -657,7 +663,7 @@ export default class AudioRecording {
 
     private setCurrentAudioElement(
         elementToChangeTo: Element,
-        checking?: boolean
+        disableHighlightIfNoAudio?: boolean
     ): void {
         let firstExistingAudioCurrentElement: Element | null = null;
         const pageDocBody = this.getPageDocBody();
@@ -672,39 +678,14 @@ export default class AudioRecording {
         this.setCurrentAudioElementFrom(
             firstExistingAudioCurrentElement,
             elementToChangeTo,
-            checking
+            disableHighlightIfNoAudio
         );
-    }
-
-    // Generally we set the current span, we want to highlight it. But during
-    // listening to the whole page, especially in a Motion preview, we
-    // prefer not to highlight the current span unless it actually has audio.
-    // This is achieved by passing checking true.
-    private setCurrentAudioElementFromJQuery(
-        current: JQuery,
-        changeTo: JQuery,
-        checking?: boolean
-    ): void {
-        // TODO: Deprecate me
-        let currentElement: HTMLElement | null = null;
-        if (current && current.length > 0) {
-            currentElement = current[0];
-        }
-
-        if (changeTo && changeTo.length > 0) {
-            const elementToChangeTo = changeTo[0];
-            this.setCurrentAudioElementFrom(
-                currentElement,
-                elementToChangeTo,
-                checking
-            );
-        }
     }
 
     private setCurrentAudioElementFrom(
         currentElement: Element | null | undefined,
         elementToChangeTo: Element,
-        checking?: boolean
+        disableHighlightIfNoAudio?: boolean
     ): void {
         if (currentElement == elementToChangeTo) {
             // No need to do much, and better not to so we can avoid any temporary flashes as the highlight is removed and re-applied
@@ -719,10 +700,7 @@ export default class AudioRecording {
             );
         }
 
-        // We might be changing to nothing when doing a whole-page
-        // preview (possibly from Motion) and there is no text or it has never
-        // been marked up by the talking book tool.
-        if (checking) {
+        if (disableHighlightIfNoAudio) {
             elementToChangeTo.classList.add("disableHighlight"); // prevents highlight showing at once
             axios
                 .get(
@@ -760,7 +738,7 @@ export default class AudioRecording {
         }
 
         // Before updating the controls, we need to update the audioRecordingMode. It might've changed.
-        this.initializeForMarkup();
+        this.initializeAudioRecordingMode();
     }
 
     // If we have an mp3 file but not a wav file, the file server will return that instead.
@@ -956,10 +934,6 @@ export default class AudioRecording {
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
     public listen(): void {
-        const original: JQuery = this.getPageDocBodyJQuery().find(
-            ".ui-audioCurrent"
-        );
-
         this.elementsToPlayConsecutivelyStack = jQuery
             .makeArray(this.getAudioElements())
             .reverse();
@@ -969,11 +943,8 @@ export default class AudioRecording {
         const firstElementToPlay = this.elementsToPlayConsecutivelyStack[
             stackSize - 1
         ]; // Remember to pop it when you're done playing it. (i.e., in playEnded)
-        this.setCurrentAudioElementFromJQuery(
-            original,
-            $(firstElementToPlay),
-            true
-        );
+
+        this.setCurrentAudioElement(firstElementToPlay, true);
         this.setStatus("listen", Status.Active);
         this.playCurrentInternal();
     }
@@ -1164,16 +1135,12 @@ export default class AudioRecording {
             elementIdsToDelete.push(this.nextElementIdToPlay);
         } else {
             // i.e., AudioRecordingMode = TextBox
-            if (this.getCurrentPlaybackMode() == AudioRecordingMode.TextBox) {
-                // Easy enough, we just delete the single file corresponding to the text box... which is supposed to be nextElementIdToPlay
-                elementIdsToDelete.push(this.nextElementIdToPlay);
-            } else {
-                // i.e., AudioRecordingMode = TextBox but PlaybackMode = Sentence
-                // Slightly more complicated, need to delete all the sentences in this text box.
-                const sentences = this.getAudioSegmentsInCurrentTextBox();
-                for (let i = 0; i < sentences.length; ++i) {
-                    elementIdsToDelete.push(sentences[i].id);
-                }
+            // In particular, AudioRecordingMode = TextBox but PlaybackMode = Sentence is more complicated.
+            // Need to delete all the segments (sentences) in this text box.
+            // (TextBox/TextBox is easy and works either way, whether same as Sentence/Sentence or using the logic to find all segments within the text box used for TextBox/Sentence)
+            const sentences = this.getAudioSegmentsInCurrentTextBox();
+            for (let i = 0; i < sentences.length; ++i) {
+                elementIdsToDelete.push(sentences[i].id);
             }
         }
 
@@ -1268,6 +1235,7 @@ export default class AudioRecording {
             );
         } else {
             // From Sentence -> TextBox, we don't convert the playback mode.
+            // (since until/unless the user actually makes a new whole-text-box recording, we actually still have by-sentence recordings we can play)
 
             const currentTextBox = this.getCurrentTextBox();
             if (currentTextBox) {
@@ -1281,7 +1249,7 @@ export default class AudioRecording {
     public displaySplitButton(): void {
         const element = document.getElementById("audio-split-wrapper");
         if (element) {
-            element.classList.remove("hide-countable");
+            element.classList.remove("hide-countable"); // When we make this button visible we have to adjust classes so that it starts to participate in the CSS that numbers the steps
             element.classList.add("talking-book-counter");
             element.classList.remove("initial-state"); // Note that by default it's already displayed correctly, so we can remove it immediately.
         }
@@ -1294,9 +1262,9 @@ export default class AudioRecording {
             element.classList.remove("talking-book-counter");
 
             // Need to special case the initial load, which does not need animation.
-            // In our CSS, we detect initialState and change it accordingly.
+            // In our CSS, we detect initial-state and change it accordingly.
             // But since the raw HTML does not have this button hidden, we wait a little bit to make sure any animation (transition) has definitely finished
-            //   before removing the class that
+            //   before removing the class that identifies the initial state.
             if (element.classList.contains("initial-state")) {
                 setTimeout(() => {
                     element.classList.remove("initial-state");
@@ -1488,16 +1456,18 @@ export default class AudioRecording {
             }
         }
 
-        // TODO: Maybe this should just never return null?  It's not expected to be valid. Maybe we should just fail fast with exception.
-        //       It would make the code in the callers so much cleaner, less repetitive, and easier to work with.
         const currentTextBox = audioCurrentElements.item(0);
         console.assert(currentTextBox, "CurrentTextBox should not be null");
         return <HTMLElement | null>(
-            this.getParentTextBoxOfElement(audioCurrentElements.item(0))
+            this.getTextBoxOfElement(audioCurrentElements.item(0))
         );
     }
 
-    private getParentTextBoxOfElement(element: Element | null): Element | null {
+    // Returns the text box corresponding to this element.
+    //   If element is a sentence span, it would return its most recent ancestor div which is a text box.
+    //   If element is already a text box, it will return itself.
+    //   Returns null if no ancestor which is a text box could be found.
+    private getTextBoxOfElement(element: Element | null): Element | null {
         let currToExamine: Element | null = element;
 
         while (currToExamine && !this.isRecordableDiv(currToExamine)) {
@@ -1533,20 +1503,13 @@ export default class AudioRecording {
     // This happens even if audioRecordingMode=Sentence. It is caller's responsibility to either ensure that this operation is valid,
     // or to be able to handle the resulting state (possibly in Sentence mode but a div is selected), for example by calling updateMarkupForCurrentText() to re-update the state.
     private moveCurrentHighlightToTextBox(newSelectedTextBox): void {
-        const pageBody = this.getPageDocBody();
-        if (!pageBody) return; // Just give up, not much we can do from here.
-
-        const audioCurrentList = pageBody.getElementsByClassName(kAudioCurrent);
-        this.setCurrentAudioElementFromJQuery(
-            $(audioCurrentList),
-            $(newSelectedTextBox)
-        );
+        this.setCurrentAudioElement(newSelectedTextBox);
     }
 
     public newPageReady() {
         // FYI, it is possible for newPageReady to be called without updateMarkup() being called
         // (e.g. when opening the toolbox with an empty text box).
-        this.initializeForMarkup();
+        this.initializeAudioRecordingMode();
         this.changeStateAndSetExpected("");
     }
 
@@ -1601,7 +1564,7 @@ export default class AudioRecording {
         this.isShowing = true;
 
         if (audioPlaybackMode == AudioRecordingMode.Unknown) {
-            this.initializeForMarkup();
+            this.initializeAudioRecordingMode();
             // The reason we force the new playback mode to be sentence is that
             // The only way it is allowed to reach PlaybackMode = TextBox is immediately after doing a recording by TextBox mode.
             // So here, (e.g. when you type into a text box for the first time), we want you to be in Recording=*,Playback=Sentence mode.
@@ -1688,8 +1651,12 @@ export default class AudioRecording {
         }
         console.assert(this.audioRecordingMode == AudioRecordingMode.TextBox);
 
-        const audioCurrentList = this.getPageDocBodyJQuery().find(
-            ".ui-audioCurrent"
+        const pageDocBody = this.getPageDocBody();
+        if (!pageDocBody) {
+            return;
+        }
+        const audioCurrentList = pageDocBody.getElementsByClassName(
+            "ui-audioCurrent"
         );
 
         if (isEarlyAbortEnabled && audioCurrentList.length >= 1) {
@@ -1698,11 +1665,11 @@ export default class AudioRecording {
             // We wouldn't want multiple things highlighted, or end up pointing to the wrong thing, etc.
             return;
         }
-        let audioCurrent: HTMLElement | null = null;
+        let audioCurrent: Element | null = null;
         if (audioCurrentList.length >= 1) {
-            audioCurrent = audioCurrentList[0];
+            audioCurrent = audioCurrentList.item(0);
         }
-        const changeTo = this.getParentTextBoxOfElement(element);
+        const changeTo = this.getTextBoxOfElement(element);
         if (changeTo) {
             this.setCurrentAudioElementFrom(audioCurrent, changeTo);
         }
@@ -1752,17 +1719,12 @@ export default class AudioRecording {
             }
         }
 
-        this.setCurrentAudioElementFromJQuery(
-            audioCurrentList,
-            $(<any>changeTo)
-        );
+        if (changeTo) {
+            this.setCurrentAudioElement(changeTo);
+        }
     }
 
     public setCurrentAudioElementToFirstAudioElement() {
-        const audioCurrentList = this.getPageDocBodyJQuery().find(
-            ".ui-audioCurrent"
-        );
-
         const firstSentence = this.getPageDocBodyJQuery()
             .find(kAudioSentenceClassSelector)
             .first();
@@ -1771,7 +1733,7 @@ export default class AudioRecording {
             return;
         }
 
-        this.setCurrentAudioElementFromJQuery(audioCurrentList, firstSentence); // typically first arg matches nothing.
+        this.setCurrentAudioElement(firstSentence[0]); // typically first arg matches nothing.
 
         // In Sentence/Sentence mode: OK to move.
         // Text/Sentence mode: Ok to swap.

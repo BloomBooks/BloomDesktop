@@ -199,6 +199,9 @@ div.ui-audioCurrent:not(.disableHighlight) p {
 // Automatic numbering of the elements
 // Uses CSS counter instead of an ordered list (which is more awkward structurally and doesn't offer formatting flexibility)
 // You could use display: none instead of the not() pseudo-selector, but display: none is not compatible with CSS transitions.
+.ui-audioBody {
+    counter-reset: talkingBookListCounter;
+}
 *:not(.hide-countable) > .audio-label.talking-book-counter:before {
     content: counter(talkingBookListCounter) ") ";
 }
