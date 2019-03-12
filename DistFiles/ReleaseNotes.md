@@ -8,7 +8,7 @@
 
 ## Edit Tab
 
-Bloom has a way of changing the layout of a page to match one of the template pages. Now, in the Change Layout dialog you can now tell Bloom to make that change for _all_ similar pages in the book. This makes it easy to, for example, add a place for a sign language video to all pages.
+⭐ Bloom has a way of changing the layout of a page to match one of the template pages. Now, in the "Choose Different Layout" dialog you can now tell Bloom to make that change for _all_ similar pages in the book. This makes it easy to, for example, add a place for a sign language video to all pages.
 
 ### Talking Books
 
@@ -17,8 +17,6 @@ Bloom has a way of changing the layout of a page to match one of the template pa
 ### Books for the Visually Impaired
 
 We have improved advice given in Image Description Tool, simplified it, and added a checkbox for stating that the image should not be given an image description (e.g., because it is purely decorative).
-
-⭐ Allow "Choose Different Layout..." to change all pages in the book. This is particularly useful when adapting a book as a Sign Language diglot.
 
 ### Sign Language Books
 
