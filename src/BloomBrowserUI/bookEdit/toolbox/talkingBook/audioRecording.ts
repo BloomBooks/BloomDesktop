@@ -394,13 +394,13 @@ export default class AudioRecording {
         const editable = this.getRecordableDivs();
         if (editable.length === 0) {
             // no editable text on this page.
-            this.changeStateAndSetExpected("");
+            this.changeStateAndSetExpectedAsync("");
             return;
         }
 
         this.updateMarkupForCurrentText(this.getCurrentPlaybackMode());
 
-        this.changeStateAndSetExpected("record");
+        this.changeStateAndSetExpectedAsync("record");
 
         this.addAudioLevelListener();
     }
@@ -506,7 +506,7 @@ export default class AudioRecording {
         const next = this.getNextAudioElement();
         if (!next) return;
         this.setCurrentAudioElement(next);
-        this.changeStateAndSetExpected("record");
+        this.changeStateAndSetExpectedAsync("record");
     }
 
     private moveToPrevAudioElement(): void {
@@ -521,7 +521,7 @@ export default class AudioRecording {
         const prev = this.getPreviousAudioElement();
         if (prev == null) return;
         this.setCurrentAudioElement(prev);
-        this.changeStateAndSetExpected("record"); // Enhance: I think it'd actually be better to dynamically assign Expected based on what audio is available etc., instead of based on state transitions. Especially when doing Prev.
+        this.changeStateAndSetExpectedAsync("record"); // Enhance: I think it'd actually be better to dynamically assign Expected based on what audio is available etc., instead of based on state transitions. Especially when doing Prev.
     }
 
     // Gets the next audio element to be recorded
@@ -825,10 +825,10 @@ export default class AudioRecording {
                     this.updateMarkupForCurrentText(AudioRecordingMode.TextBox);
                 }
                 this.updatePlayerStatus();
-                this.changeStateAndSetExpected("play");
+                this.changeStateAndSetExpectedAsync("play");
             })
             .catch(error => {
-                this.changeStateAndSetExpected("record"); //record failed, so we expect them to try again
+                this.changeStateAndSetExpectedAsync("record"); //record failed, so we expect them to try again
                 toastr.error(error.response.statusText);
                 console.log(error.response.statusText);
                 this.updatePlayerStatus();
@@ -1000,7 +1000,7 @@ export default class AudioRecording {
         // Change state to "Split" if possible but fallback to Next if not.
         // TODO: Maybe we should fallback to Listen to Whole Page if Next is not available (A.k.a. you just checked the last thing)
         //  What if you reached here by listening to the whole page? Does it matter that we'll push them toward listening to it again?
-        this.changeStateAndSetExpected("split");
+        this.changeStateAndSetExpectedAsync("split");
     }
 
     private selectInputDevice(): void {
@@ -1164,7 +1164,7 @@ export default class AudioRecording {
                 });
         }
         this.updatePlayerStatus();
-        this.changeStateAndSetExpected("record");
+        this.changeStateAndSetExpectedAsync("record");
     }
 
     // Update the input element (e.g. checkbox) which visually represents the recording mode and updates the textbox markup to reflect the new mode.
@@ -1232,7 +1232,7 @@ export default class AudioRecording {
 
             // Enhance: Maybe could be Play if the current sentence already has text available?
             // Enhance: Maybe this function could have a Fallback optional parameter. And it would try to set Play, but switch to Record if not available.
-            this.changeStateAndSetExpected("record");
+            this.changeStateAndSetExpectedAsync("record");
         } else {
             // From Sentence -> TextBox, we don't convert the playback mode.
             // (since until/unless the user actually makes a new whole-text-box recording, we actually still have by-sentence recordings we can play)
@@ -1241,7 +1241,7 @@ export default class AudioRecording {
             if (currentTextBox) {
                 this.persistRecordingMode(currentTextBox);
                 this.setCurrentAudioElementBasedOnRecordingMode(currentTextBox);
-                this.changeStateAndSetExpected("record");
+                this.changeStateAndSetExpectedAsync("record");
             }
         }
     }
@@ -1510,7 +1510,7 @@ export default class AudioRecording {
         // FYI, it is possible for newPageReady to be called without updateMarkup() being called
         // (e.g. when opening the toolbox with an empty text box).
         this.initializeAudioRecordingMode();
-        this.changeStateAndSetExpected("");
+        this.changeStateAndSetExpectedAsync("");
     }
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
@@ -1583,7 +1583,7 @@ export default class AudioRecording {
 
         if (unionedElementsToProcess.length === 0) {
             // no editable text on this page.
-            this.changeStateAndSetExpected("");
+            this.changeStateAndSetExpectedAsync("");
             return;
         }
 
@@ -2374,7 +2374,8 @@ export default class AudioRecording {
 
     // ------------ State Machine ----------------
 
-    public changeStateAndSetExpected(
+    // Note: button states may not change immediately. If you call it rapidly in succession with different values, you may not see valid results.
+    public changeStateAndSetExpectedAsync(
         expectedVerb: string,
         numRetriesRemaining: number = 1
     ) {
@@ -2419,7 +2420,7 @@ export default class AudioRecording {
                 // "wrong"... the alternative is it points to nothing and you are stuck.
                 // IMO pointing to the first element is less wrong than disabling the whole toolbox.
                 this.setCurrentAudioElementToFirstAudioElement();
-                this.changeStateAndSetExpected(
+                this.changeStateAndSetExpectedAsync(
                     expectedVerb,
                     numRetriesRemaining - 1
                 );
@@ -2943,11 +2944,11 @@ export default class AudioRecording {
 
             // Now that we're all done with use sentenceToIdListMap, clear it out so that there's no potential for accidental re-use
             this.sentenceToIdListMap = {};
-            this.changeStateAndSetExpected("next");
+            this.changeStateAndSetExpectedAsync("next");
             this.setStatus("split", Status.Disabled); // No need to run it again if it was successful. (Until the settings are changed).
             this.endBusy();
         } else {
-            this.changeStateAndSetExpected("record");
+            this.changeStateAndSetExpectedAsync("record");
             doneCallback();
 
             // TODO: Localize
