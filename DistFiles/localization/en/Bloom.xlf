@@ -2083,20 +2083,20 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
         <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckUnnumbered" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckLabel" sil:dynamic="true">
         <source xml:lang="en">Check</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckUnnumbered</note>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckLabel</note>
         <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
-        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Check if possible</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Check if possible, but without the number</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsUnnumbered" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel" sil:dynamic="true">
         <source xml:lang="en">Check that you are recording into the correct device and that these levels are showing blue:</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettingsUnnumbered</note>
-        <note>Please make it match EditTab.Toolbox.TalkingBookTool.CheckSettings if possible</note>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.CheckSettings if possible, but without the number</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true">
         <source xml:lang="en">Clear</source>
@@ -2111,19 +2111,19 @@
         <source xml:lang="en">2) Look at the highlighted text</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceUnnumbered" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true">
         <source xml:lang="en">Look at the highlighted text</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentenceUnnumbered</note>
-        <note>Please make it match EditTab.Toolbox.TalkingBookTool.LookAtSentence if possible</note>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.LookAtSentence if possible, but without the number</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.NextUnnumbered" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.NextLabel" sil:dynamic="true">
         <source xml:lang="en">Next</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.NextUnnumbered</note>
-        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Next if possible</note>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.NextLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Next if possible, but without the number</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true">
         <source xml:lang="en">Record by sentences</source>
@@ -2143,8 +2143,8 @@
         <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
         <note>Shown if you open TalkingBookTool, enable "Record the whole text box...", make a recording, and then attempt to uncheck the "Record the whole text box..." input (without first clearing the audio recordings you are about to lose)</note>
-        <note>For "split", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitUnnumbered</note>
-        <note>For "clear", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearUnnumbered</note>
+        <note>For "split", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
+        <note>For "clear", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true">
         <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
@@ -2155,15 +2155,14 @@
         <source xml:lang="en">3) Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Speak</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakUnnumbered" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true">
         <source xml:lang="en">Speak</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakUnnumbered</note>
-        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible</note>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible, but without the number</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitUnnumbered">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel">
         <source xml:lang="en">Split recording into sentences for highlighting.</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.SplitUnnumbered</note>
-        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible</note>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
         <note>This text appears on the button the user can press to trigger automatic splitting of audio. An audio file corresponding to an entire text box will be split into multiple audio files (one per sentence) instead. (Also known as "Forced Alignment" in technical terms)</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
