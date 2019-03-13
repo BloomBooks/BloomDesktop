@@ -1837,16 +1837,19 @@
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.KeepInMind</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe" sil:dynamic="true">
-        <source xml:lang="en">Are there important actions, relationships, emotions, or things in the scene that add to the story but are not in the text?</source>
+        <source xml:lang="en">Are there important **actions**, **relationships**, **emotions**, or things in the **scene** that add to the story but are not in the text?</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe</note>
+        <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords" sil:dynamic="true">
-        <source xml:lang="en">Use words that are simple enough for the listener.</source>
+        <source xml:lang="en">Use words that are **simple** enough for the listener.</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords</note>
+        <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.KeepItShort" sil:dynamic="true">
-        <source xml:lang="en">Keep it short.</source>
+        <source xml:lang="en">Keep it **short**.</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.KeepItShort</note>
+        <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox" sil:dynamic="true">
         <source xml:lang="en">Otherwise, check this box:</source>

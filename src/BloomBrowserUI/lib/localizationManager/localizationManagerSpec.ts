@@ -21,4 +21,38 @@ describe("localizationManager", () => {
                             done();
                     });
             }); */
+
+    it("processSimpleMarkdown works properly", () => {
+        const result1 = theOneLocalizationManager.processSimpleMarkdown(
+            "This is a test."
+        );
+        expect(result1).toBe("This is a test.");
+
+        const result2 = theOneLocalizationManager.processSimpleMarkdown(
+            "This is a **test**."
+        );
+        expect(result2).toBe("This is a <strong>test</strong>.");
+
+        const result3 = theOneLocalizationManager.processSimpleMarkdown(
+            "This is a *test*."
+        );
+        expect(result3).toBe("This is a <em>test</em>.");
+
+        const result4 = theOneLocalizationManager.processSimpleMarkdown(
+            "This is a [test](https://sil.org)."
+        );
+        expect(result4).toBe('This is a <a href="https://sil.org">test</a>.');
+
+        const result5 = theOneLocalizationManager.processSimpleMarkdown(
+            "*This* is a **more** complex [test](https://wherever.com)**!!**"
+        );
+        expect(result5).toBe(
+            '<em>This</em> is a <strong>more</strong> complex <a href="https://wherever.com">test</a><strong>!!</strong>'
+        );
+
+        const result6 = theOneLocalizationManager.processSimpleMarkdown(
+            "This is a [**] test (*)."
+        );
+        expect(result6).toBe("This is a [**] test (*).");
+    });
 });

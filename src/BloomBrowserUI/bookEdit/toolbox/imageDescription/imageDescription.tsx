@@ -57,21 +57,24 @@ export class ImageDescriptionToolControls extends React.Component<
                             <ul>
                                 <li>
                                     <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe">
-                                        Are there important actions,
-                                        relationships, emotions, or things in
-                                        the scene that add to the story but are
-                                        not in the text?
+                                        Are there important{" "}
+                                        <strong>actions</strong>,{" "}
+                                        <strong>relationships</strong>,{" "}
+                                        <strong>emotions</strong>, or things in
+                                        the <strong>scene</strong> that add to
+                                        the story but are not in the text?
                                     </Label>
                                     <ul>
                                         <li>
                                             <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords">
-                                                Use words that are simple enough
+                                                Use words that are{" "}
+                                                <strong>simple</strong> enough
                                                 for the listener.
                                             </Label>
                                         </li>
                                         <li>
                                             <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.KeepItShort">
-                                                Keep it short.
+                                                Keep it <strong>short</strong>.
                                             </Label>
                                         </li>
                                     </ul>
