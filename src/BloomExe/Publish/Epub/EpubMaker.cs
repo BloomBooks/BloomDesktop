@@ -1129,9 +1129,13 @@ namespace Bloom.Publish.Epub
 							newAltText = "Logo of the book sponsors"; // Alternatively, it's OK to also put in "" to signal no accessibility need
 						}
 					}
-
 					img.SetAttribute("alt", newAltText);
 					img.SetAttribute("role", "presentation"); // tells accessibility tools to ignore it and makes DAISY checker happy
+					continue;
+				}
+				if ((img.ParentNode as XmlElement).GetAttribute("aria-hidden") == "true")
+				{
+					img.SetAttribute("role", "presentation"); // may not be needed, but doesn't hurt anything.
 					continue;
 				}
 				var desc = img.SelectSingleNode("following-sibling::div[contains(@class, 'bloom-imageDescription')]/div[contains(@class, 'bloom-content1')]") as XmlElement;

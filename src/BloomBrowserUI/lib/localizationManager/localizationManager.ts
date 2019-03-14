@@ -376,26 +376,77 @@ export class LocalizationManager {
      * @param {String[]} args
      * @returns {String}
      */
-    public simpleDotNetFormat(format: string, args: string[]) {
+    public simpleDotNetFormat(format: string, args: string[]): string {
         return format.replace(/{(\d+)}/g, (match: string, index: number) => {
             return typeof args[index] !== "undefined" ? args[index] : match;
         });
     }
+
+    /**
+     * Convert simple Markdown markup into HTML.  Only **, *, and the simplest []() are
+     * handled for now.
+     * @param {String} text
+     * @returns {String}
+     */
+    public processSimpleMarkdown(text: string): string {
+        if (text.indexOf("*") < 0 && text.indexOf("[") < 0) return text;
+        const reStrong = /(^|[^*])\*\*([^*]+)\*\*([^*]|$)/g;
+        let newstr = text.replace(reStrong, "$1<strong>$2</strong>$3");
+        const reEm = /(^|[^*])\*([^*]+)\*([^*]|$)/g;
+        newstr = newstr.replace(reEm, "$1<em>$2</em>$3");
+        const reA = /\[([^\]]*)\]\(([^)]*)\)/g;
+        newstr = newstr.replace(reA, '<a href="$2">$1</a>');
+        return newstr;
+    }
 }
 
 /**
- * Returns a string where html entities have been convert to normal text
+ * Returns a string where html entities have been converted to normal text
  * @param {String} text
  */
 function HtmlDecode(text): string {
-    if (text === "") {
-        //an empty string leads to div.firstChild, below, being null.
+    if (text.indexOf("&") < 0) {
+        // no need to decode anything!
         return text;
     }
     const div = document.createElement("div");
     div.innerHTML = text;
-    return div.firstChild!.nodeValue!;
+    if (text.indexOf("<") < 0) {
+        // cheap decoding using built-in functionality
+        return div.firstChild!.nodeValue!;
+    }
+    let retval = "";
+    for (let i = 0; i < div.childNodes.length; ++i) {
+        // (childNodes.forEach doesn't exist until Firefox 50.)
+        const node = div.childNodes[i] as HTMLElement;
+        if (node) {
+            if (node.firstChild) {
+                retval =
+                    retval +
+                    extractStartTag(node.outerHTML) +
+                    HtmlDecode(node.innerHTML) +
+                    "</" +
+                    node.localName +
+                    ">";
+            } else {
+                // empty element, no text to have any encoded characters
+                retval = retval + node.outerHTML;
+            }
+        } else {
+            const nodeValue = div.childNodes[i].nodeValue;
+            if (nodeValue) {
+                retval = retval + div.childNodes[i].nodeValue;
+            } else {
+                retval = retval + "[UNKNOWN VALUE]";
+            }
+        }
+    }
+    return retval;
 }
 
-var theOneLocalizationManager: LocalizationManager = new LocalizationManager();
+function extractStartTag(text: string): string {
+    return text.substring(0, text.indexOf(">") + 1);
+}
+
+const theOneLocalizationManager: LocalizationManager = new LocalizationManager();
 export default theOneLocalizationManager;
