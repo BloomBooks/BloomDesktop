@@ -2808,12 +2808,25 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
         <target xml:lang="prs" state="translated">4) بررسی کردن</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Check</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckLabel</note>
+        <target xml:lang="prs" state="translated">بررسی کردن</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
         <target xml:lang="prs" state="translated">1) بررسی کنید که شما در وسیله درست ثبت میکنید و اینکه این سطوح ها آبی هستند:</target>
         <alt-trans>
           <target xml:lang="prs">1) بررسی کنید که شما در وصیله درست ثبت میکنید و اینکه این سطوح ها آبی هستند:</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Check that you are recording into the correct device and that these levels are showing blue:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel</note>
+        <target xml:lang="prs" state="translated">بررسی کنید که شما در وسیله درست ثبت میکنید و اینکه این سطوح ها آبی هستند:</target>
+        <alt-trans>
+          <target xml:lang="prs">بررسی کنید که شما در وصیله درست ثبت میکنید و اینکه این سطوح ها آبی هستند:</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true" approved="yes">
@@ -2831,10 +2844,20 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
         <target xml:lang="prs" state="translated">2) به جمله نشانی شده نگاه کنید</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true">
+        <source xml:lang="en">Look at the highlighted text</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel</note>
+        <target xml:lang="prs" state="translated">به جمله نشانی شده نگاه کنید</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true" approved="yes">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
         <target xml:lang="prs" state="translated">5) بعدی</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.NextLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Next</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.NextLabel</note>
+        <target xml:lang="prs" state="translated">بعدی</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true">
         <source xml:lang="en">Record by sentences</source>
@@ -2857,6 +2880,11 @@
         <source xml:lang="en">3) Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Speak</note>
         <target xml:lang="prs" state="translated">3) گپ بزنید</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Speak</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakLabel</note>
+        <target xml:lang="prs" state="translated">گپ بزنید</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
         <source xml:lang="en">Make an e-book that can play audio recordings while highlighting text.</source>

@@ -2826,10 +2826,20 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
         <target xml:lang="fr" state="translated">4) Vérifiez</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Check</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckLabel</note>
+        <target xml:lang="fr" state="translated">Vérifiez</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
         <target xml:lang="fr" state="translated">1) Vérifiez que vous enregistrez dans le microphone adéquat et que ces niveaux apparaissent en bleu :</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Check that you are recording into the correct device and that these levels are showing blue:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel</note>
+        <target xml:lang="fr" state="translated">Vérifiez que vous enregistrez dans le microphone adéquat et que ces niveaux apparaissent en bleu :</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Clear</source>
@@ -2846,10 +2856,20 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
         <target xml:lang="fr" state="translated">2) Regardez la phrase surlignée</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true">
+        <source xml:lang="en">Look at the highlighted text</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel</note>
+        <target xml:lang="fr" state="translated">Regardez la phrase surlignée</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true" approved="yes">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
         <target xml:lang="fr" state="translated">5) Suivant</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.NextLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Next</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.NextLabel</note>
+        <target xml:lang="fr" state="translated">Suivant</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true">
         <source xml:lang="en">Record by sentences</source>
@@ -2872,6 +2892,11 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">3) Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Speak</note>
         <target xml:lang="fr" state="translated">3) Parlez</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speaklabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Speak</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakLabel</note>
+        <target xml:lang="fr" state="translated">Parlez</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
         <source xml:lang="en">Make an e-book that can play audio recordings while highlighting text.</source>

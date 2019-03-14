@@ -30,18 +30,18 @@ html
 					// this seems more durable. By the time the user can click Play, we'll be done.
 					audio(id='player', preload='none')
 
-				div.audio-label.talking-book-counter(id='audio-check' data-i18n='EditTab.Toolbox.TalkingBookTool.CheckSettingsUnnumbered') Check that you are recording into the correct device and that these levels are showing blue:
+				div.audio-label.talking-book-counter(id='audio-check' data-i18n='EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel') Check that you are recording into the correct device and that these levels are showing blue:
 				div.ui-audioInputGroup
 					div.ui-audioInput
 						img(id='audio-input-dev' src='' height='15' width='15' alt='mic')
 						ul(id='audio-devlist')
 					div.ui-audioMeter
 						canvas(id='audio-meter' width='80' height='15')
-				div.audio-label.talking-book-counter(id='audio-look-at' data-i18n='EditTab.Toolbox.TalkingBookTool.LookAtSentenceUnnumbered') Look at the highlighted text
-				+buttonGroup('record', 'expected', 'talking-book-counter', '', 'Speak', 'SpeakUnnumbered')
-				+buttonGroup('play', 'enabled', 'talking-book-counter', '', 'Check', 'CheckUnnumbered')
-				+buttonGroup('split', 'enabled', 'talking-book-counter', 'initial-state', 'Split', 'SplitUnnumbered')
-				+buttonGroup('next', 'enabled', 'talking-book-counter', '', 'Next', 'NextUnnumbered')
+				div.audio-label.talking-book-counter(id='audio-look-at' data-i18n='EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel') Look at the highlighted text
+				+buttonGroup('record', 'expected', 'talking-book-counter', '', 'Speak', 'SpeakLabel')
+				+buttonGroup('play', 'enabled', 'talking-book-counter', '', 'Check', 'CheckLabel')
+				+buttonGroup('split', 'enabled', 'talking-book-counter', 'initial-state', 'Split', 'SplitLabel')
+				+buttonGroup('next', 'enabled', 'talking-book-counter', '', 'Next', 'NextLabel')
 
 				+buttonGroup('prev', 'disabled', '', '', 'Back', 'Back')
 				+buttonGroup('clear', 'enabled', '', '', 'Clear', 'Clear')
