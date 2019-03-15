@@ -3078,9 +3078,9 @@
         <note>menu header in the Publish tab</note>
       </trans-unit>
       <trans-unit id="PublishTab.OptionsMenu.SizeLayout">
-        <source xml:lang="en">Size/Layout</source>
+        <source xml:lang="en">Size/Orientation</source>
         <note>ID: PublishTab.OptionsMenu.SizeLayout</note>
-        <note>Header for a region of the menu which lists various standard page layout sizes</note>
+        <note>Header for a region of the menu which lists various standard page sizes and orientations</note>
       </trans-unit>
       <trans-unit id="PublishTab.Options_ToolTip_">
         <source xml:lang="en">Choose a page size and orientation</source>
