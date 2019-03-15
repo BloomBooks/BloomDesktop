@@ -188,7 +188,7 @@
         <note>ID: BookMetadata.a11yLevelAAA</note>
       </trans-unit>
       <trans-unit id="BookMetadata.alternativeText" sil:dynamic="true">
-        <source xml:lang="en">Alternative text</source>
+        <source xml:lang="en">Has Image Descriptions</source>
         <note>ID: BookMetadata.alternativeText</note>
       </trans-unit>
       <trans-unit id="BookMetadata.author" sil:dynamic="true">
@@ -234,10 +234,6 @@
       <trans-unit id="BookMetadata.signLanguage" sil:dynamic="true">
         <source xml:lang="en">Sign Language</source>
         <note>ID: BookMetadata.signLanguage</note>
-      </trans-unit>
-      <trans-unit id="BookMetadata.soundHazard" sil:dynamic="true">
-        <source xml:lang="en">Sound Hazard</source>
-        <note>ID: BookMetadata.soundHazard</note>
       </trans-unit>
       <trans-unit id="BookMetadata.subjects" sil:dynamic="true">
         <source xml:lang="en">Subjects</source>

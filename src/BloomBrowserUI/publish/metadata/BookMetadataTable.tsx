@@ -149,29 +149,32 @@ export default class BookMetadataTable extends React.Component<IProps> {
         return (
             <div>
                 {/* from https://www.w3.org/wiki/WebSchemas/Accessibility*/}
-                {[
-                    "flashingHazard",
-                    "motionSimulationHazard",
-                    "soundHazard"
-                ].map(hazardName => {
-                    return (
-                        <StringListCheckbox
-                            key={hazardName}
-                            l10nKey={"BookMetadata." + hazardName}
-                            alreadyLocalized={true}
-                            list={this.props.metadata.hazards.value}
-                            itemName={hazardName}
-                            tristateItemOffName={
-                                "no" + this.capitalizeFirstChar(hazardName)
-                            }
-                            onChange={list =>
-                                (this.props.metadata.hazards.value = list)
-                            }
-                        >
-                            {this.props.translatedControlStrings[hazardName]}
-                        </StringListCheckbox>
-                    );
-                })}
+                {/* "Sound Hazard" is too hard to explain (BL-6947) */}
+                {["flashingHazard", "motionSimulationHazard"].map(
+                    hazardName => {
+                        return (
+                            <StringListCheckbox
+                                key={hazardName}
+                                l10nKey={"BookMetadata." + hazardName}
+                                alreadyLocalized={true}
+                                list={this.props.metadata.hazards.value}
+                                itemName={hazardName}
+                                tristateItemOffName={
+                                    "no" + this.capitalizeFirstChar(hazardName)
+                                }
+                                onChange={list =>
+                                    (this.props.metadata.hazards.value = list)
+                                }
+                            >
+                                {
+                                    this.props.translatedControlStrings[
+                                        hazardName
+                                    ]
+                                }
+                            </StringListCheckbox>
+                        );
+                    }
+                )}
             </div>
         );
     }
