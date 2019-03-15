@@ -562,22 +562,17 @@ namespace Bloom.Publish.Epub
 			if (!string.IsNullOrEmpty(metadata.Hazards))
 			{
 				var hazards = metadata.Hazards.Split(',');
-				if (hazards.All(haz => haz.StartsWith("no")))
+				// "none" is recommended instead of listing all 3 noXXXHazard values separately.
+				// But since we don't know anything about sound, we can't use it.  (BL-6947)
+				foreach (var hazard in hazards)
 				{
-					// "none" is recommended instead of listing all 3 noXXXHazard values separately
-					metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), "none"));
-				}
-				else
-				{
-					foreach (var hazard in hazards)
-					{
-						metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), hazard));
-					}
+					metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), hazard));
 				}
 			}
 			else
 			{
-				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), "none"));
+				// report that we don't know anything.
+				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), "unknown"));
 			}
 
 			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilitySummary"),
