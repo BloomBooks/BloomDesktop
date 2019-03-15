@@ -109,9 +109,14 @@ class TextOverPictureManager {
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
     // to create the context menu
     private deleteFloatingTOPBox(mouseX: number, mouseY: number) {
-        const focusedBubble = this.getImageContainerFromMouse(mouseX, mouseY);
-        if (focusedBubble && focusedBubble.length > 0) {
-            focusedBubble.remove();
+        const clickedElement = document.elementFromPoint(mouseX, mouseY);
+        if (clickedElement) {
+            const textElement = clickedElement.closest(
+                ".bloom-textOverPicture"
+            );
+            if (textElement && textElement.parentElement) {
+                textElement.parentElement.removeChild(textElement);
+            }
         }
     }
 
