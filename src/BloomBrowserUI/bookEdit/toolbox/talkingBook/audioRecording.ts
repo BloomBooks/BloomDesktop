@@ -2457,6 +2457,7 @@ export default class AudioRecording {
         const doWhenTextBoxAudioAvailabilityKnownCallback = (
             textBoxResponse: AxiosResponse<any>
         ) => {
+            // Look up the subsequent async call that we (possibly) need to retrieve all the information we need to complete processing
             if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
                 const currentElementIds = this.getSegmentIdsWithinCurrent();
                 axios
@@ -2484,6 +2485,7 @@ export default class AudioRecording {
                 );
 
                 // Oh, we already know the answer (it's identical to last thing we looked up).
+                // (If RecordingMode=TextBox but PlaybackMode=Sentence, we want to know if any of the sentences of the currently highlighted element contain audio)
                 const elementResponse = textBoxResponse;
                 this.updateButtonStateHelper(
                     expectedVerb,
@@ -2514,18 +2516,22 @@ export default class AudioRecording {
         textBoxResponse: AxiosResponse<any>,
         elementResponse: AxiosResponse<any>
     ): void {
+        // Note: If there is no audio, it returns Request.Failed AKA it actually has Non-OK Status code!
+        //       This doesn't mean you need to log an error though, since it is "normal" for failed requests to return.
+        //       Just mark them as not-exist instead.
+
         // This var is true if the Text Box containing the Currently Highlighted Element contains audio for any of the elements within the text box.
-        //   (Aka, true if the Currently Highlighted Element or any of its siblings contain audio)
         const doesTextBoxAudioExist: boolean =
             textBoxResponse &&
-            textBoxResponse.status == 200 &&
-            textBoxResponse.statusText == "OK";
+            textBoxResponse.status === 200 &&
+            textBoxResponse.statusText === "OK";
 
         // This var is true if the Currently Highlighted Element contains audio
+        // (If RecordingMode=TextBox but PlaybackMode=Sentence, this means if any of the sentences of the currently highlighted element contain audio)
         const doesElementAudioExist: boolean =
             elementResponse &&
-            elementResponse.status == 200 &&
-            elementResponse.statusText == "OK";
+            elementResponse.status === 200 &&
+            elementResponse.statusText === "OK";
 
         // Clear and Play (Check) buttons
         if (doesElementAudioExist) {
@@ -2538,12 +2544,12 @@ export default class AudioRecording {
 
         // Split button
         const isSplitButtonVisible =
-            this.audioRecordingMode == AudioRecordingMode.TextBox; // TODO: Could determine visibility from DOM instead. which is better?
+            this.audioRecordingMode === AudioRecordingMode.TextBox; // TODO: Could determine visibility from DOM instead. which is better?
         const currentPlaybackMode = this.getCurrentPlaybackMode();
         if (
             doesElementAudioExist &&
             isSplitButtonVisible &&
-            currentPlaybackMode == AudioRecordingMode.TextBox
+            currentPlaybackMode === AudioRecordingMode.TextBox
         ) {
             this.setEnabledOrExpecting("split", expectedVerb);
         } else {
@@ -2556,7 +2562,7 @@ export default class AudioRecording {
 
             const shouldNextButtonOverrideSplit: boolean =
                 expectedVerb == "split" &&
-                this.getStatus("split") == Status.Disabled;
+                this.getStatus("split") === Status.Disabled;
             if (!shouldNextButtonOverrideSplit) {
                 // Normal case for Next
                 this.setEnabledOrExpecting("next", expectedVerb);
@@ -2576,27 +2582,29 @@ export default class AudioRecording {
         }
 
         // Recording Mode checkbox
-        if (doesTextBoxAudioExist) {
-            // Determine whether the recording mode checkbox should be enabled or not, based on whether any audio files are present
-            // for anything in the current text box
-            if (
-                this.audioRecordingMode == AudioRecordingMode.TextBox &&
-                currentPlaybackMode == AudioRecordingMode.TextBox
-            ) {
-                // There is some audio set to play back in Text Box mode. If we switch the Record Mode to sentence mode, it also implies switching the Playback mode to Sentence mode.
-                // Disable the control so that the user can't accidentally lose data during this switch.
-                this.disableRecordingModeControl(!ToolBox.isXmatterPage());
-            } else {
-                this.enableRecordingModeControl();
-            }
-        } else {
-            // Note: If there is no audio, it returns Request.Failed AKA it actually has Non-OK Status code!
-
+        if (ToolBox.isXmatterPage()) {
             // We don't want to enable the checkbox if we are on an xMatter page (BL-6737).
             // It is probably already disabled at this point, but might as well play it safe.
-            if (ToolBox.isXmatterPage()) {
-                this.disableRecordingModeControl(false);
+            this.disableRecordingModeControl(false);
+        } else {
+            // Normal page
+
+            // Determine whether the recording mode checkbox should be enabled or not, based on whether any audio files are present
+            // for anything in the current text box
+            if (doesTextBoxAudioExist) {
+                if (
+                    this.audioRecordingMode === AudioRecordingMode.TextBox &&
+                    currentPlaybackMode === AudioRecordingMode.TextBox
+                ) {
+                    // There is some audio set to play back in Text Box mode. If we switch the Record Mode to sentence mode, it also implies switching the Playback mode to Sentence mode.
+                    // Disable the control so that the user can't accidentally lose data during this switch.
+                    this.disableRecordingModeControl(true);
+                } else {
+                    // Even though there is audio on this page, nothing immediately bad will happen if the user switches the checkbox mode, so go ahead and enable it.
+                    this.enableRecordingModeControl();
+                }
             } else {
+                // No existing audio on a normal page means definitely safe to enable. (No audio can be lost because none exists)
                 this.enableRecordingModeControl();
             }
         }

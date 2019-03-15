@@ -2082,6 +2082,7 @@
         <source xml:lang="en">4) Check</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
         <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckLabel" sil:dynamic="true">
         <source xml:lang="en">Check</source>
@@ -2092,6 +2093,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel" sil:dynamic="true">
         <source xml:lang="en">Check that you are recording into the correct device and that these levels are showing blue:</source>
@@ -2110,6 +2112,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
         <source xml:lang="en">2) Look at the highlighted text</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true">
         <source xml:lang="en">Look at the highlighted text</source>
@@ -2119,6 +2122,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.NextLabel" sil:dynamic="true">
         <source xml:lang="en">Next</source>
@@ -2154,6 +2158,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true">
         <source xml:lang="en">3) Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Speak</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true">
         <source xml:lang="en">Speak</source>
