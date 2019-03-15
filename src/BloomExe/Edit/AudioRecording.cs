@@ -423,11 +423,19 @@ namespace Bloom.Edit
 
 		private string GetPathToPublishableAudioForSegment(string segmentId)
 		{
+			if (_bookSelection?.CurrentSelection?.FolderPath == null)
+			{
+				return "";
+			}
 			return Path.Combine(_bookSelection.CurrentSelection.FolderPath, "audio", $"{segmentId}.{kPublishableExtension}");
 		}
 
 		private string GetPathToRecordableAudioForSegment(string segmentId)
 		{
+			if (_bookSelection?.CurrentSelection?.FolderPath == null)
+			{
+				return "";
+			}
 			return Path.Combine(_bookSelection.CurrentSelection.FolderPath, "audio", $"{segmentId}.{kRecordableExtension}");
 		}
 
@@ -579,7 +587,6 @@ namespace Bloom.Edit
 				var bloomIndex = idWithPrefix.IndexOf(Api_Prefix);
 				var id = idWithPrefix.Substring(bloomIndex + Api_Prefix.Length);
 				var segmentId = Path.GetFileNameWithoutExtension(id);
-				var recordablePath = GetPathToRecordableAudioForSegment(segmentId);
 
 				WaitForRecordingToComplete();
 
