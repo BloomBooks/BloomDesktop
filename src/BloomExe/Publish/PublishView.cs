@@ -383,8 +383,8 @@ namespace Bloom.Publish
 			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
 			_layoutChoices.DropDownItems.Clear();
 			_layoutChoices.DropDownItems.Add(new ToolStripSeparator());
-			var headerText = LocalizationManager.GetString(@"PublishTab.OptionsMenu.SizeLayout", "Size/Layout",
-				@"Header for a region of the menu which lists various standard page layout sizes");
+			var headerText = LocalizationManager.GetString(@"PublishTab.OptionsMenu.SizeLayout", "Size/Orientation",
+				@"Header for a region of the menu which lists various standard page sizes and orientations");
 			var headerItem2 = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(headerText);
 			headerItem2.Enabled = false;
 			foreach (var lc in layoutChoices)
