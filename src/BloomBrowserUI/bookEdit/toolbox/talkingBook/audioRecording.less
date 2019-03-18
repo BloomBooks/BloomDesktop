@@ -191,7 +191,8 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     }
     .audio-label {
         display: inline-block;
-        max-width: 100px;
+        max-width: 87px; // .ui-audioBody is either 150 pixels or 167 pixels depending on if scrollbar present. So .button-wrapper (60 pixels) + this + 3 pixels whitespace must add up to 150 pixels.
+
         vertical-align: top;
 
         &.expected {
@@ -226,6 +227,13 @@ div.ui-audioCurrent:not(.disableHighlight) p {
 
     overflow: hidden; // hiding the overflow causes the subsequent element to smoothly move up
 }
+#audio-split-wrapper {
+    height: 57.5px; // Enhance: This setup is not robust for varying lengths of translated text, but I didn't find a way to make animation work otherwise yet.
+    &.hide-countable {
+        height: 0px;
+    }
+}
+
 .button-label-wrapper button {
     height: 45px;
     transition: height @splitAnimationTime;
