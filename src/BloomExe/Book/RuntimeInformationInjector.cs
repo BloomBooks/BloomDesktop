@@ -140,7 +140,7 @@ namespace Bloom.Book
 		{
 			SafelyAddLanguage(d, "en", "English");
 			SafelyAddLanguage(d, "ha", "Hausa");
-			SafelyAddLanguage(d, "hi", "हिन्दी");//hindi
+			SafelyAddLanguage(d, "hi", "हिन्दी"); //hindi
 			SafelyAddLanguage(d, "es", "español");
 			SafelyAddLanguage(d, "fr", "français");
 			SafelyAddLanguage(d, "pt", "português");
@@ -148,7 +148,8 @@ namespace Bloom.Book
 			SafelyAddLanguage(d, "th", "ภาษาไทย"); //thai
 			SafelyAddLanguage(d, "tpi", "Tok Pisin");
 			SafelyAddLanguage(d, "id", "Bahasa Indonesia");
-			SafelyAddLanguage(d, "ar","العربية/عربي‎");//arabic
+			SafelyAddLanguage(d, "ar","العربية/عربي‎"); //arabic
+			SafelyAddLanguage(d, "zh-CN", "中文（简体）"); // chinese, simplified
 			//    return { "en": "English", "vernacularLang": "en", "{V}": "English", "{N1}": "English", "{N2}": "", "ar": "العربية/عربي‎","id": "Bahasa Indonesia",
 			//"ha": "Hausa", "hi": "हिन्दी", "es": "español", "fr": "français", "pt": "português", "swa": "Swahili", "th": "ภาษาไทย", "tpi": "Tok Pisin", "TemplateBooks.PageLabel.Front Cover": "Front Cover", "*You may use this space for author/illustrator, or anything else.": "*You may use this space for author/illustrator, or anything else.", "Click to choose topic": "Click to choose topic", "EditTab.FormatDialog.FontSizeTip": "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\\nCurrent size is {2}pt.", "FrontMatter.Factory.Book title in {lang}": "Book title in {lang}", "FrontMatter.Factory.Click to choose topic": "Click to choose topic", "FrontMatter.Factory.International Standard Book Number. Leave blank if you don't have one of these.": "International Standard Book Number. Leave blank if you don't have one of these.", "FrontMatter.Factory.Acknowledgments for translated version, in {lang}": "Acknowledgments for translated version, in {lang}", "FrontMatter.Factory.Use this to acknowledge any funding agencies.": "Use this to acknowledge any funding agencies.", "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.": "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.", "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.": "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover." };
 

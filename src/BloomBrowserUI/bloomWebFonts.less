@@ -1,0 +1,89 @@
+// This may eventually be subsumed into bloomUI.less, but for now that file has other ideas about fonts and isn't
+// imported where we need webfonts.
+
+// This file should be imported by any Bloom .less file that wants to access webfonts.
+// The following were very helpful in compiling this:
+// - google-webfonts-helper.herokuapp.com (for getting .woff2 Roboto with a maximum of charsets)
+// - transfonter.org (for making .woff2 files from .ttf fonts)
+// - scriptsource.org (for finding Unicode ranges for specific scripts)
+
+// This Roboto covers latin, latin-ext, greek, greek-ext, cyrillic, cyrillic-ext and vietnamese Unicode blocks.
+@font-face {
+    font-family: "RobotoRegular";
+    src: url("/bloom/fonts/Roboto-Regular.woff2") format("woff2");
+}
+
+// This Roboto covers latin, latin-ext, greek, greek-ext, cyrillic, cyrillic-ext and vietnamese Unicode blocks.
+@font-face {
+    font-family: "RobotoBold";
+    src: url("/bloom/fonts/Roboto-Bold.woff2") format("woff2");
+}
+
+// This Noto Sans font only covers Unicode points used by Devanagari scripts (at least Hindi and Nepali).
+@font-face {
+    font-family: "NotoSansDevanagariRegular";
+    src: url("/bloom/fonts/NotoSansDevanagari-Regular.woff2") format("woff2");
+    unicode-range: U+0900-097F, U+A8E0-A8FF;
+}
+
+// This Noto Sans font only covers Unicode points used by Devanagari scripts (at least Hindi and Nepali).
+@font-face {
+    font-family: "NotoSansDevanagariBold";
+    src: url("/bloom/fonts/NotoSansDevanagari-Bold.woff2") format("woff2");
+    unicode-range: U+0900-097F, U+A8E0-A8FF;
+}
+
+// This Noto Sans font only covers Unicode points used by Thai scripts.
+@font-face {
+    font-family: "NotoSansThaiRegular";
+    src: url("/bloom/fonts/NotoSansThai-Regular.woff2") format("woff2");
+    unicode-range: U+0E00-0E7F;
+}
+
+// This Noto Sans font only covers Unicode points used by Thai scripts.
+@font-face {
+    font-family: "NotoSansThaiBold";
+    src: url("/bloom/fonts/NotoSansThai-Bold.woff2") format("woff2");
+    unicode-range: U+0E00-0E7F;
+}
+
+// This Noto Sans font only covers Unicode points used by Bengali scripts.
+@font-face {
+    font-family: "NotoSansBengaliRegular";
+    src: url("/bloom/fonts/NotoSansBengali-Regular.woff2") format("woff2");
+    unicode-range: U+0980-09FF;
+}
+
+// This Noto Sans font only covers Unicode points used by Bengali scripts.
+@font-face {
+    font-family: "NotoSansBengaliBold";
+    src: url("/bloom/fonts/NotoSansBengali-Bold.woff2") format("woff2");
+    unicode-range: U+0980-09FF;
+}
+
+// This Noto Sans font only covers Unicode points used by Simplified Chinese scripts.
+@font-face {
+    font-family: "NotoSansChineseRegular";
+    src: url("/bloom/fonts/NotoSansSc-Regular.woff2") format("woff2");
+    unicode-range: U+3000-303F, U+FF00-FFEF, U+4E00-9FFF;
+}
+
+// This Noto Sans font only covers Unicode points used by Arabic scripts.
+@font-face {
+    font-family: "NotoSansArabicRegular";
+    src: url("/bloom/fonts/NotoSansArabic-Regular.woff2") format("woff2");
+    unicode-range: U+0600-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+// This Noto Sans font only covers Unicode points used by Arabic scripts.
+@font-face {
+    font-family: "NotoSansArabicBold";
+    src: url("/bloom/fonts/NotoSansArabic-Bold.woff2") format("woff2");
+    unicode-range: U+0600-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@RegularFontStack: NotoSansThaiRegular, NotoSansBengaliRegular,
+    NotoSansDevanagariRegular, NotoSansChineseRegular, NotoSansArabicRegular,
+    RobotoRegular, sans-serif;
+@BoldFontStack: NotoSansThaiBold, NotoSansBengaliBold, NotoSansDevanagariBold,
+    NotoSansChineseRegular, NotoSansArabicBold, RobotoBold, sans-serif;

@@ -1,15 +1,13 @@
 ﻿// This file gets imported by editMode.less
+
+@import "../../bloomWebFonts.less";
+
 @BubbleBorder: #e0deb7;
 @BubbleBackground: #faf7cc;
 @TabColor: @BubbleBorder;
 @TabBorder: @BubbleBackground;
 
 @BubbleTextColor: black;
-
-@font-face {
-    font-family: "Roboto";
-    src: url("/bloom/fonts/Roboto-Regular.ttf") format("truetype");
-}
 
 .qtip-default {
     background-color: @BubbleBackground !important;
@@ -117,9 +115,9 @@
                     outline: none;
                     text-decoration: none;
                     color: black;
-                    font-family: "Roboto", sans-serif;
+                    font-family: @RegularFontStack;
                     &.active {
-                        font-weight: bold;
+                        font-family: @BoldFontStack;
                     }
                     &:hover {
                         text-decoration: underline;
@@ -140,7 +138,7 @@
         line-height: 1.5;
         color: black;
         padding-top: 4px;
-        font-family: "Roboto", sans-serif;
+        font-family: @RegularFontStack;
         &.active {
             overflow-y: hidden !important;
         }
