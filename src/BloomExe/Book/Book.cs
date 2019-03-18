@@ -1781,6 +1781,18 @@ namespace Bloom.Book
 			return false;
 		}
 
+		public void ReportIfBrokenAudioSentenceElements()
+		{
+			if (HasBrokenAudioSentenceElements())
+			{
+				string shortMsg = L10NSharp.LocalizationManager.GetString(@"PublishTab.Audio.ElementsMissingId",
+					"Some audio elements are missing ids",
+					@"Message briefly displayed to the user in a toast");
+				var longMsg = "This book has elements marked audio-sentence that have no IDs. Usually this means that the book has been edited using some other program than Bloom.";
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg);
+			}
+		}
+
 		/// <summary>
 		/// Determines whether the book references an existing image file other than
 		/// branding, placeholder, or license images.
@@ -2352,7 +2364,8 @@ namespace Bloom.Book
 				return HtmlDom.AddEmptyUserModifiedStylesNode(headElement);
 
 			var coverColorElement = HtmlDom.GetCoverColorStyleElement(headElement);
-			if (coverColorElement == null)
+			// If the user defines the cover color, the two elements could end up being the same.
+			if (coverColorElement == null || coverColorElement == userStyleElement)
 				return userStyleElement;
 
 			// We have both style elements. Make sure they're in the right order.

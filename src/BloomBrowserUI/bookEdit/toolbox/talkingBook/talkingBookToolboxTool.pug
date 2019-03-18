@@ -1,15 +1,20 @@
-﻿mixin buttonGroup(buttonId, initialStatusClass, buttonLabel, i18nId)
-	div.button-label-wrapper(id='audio-'+buttonId + '-wrapper')
+﻿mixin buttonGroup(buttonId, initialStatusClass, counterClass, wrapperClasses, buttonLabel, i18nId)
+	div.button-label-wrapper(id='audio-'+buttonId + '-wrapper' class=wrapperClasses)
 		.button-wrapper
 			button(id='audio-'+buttonId class='ui-audio-button ui-button ' + initialStatusClass)
-		div.audio-label(id='audio-'+buttonId+'-label' data-i18n='EditTab.Toolbox.TalkingBookTool.'+i18nId)=buttonLabel
+		div.audio-label(id='audio-'+buttonId+'-label' class=counterClass data-i18n='EditTab.Toolbox.TalkingBookTool.'+i18nId)=buttonLabel
+
 mixin checkboxWithHiddenClickHandler(buttonId, i18nKey, englishLabel, isChecked, additionalStyles)
 	// The click handler can be used to handle events on the checkbox even while the checkbox is disabled (which would suppress events on the checkbox itself)
 	div(id='audio-' + buttonId + '-wrapper', style='display:inline-block; position:relative;' + additionalStyles)
-		input(id='audio-'+buttonId type='checkbox', name=buttonId, value=theValue, checked=isChecked)
-		div(id='audio-' + buttonId + '-clickHandler', style='position:absolute; left:0; right:0; top:0; bottom:0;')
-		label(data-i18n=i18nKey)
-			=englishLabel
+		table
+			tr
+				td(style='vertical-align: top')
+					input(id='audio-'+buttonId type='checkbox', name=buttonId, value=theValue, checked=isChecked)
+				td
+					div(id='audio-' + buttonId + '-clickHandler', style='position:absolute; left:0; right:0; top:0; bottom:0;')
+					label(data-i18n=i18nKey)
+						=englishLabel
 
 html
 	head
@@ -24,25 +29,27 @@ html
 					// As an alternative, a settimeout() in the javascript also worked, button
 					// this seems more durable. By the time the user can click Play, we'll be done.
 					audio(id='player', preload='none')
-				div.audio-label(id='audio-check' data-i18n='EditTab.Toolbox.TalkingBookTool.CheckSettings') 1) Check that you are recording into the correct device and that these levels are showing blue:
+
+				div.audio-label.talking-book-counter(id='audio-check' data-i18n='EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel') Check that you are recording into the correct device and that these levels are showing blue:
 				div.ui-audioInputGroup
 					div.ui-audioInput
 						img(id='audio-input-dev' src='' height='15' width='15' alt='mic')
 						ul(id='audio-devlist')
 					div.ui-audioMeter
 						canvas(id='audio-meter' width='80' height='15')
-				div.audio-label(id='audio-look-at' data-i18n='EditTab.Toolbox.TalkingBookTool.LookAtSentence') 2) Look at the highlighted text
-				+buttonGroup('record', 'expected', '3) Speak', 'Speak')
-				+buttonGroup('play', 'enabled', '4) Check', 'Check')
-				+buttonGroup('next', 'enabled', '5) Next', 'Next')
-				+buttonGroup('prev', 'disabled', 'Back', 'Back')
-				+buttonGroup('clear', 'enabled', 'Clear', 'Clear')
-				+buttonGroup('listen', 'disabled', 'Listen to the whole page', 'Listen')
-				+checkboxWithHiddenClickHandler('recordingModeControl', 'EditTab.Toolbox.TalkingBookTool.RecordBySentences','Record by sentences', true, 'padding-top:22px')
-				div(id='audio-autoSegmentWrapper')
-					button(id='audio-autoSegment' data-i18n='EditTab.Toolbox.TalkingBookTool.AutoSegment') Auto Segment
-					button(id='audio-autoSegmentSettings')
-					br
-					div.autoSegmentStatus Segmenting...
+				div.audio-label.talking-book-counter(id='audio-look-at' data-i18n='EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel') Look at the highlighted text
+				+buttonGroup('record', 'expected', 'talking-book-counter', '', 'Speak', 'SpeakLabel')
+				+buttonGroup('play', 'enabled', 'talking-book-counter', '', 'Check', 'CheckLabel')
+				+buttonGroup('split', 'enabled', 'talking-book-counter', 'initial-state', 'Split', 'SplitLabel')
+				+buttonGroup('next', 'enabled', 'talking-book-counter', '', 'Next', 'NextLabel')
+
+				+buttonGroup('prev', 'disabled', '', '', 'Back', 'Back')
+				+buttonGroup('clear', 'enabled', '', '', 'Clear', 'Clear')
+				+buttonGroup('listen', 'disabled', '', '', 'Listen to the whole page', 'Listen')
+				div.audio-advanced
+					strong
+						label(data-i18n='Common.Advanced')
+					+checkboxWithHiddenClickHandler('recordingModeControl', 'EditTab.Toolbox.TalkingBookTool.RecordByTextBox','Record by whole text box, then let Bloom split it into sentences later.', true, 'padding-top:16px')
+
 				div.audio-about(data-i18n='EditTab.Toolbox.TalkingBookTool.ToolPurpose') Make an e-book that can play audio recordings while highlighting text.
 				a(href='/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Talking_Book_Tool_overview.htm', data-i18n='Common.Help') Help

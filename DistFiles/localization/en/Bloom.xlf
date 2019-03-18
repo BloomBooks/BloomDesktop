@@ -188,7 +188,7 @@
         <note>ID: BookMetadata.a11yLevelAAA</note>
       </trans-unit>
       <trans-unit id="BookMetadata.alternativeText" sil:dynamic="true">
-        <source xml:lang="en">Alternative text</source>
+        <source xml:lang="en">Has Image Descriptions</source>
         <note>ID: BookMetadata.alternativeText</note>
       </trans-unit>
       <trans-unit id="BookMetadata.author" sil:dynamic="true">
@@ -234,10 +234,6 @@
       <trans-unit id="BookMetadata.signLanguage" sil:dynamic="true">
         <source xml:lang="en">Sign Language</source>
         <note>ID: BookMetadata.signLanguage</note>
-      </trans-unit>
-      <trans-unit id="BookMetadata.soundHazard" sil:dynamic="true">
-        <source xml:lang="en">Sound Hazard</source>
-        <note>ID: BookMetadata.soundHazard</note>
       </trans-unit>
       <trans-unit id="BookMetadata.subjects" sil:dynamic="true">
         <source xml:lang="en">Subjects</source>
@@ -1833,21 +1829,56 @@
         <source xml:lang="en">Image Description Tool</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.MoreInformation" sil:dynamic="true">
+        <source xml:lang="en">For more information:</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.MoreInformation</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.KeepInMind" sil:dynamic="true">
+        <source xml:lang="en">Keep these things in mind:</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.KeepInMind</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe" sil:dynamic="true">
+        <source xml:lang="en">Are there important **actions**, **relationships**, **emotions**, or things in the **scene** that add to the story but are not in the text?</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe</note>
+        <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords" sil:dynamic="true">
+        <source xml:lang="en">Use words that are **simple** enough for the listener.</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords</note>
+        <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.KeepItShort" sil:dynamic="true">
+        <source xml:lang="en">Keep it **short**.</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.KeepItShort</note>
+        <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox" sil:dynamic="true">
+        <source xml:lang="en">Otherwise, check this box:</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckThisBox</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe" sil:dynamic="true">
+        <source xml:lang="en">This image should not be described.</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true">
         <source xml:lang="en">Be Concise</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeConcise</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeObjective" sil:dynamic="true">
         <source xml:lang="en">Be Objective</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeObjective</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo" sil:dynamic="true">
         <source xml:lang="en">Bloom training video</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true">
         <source xml:lang="en">Check your image description against each of these reminders:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckDescription</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience" sil:dynamic="true">
         <source xml:lang="en">Consider your Audience</source>
@@ -1861,7 +1892,7 @@
         <source xml:lang="en">General to Specific</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.GeneralSpecific</note>
       </trans-unit>
-	  <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.LearnToMake" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.LearnToMake" sil:dynamic="true">
         <source xml:lang="en">Learn to make effective image descriptions</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.LearnToMake</note>
       </trans-unit>
@@ -2078,36 +2109,37 @@
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegment">
-        <source xml:lang="en">Auto Segment</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegment</note>
-        <note>This text appears on the button the user can press to trigger automatic segmentation of audio. An audio file corresponding to an entire text box will be segmented into one audio file per sentence instead. (Also known as "Forced Alignment" in technical terms)</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError">
-        <source xml:lang="en">Segmenting... Error</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError</note>
-        <note>Indicates that automatic segmentation of audio (text-audio syncrhonization or "forced alignment") failed with an errror.</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusInProgress">
-        <source xml:lang="en">Segmenting...</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusInProgress</note>
-        <note>Indicates that automatic segmentation of audio (text-audio syncrhonization or "forced alignment") is in progress.</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true">
         <source xml:lang="en">Back</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Back</note>
+        <note>As in, move the selection "BACK"wards to the previous sentence.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Check" sil:dynamic="true">
         <source xml:lang="en">4) Check</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
+        <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckLabel" sil:dynamic="true">
+        <source xml:lang="en">Check</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckLabel</note>
+        <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Check if possible, but without the number</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel" sil:dynamic="true">
+        <source xml:lang="en">Check that you are recording into the correct device and that these levels are showing blue:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.CheckSettings if possible, but without the number</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true">
         <source xml:lang="en">Clear</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
+        <note>As in, "CLEAR" (or delete) the existing recording file.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true">
         <source xml:lang="en">Listen to the whole page</source>
@@ -2116,25 +2148,43 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
         <source xml:lang="en">2) Look at the highlighted text</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true">
+        <source xml:lang="en">Look at the highlighted text</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.LookAtSentence if possible, but without the number</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.NextLabel" sil:dynamic="true">
+        <source xml:lang="en">Next</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.NextLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Next if possible, but without the number</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true">
         <source xml:lang="en">Record by sentences</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordBySentences</note>
+        <note>Deprecated in Bloom Version 4.5</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordByTextBox" sil:dynamic="true">
+        <source xml:lang="en">Record the whole text box, then let Bloom split it into sentences later.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordByTextBox</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings" sil:dynamic="true">
         <source xml:lang="en">Please clear all existing recordings on this page before changing modes.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
         <note>Shown if you open TalkingBookTool, make a recording, and then attempt to toggle the "Record by Sentences" input (without first clearing the audio recordings you are about to lose)</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordingsTextBox" sil:dynamic="true">
-        <source xml:lang="en">Please clear all existing recordings in this text box before changing modes.</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordingsTextBox</note>
-        <note>Shown if you open TalkingBookTool, make a recording, and then attempt to toggle the "Record by Sentences" input (without first clearing the audio recordings you are about to lose)</note>
-        <note>Please also consult ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true">
+        <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
+        <note>Shown if you open TalkingBookTool, enable "Record the whole text box...", make a recording, and then attempt to uncheck the "Record the whole text box..." input (without first clearing the audio recordings you are about to lose)</note>
+        <note>For "split", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
+        <note>For "clear", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true">
         <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
@@ -2144,6 +2194,17 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true">
         <source xml:lang="en">3) Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Speak</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true">
+        <source xml:lang="en">Speak</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible, but without the number</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel">
+        <source xml:lang="en">Split recording into sentences for highlighting.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
+        <note>This text appears on the button the user can press to trigger automatic splitting of audio. An audio file corresponding to an entire text box will be split into multiple audio files (one per sentence) instead. (Also known as "Forced Alignment" in technical terms)</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
         <source xml:lang="en">Make an e-book that can play audio recordings while highlighting text.</source>
@@ -2962,7 +3023,7 @@
         <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
       </trans-unit>
-	  <!-- "PublishTab.Epub.BackLinkLabel might go here if we restore BL-6017 image description links -->
+      <!-- "PublishTab.Epub.BackLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.Accessibility">
         <source xml:lang="en">Accessibility</source>
         <note>ID: PublishTab.Epub.Accessibility</note>
@@ -2984,12 +3045,12 @@
         <source xml:lang="en">Getting ePUBs onto a device</source>
         <note>ID: PublishTab.Epub.Help.Publishing</note>
       </trans-unit>
-	  <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
+      <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.IncludeOnPage">
         <source xml:lang="en">Include image descriptions on page</source>
         <note>ID: PublishTab.Epub.IncludeOnPage</note>
       </trans-unit>
-	  <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
+      <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.NoAudioDescriptions">
         <source xml:lang="en">No recorded audio image descriptions</source>
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
@@ -3075,9 +3136,9 @@
         <note>menu header in the Publish tab</note>
       </trans-unit>
       <trans-unit id="PublishTab.OptionsMenu.SizeLayout">
-        <source xml:lang="en">Size/Layout</source>
+        <source xml:lang="en">Size/Orientation</source>
         <note>ID: PublishTab.OptionsMenu.SizeLayout</note>
-        <note>Header for a region of the menu which lists various standard page layout sizes</note>
+        <note>Header for a region of the menu which lists various standard page sizes and orientations</note>
       </trans-unit>
       <trans-unit id="PublishTab.Options_ToolTip_">
         <source xml:lang="en">Choose a page size and orientation</source>
@@ -3920,6 +3981,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Picture Dictionary</source>
         <note>ID: TemplateBooks.BookName.Picture Dictionary</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Sign Language" sil:dynamic="true">
+        <source xml:lang="en">Sign Language</source>
+        <note>ID: TemplateBooks.BookName.Sign Language</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true">
         <source xml:lang="en">Template Starter</source>
         <note>ID: TemplateBooks.BookName.Template Starter</note>
@@ -4074,6 +4139,18 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Basic Text &amp; Picture</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true">
+        <source xml:lang="en">Big Picture Diglot</source>
+        <note>ID: TemplateBooks.PageLabel.Big Picture Diglot</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Text Diglot" sil:dynamic="true">
+        <source xml:lang="en">Big Text Diglot</source>
+        <note>ID: TemplateBooks.PageLabel.Big Text Diglot</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Video Diglot" sil:dynamic="true">
+        <source xml:lang="en">Big Video Diglot</source>
+        <note>ID: TemplateBooks.PageLabel.Big Video Diglot</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Bloom Reader Quiz" sil:dynamic="true">
         <source xml:lang="en">Bloom Reader Quiz</source>
         <note>ID: TemplateBooks.PageLabel.Bloom Reader Quiz</note>
@@ -4163,6 +4240,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Just an Image</source>
         <note>ID: TemplateBooks.PageLabel.Just an Image</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just Video" sil:dynamic="true">
+        <source xml:lang="en">Just Video</source>
+        <note>ID: TemplateBooks.PageLabel.Just Video</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
         <source xml:lang="en">Outside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Outside Back Cover</note>
@@ -4170,6 +4251,10 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
         <note>ID: TemplateBooks.PageLabel.Paper Saver</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Video" sil:dynamic="true">
+        <source xml:lang="en">Picture &amp; Video</source>
+        <note>ID: TemplateBooks.PageLabel.Picture &amp; Video</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true">
         <source xml:lang="en">Picture &amp; Word</source>
@@ -4221,6 +4306,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Translation Instructions</source>
         <note>ID: TemplateBooks.PageLabel.Translation Instructions</note>
         <note>This page type only shows in Edit Mode to give instructions to translators. It does not print.</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Video Over Text" sil:dynamic="true">
+        <source xml:lang="en">Video Over Text</source>
+        <note>ID: TemplateBooks.PageLabel.Video Over Text</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
         <source xml:lang="en">Setup</source>

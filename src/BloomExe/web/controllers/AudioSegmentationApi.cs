@@ -239,8 +239,8 @@ namespace Bloom.web.controllers
 			}
 			Logger.WriteMinorEvent($"AudioSegmentationApi.AutoSegment(): Attempting to segment with langCode={langCode}");
 
-			string textFragmentsFilename =  $"{directoryName}/{requestParameters.audioFilenameBase}_fragments.txt";
-			string audioTimingsFilename = $"{directoryName}/{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}";
+			string textFragmentsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_fragments.txt");
+			string audioTimingsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}");
 
 			audioTextFragments = audioTextFragments.Where(obj => !String.IsNullOrWhiteSpace(obj.fragmentText)); // Remove entries containing only whitespace
 			var fragmentList = audioTextFragments.Select(obj => TextUtils.TrimEndNewlines(obj.fragmentText));
@@ -311,8 +311,10 @@ namespace Bloom.web.controllers
 			string aeneasLang = "eo";
 
 			// Note: The version of FFMPEG in output/Debug or output/Release is probably not compatible with the version required by Aeneas.
-			// Thus, change the working path to something that hopefully doesn't contain our FFMPEG version.
-			string changeDirectoryCommand = $"cd {kWorkingDirectory} && ";
+			// Therefore change the working path to the book's audio folder.  This has the benefit of allowing us to sidestep python's
+			// inability to cope with non-ascii characters in file pathnames passed in on the command line by using bare filenames in the
+			// command.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6927.
+			string workingDirectory = Path.GetDirectoryName(inputAudioFilename);
 
 			// I think this sets the boundary to the midpoint between the end of the previous sentence and the start of the next one.
 			// This is good because by default, it would align it such that the subsequent audio started as close as possible to the beginning of it. Since there is a subtle pause when switching between two audio files, this left very little margin for error.
@@ -322,17 +324,22 @@ namespace Bloom.web.controllers
 			// This would prevent it from being included in the first sentence's audio. (FYI, the hidden format will suppress it from the output timings file).
 			// Specify 0 to turn this off.
 			string audioHeadParams = $"|os_task_file_head_tail_format=hidden|is_audio_file_detect_head_min=0.00|is_audio_file_detect_head_max={maxAudioHeadDurationSec}";
-			string commandString = $"{changeDirectoryCommand} python -m aeneas.tools.execute_task \"{inputAudioFilename}\" \"{inputTextFragmentsFilename}\" \"task_language={aeneasLang}|is_text_type=plain|os_task_file_format={kTimingsOutputFormat}{audioHeadParams}{boundaryAdjustmentParams}\" \"{outputTimingsFilename}\" --runtime-configuration=\"tts_voice_code={ttsEngineLang}\"";
+			var audioFile = Path.GetFileName(inputAudioFilename);
+			var fragmentsFile = Path.GetFileName(inputTextFragmentsFilename);
+			var outputFile = Path.GetFileName(outputTimingsFilename);
+			string commandString = $"python -m aeneas.tools.execute_task \"{audioFile}\" \"{fragmentsFile}\" \"task_language={aeneasLang}|is_text_type=plain|os_task_file_format={kTimingsOutputFormat}{audioHeadParams}{boundaryAdjustmentParams}\" \"{outputFile}\" --runtime-configuration=\"tts_voice_code={ttsEngineLang}\"";
 
 			var processStartInfo = new ProcessStartInfo()
 			{
 				FileName = "CMD.EXE",	// TODO: Linux compatability
-
-				// DEBUG NOTE: you can use "/K" instead of "/C" to keep the window open (if needed for debugging)
 				Arguments = $"/C {commandString}",
 				UseShellExecute = false,
+				RedirectStandardOutput = true,
+				RedirectStandardError = true,
+				WorkingDirectory = workingDirectory,
 				CreateNoWindow = true
 			};
+			processStartInfo.EnvironmentVariables.Add("PYTHONIOENCODING", "UTF-8");	// quiets a python complaint if nothing else
 
 			var process = Process.Start(processStartInfo);
 
@@ -342,6 +349,18 @@ namespace Bloom.web.controllers
 			process.WaitForExit();
 
 			// Note: we could also request Aeneas write the standard output/error, or a log (or verbose log... or very verbose log) if desired
+			if (process.ExitCode != 0)
+			{
+				Console.WriteLine("ERROR: python aeneas process to segment the audio file finished with exit code = {0}.", process.ExitCode);
+				Console.WriteLine($"working directory = {workingDirectory}");
+				Console.WriteLine($"failed command = {commandString}");
+				var stdout = process.StandardOutput.ReadToEnd();
+				if (!string.IsNullOrWhiteSpace(stdout))
+					Console.WriteLine($"process.stdout = {stdout}");
+				var stderr = process.StandardError.ReadToEnd();
+				if (!string.IsNullOrWhiteSpace(stderr))
+					Console.WriteLine($"process.stderr = {stderr}");
+			}
 
 
 			// This might throw exceptions, but IMO best to let the error handler pass it, and have the Javascript code be as robust as possible, instead of passing on error messages to user

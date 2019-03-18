@@ -2,6 +2,7 @@ import { CancelTokenStatic } from "axios";
 import * as React from "react";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import { BloomApi } from "../utils/bloomApi";
+import { JSXElement } from "babel-types";
 
 // set the following boolean to highlight all translated strings to see if any are missing
 const highlightTranslatedStrings: boolean = false;
@@ -75,11 +76,40 @@ export class LocalizableElement<
         // Note the following *looks* better, but React complains that there is not exactly one child
         // even though React.Children.count returns 1.
         //      this.translated = React.Children.only(this.props.children).toString();
-        if (React.Children.count(this.props.children) === 1) {
-            return React.Children.toArray(this.props.children)[0].toString();
-        } else {
-            return "ERROR: must have exactly one child (a text string). Cannot yet handle any elements like spans.";
+        const count = React.Children.count(this.props.children);
+        const children = React.Children.toArray(this.props.children);
+        if (count === 1 && typeof children[0] === "string") {
+            return children[0].toString();
         }
+        // Take a stab at handling multiple nodes (text/element) in the original TSX.  This isn't
+        // too critical if you put the equivalent string in the xliff file, which isn't too bad for
+        // <strong> or <em> represented by **...** or *...* (Markdown notation).
+        let retval = "";
+        for (let i = 0; i < count; ++i) {
+            const item = children[i].valueOf();
+            if (typeof item === "object") {
+                const htmlString = this.extractRawHtml(item);
+                retval = retval + htmlString;
+            } else {
+                retval = retval + item;
+            }
+        }
+        return retval;
+    }
+
+    // reverse-engineered from React/TSX
+    // handles only one level of markup without any attributes.  Making this recursive
+    // may well work, but YAGNI.
+    public extractRawHtml(item: object): string {
+        const type = item["type"];
+        const props = item["props"];
+        if (type != null && typeof type === "string" && props != null) {
+            const children = props["children"];
+            if (typeof children === "string") {
+                return "<" + type + ">" + children + "</" + type + ">";
+            }
+        }
+        return "[UNKNOWN DATA]";
     }
 
     public componentDidUpdate() {
@@ -192,6 +222,19 @@ export class LocalizableElement<
 
     public getLocalizedContent(): JSX.Element {
         const parts = this.getLocalizedContentAndClass();
+        const idxStart = parts.text.search(/<.*>/);
+        if (idxStart >= 0) {
+            const idxEnd1 = parts.text.indexOf("</", idxStart + 1);
+            const idxEnd2 = parts.text.indexOf("/>", idxStart + 1);
+            if (idxEnd1 > idxStart || idxEnd2 > idxStart) {
+                return (
+                    <span
+                        className={parts.l10nClass}
+                        dangerouslySetInnerHTML={{ __html: parts.text }}
+                    />
+                );
+            }
+        }
         return <span className={parts.l10nClass}>{parts.text}</span>;
     }
 
@@ -209,7 +252,9 @@ export class LocalizableElement<
             this.state.lookupSuccessful
         ) {
             l10nClass = "translated";
-            text = this.state.translation;
+            text = theOneLocalizationManager.processSimpleMarkdown(
+                this.state.translation
+            );
         }
         return { text: text, l10nClass: l10nClass };
     }

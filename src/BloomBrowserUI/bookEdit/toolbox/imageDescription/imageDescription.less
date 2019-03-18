@@ -10,6 +10,7 @@
     flex-direction: column;
     justify-content: space-between;
     padding-left: 20px;
+    padding-right: 20px;
     height: 100%; // push the help link to the bottom
     *,
     a {
@@ -19,7 +20,26 @@
 
 .imgDescLabelBlock {
     // no: creates a scroll-bar, bizarrely... margin-top: 2em;
-    margin-bottom: 2em;
+    margin-bottom: 3em;
+    ul {
+        list-style: disc outside none;
+        padding-left: 1em;
+        ul {
+            margin-top: 1em;
+            list-style: disc outside none;
+            padding-left: 1em;
+        }
+        li {
+            margin-bottom: 1em;
+        }
+    }
+    strong {
+        color: white;
+    }
+}
+
+.imageDescriptionCheck {
+    float: left;
 }
 
 @playVideoIconWidth: 16px;

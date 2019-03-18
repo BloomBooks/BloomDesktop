@@ -526,6 +526,7 @@ namespace BloomTests.Publish
 			var foundNoMotionHazard = false;
 			var foundNoFlashingHazard = false;
 			var foundNoSoundHazard = false;
+			var foundUnknown = false;
 			foreach (XmlNode node in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessibilityHazard']", _ns))
 			{
 				switch (node.InnerXml)
@@ -537,6 +538,7 @@ namespace BloomTests.Publish
 				case "noMotionSimulationHazard": foundNoMotionHazard = true; break;
 				case "noFlashingHazard": foundNoFlashingHazard = true; break;
 				case "noSoundHazard": foundNoSoundHazard = true; break;
+				case "unknown": foundUnknown = true; break;
 				default: foundOther = true; break;
 				}
 			}
@@ -544,6 +546,17 @@ namespace BloomTests.Publish
 			// Not much to check here, since we want the hazard manifest based entirely on user input.
 			Assert.IsFalse(foundNoSoundHazard && foundNoFlashingHazard && foundNoMotionHazard,
 				"'none' is recommended instead of listing all 3 noXXXHazard values separately");
+			Assert.IsFalse(foundSoundHazard || foundNoSoundHazard,
+				"Sound hazards are not checked at present.");
+			var definite = foundMotionHazard || foundNoMotionHazard || foundFlashingHazard || foundNoFlashingHazard;
+			Assert.IsTrue(foundUnknown || foundNone || definite,
+				"Something should be stated about hazards");
+			Assert.IsFalse(foundUnknown && foundNone,
+				"Cannot have both unknown and none for hazards");
+			Assert.IsFalse(foundUnknown && definite,
+				"Cannot have both unknown and a definite hazard");
+			Assert.IsFalse(foundNone && definite,
+				"Cannot have both none and a definite hazard");
 
 			var summaryCount = 0;
 			foreach (var unused in xdoc.SelectNodes("opf:package/opf:metadata/opf:meta[@property='schema:accessibilitySummary']", _ns))
