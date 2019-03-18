@@ -83,7 +83,7 @@ namespace BloomTests.WebLibraryIntegration
 			_guid1 = Guid.NewGuid().ToString();
 			_guid2 = Guid.NewGuid().ToString();
 			var book3Time = new DateTime(2019,3,5,15,33,30);
-			var smallSpan = new TimeSpan(1); // only 100ns!
+			var smallSpan = new TimeSpan(10); // only 1 microsecond! (100ns is too short for Linux file timestamps)
 			SetupMetaData(bookFolder1, _guid1, book3Time + smallSpan);
 			SetupMetaData(bookFolder2, _guid1, book3Time + smallSpan + smallSpan);
 			SetupMetaData(bookFolder3, _guid1, book3Time);
@@ -117,12 +117,12 @@ namespace BloomTests.WebLibraryIntegration
 			var book3 = _foldersToDispose[5];
 			var book4 = _foldersToDispose[6];
 			var book5 = _foldersToDispose[7];
-			Assert.That(GetInstanceIdFromMetadataFile(book1), Is.Not.EqualTo(_guid1));
-			Assert.That(GetInstanceIdFromMetadataFile(book2), Is.Not.EqualTo(_guid1));
-			Assert.That(GetInstanceIdFromMetadataFile(book1), Is.Not.EqualTo(GetInstanceIdFromMetadataFile(book2)));
-			Assert.That(GetInstanceIdFromMetadataFile(book3), Is.EqualTo(_guid1));
-			Assert.That(GetInstanceIdFromMetadataFile(book4), Is.EqualTo(_guid2));
-			Assert.That(GetInstanceIdFromMetadataFile(book4), Is.Not.EqualTo(GetInstanceIdFromMetadataFile(book5)));
+			Assert.That(GetInstanceIdFromMetadataFile(book1), Is.Not.EqualTo(_guid1), "book1 should have changed guid1");
+			Assert.That(GetInstanceIdFromMetadataFile(book2), Is.Not.EqualTo(_guid1), "book2 should have changed guid1");
+			Assert.That(GetInstanceIdFromMetadataFile(book1), Is.Not.EqualTo(GetInstanceIdFromMetadataFile(book2)), "book1 should have different guid than book2");
+			Assert.That(GetInstanceIdFromMetadataFile(book3), Is.EqualTo(_guid1), "book3 should have guid1");
+			Assert.That(GetInstanceIdFromMetadataFile(book4), Is.EqualTo(_guid2), "book4 should have guid2");
+			Assert.That(GetInstanceIdFromMetadataFile(book4), Is.Not.EqualTo(GetInstanceIdFromMetadataFile(book5)), "book4 should have different guid than book5");
 		}
 	}
 }
