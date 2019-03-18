@@ -3949,6 +3949,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Picture Dictionary</source>
         <note>ID: TemplateBooks.BookName.Picture Dictionary</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Sign Language" sil:dynamic="true">
+        <source xml:lang="en">Sign Language</source>
+        <note>ID: TemplateBooks.BookName.Sign Language</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true">
         <source xml:lang="en">Template Starter</source>
         <note>ID: TemplateBooks.BookName.Template Starter</note>
@@ -4103,6 +4107,18 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Basic Text &amp; Picture</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true">
+        <source xml:lang="en">Big Picture Diglot</source>
+        <note>ID: TemplateBooks.PageLabel.Big Picture Diglot</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Text Diglot" sil:dynamic="true">
+        <source xml:lang="en">Big Text Diglot</source>
+        <note>ID: TemplateBooks.PageLabel.Big Text Diglot</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Video Diglot" sil:dynamic="true">
+        <source xml:lang="en">Big Video Diglot</source>
+        <note>ID: TemplateBooks.PageLabel.Big Video Diglot</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Bloom Reader Quiz" sil:dynamic="true">
         <source xml:lang="en">Bloom Reader Quiz</source>
         <note>ID: TemplateBooks.PageLabel.Bloom Reader Quiz</note>
@@ -4192,6 +4208,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Just an Image</source>
         <note>ID: TemplateBooks.PageLabel.Just an Image</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just Video" sil:dynamic="true">
+        <source xml:lang="en">Just Video</source>
+        <note>ID: TemplateBooks.PageLabel.Just Video</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
         <source xml:lang="en">Outside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Outside Back Cover</note>
@@ -4199,6 +4219,10 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
         <note>ID: TemplateBooks.PageLabel.Paper Saver</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Video" sil:dynamic="true">
+        <source xml:lang="en">Picture &amp; Video</source>
+        <note>ID: TemplateBooks.PageLabel.Picture &amp; Video</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true">
         <source xml:lang="en">Picture &amp; Word</source>
@@ -4250,6 +4274,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Translation Instructions</source>
         <note>ID: TemplateBooks.PageLabel.Translation Instructions</note>
         <note>This page type only shows in Edit Mode to give instructions to translators. It does not print.</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Video Over Text" sil:dynamic="true">
+        <source xml:lang="en">Video Over Text</source>
+        <note>ID: TemplateBooks.PageLabel.Video Over Text</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
         <source xml:lang="en">Setup</source>
