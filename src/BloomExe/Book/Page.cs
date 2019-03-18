@@ -39,7 +39,7 @@ namespace Bloom.Book
 			sourcePage = EnsureID(sourcePage);
 			_id = FixPageId(sourcePage.Attributes["id"].Value);
 			var lineage = sourcePage.Attributes["data-pagelineage"];
-			_pageLineage = lineage == null ? new string[] {} : lineage.Value.Split(new[] { ',' });
+			_pageLineage = lineage == null ? new string[] {} : lineage.Value.Split(new[] { ',', ';' });
 
 			Guard.AgainstNull(book,"Book");
 			Book = book;
