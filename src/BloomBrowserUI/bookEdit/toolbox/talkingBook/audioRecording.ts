@@ -1266,7 +1266,6 @@ export default class AudioRecording {
         if (element) {
             element.classList.remove("hide-countable"); // When we make this button visible we have to adjust classes so that it starts to participate in the CSS that numbers the steps
             element.classList.add("talking-book-counter");
-            element.classList.remove("initial-state"); // Note that by default it's already displayed correctly, so we can remove it immediately.
         }
     }
 
@@ -1275,16 +1274,6 @@ export default class AudioRecording {
         if (element) {
             element.classList.add("hide-countable");
             element.classList.remove("talking-book-counter");
-
-            // Need to special case the initial load, which does not need animation.
-            // In our CSS, we detect initial-state and change it accordingly.
-            // But since the raw HTML does not have this button hidden, we wait a little bit to make sure any animation (transition) has definitely finished
-            //   before removing the class that identifies the initial state.
-            if (element.classList.contains("initial-state")) {
-                setTimeout(() => {
-                    element.classList.remove("initial-state");
-                }, 200);
-            }
         }
     }
 
