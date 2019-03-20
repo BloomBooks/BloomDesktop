@@ -343,8 +343,9 @@ namespace Bloom.web.controllers
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "video chosen or canceled", false);
 					if (DialogResult.OK == result)
 					{
-						// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
-						SaveChangedVideo(videoContainer, dlg.FileName, "Bloom had a problem including that video");
+						var newVideoPath = Path.Combine(BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath), GetNewVideoFileName()); // Use a new name to defeat caching.
+						RobustFile.Copy(dlg.FileName, newVideoPath);
+						SaveChangedVideo(videoContainer, newVideoPath, "Bloom had a problem including that video");
 						// Warn the user if we're starting to use too much memory.
 						SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "video chosen and saved", true);
 					}
