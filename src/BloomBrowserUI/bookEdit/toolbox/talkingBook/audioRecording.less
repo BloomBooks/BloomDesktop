@@ -26,6 +26,24 @@ div.ui-audioCurrent:not(.disableHighlight) p {
         content: " ";
     }
 }
+.ui-audioCurrent.bloom-postAudioSplit[data-audiorecordingmode="TextBox"]:not(.disableHighlight) {
+    // Special higlighting after the Split button completes to show it completed.
+    span:nth-child(3n + 1) {
+        background-color: #bfedf3;
+    }
+    span:nth-child(3n + 2) {
+        background-color: #7fdae6;
+    }
+    span:nth-child(3n + 3) {
+        background-color: #29c2d6;
+    }
+
+    p {
+        // Override the normal yellow highlight so it doesn't clash with the ones we just added
+        background: none;
+    }
+}
+
 .ui-audioBody {
     padding-left: 15px;
     padding-right: 15px;
