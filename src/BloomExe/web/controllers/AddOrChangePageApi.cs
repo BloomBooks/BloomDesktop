@@ -46,11 +46,31 @@ namespace Bloom.web.controllers
 			var templatePage = GetPageTemplateAndUserStyles(request, out unused);
 			if (templatePage != null)
 			{
+				CopyVideoPlaceHolderIfNeeded(templatePage);
 				_templateInsertionCommand.Insert(templatePage as Page);
 				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay); // needed to get the styles updated
 				request.PostSucceeded();
 				return;
 			}
+		}
+
+		/// <summary>
+		/// Ensure the book folder has the video-placeholder.svg file if it is needed by the template
+		/// page.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-6920.
+		/// </remarks>
+		private void CopyVideoPlaceHolderIfNeeded(IPage templatePage)
+		{
+			// The need for video-placeholder.svg is given by an element in the page that looks
+			// something like this:
+			//     <div class="bloom-videoContainer bloom-noVideoSelected bloom-leadingElement" />
+			// Note that the page's HTML doesn't directly reference the image file.  That's done
+			// by the CSS which interprets bloom-noVideoSelected.
+			var div = templatePage.GetDivNodeForThisPage();
+			if (div.SelectSingleNode(".//div[contains(@class, 'bloom-noVideoSelected')]") != null)
+				_pageSelection.CurrentSelection.Book.Storage.Update("video-placeholder.svg");
 		}
 
 		private void HandleChangeLayout(ApiRequest request)
@@ -59,6 +79,7 @@ namespace Bloom.web.controllers
 			var templatePage = GetPageTemplateAndUserStyles(request, out changeWholeBook);
 			if (templatePage != null)
 			{
+				CopyVideoPlaceHolderIfNeeded(templatePage);
 				var pageToChange = _pageSelection.CurrentSelection;
 				if (changeWholeBook)
 					ChangeSimilarPagesInEntireBook(pageToChange, templatePage);
@@ -78,7 +99,9 @@ namespace Bloom.web.controllers
 			{
 				if (page.IsXMatter || page.IdOfFirstAncestor != ancestorPageId)
 					continue;
-				book.UpdatePageToTemplateAndUpdateLineage(page, newTemplatePage, false);
+				// The user has explicitly allowed possible data loss.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-6921.
+				book.UpdatePageToTemplateAndUpdateLineage(page, newTemplatePage, true);
 			}
 		}
 

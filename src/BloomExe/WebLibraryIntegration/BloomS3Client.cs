@@ -314,7 +314,7 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		//Note: there is a similar list for BloomPacks, but it is not identical, so don't just copy/paste
-		private static readonly string[] excludedFileExtensionsLowerCase = { ".db", ".bloompack", ".bak", ".userprefs", ".md" };
+		private static readonly string[] excludedFileExtensionsLowerCase = { ".db", ".bloompack", ".bak", ".userprefs", ".md", ".map" };
 		private AmazonS3Config _s3Config;
 		private string _previousBucketName;
 		private string _bucketName;
@@ -390,7 +390,7 @@ namespace Bloom.WebLibraryIntegration
 					{
 						throw;
 					}
-					if(fileName.EndsWith(BookTransfer.BookOrderExtension))
+					if(fileName.EndsWith(BookInfo.BookOrderExtension))
 					{
 						// Remember the url that can be used to download the book. This seems to work but I wish
 						// I could find a way to get a definitive URL from the response to UploadPart or some similar way.

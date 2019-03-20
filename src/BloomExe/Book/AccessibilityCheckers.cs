@@ -38,6 +38,8 @@ namespace Bloom.web.controllers
 			foreach (XmlElement imageContainer in book.OurHtmlDom.SafeSelectNodes(
 				"//div[contains(@class, 'bloom-imageContainer')]"))
 			{
+				if (imageContainer.GetAttribute("aria-hidden") == "true")
+					continue;	// no description needed if hidden from accessibility
 				var visibleElements = imageContainer.SelectSingleNode(
 						$@"./div[contains(@class,'bloom-imageDescription')]
 								/div[contains(@class,'bloom-editable')

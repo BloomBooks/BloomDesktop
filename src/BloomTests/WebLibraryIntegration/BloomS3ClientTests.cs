@@ -60,6 +60,7 @@ namespace BloomTests.WebLibraryIntegration
 		[TestCase("bucket/my.pdf")]
 		[TestCase("bucket/my.PDF")]
 		[TestCase("bucket/thumbs.db")]
+		[TestCase("bucket/Basic Book.css.map")]
 		// We don't download narration audio (for now)
 		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.mp3")]
 		[TestCase("bucket/1EC14CB3-CAEC-4C83-8092-74C78CA7C515.MP3")]
@@ -76,6 +77,7 @@ namespace BloomTests.WebLibraryIntegration
 
 		[TestCase("bucket/abc.def")]
 		[TestCase("bucket/abc.def.ghi")]
+		[TestCase("bucket/Basic Book.css")]
 		[TestCase("bucket/music.mp3")]
 		[TestCase("bucket/music.MP3")]
 		[TestCase("bucket/music.wav")]

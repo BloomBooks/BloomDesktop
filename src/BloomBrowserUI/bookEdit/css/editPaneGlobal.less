@@ -1,4 +1,6 @@
-﻿/* Unless otherwise noted, these rules have been moved from editMode.css
+﻿@import "../../bloomWebFonts.less";
+
+/* Unless otherwise noted, these rules have been moved from editMode.css
     BODY is not within the scoped css DIV */
 
 body {
@@ -18,8 +20,9 @@ To handling the mis-match.*/
 
 /* Qtip won't work if these rules are inside the scoped DIV */
 .qtip-content {
-    font-family: "Segoe UI", "Open Sans", Arial, sans-serif;
+    font-family: @BubbleFontStack; // for xmatter field definition bubbles
 }
+
 div.ui-tooltip-title {
     text-align: justify;
     margin-left: -9px;

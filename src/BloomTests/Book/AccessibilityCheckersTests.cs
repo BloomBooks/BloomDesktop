@@ -107,6 +107,34 @@ namespace BloomTests.Book
 			Assert.AreEqual(2, results.Count(), "Should point out missing image description");
 		}
 
+		[Test]
+		public void CheckDescriptionsForAllImages_AriaHidden()
+		{
+			var divWithoutCorrectLangDescription =
+				$@"<div class='bloom-translationGroup bloom-imageDescription'>
+					<div class='bloom-editable' lang='{this._collectionSettings.Language1Iso639Code}'>
+						<p>  </p>
+					</div>
+				</div>";
+
+			var divWithDescription =
+				$@"<div class='bloom-translationGroup bloom-imageDescription'>
+					<div class='bloom-editable' lang='{this._collectionSettings.Language1Iso639Code}'>
+						<p>A nice flower</p>
+					</div>
+				</div>";
+
+			var html = $@"<html> <body>
+					{MakeHtmlForPageWithImage(divWithDescription)}
+					{MakeHtmlForPageWithImage(divWithoutCorrectLangDescription)}
+					{MakeHtmlForPageWithImageAriaHidden(divWithDescription)}
+					{MakeHtmlForPageWithImageAriaHidden(divWithoutCorrectLangDescription)}
+				</body> </html>";
+			var testBook = CreateBookWithPhysicalFile(html);
+			var results = AccessibilityCheckers.CheckDescriptionsForAllImages(testBook);
+			Assert.AreEqual(1, results.Count(), "Should point out missing image description");
+		}
+
 		/* -----------------------------------------------------------------------------------*/
 		/* ----------------------CheckAudioForAllText-----------------------------------------*/
 		/* -----------------------------------------------------------------------------------*/
@@ -290,6 +318,20 @@ namespace BloomTests.Book
 		<div class='pageLabel'>{pageLabel}</div>
 		<div class='marginBox'>
 				<div class='bloom-imageContainer'>
+					<img src='flower.png'></img>
+					{translationGroupText}
+				</div>
+			</div>
+		</div>";
+		}
+
+		private string MakeHtmlForPageWithImageAriaHidden(string translationGroupText, string pageNumber = "1",
+			string pageLabel = "Some page label")
+		{
+			return $@"<div class='bloom-page' data-page-number='{pageNumber ?? ""}'>
+		<div class='pageLabel'>{pageLabel}</div>
+		<div class='marginBox'>
+				<div class='bloom-imageContainer' aria-hidden='true'>
 					<img src='flower.png'></img>
 					{translationGroupText}
 				</div>

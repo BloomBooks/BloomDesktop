@@ -3813,6 +3813,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
         <target xml:lang="es-ES" state="translated">4) Revisar</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Check</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckLabel</note>
+        <target xml:lang="es-ES" state="translated">Revisar</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
@@ -3822,6 +3827,20 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">1) Averigue que está grabando al dispositivo correcto y que los niveles se ven azules:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">1) Averiguar que está usando el dispositivo de grabación correcto y que el nivel de sonido aparece en la zona azul:</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Check that you are recording into the correct device and that these levels are showing blue:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel</note>
+        <target xml:lang="es-ES" state="translated">Averigüe si está grabando en el dispositivo correcto y que los siguientes niveles se muestren azules:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Averigüe que esté grabando en el dispositivo correcto y que los siguientes niveles se muestren azules:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Averigue que está grabando al dispositivo correcto y que los niveles se ven azules:</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">1) Averiguar que está usando el dispositivo de grabación correcto y que el nivel de sonido aparece en la zona azul:</target>
@@ -3848,10 +3867,26 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
           <target xml:lang="es-ES">2) Mirar la frase destacada</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Look at the highlighted text</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel</note>
+        <target xml:lang="es-ES" state="translated">Mirar la oración resaltada</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Mirar la oración destacada</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Mirar la frase destacada</target>
+        </alt-trans>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true" approved="yes">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
         <target xml:lang="es-ES" state="translated">5) Siguiente</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.NextLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Next</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.NextLabel</note>
+        <target xml:lang="es-ES" state="translated">Siguiente</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Record by sentences</source>
@@ -3879,6 +3914,14 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="translated">3) Hablar</target>
         <alt-trans>
           <target xml:lang="es-ES">3) Grabar</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speaklabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Speak</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakLabel</note>
+        <target xml:lang="es-ES" state="translated">Hablar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Grabar</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true" approved="yes">

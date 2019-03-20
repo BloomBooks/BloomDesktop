@@ -140,7 +140,7 @@ namespace BloomTests.Publish
 			MakeSampleSvgImage(book.FolderPath.CombineForPath("back-cover-outside.svg"));
 			// Add some accessibility stuff from the ePUB metadata dialog
 			var metadata = book.BookInfo.MetaData;
-			metadata.Hazards = "flashingHazard,noMotionSimulationHazard,soundHazard";
+			metadata.Hazards = "flashingHazard,noMotionSimulationHazard";
 			metadata.A11yFeatures = "signLanguage";
 			// Currently, only in OnPage mode does the image description turn into an aside that can be linked to the image.
 			MakeEpub("output", "ExportEpubWithSvgTests", book, BookInfo.HowToPublishImageDescriptions.OnPage);

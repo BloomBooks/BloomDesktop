@@ -207,6 +207,14 @@ namespace Bloom.Book
 
             MultiTextBase source = dom.GetBookSetting(key);
 
+			if (key == "copyright")
+			{
+				// For CC0, we store the "copyright", but don't display it in the text of the book.
+				var licenseUrl = dom.GetBookSetting("licenseUrl").GetExactAlternative("*");
+				if (licenseUrl == CreativeCommonsLicense.CC0Url)
+					source = new MultiTextBase();
+			}
+
 			foreach (XmlElement target in dom.SafeSelectNodes("//*[@data-derived='" + key + "']"))
 			{
 				//just put value into the text of the element

@@ -581,22 +581,17 @@ namespace Bloom.Publish.Epub
 			if (!string.IsNullOrEmpty(metadata.Hazards))
 			{
 				var hazards = metadata.Hazards.Split(',');
-				if (hazards.All(haz => haz.StartsWith("no")))
+				// "none" is recommended instead of listing all 3 noXXXHazard values separately.
+				// But since we don't know anything about sound, we can't use it.  (BL-6947)
+				foreach (var hazard in hazards)
 				{
-					// "none" is recommended instead of listing all 3 noXXXHazard values separately
-					metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), "none"));
-				}
-				else
-				{
-					foreach (var hazard in hazards)
-					{
-						metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), hazard));
-					}
+					metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), hazard));
 				}
 			}
 			else
 			{
-				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), "none"));
+				// report that we don't know anything.
+				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityHazard"), "unknown"));
 			}
 
 			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilitySummary"),
@@ -1132,9 +1127,13 @@ namespace Bloom.Publish.Epub
 							newAltText = "Logo of the book sponsors"; // Alternatively, it's OK to also put in "" to signal no accessibility need
 						}
 					}
-
 					img.SetAttribute("alt", newAltText);
 					img.SetAttribute("role", "presentation"); // tells accessibility tools to ignore it and makes DAISY checker happy
+					continue;
+				}
+				if ((img.ParentNode as XmlElement).GetAttribute("aria-hidden") == "true")
+				{
+					img.SetAttribute("role", "presentation"); // may not be needed, but doesn't hurt anything.
 					continue;
 				}
 				var desc = img.SelectSingleNode("following-sibling::div[contains(@class, 'bloom-imageDescription')]/div[contains(@class, 'bloom-content1')]") as XmlElement;

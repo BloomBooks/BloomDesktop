@@ -71,8 +71,7 @@ namespace Bloom.web.controllers
 					{
 						flashingHazard = LocalizationManager.GetString("BookMetadata.flashingHazard", "Flashing Hazard"),
 						motionSimulationHazard = LocalizationManager.GetString("BookMetadata.motionSimulationHazard", "Motion Simulation Hazard"),
-						soundHazard = LocalizationManager.GetString("BookMetadata.soundHazard", "Sound Hazard"),
-						alternativeText = LocalizationManager.GetString("BookMetadata.alternativeText", "Alternative Text"),
+						alternativeText = LocalizationManager.GetString("BookMetadata.alternativeText", "Has Image Descriptions"),
 						signLanguage = LocalizationManager.GetString("BookMetadata.signLanguage", "Sign Language"),
 					};
 					var blob = new

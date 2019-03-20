@@ -459,5 +459,89 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'normal-style') and contains(@class, 'bloom-translationGroup')]", 0);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-translationGroup']", 1);
 		}
+
+		[Test]
+		public void FixDuplicateLanguageDivs_HandlesEmptyDivs()
+		{
+			var contents = @"<div class='bloom-page' >
+			<div class='bloom-translationGroup normal-style'>
+				<div class='bloom-editable' data-languagetipcontent='First' lang='xyz'></div>
+				<div class='bloom-editable' lang='en'></div>
+				<div class='bloom-editable' lang='fr'></div>
+				<div class='bloom-editable' data-languagetipcontent='Second' lang='xyz'></div>
+			</div>
+		</div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+			TranslationGroupManager.FixDuplicateLanguageDivs((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")[0], "xyz");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-translationGroup')]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable']", 3);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='xyz']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='fr']", 1);
+		}
+
+		[Test]
+		public void FixDuplicateLanguageDivs_HandlesEmptySecondDiv()
+		{
+			var contents = @"<div class='bloom-page' >
+			<div class='bloom-translationGroup normal-style'>
+				<div class='bloom-editable' data-languagetipcontent='First' lang='xyz'>Xyz text</div>
+				<div class='bloom-editable' lang='en'>English text</div>
+				<div class='bloom-editable' lang='fr'>French text</div>
+				<div class='bloom-editable' data-languagetipcontent='Second' lang='xyz'></div>
+			</div>
+		</div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+			TranslationGroupManager.FixDuplicateLanguageDivs((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")[0], "xyz");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-translationGroup')]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable']", 3);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='xyz' and contains(., 'Xyz text')]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='fr']", 1);
+		}
+
+		[Test]
+		public void FixDuplicateLanguageDivs_HandlesEmptyFirstDiv()
+		{
+			var contents = @"<div class='bloom-page' >
+			<div class='bloom-translationGroup normal-style'>
+				<div class='bloom-editable' data-languagetipcontent='First' lang='xyz'></div>
+				<div class='bloom-editable' lang='en'>English text</div>
+				<div class='bloom-editable' lang='fr'>French text</div>
+				<div class='bloom-editable' data-languagetipcontent='Second' lang='xyz'>Xyz text</div>
+			</div>
+		</div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+			TranslationGroupManager.FixDuplicateLanguageDivs((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")[0], "xyz");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-translationGroup')]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable']", 3);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='xyz' and contains(., 'Xyz text')]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='fr']", 1);
+		}
+
+		[Test]
+		public void FixDuplicateLanguageDivs_HandlesNonemptyDivs()
+		{
+			var contents = @"<div class='bloom-page' >
+			<div class='bloom-translationGroup normal-style'>
+				<div class='bloom-editable' data-languagetipcontent='First' lang='xyz'>First Xyz text</div>
+				<div class='bloom-editable' lang='en'>English text</div>
+				<div class='bloom-editable' lang='fr'>French text</div>
+				<div class='bloom-editable' data-languagetipcontent='Second' lang='xyz'>Second Xyz text</div>
+			</div>
+		</div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+			TranslationGroupManager.FixDuplicateLanguageDivs((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")[0], "xyz");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-translationGroup')]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable']", 3);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='xyz' and contains(., 'First Xyz text"+ System.Environment.NewLine +"Second Xyz text')]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-editable' and @lang='fr']", 1);
+		}
 	}
 }

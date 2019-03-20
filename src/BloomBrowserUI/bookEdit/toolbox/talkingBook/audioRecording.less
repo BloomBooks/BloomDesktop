@@ -6,6 +6,7 @@
 @toolboxBackgroundColor: @bloom-panelBackground;
 @sectionVerticalGap: 25px;
 @buttonColumnWidth: 40px;
+@splitAnimationTime: 300ms;
 
 //highlight of the text on the page
 span.ui-audioCurrent:not(.disableHighlight),
@@ -50,6 +51,10 @@ div.ui-audioCurrent:not(.disableHighlight) p {
         background-repeat: no-repeat;
         display: inline-block;
         margin-bottom: 5px;
+        border: solid thin transparent; // just be a little responsive to indicate that it is clickable
+        &:hover {
+            border: none; // makes it grow a little on mouse hover
+        }
     }
     #audio-prev,
     #audio-clear {
@@ -82,6 +87,16 @@ div.ui-audioCurrent:not(.disableHighlight) p {
             background-image: url(audio/play_active.svg);
         }
     }
+    #audio-split {
+        background-image: url(audio/split_enabled.svg);
+        height: 45px;
+        width: 45px; // visually same width as record button
+
+        &.expected {
+            background-image: url(audio/split_expected.svg);
+        }
+    }
+
     .audio-about {
         margin-top: @sectionVerticalGap;
     }
@@ -91,7 +106,6 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     }
     #audio-listen-label {
         position: relative;
-        top: 12px;
         width: 80px;
     }
     a {
@@ -116,6 +130,11 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     img#audio-input-dev {
         height: 30px;
         width: 30px;
+        box-sizing: border-box;
+        border: solid thin transparent; // just be a little responsive to indicate that it is clickable
+        &:hover {
+            border: none; // makes it grow a little on mouse hover
+        }
     }
     // hidden unless we need to choose between three or more input devices.
     #audio-devlist {
@@ -137,6 +156,10 @@ div.ui-audioCurrent:not(.disableHighlight) p {
             &:hover {
                 background-color: @hoverBackgroundColor;
             }
+        }
+        #audio-input-dev {
+            margin-top: 2px;
+            width: 15px;
         }
     }
     #audio-next {
@@ -161,13 +184,22 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     .button-label-wrapper {
         margin-top: 10px;
     }
+
+    @buttonWidth: 60px;
+    @uiAudioBodyMinWidth: 150px; // The minimum width of the container, which occurs if the scroll bar is present. It is 17 pixels larger otherwise
+    @whitespaceFillerWidth: 3px; // Caused by the whitespace in the PUG code I think.
     .button-wrapper {
         display: inline-block;
-        min-width: 60px;
+        min-width: @buttonWidth;
+        vertical-align: top; // Align the button with the label in case the label is really long.
     }
+
     .audio-label {
         display: inline-block;
-        max-width: 100px;
+        max-width: (
+            @uiAudioBodyMinWidth - @buttonWidth - @whitespaceFillerWidth
+        );
+        vertical-align: top;
 
         &.expected {
             color: @highlightColor;
@@ -175,131 +207,83 @@ div.ui-audioCurrent:not(.disableHighlight) p {
             //font-size: 11pt;
         }
     }
-    .audio-about {
-        margin-top: @sectionVerticalGap;
-    }
-    #audio-look-at,
-    #audio-check {
-        max-width: none;
-    }
-    #audio-listen-label {
-        position: relative;
-        top: 12px;
-        width: 80px;
-    }
-    a {
-        display: block; //start on a new line
-        margin-top: 10px;
-        text-decoration: underline;
-        cursor: pointer;
-    }
-    .ui-audioFooter {
-        margin-top: 30px;
-        margin-bottom: 5px;
-    }
-    .ui-audioInput,
-    div.ui-audioMeter {
-        display: inline-block;
-    }
-    .ui-audioInputGroup {
-        margin-top: 5px;
-        margin-bottom: 12px;
-    }
-    img#audio-input-dev {
-        height: 30px;
-        width: 30px;
-    }
-    // hidden unless we need to choose between three or more input devices.
-    #audio-devlist {
-        display: none;
-        position: absolute;
-        background-color: white;
-        width: 200px;
-        li {
-            min-height: 20px;
-            font-size: 12px;
-            &:hover {
-                background-color: @hoverBackgroundColor;
-            }
-        }
-        #audio-input-dev {
-            margin-top: 2px;
-            width: 15px;
-        }
-    }
-
-    #audio-autoSegmentWrapper {
-        text-align: right;
-        vertical-align: middle;
-        background-color: @bloom-panelBackground;
-
-        opacity: 0;
-        border-width: 0px;
-        height: 0px;
-        transition: opacity 300ms, border-width 300ms, height 300ms;
-    }
-
-    #audio-autoSegmentWrapper.autoSegmentEnabled {
-        // Animation works best when going from pixel value to pixel value.  We have 12 pixels margin-top,
-        // 15 pixels (probably derived from default font-size 1 em) for button, 1 pixel border-top, 1 pixel border-bottom,
-        // 15 pixels (probably derived from default font-size 1 em) for the status notification
-        // Total is 44 pixels.  (FYI, Firefox cliams 43.3 pixels which is in pretty good agreement)
-        height: 44px;
-        opacity: 1;
-        border-width: 1px;
-        transition: all 300ms;
-    }
-
-    .autoSegmentEnabled #audio-autoSegment {
-        height: auto;
-        line-height: 1em; // The text size is independent of the button height, so need to set this. line-height better than font-size because font-size affects width too.
-        transition: all 300ms;
-    }
-
-    #audio-autoSegment {
-        background-color: transparent;
-
-        font-weight: bold;
-        border-width: 1px;
-        margin-top: 12px;
-        margin-right: 6px;
-
-        // Grows the height of the button via transition
-        height: 0px;
-        line-height: 0em;
-        transition: height 300ms, line-height 300ms;
-    }
-
-    .autoSegmentEnabled #audio-autoSegmentSettings {
-        height: 15px;
-        transition: height 300ms;
-    }
-
-    #audio-autoSegmentSettings {
-        background-color: @toolboxBackgroundColor;
-        background-image: url("../../img/cogWhite.svg");
-        background-size: 15px;
-
-        border: 0px;
-        padding: 0px;
-
-        width: 15px;
-        vertical-align: top;
-        margin-top: 14px;
-
-        // Grows the height of the button via transition
-        height: 0px;
-        transition: height 300ms;
-    }
-
-    .autoSegmentStatus {
-        display: none;
-        color: @bloom-yellow;
-        font-weight: bold;
-        text-align: center;
-        margin-top: 1em;
+    .audio-advanced {
+        padding-top: 35px;
     }
 }
+
+// Automatic numbering of the elements
+// Uses CSS counter instead of an ordered list (which is more awkward structurally and doesn't offer formatting flexibility)
+// You could use display: none instead of the not() pseudo-selector, but display: none is not compatible with CSS transitions.
+.ui-audioBody {
+    counter-reset: talkingBookListCounter;
+}
+*:not(.hide-countable) > .audio-label.talking-book-counter:before {
+    content: counter(talkingBookListCounter) ") ";
+}
+*:not(.hide-countable) > .audio-label.talking-book-counter {
+    counter-increment: talkingBookListCounter;
+}
+
+//////////////////////////////////////////
+// Animation of hiding/showing a button //
+//////////////////////////////////////////
+@anticipatedButtonLabelHeight: 57.5px; // The expected height for the English text. Ideal results would be had if this is kept up to date whenever the English string changes.
+@buttonLabelMaxHeight: 100px;
+@expandTargetProportion: unit(
+    @anticipatedButtonLabelHeight / @buttonLabelMaxHeight
+);
+@shrinkTargetProportion: 1 - @expandTargetProportion;
+
+// Active Case
+.button-label-wrapper {
+    max-height: @buttonLabelMaxHeight; // Should be at least as large as the anticipated need
+    transition: max-height @splitAnimationTime;
+
+    // Timing for Expanding
+    //
+    // Roughly linear to the target for most of the duration. (Then rapidly finish the rest in the last little portion of time)
+    // For en, we expect no effect after it reaches actualHeight/maxHeight = 57.5/100 = 0.575
+    // Thus, we want it to shrink extremely rapidly at first so we can quickly reach the region where it has a visible effect.
+    transition-timing-function: cubic-bezier(
+        0.9,
+        @expandTargetProportion,
+        0.9,
+        @expandTargetProportion
+    ); // Linear to 60% for most of the duration.
+
+    overflow: hidden; // hiding the overflow causes the subsequent element to smoothly move up
+}
+
+// Hidden Case
+.ui-audioBody .button-label-wrapper.hide-countable {
+    max-height: 0px;
+
+    // Timing for Shrinking (because the rule takes effect immediately once the selector rule is met)
+    //
+    // Rapidly shrink to the expected size of the text, then roughly linear shrink to the end.
+    // For en, we expect no effect until it reaches the expected target size
+    // Thus, we want it to shrink extremely rapidly at first so we can quickly reach the region where it has a visible effect.
+    transition-timing-function: cubic-bezier(
+        0,
+        @shrinkTargetProportion,
+        0,
+        @shrinkTargetProportion
+    );
+}
+
+.cursor-progress {
+    cursor: progress;
+}
+body .cursor-progress {
+    // A rule with higher specificity to beat out some ckeditor rules that set it to cursor: text
+    cursor: progress;
+}
+.cursor-progress button {
+    // Deal with buttons on the image container, which will appear grabbable by default. Especially the on-hover buttons for the bloom-imageContainer, those are hard to modify in the JS layer.
+    cursor: progress;
+}
+
 #toast-container {
     z-index: 999999 !important;
     font-family: "Segoe UI", "sans-serif";

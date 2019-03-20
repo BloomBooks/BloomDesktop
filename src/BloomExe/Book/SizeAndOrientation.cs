@@ -138,6 +138,10 @@ namespace Bloom.Book
 					continue;
 
 				fileName = fileName.Replace("file://", "").Replace("%5C", "/").Replace("%20", " ");
+				// Some older Bloom files still have references like "..\customCollectionStyles.css".  They get
+				// cleaned up as far as I can tell, but can still cause a toast when first looking at the book.
+				if (SIL.PlatformUtilities.Platform.IsLinux)
+					fileName = fileName.Replace("\\", "/");
 				var path = fileLocator.LocateFile(fileName);
 				// "../customCollectionStyles.css" and "../settingsCollectionStyles.css" won't be found when
 				// creating a book from a BloomPack shell book.
