@@ -806,6 +806,32 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Fix errors that users have encountered.  For now, this is only a duplication of language div elements
+		/// inside of translationGroup divs.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-6923.
+		/// </remarks>
+		private void FixErrorsEncounteredByUsers(HtmlDom bookDOM)
+		{
+			foreach (
+				XmlElement groupElement in
+				bookDOM.Body.SafeSelectNodes("descendant::*[contains(@class,'bloom-translationGroup')]"))
+			{
+				// Even though the user only had duplicate vernacular divs, let's check all three
+				// languages just to be safe.
+				var lang1 = CollectionSettings.Language1Iso639Code;
+				TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang1);
+				var lang2 = CollectionSettings.Language2Iso639Code;
+				if (!String.IsNullOrEmpty(lang2) && lang2 != lang1)
+					TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang2);
+				var lang3 = CollectionSettings.Language3Iso639Code;
+				if (!String.IsNullOrEmpty(lang3) && lang3 != lang2 && lang3 != lang1)
+					TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang3);
+			}
+		}
+
+		/// <summary>
 		/// For Bloom Reader books (and ePUBs), we need to copy the collection level settings files
 		/// to go with the book.  Since these end up in the zip file with the book files, the link
 		/// references to them need to be adjusted to use the current directory, not the parent
@@ -948,6 +974,7 @@ namespace Bloom.Book
 			}
 			RemoveObsoleteSoundAttributes(bookDOM);
 			BringBookInfoUpToDate(oldMetaData);
+			FixErrorsEncounteredByUsers(bookDOM);
 		}
 
 		// Some books got corrupted with CKE temp data, possibly before we prevented this happening when

@@ -7,6 +7,7 @@ using System.Xml;
 using Bloom.Collection;
 using SIL.Extensions;
 using SIL.Linq;
+using SIL.Reporting;
 using SIL.Xml;
 
 namespace Bloom.Book
@@ -308,6 +309,51 @@ namespace Bloom.Book
 					if (t != null && t.Value.StartsWith("{"))
 						t.Value = "";
 					//otherwise html tidy will throw away spans (at least) that are empty, so we never get a chance to fill in the values.
+				}
+			}
+		}
+
+		/// <summary>
+		/// If the group element contains more than one child div in the given language, remove or
+		/// merge the duplicates.
+		/// </summary>
+		/// <remarks>
+		/// We've had at least one user end up with duplicate vernacular divs in a shell book.  (She
+		/// was using Bloom 4.3 to translate a shell book created with Bloom 3.7.)  I haven't been
+		/// able to reproduce the effect or isolate the cause, but this fixes things.
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-6923.
+		/// </remarks>
+		internal static void FixDuplicateLanguageDivs(XmlElement groupElement, string isoCode)
+		{
+			XmlNodeList list = groupElement.SafeSelectNodes("./div[@lang='" + isoCode + "']");
+			if (list.Count > 1)
+			{
+				var count = list.Count;
+				foreach (XmlNode div in list)
+				{
+					var innerText = div.InnerText.Trim();
+					if (String.IsNullOrEmpty(innerText))
+					{
+						Logger.WriteEvent($"An empty duplicate div for {isoCode} has been removed from a translation group.");
+						groupElement.RemoveChild(div);
+						--count;
+						if (count == 1)
+							break;
+					}
+				}
+				if (count > 1)
+				{
+					Logger.WriteEvent($"Duplicate divs for {isoCode} have been merged in a translation group.");
+					list = groupElement.SafeSelectNodes("./div[@lang='" + isoCode + "']");
+					XmlNode first = list[0];
+					for (int i = 1; i < list.Count; ++i)
+					{
+						var newline = groupElement.OwnerDocument.CreateTextNode(Environment.NewLine);
+						first.AppendChild(newline);
+						foreach (XmlNode node in list[i].ChildNodes)
+							first.AppendChild(node);
+						groupElement.RemoveChild(list[i]);
+					}
 				}
 			}
 		}
