@@ -789,10 +789,25 @@ export default class AudioRecording {
         toastr.clear();
 
         this.recording = true;
-        var current: JQuery = this.getPageDocBodyJQuery().find(
-            ".ui-audioCurrent"
+
+        const pageDocBody = this.getPageDocBody();
+        const audioCurrentElements = pageDocBody!.getElementsByClassName(
+            "ui-audioCurrent"
         );
-        var id = current.attr("id");
+        let currentElement: Element | null = null;
+        if (audioCurrentElements.length > 0) {
+            currentElement = audioCurrentElements.item(0);
+        }
+        let id: string | undefined = undefined;
+        if (currentElement) {
+            if (currentElement.hasAttribute("id")) {
+                id = currentElement.getAttribute("id")!;
+            } else {
+                id = this.createValidXhtmlUniqueId();
+                currentElement.setAttribute("id", id);
+            }
+        }
+
         axios
             .post("/bloom/api/audio/startRecord?id=" + id)
             .then(result => {
@@ -1251,7 +1266,6 @@ export default class AudioRecording {
         if (element) {
             element.classList.remove("hide-countable"); // When we make this button visible we have to adjust classes so that it starts to participate in the CSS that numbers the steps
             element.classList.add("talking-book-counter");
-            element.classList.remove("initial-state"); // Note that by default it's already displayed correctly, so we can remove it immediately.
         }
     }
 
@@ -1260,16 +1274,6 @@ export default class AudioRecording {
         if (element) {
             element.classList.add("hide-countable");
             element.classList.remove("talking-book-counter");
-
-            // Need to special case the initial load, which does not need animation.
-            // In our CSS, we detect initial-state and change it accordingly.
-            // But since the raw HTML does not have this button hidden, we wait a little bit to make sure any animation (transition) has definitely finished
-            //   before removing the class that identifies the initial state.
-            if (element.classList.contains("initial-state")) {
-                setTimeout(() => {
-                    element.classList.remove("initial-state");
-                }, 200);
-            }
         }
     }
 
@@ -1494,7 +1498,13 @@ export default class AudioRecording {
             // If the cursor is within a span within a div, it is the div that is the activeElement.  This is both a good thing (when we want to know what div the user is in) and a bad thing (in by sentence mode, we'd really prefer to know what span they're in but this is not trivial)
             return pageFrame.contentDocument.activeElement;
         } else {
-            return this.getCurrentTextBox();
+            const currentTextBox = this.getCurrentTextBox();
+
+            if (currentTextBox) {
+                return currentTextBox;
+            } else {
+                return this.setCurrentAudioElementToFirstAudioElement();
+            }
         }
     }
 
@@ -1535,7 +1545,7 @@ export default class AudioRecording {
         // * Adjust the Current Highlight appropriately.
         // * (keep adjusting the current highlight to) fight with timing issues
 
-        const currentTextBox = this.getCurrentTextBox();
+        let currentTextBox = this.getCurrentTextBox();
 
         // Enhance: it would be nice/significantly more intuitive if this (or a stripped-down version that just moves the highlight/audio recording mode) could run when the mouse focus changes.
         if (allowUpdateOfCurrent) {
@@ -1557,10 +1567,6 @@ export default class AudioRecording {
             }
         }
 
-        if (!currentTextBox) {
-            return;
-        }
-
         this.isShowing = true;
 
         if (audioPlaybackMode == AudioRecordingMode.Unknown) {
@@ -1577,9 +1583,15 @@ export default class AudioRecording {
         const unprocessedRecordables = recordableDivs.filter(
             ":not([data-audioRecordingMode])"
         );
-        let unionedElementsToProcess = $(currentTextBox).add(
-            unprocessedRecordables
-        );
+
+        let unionedElementsToProcess: JQuery;
+        if (currentTextBox) {
+            unionedElementsToProcess = $(currentTextBox).add(
+                unprocessedRecordables
+            );
+        } else {
+            unionedElementsToProcess = unprocessedRecordables;
+        }
 
         if (unionedElementsToProcess.length === 0) {
             // no editable text on this page.
@@ -1597,8 +1609,14 @@ export default class AudioRecording {
         //thisClass.setStatus('record', Status.Expected);
         thisClass.levelCanvas = $("#audio-meter").get()[0];
 
-        // This synchronous call probably makes the flashing problem even more likely compared to delaying it but I think it is helpful if the state is being rapidly modified.
-        this.setCurrentAudioElementBasedOnRecordingMode(currentTextBox); // TODO: Probably not actually necessary to re-apply every time. Refactor it elsewhere.
+        if (!currentTextBox) {
+            currentTextBox = this.setCurrentAudioElementToFirstAudioElement();
+        }
+
+        if (currentTextBox) {
+            // This synchronous call probably makes the flashing problem even more likely compared to delaying it but I think it is helpful if the state is being rapidly modified.
+            this.setCurrentAudioElementBasedOnRecordingMode(currentTextBox); // TODO: Probably not actually necessary to re-apply every time. Refactor it elsewhere.
+        }
 
         // Note: Marking up the Current Element needs to happen after CKEditor's onload() fully finishes.  (onload sets the HTML of the bloom-editable to its original value, so it can wipe out any changes made to the original value).
         //   There is a race condition as to which one finishes first.  We need to  finish AFTER Ckeditor's onload()
@@ -1617,11 +1635,16 @@ export default class AudioRecording {
         //   Parallel timeouts (20, 100, 500): 0/30 failure rate.  Sometimes (probably 30%) single on-off-on flash of the highlight.
         //   Parallel timeouts (20, exponential back-offs starting from 100): 0/30 failure rate. Flash still problematic.
 
+        // TODO: Is this repeated setting still necessary? By the end of version 4.5 it doesn't seem necessary anymore but hard to say for sure because it only triggers non-deterministically
         let delayInMilliseconds = 20;
         while (delayInMilliseconds < 1000) {
             // Keep setting the current highlight for an additional roughly 1 second
             setTimeout(() => {
-                this.setCurrentAudioElementBasedOnRecordingMode(currentTextBox);
+                if (currentTextBox) {
+                    this.setCurrentAudioElementBasedOnRecordingMode(
+                        currentTextBox
+                    );
+                }
             }, delayInMilliseconds);
 
             delayInMilliseconds *= 2;
@@ -1723,16 +1746,17 @@ export default class AudioRecording {
         }
     }
 
-    public setCurrentAudioElementToFirstAudioElement() {
-        const firstSentence = this.getPageDocBodyJQuery()
+    public setCurrentAudioElementToFirstAudioElement(): HTMLElement | null {
+        const firstSentenceJQuery = this.getPageDocBodyJQuery()
             .find(kAudioSentenceClassSelector)
             .first();
-        if (firstSentence.length === 0) {
+        if (firstSentenceJQuery.length === 0) {
             // no recordable sentence found.
-            return;
+            return null;
         }
 
-        this.setCurrentAudioElement(firstSentence[0]); // typically first arg matches nothing.
+        const firstSentence = firstSentenceJQuery[0];
+        this.setCurrentAudioElement(firstSentence); // typically first arg matches nothing.
 
         // In Sentence/Sentence mode: OK to move.
         // Text/Sentence mode: Ok to swap.
@@ -1747,6 +1771,8 @@ export default class AudioRecording {
         } else {
             this.enableRecordingModeControl();
         }
+
+        return firstSentence;
     }
 
     // This gets invoked via websocket message. It draws a series of bars

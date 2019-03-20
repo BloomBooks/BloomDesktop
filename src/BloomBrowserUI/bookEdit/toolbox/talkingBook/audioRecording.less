@@ -184,14 +184,21 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     .button-label-wrapper {
         margin-top: 10px;
     }
+
+    @buttonWidth: 60px;
+    @uiAudioBodyMinWidth: 150px; // The minimum width of the container, which occurs if the scroll bar is present. It is 17 pixels larger otherwise
+    @whitespaceFillerWidth: 3px; // Caused by the whitespace in the PUG code I think.
     .button-wrapper {
         display: inline-block;
-        min-width: 60px;
+        min-width: @buttonWidth;
         vertical-align: top; // Align the button with the label in case the label is really long.
     }
+
     .audio-label {
         display: inline-block;
-        max-width: 100px;
+        max-width: (
+            @uiAudioBodyMinWidth - @buttonWidth - @whitespaceFillerWidth
+        );
         vertical-align: top;
 
         &.expected {
@@ -218,29 +225,51 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     counter-increment: talkingBookListCounter;
 }
 
-// Animation of hiding/showing a button
+//////////////////////////////////////////
+// Animation of hiding/showing a button //
+//////////////////////////////////////////
+@anticipatedButtonLabelHeight: 57.5px; // The expected height for the English text. Ideal results would be had if this is kept up to date whenever the English string changes.
+@buttonLabelMaxHeight: 100px;
+@expandTargetProportion: unit(
+    @anticipatedButtonLabelHeight / @buttonLabelMaxHeight
+);
+@shrinkTargetProportion: 1 - @expandTargetProportion;
+
 // Active Case
 .button-label-wrapper {
-    height: 50px;
-    transition: height @splitAnimationTime;
+    max-height: @buttonLabelMaxHeight; // Should be at least as large as the anticipated need
+    transition: max-height @splitAnimationTime;
+
+    // Timing for Expanding
+    //
+    // Roughly linear to the target for most of the duration. (Then rapidly finish the rest in the last little portion of time)
+    // For en, we expect no effect after it reaches actualHeight/maxHeight = 57.5/100 = 0.575
+    // Thus, we want it to shrink extremely rapidly at first so we can quickly reach the region where it has a visible effect.
+    transition-timing-function: cubic-bezier(
+        0.9,
+        @expandTargetProportion,
+        0.9,
+        @expandTargetProportion
+    ); // Linear to 60% for most of the duration.
 
     overflow: hidden; // hiding the overflow causes the subsequent element to smoothly move up
-}
-.button-label-wrapper button {
-    height: 45px;
-    transition: height @splitAnimationTime;
-}
-.button-label-wrapper .audio-label {
-    transition: height @splitAnimationTime;
 }
 
 // Hidden Case
 .ui-audioBody .button-label-wrapper.hide-countable {
-    height: 0px;
+    max-height: 0px;
 
-    &.initial-state {
-        transition: height 0ms; // On start-up, no need to animate, just do it ASAP
-    }
+    // Timing for Shrinking (because the rule takes effect immediately once the selector rule is met)
+    //
+    // Rapidly shrink to the expected size of the text, then roughly linear shrink to the end.
+    // For en, we expect no effect until it reaches the expected target size
+    // Thus, we want it to shrink extremely rapidly at first so we can quickly reach the region where it has a visible effect.
+    transition-timing-function: cubic-bezier(
+        0,
+        @shrinkTargetProportion,
+        0,
+        @shrinkTargetProportion
+    );
 }
 
 .cursor-progress {
