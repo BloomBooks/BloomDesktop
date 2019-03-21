@@ -341,14 +341,14 @@ export default class AudioRecording {
 
     // At this point we are handling all missing dependencies the same.
     private handleMissingDependency(): void {
-        const aeneasName = "Aeneas";
+        const aeneasName = "aeneas";
         const blAeneasUrl = "https://bloomlibrary.org/aeneas";
         // For now at least, we only report Aeneas as missing and point the user to pages
         // where installing Aeneas will also install all of its dependencies.
         theOneLocalizationManager
             .asyncGetText(
                 "EditTab.Toolbox.TalkingBook.MissingDependency",
-                "To use Auto Segment, first install this {0} system.",
+                "To split recordings into sentences, first install this {0} system.",
                 "The placeholder {0} will be replaced with the dependency that needs to be installed."
             )
             .done(localizedMessage => {
