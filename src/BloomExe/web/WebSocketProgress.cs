@@ -49,10 +49,14 @@ namespace Bloom.web
 		public void ErrorWithoutLocalizing(string message, params object[] args)
 		{
 			MessageWithoutLocalizing($"<span style='color:red'>{message}</span>", args);
+			SIL.Reporting.Logger.WriteEvent($"Error: {message}", args);
 		}
 		public void Error(string idSuffix, string message, bool useL10nIdPrefix=true)
 		{
-			ErrorWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message));
+			var localizedMessage = LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message);
+			ErrorWithoutLocalizing(localizedMessage);
+			if (localizedMessage != message)
+				SIL.Reporting.Logger.WriteEvent($"Error: {message}");	// repeat message in the log unlocalized.
 		}
 
 		public void MessageWithoutLocalizing(string message, params object[] args)
@@ -89,6 +93,9 @@ namespace Bloom.web
 		{
 			var formatted = GetMessageWithParams(idSuffix, comment, message, parameters);
 			ErrorWithoutLocalizing(formatted);
+			var formattedEnglish = String.Format(message, parameters);
+			if (formatted != formattedEnglish)
+				SIL.Reporting.Logger.WriteEvent($"Error: {formattedEnglish}");	// repeat message in the log unlocalized.
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
