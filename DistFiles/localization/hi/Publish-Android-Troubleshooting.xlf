@@ -2,78 +2,84 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Publish-Android-Troubleshooting-en.htm" datatype="html" source-language="en" target-language="hi">
     <body>
-      <trans-unit id="android.publish.trouble.tips">
+      <trans-unit id="android.publish.trouble.tips" approved="yes">
         <source xml:lang="en">Troubleshooting Tips for Android Publishing</source>
-        <target xml:lang="hi" state="needs-translation">Troubleshooting Tips for Android Publishing</target>
+        <target xml:lang="hi" state="translated">Android प्रकाशन के लिए समस्या निवारण युक्तियाँ</target>
         <note>ID: android.publish.trouble.tips</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi">
+      <trans-unit id="android.publish.wifi" approved="yes">
         <source xml:lang="en">Serve on WiFi Network</source>
-        <target xml:lang="hi" state="needs-translation">Serve on WiFi Network</target>
+        <target xml:lang="hi" state="translated">वाईफाई नेटवर्क द्वारा भेजें</target>
         <note>ID: android.publish.wifi</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.unseen">
+      <trans-unit id="android.publish.wifi.unseen" approved="yes">
         <source xml:lang="en">Problem: Android Device is not seeing book advertisements</source>
-        <target xml:lang="hi" state="needs-translation">Problem: Android Device is not seeing book advertisements</target>
+        <target xml:lang="hi" state="translated">समस्या: एंड्राइड डिवाइस को पुस्तक विज्ञापन नहीं मिल रहा</target>
         <note>ID: android.publish.wifi.unseen</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.run.receive">
+      <trans-unit id="android.publish.wifi.run.receive" approved="yes">
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</source>
-        <target xml:lang="hi" state="needs-translation">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</target>
+        <target xml:lang="hi" state="translated">इस तरीके का उपयोग करते समय, आपको ब्लूम रीडर चलाने, इसके मेनू को खोलने, और "वाईफाई से प्राप्त करें" चुनेने की आवश्यकता है।</target>
         <note>ID: android.publish.wifi.run.receive</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.receive.from">
+      <trans-unit id="android.publish.wifi.receive.from" approved="yes">
         <source xml:lang="en">Make sure the device is in the "Receive from WiFi" screen</source>
-        <target xml:lang="hi" state="needs-translation">Make sure the device is in the "Receive from WiFi" screen</target>
+        <target xml:lang="hi" state="translated">निश्चित कर लें कि यह डिवाइस "वाईफाई द्वारा प्राप्त करें" स्क्रीन में है</target>
         <note>ID: android.publish.wifi.receive.from</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.same.network">
+      <trans-unit id="android.publish.wifi.same.network" approved="yes">
         <source xml:lang="en">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
-        <target xml:lang="hi" state="needs-translation">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</target>
+        <target xml:lang="hi" state="translated">सुनिश्चित करें कि कंप्यूटर और डिवाइस एक ही वाईफाई नेटवर्क से जुड़े हैं। केबल के माध्यम से वाईफाई राऊटर से जुड़ा हुआ एक कंप्यूटर उसी के नेटवर्क पर हो सकता है। यह तकनीकी रूप से संभव है कि वायर्ड नेटवर्क वाईफाई की तरह एक ही स्थानीय सबनेट पर जुड़ा हो, लेकिन ब्लूम टीम उसे सेट करने में कोई भी सहायता प्रदान करने में सक्षम नहीं होगी, क्षमा करें ।</target>
         <note>ID: android.publish.wifi.same.network</note>
+        <alt-trans>
+          <target xml:lang="hi">सुनिश्चित करें कि कंप्यूटर और डिवाइस एक ही वाईफाई नेटवर्क से जुड़ी हैं। केबल के माध्यम से वाईफाई राऊटर से जुड़ा हुआ एक कंप्यूटर उसी के नेटवर्क पर हो सकता है। यह तकनीकी रूप से संभव है कि वायर्ड नेटवर्क वाईफाई की तरह एक ही स्थानीय सबनेट पर जुड़ा हो, लेकिन ब्लूम टीम उसे सेट करने में कोई भी मदद प्रदान करने में सक्षम नहीं होगी, क्षमा करें ।</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.firewalls">
+      <trans-unit id="android.publish.wifi.firewalls" approved="yes">
         <source xml:lang="en">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</source>
-        <target xml:lang="hi" state="needs-translation">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</target>
+        <target xml:lang="hi" state="translated">सुनिश्चित करें कि आपके कंप्यूटर में कोई फायरवॉल तो नहीं है जो हस्तक्षेप कर रहा है। जब आप पहली बार किसी पुस्तक का विज्ञापन देना शुरू करेंगे तब विंडोज फायरवॉल दिखाई देगा। अगर आपने उसके लिए "नहीं" कह दिया, तो शायद वह फिर से पूछेगा भी नहीं। यदि आपके पास अतिरिक्त थर्ड पार्टी फायरवॉल इनस्टॉल है, तो उसे अक्षम करने का प्रयास करें। ब्लूम पोर्ट 5913 पर UDP के माध्यम से स्थानीय नेट पर प्रसारित करने के द्वारा पुस्तक का विज्ञापन देता है, और ब्लूम रीडर पोर्ट 5915 के माध्यम से एक किताब का अनुरोध करता है।</target>
         <note>ID: android.publish.wifi.firewalls</note>
       </trans-unit>
-      <trans-unit id="android.publish.usb">
+      <trans-unit id="android.publish.usb" approved="yes">
         <source xml:lang="en">Send Over USB Cable</source>
-        <target xml:lang="hi" state="needs-translation">Send Over USB Cable</target>
+        <target xml:lang="hi" state="translated">यूएसबी तार के द्वारा भेजें</target>
         <note>ID: android.publish.usb</note>
       </trans-unit>
-      <trans-unit id="android.publish.usb.not.connect">
+      <trans-unit id="android.publish.usb.not.connect" approved="yes">
         <source xml:lang="en">Problem: Bloom is not connecting to my device</source>
-        <target xml:lang="hi" state="needs-translation">Problem: Bloom is not connecting to my device</target>
+        <target xml:lang="hi" state="translated">समस्या: ब्लूम डिवाइस से जुड़ नहीं पा रहा है</target>
         <note>ID: android.publish.usb.not.connect</note>
       </trans-unit>
-      <trans-unit id="android.publish.usb.consider.wifi">
+      <trans-unit id="android.publish.usb.consider.wifi" approved="yes">
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
         </source>
-        <target xml:lang="hi" state="needs-translation">
-<g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
+        <target xml:lang="hi" state="translated">
+<g id="genid-1" ctype="x-html-p">हम ने पाया है कि यह तरीका बहुत सी डिवाइसों के लिए समस्या पैदा करता है, इसलिए अगर आप केवल एक ही डिवाइस के साथ काम कर रहे हैं तो भी वाईफाई तरीके का उपयोग करने पर विचार करें।</g>
 </target>
         <note>ID: android.publish.usb.consider.wifi</note>
       </trans-unit>
-      <trans-unit id="android.publish.usb.automatic">
+      <trans-unit id="android.publish.usb.automatic" approved="yes">
         <source xml:lang="en">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
-        <target xml:lang="hi" state="needs-translation">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</target>
+        <target xml:lang="hi" state="translated">इस तरीके का उपयोग करते समय, पुस्तकें प्राप्त करने के लिए आपको किसी भी विशेष मोड में जाने की जरुरत नहीं है। सिर्फ ब्लूम रीडर चलाएं। पुस्तकें जब स्थानांतरित होंगी तब वे अपने आप दिखाई देंगी।</target>
         <note>ID: android.publish.usb.automatic</note>
       </trans-unit>
-      <trans-unit id="android.publish.usb.uses.mtp">
+      <trans-unit id="android.publish.usb.uses.mtp" approved="yes">
         <source xml:lang="en">Some Android devices have multiple modes they can be in when connected to a computer. Some will ask you as soon as you connect the cable to the computer. Bloom will be trying to talk to the device using a protocol called "MTP". If you're not sure that your device is connecting using MTP, try googling the name of your device + "MTP".</source>
-        <target xml:lang="hi" state="needs-translation">Some Android devices have multiple modes they can be in when connected to a computer. Some will ask you as soon as you connect the cable to the computer. Bloom will be trying to talk to the device using a protocol called "MTP". If you're not sure that your device is connecting using MTP, try googling the name of your device + "MTP".</target>
+        <target xml:lang="hi" state="translated">किसी कंप्यूटर से जुड़ते समय कुछ एंड्राइड डिवाइस में कई मोड हो सकते हैं। जैसे ही आप केबल को कंप्यूटर से जोड़ेंगे कुछ आपकी अनुमति लेते हैं। ब्लूम "एमटीपी" नामक एक प्रोटोकॉल का उपयोग करके आपके डिवाइस से संपर्क करने की कोशिश करेगा। यदि आप सुनिश्चित नहीं हैं कि आपकी डिवाइस एमटीपी का उपयोग करके जुड़ रही है, तो अपने डिवाइस और "एमटीपी" का नाम गूगल करने की कोशिश करें।</target>
         <note>ID: android.publish.usb.uses.mtp</note>
+        <alt-trans>
+          <target xml:lang="hi">किसी कंप्यूटर से जुड़ते समय कुछ एंड्राइड डिवाइस में कई मोड हो सकते हैं। जैसे ही आप केबल को कंप्यूटर से जोड़ेंगे कुछ आपकी अनुमति लेते हैं। ब्लूम "एमटीपी" नामक एक प्रोटोकॉल का उपयोग करके आपकी डिवाइस से संपर्क करने की कोशिश करेगा। यदि आप सुनिश्चित नहीं हैं कि आपकी डिवाइस एमटीपी का उपयोग करके जुड़ रही है, तो अपने डिवाइस और "एमटीपी" का नाम गूगल करने की कोशिश करें।</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.usb.windows">
+      <trans-unit id="android.publish.usb.windows" approved="yes">
         <source xml:lang="en">The device should be showing up in Windows File Explorer (this feature is Windows-only)</source>
-        <target xml:lang="hi" state="needs-translation">The device should be showing up in Windows File Explorer (this feature is Windows-only)</target>
+        <target xml:lang="hi" state="translated">डिवाइस विंडोज फाइल एक्सप्लोरर में दिखाई देना चाहिए (यह सुविधा विंडोज-केवल के लिए है)</target>
         <note>ID: android.publish.usb.windows</note>
       </trans-unit>
-      <trans-unit id="android.publish.usb.cable.or.port">
+      <trans-unit id="android.publish.usb.cable.or.port" approved="yes">
         <source xml:lang="en">Try a different cable, or a different USB port.</source>
-        <target xml:lang="hi" state="needs-translation">Try a different cable, or a different USB port.</target>
+        <target xml:lang="hi" state="translated">दूसरे तार, या दूसरे यूएसबी पोर्ट का उपयोग करने की कोशिश करें।</target>
         <note>ID: android.publish.usb.cable.or.port</note>
       </trans-unit>
     </body>

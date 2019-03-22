@@ -56,6 +56,9 @@
         <source xml:lang="en">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
         <target xml:lang="es-ES" state="translated">Vea <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">estos vídeos de capacitación</g>.</target>
         <note>ID: leveled.learn.videos</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Vea <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">estos videos de capacitación</g>.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Leveled Readers".</source>

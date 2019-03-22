@@ -25,8 +25,11 @@
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive" approved="yes">
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</source>
-        <target xml:lang="es-ES" state="translated">Cuando se utiliza este método, necesita ejecutar el Lector Bloom. Abra el menú y elija "Recibir de WiFi".</target>
+        <target xml:lang="es-ES" state="translated">Cuando se utiliza este método, necesita ejecutar Bloom Reader. Abra el menú y elija "Recibir de WiFi".</target>
         <note>ID: android.publish.wifi.run.receive</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Cuando se utiliza este método, necesita ejecutar el Lector Bloom. Abra el menú y elija "Recibir de WiFi".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Cuando se utiliza este método, necesita ejecutar el Lector Bloom. Abra el menú y elige "Recibir de WiFi".</target>
         </alt-trans>
@@ -49,8 +52,11 @@
       </trans-unit>
       <trans-unit id="android.publish.wifi.firewalls" approved="yes">
         <source xml:lang="en">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</source>
-        <target xml:lang="es-ES" state="translated">Asegúrese que su computadora no tenga un contrafuegos (firewall) que está interfiriendo. El contrafuegos de Windows se mostrará cuando recién empiece a compartir su libro. Si dijo "No" a eso, es posible que no vuelva a preguntarle. Si tiene otros contrafuegos instalados, intente deshabilitarlos. Bloom comparte un libro transmitiéndolo en la red local a través de UDP en el puerto 5913 y el Lector Bloom pide un libro por medio del puerto 5915.</target>
+        <target xml:lang="es-ES" state="translated">Asegúrese que su computadora no tenga un contrafuegos (firewall) que está interfiriendo. El contrafuegos de Windows se mostrará cuando recién empiece a compartir su libro. Si dijo "No" a eso, es posible que no vuelva a preguntarle. Si tiene otros contrafuegos instalados, intente deshabilitarlos. Bloom comparte un libro transmitiéndolo en la red local a través de UDP en el puerto 5913 y Bloom Reader pide un libro por medio del puerto 5915.</target>
         <note>ID: android.publish.wifi.firewalls</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Asegúrese que su computadora no tenga un contrafuegos (firewall) que está interfiriendo. El contrafuegos de Windows se mostrará cuando recién empiece a compartir su libro. Si dijo "No" a eso, es posible que no vuelva a preguntarle. Si tiene otros contrafuegos instalados, intente deshabilitarlos. Bloom comparte un libro transmitiéndolo en la red local a través de UDP en el puerto 5913 y el Lector Bloom pide un libro por medio del puerto 5915.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Asegúre de que su computadora no tiene un contrafuegos (firewall) que está interfiriendo. El contrafuegos de Windows se mostrará cuando recien empieza a compartir su libro. Si dijo "No" a eso, es posible que no volverá a preguntarle. Si tienes otros contrafuegos instalados, intente deshabilitarlos. Bloom comparte un libro transmitiendolo en la red local a través de UDP en el puerto 5913 y el Lector Bloom pide un libro por medio del puerto 5915.</target>
         </alt-trans>
@@ -89,8 +95,11 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.automatic" approved="yes">
         <source xml:lang="en">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
-        <target xml:lang="es-ES" state="translated">Mientras que utiliza este método, no tiene que entrar en ningún modo especial para recibir libros. Basta con ejecutar el Lector Bloom. Los libros deben aparecer automáticamente cuando se transfieran.</target>
+        <target xml:lang="es-ES" state="translated">Mientras que utiliza este método, no tiene que entrar en ningún modo especial para recibir libros. Sólo ejecuta Bloom Reader. Los libros deben aparecer automáticamente cuando se transfieran.</target>
         <note>ID: android.publish.usb.automatic</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Mientras que utiliza este método, no tiene que entrar en ningún modo especial para recibir libros. Basta con ejecutar el Lector Bloom. Los libros deben aparecer automáticamente cuando se transfieran.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Mientra que utiliz este método, no tienes que entrar ningún modo especial para recibir libros. Basta con ejecutar el Lector Bloom. Los libros deben aparecer automáticamente cuando se transfieran.</target>
         </alt-trans>
