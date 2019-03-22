@@ -149,7 +149,15 @@ export default class AudioRecording {
             .mouseup(e => this.endRecordCurrent());
         $("#audio-play")
             .off()
-            .click(e => this.playCurrent());
+            .click(e => {
+                if (!e.ctrlKey) {
+                    // Normal case
+                    this.playCurrent();
+                } else {
+                    // Control + Click case: Special debug mode
+                    this.playESpeakPreview();
+                }
+            });
         $("#audio-split")
             .off()
             .click(e => this.split());
@@ -3050,6 +3058,23 @@ export default class AudioRecording {
             }
         }
         return elementsToUpdate;
+    }
+
+    private playESpeakPreview(): void {
+        const current = this.getCurrentHighlight();
+        if (current) {
+            const textToSpeak = current.innerText;
+
+            const inputParameters = {
+                text: textToSpeak,
+                lang: this.getAutoSegmentLanguageCode()
+            };
+
+            BloomApi.postJson(
+                "audioSegmentation/eSpeakPreview",
+                JSON.stringify(inputParameters)
+            );
+        }
     }
 }
 
