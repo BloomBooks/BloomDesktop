@@ -247,7 +247,10 @@
         <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
-        <target xml:lang="es-ES" state="translated">En el cuadro superior, escriba lo que está buscando. A continuación pulse INTRO.</target>
+        <target xml:lang="es-ES" state="translated">En el cuadro superior, escriba lo que está buscando. A continuación pulse ENTRAR.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">En el cuadro superior, escriba lo que está buscando. A continuación pulse INTRO.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esto es la galería de 'Arte de la Lectura' (Art of Reading). En el cuadro superior, escriba lo que está buscando. A continuación pulse INTRO. Puede escribir palabras en inglés e indonesio.</target>
         </alt-trans>
@@ -603,7 +606,7 @@
           <target xml:lang="es-ES">Puede adaptar y añadir a este trabajo.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true" approved="yes">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>

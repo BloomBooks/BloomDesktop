@@ -261,8 +261,8 @@
         <note>ID: BookMetadata.a11yLevelAAA</note>
         <target xml:lang="zh-CN" state="translated">等级AAA</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.alternativeText" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Alternative text</source>
+      <trans-unit id="BookMetadata.alternativeText" sil:dynamic="true">
+        <source xml:lang="en">Has Image Descriptions</source>
         <note>ID: BookMetadata.alternativeText</note>
         <target xml:lang="zh-CN" state="translated">替代文本</target>
       </trans-unit>
@@ -326,11 +326,6 @@
         <source xml:lang="en">Sign Language</source>
         <note>ID: BookMetadata.signLanguage</note>
         <target xml:lang="zh-CN" state="translated">手语</target>
-      </trans-unit>
-      <trans-unit id="BookMetadata.soundHazard" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Sound Hazard</source>
-        <note>ID: BookMetadata.soundHazard</note>
-        <target xml:lang="zh-CN" state="translated">声音危害</target>
       </trans-unit>
       <trans-unit id="BookMetadata.subjects" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Subjects</source>
@@ -1058,12 +1053,6 @@
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
         <target xml:lang="zh-CN" state="translated">帮助(&amp;H)</target>
-      </trans-unit>
-      <trans-unit id="Common.MissingDependency">
-        <source xml:lang="en">Missing Dependency: {0} not found.</source>
-        <note>ID: Common.MissingDependency</note>
-        <note>The {0} will be replaced by the name of an item which was not found</note>
-        <target xml:lang="zh-CN" state="needs-translation">Missing Dependency: {0} not found.</target>
       </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Loading...</source>
@@ -2356,24 +2345,66 @@
         <note>ID: EditTab.Toolbox.ImageDescriptionTool</note>
         <target xml:lang="zh-CN" state="translated">图片描述工具</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.MoreInformation" sil:dynamic="true">
+        <source xml:lang="en">For more information:</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.MoreInformation</note>
+        <target xml:lang="zh-CN" state="needs-translation">For more information:</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.KeepInMind" sil:dynamic="true">
+        <source xml:lang="en">Keep these things in mind:</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.KeepInMind</note>
+        <target xml:lang="zh-CN" state="needs-translation">Keep these things in mind:</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe" sil:dynamic="true">
+        <source xml:lang="en">Are there important **actions**, **relationships**, **emotions**, or things in the **scene** that add to the story but are not in the text?</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe</note>
+        <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
+        <target xml:lang="zh-CN" state="needs-translation">Are there important **actions**, **relationships**, **emotions**, or things in the **scene** that add to the story but are not in the text?</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords" sil:dynamic="true">
+        <source xml:lang="en">Use words that are **simple** enough for the listener.</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords</note>
+        <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
+        <target xml:lang="zh-CN" state="needs-translation">Use words that are **simple** enough for the listener.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.KeepItShort" sil:dynamic="true">
+        <source xml:lang="en">Keep it **short**.</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.KeepItShort</note>
+        <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
+        <target xml:lang="zh-CN" state="needs-translation">Keep it **short**.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox" sil:dynamic="true">
+        <source xml:lang="en">Otherwise, check this box:</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckThisBox</note>
+        <target xml:lang="zh-CN" state="needs-translation">Otherwise, check this box:</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe" sil:dynamic="true">
+        <source xml:lang="en">This image should not be described.</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe</note>
+        <target xml:lang="zh-CN" state="needs-translation">This image should not be described.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Be Concise</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeConcise</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
         <target xml:lang="zh-CN" state="translated">简洁</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeObjective" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Be Objective</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeObjective</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
         <target xml:lang="zh-CN" state="translated">客观</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom training video</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
         <target xml:lang="zh-CN" state="translated">介绍Bloom使用方法的视频</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Check your image description against each of these reminders:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckDescription</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
         <target xml:lang="zh-CN" state="translated">根据以下提示检查图片描述</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience" sil:dynamic="true" approved="yes">
@@ -2636,6 +2667,12 @@
         <note>This is very low priority for translation.</note>
         <target xml:lang="zh-CN" state="translated">可能拔出麦克风时造成Bloom录音状态异常。请重启。</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBook.MissingDependency">
+        <source xml:lang="en">To use Auto Segment, first install this {0} system.</source>
+        <note>ID: EditTab.Toolbox.TalkingBook.MissingDependency</note>
+        <note>The placeholder {0} will be replaced with the dependency that needs to be installed.</note>
+        <target xml:lang="zh-CN" state="needs-translation">To use Auto Segment, first install this {0} system.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoInput" approved="yes">
         <source xml:lang="en">No input device</source>
         <note>ID: EditTab.Toolbox.TalkingBook.NoInput</note>
@@ -2657,52 +2694,42 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
         <target xml:lang="zh-CN" state="translated">有声书工具</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegment">
-        <source xml:lang="en">Auto Segment</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegment</note>
-        <note>This text appears on the button the user can press to trigger automatic segmentation of audio. An audio file corresponding to an entire text box will be segmented into one audio file per sentence instead. (Also known as "Forced Alignment" in technical terms)</note>
-        <target xml:lang="zh-CN" state="needs-translation">Auto Segment</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError">
-        <source xml:lang="en">Segmenting... Error</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError</note>
-        <note>Indicates that automatic segmentation of audio (text-audio syncrhonization or "forced alignment") failed with an errror.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Segmenting... Error</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusInProgress">
-        <source xml:lang="en">Segmenting...</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusInProgress</note>
-        <note>Indicates that automatic segmentation of audio (text-audio syncrhonization or "forced alignment") is in progress.</note>
-        <target xml:lang="zh-CN" state="needs-translation">Segmenting...</target>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Back</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Back</note>
+        <note>As in, move the selection "BACK"wards to the previous sentence.</note>
         <target xml:lang="zh-CN" state="translated">后退</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Check" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4) Check</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
+        <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
         <target xml:lang="zh-CN" state="translated">4)检查</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Check</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckLabel</note>
+        <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Check if possible, but without the number</note>
         <target xml:lang="zh-CN" state="translated">检查</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
-        <target xml:lang="zh-CN" state="translated">1)请用合适的装置录音，音量大小最好控制在蓝色范围内</target>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
+        <target xml:lang="zh-CN" state="translated">请用合适的装置录音，音量大小最好控制在蓝色范围内</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.CheckSettings if possible, but without the number</note>
         <target xml:lang="zh-CN" state="translated">请用合适的装置录音，音量大小最好控制在蓝色范围内</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Clear</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
+        <note>As in, "CLEAR" (or delete) the existing recording file.</note>
         <target xml:lang="zh-CN" state="translated">清除</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true" approved="yes">
@@ -2713,33 +2740,51 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true" approved="yes">
         <source xml:lang="en">2) Look at the highlighted text</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
         <target xml:lang="zh-CN" state="translated">2)看高亮的句子</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Look at the highlighted text</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.LookAtSentence if possible, but without the number</note>
         <target xml:lang="zh-CN" state="translated">看高亮的句子</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true" approved="yes">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
         <target xml:lang="zh-CN" state="translated">5)下一步</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.NextLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.NextLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Next if possible, but without the number</note>
         <target xml:lang="zh-CN" state="translated">下一步</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Record by sentences</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordBySentences</note>
+        <note>Deprecated in Bloom Version 4.5</note>
         <target xml:lang="zh-CN" state="translated">逐句录制</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordByTextBox" sil:dynamic="true">
+        <source xml:lang="en">Record the whole text box, then let Bloom split it into sentences later.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordByTextBox</note>
+        <target xml:lang="zh-CN" state="needs-translation">Record the whole text box, then let Bloom split it into sentences later.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Please clear all existing recordings on this page before changing modes.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
         <note>Shown if you open TalkingBookTool, make a recording, and then attempt to toggle the "Record by Sentences" input (without first clearing the audio recordings you are about to lose)</note>
         <target xml:lang="zh-CN" state="translated">请先清除这页上已经有的录音，然后再切换模式</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true">
+        <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
+        <note>Shown if you open TalkingBookTool, enable "Record the whole text box...", make a recording, and then attempt to uncheck the "Record the whole text box..." input (without first clearing the audio recordings you are about to lose)</note>
+        <note>For "split", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
+        <note>For "clear", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
+        <target xml:lang="zh-CN" state="needs-translation">Please split or clear the existing recording in this text box before changing modes.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true">
         <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
@@ -2750,12 +2795,20 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true" approved="yes">
         <source xml:lang="en">3) Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Speak</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
         <target xml:lang="zh-CN" state="translated">3)说</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible, but without the number</note>
         <target xml:lang="zh-CN" state="translated">说</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel">
+        <source xml:lang="en">Split recording into sentences for highlighting.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
+        <note>This text appears on the button the user can press to trigger automatic splitting of audio. An audio file corresponding to an entire text box will be split into multiple audio files (one per sentence) instead. (Also known as "Forced Alignment" in technical terms)</note>
+        <target xml:lang="zh-CN" state="needs-translation">Split recording into sentences for highlighting.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make an e-book that can play audio recordings while highlighting text.</source>
@@ -3449,10 +3502,22 @@
         <note>Help link under Motion Book checkbox</note>
         <target xml:lang="zh-CN" state="translated">关于动态书</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Bloom Reader Bookshelf</source>
+        <note>ID: PublishTab.Android.BookShelf</note>
+        <note>A heading in the Publish to Android screen.</note>
+        <target xml:lang="zh-CN" state="translated">Bloom阅读器书架</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Save Bloom Reader File</source>
         <note>ID: PublishTab.Android.ChooseFile</note>
         <target xml:lang="zh-CN" state="translated">保存成可用于Bloom阅读器的文档</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
+        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
+        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
+        <note>Appears in portrait mode when Motion checkbox is checked</note>
+        <target xml:lang="zh-CN" state="needs-translation">Choose landscape to activate Motion Book mode</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Send over USB Cable</source>
@@ -3475,14 +3540,11 @@
         <note>ID: PublishTab.Android.CopyToClipboard</note>
         <target xml:lang="zh-CN" state="translated">复制到剪切板</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
-        <note>ID: PublishTab.Android.Intro</note>
-        <note>This is displayed at the top of the Android screen.</note>
-        <target xml:lang="zh-CN" state="translated">把您书传送到“Bloom阅读器”这个安卓应用上。</target>
-        <alt-trans>
-          <target xml:lang="zh-CN">这里可以把您书传送到，“Bloom阅读器”这个安卓应用上。</target>
-        </alt-trans>
+      <trans-unit id="PublishTab.Android.Features" sil:dynamic="true">
+        <source xml:lang="en">Features</source>
+        <note>ID: PublishTab.Android.Features</note>
+        <note>The second heading in the Settings section, which shows a checklist of various features.</note>
+        <target xml:lang="zh-CN" state="needs-translation">Features</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
@@ -3526,26 +3588,23 @@
         <note>{0} and {1} are font names</note>
         <target xml:lang="zh-CN" state="translated">把{1} 换成{0}</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Bloom Reader Bookshelf</source>
-        <note>ID: PublishTab.Android.BookShelf</note>
-        <note>A heading in the Publish to Android screen.</note>
-        <target xml:lang="zh-CN" state="translated">Bloom阅读器书架</target>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
-        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
-        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
-        <note>Appears in portrait mode when Motion checkbox is checked</note>
-        <target xml:lang="zh-CN" state="needs-translation">Choose landscape to activate Motion Book mode</target>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
         <note>Link to find Bloom Reader on Google Play Store</note>
         <target xml:lang="zh-CN" state="translated">下载Bloom阅读软件</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Method Choices</source>
+      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
+        <note>ID: PublishTab.Android.Intro</note>
+        <note>This is displayed at the top of the Android screen.</note>
+        <target xml:lang="zh-CN" state="translated">把您书传送到“Bloom阅读器”这个安卓应用上。</target>
+        <alt-trans>
+          <target xml:lang="zh-CN">这里可以把您书传送到，“Bloom阅读器”这个安卓应用上。</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true">
+        <source xml:lang="en">Choose how to send to device</source>
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
         <target xml:lang="zh-CN" state="translated">选择方式</target>
@@ -3749,8 +3808,8 @@
           <target xml:lang="zh-CN">适用于电子设备的Bloom图书。</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.AndroidButton" approved="yes">
-        <source xml:lang="en">Android</source>
+      <trans-unit id="PublishTab.AndroidButton">
+        <source xml:lang="en">Bloom Reader</source>
         <note>ID: PublishTab.AndroidButton</note>
         <target xml:lang="zh-CN" state="translated">安卓</target>
       </trans-unit>
@@ -3942,10 +4001,10 @@
         <note>menu header in the Publish tab</note>
         <target xml:lang="zh-CN" state="translated">选项</target>
       </trans-unit>
-      <trans-unit id="PublishTab.OptionsMenu.SizeLayout" approved="yes">
-        <source xml:lang="en">Size/Layout</source>
+      <trans-unit id="PublishTab.OptionsMenu.SizeLayout">
+        <source xml:lang="en">Size/Orientation</source>
         <note>ID: PublishTab.OptionsMenu.SizeLayout</note>
-        <note>Header for a region of the menu which lists various standard page layout sizes</note>
+        <note>Header for a region of the menu which lists various standard page sizes and orientations</note>
         <target xml:lang="zh-CN" state="translated">尺寸/布局</target>
       </trans-unit>
       <trans-unit id="PublishTab.Options_ToolTip_" approved="yes">
@@ -4781,6 +4840,11 @@ Do you want to go ahead?</note>
         <note>ID: ReaderTemplateBloomPackDialog.IntroLabel</note>
         <target xml:lang="zh-CN" state="translated">这本书将被制成模板:</target>
       </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.IUnderstandCheckboxLabel">
+        <source xml:lang="en">I understand what a template is and this is really what I want to do</source>
+        <note>ID: ReaderTemplateBloomPackDialog.IUnderstandCheckboxLabel</note>
+        <target xml:lang="zh-CN" state="needs-translation">I understand what a template is and this is really what I want to do</target>
+      </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton" approved="yes">
         <source xml:lang="en">Save Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.SaveBloomPackButton</note>
@@ -4993,6 +5057,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.BookName.Picture Dictionary</note>
         <target xml:lang="zh-CN" state="translated">图片词典</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Sign Language" sil:dynamic="true">
+        <source xml:lang="en">Sign Language</source>
+        <note>ID: TemplateBooks.BookName.Sign Language</note>
+        <target xml:lang="zh-CN" state="needs-translation">Sign Language</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Template Starter</source>
         <note>ID: TemplateBooks.BookName.Template Starter</note>
@@ -5184,6 +5253,21 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
         <target xml:lang="zh-CN" state="translated">文本和图片</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true">
+        <source xml:lang="en">Big Picture Diglot</source>
+        <note>ID: TemplateBooks.PageLabel.Big Picture Diglot</note>
+        <target xml:lang="zh-CN" state="needs-translation">Big Picture Diglot</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Text Diglot" sil:dynamic="true">
+        <source xml:lang="en">Big Text Diglot</source>
+        <note>ID: TemplateBooks.PageLabel.Big Text Diglot</note>
+        <target xml:lang="zh-CN" state="needs-translation">Big Text Diglot</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Video Diglot" sil:dynamic="true">
+        <source xml:lang="en">Big Video Diglot</source>
+        <note>ID: TemplateBooks.PageLabel.Big Video Diglot</note>
+        <target xml:lang="zh-CN" state="needs-translation">Big Video Diglot</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Bloom Reader Quiz" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom Reader Quiz</source>
         <note>ID: TemplateBooks.PageLabel.Bloom Reader Quiz</note>
@@ -5295,6 +5379,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Just an Image</note>
         <target xml:lang="zh-CN" state="translated">只有图像</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just Video" sil:dynamic="true">
+        <source xml:lang="en">Just Video</source>
+        <note>ID: TemplateBooks.PageLabel.Just Video</note>
+        <target xml:lang="zh-CN" state="needs-translation">Just Video</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Outside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Outside Back Cover</note>
@@ -5304,6 +5393,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Paper Saver</source>
         <note>ID: TemplateBooks.PageLabel.Paper Saver</note>
         <target xml:lang="zh-CN" state="translated">节省纸张装置</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Video" sil:dynamic="true">
+        <source xml:lang="en">Picture &amp; Video</source>
+        <note>ID: TemplateBooks.PageLabel.Picture &amp; Video</note>
+        <target xml:lang="zh-CN" state="needs-translation">Picture &amp; Video</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture &amp; Word</source>
@@ -5370,6 +5464,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Translation Instructions</note>
         <note>This page type only shows in Edit Mode to give instructions to translators. It does not print.</note>
         <target xml:lang="zh-CN" state="translated">翻译说明</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Video Over Text" sil:dynamic="true">
+        <source xml:lang="en">Video Over Text</source>
+        <note>ID: TemplateBooks.PageLabel.Video Over Text</note>
+        <target xml:lang="zh-CN" state="needs-translation">Video Over Text</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog" approved="yes">
         <source xml:lang="en">Setup</source>

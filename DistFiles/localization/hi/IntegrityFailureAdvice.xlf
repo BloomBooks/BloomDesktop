@@ -2,80 +2,89 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="IntegrityFailureAdvice-en.md" datatype="html" source-language="en" target-language="hi">
     <body>
-      <trans-unit id="integrity.title">
+      <trans-unit id="integrity.title" approved="yes">
         <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
         <target xml:lang="hi" state="translated">ब्लूम अपनी स्वयं की कुछ फाइलों को खोज नहीं पा रहा है, और जारी नहीं रख सकता</target>
         <note>ID: integrity.title</note>
       </trans-unit>
-      <trans-unit id="integrity.causes">
+      <trans-unit id="integrity.causes" approved="yes">
         <source xml:lang="en">Possible Causes</source>
-        <target xml:lang="hi" state="needs-translation">Possible Causes</target>
+        <target xml:lang="hi" state="translated">संभावित कारण</target>
         <note>ID: integrity.causes</note>
       </trans-unit>
-      <trans-unit id="integrity.causes.1">
+      <trans-unit id="integrity.causes.1" approved="yes">
         <source xml:lang="en">Your antivirus may have "quarantined" one or more Bloom files.</source>
-        <target xml:lang="hi" state="needs-translation">Your antivirus may have "quarantined" one or more Bloom files.</target>
+        <target xml:lang="hi" state="translated">आपके एंटीवायरस में एक या अधिक "अलग" ब्लूम फाइलें हो सकती हैं।</target>
         <note>ID: integrity.causes.1</note>
       </trans-unit>
-      <trans-unit id="integrity.causes.2">
+      <trans-unit id="integrity.causes.2" approved="yes">
         <source xml:lang="en">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </source>
-        <target xml:lang="hi" state="needs-translation">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </target>
+        <target xml:lang="hi" state="translated">आपके कंप्यूटर व्यवस्थापक ने बुरी बातें रोकने के लिए आपके कंप्यूटर को शायद "बंद कर" दिया है, लेकिन इस तरह से बंद किया है कि ब्लूम फाइलों को उस जगह नहीं रख सकता जहां उन्हें होना चाहिए। </target>
         <note>ID: integrity.causes.2</note>
       </trans-unit>
-      <trans-unit id="integrity.todo">
+      <trans-unit id="integrity.todo" approved="yes">
         <source xml:lang="en">What To Do</source>
-        <target xml:lang="hi" state="needs-translation">What To Do</target>
+        <target xml:lang="hi" state="translated">क्या करें</target>
         <note>ID: integrity.todo</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas">
+      <trans-unit id="integrity.todo.ideas" approved="yes">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
-        <target xml:lang="hi" state="needs-translation">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</target>
+        <target xml:lang="hi" state="translated">इस जानकारी को दर्ज करने के बाद, हम आपसे संपर्क करेंगे और इस कार्य को करने में आपकी सहायता करेंगे। इस दौरान, निम्न कुछ सुझाव दिए गए हैं:</target>
         <note>ID: integrity.todo.ideas</note>
+        <alt-trans>
+          <target xml:lang="hi">इस जानकारी को दर्ज करने के बाद, हम आपसे संपर्क करेंगे और इस कार्य को करने में आपकी मदद करेंगे। इस दौरान, निम्न कुछ सुझाव दिए गए हैं:</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Reinstall">
+      <trans-unit id="integrity.todo.ideas.Reinstall" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
-        <target xml:lang="hi" state="needs-translation">Run the Bloom installer again, and see if it starts up OK this time.</target>
+        <target xml:lang="hi" state="translated">ब्लूम इंस्टॉलर को फिर से चलाएं, और देखें कि क्या यह इस बार ठीक शुरू होता है।</target>
         <note>ID: integrity.todo.ideas.Reinstall</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Antivirus">
+      <trans-unit id="integrity.todo.ideas.Antivirus" approved="yes">
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
-        <target xml:lang="hi" state="needs-translation">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
+        <target xml:lang="hi" state="translated">अगर इससे यह ठीक नहीं हो रहा, तो अब आपके एंटी-वायरस से सहायता लेने की जरुरत है। "गुम फाइलें" भाग में यदि किसी भी फाइल के अंत में "exe" दिखता है, तो ब्लूम प्रोग्राम फोल्डर को "whitelisting" करने पर विचार करें, जो <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g> में है।</target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
+        <alt-trans>
+          <target xml:lang="hi">अगर इससे यह ठीक नहीं हो रहा, तो अब आपके एंटी-वायरस से मदद लेने की जरुरत है। "गुम फाइलें" भाग में अगर किसी भी फाइल के अंत में "exe" दिखता है, तो ब्लूम प्रोग्राम फोल्डर को "whitelisting" करने पर विचार करें, जो <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g> में है।</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.AVAST">
+      <trans-unit id="integrity.todo.ideas.AVAST" approved="yes">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</source>
-        <target xml:lang="hi" state="needs-translation">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</target>
+        <target xml:lang="hi" state="translated">अवास्ट: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">निर्देश</g>.</target>
         <note>ID: integrity.todo.ideas.AVAST</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Norton">
+      <trans-unit id="integrity.todo.ideas.Norton" approved="yes">
         <source xml:lang="en">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>.</source>
-        <target xml:lang="hi" state="needs-translation">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>.</target>
+        <target xml:lang="hi" state="translated">नॉर्टन एंटीवायरस: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Symantec से निर्देश</g></target>
         <note>ID: integrity.todo.ideas.Norton</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.AVG">
+      <trans-unit id="integrity.todo.ideas.AVG" approved="yes">
         <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
-        <target xml:lang="hi" state="needs-translation">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</target>
+        <target xml:lang="hi" state="translated">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">AVG से निर्देश</g>.</target>
         <note>ID: integrity.todo.ideas.AVG</note>
         <note>The former source text had an incorrect &amp;amp; following l=en_US in the href attribute value.</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Others">
+      <trans-unit id="integrity.todo.ideas.Others" approved="yes">
         <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>
-        <target xml:lang="hi" state="needs-translation">Others: Google for "whitelist directory name-of-your-antivirus"</target>
+        <target xml:lang="hi" state="translated">अन्य: "वाइटलिस्ट निर्देशिका आपके-एंटीवायरस-का-नाम" के लिए गूगल</target>
         <note>ID: integrity.todo.ideas.Others</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Restart">
+      <trans-unit id="integrity.todo.ideas.Restart" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
-        <target xml:lang="hi" state="needs-translation">Run the Bloom installer again, and see if it starts up OK this time.</target>
+        <target xml:lang="hi" state="translated">ब्लूम इंस्टॉलर को फिर से चलाएं, और देखें कि क्या यह इस बार ठीक शुरू होता है।</target>
         <note>ID: integrity.todo.ideas.Restart</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Retrieve">
+      <trans-unit id="integrity.todo.ideas.Retrieve" approved="yes">
         <source xml:lang="en">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.</source>
-        <target xml:lang="hi" state="needs-translation">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.</target>
+        <target xml:lang="hi" state="translated">आपके एंटी-वायरस प्रोग्राम ने ब्लूम के जिस हिस्से को लिया है उसे वापस लेने की आप भी कोशिश कर सकते हैं। AVG के लिए, AVG "विकल्प" मेनू खोजें, "वायरस वॉल्ट" पर क्लिक करें, वॉल्ट में की ब्लूम फाइल पर क्लिक करें, और फिर "रिस्टोर" पर क्लिक करें। किसी दृश्य मार्गदर्शिका के लिए, यह चित्र <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">देखें</g></target>
         <note>ID: integrity.todo.ideas.Retrieve</note>
+        <alt-trans>
+          <target xml:lang="hi">आपके एंटी-वायरस प्रोग्राम ने ब्लूम के जिस हिस्से को लिया है उसे वापस लेने की आप भी कोशिश कर सकते हैं।AVG के लिए, AVG "विकल्प" मेनू खोजें, "वायरस वॉल्ट" पर क्लिक करें, वॉल्ट में की ब्लूम फाइल पर क्लिक करें, और फिर "रिस्टोर" पर क्लिक करें। किसी दृश्य मार्गदर्शिका के लिए, यह चित्र <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">देखें</g></target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.missing">
+      <trans-unit id="integrity.missing" approved="yes">
         <source xml:lang="en">Missing Files</source>
-        <target xml:lang="hi" state="needs-translation">Missing Files</target>
+        <target xml:lang="hi" state="translated">गुम फाइलें</target>
         <note>ID: integrity.missing</note>
       </trans-unit>
     </body>
