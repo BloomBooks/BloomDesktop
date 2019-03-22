@@ -26,6 +26,11 @@ namespace Bloom.web.controllers
 		public string id;
 	}
 
+	internal class ESpeakPreviewRequest
+	{
+		public string text;
+		public string lang;
+	}
 
 	// API Handler to process audio segmentation (forced alignment)
 	public class AudioSegmentationApi
@@ -45,6 +50,7 @@ namespace Bloom.web.controllers
 		{
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "autoSegmentAudio", AutoSegment, handleOnUiThread: false, requiresSync : false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "checkAutoSegmentDependencies", CheckAutoSegmentDependenciesMet, handleOnUiThread: false, requiresSync: false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "eSpeakPreview", ESpeakPreview, handleOnUiThread: false, requiresSync: false);
 		}
 
 		/// <summary>
@@ -217,18 +223,10 @@ namespace Bloom.web.controllers
 
 			// When using TTS overrides, there's no Aeneas error message that tells us if the language is unsupported.
 			// Therefore, we explicitly test if the language is supported by the dependency (eSpeak) before getting started.
-			string langCode = null;
-			var langCodesToTry = new [] { requestedLangCode, "eo", "en" }; // "eo" is Esperanto
-			var stdOut = "";
-			var stdErr = "";
-			foreach (var langCodeToTry in langCodesToTry)
-			{
-				if (!DoesCommandCauseError($"espeak -v {langCodeToTry} -q \"hello world\"", kWorkingDirectory, out stdOut, out stdErr))
-				{
-					langCode = langCodeToTry;
-					break;
-				}
-			}
+			string stdOut;
+			string stdErr;
+			string langCode = GetBestSupportedLanguage(requestedLangCode, out stdOut, out stdErr);
+
 			if (string.IsNullOrEmpty(langCode))
 			{
 				// FYI: The error message is expected to be in stdError with an empty stdOut, but I included both just in case.
@@ -279,6 +277,46 @@ namespace Bloom.web.controllers
 			// TODO: Think about our cleanup policy for the timings file
 			// While fragments is pretty useless and safe to delete sooner...
 			// The timings file seems hypothetically useful (fine-tuning? for playing a whole mp3 file?) so it's less clear when to delete it.
+		}
+
+		private string GetBestSupportedLanguage(string requestedLangCode)
+		{
+			string stdOut;
+			string stdErr;
+
+			return GetBestSupportedLanguage(requestedLangCode, out stdOut, out stdErr);
+		}
+
+		// Determines which language code to use for eSpeak
+		private string GetBestSupportedLanguage(string requestedLangCode, out string stdOut, out string stdErr)
+		{
+			stdOut = "";
+			stdErr = "";
+
+			// Normally requestedLangCode should be under our control. 
+			// But just do a quick and easy check to make sure it looks reasonable. (there are some highly contrived scenarios where a XSS injection would be possible with some social engineering.)
+			if (requestedLangCode.Contains('"') || requestedLangCode.Contains('\\'))
+			{
+				// This doesn't look like a lang code and has non-zero potential for injection. just return a default value instead
+				Debug.Assert(false);
+
+				return "eo";
+			}
+
+			// When using TTS overrides, there's no Aeneas error message that tells us if the language is unsupported.
+			// Therefore, we explicitly test if the language is supported by the dependency (eSpeak) before getting started.
+			string langCode = null;
+			var langCodesToTry = new[] { requestedLangCode, "eo", "en" }; // "eo" is Esperanto
+			foreach (var langCodeToTry in langCodesToTry)
+			{
+				if (!DoesCommandCauseError($"espeak -v {langCodeToTry} -q \"hello world\"", kWorkingDirectory, out stdOut, out stdErr))
+				{
+					langCode = langCodeToTry;
+					break;
+				}
+			}
+
+			return langCode;
 		}
 
 		/// <summary>
@@ -548,6 +586,55 @@ namespace Bloom.web.controllers
 			process.Start();
 
 			return tcs.Task;
+		}
+
+		/// <summary>
+		/// API Handler when the Auto Segment button is clicked
+		///
+		/// Replies with true if AutoSegment completed successfully, or false if there was an error. In addition, a NonFatal message/exception may be reported with the error
+		/// </summary>
+		public void ESpeakPreview(ApiRequest request)
+		{
+			Logger.WriteEvent("AudioSegmentationApi.ESpeakPreview(): ESpeakPreview started.");
+
+			// Parse the JSON containing the text segmentation data.
+			string json = request.RequiredPostJson();
+			ESpeakPreviewRequest requestParameters = JsonConvert.DeserializeObject<ESpeakPreviewRequest>(json);
+
+			string requestedLangCode = requestParameters.lang;
+			string langCode = GetBestSupportedLanguage(requestedLangCode);
+
+			string text = requestParameters.text;
+			text = SanitizeTextForESpeakPreview(text);
+
+			string command = $"espeak -v {langCode} \"{text}\"";	// No quiet mode on. This will cause it to play through the sound system.
+			Logger.WriteEvent($"AudioSegmentationApi.ESpeakPreview(): langCode={langCode ?? "null"}");
+
+			bool status = DoesCommandCauseError(command);
+
+			Logger.WriteEvent("AudioSegmentationApi.ESpeakPreview(): Completed with status: " + status);
+			request.ReplyWithBoolean(status);
+		}
+
+		// Clean up the text before passing it off to the command line
+		public static string SanitizeTextForESpeakPreview(string unsafeText)
+		{
+			// Prevent the string from being prematurely terminated and allowing a malicious user to inject code
+			// Here is an example you can type into a text box to test with:
+			//   Hello world" && espeak -v en "If you did not hear it say and and, then there is an XSS vulnerability."
+			unsafeText = unsafeText.Replace('"', ' ');  // Get rid of quotes so that they can't mess up the command line quotes. Escaping the quotes with a backslash is more complicated and a single level of escaping didn't seem to fix it either. (And even levels won't help because it's now just escaping itself).
+
+			// Backslash cases don't seem to be a problem. Probably means it's escaped automatically?
+			// Here are some cases you can use to test with:
+			//   You should be about to hear backslash alpha. \alpha
+			//   You should be about to hear backslash backslash alpha. \\alpha
+
+			// Handle text boxes with multiple paragraphs
+			unsafeText = unsafeText.Replace('\n', ' ');
+			unsafeText = unsafeText.Replace('\r', ' ');
+
+			string sanitizedText = unsafeText;
+			return sanitizedText;
 		}
 	}
 }
