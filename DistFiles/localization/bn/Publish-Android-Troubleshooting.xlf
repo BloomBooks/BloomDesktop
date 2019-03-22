@@ -9,12 +9,12 @@
       </trans-unit>
       <trans-unit id="android.publish.wifi">
         <source xml:lang="en">Serve on WiFi Network</source>
-        <target xml:lang="bn" state="needs-translation">Serve on WiFi Network</target>
+        <target xml:lang="bn" state="translated">Wi-Fi নেটওয়ার্কে সেবা দিন</target>
         <note>ID: android.publish.wifi</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.unseen">
         <source xml:lang="en">Problem: Android Device is not seeing book advertisements</source>
-        <target xml:lang="bn" state="needs-translation">Problem: Android Device is not seeing book advertisements</target>
+        <target xml:lang="bn" state="translated">সমস্যা: অ্যান্ড্রয়েড ডিভাইসে বইয়ের বিজ্ঞাপন দেখা যাচ্ছে না</target>
         <note>ID: android.publish.wifi.unseen</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive">
@@ -39,12 +39,12 @@
       </trans-unit>
       <trans-unit id="android.publish.usb">
         <source xml:lang="en">Send Over USB Cable</source>
-        <target xml:lang="bn" state="needs-translation">Send Over USB Cable</target>
+        <target xml:lang="bn" state="translated">USB তার দিয়ে প্রেরণ করুন</target>
         <note>ID: android.publish.usb</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.not.connect">
         <source xml:lang="en">Problem: Bloom is not connecting to my device</source>
-        <target xml:lang="bn" state="needs-translation">Problem: Bloom is not connecting to my device</target>
+        <target xml:lang="bn" state="translated">সমস্যা: আমার ডিভাইসে ব্লুম সংযোগ হচ্ছে না</target>
         <note>ID: android.publish.usb.not.connect</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.consider.wifi">
@@ -73,7 +73,7 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.cable.or.port">
         <source xml:lang="en">Try a different cable, or a different USB port.</source>
-        <target xml:lang="bn" state="needs-translation">Try a different cable, or a different USB port.</target>
+        <target xml:lang="bn" state="translated">অন্য তার বা অন্য USB পোর্ট ব্যবহার করুন।</target>
         <note>ID: android.publish.usb.cable.or.port</note>
       </trans-unit>
     </body>

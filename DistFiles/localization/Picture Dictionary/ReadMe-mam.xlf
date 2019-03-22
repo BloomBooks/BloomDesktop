@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="mam">
+    <body>
+      <trans-unit id="picture.dictionary">
+        <source xml:lang="en">About the Picture Dictionary Template</source>
+        <target xml:lang="mam" state="needs-translation">About the Picture Dictionary Template</target>
+        <note>ID: picture.dictionary</note>
+      </trans-unit>
+      <trans-unit id="picture.dictionary.use">
+        <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
+        <target xml:lang="mam" state="needs-translation">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</target>
+        <note>ID: picture.dictionary.use</note>
+      </trans-unit>
+      <trans-unit id="picture.dictionary.limits">
+        <source xml:lang="en">Limitations of this version</source>
+        <target xml:lang="mam" state="needs-translation">Limitations of this version</target>
+        <note>ID: picture.dictionary.limits</note>
+      </trans-unit>
+      <trans-unit id="picture.dictionary.stillexperimental">
+        <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
+        <target xml:lang="mam" state="needs-translation">This book is currently marked "experimental" because we know of several problems in layout and convenience.</target>
+        <note>ID: picture.dictionary.stillexperimental</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

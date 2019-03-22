@@ -232,9 +232,9 @@
         <target xml:lang="ha" state="needs-translation">Level AAA conformance</target>
       </trans-unit>
       <trans-unit id="BookMetadata.alternativeText" sil:dynamic="true">
-        <source xml:lang="en">Alternative text</source>
+        <source xml:lang="en">Has Image Descriptions</source>
         <note>ID: BookMetadata.alternativeText</note>
-        <target xml:lang="ha" state="needs-translation">Alternative text</target>
+        <target xml:lang="ha" state="needs-translation">Has Image Descriptions</target>
       </trans-unit>
       <trans-unit id="BookMetadata.author" sil:dynamic="true">
         <source xml:lang="en">Author</source>
@@ -290,11 +290,6 @@
         <source xml:lang="en">Sign Language</source>
         <note>ID: BookMetadata.signLanguage</note>
         <target xml:lang="ha" state="needs-translation">Sign Language</target>
-      </trans-unit>
-      <trans-unit id="BookMetadata.soundHazard" sil:dynamic="true">
-        <source xml:lang="en">Sound Hazard</source>
-        <note>ID: BookMetadata.soundHazard</note>
-        <target xml:lang="ha" state="needs-translation">Sound Hazard</target>
       </trans-unit>
       <trans-unit id="BookMetadata.subjects" sil:dynamic="true">
         <source xml:lang="en">Subjects</source>
@@ -1013,12 +1008,6 @@
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
         <target xml:lang="ha" state="translated">&amp;Taimako</target>
-      </trans-unit>
-      <trans-unit id="Common.MissingDependency">
-        <source xml:lang="en">Missing Dependency: {0} not found.</source>
-        <note>ID: Common.MissingDependency</note>
-        <note>The {0} will be replaced by the name of an item which was not found</note>
-        <target xml:lang="ha" state="needs-translation">Missing Dependency: {0} not found.</target>
       </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Loading...</source>
@@ -2266,24 +2255,66 @@
         <note>ID: EditTab.Toolbox.ImageDescriptionTool</note>
         <target xml:lang="ha" state="needs-translation">Image Description Tool</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.MoreInformation" sil:dynamic="true">
+        <source xml:lang="en">For more information:</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.MoreInformation</note>
+        <target xml:lang="ha" state="needs-translation">For more information:</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.KeepInMind" sil:dynamic="true">
+        <source xml:lang="en">Keep these things in mind:</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.KeepInMind</note>
+        <target xml:lang="ha" state="needs-translation">Keep these things in mind:</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe" sil:dynamic="true">
+        <source xml:lang="en">Are there important **actions**, **relationships**, **emotions**, or things in the **scene** that add to the story but are not in the text?</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe</note>
+        <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
+        <target xml:lang="ha" state="needs-translation">Are there important **actions**, **relationships**, **emotions**, or things in the **scene** that add to the story but are not in the text?</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords" sil:dynamic="true">
+        <source xml:lang="en">Use words that are **simple** enough for the listener.</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords</note>
+        <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
+        <target xml:lang="ha" state="needs-translation">Use words that are **simple** enough for the listener.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.KeepItShort" sil:dynamic="true">
+        <source xml:lang="en">Keep it **short**.</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.KeepItShort</note>
+        <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
+        <target xml:lang="ha" state="needs-translation">Keep it **short**.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox" sil:dynamic="true">
+        <source xml:lang="en">Otherwise, check this box:</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckThisBox</note>
+        <target xml:lang="ha" state="needs-translation">Otherwise, check this box:</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe" sil:dynamic="true">
+        <source xml:lang="en">This image should not be described.</source>
+        <note>ID: EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe</note>
+        <target xml:lang="ha" state="needs-translation">This image should not be described.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true">
         <source xml:lang="en">Be Concise</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeConcise</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
         <target xml:lang="ha" state="needs-translation">Be Concise</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeObjective" sil:dynamic="true">
         <source xml:lang="en">Be Objective</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeObjective</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
         <target xml:lang="ha" state="needs-translation">Be Objective</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo" sil:dynamic="true">
         <source xml:lang="en">Bloom training video</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
         <target xml:lang="ha" state="needs-translation">Bloom training video</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true">
         <source xml:lang="en">Check your image description against each of these reminders:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckDescription</note>
+        <note>Obsolete for Bloom 4.5 and later</note>
         <target xml:lang="ha" state="needs-translation">Check your image description against each of these reminders:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience" sil:dynamic="true">
@@ -2543,6 +2574,12 @@
         <note>This is very low priority for translation.</note>
         <target xml:lang="ha" state="translated">Ɗaukar sautin Bloom na fuskantar matsala, mai yiwuwa wannan ya faru ne ta sanadiyyar cire bututun magana. Zaka buƙaci Ka kashe ka sake kunnawa.</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBook.MissingDependency">
+        <source xml:lang="en">To use Auto Segment, first install this {0} system.</source>
+        <note>ID: EditTab.Toolbox.TalkingBook.MissingDependency</note>
+        <note>The placeholder {0} will be replaced with the dependency that needs to be installed.</note>
+        <target xml:lang="ha" state="needs-translation">To use Auto Segment, first install this {0} system.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoInput" approved="yes">
         <source xml:lang="en">No input device</source>
         <note>ID: EditTab.Toolbox.TalkingBook.NoInput</note>
@@ -2564,42 +2601,42 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
         <target xml:lang="ha" state="translated">Kayan Litatafin Magana</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegment">
-        <source xml:lang="en">Auto Segment</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegment</note>
-        <note>This text appears on the button the user can press to trigger automatic segmentation of audio. An audio file corresponding to an entire text box will be segmented into one audio file per sentence instead. (Also known as "Forced Alignment" in technical terms)</note>
-        <target xml:lang="ha" state="needs-translation">Auto Segment</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError">
-        <source xml:lang="en">Segmenting... Error</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusError</note>
-        <note>Indicates that automatic segmentation of audio (text-audio syncrhonization or "forced alignment") failed with an errror.</note>
-        <target xml:lang="ha" state="needs-translation">Segmenting... Error</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusInProgress">
-        <source xml:lang="en">Segmenting...</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AutoSegmentStatusInProgress</note>
-        <note>Indicates that automatic segmentation of audio (text-audio syncrhonization or "forced alignment") is in progress.</note>
-        <target xml:lang="ha" state="needs-translation">Segmenting...</target>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Back</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Back</note>
+        <note>As in, move the selection "BACK"wards to the previous sentence.</note>
         <target xml:lang="ha" state="translated">Baya</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Check" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4) Check</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
+        <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
         <target xml:lang="ha" state="translated">4) Bincika</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Check</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckLabel</note>
+        <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Check if possible, but without the number</note>
+        <target xml:lang="ha" state="translated">Bincika</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
         <target xml:lang="ha" state="translated">1) Ka tabbatar da kana ɗaukar sauti a cikin na'urar da ta dace kuma waɗannan matakan suna nuna shuɗiyar kala:</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Check that you are recording into the correct device and that these levels are showing blue:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.CheckSettings if possible, but without the number</note>
+        <target xml:lang="ha" state="translated">Ka tabbatar da kana ɗaukar sauti a cikin na'urar da ta dace kuma waɗannan matakan suna nuna shuɗiyar kala:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Clear</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
+        <note>As in, "CLEAR" (or delete) the existing recording file.</note>
         <target xml:lang="ha" state="translated">Tangaram</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true" approved="yes">
@@ -2610,23 +2647,51 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
         <source xml:lang="en">2) Look at the highlighted text</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
         <target xml:lang="ha" state="translated">2) Ka dubi jimlar da aka yi ma alama</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true">
+        <source xml:lang="en">Look at the highlighted text</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.LookAtSentence if possible, but without the number</note>
+        <target xml:lang="ha" state="translated">Ka dubi jimlar da aka yi ma alama</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true" approved="yes">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
         <target xml:lang="ha" state="translated">5) Gaba</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.NextLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Next</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.NextLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Next if possible, but without the number</note>
+        <target xml:lang="ha" state="translated">Gaba</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true">
         <source xml:lang="en">Record by sentences</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordBySentences</note>
+        <note>Deprecated in Bloom Version 4.5</note>
         <target xml:lang="ha" state="needs-translation">Record by sentences</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordByTextBox" sil:dynamic="true">
+        <source xml:lang="en">Record the whole text box, then let Bloom split it into sentences later.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordByTextBox</note>
+        <target xml:lang="ha" state="needs-translation">Record the whole text box, then let Bloom split it into sentences later.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings" sil:dynamic="true">
         <source xml:lang="en">Please clear all existing recordings on this page before changing modes.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
         <note>Shown if you open TalkingBookTool, make a recording, and then attempt to toggle the "Record by Sentences" input (without first clearing the audio recordings you are about to lose)</note>
         <target xml:lang="ha" state="needs-translation">Please clear all existing recordings on this page before changing modes.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true">
+        <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
+        <note>Shown if you open TalkingBookTool, enable "Record the whole text box...", make a recording, and then attempt to uncheck the "Record the whole text box..." input (without first clearing the audio recordings you are about to lose)</note>
+        <note>For "split", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
+        <note>For "clear", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
+        <target xml:lang="ha" state="needs-translation">Please split or clear the existing recording in this text box before changing modes.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true">
         <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
@@ -2637,7 +2702,20 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true" approved="yes">
         <source xml:lang="en">3) Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Speak</note>
+        <note>Last used in version 4.4, deprecated in 4.5</note>
         <target xml:lang="ha" state="translated">3) Yi magana</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Speak</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakLabel</note>
+        <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible, but without the number</note>
+        <target xml:lang="ha" state="translated">Yi magana</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel">
+        <source xml:lang="en">Split recording into sentences for highlighting.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
+        <note>This text appears on the button the user can press to trigger automatic splitting of audio. An audio file corresponding to an entire text box will be split into multiple audio files (one per sentence) instead. (Also known as "Forced Alignment" in technical terms)</note>
+        <target xml:lang="ha" state="needs-translation">Split recording into sentences for highlighting.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
         <source xml:lang="en">Make an e-book that can play audio recordings while highlighting text.</source>
@@ -3298,10 +3376,22 @@
         <note>Help link under Motion Book checkbox</note>
         <target xml:lang="ha" state="needs-translation">About Motion Books</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true">
+        <source xml:lang="en">Bloom Reader Bookshelf</source>
+        <note>ID: PublishTab.Android.BookShelf</note>
+        <note>A heading in the Publish to Android screen.</note>
+        <target xml:lang="ha" state="needs-translation">Bloom Reader Bookshelf</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseFile" sil:dynamic="true">
         <source xml:lang="en">Save Bloom Reader File</source>
         <note>ID: PublishTab.Android.ChooseFile</note>
         <target xml:lang="ha" state="needs-translation">Save Bloom Reader File</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
+        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
+        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
+        <note>Appears in portrait mode when Motion checkbox is checked</note>
+        <target xml:lang="ha" state="needs-translation">Choose landscape to activate Motion Book mode</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true">
         <source xml:lang="en">Send over USB Cable</source>
@@ -3324,11 +3414,11 @@
         <note>ID: PublishTab.Android.CopyToClipboard</note>
         <target xml:lang="ha" state="needs-translation">Copy to Clipboard</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
-        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
-        <note>ID: PublishTab.Android.Intro</note>
-        <note>This is displayed at the top of the Android screen.</note>
-        <target xml:lang="ha" state="needs-translation">Send Your Book to the Bloom Reader Android App</target>
+      <trans-unit id="PublishTab.Android.Features" sil:dynamic="true">
+        <source xml:lang="en">Features</source>
+        <note>ID: PublishTab.Android.Features</note>
+        <note>The second heading in the Settings section, which shows a checklist of various features.</note>
+        <target xml:lang="ha" state="needs-translation">Features</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true">
         <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
@@ -3372,29 +3462,23 @@
         <note>{0} and {1} are font names</note>
         <target xml:lang="ha" state="needs-translation">Substituting "{0}" for "{1}"</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true">
-        <source xml:lang="en">Bloom Reader Bookshelf</source>
-        <note>ID: PublishTab.Android.BookShelf</note>
-        <note>A heading in the Publish to Android screen.</note>
-        <target xml:lang="ha" state="needs-translation">Bloom Reader Bookshelf</target>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
-        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
-        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
-        <note>Appears in portrait mode when Motion checkbox is checked</note>
-        <target xml:lang="ha" state="needs-translation">Choose landscape to activate Motion Book mode</target>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
         <note>Link to find Bloom Reader on Google Play Store</note>
         <target xml:lang="ha" state="needs-translation">Get Bloom Reader App</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
+        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
+        <note>ID: PublishTab.Android.Intro</note>
+        <note>This is displayed at the top of the Android screen.</note>
+        <target xml:lang="ha" state="needs-translation">Send Your Book to the Bloom Reader Android App</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.Method" sil:dynamic="true">
-        <source xml:lang="en">Method Choices</source>
+        <source xml:lang="en">Choose how to send to device</source>
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
-        <target xml:lang="ha" state="needs-translation">Method Choices</target>
+        <target xml:lang="ha" state="needs-translation">Choose how to send to device</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true">
         <source xml:lang="en">Motion Book</source>
@@ -3590,9 +3674,9 @@
         <target xml:lang="ha" state="needs-translation">Bloom Book for Devices</target>
       </trans-unit>
       <trans-unit id="PublishTab.AndroidButton">
-        <source xml:lang="en">Android</source>
+        <source xml:lang="en">Bloom Reader</source>
         <note>ID: PublishTab.AndroidButton</note>
-        <target xml:lang="ha" state="needs-translation">Android</target>
+        <target xml:lang="ha" state="needs-translation">Bloom Reader</target>
       </trans-unit>
       <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true">
         <source xml:lang="en">Publish to an Android device.</source>
@@ -3774,10 +3858,10 @@
         <target xml:lang="ha" state="needs-translation">Options</target>
       </trans-unit>
       <trans-unit id="PublishTab.OptionsMenu.SizeLayout">
-        <source xml:lang="en">Size/Layout</source>
+        <source xml:lang="en">Size/Orientation</source>
         <note>ID: PublishTab.OptionsMenu.SizeLayout</note>
-        <note>Header for a region of the menu which lists various standard page layout sizes</note>
-        <target xml:lang="ha" state="needs-translation">Size/Layout</target>
+        <note>Header for a region of the menu which lists various standard page sizes and orientations</note>
+        <target xml:lang="ha" state="needs-translation">Size/Orientation</target>
       </trans-unit>
       <trans-unit id="PublishTab.Options_ToolTip_">
         <source xml:lang="en">Choose a page size and orientation</source>
@@ -4606,6 +4690,11 @@ Do you want to go ahead?</note>
         <note>ID: ReaderTemplateBloomPackDialog.IntroLabel</note>
         <target xml:lang="ha" state="translated">Waɗannan littafan da ke biye za a yi su a cikin muhallan:</target>
       </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.IUnderstandCheckboxLabel">
+        <source xml:lang="en">I understand what a template is and this is really what I want to do</source>
+        <note>ID: ReaderTemplateBloomPackDialog.IUnderstandCheckboxLabel</note>
+        <target xml:lang="ha" state="needs-translation">I understand what a template is and this is really what I want to do</target>
+      </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton" approved="yes">
         <source xml:lang="en">Save Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.SaveBloomPackButton</note>
@@ -4815,6 +4904,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.BookName.Picture Dictionary</note>
         <target xml:lang="ha" state="translated">Ƙamus na hotuna</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Sign Language" sil:dynamic="true">
+        <source xml:lang="en">Sign Language</source>
+        <note>ID: TemplateBooks.BookName.Sign Language</note>
+        <target xml:lang="ha" state="needs-translation">Sign Language</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true">
         <source xml:lang="en">Template Starter</source>
         <note>ID: TemplateBooks.BookName.Template Starter</note>
@@ -5006,6 +5100,21 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
         <target xml:lang="ha" state="translated">Matani da Hoto Matakin</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true">
+        <source xml:lang="en">Big Picture Diglot</source>
+        <note>ID: TemplateBooks.PageLabel.Big Picture Diglot</note>
+        <target xml:lang="ha" state="needs-translation">Big Picture Diglot</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Text Diglot" sil:dynamic="true">
+        <source xml:lang="en">Big Text Diglot</source>
+        <note>ID: TemplateBooks.PageLabel.Big Text Diglot</note>
+        <target xml:lang="ha" state="needs-translation">Big Text Diglot</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Video Diglot" sil:dynamic="true">
+        <source xml:lang="en">Big Video Diglot</source>
+        <note>ID: TemplateBooks.PageLabel.Big Video Diglot</note>
+        <target xml:lang="ha" state="needs-translation">Big Video Diglot</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Bloom Reader Quiz" sil:dynamic="true">
         <source xml:lang="en">Bloom Reader Quiz</source>
         <note>ID: TemplateBooks.PageLabel.Bloom Reader Quiz</note>
@@ -5117,6 +5226,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Just an Image</note>
         <target xml:lang="ha" state="translated">Sura Kawai</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just Video" sil:dynamic="true">
+        <source xml:lang="en">Just Video</source>
+        <note>ID: TemplateBooks.PageLabel.Just Video</note>
+        <target xml:lang="ha" state="needs-translation">Just Video</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Outside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Outside Back Cover</note>
@@ -5126,6 +5240,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Paper Saver</source>
         <note>ID: TemplateBooks.PageLabel.Paper Saver</note>
         <target xml:lang="ha" state="needs-translation">Paper Saver</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Video" sil:dynamic="true">
+        <source xml:lang="en">Picture &amp; Video</source>
+        <note>ID: TemplateBooks.PageLabel.Picture &amp; Video</note>
+        <target xml:lang="ha" state="needs-translation">Picture &amp; Video</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture &amp; Word</source>
@@ -5189,6 +5308,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Translation Instructions</note>
         <note>This page type only shows in Edit Mode to give instructions to translators. It does not print.</note>
         <target xml:lang="ha" state="needs-translation">Translation Instructions</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Video Over Text" sil:dynamic="true">
+        <source xml:lang="en">Video Over Text</source>
+        <note>ID: TemplateBooks.PageLabel.Video Over Text</note>
+        <target xml:lang="ha" state="needs-translation">Video Over Text</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog" approved="yes">
         <source xml:lang="en">Setup</source>

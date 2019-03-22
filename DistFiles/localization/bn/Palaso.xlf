@@ -7,6 +7,9 @@
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
         <target xml:lang="bn" state="translated">{0} নির্মিত</target>
+        <alt-trans>
+          <target xml:lang="bn">{0} এ নির্মিত</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
@@ -44,23 +47,35 @@
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
         <target xml:lang="bn" state="translated">অ্যাপ্লিকেশনটি চালু হতে সমস্যা হয়েছিল সে জন্য আপনার কম্পিউটারটি রিস্টার্ট দেওয়ার প্রয়োজন হতে পারে।</target>
+        <alt-trans>
+          <target xml:lang="bn">অ্যাপ্লিকেশনটি চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হতে পারে।</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.Specific" approved="yes">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
         <target xml:lang="bn" state="translated">{0} চালু হতে সমস্যা হয়েছিল সে জন্য আপনার কম্পিউটারটি রিস্টার্ট দেওয়ার প্রয়োজন হতে পারে।</target>
+        <alt-trans>
+          <target xml:lang="bn">{0} চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হতে পারে।</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.General" approved="yes">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
         <target xml:lang="bn" state="translated">অন্যান্য অ্যাপ্লিকেশন শেষ হতে অপেক্ষা...</target>
+        <alt-trans>
+          <target xml:lang="bn">অন্যান্য অ্যাপ্লিকেশন শেষ হওয়ার অপেক্ষা...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.Specific" approved="yes">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
         <target xml:lang="bn" state="translated">অন্যান্য {0} শেষ হতে অপেক্ষা...</target>
+        <alt-trans>
+          <target xml:lang="bn">অন্যান্য {0} শেষ হওয়ার অপেক্ষা...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.AbortButton">
         <source xml:lang="en">&amp;Abort</source>
@@ -75,7 +90,10 @@
       <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="bn" state="translated">&amp;ছেড়ে দিন</target>
+        <target xml:lang="bn" state="translated">&amp;উপেক্ষা করুন</target>
+        <alt-trans>
+          <target xml:lang="bn">&amp;ছেড়ে দিন</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
@@ -105,7 +123,10 @@
       <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="bn" state="translated">&amp;হ্যা</target>
+        <target xml:lang="bn" state="translated">&amp;হ্যাঁ</target>
+        <alt-trans>
+          <target xml:lang="bn">&amp;হ্যা</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -246,7 +267,10 @@
       <trans-unit id="ImageToolbox.NoGalleries">
         <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
         <note>ID: ImageToolbox.NoGalleries</note>
-        <target xml:lang="bn" state="translated">এই কম্পিউটারে এখন পর্যন্ত ছবি প্রদর্শনী প্রতিস্থাপন হয়নি মনে হয়</target>
+        <target xml:lang="bn" state="translated">এই কম্পিউটারে এখন পর্যন্ত ছবি প্রদর্শনী প্রতিস্থাপন হয়নি মনে হয়।</target>
+        <alt-trans>
+          <target xml:lang="bn">এই কম্পিউটারে এখন পর্যন্ত ছবি প্রদর্শনী প্রতিস্থাপন হয়নি মনে হয়</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
@@ -427,7 +451,10 @@
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="bn" state="translated">অাপনি এই কাজের প্রতিলিপি ও উন্নত করতে পারেন, এ ছাড়াও বিতরন এমনকি ব্যানিজ্যিক উদ্দ্যেশেও, সমস্ত কিছুই কোনোরকম অনুমতি ছাড়াই.</target>
+        <target xml:lang="bn" state="translated">আপনি এই কাজের প্রতিলিপি করতে পারেন ও উন্নত করতে পারেন, এ ছাড়াও বিতরন করতে পারেন এমনকি ব্যানিজ্যিক উদ্দ্যেশেও, সমস্ত কিছুই কোনোরকম অনুমতি ছাড়াই করতে পারেন।</target>
+        <alt-trans>
+          <target xml:lang="bn">অাপনি এই কাজের প্রতিলিপি ও উন্নত করতে পারেন, এ ছাড়াও বিতরন এমনকি ব্যানিজ্যিক উদ্দ্যেশেও, সমস্ত কিছুই কোনোরকম অনুমতি ছাড়াই.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
@@ -483,7 +510,10 @@
       <trans-unit id="MetadataEditor.License">
         <source xml:lang="en">License</source>
         <note>ID: MetadataEditor.License</note>
-        <target xml:lang="bn" state="translated">ছাড়পত্র</target>
+        <target xml:lang="bn" state="translated">অনুজ্ঞা</target>
+        <alt-trans>
+          <target xml:lang="bn">ছাড়পত্র</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
@@ -674,7 +704,10 @@
       <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
         <source xml:lang="en">[Missing] {0} ({1})</source>
         <note>ID: XkbKeyboardAdaptor.MissingKeyboard</note>
-        <target xml:lang="bn" state="translated">[Missing] {0} ({1})</target>
+        <target xml:lang="bn" state="translated">[অনুপস্থিত] {0} ({1})</target>
+        <alt-trans>
+          <target xml:lang="bn">[Missing] {0} ({1})</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>

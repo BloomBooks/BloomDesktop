@@ -2,24 +2,24 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="hi">
     <body>
-      <trans-unit id="picture.dictionary">
+      <trans-unit id="picture.dictionary" approved="yes">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="hi" state="needs-translation">About the Picture Dictionary Template</target>
+        <target xml:lang="hi" state="translated">चित्र शब्दकोश टेंपलेट के बारे में</target>
         <note>ID: picture.dictionary</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.use">
+      <trans-unit id="picture.dictionary.use" approved="yes">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
-        <target xml:lang="hi" state="needs-translation">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</target>
+        <target xml:lang="hi" state="translated">एक-भाषी, द्विभाषी, या त्रिभाषी चित्र शब्दकोष बनाने के लिए जो है इस टेम्पलेट का उपयोग करें।</target>
         <note>ID: picture.dictionary.use</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.limits">
+      <trans-unit id="picture.dictionary.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="hi" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="hi" state="translated">इस संस्करण की सीमाएं</target>
         <note>ID: picture.dictionary.limits</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.stillexperimental">
+      <trans-unit id="picture.dictionary.stillexperimental" approved="yes">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
-        <target xml:lang="hi" state="needs-translation">This book is currently marked "experimental" because we know of several problems in layout and convenience.</target>
+        <target xml:lang="hi" state="translated">इस पुस्तक को वर्तमान में "प्रयोगात्मक" अंकित किया गया है क्योंकि हम लेआउट की विभिन्न समस्याओं और सुविधाओं को जानते हैं।</target>
         <note>ID: picture.dictionary.stillexperimental</note>
       </trans-unit>
     </body>
