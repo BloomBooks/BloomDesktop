@@ -66,5 +66,26 @@ namespace BloomTests.web.controllers
 			Assert.That(timingRanges[1].Item1, Is.EqualTo("4.980"), "Start timing 2");
 			Assert.That(timingRanges[1].Item2, Is.EqualTo("10.000"), "End timing 2");
 		}
+
+		[Test]
+		public void SanitizeTextForESpeakPreview_Quotes_Stripped()
+		{
+			string unsafeText = "One\" && espeak - v en \"Two.";
+			string safeText = AudioSegmentationApi.SanitizeTextForESpeakPreview(unsafeText);
+
+			Assert.That(safeText, Is.Not.EqualTo(unsafeText));	// Definitely must pass
+			Assert.That(safeText, Is.EqualTo("One  && espeak - v en  Two."));	// There are other acceptable variations that it could equal
+		}
+
+
+		[Test]
+		public void SanitizeTextForESpeakPreview_Newlines_ReplacedWithSpace()
+		{
+			string unsafeText = "One\nTwo";
+			string safeText = AudioSegmentationApi.SanitizeTextForESpeakPreview(unsafeText);
+
+			Assert.That(safeText, Is.Not.EqualTo(unsafeText));
+			Assert.That(safeText, Is.EqualTo("One Two"));   // There are other acceptable variations that it could equal
+		}
 	}
 }
