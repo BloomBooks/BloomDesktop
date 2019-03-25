@@ -47,6 +47,7 @@
           
           
           
+          
           <g id="genid-1" ctype="x-html-em">Keterprediksian</g>dalam teks berarti pembaca dapat menebak apa yang akan datang sesudahnya. Anda dapat meningkatkan keterprediksian dengan menggunakan pola-pola berulang. Berikut sebagian pola yang bisa Anda gunakan:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
         <alt-trans>
@@ -62,6 +63,22 @@
           
           
           
+          
+          <g id="genid-1" ctype="x-html-em">Keterprediksian</g>dalam teks berarti pembaca dapat menebak apa yang akan datang sesudahnya. Anda dapat meningkatkan keterprediksian dengan menggunakan pola-pola berulang. Berikut sebagian pola yang bisa Anda gunakan:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-1" ctype="x-html-em">Keterprediksian</g>dalam teks berarti pembaca dapat menebak apa yang akan datang sesudahnya. Anda dapat meningkatkan keterprediksian dengan menggunakan pola-pola berulang. Berikut sebagian pola yang bisa Anda gunakan:</target>
         </alt-trans>
         <alt-trans>
@@ -94,17 +111,6 @@
         <alt-trans>
           <target xml:lang="id">
           
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-1" ctype="x-html-em">Keterprediksian</g>dalam teks berarti pembaca dapat menebak apa yang akan datang sesudahnya. Anda dapat meningkatkan keterprediksian dengan menggunakan pola-pola berulang. Berikut sebagian pola yang bisa Anda gunakan:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">
           
           
           
@@ -159,6 +165,7 @@ Komik apa, komik apa, komik apa sekarang?</g>
       
       
       
+      
       </target>
         <note>ID: leveled.reader.rhyme</note>
         <alt-trans>
@@ -182,6 +189,30 @@ Komik apa, komik apa, komik apa sekarang?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Rima - sebuah kisah dengan pola atau urutan yang juga mengandung rima atau pengulangan bunyi. Misalnya:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre">Sedang apa, sedang apa, sedang apa sekarang?
+Sedang baca, sedang baca, sedang baca sekarang.
+Sekarang baca apa, baca apa sekarang?
+Baca komik, baca komik, baca komik sekarang.
+Komik apa, komik apa, komik apa sekarang?</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. dan Eric Carle</g>
+        </g>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -238,25 +269,6 @@ Komik apa, komik apa, komik apa sekarang?</g>
           <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. dan Eric Carle</g>
         </g>
       
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Rima - sebuah kisah dengan pola atau urutan yang juga mengandung rima atau pengulangan bunyi. Misalnya:
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">Sedang apa, sedang apa, sedang apa sekarang?
-Sedang baca, sedang baca, sedang baca sekarang.
-Sekarang baca apa, baca apa sekarang?
-Baca komik, baca komik, baca komik sekarang.
-Komik apa, komik apa, komik apa sekarang?</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. dan Eric Carle</g>
-        </g>
       
       
       
@@ -288,6 +300,7 @@ Komik apa, komik apa, komik apa sekarang?</g>
     
     
     
+    
     </target>
         <note>ID: leveled.reader.illustrations.help</note>
         <alt-trans>
@@ -303,6 +316,22 @@ Komik apa, komik apa, komik apa sekarang?</g>
     
     
     
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Ilustrasi memberikan dukungan pada sebuah kisah. Ilustrasi terkait dengan kisah dengan cara berbeda pada berbagai macam <g id="genid-5" ctype="x-html-em">tingkat</g>dan untuk berbagai jenis pembaca (lihat di bawah). Ingatlah bahwa pada banyak kebudayaan yang tidak memiliki banyak materi cetak, gambar yang kompleks mungkin sulit dipahami.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     </target>
         </alt-trans>
         <alt-trans>
@@ -335,17 +364,6 @@ Komik apa, komik apa, komik apa sekarang?</g>
         <alt-trans>
           <target xml:lang="id">Ilustrasi memberikan dukungan pada sebuah kisah. Ilustrasi terkait dengan kisah dengan cara berbeda pada berbagai macam <g id="genid-5" ctype="x-html-em">tingkat</g>dan untuk berbagai jenis pembaca (lihat di bawah). Ingatlah bahwa pada banyak kebudayaan yang tidak memiliki banyak materi cetak, gambar yang kompleks mungkin sulit dipahami.
     
-    
-    
-    
-    
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Ilustrasi memberikan dukungan pada sebuah kisah. Ilustrasi terkait dengan kisah dengan cara berbeda pada berbagai macam <g id="genid-5" ctype="x-html-em">tingkat</g>dan untuk berbagai jenis pembaca (lihat di bawah). Ingatlah bahwa pada banyak kebudayaan yang tidak memiliki banyak materi cetak, gambar yang kompleks mungkin sulit dipahami.
     
     
     
@@ -360,6 +378,7 @@ Komik apa, komik apa, komik apa sekarang?</g>
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
         <target xml:lang="id" state="translated">Bagi <g id="genid-6" ctype="x-html-strong">Pembaca Berkembang</g>gambar harus sesuai benar dengan alur cerita. Pembaca harus dapat menebak alur cerita hanya dengan melihat gambarnya. Ilustrasi pada tingkat ini harus sederhana.
+      
       
       
       
@@ -387,6 +406,22 @@ Komik apa, komik apa, komik apa sekarang?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Bagi <g id="genid-6" ctype="x-html-strong">Pembaca Berkembang</g>gambar harus sesuai benar dengan alur cerita. Pembaca harus dapat menebak alur cerita hanya dengan melihat gambarnya. Ilustrasi pada tingkat ini harus sederhana.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -419,17 +454,6 @@ Komik apa, komik apa, komik apa sekarang?</g>
         <alt-trans>
           <target xml:lang="id">Bagi <g id="genid-6" ctype="x-html-strong">Pembaca Berkembang</g>gambar harus sesuai benar dengan alur cerita. Pembaca harus dapat menebak alur cerita hanya dengan melihat gambarnya. Ilustrasi pada tingkat ini harus sederhana.
       
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Bagi <g id="genid-6" ctype="x-html-strong">Pembaca Berkembang</g>gambar harus sesuai benar dengan alur cerita. Pembaca harus dapat menebak alur cerita hanya dengan melihat gambarnya. Ilustrasi pada tingkat ini harus sederhana.
       
       
       
@@ -444,6 +468,7 @@ Komik apa, komik apa, komik apa sekarang?</g>
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
       </source>
         <target xml:lang="id" state="translated">Bagi <g id="genid-7" ctype="x-html-strong">Pembaca Pemula</g>gambar sebaiknya membantu untuk memahami alur cerita. Seiring bertambahnya jumlah teks, pembaca tidak begitu mengandalkan pada gambar dan memperoleh lebih banyak arti/pengertian/pemahaman dari teks. Ilustrasinya bisa lebih kompleks lagi.
+      
       
       
       
@@ -471,6 +496,22 @@ Komik apa, komik apa, komik apa sekarang?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Bagi <g id="genid-7" ctype="x-html-strong">Pembaca Pemula</g>gambar sebaiknya membantu untuk memahami alur cerita. Seiring bertambahnya jumlah teks, pembaca tidak begitu mengandalkan pada gambar dan memperoleh lebih banyak arti/pengertian/pemahaman dari teks. Ilustrasinya bisa lebih kompleks lagi.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -503,17 +544,6 @@ Komik apa, komik apa, komik apa sekarang?</g>
         <alt-trans>
           <target xml:lang="id">Bagi <g id="genid-7" ctype="x-html-strong">Pembaca Pemula</g>gambar sebaiknya membantu untuk memahami alur cerita. Seiring bertambahnya jumlah teks, pembaca tidak begitu mengandalkan pada gambar dan memperoleh lebih banyak arti/pengertian/pemahaman dari teks. Ilustrasinya bisa lebih kompleks lagi.
       
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Bagi <g id="genid-7" ctype="x-html-strong">Pembaca Pemula</g>gambar sebaiknya membantu untuk memahami alur cerita. Seiring bertambahnya jumlah teks, pembaca tidak begitu mengandalkan pada gambar dan memperoleh lebih banyak arti/pengertian/pemahaman dari teks. Ilustrasinya bisa lebih kompleks lagi.
       
       
       
@@ -528,6 +558,7 @@ Komik apa, komik apa, komik apa sekarang?</g>
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
       </source>
         <target xml:lang="id" state="translated">Bagi <g id="genid-8" ctype="x-html-strong">Pembaca Mahir</g>gambar sebaiknya memberikan sedikit atau tidak bantuan untuk memahami alur cerita. Pembaca lebih mengandalkan teks daripada gambar untuk memahami arti. Ilustrasinya bahkan bisa lebih kompleks lagi.
+      
       
       
       
@@ -555,6 +586,22 @@ Komik apa, komik apa, komik apa sekarang?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Bagi <g id="genid-8" ctype="x-html-strong">Pembaca Mahir</g>gambar sebaiknya memberikan sedikit atau tidak bantuan untuk memahami alur cerita. Pembaca lebih mengandalkan teks daripada gambar untuk memahami arti. Ilustrasinya bahkan bisa lebih kompleks lagi.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -587,17 +634,6 @@ Komik apa, komik apa, komik apa sekarang?</g>
         <alt-trans>
           <target xml:lang="id">Bagi <g id="genid-8" ctype="x-html-strong">Pembaca Mahir</g>gambar sebaiknya memberikan sedikit atau tidak bantuan untuk memahami alur cerita. Pembaca lebih mengandalkan teks daripada gambar untuk memahami arti. Ilustrasinya bahkan bisa lebih kompleks lagi.
       
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Bagi <g id="genid-8" ctype="x-html-strong">Pembaca Mahir</g>gambar sebaiknya memberikan sedikit atau tidak bantuan untuk memahami alur cerita. Pembaca lebih mengandalkan teks daripada gambar untuk memahami arti. Ilustrasinya bahkan bisa lebih kompleks lagi.
       
       
       
@@ -634,6 +670,7 @@ Komik apa, komik apa, komik apa sekarang?</g>
       
       
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
         <alt-trans>
@@ -649,6 +686,22 @@ Komik apa, komik apa, komik apa sekarang?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Bagi <g id="genid-9" ctype="x-html-strong">Pembaca Berkembang</g>buku haruslah konkret, harus memfokuskan pada satu ide/tema, dan harus sudah tidak asing lagi serta mudah dipahami.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -681,17 +734,6 @@ Komik apa, komik apa, komik apa sekarang?</g>
         <alt-trans>
           <target xml:lang="id">Bagi <g id="genid-9" ctype="x-html-strong">Pembaca Berkembang</g>buku haruslah konkret, harus memfokuskan pada satu ide/tema, dan harus sudah tidak asing lagi serta mudah dipahami.
       
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Bagi <g id="genid-9" ctype="x-html-strong">Pembaca Berkembang</g>buku haruslah konkret, harus memfokuskan pada satu ide/tema, dan harus sudah tidak asing lagi serta mudah dipahami.
       
       
       
@@ -706,6 +748,7 @@ Komik apa, komik apa, komik apa sekarang?</g>
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
       </source>
         <target xml:lang="id" state="translated">Bagi <g id="genid-10" ctype="x-html-strong">Pembaca Pemula</g>, kembangkan kisah seputar konsep yang tidak asing lagi namun lebih mendalam.
+      
       
       
       
@@ -733,6 +776,22 @@ Komik apa, komik apa, komik apa sekarang?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Bagi <g id="genid-10" ctype="x-html-strong">Pembaca Pemula</g>, kembangkan kisah seputar konsep yang tidak asing lagi namun lebih mendalam.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -765,17 +824,6 @@ Komik apa, komik apa, komik apa sekarang?</g>
         <alt-trans>
           <target xml:lang="id">Bagi <g id="genid-10" ctype="x-html-strong">Pembaca Pemula</g>, kembangkan kisah seputar konsep yang tidak asing lagi namun lebih mendalam.
       
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Bagi <g id="genid-10" ctype="x-html-strong">Pembaca Pemula</g>, kembangkan kisah seputar konsep yang tidak asing lagi namun lebih mendalam.
       
       
       
@@ -790,6 +838,7 @@ Komik apa, komik apa, komik apa sekarang?</g>
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
       </source>
         <target xml:lang="id" state="translated">Bagi <g id="genid-11" ctype="x-html-strong">Pembaca Mahir</g>konsepnya bisa diperluas melampaui apa yang sudah tidak asing lagi, lebih bervariasi, dan abstrak.
+      
       
       
       
@@ -817,6 +866,22 @@ Komik apa, komik apa, komik apa sekarang?</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="id">Bagi <g id="genid-11" ctype="x-html-strong">Pembaca Mahir</g>konsepnya bisa diperluas melampaui apa yang sudah tidak asing lagi, lebih bervariasi, dan abstrak.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -849,17 +914,6 @@ Komik apa, komik apa, komik apa sekarang?</g>
         <alt-trans>
           <target xml:lang="id">Bagi <g id="genid-11" ctype="x-html-strong">Pembaca Mahir</g>konsepnya bisa diperluas melampaui apa yang sudah tidak asing lagi, lebih bervariasi, dan abstrak.
       
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">Bagi <g id="genid-11" ctype="x-html-strong">Pembaca Mahir</g>konsepnya bisa diperluas melampaui apa yang sudah tidak asing lagi, lebih bervariasi, dan abstrak.
       
       
       

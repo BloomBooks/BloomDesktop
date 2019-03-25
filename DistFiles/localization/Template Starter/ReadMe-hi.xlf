@@ -14,6 +14,10 @@ There are two ways people can use your template. The first way is to start new b
 दो तरीके हैं जिनके द्वारा लोग आपके टेम्पलेट का उपयोग कर सकते हैं। पहला तरीका है नए पुस्तकों को शुरू करना। उदाहरण के लिए, विद्यार्थी के पुस्तकों की कल्पना करें जिसमें सप्ताह में हर एक स्कूल दिन के लिए एक ही पन्ना है। आप 5 पन्नों का एक टेम्पलेट बना सकते हैं, जिसमें प्रत्येक पन्ने पर टेक्स्ट टाइप करने और चित्र चुनने की जगह हो। पाठ्यक्रम लेखक आपकी हर सप्ताह एक टेम्पलेट चुनकर नई पुस्तक बना सकते हैं<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g></target>
         <note>ID: template.starter.firstusage</note>
         <alt-trans>
+          <target xml:lang="hi">यह विशेष टेम्पलेट आपको आपकी अपनी टेम्पलेट्स बनाने देता है। एक टेम्पलेट संबंधित पन्ना लेआउट्स का एक संग्रह उपलब्ध कराता है जिसमें से लेखक एक मूल पुस्तक बनाते समय चुनाव कर सकता है। सामान्यतः टेम्पलेट पन्नों पर टेक्स्ट ब्लॉक और चित्र ब्लॉक खाली और लेखक द्वारा भरने के लिए तैयार होते हैं। कभी कभार आदर्श टेक्स्ट या चित्र हो सकते हैं जिन्हें पन्ने के हर प्रति पर होना जरुरी होता है। 
+दो तरीके हैं जिनके द्वारा लोग आपके टेम्पलेट का उपयोग कर सकते हैं। पहला तरीका है नए पुस्तकों को शुरू करना। उदाहरण के लिए, विद्यार्थी के पुस्तकों की कल्पना करें जिसमें सप्ताह में हर एक स्कूल दिन के लिए एक ही पन्ना है। आप 5 पन्नों का एक टेम्पलेट बना सकते हैं, जिसमें प्रत्येक पन्ने पर टेक्स्ट टाइप करने और चित्र चुनने की जगह हो। पाठ्यक्रम लेखक आपकी हर सप्ताह एक टेम्पलेट चुनकर नई पुस्तक बना सकते हैं<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g></target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="hi">यह विशेष टेम्पलेट आपको आपकी अपनी टेम्पलेट्स बनाने देती है। एक टेम्पलेट संबंधित पन्ना लेआउट्स का एक संग्रह उपलब्ध कराती है जिसमें से लेखक एक मूल पुस्तक बनाते समय चुनाव कर सकता है। सामान्यतः टेम्पलेट पन्नों पर टेक्स्ट ब्लॉक और चित्र ब्लॉक खाली और लेखक द्वारा भरने के लिए तैयार होते हैं। कभी कभार आदर्श टेक्स्ट या चित्र हो सकते हैं जिन्हें पन्ने के हर प्रति पर होना जरुरी होता है। दो तरीके हैं जिनके द्वारा लोग आपकी टेम्पलेट का उपयोग कर सकते हैं। पहला तरीका है नए पुस्तकों को शुरू करना। उदाहरण के लिए, विद्यार्थी के पुस्तकों की कल्पना करें जिसमें सप्ताह में हर एक स्कूल दिन के लिए एक ही पन्ना है। आप 5 पन्नों की एक टेम्पलेट बना सकते हैं, जिसमें प्रत्येक पन्ने पर टेक्स्ट टाइप करने और चित्र चुनने की जगह हो। पाठ्यक्रम लेखक आपकी हर सप्ताह एक टेम्पलेट चुनकर नई पुस्तक बना सकते हैं<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
         </alt-trans>
       </trans-unit>
@@ -67,9 +71,15 @@ There are two ways people can use your template. The first way is to start new b
         <note>ID: template.starter.document</note>
       </trans-unit>
       <trans-unit id="template.starter.describeyours" approved="yes">
-        <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
-        <target xml:lang="hi" state="translated">इसके अलावा आपके टेम्पलेट का वर्णन जोड़ने पर विचार करें, जैसे आप इस समय पढ़ रहे हैं। ऐसा करने के लिए, <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g>नाम की एक टेक्स्ट फाइल आपके टेम्पलेट के फोल्डर में रखें। इस फाइल को <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">मार्कडाउन स्टैंडर्ड</g> का पालन करना चाहिए। अन्य भाषाओं में अपने निर्देश प्रदान करने के लिए, उस फाइल के संस्करण बनाएं जो "en" को प्रत्येक भाषा के दो अक्षर कोड में बदल दें। उदाहरण के लिए, <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> दिखाया जाएगा जब ब्लूम फ्रेंच में लेबल दिखाने के लिए सेट किया जाएगा। आप स्क्रीनशॉट भी शामिल कर सकते हैं, जैसे हमारे पास इस डॉक्यूमेंट में है। आप जिस किसी भी चित्र का उपयोग करते हैं उन्हें "readmeimages" नाम के फोल्डर में डालें, ताकि चित्रों को इस तरह से संदर्भित किया जाए:</target>
+        <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
+        <target xml:lang="hi" state="translated">इसके अलावा आपके टेम्पलेट का वर्णन जोड़ने पर विचार करें, जैसे आप इस समय पढ़ रहे हैं। ऐसा करने के लिए, <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g>नाम की एक टेक्स्ट फाइल आपके टेम्पलेट के फोल्डर में रखें। इस फाइल को <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">मार्कडाउन स्टैंडर्ड</g> का पालन करना चाहिए। अन्य भाषाओं में अपने निर्देश प्रदान करने के लिए, उस फाइल के संस्करण बनाएं जो "en" को प्रत्येक भाषा के दो अक्षर कोड में बदल दें। उदाहरण के लिए, <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> दिखाया जाएगा जब ब्लूम फ्रेंच में लेबल दिखाने के लिए सेट किया जाएगा। आप स्क्रीनशॉट भी शामिल कर सकते हैं, जैसे हमारे पास इस डॉक्यूमेंट में है। आप जिस किसी भी चित्र का उपयोग करते हैं उन्हें "readmeimages" नाम के फोल्डर में डालें, ताकि चित्रों को इस तरह से संदर्भित किया जाए:</target>
         <note>ID: template.starter.describeyours</note>
+        <alt-trans>
+          <target xml:lang="hi">इसके अलावा आपके टेम्पलेट का वर्णन जोड़ने पर विचार करें, जैसे आप इस समय पढ़ रहे हैं। ऐसा करने के लिए, <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g>नाम की एक टेक्स्ट फाइल आपके टेम्पलेट के फोल्डर में रखें। इस फाइल को <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">मार्कडाउन स्टैंडर्ड</g> का पालन करना चाहिए। अन्य भाषाओं में अपने निर्देश प्रदान करने के लिए, उस फाइल के संस्करण बनाएं जो "en" को प्रत्येक भाषा के दो अक्षर कोड में बदल दें। उदाहरण के लिए, <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> दिखाया जाएगा जब ब्लूम फ्रेंच में लेबल दिखाने के लिए सेट किया जाएगा। आप स्क्रीनशॉट भी शामिल कर सकते हैं, जैसे हमारे पास इस डॉक्यूमेंट में है। आप जिस किसी भी चित्र का उपयोग करते हैं उन्हें "readmeimages" नाम के फोल्डर में डालें, ताकि चित्रों को इस तरह से संदर्भित किया जाए:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="hi">इसके अलावा आपके टेम्पलेट का वर्णन जोड़ने पर विचार करें, जैसे आप इस समय पढ़ रहे हैं। ऐसा करने के लिए, <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g>नाम की एक टेक्स्ट फाइल आपके टेम्पलेट के फोल्डर में रखें। इस फाइल को <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">मार्कडाउन स्टैंडर्ड</g> का पालन करना चाहिए। अन्य भाषाओं में अपने निर्देश प्रदान करने के लिए, उस फाइल के संस्करण बनाएं जो "en" को प्रत्येक भाषा के दो अक्षर कोड में बदल दें। उदाहरण के लिए, <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> दिखाया जाएगा जब ब्लूम फ्रेंच में लेबल दिखाने के लिए सेट किया जाएगा। आप स्क्रीनशॉट भी शामिल कर सकते हैं, जैसे हमारे पास इस डॉक्यूमेंट में है। आप जिस किसी भी चित्र का उपयोग करते हैं उन्हें "readmeimages" नाम के फोल्डर में डालें, ताकि चित्रों को इस तरह से संदर्भित किया जाए:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi">इसके अलावा आपकी टेम्पलेट का वर्णन जोड़ने पर विचार करें, जैसे आप इस समय पढ़ रहे हैं। ऐसा करने के लिए, <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g>नाम की एक टेक्स्ट फाइल आपके टेम्पलेट के फोल्डर में रखें। इस फाइल को <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">मार्कडाउन स्टैंडर्ड</g> का पालन करना चाहिए। अन्य भाषाओं में अपने निर्देश प्रदान करने के लिए, उस फाइल के संस्करण बनाएं जो "en" को प्रत्येक भाषा के दो अक्षर कोड में बदल दें। उदाहरण के लिए, <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> दिखाया जाएगा जब ब्लूम फ्रेंच में लेबल दिखाने के लिए सेट किया जाएगा। आप स्क्रीनशॉट भी शामिल कर सकते हैं, जैसे हमारे पास इस डॉक्यूमेंट में है। आप जिस किसी भी चित्र का उपयोग करते हैं उन्हें "readmeimages" नाम के फोल्डर में डालें, ताकि चित्रों को इस तरह से संदर्भित किया जाए:</target>
         </alt-trans>
@@ -109,15 +119,27 @@ There are two ways people can use your template. The first way is to start new b
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
         <target xml:lang="hi" state="translated">
           
+          
           <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: इन पुस्तकों को बाद में आगामी फोलियो फीचर का इस्तेमाल कर संयोजित किया जा सकता है। ध्यान दें कि ब्लूम अभी तक आपको कोई उपाय नहीं देता है जो संकेत दे कि कोई पन्ना स्वचालित रूप से नई पुस्तकों में शामिल किया जाना चाहिए; लेखक को पन्ना जोड़ें डायलॉग से हर एक पन्ने को जोड़ना होगा।</target>
         <note>ID: template.starter.nothingautomatic</note>
+        <alt-trans>
+          <target xml:lang="hi">
+          
+          <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: इन पुस्तकों को बाद में आगामी फोलियो फीचर का इस्तेमाल कर संयोजित किया जा सकता है। ध्यान दें कि ब्लूम अभी तक आपको कोई उपाय नहीं देता है जो संकेत दे कि कोई पन्ना स्वचालित रूप से नई पुस्तकों में शामिल किया जाना चाहिए; लेखक को पन्ना जोड़ें डायलॉग से हर एक पन्ने को जोड़ना होगा।</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
         <target xml:lang="hi" state="translated">
           
+          
           <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: यदि आप नहीं चाहते कि आपके टेंपलेट के पन्ने, पन्ना जोड़ें डायलॉग में दिखाई दे, तो आप पन्नाजोड़नेकेलिएनहीं.txt नाम के पुस्तक टेंपलेट फोल्डर में एक फाइल निर्माण करने के द्वारा ब्लूम को इसकी सूचना दे सकते हैं।</target>
         <note>ID: template.starter.nametonotaddpage</note>
+        <alt-trans>
+          <target xml:lang="hi">
+          
+          <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: यदि आप नहीं चाहते कि आपके टेंपलेट के पन्ने, पन्ना जोड़ें डायलॉग में दिखाई दे, तो आप पन्नाजोड़नेकेलिएनहीं.txt नाम के पुस्तक टेंपलेट फोल्डर में एक फाइल निर्माण करने के द्वारा ब्लूम को इसकी सूचना दे सकते हैं।</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi">
           
@@ -128,15 +150,27 @@ There are two ways people can use your template. The first way is to start new b
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
         <target xml:lang="hi" state="translated">
           
+          
           <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: लोग आपके लेबलों और विवरणों का अन्य राष्ट्रीय भाषाओं में अनुवाद नहीं कर पाएंगे। यदि यह एक समस्या है, तो कृपया ब्लूम टीम से संपर्क करें।</target>
         <note>ID: template.starter.labelsnottranslatable</note>
+        <alt-trans>
+          <target xml:lang="hi">
+          
+          <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: लोग आपके लेबलों और विवरणों का अन्य राष्ट्रीय भाषाओं में अनुवाद नहीं कर पाएंगे। यदि यह एक समस्या है, तो कृपया ब्लूम टीम से संपर्क करें।</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.editrawhtml" approved="yes">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
         <target xml:lang="hi" state="translated">
           
+          
           <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: अगर आप आप चाहते हैं कि पन्ना जोड़ें स्क्रीन भी पन्ने पर एक संक्षिप्त विवरण दे, तो आपको ब्लूम को बंद करना होगा और नोटपैड में टेंपलेट के एचटीएमएल को एडिट करना होगा, जैसे की: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
+        <alt-trans>
+          <target xml:lang="hi">
+          
+          <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: अगर आप आप चाहते हैं कि पन्ना जोड़ें स्क्रीन भी पन्ने पर एक संक्षिप्त विवरण दे, तो आपको ब्लूम को बंद करना होगा और नोटपैड में टेंपलेट के एचटीएमएल को एडिट करना होगा, जैसे की: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>
