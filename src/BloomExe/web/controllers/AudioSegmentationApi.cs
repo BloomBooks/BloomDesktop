@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Utils;
 using Newtonsoft.Json;
+using SIL.IO;
 using SIL.Reporting;
 
 namespace Bloom.web.controllers
@@ -53,6 +54,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "eSpeakPreview", ESpeakPreview, handleOnUiThread: false, requiresSync: false);
 		}
 
+		#region CheckAutoSegmentDependenciesMet
 		/// <summary>
 		/// API Handler which
 		/// Returns "TRUE" if success, otherwiese "FALSE" followed by an error message if not successful.
@@ -82,6 +84,11 @@ namespace Bloom.web.controllers
 			}
 		}
 
+		/// <summary>
+		/// Checks if all dependencies necessary to run Split feature are present.
+		/// </summary>
+		/// <param name="message">output - Will return which dependency is missing</param>
+		/// <returns>True if all dependencies are met, meaning Split feature should be able to run successfully. False if Split feature is missing a dependency</returns>
 		public bool AreAutoSegmentDependenciesMet(out string message)
 		{
 			if (DoesCommandCauseError("WHERE python", kWorkingDirectory))   // TODO: Linux compatability. Also more below.   Probably use "which" command on Linux.
@@ -154,7 +161,7 @@ namespace Bloom.web.controllers
 			standardOutput = process.StandardOutput.ReadToEnd();
 			standardError = process.StandardError.ReadToEnd();
 
-			Debug.Assert(process.ExitCode != -1073741510); // aka 0xc000013a which means that the command prompt exited, and we can't determine what the exit code of the last command was :(
+			Debug.Assert(process.ExitCode != -1073741510, "Process Exit Code was 0xc000013a, indicating that the command prompt exited. That means we can't read the vlaue of the exit code of the last command of the session");
 
 			if (process.ExitCode == 0)
 			{
@@ -171,7 +178,9 @@ namespace Bloom.web.controllers
 				return true;
 			}
 		}
+		#endregion
 
+		#region Split (AutoSegment) and supporting functionality
 		// e.g. {"audioFilenameBase":"i7e1bb1ee-515e-4105-9873-9ba882b09713","audioTextFragments":[{"fragmentText":"Sentence 1.","id":"i0012e528-97d6-4d82-a862-c7c2d07c8c40"},{"fragmentText":"Sentence 2.","id":"b0bfe4a7-470c-4442-aaba-9a248e0a476d"},{"fragmentText":"Sentence 3.","id":"dfd20683-aea3-47af-8686-7714c0b354c5"}],"lang":"en"}
 		internal static AutoSegmentRequest ParseJson(string json)
 		{
@@ -184,7 +193,6 @@ namespace Bloom.web.controllers
 		///
 		/// Replies with true if AutoSegment completed successfully, or false if there was an error. In addition, a NonFatal message/exception may be reported with the error
 		/// </summary>
-		/// <param name="request"></param>
 		public void AutoSegment(ApiRequest request)
 		{
 			Logger.WriteEvent("AudioSegmentationApi.AutoSegment(): AutoSegment started.");
@@ -240,8 +248,20 @@ namespace Bloom.web.controllers
 			string textFragmentsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_fragments.txt");
 			string audioTimingsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}");
 
+			// Clean up the fragments
 			audioTextFragments = audioTextFragments.Where(obj => !String.IsNullOrWhiteSpace(obj.fragmentText)); // Remove entries containing only whitespace
 			var fragmentList = audioTextFragments.Select(obj => TextUtils.TrimEndNewlines(obj.fragmentText));
+			if (langCode != requestedLangCode)
+			{
+				string collectionPath = _bookSelection.CurrentSelection.CollectionSettings.FolderPath;
+				string orthographyConversionMappingPath = Path.Combine(collectionPath, $"convert_{requestedLangCode}_to_{langCode}.txt");
+				if (File.Exists(orthographyConversionMappingPath))
+				{
+					fragmentList = ApplyOrthographyConversion(fragmentList, orthographyConversionMappingPath);
+				}
+			}
+
+			// Get the GUID filenames (without extension)
 			var idList = audioTextFragments.Select(obj => obj.id).ToList();
 
 			try
@@ -262,7 +282,7 @@ namespace Bloom.web.controllers
 
 			try
 			{
-				File.Delete(textFragmentsFilename);
+				RobustFile.Delete(textFragmentsFilename);
 			}
 			catch (Exception e)
 			{
@@ -303,11 +323,40 @@ namespace Bloom.web.controllers
 				return "eo";
 			}
 
-			// When using TTS overrides, there's no Aeneas error message that tells us if the language is unsupported.
+			// First try the requested langauge directly.
+			// (We need to test eSpeak directly instead of Aeneas because when using TTS overrides, there's no Aeneas error message that tells us if the language is unsupported.
 			// Therefore, we explicitly test if the language is supported by the dependency (eSpeak) before getting started.
+			if (!DoesCommandCauseError($"espeak -v {requestedLangCode} -q \"hello world\"", kWorkingDirectory, out stdOut, out stdErr))
+			{
+				return requestedLangCode;
+			}
+
+			// Nope, looks like the requested language is not supported by the eSpeak installation.
+			// Let's check the fallback languages.
+
+			var potentialFallbackLangs = new List<string>();
+
+			// Check the orthography conversion files. If present, they specify the (first) fallback language to be used.
+			string collectionPath = _bookSelection.CurrentSelection.CollectionSettings.FolderPath;
+			var matchingFiles = Directory.EnumerateFiles(collectionPath, $"convert_{requestedLangCode}_to_*.txt");
+			foreach (var matchingFile in matchingFiles)
+			{
+				Tuple<string, string> sourceAndTargetTuple = OrthographyConverter.ParseSourceAndTargetFromFilename(matchingFile);
+				if (sourceAndTargetTuple != null)
+				{
+					string targetLang = sourceAndTargetTuple.Item2;
+					potentialFallbackLangs.Add(targetLang);
+					break;
+				}
+			}
+
+			// Add more default fallback languages to the end
+			potentialFallbackLangs.Add("eo");	// "eo" is Esperanto
+			potentialFallbackLangs.Add("en");
+
+			// Now go and try the fallback languages until we (possibly) find one that works
 			string langCode = null;
-			var langCodesToTry = new[] { requestedLangCode, "eo", "en" }; // "eo" is Esperanto
-			foreach (var langCodeToTry in langCodesToTry)
+			foreach (var langCodeToTry in potentialFallbackLangs)
 			{
 				if (!DoesCommandCauseError($"espeak -v {langCodeToTry} -q \"hello world\"", kWorkingDirectory, out stdOut, out stdErr))
 				{
@@ -340,6 +389,34 @@ namespace Bloom.web.controllers
 			}
 
 			return null;
+		}
+
+		/// <summary>
+		/// Reads the orthography conversion settings file and applies the specified mapping to a list of strings
+		/// </summary>
+		/// <param name="fragments">The texts (as an IEnumerable<string>) to apply the mapping to</param>
+		/// <param name="orthographyConversionFile">The filename containing the conversion settings. It should be tab-delimited with 2 columns. The 1st column is a sequence of 1 or more characters in the source language. The 2nd column contains a sequence of characteres to map to in the target language.</param>
+		/// <returns></returns>
+		public static IEnumerable<string> ApplyOrthographyConversion(IEnumerable<string> fragments, string orthographyConversionFile)
+		{
+			var converter = new OrthographyConverter(orthographyConversionFile);
+			foreach (var fragment in fragments)
+			{
+				string mappedFragment = converter.ApplyMappings(fragment);
+				yield return mappedFragment;
+			}
+		}
+
+		/// <summary>
+		/// Reads the orthography conversion settings file and applies the specified mapping to a piece of text
+		/// </summary>
+		/// <param name="text">The text (as a scalar string) to apply the mapping to</param>
+		/// <param name="orthographyConversionFile">The filename containing the conversion settings. It should be tab-delimited with 2 columns. The 1st column is a sequence of 1 or more characters in the source language. The 2nd column contains a sequence of characteres to map to in the target language.</param>
+		/// <returns></returns>
+		public static string ApplyOrthographyConversion(string text, string orthographyConversionFile)
+		{
+			var converter = new OrthographyConverter(orthographyConversionFile);
+			return converter.ApplyMappings(text);
 		}
 
 		public List<Tuple<string, string>> GetSplitStartEndTimings(string inputAudioFilename, string inputTextFragmentsFilename, string outputTimingsFilename, string ttsEngineLang = "en")
@@ -377,7 +454,11 @@ namespace Bloom.web.controllers
 				WorkingDirectory = workingDirectory,
 				CreateNoWindow = true
 			};
-			processStartInfo.EnvironmentVariables.Add("PYTHONIOENCODING", "UTF-8");	// quiets a python complaint if nothing else
+			string pythonIoEncodingKey = "PYTHONIOENCODING";
+			if (!processStartInfo.EnvironmentVariables.ContainsKey(pythonIoEncodingKey))
+			{
+				processStartInfo.EnvironmentVariables.Add(pythonIoEncodingKey, "UTF-8");    // quiets a python complaint if nothing else
+			}
 
 			var process = Process.Start(processStartInfo);
 
@@ -587,11 +668,23 @@ namespace Bloom.web.controllers
 
 			return tcs.Task;
 		}
+		#endregion
+
+
+		#region ESpeak Preview
+
+		internal class ESpeakPreviewResponse
+		{
+			public bool status;
+			public string text;
+			public string lang;
+			public string filePath;
+		}
 
 		/// <summary>
 		/// API Handler when the Auto Segment button is clicked
 		///
-		/// Replies with true if AutoSegment completed successfully, or false if there was an error. In addition, a NonFatal message/exception may be reported with the error
+		/// Replies with the text read (with orthography conversion applied) if eSpeak completed successfully, or "' if there was an error.
 		/// </summary>
 		public void ESpeakPreview(ApiRequest request)
 		{
@@ -603,17 +696,44 @@ namespace Bloom.web.controllers
 
 			string requestedLangCode = requestParameters.lang;
 			string langCode = GetBestSupportedLanguage(requestedLangCode);
+			Logger.WriteEvent($"AudioSegmentationApi.ESpeakPreview(): langCode={langCode ?? "null"}");
 
 			string text = requestParameters.text;
 			text = SanitizeTextForESpeakPreview(text);
 
-			string command = $"espeak -v {langCode} \"{text}\"";	// No quiet mode on. This will cause it to play through the sound system.
-			Logger.WriteEvent($"AudioSegmentationApi.ESpeakPreview(): langCode={langCode ?? "null"}");
+			string collectionPath = _bookSelection.CurrentSelection.CollectionSettings.FolderPath;
+			string orthographyConversionMappingPath = Path.Combine(collectionPath, $"convert_{requestedLangCode}_to_{langCode}.txt");
+			if (File.Exists(orthographyConversionMappingPath))
+			{
+				text = ApplyOrthographyConversion(text, orthographyConversionMappingPath);
+			}
 
-			bool status = DoesCommandCauseError(command);
+			// Even though you theoretically can pass the text through on the command line, it's better to write it to file.
+			// The way the command line handles non-ASCII characters is not guaranteed to be the same as when reading from file.
+			// It's more straightforward to just read/write it from file.
+			// This causes the audio to match the audio that Aeneas will hear when it calls its eSpeak dependency.
+			//   (Well, actually it was difficult to verify the exact audio that Aeneas hears, but for -v el "άλφα", verified reading from file caused audio duration to match, but passing on command line caused discrepancy in audio duration)
+			string textToSpeakFullPath = Path.GetTempFileName();
+			File.WriteAllText(textToSpeakFullPath, text, Encoding.UTF8);
+
+			string command = $"espeak -v {langCode} -f \"{textToSpeakFullPath}\"";
+
+			// TODO: Start off an async process instead. No need to wait for espeak to finish before ending.
+			bool status = !DoesCommandCauseError(command);
+
+			RobustFile.Delete(textToSpeakFullPath);
 
 			Logger.WriteEvent("AudioSegmentationApi.ESpeakPreview(): Completed with status: " + status);
-			request.ReplyWithBoolean(status);
+			var response = new ESpeakPreviewResponse()
+			{
+				status = status,
+				text = text,
+				lang = langCode,
+				filePath = Path.GetFileName(orthographyConversionMappingPath)
+			};
+			
+			string responseJson = JsonConvert.SerializeObject(response);
+			request.ReplyWithJson(responseJson);
 		}
 
 		// Clean up the text before passing it off to the command line
@@ -636,5 +756,7 @@ namespace Bloom.web.controllers
 			string sanitizedText = unsafeText;
 			return sanitizedText;
 		}
+
+		#endregion
 	}
 }
