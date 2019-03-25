@@ -2626,10 +2626,10 @@
         <target xml:lang="az" state="translated">Bloom səs yazma qeyri-adi vəziyyətdədir - bəlkə bir mikrofon ayırması səbəb ola bilər. Yenidən başlatmaq lazımdır.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.MissingDependency">
-        <source xml:lang="en">To use Auto Segment, first install this {0} system.</source>
+        <source xml:lang="en">To split recordings into sentences, first install this {0} system.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.MissingDependency</note>
         <note>The placeholder {0} will be replaced with the dependency that needs to be installed.</note>
-        <target xml:lang="az" state="needs-translation">To use Auto Segment, first install this {0} system.</target>
+        <target xml:lang="az" state="needs-translation">To split recordings into sentences, first install this {0} system.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoInput" approved="yes">
         <source xml:lang="en">No input device</source>
@@ -2717,11 +2717,6 @@
         <source xml:lang="en">Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.NextLabel</note>
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.Next if possible, but without the number</note>
-        <target xml:lang="az" state="translated">Növbəti</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.NextLabel" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Next</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.NextLabel</note>
         <target xml:lang="az" state="translated">Növbəti</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true">
