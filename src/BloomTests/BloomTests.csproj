@@ -231,6 +231,7 @@
     <Compile Include="Book\AccessibilityCheckersTests.cs" />
     <Compile Include="web\controllers\AudioSegmentationApiTests.cs" />
     <Compile Include="web\controllers\ImageApiTests.cs" />
+    <Compile Include="web\controllers\OrthographyConverterTests.cs" />
     <Compile Include="web\controllers\PageTemplatesApiTests.cs" />
     <Compile Include="web\controllers\CollectionSettingsApiTests.cs" />
     <Compile Include="web\controllers\WiFiPublisher.cs" />
