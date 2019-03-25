@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="prs">
     <body>
@@ -2785,10 +2785,10 @@
         <target xml:lang="prs" state="translated">ثبت بلوم یک حالت غیر معمولی است، ممکن است توسط کشیدن مایکروفون شده باشد. شما به دوباره روشن کردن نیاز دارید.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.MissingDependency">
-        <source xml:lang="en">To use Auto Segment, first install this {0} system.</source>
+        <source xml:lang="en">To split recordings into sentences, first install this {0} system.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.MissingDependency</note>
         <note>The placeholder {0} will be replaced with the dependency that needs to be installed.</note>
-        <target xml:lang="prs" state="needs-translation">To use Auto Segment, first install this {0} system.</target>
+        <target xml:lang="prs" state="needs-translation">To split recordings into sentences, first install this {0} system.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoInput" approved="yes">
         <source xml:lang="en">No input device</source>

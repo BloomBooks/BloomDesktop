@@ -3134,8 +3134,8 @@
         <note>This is very low priority for translation.</note>
         <target xml:lang="hi" state="translated">ब्लूम रिकॉर्डिंग एक असामान्य स्थिति में है, संभवतः माइक्रोफोन को निकालने के कारण ऐसा हुआ है। आपको रिस्टार्ट करना होगा।</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBook.MissingDependency" approved="yes">
-        <source xml:lang="en">To use Auto Segment, first install this {0} system.</source>
+      <trans-unit id="EditTab.Toolbox.TalkingBook.MissingDependency">
+        <source xml:lang="en">To split recordings into sentences, first install this {0} system.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.MissingDependency</note>
         <note>The placeholder {0} will be replaced with the dependency that needs to be installed.</note>
         <target xml:lang="hi" state="translated">ऑटो सेगमेंट का उपयोग करने के लिए, पहले इस {0} सिस्टम को इंस्टॉल करें।</target>
@@ -4756,6 +4756,9 @@
         <note>ID: PublishTab.PdfMaker.CompressConvertColor</note>
         <note>Message displayed in a progress report dialog box</note>
         <target xml:lang="hi" state="translated">पीडीएफ &amp;amp को कम्प्रेस किया जा रहा है; रंग को CMYK में बदला जा रहा है</target>
+        <alt-trans>
+          <target xml:lang="hi">पीडीएफ &amp;amp को कम्प्रेस किया जा रहा है; रंग को CMYK में बदला जा रहा है</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Creating" approved="yes">
         <source xml:lang="en">Creating PDF...</source>
