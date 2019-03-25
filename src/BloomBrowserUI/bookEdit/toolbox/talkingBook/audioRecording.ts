@@ -3072,7 +3072,18 @@ export default class AudioRecording {
 
             BloomApi.postJson(
                 "audioSegmentation/eSpeakPreview",
-                JSON.stringify(inputParameters)
+                JSON.stringify(inputParameters),
+                result => {
+                    const convertedText: string = result.data;
+                    // TODO: Localize after UI text is finalized.
+                    if (convertedText) {
+                        toastr.info(
+                            `Result of orthography conversion: ${convertedText}`
+                        );
+                    } else {
+                        toastr.info(`eSpeak failed.`);
+                    }
+                }
             );
         }
     }

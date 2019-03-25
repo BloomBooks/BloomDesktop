@@ -221,7 +221,9 @@ export class BloomApi {
             urlSuffix,
             data,
             {
-                headers: { "Content-Type": "application/json" }
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8" // JSON normally uses UTF-8. Need to explicitly set it because UTF-8 is not the default.
+                }
             },
             successCallback
         );
