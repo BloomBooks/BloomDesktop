@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="quc" state="needs-translation">Go to the Help menu and choose: "Building Reader Templates".</target>
+        <target xml:lang="quc" state="translated"> Jat pa ri cholb’al chak to’b’anik xuquje’ cha’: “Uwokik taq raqanib’al rech sik’ib’al” Raqanib’al.   </target>
         <note>ID: decodable.learn.helpmenu</note>
       </trans-unit>
     </body>
