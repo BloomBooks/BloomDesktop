@@ -1739,13 +1739,19 @@ namespace Bloom.Book
 		/// </summary>
 		public static void CopyCollectionStyles(string bookDir, string targetDir)
 		{
+			// Overwrite any existing file in the target directory.
+			// If a file is present, that seems to mean the user has extraneous copy of a file which normally belongs in their collection folder in their book folder as well.
+			// Our policy is to ignore the one in the book folder and just use the one in their collection folder (which is where it belongs).
+			// (Note that we're only overwriting it in the target directory which is a temp directory. We're not overwriting anything in their book folder.)
+			bool overwriteInTargetDir = true;
+
 			var collectionDir = Path.GetDirectoryName(bookDir);
 			var settings = Path.Combine(collectionDir, "settingsCollectionStyles.css");
 			if (File.Exists(settings))
-				RobustFile.Copy(settings, Path.Combine(targetDir,"settingsCollectionStyles.css"));
+				RobustFile.Copy(settings, Path.Combine(targetDir,"settingsCollectionStyles.css"), overwriteInTargetDir);	
 			var custom = Path.Combine(collectionDir, "customCollectionStyles.css");
 			if (File.Exists(custom))
-				RobustFile.Copy(custom, Path.Combine(targetDir,"customCollectionStyles.css"));
+				RobustFile.Copy(custom, Path.Combine(targetDir,"customCollectionStyles.css"), overwriteInTargetDir);
 		}
 
 

@@ -341,14 +341,14 @@ export default class AudioRecording {
 
     // At this point we are handling all missing dependencies the same.
     private handleMissingDependency(): void {
-        const aeneasName = "Aeneas";
+        const aeneasName = "aeneas";
         const blAeneasUrl = "https://bloomlibrary.org/aeneas";
         // For now at least, we only report Aeneas as missing and point the user to pages
         // where installing Aeneas will also install all of its dependencies.
         theOneLocalizationManager
             .asyncGetText(
                 "EditTab.Toolbox.TalkingBook.MissingDependency",
-                "To use Auto Segment, first install this {0} system.",
+                "To split recordings into sentences, first install this {0} system.",
                 "The placeholder {0} will be replaced with the dependency that needs to be installed."
             )
             .done(localizedMessage => {
@@ -808,6 +808,8 @@ export default class AudioRecording {
             }
         }
 
+        this.clearAudioSplit();
+
         axios
             .post("/bloom/api/audio/startRecord?id=" + id)
             .then(result => {
@@ -1178,6 +1180,8 @@ export default class AudioRecording {
                     toastr.error(error.statusText);
                 });
         }
+
+        this.clearAudioSplit();
         this.updatePlayerStatus();
         this.changeStateAndSetExpectedAsync("record");
     }
@@ -1248,6 +1252,8 @@ export default class AudioRecording {
             // Enhance: Maybe could be Play if the current sentence already has text available?
             // Enhance: Maybe this function could have a Fallback optional parameter. And it would try to set Play, but switch to Record if not available.
             this.changeStateAndSetExpectedAsync("record");
+
+            this.clearAudioSplit();
         } else {
             // From Sentence -> TextBox, we don't convert the playback mode.
             // (since until/unless the user actually makes a new whole-text-box recording, we actually still have by-sentence recordings we can play)
@@ -2976,6 +2982,8 @@ export default class AudioRecording {
                 allowUpdateOfCurrent
             );
 
+            this.markAudioSplit();
+
             // Now that we're all done with use sentenceToIdListMap, clear it out so that there's no potential for accidental re-use
             this.sentenceToIdListMap = {};
             this.changeStateAndSetExpectedAsync("next");
@@ -3012,6 +3020,20 @@ export default class AudioRecording {
             if (element) {
                 element.classList.remove("cursor-progress");
             }
+        }
+    }
+
+    private markAudioSplit() {
+        const currentTextBox = this.getCurrentTextBox();
+        if (currentTextBox) {
+            currentTextBox.classList.add("bloom-postAudioSplit");
+        }
+    }
+
+    private clearAudioSplit() {
+        const currentTextBox = this.getCurrentTextBox();
+        if (currentTextBox) {
+            currentTextBox.classList.remove("bloom-postAudioSplit");
         }
     }
 
