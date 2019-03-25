@@ -208,7 +208,7 @@ namespace Bloom.web.controllers
 			if (!AreAutoSegmentDependenciesMet(out message))
 			{
 				var localizedFormatString = L10NSharp.LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.MissingDependency",
-					"To use Auto Segment, first install this {0} system.",
+					"To split recordings into sentences, first install this {0} system.",
 					"The placeholder {0} will be replaced with the dependency that needs to be installed.");
 				ErrorReport.ReportNonFatalMessageWithStackTrace(string.Format(localizedFormatString, message));
 				request.ReplyWithBoolean(false);

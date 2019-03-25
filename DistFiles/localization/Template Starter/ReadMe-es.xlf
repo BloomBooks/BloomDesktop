@@ -149,6 +149,7 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
           
           
           
+          
 
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
         <note>ID: template.starter.nothingautomatic</note>
@@ -156,6 +157,14 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
           <target xml:lang="es-ES">
           
           
+          
+
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+          
 
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
         </alt-trans>
@@ -173,14 +182,6 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
         <alt-trans>
           <target xml:lang="es-ES">
           
-          
-          
-          
-          
-<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom 3.9 todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">
           
           
           
