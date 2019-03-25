@@ -2,13 +2,13 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Palaso.dll" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="bn">
     <body>
-      <trans-unit id="AboutDialog.BuiltOnDate" approved="yes">
+      <trans-unit id="AboutDialog.BuiltOnDate">
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
-        <target xml:lang="bn" state="translated">{0} নির্মিত</target>
+        <target xml:lang="bn" state="translated">{0} এ নির্মিত</target>
         <alt-trans>
-          <target xml:lang="bn">{0} এ নির্মিত</target>
+          <target xml:lang="bn">{0} নির্মিত</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
@@ -43,38 +43,38 @@
         <note>{0} is the application name</note>
         <target xml:lang="bn" state="translated">{0} এর অন্য একটি কপি ইতোমধ্যে চলছে।যদি আপনি {0} এর ঐ কপিটি খুঁজে না পান, আপনার কম্পিউটার রিস্টার্ট দিন।</target>
       </trans-unit>
-      <trans-unit id="Application.ProblemStarting.General" approved="yes">
+      <trans-unit id="Application.ProblemStarting.General">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
-        <target xml:lang="bn" state="translated">অ্যাপ্লিকেশনটি চালু হতে সমস্যা হয়েছিল সে জন্য আপনার কম্পিউটারটি রিস্টার্ট দেওয়ার প্রয়োজন হতে পারে।</target>
+        <target xml:lang="bn" state="translated">অ্যাপ্লিকেশনটি চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হতে পারে।</target>
         <alt-trans>
-          <target xml:lang="bn">অ্যাপ্লিকেশনটি চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হতে পারে।</target>
+          <target xml:lang="bn">অ্যাপ্লিকেশনটি চালু হতে সমস্যা হয়েছিল সে জন্য আপনার কম্পিউটারটি রিস্টার্ট দেওয়ার প্রয়োজন হতে পারে।</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Application.ProblemStarting.Specific" approved="yes">
+      <trans-unit id="Application.ProblemStarting.Specific">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="bn" state="translated">{0} চালু হতে সমস্যা হয়েছিল সে জন্য আপনার কম্পিউটারটি রিস্টার্ট দেওয়ার প্রয়োজন হতে পারে।</target>
+        <target xml:lang="bn" state="translated">{0} চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হতে পারে।</target>
         <alt-trans>
-          <target xml:lang="bn">{0} চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হতে পারে।</target>
+          <target xml:lang="bn">{0} চালু হতে সমস্যা হয়েছিল সে জন্য আপনার কম্পিউটারটি রিস্টার্ট দেওয়ার প্রয়োজন হতে পারে।</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Application.WaitingFinish.General" approved="yes">
+      <trans-unit id="Application.WaitingFinish.General">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
-        <target xml:lang="bn" state="translated">অন্যান্য অ্যাপ্লিকেশন শেষ হতে অপেক্ষা...</target>
+        <target xml:lang="bn" state="translated">অন্যান্য অ্যাপ্লিকেশন শেষ হওয়ার অপেক্ষা...</target>
         <alt-trans>
-          <target xml:lang="bn">অন্যান্য অ্যাপ্লিকেশন শেষ হওয়ার অপেক্ষা...</target>
+          <target xml:lang="bn">অন্যান্য অ্যাপ্লিকেশন শেষ হতে অপেক্ষা...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Application.WaitingFinish.Specific" approved="yes">
+      <trans-unit id="Application.WaitingFinish.Specific">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="bn" state="translated">অন্যান্য {0} শেষ হতে অপেক্ষা...</target>
+        <target xml:lang="bn" state="translated">অন্যান্য {0} শেষ হওয়ার অপেক্ষা...</target>
         <alt-trans>
-          <target xml:lang="bn">অন্যান্য {0} শেষ হওয়ার অপেক্ষা...</target>
+          <target xml:lang="bn">অন্যান্য {0} শেষ হতে অপেক্ষা...</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="Common.AbortButton">
@@ -202,9 +202,6 @@
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
         <target xml:lang="bn" state="translated">ফাইল</target>
-        <alt-trans>
-          <target xml:lang="bn">Joo joo</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileChooserTitle">
         <source xml:lang="en">Choose Picture File</source>
