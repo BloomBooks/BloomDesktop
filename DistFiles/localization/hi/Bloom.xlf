@@ -2076,12 +2076,12 @@
         <note>ID: EditTab.FrontMatter.NameofTranslatorPrompt</note>
         <target xml:lang="hi" state="translated">{lang} में, अनुवादक का नाम</target>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalAcknowledgmentsPrompt</note>
-        <target xml:lang="hi" state="translated">ताजा (या शेल) आभार {lang} में</target>
+        <target xml:lang="hi" state="translated">मूल (या शैल) स्वीकृतियां {lang} में</target>
         <alt-trans>
-          <target xml:lang="hi">मूल (या शैल) स्वीकृतियां {lang} में</target>
+          <target xml:lang="hi">ताजा (या शेल) आभार {lang} में</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="hi">मूल (या शैल) स्वीकृतियां {भाषा} में</target>
@@ -3134,7 +3134,7 @@
         <note>This is very low priority for translation.</note>
         <target xml:lang="hi" state="translated">ब्लूम रिकॉर्डिंग एक असामान्य स्थिति में है, संभवतः माइक्रोफोन को निकालने के कारण ऐसा हुआ है। आपको रिस्टार्ट करना होगा।</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBook.MissingDependency">
+      <trans-unit id="EditTab.Toolbox.TalkingBook.MissingDependency" approved="yes">
         <source xml:lang="en">To split recordings into sentences, first install this {0} system.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.MissingDependency</note>
         <note>The placeholder {0} will be replaced with the dependency that needs to be installed.</note>
@@ -5574,12 +5574,15 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Letters.LetterHelp2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Notice that the English list includes symbols that are used to make words, like ' in </source>
         <note>ID: ReaderSetup.Letters.LetterHelp2</note>
-        <target xml:lang="hi" state="translated">ध्यान दें कि अंग्रेजी सूची में वे शब्द शामिल हैं जिनका उपयोग शब्दों को बनाने के लिए किया जाता है, जैसे ' in</target>
+        <target xml:lang="hi" state="translated">ध्यान दें कि अंग्रेजी सूची में वे चिन्ह शामिल हैं जिनका उपयोग शब्दों को बनाने के लिए किया जाता है जिन्हें संबंद कारक चिन्ह कहा जाता है, जैसे (-) इस शब्द में:</target>
+        <alt-trans>
+          <target xml:lang="hi">ध्यान दें कि अंग्रेजी सूची में वे शब्द शामिल हैं जिनका उपयोग शब्दों को बनाने के लिए किया जाता है, जैसे ' in</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi">सूचना है कि अंग्रेजी सूची भी शामिल है जैसे शब्दों में, करने के लिए उपयोग किए गए प्रतीक ' में</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Letters.LetterHelp3" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Letters.LetterHelp3" sil:dynamic="true" approved="yes">
         <source xml:lang="en">it's</source>
         <note>ID: ReaderSetup.Letters.LetterHelp3</note>
         <target xml:lang="hi" state="translated">आंधी-तूफान</target>
@@ -5755,7 +5758,7 @@ Do you want to go ahead?</note>
           <target xml:lang="hi">ब्लूम पहले से जानता है कि संसार की भाषाओं में कौन से अक्षर हमेशा अंत में आते हैं। अन्य अक्षरों को जोड़ने के लिए, यूनिकोड अक्षरों को यहां पर दर्ज करें। उदाहरण के लिए, थाई लिपि भाषाओं में, वाक्यों को अलग करने के लिए सामान्य अंतर रखा जाता है यह ब्लूम को बताने के लिए \U0020 दर्ज करें।</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Decodable Reader Tool</source>
         <note>ID: ReaderSetup.SetUpDecodableReaderTool</note>
         <target xml:lang="hi" state="translated">डिकोडेबल पुस्तक उपकरण सेट अप करें</target>
@@ -6458,20 +6461,20 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Day 4</note>
         <target xml:lang="hi" state="translated">दिन 4</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Day 5a" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Day 5a" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 5a</source>
         <note>ID: TemplateBooks.PageLabel.Day 5a</note>
-        <target xml:lang="hi" state="translated">दिन 5ए</target>
+        <target xml:lang="hi" state="translated">दिन 5a</target>
         <alt-trans>
-          <target xml:lang="hi">दिन 5a</target>
+          <target xml:lang="hi">दिन 5ए</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Day 5b" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Day 5b" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 5b</source>
         <note>ID: TemplateBooks.PageLabel.Day 5b</note>
-        <target xml:lang="hi" state="translated">दिन 5बी</target>
+        <target xml:lang="hi" state="translated">दिन 5b</target>
         <alt-trans>
-          <target xml:lang="hi">दिन 5b</target>
+          <target xml:lang="hi">दिन 5बी</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="hi">दिन 5 ब</target>

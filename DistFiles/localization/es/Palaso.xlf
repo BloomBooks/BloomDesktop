@@ -606,11 +606,14 @@
           <target xml:lang="es-ES">Puede adaptar y añadir a este trabajo.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">Usted puede adaptar y añadir a esta obra, pero debe distribuir el trabajo resultante solo bajo una licencia igual o similar a ésta.</target>
+        <target xml:lang="es-ES" state="translated">Usted puede adaptar y añadir a esta obra, pero usted puede distribuir la obra resultante sólo bajo una licencia igual o similar a ésta.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Usted puede adaptar y añadir a esta obra, pero debe distribuir el trabajo resultante solo bajo una licencia igual o similar a ésta.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Usted puede adaptar y añadir a esta obra, pero usted puede distribuir el trabajo resultante sólo bajo una licencia igual o similar a ésta.</target>
         </alt-trans>

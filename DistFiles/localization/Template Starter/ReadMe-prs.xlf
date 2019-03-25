@@ -58,8 +58,12 @@ There are two ways people can use your template. The first way is to start new b
       <trans-unit id="template.starter.describeyours" approved="yes">
         <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
         <target xml:lang="prs" state="translated">همچنین در حال اضافه کردن یک توضیح از نمونه خود، مانند آنچه که اکنون در حال خواندن است را در نظر بگیرید. برای انجام این کار، یک فایل متنی به نام<g id="genid-8" ctype="x-html-code">ReadMe-en.md</g>در فولدر نمونه شما. این فایل باید به تعقیب<g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">استندرد نشانه گذاری</g>. 
-برای ارائه دستورالعمل های خود به زبان های دیگر، نسخه هایی از این فایل را ایجاد کنید که "en" را به کد دو حرفی هر زبان تغییر دهید. مثلا<g id="genid-10" ctype="x-html-code" >ReadMe-fr.md</g>هنگامی که بلوم تنظیم می شود لیبل ها را در فرانسوی نشان بدهد. شما همچنین می توانید تصاویر را شامل کنید، مانند ما در این سند. هر تصاویر یکه استفاده می کنید در یک فولدر به نام "ReadMeImages" ذخیره کنید، به طوریکه تصاویر به این صورت حواله میدهند:</target>
+برای ارائه دستورالعمل های خود به زبان های دیگر، نسخه هایی از این فایل را ایجاد کنید که "en" را به کد دو حرفی هر زبان تغییر دهید. مثلا<g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g>هنگامی که بلوم تنظیم می شود لیبل ها را در فرانسوی نشان بدهد. شما همچنین می توانید تصاویر را شامل کنید، مانند ما در این سند. هر تصاویر یکه استفاده می کنید در یک فولدر به نام "ReadMeImages" ذخیره کنید، به طوریکه تصاویر به این صورت حواله میدهند:</target>
         <note>ID: template.starter.describeyours</note>
+        <alt-trans>
+          <target xml:lang="prs">همچنین در حال اضافه کردن یک توضیح از نمونه خود، مانند آنچه که اکنون در حال خواندن است را در نظر بگیرید. برای انجام این کار، یک فایل متنی به نام<g id="genid-8" ctype="x-html-code">ReadMe-en.md</g>در فولدر نمونه شما. این فایل باید به تعقیب<g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">استندرد نشانه گذاری</g>. 
+برای ارائه دستورالعمل های خود به زبان های دیگر، نسخه هایی از این فایل را ایجاد کنید که "en" را به کد دو حرفی هر زبان تغییر دهید. مثلا<g id="genid-10" ctype="x-html-code" >ReadMe-fr.md</g>هنگامی که بلوم تنظیم می شود لیبل ها را در فرانسوی نشان بدهد. شما همچنین می توانید تصاویر را شامل کنید، مانند ما در این سند. هر تصاویر یکه استفاده می کنید در یک فولدر به نام "ReadMeImages" ذخیره کنید، به طوریکه تصاویر به این صورت حواله میدهند:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="prs">همچنین در حال اضافه کردن یک توضیح از نمونه خود، مانند آنچه که اکنون در حال خواندن است را در نظر بگیرید. برای انجام این کار، یک فایل متنی به نام<g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g>در فولدر نمونه شما. این فایل باید به تعقیب<g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">استندرد نشانه گذاری</g>. 
 برای ارائه دستورالعمل های خود به زبان های دیگر، نسخه هایی از این فایل را ایجاد کنید که "en" را به کد دو حرفی هر زبان تغییر دهید. مثلا<g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g>هنگامی که بلوم تنظیم می شود لیبل ها را در فرانسوی نشان بدهد. شما همچنین می توانید تصاویر را شامل کنید، مانند ما در این سند. هر تصاویر یکه استفاده می کنید در یک فولدر به نام "ReadMeImages" ذخیره کنید، به طوریکه تصاویر به این صورت حواله میدهند:</target>
@@ -99,6 +103,7 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
 <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: بعدا این کتاب ها با استفاده از ویژگی Folio می توانند ترکیب شوند. توجه داشته باشید که بلوم هنوز راهی برای نشان دادن اینکه صفحه باید به صورت اوتومات در کتابهای جدید داخل شود، به شما ارائه نخواهد شد؛ مؤلف باید هر یک را از (Add Page dialog) صفحه محاوره اضافه کند.</target>
         <note>ID: template.starter.nothingautomatic</note>
         <alt-trans>
@@ -108,6 +113,16 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
+<g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: بعدا این کتاب ها با استفاده از ویژگی Folio می توانند ترکیب شوند. توجه داشته باشید که بلوم هنوز راهی برای نشان دادن اینکه صفحه باید به صورت اوتومات در کتابهای جدید داخل شود، به شما ارائه نخواهد شد؛ مؤلف باید هر یک را از (Add Page dialog) صفحه محاوره اضافه کند.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">
+          
+          
+          
+          
+          
 <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: بعدا این کتاب ها با استفاده از ویژگی Folio می توانند ترکیب شوند. توجه داشته باشید که بلوم هنوز راهی برای نشان دادن اینکه صفحه باید به صورت اوتومات در کتابهای جدید داخل شود، به شما ارائه نخواهد شد؛ مؤلف باید هر یک را از (Add Page dialog) صفحه محاوره اضافه کند.</target>
         </alt-trans>
         <alt-trans>
@@ -128,11 +143,6 @@ There are two ways people can use your template. The first way is to start new b
         <alt-trans>
           <target xml:lang="prs">
           
-          
-<g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: بعدا این کتاب ها با استفاده از ویژگی Folio می توانند ترکیب شوند. توجه داشته باشید که بلوم هنوز راهی برای نشان دادن اینکه صفحه باید به صورت اوتومات در کتابهای جدید داخل شود، به شما ارائه نخواهد شد؛ مؤلف باید هر یک را از (Add Page dialog) صفحه محاوره اضافه کند.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">
           
 <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: بعدا این کتاب ها با استفاده از ویژگی Folio می توانند ترکیب شوند. توجه داشته باشید که بلوم هنوز راهی برای نشان دادن اینکه صفحه باید به صورت اوتومات در کتابهای جدید داخل شود، به شما ارائه نخواهد شد؛ مؤلف باید هر یک را از (Add Page dialog) صفحه محاوره اضافه کند.</target>
         </alt-trans>
@@ -140,6 +150,7 @@ There are two ways people can use your template. The first way is to start new b
       <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
         <target xml:lang="prs" state="translated">
+          
           
           
           
@@ -187,6 +198,32 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
+<g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: اگر شما نمی خواهید صفحات نمونه شما در صفحه محاوره ( Add Page dialog) نمایش داده شود، شما می توانید با ایجاد یک فایل در فولدر نمونه کتاب به نام NotForAddPage.txt به Bloom خاطرنشان سازید.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: اگر شما نمی خواهید صفحات نمونه شما در صفحه محاوره ( Add Page dialog) نمایش داده شود، شما می توانید با ایجاد یک فایل در فولدر نمونه کتاب به نام NotForAddPage.txt به Bloom خاطرنشان سازید.</target>
         </alt-trans>
         <alt-trans>
@@ -239,27 +276,6 @@ There are two ways people can use your template. The first way is to start new b
         <alt-trans>
           <target xml:lang="prs">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: اگر شما نمی خواهید صفحات نمونه شما در صفحه محاوره ( Add Page dialog) نمایش داده شود، شما می توانید با ایجاد یک فایل در فولدر نمونه کتاب به نام NotForAddPage.txt به Bloom خاطرنشان سازید.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">
           
           
           
@@ -283,6 +299,7 @@ There are two ways people can use your template. The first way is to start new b
       <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
         <target xml:lang="prs" state="translated">
+          
           
           
           
@@ -330,6 +347,32 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
+<g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: مردم نمیتوانند لیبل ها و تشریحات شما را به زبانهای دیگر ترجمه کنند. اگر این مشکل است، لطفا با تیم بلوم تماس بگیرید.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: مردم نمیتوانند لیبل ها و تشریحات شما را به زبانهای دیگر ترجمه کنند. اگر این مشکل است، لطفا با تیم بلوم تماس بگیرید.</target>
         </alt-trans>
         <alt-trans>
@@ -382,27 +425,6 @@ There are two ways people can use your template. The first way is to start new b
         <alt-trans>
           <target xml:lang="prs">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: مردم نمیتوانند لیبل ها و تشریحات شما را به زبانهای دیگر ترجمه کنند. اگر این مشکل است، لطفا با تیم بلوم تماس بگیرید.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">
           
           
           
@@ -426,6 +448,7 @@ There are two ways people can use your template. The first way is to start new b
       <trans-unit id="template.starter.editrawhtml" approved="yes">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
         <target xml:lang="prs" state="translated">
+          
           
           
           
@@ -475,6 +498,34 @@ Context | Edit Context</target>
           
           
           
+          
+          <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: اگر می خواهید صفحه اضافه (Add Page screen) را نیز توضیح کوتاهی ارائه دهید، باید بلوم را ترک کرده و Html را در Notepad ایدیت کنید، مانند این: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/>
+ 
+Context | Edit Context</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="prs">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: اگر می خواهید صفحه اضافه (Add Page screen) را نیز توضیح کوتاهی ارائه دهید، باید بلوم را ترک کرده و Html را در Notepad ایدیت کنید، مانند این: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/>
  
 Context | Edit Context</target>
@@ -533,29 +584,6 @@ Context | Edit Context</target>
         <alt-trans>
           <target xml:lang="prs">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: اگر می خواهید صفحه اضافه (Add Page screen) را نیز توضیح کوتاهی ارائه دهید، باید بلوم را ترک کرده و Html را در Notepad ایدیت کنید، مانند این: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/>
- 
-Context | Edit Context</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">
           
           
           
