@@ -83,7 +83,7 @@ namespace BloomTests.WebLibraryIntegration
 			_guid1 = Guid.NewGuid().ToString();
 			_guid2 = Guid.NewGuid().ToString();
 			var book3Time = new DateTime(2019,3,5,15,33,30);
-			var smallSpan = new TimeSpan(10000); // only 1 millisecond! (100ns is too short for Linux file timestamps)
+			var smallSpan = new TimeSpan(100000000); // only 10 seconds! (100ns is too short for Linux file timestamps)
 			SetupMetaData(bookFolder1, _guid1, book3Time + smallSpan);
 			SetupMetaData(bookFolder2, _guid1, book3Time + smallSpan + smallSpan);
 			SetupMetaData(bookFolder3, _guid1, book3Time);
