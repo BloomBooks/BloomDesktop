@@ -2,8 +2,8 @@
 Version=1.0
 Name=Bloom BetaInternal
 Comment=Literacy materials development for language communities
-Exec=bloom-betainternal %u
-Icon=bloom-betainternal
+Exec=bloom-beta %u
+Icon=bloom-beta
 Terminal=false
 Type=Application
 Categories=Education;
