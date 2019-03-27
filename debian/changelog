@@ -1,3 +1,10 @@
+bloom-desktop (4.4.0) stable; urgency=medium
+
+  * Change from beta to release
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Wed, 27 Mar 2019 08:53:09 -0600
+
 bloom-desktop-beta (4.4.0) stable; urgency=medium
 
   * Change from betainternal to beta
