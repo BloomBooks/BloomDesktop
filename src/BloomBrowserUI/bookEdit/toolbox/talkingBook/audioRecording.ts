@@ -2817,12 +2817,15 @@ export default class AudioRecording {
     }
 
     private split(): void {
+        this.setStatus("split", Status.Disabled); // Disable it immediately (not asynchronously!) so that the button stops registering clicks
+
         BloomApi.get(
             "audioSegmentation/checkAutoSegmentDependencies",
             result => {
                 if (result.data === "FALSE") {
                     // The specific missing dependency is only reported in the error log on the C# side.
                     this.handleMissingDependency();
+                    this.setStatus("split", Status.Enabled);
                 } else {
                     this.autoSegment();
                 }
@@ -2873,7 +2876,7 @@ export default class AudioRecording {
             };
 
             this.disableInteraction();
-            // this.setStatus("split", Status.Active);  // Now we decide to just keep it disabled instaed.
+            // this.setStatus("split", Status.Active);  // Now we decide to just keep it disabled instead.
             this.showBusy();
 
             BloomApi.postJson(
@@ -2881,6 +2884,8 @@ export default class AudioRecording {
                 JSON.stringify(inputParameters),
                 result => {
                     this.setStatus("split", Status.Disabled);
+                    this.endBusy(); // This always needs to happen regardless of what path through processAutoSegmentResponse the code takes.
+
                     this.processAutoSegmentResponse(result);
                 }
             );
@@ -2996,7 +3001,6 @@ export default class AudioRecording {
             this.sentenceToIdListMap = {};
             this.changeStateAndSetExpectedAsync("next");
             this.setStatus("split", Status.Disabled); // No need to run it again if it was successful. (Until the settings are changed).
-            this.endBusy();
         } else {
             this.changeStateAndSetExpectedAsync("record");
             doneCallback();
