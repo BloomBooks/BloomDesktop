@@ -80,6 +80,10 @@ namespace Bloom.Api
 		private void WriteOutput(byte[] buffer, HttpListenerResponse response)
 		{
 			response.ContentLength64 += buffer.Length;
+			// This is particularly useful in allowing the bloom-player used in the android preview
+			// to access the current preview book. Also allows local browsers running bloom-player
+			// to access it.
+			response.AppendHeader("Access-Control-Allow-Origin", "*");
 			Stream output = response.OutputStream;
 			try
 			{
@@ -134,6 +138,7 @@ namespace Bloom.Api
 			{
 				_actualContext.Response.ContentLength64 = fs.Length;
 				_actualContext.Response.AppendHeader("PathOnDisk", HttpUtility.UrlEncode(path));
+				_actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
 				if (ShouldCache(path, originalPath))
 				{
 					_actualContext.Response.AppendHeader("Cache-Control",

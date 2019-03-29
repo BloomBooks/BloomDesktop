@@ -31,7 +31,6 @@ import Option from "../../react_components/option";
 import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
-import BloomPlayer from "../../bloom-player/bloom-player-core";
 import {
     H1,
     H2,
@@ -120,6 +119,9 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
 
     public componentDidMount() {
         window.addEventListener("beforeunload", this.componentCleanup);
+        window.addEventListener("message", event => {
+            this.gotBookProps(event.data);
+        });
     }
 
     // Apparently, we have to rely on the window event when closing or refreshing the page.
@@ -192,18 +194,10 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                         }
                                     >
                                         <div className="preview-content">
-                                            <BloomPlayer
-                                                url={this.state.previewUrl}
-                                                landscape={
-                                                    this.state
-                                                        .landscapePreviewMode
-                                                }
-                                                showContextPages={false}
-                                                paused={
-                                                    this.state.previewPaused
-                                                }
-                                                reportBookProperties={arg =>
-                                                    this.gotBookProps(arg)
+                                            <iframe
+                                                src={
+                                                    "../../bloom-player/dist/bloomplayer.htm?url=" +
+                                                    this.state.previewUrl
                                                 }
                                             />
                                         </div>
