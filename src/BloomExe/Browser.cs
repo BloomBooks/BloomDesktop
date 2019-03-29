@@ -782,8 +782,17 @@ namespace Bloom
 
 		public static void ClearCache()
 		{
-			var instance = Xpcom.CreateInstance<nsICacheStorageService>("@mozilla.org/netwerk/cache-storage-service;1");
-			instance.Clear();
+			try
+			{
+				var instance = Xpcom.CreateInstance<nsICacheStorageService>("@mozilla.org/netwerk/cache-storage-service;1");
+				instance.Clear();
+			}
+			catch (InvalidCastException e)
+			{
+				// For some reason, Release builds (only) sometimes run into this when uploading.
+				// Don't let it stop us just to clear a cache.
+				Logger.WriteError(e);
+			}
 		}
 
 		public void SetEditDom(HtmlDom editDom)
