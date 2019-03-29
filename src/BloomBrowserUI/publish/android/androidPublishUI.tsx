@@ -31,7 +31,7 @@ import Option from "../../react_components/option";
 import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
-import BloomPlayer from "../../bloom-player/bloom-player-core";
+import { BloomPlayerCore } from "bloom-player-react/lib/bloom-player-core";
 import {
     H1,
     H2,
@@ -192,7 +192,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                         }
                                     >
                                         <div className="preview-content">
-                                            <BloomPlayer
+                                            <BloomPlayerCore
                                                 url={this.state.previewUrl}
                                                 landscape={
                                                     this.state
