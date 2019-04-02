@@ -197,13 +197,19 @@ export class BloomApi {
         urlSuffix: string,
         data: any,
         config: AxiosRequestConfig,
-        successCallback?: (r: AxiosResponse) => void
+        successCallback?: (r: AxiosResponse) => void,
+        errorCallback?: (r: AxiosResponse) => void
     ) {
         if (successCallback) {
             BloomApi.wrapAxios(
                 axios
                     .post(this.kBloomApiPrefix + urlSuffix, data, config)
                     .then(successCallback)
+                    .catch(r => {
+                        if (errorCallback) {
+                            errorCallback(r);
+                        }
+                    })
             );
         } else {
             BloomApi.wrapAxios(
@@ -215,7 +221,8 @@ export class BloomApi {
     public static postJson(
         urlSuffix: string,
         data: any,
-        successCallback?: (r: AxiosResponse) => void
+        successCallback?: (r: AxiosResponse) => void,
+        errorCallback?: (r: AxiosResponse) => void
     ) {
         BloomApi.postDataWithConfig(
             urlSuffix,
@@ -223,7 +230,8 @@ export class BloomApi {
             {
                 headers: { "Content-Type": "application/json" }
             },
-            successCallback
+            successCallback,
+            errorCallback
         );
     }
 
