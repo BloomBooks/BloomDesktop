@@ -40,7 +40,13 @@ export default class WebSocketManager {
             //here we're passing "socketName" in the "subprotocol" parameter, just for ease of identifying
             //sockets on the server side when debugging.
 
-            // Enhance: This needs a try/catch or something. What is the plan if the constructor throws an exception?
+            // I tried a lot of error handling here: catching any exception in the constructor, attaching
+            // onerror and onclose handlers to the new socket...and we still get notifications sent to the unhandled
+            // error hook, when a connection is refused, as it is if the page we're trying to set up
+            // a socket for has already been navigated away from. Apparently there's a browser spec that
+            // says clients should purposely make it difficult for Javascript to explore what's going
+            // wrong when a socket can't be opened. So instead those errors are suppressed
+            // in Browser.ReportJavascriptError.
             WebSocketManager.socketMap[clientContext] = new WebSocket(
                 "ws://127.0.0.1:" + websocketPort.toString(),
                 clientContext

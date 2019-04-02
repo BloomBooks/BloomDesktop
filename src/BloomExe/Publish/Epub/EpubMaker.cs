@@ -85,6 +85,7 @@ namespace Bloom.Publish.Epub
 		public const string kCssFolder = "css";
 		public const string kFontsFolder = "fonts";
 		public const string kVideoFolder = "video";
+		private Guid _thumbnailRequestId;
 
 		public static readonly string EpubExportRootFolder = Path.Combine(Path.GetTempPath(), kEPUBExportFolder);
 
@@ -178,7 +179,20 @@ namespace Bloom.Publish.Epub
 			get { return _publishHelper.ControlForInvoke; }
 			set { _publishHelper.ControlForInvoke = value; }
 		}
-		public bool AbortRequested { get; set; }
+
+		public bool AbortRequested
+		{
+			get { return _abortRequested; }
+			set
+			{
+				_abortRequested = value;
+				if (_abortRequested && _thumbNailer != null && _thumbnailRequestId != Guid.Empty)
+				{
+					_thumbNailer.CancelOrder(_thumbnailRequestId);
+				}
+			}
+		}
+
 		// Only make one audio file per page. This means if there are multiple recorded sentences on a page,
 		// Epubmaker will squash them into one, compress it, and make smil entries with appropriate offsets.
 		// This is closer to how the standard Moby Dick example is done, and at least one epub reader
@@ -298,12 +312,17 @@ namespace Bloom.Publish.Epub
 			ApplicationException thumbNailException = null;
 			try
 			{
-				_thumbNailer.MakeThumbnailOfCover(Book, 256);
+				_thumbnailRequestId = Guid.NewGuid();
+				_thumbNailer.MakeThumbnailOfCover(Book, 256,_thumbnailRequestId);
+				_thumbnailRequestId = Guid.Empty;
 			}
 			catch (ApplicationException e)
 			{
 				thumbNailException = e;
 			}
+
+			if (AbortRequested)
+				return; // especially to avoid reporting problems making thumbnail, e.g., because aborted.
 
 			var coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
 			if (thumbNailException != null || !RobustFile.Exists(coverPageImagePath))
@@ -765,6 +784,7 @@ namespace Bloom.Publish.Epub
 		}
 
 		Dictionary<string, string> _directionSettings = new Dictionary<string, string>();
+		private bool _abortRequested;
 
 		private void CopyStyleSheets(HtmlDom pageDom)
 		{

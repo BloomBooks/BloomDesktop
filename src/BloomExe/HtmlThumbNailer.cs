@@ -97,6 +97,7 @@ namespace Bloom
 			public int Height = DefaultHeight;
 			public string FileName = "thumbnail.png";
 			public bool MustRegenerate = false; // true if a cached image may not be returned.
+			public Guid RequestId;
 		}
 
 
@@ -232,6 +233,18 @@ namespace Bloom
 		private static bool _thumbnailTimeoutAlreadyDisplayed;
 #endif
 
+		public void CancelOrder(Guid requestId)
+		{
+			var order = _currentOrder; // local copy in case another thread changes it
+			if (order != null && order.Options.RequestId == requestId && order.WaitHandle != null)
+			{
+				order.Canceled = true;
+				order.WaitHandle.Set();
+			}
+			// enhance: could search PendingOrders for matching items. However, currently
+			// cancellation is only used for synchronous orders.
+		}
+
 		private bool OpenTempFileInBrowser(GeckoWebBrowser browser, string filePath)
 		{
 			var order = (ThumbnailOrder) browser.Tag;
@@ -248,7 +261,7 @@ namespace Bloom
 					}), filePath);
 					waitHandle.WaitOne(10000);
 				}
-				if (_disposed || !navigationHappened)
+				if (_disposed || !navigationHappened || order.Canceled)
 					return false;
 				if (!order.Done)
 				{
@@ -420,6 +433,11 @@ namespace Bloom
 			return -1;
 		}
 
+		// The order we most recently started working on.
+		// I'm not sure we can't be working on more than one at a time, so use with care.
+		// Currently only used to try to abort orders; if that fails, it's not too serious.
+		private ThumbnailOrder _currentOrder;
+
 		/// <summary>
 		/// Returns true if it make some attempt at an image, false if navigation is currently suppressed.
 		/// </summary>
@@ -430,6 +448,7 @@ namespace Bloom
 		private bool CreateThumbNail(ThumbnailOrder order, GeckoWebBrowser browser, out Image thumbnail)
 		{
 			// runs on threadpool thread
+			_currentOrder = order;
 			thumbnail = null;
 			using (var temp = BloomServer.MakeSimulatedPageFileInBookFolder(order.Document, source:"thumb"))
 			{
@@ -546,7 +565,7 @@ namespace Bloom
 				if (browser == null)
 					return;
 
-				if (!CreateThumbNail(order, browser, out pendingThumbnail))
+				if (!CreateThumbNail(order, browser, out pendingThumbnail) && !order.Canceled)
 				{
 					// For some reason...possibly another navigation was in progress...we can't do this just now.
 					// Try it again later.
@@ -839,5 +858,6 @@ namespace Bloom
 		public HtmlThumbNailer.ThumbnailOptions Options;
 		public AutoResetEvent WaitHandle;
 		public CancellationTokenSource CancelToken;
+		public bool Canceled;
 	}
 }

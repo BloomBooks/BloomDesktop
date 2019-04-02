@@ -145,11 +145,18 @@ namespace Bloom.Publish.Android
 					// another background one and return before the preview is ready. But in case something in C#
 					// might one day kick of a new preview, or we find we do need a background thread,
 					// I've made it a websocket broadcast when it is ready.
+					// If we've already left the publish tab...we can get a few of these requests queued up when
+					// a tester rapidly toggles between views...abandon the attempt
+					if (!PublishHelper.InPublishTab)
+					{
+						request.Failed("aborted, no longer in publish tab");
+						return;
+					}
 					PreviewUrl = StageBloomD(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor);
 					_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
 					request.PostSucceeded();
 				}
-			}, true);
+			}, false);
 
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "thumbnail", request =>

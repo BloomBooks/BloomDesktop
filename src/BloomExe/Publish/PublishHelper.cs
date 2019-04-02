@@ -14,7 +14,29 @@ namespace Bloom.Publish
 {
 	public class PublishHelper : IDisposable
 	{
+		private static PublishHelper _latestInstance;
+
+		public PublishHelper()
+		{
+			if (!InPublishTab)
+			{
+				throw new InvalidOperationException("Should not be creating bloom book while not in publish tab");
+			}
+			_latestInstance = this;
+		}
 		public Control ControlForInvoke { get; set; }
+
+		public static void Cancel()
+		{
+			_latestInstance = null;
+		}
+
+		// I'm not sure this is the best global place to keep track of this, but various things should abort
+		// if we're trying to build previews and switch out of the publish tab entirely. The most important
+		// are ones that (because of NavigationIsolator) can hold up displaying the page back in one of the
+		// other views.
+		public static bool InPublishTab { get; set; }
+
 		Browser _browser = new Browser();
 		// The only reason this isn't just ../* is performance. We could change it.  It comes from the need to actually
 		// remove any elements that the style rules would hide, because epub readers ignore visibility settings.
@@ -72,8 +94,11 @@ namespace Bloom.Publish
 				return;
 			if (epubMaker != null)
 				epubMaker.AddEpubVisibilityStylesheetAndClass(displayDom);
-
-			_browser.NavigateAndWaitTillDone(displayDom, 10000, "publish");
+			if (this != _latestInstance)
+				return;
+			_browser.NavigateAndWaitTillDone(displayDom, 10000, "publish", () => this != _latestInstance);
+			if (this != _latestInstance)
+				return;
 
 			var toBeDeleted = new List<XmlElement> ();
 			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
@@ -252,7 +277,17 @@ namespace Bloom.Publish
 				{
 					if (_browser != null)
 					{
-						_browser.Invoke((Action) (() => _browser.Dispose()));
+						if (_browser.IsHandleCreated)
+						{
+							_browser.Invoke((Action) (() => _browser.Dispose()));
+						}
+						else
+						{
+							// We can't invoke if it doesn't have a handle...and we certainly don't want
+							// to waste time getting it one...hopefully we can just dispose it on this
+							// thread.
+							_browser.Dispose();
+						}
 					}
 
 					_browser = null;
