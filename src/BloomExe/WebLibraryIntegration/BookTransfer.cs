@@ -395,6 +395,8 @@ namespace Bloom.WebLibraryIntegration
 				}
 				metadata.SetUploader(UserId);
 				s3BookId = S3BookId(metadata);
+				// Review: Is it ok if I add this only in Debug mode? (Or should I just get rid of it)
+				progress.WriteMessage("s3BookId: " + s3BookId);
 				metadata.DownloadSource = s3BookId;
 				// Any updated ID at least needs to become a permanent part of the book.
 				// The file uploaded must also contain the correct DownloadSource data, so that it can be used
