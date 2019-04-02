@@ -27,6 +27,11 @@ namespace Bloom
 			_thumbnailProvider = thumbNailer;
 		}
 
+		public void CancelOrder(Guid requestId)
+		{
+			_thumbnailProvider.CancelOrder(requestId);
+		}
+
 		public HtmlThumbNailer HtmlThumbNailer { get { return _thumbnailProvider;} }
 
 		private void GetThumbNailOfBookCover(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Image> callback, Action<Exception> errorCallback, bool async)
@@ -74,12 +79,13 @@ namespace Bloom
 		/// </summary>
 		/// <param name="book"></param>
 		/// <param name="height">Optional parameter. If unspecified, use defaults</param>
-		public void MakeThumbnailOfCover(Book.Book book, int height = -1)
+		public void MakeThumbnailOfCover(Book.Book book, int height = -1, Guid requestId = new Guid())
 		{
 			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions
 			{
 				//since this is destined for HTML, it's much easier to handle if there is no pre-padding
-				CenterImageUsingTransparentPadding = false
+				CenterImageUsingTransparentPadding = false,
+				RequestId = requestId
 			};
 
 			if (height != -1)

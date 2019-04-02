@@ -854,7 +854,7 @@ namespace Bloom
 			UpdateDisplay();
 		}
 
-		public void NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav")
+		public void NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav", Func<bool> cancelCheck = null)
 		{
 			// Should be called on UI thread. Since it is quite typical for this method to create the
 			// window handle and browser, it can't do its own Invoke, which depends on already having a handle.
@@ -875,6 +875,11 @@ namespace Bloom
 			{
 				Application.DoEvents(); // NOTE: this has bad consequences all down the line. See BL-6122.
 				Application.RaiseIdle(new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
+				if (cancelCheck != null && cancelCheck())
+				{
+					navTimer.Stop();
+					return;
+				}
 				// Keeping this code as a reminder: it seems to be a reliable way of telling when
 				// the nothing happens when told to navigate problem is rearing its ugly head.
 				// But I'm not sure enough to throw what might be a premature exception.
@@ -1229,6 +1234,16 @@ namespace Bloom
 			// so decided not to clutter the log with them.)
 			if (ex.Message.Contains("file: \"chrome://global/content/bindings/videocontrols.xml\""))
 				return;
+			// This one apparently can't be stopped in Javascript  (it comes from WebSocketManager.getOrCreateWebSocket).
+			// It's something to do with preventing malicious code from probing for open sockets.
+			// We get it quite often when testers are clicking around much too fast and pages become obsolete
+			// before they finish loading.
+			if (ex.Message.Contains("JavaScript Error: \"The connection was refused when attempting to contact"))
+			{
+				Logger.WriteError(ex);
+				return;
+			}
+
 			var longMsg = ex.Message;
 			if (script != null)
 				longMsg = string.Format("Script=\"{0}\"{1}Exception message = {2}", script, Environment.NewLine, ex.Message);

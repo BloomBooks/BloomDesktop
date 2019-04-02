@@ -41,6 +41,7 @@ namespace Bloom.Publish
 		private HtmlPublishPanel _htmlControl;
 		private NavigationIsolator _isolator;
 		private PublishToAndroidApi _publishApi;
+		private PublishEpubApi _publishEpubApi;
 		private BloomWebSocketServer _webSocketServer;
 
 
@@ -48,12 +49,13 @@ namespace Bloom.Publish
 
 		public PublishView(PublishModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator,
-			PublishToAndroidApi publishApi, BloomWebSocketServer webSocketServer)
+			PublishToAndroidApi publishApi, PublishEpubApi publishEpubApi, BloomWebSocketServer webSocketServer)
 		{
 			_bookTransferrer = bookTransferrer;
 			_loginDialog = login;
 			_isolator = isolator;
 			_publishApi = publishApi;
+			_publishEpubApi = publishEpubApi;
 			_webSocketServer = webSocketServer;
 
 			InitializeComponent();
@@ -137,6 +139,7 @@ namespace Bloom.Publish
 		{
 			if (IsMakingPdf)
 				_makePdfBackgroundWorker.CancelAsync();
+			_publishEpubApi?.AbortMakingEpub();
 			// This allows various cleanup of controls which we won't use again, since we
 			// always switch to this state when we reactivate the view.
 			// In particular, it is part of the solution to BL-4901 that the HtmlPublishPanel,
@@ -145,6 +148,8 @@ namespace Bloom.Publish
 			// This is only supposed to be active in one mode of PublishView.
 			Browser.SuppressJavaScriptErrors = false;
 			Browser.ClearCache(); // of anything used in publish mode; may help free memory.
+			PublishHelper.Cancel();
+			PublishHelper.InPublishTab = false;
 		}
 
 		private void BackgroundColorsForLinux() {
@@ -204,6 +209,7 @@ namespace Bloom.Publish
 		private void Activate()
 		{
 			_activated = false;
+			PublishHelper.InPublishTab = true;
 
 			Logger.WriteEvent("Entered Publish Tab");
 			if (IsMakingPdf)
@@ -432,6 +438,8 @@ namespace Bloom.Publish
 			// This is only supposed to be active in one mode of PublishView.
 			Browser.SuppressJavaScriptErrors = false;
 			Browser.ClearCache(); // try to free memory when switching
+			// Abort any work we're doing to prepare a preview (at least stop it interfering with other navigation).
+			PublishHelper.Cancel();
 
 			if (displayMode != PublishModel.DisplayModes.Upload && _uploadControl != null)
 			{
