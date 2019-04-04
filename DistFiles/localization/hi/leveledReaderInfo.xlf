@@ -37,8 +37,15 @@
         <target xml:lang="hi" state="translated">
           
           
+          
            <g id="genid-1" ctype="x-html-em">पूर्वानुमान</g> किसी टेक्स्ट में, इसका मतलब है कि पुस्तक पहले से अनुमान लगा सकती है कि आगे क्या आएगा। बार-बार एक ही पैटर्न का उपयोग करके आप पूर्वानुमान में इजाफा ला सकते हैं। यहां कुछ पैटर्न हैं जिनका आप उपयोग कर सकते हैं:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
+        <alt-trans>
+          <target xml:lang="hi">
+          
+          
+           <g id="genid-1" ctype="x-html-em">पूर्वानुमान</g> किसी टेक्स्ट में, इसका मतलब है कि पुस्तक पहले से अनुमान लगा सकती है कि आगे क्या आएगा। बार-बार एक ही पैटर्न का उपयोग करके आप पूर्वानुमान में इजाफा ला सकते हैं। यहां कुछ पैटर्न हैं जिनका आप उपयोग कर सकते हैं:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi">
           
@@ -80,8 +87,24 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
       </target>
         <note>ID: leveled.reader.rhyme</note>
+        <alt-trans>
+          <target xml:lang="hi">यमक - एक पैटर्न या अनुक्रम की एक कहानी जिस में यमक भी शामिल है। उदाहरण के लिए:
+                <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre">भूरे भालू, भूरे भालू, क्या देखते हो?
+मैं एक लाल पक्षी को अपनी ओर देखते हुए देखता हूँ।
+लाल पक्षी, लाल पक्षी, क्या देखते हो?
+मैं एक पीले रंग की बतख को अपनी ओर देखते हुए देखता हूँ। 
+पीली बतख, पीली बतख, क्या देखते हो?</g> 
+          <g id="genid-4" ctype="x-html-div" html:class="author">- बिल मार्टिन, जूनियर और एरिक कारले</g>
+        </g>
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi">यमक - एक पैटर्न या अनुक्रम की एक कहानी जिस में यमक भी शामिल है। उदाहरण के लिए:
                 <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
@@ -122,8 +145,15 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <target xml:lang="hi" state="translated">चित्रण कहानी को आधार प्रदान करते हैं। चित्रण अलग अलग तरीके से अलग अलग <g id="genid-5" ctype="x-html-em">पुस्तकों में</g> और विभिन्न प्रकार के पाठकों को (नीचे देखें) कहानी को समझाते हैं। याद रखें कि कई संस्कृतियों में जहां ज्यादा मुद्रित सामग्री उपलब्ध नहीं है, जटिल चित्रों को समझना मुश्किल हो सकता है। 
     
     
+    
     </target>
         <note>ID: leveled.reader.illustrations.help</note>
+        <alt-trans>
+          <target xml:lang="hi">चित्रण कहानी को आधार प्रदान करते हैं। चित्रण अलग अलग तरीके से अलग अलग <g id="genid-5" ctype="x-html-em">पुस्तकों में</g> और विभिन्न प्रकार के पाठकों को (नीचे देखें) कहानी को समझाते हैं। याद रखें कि कई संस्कृतियों में जहां ज्यादा मुद्रित सामग्री उपलब्ध नहीं है, जटिल चित्रों को समझना मुश्किल हो सकता है। 
+    
+    
+    </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi">चित्रण कहानी को आधार प्रदान करते हैं। चित्रण अलग अलग तरीके से अलग अलग <g id="genid-5" ctype="x-html-em">पुस्तकों में</g> और विभिन्न प्रकार के पाठकों को (नीचे देखें) कहानी को समझाते हैं। याद रखें कि कई संस्कृतियों में जहां ज्यादा मुद्रित सामग्री उपलब्ध नहीं है, जटिल चित्रों को समझना मुश्किल हो सकता है। 
     
@@ -135,8 +165,14 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       </source>
         <target xml:lang="hi" state="translated"><g id="genid-6" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> चित्र बारीकी से कहानी से मेल खाना चाहिए। पाठक केवल चित्रों को देखकर कहानी की रुपरेखा पहले से देखने में समर्थ होना चाहिए। इस स्तर पर यह चित्रण सरल होने चाहिए।      
       
+      
       </target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
+        <alt-trans>
+          <target xml:lang="hi"><g id="genid-6" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> चित्र बारीकी से कहानी से मेल खाना चाहिए। पाठक केवल चित्रों को देखकर कहानी की रुपरेखा पहले से देखने में समर्थ होना चाहिए। इस स्तर पर यह चित्रण सरल होने चाहिए।      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi"><g id="genid-6" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> चित्र बारीकी से कहानी से मेल खाना चाहिए। पाठक केवल चित्रों को देखकर कहानी की रुपरेखा पहले से देखने में समर्थ होना चाहिए। इस स्तर पर यह चित्रण सरल होने चाहिए।      
       </target>
@@ -148,8 +184,15 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <target xml:lang="hi" state="translated"><g id="genid-7" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g> चित्र कहानी रुपरेखा में सहायता करना चाहिए। जैसे-जैसे टेक्स्ट की मात्रा बढ़ती है, पाठक चित्रों पर कम निर्भर होता है और उसे टेक्स्ट से अधिक अर्थ समझने लगता है। चित्रांकन अधिक जटिल हो सकता है।
       
       
+      
       </target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
+        <alt-trans>
+          <target xml:lang="hi"><g id="genid-7" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g> चित्र कहानी रुपरेखा में सहायता करना चाहिए। जैसे-जैसे टेक्स्ट की मात्रा बढ़ती है, पाठक चित्रों पर कम निर्भर होता है और उसे टेक्स्ट से अधिक अर्थ समझने लगता है। चित्रांकन अधिक जटिल हो सकता है।
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi"><g id="genid-7" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g> चित्र कहानी रुपरेखा में सहायता करना चाहिए। जैसे-जैसे टेक्स्ट की मात्रा बढ़ती है, पाठक चित्रों पर कम निर्भर होता है और उसे टेक्स्ट से अधिक अर्थ समझने लगता है। चित्रांकन अधिक जटिल हो सकता है।
       
@@ -161,8 +204,14 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       </source>
         <target xml:lang="hi" state="translated"><g id="genid-8" ctype="x-html-strong">धड़ाके से बोलनेवाले पाठकों के लिए</g> चित्रों द्वारा कहानी रुपरेखा में बहुत कम कोई सहायता नहीं मिलनी चाहिए। अर्थ समझने के लिए पाठक चित्रों से ज्यादा टेक्स्ट पर निर्भर होता है। चित्रण और अधिक जटिल हो सकता है।      
       
+      
       </target>
         <note>ID: leveled.reader.fluent.reader</note>
+        <alt-trans>
+          <target xml:lang="hi"><g id="genid-8" ctype="x-html-strong">धड़ाके से बोलनेवाले पाठकों के लिए</g> चित्रों द्वारा कहानी रुपरेखा में बहुत कम कोई सहायता नहीं मिलनी चाहिए। अर्थ समझने के लिए पाठक चित्रों से ज्यादा टेक्स्ट पर निर्भर होता है। चित्रण और अधिक जटिल हो सकता है।      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi"><g id="genid-8" ctype="x-html-strong">धड़ाके से बोलनेवाले पाठकों के लिए</g> चित्रों द्वारा कहानी रुपरेखा में बहुत कम कोई सहायता नहीं मिलनी चाहिए। अर्थ समझने के लिए पाठक चित्रों से ज्यादा टेक्स्ट पर निर्भर होता है। चित्रण और अधिक जटिल हो सकता है।      
       </target>
@@ -186,8 +235,14 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       </source>
         <target xml:lang="hi" state="translated"><g id="genid-9" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> पुस्तक ठोस होनी चाहिए, किसी एक विचार/विषय पर केंद्रित होनी चाहिए, और परिचित तथा समझने में आसान होनी चाहिए।      
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
+        <alt-trans>
+          <target xml:lang="hi"><g id="genid-9" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> पुस्तक ठोस होनी चाहिए, किसी एक विचार/विषय पर केंद्रित होनी चाहिए, और परिचित तथा समझने में आसान होनी चाहिए।      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi"><g id="genid-9" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> पुस्तक ठोस होनी चाहिए, किसी एक विचार/विषय पर केंद्रित होनी चाहिए, और परिचित तथा समझने में आसान होनी चाहिए।      
       </target>
@@ -198,8 +253,14 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       </source>
         <target xml:lang="hi" state="translated"><g id="genid-10" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g>, प्रचलित अवधारणा के चारों ओर लेकिन गहरे अर्थ वाली कहानी विकसित करें।      
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.early.reader</note>
+        <alt-trans>
+          <target xml:lang="hi"><g id="genid-10" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g>, प्रचलित अवधारणा के चारों ओर लेकिन गहरे अर्थ वाली कहानी विकसित करें।      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi"><g id="genid-10" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g>, प्रचलित अवधारणा के चारों ओर लेकिन गहरे अर्थ वाली कहानी विकसित करें।      
       </target>
@@ -214,8 +275,14 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       </source>
         <target xml:lang="hi" state="translated"><g id="genid-11" ctype="x-html-strong">धड़ाके से बोलनेवालों के लिए</g>अवधारणा जो प्रचलित है उससे परे, तरह-तरह की, और गूढ़ हो सकती है।      
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.fluent.reader</note>
+        <alt-trans>
+          <target xml:lang="hi"><g id="genid-11" ctype="x-html-strong">धड़ाके से बोलनेवालों के लिए</g>अवधारणा जो प्रचलित है उससे परे, तरह-तरह की, और गूढ़ हो सकती है।      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi"><g id="genid-11" ctype="x-html-strong">धड़ाके से बोलनेवालों के लिए</g>अवधारणा जो प्रचलित है उससे परे, तरह-तरह की, और गूढ़ हो सकती है।      
       </target>

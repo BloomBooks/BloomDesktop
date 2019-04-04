@@ -6,28 +6,32 @@
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
-        <target xml:lang="quc" state="needs-translation">Built on {0}</target>
+        <target xml:lang="quc" state="translated">Wokom tzij {0}</target>
+        <alt-trans>
+          <target xml:lang="quc">Wokom tzij</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="quc" state="needs-translation">No Updates</target>
+        <target xml:lang="quc" state="translated">Ma k'ot k'ak'saxik</target>
       </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="quc" state="needs-translation">About {0}</target>
+        <target xml:lang="quc" state="translated">Pa uwi'{0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="quc" state="needs-translation">Check For Updates</target>
+        <target xml:lang="quc" state="translated">Utzukuxik k'ak'saxik
+</target>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="quc" state="needs-translation">Release Notes</target>
+        <target xml:lang="quc" state="translated">Ub'ixkil tzij</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
@@ -65,12 +69,18 @@
       <trans-unit id="Common.AbortButton">
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
-        <target xml:lang="quc" state="needs-translation">&amp;Abort</target>
+        <target xml:lang="quc" state="translated">&amp;Uq'atexik</target>
+        <alt-trans>
+          <target xml:lang="quc">Uq'atexik</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="quc" state="needs-translation">&amp;Cancel</target>
+        <target xml:lang="quc" state="translated">&amp;Uq'atexik</target>
+        <alt-trans>
+          <target xml:lang="quc">Uq'atexik</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
@@ -80,22 +90,34 @@
       <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="quc" state="needs-translation">No</target>
+        <target xml:lang="quc" state="translated">Jayi'</target>
       </trans-unit>
       <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
-        <target xml:lang="quc" state="needs-translation">&amp;No</target>
+        <target xml:lang="quc" state="translated">&amp;Jayi'</target>
+        <alt-trans>
+          <target xml:lang="quc">Jayi'</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.OKButton">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="quc" state="needs-translation">&amp;OK</target>
+        <target xml:lang="quc" state="translated">K'amik</target>
+        <alt-trans>
+          <target xml:lang="quc">&amp;K'amik</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
-        <target xml:lang="quc" state="needs-translation">&amp;Retry</target>
+        <target xml:lang="quc" state="translated">&amp;Tzalijem jumul chik</target>
+        <alt-trans>
+          <target xml:lang="quc">Tzalijem Jumul chik</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">&amp; Tzalijem jumul chik</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.Yes">
         <source xml:lang="en">Yes</source>
@@ -127,12 +149,15 @@
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="quc" state="needs-translation">&amp;Cancel</target>
+        <target xml:lang="quc" state="translated">Uq'atexik</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="quc" state="needs-translation">&amp;Delete</target>
+        <target xml:lang="quc" state="translated">&amp;Resaxik</target>
+        <alt-trans>
+          <target xml:lang="quc">Resaxik</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
         <source xml:lang="en">Found {0} images with names close to “{1}”</source>
@@ -154,7 +179,7 @@
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="quc" state="needs-translation">Use {0}</target>
+        <target xml:lang="quc" state="translated">Ukusaxik{0}</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop">
         <source xml:lang="en">Crop</source>
@@ -347,7 +372,10 @@
       <trans-unit id="LanguageLookup.PrimaryNameHeader">
         <source xml:lang="en">Name</source>
         <note>ID: LanguageLookup.PrimaryNameHeader</note>
-        <target xml:lang="quc" state="translated">Biaj</target>
+        <target xml:lang="quc" state="translated">B'iaj</target>
+        <alt-trans>
+          <target xml:lang="quc">Biaj</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel">
         <source xml:lang="en">Show regional dialects</source>
