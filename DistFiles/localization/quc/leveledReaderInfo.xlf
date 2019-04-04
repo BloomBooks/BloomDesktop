@@ -2,59 +2,136 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="leveledReaderInfo-en.html" datatype="html" source-language="en" target-language="quc">
     <body>
-      <trans-unit id="leveled.reader.vocabulary">
+      <trans-unit id="leveled.reader.vocabulary" approved="yes">
         <source xml:lang="en">Vocabulary</source>
-        <target xml:lang="quc" state="needs-translation">Vocabulary</target>
+        <target xml:lang="quc" state="translated">Choltzij</target>
         <note>ID: leveled.reader.vocabulary</note>
+        <alt-trans>
+          <target xml:lang="quc">Jupuq tzijchi' </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.start.simple">
+      <trans-unit id="leveled.reader.start.simple" approved="yes">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
-        <target xml:lang="quc" state="needs-translation">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</target>
+        <target xml:lang="quc" state="translated">Pa ri majb’al taq q’at rech, chkojo taq tzij man k’ax ta rilik kumal ri ak’alab’ rumal kkich’ob’ chik. Wene utz pa utzijob’al, chukojo taq tzij xa jun kel wi. Are taq ri ak’alab’ kepaqi’ chech ri taq q’at, katkowin chech ukojik nik’aj taq tzij chik ri k’i kel wi. Xuquje’ katkowin chech umajik ukojik ri tzij chi man kch’ob’otaj taj. Ri ak’alab’ wene kekowin chik chech ri ch’ob’onem tzij ri kub’ij ri taq tzij rumal e k’o chi upam xuquje’ ri’ tz’aqat taq chomanik keta’m chi uwach xuquje’ rumal jalajoj taq wachib’al.</target>
         <note>ID: leveled.reader.start.simple</note>
+        <alt-trans>
+          <target xml:lang="quc">Pa ri taq q’at  majb’al rech, chkojo taq tzij ma k’axta rilik   kmal ri ak’alab’ rumal kkich’ob’ chik. We ne utz pa utzijob’al,  chkojo taq tzij xa jun kelwi. Are chi’ ri ak’alab’ kepaqi’ che ri taq q’at, katkowin che ukojik  nik’aj taq  tzij chik ri k’i kel wi. Xuquje’ katkowin che umajik ukojik ri tzij che  man kch’ob’taj taj. Ri ak’alab’ we ne kekowin chik che ri ch’ob’onem tzij  ri kub’ij  ri taq tzij rumal e k’o chi upam xuquje’ ri’  tz’aqat taq chomanik keta’m chi uwach, xuquje’ rumal  jalajoj taq wachib’al.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.formatting">
+      <trans-unit id="leveled.reader.formatting" approved="yes">
         <source xml:lang="en">Formatting</source>
-        <target xml:lang="quc" state="needs-translation">Formatting</target>
+        <target xml:lang="quc" state="translated">Q’inb'al</target>
         <note>ID: leveled.reader.formatting</note>
+        <alt-trans>
+          <target xml:lang="quc">Q’in</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.start.large">
+      <trans-unit id="leveled.reader.start.large" approved="yes">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
-        <target xml:lang="quc" state="needs-translation">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</target>
+        <target xml:lang="quc" state="translated">Ri Nab'e taq sik’inel wuj are utz kkoj kuk' ri nima’q taq tz’ib’ xuquje’ ri nima’q taq uxo’l ri tzij. Xuquje’ koqxa’nix uya’ik ri tzij teqne ri tz’aqat taq chomanik xa pa jun k'olib'al pa jujunal chi kech ri uxaq taq wuj. Are taq ri sik’inel taq wuj kpaqi’ ri keta'mab'al, ri unimal taq ri tz’ib’ xuquje’ ri uxo’l taq ri tzij utz kub’an ch’uti’n xuquje’ ri tz’aqat taq chomanik utz we kriqitaj pa jalajoj taq uk’olib’al.</target>
         <note>ID: leveled.reader.start.large</note>
+        <alt-trans>
+          <target xml:lang="quc">Ri Majb’al taq sik’inel wuj kecheb’ej ri ukojik ri nima’q taq tz’ib’ xuquje’ ri nima’q taq uxo’l  chi kixo’l ri tzij. Xuquje’ koqxa’nijikk ri uya’ik ri tzij  xuquje’ ri tz’aqat taq chomanik pa ri uk’olib’al pa jujunal chi kech ri uxaq ri wuj. Are chi’ ri sik’inel taq wuj kepaqi’k, ri unimal taq ri tz’ib’ xuquje’ ri  uxo’l  chkixo’l taq ri tzij k’o karaj kub’an ch’uti’n xuquje’ ri tz’aqat taq chomanik kraqataj pa jalajoj taq uk’olib’al.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.increase.sizes">
+      <trans-unit id="leveled.reader.increase.sizes" approved="yes">
         <source xml:lang="en">To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</source>
-        <target xml:lang="quc" state="needs-translation">To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</target>
+        <target xml:lang="quc" state="translated">Rech kk’iy unimal ri uwach tz’ib’, ri uxo’l ri uq'e'tal tz’ib’ xuquje’ ri uya’ik uxo’l chi kixo’l taq ri tzij, chb’ana pitz’ chi upam jun kajxukut rech woktz’ib’ k’ate k’u ri’ pa ri laj wachib’al rech "engranaje" saqsoj pa ri jutz' ikim k'o pa moxq’ab’. We chwe’q kb’ij kab’an jun wuj rech raqanib’al, ri wuj b’anom ruk’ la’ ri raqanib’al ri' xuquje’ kkikoj na ri suk’umanem.</target>
         <note>ID: leveled.reader.increase.sizes</note>
+        <alt-trans>
+          <target xml:lang="quc">Rech kk’iy ri unimal ri tz’ib’, ri uxo’l ri chol tz’ib’ xuquje’ ri  uya’ik uxo’l  chkixo’l taq ri tzij,  chb’ana pitz’ chi upam jun woktz’ib’ pa kajb’al  k’ate k’uri’ pa ri laj wachib’al rech  "engranaje" saqsoj pa ri uxukut ikim moxq’ab’. We chwe’q kb’ij kab’an jun wuj rech raqanib’al, ri wuj b’anom ruk’  la’  ri raqanib’al  xuquje’ kkikojo na ri suk’manem.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.predictability">
+      <trans-unit id="leveled.reader.predictability" approved="yes">
         <source xml:lang="en">Predictability</source>
-        <target xml:lang="quc" state="needs-translation">Predictability</target>
+        <target xml:lang="quc" state="translated">Nab’e rilik</target>
         <note>ID: leveled.reader.predictability</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.repeat.patterns">
+      <trans-unit id="leveled.reader.repeat.patterns" approved="yes">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
-        <target xml:lang="quc" state="needs-translation">
+        <target xml:lang="quc" state="translated">
           
-          <g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</target>
+<g id="genid-1" ctype="x-html-em"> Nab’e rilik</g> pa jun woktz’ib’ kub’ij chech jun sik’inel uwach wuj kkowinik kub’ij ri petinaq. Kuya'o knimarisax uwach majb'al rilik ruk' ri k’amab'al kamulinem. Chi ri' k’o jujun taq k’amab'al kamulinem katkowin chech ukojik: 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <g id="genid-1" ctype="x-html-em"> Previsibilidad</g> en un texto significa que un lector puede adivinar lo que vendría después. El uso de patrones repetidos puede aumentar la previsibilidad. Aquí hay algunos patrones que usted puede utilizar:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
+        <alt-trans>
+          <target xml:lang="quc">
+                    <g id="genid-1" ctype="x-html-em"> Nab’e rilik</g> pa jun woktz’ib’ kub’ij che jun sik’inel uwach uwo wuj  kkowinik kub’ij ri petenaq. Ri ukojik ri k’amal taq b’e kamulem  kunimarisaj ri nab’e rilik. Chi’ k’o jujun taq k’amal taq b’e kkowin la che ukoji:
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <g id="genid-1" ctype="x-html-em"> Previsibilidad</g> en un texto significa que un lector puede adivinar lo que vendría después. El uso de patrones repetidos puede aumentar la previsibilidad. Aquí hay algunos patrones que usted puede utilizar:</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.repetition">
+      <trans-unit id="leveled.reader.repetition" approved="yes">
         <source xml:lang="en">Repetition - repeating parts of the text, for example, using the same sentence with each page and just changing one word in the sentence</source>
-        <target xml:lang="quc" state="needs-translation">Repetition - repeating parts of the text, for example, using the same sentence with each page and just changing one word in the sentence</target>
+        <target xml:lang="quc" state="translated">Kamulixik – Kamulixik ri kel wi ri woktz’ib’. Ri k’amb’al no’j, ukojik xaq junam ri tz’aqat chomanik pa jujunal ri uxaq wuj xuquje’ xaq jeri’ uk’exik jun tzij pa ri tz’aqat chomanik</target>
         <note>ID: leveled.reader.repetition</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.sequencing">
+      <trans-unit id="leveled.reader.sequencing" approved="yes">
         <source xml:lang="en">Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</source>
-        <target xml:lang="quc" state="needs-translation">Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</target>
+        <target xml:lang="quc" state="translated">Ri cholajim tzij - jun tzijob’elil ruk’ jun cholajim tzij ch’ob’otal uwach pacha’ taq ri q’ij rech ri wuqq'ij te'qne kukoj ajilab’al pa jun k’amab'al kamulinem</target>
         <note>ID: leveled.reader.sequencing</note>
+        <alt-trans>
+          <target xml:lang="quc">Ri cholajim tzij -  jun tzijob’elil tzij ruk’ jun cholajim tzij  ch’ob’atal uwach pacha’ ri  q’ij rech ri xomano o kukoj ajilab’al pa jun k’amal b’e tzij</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.building.sequence">
+      <trans-unit id="leveled.reader.building.sequence" approved="yes">
         <source xml:lang="en">Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
-        <target xml:lang="quc" state="needs-translation">Building Sequence - a story with a pattern that is repeated and added to with each new page</target>
+        <target xml:lang="quc" state="translated">Cholajim Kk’iyik - jun tzijob’elil ruk’ jun k’amab'al kamulinem xuquje’ ri ktiq chi jujunal k’ak’ uxaq wuj</target>
         <note>ID: leveled.reader.building.sequence</note>
+        <alt-trans>
+          <target xml:lang="quc">Ri cholajem Kk’iyik -  jun tzijob’elil tzij ruk’ jun k’amal b’e  kkamulixik xuquje’ ktiq che jujunal k’ak’ uxaq wuj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.rhyme">
+      <trans-unit id="leveled.reader.rhyme" approved="yes">
         <source xml:lang="en">Rhyme - a story with a pattern or sequence that also includes rhyme. For example:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry"><g id="genid-3" ctype="x-html-pre">Brown Bear, Brown Bear, What do you see?
 I see a red bird looking at me.
@@ -62,89 +139,521 @@ Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
 Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g>
       </source>
-        <target xml:lang="quc" state="needs-translation">Rhyme - a story with a pattern or sequence that also includes rhyme. For example:
+        <target xml:lang="quc" state="translated">Pach'um tzij – jun tzijob’elil ruk’ jun k’amab'al kamulinem te'qne jun cholajim tzij k’o chi upam pach'um tzij. K’amab’al no’j:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">Brown Bear, Brown Bear, What do you see?
-I see a red bird looking at me.
-Red Bird, Red Bird, What do you see?
-I see a yellow duck looking at me.
-Yellow Duck, Yellow Duck, What do you see?</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g>
+          <g id="genid-3" ctype="x-html-pre"> Ri tix koq’ik
+xa rumal man kawar taj
+Chatwaroq alaj tix
+xa rumal le ik' katuto</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- Adriano del Valle</g>
         </g>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       
       </target>
         <note>ID: leveled.reader.rhyme</note>
+        <alt-trans>
+          <target xml:lang="quc">Rima – jun tzijob’elil tzij ruk’ jun k’amal b’e o ri ucholajil k’o chi upam rima. K’amb’al no’j:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre">Ri tix koq’ik
+porque no quería dormir
+Duerme elefantito mío
+que la luna te va a oír</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- Adriano del Valle</g>
+        </g>
+
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.illustrations">
+      <trans-unit id="leveled.reader.illustrations" approved="yes">
         <source xml:lang="en">Illustration Support</source>
-        <target xml:lang="quc" state="needs-translation">Illustration Support</target>
+        <target xml:lang="quc" state="translated">Tob’anik chech ri jalajoj taq wachib’al</target>
         <note>ID: leveled.reader.illustrations</note>
+        <alt-trans>
+          <target xml:lang="quc">Tob’anik che ri jalajoj taq wachib’al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.illustrations.help">
+      <trans-unit id="leveled.reader.illustrations.help" approved="yes">
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
     </source>
-        <target xml:lang="quc" state="needs-translation">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
+        <target xml:lang="quc" state="translated">Ri jalajoj taq wachib’al are jun chakub’al ri kto’b’an chech jun k'i'san tzijob'elil. Ri jalajoj taq wachib’al kajunamataj ruk’ ri k'i'san tzijob'elil pa k’i taq ub’antajik pa jalajoj <g id="genid-5" ctype="x-html-em"> niveles</g> xuquje’ chi kech jalajoj taq sik’ìnel taq uwach wuj (chawila chi uxe'). Chna’taj chi qech chi pa k’i taq tinamit man k’o ta k’i kiwuj b’anom, kraj ne k’ax kkiraq chech uch’ob’ik ri jalajoj taq wachib’al.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     </target>
         <note>ID: leveled.reader.illustrations.help</note>
+        <alt-trans>
+          <target xml:lang="quc">Ri jalajoj taq wachib’al chakub’al rech to’b’anik che jun tzijob’elil tzij..  Ri jalajoj taq wachib’al kajunamataj ruk’ ri tzijob’elil  pa k’i taq ub’antajik pa jalajoj <g id="genid-5" ctype="x-html-em"> niveles</g> xuquje’ chi kech jalajoj  taq kb’antajik ri sik’ìnel taq uwach uwowuj (ver abajo). Chna’tasaj  k’i taq no’jib’al  man  k’o ta k’i  kiwuj b’anom, kaj ne k’ax kkiraq che uch’ob’ik ri jalajoj taq wachib’al.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.illustrations.emergent.reader">
+      <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
-        <target xml:lang="quc" state="needs-translation">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
+        <target xml:lang="quc" state="translated">Chi kech <g id="genid-6" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g> ri jalajoj taq wachib’al rajawaxik kuk’ulaj rib’ ruk’ ri kematalik chech ri k'i'san tzijob'elil te'qne ri tzijob’elil. Are taq kil ri wachib’al, jun sik’inel uwach wuj kkowin chech unab’ejasaxik ub’ixik ri kematal wi. Rajawaxik chi ri jalajoj taq wachib’al chi upam we q’at ri' ma k’ax ta uch'ob'ik.      
+      
+      
+
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       
       </target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech <g id="genid-6" ctype="x-html-strong"> Majb’al taq sik’inel wuj </g> ri k’i taq wachib’al  rajawaxik kuk’ulaj rib’ ruk’ ri kematalik chech ri tzijob’elil o b’ano’n. Are chi’ kil ri wachib’al, jun  sik’in uwach wuj kkowin che unab’ajasaxik ub’ixik ri kematal wi. Ri jalajoj taq wachib’al chi upam we q’at rajawaxik ma k’ax taj.      
+      
+      
+
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.illustrations.early.reader">
+      <trans-unit id="leveled.reader.illustrations.early.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
       </source>
-        <target xml:lang="quc" state="needs-translation">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
+        <target xml:lang="quc" state="translated">Chi kech ri <g id="genid-7" ctype="x-html-strong"> Nab'e taq sik’inel wuj </g> Rajawaxik ri wachib’al kkiya’ tob’anik chech ri kematalik. We kpaqi’ ri uk’iyal ri tz’ib’atalik, ri sik’inel uwach wuj man kuya chi uq'ij ri wachib’al, are kuch’ob’ ri tz’ib’atalik. Ri wachib’al utz kapaqi' uq'ij ri kel kub'ij.      
       
       </target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech ri <g id="genid-7" ctype="x-html-strong"> Majb’al taq sik’inel wuj </g>  Rajawaxik ri wachib’al kkiya’ tob’anik che ri kematalik. We kpaqi’ ri uk’iyal ri tz’ib’atalik, ri sikìnel rech ri uwo wuj kqaj lo rilik kb'ano che ri wachib’al  xuquje’  kch’ob’ na ri tz’ib’atalik. Ri wachib’al  k’ax chi na rilik. 
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.fluent.reader">
+      <trans-unit id="leveled.reader.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
       </source>
-        <target xml:lang="quc" state="needs-translation">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
-      
+        <target xml:lang="quc" state="translated">Chi kech ri <g id="genid-8" ctype="x-html-strong">sak'aj taq sik’inel wuj</g> Ri jalajoj taq wachib’al kkiya’ jub’iq’ te'qne man katob’an ta chi chech ri kematalik. Ri uch’ob’onem rech sik’inel rech uwach wuj are ri kusik'ij uwach, man are ta chi ri wachib'al. Rajawaxik chi k’ax na uch'ob'ik ri kel kub'ij ri wachib'al.      
       </target>
         <note>ID: leveled.reader.fluent.reader</note>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech ri <g id="genid-8" ctype="x-html-strong">Suk’ sik’inel taq wuj </g> Ri wachib’al kkiya’ jub’iq’ o ma  jun tob’anik che ri kematalik. Ri uch’ob’anem ri sik’inel rech ri uwach uwowuj are kril na ri tz’ib’atalik chi uwach ri wachib’al. Wa’ k’ax chi na rilik. 
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.topic.choice">
+      <trans-unit id="leveled.reader.topic.choice" approved="yes">
         <source xml:lang="en">Choice of Topic</source>
-        <target xml:lang="quc" state="needs-translation">Choice of Topic</target>
+        <target xml:lang="quc" state="translated">Ucha’xik ub’i’ ri ch’ob’oj</target>
         <note>ID: leveled.reader.topic.choice</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.topic.choice.discussion">
+      <trans-unit id="leveled.reader.topic.choice.discussion" approved="yes">
         <source xml:lang="en">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
-        <target xml:lang="quc" state="needs-translation">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</target>
+        <target xml:lang="quc" state="translated">Ri jalajoj taq no'jwuj kuya'o kkitzijob'ej k’i taq no'jinem. Pa ri uchakuxik ri no'jwuj chi kech ri nab'e taq sik’inel wuj, rajawaxik kcha’ no'jinem ri keta'm chik. Ri sik’inel taq uwach wuj utz kkil usik’ixik uwach wuj xuquje’ kkitaqej usik’ixik xa rumal kuptanij pa kik'aslemal xuquje’ keta’m ri ktzijob'exik. Chi kech ri sak'aj taq sik’inel uwach wuj, utz kya’ no’jib’al chi upam ri man eta’matal ta kumal.</target>
         <note>ID: leveled.reader.topic.choice.discussion</note>
+        <alt-trans>
+          <target xml:lang="quc">Ri wuj kkich’a’ k’i taq ch’ob’oj. Pa ri uchakuxik ri wuj chi kech ri sik’inel taq wuj k’ate’ tajan kkimajo, chcha’ ch’ob’oj che eta’matal chik. Ri sik’inel taq uwach wuj kkirayij na  usik’ixik uwach wuj  xuquje’ kkisik’ij na uwach  we kkilo che k’o upatan chi kech xuquje’ eta’matal chik kumal. Chi kech ri sik’inel taq wuj  nim keta’mab’al chik, utz kya’ no’jib’al chi upam che ma eta’matal taj rumal ri sik’ìnel uwach uwowuj.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.topic.choice.emergent.reader">
+      <trans-unit id="leveled.reader.topic.choice.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.
       </source>
-        <target xml:lang="quc" state="needs-translation">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.
-      
+        <target xml:lang="quc" state="translated">Chi kech <g id="genid-9" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g> ri no'jwuj qas are kutzijoj ri no’jib’al, rajawaxik kajeqi’ xa pa jun chomab’al xuquje’ no'jinem ri man k’ax ta uch’ob’ik.      
       </target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech <g id="genid-9" ctype="x-html-strong"> Sik’inel wuj k’ate’ tajan kumajo</g> ri wuj qas are kutzijoj ri no’jib’al, rajawaxik kajeqi’ pa jun chomab’al,  xuquje’ eta’mtal chi uwach  kumal rech ma k’axta uch’ob’ik..
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Chikech <g id="genid-9" ctype="x-html-strong"> Sik’inel wuj k’ate’ tajan kumajo</g> ri wuj qas are kutzijoj ri no’jib’al, rajawaxik kajeqi’ pa jun chomab’al,  xuquje’ eta’mtal chi uwach  kumal rech ma k’axta uch’ob’ik..
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.topic.choice.early.reader">
+      <trans-unit id="leveled.reader.topic.choice.early.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
       </source>
-        <target xml:lang="quc" state="needs-translation">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
-      
+        <target xml:lang="quc" state="translated">Chi kech ri <g id="genid-10" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g>, rajawaxik kb’an jun k'i'san tzijob’elil pa uwi’ jun chomab’al eta’matal kumal xa are nim chi ub’antajik.      
       </target>
         <note>ID: leveled.reader.topic.choice.early.reader</note>
-      </trans-unit>
-      <trans-unit id="leveled.reader.topic.choice.fluent.reader">
-        <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
-      </source>
-        <target xml:lang="quc" state="needs-translation">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
+        <alt-trans>
+          <target xml:lang="quc">Chi kech ri <g id="genid-10" ctype="x-html-strong"> Majb’al taq sik’inel wuj </g>, rajawaxik kb’an jun tzijob’elil tzij pa uwi’ jun chomab’al eta’m tal chik uwach ruk' nim, ub’antajik.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       
       </target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="leveled.reader.topic.choice.fluent.reader" approved="yes">
+        <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
+      </source>
+        <target xml:lang="quc" state="translated">Chi kech ri <g id="genid-11" ctype="x-html-strong"> Sak'aj taq sik’inel wuj</g> ri jalajoj taq chomab’al man rajawaxik taj chi keta'm chik, utz la' we k'i uwach kya'ik xuquje’ chi xaq pa ri ri chomab’al k'o wi.      
+      </target>
         <note>ID: leveled.reader.topic.choice.fluent.reader</note>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech ri <g id="genid-11" ctype="x-html-strong"> Suk’ sik’inel taq wuj </g> k‘i taq chomab’al ma rajawaxik taj e alaxik, k’o kraj e jalajoj xuquje’ ri chomab’al kiltaj ta uwach.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech ri <g id="genid-11" ctype="x-html-strong">Lectores fluidos</g> k‘i taq chomab’al ma rajawaxik taj e alaxik, k’o kraj e jalajoj xuquje’ ri chomab’al kiltaj ta uwach.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Rech ri <g id="genid-11" ctype="x-html-strong">Lectores fluidos</g> k‘i taq chomab’al ma rajawaxik taj e alaxik, k’o kraj e jalajoj xuquje’ ri chomab’al kiltaj ta uwach.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>

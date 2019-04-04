@@ -2,98 +2,172 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="quc">
     <body>
-      <trans-unit id="AccessibilityCheck.AccessibilityChecker" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.AccessibilityChecker" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Accessibility Checker</source>
         <note>ID: AccessibilityCheck.AccessibilityChecker</note>
-        <target xml:lang="quc" state="needs-translation">Accessibility Checker</target>
+        <target xml:lang="quc" state="translated">Ilonel rech okib’al</target>
+        <alt-trans>
+          <target xml:lang="quc">Ilonel rech jamalil okib’al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.ACEByDaisy" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.ACEByDaisy" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Ace by DAISY Automated Checks</source>
         <note>ID: AccessibilityCheck.ACEByDaisy</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="quc" state="needs-translation">Ace by DAISY Automated Checks</target>
+        <target xml:lang="quc" state="translated">Utukelal ilb'al rech "Ace by DAISY"</target>
+        <alt-trans>
+          <target xml:lang="quc">Ilonik rech utukel wi rech "Ace by DAISY"   </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.audioForAllText" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.audioForAllText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Audio for all text</source>
         <note>ID: AccessibilityCheck.audioForAllText</note>
-        <target xml:lang="quc" state="needs-translation">Audio for all text</target>
+        <target xml:lang="quc" state="translated">Ch’ab’alil chech ronojel ri woktz’ib’</target>
+        <alt-trans>
+          <target xml:lang="quc">Ch’ab’alil che ronojel ri woktz’ib’
+
+</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Audio for all image descriptions</source>
         <note>ID: AccessibilityCheck.audioForAllImageDescriptions</note>
-        <target xml:lang="quc" state="needs-translation">Audio for all image descriptions</target>
+        <target xml:lang="quc" state="translated"> Ch’ab’alil chi kech konojel ri ub'ixik ub'antajik ri wachib’al</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom can automatically check these for you:</source>
         <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
-        <target xml:lang="quc" state="needs-translation">Bloom can automatically check these for you:</target>
+        <target xml:lang="quc" state="translated">Bloom kkowin chech rilik utukel wi, we ri’ chi ak’axwach:</target>
+        <alt-trans>
+          <target xml:lang="quc">Bloom kkowin che rilik utukel wi we ri’  chk’axwach lal.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.Checklist" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.Checklist" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Accessibility Checklist</source>
         <note>ID: AccessibilityCheck.Checklist</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="quc" state="needs-translation">Accessibility Checklist</target>
+        <target xml:lang="quc" state="translated">Cholilonik rech okib’al</target>
+        <alt-trans>
+          <target xml:lang="quc">Chol ilonik rech okib’al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.descriptionsForAllImages" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.descriptionsForAllImages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Descriptions for all images</source>
         <note>ID: AccessibilityCheck.descriptionsForAllImages</note>
-        <target xml:lang="quc" state="needs-translation">Descriptions for all images</target>
+        <target xml:lang="quc" state="translated">Ub’ixik ub’antajik chi kech konojel taq wachib’al</target>
+        <alt-trans>
+          <target xml:lang="quc">Ub’ixik ub’antajik chike konojel taq wachib’al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.FindingAce" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Finding Ace by DAISY on this computer...</source>
+        <note>ID: AccessibilityCheck.FindingAce</note>
+        <target xml:lang="quc" state="translated">Xriqitaj pa Ace by DAISY pa we kematz’ib’...</target>
+        <alt-trans>
+          <target xml:lang="quc">Finding Ace by DAISY pa we kematz’ib’…
+
+</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.FoundAce" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Found.</source>
+        <note>ID: AccessibilityCheck.FoundAce</note>
+        <target xml:lang="quc" state="translated">Xriqitajik.</target>
+        <alt-trans>
+          <target xml:lang="quc">Xraqatajik.</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Learn About Accessibility</source>
         <note>ID: AccessibilityCheck.LearnAbout</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="quc" state="needs-translation">Learn About Accessibility</target>
+        <target xml:lang="quc" state="translated">K’i eta’manik pa uwi’ okib’al</target>
+        <alt-trans>
+          <target xml:lang="quc">K’i eta’manik  pa uwi’ okib’al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibleBookDefinition" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibleBookDefinition" sil:dynamic="true" approved="yes">
         <source xml:lang="en">"Accessible Books" are books that work well for people with impaired vision. With the ePUB format*, it is possible to make "Born Accessible" books that work well for everyone**, regardless of vision. Bloom has the following tools to help you create these books:</source>
         <note>ID: AccessibilityCheck.LearnAbout.AccessibleBookDefinition</note>
         <note>The * and ** are footnote markers that should remain the same.</note>
-        <target xml:lang="quc" state="needs-translation">"Accessible Books" are books that work well for people with impaired vision. With the ePUB format*, it is possible to make "Born Accessible" books that work well for everyone**, regardless of vision. Bloom has the following tools to help you create these books:</target>
+        <target xml:lang="quc" state="translated">“Wuj ya'tal okem ” "are taq wuj b’anom chi kech ri winaq k’o ne jun k’ax pa kib’aq’wach. Ruk’ ri q’in ePUB* kb’an ne kowinem chech ri ub’anik ri wuj “Ya'tal okem are taq xtik uloq" kchakun chi kech konojel**, Jas ne ri k’ax chech ri ub’aqwach. Bloom k’o ri chakub’al chech ato’ik ub’anik we wuj ri’:</target>
+        <alt-trans>
+          <target xml:lang="quc">
+“Wuj chi kech k’ax b’aq’wachaj” "are taq wuj b’anom chi kech ri winaq k’o ne jun  k’ax pa kib’aq’wach. Ruk’ ri q’in ePUB* kb’an ne kowinem che ri ub’anik ri wuj   “Ya’talik are chi’ xtik loq" kchakun chi kech konojel**,  Su ne lo ri k’ax che ri ub’aqwach. Bloom k’o ri chakub’al rech che ato’ik ub’anik we wuj ri’:
+</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.CheckerHas" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.CheckerHas" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This tool, the Accessibility Checker, has:</source>
         <note>ID: AccessibilityCheck.LearnAbout.CheckerHas</note>
-        <target xml:lang="quc" state="needs-translation">This tool, the Accessibility Checker, has:</target>
+        <target xml:lang="quc" state="translated">We chakub’al, "Ilonel rech ya'tal okib'al", k'o rech:</target>
+        <alt-trans>
+          <target xml:lang="quc">We chakub’al, "Ilonel rech ri okib’al", Ko rech</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibilityCheckList" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibilityCheckList" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The "Accessibility Checklist" which is where Bloom checks over your book and points you to anything that needs attention, especially for speakers of minority languages.</source>
         <note>ID: AccessibilityCheck.LearnAbout.AccessibilityCheckList</note>
-        <target xml:lang="quc" state="needs-translation">The "Accessibility Checklist" which is where Bloom checks over your book and points you to anything that needs attention, especially for speakers of minority languages.</target>
+        <target xml:lang="quc" state="translated">Ri "Chol ilonik rech okib’al” chila’ pa wi ri Bloom kunik’oj jas ri awuj xuquje’ kk’utu ronojel ri sutaq kraj rilik, pacha’ ne ri winaq kech’aw pa ri tzijob’al man e k’i taj.</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri "Chol re ilonik rech okib’al” chila’ pa wi ri Bloom kunik’oj su ri awuj xuquje’ kk’utu ronojel ri sutaq kraj rilik, pacha’ ri winaq kech’aw pa ri tzijob’al ma e k’i taj.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.AceByDaisyChecker" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.AceByDaisyChecker" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The "Ace by DAISY Checker" searches the actual ePUB generated by Bloom looking for any problems.</source>
         <note>ID: AccessibilityCheck.LearnAbout.AceByDaisyChecker</note>
-        <target xml:lang="quc" state="needs-translation">The "Ace by DAISY Checker" searches the actual ePUB generated by Bloom looking for any problems.</target>
+        <target xml:lang="quc" state="translated">Ri ilonel "Ace by Daisy Checker" kunik’oj ri k’olib’al ePUB ya’om rumal Bloom chech utzukuxik ri k’i taq k’axk'olil.</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri ilonel rech "Ace by Daisy Checker" kunik’oj ri k’olib’al ePUB ya’om rumal Bloom che utzukuxik ri k’i taq k’eyowal.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.EpubDefinition" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.EpubDefinition" sil:dynamic="true" approved="yes">
         <source xml:lang="en">definition of the ePUB format</source>
         <note>ID: AccessibilityCheck.LearnAbout.EpubDefinition</note>
-        <target xml:lang="quc" state="needs-translation">definition of the ePUB format</target>
+        <target xml:lang="quc" state="translated">q’alajisanem rech ri q’in ePUB</target>
+        <alt-trans>
+          <target xml:lang="quc">Q’alajisanem rech ri q’in ePUB</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.Footnote" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.Footnote" sil:dynamic="true" approved="yes">
         <source xml:lang="en">While the ideal is that a single book can serve everyone, the ePUB standard and ePUB readers do not actually support that. They currently only work for blind people who speak a language that is supported by "Text to Speech" (TTS) systems. At this time, TTS is only available for large or commercially interesting languages. Until the standard and accessible readers improve, it is necessary to make special versions of accessible books for minority language speakers. For blind readers to hear the image descriptions, we need to put something special on the page. In this version of Bloom, you do this by clicking the "Include image descriptions on page" checkbox in the Publish:ePUB screen. Future versions may have other options in this area.</source>
         <note>ID: AccessibilityCheck.LearnAbout.Footnote</note>
-        <target xml:lang="quc" state="needs-translation">While the ideal is that a single book can serve everyone, the ePUB standard and ePUB readers do not actually support that. They currently only work for blind people who speak a language that is supported by "Text to Speech" (TTS) systems. At this time, TTS is only available for large or commercially interesting languages. Until the standard and accessible readers improve, it is necessary to make special versions of accessible books for minority language speakers. For blind readers to hear the image descriptions, we need to put something special on the page. In this version of Bloom, you do this by clicking the "Include image descriptions on page" checkbox in the Publish:ePUB screen. Future versions may have other options in this area.</target>
+        <target xml:lang="quc" state="translated">Ri kurajawaj qak'u'x are k’ut uwokik jun no’jwuj kub’ana upatan chi kech konojel. Man kb’antaj ta kowinem ruk' q’in ePUB xuquje’ ri sik’il taq rech ePUB xa rumal xuwi kchakun chi kech ri winaq man keka’y taj xuwi ri kech’aw pa jun tzijob’al k’o tob’anik chi kech pa kematal chak "Text to Speech" (TTS) te'qne "Woktz’ib’ ruk’ ch’ab’alil". Kamik ri’, ri TTS xuwi ya'tal chi kech nik’aj taq tzijob’al k’i uwinaqil kekojowik. Kab'an na rutzil ri q’in xuquje’ ri sik’ib’al ePUB rech kuya'o kokisax pa taq Wuj ya'tal okib'al chi kech ri winaq kech’aw pa ri tzijob’al chi man e k’i taj. Chi kech ri winaq ri man keka'y taj rech kkita le kab'ix para uwi' ub'antajik taq le wachib'al rajawaxik kqanim na jun such pa ri uxaq wuj. Chi upam we jun ub’antajik Bloom, kb’an kowinem chech ruk’ ub’anik pitz’ pa uwi’ ri k’olib’al "Ukojik uya’ik ri kkb’ij ri wachib’al chi upam ri uxaq wuj" pa ri wok ilb’al wachaj Tzijob’exik:ePUB. Chwe’q kb’ij kb’an chi nik’aj pa koksax chi na nik’aj taq okib’al chik chech we uqajib’al ri upam.</target>
+        <alt-trans>
+          <target xml:lang="quc">
+Ri jun no’j are k’ut uwokik jun no’jwuj  kub’ana upatan chi kech konojel. Ma kb’antaj ta kwinem che, ruk’ ri q’in ePUB xuquje’ ri sik’il taq rech ePUB. Xuw b’a’ kchakun chi kech ri winaq ma keka’y taj xuw kech’aw pa jun tzijob’al k’o tob’anik chi kech rumal ri kematal chak "Text to Speech" (TTS) o "Woktz’ib’ ruk’ ch’ab’alil". Kamik ri’, chi upam ri TTS xuw k’olik chi kech nik’aj taq tzijob’al k’i uwinaqil  kech’aw chi upam ri tzijob’al. Ke’utzir na ri q’in xuquje’ ri sik’ib’al ePUB xk’ex suk’umax na, rajawaxik uwokik nik’aj taq wuj chik okib’al chi kech ri winaq kech’aw pa ri tzijob’al che ma e k’i taj. Rech  ri sik’in taq ma keka’y taj kekwinik kkito ri kb’ixik pa uwi’ ub’antajik ri wachib’al, kqanim na jun such pa ri uxaq wuj. Chi upam we jun ri ub’antajik Bloom, kb’an kwinem che ruk’ ub’anik pitz’ pa uwi’ ri k’olib’al "Ukojik uya’ik ri kkb’ij ri wachib’al chi upam ri uxaq wuj" pa ri wok ilb’al wachaj Tzijob’exik:ePUB. Chwe’q kb’ij kb’an chik nik’aj pa koksax chi na nik’aj taq okib’al chik che we uqajib’al ri upam.
+</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.ManualChecksHeading" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.ManualChecksHeading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You need to check these yourself:</source>
         <note>ID: AccessibilityCheck.ManualChecksHeading</note>
-        <target xml:lang="quc" state="needs-translation">You need to check these yourself:</target>
+        <target xml:lang="quc" state="translated">Rajawaxik rilik rib': </target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No essential information by color</source>
         <note>ID: AccessibilityCheck.noEssentialInfoByColor</note>
-        <target xml:lang="quc" state="translated">Ma k’ot uq’alajisaxik nim upatan pa uka’yib’al
+        <target xml:lang="quc" state="translated">Man k’o ta uq’alajisaxik nim upatan pa uq'o'b'al</target>
+        <alt-trans>
+          <target xml:lang="quc">Ma k’ot uq’alajisaxik nim upatan pa uka’yib’al</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Ma k’ot uq’alajisaxik nim upatan pa uka’yib’al
 
 </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomIntegrity.WindowTitle">
+      <trans-unit id="AccessibilityCheck.WindowTitle" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Bloom Accessibility Checker</source>
+        <note>ID: AccessibilityCheck.WindowTitle</note>
+        <target xml:lang="quc" state="translated">Ilonel rech okib’al Bloom</target>
+      </trans-unit>
+      <trans-unit id="BloomIntegrity.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
         <target xml:lang="quc" state="translated">K'axk'olil ruk' Bloom</target>
       </trans-unit>
-      <trans-unit id="BloomIntegrityDialog.ReportProblem">
+      <trans-unit id="BloomIntegrityDialog.ReportProblem" approved="yes">
         <source xml:lang="en">Report Problem</source>
         <note>ID: BloomIntegrityDialog.ReportProblem</note>
         <target xml:lang="quc" state="translated">Uya'ik ub'ixik k'axk'olil</target>
@@ -101,830 +175,1276 @@
           <target xml:lang="quc">K'axk'olil ruk' Bloom</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.BadCharsInFileName">
+      <trans-unit id="BloomPackInstallDialog.BadCharsInFileName" approved="yes">
         <source xml:lang="en">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>
         <note>ID: BloomPackInstallDialog.BadCharsInFileName</note>
-        <target xml:lang="quc" state="needs-translation">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</target>
+        <target xml:lang="quc" state="translated">Karaj ne jun ojer Woktanaj rech Bloom ri xkoj chi uxe’ kan ri Woktanaj rech Bloom kkowin che uk’amik ub’e ri ub’antajik ri b’i’aj rech ri k’i taq k’olchak. Ri b’anal rech ri Woktanaj rech Bloom kkowinik kutzalij ub’anik jumul chik ruk’ uk’ak’arisaxik ri no’j. We man kb’an taj kowinem chech, jun nim reta’mab’al chi rij wa’ kkowinik chi uk’ojisaxik ri tanaj rech Bloom.</target>
+        <alt-trans>
+          <target xml:lang="quc">Are wa’ kaj ne jun  ojer tanaj rech Bloom xwoktajik chi uxe’  kan ri tanaj rech Bloom kkowin che uk’amik ub’e ri ub’antajik ri b’i’aj rech ri k’i taq k’olchak. Ri b’anol rech ri tanaj rech  Bloom kkowinik ktzelej ub’anik jumul chik   ruk’ uk’ak’saxik ri no’j. We man kb’antaj kwinem che,   jun nim reta’mab’al chi rij wa’ kkowinik che uk’ojsaxik ri  tanaj rech Bloom.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.BloomPackInstallation">
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstallation" approved="yes">
         <source xml:lang="en">Bloom Pack Installation</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstallation</note>
-        <target xml:lang="quc" state="needs-translation">Bloom Pack Installation</target>
+        <target xml:lang="quc" state="translated">Ujeqeb’axik rech jun Woktanaj rech Bloom</target>
+        <alt-trans>
+          <target xml:lang="quc">Ujeqb’axik rech jun Tanaj rech Bloom.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.BloomPackInstalled">
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstalled" approved="yes">
         <source xml:lang="en">The {0} Collection is now ready to use on this computer.</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstalled</note>
-        <target xml:lang="quc" state="needs-translation">The {0} Collection is now ready to use on this computer.</target>
+        <target xml:lang="quc" state="translated">We Woktanaj taq uwach wuj {0} xutzirik rech kokisaxik pa we kematz’ib’.</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri k’i taq uwach wuj {0} xutzirik rech koksaxik pa we kematz’ib’.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.BloomPackInstaller">
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstaller" approved="yes">
         <source xml:lang="en">Bloom Pack Installer</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstaller</note>
         <note>Displayed as the message box title</note>
-        <target xml:lang="quc" state="needs-translation">Bloom Pack Installer</target>
+        <target xml:lang="quc" state="translated">Jeqb’anel rech Woktanaj rech Bloom</target>
+        <alt-trans>
+          <target xml:lang="quc">Jeqb’anel rech Tanaj rech Bloom</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.CorruptBloomPack">
+      <trans-unit id="BloomPackInstallDialog.CorruptBloomPack" approved="yes">
         <source xml:lang="en">This BloomPack appears to be incomplete or corrupt.</source>
         <note>ID: BloomPackInstallDialog.CorruptBloomPack</note>
-        <target xml:lang="quc" state="needs-translation">This BloomPack appears to be incomplete or corrupt.</target>
+        <target xml:lang="quc" state="translated">We Woktanaj rech Bloom pacha’ ub’ik man tz’aqat taj te'qne k’axk’ob’inaq.</target>
+        <alt-trans>
+          <target xml:lang="quc">We Tanaj rech Bloom pa cha’ b’i ma tz’aqat taj o k’axq’ob’inaq.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.DoesNotExist">
+      <trans-unit id="BloomPackInstallDialog.DoesNotExist" approved="yes">
         <source xml:lang="en">{0} does not exist</source>
         <note>ID: BloomPackInstallDialog.DoesNotExist</note>
-        <target xml:lang="quc" state="needs-translation">{0} does not exist</target>
+        <target xml:lang="quc" state="translated">{0} man k’o taj</target>
+        <alt-trans>
+          <target xml:lang="quc">{0} xas man k’o taj  </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack">
+      <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack" approved="yes">
         <source xml:lang="en">Bloom was not able to install that Bloom Pack</source>
         <note>ID: BloomPackInstallDialog.ErrorInstallingBloomPack</note>
-        <target xml:lang="quc" state="needs-translation">Bloom was not able to install that Bloom Pack</target>
+        <target xml:lang="quc" state="translated">Bloom man xkowin ta chech ujeqeb’axik le Woktanaj rech Bloom</target>
+        <alt-trans>
+          <target xml:lang="quc">Bloom ma xkowin taj che ri ujeqab’axik le Tanaj Bloom</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.Extracting">
+      <trans-unit id="BloomPackInstallDialog.Extracting" approved="yes">
         <source xml:lang="en">Extracting...</source>
         <note>ID: BloomPackInstallDialog.Extracting</note>
         <note>Shown while Bloom Packs are being installed</note>
-        <target xml:lang="quc" state="needs-translation">Extracting...</target>
+        <target xml:lang="quc" state="translated">Uk’amik apanoq…</target>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.MustRestartToSee">
+      <trans-unit id="BloomPackInstallDialog.MustRestartToSee" approved="yes">
         <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
         <note>ID: BloomPackInstallDialog.MustRestartToSee</note>
-        <target xml:lang="quc" state="needs-translation">Bloom is already running, but the contents will not show up until the next time you run Bloom</target>
+        <target xml:lang="quc" state="translated">Bloom katajin chi ujeqeb'axik, xa k’ut man kk’ut ta na ri ruk’a'm chi upam k’a pa jumul chik are taq kchakun chi upam Bloom</target>
+        <alt-trans>
+          <target xml:lang="quc">Bloom tajan chik kchakunik, xa k’ut ma kk’ut taj ri rek’a'm chi upam k’a pa jumul chik are chi’ kchakun la chi upam Bloom</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.NotInstalled">
+      <trans-unit id="BloomPackInstallDialog.NotInstalled" approved="yes">
         <source xml:lang="en">The Bloom collection will not be installed.</source>
         <note>ID: BloomPackInstallDialog.NotInstalled</note>
-        <target xml:lang="quc" state="needs-translation">The Bloom collection will not be installed.</target>
+        <target xml:lang="quc" state="translated">Man kjeqeb’ax ta na ri k’i taq uwach wuj rech Bloom.</target>
+        <alt-trans>
+          <target xml:lang="quc">Man kjeqb’ax ta na ri k’i taq uwach wuj rech Bloom. </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.Opening">
+      <trans-unit id="BloomPackInstallDialog.Opening" approved="yes">
         <source xml:lang="en">Opening {0}...</source>
         <note>ID: BloomPackInstallDialog.Opening</note>
-        <target xml:lang="quc" state="needs-translation">Opening {0}...</target>
+        <target xml:lang="quc" state="translated">Katajin kajaqik {0}...</target>
+        <alt-trans>
+          <target xml:lang="quc">Ktajin kjaqik {0}...</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Tajan kjaqik {0}...
+
+</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.Replace">
+      <trans-unit id="BloomPackInstallDialog.Replace" approved="yes">
         <source xml:lang="en">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</source>
         <note>ID: BloomPackInstallDialog.Replace</note>
-        <target xml:lang="quc" state="needs-translation">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</target>
+        <target xml:lang="quc" state="translated">Chi upam we kematz’ib’ k’o chi jun woktanaj rech Bloom ub’i’am '{0}'. ¿La kawaj kak’ex ruk’ ri k’o chik chi upam we woktanaj rech Bloom?</target>
+        <alt-trans>
+          <target xml:lang="quc">We kematz’ib’ k’o chik chi upam k’i taq uwach rech Bloom ub’i’am '{0}'. ¿Kawaj uk’exik  ruk’ ri k’o chik chi upam we Tanaj rech Bloom?</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.SingleCollectionFolder">
+      <trans-unit id="BloomPackInstallDialog.SingleCollectionFolder" approved="yes">
         <source xml:lang="en">Bloom Packs should have only a single collection folder at the top level of the .ZIP file.</source>
         <note>ID: BloomPackInstallDialog.SingleCollectionFolder</note>
-        <target xml:lang="quc" state="needs-translation">Bloom Packs should have only a single collection folder at the top level of the .ZIP file.</target>
+        <target xml:lang="quc" state="translated">Le Woktanaj rech Bloom rajawaxik xa jun k'olyakb'al chak kya’ wi rech k’i taq uwach wuj pa kiltaj pa ri nimq’at k'o ajsik rech k’olchak ZIP.</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri k’i taq tanaj Bloom rajawaxik xa jun k’olyakb’al chak kya’ wi rech k’i taq uwach wuj pa ri q’at ajsik rech k’olchak .ZIP file.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.UnableToReplace">
+      <trans-unit id="BloomPackInstallDialog.UnableToReplace" approved="yes">
         <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
         <note>ID: BloomPackInstallDialog.UnableToReplace</note>
-        <target xml:lang="quc" state="needs-translation">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</target>
+        <target xml:lang="quc" state="translated">Bloom man xkowin taj chech uchupik ri uwachib’al k’o pa '{0}'. Chatel na pa Bloom we katajin kchakunik k'ate k'u ri' chab’ana chi jumul. We man kchakun taj, chab’ana chi jumul are taq katzij chik le kematz’ib’.</target>
+        <alt-trans>
+          <target xml:lang="quc">Bloom ma xkowin taj che uchupik ri uwachib’al k’o pa '{0}'. Chat telub’ik pa Bloom we tajan kchakunik xuquje’ chb’ana chi jumul chik. We man kchakun taj, chab’ana chi jumul chik k’ate k’u ri’ xtzijtajik jumul chik ri kematz’ib’.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true">
+      <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</source>
         <note>ID: BookEditor.CharacterMap.Instructions</note>
         <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): To select, use your mouse wheel or point at what you want, then release the key.</note>
-        <target xml:lang="quc" state="needs-translation">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</target>
+        <target xml:lang="quc" state="translated">Chech uch'axik, chakojo ri setesik rech ri ch'o, chak'utu' ri kawaj, te'qne chapitz'a' ri cholnak'tz'ib' uk'utum ruk' ri raxkaqkoj q'o'b'al. 
+K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'aj.</target>
+        <alt-trans>
+          <target xml:lang="quc">Che uch'axik, chakojo ri setesik rech ri ch'o, chak'utu' ri kawaj, o chapitz'a' ri cholnak'tz'ib' uk'utum pa kaqxuk'ux rij ri uka'yib'al. K'isb'al rech tzoqopij ri cholnak'tz'ib' che apitz'om rech kuk'ut ri chol b'i'aj.   </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true">
+      <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is the default for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.DefaultForText</note>
-        <target xml:lang="quc" state="needs-translation">This formatting is the default for all text boxes with '{0}' style.</target>
+        <target xml:lang="quc" state="translated">We q’inb'al ri’ are' jeqeb’am chi uloq chi kech konojel ri kajxukut rech woktzij ruk’ ri retz’ab’alil '{0}'.</target>
+        <alt-trans>
+          <target xml:lang="quc">We q’inb'al ri’ are' jeqeb’am chi uloq chi kech konojel ri kajxukut rech woktz’ib’ ruk’ ri retz’ab’alil '{0}'.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">We q’in ri’ jeqb’am chi uloq chi kech konojel ri kajxukut rech woktz’ib’ ruk’ ri retz’ab’alil '{0}'.
+
+</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">We q’in are’ jeqb’am chi uloq chi kech konojel ri kajxukut rech woktz’ib’ ruk’ ri retz’ab’alil '{0}'.
+
+</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookEditor.ForText" sil:dynamic="true">
+      <trans-unit id="BookEditor.ForText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.ForText</note>
-        <target xml:lang="quc" state="needs-translation">This formatting is for all text boxes with '{0}' style.</target>
+        <target xml:lang="quc" state="translated">We q’inb'al ri’ are kech konojel ri kajxukut rech woktzij ruk’ ri retz’ab’alil '{0}'.</target>
+        <alt-trans>
+          <target xml:lang="quc">We q’inb'al ri’ are kech konojel ri kajxukut rech woktz’ib’ ruk’ ri retz’ab’alil '{0}'.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">We q’in ri’ are chi kech konojel ri kajxukut rech woktz’ib’ ruk’ ri retz’ab’alil '{0}'.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true">
+      <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is for all {0} text boxes with '{1}' style.</source>
         <note>ID: BookEditor.ForTextInLang</note>
-        <target xml:lang="quc" state="needs-translation">This formatting is for all {0} text boxes with '{1}' style.</target>
+        <target xml:lang="quc" state="translated">We q’inb'al ri’ are kech konojel ri woktzij {0} k'o pa kajxukut ruk’ ri retz’ab’alil '{1}'.</target>
+        <alt-trans>
+          <target xml:lang="quc">We q’in ri’ chi kech konojel ri woktz’ib’ {0} pa kajxukut ruk’ ri retz’ab’alil '{1}'.  </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true">
+      <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
         <note>ID: BookEditor.FormattingDisabled</note>
-        <target xml:lang="quc" state="needs-translation">Sorry, Reader Templates do not allow changes to formatting.</target>
+        <target xml:lang="quc" state="translated">K’ax kqana’o. Ri k’i taq raqanib’al kech ri k’i taq no’jwuj ma kuya taj kb’an k’exnik che ri q’in.</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yCertifier" sil:dynamic="true">
+      <trans-unit id="BookMetadata.a11yCertifier" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level certified by</source>
         <note>ID: BookMetadata.a11yCertifier</note>
-        <target xml:lang="quc" state="needs-translation">Level certified by</target>
+        <target xml:lang="quc" state="translated">Juq’at ya’tal uwujil rumal</target>
+        <alt-trans>
+          <target xml:lang="quc">Q’at ya’talik ruk’ uwujil rumal</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yFeatures" sil:dynamic="true">
+      <trans-unit id="BookMetadata.a11yFeatures" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Accessibility features</source>
         <note>ID: BookMetadata.a11yFeatures</note>
-        <target xml:lang="quc" state="needs-translation">Accessibility features</target>
+        <target xml:lang="quc" state="translated">Chakub’al rech okib’al</target>
+        <alt-trans>
+          <target xml:lang="quc">Chakub’al  rech  okib’al</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Chak  rech  okib’al</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Chakub’al  re okib’al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yLevel" sil:dynamic="true">
+      <trans-unit id="BookMetadata.a11yLevel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Accessibility level</source>
         <note>ID: BookMetadata.a11yLevel</note>
-        <target xml:lang="quc" state="needs-translation">Accessibility level</target>
+        <target xml:lang="quc" state="translated">Q’at rech okib’al</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yLevelNone" sil:dynamic="true">
+      <trans-unit id="BookMetadata.a11yLevelNone" sil:dynamic="true" approved="yes">
         <source xml:lang="en">None</source>
         <note>ID: BookMetadata.a11yLevelNone</note>
         <note>indicates that no level of accessibility conformance is claimed</note>
-        <target xml:lang="quc" state="needs-translation">None</target>
+        <target xml:lang="quc" state="translated">Man k'o ta jun</target>
+        <alt-trans>
+          <target xml:lang="quc">Maj jun</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yLevelA" sil:dynamic="true">
+      <trans-unit id="BookMetadata.a11yLevelA" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level A conformance</source>
         <note>ID: BookMetadata.a11yLevelA</note>
-        <target xml:lang="quc" state="needs-translation">Level A conformance</target>
+        <target xml:lang="quc" state="translated">Junamam  q’at A</target>
+        <alt-trans>
+          <target xml:lang="quc">Junamam q’at A</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yLevelAA" sil:dynamic="true">
+      <trans-unit id="BookMetadata.a11yLevelAA" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level AA conformance</source>
         <note>ID: BookMetadata.a11yLevelAA</note>
-        <target xml:lang="quc" state="needs-translation">Level AA conformance</target>
+        <target xml:lang="quc" state="translated">Junamam q’at AA 
+
+</target>
+        <alt-trans>
+          <target xml:lang="quc">Junamam q’at AA</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yLevelAAA" sil:dynamic="true">
+      <trans-unit id="BookMetadata.a11yLevelAAA" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level AAA conformance</source>
         <note>ID: BookMetadata.a11yLevelAAA</note>
-        <target xml:lang="quc" state="needs-translation">Level AAA conformance</target>
+        <target xml:lang="quc" state="translated">Junamam q’at AAA</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.alternativeText" sil:dynamic="true">
+      <trans-unit id="BookMetadata.alternativeText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Has Image Descriptions</source>
         <note>ID: BookMetadata.alternativeText</note>
-        <target xml:lang="quc" state="needs-translation">Has Image Descriptions</target>
+        <target xml:lang="quc" state="translated">Xo’lan woktz’ib’</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.author" sil:dynamic="true">
+      <trans-unit id="BookMetadata.author" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Author</source>
         <note>ID: BookMetadata.author</note>
-        <target xml:lang="quc" state="needs-translation">Author</target>
+        <target xml:lang="quc" state="translated">B'anol rech</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.flashingHazard" sil:dynamic="true">
+      <trans-unit id="BookMetadata.flashingHazard" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Flashing Hazard</source>
         <note>ID: BookMetadata.flashingHazard</note>
-        <target xml:lang="quc" state="needs-translation">Flashing Hazard</target>
+        <target xml:lang="quc" state="translated">K'axk'olil: taq wachib’al kechuple'nik</target>
+        <alt-trans>
+          <target xml:lang="quc">Retal k'axk'olil: taq wachib’al kechuple'nik</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">K’ax:  taq wachib’al  kechuplénik</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.hazards" sil:dynamic="true">
+      <trans-unit id="BookMetadata.hazards" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Hazards</source>
         <note>ID: BookMetadata.hazards</note>
-        <target xml:lang="quc" state="needs-translation">Hazards</target>
+        <target xml:lang="quc" state="translated">Retal taq k’axk'olil</target>
+        <alt-trans>
+          <target xml:lang="quc">Taq k’ax</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.inLanguage" sil:dynamic="true">
+      <trans-unit id="BookMetadata.inLanguage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Language</source>
         <note>ID: BookMetadata.inLanguage</note>
-        <target xml:lang="quc" state="needs-translation">Language</target>
+        <target xml:lang="quc" state="translated">Tzijob'al</target>
+        <alt-trans>
+          <target xml:lang="quc">Chi’</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.level" sil:dynamic="true">
+      <trans-unit id="BookMetadata.level" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Reading level</source>
         <note>ID: BookMetadata.level</note>
-        <target xml:lang="quc" state="needs-translation">Reading level</target>
+        <target xml:lang="quc" state="translated">Q’at rech sik’in wuj</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.License" sil:dynamic="true">
+      <trans-unit id="BookMetadata.License" sil:dynamic="true" approved="yes">
         <source xml:lang="en">License</source>
         <note>ID: BookMetadata.License</note>
-        <target xml:lang="quc" state="needs-translation">License</target>
+        <target xml:lang="quc" state="translated">Ya'tal wuj</target>
+        <alt-trans>
+          <target xml:lang="quc">Wujil ya’talik</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.metapicture" sil:dynamic="true">
+      <trans-unit id="BookMetadata.metapicture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture</source>
         <note>ID: BookMetadata.metapicture</note>
-        <target xml:lang="quc" state="needs-translation">Picture</target>
+        <target xml:lang="quc" state="translated">Wachib'al</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.motionSimulationHazard" sil:dynamic="true">
+      <trans-unit id="BookMetadata.motionSimulationHazard" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Motion Simulation Hazard</source>
         <note>ID: BookMetadata.motionSimulationHazard</note>
-        <target xml:lang="quc" state="needs-translation">Motion Simulation Hazard</target>
+        <target xml:lang="quc" state="translated">K'axk'olil: Silob’em pa nawalil</target>
+        <alt-trans>
+          <target xml:lang="quc">Retal k'axk'olil: Silob’em pa nawalil</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Silob’em pa nawalil</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Silob’en pa nawalil</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.name" sil:dynamic="true">
+      <trans-unit id="BookMetadata.name" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: BookMetadata.name</note>
-        <target xml:lang="quc" state="translated">Biaj</target>
+        <target xml:lang="quc" state="translated">B'i'aj</target>
+        <alt-trans>
+          <target xml:lang="quc">Biaj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.numberOfPages" sil:dynamic="true">
+      <trans-unit id="BookMetadata.numberOfPages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Number of pages</source>
         <note>ID: BookMetadata.numberOfPages</note>
-        <target xml:lang="quc" state="needs-translation">Number of pages</target>
+        <target xml:lang="quc" state="translated">Rajilab’al uxaq taq wuj</target>
+        <alt-trans>
+          <target xml:lang="quc">Ajilab’al uxaq taq wuj
+</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.signLanguage" sil:dynamic="true">
+      <trans-unit id="BookMetadata.signLanguage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sign Language</source>
         <note>ID: BookMetadata.signLanguage</note>
-        <target xml:lang="quc" state="needs-translation">Sign Language</target>
+        <target xml:lang="quc" state="translated">Tzijob’al ruk’  taq retalb’alil</target>
+        <alt-trans>
+          <target xml:lang="quc">Tzijob’al ruk’ taq retalb’alil</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.subjects" sil:dynamic="true">
+      <trans-unit id="BookMetadata.subjects" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Subjects</source>
         <note>ID: BookMetadata.subjects</note>
-        <target xml:lang="quc" state="needs-translation">Subjects</target>
+        <target xml:lang="quc" state="translated">Taq ch’ob’onik</target>
+        <alt-trans>
+          <target xml:lang="quc">Taq ch’ob’anik</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.typicalAgeRange" sil:dynamic="true">
+      <trans-unit id="BookMetadata.typicalAgeRange" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Typical age range</source>
         <note>ID: BookMetadata.typicalAgeRange</note>
-        <target xml:lang="quc" state="needs-translation">Typical age range</target>
+        <target xml:lang="quc" state="translated">Reqa’nib’al  uxo’lil junab’</target>
+        <alt-trans>
+          <target xml:lang="quc">Reqa’nib’al uxo’lil junab’</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.WhatsThis" sil:dynamic="true">
+      <trans-unit id="BookMetadata.WhatsThis" sil:dynamic="true" approved="yes">
         <source xml:lang="en">What's this?</source>
         <note>ID: BookMetadata.WhatsThis</note>
         <note>minimal question indicating a link to information</note>
-        <target xml:lang="quc" state="needs-translation">What's this?</target>
+        <target xml:lang="quc" state="translated">¿Su wa'?</target>
+        <alt-trans>
+          <target xml:lang="quc">Su wa'?</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookStorage.CorruptBook">
+      <trans-unit id="BookStorage.CorruptBook" approved="yes">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="quc" state="needs-translation">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</target>
+        <target xml:lang="quc" state="translated">Bloom man xkowintaj xusik’ij uwach we no’jwuj ri' xuquje’ xriqitaj jun uwachib'al ri k'ate xb'anik. Kqoqxa’nij unik’ojixik ri k’exnik xb’an naqaj chech we no’jwuj ri'. We kak’ulmataj chi jumul chi man k'o ta ub’ixik, chab’ana jun toq’ob’ chab’ana pitz’ pa Ub'antajikil xuquje’ kab'ij uloq chi qech ri k’axk’olil.</target>
+        <alt-trans>
+          <target xml:lang="quc">Bloom ma xkowintaj xusik’ij uwach we no’jwuj xuquje’ xraqatajik xtzalaj chi jumul chik jun uwach kuya uwi’ ruk’ k’a te naqaj ri’. Koqxa’nej unik’ojixik ri k’exnik xb’an naqaj che we no’jwuj. We kak’ulmataj chi jumul chik che maj ub’ixik, chab’ana jun toq’ob’ chab’ana pitz’ pa ucholajil no’j xuquje’ kab’ila' chi qech ri k’axk’olil.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="BookStorage.FolderMoved">
+      <trans-unit id="BookStorage.FolderMoved" approved="yes">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
         <note>ID: BookStorage.FolderMoved</note>
-        <target xml:lang="quc" state="needs-translation">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</target>
+        <target xml:lang="quc" state="translated">Jexa jun uq'ab' le ub'e'al le k’olyakb’al chak rech we no’jwuj ri’ xsilob’isaxik te'qne xk’extaj ub’i’. Rumal wa’, Bloom man kakowin taj kuk’ol ri k’exenik xb’an chi upam we uxaq wuj ri' rumal ri' rajawaxik kb'an elem na. We man ak’exom ta le ub’i’ te'qne man ak'exom ta uk'olib'al le jastaq, chab’ana jun toq’ob’ chab’ana pitz’ pa Ub'antajikil, chi uxe’, xuquje’ kab’ij uloq le k’axk’olil chi kech ri ajkemchakunelab’.</target>
+        <alt-trans>
+          <target xml:lang="quc">Pacha’ b’i jun kel wi ri ub’eyal rech ri k’olyakb’al chak chi kech we no’jwuj ri’ xsolob’isaxik o xk’ex ri ub’i’. Rumal wa’, Bloom ma kakowin taj kuk’ol ri k’exnik xb’anik chi upam we uxaq wuj, xuquje’ rajawaxik kel na ls kamik. We lal tajanik  taj k’exom la ri ub’i’  xuquje’ ma silob’em ta la ri sutaq, chab’ana ls jun toq’ob’ chb’ana la pitz’ pa ucholajil no’j, chi uxe’, xuquje’ kb’ij lo la ri k’axk’olil  chi kech ri ajkemchakunelab’.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Browser.CopyTroubleshootingInfo">
+      <trans-unit id="Browser.CopyTroubleshootingInfo" approved="yes">
         <source xml:lang="en">Copy Troubleshooting Information</source>
         <note>ID: Browser.CopyTroubleshootingInfo</note>
-        <target xml:lang="quc" state="needs-translation">Copy Troubleshooting Information</target>
+        <target xml:lang="quc" state="translated">
+Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil 
+</target>
       </trans-unit>
-      <trans-unit id="Browser.OpenPageInFirefox">
+      <trans-unit id="Browser.OpenPageInFirefox" approved="yes">
         <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
         <note>ID: Browser.OpenPageInFirefox</note>
-        <target xml:lang="quc" state="needs-translation">Open Page in Firefox (which must be in the PATH environment variable)</target>
+        <target xml:lang="quc" state="translated">Utorik uxaq wuj pa Firefox (rajawaxik k'o pa ri k'exowik ri k'o chi rij PATH)</target>
+        <alt-trans>
+          <target xml:lang="quc">Utorik uxaq wuj pa Firefox (rajawaxik k'o pa ri k'exowik ri k'o chi rij)
+</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Browser.ProblemSaving">
+      <trans-unit id="Browser.ProblemSaving" approved="yes">
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
         <note>ID: Browser.ProblemSaving</note>
-        <target xml:lang="quc" state="needs-translation">There was a problem while saving. Please return to the previous page and make sure it looks correct.</target>
+        <target xml:lang="quc" state="translated">Xriqitaj jun k'axk'olil are taq' xak'ol ri no'jwuj awech. Chab'ana jun toq'ob' kattzalij pa ri uxaq wuj chi uxe' uloq chech rilik we utz ub'anom ronojel.</target>
+        <alt-trans>
+          <target xml:lang="quc">Xrqataj jun k'ax are chi' xk'ol ri no'jwuj awech. Chab'ana jun toq'ob' kat tzalaj pa ri uxaq wuj chi uxe' uloq che rilik we utz ub'anom ronojel.    </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AboutBloomEnterprise">
+      <trans-unit id="CollectionSettingsDialog.AboutBloomEnterprise" approved="yes">
         <source xml:lang="en">About the Bloom Enterprise Service</source>
         <note>ID: CollectionSettingsDialog.AboutBloomEnterprise</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="quc" state="needs-translation">About the Bloom Enterprise Service</target>
+        <target xml:lang="quc" state="translated">Pa uwi’ ri patanib’al k’aywokaj rech Bloom</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
         <source xml:lang="en">Advanced Program Settings</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel</note>
-        <target xml:lang="quc" state="needs-translation">Advanced Program Settings</target>
+        <target xml:lang="quc" state="translated">Tz'aqatil uwach Suk’umanem rech ri kematal chak</target>
+        <alt-trans>
+          <target xml:lang="quc">Suk’manem k’wich na rech ri kemchak</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate" approved="yes">
         <source xml:lang="en">Automatically update Bloom</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate</note>
-        <target xml:lang="quc" state="needs-translation">Automatically update Bloom</target>
+        <target xml:lang="quc" state="translated">Uk’ak’arisaxik ri Bloom utukelal rib’</target>
+        <alt-trans>
+          <target xml:lang="quc">K’ak’asaxik ri Bloomutuke’lal rib’</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands" approved="yes">
         <source xml:lang="en">Show Experimental Features</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
         <note xml:lang="en">OLD TEXT (before 4.3): Show Experimental Commands</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Show Experimental Commands (e.g. Export XML for InDesign)</note>
-        <target xml:lang="quc" state="needs-translation">Show Experimental Features</target>
+        <target xml:lang="quc" state="translated">Uk’utik ri Uchak pajb'al ukojik</target>
+        <alt-trans>
+          <target xml:lang="quc">Uk’utik ri k’i taq chak b’anom</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates" approved="yes">
         <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates</note>
-        <target xml:lang="quc" state="needs-translation">Show Experimental Templates (e.g. Picture Dictionary)</target>
+        <target xml:lang="quc" state="translated">Chk’ut ri Raqanib’al Kojom chik (K’amb’al no’j. Choltzij k’o Wachib’al chi uwach)</target>
+        <alt-trans>
+          <target xml:lang="quc">Chk’ut ri Raqanib’al Kojom chik (k’amb’al no’j Choltzij k’o Wachib’al chi uwach)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate1</note>
-        <target xml:lang="quc" state="needs-translation">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</target>
+        <target xml:lang="quc" state="translated">Bloom katajin kk’extaj ri tz’ib’ ya’om chi uloq chech "{0}" ruk' ri k’ak’ tz’ib’ "Andika New Basic".</target>
+        <alt-trans>
+          <target xml:lang="quc">Bloom tajan kk’extaj ri tz’ib’ ya’om chi uloq che "{0}" ri k’ak’ tz’ib’ "Andika New Basic".</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate2</note>
-        <target xml:lang="quc" state="needs-translation">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</target>
+        <target xml:lang="quc" state="translated">We ri’ katob'an na chech le uwach chak ri tz’ajom wuj chi kech k’i taq tzijob’al. We ri atzijob’al are jun chi kech ri man qasta rajawaxik "Andika", katkowinik kak’ex chi jumul ri suk’umanem: Uwokik k’i taq no’jwuj.</target>
+        <alt-trans>
+          <target xml:lang="quc">Wa we ri’ kutzir na uwach wuj tz’ajom chi kech ri k’i taq tzijob’al. We ri atzijob’al are jun chi kech e jub’iq’ rajawaxik "Andika", Katkowinik kak’ex chi jumul chik pa suk’manem: Uwokik k’i taq no’jwuj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel" approved="yes">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
-        <target xml:lang="quc" state="needs-translation">Book Making</target>
+        <target xml:lang="quc" state="translated">Katajin kub’an taq wuj</target>
+        <alt-trans>
+          <target xml:lang="quc">Tajan kub’an taq wuj   </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding" approved="yes">
         <source xml:lang="en">Branding</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
         <note xml:lang="en">Used in 3.9 and 4.0; not used in 4.1</note>
-        <target xml:lang="quc" state="needs-translation">Branding</target>
+        <target xml:lang="quc" state="translated">Ukojik retal</target>
+        <alt-trans>
+          <target xml:lang="quc">Ukojik ub’i’</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true" approved="yes">
         <source xml:lang="en">None</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
-        <target xml:lang="quc" state="needs-translation">None</target>
+        <target xml:lang="quc" state="translated">Man k'o ta jun</target>
+        <alt-trans>
+          <target xml:lang="quc">Maj jun</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
         <note>{0} is a language name.</note>
-        <target xml:lang="quc" state="needs-translation">Default Font for {0}</target>
+        <target xml:lang="quc" state="translated">Uxe'al ya’om chi uloq che {0}</target>
+        <alt-trans>
+          <target xml:lang="quc">Uwach tz'ib' ya’om chi uloq che {0}</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Ya’om chi uloq che {0}</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack" approved="yes">
         <source xml:lang="en">Front/Back Matter Pack</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
-        <target xml:lang="quc" state="needs-translation">Front/Back Matter Pack</target>
+        <target xml:lang="quc" state="translated">Nab'e/K’isb’al tanaj chakub’al</target>
+        <alt-trans>
+          <target xml:lang="quc">Tanaj chakonsab’al  b’anom chi uxe’uloq/K’isb’al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Device</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device</note>
         <note>Name of a Front/Back Matter Pack used for Bloom Reader</note>
-        <target xml:lang="quc" state="needs-translation">Device</target>
+        <target xml:lang="quc" state="translated">Wiqchakub'al</target>
+        <alt-trans>
+          <target xml:lang="quc">K’olwiqjlkemchakub'al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
-        <target xml:lang="quc" state="needs-translation">Paper Saver</target>
+        <target xml:lang="quc" state="translated">Tob'ukojik rech wuj</target>
+        <alt-trans>
+          <target xml:lang="quc">K’ol uk’u’x wuj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true" approved="yes">
         <source xml:lang="en">SIL-PNG</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG</note>
         <note>Name of a Front/Back Matter Pack that has SIL Papua New Guinea customizations</note>
-        <target xml:lang="quc" state="needs-translation">SIL-PNG</target>
+        <target xml:lang="quc" state="translated">SIL-PNG</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Super Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts title page on the inside of the front cover and credits on the inside of the back cover</note>
-        <target xml:lang="quc" state="needs-translation">Super Paper Saver</target>
+        <target xml:lang="quc" state="translated">Nimalaj tob'ukojik rech wuj</target>
+        <alt-trans>
+          <target xml:lang="quc">Nimalaj  k’oluk’u’x wuj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Traditional</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional</note>
         <note>Name of the default Front/Back Matter Pack</note>
-        <target xml:lang="quc" state="needs-translation">Traditional</target>
+        <target xml:lang="quc" state="translated">Junalik b’anom</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Video</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video</note>
         <note>Name of a Front/Back Matter Pack that is used for talking/animating experiences</note>
-        <target xml:lang="quc" state="needs-translation">Video</target>
+        <target xml:lang="quc" state="translated">Silob'wachib'al</target>
+        <alt-trans>
+          <target xml:lang="quc">Solob’ilb’al wachaj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
-        <target xml:lang="quc" state="needs-translation">Arabic-Indic</target>
+        <target xml:lang="quc" state="translated">Indo-Arábigo</target>
+        <alt-trans>
+          <target xml:lang="quc">Arabic-Indic</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian</note>
-        <target xml:lang="quc" state="needs-translation">Armenian</target>
+        <target xml:lang="quc" state="translated">Armenio</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bengali</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali</note>
-        <target xml:lang="quc" state="needs-translation">Bengali</target>
+        <target xml:lang="quc" state="translated">Bengalí</target>
+        <alt-trans>
+          <target xml:lang="quc">Bengali</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cambodian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian</note>
-        <target xml:lang="quc" state="needs-translation">Cambodian</target>
+        <target xml:lang="quc" state="translated">Aj Comboyano</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Comboyano</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cjk-Decimal</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal</note>
-        <target xml:lang="quc" state="needs-translation">Cjk-Decimal</target>
+        <target xml:lang="quc" state="translated">Cjk-Lajujib’al</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decimal</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal</note>
-        <target xml:lang="quc" state="needs-translation">Decimal</target>
+        <target xml:lang="quc" state="translated">Lajujib’al</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Devanagari</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari</note>
-        <target xml:lang="quc" state="needs-translation">Devanagari</target>
+        <target xml:lang="quc" state="translated">Devanagari</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Georgian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian</note>
-        <target xml:lang="quc" state="needs-translation">Georgian</target>
+        <target xml:lang="quc" state="translated">Aj Georgia</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Georgiano</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Gujarati</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati</note>
-        <target xml:lang="quc" state="needs-translation">Gujarati</target>
+        <target xml:lang="quc" state="translated">Aj Gujarati</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Gujarati   </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Gurmukhi</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi</note>
-        <target xml:lang="quc" state="needs-translation">Gurmukhi</target>
+        <target xml:lang="quc" state="translated">Ri Gurmukhi     
+
+</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Hebrew</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew</note>
-        <target xml:lang="quc" state="needs-translation">Hebrew</target>
+        <target xml:lang="quc" state="translated">Aj Hebreo</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Hebreo
+
+</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Kannada</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada</note>
-        <target xml:lang="quc" state="needs-translation">Kannada</target>
+        <target xml:lang="quc" state="translated">Aj Kannada</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Kannada</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Khmer</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer</note>
-        <target xml:lang="quc" state="needs-translation">Khmer</target>
+        <target xml:lang="quc" state="translated">Aj Khmer</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Khmer</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Lao</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao</note>
-        <target xml:lang="quc" state="needs-translation">Lao</target>
+        <target xml:lang="quc" state="translated">Aj Lao</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Lao</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Lower-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian</note>
-        <target xml:lang="quc" state="needs-translation">Lower-Armenian</target>
+        <target xml:lang="quc" state="translated">Aj Armenio (Ajxik)</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Lower-Armenian</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Malayalam</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam</note>
-        <target xml:lang="quc" state="needs-translation">Malayalam</target>
+        <target xml:lang="quc" state="translated">Aj Malabar</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Malayalam</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Mongolian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian</note>
-        <target xml:lang="quc" state="needs-translation">Mongolian</target>
+        <target xml:lang="quc" state="translated">Aj Mongolia</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Mongolian</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Myanmar</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar</note>
-        <target xml:lang="quc" state="needs-translation">Myanmar</target>
+        <target xml:lang="quc" state="translated">Aj Birmano</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Myanmar</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Oriya</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya</note>
-        <target xml:lang="quc" state="needs-translation">Oriya</target>
+        <target xml:lang="quc" state="translated">Aj Oriya</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Oriya</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel" approved="yes">
         <source xml:lang="en">Page Numbering Style</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel</note>
-        <target xml:lang="quc" state="needs-translation">Page Numbering Style</target>
+        <target xml:lang="quc" state="translated">Retz'eb'alil rech ajilanem uxaq taq wuj</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Persian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian</note>
-        <target xml:lang="quc" state="needs-translation">Persian</target>
+        <target xml:lang="quc" state="translated">Aj Persa</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Persa</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Tamil</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil</note>
-        <target xml:lang="quc" state="needs-translation">Tamil</target>
+        <target xml:lang="quc" state="translated">Aj Tamil</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri tamil</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Telugu</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu</note>
-        <target xml:lang="quc" state="needs-translation">Telugu</target>
+        <target xml:lang="quc" state="translated">Aj Télegu</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Telegu</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Thai</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai</note>
-        <target xml:lang="quc" state="needs-translation">Thai</target>
+        <target xml:lang="quc" state="translated">Aj Tailandés</target>
+        <alt-trans>
+          <target xml:lang="quc">AjTailandés</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Tibetan</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan</note>
-        <target xml:lang="quc" state="needs-translation">Tibetan</target>
+        <target xml:lang="quc" state="translated">Aj Tibetano</target>
+        <alt-trans>
+          <target xml:lang="quc">AjTibetano</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Upper-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
-        <target xml:lang="quc" state="needs-translation">Upper-Armenian</target>
+        <target xml:lang="quc" state="translated">Aj Armenio (Ajxik)</target>
+        <alt-trans>
+          <target xml:lang="quc">Armenio (Alto)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink" approved="yes">
         <source xml:lang="en">Special Script Settings</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink</note>
-        <target xml:lang="quc" state="needs-translation">Special Script Settings</target>
+        <target xml:lang="quc" state="translated">Suk'umanem rech taq le Ka'yib'al nim uq'ij</target>
+        <alt-trans>
+          <target xml:lang="quc">Suk'manem chi kech ri qas kika'yiba'l</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle">
+      <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
-        <target xml:lang="quc" state="needs-translation">Settings</target>
+        <target xml:lang="quc" state="translated">Suk'umanem</target>
+        <alt-trans>
+          <target xml:lang="quc">Suk'manem</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink" approved="yes">
         <source xml:lang="en">Change...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
-        <target xml:lang="quc" state="needs-translation">Change...</target>
+        <target xml:lang="quc" state="translated">K'exenik...</target>
+        <alt-trans>
+          <target xml:lang="quc">K'exanik</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection" approved="yes">
         <source xml:lang="en">Language 1</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language1InSourceCollection</note>
         <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
-        <target xml:lang="quc" state="needs-translation">Language 1</target>
+        <target xml:lang="quc" state="translated">Tzijob'al 1</target>
+        <alt-trans>
+          <target xml:lang="quc">Jun chi'</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection" approved="yes">
         <source xml:lang="en">Language 2</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language2InSourceCollection</note>
         <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
-        <target xml:lang="quc" state="needs-translation">Language 2</target>
+        <target xml:lang="quc" state="translated">Tzijob'al 2</target>
+        <alt-trans>
+          <target xml:lang="quc">Keb' chi'</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection" approved="yes">
         <source xml:lang="en">Language 3</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language3InSourceCollection</note>
         <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
-        <target xml:lang="quc" state="needs-translation">Language 3</target>
+        <target xml:lang="quc" state="translated">Tzijob'al 3</target>
+        <alt-trans>
+          <target xml:lang="quc">Oxib' chi'</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel" approved="yes">
         <source xml:lang="en">Languages</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.LanguageTabLabel</note>
-        <target xml:lang="quc" state="needs-translation">Languages</target>
+        <target xml:lang="quc" state="translated">Tzijob'al</target>
+        <alt-trans>
+          <target xml:lang="quc">Taq chi'</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink" approved="yes">
         <source xml:lang="en">Remove</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.RemoveLanguageLink</note>
-        <target xml:lang="quc" state="needs-translation">Remove</target>
+        <target xml:lang="quc" state="translated">Resaxik</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink" approved="yes">
         <source xml:lang="en">Set...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink</note>
         <note>If there is no third language specified, the link changes to this.</note>
-        <target xml:lang="quc" state="needs-translation">Set...</target>
+        <target xml:lang="quc" state="translated">Usuk'umaxik</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel" approved="yes">
         <source xml:lang="en">Local Language</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
-        <target xml:lang="quc" state="needs-translation">Local Language</target>
+        <target xml:lang="quc" state="translated">Waral Tzijob'al</target>
+        <alt-trans>
+          <target xml:lang="quc">Waral chi'</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label" approved="yes">
         <source xml:lang="en">Language 2 (e.g. National Language)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language2Label</note>
-        <target xml:lang="quc" state="needs-translation">Language 2 (e.g. National Language)</target>
+        <target xml:lang="quc" state="translated">Tzijob'al 2 (K'amab'al no'j. Utzijob'al Amaq')</target>
+        <alt-trans>
+          <target xml:lang="quc">Keb' chi' (K'amab'al no'j. Amaq' chi')</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Keb' chi' (K'utub'al Amaq' chi')</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label" approved="yes">
         <source xml:lang="en">Language 3 (e.g. Regional Language)   (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language3Label</note>
         <note xml:lang="en">OLD TEXT (before 3.9, 1 fewer space): Language 3 (e.g. Regional Language)  (Optional)</note>
-        <target xml:lang="quc" state="needs-translation">Language 3 (e.g. Regional Language)   (Optional)</target>
+        <target xml:lang="quc" state="translated">Tzijob'al 3 (K'amab'al no'j. Utzijob'al rech uq'ab' taq Amaq') (Ajawatalik)</target>
+        <alt-trans>
+          <target xml:lang="quc">Oxib' chi' (K'amab'al no'j. chi' rech uq'ab' tinamit) (Ajawatalik)
+
+</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName</note>
-        <target xml:lang="quc" state="needs-translation">Bloom Collection Name</target>
+        <target xml:lang="quc" state="translated">Ub'i' k'i taq uwach ri Bloom
+
+</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject" approved="yes">
         <source xml:lang="en">Bloom Enterprise Project</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="quc" state="needs-translation">Bloom Enterprise Project</target>
+        <target xml:lang="quc" state="translated">Wokchak rech Nima’q taq ajk’ayinelab’ Bloom</target>
+        <alt-trans>
+          <target xml:lang="quc">Ch’ob’om  chak rech Bloom nima’q taq ajk’ayanejab’</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Ch’ob’om  chak rech Bloom nima’q taq ajk’aynejab’</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Country</note>
-        <target xml:lang="quc" state="needs-translation">Country</target>
+        <target xml:lang="quc" state="translated">Amaq'</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District" approved="yes">
         <source xml:lang="en">District</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.District</note>
-        <target xml:lang="quc" state="needs-translation">District</target>
+        <target xml:lang="quc" state="translated">K'utrulewal</target>
+        <alt-trans>
+          <target xml:lang="quc">Kel wi rulewal</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel" approved="yes">
         <source xml:lang="en">Project Information</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel</note>
-        <target xml:lang="quc" state="needs-translation">Project Information</target>
+        <target xml:lang="quc" state="translated">Q’alajisab'al rech Wokcholom chak</target>
+        <alt-trans>
+          <target xml:lang="quc">Uq’alajisaxik rech ch’ob’om chak</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Uq’alajisaxik rech ch’ob’om  chak</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province" approved="yes">
         <source xml:lang="en">Province</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
-        <target xml:lang="quc" state="needs-translation">Province</target>
+        <target xml:lang="quc" state="translated">Uq’ab’ tinamit</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.Restart">
+      <trans-unit id="CollectionSettingsDialog.Restart" approved="yes">
         <source xml:lang="en">Restart</source>
         <note>ID: CollectionSettingsDialog.Restart</note>
         <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
-        <target xml:lang="quc" state="needs-translation">Restart</target>
+        <target xml:lang="quc" state="translated">K'ak'umajik</target>
+        <alt-trans>
+          <target xml:lang="quc">Umajik chi jumul </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.RestartMessage">
+      <trans-unit id="CollectionSettingsDialog.RestartMessage" approved="yes">
         <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
         <note>ID: CollectionSettingsDialog.RestartMessage</note>
-        <target xml:lang="quc" state="needs-translation">Bloom will close and re-open this project with the new settings.</target>
+        <target xml:lang="quc" state="translated">Bloom kutz’apij na xuquje’ kutor na jun mul chik we wokcholom chak ruk’ k’ak’ taq suk'manem.</target>
+        <alt-trans>
+          <target xml:lang="quc"> Bloom kutz’apij na xuquje’ kutoro na jun mul chik we ch’ob’om chak ruk’ taq k’ak’ suk'manem.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc"> Bloom kutz’apij na xuquje’  kutoro na jun mul chik we ch’ob’om chak ruk’ taq k’ak’ suk'manem.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
+      <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem" approved="yes">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
-        <target xml:lang="quc" state="needs-translation">Make Reader Template Bloom Pack...</target>
+        <target xml:lang="quc" state="translated">Uwokik jun Tanaj rech Bloom rech Raqanib'al ri No'jwuj...</target>
+        <alt-trans>
+          <target xml:lang="quc">Uwokik jun Tanaj rech Bloom rech Raqanib'al ri no'jwuj...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.AdminManagesUpdates">
+      <trans-unit id="CollectionTab.AdminManagesUpdates" approved="yes">
         <source xml:lang="en">Your system administrator manages Bloom updates for this computer.</source>
         <note>ID: CollectionTab.AdminManagesUpdates</note>
-        <target xml:lang="quc" state="needs-translation">Your system administrator manages Bloom updates for this computer.</target>
+        <target xml:lang="quc" state="translated">We k’ak’anel rech ri wokchakub’al, kuk’ak’alej ri k'i taq k’ak’arisaxik ri Bloom pa we kematz’ib’ ri'.</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri k’ak’nel rech ri wokchakub’al kuk’ak’lej ri k'i taq k’ak’saxik ri Bloom chi upam we kematz’ib’.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.AdvancedToolStripMenuItem">
+      <trans-unit id="CollectionTab.AdvancedToolStripMenuItem" approved="yes">
         <source xml:lang="en">Advanced</source>
         <note>ID: CollectionTab.AdvancedToolStripMenuItem</note>
-        <target xml:lang="quc" state="needs-translation">Advanced</target>
+        <target xml:lang="quc" state="translated">Nimab'anib'al</target>
+        <alt-trans>
+          <target xml:lang="quc"> Ub'inisam</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Applying">
+      <trans-unit id="CollectionTab.Applying" approved="yes">
         <source xml:lang="en">Applying updates</source>
         <note>ID: CollectionTab.Applying</note>
-        <target xml:lang="quc" state="needs-translation">Applying updates</target>
+        <target xml:lang="quc" state="translated">Katajin kokisax k’i taq k’ak’arisanem</target>
+        <alt-trans>
+          <target xml:lang="quc">Tajan koksax k’i taq k’ak’arisanem</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BloomLibraryLinkLabel">
+      <trans-unit id="CollectionTab.BloomLibraryLinkLabel" approved="yes">
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
         <note>ID: CollectionTab.BloomLibraryLinkLabel</note>
         <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
-        <target xml:lang="quc" state="needs-translation">Get more source books at BloomLibrary.org</target>
+        <target xml:lang="quc" state="translated">Utzukuxik k’i Kemuxe' No’jwuj pa BloomLibrary.org</target>
+        <alt-trans>
+          <target xml:lang="quc">Utzukuxik k’i No’j wuj Tz’ib’ pa BloomLibrary.org</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Utzukuxik k’i No’jwuj Tz’ib’ pa BloomLibrary.org</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part1">
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part1" approved="yes">
         <source xml:lang="en">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerification.Part1</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="quc" state="needs-translation">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</target>
+        <target xml:lang="quc" state="translated">Ub’ixikil: Le Uk'olib'al no'jwuj Bloom k’o chi upam jalajoj taq No'jwuj wokotal chik, xa are k’ut chi ronojel xa jun “Wokcha'tal Kemuxe' No’jwuj”, xa rech uwokik no'jwuj wokotal chik, man xa ta rech kaq’axax pa jun ajwaral tzijob’al.</target>
+        <alt-trans>
+          <target xml:lang="quc">Ub’ixkil: Ri K’ol no’jwuj Bloom k’o chi upam no’jwuj b’anom chik uloq, xa k’ut jun kamik ri’ “Uwach ri No’jwuj Fuente”, xa rech uwokik No’jwuj b’anom chik uloq, ma xat rech kaq’axax pa jun waral tzijob’al.  </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part2">
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part2" approved="yes">
         <source xml:lang="en">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerification.Part2</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="quc" state="needs-translation">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</target>
+        <target xml:lang="quc" state="translated">Are taq xwokotaj jun No'jwuj wokotal chik, katkowinik kapaqab'a' pa ri Uk'olib'al no'jwuj Bloom pa le k’utjaqb’al “Tzijob’exik”.</target>
+        <alt-trans>
+          <target xml:lang="quc">Are taq xwokotaj jun No'jwuj wokotal chik, katkowinik kaya pa ri Uk'olib'al no'jwuj Bloom chi k’utjaqb’al “Tzijob’exik”.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Are chi’ xwok jun No’jwuj B’anom chik uloq katkowinik kaya pa ri K’olno’l wuj Bloom chi k’utjaqb’al “Tzijob’exik”. </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption">
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption" approved="yes">
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="quc" state="needs-translation">Source Collection</target>
+        <target xml:lang="quc" state="translated">K’i taq uwach wuj Kemuxe'</target>
+        <alt-trans>
+          <target xml:lang="quc">K’i taq uwach wuj Fuente</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.DeleteBook">
+      <trans-unit id="CollectionTab.BookMenu.DeleteBook" approved="yes">
         <source xml:lang="en">Delete Book</source>
         <note>ID: CollectionTab.BookMenu.DeleteBook</note>
-        <target xml:lang="quc" state="needs-translation">Delete Book</target>
+        <target xml:lang="quc" state="translated">Uchupik ri wuj</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.DuplicateBook">
+      <trans-unit id="CollectionTab.BookMenu.DuplicateBook" approved="yes">
         <source xml:lang="en">Duplicate Book</source>
         <note>ID: CollectionTab.BookMenu.DuplicateBook</note>
-        <target xml:lang="quc" state="needs-translation">Duplicate Book</target>
+        <target xml:lang="quc" state="translated">Resaxik uwach ri wuj</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ExportDocMessage">
+      <trans-unit id="CollectionTab.BookMenu.ExportDocMessage" approved="yes">
         <source xml:lang="en">Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book. These programs normally don't do well with preserving the layout, so don't expect much.</source>
         <note>ID: CollectionTab.BookMenu.ExportDocMessage</note>
-        <target xml:lang="quc" state="needs-translation">Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book. These programs normally don't do well with preserving the layout, so don't expect much.</target>
+        <target xml:lang="quc" state="translated">Bloom kutor na we uwujil HTML pa ri kematal chak rech ri chakunel rech woktzij (amag'el are Word o LibreOffice). Katkowin na kab'an unik’ojisaxik ri woktzij xuquje’ ri wachib’al rech we no’jwuj ri'. Wa' we kematal chak k’o karaj man kuk’ol ta ri uwokob’axik uxaq wuj, man kakub’i’ ta ak’u’x chi rij.</target>
+        <alt-trans>
+          <target xml:lang="quc">Bloom kutor na we wuj HTML pa ri ukemchak rech ri chakunel rech woktz’ib’ (normalmente Word o LibreOffice). Lal kakowin na la che unik’ojisaxik ri wok tz’ib’ xuquje’ ri wachib’al rech we no’jwuj. We kemchak k’o karaj ma kuk’ol taj ri wokob’al rech ri uxaq wuj, ma kakub’i’ ta ak’u’x chi rij.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
+      <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice" approved="yes">
         <source xml:lang="en">Export to Word or LibreOffice...</source>
         <note>ID: CollectionTab.BookMenu.ExportToWordOrLibreOffice</note>
-        <target xml:lang="quc" state="needs-translation">Export to Word or LibreOffice...</target>
+        <target xml:lang="quc" state="translated">Utaqik pa Word te'qne pa LibreOffice...</target>
+        <alt-trans>
+          <target xml:lang="quc">Utaqik ri wok tz'ib' LibreOffice...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ExportToXMLForInDesign">
+      <trans-unit id="CollectionTab.BookMenu.ExportToXMLForInDesign" approved="yes">
         <source xml:lang="en">Export to XML for InDesign...</source>
         <note>ID: CollectionTab.BookMenu.ExportToXMLForInDesign</note>
-        <target xml:lang="quc" state="needs-translation">Export to XML for InDesign...</target>
+        <target xml:lang="quc" state="translated">Utaqik pa XML chech InDesign...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.MakeBloomPack">
+      <trans-unit id="CollectionTab.BookMenu.MakeBloomPack" approved="yes">
         <source xml:lang="en">Make Bloom Pack...</source>
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
-        <target xml:lang="quc" state="needs-translation">Make Bloom Pack...</target>
+        <target xml:lang="quc" state="translated">Utikik jutanaj rech Bloom...</target>
+        <alt-trans>
+          <target xml:lang="quc">Utikik jun tanaj rech Bloom...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
+      <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip" approved="yes">
         <source xml:lang="en">Update Book</source>
         <note>ID: CollectionTab.BookMenu.UpdateFrontMatterToolStrip</note>
-        <target xml:lang="quc" state="needs-translation">Update Book</target>
+        <target xml:lang="quc" state="translated">Uk'ak'arisaxik ri wuj</target>
+        <alt-trans>
+          <target xml:lang="quc">Uk'ak'saxik ri wuj</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">k'ak'saxik ri wuj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.UpdateThumbnail">
+      <trans-unit id="CollectionTab.BookMenu.UpdateThumbnail" approved="yes">
         <source xml:lang="en">Update Thumbnail</source>
         <note>ID: CollectionTab.BookMenu.UpdateThumbnail</note>
-        <target xml:lang="quc" state="needs-translation">Update Thumbnail</target>
+        <target xml:lang="quc" state="translated">Uk'ak'saxik ri lajilal</target>
+        <alt-trans>
+          <target xml:lang="quc">K'ak'saxik ri laj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookSourceHeading">
+      <trans-unit id="CollectionTab.BookSourceHeading" approved="yes">
         <source xml:lang="en">Sources For New Books</source>
         <note>ID: CollectionTab.BookSourceHeading</note>
-        <target xml:lang="quc" state="needs-translation">Sources For New Books</target>
+        <target xml:lang="quc" state="translated">Uxe’al rech k’ak’ taq wuj</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookSourcesLockNotice">
+      <trans-unit id="CollectionTab.BookSourcesLockNotice" approved="yes">
         <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
         <note>ID: CollectionTab.BookSourcesLockNotice</note>
-        <target xml:lang="quc" state="needs-translation">This collection is locked, so new books cannot be added/removed.</target>
+        <target xml:lang="quc" state="translated">We wokcha'tal uwach wuj q’atum uwach, man loq’ taj kya’ uwi’ te'qne kchup k’ak’ taq wuj.</target>
+        <alt-trans>
+          <target xml:lang="quc">We k’i taq uwach wuj  q’atum uwach, man loq’ taj kya’ uwi’ o  kchup k’ak’ taq wuj.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true">
+      <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Books From BloomLibrary.org</source>
         <note>ID: CollectionTab.Books From BloomLibrary.org</note>
-        <target xml:lang="quc" state="needs-translation">Books From BloomLibrary.org</target>
+        <target xml:lang="quc" state="translated">Taq wuj rech BloomLibrary.org</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
+      <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks" approved="yes">
         <source xml:lang="en">Do Updates of All Books</source>
         <note>ID: CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks</note>
-        <target xml:lang="quc" state="needs-translation">Do Updates of All Books</target>
+        <target xml:lang="quc" state="translated">Uk’ak’arisaxik ronojel taq wuj</target>
+        <alt-trans>
+          <target xml:lang="quc">K’ak’saxik ronojel taq wuj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks">
+      <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks" approved="yes">
         <source xml:lang="en">Do Checks of All Books</source>
         <note>ID: CollectionTab.CollectionMenu.doChecksOfAllBooks</note>
-        <target xml:lang="quc" state="needs-translation">Do Checks of All Books</target>
+        <target xml:lang="quc" state="translated">Unik’osaxik ronojel taq wuj</target>
+        <alt-trans>
+          <target xml:lang="quc">Nik’oxsaxik ronojel taq wuj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages">
+      <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages" approved="yes">
         <source xml:lang="en">Rescue Missing Images...</source>
         <note>ID: CollectionTab.CollectionMenu.rescueMissingImages</note>
-        <target xml:lang="quc" state="needs-translation">Rescue Missing Images...</target>
+        <target xml:lang="quc" state="translated">Xuxnax na k’i taq wachib’al kraj na...</target>
+        <alt-trans>
+          <target xml:lang="quc">Xuxnaxik na k’i taq wachib’al kraj na...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.showHistory">
+      <trans-unit id="CollectionTab.CollectionMenu.showHistory" approved="yes">
         <source xml:lang="en">Collection History...</source>
         <note>ID: CollectionTab.CollectionMenu.showHistory</note>
-        <target xml:lang="quc" state="needs-translation">Collection History...</target>
+        <target xml:lang="quc" state="translated">Na'tajisab'al rech wokcha'talik...</target>
+        <alt-trans>
+          <target xml:lang="quc">Na'tajisab'al rech ri k’i uwach wuj...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.showNotes">
+      <trans-unit id="CollectionTab.CollectionMenu.showNotes" approved="yes">
         <source xml:lang="en">Collection Notes...</source>
         <note>ID: CollectionTab.CollectionMenu.showNotes</note>
-        <target xml:lang="quc" state="needs-translation">Collection Notes...</target>
+        <target xml:lang="quc" state="translated">Taq ub’ixikil rech wokcha'talik...</target>
+        <alt-trans>
+          <target xml:lang="quc">Taq ub’ixkil rech ri k’i uwach wuj...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionTabLabel">
+      <trans-unit id="CollectionTab.CollectionTabLabel" approved="yes">
         <source xml:lang="en">Collections</source>
         <note>ID: CollectionTab.CollectionTabLabel</note>
-        <target xml:lang="quc" state="needs-translation">Collections</target>
+        <target xml:lang="quc" state="translated">Taq wokcha'talik</target>
+        <alt-trans>
+          <target xml:lang="quc">K’i taq uwach wuj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Collections">
+      <trans-unit id="CollectionTab.Collections" approved="yes">
         <source xml:lang="en">Collections</source>
         <note>ID: CollectionTab.Collections</note>
-        <target xml:lang="quc" state="needs-translation">Collections</target>
+        <target xml:lang="quc" state="translated">Taq wokcha'talik</target>
+        <alt-trans>
+          <target xml:lang="quc">K’i taq uwach wuj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.ConfiguringBookMessage">
+      <trans-unit id="CollectionTab.ConfiguringBookMessage" approved="yes">
         <source xml:lang="en">Building...</source>
         <note>ID: CollectionTab.ConfiguringBookMessage</note>
-        <target xml:lang="quc" state="needs-translation">Building...</target>
+        <target xml:lang="quc" state="translated">Katajin uwokik...</target>
+        <alt-trans>
+          <target xml:lang="quc">Tajan uwokik...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.ConfirmRecycleDescription">
+      <trans-unit id="CollectionTab.ConfirmRecycleDescription" approved="yes">
         <source xml:lang="en">The book '{0}'</source>
         <note>ID: CollectionTab.ConfirmRecycleDescription</note>
-        <target xml:lang="quc" state="needs-translation">The book '{0}'</target>
+        <target xml:lang="quc" state="translated">Ri wuj '{0}'</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk">
+      <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk" approved="yes">
         <source xml:lang="en">Open Folder on Disk</source>
         <note>ID: CollectionTab.ContextMenu.OpenFolderOnDisk</note>
-        <target xml:lang="quc" state="needs-translation">Open Folder on Disk</target>
+        <target xml:lang="quc" state="translated">Utorik k'olyakb'al chak chi upam ri setk'olib'al</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.EditBookButton">
+      <trans-unit id="CollectionTab.EditBookButton" approved="yes">
         <source xml:lang="en">Edit this book</source>
         <note>ID: CollectionTab.EditBookButton</note>
-        <target xml:lang="quc" state="needs-translation">Edit this book</target>
+        <target xml:lang="quc" state="translated">Ukolomaxik we wuj</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
+      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-        <target xml:lang="quc" state="needs-translation">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</target>
+        <target xml:lang="quc" state="translated">Rumal chi are we jun wokcha'tal kemuxe' no’jwuj, Bloom man katajin ta kutzuj No'jwuj wokotal chik ri e k'o pacha kemuxe' rech k'ak' taq No'jwuj wokotal chik. We kawaj kawiq jun tzijob'al chik chech jun No'jwuj wokotal chik, rajawaxik kab'an k'ak' utz'ib'axik le wokcha'talik no'jwuj ri k'o wi ri no'jwuj wokotal chik, chi uk'axwach jun uwachib'al. Le cholb'al q'ij ma kokisax ta chech uwokik jun k'ak' no'jwuj wokotal chik.</target>
+        <alt-trans>
+          <target xml:lang="quc">Rumal chech are jun k'i taq uwach ri no'jwuj fuente, Bloom ma tajan ta  kusuj no'jwuj b'anom chi uloq e k'olik pacha' fuentes chi kech k'ak' taq no'jwuj. We kawaj uya'ik uwi' jun tzijob'al che jun no'jwuj b'anom chi uloq, rajawaxik ukolomaxik k'i taq uwach no'jwuj che k'o chik chi upam ri no'jwuj b'anom chi uloq, chi uk'axwach jun wachib'al. Ri cholq'ij ma koksax ta  chech uwokik jun k'ak' No'jwuj B'anom chi uloq.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.MakeBloomPackButton">
+      <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
         <note>ID: CollectionTab.MakeBloomPackButton</note>
-        <target xml:lang="quc" state="needs-translation">Make Bloom Pack</target>
+        <target xml:lang="quc" state="translated">Uwokik jun Tanaj rech Bloom</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
+      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate" approved="yes">
         <source xml:lang="en">Make a book using this source</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate</note>
-        <target xml:lang="quc" state="needs-translation">Make a book using this source</target>
+        <target xml:lang="quc" state="translated">Uwokik jun wuj ruk’ we Uxe'al wuj</target>
+        <alt-trans>
+          <target xml:lang="quc">Uwokik jun wuj ruk’ we wuj Fuente</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_">
+      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_" approved="yes">
         <source xml:lang="en">Create a book in my language using this source book</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate_ToolTip_</note>
-        <target xml:lang="quc" state="needs-translation">Create a book in my language using this source book</target>
+        <target xml:lang="quc" state="translated">Uwokik jun wuj pa ri nutzijob’al ruk’ we Uxe'al wuj</target>
+        <alt-trans>
+          <target xml:lang="quc">Uwokik jun wuj pa ri nutzijob’al ruk’ we wuj Fuente
+
+</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.MoreLanguagesMenuItem">
+      <trans-unit id="CollectionTab.MoreLanguagesMenuItem" approved="yes">
         <source xml:lang="en">More...</source>
         <note>ID: CollectionTab.MoreLanguagesMenuItem</note>
         <note>Brings up the localization dialog</note>
         <note xml:lang="en">used in 3.9 and earlier; feature removed in 4.0</note>
-        <target xml:lang="quc" state="needs-translation">More...</target>
+        <target xml:lang="quc" state="translated">K’i...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Open/CreateCollectionButton">
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton" approved="yes">
         <source xml:lang="en">Other Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton</note>
         <note>This is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
-        <target xml:lang="quc" state="needs-translation">Other Collection</target>
+        <target xml:lang="quc" state="translated">Jun chik woktanaj</target>
+        <alt-trans>
+          <target xml:lang="quc">Jun chik tanaj   </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Open/CreateCollectionButton_ToolTip_">
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton_ToolTip_" approved="yes">
         <source xml:lang="en">Open/Create/Get Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton_ToolTip_</note>
         <note>This is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
-        <target xml:lang="quc" state="needs-translation">Open/Create/Get Collection</target>
+        <target xml:lang="quc" state="translated">Utorik/uwokik/Uk’amik woktanaj</target>
+        <alt-trans>
+          <target xml:lang="quc">Utorik/uwokik/Uk’amik Tanaj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.OpenCreateCollectionMenuItem">
+      <trans-unit id="CollectionTab.OpenCreateCollectionMenuItem" approved="yes">
         <source xml:lang="en">Open or Create Another Collection</source>
         <note>ID: CollectionTab.OpenCreateCollectionMenuItem</note>
-        <target xml:lang="quc" state="needs-translation">Open or Create Another Collection</target>
+        <target xml:lang="quc" state="translated">Utorik te'qne uwokik jun chik woktanaj</target>
+        <alt-trans>
+          <target xml:lang="quc">Utorik xuquje’ uwokik jun chik tanaj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Progress">
+      <trans-unit id="CollectionTab.Progress" approved="yes">
         <source xml:lang="en">({0}% complete)</source>
         <note>ID: CollectionTab.Progress</note>
-        <target xml:lang="quc" state="needs-translation">({0}% complete)</target>
+        <target xml:lang="quc" state="translated">({0}% xtz'aqatisaxik) </target>
       </trans-unit>
-      <trans-unit id="CollectionTab.RestartToUpdate">
+      <trans-unit id="CollectionTab.RestartToUpdate" approved="yes">
         <source xml:lang="en">Restart Bloom to Update</source>
         <note>ID: CollectionTab.RestartToUpdate</note>
         <note>Restart the Bloom program, not Windows</note>
-        <target xml:lang="quc" state="needs-translation">Restart Bloom to Update</target>
+        <target xml:lang="quc" state="translated">K'ak'umajik rech uk'ak'arisaxik</target>
+        <alt-trans>
+          <target xml:lang="quc">K'ak' umajik rech uk'ak'saxik </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
+      <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample Shells</source>
         <note>ID: CollectionTab.Sample Shells</note>
-        <target xml:lang="quc" state="needs-translation">Sample Shells</target>
+        <target xml:lang="quc" state="translated">Taq wuj B'anom chik rech k'utb'al</target>
+        <alt-trans>
+          <target xml:lang="quc">Taq wuj B'anom chi uloq rech k'utb'al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.SendReceive">
+      <trans-unit id="CollectionTab.SendReceive" approved="yes">
         <source xml:lang="en">Send/Receive</source>
         <note>ID: CollectionTab.SendReceive</note>
-        <target xml:lang="quc" state="needs-translation">Send/Receive</target>
+        <target xml:lang="quc" state="translated">Utaqik/Uk’amik  </target>
       </trans-unit>
-      <trans-unit id="CollectionTab.SettingsButton">
+      <trans-unit id="CollectionTab.SettingsButton" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionTab.SettingsButton</note>
-        <target xml:lang="quc" state="needs-translation">Settings</target>
+        <target xml:lang="quc" state="translated">Suk'umanem</target>
+        <alt-trans>
+          <target xml:lang="quc">Suk'manem</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+      <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections" approved="yes">
         <source xml:lang="en">Open Additional Collections Folder</source>
         <note>ID: CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections</note>
-        <target xml:lang="quc" state="needs-translation">Open Additional Collections Folder</target>
+        <target xml:lang="quc" state="translated">Utorik jun tz'aqatisab'al k'olyakb'al chak rech Wokcha'tal No'jwuj</target>
+        <alt-trans>
+          <target xml:lang="quc">Utorik jun k'olyakb'al chak uya'ik uwi' chech ri k'i taq Uwach wuj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.SourcesForNewShellsHeading">
+      <trans-unit id="CollectionTab.SourcesForNewShellsHeading" approved="yes">
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
-        <target xml:lang="quc" state="needs-translation">Sources For New Shells</target>
+        <target xml:lang="quc" state="translated">Kemuxe' tz'ib' rech k’ak’ taq No'jwuj wokotal chik</target>
+        <alt-trans>
+          <target xml:lang="quc">Uxe’al rech k’ak’ taq wuj</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Uxe’al rech k’ak’ taq No'jwuj wuj b'anom chi uloq</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Templates" sil:dynamic="true">
+      <trans-unit id="CollectionTab.Templates" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Templates</source>
         <note>ID: CollectionTab.Templates</note>
-        <target xml:lang="quc" state="needs-translation">Templates</target>
+        <target xml:lang="quc" state="translated">Raqanib’al </target>
       </trans-unit>
-      <trans-unit id="CollectionTab.TitleMissing">
+      <trans-unit id="CollectionTab.TitleMissing" approved="yes">
         <source xml:lang="en">Title Missing</source>
         <note>ID: CollectionTab.TitleMissing</note>
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
-        <target xml:lang="quc" state="needs-translation">Title Missing</target>
+        <target xml:lang="quc" state="translated">Ub’i’ chak karaj na </target>
       </trans-unit>
-      <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip">
+      <trans-unit id="CollectionTab.UILanguageMenu.HelpTranslate">
+        <source xml:lang="en">Help us translate Bloom (web)</source>
+        <note>ID: CollectionTab.UILanguageMenu.HelpTranslate</note>
+        <note>The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.</note>
+        <target xml:lang="quc" state="needs-translation">Help us translate Bloom (web)</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip" approved="yes">
         <source xml:lang="en">{0}% translated</source>
         <note>ID: CollectionTab.UILanguageMenu.ItemTooltip</note>
         <note>Shown when hovering over an item in the UI Language menu. The {0} marker is filled in by a number between 1 and 100.</note>
-        <target xml:lang="quc" state="needs-translation">{0}% translated</target>
+        <target xml:lang="quc" state="translated">‎{0}% q’axem chik</target>
+        <alt-trans>
+          <target xml:lang="quc">‎{0}% q’axem ri tzi</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.UnableToCheckForUpdate">
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
@@ -1014,11 +1534,14 @@
         <note>ID: Common.HelpButton</note>
         <target xml:lang="quc" state="needs-translation">&amp;Help</target>
       </trans-unit>
-      <trans-unit id="Common.Loading" sil:dynamic="true">
+      <trans-unit id="Common.Loading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Loading...</source>
         <note>ID: Common.Loading</note>
         <note>This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.</note>
-        <target xml:lang="quc" state="needs-translation">Loading...</target>
+        <target xml:lang="quc" state="translated">Katajin kusik'ij uwach...</target>
+        <alt-trans>
+          <target xml:lang="quc">Tajan kreqar…</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.Next">
         <source xml:lang="en">&amp;Next</source>
@@ -1032,79 +1555,115 @@
         <note>In a wizard, this button takes you to the next step.</note>
         <target xml:lang="quc" state="needs-translation">Next</target>
       </trans-unit>
-      <trans-unit id="Common.OK">
+      <trans-unit id="Common.OK" approved="yes">
         <source xml:lang="en">OK</source>
         <note>ID: Common.OK</note>
-        <target xml:lang="quc" state="needs-translation">OK</target>
+        <target xml:lang="quc" state="translated">Uk'amik</target>
+        <alt-trans>
+          <target xml:lang="quc">KK’AMIK</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.OKButton">
+      <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="quc" state="needs-translation">&amp;OK</target>
+        <target xml:lang="quc" state="translated">&amp;Uk'amik</target>
+        <alt-trans>
+          <target xml:lang="quc">&amp;KK’AMIK</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Optional">
+      <trans-unit id="Common.Optional" approved="yes">
         <source xml:lang="en">optional</source>
         <note>ID: Common.Optional</note>
-        <target xml:lang="quc" state="needs-translation">optional</target>
+        <target xml:lang="quc" state="translated">ya'tal kacha'o</target>
+        <alt-trans>
+          <target xml:lang="quc">opcional Ajawtalik</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Preview">
+      <trans-unit id="Common.Preview" approved="yes">
         <source xml:lang="en">Preview</source>
         <note>ID: Common.Preview</note>
-        <target xml:lang="quc" state="needs-translation">Preview</target>
+        <target xml:lang="quc" state="translated">Nab’e rilik</target>
       </trans-unit>
-      <trans-unit id="Common.Progress">
+      <trans-unit id="Common.Progress" approved="yes">
         <source xml:lang="en">Progress</source>
         <note>ID: Common.Progress</note>
-        <target xml:lang="quc" state="needs-translation">Progress</target>
+        <target xml:lang="quc" state="translated">Nimarem</target>
       </trans-unit>
-      <trans-unit id="Common.Refresh">
+      <trans-unit id="Common.Refresh" approved="yes">
         <source xml:lang="en">Refresh</source>
         <note>ID: Common.Refresh</note>
         <note>Sense of refreshing a web page.</note>
-        <target xml:lang="quc" state="needs-translation">Refresh</target>
+        <target xml:lang="quc" state="translated">K'ak'arisaxik</target>
+        <alt-trans>
+          <target xml:lang="quc">K'ak'saxik </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.SeeWebPage">
+      <trans-unit id="Common.SeeWebPage" approved="yes">
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
         <note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
-        <target xml:lang="quc" state="needs-translation">See {0}.</target>
+        <target xml:lang="quc" state="translated">Ilik {0}.</target>
+        <alt-trans>
+          <target xml:lang="quc">Ilik {0}</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Settings">
+      <trans-unit id="Common.Settings" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: Common.Settings</note>
-        <target xml:lang="quc" state="needs-translation">Settings</target>
+        <target xml:lang="quc" state="translated">Suk'umanem</target>
+        <alt-trans>
+          <target xml:lang="quc">Suk'manem</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Download.Completed">
+      <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
-        <target xml:lang="quc" state="needs-translation">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</target>
+        <target xml:lang="quc" state="translated">Ri uqajisaxik ({0}) xtz'aqatik. Katkowin chech rilik pa ri wokutas rech Woktanaj, "Wuj taq rech BloomLibrary.org".</target>
+        <alt-trans>
+          <target xml:lang="quc">Uqajisaxik ({0}) xtz'aqatik. Katkowin che rilik pa ri k’olwokutas rech K’i taq uwach wuj, "Wuj taq rech BloomLibrary.org". </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Download.CompletedCaption">
+      <trans-unit id="Download.CompletedCaption" approved="yes">
         <source xml:lang="en">Download complete</source>
         <note>ID: Download.CompletedCaption</note>
-        <target xml:lang="quc" state="needs-translation">Download complete</target>
+        <target xml:lang="quc" state="translated">Xtz’aqat uqajisaxik</target>
+        <alt-trans>
+          <target xml:lang="quc">Tz’aqat uqajisaxik</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Download.CopyFailed">
+      <trans-unit id="Download.CopyFailed" approved="yes">
         <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers</source>
         <note>ID: Download.CopyFailed</note>
         <note xml:lang="en">OLD TEXT (before 3.9, period at end): Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</note>
-        <target xml:lang="quc" state="needs-translation">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers</target>
+        <target xml:lang="quc" state="translated">Bloom xuqajisaj ri wuj, xa k’ut man xkowin ta chech uya’ik jamalik uwach pa Bloom. Chb’ana toqob’, chatzija chi jumul chik ri akematz’ib’ xuquje’ chab’ana jumul chik. We kwil chi jumul we jun oqxa’n ri', chb’ana toq’ob’ chb’ana pitz' pa uwi’ ri “Detalles” xuquje’ chya ub’ixik ri k’axk'olil chi kech ri ajkemal taq chak rech Bloom</target>
+        <alt-trans>
+          <target xml:lang="quc">Bloom xuqasaj  ri wuj, xa k’ut ma xkowin ta che uya’ik jamalik uwach pa ri Bloom. Chb’ana toqob’, chamajij jumul chik ri akematz’ib’ xuquje’ chab’ana jumul chik. We kk’am we jun oqxa’n jun mul  chik, chb’ana toq’ob’ chb’ana pitz' pa uwi’ ri  “Detalles” xuquje’ chya ub’ixik ri k’ayowal  chi kech ri kemonelab’ rech Bloom</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Download.DownloadingDialogTitle">
+      <trans-unit id="Download.DownloadingDialogTitle" approved="yes">
         <source xml:lang="en">Downloading book</source>
         <note>ID: Download.DownloadingDialogTitle</note>
-        <target xml:lang="quc" state="needs-translation">Downloading book</target>
+        <target xml:lang="quc" state="translated">Katajin uqajisaxik ri wuj</target>
+        <alt-trans>
+          <target xml:lang="quc">Tajan uqajisaxik ri wuj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Download.GenericNetworkProblemNotice">
+      <trans-unit id="Download.GenericNetworkProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
         <note>ID: Download.GenericNetworkProblemNotice</note>
         <note xml:lang="en">OLD TEXT (before 3.9): There was a problem downloading your book.</note>
-        <target xml:lang="quc" state="needs-translation">There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</target>
+        <target xml:lang="quc" state="translated">Man xb’an ta ta kowinem chech uqajisaxik ri wuj. Chb’ana jumul pa jun q’ij chik xuquje’ kaya ub’ixik chi qech chi upam we issues@bloomlibrary.org we man xatkowin ta chech uqajisaxik.</target>
+        <alt-trans>
+          <target xml:lang="quc">Man xb’an taj ta kwinem che uqajisaxik ri wuj. Chb’ana jumul chik pa jun q’ij chik xuquje’ kaya ub’ixik chi qech chi upam we issues@bloomlibrary.org we man xatkowin ta che uqajisaxik.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Download.ProblemNotice">
+      <trans-unit id="Download.ProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
         <note>ID: Download.ProblemNotice</note>
-        <target xml:lang="quc" state="needs-translation">There was a problem downloading your book. You may need to restart Bloom or get technical help.</target>
+        <target xml:lang="quc" state="translated">Man xb’antaj ta kowinem chech uqajisaxik ri awuj. Kraj ne rajawaxik kab'an k’ak’umajik jumul chik ri Bloom te'qne uta'ik tob'anik chech jun k’o reta’mab’al chi rij.</target>
+        <alt-trans>
+          <target xml:lang="quc">Ma xb’antaj ta kwinem che uqajisaxik ri awuj. Kaj ne rajawaxik k’ak’ umajik jumul chik ri  Bloom xuquje’ uk’amik to’ba’nik che jun k’o reta’mab’al chi rij.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Download.TimeoutProblemNotice">
         <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
@@ -1440,11 +1999,11 @@
         <note>ID: EditTab.FormatDialog.CreateStyle</note>
         <target xml:lang="quc" state="needs-translation">Create a new style</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.DefaultStyles.BigWords-style" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.BigWords-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Words</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.BigWords-style</note>
         <note>Appears in most templates</note>
-        <target xml:lang="quc" state="needs-translation">Big Words</target>
+        <target xml:lang="quc" state="translated">Nima'q taq tzij</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Cover-Default-style" sil:dynamic="true">
         <source xml:lang="en">Cover Default</source>
@@ -1491,7 +2050,7 @@
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.quiz-style" sil:dynamic="true">
         <source xml:lang="en">Quiz</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.quiz-style</note>
-        <note>Multimedia template</note>
+        <note>Special template</note>
         <target xml:lang="quc" state="needs-translation">Quiz</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true">
@@ -1856,7 +2415,7 @@
         <note>Button in a state that indicates books in this collection are always unlocked.</note>
         <target xml:lang="quc" state="needs-translation">Books are never locked in a Source Collection.</target>
       </trans-unit>
-      <trans-unit id="EditTab.NewBookName">
+      <trans-unit id="EditTab.NewBookName" approved="yes">
         <source xml:lang="en">Book</source>
         <note>ID: EditTab.NewBookName</note>
         <note>Default file and folder name when you make a new book, but haven't give it a title yet.</note>
@@ -2715,6 +3274,12 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakLabel</note>
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible, but without the number</note>
         <target xml:lang="quc" state="needs-translation">Speak</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitError">
+        <source xml:lang="en">Something went wrong while splitting the recording.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SplitError</note>
+        <note>This text appears if an error occurs while perfoming automatic splitting of audio (an audio file corresponding to an entire text box will be split into multiple sections, one section per sentence).</note>
+        <target xml:lang="quc" state="needs-translation">Something went wrong while splitting the recording.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel">
         <source xml:lang="en">Split recording into sentences for highlighting.</source>
@@ -3733,6 +4298,12 @@
         <note>Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc.</note>
         <target xml:lang="quc" state="needs-translation">Accessibility</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.BuildingEPub">
+        <source xml:lang="en">Building ePUB</source>
+        <note>ID: PublishTab.Epub.BuildingEPub</note>
+        <note>Shown in a progress box when Bloom is starting to create an ePUB</note>
+        <target xml:lang="quc" state="needs-translation">Building ePUB</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.Done">
         <source xml:lang="en">Done</source>
         <note>ID: PublishTab.Epub.Done</note>
@@ -3802,7 +4373,7 @@
         <note>ID: PublishTab.Epub.Title</note>
         <target xml:lang="quc" state="needs-translation">Create an ePUB book</target>
       </trans-unit>
-      <trans-unit id="PublishTab.EpubButton">
+      <trans-unit id="PublishTab.EpubButton" approved="yes">
         <source xml:lang="en">ePUB</source>
         <note>ID: PublishTab.EpubButton</note>
         <target xml:lang="quc" state="translated">ePUB</target>
@@ -4400,7 +4971,7 @@ Do you want to go ahead?</note>
         <note>ID: ReaderSetup.AverageHeader</note>
         <target xml:lang="quc" state="needs-translation">Avg</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book</source>
         <note>ID: ReaderSetup.BookHeader</note>
         <target xml:lang="quc" state="translated">Wuj</target>
@@ -4480,6 +5051,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">.</source>
         <note>ID: ReaderSetup.Letters.LetterHelp4</note>
         <target xml:lang="quc" state="needs-translation">.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp5" sil:dynamic="true">
+        <source xml:lang="en">Do not include punctuation in this list. Bloom does not support the inclusion of punctuation in decodable stages.</source>
+        <note>ID: ReaderSetup.Letters.LetterHelp5</note>
+        <target xml:lang="quc" state="needs-translation">Do not include punctuation in this list. Bloom does not support the inclusion of punctuation in decodable stages.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true">
         <source xml:lang="en">Level</source>
@@ -4784,10 +5360,13 @@ Do you want to go ahead?</note>
         <note>ID: ReportProblemDialog.IncludeScreenshotButton</note>
         <target xml:lang="quc" state="needs-translation">Include this screenshot</target>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Name">
+      <trans-unit id="ReportProblemDialog.Name" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: ReportProblemDialog.Name</note>
-        <target xml:lang="quc" state="translated">Biaj</target>
+        <target xml:lang="quc" state="translated">B'i'aj</target>
+        <alt-trans>
+          <target xml:lang="quc">Biaj</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.Retry">
         <source xml:lang="en">Retry</source>
@@ -4873,11 +5452,10 @@ Do you want to go ahead?</note>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
         <target xml:lang="quc" state="needs-translation">This script requires taller lines</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true">
-        <source xml:lang="en">Arithmetic Template</source>
-        <note>ID: TemplateBooks.BookName.Arithmetic Template</note>
-        <note xml:lang="en">OLD TEXT (before 4.0): Arithmetic</note>
-        <target xml:lang="quc" state="needs-translation">Arithmetic Template</target>
+      <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
+        <source xml:lang="en">Arithmetic</source>
+        <note>ID: TemplateBooks.BookName.Arithmetic</note>
+        <target xml:lang="quc" state="needs-translation">Arithmetic</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true">
         <source xml:lang="en">Basic Book</source>
@@ -4899,11 +5477,6 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.BookName.Leveled Reader</note>
         <target xml:lang="quc" state="needs-translation">Leveled Reader</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Multimedia" sil:dynamic="true">
-        <source xml:lang="en">Multimedia</source>
-        <note>ID: TemplateBooks.BookName.Multimedia</note>
-        <target xml:lang="quc" state="needs-translation">Multimedia</target>
-      </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true">
         <source xml:lang="en">Picture Dictionary</source>
         <note>ID: TemplateBooks.BookName.Picture Dictionary</note>
@@ -4913,6 +5486,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Sign Language</source>
         <note>ID: TemplateBooks.BookName.Sign Language</note>
         <target xml:lang="quc" state="needs-translation">Sign Language</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Special" sil:dynamic="true">
+        <source xml:lang="en">Special</source>
+        <note>ID: TemplateBooks.BookName.Special</note>
+        <target xml:lang="quc" state="needs-translation">Special</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true">
         <source xml:lang="en">Template Starter</source>
@@ -4934,6 +5512,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.BookName.Wall Calendar</note>
         <target xml:lang="quc" state="needs-translation">Wall Calendar</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Bloom Reader Quiz" sil:dynamic="true">
+        <source xml:lang="en">Use for comprehension testing on devices.</source>
+        <note>ID: TemplateBooks.PageDescription.Bloom Reader Quiz</note>
+        <target xml:lang="quc" state="needs-translation">Use for comprehension testing on devices.</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true">
         <source xml:lang="en">A blank page that allows you to add items.</source>
         <note>ID: TemplateBooks.PageDescription.Custom</note>
@@ -4954,6 +5537,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
         <note>New string in Bloom 4.2</note>
         <target xml:lang="quc" state="needs-translation">For use with Landscape orientation.</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true">
+        <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
+        <note>ID: TemplateBooks.PageDescription.Translation Instructions</note>
+        <target xml:lang="quc" state="needs-translation">A page of instructions to translators which appears only in the Edit tab.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true">
         <source xml:lang="en">1</source>
@@ -5048,10 +5636,10 @@ Do you want to go ahead?</note>
         <note>This label indicates a page with three arithmetic problems on it.</note>
         <target xml:lang="quc" state="needs-translation">3 Problems</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.4" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.4" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4</source>
         <note>ID: TemplateBooks.PageLabel.4</note>
-        <target xml:lang="quc" state="needs-translation">4</target>
+        <target xml:lang="quc" state="translated">4</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.4 Problems" sil:dynamic="true">
         <source xml:lang="en">4 Problems</source>
@@ -5064,10 +5652,10 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.5</note>
         <target xml:lang="quc" state="needs-translation">5</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.6" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.6" sil:dynamic="true" approved="yes">
         <source xml:lang="en">6</source>
         <note>ID: TemplateBooks.PageLabel.6</note>
-        <target xml:lang="quc" state="needs-translation">6</target>
+        <target xml:lang="quc" state="translated">6</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.7" sil:dynamic="true">
         <source xml:lang="en">7</source>
@@ -5214,6 +5802,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Instructions" sil:dynamic="true">
         <source xml:lang="en">Instructions</source>
         <note>ID: TemplateBooks.PageLabel.Instructions</note>
+        <note>Used for Big Book Teacher instructions</note>
         <target xml:lang="quc" state="needs-translation">Instructions</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just Text" sil:dynamic="true">
@@ -5287,6 +5876,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Super Paper Saver</source>
         <note>ID: TemplateBooks.PageLabel.Super Paper Saver</note>
         <target xml:lang="quc" state="needs-translation">Super Paper Saver</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Text Over Video" sil:dynamic="true">
+        <source xml:lang="en">Text Over Video</source>
+        <note>ID: TemplateBooks.PageLabel.Text Over Video</note>
+        <target xml:lang="quc" state="needs-translation">Text Over Video</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.The End" sil:dynamic="true">
         <source xml:lang="en">The End</source>

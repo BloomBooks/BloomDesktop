@@ -2,115 +2,192 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="quc">
     <body>
-      <trans-unit id="template.starter">
+      <trans-unit id="template.starter" approved="yes">
         <source xml:lang="en">How to use the Template Starter</source>
-        <target xml:lang="quc" state="needs-translation">How to use the Template Starter</target>
+        <target xml:lang="quc" state="translated">Jas ukojik ri Raqanib’al majib’al rech</target>
         <note>ID: template.starter</note>
+        <alt-trans>
+          <target xml:lang="quc">Su ukojik ri Raqanib’al majib’al rech</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.firstusage">
+      <trans-unit id="template.starter.firstusage" approved="yes">
         <source xml:lang="en">This special template lets you make your own templates. A template provides a set of related page layouts that an author can choose from in writing an original book. Usually the text blocks and picture blocks on template pages will be empty, ready for an author to fill in. Sometimes there may be standard text or pictures that should be on every copy of the page.
 There are two ways people can use your template. The first way is to start new books. For example, imagine student books that have one page for each school day of the week. You could make a template with 5 pages, each with places to type in text and choose pictures. Curriculum authors could select your template and make a new book, one for each week<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</source>
-        <target xml:lang="quc" state="needs-translation">This special template lets you make your own templates. A template provides a set of related page layouts that an author can choose from in writing an original book. Usually the text blocks and picture blocks on template pages will be empty, ready for an author to fill in. Sometimes there may be standard text or pictures that should be on every copy of the page.
-There are two ways people can use your template. The first way is to start new books. For example, imagine student books that have one page for each school day of the week. You could make a template with 5 pages, each with places to type in text and choose pictures. Curriculum authors could select your template and make a new book, one for each week<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
+        <target xml:lang="quc" state="translated">We raqanib’al nim uq'ij kuya q’ij rech katik jalajoj taq raqanib’al awech at. Jun raqanib’al kuya jupuq wokob’al rech uxaq taq wuj ri e junamatalik rech jun b’anal no'wuj kucha jun wuj qas uxe’al. Amaq'el le kajxukut rech woktz’ib’ xuquje’ le kajxukut rech ri wachib’al pa taq uxaq wuj ri raqanib’al jamal na upam rech jun b’anal rech kunojisaj. K’o karaj k’o woktz’ib’ pa junamam te’qne wachib’al pa junamam rajawaxik k’o chi jujunal ri uxaq taq wuj.
+K’o keb’ uwach ukojik ri raqanib’al kumal le winaq. Le nab’e ukojik are chech umajik ub’anik k’ak’ taq wuj. K'amna'oj: Chachomaj wuj chi kech ri tijoxelab’ chi kkikoj jun uxaq wuj ronojel taq q’ij pa taq le wuqq'ij. At katkowin chech ub’anik jun raqanib’al ruk’ job’ uxaq taq wuj, chi jujunal ruk’ kajuxukut rech unimik woktz’ib’ xuquje’ ucha’xik jalajoj taq wachib’al. Ri e b’anal k'ak' taq chomab'al kya'o kkicha ri raqanib’al rech kkib'an jun k’ak’ wuj, jujun chi q'ij rech le wuqq'ij<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
         <note>ID: template.starter.firstusage</note>
+        <alt-trans>
+          <target xml:lang="quc">We raqanib’al nim uq'ij kuya q’ij rech katik jalajoj taq raqanib’al awech at. Jun raqanib’al kuya jun puq wokob’al che uxaq taq wuj kajunamatajik che jun b’anol rech kucha’o ri utz’ib’axik jun wuj qas uxe’al. Je wi ri kaj xukut rech woktz’ib’ xuquje’ ri kaj taq xukut rech ri wachib’al pa ri uxaq taq wuj rech ri raqanib’al jamal na upam, xutzirik rech jun b’anol rech kutz’aqo. K’o karaj k’o woktz’ib’ pa junamam xuquje’ k’i taq wachib’al rajawaxik k’o chi jujunal ri uxaq wuj.
+K’o keb’ uwach ri winaq kkowinik kukoj ri uraqanib’al. Ri nab’e ub’anik are rech umajik ub’anik k’ak’ taq wuj. Pacha’ ri k’utub’al, chchomaj pe’ wuj chi kech ri tijoxelab’ che k’o jun uxaq wuj ronojel taq q’ij pa jun xomano. Lal kkowin na la che ub’anik jun raqanib’al ruk’ job’ uxaq taq wuj, jujunal ruk’ kaj uxukut rech unimik woktz’ib’ xuquje’ ucha’xik wachib’al. Ri b’anal taq rech ri chomaba’l k’ak’ k’utik kkowin na che ucha’xik ri raqanib’al xuquje’ ub’anik jun k’ak’ wuj, jun che xomano <g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">We raqanib’al  qas k’wich na kuya q’ij katik awech ri raqanib’al. Jun raqanib’al  kuya jun puq wokob’al che  uxaq taq wuj  kajunamatajik che jun b’anol rech kucha’o  ri utz’ib’axik jun wuj qas uxe’al. Je wi ri kaj xukut rech woktz’ib’  xuquje’ ri kaj taq xukut rech ri wachib’al  pa ri uxaq taq wuj rech ri raqanib’al jamal na upam, xutzirik rech jun b’anol rech  kutz’aqo. K’o karaj k’o woktz’ib’  pa junamam  xuquje’ k’i taq  wachib’al rajawaxik k’o chi jujunal ri uxaq wuj.
+K’o keb’ uwach ri winaq kkowinik kukoj ri uraqanib’al. Ri nab’e ub’anik are rech umajik ub’anik k’ak’ taq wuj. Pacha’ ri k’utub’al,  chchomaj pe’ wuj chi kech ri tijoxelab’ che k’o jun uxaq wuj ronojel taq q’ij pa jun xomano. Lal kkowin na la  che ub’anik jun raqanib’al ruk’ job’ uxaq taq wuj, jujunal  ruk’ kaj uxukut  rech unimik woktz’ib’ xuquje’  ucha’xik wachib’al. Ri b’anal taq rech ri chomaba’l k’ak’ k’utik  kkowin na  che ucha’xik ri raqanib’al xuquje’ ub’anik jun k’ak’ wuj, jun  che xomano  <g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.
+</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.secondusage">
+      <trans-unit id="template.starter.secondusage" approved="yes">
         <source xml:lang="en">The second way people can use templates is as source of new pages, regardless of how they started the book. For example, in some places, each book requires a page as part of a government approval process. You might make a template containing that page and give it to others in your country. Then, when people translate a shellbook, they go to the end of the book and click “Add Page”. The page you made will appear in their list of choices. Some other ideas for templates are alphabet charts, glossaries, and instructions on how to use the book in a classroom. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></source>
-        <target xml:lang="quc" state="needs-translation">The second way people can use templates is as source of new pages, regardless of how they started the book. For example, in some places, each book requires a page as part of a government approval process. You might make a template containing that page and give it to others in your country. Then, when people translate a shellbook, they go to the end of the book and click “Add Page”. The page you made will appear in their list of choices. Some other ideas for templates are alphabet charts, glossaries, and instructions on how to use the book in a classroom. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
+        <target xml:lang="quc" state="translated">Ri ukab' ukojik le raqanib'al kumal le winaq are kuk'am ub'e chech taq k’ak’ uxaq wuj, man rajawaxik taj kkil ri umajik uloq ri no'jwuj. K'amna'oj: Pa jujun taq tinamit, chi jujunal taq le uwaq wuj kuta jun uxaq wuj jawi' k’o wi ri uchakunisaxik jawi' kub’ij wi chi xya uq'ij rumal le q'atab’al tzij. Kuya'o kwok jun raqanib’al ri k'o wi ri uxaq wuj rech kajach chi kech pa jun tinamit chik. K’ate k’u ri’, are taq ri wuj kq'axax pa jule' taq tzij chik ri No'jwuj wokotal chik kuya'o kb’e pa uk’isb’al rech ri wuj k'ate k'u ri' kab’an pitz’ pa “Uwiqik uxaq wuj”. Ri uxaq wuj ri xab’ano kq’alajin pa ri kacha' wi. Jujun taq chomab'al pa uwi' le raqanib’al k’o chi upam ri q’e’tb’al rech ri choltz’ib’, choltzij xuquje’ k’i taq taqanik pa uwi’ jas ukojik ri wuj pa jun tijob’al kuk’ tijoxelab’. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
         <note>ID: template.starter.secondusage</note>
+        <alt-trans>
+          <target xml:lang="quc">Ri ukab' jun chik ub'anik are che ri winaq kekowinik  kkikoj  ri raqanib'al  pacha’ xpe wi ri tz’ib’ rech taq k’ak’ uxaq taq wuj,  man are taj kilik su umajikuloq ri wuj. Pacha’ ri k’utub’al, pa jun taq k’olib’al, jujunal chi kech ri wuj kuta jun uxaq wuj  pa k’o wi ri uchakunisaxik pa kub’ij wi che ri q’atab’al tzij ya’talik. Chwoko jun raqanib’al ruk’ ri uxaq wuj xuya ri q’atab’al tzij xuquje’ chjacha’ chi kech nik’aj chik pa ri awamaq’. K’ate k’u ri’, are chi’ nik’aj chik kkichakuj uq’axexik tzij pa ri Wuj eb’anom chi uloq, utz kb’e k’isb’al rech ri wuj xuquje’ kb’an pitz’ pa “ Uya’ik uxaq wuj”.  Ri uxaq wuj che xb’an la kq’alijan chi upam ri chol b’i’aj.  Nik’aj taq chomaba’l chik rech raqanib’al k’o chi upam ri q’e’tb’al rech ri choltz’ib’, k’i taq choltzij xuquje’ k’i taq taqanik pa uwi’ su ukojik ri wuj pa jun tijob’al kuk’ jupuq ajtijoxelab’.  <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g> </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.waystohelp">
+      <trans-unit id="template.starter.waystohelp" approved="yes">
         <source xml:lang="en">Making templates is just like making any other custom book; all the same controls are available for making and customizing pages. But since you will probably be sharing with other people, there are a number of things you can do to help users of your template:</source>
-        <target xml:lang="quc" state="needs-translation">Making templates is just like making any other custom book; all the same controls are available for making and customizing pages. But since you will probably be sharing with other people, there are a number of things you can do to help users of your template:</target>
+        <target xml:lang="quc" state="translated">Ri e raqanib’al xaq junam ub’anik pacha’ nik’aj taq No'jwuj winaqirisam chik; ronojel ri iltajinaq chik ya’talik kokisaxik chech ub’anik xuquje’ recheb’exik ri uxaq taq wuj winaqirisam chik. Xa k’ut we jachom ri e raqanib’al kuk’ jule' taq winaq chik, k'o k’i taq jastaq katkowinik kab’ano chech kito’ik ri kekojow ri raqanib’al ab'anom:</target>
         <note>ID: template.starter.waystohelp</note>
+        <alt-trans>
+          <target xml:lang="quc">Ri raqanib’alib’ xaq junam ub’anik pacha’ nik’aj taq wuj chik echb’exik, ronojel iltajnaq ya’talik koksaxik che ub’anik xuquje’ rechb’exik ri uxaq taq wuj. Xa k’ut we jachom ri raqanib’alib’ kuk’ nik’aj taq winaq chik, K’i taq sutaq katkowinik kab’ano che kito’ik ri kekojowik ri awaqanib’a:</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.labelpages">
+      <trans-unit id="template.starter.labelpages" approved="yes">
         <source xml:lang="en">Label Your Pages</source>
-        <target xml:lang="quc" state="needs-translation">Label Your Pages</target>
+        <target xml:lang="quc" state="translated">Ukojik retal chech uxaq taq wuj</target>
         <note>ID: template.starter.labelpages</note>
+        <alt-trans>
+          <target xml:lang="quc">Ukojik retal che uxaq taq wuj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.labeleachpage">
+      <trans-unit id="template.starter.labeleachpage" approved="yes">
         <source xml:lang="en">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</source>
-        <target xml:lang="quc" state="needs-translation">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
+        <target xml:lang="quc" state="translated">Are taq kawiq uxaq taq wuj chech ri raqanib’al ab'anom, chya’ jun utz retal chi jujunal rech kub’an upatan<g id="genid-5" ctype="x-html-sup"> <g id="genid-6" ctype="x-html-a" html:href="#note2"> 3</g>, <g id="genid-7" ctype="x-html-a" html:href="@note3"> 4</g></g>:</target>
         <note>ID: template.starter.labeleachpage</note>
+        <alt-trans>
+          <target xml:lang="quc">Are chi’ kaya’ uwi’ uxaq taq wuj che ri awaqanib’al, chya’ chi kech jujunal jun retal rech kb’an upatan<g id="genid-5" ctype="x-html-sup"> <g id="genid-6" ctype="x-html-a" html:href="#note2"> 3</g>, <g id="genid-7" ctype="x-html-a" html:href="@note3"> 4</g></g>:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Are chi’ kaya’ uwi’ uxaq taq wuj che ri awaqanib’al, chya’ chi kech jujunal  jun retal rech kb’an upatan<g id="genid-5" ctype="x-html-sup"> <g id="genid-6" ctype="x-html-a" html:href="#note2"> 3</g>, <g id="genid-7" ctype="x-html-a" html:href="@note3"> 4</g></g>:</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.thumbnails">
+      <trans-unit id="template.starter.thumbnails" approved="yes">
         <source xml:lang="en">Check Your Thumbnails</source>
-        <target xml:lang="quc" state="needs-translation">Check Your Thumbnails</target>
+        <target xml:lang="quc" state="translated">Chanik’oj ri lajilal</target>
         <note>ID: template.starter.thumbnails</note>
+        <alt-trans>
+          <target xml:lang="quc">Chanik’oj ri ch’uti’n</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.thumbnails.onlyonce">
+      <trans-unit id="template.starter.thumbnails.onlyonce" approved="yes">
         <source xml:lang="en">To speed things up, Bloom only makes this thumbnail once, and stores it in the "template" subdirectory of your template:</source>
-        <target xml:lang="quc" state="needs-translation">To speed things up, Bloom only makes this thumbnail once, and stores it in the "template" subdirectory of your template:</target>
+        <target xml:lang="quc" state="translated">Rech je'l ub'anik, Bloom xaq xuwi jumul kub’an we le lajilal k'ate k'uri' kuk’ol chi upam ri ukab’ k’olib’al "raqanib'al" rech ri raqanib'al ab'anom:</target>
         <note>ID: template.starter.thumbnails.onlyonce</note>
+        <alt-trans>
+          <target xml:lang="quc">Rech kel sib’alaj suk’, Bloom xaq xuw xa jun mul kb’an we ch’uti’n che xuquje’ kuk’olo chi upam ri ukab’ k’olib’al:</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.thumbnails.update">
+      <trans-unit id="template.starter.thumbnails.update" approved="yes">
         <source xml:lang="en">If you later make a change to the page, the thumbnail will be out of date. To fix that, click the "Add Page" button, and Bloom will regenerate those thumbnails. If the automatically generated thumbnail doesn't convey the purpose of the page, you can make your own. Just make sure to mark the file as "Read Only" so that Bloom doesn't overwrite it. You can also make your thumbnails as svgs, if you like (that's what we do for templates we ship with Bloom).  In any case, make sure to click "Add Page" at least once before distributing your template, so that all the thumbnails are already generated.</source>
-        <target xml:lang="quc" state="needs-translation">If you later make a change to the page, the thumbnail will be out of date. To fix that, click the "Add Page" button, and Bloom will regenerate those thumbnails. If the automatically generated thumbnail doesn't convey the purpose of the page, you can make your own. Just make sure to mark the file as "Read Only" so that Bloom doesn't overwrite it. You can also make your thumbnails as svgs, if you like (that's what we do for templates we ship with Bloom).  In any case, make sure to click "Add Page" at least once before distributing your template, so that all the thumbnails are already generated.</target>
+        <target xml:lang="quc" state="translated">We kab'an jun k'exinik pa le uxaq wuj, le ulajilal wachib'al man k'o ta chi upatan. Rech kasuk’umaj chb’ana’ pitz’ pa ri  pitz’b’al “Uwiqik uxaq wuj”, rech Bloom kuk’ak’arisaj ri lajilal. We ri lajilal xk’ak’arisaxik man kuya ta  ub’ixik  ri rayib’al ri uxaq wuj, kuya'o kab’an jun awech la lajilal. Xa are k’ut sib'alaj rajawaxik kkoj retal ri k’olchak ruk’ “Xaq xuwi Sik’in wuj” rech Bloom  man ktz’ib’an ta pa uwi’. We kawaj kab’an ri taq lajilal ruk' ri  k’olchak svgs. (Are wa’ kqab’ano chi kech taq ri raqanib’al ri kqataq ruk’ Bloom). Xaq pa su kel wi, rajawaxik kb’an pitz’  pa “Uwiqik uxaq wuj” xa jun mul chi uxe’ kanoq are taq kajach ri raqanib’al rech  konojel ri lajilal kek’ak'arisaxik.</target>
         <note>ID: template.starter.thumbnails.update</note>
+        <alt-trans>
+          <target xml:lang="quc">We k’ate k’u ri’ kb’an la jun k’exnik pa ri uxaq wuj, ri ch’uti’n wachib’al man kapatanan ta chik. Rech usuk’umaxik, chb’ana’ pitz’ pa ri  pitz’b’al “Uya’ik uwi’ uxaq wuj”, xuquje’ Bloom kuk’ak’arisaj ri ch’uti’n. We ri ch’uti’n k’ak’arisam ma kuya ta  ub’ixik  ri rayib’al rech ri uxaq wuj, b’ana la jun ech la ri ch’uti’n. Xa k’ut nim upatan roksaxik retal ri k’olchak ruk’ “Xaq xuw Sik’in wuj” rech ri Bloom  ma ktz’ib’an taj pa uwi’. We kaj la, xuquje’  b’ana la ri taq ch’uti’n pacha’ k’i  k’olchak svgs. (Are wa’ kqab’ano chi kech ri raqanib’alib’ kqataq ub’ik ruk’ Bloom). Xaq pa su kel wi, rajawaxik kb’an pitz’  pa “Uya’ik uwi’ uxaq wuj” xa jun mul chi uxe’ kanoq che ujachik ri raqanib’alib’ rech  konojel ri k’i taq ch’uti’n kek’ak’arisaxik.          </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.document">
+      <trans-unit id="template.starter.document" approved="yes">
         <source xml:lang="en">Document Your Template</source>
-        <target xml:lang="quc" state="needs-translation">Document Your Template</target>
+        <target xml:lang="quc" state="translated">Chb’ana uwujil ri raqanib’al</target>
         <note>ID: template.starter.document</note>
       </trans-unit>
-      <trans-unit id="template.starter.describeyours">
+      <trans-unit id="template.starter.describeyours" approved="yes">
         <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
-        <target xml:lang="quc" state="needs-translation">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</target>
+        <target xml:lang="quc" state="translated">Xuquje’ chchomaj uya’ik ub’ixik ri ub’antajik ri raqanib’al, pacha’ ri katajin kasik’ij uwach chanim ri’. Rech ub’anik wa’, chkojo’ jun k’olchak rech woktz’ib’ ub’i’ <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> pa ri k’olyakb’al chak ri k’o chi upam ri raqanib’al. We k’olchak ri' rajawaxik kutaqej ri choltaqanik chak <g id="genid-9" ctype="x-html-a"
+html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Rech uya’ik taqanik pa nik’aj taq tzijob’al chik, rajawaxik kab’an nik’aj chik k’olchak kuk’ex ri “pa” keb’ uwach tz’ib’ rech ri retal chi jujunal chi kech ri tzijob’al. K'amna'oj <g id="genid-10" ctype="x-html-code">ReadMe-es.md</g> kk’ut rib’ are taq ri Bloom xsuk’amaxik chech uk’utik retal pa kaxla'n tzij. Xuquje’ kuk'ulaj ri esan wachaj, pacha’ k’o chi upam we wuj ri’. Chya ronojel taq ri wachib’al kakojo chi upam ri k’olyakb’al chak ub’i’am "ReadMeImages", rech ri wachib’al katzijob’ex uwach chi jewa’ ri’ ub’anik:</target>
         <note>ID: template.starter.describeyours</note>
+        <alt-trans>
+          <target xml:lang="quc">Xuquje’ chchomaj la uya’ik uwi’ ub’ixik ri ub’anatajik ri raqanib’al, pacha’ ri tajan kasik’ij uwach chanim ri’. Rech ub’anik wa’, chkojo’ jun k’olchak rech woktz’ib’ ub’i’ <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> pa ri k’olyakb’al chak che k’o chi upam ri raqanib’al.We k’olchak rajawaxik kutaqej ri choltaqanik chak <g id="genid-9" ctype="x-html-a"
+html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Rech uya’ik taqanik pa nik’aj  taq tzijob’al, rajawaxik kab’an nik’aj chik rech ri k’olchak kuk’ex ri “pa” keb’ uwach tz’ib’ rech ri retal chi jujunal chi kech ri tzijob’al. Pacha’ ri k’utub’al <g id="genid-10" ctype="x-html-code">ReadMe-es.md</g>  kk’ut rib’ are chi’ Bloom xsuk’amaxik  che uk’utik  retal  pa kaxlan tzij.  Xuquje’ kya’ chi upam ri  chapanik rech woilb’al wachaj, pacha’ k’o chi upam we wuj ri’. Chya ronojel taq ri wachib’al kakojo  chi upam ri k’olyakb’al chak ub’i’am "ReadMeImages", rech ri wachib’al xtzijob’exik  jewa’ ri’ ub’anik:</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.thumbnailsshown">
+      <trans-unit id="template.starter.thumbnailsshown" approved="yes">
         <source xml:lang="en">When the Add Page dialog box shows your template pages, it will show a thumbnail:</source>
-        <target xml:lang="quc" state="needs-translation">When the Add Page dialog box shows your template pages, it will show a thumbnail:</target>
+        <target xml:lang="quc" state="translated">Are taq ri kajxukut rech tzijonem "Uwiqik uxaq wuj" kk’ut ri uxaq taq wuj rech raqanib’al, kk’utu na jun lajilal:</target>
         <note>ID: template.starter.thumbnailsshown</note>
+        <alt-trans>
+          <target xml:lang="quc">Are chi’ ri kajxukut rech tzijonem "Uya’ik uwi’ uxaq wuj" kk’ut ri uxaq wuj awech rech raqanib’a, kk’utu na jun ch’uti’n:</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.share">
+      <trans-unit id="template.starter.share" approved="yes">
         <source xml:lang="en">Share Your Template</source>
-        <target xml:lang="quc" state="needs-translation">Share Your Template</target>
+        <target xml:lang="quc" state="translated">Chajacha’ ri raqanib’al ab'anom</target>
         <note>ID: template.starter.share</note>
+        <alt-trans>
+          <target xml:lang="quc">Chajacha’ raqanib’al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.share.publish">
+      <trans-unit id="template.starter.share.publish" approved="yes">
         <source xml:lang="en">Remember that Bloom is about planting seeds, about sharing. So plan to share your template on the BloomLibrary for people around the world to find. This takes just a few clicks in the Publish Tab.</source>
-        <target xml:lang="quc" state="needs-translation">Remember that Bloom is about planting seeds, about sharing. So plan to share your template on the BloomLibrary for people around the world to find. This takes just a few clicks in the Publish Tab.</target>
+        <target xml:lang="quc" state="translated">Chana’tisaj chi ri Bloom pacha utikik ija' rech kab'an ula'nik ruk'. Rumal ri’ chachomaj chi xa ulanik ri rajawaxik kab'anik pa le k’olwuj rech Bloom rech ri jalajoj taq winaq rech uwachulew kkiriqo. Wa’ xuwi kraj jujun taq pitz’ pa ri k’utjaqb’al rech “Tzijob’exik”.</target>
         <note>ID: template.starter.share.publish</note>
+        <alt-trans>
+          <target xml:lang="quc">Chana’tisaj che ri Bloom kuwok wa’ we ri’ xuquje’ ujachik. Rumal ri’ cholo’ ri ujachik ri raqanib’al chi upam ri k’olwuj rech Bloom rech ri winaq e k’o pa ronojel ri uwachulew kkiraqo. Wa’ xuw kraj jujun taq pitz’ pa ri k’utjaqb’al rech “Tzijob’exik”.  </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.share.bloompack">
+      <trans-unit id="template.starter.share.bloompack" approved="yes">
         <source xml:lang="en">For local colleagues, an easy way to distribute your template is via a Bloom Pack. In the collections tab, right-click on your template's thumbnail. Choose 'Make Bloom Pack'. Save that somewhere, for example to a USB Key. Then take it to another computer, double click on the file you made, and your template will be added to the "Sources for New Books" on that computer.</source>
-        <target xml:lang="quc" state="needs-translation">For local colleagues, an easy way to distribute your template is via a Bloom Pack. In the collections tab, right-click on your template's thumbnail. Choose 'Make Bloom Pack'. Save that somewhere, for example to a USB Key. Then take it to another computer, double click on the file you made, and your template will be added to the "Sources for New Books" on that computer.</target>
+        <target xml:lang="quc" state="translated">Chi kech qachalal ajwaral, rech man k’ax taj ujachik ri raqanib’al chak are utz ruk' le Tanaj Bloom. Pa le k’utjaqb’al rech ri k’i taq uwach wuj, chb’ana pitz’ ruk’ uwi’kaq’ab’ pa ri lajilal rech raqanib’al. Chacha’ 'Uwokik jun Tanaj rech Bloom'. Chak’olo’ pa wi jun k’olib’al, pacha’ pa jun USB. K’ate k’u ri’ chanak’a’ pa jun kematz’ib’ chik, chab’ana kamul pitz’ pa uwi’ ri k’olchak ri xab’ano, rech ri raqanib’al ri xab'ano ktiq ruk’ ri "Tz’ib’ rech taq k’ak’ taq wuj" chi upam le kematz’ib’.</target>
         <note>ID: template.starter.share.bloompack</note>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech achi’lab’ ajwaral, ma k’ax taj ujachik ri raqanisab’al rumal ri Tanaj Bloom. Pa ri k’utjaqb’al rech ri k’i taq uwach wuj, chb’a na pitz’ ruk’ uwi’kaq’ab’ pa ri ch’uti’n rech raqanib’al. Chacha’ 'Uwokik jun Tanaj rech Bloom'. Ch’ak’olo’ pa wi jun k’olib’al, pacha’ pa jun k’olib’al chak. K’ate k’u ri’ chanak’a’ pa jun chik kematz’ib’, chb’a na keb’ mul pitz’ pa uwi’ ri k’olchak xab’ano, xuquje’ ri awaqanib’al ktiq ruk’ ri "Tz’ib’ rech taq k’ak’ taq wuj" chi upam le kematz’ib’.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.notes">
+      <trans-unit id="template.starter.notes" approved="yes">
         <source xml:lang="en">Notes</source>
-        <target xml:lang="quc" state="needs-translation">Notes</target>
+        <target xml:lang="quc" state="translated">Taq ub’ixikil</target>
         <note>ID: template.starter.notes</note>
+        <alt-trans>
+          <target xml:lang="quc">Taq ub’ixkil</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.nothingautomatic">
+      <trans-unit id="template.starter.nothingautomatic" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
-        <target xml:lang="quc" state="needs-translation">
+        <target xml:lang="quc" state="translated">
           
-          <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</target>
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: We wuj ri' kuya'o kxo’lix upam chwe'q kab'ij ruk' uwach taq uxaq wuj. Chna'taj chi qech chi Bloom k'a maja’ k’o jun ub’anik chech ub’ixik chi jun uxaq wuj rajawaxik kya’ chi upam ri k’ak’ taq wuj, ri b’anal rech kuya na uwi’ jujunal chi kech ri uxaq wuj che ri kajxukut rech tzijonem "Uwiqik Uxaq Wuj".</target>
         <note>ID: template.starter.nothingautomatic</note>
+        <alt-trans>
+          <target xml:lang="quc">
+          <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: We k’i wuj kxo’lix na upam kk’ulmataj na anaqil uchak ajlinem chi uwach ri uxaq wuj. Chwi la pe’ che ri Bloom maja’ k’o jun ub’anik che ub’ixik chi jun uxaq wuj rajawaxik kya’ chi upam ri k’ak’ taq wuj, ri b’anal rech kuya na uwi’ jujunal chi kech ri uxaq wuj  che ri kajxukut rech tzijonem "Uya’ik Uwi’ Uxaq Wuj".
+ 
+</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.nametonotaddpage">
+      <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
-        <target xml:lang="quc" state="needs-translation">
-          
-          <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</target>
+        <target xml:lang="quc" state="translated"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>:We man kawaj taj chi ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uwiqik Uxaq Wuj", kuya'o kaya ub'ixik chech Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’al taq rech No'jwuj.</target>
         <note>ID: template.starter.nametonotaddpage</note>
+        <alt-trans>
+          <target xml:lang="quc"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>:We man kawaj taj che ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uya’ik Uwi’ Uxaq Wuj", lal kakowin la che ub’ixik we ri’ che Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’alib’ rech Wuj.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.labelsnottranslatable">
+      <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
-        <target xml:lang="quc" state="needs-translation">
+        <target xml:lang="quc" state="translated">
           
-          <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</target>
+<g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Jule' taq winaq chik, man kekowin ta chech uq’axexik pa jun tzijob'al chik ri retwokaj xuquje’ ub’ixik ri ub’antajik pa jule' taq tzijob’al chik rech uwachulew. We kuya k’axk’olil, chatch’aw kuk’ ri jupuq nima’q taq keta’mab’al rech Bloom.</target>
         <note>ID: template.starter.labelsnottranslatable</note>
+        <alt-trans>
+          <target xml:lang="quc">
+          <g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Nik’aj taq winaq ma kekomin ta na che uq’axexik pa jun tzijobal chik ri retwokaj xuquje’ ub’ixik ri ub’antajik  pa nik’aj taq tzijob’al chik rech amaq’. We we ri’ kuya k’axk’olil, chatch’aw kuk’ ri jupuq nima’q taq keta’mab’al rech Bloom.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.editrawhtml">
+      <trans-unit id="template.starter.editrawhtml" approved="yes">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
-        <target xml:lang="quc" state="needs-translation">
+        <target xml:lang="quc" state="translated">
           
-          <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kawaj chi le kutb'al wach rech "Uwiqik Uxaq wuj” xuquje’ chya’ ub’ixik jub’iq’ ri ub’antajik ri k’o chi upam ri uxaq wuj, rajawaxik katel na pa ri Bloom k'ate k'u ri' kab'an ukolomaxik le k’olchak html rech ri raqanib’al pa "Notepad", xaq jeri':<x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
+        <alt-trans>
+          <target xml:lang="quc">
+          <g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kariyij che ri woilb’al rech "Uya’ik uwi’ Uxaq wuj” xuquje’ chya’ jun ub’ixik jub’iq’ ri ub’antajik ri k’o chi upam ri uxaq wuj, katel na pa ri Bloom xuquje’ ukolomaxik ri k’olchak html rech ri raqanib’al pa "Notepad", xuw xa je wa’:<x id="genid-15" ctype="image"
+html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">
+          <g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kariyij che ri woilb’al rech "Uya’ik uwi’ Uxaq wuj” xuquje’ chya’ jun ub’ixik jub’iq’ ri ub’antajik ri k’o chi upam ri uxaq wuj, katel na pa ri Bloom xuquje’ ukolomaxik ri k’olchak html rech ri raqanib’al pa "Notepad", xuw xa je wa’: <x id="genid-15" ctype="image"
+html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>
