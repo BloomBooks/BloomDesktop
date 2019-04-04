@@ -84,17 +84,22 @@
       <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true">
         <source xml:lang="en">No essential information by color</source>
         <note>ID: AccessibilityCheck.noEssentialInfoByColor</note>
-        <target xml:lang="quc" state="needs-translation">No essential information by color</target>
+        <target xml:lang="quc" state="translated">Ma k’ot uq’alajisaxik nim upatan pa uka’yib’al
+
+</target>
       </trans-unit>
       <trans-unit id="BloomIntegrity.WindowTitle">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
-        <target xml:lang="quc" state="needs-translation">Bloom Problem</target>
+        <target xml:lang="quc" state="translated">K'axk'olil ruk' Bloom</target>
       </trans-unit>
       <trans-unit id="BloomIntegrityDialog.ReportProblem">
         <source xml:lang="en">Report Problem</source>
         <note>ID: BloomIntegrityDialog.ReportProblem</note>
-        <target xml:lang="quc" state="needs-translation">Report Problem</target>
+        <target xml:lang="quc" state="translated">Uya'ik ub'ixik k'axk'olil</target>
+        <alt-trans>
+          <target xml:lang="quc">K'axk'olil ruk' Bloom</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BadCharsInFileName">
         <source xml:lang="en">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>

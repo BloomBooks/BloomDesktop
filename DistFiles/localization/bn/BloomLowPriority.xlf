@@ -43,8 +43,8 @@
             Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
         </source>
         <note>ID: Settings.Enterprise.Overview</note>
-        <target xml:lang="bn" state="needs-translation">
-            Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
+        <target xml:lang="bn" state="translated">
+            ব্লুম এন্টারপ্রাইজ প্রকাশক, সরকার, এবং আন্তর্জাতিক সংস্থার জন্য গুরুত্বপূর্ণ বৈশিষ্ট্য এবং পরিষেবা যুক্ত করে। অর্থ প্রদানকারী সদস্যতা তাদের অনন্য প্রয়োজন পুর্ণ করার সঙ্গে সঙ্গে সম্প্রদায়ের বৃহদাকারে বিকাশ ও ব্লুম ব্যবহারকারীদের সমর্থন করে।
         </target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None">
@@ -56,7 +56,7 @@
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
         <note>ID: Settings.Enterprise.NeedsCode</note>
         <note>%0 will be replaced with the name of the branding. Keep surrounding **...**. [here](%1) will become a hot link; %1 will not be seen, but will be the URL for the destination page. Translate "here" and keep the [](%1) around it.</note>
-        <target xml:lang="bn" state="needs-translation">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</target>
+        <target xml:lang="bn" state="translated">ব্লুমের একটি পুরোনো সংস্করণে, এই প্রকল্পটি **%0** ব্যবহার করেছিল। এর ব্যবহার অবিরত রাখতে আপনাকে একটি বর্তমান সদস্যতার কোড দিতে হবে। SIL ব্র্যান্ডিংয়ের কোড [here](%1) পাওয়া যাবে। অন্যান্য সদস্যতার জন্য, আপনার প্রকল্প প্রশাসকের সাথে যোগাযোগ করুন।</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NotValid">
         <source xml:lang="en">That code appears to be incorrect.</source>
