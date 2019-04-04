@@ -22,9 +22,9 @@
         <target xml:lang="quc" state="needs-translation">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </target>
         <note>ID: integrity.causes.2</note>
       </trans-unit>
-      <trans-unit id="integrity.todo">
+      <trans-unit id="integrity.todo" approved="yes">
         <source xml:lang="en">What To Do</source>
-        <target xml:lang="quc" state="needs-translation">What To Do</target>
+        <target xml:lang="quc" state="translated">Su kb'anik</target>
         <note>ID: integrity.todo</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas">

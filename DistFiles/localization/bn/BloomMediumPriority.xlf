@@ -5,7 +5,7 @@
       <note>This file is not yet being used.  We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
-      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
         <target xml:lang="bn" state="translated">বিশেষ বাক্যের–সমাপ্তি বিরাম চিহ্ন</target>
