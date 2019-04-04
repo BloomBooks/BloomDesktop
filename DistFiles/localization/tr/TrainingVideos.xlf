@@ -133,6 +133,7 @@
           
           
           
+          
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Yüksek Çözünürlük</g> (büyük dosyalar)</target>
         <note>ID: training.videos.hires</note>
         <alt-trans>
@@ -153,6 +154,27 @@
           
           
           
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Yüksek Çözünürlük</g> (büyük dosyalar)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="tr">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Yüksek Çözünürlük</g> (büyük dosyalar)</target>
         </alt-trans>
         <alt-trans>
@@ -195,22 +217,6 @@
         <alt-trans>
           <target xml:lang="tr">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Yüksek Çözünürlük</g> (büyük dosyalar)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="tr">
           
           
           
@@ -229,6 +235,7 @@
       <trans-unit id="training.videos.lores">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
         <target xml:lang="tr" state="translated">
+          
           
           
           
@@ -266,6 +273,27 @@
           
           
           
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Düşük Çözünürlük</g> (Daha küçük dosyalar)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="tr">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Düşük Çözünürlük</g> (Daha küçük dosyalar)</target>
         </alt-trans>
         <alt-trans>
@@ -308,22 +336,6 @@
         <alt-trans>
           <target xml:lang="tr">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Düşük Çözünürlük</g> (Daha küçük dosyalar)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="tr">
           
           
           
