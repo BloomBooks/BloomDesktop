@@ -2,18 +2,27 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="quc">
     <body>
-      <trans-unit id="bigbook.title">
+      <trans-unit id="bigbook.title" approved="yes">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="quc" state="translated">Pwi' nima'q taq wuj
-</target>
+        <target xml:lang="quc" state="translated">Pa uwi' nima'q taq wuj</target>
         <note>ID: bigbook.title</note>
+        <alt-trans>
+          <target xml:lang="quc">Pwi' nima'q taq wuj</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Pwi' nima'q taq wuj
+</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="bigbook.use">
+      <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="quc" state="translated">Ri nima’q taq wuj b’anom rech ri tijonelab’ kkichapo kkisik’ij uwach chi kiwach le tijoxelab’ pa ri tijonem. Rech uq’alajisaxik na  chwila’ chi upam we ri’ <g id = "genid-1" ctype = "x-html-a" html:href = "http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf"> PDF de Escolar </g>.</target>
+        <target xml:lang="quc" state="translated">Ri nima’q taq wuj b’anom chi kech ri tijonelab’ rech kkichapo kkisik’ij uwach chi kiwach le tijoxelab’ pa ri tijonem. Para más información vea este <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF de Scholastic</g>.</target>
         <note>ID: bigbook.use</note>
         <alt-trans>
-          <target xml:lang="quc">Ri nima’q taq wuj b’anom chi kech ri tijonelab’ rech kkichapo kkisik’ij uwach chi kiwach le tijoxelab’ pa ri tijonem. Para más información vea este <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF de Scholastic</g>.</target>
+          <target xml:lang="quc">Ri nima’q taq wuj b’anom rech ri tijonelab’ kkichapo kkisik’ij uwach chi kiwach le tijoxelab’ pa ri tijonem. Rech uq’alajisaxik na  chwila’ chi upam we ri’ <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf"> PDF de Escolar </g>.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Ri nima’q taq wuj b’anom rech ri tijonelab’ kkichapo kkisik’ij uwach chi kiwach le tijoxelab’ pa ri tijonem. Rech uq’alajisaxik na  chwila’ chi upam we ri’ <g id = "genid-1" ctype = "x-html-a" html:href = "http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf"> PDF de Escolar </g>.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="quc">Ri nima’q taq wuj b’anom rech ri ajtijonelab’ kkichipo kkisik’ij uwach chkiwach ajtijoxelab’ pa ri Tijonem. Para más información vea este <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF de Scholastic</g>.</target>
@@ -22,23 +31,34 @@
           <target xml:lang="quc">Ri nima’q taq wuj b’anom rech ri ajtijonelab’ kkichipo kkisik’ij uwach chkiwach ajtijoxelab’ pa ri Tijonem.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="bigbook.printing">
+      <trans-unit id="bigbook.printing" approved="yes">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="quc" state="translated">Tajin tz'ajtz'ib'an jun nim wuj</target>
+        <target xml:lang="quc" state="translated">Katajin katz'ajtz'ib'ax jun nim wuj</target>
         <note>ID: bigbook.printing</note>
+        <alt-trans>
+          <target xml:lang="quc">Tajin tz'ajtz'ib'an jun nim wuj</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc">Tajan tz'ajtzib'an jun nim wuj </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="bigbook.printing.enlargeA4">
+      <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="quc" state="translated">Rech kb’an kowinem chech ri sutaq, we uxe’ rqanib’al ukojik pa A4 
+        <target xml:lang="quc" state="translated">Rech kb’an kowinem chech ri sutaq, we uxe’ raqanib’al ukojik pa A4 
+Q’e’lik, ruk' nima’q taq uwach tz’ib’. Kkowinik kub’an wuj A3 ruk’ (kab’ichal unimal). Xuwi kk’am ub’ik ri PDF A4 pa jun tz’ajtz’ib’al wuj xuquje’ chta chi kech kkinimarisaj pa A3.</target>
+        <note>ID: bigbook.printing.enlargeA4</note>
+        <alt-trans>
+          <target xml:lang="quc">Rech kb’an kowinem chech ri sutaq, we uxe’ rqanib’al ukojik pa A4 
+q’e’lik, ruk' nima’q taq uwach tz’ib’. Kkowinik kub’an wuj A3 ruk’ (kab’chal unimal). Xuw kak’amub’ik ri PDF A4 pa jun tz’ajtz’ib’al wuj xuquje’ chta chike kkinimarisaj pa A3.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Rech kb’an kowinem chech ri sutaq, we uxe’ rqanib’al ukojik pa A4 
 q’e’lik, ruk' nima’q taq uwach tz’ib’. Kkowinik kub’an wuj A3 ruk’ (kab’chal unimal). Xuw kak’amub’ik ri PDF A4 pa jun tz’ajtz’ib’al wuj xuquje’ chta chike kkinimarisaj pa A3.  
 
 </target>
-        <note>ID: bigbook.printing.enlargeA4</note>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc">Rech kb’an kowinem chech ri sutaq, we uxe’ pa A4 suk’juch’ ruk' nima’q taq uwach tz’ib’.</target>
         </alt-trans>
@@ -46,7 +66,7 @@ q’e’lik, ruk' nima’q taq uwach tz’ib’. Kkowinik kub’an wuj A3 ruk’
           <target xml:lang="quc">Rech  kb’an kowinem che ri sutaq, we uxe’ pa A4 suk’juch’  ruk nima’q taq uwach tz’ib’</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="bigbook.limits">
+      <trans-unit id="bigbook.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
         <target xml:lang="quc" state="translated">Ri uk'axk'olil ri tzijob'al ri'</target>
         <note>ID: bigbook.limits</note>
@@ -57,17 +77,29 @@ q’e’lik, ruk' nima’q taq uwach tz’ib’. Kkowinik kub’an wuj A3 ruk’
           <target xml:lang="quc">Ruk'ayewal ri tzijob'al ri'</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="bigbook.limits.smallscreen">
+      <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="quc" state="translated">We tajan kakoj laj  uwo ilb’al wachaj, k’ax karaq che usik’ixik uwach ri xebanowik.   Chb’ana’ zoom ruk’ ri ukojik +/- ajsik pa uwikaq’ab’ re uwo ilb’al rech katkowin che ukolomaxik.</target>
+        <target xml:lang="quc" state="translated">We katajin kakoj alaj uwach ilb’al wachaj, k’ax kariq chech usik’ixik uwach ri xeb'anowik. Chb’ana’ zoom ruk’ ri ukojik +/- ajsik pa uwikaq’ab’ rech uwach ilb’al rech katkowin chech ukolomaxik.</target>
         <note>ID: bigbook.limits.smallscreen</note>
+        <alt-trans>
+          <target xml:lang="quc">We katajin kakoj alaj uwach ilb’al wachaj, k’ax kariq chech usik’ixik uwach ri xeb'anowik. Chb’ana’ zoom ruk’ ri ukojik +/- ajsik pa uwikaq’ab’ re uwach ilb’al rech katkowin chech ukolomaxik.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">We tajan kakoj laj  uwo ilb’al wachaj, k’ax karaq che usik’ixik uwach ri xebanowik.   Chb’ana’ zoom ruk’ ri ukojik +/- ajsik pa uwikaq’ab’ re uwo ilb’al rech katkowin che ukolomaxik.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="bigbook.limits.Englishtemplate">
+      <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="quc" state="translated">We tajan kakoj laj  uwo ilb’al wachaj, k’ax karaq che usik’ixik uwach ri xebanowik.   Chb’ana’ zoom ruk’ ri ukojik +/- ajsik pa uwikaq’ab’ re uwo ilb’al rech katkowin che ukolomaxik.</target>
+        <target xml:lang="quc" state="translated">We katajin kakoj alaj uwach ilb’al wachaj, k’ax kariq chech usik’ixik uwach ri xeb'anowik. Chb’ana’ zoom ruk’ ri ukojik +/- ajsik pa uwikaq’ab’ rech uwach ilb’al rech katkowin chech ukolomaxik.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
+        <alt-trans>
+          <target xml:lang="quc">We katajin kakoj laj  uwach ilb’al wachaj, k’ax kariq chech usik’ixik uwach ri xeb'anowik.   Chb’ana’ zoom ruk’ ri ukojik +/- ajsik pa uwikaq’ab’ reche uwach ilb’al rech katkowin chech ukolomaxik.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">We tajan kakoj laj  uwo ilb’al wachaj, k’ax karaq che usik’ixik uwach ri xebanowik.   Chb’ana’ zoom ruk’ ri ukojik +/- ajsik pa uwikaq’ab’ re uwo ilb’al rech katkowin che ukolomaxik.</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>

@@ -62,6 +62,7 @@
           
           
           
+          
           <g id="genid-1" ctype="x-html-em">Previsibilidade</g> em um texto significa que um leitor pode adivinhar o que viria a seguir. O uso de padrões repetidos pode aumentar a previsibilidade. Aqui estão alguns padrões que você pode usar:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
         <alt-trans>
@@ -92,6 +93,37 @@
           
           
           
+          
+          <g id="genid-1" ctype="x-html-em">Previsibilidade</g> em um texto significa que um leitor pode adivinhar o que viria a seguir. O uso de padrões repetidos pode aumentar a previsibilidade. Aqui estão alguns padrões que você pode usar:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-1" ctype="x-html-em">Previsibilidade</g> em um texto significa que um leitor pode adivinhar o que viria a seguir. O uso de padrões repetidos pode aumentar a previsibilidade. Aqui estão alguns padrões que você pode usar:</target>
         </alt-trans>
         <alt-trans>
@@ -154,32 +186,6 @@
         <alt-trans>
           <target xml:lang="pt-PT">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-1" ctype="x-html-em">Previsibilidade</g> em um texto significa que um leitor pode adivinhar o que viria a seguir. O uso de padrões repetidos pode aumentar a previsibilidade. Aqui estão alguns padrões que você pode usar:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">
           
           
           
@@ -264,6 +270,7 @@ Contra os rigores da vida.
       
       
       
+      
       </target>
         <note>ID: leveled.reader.rhyme</note>
         <alt-trans>
@@ -302,6 +309,45 @@ Contra os rigores da vida.
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">Rima - Uma história com um padrão ou sequência que também inclui rima. Por exemplo:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poesia">
+          <g id="genid-3" ctype="x-html-pre">Toda criança no mundo
+Deve ser bem protegida
+Contra os rigores do tempo
+Contra os rigores da vida.
+</g>
+          <g id="genid-4" ctype="x-html-div" html:class="autor">- Ruth Rocha</g>
+        </g>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -388,40 +434,6 @@ Contra os rigores da vida.
           <g id="genid-4" ctype="x-html-div" html:class="autor">- Ruth Rocha</g>
         </g>
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">Rima - Uma história com um padrão ou sequência que também inclui rima. Por exemplo:
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poesia">
-          <g id="genid-3" ctype="x-html-pre">Toda criança no mundo
-Deve ser bem protegida
-Contra os rigores do tempo
-Contra os rigores da vida.
-</g>
-          <g id="genid-4" ctype="x-html-div" html:class="autor">- Ruth Rocha</g>
-        </g>
       
       
       
@@ -482,6 +494,7 @@ Contra os rigores da vida.
     
     
     
+    
     </target>
         <note>ID: leveled.reader.illustrations.help</note>
         <alt-trans>
@@ -511,6 +524,36 @@ Contra os rigores da vida.
     
     
     
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">As ilustrações podem suportar uma história. As ilustrações referem-se à história de diferentes maneiras para diferentes <g id="genid-5" ctype="x-html-em"> níveis</g> e para diferentes tipos de leitores (veja abaixo). Lembre-se de que em muitas culturas que não possuem muito material impresso, pode ser difícil entender ilustrações complexas.    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     </target>
         </alt-trans>
         <alt-trans>
@@ -571,31 +614,6 @@ Contra os rigores da vida.
         <alt-trans>
           <target xml:lang="pt-PT">As ilustrações podem suportar uma história. As ilustrações referem-se à história de diferentes maneiras para diferentes <g id="genid-5" ctype="x-html-em"> níveis</g> e para diferentes tipos de leitores (veja abaixo). Lembre-se de que em muitas culturas que não possuem muito material impresso, pode ser difícil entender ilustrações complexas.    
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">As ilustrações podem suportar uma história. As ilustrações referem-se à história de diferentes maneiras para diferentes <g id="genid-5" ctype="x-html-em"> níveis</g> e para diferentes tipos de leitores (veja abaixo). Lembre-se de que em muitas culturas que não possuem muito material impresso, pode ser difícil entender ilustrações complexas.    
     
     
     
@@ -624,6 +642,7 @@ Contra os rigores da vida.
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
         <target xml:lang="pt-PT" state="translated">Para os <g id="genid-6" ctype="x-html-strong"> Leitores novos</g> as ilustrações devem coincidir precisamente com o histórico. Ao ver as ilustrações, um leitor deve ser capaz de prever a linha da história. As ilustrações desse nivel devem ser simples.      
+      
       
       
       
@@ -679,6 +698,36 @@ Contra os rigores da vida.
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">Para os <g id="genid-6" ctype="x-html-strong"> Leitores novos</g> as ilustrações devem coincidir precisamente com o histórico. Ao ver as ilustrações, um leitor deve ser capaz de prever a linha da história. As ilustrações desse nivel devem ser simples.      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -739,31 +788,6 @@ Contra os rigores da vida.
         <alt-trans>
           <target xml:lang="pt-PT">Para os <g id="genid-6" ctype="x-html-strong"> Leitores novos</g> as ilustrações devem coincidir precisamente com o histórico. Ao ver as ilustrações, um leitor deve ser capaz de prever a linha da história. As ilustrações desse nivel devem ser simples.      
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">Para os <g id="genid-6" ctype="x-html-strong"> Leitores novos</g> as ilustrações devem coincidir precisamente com o histórico. Ao ver as ilustrações, um leitor deve ser capaz de prever a linha da história. As ilustrações desse nivel devem ser simples.      
       
       
       
@@ -792,6 +816,7 @@ Contra os rigores da vida.
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
       </source>
         <target xml:lang="pt-PT" state="translated">Para os <g id="genid-7" ctype="x-html-strong"> Leitores iniciantes </g> as ilustrações devem suportar o enredo. À medida que a quantidade de texto aumenta, o leitor depende menos das ilustrações e entende mais do texto. As ilustrações podem ser mais complexas.      
+      
       
       
       
@@ -847,6 +872,36 @@ Contra os rigores da vida.
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">Para os <g id="genid-7" ctype="x-html-strong"> Leitores iniciantes </g> as ilustrações devem suportar o enredo. À medida que a quantidade de texto aumenta, o leitor depende menos das ilustrações e entende mais do texto. As ilustrações podem ser mais complexas.      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -907,31 +962,6 @@ Contra os rigores da vida.
         <alt-trans>
           <target xml:lang="pt-PT">Para os <g id="genid-7" ctype="x-html-strong"> Leitores iniciantes </g> as ilustrações devem suportar o enredo. À medida que a quantidade de texto aumenta, o leitor depende menos das ilustrações e entende mais do texto. As ilustrações podem ser mais complexas.      
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">Para os <g id="genid-7" ctype="x-html-strong"> Leitores iniciantes </g> as ilustrações devem suportar o enredo. À medida que a quantidade de texto aumenta, o leitor depende menos das ilustrações e entende mais do texto. As ilustrações podem ser mais complexas.      
       
       
       
@@ -960,6 +990,7 @@ Contra os rigores da vida.
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
       </source>
         <target xml:lang="pt-PT" state="translated">Para os <g id="genid-8" ctype="x-html-strong">Leitores fluidos</g> as ilustrações devem oferecer pouco ou nenhum apoio ao enredo. O entendimento do leitor depende mais do texto do que as ilustrações. As ilustrações podem ser ainda mais complexas.      
+      
       
       
       
@@ -1015,6 +1046,36 @@ Contra os rigores da vida.
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">Para os <g id="genid-8" ctype="x-html-strong">Leitores fluidos</g> as ilustrações devem oferecer pouco ou nenhum apoio ao enredo. O entendimento do leitor depende mais do texto do que as ilustrações. As ilustrações podem ser ainda mais complexas.      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -1075,31 +1136,6 @@ Contra os rigores da vida.
         <alt-trans>
           <target xml:lang="pt-PT">Para os <g id="genid-8" ctype="x-html-strong">Leitores fluidos</g> as ilustrações devem oferecer pouco ou nenhum apoio ao enredo. O entendimento do leitor depende mais do texto do que as ilustrações. As ilustrações podem ser ainda mais complexas.      
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">Para os <g id="genid-8" ctype="x-html-strong">Leitores fluidos</g> as ilustrações devem oferecer pouco ou nenhum apoio ao enredo. O entendimento do leitor depende mais do texto do que as ilustrações. As ilustrações podem ser ainda mais complexas.      
       
       
       
@@ -1164,6 +1200,7 @@ Contra os rigores da vida.
       
       
       
+      
       </target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
         <alt-trans>
@@ -1193,6 +1230,36 @@ Contra os rigores da vida.
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">Para os <g id="genid-9" ctype="x-html-strong"> Leitores novos</g> o livro deve ser concreto, ele deve se concentrar em uma idéia ou tópico, e deve ser familiar e fácil de entender.      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -1253,31 +1320,6 @@ Contra os rigores da vida.
         <alt-trans>
           <target xml:lang="pt-PT">Para os <g id="genid-9" ctype="x-html-strong"> Leitores novos</g> o livro deve ser concreto, ele deve se concentrar em uma idéia ou tópico, e deve ser familiar e fácil de entender.      
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">Para os <g id="genid-9" ctype="x-html-strong"> Leitores novos</g> o livro deve ser concreto, ele deve se concentrar em uma idéia ou tópico, e deve ser familiar e fácil de entender.      
       
       
       
@@ -1306,6 +1348,7 @@ Contra os rigores da vida.
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
       </source>
         <target xml:lang="pt-PT" state="translated">Para os <g id="genid-10" ctype="x-html-strong"> leitores iniciantes</g>, uma história deve ser desenvolvida em torno de um conceito familiar, mas com maior profundidade.      
+      
       
       
       
@@ -1361,6 +1404,36 @@ Contra os rigores da vida.
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">Para os <g id="genid-10" ctype="x-html-strong"> leitores iniciantes</g>, uma história deve ser desenvolvida em torno de um conceito familiar, mas com maior profundidade.      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -1421,31 +1494,6 @@ Contra os rigores da vida.
         <alt-trans>
           <target xml:lang="pt-PT">Para os <g id="genid-10" ctype="x-html-strong"> leitores iniciantes</g>, uma história deve ser desenvolvida em torno de um conceito familiar, mas com maior profundidade.      
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">Para os <g id="genid-10" ctype="x-html-strong"> leitores iniciantes</g>, uma história deve ser desenvolvida em torno de um conceito familiar, mas com maior profundidade.      
       
       
       
@@ -1474,6 +1522,7 @@ Contra os rigores da vida.
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
       </source>
         <target xml:lang="pt-PT" state="translated">Para os <g id="genid-11" ctype="x-html-strong"> leitores fluidos</g>, os conceitos não precisam ser familiares e podem ser mais variados e abstratos.      
+      
       
       
       
@@ -1529,6 +1578,36 @@ Contra os rigores da vida.
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">Para os <g id="genid-11" ctype="x-html-strong"> leitores fluidos</g>, os conceitos não precisam ser familiares e podem ser mais variados e abstratos.      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -1589,31 +1668,6 @@ Contra os rigores da vida.
         <alt-trans>
           <target xml:lang="pt-PT">Para os <g id="genid-11" ctype="x-html-strong"> leitores fluidos</g>, os conceitos não precisam ser familiares e podem ser mais variados e abstratos.      
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">Para os <g id="genid-11" ctype="x-html-strong"> leitores fluidos</g>, os conceitos não precisam ser familiares e podem ser mais variados e abstratos.      
       
       
       
