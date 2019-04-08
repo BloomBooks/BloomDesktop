@@ -2882,11 +2882,21 @@ export default class AudioRecording {
             BloomApi.postJson(
                 "audioSegmentation/autoSegmentAudio",
                 JSON.stringify(inputParameters),
+
+                // onSuccess
                 result => {
                     this.setStatus("split", Status.Disabled);
                     this.endBusy(); // This always needs to happen regardless of what path through processAutoSegmentResponse the code takes.
 
                     this.processAutoSegmentResponse(result);
+                },
+
+                // onError
+                result => {
+                    // This always needs to happen regardless of what happens
+                    // Otherwise, classes like cursor-progress will not go away upon a C# exception.
+                    // It can even be persisted into the saved HTML file and re-loaded with the cursor-progress state still applied
+                    this.endBusy();
                 }
             );
         }
