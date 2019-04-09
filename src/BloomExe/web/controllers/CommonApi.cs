@@ -44,6 +44,7 @@ namespace Bloom.web.controllers
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			apiHandler.RegisterEndpointHandler("uiLanguages", HandleUiLanguages, false);
+			apiHandler.RegisterEndpointHandler("currentUiLanguage", HandleCurrentUiLanguage, false);
 			apiHandler.RegisterEndpointHandler("bubbleLanguages", HandleBubbleLanguages, false);
 			apiHandler.RegisterEndpointHandler("authorMode", HandleAuthorMode, false);
 			apiHandler.RegisterEndpointHandler("topics", HandleTopics, false);
@@ -219,6 +220,18 @@ namespace Bloom.web.controllers
 					langs.Add(new { label = langItem.MenuText, tag = code });
 				}
 				request.ReplyWithJson(JsonConvert.SerializeObject(new { languages = langs }));
+			}
+		}
+
+		/// <summary>
+		/// Returns a simple string with the current UI lanuage
+		/// </summary>
+		/// <param name="request"></param>
+		public void HandleCurrentUiLanguage(ApiRequest request)
+		{
+			lock (request)
+			{
+				request.ReplyWithText(L10NSharp.LocalizationManager.UILanguageId);
 			}
 		}
 
