@@ -2196,6 +2196,11 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakLabel</note>
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible, but without the number</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitError">
+        <source xml:lang="en">Something went wrong while splitting the recording.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SplitError</note>
+        <note>This text appears if an error occurs while perfoming automatic splitting of audio (an audio file corresponding to an entire text box will be split into multiple sections, one section per sentence).</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel">
         <source xml:lang="en">Split recording into sentences for highlighting.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
