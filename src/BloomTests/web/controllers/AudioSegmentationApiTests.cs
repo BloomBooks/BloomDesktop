@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Text;
 using Bloom.web.controllers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -70,11 +71,11 @@ namespace BloomTests.web.controllers
 		[Test]
 		public void SanitizeTextForESpeakPreview_Quotes_Stripped()
 		{
-			string unsafeText = "One\" && espeak - v en \"Two.";
+			string unsafeText = "One\" && espeak -v en \"Two.";
 			string safeText = AudioSegmentationApi.SanitizeTextForESpeakPreview(unsafeText);
 
 			Assert.That(safeText, Is.Not.EqualTo(unsafeText));	// Definitely must pass
-			Assert.That(safeText, Is.EqualTo("One  && espeak - v en  Two."));	// There are other acceptable variations that it could equal
+			Assert.That(safeText, Is.EqualTo("One  && espeak -v en  Two."));	// There are other acceptable variations that it could equal
 		}
 
 
@@ -86,6 +87,74 @@ namespace BloomTests.web.controllers
 
 			Assert.That(safeText, Is.Not.EqualTo(unsafeText));
 			Assert.That(safeText, Is.EqualTo("One Two"));   // There are other acceptable variations that it could equal
+		}
+
+		[Test]
+		public void ApplyOrthographyConversion_Ascii_MapJToY()
+		{
+			// Setup
+			string tempFileName = Path.GetTempFileName();
+			File.WriteAllText(tempFileName, "j\ty");
+
+			var fragments = new List<string>();
+			fragments.Add("jojo");
+
+			// System Under Test
+			List<string> mappedFragments = AudioSegmentationApi.ApplyOrthographyConversion(fragments, tempFileName).ToList();
+
+			// Cleanup
+			File.Delete(tempFileName);
+
+			// Verification
+			Assert.That(mappedFragments[0], Is.EqualTo("yoyo"));
+		}
+
+		// Try a few encodings because the user could pick one of several options in their favorite text editor when creating their settings file.
+		[TestCase("utf8")]
+		[TestCase("Unicode")]
+		[TestCase("BigEndianUnicode")]
+		public void ApplyOrthographyConversion_NonAscii_SpecialCharsRecognizedAndConverted(string encodingStr)
+		{
+			// Parse test case parameter
+			Encoding encoding = Encoding.Default;
+			if (encodingStr == "utf8")
+			{
+				encoding = Encoding.UTF8;
+			}
+			else if (encodingStr.Equals("Unicode", StringComparison.OrdinalIgnoreCase) || encodingStr == "utf16" || encodingStr == "utf16le")
+			{
+				encoding = Encoding.Unicode;
+			}
+			else if (encodingStr.Equals("BigEndianUnicode", StringComparison.OrdinalIgnoreCase) || encodingStr == "utf16be")
+			{
+				encoding = Encoding.BigEndianUnicode;
+			}
+
+			// Setup the settings file that the System Under Test will read
+			// Converts "άλφα" into "alpha"
+			string[] lines = new string[]
+			{
+				"ά\ta",
+				"λ\tl",
+				"φ\tph",
+				"α\ta"
+			};
+
+			string tempFileName = Path.GetTempFileName();
+			File.WriteAllLines(tempFileName, lines, encoding);
+
+			// Other Setup
+			var fragments = new List<string>();
+			fragments.Add("άλφα");
+
+			// System Under Test
+			List<string> mappedFragments = AudioSegmentationApi.ApplyOrthographyConversion(fragments, tempFileName).ToList();
+
+			// Cleanup
+			File.Delete(tempFileName);
+
+			// Verification
+			Assert.That(mappedFragments[0], Is.EqualTo("alpha"));
 		}
 	}
 }

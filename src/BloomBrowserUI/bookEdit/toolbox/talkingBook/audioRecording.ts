@@ -3086,7 +3086,56 @@ export default class AudioRecording {
 
             BloomApi.postJson(
                 "audioSegmentation/eSpeakPreview",
-                JSON.stringify(inputParameters)
+                JSON.stringify(inputParameters),
+                result => {
+                    if (result && result.data && result.data.status) {
+                        const convertedText: string = result.data.text;
+                        const languageUsed: string = result.data.lang;
+                        const fileUsed: string = result.data.filePath;
+
+                        if (convertedText) {
+                            theOneLocalizationManager
+                                .asyncGetText(
+                                    "EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion",
+                                    "Result of orthography conversion:",
+                                    "After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file."
+                                )
+                                .done(localizedMessage1 => {
+                                    theOneLocalizationManager
+                                        .asyncGetText(
+                                            "EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed",
+                                            "eSpeak language:",
+                                            "After this text, the program will display the language code of the language settings that eSpeak used. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud)."
+                                        )
+                                        .done(localizedMessage2 => {
+                                            theOneLocalizationManager
+                                                .asyncGetText(
+                                                    "EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed",
+                                                    "Conversion file used:",
+                                                    "After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specificies a mapping which is used to convert the script for one language into the script for another."
+                                                )
+                                                .done(localizedMessage3 => {
+                                                    toastr.info(
+                                                        `${localizedMessage1} \"${convertedText}\"<br /><br />` +
+                                                            `${localizedMessage2} ${languageUsed}<br /><br />` +
+                                                            `${localizedMessage3} ${fileUsed}`
+                                                    );
+                                                });
+                                        });
+                                });
+                        }
+                    } else {
+                        theOneLocalizationManager
+                            .asyncGetText(
+                                "EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error",
+                                "eSpeak failed.",
+                                "This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud)."
+                            )
+                            .done(localizedMessage => {
+                                toastr.info(localizedMessage);
+                            });
+                    }
+                }
             );
         }
     }
