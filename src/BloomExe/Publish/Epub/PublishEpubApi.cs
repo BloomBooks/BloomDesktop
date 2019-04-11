@@ -197,14 +197,22 @@ namespace Bloom.Publish.Epub
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "abortPreview", request =>
 			{
-				lock (_epubMakerLock)
-				{
-					if (EpubMaker != null && _stagingEpub)
-						EpubMaker.AbortRequested = true; // typically will cause some OTHER thread that is making the epub to wind up quickly.
-				}
+				AbortMakingEpub();
 
 				request.PostSucceeded();
 			}, false, false);
+		}
+
+		public void AbortMakingEpub()
+		{
+			lock (_epubMakerLock)
+			{
+				if (EpubMaker != null && _stagingEpub)
+				{
+					// typically will cause some OTHER thread that is making the epub to wind up quickly.
+					EpubMaker.AbortRequested = true;
+				}
+			}
 		}
 
 		private void RefreshPreview(EpubPublishUiSettings newSettings)
@@ -349,7 +357,7 @@ namespace Bloom.Publish.Epub
 					if (succeeded)
 						EpubMaker.SaveEpub(path, _progress);
 				}
-			} while (!succeeded); // try until we get a complete epub, not interrupted by user changing something.
+			} while (!succeeded && !EpubMaker.AbortRequested); // try until we get a complete epub, not interrupted by user changing something.
 		}
 
 		public bool UpdatePreview(EpubPublishUiSettings newSettings, bool force, WebSocketProgress progress = null)
@@ -402,6 +410,10 @@ namespace Bloom.Publish.Epub
 				{
 					try
 					{
+						if (!PublishHelper.InPublishTab)
+						{
+							return false;
+						}
 						_previewSrc = UpdateEpubControlContent();
 					}
 					catch (ApplicationException ex)
