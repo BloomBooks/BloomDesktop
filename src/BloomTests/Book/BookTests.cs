@@ -2365,6 +2365,75 @@ namespace BloomTests.Book
 			Assert.That(audioSpans[0].InnerText, Is.EqualTo("Page 1 Paragraph 2 Sentence 1"));
 		}
 
+		[Test]
+		public void RepairCoverImageDescriptions_Works1()
+		{
+			string html = @"<html><head></head><body>
+	<div id='bloomDataDiv'>
+		<div data-book='coverImageDescription' lang='*'>
+			<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' lang='en' contenteditable='true'>
+				<p>musical score in artistic waves</p>
+			</div>
+			<div style='' class='bloom-editable normal-style' lang='z' contenteditable='true'></div>
+			<div data-languagetipcontent='español' style='' class='bloom-editable normal-style bloom-contentNational2' lang='es' contenteditable='true'></div>
+			<div data-languagetipcontent='français' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='' class='bloom-editable normal-style bloom-contentNational1' lang='fr' contenteditable='true'>
+				<p></p>
+			</div>
+		</div>
+		<div class='bloom-page' id='guid1'>
+			<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+			<div class='bloom-editable bloom-content2' contenteditable='true'></div>
+			<div class='bloom-editable bloom-content3' contenteditable='true'></div>
+		</div>
+	</div>
+</body></html>";
+			var dom = new HtmlDom(html);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'bloom-editable')]", 4);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'normal-style')]", 4);
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'ImageDescriptionEdit-style')]");
+			Bloom.Book.Book.RepairCoverImageDescriptions(dom);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'bloom-editable')]", 4);
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'normal-style')]");
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(concat(' ',@class,' '), ' ImageDescriptionEdit-style ')]", 4);
+		}
+
+		[Test]
+		public void RepairCoverImageDescriptions_Works2()
+		{
+			string html = @"<html><head></head><body>
+	<div id='bloomDataDiv'>
+		<div data-book='coverImageDescription' lang='*'>
+			<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+				<p></p>
+			</div>
+			<div data-languagetipcontent='español' style='' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-contentNational2' contenteditable='true' lang='es'>
+				<p></p>
+			</div>
+			<div data-languagetipcontent='français' style='' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-contentNational1' contenteditable='true' lang='fr'>
+				<p></p>
+			</div>
+			<div style='' class='bloom-editable' contenteditable='true' lang='z'>
+				<p></p>
+			</div>
+		</div>
+		<div class='bloom-page' id='guid1'>
+			<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+			<div class='bloom-editable bloom-content2' contenteditable='true'></div>
+			<div class='bloom-editable bloom-content3' contenteditable='true'></div>
+		</div>
+	</div>
+</body></html>";
+			var dom = new HtmlDom(html);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'bloom-editable')]", 4);
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'normal-style')]");
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'ImageDescriptionEdit-style')]");
+			Bloom.Book.Book.RepairCoverImageDescriptions(dom);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'bloom-editable')]", 4);
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'normal-style')]");
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(concat(' ',@class,' '), ' ImageDescriptionEdit-style ')]", 4);
+		}
+
+
 
 #if UserControlledTemplate
 		[Test]
