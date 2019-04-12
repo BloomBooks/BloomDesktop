@@ -39,3 +39,77 @@
         box-sizing: border-box;
     }
 }
+.bloom-page.quizv2 {
+    .bloom-translationGroup {
+        margin-bottom: 10px;
+        flex-grow: 1;
+        margin-left: 10px;
+    }
+    .check-answer-wrapper {
+        display: flex; // horizontal;
+
+        .quizCheck {
+            display: inline-block;
+            cursor: pointer;
+            height: 15px;
+            width: 15px;
+            border: 1px solid black;
+        }
+
+        .quizCheck::after {
+            position: absolute;
+            display: block;
+            content: "\2713";
+            opacity: 0;
+            top: -4px;
+            left: 1px;
+            color: white;
+        }
+    }
+}
+
+// In edit mode, the check boxes are checked if marked correct.
+body.editMode .bloom-page.quizv2 .check-answer-wrapper {
+    &.empty {
+        opacity: 0.5; // dim empty ones.
+        display: flex; // more specific rule blocks non-editMode rule below.
+    }
+    &.correctAnswer {
+        .quizCheck {
+            background-color: green;
+        }
+
+        .quizCheck::after {
+            opacity: 1;
+        }
+    }
+}
+
+// In read mode, the check boxes are checked if marked correct AND userSelected
+// We would like to mark this rule body:not(.editMode)
+// but when loaded into bloom reader, all the rules are preceded by something like [__scoped_1],
+// and any rule that begins [__scoped_1] body...won't match.
+// So we have to rely on somethign else. In this case, userSelected will
+// never occur in editMode.
+.bloom-page.quizv2 .check-answer-wrapper.correctAnswer.userSelected {
+    .quizCheck {
+        background-color: green;
+    }
+
+    .quizCheck::after {
+        opacity: 1;
+    }
+}
+.bloom-page.quizv2 {
+    .check-answer-wrapper {
+        &.empty {
+            // Javascript adds this class if the answer contains nothing visible.
+            // This rule is overridden by a more specific one in edit mode.
+            display: none;
+        }
+        &.userSelected:not(.correctAnswer) {
+            // In read mode, if they are selected but not correct, the whole answer dims
+            opacity: 0.5;
+        }
+    }
+}
