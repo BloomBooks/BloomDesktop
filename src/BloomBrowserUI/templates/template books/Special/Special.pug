@@ -1,5 +1,15 @@
 include ../standard-page-mixins.pug
 
+mixin answer
+	.check-answer-wrapper
+		//- A div used as a check-box, because a regular input is hard to give the look we want.
+		//- For accessibility, there is also a proper input element, whose value is kept in sync, but which is hidden.
+		.quizCheck
+		//- We'd like the name to be localized and the reader to play a recording of a vernacular description.
+		//- Don't see how to achieve that yet but at least a screen reader will see an input.
+		input.hiddenCheckbox(type="checkbox", name="Correct")
+		+field("auto").QuizAnswer-style(data-hint="Put a possible answer here. Check it if it is correct.")
+
 doctype html
 html
 	head
@@ -14,6 +24,7 @@ html
 		+standardStyles
 			= '\n'
 			| .quiz-style { font-size: 11pt !important;}
+			| .QuizQuestion-style {font-weight: bold !important;}
 	body
 		+dataDiv
 			+bookVariable-title('en', 'Special')
@@ -33,7 +44,9 @@ html
 		//- not be a problem after all.
 		//- Yet another option is to have one or more placeholders for the instructions here and have the
 		//- Add Page dialog code insert localizations.
-		+page('Bloom Reader Quiz', 'Use for comprehension testing on devices.' ).questions.bloom-nonprinting#4140d100-e4c3-49c4-af05-dda5789e019b(data-page='extra').screen-only
+		//- Warning: be careful not to use the 'questions' class anywhere else! Bloom publishing expects pages whose class list contains
+		//- 'questions' to be this one special type, and deletes them from publications (after extracting certain data to json for .bloomd).
+		+page('Bloom Reader Quiz', 'Use for comprehension testing.' ).questions.bloom-nonprinting#4140d100-e4c3-49c4-af05-dda5789e019b(data-page='extra').screen-only
 			.split-pane.vertical-percent
 				.split-pane-component.position-left
 					.split-pane-component-inner
@@ -60,6 +73,13 @@ html
 				.split-pane-component.position-right
 					.split-pane-component-inner.adding
 						+field("auto").quiz-style.quizContents.bloom-userCannotModifyStyles.bloom-noAudio
+		+page('Quiz Page', 'Use for comprehension testing.').simple-quiz.bloom-smart-page#F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D(data-page='extra')
+			.quiz
+				+field("auto").QuizQuestion-style(data-hint="Put a comprehension question here")
+				each dummy in new Array(8)
+					+answer()
+				script(src="quiz.js")
+
 		+page('Translation Instructions', 'A page of instructions to translators which appears only in the Edit tab.' )#d054bb76-dc6b-4452-a4ab-f4b83ffa10cc(data-page='extra').bloom-noreader.bloom-nonprinting.screen-only
 			.split-pane-component-inner
 				+field-mono-meta('*','').bloom-noAudio

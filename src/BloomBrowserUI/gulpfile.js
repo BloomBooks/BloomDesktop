@@ -67,7 +67,8 @@ var paths = {
     ],
     nodeFilesNeededInOutput: [
         "./**/bloom-player/dist/bloomPlayer.js",
-        "./**/bloom-player/dist/bloomplayer.htm"
+        "./**/bloom-player/dist/bloomplayer.htm",
+        "./**/bloom-player/dist/*.mp3"
     ],
     // List all the HTML files created by markdown or pug earlier in this gulp process.
     htmlFiles: ["../../output/browser/**/*-en.htm*"],
