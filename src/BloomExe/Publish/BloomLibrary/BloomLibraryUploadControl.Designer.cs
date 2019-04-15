@@ -640,8 +640,9 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizationComment(this.label2, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label2, "Common.Optional");
 			this.label2.Location = new System.Drawing.Point(563, 34);
+			this.label2.MinimumSize = new System.Drawing.Size(44, 15);
 			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(44, 10);
+			this.label2.Size = new System.Drawing.Size(44, 15);
 			this.label2.TabIndex = 36;
 			this.label2.Text = "optional";
 			// 
