@@ -66,6 +66,10 @@ var paths = {
         "!./**/*.bat",
         "!./**/node_modules/**/*.*"
     ],
+    nodeFilesNeededInOutput: [
+        "./**/bloom-player/dist/bloomPlayer.js",
+        "./**/bloom-player/dist/bloomplayer.htm"
+    ],
     // List all the HTML files created by markdown or pug earlier in this gulp process.
     htmlFiles: ["../../output/browser/**/*-en.htm*"],
     // List all the available translated Xliff files. (omitting original English Xliff files)
@@ -141,6 +145,15 @@ gulp.task("copy", function() {
     gulp.src("./node_modules/jquery/dist/jquery.min.js").pipe(
         gulpCopy(outputDir, { prefix: 3 })
     );
+
+    // Handling these separately lets us strip of the node_modules prefix,
+    // but also, it's confusing to try to get things out of node_modules
+    // as part of filesThatMightBeNeededInOutput when that glob explicitly
+    // excludes node_modules; it ought to work to include some of them after
+    // the exclude, but I could not make it do so.
+    gulp.src(paths.nodeFilesNeededInOutput)
+        .pipe(debug())
+        .pipe(gulpCopy(outputDir, { prefix: 1 }));
 
     return gulp
         .src(paths.filesThatMightBeNeededInOutput)

@@ -236,6 +236,7 @@ class PageChooser {
         defaultText: string,
         id: string = defaultText
     ) {
+        defaultText = defaultText.trim();
         if (defaultText) {
             theOneLocalizationManager
                 .asyncGetText(

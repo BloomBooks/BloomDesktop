@@ -79,9 +79,12 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
         <note>ID: template.starter.document</note>
       </trans-unit>
       <trans-unit id="template.starter.describeyours" approved="yes">
-        <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
-        <target xml:lang="fr" state="translated">Pensez également à ajouter une description de votre modèle, telles que celle que vous lisez maintenant. Pour faire cela, mettez un fichier texte intitulé <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> dans le dossier de votre modèle. Ce fichier doit suivre le format <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Pour fournir vos instructions dans d’autres langues, faites des versions de ce fichier où le « en » est remplacé par le code à deux lettres de la langue. Par exemple <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> apparaîtrait quand Bloom est configuré pour afficher des intitulés en français. Vous pouvez également mettre des captures d’écran, comme dans le présent document. Mettez toutes les images que vous utilisez dans un dossier intitulé "ReadMeImages", afin que les images soient référencées comme ceci :</target>
+        <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
+        <target xml:lang="fr" state="translated">Pensez également à ajouter une description de votre modèle, telles que celle que vous lisez maintenant. Pour faire cela, mettez un fichier texte intitulé <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> dans le dossier de votre modèle. Ce fichier doit suivre le format <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Pour fournir vos instructions dans d’autres langues, faites des versions de ce fichier où le « en » est remplacé par le code à deux lettres de la langue. Par exemple <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> apparaîtrait quand Bloom est configuré pour afficher des intitulés en français. Vous pouvez également mettre des captures d’écran, comme dans le présent document. Mettez toutes les images que vous utilisez dans un dossier intitulé "ReadMeImages", afin que les images soient référencées comme ceci :</target>
         <note>ID: template.starter.describeyours</note>
+        <alt-trans>
+          <target xml:lang="fr">Pensez également à ajouter une description de votre modèle, telles que celle que vous lisez maintenant. Pour faire cela, mettez un fichier texte intitulé <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> dans le dossier de votre modèle. Ce fichier doit suivre le format <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Pour fournir vos instructions dans d’autres langues, faites des versions de ce fichier où le « en » est remplacé par le code à deux lettres de la langue. Par exemple <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> apparaîtrait quand Bloom est configuré pour afficher des intitulés en français. Vous pouvez également mettre des captures d’écran, comme dans le présent document. Mettez toutes les images que vous utilisez dans un dossier intitulé "ReadMeImages", afin que les images soient référencées comme ceci :</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Pensez également à ajouter une description de votre modèle, telles que celle que vous lisez maintenant. Pour faire cela, mettez un fichier texte intitulé <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md"> ReadMe-en.md</g> dans le dossier de votre modèle. Ce fichier doit suivre le <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/"> format markdown standard</g>. Pour fournir vos instructions dans d’autres langues, faites des versions de ce fichier où le « en » est remplacé par le code à deux lettres de la langue. Par exemple <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md"> Lisezmoi-fr.md</g> apparaîtrait quand Bloom est configuré pour afficher des intitulés en français. Vous pouvez également mettre des captures d’écran, comme dans le présent document. Mettez toutes les images que vous utilisez dans un dossier intitulé « ReadMeImages », afin que les images soient référencées comme ceci :</target>
         </alt-trans>
@@ -127,6 +130,8 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
           
           
           
+          
+          
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
         <note>ID: template.starter.nothingautomatic</note>
         <alt-trans>
@@ -134,6 +139,23 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
           
           
           
+          
+          
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">
+          
+          
+          
+          
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">
+          
+          
+          
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
         </alt-trans>
         <alt-trans>
@@ -146,32 +168,13 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
           <target xml:lang="fr">
           
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom 3.9 n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
-          
-          
-          
-          
-          
-          
-<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom 3.9 n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
         <target xml:lang="fr" state="translated">
+          
+          
           
           
           
@@ -197,6 +200,37 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
           
           
           
+          
+          
+<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si vous ne voulez pas que vos modèles s'affichent dans la boîte de dialogue "Ajouter une page", vous pouvez l'indiquer à Bloom en créant un fichier intitulé "NotForAddPage.txt" dans le dossier des modèles de ce livre.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si vous ne voulez pas que vos modèles s'affichent dans la boîte de dialogue "Ajouter une page", vous pouvez l'indiquer à Bloom en créant un fichier intitulé "NotForAddPage.txt" dans le dossier des modèles de ce livre.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 <g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si vous ne voulez pas que vos modèles s'affichent dans la boîte de dialogue "Ajouter une page", vous pouvez l'indiquer à Bloom en créant un fichier intitulé "NotForAddPage.txt" dans le dossier des modèles de ce livre.</target>
         </alt-trans>
         <alt-trans>
@@ -216,27 +250,6 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
           <target xml:lang="fr">
           
           
-          
-          
-          
-          
-          
-          
-<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si vous ne voulez pas que vos modèles s'affichent dans la boîte de dialogue "Ajouter une page", vous pouvez l'indiquer à Bloom en créant un fichier intitulé "NotForAddPage.txt" dans le dossier des modèles de ce livre.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si vous ne voulez pas que vos modèles s'affichent dans la boîte de dialogue "Ajouter une page", vous pouvez l'indiquer à Bloom en créant un fichier intitulé "NotForAddPage.txt" dans le dossier des modèles de ce livre.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
           
           
           
@@ -307,6 +320,8 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
           
           
           
+          
+          
 <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Si vous voulez qu'une brève description de la page figure sur l'écran "Ajouter une page", vous devrez quitter Bloom et éditer le fichier html du template dans "Notepad", comme ceci : <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
         <alt-trans>
@@ -321,6 +336,37 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
           
           
           
+          
+          
+<g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Si vous voulez qu'une brève description de la page figure sur l'écran "Ajouter une page", vous devrez quitter Bloom et éditer le fichier html du template dans "Notepad", comme ceci : <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+<g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Si vous voulez qu'une brève description de la page figure sur l'écran "Ajouter une page", vous devrez quitter Bloom et éditer le fichier html du template dans "Notepad", comme ceci : <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Si vous voulez qu'une brève description de la page figure sur l'écran "Ajouter une page", vous devrez quitter Bloom et éditer le fichier html du template dans "Notepad", comme ceci : <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         </alt-trans>
         <alt-trans>
@@ -340,27 +386,6 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
           <target xml:lang="fr">
           
           
-          
-          
-          
-          
-          
-          
-<g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Si vous voulez qu'une brève description de la page figure sur l'écran "Ajouter une page", vous devrez quitter Bloom et éditer le fichier html du template dans "Notepad", comme ceci : <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Si vous voulez qu'une brève description de la page figure sur l'écran "Ajouter une page", vous devrez quitter Bloom et éditer le fichier html du template dans "Notepad", comme ceci : <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
           
           
           

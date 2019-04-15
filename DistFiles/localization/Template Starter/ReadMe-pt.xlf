@@ -55,9 +55,12 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
         <note>ID: template.starter.document</note>
       </trans-unit>
       <trans-unit id="template.starter.describeyours">
-        <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
-        <target xml:lang="pt-PT" state="translated">Também considere adicionar uma descrição do seu modelo, como o que você está lendo agora. Para fazer isso, coloque um arquivo de texto chamado <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> na pasta que contém o seu modelo. Este arquivo deve seguir o protocolo <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Para fornecer as instruções em outros idiomas, você deve fazer versões desse arquivo que alterem o "in" para duas letras do código de cada idioma. Por exemplo, <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> será mostrado quando Bloom for configurado para mostrar rótulos em espanhol. Você também pode incluir screenshots, como os que temos neste documento. Coloque todas as imagens que você usa em uma pasta chamada "ReadMeImages", de modo que as imagens sejam referenciadas desta maneira:</target>
+        <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
+        <target xml:lang="pt-PT" state="translated">Também considere adicionar uma descrição do seu modelo, como o que você está lendo agora. Para fazer isso, coloque um arquivo de texto chamado <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> na pasta que contém o seu modelo. Este arquivo deve seguir o protocolo <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Para fornecer as instruções em outros idiomas, você deve fazer versões desse arquivo que alterem o "in" para duas letras do código de cada idioma. Por exemplo, <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> será mostrado quando Bloom for configurado para mostrar rótulos em espanhol. Você também pode incluir screenshots, como os que temos neste documento. Coloque todas as imagens que você usa em uma pasta chamada "ReadMeImages", de modo que as imagens sejam referenciadas desta maneira:</target>
         <note>ID: template.starter.describeyours</note>
+        <alt-trans>
+          <target xml:lang="pt-PT">Também considere adicionar uma descrição do seu modelo, como o que você está lendo agora. Para fazer isso, coloque um arquivo de texto chamado <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> na pasta que contém o seu modelo. Este arquivo deve seguir o protocolo <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Para fornecer as instruções em outros idiomas, você deve fazer versões desse arquivo que alterem o "in" para duas letras do código de cada idioma. Por exemplo, <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> será mostrado quando Bloom for configurado para mostrar rótulos em espanhol. Você também pode incluir screenshots, como os que temos neste documento. Coloque todas as imagens que você usa em uma pasta chamada "ReadMeImages", de modo que as imagens sejam referenciadas desta maneira:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.thumbnailsshown">
         <source xml:lang="en">When the Add Page dialog box shows your template pages, it will show a thumbnail:</source>
@@ -95,6 +98,8 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
           
           
           
+          
+          
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estes livros poderiam ser combinados no futuro com o papel iminente do Folio. Observe que o Bloom ainda não possui um mecanismo para indicar que uma página deve ser automaticamente incluída nos novos livros; o autor terá que adicionar cada página da caixa de diálogo "Adicionar página".</target>
         <note>ID: template.starter.nothingautomatic</note>
         <alt-trans>
@@ -103,6 +108,25 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
           
           
           
+          
+          
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estes livros poderiam ser combinados no futuro com o papel iminente do Folio. Observe que o Bloom ainda não possui um mecanismo para indicar que uma página deve ser automaticamente incluída nos novos livros; o autor terá que adicionar cada página da caixa de diálogo "Adicionar página".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">
+          
+          
+          
+          
+          
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estes livros poderiam ser combinados no futuro com o papel iminente do Folio. Observe que o Bloom ainda não possui um mecanismo para indicar que uma página deve ser automaticamente incluída nos novos livros; o autor terá que adicionar cada página da caixa de diálogo "Adicionar página".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">
+          
+          
+          
+          
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estes livros poderiam ser combinados no futuro com o papel iminente do Folio. Observe que o Bloom ainda não possui um mecanismo para indicar que uma página deve ser automaticamente incluída nos novos livros; o autor terá que adicionar cada página da caixa de diálogo "Adicionar página".</target>
         </alt-trans>
         <alt-trans>
@@ -117,33 +141,13 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
           
           
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estes livros poderiam ser combinados no futuro com o papel iminente do Folio. Observe que o Bloom ainda não possui um mecanismo para indicar que uma página deve ser automaticamente incluída nos novos livros; o autor terá que adicionar cada página da caixa de diálogo "Adicionar página".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">
-          
-<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estes livros poderiam ser combinados no futuro com o papel iminente do Folio. Observe que o Bloom ainda não possui um mecanismo para indicar que uma página deve ser automaticamente incluída nos novos livros; o autor terá que adicionar cada página da caixa de diálogo "Adicionar página".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estes livros poderiam ser combinados no futuro com o papel iminente do Folio. Observe que o Bloom 3.9 ainda não possui um mecanismo para indicar que uma página deve ser automaticamente incluída nos novos livros; o autor terá que adicionar cada página da caixa de diálogo "Adicionar página".</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
         <target xml:lang="pt-PT" state="translated">
+          
+          
           
           
           
@@ -181,6 +185,49 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
           
           
           
+          
+          
+<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Se você não quiser que suas páginas de modelo sejam exibidas na caixa de diálogo "Adicionar página", você pode indicar isso no Bloom criando um arquivo chamado "NotForAddPage.txt". na pasta Modelos de livros.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Se você não quiser que suas páginas de modelo sejam exibidas na caixa de diálogo "Adicionar página", você pode indicar isso no Bloom criando um arquivo chamado "NotForAddPage.txt". na pasta Modelos de livros.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 <g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Se você não quiser que suas páginas de modelo sejam exibidas na caixa de diálogo "Adicionar página", você pode indicar isso no Bloom criando um arquivo chamado "NotForAddPage.txt". na pasta Modelos de livros.</target>
         </alt-trans>
         <alt-trans>
@@ -206,39 +253,6 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
           <target xml:lang="pt-PT">
           
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Se você não quiser que suas páginas de modelo sejam exibidas na caixa de diálogo "Adicionar página", você pode indicar isso no Bloom criando um arquivo chamado "NotForAddPage.txt". na pasta Modelos de livros.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Se você não quiser que suas páginas de modelo sejam exibidas na caixa de diálogo "Adicionar página", você pode indicar isso no Bloom criando um arquivo chamado "NotForAddPage.txt". na pasta Modelos de livros.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">
           
           
           
@@ -257,6 +271,8 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
       <trans-unit id="template.starter.labelsnottranslatable">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
         <target xml:lang="pt-PT" state="translated">
+          
+          
           
           
           
@@ -294,6 +310,49 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
           
           
           
+          
+          
+<g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Outras pessoas não poderão traduzir seus rótulos e descrições para outras línguas nacionais. Se isso for problemático, entre em contato com a equipe técnica da Bloom.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+<g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Outras pessoas não poderão traduzir seus rótulos e descrições para outras línguas nacionais. Se isso for problemático, entre em contato com a equipe técnica da Bloom.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 <g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Outras pessoas não poderão traduzir seus rótulos e descrições para outras línguas nacionais. Se isso for problemático, entre em contato com a equipe técnica da Bloom.</target>
         </alt-trans>
         <alt-trans>
@@ -319,39 +378,6 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
           <target xml:lang="pt-PT">
           
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Outras pessoas não poderão traduzir seus rótulos e descrições para outras línguas nacionais. Se isso for problemático, entre em contato com a equipe técnica da Bloom.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Outras pessoas não poderão traduzir seus rótulos e descrições para outras línguas nacionais. Se isso for problemático, entre em contato com a equipe técnica da Bloom.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">
           
           
           
@@ -370,6 +396,8 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
       <trans-unit id="template.starter.editrawhtml">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
         <target xml:lang="pt-PT" state="translated">
+          
+          
           
           
           
@@ -409,6 +437,51 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
           
           
           
+          
+          
+<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Se você quiser que a tela "Adicionar página" também forneça uma breve descrição da página, você terá que sair do Bloom e editar o arquivo html do modelo em "Bloco de notas", como este: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Se você quiser que a tela "Adicionar página" também forneça uma breve descrição da página, você terá que sair do Bloom e editar o arquivo html do modelo em "Bloco de notas", como este: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 <g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Se você quiser que a tela "Adicionar página" também forneça uma breve descrição da página, você terá que sair do Bloom e editar o arquivo html do modelo em "Bloco de notas", como este: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         </alt-trans>
         <alt-trans>
@@ -435,41 +508,6 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
           <target xml:lang="pt-PT">
           
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Se você quiser que a tela "Adicionar página" também forneça uma breve descrição da página, você terá que sair do Bloom e editar o arquivo html do modelo em "Bloco de notas", como este: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Se você quiser que a tela "Adicionar página" também forneça uma breve descrição da página, você terá que sair do Bloom e editar o arquivo html do modelo em "Bloco de notas", como este: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pt-PT">
           
           
           

@@ -5,6 +5,7 @@ import "../../lib/jquery.i18n.custom";
 import "../../lib/jquery.onSafe";
 import axios from "axios";
 import { BloomApi } from "../../utils/bloomApi";
+import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
@@ -273,6 +274,54 @@ export class ToolBox {
                                     .find("*[data-i18n]")
                                     .localize(); // run localization
 
+                                BloomApi.get("currentUiLanguage", result => {
+                                    const langName = result.data;
+
+                                    const nodeList = document.querySelectorAll(
+                                        ':not([data-i18n=""])'
+                                    );
+                                    for (let i = 0; i < nodeList.length; ++i) {
+                                        const node = nodeList.item(i);
+
+                                        if (!node.hasAttribute("data-i18n")) {
+                                            // Nodes which don't have data-18n will match the selector that it's not equal to "",
+                                            // but we definitely don't want to apply language text-specific markup to those non-leaf nodes.
+                                            continue;
+                                        }
+
+                                        // TODO: This only works when the tool is loaded up for the first time.
+                                        // It oesn't work if you open a new tool after the talking book tool is initialized for the first time.
+                                        // TODO: How to re-translate when UI lang changed.
+                                        const i18nId = node.getAttribute(
+                                            "data-i18n"
+                                        );
+                                        if (!i18nId) {
+                                            node.setAttribute("lang", langName);
+                                        } else {
+                                            // Double-check that it's actually in this language and not just using an English fallback
+                                            theOneLocalizationManager
+                                                .asyncGetTextInLang(
+                                                    i18nId,
+                                                    "",
+                                                    langName,
+                                                    ""
+                                                )
+                                                .done(result => {
+                                                    if (result) {
+                                                        node.setAttribute(
+                                                            "lang",
+                                                            langName
+                                                        );
+                                                    } else {
+                                                        node.removeAttribute(
+                                                            "lang"
+                                                        ); // Or maybe set to "en" instead?
+                                                    }
+                                                });
+                                        }
+                                    }
+                                });
+
                                 // Now bind the window's resize function to the toolbox resizer
                                 $(window).bind("resize", () => {
                                     clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
@@ -303,6 +352,41 @@ export class ToolBox {
                     })
                 )
         );
+    }
+
+    // Adds "lang" attributes into the DOM for toolbox elements which have internationalization. (AKA, have data-i18n)
+    // TODO: This only works with non-React toolbox components. For now, we only need it for talking book tool though.
+    public static insertLangAttributesIntoToolboxElements() {
+        BloomApi.get("currentUiLanguage", result => {
+            const langName = result.data;
+
+            const nodeList = document.querySelectorAll(':not([data-i18n=""])');
+            for (let i = 0; i < nodeList.length; ++i) {
+                const node = nodeList.item(i);
+
+                if (!node.hasAttribute("data-i18n")) {
+                    // Nodes which don't have data-18n will match the selector that it's not equal to "",
+                    // but we definitely don't want to apply language text-specific markup to those non-leaf nodes.
+                    continue;
+                }
+
+                const i18nId = node.getAttribute("data-i18n");
+                if (!i18nId) {
+                    node.setAttribute("lang", langName);
+                } else {
+                    // Double-check that it's actually in this language and not just using an English fallback
+                    theOneLocalizationManager
+                        .asyncGetTextInLang(i18nId, "", langName, "")
+                        .done(result => {
+                            if (result) {
+                                node.setAttribute("lang", langName);
+                            } else {
+                                node.removeAttribute("lang"); // Or maybe set to "en" instead?
+                            }
+                        });
+                }
+            }
+        });
     }
 
     //currently just a wrapper around the global, to be enhanced someday when we get rid of all the globals
@@ -556,6 +640,8 @@ function activateTool(newTool: ITool) {
             newTool.showTool();
             newTool.newPageReady();
         }
+
+        ToolBox.insertLangAttributesIntoToolboxElements(); // allows language-specific CSS formatting to be applied.
     }
 }
 

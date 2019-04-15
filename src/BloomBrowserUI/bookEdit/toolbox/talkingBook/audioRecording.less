@@ -236,11 +236,19 @@ div.ui-audioCurrent:not(.disableHighlight) p {
 .ui-audioBody {
     counter-reset: talkingBookListCounter;
 }
+*:not(.hide-countable) > .audio-label.talking-book-counter {
+    counter-increment: talkingBookListCounter;
+}
 *:not(.hide-countable) > .audio-label.talking-book-counter:before {
     content: counter(talkingBookListCounter) ") ";
 }
-*:not(.hide-countable) > .audio-label.talking-book-counter {
-    counter-increment: talkingBookListCounter;
+// Customized number styles for UI languages which need it:
+*:not(.hide-countable) > .audio-label.talking-book-counter[lang="bn"]:before {
+    // bn = Bangla also known as Bengali
+
+    // Note: If some of the items are in lang="bn", but some fallback to lang="en", we want the "en" ones to use the default numbering (for now)
+    //       (If in the future, you want all of them to use bengali numbers, you can include lang="bn" on the fallback ones too if they have class talking-book-counter)
+    content: counter(talkingBookListCounter, bengali) ") ";
 }
 
 //////////////////////////////////////////

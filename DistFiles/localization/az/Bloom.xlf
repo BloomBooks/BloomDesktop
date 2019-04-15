@@ -1782,7 +1782,7 @@
       <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true">
         <source xml:lang="en">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</source>
         <note>ID: EditTab.FrontMatter.SimpleLineDrawings</note>
-        <target xml:lang="az" state="needs-translation">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</target>
+        <target xml:lang="az" state="translated">Sadə xətt cizgiləri ən yaxşı görünür. Bu səhifəni istifadə etmək əvəzinə öz thumbnail.png faylınızı düzəldə bilərsiniz və Bloom onun üstünən yazmazsın deyə thumbnail.png fayl parametrləri Yalnız oxumaq kimi müəyyən edə bilərsiniz.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.SingleImageCredit">
         <source xml:lang="en">Image on page {0} by {1}.</source>
@@ -1790,7 +1790,7 @@
         <note>Used on the Title page of a book when "Paste Image Credits" is clicked. Put {0} in the translation where the page number of an image should go and put {1} in the translation where the image credits should go. For example in English, 'Image on page {0} by {1}.' comes out like 'Image on page 3 by John Doe, Copyright John Doe 2017, CC-BY-NC.'</note>
         <note xml:lang="en">OLD TEXT (early 4.1, remove quotation marks): "Image on page {0} by {1}."</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="az" state="needs-translation">Image on page {0} by {1}.</target>
+        <target xml:lang="az" state="translated">{0} səhifədəki təsvir {1} tərəfindəndir.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to choose topic</source>
@@ -1811,7 +1811,7 @@
         <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
         <note>ID: EditTab.Image.AltMsg</note>
         <note>The {0} is replaced by the filename of the picture.</note>
-        <target xml:lang="az" state="needs-translation">This picture, {0}, is missing or was loading too slowly.</target>
+        <target xml:lang="az" state="translated">Bu şəkil {0}, mövcud deyil, və ya həddən artıq yüklənirdi.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Image</source>
@@ -1826,7 +1826,7 @@
       <trans-unit id="EditTab.Image.CopyImageFailed" sil:dynamic="true">
         <source xml:lang="en">Bloom had problems using your computer's clipboard. Some other program may be interfering.</source>
         <note>ID: EditTab.Image.CopyImageFailed</note>
-        <target xml:lang="az" state="needs-translation">Bloom had problems using your computer's clipboard. Some other program may be interfering.</target>
+        <target xml:lang="az" state="translated">Bloom kompüterinizin mübadilə buferi istifadə edərkən problemlər uçradı. Digər proqram müdaxilə edə bilər.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cut Image</source>
@@ -1842,7 +1842,7 @@
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
         <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
         <note>ID: EditTab.Image.MissingInfo</note>
-        <target xml:lang="az" state="needs-translation">Image is missing information on Credits, Copyright, or License</target>
+        <target xml:lang="az" state="translated">Təsvir Məziyyət, Müəlliflik hüququ, və ya Lisenziya haqqındakı məlumatlardan əskikdir</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paste Image</source>
@@ -2626,10 +2626,10 @@
         <target xml:lang="az" state="translated">Bloom səs yazma qeyri-adi vəziyyətdədir - bəlkə bir mikrofon ayırması səbəb ola bilər. Yenidən başlatmaq lazımdır.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.MissingDependency">
-        <source xml:lang="en">To use Auto Segment, first install this {0} system.</source>
+        <source xml:lang="en">To split recordings into sentences, first install this {0} system.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.MissingDependency</note>
         <note>The placeholder {0} will be replaced with the dependency that needs to be installed.</note>
-        <target xml:lang="az" state="needs-translation">To use Auto Segment, first install this {0} system.</target>
+        <target xml:lang="az" state="needs-translation">To split recordings into sentences, first install this {0} system.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoInput" approved="yes">
         <source xml:lang="en">No input device</source>
@@ -2717,11 +2717,6 @@
         <source xml:lang="en">Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.NextLabel</note>
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.Next if possible, but without the number</note>
-        <target xml:lang="az" state="translated">Növbəti</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.NextLabel" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Next</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.NextLabel</note>
         <target xml:lang="az" state="translated">Növbəti</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true">

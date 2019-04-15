@@ -96,9 +96,12 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
         <note>ID: template.starter.document</note>
       </trans-unit>
       <trans-unit id="template.starter.describeyours" approved="yes">
-        <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
-        <target xml:lang="es-ES" state="translated">También considere agregar una descripción de su plantilla, como la que está leyendo ahorita. Para hacer esto, coloque un archivo de texto llamado <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> en la carpeta que contiene su plantilla. Este archivo debe seguir el protocolo <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Para proporcionar las instrucciones en otros idiomas, debe hacer versiones de ese archivo que cambian el "en" a dos letras del código de cada idioma. Por ejemplo <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-es.md">ReadMe-es.md</g> se mostrará cuando Bloom esta configurado para mostrar etiquetas en español. También puede incluir capturas de pantallas, como las que tenemos en este documento. Coloque todas las imágenes que usa en una carpeta llamada "ReadMeImages", para que las imágenes sean referenciadas de esta forma:</target>
+        <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
+        <target xml:lang="es-ES" state="translated">También considere agregar una descripción de su plantilla, como la que está leyendo ahorita. Para hacer esto, coloque un archivo de texto llamado <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> en la carpeta que contiene su plantilla. Este archivo debe seguir el protocolo <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Para proporcionar las instrucciones en otros idiomas, debe hacer versiones de ese archivo que cambian el "en" a dos letras del código de cada idioma. Por ejemplo <g id="genid-10" ctype="x-html-code">ReadMe-es.md</g> se mostrará cuando Bloom esta configurado para mostrar etiquetas en español. También puede incluir capturas de pantallas, como las que tenemos en este documento. Coloque todas las imágenes que usa en una carpeta llamada "ReadMeImages", para que las imágenes sean referenciadas de esta forma:</target>
         <note>ID: template.starter.describeyours</note>
+        <alt-trans>
+          <target xml:lang="es-ES">También considere agregar una descripción de su plantilla, como la que está leyendo ahorita. Para hacer esto, coloque un archivo de texto llamado <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> en la carpeta que contiene su plantilla. Este archivo debe seguir el protocolo <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Para proporcionar las instrucciones en otros idiomas, debe hacer versiones de ese archivo que cambian el "en" a dos letras del código de cada idioma. Por ejemplo <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-es.md">ReadMe-es.md</g> se mostrará cuando Bloom esta configurado para mostrar etiquetas en español. También puede incluir capturas de pantallas, como las que tenemos en este documento. Coloque todas las imágenes que usa en una carpeta llamada "ReadMeImages", para que las imágenes sean referenciadas de esta forma:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">También considere agregar una descripción de su plantilla, como la que estás leyendo ahorita. Para hacer esto, coloque un archivo de texto llamado <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> en la carpeta que contiene su plantilla. Este archivo debe seguir el protocolo <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Para proporcionar las instrucciones en otros idiomas, debe hacer versiones de ese archivo que cambian el "en" a dos letras del código de cada idioma. Por ejemplo <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-es.md">ReadMe-es.md</g> se mostrará cuando Bloom esta configurado para mostrar etiquetas en español. También puede incluir capturas de pantallas, como las que tenemos en este documento. Coloque todas las imágenes que usas en una carpeta llamada "ReadMeImages", para que las imágenes serán referenciadas como esto:</target>
         </alt-trans>
@@ -150,6 +153,8 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
           
           
           
+          
+          
 
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
         <note>ID: template.starter.nothingautomatic</note>
@@ -158,6 +163,25 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
           
           
           
+          
+          
+
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+          
+          
+          
+
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+          
+          
 
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
         </alt-trans>
@@ -173,20 +197,6 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
           
 
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">
-          
-<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">
-          
-          
-          
-          
-          
-<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom 3.9 todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage" approved="yes">

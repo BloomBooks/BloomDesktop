@@ -757,12 +757,12 @@
         <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
         <target xml:lang="hi" state="translated">सेटिंग्स सुरक्षा पासवर्ड</target>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox">
+      <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox" approved="yes">
         <source xml:lang="en">Show Characters</source>
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
-        <target xml:lang="hi" state="translated">अक्षर दिखाएं</target>
+        <target xml:lang="hi" state="translated">वर्ण दिखाएँ</target>
         <alt-trans>
-          <target xml:lang="hi">वर्ण दिखाएँ</target>
+          <target xml:lang="hi">अक्षर दिखाएं</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice" approved="yes">
