@@ -18,7 +18,7 @@ namespace Bloom.Publish
 
 		public PublishHelper()
 		{
-			if (!InPublishTab)
+			if (!InPublishTab && !Program.RunningUnitTests)
 			{
 				throw new InvalidOperationException("Should not be creating bloom book while not in publish tab");
 			}
