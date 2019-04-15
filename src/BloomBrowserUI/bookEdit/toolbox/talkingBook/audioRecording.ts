@@ -149,7 +149,15 @@ export default class AudioRecording {
             .mouseup(e => this.endRecordCurrent());
         $("#audio-play")
             .off()
-            .click(e => this.playCurrent());
+            .click(e => {
+                if (!e.ctrlKey) {
+                    // Normal case
+                    this.playCurrent();
+                } else {
+                    // Control + Click case: Special debug mode
+                    this.playESpeakPreview();
+                }
+            });
         $("#audio-split")
             .off()
             .click(e => this.split());
@@ -2809,12 +2817,15 @@ export default class AudioRecording {
     }
 
     private split(): void {
+        this.setStatus("split", Status.Disabled); // Disable it immediately (not asynchronously!) so that the button stops registering clicks
+
         BloomApi.get(
             "audioSegmentation/checkAutoSegmentDependencies",
             result => {
                 if (result.data === "FALSE") {
                     // The specific missing dependency is only reported in the error log on the C# side.
                     this.handleMissingDependency();
+                    this.setStatus("split", Status.Enabled);
                 } else {
                     this.autoSegment();
                 }
@@ -2865,15 +2876,27 @@ export default class AudioRecording {
             };
 
             this.disableInteraction();
-            // this.setStatus("split", Status.Active);  // Now we decide to just keep it disabled instaed.
+            // this.setStatus("split", Status.Active);  // Now we decide to just keep it disabled instead.
             this.showBusy();
 
             BloomApi.postJson(
                 "audioSegmentation/autoSegmentAudio",
                 JSON.stringify(inputParameters),
+
+                // onSuccess
                 result => {
                     this.setStatus("split", Status.Disabled);
+                    this.endBusy(); // This always needs to happen regardless of what path through processAutoSegmentResponse the code takes.
+
                     this.processAutoSegmentResponse(result);
+                },
+
+                // onError
+                result => {
+                    // This always needs to happen regardless of what happens
+                    // Otherwise, classes like cursor-progress will not go away upon a C# exception.
+                    // It can even be persisted into the saved HTML file and re-loaded with the cursor-progress state still applied
+                    this.endBusy();
                 }
             );
         }
@@ -2988,7 +3011,6 @@ export default class AudioRecording {
             this.sentenceToIdListMap = {};
             this.changeStateAndSetExpectedAsync("next");
             this.setStatus("split", Status.Disabled); // No need to run it again if it was successful. (Until the settings are changed).
-            this.endBusy();
         } else {
             this.changeStateAndSetExpectedAsync("record");
             doneCallback();
@@ -3050,6 +3072,72 @@ export default class AudioRecording {
             }
         }
         return elementsToUpdate;
+    }
+
+    private playESpeakPreview(): void {
+        const current = this.getCurrentHighlight();
+        if (current) {
+            const textToSpeak = current.innerText;
+
+            const inputParameters = {
+                text: textToSpeak,
+                lang: this.getAutoSegmentLanguageCode()
+            };
+
+            BloomApi.postJson(
+                "audioSegmentation/eSpeakPreview",
+                JSON.stringify(inputParameters),
+                result => {
+                    if (result && result.data && result.data.status) {
+                        const convertedText: string = result.data.text;
+                        const languageUsed: string = result.data.lang;
+                        const fileUsed: string = result.data.filePath;
+
+                        if (convertedText) {
+                            theOneLocalizationManager
+                                .asyncGetText(
+                                    "EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion",
+                                    "Result of orthography conversion:",
+                                    "After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file."
+                                )
+                                .done(localizedMessage1 => {
+                                    theOneLocalizationManager
+                                        .asyncGetText(
+                                            "EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed",
+                                            "eSpeak language:",
+                                            "After this text, the program will display the language code of the language settings that eSpeak used. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud)."
+                                        )
+                                        .done(localizedMessage2 => {
+                                            theOneLocalizationManager
+                                                .asyncGetText(
+                                                    "EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed",
+                                                    "Conversion file used:",
+                                                    "After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specificies a mapping which is used to convert the script for one language into the script for another."
+                                                )
+                                                .done(localizedMessage3 => {
+                                                    toastr.info(
+                                                        `${localizedMessage1} \"${convertedText}\"<br /><br />` +
+                                                            `${localizedMessage2} ${languageUsed}<br /><br />` +
+                                                            `${localizedMessage3} ${fileUsed}`
+                                                    );
+                                                });
+                                        });
+                                });
+                        }
+                    } else {
+                        theOneLocalizationManager
+                            .asyncGetText(
+                                "EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error",
+                                "eSpeak failed.",
+                                "This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud)."
+                            )
+                            .done(localizedMessage => {
+                                toastr.info(localizedMessage);
+                            });
+                    }
+                }
+            );
+        }
     }
 }
 

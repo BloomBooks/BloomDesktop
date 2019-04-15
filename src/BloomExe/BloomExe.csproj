@@ -635,6 +635,7 @@
     <Compile Include="web\controllers\BookMetadataApi.cs" />
     <Compile Include="web\controllers\CommonApi.cs" />
     <Compile Include="web\controllers\ImageApi.cs" />
+    <Compile Include="web\controllers\OrthographyConverter.cs" />
     <Compile Include="web\controllers\PageTemplatesApi.cs" />
     <Compile Include="web\controllers\KeyboardingConfigApi.cs" />
     <Compile Include="web\controllers\BookSettingsApi.cs" />

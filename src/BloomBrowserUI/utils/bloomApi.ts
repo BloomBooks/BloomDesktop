@@ -197,33 +197,39 @@ export class BloomApi {
         urlSuffix: string,
         data: any,
         config: AxiosRequestConfig,
-        successCallback?: (r: AxiosResponse) => void
+        successCallback?: (r: AxiosResponse) => void,
+        errorCallback?: (r: AxiosResponse) => void
     ) {
-        if (successCallback) {
-            BloomApi.wrapAxios(
-                axios
-                    .post(this.kBloomApiPrefix + urlSuffix, data, config)
-                    .then(successCallback)
-            );
-        } else {
-            BloomApi.wrapAxios(
-                axios.post(this.kBloomApiPrefix + urlSuffix, data, config)
-            );
-        }
+        BloomApi.wrapAxios(
+            axios
+                .post(this.kBloomApiPrefix + urlSuffix, data, config)
+                .then(successCallback ? successCallback : () => {})
+                .catch(r => {
+                    if (errorCallback) {
+                        errorCallback(r);
+                    } else {
+                        throw r;
+                    }
+                })
+        );
     }
 
     public static postJson(
         urlSuffix: string,
         data: any,
-        successCallback?: (r: AxiosResponse) => void
+        successCallback?: (r: AxiosResponse) => void,
+        errorCallback?: (r: AxiosResponse) => void
     ) {
         BloomApi.postDataWithConfig(
             urlSuffix,
             data,
             {
-                headers: { "Content-Type": "application/json" }
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8" // JSON normally uses UTF-8. Need to explicitly set it because UTF-8 is not the default.
+                }
             },
-            successCallback
+            successCallback,
+            errorCallback
         );
     }
 

@@ -310,7 +310,7 @@ namespace Bloom.Api
 
 			using(var body = request.InputStream)
 			{
-				using(StreamReader reader = new StreamReader(body, request.ContentEncoding))
+				using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
 				{
 					var inputString = reader.ReadToEnd();
 					return UnescapeString(inputString);
