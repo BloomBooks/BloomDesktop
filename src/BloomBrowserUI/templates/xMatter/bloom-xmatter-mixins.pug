@@ -125,7 +125,17 @@ mixin standard-cover-contents
 mixin standard-cover-image
 	.bloom-imageContainer
 		img(data-book="coverImage", src="placeHolder.png")
-		+field("auto").bloom-imageDescription.bloom-trailingElement.normal-style(data-book="coverImageDescription")
+		+field-cover-image("auto").bloom-imageDescription.bloom-trailingElement(data-book="coverImageDescription")
+
+mixin field-cover-image(languages)
+	-requireOneArgument('field', arguments);
+	.bloom-translationGroup(data-default-languages=languages)&attributes(attributes)
+		+editable-cover-image(kLanguageForPrototypeOnly)
+
+mixin editable-cover-image(language)
+	- requireOneArgument('editable', arguments)
+	.bloom-editable.ImageDescriptionEdit-style(lang=language, contenteditable="true")&attributes(attributes)
+
 
 mixin factoryStandard-outsideFrontCover
 	// FRONT COVER
