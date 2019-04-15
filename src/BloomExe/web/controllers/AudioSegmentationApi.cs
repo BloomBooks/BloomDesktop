@@ -130,23 +130,29 @@ namespace Bloom.web.controllers
 		// Returns true if the command returned with an error
 		protected bool DoesCommandCauseError(string commandString, string workingDirectory, out string standardOutput, out string standardError, params int[] errorCodesToIgnore)
 		{
+			string command;
+			string arguments;
 			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
+				command = "/bin/bash";
+				arguments = "-c \"{commandString}\"";
 				standardOutput = "";
 				standardError = "";
 				return true;	// TODO: Linux compatibility.
 			}
-			if (!String.IsNullOrEmpty(workingDirectory))
+			else
 			{
-				commandString = $"cd \"{workingDirectory}\" && {commandString}";
+				command = "CMD";
+				// REVIEW: are you sure this does the exit command if if %ERRORLEVEL% == 0?  or that the exit is even needed?
+				arguments = $"/C {commandString} && exit %ERRORLEVEL%";
+				if (!string.IsNullOrEmpty(workingDirectory) && workingDirectory.Contains("%"))
+					workingDirectory = Environment.ExpandEnvironmentVariables(workingDirectory);
 			}
 
-			string arguments = $"/C {commandString} && exit %ERRORLEVEL%";
-			var process = new Process()
-			{
+			var process = new Process {
 				StartInfo = new ProcessStartInfo()
 				{
-					FileName = "CMD",	// TODO: Linux compatability
+					FileName = command,
 					Arguments = arguments,
 					UseShellExecute = false,
 					CreateNoWindow = true,
@@ -154,14 +160,15 @@ namespace Bloom.web.controllers
 					RedirectStandardError = true,
 				},
 			};
-
+			if (!string.IsNullOrEmpty(workingDirectory))
+				process.StartInfo.WorkingDirectory = workingDirectory;
 			process.Start();
 			process.WaitForExit();
 
 			standardOutput = process.StandardOutput.ReadToEnd();
 			standardError = process.StandardError.ReadToEnd();
 
-			Debug.Assert(process.ExitCode != -1073741510, "Process Exit Code was 0xc000013a, indicating that the command prompt exited. That means we can't read the vlaue of the exit code of the last command of the session");
+			Debug.Assert(process.ExitCode != -1073741510, "Process Exit Code was 0xc000013a, indicating that the command prompt exited. That means we can't read the value of the exit code of the last command of the session");
 
 			if (process.ExitCode == 0)
 			{
@@ -675,7 +682,6 @@ namespace Bloom.web.controllers
 
 		internal class ESpeakPreviewResponse
 		{
-			public bool status;
 			public string text;
 			public string lang;
 			public string filePath;
@@ -716,24 +722,20 @@ namespace Bloom.web.controllers
 			string textToSpeakFullPath = Path.GetTempFileName();
 			File.WriteAllText(textToSpeakFullPath, text, Encoding.UTF8);
 
-			string command = $"espeak -v {langCode} -f \"{textToSpeakFullPath}\"";
-
-			// TODO: Start off an async process instead. No need to wait for espeak to finish before ending.
-			bool status = !DoesCommandCauseError(command);
-
-			RobustFile.Delete(textToSpeakFullPath);
-
-			Logger.WriteEvent("AudioSegmentationApi.ESpeakPreview(): Completed with status: " + status);
+			// No need to wait for espeak before responding.
 			var response = new ESpeakPreviewResponse()
 			{
-				status = status,
 				text = text,
 				lang = langCode,
-				filePath = Path.GetFileName(orthographyConversionMappingPath)
+				filePath = File.Exists(orthographyConversionMappingPath) ? Path.GetFileName(orthographyConversionMappingPath) : ""
 			};
-			
 			string responseJson = JsonConvert.SerializeObject(response);
 			request.ReplyWithJson(responseJson);
+
+			string command = $"espeak -v {langCode} -f \"{textToSpeakFullPath}\"";
+			bool status = !DoesCommandCauseError(command);
+			RobustFile.Delete(textToSpeakFullPath);
+			Logger.WriteEvent("AudioSegmentationApi.ESpeakPreview() Completed with status: " + status);
 		}
 
 		// Clean up the text before passing it off to the command line
