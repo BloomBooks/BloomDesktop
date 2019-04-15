@@ -42,7 +42,11 @@ namespace Bloom.web.controllers
 			string[] lines = File.ReadAllLines(filename);
 			foreach (var line in lines)
 			{
-				string[] fields = line.Split('\t');
+				// Allow empty lines and # comments.  (See BL-7023)
+				if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#"))
+					continue;
+				// Allow any number of spaces or tabs to separate fields on a line.  (See BL-7023)
+				string[] fields = line.Split(new [] {'\t', ' '}, StringSplitOptions.RemoveEmptyEntries);
 				if (fields.Length >= 2)
 				{
 					Debug.Assert(!mappings.ContainsKey(fields[0]), $"Invalid Orthography Conversion settings ({filename}). Duplicate key: \"{fields[0]}\".");

@@ -3095,7 +3095,7 @@ export default class AudioRecording {
                 "audioSegmentation/eSpeakPreview",
                 JSON.stringify(inputParameters),
                 result => {
-                    if (result && result.data && result.data.status) {
+                    if (result && result.data && result.data.filePath) {
                         const convertedText: string = result.data.text;
                         const languageUsed: string = result.data.lang;
                         const fileUsed: string = result.data.filePath;
@@ -3119,7 +3119,7 @@ export default class AudioRecording {
                                                 .asyncGetText(
                                                     "EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed",
                                                     "Conversion file used:",
-                                                    "After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specificies a mapping which is used to convert the script for one language into the script for another."
+                                                    "After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specifies a mapping which is used to convert the script for one language into the script for another."
                                                 )
                                                 .done(localizedMessage3 => {
                                                     toastr.info(
@@ -3131,16 +3131,6 @@ export default class AudioRecording {
                                         });
                                 });
                         }
-                    } else {
-                        theOneLocalizationManager
-                            .asyncGetText(
-                                "EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error",
-                                "eSpeak failed.",
-                                "This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud)."
-                            )
-                            .done(localizedMessage => {
-                                toastr.info(localizedMessage);
-                            });
                     }
                 }
             );
