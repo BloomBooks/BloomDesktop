@@ -17,6 +17,7 @@ using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Bloom.Book
 {
@@ -232,7 +233,7 @@ namespace Bloom.Book
 					newEntry.Size = fi.Length;
 				}
 
-				zipStream.PutNextEntry(newEntry);
+				SafelyPutNextEntry(zipStream, newEntry);
 
 				if (modifiedContent.Length > 0)
 				{
@@ -281,12 +282,38 @@ namespace Bloom.Book
 			ZipEntry entry = new ZipEntry(name);
 			var shaBytes = Encoding.UTF8.GetBytes(content);
 			entry.Size = shaBytes.Length;
-			zipStream.PutNextEntry(entry);
+			SafelyPutNextEntry(zipStream, entry);
 			using (var memStream = new MemoryStream(shaBytes))
 			{
 				StreamUtils.Copy(memStream, zipStream, new byte[1024]);
 			}
 			zipStream.CloseEntry();
+		}
+
+		/// <summary>
+		/// Saving files with a ".txt" extension apparently causes the zip library to use the
+		/// current culture setting for storing that file.  For some reason, on Windows 10 you
+		/// can assign a culture (English(Europe) / en-150) that the .Net code doesn't recognize
+		/// as valid when trying to get an encoding, resulting in an exception being thrown.
+		/// Reassigning the current culture temporarily sidesteps that problem.
+		/// (NOTE: CurrentCulture, not CurrentUICulture is involved here.)
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7078.
+		/// </remarks>
+		private static void SafelyPutNextEntry(ZipOutputStream zipStream, ZipEntry entry)
+		{
+			var currentCulture = CultureInfo.CurrentCulture;
+			try
+			{
+				if (entry.Name.EndsWith(".txt"))
+					CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+				zipStream.PutNextEntry(entry);
+			}
+			finally
+			{
+				CultureInfo.CurrentCulture = currentCulture;
+			}
 		}
 
 		private static void StripImgWithFilesWeCannotFind(XmlDocument dom, string bookFile)
