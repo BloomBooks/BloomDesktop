@@ -68,7 +68,6 @@ namespace Bloom.Publish.BloomLibrary
 			this._blindCheckBox = new System.Windows.Forms.CheckBox();
 			this._visuallyImpairedCheckBox = new System.Windows.Forms.CheckBox();
 			this._signLanguageCheckBox = new System.Windows.Forms.CheckBox();
-			this.label2 = new System.Windows.Forms.Label();
 			this.label4 = new System.Windows.Forms.Label();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.panel1 = new System.Windows.Forms.Panel();
@@ -632,20 +631,6 @@ namespace Bloom.Publish.BloomLibrary
 			this._signLanguageCheckBox.Text = "Sign Language";
 			this._signLanguageCheckBox.CheckedChanged += new System.EventHandler(this._signLanguageCheckBox_CheckedChanged);
 			// 
-			// label2
-			// 
-			this.label2.AutoSize = true;
-			this.label2.Dock = System.Windows.Forms.DockStyle.Right;
-			this._L10NSharpExtender.SetLocalizableToolTip(this.label2, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.label2, null);
-			this._L10NSharpExtender.SetLocalizingId(this.label2, "Common.Optional");
-			this.label2.Location = new System.Drawing.Point(563, 34);
-			this.label2.MinimumSize = new System.Drawing.Size(44, 15);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(44, 15);
-			this.label2.TabIndex = 36;
-			this.label2.Text = "optional";
-			// 
 			// label4
 			// 
 			this.label4.AutoSize = true;
@@ -667,7 +652,6 @@ namespace Bloom.Publish.BloomLibrary
 			this.tableLayoutPanel1.AutoScroll = true;
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-			this.tableLayoutPanel1.Controls.Add(this.label2, 0, 2);
 			this.tableLayoutPanel1.Controls.Add(this._giveBackLabel, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this._helpEachOtherLabel, 0, 1);
 			this.tableLayoutPanel1.Controls.Add(this.label7, 0, 3);
@@ -936,7 +920,6 @@ namespace Bloom.Publish.BloomLibrary
 		private CheckBox _blindCheckBox;
 		private CheckBox _visuallyImpairedCheckBox;
 		private CheckBox _signLanguageCheckBox;
-		private Label label2;
 		private Panel panel6;
 		private Label label4;
 	}
