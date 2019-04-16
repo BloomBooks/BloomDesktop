@@ -22,7 +22,8 @@ namespace Bloom.web
 		UserSuggestions,
 		Support,
 		IssueTrackingSystem,
-		IssueTrackingSystemBackend
+		IssueTrackingSystemBackend,
+		LocalizingSystem
 	}
 
 	public static class ErrorLevelExtensions

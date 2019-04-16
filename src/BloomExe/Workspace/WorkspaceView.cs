@@ -410,6 +410,12 @@ namespace Bloom.Workspace
 				if (langItem.IsoCode == Settings.Default.UserInterfaceLanguage)
 					UpdateMenuTextToShorterNameOfSelection(uiMenuControl, langItem.MenuText);
 			}
+			uiMenuControl.DropDownItems.Add("-");		// adds ToolStripSeparator
+			var message = LocalizationManager.GetString("CollectionTab.UILanguageMenu.HelpTranslate", "Help us translate Bloom (web)",
+				"The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.");
+			var helpItem = uiMenuControl.DropDownItems.Add(message);
+			helpItem.Image = global::Bloom.Properties.Resources.weblink;
+			helpItem.Click += (sender, args) => SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LocalizingSystem));
 		}
 
 		private static int compareLangItems(LanguageItem a, LanguageItem b)

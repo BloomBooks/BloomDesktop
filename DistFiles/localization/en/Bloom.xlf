@@ -740,6 +740,11 @@
         <note>ID: CollectionTab.TitleMissing</note>
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.UILanguageMenu.HelpTranslate">
+        <source xml:lang="en">Help us translate Bloom (web)</source>
+        <note>ID: CollectionTab.UILanguageMenu.HelpTranslate</note>
+        <note>The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip">
         <source xml:lang="en">{0}% translated</source>
         <note>ID: CollectionTab.UILanguageMenu.ItemTooltip</note>
