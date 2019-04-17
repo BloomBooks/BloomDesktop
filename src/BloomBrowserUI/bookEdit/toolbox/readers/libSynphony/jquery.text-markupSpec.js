@@ -171,4 +171,15 @@ describe("jquery.text-markup", function() {
         var result = $("div").getTotalWordCount();
         expect(result).toBe(22);
     });
+
+    it("getTotalWordCount in Nepali", function() {
+        // Two sentences w/ six words each. Between the two sentences there are 8 zero-width joiners.
+        // The second sentence also contains a zero-width non-joiner, which should create a word break.
+        // Therefore this text should yield a count of 13 words.
+        $("#text_entry1").html("चम्‍ब लामाई दिम ब्रुम पङ्‍ज्‍यीम फुप्‍ची।");
+        $("#text_entry2").html("बुम पङ्‌प थ्‍यामम्‌ छियम्‍से जम्‍ब खज्‍यी।");
+
+        var result = $("div").getTotalWordCount();
+        expect(result).toBe(13);
+    });
 });

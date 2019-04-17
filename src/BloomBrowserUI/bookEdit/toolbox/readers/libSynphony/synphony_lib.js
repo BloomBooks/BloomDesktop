@@ -444,9 +444,24 @@ LibSynphony.prototype.getWordsFromHtmlString = function(textHTML, letters) {
     );
     s = XRegExp.replace(s, regex, " ");
 
-    // split into words using Separator and Control characters
-    // (ZERO WIDTH SPACE is a Control charactor.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3933.)
-    regex = XRegExp("[\\p{Z}\\p{C}]+", "xg");
+    // Split into words using Separator and some Control characters
+    // e.g. ZERO WIDTH SPACE is a Control charactor.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3933.
+    // But so is ZERO WIDTH JOINER. See https://issues.bloomlibrary.org/youtrack/issue/BL-7081.
+    // The following variables are Control(format) characters that should split words.
+    // See list at: https://www.compart.com/en/unicode/category/Cf
+    var zeroWidthSplitters = "\u200b\u200c"; // ZERO WIDTH SPACE / ZERO WIDTH NON-JOINER
+    var ltrrtl = "\u200e\u200f"; // LEFT-TO-RIGHT MARK / RIGHT-TO-LEFT MARK
+    var directional = "\u202A-\u202E"; // more LTR/RTL/directional markers
+    var isolates = "\u2066-\u2069"; // directional "isolate" markers
+    regex = XRegExp(
+        "[\\p{Z}\\p{Cc}" + // split on whitespace and Control(control) characters
+            zeroWidthSplitters +
+            ltrrtl +
+            directional +
+            isolates +
+            "]+",
+        "xg"
+    );
     return XRegExp.split(s.trim(), regex);
 };
 
