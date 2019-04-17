@@ -306,13 +306,14 @@ namespace Bloom.Book
 			var currentCulture = CultureInfo.CurrentCulture;
 			try
 			{
-				if (entry.Name.EndsWith(".txt"))
+				if (SIL.PlatformUtilities.Platform.IsWindows && entry.Name.EndsWith(".txt"))
 					CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 				zipStream.PutNextEntry(entry);
 			}
 			finally
 			{
-				CultureInfo.CurrentCulture = currentCulture;
+				if (SIL.PlatformUtilities.Platform.IsWindows && entry.Name.EndsWith(".txt"))
+					CultureInfo.CurrentCulture = currentCulture;
 			}
 		}
 
