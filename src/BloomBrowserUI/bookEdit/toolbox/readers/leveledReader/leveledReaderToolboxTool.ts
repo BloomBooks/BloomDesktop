@@ -2,7 +2,6 @@
 import { getTheOneReaderToolsModel, DRTState } from "../readerToolsModel";
 import { beginInitializeLeveledReaderTool } from "../readerTools";
 import { ITool } from "../../toolbox";
-import { ToolBox } from "../../toolbox";
 import { BloomApi } from "../../../../utils/bloomApi";
 
 export class LeveledReaderToolboxTool implements ITool {
