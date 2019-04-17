@@ -55,6 +55,8 @@ namespace Bloom.CollectionChoosing
 			get { return _templateButton; }
 		}
 
+		private const int MaxMruRows = 3;
+
 		private void OnLoad(object sender, EventArgs e)
 		{
 			if (this.DesignModeAtAll())
@@ -64,7 +66,7 @@ namespace Bloom.CollectionChoosing
 
 			_templateButton.Parent.Controls.Remove(_templateButton);
 
-			const int maxMruItems = 3;
+			const int maxMruItems = 9;
 			var collectionsToShow = _mruList.Paths.Take(maxMruItems).ToList();
 			if (collectionsToShow.Count() < maxMruItems && Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
 			{
@@ -76,35 +78,30 @@ namespace Bloom.CollectionChoosing
 					.Take(maxMruItems - collectionsToShow.Count()));
 			}
 			var count = 0;
+			var column = 0;
 			foreach (var path in collectionsToShow)
 			{
-				AddFileChoice(path, count);
+				AddFileChoice(path, count, column);
 				++count;
+				if (count % MaxMruRows == 0)
+					column++;
 				if (count > maxMruItems)
 					break;
 			}
-
-			foreach (Control control in tableLayoutPanel2.Controls)
-			{
-				if (control.Tag != null && control.Tag.ToString() == "sendreceive")
-					control.Visible = Settings.Default.ShowSendReceive;
-			}
-			// We've pulled _sendReceiveInstructionsLabel out into _topRightPanel; set visibility in the same way
-			_sendReceiveInstructionsLabel.Visible = Settings.Default.ShowSendReceive;
 		}
 
-
-		private void AddFileChoice(string path, int index)
+		private void AddFileChoice(string path, int index, int column)
 		{
 			const int kRowOffsetForMRUChoices = 1;
 			var button = AddChoice(Path.GetFileNameWithoutExtension(path), path, true, OnOpenRecentCollection,
-								   index + kRowOffsetForMRUChoices);
+								   index % MaxMruRows + kRowOffsetForMRUChoices, column);
 			button.Tag = path;
 		}
 
 		private Button AddChoice(string localizedLabel, string localizedTooltip, bool enabled, EventHandler clickHandler,
-								 int row)
+								 int row, int column)
 		{
+			const string buttonLabelPadding = "  ";
 			var button = new Button();
 			button.Anchor = AnchorStyles.Top | AnchorStyles.Left;
 
@@ -116,7 +113,7 @@ namespace Bloom.CollectionChoosing
 
 			button.ImageAlign = ContentAlignment.MiddleLeft;
 			button.Click += clickHandler;
-			button.Text = "  " + localizedLabel;
+			button.Text = buttonLabelPadding + localizedLabel;
 
 			button.FlatAppearance.BorderSize = _templateButton.FlatAppearance.BorderSize;
 			button.ForeColor = _templateButton.ForeColor;
@@ -129,7 +126,7 @@ namespace Bloom.CollectionChoosing
 			toolTip1.SetToolTip(button, localizedTooltip);
 			tableLayoutPanel2.Controls.Add(button);
 			tableLayoutPanel2.SetRow(button, row);
-			tableLayoutPanel2.SetColumn(button, 0);
+			tableLayoutPanel2.SetColumn(button, column);
 			return button;
 		}
 #if Chorus
