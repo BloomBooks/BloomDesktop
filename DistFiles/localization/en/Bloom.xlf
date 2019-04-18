@@ -4291,6 +4291,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Super Paper Saver</source>
         <note>ID: TemplateBooks.PageLabel.Super Paper Saver</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Text Over Video" sil:dynamic="true">
+        <source xml:lang="en">Text Over Video</source>
+        <note>ID: TemplateBooks.PageLabel.Text Over Video</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.The End" sil:dynamic="true">
         <source xml:lang="en">The End</source>
         <note>ID: TemplateBooks.PageLabel.The End</note>
