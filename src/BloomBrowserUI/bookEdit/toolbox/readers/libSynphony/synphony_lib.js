@@ -405,10 +405,10 @@ LibSynphony.prototype.fullGPC2Regular = function(aGPCs) {
  */
 LibSynphony.prototype.getWordsFromHtmlString = function(textHTML, letters) {
     // replace html break with space
-    var regex = /<br><\/br>|<br>|<br \/>|<br\/>|\r?\n/g;
-    var s = textHTML.replace(regex, " ").toLowerCase();
+    let regex = /<br><\/br>|<br>|<br \/>|<br\/>|\r?\n/g;
+    let s = textHTML.replace(regex, " ").toLowerCase();
 
-    var punct = "\\p{P}";
+    let punct = "\\p{P}";
 
     if (letters) {
         // BL-1216 Use negative look-ahead to keep letters from being counted as punctuation
@@ -444,17 +444,24 @@ LibSynphony.prototype.getWordsFromHtmlString = function(textHTML, letters) {
     );
     s = XRegExp.replace(s, regex, " ");
 
-    // Split into words using Separator and some Control characters
-    // e.g. ZERO WIDTH SPACE is a Control charactor.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3933.
-    // But so is ZERO WIDTH JOINER. See https://issues.bloomlibrary.org/youtrack/issue/BL-7081.
-    // The following variables are Control(format) characters that should split words.
+    // Split into words using Separator and SOME Control characters
+    // Originally the code had p{C} (all Control characters), but this was too all-encompassing.
+    const whitespace = "\\p{Z}";
+    const controlChars = "\\p{Cc}"; // "real" Control characters
+    // The following constants are Control(format) [p{Cf}] characters that should split words.
+    // e.g. ZERO WIDTH SPACE is a Control(format) charactor
+    // (See http://issues.bloomlibrary.org/youtrack/issue/BL-3933),
+    // but so is ZERO WIDTH JOINER (See https://issues.bloomlibrary.org/youtrack/issue/BL-7081).
     // See list at: https://www.compart.com/en/unicode/category/Cf
-    var zeroWidthSplitters = "\u200b\u200c"; // ZERO WIDTH SPACE / ZERO WIDTH NON-JOINER
-    var ltrrtl = "\u200e\u200f"; // LEFT-TO-RIGHT MARK / RIGHT-TO-LEFT MARK
-    var directional = "\u202A-\u202E"; // more LTR/RTL/directional markers
-    var isolates = "\u2066-\u2069"; // directional "isolate" markers
+    const zeroWidthSplitters = "\u200b\u200c"; // ZERO WIDTH SPACE / ZERO WIDTH NON-JOINER
+    const ltrrtl = "\u200e\u200f"; // LEFT-TO-RIGHT MARK / RIGHT-TO-LEFT MARK
+    const directional = "\u202A-\u202E"; // more LTR/RTL/directional markers
+    const isolates = "\u2066-\u2069"; // directional "isolate" markers
+    // split on whitespace, Control(control) and some Control(format) characters
     regex = XRegExp(
-        "[\\p{Z}\\p{Cc}" + // split on whitespace and Control(control) characters
+        "[" +
+            whitespace +
+            controlChars +
             zeroWidthSplitters +
             ltrrtl +
             directional +
