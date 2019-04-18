@@ -754,7 +754,7 @@ function beginAddTool(
     checkBoxId: string,
     toolId: string,
     openTool: boolean,
-    whenLoaded?: (() => void)
+    whenLoaded?: () => void
 ): void {
     const chkBox = document.getElementById(checkBoxId);
     if (chkBox) {
@@ -842,15 +842,17 @@ function handleKeyboardInput(): void {
         );
         if (!page || !page.contentWindow) return; // unit testing?
 
-        const selection: Selection = page.contentWindow.getSelection();
-        const anchor: Node = selection.anchorNode;
-        const active = <HTMLDivElement>$(anchor)
-            .closest("div")
-            .get(0);
+        const selection: Selection | null = page.contentWindow.getSelection();
+        const anchor: Node | null = selection ? selection.anchorNode : null;
+        const active = anchor ? <HTMLDivElement>$(anchor)
+                  .closest("div")
+                  .get(0) : null;
         if (
             !active ||
-            selection.rangeCount > 1 ||
-            (selection.rangeCount === 1 && !selection.getRangeAt(0).collapsed)
+            (selection &&
+                (selection.rangeCount > 1 ||
+                    (selection.rangeCount === 1 &&
+                        !selection.getRangeAt(0).collapsed)))
         ) {
             return; // don't even try to adjust markup while there is some complex selection
         }
@@ -878,9 +880,10 @@ function handleKeyboardInput(): void {
         // clicks away, the markup will be redone and fixed. So this is a known tradeoff; we get
         // more reliable insertion-point-preservation, at the cost of some temporarily inaccurate
         // markup.
-        const editableDiv = $(selection.anchorNode).parents(
-            ".bloom-editable"
-        )[0];
+        const selNode = selection ? selection.anchorNode : null;
+        const editableDiv = selNode
+            ? $(selNode).parents(".bloom-editable")[0]
+            : null;
         // In 3.9, this is null when you press backspace in an empty box; the selection.anchorNode is itself a .bloom-editable, so
         // presumably we could adjust the above query to still get the div it's looking for.
         if (editableDiv) {

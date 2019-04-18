@@ -15,7 +15,7 @@ export class BloomApi {
     // (or an exception is thrown in the .then code)
     // You can also pass a get, post, etc. call without a .then().
     public static wrapAxios(
-        call: AxiosPromise | Promise<void>,
+        call: Promise<void | AxiosResponse>,
         report: boolean = true
     ) {
         // Save the place where the original axios call was made.

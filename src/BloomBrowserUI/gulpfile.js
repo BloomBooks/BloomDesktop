@@ -22,7 +22,6 @@ var path = require("path");
 var sourcemaps = require("gulp-sourcemaps");
 var webpackStream = require("webpack-stream");
 var del = require("del");
-var runSequence = require("run-sequence");
 var gulpCopy = require("gulp-copy");
 var gulpFlatten = require("gulp-flatten");
 var globule = require("globule");
@@ -121,7 +120,7 @@ gulp.task("pug", function() {
 gulp.task("webpack", function() {
     var webpackconfig = require("./webpack.config.js");
     return gulp
-        .src("unused") // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
+        .src("unused", { allowEmpty: true }) // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
         .pipe(webpackStream(webpackconfig, require("webpack")))
         .pipe(gulp.dest(outputDir));
 });
@@ -129,7 +128,7 @@ gulp.task("webpack", function() {
 gulp.task("webpack-prod", function() {
     var webpackconfig = require("./webpack.config-prod.js");
     return gulp
-        .src("unused") // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
+        .src("unused", { allowEmpty: true }) // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
         .pipe(webpackStream(webpackconfig, require("webpack")))
         .pipe(gulp.dest(outputDir));
 });
@@ -205,25 +204,23 @@ gulp.task("watchInner", function() {
     );
 });
 
-gulp.task("watchlp", function() {
-    runSequence(["less", "pug"], "watchInner");
-});
+gulp.task("watchlp", gulp.series(gulp.parallel("less", "pug"), "watchInner"));
 
-gulp.task("watch", function() {
+gulp.task("watch", async function() {
     console.log(
         '****** PLEASE run "webpack --watch" in a separate console *********'
     );
-    runSequence(
+    gulp.series(
         "clean",
         "copy",
-        [
+        gulp.parallel(
             "less",
             "pug",
             "markdownHelp",
             "markdownTemplateReadme",
             "markdownInfoPages",
             "markdownDistInfo"
-        ],
+        ),
         "watchInner"
     );
 });
@@ -246,7 +243,7 @@ gulp.task("markdownTemplateReadme", function() {
                 var result = markdownIt.render(file.contents.toString());
                 // wrap the generated HTML in a document and make it use our standard stylesheet.
                 // strip out the string we insert to obfuscate email addresses in source code.
-                file.contents = new Buffer(
+                file.contents = Buffer.from(
                     `<html><head><meta charset='utf-8'><link rel='stylesheet' href='../../../bookPreview/BookReadme.css' type='text/css' /></head><body>
                 ` +
                         result.replace("removethis", "") +
@@ -332,16 +329,16 @@ gulp.task("createXliffFiles", function() {
         );
 });
 
-gulp.task("default", function(callback) {
-    //NB: run-sequence is needed for gulp 3.x, but soon there will be gulp which will have a built-in "series" function.
-    // This parallelism seems to provide the best performance.  The pug and markdown tasks must all be done before the
-    // translateHtml and createXliff tasks.  Putting 'less' with the first group and 'webpack' with the second group
-    // minimizes the overall build time according to tests.
-    // Keep the "build-prod" task in sync with this.
-    runSequence(
+gulp.task("brandings", async function() {
+    return child_process.exec("npm run buildBrandings");
+});
+
+gulp.task(
+    "default",
+    gulp.series(
         "clean",
         "copy",
-        [
+        gulp.parallel(
             "brandings",
             "less",
             "pug",
@@ -349,19 +346,19 @@ gulp.task("default", function(callback) {
             "markdownTemplateReadme",
             "markdownInfoPages",
             "markdownDistInfo"
-        ],
-        ["webpack", "translateHtmlFiles", "createXliffFiles"],
-        callback
-    );
-});
+        ),
+        gulp.parallel("webpack", "translateHtmlFiles", "createXliffFiles")
+    )
+);
 
-gulp.task("build-prod", function(callback) {
+gulp.task(
     //Should generally match default, with just those changes needed for a production
     // build.
-    runSequence(
+    "build-prod",
+    gulp.series(
         "clean",
         "copy",
-        [
+        gulp.parallel(
             "brandings",
             "less",
             "pug",
@@ -369,16 +366,10 @@ gulp.task("build-prod", function(callback) {
             "markdownTemplateReadme",
             "markdownInfoPages",
             "markdownDistInfo"
-        ],
-        ["webpack-prod", "translateHtmlFiles", "createXliffFiles"],
-        callback
-    );
-});
-
-gulp.task("brandings", function() {
-    // run("npm run buildBrandings"));
-    return child_process.execFile("npm run buildBrandings");
-});
+        ),
+        gulp.parallel("webpack-prod", "translateHtmlFiles", "createXliffFiles")
+    )
+);
 
 // Find which of the translated xliff files match up with the given html file.
 // Note that allXliffFiles uses / to separate directories even on Windows, but
@@ -441,7 +432,7 @@ var basicMarkdown = function(files, style, folder) {
             tap(function(file) {
                 var result = markdownIt.render(file.contents.toString());
                 // convert to full HTML, ensuring that the file is known to be utf-8.
-                file.contents = new Buffer(
+                file.contents = Buffer.from(
                     `<html><head><meta charset='utf-8'>` +
                         style +
                         `</head><body>
