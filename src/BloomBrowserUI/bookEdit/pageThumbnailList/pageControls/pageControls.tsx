@@ -139,7 +139,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                         <span>
                             {this.state.lockState === "BookLocked" && (
                                 <BloomButton
-                                    l10nKey="EditTab.UnlockBook"
+                                    l10nKey="" // "EditTab.UnlockBook" is uneccessary and causes toast
                                     l10nComment="Button that tells Bloom to temporarily unlock a shell book for editing other than translation."
                                     enabled={true}
                                     clickEndpoint="edit/pageControls/unlockBook"
@@ -150,7 +150,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                             )}
                             {this.state.lockState === "BookUnlocked" && (
                                 <BloomButton
-                                    l10nKey="EditTab.LockBook"
+                                    l10nKey="" // "EditTab.LockBook" is uneccessary and causes toast
                                     l10nComment="Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation)."
                                     enabled={true}
                                     clickEndpoint="edit/pageControls/lockBook"
