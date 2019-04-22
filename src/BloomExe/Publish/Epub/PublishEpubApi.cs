@@ -362,7 +362,7 @@ namespace Bloom.Publish.Epub
 
 		public bool UpdatePreview(EpubPublishUiSettings newSettings, bool force, WebSocketProgress progress = null)
 		{
-			_progress = progress ?? _standardProgress;
+			_progress = progress ?? _standardProgress.WithL10NPrefix("PublishTab.Epub.");
 			if (Program.RunningOnUiThread)
 			{
 				// There's some stuff inside this lock that has to run on the UI thread.
