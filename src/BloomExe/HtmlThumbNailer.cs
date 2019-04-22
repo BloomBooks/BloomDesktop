@@ -11,15 +11,12 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.ImageProcessing;
 using Bloom.Api;
-using DesktopAnalytics;
 using Gecko;
 using Gecko.Events;
-using Gecko.Utils;
 using SIL.Code;
 using SIL.Reporting;
 using Bloom.Book;
 using Bloom.Properties;
-using BloomTemp;
 using Gecko.DOM;
 using SIL.IO;
 
@@ -27,7 +24,7 @@ namespace Bloom
 {
 	public class HtmlThumbNailer : IDisposable
 	{
-		Dictionary<string, Image> _images = new Dictionary<string, Image>();
+		readonly Dictionary<string, Image> _images = new Dictionary<string, Image>();
 
 		// This is used to synchronize browser access between different
 		// instances of Gecko which are used in various classes.
@@ -156,10 +153,12 @@ namespace Bloom
 		/// <summary>
 		///
 		/// </summary>
+		/// <param name="folderForThumbNailCache"></param>
 		/// <param name="key">whatever system you want... just used for caching</param>
 		/// <param name="document"></param>
-		/// <param name="backgroundColorOfResult">use Color.Transparent if you'll be composing in onto something else</param>
-		/// <param name="drawBorderDashed"></param>
+		/// <param name="options"></param>
+		/// <param name="callback"></param>
+		/// <param name="errorCallback"></param>
 		/// <returns></returns>
 		public void GetThumbnailAsync(string folderForThumbNailCache, string key, HtmlDom document,
 			ThumbnailOptions options, Action<Image> callback, Action<Exception> errorCallback)
@@ -170,10 +169,13 @@ namespace Bloom
 		/// <summary>
 		///
 		/// </summary>
+		/// <param name="folderForThumbNailCache"></param>
 		/// <param name="key">whatever system you want... just used for caching</param>
 		/// <param name="document"></param>
-		/// <param name="backgroundColorOfResult">use Color.Transparent if you'll be composing in onto something else</param>
-		/// <param name="drawBorderDashed"></param>
+		/// <param name="options"></param>
+		/// <param name="callback"></param>
+		/// <param name="errorCallback"></param>
+		/// <param name="async"></param>
 		/// <returns></returns>
 		public void GetThumbnail(string folderForThumbNailCache, string key, HtmlDom document,
 			ThumbnailOptions options, Action<Image> callback, Action<Exception> errorCallback, bool async)
@@ -186,7 +188,7 @@ namespace Bloom
 
 			//In our cache?
 			Image image;
-			if (!String.IsNullOrWhiteSpace(key) && _images.TryGetValue(key, out image))
+			if (!string.IsNullOrWhiteSpace(key) && _images.TryGetValue(key, out image))
 			{
 				callback(image);
 				return;
@@ -199,14 +201,14 @@ namespace Bloom
 				{
 					var thumbnail = ImageUtils.GetImageFromFile(thumbNailFilePath);
 					thumbnail.Tag = thumbNailFilePath;
-					if (!String.IsNullOrWhiteSpace(key))
+					if (!string.IsNullOrWhiteSpace(key))
 						_images.Add(key, thumbnail);
 					callback(thumbnail);
 					return;
 				}
 			}
 
-			var order = new ThumbnailOrder() {
+			var order = new ThumbnailOrder {
 				ThumbNailFilePath = thumbNailFilePath,
 				Options = options,
 				Callback = callback,
@@ -450,7 +452,7 @@ namespace Bloom
 			// runs on threadpool thread
 			_currentOrder = order;
 			thumbnail = null;
-			using (var temp = BloomServer.MakeSimulatedPageFileInBookFolder(order.Document, source:"thumb"))
+			using (var temp = BloomServer.MakeSimulatedPageFileInBookFolder(order.Document, source:BloomServer.SimulatedPageFileSource.Thumb))
 			{
 				order.Done = false;
 				browser.Tag = order;

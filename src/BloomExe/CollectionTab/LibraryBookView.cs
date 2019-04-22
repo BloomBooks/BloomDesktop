@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.Windows.Forms;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Gecko;
@@ -135,7 +135,7 @@ namespace Bloom.CollectionTab
 				//_previewBrowser.Visible = true;
 				_splitContainerForPreviewAndAboutBrowsers.Visible = true;
 				if (updatePreview && !TroubleShooterDialog.SuppressBookPreview)
-					_previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook(), source:"preview");
+					_previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook(), source:BloomServer.SimulatedPageFileSource.Preview);
 				_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = true;
 				if (_bookSelection.CurrentSelection.HasAboutBookInformationToShow)
 				{

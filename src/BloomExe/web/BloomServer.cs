@@ -2,19 +2,21 @@
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Web;
 using System.Windows.Forms;
+using System.Xml;
 using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
 using SIL.IO;
 using SIL.Reporting;
-using SIL.Extensions;
 using BloomTemp;
 using Bloom.Book;
 using Bloom.ImageProcessing;
@@ -23,6 +25,8 @@ using Bloom.Edit;
 using Bloom.Publish.Epub;
 using Bloom.Properties;
 using Bloom.web;
+using SIL.PlatformUtilities;
+using ThreadState = System.Threading.ThreadState;
 
 namespace Bloom.Api
 {
@@ -166,6 +170,18 @@ namespace Bloom.Api
 
 		public Book.Book CurrentBook => _bookSelection?.CurrentSelection;
 
+		public enum SimulatedPageFileSource
+		{
+			Normal,     // Normal page preview
+			Pub,        // PDF preview
+			Thumb,      // Thumbnailer
+			Pagelist,   // Initial list of page thumbs
+			Epub,       // ePUB preview
+			Nav,        // Navigating to a new page?
+			Preview,    // Preview whole book
+			Frame       // Editing View is updating single displayed page
+		}
+
 		/// <summary>
 		/// This code sets things up so that we can edit (or make a thumbnail of, etc.) one page of a book.
 		/// This is tricky because we have to satisfy several constraints:
@@ -198,8 +214,10 @@ namespace Bloom.Api
 		/// a src attr for an IFrame. We need to account for this because un-escaped quotation marks in the
 		/// URL can cause errors in JavaScript strings. Also, we want to use the same name each time
 		/// for current page content, so Open Page in Browser works even after changing pages.</param>
+		/// <param name="setAsCurrentPageForDebugging"></param>
+		/// <param name="source">SimulatedPageFileSource enum</param>
 		/// <returns></returns>
-		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool isCurrentPageContent = false, bool setAsCurrentPageForDebugging = false, string source="")
+		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool isCurrentPageContent = false, bool setAsCurrentPageForDebugging = false, BloomServer.SimulatedPageFileSource source = BloomServer.SimulatedPageFileSource.Normal)
 		{
 			var simulatedPageFileName = Path.ChangeExtension((isCurrentPageContent ? "currentPage" : Guid.NewGuid().ToString()) + SimulatedFileUrlMarker + source, ".html");
 			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
@@ -232,12 +250,36 @@ namespace Bloom.Api
 			{
 				_keyToCurrentPage = key;
 			}
+
+			// If we are creating a page thumbnail and we have videos,
+			// replace them with our standard video placeholder image.
+			if (source == BloomServer.SimulatedPageFileSource.Thumb ||
+			    source == BloomServer.SimulatedPageFileSource.Pagelist ||
+			    source == BloomServer.SimulatedPageFileSource.Epub)
+			{
+				ReplaceAnyVideoElementsWithPlaceholder(dom);
+			}
 			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
 			lock (_urlToSimulatedPageContent)
 			{
 				_urlToSimulatedPageContent[key] = html5String;
 			}
-			return new SimulatedPageFile() {Key = url};
+			return new SimulatedPageFile {Key = url};
+		}
+
+		private const string vidPlaceHolderDivContents =
+			@"<img src='video-placeholder.svg' />";
+
+		private static void ReplaceAnyVideoElementsWithPlaceholder(HtmlDom dom)
+		{
+			var vidNodes = dom.SafeSelectNodes("//div[contains(concat(' ', @class, ' '), ' bloom-videoContainer ')]");
+			foreach (XmlNode vidNode in vidNodes)
+			{
+				var placeHolderNode = dom.RawDom.CreateElement("div");
+				placeHolderNode.InnerXml = vidPlaceHolderDivContents;
+				placeHolderNode.SetAttribute("class", "bloom-imageContainer");
+				vidNode.ParentNode.ReplaceChild(placeHolderNode, vidNode);
+			}
 		}
 
 		internal static void RemoveSimulatedPageFile(string key)
@@ -379,7 +421,7 @@ namespace Bloom.Api
 				imageFile = Directory.EnumerateFiles(sourceDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
 
 				// image file not found
-				if (string.IsNullOrEmpty(imageFile)) return false;
+				if (String.IsNullOrEmpty(imageFile)) return false;
 
 				// BL-2368: Do not process files from the BloomBrowserUI directory. These files are already in the state we
 				//          want them. Running them through _cache.GetPathToResizedImage() is not necessary, and in PNG files
@@ -395,7 +437,7 @@ namespace Bloom.Api
 				var thumb = info.GetQueryParameters()["thumbnail"] != null;
 				imageFile = _cache.GetPathToResizedImage(imageFile, thumb);
 
-				if (string.IsNullOrEmpty(imageFile)) return false;
+				if (String.IsNullOrEmpty(imageFile)) return false;
 			}
 
 			info.ReplyWithImage(imageFile, originalImageFile);
@@ -405,7 +447,7 @@ namespace Bloom.Api
 		protected static bool IsImageTypeThatCanBeDegraded(string path)
 		{
 			var extension = Path.GetExtension(path);
-			if(!string.IsNullOrEmpty(extension))
+			if(!String.IsNullOrEmpty(extension))
 				extension = extension.ToLower();
 			//note, we're omitting SVG
 			return (new[] { ".png", ".jpg", ".jpeg"}.Contains(extension));
@@ -436,7 +478,7 @@ namespace Bloom.Api
 			// network mapped drives don't work if the computer isn't on a network.
 			// So we'll change the localhost\C$ to C: (same for other letters)
 			var pathArray = localPath.Substring(10).ToCharArray();
-			var drive = char.ToUpper(pathArray[0]);
+			var drive = Char.ToUpper(pathArray[0]);
 			if (pathArray[1] == '$' && pathArray[2] == '/' && drive >= 'A' && drive <= 'Z')
 				pathArray[1] = ':';
 			return new String(pathArray);
@@ -526,7 +568,7 @@ namespace Bloom.Api
 			// but at the moment FF, looking for source maps to go with css, is
 			// looking for those maps where we said the css was, which is in the actual
 			// book folders. So instead redirect to our browser file folder.
-			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
+			if (String.IsNullOrEmpty(path) || !RobustFile.Exists(path))
 			{
 				var startOfBookLayout = localPath.IndexOf("bookLayout");
 				if (startOfBookLayout > 0)
@@ -553,7 +595,7 @@ namespace Bloom.Api
 					}
 					// Might be a page from a different template than the one we based this book on
 					path = BloomFileLocator.sTheMostRecentBloomFileLocator.LocateFile(pathMinusPrefix);
-					if (!string.IsNullOrEmpty(path))
+					if (!String.IsNullOrEmpty(path))
 					{
 						info.ReplyWithImage(path);
 						return true;
@@ -573,7 +615,7 @@ namespace Bloom.Api
 				// </div>
 				// This leads to data being stored doubly encoded in the program's run-time data.  The coverImage data is supposed to be
 				// Html/Xml encoded (using &), not Url encoded (using %).
-				path = System.Web.HttpUtility.UrlDecode(localPath);
+				path = HttpUtility.UrlDecode(localPath);
 			}
 			if (!RobustFile.Exists(path) && IsImageTypeThatCanBeReturned(localPath) && _bookSelection?.CurrentSelection != null)
 			{
@@ -643,14 +685,14 @@ namespace Bloom.Api
 				// Complain quietly about missing image files.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3938.
 				// The user visible message needs to be localized.  The detailed message is more developer oriented, so should stay in English.  (BL-4151)
 				var userMsg = LocalizationManager.GetString("WebServer.Warning.NoImageFile", "Cannot Find Image File");
-				var detailMsg = String.Format("Server could not find the image file {0}. LocalPath was {1}{2}", path, localPath, System.Environment.NewLine);
+				var detailMsg = String.Format("Server could not find the image file {0}. LocalPath was {1}{2}", path, localPath, Environment.NewLine);
 				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, userMsg, detailMsg);
 			}
 			else
 			{
 				// The user visible message needs to be localized.  The detailed message is more developer oriented, so should stay in English.  (BL-4151)
 				var userMsg = LocalizationManager.GetString("WebServer.Warning.NoFile", "Cannot Find File");
-				var detailMsg = String.Format("Server could not find the file {0}. LocalPath was {1}{2}", path, localPath, System.Environment.NewLine);
+				var detailMsg = String.Format("Server could not find the file {0}. LocalPath was {1}{2}", path, localPath, Environment.NewLine);
 				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, userMsg, detailMsg);
 			}
 		}
@@ -735,18 +777,18 @@ namespace Bloom.Api
 			}
 			// if still not found, and localPath is an actual file path, use it
 			// if still not found, and localPath is an actual file path, use it
-			if (string.IsNullOrEmpty(path) && RobustFile.Exists(localPath))
+			if (String.IsNullOrEmpty(path) && RobustFile.Exists(localPath))
 			{
 				path = localPath;
 			}
 
-			if (string.IsNullOrEmpty(path))
+			if (String.IsNullOrEmpty(path))
 			{
 				// it's just possible we need to add BloomBrowserUI to the path (in the case of the AddPage dialog)
 				var p = FileLocationUtilities.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, localPath);
 				if(RobustFile.Exists(p)) path = p;
 			}
-			if (string.IsNullOrEmpty(path))
+			if (String.IsNullOrEmpty(path))
 			{
 				var p = FileLocationUtilities.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, incomingPath);
 				if (RobustFile.Exists(p))
@@ -755,7 +797,7 @@ namespace Bloom.Api
 
 
 			// return false if the file was not found
-			if (string.IsNullOrEmpty(path)) return false;
+			if (String.IsNullOrEmpty(path)) return false;
 
 			info.ContentType = "text/css";
 			info.ReplyWithFileContent(path);
@@ -789,7 +831,7 @@ namespace Bloom.Api
 			if(!success)
 			{
 
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(GetServerStartFailureMessage());
+				ErrorReport.NotifyUserOfProblem(GetServerStartFailureMessage());
 				Logger.WriteEvent("Error: Could not start up internal HTTP Server");
 				Analytics.ReportException(new ApplicationException("Could not start server."));
 				Application.Exit();
@@ -857,7 +899,7 @@ namespace Bloom.Api
 			}
 			catch(Exception error)
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,GetServerStartFailureMessage());
+				ErrorReport.NotifyUserOfProblem(error,GetServerStartFailureMessage());
 				Application.Exit();
 			}
 		}
@@ -865,12 +907,12 @@ namespace Bloom.Api
 		private static string GetServerStartFailureMessage()
 		{
 			var zoneAlarm = false;
-			if(SIL.PlatformUtilities.Platform.IsWindows)
+			if(Platform.IsWindows)
 			{
 				zoneAlarm =
-					Directory.Exists(Path.Combine(Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86),
+					Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
 					                              "CheckPoint/ZoneAlarm")) ||
-					         Directory.Exists(Path.Combine(Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles),
+					         Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
 					                              "CheckPoint/ZoneAlarm"));
 
 				if(!zoneAlarm)
@@ -878,7 +920,7 @@ namespace Bloom.Api
 					try
 					{
 						zoneAlarm =
-							System.Diagnostics.Process.GetProcesses().Any(p => p.Modules.Cast<System.Diagnostics.ProcessModule>().Any(m => m.ModuleName.Contains("ZoneAlarm")));
+							Process.GetProcesses().Any(p => p.Modules.Cast<ProcessModule>().Any(m => m.ModuleName.Contains("ZoneAlarm")));
 					}
 					catch(Exception error)
 					{
@@ -1030,7 +1072,7 @@ namespace Bloom.Api
 						Logger.WriteEvent(error.StackTrace);
 						#if DEBUG
 						//NB: "throw" here makes it impossible for even the programmer to continue and try to see how it happens
-						System.Diagnostics.Debug.Fail("(Debug Only) "+error.Message);
+						Debug.Fail("(Debug Only) "+error.Message);
 						#endif
 					}
 				}
@@ -1179,7 +1221,7 @@ namespace Bloom.Api
 
 		protected virtual void Dispose(bool fDisposing)
 		{
-			System.Diagnostics.Debug.WriteLineIf(!fDisposing, "****** Missing Dispose() call for " + GetType() + ". *******");
+			Debug.WriteLineIf(!fDisposing, "****** Missing Dispose() call for " + GetType() + ". *******");
 			if (fDisposing && !IsDisposed)
 			{
 				// dispose managed and unmanaged objects
@@ -1217,7 +1259,7 @@ namespace Bloom.Api
 						}
 
 						// stop listening for incoming http requests
-						System.Diagnostics.Debug.Assert(_listener.IsListening);
+						Debug.Assert(_listener.IsListening);
 						if(_listener.IsListening)
 						{
 							//In BL-3290, a user quitely failed here each time he exited Bloom, with a Cannot access a disposed object.

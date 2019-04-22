@@ -510,7 +510,7 @@ namespace Bloom.Edit
 					_model.SetupServerWithCurrentBookToolboxContents();
 					var dom = _model.GetXmlDocumentForEditScreenWebPage();
 					_model.RemoveStandardEventListeners();
-					_browser1.Navigate(dom, domForCurrentPage, setAsCurrentPageForDebugging: true, source:"frame");
+					_browser1.Navigate(dom, domForCurrentPage, setAsCurrentPageForDebugging: true, source:BloomServer.SimulatedPageFileSource.Frame);
 				}
 				_model.CheckForBL2634("navigated to page");
 				_pageListView.Focus();
