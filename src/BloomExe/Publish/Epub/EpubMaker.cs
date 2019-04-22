@@ -267,6 +267,11 @@ namespace Bloom.Publish.Epub
 			_svgItems = new List<string>();
 			_firstContentPageItem = null;
 			HandleImageDescriptions(Book.OurHtmlDom);
+
+			// TODO: Future UI design will allow the user to specify the content of this list.
+			var languagesToInclude = PublishModel.GetLanguagesWantedForBook(this.Book);
+			PublishModel.RemoveUnwantedLanguageData(Book.OurHtmlDom, languagesToInclude, Book.CollectionSettings.CollectionLanguageCodes);
+
 			if (string.IsNullOrEmpty(SignLanguageApi.FfmpegProgram))
 			{
 				Logger.WriteEvent("Cannot find ffmpeg program while preparing videos for publishing.");

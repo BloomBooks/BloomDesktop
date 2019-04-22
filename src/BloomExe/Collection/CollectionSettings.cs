@@ -927,6 +927,24 @@ namespace Bloom.Collection
 		}
 
 		/// <summary>
+		/// Get a list of the unique language codes currently assigned for this collection.
+		/// The result contains anywhere from 1 to 3 ISO codes.
+		/// </summary>
+		public IEnumerable<string> CollectionLanguageCodes
+		{
+			get
+			{
+				var codes = new List<string>();
+				codes.Add(Language1Iso639Code);
+				if (!String.IsNullOrEmpty(Language2Iso639Code) && !codes.Contains(Language2Iso639Code))
+					codes.Add(Language2Iso639Code);
+				if (!String.IsNullOrEmpty(Language3Iso639Code) && !codes.Contains(Language3Iso639Code))
+					codes.Add(Language3Iso639Code);
+				return codes;
+			}
+		}
+
+		/// <summary>
 		/// Given a choice, what language should we use to describe the license on the page (not in the UI, which is controlled by the UI Language)
 		/// </summary>
 		public IEnumerable<string> LicenseDescriptionLanguagePriorities
