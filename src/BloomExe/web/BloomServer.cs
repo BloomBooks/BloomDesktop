@@ -8,6 +8,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
+using System.Xml;
 using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -198,6 +199,9 @@ namespace Bloom.Api
 		/// a src attr for an IFrame. We need to account for this because un-escaped quotation marks in the
 		/// URL can cause errors in JavaScript strings. Also, we want to use the same name each time
 		/// for current page content, so Open Page in Browser works even after changing pages.</param>
+		/// <param name="setAsCurrentPageForDebugging"></param>
+		/// <param name="source">"" = Normal page preview, "pub" = PDF preview, "thumb" = Thumbnailer,
+		///   "pagelist" = Page panel initial load, "epub" = ePUB preview</param>
 		/// <returns></returns>
 		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool isCurrentPageContent = false, bool setAsCurrentPageForDebugging = false, string source="")
 		{
@@ -232,12 +236,36 @@ namespace Bloom.Api
 			{
 				_keyToCurrentPage = key;
 			}
+
+			// If we are creating a page thumbnail and we have videos,
+			// replace them with our standard video placeholder image.
+			if (source == "thumb" || source=="pagelist" || source == "epub")
+			{
+				ReplaceAnyVideoElementsWithPlaceholder(dom);
+			}
 			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
 			lock (_urlToSimulatedPageContent)
 			{
 				_urlToSimulatedPageContent[key] = html5String;
 			}
 			return new SimulatedPageFile() {Key = url};
+		}
+
+		//private const string vidPlaceHolderDivContents =
+		//	@"<img src='video-placeholder.svg' height='152' width='152' />";
+		private const string vidPlaceHolderDivContents =
+			@"<img src='video-placeholder.svg' />";
+
+		private static void ReplaceAnyVideoElementsWithPlaceholder(HtmlDom dom)
+		{
+			var vidNodes = dom.SafeSelectNodes("//div[contains(concat(' ', @class, ' '), ' bloom-videoContainer ')]");
+			foreach (XmlNode vidNode in vidNodes)
+			{
+				var placeHolderNode = dom.RawDom.CreateElement("div");
+				placeHolderNode.InnerXml = vidPlaceHolderDivContents;
+				placeHolderNode.SetAttribute("class", "bloom-imageContainer");
+				vidNode.ParentNode.ReplaceChild(placeHolderNode, vidNode);
+			}
 		}
 
 		internal static void RemoveSimulatedPageFile(string key)
