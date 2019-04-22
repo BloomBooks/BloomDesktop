@@ -1,1 +1,1 @@
-This file exists as a flag to prevent the multi-media template being shown in a source collection
+This file exists as a flag to prevent the Special template being shown in the lower left of the Collections tab.

@@ -148,6 +148,7 @@ namespace Bloom.web
 		void MessageWithParams(string id, string comment, string message, params object[] parameters);
 		void ErrorWithParams(string id, string comment, string message, params object[] parameters);
 		void MessageWithColorAndParams(string id, string comment, string color, string message, params object[] parameters);
+		WebSocketProgress WithL10NPrefix(string localizationIdPrefix);
 	}
 
 	// Passing one of these where we don't need the progress report saves recipients handling nulls
@@ -175,6 +176,11 @@ namespace Bloom.web
 
 		public void MessageWithColorAndParams(string id, string comment, string color, string message, params object[] parameters)
 		{
+		}
+
+		public WebSocketProgress WithL10NPrefix(string prefix)
+		{
+			return null;
 		}
 	}
 }
