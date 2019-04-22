@@ -18,6 +18,7 @@ using Bloom.Publish.PDF;
 using DesktopAnalytics;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Xml;
 
 namespace Bloom.Publish
 {
@@ -561,5 +562,53 @@ namespace Bloom.Publish
 			});
 		}
 
+		/// <summary>
+		/// Remove all text data that is not in a desired language.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7124.
+		/// </remarks>
+		public static void RemoveUnwantedLanguageData(HtmlDom dom, IEnumerable<string> languagesToInclude, string nationalLanguage)
+		{
+			if (languagesToInclude == null || languagesToInclude.Count() == 0)
+				return;
+			// Place the desired language tags plus the two standard pseudolanguage tags in a HashSet
+			// for fast access.
+			var languages = new HashSet<string>();
+			foreach (var lang in languagesToInclude)
+				languages.Add(lang);
+			languages.Add("*");
+			languages.Add("z");
+			foreach (var div in dom.RawDom.SafeSelectNodes("//div[@lang]").Cast<XmlElement>().ToList())
+			{
+				var lang = div.GetAttribute("lang");
+				if (String.IsNullOrEmpty(lang) || languages.Contains(lang))
+					continue;
+				var dataBook = div.GetAttribute("data-book");
+				// REVIEW: should we check the specific value?  There are at least 8 values for which the
+				// national language is used.
+				if (!String.IsNullOrEmpty(dataBook) && lang == nationalLanguage)
+					continue;
+				// Remove this div
+				div.ParentNode.RemoveChild(div);
+			}
+		}
+
+		/// <summary>
+		/// Get the languages used in the book as specified by the user in the multilingual settings.
+		/// </summary>
+		/// <remarks>
+		/// Future UI work will make this obsolete as the user will be able to set the list directly at publish time.
+		/// </remarks>
+		public static IEnumerable<string> GetLanguagesWantedForBook(Book.Book book)
+		{
+			List<string> languagesToWrite = new List<string>();
+			languagesToWrite.Add(book.CollectionSettings.Language1Iso639Code);
+			if (!String.IsNullOrEmpty(book.MultilingualContentLanguage2))
+				languagesToWrite.Add(book.MultilingualContentLanguage2);
+			if (!String.IsNullOrEmpty(book.MultilingualContentLanguage3))
+				languagesToWrite.Add(book.MultilingualContentLanguage3);
+			return languagesToWrite;
+		}
 	}
 }

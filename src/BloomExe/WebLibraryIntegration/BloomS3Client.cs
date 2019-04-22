@@ -20,6 +20,7 @@ using RestSharp.Extensions.MonoHttp;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
+using SIL.Xml;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -198,7 +199,7 @@ namespace Bloom.WebLibraryIntegration
 		/// except the one we want.
 		/// </summary>
 		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress,
-			string pdfToInclude = null, ISet<string> audioFilesToInclude = null, IEnumerable<string> videoFilesToInclude = null)
+			string pdfToInclude = null, ISet<string> audioFilesToInclude = null, IEnumerable<string> videoFilesToInclude = null, string[] languagesToInclude = null, string nationalLanguage=null)
 		{
 			BaseUrl = null;
 			BookOrderUrlOfRecentUpload = null;
@@ -243,6 +244,9 @@ namespace Bloom.WebLibraryIntegration
 			// Don't upload corrupt htms that have been repaired
 			foreach (var path in Directory.EnumerateFiles(destDirName, BookStorage.PrefixForCorruptHtmFiles + "*.htm"))
 				RobustFile.Delete(path);
+
+			RemoveUnwantedLanguageData(destDirName, languagesToInclude, nationalLanguage);
+
 			UploadDirectory(prefix, wrapperPath, progress);
 
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
@@ -312,6 +316,20 @@ namespace Bloom.WebLibraryIntegration
 			fileSystemInfo.Attributes = FileAttributes.Normal; // thumbnails can be intentionally readonly (when they are created by hand)
 			fileSystemInfo.Delete();
 		}
+
+		public void RemoveUnwantedLanguageData(string destDirName, IEnumerable<string> languagesToInclude, string nationalLanguage)
+		{
+			// There should be only one html file with the same name as the directory it's in, but let's
+			// not make any assumptions here.
+			foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.htm"))
+			{
+				var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(filepath, false);
+				var dom = new HtmlDom(xmlDomFromHtmlFile);
+				PublishModel.RemoveUnwantedLanguageData(dom, languagesToInclude, nationalLanguage);
+				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, filepath);
+			}
+		}
+
 
 		//Note: there is a similar list for BloomPacks, but it is not identical, so don't just copy/paste
 		private static readonly string[] excludedFileExtensionsLowerCase = { ".db", ".bloompack", ".bak", ".userprefs", ".md" };

@@ -64,6 +64,10 @@ namespace Bloom.Book
 			modifiedBook.OurHtmlDom.SetMedia("bloomReader");
 			EmbedFonts(modifiedBook, progress, new FontFileFinder());
 
+			// TODO: Future UI design will allow the user to specify the content of this list.
+			var languagesToInclude = Bloom.Publish.PublishModel.GetLanguagesWantedForBook(book);
+			Bloom.Publish.PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, languagesToInclude, book.CollectionSettings.Language2Iso639Code);
+
 			modifiedBook.Save();
 
 			return modifiedBook;
