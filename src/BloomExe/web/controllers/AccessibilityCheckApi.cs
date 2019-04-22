@@ -59,7 +59,8 @@ namespace Bloom.web.controllers
 			PublishEpubApi epubApi)
 		{
 			_webSocketServer = webSocketServer;
-			_webSocketProgress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
+			var progress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
+			_webSocketProgress = progress.WithL10NPrefix("AccessibilityCheck.");
 			_epubApi = epubApi;
 			bookSelection.SelectionChanged += (unused1, unused2) =>
 			{
@@ -250,13 +251,13 @@ namespace Bloom.web.controllers
 			var settings = new EpubPublishUiSettings();
 			_epubApi.GetEpubSettingsForCurrentBook(settings);
 			var path = Path.Combine(parentDirectory, Guid.NewGuid().ToString() + ".epub");
-			_epubApi.UpdateAndSave(settings, path, true, _webSocketProgress);
+			_epubApi.UpdateAndSave(settings, path, true, _webSocketProgress.WithL10NPrefix("PublishTab.Epub."));
 			return path;
 		}
 
 		private string FindAceByDaisyOrTellUser(ApiRequest request)
 		{
-			_webSocketProgress.MessageWithoutLocalizing("Finding Ace by DAISY on this computer...");
+			_webSocketProgress.Message("FindingAce", "Finding Ace by DAISY on this computer...");
 			var whereProgram = Platform.IsWindows ? "where" : "which";
 			var npmFileName = Platform.IsWindows ? "npm.cmd" : "npm";
 			var whereResult = CommandLineRunner.Run(whereProgram, npmFileName, Encoding.ASCII, "", 2, new NullProgress());
@@ -320,7 +321,7 @@ namespace Bloom.web.controllers
 					return null;
 				}
 			}
-			_webSocketProgress.MessageWithoutLocalizing("Found.");
+			_webSocketProgress.Message("FoundAce", "Found.");
 			return daisyDirectory;
 		}
 

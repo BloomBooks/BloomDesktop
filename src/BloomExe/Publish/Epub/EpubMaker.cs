@@ -10,7 +10,6 @@ using System.Web;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
-using Bloom.Api;
 using Bloom.Book;
 using Bloom.ToPalaso;
 using Bloom.web;
@@ -297,9 +296,12 @@ namespace Bloom.Publish.Epub
 			{
 				Logger.WriteEvent("Cannot find ffmpeg program while preparing videos for publishing.");
 			}
+
+			var pageLabelProgress = progress.WithL10NPrefix("TemplateBooks.PageLabel.");
 			foreach (XmlElement pageElement in Book.GetPageElements())
 			{
-				progress.MessageWithoutLocalizing(HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement));
+				var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
+				pageLabelProgress.Message(pageLabelEnglish, pageLabelEnglish);
 				// We could check for this in a few more places, but once per page seems enough in practice.
 				if (AbortRequested)
 					break;

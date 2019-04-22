@@ -17,9 +17,17 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AccessibilityCheckWindow));
+			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._browser = new Bloom.Browser();
+			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
+			// 
+			// _L10NSharpExtender
+			// 
+			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
+			this._L10NSharpExtender.PrefixForNewItems = "AccessibilityCheck";
 			// 
 			// _browser
 			// 
@@ -41,11 +49,15 @@
 			this.Controls.Add(this._browser);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.KeyPreview = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+			this._L10NSharpExtender.SetLocalizationComment(this, null);
+			this._L10NSharpExtender.SetLocalizingId(this, "AccessibilityCheck.WindowTitle");
 			this.MinimizeBox = false;
 			this.Name = "AccessibilityCheckWindow";
 			this.Text = "Bloom Accessibility Checker";
 			this.Activated += new System.EventHandler(this.AccessibilityCheckWindow_Activated);
 			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.AccessibilityCheckWindow_FormClosed);
+			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -53,5 +65,6 @@
 		#endregion
 
 		private Browser _browser;
+		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }
