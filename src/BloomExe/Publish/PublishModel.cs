@@ -17,6 +17,7 @@ using Bloom.Publish.PDF;
 using DesktopAnalytics;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Xml;
 
 namespace Bloom.Publish
 {
@@ -560,5 +561,60 @@ namespace Bloom.Publish
 			});
 		}
 
+		/// <summary>
+		/// Remove all text data that is not in a desired language.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7124.
+		/// </remarks>
+		public static void RemoveUnwantedLanguageData(HtmlDom dom, IEnumerable<string> languagesToInclude)
+		{
+			// Place the desired language tags plus the two standard pseudolanguage tags in a HashSet
+			// for fast access.
+			var contentLanguages = new HashSet<string>();
+			foreach (var lang in languagesToInclude)
+				contentLanguages.Add(lang);
+			contentLanguages.Add("*");
+			contentLanguages.Add("z");
+			// Don't change the xMatter (or the div#bloomDataDiv):  thus we have an outer loop that
+			// selects only user content pages.
+			// While we could probably safely remove some elements from xMatter,
+			// we decided to play it very safe for now and leave it all intact.
+			// We can always come back to this if we realize we should be removing more.
+			// If that happens, removing the outer loop and checking the data-book attribute (and
+			// maybe the data-derived attribute) may become necessary.
+			foreach (var page in dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(@data-xmatter-page)]").Cast<XmlElement>().ToList())
+			{
+				foreach (var div in page.SafeSelectNodes(".//div[@lang]").Cast<XmlElement>().ToList())
+				{
+					var lang = div.GetAttribute("lang");
+					if (String.IsNullOrEmpty(lang) || contentLanguages.Contains(lang))
+						continue;
+					var classAttr = div.GetAttribute("class");
+					// retain the .pageLabel and .pageDescription divs (which are always lang='en')
+					// Also retain any .Instructions-style divs, which may have the original with lang='en', and
+					// which are usually translated to the national language.
+					// REVIEW: are there any other classes that should be checked here?
+					if (classAttr.Contains("pageLabel") || classAttr.Contains("pageDescription") || classAttr.Contains("Instructions-style"))
+						continue;
+					// check whether any descendant divs are desired before deleting this div.
+					bool deleteDiv = true;
+					foreach (var subdiv in div.SafeSelectNodes(".//div[@lang]").Cast<XmlElement>().ToList())
+					{
+						var sublang = subdiv.GetAttribute("lang");
+						if (String.IsNullOrEmpty(sublang))
+							continue;
+						if (contentLanguages.Contains(sublang))
+						{
+							deleteDiv = false;
+							break;
+						}
+					}
+					// Remove this div
+					if (deleteDiv)
+						div.ParentNode.RemoveChild(div);
+				}
+			}
+		}
 	}
 }
