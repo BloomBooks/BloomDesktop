@@ -506,12 +506,14 @@ export default class BloomSourceBubbles {
                                                 .defaultView
                                         ) {
                                             const selection = wholeSource.ownerDocument.defaultView.getSelection();
-                                            const range = wholeSource.ownerDocument.createRange();
-                                            range.selectNodeContents(
-                                                wholeSource
-                                            );
-                                            selection.removeAllRanges();
-                                            selection.addRange(range);
+                                            if (selection) {
+                                                const range = wholeSource.ownerDocument.createRange();
+                                                range.selectNodeContents(
+                                                    wholeSource
+                                                );
+                                                selection.removeAllRanges();
+                                                selection.addRange(range);
+                                            }
                                         }
                                     }
                                 });
@@ -521,7 +523,8 @@ export default class BloomSourceBubbles {
                             // Otherwise the bubble may stay hidden behind something else even when clicked.
                             // However, if the user drags and makes a range selection, we don't want to hide it.
                             api.elements.tooltip.click(ev => {
-                                if (!window.getSelection().isCollapsed) {
+                                const sel = window.getSelection();
+                                if (sel && !sel.isCollapsed) {
                                     // user made a range selection, probably to copy. Don't mess with it.
                                     return;
                                 }

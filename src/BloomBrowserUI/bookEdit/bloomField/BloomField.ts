@@ -247,14 +247,15 @@ export default class BloomField {
         //preceding div.
         $(field).keydown(e => {
             if (e.which == 8 /* backspace*/) {
-                var sel = window.getSelection();
+                const sel = window.getSelection();
+                if (!sel || !sel.anchorNode) return;
                 //Are we at the start of a paragraph with nothing selected?
                 if (sel.anchorOffset == 0 && sel.isCollapsed) {
                     //Are we in the first paragraph?
                     //Embedded image divs come before the first editable paragraph, so we look at the previous element and
                     //see if it is one those. Anything marked with bloom-preventRemoval is probably not something we want to
                     //be merging with.
-                    var previousElement = $(sel.anchorNode)
+                    const previousElement = $(sel.anchorNode)
                         .closest("P")
                         .prev();
                     if (
@@ -274,11 +275,11 @@ export default class BloomField {
     // so you can start messing things up.
     private static PreventArrowingOutIntoField(field: HTMLElement) {
         $(field).keydown(function(e) {
-            var leftArrowPressed = e.which === 37;
-            var rightArrowPressed = e.which === 39;
+            const leftArrowPressed = e.which === 37;
+            const rightArrowPressed = e.which === 39;
             if (leftArrowPressed || rightArrowPressed) {
-                var sel = window.getSelection();
-                if (sel.anchorNode === this) {
+                const sel = window.getSelection();
+                if (sel && sel.anchorNode === this) {
                     e.preventDefault();
                     BloomField.MoveCursorToEdgeOfField(
                         this,
@@ -374,7 +375,7 @@ export default class BloomField {
         field: HTMLElement,
         position: CursorPosition
     ) {
-        var range = document.createRange();
+        const range = document.createRange();
         if (position === CursorPosition.start) {
             range.selectNodeContents(
                 $(field)
@@ -389,9 +390,11 @@ export default class BloomField {
             );
         }
         range.collapse(position === CursorPosition.start); //true puts it at the start
-        var sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
+        const sel = window.getSelection();
+        if (sel) {
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
     }
 
     private static ManageWhatHappensIfTheyDeleteEverything(field: HTMLElement) {
@@ -531,11 +534,12 @@ export default class BloomField {
     ) {
         $(field).keydown(e => {
             if (e.which === 8 /* backspace*/) {
-                var sel = window.getSelection();
+                const sel = window.getSelection();
+                if (!sel || !sel.anchorNode) return;
                 //Are we at the start of a paragraph with nothing selected?
                 if (sel.anchorOffset == 0 && sel.isCollapsed) {
                     //Are we in the first paragraph?
-                    var previousElement = $(sel.anchorNode)
+                    const previousElement = $(sel.anchorNode)
                         .closest("P")
                         .prev();
                     if (previousElement.length == 0) {

@@ -154,7 +154,7 @@ module.exports = {
                             presets: [
                                 // Ensure that we target our version of geckofx (mozilla/firefox)
                                 [
-                                    "babel-preset-env",
+                                    "@babel/preset-env",
                                     {
                                         targets: {
                                             browsers: [
@@ -164,7 +164,7 @@ module.exports = {
                                         }
                                     }
                                 ],
-                                "babel-preset-react"
+                                "@babel/preset-react"
                             ].map(localResolve)
                         }
                     }

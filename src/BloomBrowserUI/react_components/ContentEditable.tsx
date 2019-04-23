@@ -16,7 +16,7 @@ export default class ContentEditable extends React.Component<
 > {
     private lastContent: string;
     private ipPosition: number;
-    private ipNode: Node;
+    private ipNode: Node | null;
 
     constructor(props: IContentEditableProps) {
         super(props);
@@ -53,15 +53,18 @@ export default class ContentEditable extends React.Component<
     }
 
     public componentDidUpdate() {
-        if (this.ipNode !== window.getSelection().anchorNode) {
+        const sel = window.getSelection();
+        if (!sel || this.ipNode !== sel.anchorNode) {
+            // no selection => nothing to do
             // updated for some other reason than user editing...don't mess with window selection.
             return;
         }
         // restore the cursor position we saved when raising onChange.
         var range = document.createRange();
-        range.setStart(this.ipNode, this.ipPosition);
-        range.setEnd(this.ipNode, this.ipPosition);
-        let sel = window.getSelection();
+        if (this.ipNode) {
+            range.setStart(this.ipNode, this.ipPosition);
+            range.setEnd(this.ipNode, this.ipPosition);
+        }
         sel.removeAllRanges();
         sel.addRange(range);
     }
@@ -70,8 +73,11 @@ export default class ContentEditable extends React.Component<
         var content: string = event.currentTarget.innerText;
         if (this.props.onChange && content !== this.lastContent) {
             // onChange will re-render, messing up the cursor position. So save it.
-            this.ipPosition = window.getSelection().anchorOffset;
-            this.ipNode = window.getSelection().anchorNode;
+            const sel = window.getSelection();
+            if (sel) {
+                this.ipPosition = sel.anchorOffset;
+                this.ipNode = sel.anchorNode;
+            }
             this.props.onChange(content);
         }
         this.lastContent = content;
