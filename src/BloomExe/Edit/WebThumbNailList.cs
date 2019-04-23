@@ -371,7 +371,7 @@ namespace Bloom.Edit
 			// nulls back sometimes, it may no longer be possible.)
 			int.TryParse(_browser.RunJavaScript("(document.getElementById('pageGridWrapper')) ? document.getElementById('pageGridWrapper').scrollTop.toString() : '0'"), out _verticalScrollDistance);
 			_baseForRelativePaths = dom.BaseForRelativePaths;
-			_browser.Navigate(dom, source:"pagelist");
+			_browser.Navigate(dom, source:BloomServer.SimulatedPageFileSource.Pagelist);
 			return result;
 		}
 

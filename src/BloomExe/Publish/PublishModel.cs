@@ -13,7 +13,6 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Api;
-using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
 using DesktopAnalytics;
 using SIL.IO;
@@ -172,7 +171,7 @@ namespace Bloom.Publish
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
 			dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
-			return BloomServer.MakeSimulatedPageFileInBookFolder(dom, source:"pub");
+			return BloomServer.MakeSimulatedPageFileInBookFolder(dom, source:BloomServer.SimulatedPageFileSource.Pub);
 		}
 
 		private void AddStylesheetClasses(XmlDocument dom)
