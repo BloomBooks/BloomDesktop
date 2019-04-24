@@ -28,13 +28,13 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
         root.setAttribute("class", "ui-motionBody");
-        this.rootControl = ReactDOM.render(
+        this.rootControl = (ReactDOM.render(
             <MotionControl
                 onPreviewClick={() => this.toggleMotionPreviewPlaying()}
                 onMotionChanged={checked => this.motionChanged(checked)}
             />,
             root
-        ) as MotionControl;
+        ) as unknown) as MotionControl;
         const initialState = this.getStateFromHtml();
         this.rootControl.setState(initialState);
         if (initialState.haveImageContainerButNoImage) {
@@ -971,8 +971,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         if (!page) return;
         (page.getElementsByClassName(
             "bloom-page"
-        )[0] as HTMLElement).style.visibility =
-            "";
+        )[0] as HTMLElement).style.visibility = "";
         // stop the animation itself by removing the root elements it adds.
         this.removeElt(this.animationStyleElement);
         this.animationStyleElement = null;

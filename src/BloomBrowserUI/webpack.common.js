@@ -1,5 +1,6 @@
 ﻿var path = require("path");
 var webpack = require("webpack");
+const merge = require("webpack-merge");
 var node_modules = path.resolve(__dirname, "node_modules");
 var pathToReact = path.resolve(node_modules, "react/dist/react.js");
 var pathToReactDom = path.resolve(node_modules, "react-dom/dist/react-dom.js");
@@ -13,6 +14,7 @@ var globule = require("globule");
 
 //note: if you change this, change it in gulpfile.js & karma.conf.js as well
 var outputDir = "../../output/browser";
+const core = require("./webpack.core.js");
 
 // Because our output directory does not have the same parent as our node_modules, we
 // need to resolve the babel related presets (and plugins).  This mapping function was
@@ -23,7 +25,7 @@ function localResolve(preset) {
         : require.resolve(preset);
 }
 
-module.exports = {
+module.exports = merge(core, {
     // mode must be set to either "production" or "development" in webpack 4.
     // Webpack-common is intended to be 'required' by something that provides that.
     context: __dirname,
@@ -90,15 +92,6 @@ module.exports = {
         ],
         extensions: [".js", ".jsx", ".ts", ".tsx"] //We may need to add .less here... otherwise maybe it will ignore them unless they are require()'d
     },
-    plugins: [
-        //answer on various legacy issues: http://stackoverflow.com/questions/28969861/managing-jquery-plugin-dependency-in-webpack?lq=1
-        //prepend var $ = require("jquery") every time it encounters the global $ identifier or "jQuery".
-        new webpack.ProvidePlugin({
-            $: "jquery",
-            jQuery: "jquery",
-            "window.jQuery": "jquery"
-        })
-    ],
     optimization: {
         minimize: false,
         namedModules: true,
@@ -129,10 +122,6 @@ module.exports = {
     },
     module: {
         rules: [
-            {
-                test: /\.ts(x?)$/,
-                use: [{ loader: "ts-loader" }]
-            },
             {
                 // For the most part, we're using typescript and ts-loader handles that.
                 // But for things that are still in javascript, the following babel setup allows newer
@@ -170,24 +159,6 @@ module.exports = {
                     }
                 ]
             },
-            {
-                test: /\.less$/i,
-                use: [
-                    {
-                        loader: "style-loader" // creates style nodes from JS strings
-                    },
-                    {
-                        loader: "css-loader" // translates CSS into CommonJS
-                    },
-                    {
-                        loader: "less-loader" // compiles Less to CSS
-                    }
-                ]
-            },
-            {
-                test: /\.css$/,
-                loader: "style-loader!css-loader"
-            },
             // WOFF Font
             {
                 test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
@@ -209,4 +180,4 @@ module.exports = {
             }
         ]
     }
-};
+});
