@@ -26,7 +26,7 @@ namespace Bloom.web
 		/// Get a new WebSocketProgress that will prefix each localization id with the given string
 		/// </summary>
 		/// <param name="localizationIdPrefix"></param>
-		public WebSocketProgress WithL10NPrefix(string localizationIdPrefix)
+		public IWebSocketProgress WithL10NPrefix(string localizationIdPrefix)
 		{
 			return new WebSocketProgress(_bloomWebSocketServer, _clientContext)
 			{
@@ -138,17 +138,23 @@ namespace Bloom.web
 		}
 	}
 
-	// Useful where we want to substitute a test stub. Currently I'm only including the methods we actually want to
-	// use that way.
+	// Useful where we want to substitute a test stub.
 	public interface IWebSocketProgress
 	{
 		void MessageWithoutLocalizing(string message, params object[] args);
 		void ErrorWithoutLocalizing(string message, params object[] args);
 		void Message(string idSuffix, string comment, string message, bool useL10nIdPrefix = true);
-		void MessageWithParams(string id, string comment, string message, params object[] parameters);
+		void MessageWithParams(string idSuffix, string comment, string message, params object[] parameters);
 		void ErrorWithParams(string id, string comment, string message, params object[] parameters);
 		void MessageWithColorAndParams(string id, string comment, string color, string message, params object[] parameters);
-		WebSocketProgress WithL10NPrefix(string localizationIdPrefix);
+		IWebSocketProgress WithL10NPrefix(string localizationIdPrefix);
+		void MessageUsingTitle(string idSuffix, string message, string bookTitle, bool useL10nIdPrefix = true);
+		string GetMessageWithParams(string idSuffix, string comment, string message, params object[] parameters);
+		void Message(string idSuffix, string message, bool useL10nIdPrefix = true);
+		void MessageWithStyleWithoutLocalizing(string message, string cssStyleRules);
+		string GetTitleMessage(string idSuffix, string message, string bookTitle, bool useL10nIdPrefix = true);
+		void Error(string idSuffix, string message, bool useL10nIdPrefix = true);
+		void Exception(Exception exception);
 	}
 
 	// Passing one of these where we don't need the progress report saves recipients handling nulls
@@ -178,9 +184,39 @@ namespace Bloom.web
 		{
 		}
 
-		public WebSocketProgress WithL10NPrefix(string prefix)
+		public IWebSocketProgress WithL10NPrefix(string prefix)
+		{
+			return this;
+		}
+
+		public void MessageUsingTitle(string idSuffix, string message, string bookTitle, bool useL10nIdPrefix = true)
+		{
+		}
+
+		public string GetMessageWithParams(string idSuffix, string comment, string message, params object[] parameters)
 		{
 			return null;
+		}
+
+		public void Message(string idSuffix, string message, bool useL10nIdPrefix = true)
+		{
+		}
+
+		public void MessageWithStyleWithoutLocalizing(string message, string cssStyleRules)
+		{
+		}
+
+		public string GetTitleMessage(string idSuffix, string message, string bookTitle, bool useL10nIdPrefix = true)
+		{
+			return null;
+		}
+
+		public void Error(string idSuffix, string message, bool useL10nIdPrefix = true)
+		{
+		}
+
+		public void Exception(Exception exception)
+		{
 		}
 	}
 }

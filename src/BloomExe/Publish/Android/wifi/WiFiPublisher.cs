@@ -19,7 +19,7 @@ namespace Bloom.Publish.Android.wifi
 	public class WiFiPublisher
 	{
 		private readonly BookServer _bookServer;
-		private readonly WebSocketProgress _progress;
+		private readonly IWebSocketProgress _progress;
 		private WiFiAdvertiser _wifiAdvertiser;
 		private BloomReaderUDPListener _wifiListener;
 		public const string ProtocolVersion = "2.0";
@@ -31,7 +31,7 @@ namespace Bloom.Publish.Android.wifi
 		// Trying to send the same thing to the same device twice at the same time does not work well.
 		private WebClient _wifiSender;
 
-		public WiFiPublisher(WebSocketProgress progress, BookServer bookServer)
+		public WiFiPublisher(IWebSocketProgress progress, BookServer bookServer)
 		{
 			_bookServer = bookServer;
 			_progress = progress.WithL10NPrefix("PublishTab.Android.Wifi.Progress.");

@@ -35,7 +35,7 @@ namespace Bloom.Publish.Epub
 		// Usually _standardProgress, but when the epub is being generated for another purpose
 		// besides the preview in the main epub window (e.g., for Daisy checker), we use that
 		// window's progress box.
-		private WebSocketProgress _progress;
+		private IWebSocketProgress _progress;
 
 		private EpubPublishUiSettings _desiredEpubSettings = new EpubPublishUiSettings();
 		private bool _needNewPreview; // Used when asked to update preview while in the middle of using the current one (e.g., to save it).
@@ -69,7 +69,7 @@ namespace Bloom.Publish.Epub
 		private bool _stagingEpub;
 
 		// This goes out with our messages and, on the client side (typescript), messages are filtered
-		// down to the context (usualy a screen) that requested them. 
+		// down to the context (usualy a screen) that requested them.
 		private const string kWebsocketContext = "publish-epub";
 
 		// This constant must match the ID that is used for the listener set up in the React component EpubPreview
@@ -346,7 +346,7 @@ namespace Bloom.Publish.Epub
 			epubPublishUiSettings.removeFontSizes = info.MetaData.Epub_RemoveFontSizes;
 		}
 
-		public void UpdateAndSave(EpubPublishUiSettings newSettings, string path, bool force, WebSocketProgress progress = null)
+		public void UpdateAndSave(EpubPublishUiSettings newSettings, string path, bool force, IWebSocketProgress progress = null)
 		{
 			bool succeeded;
 			do
@@ -360,7 +360,7 @@ namespace Bloom.Publish.Epub
 			} while (!succeeded && !EpubMaker.AbortRequested); // try until we get a complete epub, not interrupted by user changing something.
 		}
 
-		public bool UpdatePreview(EpubPublishUiSettings newSettings, bool force, WebSocketProgress progress = null)
+		public bool UpdatePreview(EpubPublishUiSettings newSettings, bool force, IWebSocketProgress progress = null)
 		{
 			_progress = progress ?? _standardProgress.WithL10NPrefix("PublishTab.Epub.");
 			if (Program.RunningOnUiThread)
@@ -395,7 +395,7 @@ namespace Bloom.Publish.Epub
 				}
 
 				_desiredEpubSettings = newSettings;
-				
+
 				// clear the obsolete preview, if any; this also ensures that when the new one gets done,
 				// we will really be changing the src attr in the preview iframe so the display will update.
 				_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_Preview);

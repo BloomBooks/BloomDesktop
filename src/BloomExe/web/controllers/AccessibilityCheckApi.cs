@@ -26,12 +26,12 @@ namespace Bloom.web.controllers
 
 		private readonly NavigationIsolator _isolator;
 		private readonly BookServer _bookServer;
-		private WebSocketProgress _webSocketProgress;
+		private IWebSocketProgress _webSocketProgress;
 
 		public const string kApiUrlPart = "accessibilityCheck/";
 
 		// This goes out with our messages and, on the client side (typescript), messages are filtered
-		// down to the context (usualy a screen) that requested them. 
+		// down to the context (usualy a screen) that requested them.
 		private const string kWebSocketContext = "a11yChecklist"; // must match what is in accsesibilityChecklist.tsx
 
 		// must match what's in the typescript
@@ -77,9 +77,9 @@ namespace Bloom.web.controllers
 				RefreshClient();
 			});
 		}
-		
+
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
-		{	
+		{
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "bookName", request =>
 			{
 				request.ReplyWithText(request.CurrentBook.TitleBestForUserDisplay);
@@ -131,7 +131,7 @@ namespace Bloom.web.controllers
 					request.CurrentBook.Save();
 				},
 				false);
-			
+
 			//enhance: this might have to become async to work on large books on slow computers
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "aceByDaisyReportUrl", request => { MakeAceByDaisyReport(request); },
 				false, false
@@ -236,8 +236,8 @@ namespace Bloom.web.controllers
 						continue; // something went wrong, try again
 					}
 
-				// The html client is set to treat a text reply as a url of the report. Make sure it's valid for being a URL. 
-				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6197. 
+				// The html client is set to treat a text reply as a url of the report. Make sure it's valid for being a URL.
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6197.
 				request.ReplyWithText("/bloom/" + answerPath.EscapeCharsForHttp().Replace(Path.DirectorySeparatorChar, '/'));
 				return;
 			}
