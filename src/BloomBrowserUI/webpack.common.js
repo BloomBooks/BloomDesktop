@@ -1,5 +1,6 @@
 ﻿var path = require("path");
 var webpack = require("webpack");
+const merge = require("webpack-merge");
 var node_modules = path.resolve(__dirname, "node_modules");
 var pathToReact = path.resolve(node_modules, "react/dist/react.js");
 var pathToReactDom = path.resolve(node_modules, "react-dom/dist/react-dom.js");
@@ -13,6 +14,7 @@ var globule = require("globule");
 
 //note: if you change this, change it in gulpfile.js & karma.conf.js as well
 var outputDir = "../../output/browser";
+const core = require("./webpack.core.js");
 
 // Because our output directory does not have the same parent as our node_modules, we
 // need to resolve the babel related presets (and plugins).  This mapping function was
@@ -23,7 +25,7 @@ function localResolve(preset) {
         : require.resolve(preset);
 }
 
-module.exports = {
+module.exports = merge(core, {
     // mode must be set to either "production" or "development" in webpack 4.
     // Webpack-common is intended to be 'required' by something that provides that.
     context: __dirname,
@@ -209,4 +211,4 @@ module.exports = {
             }
         ]
     }
-};
+});
