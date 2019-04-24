@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -1001,10 +1002,11 @@ namespace Bloom.CollectionTab
 				var imageIndex = _bookThumbnails.Images.IndexOfKey(bookInfo.Id);
 				if (imageIndex > -1)
 				{
-					_bookThumbnails.Images[imageIndex] = image;
 					var button = FindBookButton(bookInfo);
 					if (button == null || button.IsDisposed)
 						return; // I (gjm) found that this condition occurred sometimes when testing BL-6100
+					image = ResizeImageIfNecessary(button.Size, image);
+					_bookThumbnails.Images[imageIndex] = image;
 					button.Image = IsUsableBook(button) ? image : MakeDim(image);
 				}
 			}
@@ -1016,6 +1018,34 @@ namespace Bloom.CollectionTab
 				throw;
 #endif
 			}
+		}
+
+		private static Image ResizeImageIfNecessary(Size buttonSize, Image image)
+		{
+			// from https://www.c-sharpcorner.com/article/resize-image-in-c-sharp/
+			var desiredHeight = buttonSize.Height;
+			var desiredWidth = buttonSize.Width;
+			if (image.Height <= desiredHeight && image.Width <= desiredWidth)
+				return image; // We are already within parameters
+			var newHeight = image.Height * desiredWidth / image.Width;
+			if (newHeight > desiredHeight)
+			{
+				// Resize with height instead
+				desiredWidth = image.Width * desiredHeight / image.Height;
+				newHeight = desiredHeight;
+			}
+
+			var newImage = new Bitmap(desiredWidth, newHeight);
+			using (var graphic = Graphics.FromImage(newImage))
+			{
+				// I tried using HighSpeed settings in here with no appreciable difference in loading speed.
+				graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
+				graphic.SmoothingMode = SmoothingMode.HighQuality;
+				graphic.PixelOffsetMode = PixelOffsetMode.HighQuality;
+				graphic.CompositingQuality = CompositingQuality.HighQuality;
+				graphic.DrawImage(image, 0, 0, desiredWidth, newHeight);
+			}
+			return newImage;
 		}
 
 		bool IsUsableBook(Button bookButton)
