@@ -158,9 +158,13 @@ export default class AudioRecording {
                     this.playESpeakPreview();
                 }
             });
+
         $("#audio-split")
             .off()
             .click(e => this.split());
+
+        this.addSplitCtrlKeyListeners();
+
         $("#audio-listen")
             .off()
             .click(e => this.listen());
@@ -207,6 +211,139 @@ export default class AudioRecording {
 
             doneCallback();
         });
+    }
+
+    private addSplitCtrlKeyListeners() {
+        // Add the event listeners to all frames, so that regardless of which frame has focus, the event will trigger
+        // window: only works when current iframe has focus.
+        // parent: only works when parent of the iframe has focus.
+        const windows: Window[] = [parent];
+        for (let i = 0; i < parent.frames.length; ++i) {
+            windows.push(parent.frames[i]);
+        }
+
+        for (let i = 0; i < windows.length; ++i) {
+            const frameWindow = windows[i];
+            frameWindow.addEventListener("keydown", event => {
+                // Don't change anything if something is in progress.
+                const cursorProgressElements = document.getElementsByClassName(
+                    "cursor-progress"
+                );
+                if (cursorProgressElements.length <= 0) {
+                    if (event.key == "Control") {
+                        this.tryEnableSplitAsync();
+                    }
+                }
+            });
+
+            frameWindow.addEventListener("keyup", event => {
+                // Don't change anything if something is in progress.
+                const cursorProgressElements = document.getElementsByClassName(
+                    "cursor-progress"
+                );
+                if (cursorProgressElements.length <= 0) {
+                    // Note: event.ctrlKey returns false when the Control key is released, which makes sense since the Ctrl key is no longer pressed.
+                    // Thus, use event.key instead
+                    if (event.key == "Control") {
+                        this.setSplitStateAsync();
+                    }
+                }
+            });
+        }
+    }
+
+    // This method enables the split button if it is possible for the Split button to succeed.
+    // (As opposed to, normally it may be possible for the Split button to succeed but we don't enable it e.g. becuase we think it'd be redundant)
+    private tryEnableSplitAsync() {
+        const isSplitButtonVisible =
+            this.audioRecordingMode === AudioRecordingMode.TextBox;
+
+        if (isSplitButtonVisible) {
+            const currentTextBox = this.getCurrentTextBox();
+
+            if (!currentTextBox) {
+                return;
+            }
+
+            const currentId = currentTextBox.id;
+            axios
+                .get(`/bloom/api/audio/checkForAnyRecording?ids=${currentId}`)
+                .then((response: AxiosResponse<any>) => {
+                    // Now find if any audio exists for the current recording element.
+                    const doesAudioExist: boolean =
+                        response &&
+                        response.status === 200 &&
+                        response.statusText === "OK";
+
+                    if (doesAudioExist) {
+                        this.setStatus("split", Status.Enabled);
+                    }
+                })
+                .catch(textBoxError => {
+                    // Note: If there is no audio, it returns Request.Failed AKA it actually goes into the catch!!!
+                    // No need to do anything, just silently keep it in its original state.
+                });
+        }
+        // Else: If not visible, don't bother changing the state at all
+    }
+
+    private setSplitStateAsync() {
+        const isSplitButtonVisible =
+            this.audioRecordingMode === AudioRecordingMode.TextBox;
+
+        if (isSplitButtonVisible) {
+            const currentTextBox = this.getCurrentTextBox();
+
+            if (!currentTextBox) {
+                return;
+            }
+
+            const currentId = currentTextBox.id;
+
+            axios
+                .get(`/bloom/api/audio/checkForAnyRecording?ids=${currentId}`)
+                .then((response: AxiosResponse<any>) => {
+                    const currentPlaybackMode = this.getCurrentPlaybackMode();
+                    this.setSplitState(
+                        AudioRecording.DoesNarrationExist(response),
+                        currentPlaybackMode
+                    );
+                })
+                .catch(error => {
+                    // Note: If there is no audio, it returns Request.Failed AKA it actually goes into the catch!!!
+                    this.setStatus("split", Status.Disabled); // Easy case, just go ahead and disable the Split button directly.
+                });
+        }
+    }
+
+    // Given a response (from "/bloom/api/audio/checkForAnyRecording?ids=..."), determines whether the response indicates that narration audio exists for any of the specified IDs
+    private static DoesNarrationExist(response: AxiosResponse<any>) {
+        // Note regarding Non-OK status codes: If there is no audio, it returns Request.Failed AKA it actually has Non-OK Status code!
+        //       This doesn't mean you need to log an error though, since it is "normal" for failed requests to return.
+        //       Just mark them as not-exist instead.
+
+        return (
+            response && response.status === 200 && response.statusText === "OK"
+        );
+    }
+
+    private setSplitState(
+        doesElementAudioExist: boolean,
+        currentPlaybackMode: AudioRecordingMode
+    ) {
+        // Split button
+        const isSplitButtonVisible =
+            this.audioRecordingMode === AudioRecordingMode.TextBox; // TODO: Could determine visibility from DOM instead. which is better?
+
+        if (
+            doesElementAudioExist &&
+            isSplitButtonVisible &&
+            currentPlaybackMode === AudioRecordingMode.TextBox
+        ) {
+            this.setStatus("split", Status.Enabled);
+        } else {
+            this.setStatus("split", Status.Disabled);
+        }
     }
 
     public playingAudio(): boolean {
@@ -2556,22 +2693,16 @@ export default class AudioRecording {
         textBoxResponse: AxiosResponse<any>,
         elementResponse: AxiosResponse<any>
     ): void {
-        // Note: If there is no audio, it returns Request.Failed AKA it actually has Non-OK Status code!
-        //       This doesn't mean you need to log an error though, since it is "normal" for failed requests to return.
-        //       Just mark them as not-exist instead.
-
         // This var is true if the Text Box containing the Currently Highlighted Element contains audio for any of the elements within the text box.
-        const doesTextBoxAudioExist: boolean =
-            textBoxResponse &&
-            textBoxResponse.status === 200 &&
-            textBoxResponse.statusText === "OK";
+        const doesTextBoxAudioExist: boolean = AudioRecording.DoesNarrationExist(
+            textBoxResponse
+        );
 
         // This var is true if the Currently Highlighted Element contains audio
         // (If RecordingMode=TextBox but PlaybackMode=Sentence, this means if any of the sentences of the currently highlighted element contain audio)
-        const doesElementAudioExist: boolean =
-            elementResponse &&
-            elementResponse.status === 200 &&
-            elementResponse.statusText === "OK";
+        const doesElementAudioExist: boolean = AudioRecording.DoesNarrationExist(
+            elementResponse
+        );
 
         // Clear and Play (Check) buttons
         if (doesElementAudioExist) {
@@ -2583,18 +2714,8 @@ export default class AudioRecording {
         }
 
         // Split button
-        const isSplitButtonVisible =
-            this.audioRecordingMode === AudioRecordingMode.TextBox; // TODO: Could determine visibility from DOM instead. which is better?
         const currentPlaybackMode = this.getCurrentPlaybackMode();
-        if (
-            doesElementAudioExist &&
-            isSplitButtonVisible &&
-            currentPlaybackMode === AudioRecordingMode.TextBox
-        ) {
-            this.setEnabledOrExpecting("split", expectedVerb);
-        } else {
-            this.setStatus("split", Status.Disabled);
-        }
+        this.setSplitState(doesElementAudioExist, currentPlaybackMode);
 
         // Next button
         if (this.getNextAudioElement()) {
