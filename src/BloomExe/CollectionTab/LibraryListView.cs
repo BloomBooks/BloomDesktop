@@ -7,10 +7,10 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using Bloom.web;
@@ -1001,10 +1001,11 @@ namespace Bloom.CollectionTab
 				var imageIndex = _bookThumbnails.Images.IndexOfKey(bookInfo.Id);
 				if (imageIndex > -1)
 				{
-					_bookThumbnails.Images[imageIndex] = image;
 					var button = FindBookButton(bookInfo);
 					if (button == null || button.IsDisposed)
 						return; // I (gjm) found that this condition occurred sometimes when testing BL-6100
+					image = ImageUtils.ResizeImageIfNecessary(button.Size, image);
+					_bookThumbnails.Images[imageIndex] = image;
 					button.Image = IsUsableBook(button) ? image : MakeDim(image);
 				}
 			}
