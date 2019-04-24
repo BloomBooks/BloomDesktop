@@ -512,6 +512,12 @@ LibSynphony.prototype.checkStory = function(
         // break the text into words
         story_vocab = this.getWordsFromHtmlString(storyHTML);
     }
+    // Just in case users want ? for glottal or similar nonsense with other special
+    // RE characters.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7075.
+    if (letters.includes("\\")) letters = letters.replace("\\", "\\\\");
+    if (letters.includes("?")) letters = letters.replace("?", "\\?");
+    if (letters.includes("+")) letters = letters.replace("+", "\\+");
+    if (letters.includes("*")) letters = letters.replace("*", "\\*");
 
     // get unique word list
     var story_vocab_compacted = _.uniq(story_vocab);
