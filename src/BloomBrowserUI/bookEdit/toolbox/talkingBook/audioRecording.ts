@@ -37,6 +37,7 @@ import { ToolBox } from "../toolbox";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
+    DisabledUnlessHover, // Same as disabled, except it will become enabled if the user hovers over it.
     Enabled, // Can use now, not the most likely thing to do next
     Expected, // The most likely/appropriate button to use next (e.g., Play right after recording)
     Active // Button now active (Play while playing; Record while held down)
@@ -163,8 +164,6 @@ export default class AudioRecording {
             .off()
             .click(e => this.split());
 
-        this.addSplitCtrlKeyListeners();
-
         $("#audio-listen")
             .off()
             .click(e => this.listen());
@@ -211,139 +210,6 @@ export default class AudioRecording {
 
             doneCallback();
         });
-    }
-
-    private addSplitCtrlKeyListeners() {
-        // Add the event listeners to all frames, so that regardless of which frame has focus, the event will trigger
-        // window: only works when current iframe has focus.
-        // parent: only works when parent of the iframe has focus.
-        const windows: Window[] = [parent];
-        for (let i = 0; i < parent.frames.length; ++i) {
-            windows.push(parent.frames[i]);
-        }
-
-        for (let i = 0; i < windows.length; ++i) {
-            const frameWindow = windows[i];
-            frameWindow.addEventListener("keydown", event => {
-                // Don't change anything if something is in progress.
-                const cursorProgressElements = document.getElementsByClassName(
-                    "cursor-progress"
-                );
-                if (cursorProgressElements.length <= 0) {
-                    if (event.key == "Control") {
-                        this.tryEnableSplitAsync();
-                    }
-                }
-            });
-
-            frameWindow.addEventListener("keyup", event => {
-                // Don't change anything if something is in progress.
-                const cursorProgressElements = document.getElementsByClassName(
-                    "cursor-progress"
-                );
-                if (cursorProgressElements.length <= 0) {
-                    // Note: event.ctrlKey returns false when the Control key is released, which makes sense since the Ctrl key is no longer pressed.
-                    // Thus, use event.key instead
-                    if (event.key == "Control") {
-                        this.setSplitStateAsync();
-                    }
-                }
-            });
-        }
-    }
-
-    // This method enables the split button if it is possible for the Split button to succeed.
-    // (As opposed to, normally it may be possible for the Split button to succeed but we don't enable it e.g. becuase we think it'd be redundant)
-    private tryEnableSplitAsync() {
-        const isSplitButtonVisible =
-            this.audioRecordingMode === AudioRecordingMode.TextBox;
-
-        if (isSplitButtonVisible) {
-            const currentTextBox = this.getCurrentTextBox();
-
-            if (!currentTextBox) {
-                return;
-            }
-
-            const currentId = currentTextBox.id;
-            axios
-                .get(`/bloom/api/audio/checkForAnyRecording?ids=${currentId}`)
-                .then((response: AxiosResponse<any>) => {
-                    // Now find if any audio exists for the current recording element.
-                    const doesAudioExist: boolean =
-                        response &&
-                        response.status === 200 &&
-                        response.statusText === "OK";
-
-                    if (doesAudioExist) {
-                        this.setStatus("split", Status.Enabled);
-                    }
-                })
-                .catch(textBoxError => {
-                    // Note: If there is no audio, it returns Request.Failed AKA it actually goes into the catch!!!
-                    // No need to do anything, just silently keep it in its original state.
-                });
-        }
-        // Else: If not visible, don't bother changing the state at all
-    }
-
-    private setSplitStateAsync() {
-        const isSplitButtonVisible =
-            this.audioRecordingMode === AudioRecordingMode.TextBox;
-
-        if (isSplitButtonVisible) {
-            const currentTextBox = this.getCurrentTextBox();
-
-            if (!currentTextBox) {
-                return;
-            }
-
-            const currentId = currentTextBox.id;
-
-            axios
-                .get(`/bloom/api/audio/checkForAnyRecording?ids=${currentId}`)
-                .then((response: AxiosResponse<any>) => {
-                    const currentPlaybackMode = this.getCurrentPlaybackMode();
-                    this.setSplitState(
-                        AudioRecording.DoesNarrationExist(response),
-                        currentPlaybackMode
-                    );
-                })
-                .catch(error => {
-                    // Note: If there is no audio, it returns Request.Failed AKA it actually goes into the catch!!!
-                    this.setStatus("split", Status.Disabled); // Easy case, just go ahead and disable the Split button directly.
-                });
-        }
-    }
-
-    // Given a response (from "/bloom/api/audio/checkForAnyRecording?ids=..."), determines whether the response indicates that narration audio exists for any of the specified IDs
-    private static DoesNarrationExist(response: AxiosResponse<any>) {
-        // Note regarding Non-OK status codes: If there is no audio, it returns Request.Failed AKA it actually has Non-OK Status code!
-        //       This doesn't mean you need to log an error though, since it is "normal" for failed requests to return.
-        //       Just mark them as not-exist instead.
-
-        return (
-            response && response.status === 200 && response.statusText === "OK"
-        );
-    }
-
-    private setSplitState(
-        doesElementAudioExist: boolean,
-        currentPlaybackMode: AudioRecordingMode
-    ) {
-        // Split button
-        const isSplitButtonVisible =
-            this.audioRecordingMode === AudioRecordingMode.TextBox; // TODO: Could determine visibility from DOM instead. which is better?
-
-        if (
-            doesElementAudioExist &&
-            isSplitButtonVisible &&
-            currentPlaybackMode === AudioRecordingMode.TextBox
-        ) {
-            this.setStatus("split", Status.Enabled);
-        } else {
-            this.setStatus("split", Status.Disabled);
-        }
     }
 
     public playingAudio(): boolean {
@@ -2688,6 +2554,17 @@ export default class AudioRecording {
             });
     }
 
+    // Given a response (from "/bloom/api/audio/checkForAnyRecording?ids=..."), determines whether the response indicates that narration audio exists for any of the specified IDs
+    private static DoesNarrationExist(response: AxiosResponse<any>) {
+        // Note regarding Non-OK status codes: If there is no audio, it returns Request.Failed AKA it actually has Non-OK Status code!
+        //       This doesn't mean you need to log an error though, since it is "normal" for failed requests to return.
+        //       Just mark them as not-exist instead.
+
+        return (
+            response && response.status === 200 && response.statusText === "OK"
+        );
+    }
+
     private updateButtonStateHelper(
         expectedVerb: string, // e.g. "record", "play", "check", etc.
         textBoxResponse: AxiosResponse<any>,
@@ -2714,8 +2591,18 @@ export default class AudioRecording {
         }
 
         // Split button
+        const isSplitButtonVisible =
+            this.audioRecordingMode === AudioRecordingMode.TextBox; // TODO: Could determine visibility from DOM instead. which is better?
         const currentPlaybackMode = this.getCurrentPlaybackMode();
-        this.setSplitState(doesElementAudioExist, currentPlaybackMode);
+        if (doesElementAudioExist && isSplitButtonVisible) {
+            if (currentPlaybackMode === AudioRecordingMode.TextBox) {
+                this.setEnabledOrExpecting("split", expectedVerb);
+            } else {
+                this.setStatus("split", Status.DisabledUnlessHover);
+            }
+        } else {
+            this.setStatus("split", Status.Disabled);
+        }
 
         // Next button
         if (this.getNextAudioElement()) {
@@ -2790,7 +2677,7 @@ export default class AudioRecording {
                     this.setStatus("listen", Status.Disabled);
                 }
             })
-            .catch(response => {
+            .catch(error => {
                 // This handles the case where AudioRecording.HandleCheckForAnyRecording() (in C#)
                 // sends back a request.Failed("no audio") and thereby avoids an uncaught js exception.
                 this.setStatus("listen", Status.Disabled);
@@ -2875,10 +2762,17 @@ export default class AudioRecording {
         if (buttonElement) {
             buttonElement.classList.remove("expected");
             buttonElement.classList.remove("disabled");
+            buttonElement.classList.remove("disabledUnlessHover");
             buttonElement.classList.remove("enabled");
             buttonElement.classList.remove("active");
 
-            buttonElement.classList.add(Status[to].toLowerCase());
+            // Convert names from PascalCase to camelCase.
+            // The enum uses PascalCase, but the CSS uses camelCase
+            const statusString: string = Status[to];
+            const className: string = AudioRecording.ToCamelCaseFromPascalCase(
+                statusString
+            );
+            buttonElement.classList.add(className);
         }
 
         const labelElement = document.getElementById(`audio-${which}-label`);
@@ -2907,6 +2801,11 @@ export default class AudioRecording {
             // Doesn't make sense to expect something while something else is active.
             this.removeExpectedStatusFromAll();
         }
+    }
+
+    // Review: Where is the best place to put this function?
+    public static ToCamelCaseFromPascalCase(text: string) {
+        return text[0].toLowerCase() + text.slice(1);
     }
 
     private removeExpectedStatusFromAll(): void {
