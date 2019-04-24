@@ -1001,6 +1001,7 @@ namespace Bloom.Book
 			var licenseMetadata = GetLicenseMetadata();
 			BringXmatterHtmlUpToDate(bookDOM);
 			RepairBrokenSmallCoverCredits(bookDOM);
+			RepairCoverImageDescriptions(bookDOM);
 
 			progress.WriteStatus("Repair page label localization");
 			RepairPageLabelLocalization(bookDOM);
@@ -1211,6 +1212,36 @@ namespace Bloom.Book
 				var imgNode = imgNodes[0];
 				coverImageElement.InnerText = (imgNode.Attributes == null || imgNode.Attributes["src"] == null) ?
 					string.Empty : HttpUtility.UrlDecode(imgNode.Attributes["src"].Value);
+			}
+		}
+
+		/// <summary>
+		/// Repair the cover image descriptions to use ImageDescriptionEdit-style instead of normal-style.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7039.
+		/// </remarks>
+		internal static void RepairCoverImageDescriptions(HtmlDom bookDOM)
+		{
+			if (bookDOM?.Body == null)
+				return;		// must be a test running...
+			var dataDiv = bookDOM.Body.SelectSingleNode("div[@id='bloomDataDiv']");
+			if (dataDiv == null)
+				return;		// must be a test running...
+			var coverImageDiv = dataDiv.SelectSingleNode("div[@data-book='coverImageDescription' and @lang='*']");
+			if (coverImageDiv == null)
+				return;		// must be a test running...  or a very old book?
+			var coverImageDescriptionDivs = coverImageDiv.SafeSelectNodes("div[contains(@class,'bloom-editable')]");
+			foreach (XmlNode descriptionDiv in coverImageDescriptionDivs)
+			{
+				//XmlElement descriptionDiv = xnode as XmlElement;
+				var classAttr = descriptionDiv.Attributes["class"].Value;
+				if (classAttr.Contains("normal-style"))
+					classAttr = classAttr.Replace("normal-style","").Replace("  ", " ");
+				if (!classAttr.Contains("ImageDescriptionEdit-style"))
+					classAttr = classAttr + " ImageDescriptionEdit-style";
+				if (classAttr != descriptionDiv.Attributes["class"].Value)
+					descriptionDiv.Attributes["class"].Value = classAttr;
 			}
 		}
 

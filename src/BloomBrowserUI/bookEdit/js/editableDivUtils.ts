@@ -7,36 +7,39 @@ interface qtipInterface extends JQuery {
 
 export class EditableDivUtils {
     public static getElementSelectionIndex(element: HTMLElement): number {
-        var page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
+        const page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
             parent.window.document.getElementById("page")
         );
         if (!page || !page.contentWindow) return -1; // unit testing?
 
-        var selection = page.contentWindow.getSelection();
-        var active = $(selection.anchorNode)
+        const selection = page.contentWindow.getSelection();
+        if (!selection || !selection.anchorNode) return -1;
+        const active = $(selection.anchorNode)
             .closest("div")
             .get(0);
         if (active != element) return -1; // huh??
         if (!active || selection.rangeCount == 0) {
             return -1;
         }
-        var myRange = selection.getRangeAt(0).cloneRange();
+        const myRange = selection.getRangeAt(0).cloneRange();
         myRange.setStart(active, 0);
         return myRange.toString().length;
     }
 
     public static selectAtOffset(node: Node, offset: number): void {
-        var page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
+        const page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
             parent.window.document.getElementById("page")
         );
         if (!page || !page.contentWindow) return;
-        var iframeWindow: Window = page.contentWindow;
-        var range = iframeWindow.document.createRange();
-        range.setStart(node, offset);
-        range.setEnd(node, offset);
-        var selection1 = iframeWindow.getSelection();
-        selection1.removeAllRanges();
-        selection1.addRange(range);
+        const iframeWindow: Window = page.contentWindow;
+        const selection1 = iframeWindow.getSelection();
+        if (selection1) {
+            const range = iframeWindow.document.createRange();
+            range.setStart(node, offset);
+            range.setEnd(node, offset);
+            selection1.removeAllRanges();
+            selection1.addRange(range);
+        }
     }
 
     /**

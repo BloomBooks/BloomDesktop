@@ -740,6 +740,11 @@
         <note>ID: CollectionTab.TitleMissing</note>
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.UILanguageMenu.HelpTranslate">
+        <source xml:lang="en">Help us translate Bloom (web)</source>
+        <note>ID: CollectionTab.UILanguageMenu.HelpTranslate</note>
+        <note>The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip">
         <source xml:lang="en">{0}% translated</source>
         <note>ID: CollectionTab.UILanguageMenu.ItemTooltip</note>
@@ -2200,6 +2205,11 @@
         <source xml:lang="en">Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakLabel</note>
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible, but without the number</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitError">
+        <source xml:lang="en">Something went wrong while splitting the recording.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SplitError</note>
+        <note>This text appears if an error occurs while perfoming automatic splitting of audio (an audio file corresponding to an entire text box will be split into multiple sections, one section per sentence).</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel">
         <source xml:lang="en">Split recording into sentences for highlighting.</source>

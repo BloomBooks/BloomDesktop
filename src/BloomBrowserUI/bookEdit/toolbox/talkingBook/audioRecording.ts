@@ -2818,7 +2818,6 @@ export default class AudioRecording {
 
     private split(): void {
         this.setStatus("split", Status.Disabled); // Disable it immediately (not asynchronously!) so that the button stops registering clicks
-
         BloomApi.get(
             "audioSegmentation/checkAutoSegmentDependencies",
             result => {
@@ -2848,11 +2847,7 @@ export default class AudioRecording {
             playButtonElement &&
             playButtonElement.classList.contains("disabled")
         ) {
-            // TODO: Localize after UI finalized
-            toastr.warning(
-                "Please record audio first before running Auto Segment"
-            );
-
+            this.displaySplitError();
             this.setStatus("split", Status.Disabled); // Remove active/expected highlights
             return;
         }
@@ -2861,7 +2856,7 @@ export default class AudioRecording {
         if (!currentTextBox) {
             // At this point, not going to be able to get the ID of the div so we can't figure out how to get the filename...
             // So just give up.
-            toastr.error("AutoSegment did not succeed.");
+            this.displaySplitError();
             this.setStatus("split", Status.Enabled); // Remove active/expected highlights
             return;
         }
@@ -2900,6 +2895,18 @@ export default class AudioRecording {
                 }
             );
         }
+    }
+
+    public displaySplitError() {
+        theOneLocalizationManager
+            .asyncGetText(
+                "EditTab.Toolbox.TalkingBookTool.SplitError",
+                "Something went wrong while splitting the recording.",
+                "This text appears if an error occurs while perfoming automatic splitting of audio (an audio file corresponding to an entire text box will be split into multiple sections, one section per sentence)."
+            )
+            .done(localizedMessage => {
+                toastr.error(localizedMessage);
+            });
     }
 
     // Finds the current text box, gets its text, split into sentences, then return each sentence with a UUID.
@@ -3015,9 +3022,9 @@ export default class AudioRecording {
             this.changeStateAndSetExpectedAsync("record");
             doneCallback();
 
-            // TODO: Localize
             // If there is a more detailed error from C#, it should be reported via ErrorReport.ReportNonFatal[...]
-            toastr.error("AutoSegment did not succeed.");
+
+            this.displaySplitError();
         }
     }
 
@@ -3088,7 +3095,7 @@ export default class AudioRecording {
                 "audioSegmentation/eSpeakPreview",
                 JSON.stringify(inputParameters),
                 result => {
-                    if (result && result.data && result.data.status) {
+                    if (result && result.data && result.data.filePath) {
                         const convertedText: string = result.data.text;
                         const languageUsed: string = result.data.lang;
                         const fileUsed: string = result.data.filePath;
@@ -3112,7 +3119,7 @@ export default class AudioRecording {
                                                 .asyncGetText(
                                                     "EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed",
                                                     "Conversion file used:",
-                                                    "After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specificies a mapping which is used to convert the script for one language into the script for another."
+                                                    "After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specifies a mapping which is used to convert the script for one language into the script for another."
                                                 )
                                                 .done(localizedMessage3 => {
                                                     toastr.info(
@@ -3124,16 +3131,6 @@ export default class AudioRecording {
                                         });
                                 });
                         }
-                    } else {
-                        theOneLocalizationManager
-                            .asyncGetText(
-                                "EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error",
-                                "eSpeak failed.",
-                                "This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud)."
-                            )
-                            .done(localizedMessage => {
-                                toastr.info(localizedMessage);
-                            });
                     }
                 }
             );

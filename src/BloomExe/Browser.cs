@@ -20,6 +20,7 @@ using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
 using L10NSharp;
+using SimulatedPageFileSource = Bloom.Api.BloomServer.SimulatedPageFileSource;
 
 namespace Bloom
 {
@@ -806,11 +807,12 @@ namespace Bloom
 		// contain references to files in the directory of the original HTML file it is derived from,
 		// 'cause that provides the information needed
 		// to fake out the browser about where the 'file' is so internal references work.
-		public void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom = null, bool setAsCurrentPageForDebugging = false, string source="nav")
+		public void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom = null, bool setAsCurrentPageForDebugging = false,
+			SimulatedPageFileSource source = SimulatedPageFileSource.Nav)
 		{
 			if (InvokeRequired)
 			{
-				Invoke(new Action<HtmlDom, HtmlDom, bool, string>(Navigate), htmlDom, htmlEditDom, setAsCurrentPageForDebugging, source);
+				Invoke(new Action<HtmlDom, HtmlDom, bool, SimulatedPageFileSource>(Navigate), htmlDom, htmlEditDom, setAsCurrentPageForDebugging, source);
 				return;
 			}
 
@@ -869,8 +871,7 @@ namespace Bloom
 			// just in case something goes wrong, avoid the timeout if it fails rather than completing.
 			_browser.NavigationError += (sender, e) => done = true;
 			// var oldUrl = _browser.Url; // goes with commented out code below
-			Navigate(htmlDom, source: "epub");
-			int restarts = 0;
+			Navigate(htmlDom, source: SimulatedPageFileSource.Epub);
 			while (!done && navTimer.ElapsedMilliseconds < timeLimit)
 			{
 				Application.DoEvents(); // NOTE: this has bad consequences all down the line. See BL-6122.

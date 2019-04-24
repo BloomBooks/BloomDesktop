@@ -10,7 +10,7 @@ import Axios from "axios";
 // This function is shared by code that wants to report errors but for some
 // reason shouldn't do so by throwing.
 export function reportError(message: string, stack: string) {
-    if (typeof (window as any).__karma__) {
+    if ((window as any).__karma__) {
         console.log(
             "skipping post to common/error because in unit tests: \r\n" +
                 message +

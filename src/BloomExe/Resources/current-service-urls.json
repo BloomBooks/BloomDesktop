@@ -1,12 +1,35 @@
 ﻿{
-	urls:[
-		{id:"parse", url: "https://bloom-parse-server-production.azurewebsites.net/parse/"},
-		{id:"parseSandbox", url: "https://bloom-parse-server-develop.azurewebsites.net/parse/"},
-		{id:"librarySite", url: "http://bloomlibrary.org"},
-		{id:"librarySiteSandbox", url: "http://dev.bloomlibrary.org"},
-        {id:"userSuggestions", url: "https://community.software.sil.org/c/bloom/featurerequests"},
-        {id:"support","url": "https://community.software.sil.org/c/bloom"},
-		{id:"issueTrackingSystem", url: "https://silbloom.myjetbrains.com"},
-		{id:"issueTrackingSystemBackend", url: "http://issues.bloomlibrary.org"}
-	]
+    "urls": [
+        {
+            "id": "parse",
+            "url":
+                "https://bloom-parse-server-production.azurewebsites.net/parse/"
+        },
+        {
+            "id": "parseSandbox",
+            "url": "https://bloom-parse-server-develop.azurewebsites.net/parse/"
+        },
+        { "id": "librarySite", "url": "http://bloomlibrary.org" },
+        { "id": "librarySiteSandbox", "url": "http://dev.bloomlibrary.org" },
+        {
+            "id": "userSuggestions",
+            "url": "https://community.software.sil.org/c/bloom/featurerequests"
+        },
+        {
+            "id": "support",
+            "url": "https://community.software.sil.org/c/bloom"
+        },
+        {
+            "id": "issueTrackingSystem",
+            "url": "https://silbloom.myjetbrains.com"
+        },
+        {
+            "id": "issueTrackingSystemBackend",
+            "url": "http://issues.bloomlibrary.org"
+        },
+        {
+            "id": "localizingSystem",
+            "url": "https://crowdin.com/project/sil-bloom"
+        }
+    ]
 }

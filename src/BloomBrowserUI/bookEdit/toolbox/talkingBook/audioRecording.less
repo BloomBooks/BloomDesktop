@@ -68,7 +68,6 @@ div.ui-audioCurrent:not(.disableHighlight) p {
         background-color: transparent;
         background-repeat: no-repeat;
         display: inline-block;
-        margin-bottom: 5px;
         border: solid thin transparent; // just be a little responsive to indicate that it is clickable
         &:hover {
             border: none; // makes it grow a little on mouse hover
@@ -201,23 +200,25 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     }
     .button-label-wrapper {
         margin-top: 10px;
+        display: table; // Helps us vertically center the sub-elements
+        margin-bottom: 5px; // Was originally part of the button. Note that vertical margins will auto-collapse with the next element's margin-top. You can switch this to padding-bottom if this is undesirable.
     }
 
     @buttonWidth: 60px;
-    @uiAudioBodyMinWidth: 150px; // The minimum width of the container, which occurs if the scroll bar is present. It is 17 pixels larger otherwise
+    @uiAudioBodyMinWidth: 149px; // The minimum width of the container, which occurs if the scroll bar is present. It is 17 pixels larger otherwise. Could be 150 or 149.67 pixels, so round down to 149
     @whitespaceFillerWidth: 3px; // Caused by the whitespace in the PUG code I think.
     .button-wrapper {
-        display: inline-block;
+        display: table-cell;
         min-width: @buttonWidth;
-        vertical-align: top; // Align the button with the label in case the label is really long.
+        vertical-align: middle; // Align the button with the label in case the label is really long.
     }
 
     .audio-label {
-        display: inline-block;
+        display: table-cell;
         max-width: (
             @uiAudioBodyMinWidth - @buttonWidth - @whitespaceFillerWidth
         );
-        vertical-align: top;
+        vertical-align: middle;
 
         &.expected {
             color: @highlightColor;
