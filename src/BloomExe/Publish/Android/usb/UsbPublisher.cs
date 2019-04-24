@@ -16,7 +16,7 @@ namespace Bloom.Publish.Android.usb
 		private readonly BookServer _bookServer;
 		public Action Stopped;
 
-		private readonly IWebSocketProgress _progress;
+		private readonly WebSocketProgress _progress;
 		private readonly AndroidDeviceUsbConnection _androidDeviceUsbConnection;
 		private DeviceNotFoundReportType _previousDeviceNotFoundReportType;
 		private BackgroundWorker _connectionHandler;

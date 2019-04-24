@@ -43,9 +43,9 @@ namespace Bloom.Publish.Android.wifi
 		private const int Port = 5913; // must match port in BloomReader NewBookListenerService.startListenForUDPBroadcast
 		private string _currentIpAddress;
 		private byte[] _sendBytes; // Data we send in each advertisement packet
-		private readonly IWebSocketProgress _progress;
+		private readonly WebSocketProgress _progress;
 
-		internal WiFiAdvertiser(IWebSocketProgress progress)
+		internal WiFiAdvertiser(WebSocketProgress progress)
 		{
 			_progress = progress;
 		}

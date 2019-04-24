@@ -35,7 +35,7 @@ namespace Bloom.Publish.Epub
 		// Usually _standardProgress, but when the epub is being generated for another purpose
 		// besides the preview in the main epub window (e.g., for Daisy checker), we use that
 		// window's progress box.
-		private IWebSocketProgress _progress;
+		private WebSocketProgress _progress;
 
 		private EpubPublishUiSettings _desiredEpubSettings = new EpubPublishUiSettings();
 		private bool _needNewPreview; // Used when asked to update preview while in the middle of using the current one (e.g., to save it).
@@ -346,7 +346,7 @@ namespace Bloom.Publish.Epub
 			epubPublishUiSettings.removeFontSizes = info.MetaData.Epub_RemoveFontSizes;
 		}
 
-		public void UpdateAndSave(EpubPublishUiSettings newSettings, string path, bool force, IWebSocketProgress progress = null)
+		public void UpdateAndSave(EpubPublishUiSettings newSettings, string path, bool force, WebSocketProgress progress = null)
 		{
 			bool succeeded;
 			do
@@ -360,7 +360,7 @@ namespace Bloom.Publish.Epub
 			} while (!succeeded && !EpubMaker.AbortRequested); // try until we get a complete epub, not interrupted by user changing something.
 		}
 
-		public bool UpdatePreview(EpubPublishUiSettings newSettings, bool force, IWebSocketProgress progress = null)
+		public bool UpdatePreview(EpubPublishUiSettings newSettings, bool force, WebSocketProgress progress = null)
 		{
 			_progress = progress ?? _standardProgress.WithL10NPrefix("PublishTab.Epub.");
 			if (Program.RunningOnUiThread)

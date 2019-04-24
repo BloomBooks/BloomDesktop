@@ -26,7 +26,7 @@ namespace Bloom.web.controllers
 
 		private readonly NavigationIsolator _isolator;
 		private readonly BookServer _bookServer;
-		private IWebSocketProgress _webSocketProgress;
+		private WebSocketProgress _webSocketProgress;
 
 		public const string kApiUrlPart = "accessibilityCheck/";
 
@@ -246,7 +246,7 @@ namespace Bloom.web.controllers
 			ReportErrorAndFailTheRequest(request, errorMessage);
 		}
 
-		private string MakeEpub(string parentDirectory, IWebSocketProgress progress)
+		private string MakeEpub(string parentDirectory, WebSocketProgress progress)
 		{
 			var settings = new EpubPublishUiSettings();
 			_epubApi.GetEpubSettingsForCurrentBook(settings);

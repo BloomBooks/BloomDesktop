@@ -272,7 +272,7 @@ namespace Bloom.Publish.Android
 		/// <param name="progress"></param>
 		/// <param name="bookServer"></param>
 		/// <param name="startingMessageFunction"></param>
-		public static void SendBook(Book.Book book, BookServer bookServer, string destFileName, Action<string, string> sendAction, IWebSocketProgress progress, Func<string, string, string> startingMessageFunction,
+		public static void SendBook(Book.Book book, BookServer bookServer, string destFileName, Action<string, string> sendAction, WebSocketProgress progress, Func<string, string, string> startingMessageFunction,
 			Func<string, bool> confirmFunction, Color backColor)
 		{
 			var bookTitle = book.Title;
@@ -334,7 +334,7 @@ namespace Bloom.Publish.Android
 		/// <remarks>
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-5274.
 		/// </remarks>
-		public static void CheckBookLayout(Bloom.Book.Book book, IWebSocketProgress progress)
+		public static void CheckBookLayout(Bloom.Book.Book book, WebSocketProgress progress)
 		{
 			var layout = book.GetLayout();
 			var desiredLayoutSize = "Device16x9";
