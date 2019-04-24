@@ -850,6 +850,11 @@ namespace BloomTests.Publish
 			{
 				MessagesNotLocalized.Add("<span style='color:" + color + "'>" + string.Format(message, parameters) + "</span>");
 			}
+
+			public WebSocketProgress WithL10NPrefix(string prefix)
+			{
+				return null;
+			}
 		}
 
 		class StubFontFinder : IFontFinder {
