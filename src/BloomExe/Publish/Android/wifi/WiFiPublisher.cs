@@ -34,7 +34,7 @@ namespace Bloom.Publish.Android.wifi
 		public WiFiPublisher(WebSocketProgress progress, BookServer bookServer)
 		{
 			_bookServer = bookServer;
-			_progress = progress.WithL10NPrefix("PublishTab.Android.Wifi.Progress.");
+			_progress = (WebSocketProgress)progress.WithL10NPrefix("PublishTab.Android.Wifi.Progress.");
 		}
 
 		public void Start(Book.Book book, CollectionSettings collectionSettings, Color backColor)

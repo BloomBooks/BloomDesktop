@@ -301,7 +301,7 @@ namespace Bloom.Publish.Epub
 			foreach (XmlElement pageElement in Book.GetPageElements())
 			{
 				var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
-				pageLabelProgress.Message(pageLabelEnglish, pageLabelEnglish);
+				pageLabelProgress.Message(pageLabelEnglish, "", pageLabelEnglish);
 				// We could check for this in a few more places, but once per page seems enough in practice.
 				if (AbortRequested)
 					break;

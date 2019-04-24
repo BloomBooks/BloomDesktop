@@ -26,7 +26,7 @@ namespace Bloom.web
 		/// Get a new WebSocketProgress that will prefix each localization id with the given string
 		/// </summary>
 		/// <param name="localizationIdPrefix"></param>
-		public WebSocketProgress WithL10NPrefix(string localizationIdPrefix)
+		public IWebSocketProgress WithL10NPrefix(string localizationIdPrefix)
 		{
 			return new WebSocketProgress(_bloomWebSocketServer, _clientContext)
 			{
@@ -148,7 +148,7 @@ namespace Bloom.web
 		void MessageWithParams(string id, string comment, string message, params object[] parameters);
 		void ErrorWithParams(string id, string comment, string message, params object[] parameters);
 		void MessageWithColorAndParams(string id, string comment, string color, string message, params object[] parameters);
-		WebSocketProgress WithL10NPrefix(string localizationIdPrefix);
+		IWebSocketProgress WithL10NPrefix(string localizationIdPrefix);
 	}
 
 	// Passing one of these where we don't need the progress report saves recipients handling nulls
@@ -178,9 +178,9 @@ namespace Bloom.web
 		{
 		}
 
-		public WebSocketProgress WithL10NPrefix(string prefix)
+		public IWebSocketProgress WithL10NPrefix(string prefix)
 		{
-			return null;
+			return this;
 		}
 	}
 }

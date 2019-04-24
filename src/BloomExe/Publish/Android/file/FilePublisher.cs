@@ -18,7 +18,7 @@ namespace Bloom.Publish.Android.file
 	{
 		public static void Save(Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress)
 		{
-			var progressWithL10N = progress.WithL10NPrefix("PublishTab.Android.File.Progress.");
+			var progressWithL10N = (WebSocketProgress)progress.WithL10NPrefix("PublishTab.Android.File.Progress.");
 			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
 			{
 				dlg.DefaultExt = BookCompressor.ExtensionForDeviceBloomBook;

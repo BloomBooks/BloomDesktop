@@ -25,7 +25,7 @@ namespace Bloom.Publish.Android.usb
 		public UsbPublisher(WebSocketProgress progress, BookServer bookServer)
 		{
 			_bookServer = bookServer;
-			_progress = progress.WithL10NPrefix("PublishTab.Android.Usb.Progress.");
+			_progress = (WebSocketProgress)progress.WithL10NPrefix("PublishTab.Android.Usb.Progress.");
 			_androidDeviceUsbConnection = new AndroidDeviceUsbConnection();
 		}
 

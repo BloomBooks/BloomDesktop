@@ -60,7 +60,7 @@ namespace Bloom.web.controllers
 		{
 			_webSocketServer = webSocketServer;
 			var progress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
-			_webSocketProgress = progress.WithL10NPrefix("AccessibilityCheck.");
+			_webSocketProgress = (WebSocketProgress)progress.WithL10NPrefix("AccessibilityCheck.");
 			_epubApi = epubApi;
 			bookSelection.SelectionChanged += (unused1, unused2) =>
 			{
@@ -251,7 +251,7 @@ namespace Bloom.web.controllers
 			var settings = new EpubPublishUiSettings();
 			_epubApi.GetEpubSettingsForCurrentBook(settings);
 			var path = Path.Combine(parentDirectory, Guid.NewGuid().ToString() + ".epub");
-			_epubApi.UpdateAndSave(settings, path, true, _webSocketProgress.WithL10NPrefix("PublishTab.Epub."));
+			_epubApi.UpdateAndSave(settings, path, true, (WebSocketProgress)_webSocketProgress.WithL10NPrefix("PublishTab.Epub."));
 			return path;
 		}
 
