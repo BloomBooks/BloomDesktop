@@ -3663,6 +3663,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">.</source>
         <note>ID: ReaderSetup.Letters.LetterHelp4</note>
       </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp5" sil:dynamic="true">
+        <source xml:lang="en">Do not include punctuation in this list. Bloom does not support the inclusion of punctuation in decodable stages.</source>
+        <note>ID: ReaderSetup.Letters.LetterHelp5</note>
+      </trans-unit>
       <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true">
         <source xml:lang="en">Level</source>
         <note>ID: ReaderSetup.LevelHeader</note>
