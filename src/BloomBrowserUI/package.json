@@ -16,7 +16,7 @@
         "testWatchChrome": "karma start --browsers Chrome",
         "teamcitytest": "karma start karma.conf.js --browsers Chrome --reporters teamcity --single-run",
         "//": {
-            "build": "does a nice new clean build of the output/brower folder.",
+            "build": "does a nice new clean build of the output/browser folder.",
             "watch": "compiles TS, Less, Pug, etc automatically. Doesn't handle all non-code things like 'build' does."
         },
         "buildBrandingFiles": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm}\" ../../output/browser/branding",
@@ -37,7 +37,8 @@
         "watch": "npm-run-all --parallel watchBrandingLess watchXMatterTemplatesLess watchBookEditLess watchBookLayoutLess watchBrandingFiles watchCode",
         "gitSemiClean": "git clean -X --dry-run --exclude='!node_modules'",
         "gitSemiCleanForReal": "git clean -fX --exclude='!node_modules'",
-        "tslint": "tslint --project tsconfig.json"
+        "tslint": "tslint --project tsconfig.json",
+        "storybook": "start-storybook"
     },
     "repository": {
         "type": "git",
@@ -97,6 +98,9 @@
         "@babel/preset-react": "^7.0.0",
         "@types/webpack-env": "^1.13.9",
         "babel-loader": "^8.0.5",
+        "@storybook/react": "^5.0.10",
+        "@types/storybook__react": "^4.0.1",
+        "@types/webpack-env": "^1.13.6",
         "cpx": "^1.5.0",
         "css-loader": "^2.1.1",
         "del": "^4.1.0",
