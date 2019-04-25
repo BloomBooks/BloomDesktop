@@ -200,7 +200,6 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     }
     .button-label-wrapper {
         margin-top: 10px;
-        display: table; // Helps us vertically center the sub-elements
         margin-bottom: 5px; // Was originally part of the button. Note that vertical margins will auto-collapse with the next element's margin-top. You can switch this to padding-bottom if this is undesirable.
     }
 
@@ -208,13 +207,13 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     @uiAudioBodyMinWidth: 149px; // The minimum width of the container, which occurs if the scroll bar is present. It is 17 pixels larger otherwise. Could be 150 or 149.67 pixels, so round down to 149
     @whitespaceFillerWidth: 3px; // Caused by the whitespace in the PUG code I think.
     .button-wrapper {
-        display: table-cell;
+        display: inline-block;
         min-width: @buttonWidth;
         vertical-align: middle; // Align the button with the label in case the label is really long.
     }
 
     .audio-label {
-        display: table-cell;
+        display: inline-block;
         max-width: (
             @uiAudioBodyMinWidth - @buttonWidth - @whitespaceFillerWidth
         );
@@ -240,7 +239,14 @@ div.ui-audioCurrent:not(.disableHighlight) p {
 *:not(.hide-countable) > .audio-label.talking-book-counter {
     counter-increment: talkingBookListCounter;
 }
-*:not(.hide-countable) > .audio-label.talking-book-counter:before {
+// Intuitively, one would expect this to be prefixed by "*:not(.hide-countable) > "
+// However, this would cause the counter to be removed, which may change the number of lines the text takes
+// That changes the vertical height needed, which affects the vertical centering, which affects the position of the top of the button.
+// Thus, we keep the counter there regardless of whether it's hide-countable or not.
+// Instead, we rely on counter-increment to check .hide-countable in order to make sure the next one gets the right number.
+// This will keep a (wrongly-numbered) counter in the text, making text length and thus vertical top more consistent
+// (Still could be corner case if we switch from a 2-digit number to a 1-digit number, but we'll live with that)
+.audio-label.talking-book-counter:before {
     content: counter(talkingBookListCounter) ") ";
 }
 // Customized number styles for UI languages which need it:
