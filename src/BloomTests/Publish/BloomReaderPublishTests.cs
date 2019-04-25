@@ -818,77 +818,37 @@ namespace BloomTests.Publish
 				});
 		}
 
-		class StubProgress : IWebSocketProgress
+		class StubProgress : WebSocketProgress
 		{
-			public List<string> MessagesNotLocalized = new List<string>();
-			public void MessageWithoutLocalizing(string message, params object[] args)
+			public readonly List<string> MessagesNotLocalized = new List<string>();
+			public override void MessageWithoutLocalizing(string message, params object[] args)
 			{
 				MessagesNotLocalized.Add(message);
 			}
-			public List<string> ErrorsNotLocalized = new List<string>();
-			public void ErrorWithoutLocalizing(string message, params object[] args)
+			public readonly List<string> ErrorsNotLocalized = new List<string>();
+			public override void ErrorWithoutLocalizing(string message, params object[] args)
 			{
 				ErrorsNotLocalized.Add(message);
 			}
 
-			public void Message(string idSuffix, string comment, string message, bool useL10nIdPrefix = true)
+			public override void Message(string idSuffix, string comment, string message, bool useL10nIdPrefix = true)
 			{
 				MessagesNotLocalized.Add(string.Format(message));
 			}
 
-			public void MessageWithParams(string id, string comment, string message, params object[] parameters)
+			public override void MessageWithParams(string id, string comment, string message, params object[] parameters)
 			{
 				MessagesNotLocalized.Add(string.Format(message, parameters));
 			}
 
-			public void ErrorWithParams(string id, string comment, string message, params object[] parameters)
+			public override void ErrorWithParams(string id, string comment, string message, params object[] parameters)
 			{
 				ErrorsNotLocalized.Add(string.Format(message, parameters));
 			}
 
-			public void MessageWithColorAndParams(string id, string comment, string color, string message, params object[] parameters)
+			public override void MessageWithColorAndParams(string id, string comment, string color, string message, params object[] parameters)
 			{
 				MessagesNotLocalized.Add("<span style='color:" + color + "'>" + string.Format(message, parameters) + "</span>");
-			}
-
-			public IWebSocketProgress WithL10NPrefix(string prefix)
-			{
-				return this;
-			}
-
-			public void MessageUsingTitle(string idSuffix, string message, string bookTitle, bool useL10nIdPrefix = true)
-			{
-				throw new NotImplementedException();
-			}
-
-			public string GetMessageWithParams(string idSuffix, string comment, string message, params object[] parameters)
-			{
-				throw new NotImplementedException();
-			}
-
-			public void Message(string idSuffix, string message, bool useL10nIdPrefix = true)
-			{
-				throw new NotImplementedException();
-			}
-
-			public void MessageWithStyleWithoutLocalizing(string message, string cssStyleRules)
-			{
-				throw new NotImplementedException();
-			}
-
-			public string GetTitleMessage(string idSuffix, string message, string bookTitle, bool useL10nIdPrefix = true)
-			{
-				throw new NotImplementedException();
-			}
-
-			public void Error(string idSuffix, string message, bool useL10nIdPrefix = true)
-			{
-				throw new NotImplementedException();
-			}
-
-			public void Exception(Exception exception)
-			{
-				throw new NotImplementedException();
 			}
 		}
 
