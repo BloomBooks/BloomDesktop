@@ -1,12 +1,5 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Bloom.Api;
-using L10NSharp;
-using Microsoft.Win32;
-using SIL.IO;
 
 namespace Bloom.web
 {
@@ -24,7 +17,7 @@ namespace Bloom.web
 		public static void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// Opening a page, better be in UI thread.
-			apiHandler.RegisterEndpointHandler(kPrefix+"/.*", ExternalLinkController.HandleRequest, true);
+			apiHandler.RegisterEndpointHandler(kPrefix+"/.*", HandleRequest, true);
 		}
 
 		/// <summary>
@@ -48,72 +41,15 @@ namespace Bloom.web
 				request.Parameters.Remove("fragment");
 			}
 
-			string browser = string.Empty;
-			if (SIL.PlatformUtilities.Platform.IsLinux)
-			{
-				// REVIEW: This opens HTML files in the browser. Do we have any non-html
-				// files that this code needs to open in the browser? Currently they get
-				// opened in whatever application the user has selected for that file type
-				// which might well be an editor.
-				browser = "xdg-open";
-			}
-			else
-			{
-				// If we don't provide the path of the browser, i.e. Process.Start(url + queryPart), we get file not found exception.
-				// If we prepend "file:///", the anchor part of the link (#xxx) is not sent unless we provide the browser path too.
-				// This is the same behavior when simply typing a url into the Run command on Windows.
-				// If we fail to get the browser path for some reason, we still load the page, just without navigating to the anchor.
-				string defaultBrowserPath;
-				if (TryGetDefaultBrowserPathWindowsOnly(out defaultBrowserPath))
-				{
-					browser = defaultBrowserPath;
-				}
-			}
-
-			//Note, we don't currently use this, since this is only used for our own html. I added it for completeness... maybe
-			//someday when we are running the BloomLibrary locally for the user, we'll have links that require a query part.
-			var queryPart = "";
-			if (request.Parameters.Count > 0)
-			{
-				//reconstruct the query part, this time minus any fragment parameter (which we removed previously, if it was there)
-				queryPart = "?" + request.Parameters.AllKeys.Aggregate("", (total, key) => total + key + "=" + request.Parameters.Get(key) + "&");
-				queryPart = queryPart.TrimEnd(new[] { '&' });
-			}
-
-			if (!string.IsNullOrEmpty(browser))
-			{
-				try
-				{
-					SIL.Program.Process.SafeStart(browser, "\"file:///" + cleanUrl + queryPart + "\"");
-					request.ExternalLinkSucceeded();
-					return;
-				}
-				catch (Exception)
-				{
-					Debug.Fail("Jumping to browser with anchor failed.");
-					// Don't crash Bloom because we can't open an external file.
-				}
-			}
-			// If the above failed, either for lack of default browser or exception, try this:
-			SIL.Program.Process.SafeStart("\"" + cleanUrl + "\"");
-
+			// If we simply provide a path to the file and have a fragment (#xxx), we get file not found exception.
+			// If we prepend "file:///", the fragment part of the link (#xxx) is not sent unless we provide the browser path too.
+			// This is the same behavior when simply typing a url into the Run command on Windows.
+			// Previously, we were attempting to look up the browser path and passing that to SafeStart, but later versions of Windows
+			// changed the way to look up the browser path, and we were opening links in Internet Explorer regardless of the default browser. (BL-6952)
+			// So now we serve the file using Bloom as the server. This launches in the default browser and makes fragments work.
+			var urlToOpenInExternalBrowser = $"http://localhost:{BloomServer.portForHttp}/bloom/{cleanUrl}";
+			SIL.Program.Process.SafeStart(urlToOpenInExternalBrowser);
 			request.ExternalLinkSucceeded();
-		}
-
-		private static bool TryGetDefaultBrowserPathWindowsOnly(out string defaultBrowserPath)
-		{
-			try
-			{
-				var key = @"HTTP\shell\open\command";
-				using (var registrykey = Registry.ClassesRoot.OpenSubKey(key, false))
-					defaultBrowserPath = ((string)registrykey.GetValue(null, null)).Split('"')[1];
-				return true;
-			}
-			catch
-			{
-				defaultBrowserPath = null;
-				return false;
-			}
 		}
 	}
 }
