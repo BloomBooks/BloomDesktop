@@ -1,4 +1,4 @@
-.bloom-page.simple-quiz {
+.bloom-page.simple-comprehension-quiz {
     .bloom-translationGroup {
         margin-bottom: 10px;
         flex-grow: 1;
@@ -41,7 +41,9 @@
 }
 
 // In edit mode, the check boxes are checked if marked correct.
-body.editMode .bloom-page.simple-quiz .checkbox-and-textbox-answer {
+body.editMode
+    .bloom-page.simple-comprehension-quiz
+    .checkbox-and-textbox-answer {
     &.empty {
         opacity: 0.5; // dim empty ones.
         // It happens that we do want a checkbox-and-textbox-answer to display:flex,
@@ -66,7 +68,7 @@ body.editMode .bloom-page.simple-quiz .checkbox-and-textbox-answer {
 // and any rule that begins [__scoped_1] body...won't match.
 // So we have to rely on something else. In this case, user-selected will
 // never occur in editMode.
-.bloom-page.simple-quiz
+.bloom-page.simple-comprehension-quiz
     .checkbox-and-textbox-answer.correct-answer.user-selected {
     .styled-check-box {
         background-color: green;
@@ -76,7 +78,7 @@ body.editMode .bloom-page.simple-quiz .checkbox-and-textbox-answer {
         opacity: 1;
     }
 }
-.bloom-page.simple-quiz {
+.bloom-page.simple-comprehension-quiz {
     .checkbox-and-textbox-answer {
         &.empty {
             // Javascript adds this class if the answer contains nothing visible.

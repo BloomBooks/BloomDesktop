@@ -1,3 +1,10 @@
+// The js generated from this file is used in the template page generated from simpleComprehensionQuiz.pug.
+// It makes sure the body element has the editMode class (if the editMode stylesheet is loaded)
+// and installs appropriate click handlers (depending on edit mode) which manipulate the classes
+// of .checkbox-and-textbox-answer elements to produce the desired checking and dimming of right
+// and wrong answers. It also adds an appropriate class to answers that are empty (to hide them or
+// dim them) and plays appropriate sounds when a right or wrong answer is chosen.
+// Eventually it will cooperate with reader code to handle analytics.
 function init() {
     ensureEditModeStyleSheet();
     markEmptyAnswers();

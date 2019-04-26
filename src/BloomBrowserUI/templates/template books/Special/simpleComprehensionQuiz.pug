@@ -14,9 +14,9 @@ mixin answer
 		+field("auto").QuizAnswer-style(data-hint="Put a possible answer here. Check it if it is correct.")
 
 mixin quizPage
-	+page('Quiz Page', 'Use for comprehension testing.').simple-quiz.bloom-smart-page#F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D(data-page='extra')
+	+page('Quiz Page', 'Use for comprehension testing.').simple-comprehension-quiz.bloom-smart-page#F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D(data-page='extra')
 		.quiz
 			+field("auto").QuizQuestion-style(data-hint="Put a comprehension question here")
 			each dummy in new Array(8)
 				+answer()
-			script(src="quiz.js")
+			script(src="simpleComprehensionQuiz.js")
