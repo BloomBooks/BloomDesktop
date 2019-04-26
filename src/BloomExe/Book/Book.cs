@@ -2177,9 +2177,9 @@ namespace Bloom.Book
 				if (string.IsNullOrEmpty(fileName))
 					continue;
 				var destinationPath = Path.Combine(FolderPath, fileName);
-				// Review: in other similar operations we don't overwrite an existing helper file.
+				// In other similar operations above we don't overwrite an existing file (e.g., images, css).
 				// But our general policy for JS is to go with the latest from our templates.
-				// So I think we should copy smart page's current code; the page content may
+				// So we copy the smart page's current code; the page content may
 				// be specific to it. Of course, if the book contains existing pages that expect
 				// an old version of this code, anything could happen. Maintainers of released
 				// smart pages will need to consider this. But this will sure help while developing

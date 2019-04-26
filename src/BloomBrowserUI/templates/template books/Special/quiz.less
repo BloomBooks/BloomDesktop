@@ -1,0 +1,91 @@
+.bloom-page.simple-quiz {
+    .bloom-translationGroup {
+        margin-bottom: 10px;
+        flex-grow: 1;
+    }
+    .checkbox-and-textbox-answer {
+        display: flex; // horizontal;
+
+        // styled-check-box and its ::after make a box and position a check mark in the box.
+        // The default rules here then hide the check mark.
+        // If the relevant classes indicate it should be checked, the
+        // opacity rule is overridden (and the background made green).
+        .styled-check-box {
+            display: inline-block;
+            cursor: pointer;
+            height: 15px;
+            width: 15px;
+            border: 1px solid black;
+            margin-right: 10px;
+        }
+
+        .styled-check-box::after {
+            position: absolute;
+            display: block;
+            content: "\2713";
+            opacity: 0;
+            top: -4px;
+            left: 1px;
+            color: white;
+        }
+
+        .hiddenCheckbox {
+            position: absolute; // occupies no space
+            // hidden, but in a way that deceives a screen reader; can still be tabbed to
+            // and selected with space key (behaves as a click, still intercepted by parent)
+            // Unfortunately, no visual indication of selecting it; the focus rectangle is
+            // hidden also. But we mainly want this for blind accessibility.
+            opacity: 0;
+        }
+    }
+}
+
+// In edit mode, the check boxes are checked if marked correct.
+body.editMode .bloom-page.simple-quiz .checkbox-and-textbox-answer {
+    &.empty {
+        opacity: 0.5; // dim empty ones.
+        // It happens that we do want a checkbox-and-textbox-answer to display:flex,
+        // but the key point of this very specific rule is to beat the one
+        // below which makes it display:none in read mode.
+        display: flex;
+    }
+    &.correct-answer {
+        .styled-check-box {
+            background-color: green;
+        }
+
+        .styled-check-box::after {
+            opacity: 1;
+        }
+    }
+}
+
+// In read mode, the check boxes are checked if marked correct AND user-selected
+// We would like to mark this rule body:not(.editMode)
+// but when loaded into bloom reader, all the rules are preceded by something like [__scoped_1],
+// and any rule that begins [__scoped_1] body...won't match.
+// So we have to rely on something else. In this case, user-selected will
+// never occur in editMode.
+.bloom-page.simple-quiz
+    .checkbox-and-textbox-answer.correct-answer.user-selected {
+    .styled-check-box {
+        background-color: green;
+    }
+
+    .styled-check-box::after {
+        opacity: 1;
+    }
+}
+.bloom-page.simple-quiz {
+    .checkbox-and-textbox-answer {
+        &.empty {
+            // Javascript adds this class if the answer contains nothing visible.
+            // This rule is overridden by a more specific one in edit mode.
+            display: none;
+        }
+        &.user-selected:not(.correct-answer) {
+            // In read mode, if they are selected but not correct, the whole answer dims
+            opacity: 0.5;
+        }
+    }
+}

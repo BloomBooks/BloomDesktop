@@ -1,21 +1,23 @@
 function init() {
     ensureEditModeStyleSheet();
     markEmptyAnswers();
-    var observer = new MutationObserver(markEmptyAnswers);
+    const observer = new MutationObserver(markEmptyAnswers);
     observer.observe(document.body, { characterData: true, subtree: true });
-    var list = document.getElementsByClassName("quizCheck");
-    for (var i = 0; i < list.length; i++) {
-        var x = list[i];
+    const list = document.getElementsByClassName("styled-check-box");
+    for (let i = 0; i < list.length; i++) {
+        let x = list[i];
         if (document.body.classList.contains("editMode")) {
             x.addEventListener("click", evt => {
-                if (
-                    evt.target.parentElement.classList.toggle("correct-answer")
-                );
+                const target = evt.target as HTMLElement;
+                if (target && target.parentElement) {
+                    target.parentElement.classList.toggle("correct-answer");
+                }
             });
         } else {
-            x.parentElement.addEventListener("click", evt => {
-                const classes = evt.currentTarget.classList;
-                classes.add("userSelected");
+            x!.parentElement!.addEventListener("click", evt => {
+                const currentTarget = evt.currentTarget as HTMLElement;
+                const classes = currentTarget.classList;
+                classes.add("user-selected");
                 const correct = classes.contains("correct-answer");
                 const soundUrl = correct
                     ? "right_answer.mp3"
@@ -23,16 +25,16 @@ function init() {
                 playSound(soundUrl);
                 // Make the state of the hidden input conform (for screen readers). Only if the
                 // correct answer was clicked does the checkbox get checked.
-                const checkBox = evt.currentTarget.getElementsByClassName(
+                const checkBox = currentTarget.getElementsByClassName(
                     "hiddenCheckbox"
-                )[0];
+                )[0] as HTMLInputElement;
                 if (checkBox) {
                     checkBox.checked = correct;
                 }
 
                 // This might cause us to send analytics information...tell the app if it's interested.
-                if (window.analyticsChange) {
-                    window.analyticsChange();
+                if ((window as any).analyticsChange) {
+                    (window as any).analyticsChange();
                 }
             });
         }
@@ -64,8 +66,10 @@ function playSound(url) {
     player.play();
 }
 
-function getPagePlayer() {
-    let player = document.querySelector("#quiz-sound-player");
+function getPagePlayer(): HTMLAudioElement {
+    let player: HTMLAudioElement | null = document.querySelector(
+        "#quiz-sound-player"
+    ) as HTMLAudioElement;
     if (player && !player.play) {
         player.remove();
         player = null;
@@ -79,8 +83,10 @@ function getPagePlayer() {
 }
 
 function markEmptyAnswers() {
-    var answers = document.getElementsByClassName("check-answer-wrapper");
-    for (var i = 0; i < answers.length; i++) {
+    const answers = document.getElementsByClassName(
+        "checkbox-and-textbox-answer"
+    );
+    for (let i = 0; i < answers.length; i++) {
         if (hasContent(answers[i])) {
             answers[i].classList.remove("empty");
         } else {
@@ -90,9 +96,9 @@ function markEmptyAnswers() {
 }
 
 function hasContent(answer) {
-    var editables = answer.getElementsByClassName("bloom-editable");
-    for (var j = 0; j < editables.length; j++) {
-        var editable = editables[j];
+    const editables = answer.getElementsByClassName("bloom-editable");
+    for (let j = 0; j < editables.length; j++) {
+        const editable = editables[j];
         if (
             editable.classList.contains("bloom-visibility-code-on") &&
             editable.textContent.trim()
