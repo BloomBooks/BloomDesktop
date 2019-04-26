@@ -4,6 +4,7 @@ var semver = require("semver");
 var { engines } = require("./package");
 var tap = require("gulp-tap");
 var replaceExt = require("replace-ext");
+var ts = require("gulp-typescript");
 
 //set up markdown with the extensions that we use to mark lines for localization
 var markdownIt = require("markdown-it")({
@@ -351,7 +352,12 @@ gulp.task("default", function(callback) {
             "markdownInfoPages",
             "markdownDistInfo"
         ],
-        ["webpack", "translateHtmlFiles", "createXliffFiles"],
+        [
+            "webpack",
+            "translateHtmlFiles",
+            "createXliffFiles",
+            "compileTemplateTypescript"
+        ],
         callback
     );
 });
@@ -371,9 +377,29 @@ gulp.task("build-prod", function(callback) {
             "markdownInfoPages",
             "markdownDistInfo"
         ],
-        ["webpack-prod", "translateHtmlFiles", "createXliffFiles"],
+        [
+            "webpack-prod",
+            "translateHtmlFiles",
+            "createXliffFiles",
+            "compileTemplateTypescript"
+        ],
         callback
     );
+});
+
+gulp.task("compileTemplateTypescript", function() {
+    // Specifying no typeRoots is a kludge. Without it, the task reports large numbers of
+    // errors in vadrious .d.ts files in node_modules that aren't even referenced
+    // by the file we're supposed to be compiling. If we eventually get stuff in the template books
+    // directory that uses other modules and needs their types, we'll have to find another
+    // approach. But in that case, we'll probably want to switch to webpack anyway
+    // in order to produce a single minimal bundle as output. This is good enough for
+    // a simple transformation of simple typescript.
+    var tsProject = ts.createProject("tsconfig.json", { typeRoots: [] });
+    return gulp
+        .src("./templates/template books/**/*.ts")
+        .pipe(tsProject())
+        .js.pipe(gulp.dest(outputDir + "/templates/template books"));
 });
 
 gulp.task("brandings", function() {
