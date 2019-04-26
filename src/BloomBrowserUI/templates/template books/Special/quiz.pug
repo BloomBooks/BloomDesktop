@@ -1,0 +1,17 @@
+mixin answer
+	.check-answer-wrapper
+		//- A div used as a check-box, because a regular input is hard to give the look we want.
+		//- For accessibility, there is also a proper input element, whose value is kept in sync, but which is hidden.
+		.quizCheck
+		//- We'd like the name to be localized and the reader to play a recording of a vernacular description.
+		//- Don't see how to achieve that yet but at least a screen reader will see an input.
+		input.hiddenCheckbox(type="checkbox", name="Correct")
+		+field("auto").QuizAnswer-style(data-hint="Put a possible answer here. Check it if it is correct.")
+
+mixin quizPage
+	+page('Quiz Page', 'Use for comprehension testing.').simple-quiz.bloom-smart-page#F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D(data-page='extra')
+		.quiz
+			+field("auto").QuizQuestion-style(data-hint="Put a comprehension question here")
+			each dummy in new Array(8)
+				+answer()
+			script(src="quiz.js")
