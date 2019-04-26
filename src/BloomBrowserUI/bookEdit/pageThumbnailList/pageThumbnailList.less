@@ -37,6 +37,16 @@ body {
     flex: 1 1 auto;
     overflow-y: auto; // so it will scroll, if it needs to, instead of growing
     cursor: default;
+    .pageContainer {
+        // BL-7074 Keep SL books from eating up memory by not displaying videos in page thumb images.
+        .bloom-videoContainer {
+            background: center no-repeat
+                url("../../templates/template books/Sign Language/video-placeholder.svg");
+            video {
+                display: none;
+            }
+        }
+    }
 }
 
 .pageContainer {
