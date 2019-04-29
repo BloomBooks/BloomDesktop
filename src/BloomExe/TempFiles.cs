@@ -47,6 +47,7 @@ namespace BloomTemp
 			XmlWriterSettings settings = new XmlWriterSettings();
 			settings.Indent = true;
 			settings.CheckCharacters = true;
+			settings.CloseOutput = true;
 			settings.OmitXmlDeclaration = true; //we're aiming at normal html5, here. Not xhtml.
 			//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html; // JohnT: someone please explain why not?
 			return settings;

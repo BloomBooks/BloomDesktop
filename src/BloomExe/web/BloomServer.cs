@@ -217,7 +217,7 @@ namespace Bloom.Api
 		/// <param name="setAsCurrentPageForDebugging"></param>
 		/// <param name="source">SimulatedPageFileSource enum</param>
 		/// <returns></returns>
-		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool isCurrentPageContent = false, bool setAsCurrentPageForDebugging = false, BloomServer.SimulatedPageFileSource source = BloomServer.SimulatedPageFileSource.Normal)
+		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool isCurrentPageContent = false, bool setAsCurrentPageForDebugging = false, SimulatedPageFileSource source = SimulatedPageFileSource.Normal)
 		{
 			var simulatedPageFileName = Path.ChangeExtension((isCurrentPageContent ? "currentPage" : Guid.NewGuid().ToString()) + SimulatedFileUrlMarker + source, ".html");
 			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
@@ -249,6 +249,12 @@ namespace Bloom.Api
 			if(setAsCurrentPageForDebugging)
 			{
 				_keyToCurrentPage = key;
+			}
+
+			if (source == SimulatedPageFileSource.Preview || source == SimulatedPageFileSource.Pub)
+			{
+				var classAttr = dom.SelectSingleNode("//body").Attributes["class"];
+				classAttr.InnerText += " preview"; // BL-7074 used to keep Book preview from loading/showing videos
 			}
 			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
 			lock (_urlToSimulatedPageContent)
