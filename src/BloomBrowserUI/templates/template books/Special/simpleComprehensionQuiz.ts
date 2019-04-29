@@ -5,49 +5,14 @@
 // and wrong answers. It also adds an appropriate class to answers that are empty (to hide them or
 // dim them) and plays appropriate sounds when a right or wrong answer is chosen.
 // Eventually it will cooperate with reader code to handle analytics.
-function init() {
-    ensureEditModeStyleSheet();
-    markEmptyAnswers();
-    const observer = new MutationObserver(markEmptyAnswers);
-    observer.observe(document.body, { characterData: true, subtree: true });
-    const list = document.getElementsByClassName("styled-check-box");
-    for (let i = 0; i < list.length; i++) {
-        let x = list[i];
-        if (document.body.classList.contains("editMode")) {
-            x.addEventListener("click", evt => {
-                const target = evt.target as HTMLElement;
-                if (target && target.parentElement) {
-                    target.parentElement.classList.toggle("correct-answer");
-                }
-            });
-        } else {
-            x!.parentElement!.addEventListener("click", evt => {
-                const currentTarget = evt.currentTarget as HTMLElement;
-                const classes = currentTarget.classList;
-                classes.add("user-selected");
-                const correct = classes.contains("correct-answer");
-                const soundUrl = correct
-                    ? "right_answer.mp3"
-                    : "wrong_answer.mp3";
-                playSound(soundUrl);
-                // Make the state of the hidden input conform (for screen readers). Only if the
-                // correct answer was clicked does the checkbox get checked.
-                const checkBox = currentTarget.getElementsByClassName(
-                    "hiddenCheckbox"
-                )[0] as HTMLInputElement;
-                if (checkBox) {
-                    checkBox.checked = correct;
-                }
 
-                // This might cause us to send analytics information...tell the app if it's interested.
-                if ((window as any).analyticsChange) {
-                    (window as any).analyticsChange();
-                }
-            });
-        }
-    }
+// Master function, called when document is ready, initialized CQ pages
+function init(): void {
+    ensureEditModeStyleSheet();
+    initAnswerWidgets();
 }
 
+//------------ Code involved in setting the editMode class on the body element when appropriate-----
 function ensureEditModeStyleSheet() {
     if (!inEditMode()) {
         return;
@@ -65,6 +30,55 @@ function inEditMode() {
         }
     }
     return false;
+}
+
+//------------ Code for managing the answer widgets-------
+
+// Initialize the answer widgets, arranging for the appropriate click actions
+// and for maintaining the class that indicates empty answers.
+// Assumes the code that sets up the editMode class on the body element if appropriate has already been run.
+function initAnswerWidgets(): void {
+    markEmptyAnswers();
+    const observer = new MutationObserver(markEmptyAnswers);
+    observer.observe(document.body, { characterData: true, subtree: true });
+    const list = document.getElementsByClassName("styled-check-box");
+    for (let i = 0; i < list.length; i++) {
+        let x = list[i];
+        if (document.body.classList.contains("editMode")) {
+            x.addEventListener("click", handleEditModeClick);
+        } else {
+            x!.parentElement!.addEventListener("click", handleReadModeClick);
+        }
+    }
+}
+
+function handleEditModeClick(evt: Event): void {
+    const target = evt.target as HTMLElement;
+    if (target && target.parentElement) {
+        target.parentElement.classList.toggle("correct-answer");
+    }
+}
+
+function handleReadModeClick(evt: Event): void {
+    const currentTarget = evt.currentTarget as HTMLElement;
+    const classes = currentTarget.classList;
+    classes.add("user-selected");
+    const correct = classes.contains("correct-answer");
+    const soundUrl = correct ? "right_answer.mp3" : "wrong_answer.mp3";
+    playSound(soundUrl);
+    // Make the state of the hidden input conform (for screen readers). Only if the
+    // correct answer was clicked does the checkbox get checked.
+    const checkBox = currentTarget.getElementsByClassName(
+        "hiddenCheckbox"
+    )[0] as HTMLInputElement;
+    if (checkBox) {
+        checkBox.checked = correct;
+    }
+
+    // This might cause us to send analytics information...tell the app if it's interested.
+    if ((window as any).analyticsChange) {
+        (window as any).analyticsChange();
+    }
 }
 
 function playSound(url) {
