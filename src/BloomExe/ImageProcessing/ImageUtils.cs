@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
@@ -346,6 +347,37 @@ namespace Bloom.ImageProcessing
 				return false;
 			}
 			return true;
+		}
+
+		public static Image ResizeImageIfNecessary(Size maxSize, Image image)
+		{
+			// from https://www.c-sharpcorner.com/article/resize-image-in-c-sharp/
+			var desiredHeight = maxSize.Height;
+			var desiredWidth = maxSize.Width;
+			if (image.Height <= desiredHeight && image.Width <= desiredWidth)
+				return image; // We are already within parameters
+
+			// Try resizing to width of button first
+			var newHeight = image.Height * desiredWidth / image.Width;
+			var newWidth = desiredWidth;
+			if (newHeight > desiredHeight)
+			{
+				// Resize to height of button instead
+				newWidth = image.Width * desiredHeight / image.Height;
+				newHeight = desiredHeight;
+			}
+
+			var newImage = new Bitmap(newWidth, newHeight);
+			using (var graphic = Graphics.FromImage(newImage))
+			{
+				// I tried using HighSpeed settings in here with no appreciable difference in loading speed.
+				graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
+				graphic.SmoothingMode = SmoothingMode.HighQuality;
+				graphic.PixelOffsetMode = PixelOffsetMode.HighQuality;
+				graphic.CompositingQuality = CompositingQuality.HighQuality;
+				graphic.DrawImage(image, 0, 0, desiredWidth, newHeight);
+			}
+			return newImage;
 		}
 	}
 }

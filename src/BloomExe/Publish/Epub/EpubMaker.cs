@@ -10,7 +10,6 @@ using System.Web;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
-using Bloom.Api;
 using Bloom.Book;
 using Bloom.ToPalaso;
 using Bloom.web;
@@ -225,7 +224,7 @@ namespace Bloom.Publish.Epub
 		/// It is required that the parent of the StagingFolder is a temporary folder into which we can
 		/// copy the Readium stuff. This folder is deleted when the EpubMaker is disposed.
 		/// </summary>
-		public void StageEpub(IWebSocketProgress progress, bool publishWithoutAudio = false)
+		public void StageEpub(WebSocketProgress progress, bool publishWithoutAudio = false)
 		{
 			PublishWithoutAudio = publishWithoutAudio;
 			if (!string.IsNullOrEmpty(BookInStagingFolder))
@@ -297,9 +296,12 @@ namespace Bloom.Publish.Epub
 			{
 				Logger.WriteEvent("Cannot find ffmpeg program while preparing videos for publishing.");
 			}
+
+			var pageLabelProgress = progress.WithL10NPrefix("TemplateBooks.PageLabel.");
 			foreach (XmlElement pageElement in Book.GetPageElements())
 			{
-				progress.MessageWithoutLocalizing(HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement));
+				var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
+				pageLabelProgress.Message(pageLabelEnglish, pageLabelEnglish);
 				// We could check for this in a few more places, but once per page seems enough in practice.
 				if (AbortRequested)
 					break;
@@ -1750,7 +1752,7 @@ namespace Bloom.Publish.Epub
 		}
 
 		// Combines staging and finishing (currently just used in tests).
-		public void SaveEpub(string destinationEpubPath, IWebSocketProgress progress)
+		public void SaveEpub(string destinationEpubPath, WebSocketProgress progress)
 		{
 			if(string.IsNullOrEmpty (BookInStagingFolder)) {
 				StageEpub(progress);
@@ -1762,7 +1764,7 @@ namespace Bloom.Publish.Epub
 		/// Finish publishing an ePUB that has been staged, by zipping it into the desired final file.
 		/// </summary>
 		/// <param name="destinationEpubPath"></param>
-		public void ZipAndSaveEpub (string destinationEpubPath, IWebSocketProgress progress)
+		public void ZipAndSaveEpub (string destinationEpubPath, WebSocketProgress progress)
 		{
 			progress.Message("Saving", comment:"Shown in a progress box when Bloom is saving an epub", message:"Saving");
 			var zip = new BloomZipFile (destinationEpubPath);

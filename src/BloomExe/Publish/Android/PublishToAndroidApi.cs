@@ -334,7 +334,7 @@ namespace Bloom.Publish.Android
 		/// <remarks>
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-5274.
 		/// </remarks>
-		public static void CheckBookLayout(Bloom.Book.Book book, Bloom.web.WebSocketProgress progress)
+		public static void CheckBookLayout(Bloom.Book.Book book, WebSocketProgress progress)
 		{
 			var layout = book.GetLayout();
 			var desiredLayoutSize = "Device16x9";

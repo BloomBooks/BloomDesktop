@@ -1738,7 +1738,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Returns true if the element name could potentially contain a valid attribute called "audio-sentence" (used by Talking Books). 
+		/// Returns true if the element name could potentially contain a valid attribute called "audio-sentence" (used by Talking Books).
 		/// </summary>
 		/// <param name="elementName">HTML element name such as "span"</param>
 		public static bool DoesElementAllowAudioSentence(string elementName)

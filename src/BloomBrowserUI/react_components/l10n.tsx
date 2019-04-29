@@ -79,14 +79,14 @@ export class LocalizableElement<
         const count = React.Children.count(this.props.children);
         const children = React.Children.toArray(this.props.children);
         if (count === 1 && typeof children[0] === "string") {
-            return children[0].toString();
+            return children[0]!.toString();
         }
         // Take a stab at handling multiple nodes (text/element) in the original TSX.  This isn't
         // too critical if you put the equivalent string in the xliff file, which isn't too bad for
         // <strong> or <em> represented by **...** or *...* (Markdown notation).
         let retval = "";
         for (let i = 0; i < count; ++i) {
-            const item = children[i].valueOf();
+            const item = children[i]!.valueOf();
             if (typeof item === "object") {
                 const htmlString = this.extractRawHtml(item);
                 retval = retval + htmlString;

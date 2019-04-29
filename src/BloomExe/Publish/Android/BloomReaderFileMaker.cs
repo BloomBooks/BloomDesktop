@@ -26,7 +26,7 @@ namespace Bloom.Publish.Android
 
 		public static Control ControlForInvoke { get; set; }
 
-		public static void CreateBloomReaderBook(string outputPath, Book.Book book, BookServer bookServer, Color backColor, IWebSocketProgress progress)
+		public static void CreateBloomReaderBook(string outputPath, Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress)
 		{
 			using (var temp = new TemporaryFolder("BloomReaderExport"))
 			{
@@ -42,7 +42,7 @@ namespace Bloom.Publish.Android
 		}
 
 		public static Book.Book PrepareBookForBloomReader(Book.Book book, BookServer bookServer, TemporaryFolder temp, Color backColor,
-			IWebSocketProgress progress)
+			WebSocketProgress progress)
 		{
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
 			// And bloom-player expects folder name to match html file name.
@@ -208,7 +208,7 @@ namespace Bloom.Publish.Android
 		/// <param name="book"></param>
 		/// <param name="progress"></param>
 		/// <param name="fontFileFinder">use new FontFinder() for real, or a stub in testing</param>
-		public static void EmbedFonts(Book.Book book, IWebSocketProgress progress, IFontFinder fontFileFinder)
+		public static void EmbedFonts(Book.Book book, WebSocketProgress progress, IFontFinder fontFileFinder)
 		{
 			const string defaultFont = "Andika New Basic"; // already in BR, don't need to embed or make rule.
 			// The 'false' here says to ignore all but the first font face in CSS's ordered lists of desired font faces.

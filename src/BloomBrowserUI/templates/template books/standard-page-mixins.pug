@@ -12,6 +12,11 @@ mixin imagex
    +image.bloom-leadingElement&attributes(attributes)
 mixin fieldx
    +field("auto").bloom-trailingElement.normal-style&attributes(attributes)
+
+//- The 'percent' parameter is inscrutable. Why does it need to be the same for both
+//- 'upper' and 'lower' mixins on the same page? What does it represent exactly?
+//- Solution: Set a custom page the way you want it and go look at the numbers Bloom
+//- puts there.
 mixin upper(percent)
    - requireOneArgument('percent', arguments);
    .split-pane-component.position-top(style='bottom: ' + percent + '%')

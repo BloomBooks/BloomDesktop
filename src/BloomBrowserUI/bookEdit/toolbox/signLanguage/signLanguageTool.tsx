@@ -807,10 +807,10 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     public static setup(root): SignLanguageToolControls {
-        return ReactDOM.render(
+        return (ReactDOM.render(
             <SignLanguageToolControls />,
             root
-        ) as SignLanguageToolControls;
+        ) as unknown) as SignLanguageToolControls;
     }
 }
 

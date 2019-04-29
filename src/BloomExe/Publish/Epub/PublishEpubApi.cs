@@ -69,7 +69,7 @@ namespace Bloom.Publish.Epub
 		private bool _stagingEpub;
 
 		// This goes out with our messages and, on the client side (typescript), messages are filtered
-		// down to the context (usualy a screen) that requested them. 
+		// down to the context (usualy a screen) that requested them.
 		private const string kWebsocketContext = "publish-epub";
 
 		// This constant must match the ID that is used for the listener set up in the React component EpubPreview
@@ -362,7 +362,7 @@ namespace Bloom.Publish.Epub
 
 		public bool UpdatePreview(EpubPublishUiSettings newSettings, bool force, WebSocketProgress progress = null)
 		{
-			_progress = progress ?? _standardProgress;
+			_progress = progress ?? _standardProgress.WithL10NPrefix("PublishTab.Epub.");
 			if (Program.RunningOnUiThread)
 			{
 				// There's some stuff inside this lock that has to run on the UI thread.
@@ -395,7 +395,7 @@ namespace Bloom.Publish.Epub
 				}
 
 				_desiredEpubSettings = newSettings;
-				
+
 				// clear the obsolete preview, if any; this also ensures that when the new one gets done,
 				// we will really be changing the src attr in the preview iframe so the display will update.
 				_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_Preview);

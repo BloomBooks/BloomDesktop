@@ -8,7 +8,7 @@ namespace Bloom.web
 	/// <summary>
 	/// Sends localized messages to a websocket, intended for html display
 	/// </summary>
-	public class WebSocketProgress: IWebSocketProgress
+	public class WebSocketProgress
 	{
 		private readonly IBloomWebSocketServer _bloomWebSocketServer;
 		private readonly string _clientContext;
@@ -26,12 +26,16 @@ namespace Bloom.web
 		/// Get a new WebSocketProgress that will prefix each localization id with the given string
 		/// </summary>
 		/// <param name="localizationIdPrefix"></param>
-		public WebSocketProgress WithL10NPrefix(string localizationIdPrefix)
+		public virtual WebSocketProgress WithL10NPrefix(string localizationIdPrefix)
 		{
 			return new WebSocketProgress(_bloomWebSocketServer, _clientContext)
 			{
 				_l10IdPrefix = localizationIdPrefix
 			};
+		}
+
+		protected WebSocketProgress()
+		{
 		}
 
 		/// <summary>
@@ -46,11 +50,12 @@ namespace Bloom.web
 			_clientContext = clientContext;
 		}
 
-		public void ErrorWithoutLocalizing(string message, params object[] args)
+		public virtual void ErrorWithoutLocalizing(string message)
 		{
-			MessageWithoutLocalizing($"<span style='color:red'>{message}</span>", args);
-			SIL.Reporting.Logger.WriteEvent($"Error: {message}", args);
+			MessageWithoutLocalizing($"<span style='color:red'>{message}</span>");
+			SIL.Reporting.Logger.WriteEvent($"Error: {message}");
 		}
+
 		public void Error(string idSuffix, string message, bool useL10nIdPrefix=true)
 		{
 			var localizedMessage = LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message);
@@ -59,12 +64,12 @@ namespace Bloom.web
 				SIL.Reporting.Logger.WriteEvent($"Error: {message}");	// repeat message in the log unlocalized.
 		}
 
-		public void MessageWithoutLocalizing(string message, params object[] args)
+		public virtual void MessageWithoutLocalizing(string message)
 		{
-			_bloomWebSocketServer.SendString(_clientContext, "progress", String.Format(message, args));
+			_bloomWebSocketServer.SendString(_clientContext, "progress", message);
 		}
 
-		public void MessageWithStyleWithoutLocalizing(string message, string cssStyleRules)
+		public virtual void MessageWithStyleWithoutLocalizing(string message, string cssStyleRules)
 		{
 			dynamic messageBundle = new DynamicJson();
 			messageBundle.message = message;
@@ -72,7 +77,7 @@ namespace Bloom.web
 			_bloomWebSocketServer.SendBundle(_clientContext, "progress", messageBundle);
 		}
 
-		public void Message(string idSuffix, string comment, string message, bool useL10nIdPrefix=true)
+		public virtual void Message(string idSuffix, string comment, string message, bool useL10nIdPrefix=true)
 		{
 			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message, comment: comment));
 		}
@@ -82,14 +87,14 @@ namespace Bloom.web
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
-		public void MessageWithParams(string idSuffix, string comment, string message, params object[] parameters)
+		public virtual void MessageWithParams(string idSuffix, string comment, string message, params object[] parameters)
 		{
 			var formatted = GetMessageWithParams(idSuffix, comment, message, parameters);
 			MessageWithoutLocalizing(formatted);
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
-		public void ErrorWithParams(string idSuffix, string comment, string message, params object[] parameters)
+		public virtual void ErrorWithParams(string idSuffix, string comment, string message, params object[] parameters)
 		{
 			var formatted = GetMessageWithParams(idSuffix, comment, message, parameters);
 			ErrorWithoutLocalizing(formatted);
@@ -99,7 +104,7 @@ namespace Bloom.web
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
-		public void MessageWithColorAndParams(string idSuffix, string comment, string color, string message, params object[] parameters)
+		public virtual void MessageWithColorAndParams(string idSuffix, string comment, string color, string message, params object[] parameters)
 		{
 			var formatted = GetMessageWithParams(idSuffix, comment, message, parameters);
 			MessageWithoutLocalizing("<span style='color:" + color + "'>" + formatted + "</span>");
@@ -138,43 +143,20 @@ namespace Bloom.web
 		}
 	}
 
-	// Useful where we want to substitute a test stub. Currently I'm only including the methods we actually want to
-	// use that way.
-	public interface IWebSocketProgress
-	{
-		void MessageWithoutLocalizing(string message, params object[] args);
-		void ErrorWithoutLocalizing(string message, params object[] args);
-		void Message(string idSuffix, string comment, string message, bool useL10nIdPrefix = true);
-		void MessageWithParams(string id, string comment, string message, params object[] parameters);
-		void ErrorWithParams(string id, string comment, string message, params object[] parameters);
-		void MessageWithColorAndParams(string id, string comment, string color, string message, params object[] parameters);
-	}
-
 	// Passing one of these where we don't need the progress report saves recipients handling nulls
-	public class NullWebSocketProgress : IWebSocketProgress
+	public class NullWebSocketProgress : WebSocketProgress
 	{
-		public void MessageWithoutLocalizing(string message, params object[] args)
+		public override void MessageWithoutLocalizing(string message)
 		{
 		}
 
-		public void ErrorWithoutLocalizing(string message, params object[] args)
+		public override void MessageWithStyleWithoutLocalizing(string message, string cssStyleRules)
 		{
 		}
 
-		public void Message(string id, string comment, string message, bool useL10nIdPrefix = true)
+		public override WebSocketProgress WithL10NPrefix(string localizationIdPrefix)
 		{
-		}
-
-		public void MessageWithParams(string id, string comment, string message, params object[] parameters)
-		{
-		}
-
-		public void ErrorWithParams(string id, string comment, string message, params object[] parameters)
-		{
-		}
-
-		public void MessageWithColorAndParams(string id, string comment, string color, string message, params object[] parameters)
-		{
+			return this;
 		}
 	}
 }

@@ -250,36 +250,12 @@ namespace Bloom.Api
 			{
 				_keyToCurrentPage = key;
 			}
-
-			// If we are creating a page thumbnail and we have videos,
-			// replace them with our standard video placeholder image.
-			if (source == BloomServer.SimulatedPageFileSource.Thumb ||
-			    source == BloomServer.SimulatedPageFileSource.Pagelist ||
-			    source == BloomServer.SimulatedPageFileSource.Epub)
-			{
-				ReplaceAnyVideoElementsWithPlaceholder(dom);
-			}
 			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
 			lock (_urlToSimulatedPageContent)
 			{
 				_urlToSimulatedPageContent[key] = html5String;
 			}
 			return new SimulatedPageFile {Key = url};
-		}
-
-		private const string vidPlaceHolderDivContents =
-			@"<img src='video-placeholder.svg' />";
-
-		private static void ReplaceAnyVideoElementsWithPlaceholder(HtmlDom dom)
-		{
-			var vidNodes = dom.SafeSelectNodes("//div[contains(concat(' ', @class, ' '), ' bloom-videoContainer ')]");
-			foreach (XmlNode vidNode in vidNodes)
-			{
-				var placeHolderNode = dom.RawDom.CreateElement("div");
-				placeHolderNode.InnerXml = vidPlaceHolderDivContents;
-				placeHolderNode.SetAttribute("class", "bloom-imageContainer");
-				vidNode.ParentNode.ReplaceChild(placeHolderNode, vidNode);
-			}
 		}
 
 		internal static void RemoveSimulatedPageFile(string key)

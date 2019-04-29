@@ -31,7 +31,7 @@ namespace Bloom.web.controllers
 		public const string kApiUrlPart = "accessibilityCheck/";
 
 		// This goes out with our messages and, on the client side (typescript), messages are filtered
-		// down to the context (usualy a screen) that requested them. 
+		// down to the context (usualy a screen) that requested them.
 		private const string kWebSocketContext = "a11yChecklist"; // must match what is in accsesibilityChecklist.tsx
 
 		// must match what's in the typescript
@@ -59,7 +59,8 @@ namespace Bloom.web.controllers
 			PublishEpubApi epubApi)
 		{
 			_webSocketServer = webSocketServer;
-			_webSocketProgress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
+			var progress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
+			_webSocketProgress = progress.WithL10NPrefix("AccessibilityCheck.");
 			_epubApi = epubApi;
 			bookSelection.SelectionChanged += (unused1, unused2) =>
 			{
@@ -76,9 +77,9 @@ namespace Bloom.web.controllers
 				RefreshClient();
 			});
 		}
-		
+
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
-		{	
+		{
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "bookName", request =>
 			{
 				request.ReplyWithText(request.CurrentBook.TitleBestForUserDisplay);
@@ -130,7 +131,7 @@ namespace Bloom.web.controllers
 					request.CurrentBook.Save();
 				},
 				false);
-			
+
 			//enhance: this might have to become async to work on large books on slow computers
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "aceByDaisyReportUrl", request => { MakeAceByDaisyReport(request); },
 				false, false
@@ -235,8 +236,8 @@ namespace Bloom.web.controllers
 						continue; // something went wrong, try again
 					}
 
-				// The html client is set to treat a text reply as a url of the report. Make sure it's valid for being a URL. 
-				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6197. 
+				// The html client is set to treat a text reply as a url of the report. Make sure it's valid for being a URL.
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6197.
 				request.ReplyWithText("/bloom/" + answerPath.EscapeCharsForHttp().Replace(Path.DirectorySeparatorChar, '/'));
 				return;
 			}
@@ -245,18 +246,18 @@ namespace Bloom.web.controllers
 			ReportErrorAndFailTheRequest(request, errorMessage);
 		}
 
-		private string MakeEpub(string parentDirectory, IWebSocketProgress progress)
+		private string MakeEpub(string parentDirectory, WebSocketProgress progress)
 		{
 			var settings = new EpubPublishUiSettings();
 			_epubApi.GetEpubSettingsForCurrentBook(settings);
 			var path = Path.Combine(parentDirectory, Guid.NewGuid().ToString() + ".epub");
-			_epubApi.UpdateAndSave(settings, path, true, _webSocketProgress);
+			_epubApi.UpdateAndSave(settings, path, true, _webSocketProgress.WithL10NPrefix("PublishTab.Epub."));
 			return path;
 		}
 
 		private string FindAceByDaisyOrTellUser(ApiRequest request)
 		{
-			_webSocketProgress.MessageWithoutLocalizing("Finding Ace by DAISY on this computer...");
+			_webSocketProgress.Message("FindingAce", "Finding Ace by DAISY on this computer...");
 			var whereProgram = Platform.IsWindows ? "where" : "which";
 			var npmFileName = Platform.IsWindows ? "npm.cmd" : "npm";
 			var whereResult = CommandLineRunner.Run(whereProgram, npmFileName, Encoding.ASCII, "", 2, new NullProgress());
@@ -320,7 +321,7 @@ namespace Bloom.web.controllers
 					return null;
 				}
 			}
-			_webSocketProgress.MessageWithoutLocalizing("Found.");
+			_webSocketProgress.Message("FoundAce", "Found.");
 			return daisyDirectory;
 		}
 

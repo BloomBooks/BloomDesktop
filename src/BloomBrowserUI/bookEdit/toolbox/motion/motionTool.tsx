@@ -28,13 +28,13 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
         root.setAttribute("class", "ui-motionBody");
-        this.rootControl = ReactDOM.render(
+        this.rootControl = (ReactDOM.render(
             <MotionControl
                 onPreviewClick={() => this.toggleMotionPreviewPlaying()}
                 onMotionChanged={checked => this.motionChanged(checked)}
             />,
             root
-        ) as MotionControl;
+        ) as unknown) as MotionControl;
         const initialState = this.getStateFromHtml();
         this.rootControl.setState(initialState);
         if (initialState.haveImageContainerButNoImage) {
