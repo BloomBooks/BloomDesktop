@@ -716,12 +716,12 @@ namespace BloomTests.Book
 		class StubProgress : IWebSocketProgress
 		{
 			public List<string> MessagesNotLocalized = new List<string>();
-			public void MessageWithoutLocalizing(string message, params object[] args)
+			public void MessageWithoutLocalizing(string message)
 			{
 				MessagesNotLocalized.Add(message);
 			}
 			public List<string> ErrorsNotLocalized = new List<string>();
-			public void ErrorWithoutLocalizing(string message, params object[] args)
+			public void ErrorWithoutLocalizing(string message)
 			{
 				ErrorsNotLocalized.Add(message);
 			}
