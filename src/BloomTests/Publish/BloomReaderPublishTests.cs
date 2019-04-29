@@ -821,12 +821,12 @@ namespace BloomTests.Publish
 		class StubProgress : WebSocketProgress
 		{
 			public readonly List<string> MessagesNotLocalized = new List<string>();
-			public override void MessageWithoutLocalizing(string message, params object[] args)
+			public override void MessageWithoutLocalizing(string message)
 			{
 				MessagesNotLocalized.Add(message);
 			}
 			public readonly List<string> ErrorsNotLocalized = new List<string>();
-			public override void ErrorWithoutLocalizing(string message, params object[] args)
+			public override void ErrorWithoutLocalizing(string message)
 			{
 				ErrorsNotLocalized.Add(message);
 			}

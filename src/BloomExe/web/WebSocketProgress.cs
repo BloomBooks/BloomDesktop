@@ -50,11 +50,12 @@ namespace Bloom.web
 			_clientContext = clientContext;
 		}
 
-		public virtual void ErrorWithoutLocalizing(string message, params object[] args)
+		public virtual void ErrorWithoutLocalizing(string message)
 		{
-			MessageWithoutLocalizing($"<span style='color:red'>{message}</span>", args);
-			SIL.Reporting.Logger.WriteEvent($"Error: {message}", args);
+			MessageWithoutLocalizing($"<span style='color:red'>{message}</span>");
+			SIL.Reporting.Logger.WriteEvent($"Error: {message}");
 		}
+
 		public void Error(string idSuffix, string message, bool useL10nIdPrefix=true)
 		{
 			var localizedMessage = LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message);
@@ -63,9 +64,9 @@ namespace Bloom.web
 				SIL.Reporting.Logger.WriteEvent($"Error: {message}");	// repeat message in the log unlocalized.
 		}
 
-		public virtual void MessageWithoutLocalizing(string message, params object[] args)
+		public virtual void MessageWithoutLocalizing(string message)
 		{
-			_bloomWebSocketServer.SendString(_clientContext, "progress", String.Format(message, args));
+			_bloomWebSocketServer.SendString(_clientContext, "progress", message);
 		}
 
 		public virtual void MessageWithStyleWithoutLocalizing(string message, string cssStyleRules)
@@ -145,7 +146,7 @@ namespace Bloom.web
 	// Passing one of these where we don't need the progress report saves recipients handling nulls
 	public class NullWebSocketProgress : WebSocketProgress
 	{
-		public override void MessageWithoutLocalizing(string message, params object[] args)
+		public override void MessageWithoutLocalizing(string message)
 		{
 		}
 

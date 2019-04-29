@@ -81,7 +81,19 @@ div.ui-audioCurrent:not(.disableHighlight) p {
         background-position: center;
     }
     .disabled {
+        // Note: There is a similar rule in signLanguage.less which actually does have the scope to affect this talking book code.
         opacity: 0.4;
+        pointer-events: none;
+    }
+
+    // This is kind of like disabled, except that pointer-events are still allowed. This allows it to look visually enabled when hovered.
+    .disabledUnlessHover {
+        opacity: 0.4;
+
+        // No need to actually disable clicks unless hovered because you are more or less probably going to be hovering it if you're going to click it
+        &:hover {
+            opacity: 1;
+        }
     }
     #audio-record {
         background-image: url("record_enabled.svg");

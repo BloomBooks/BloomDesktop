@@ -37,6 +37,7 @@ import { ToolBox } from "../toolbox";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
+    DisabledUnlessHover, // Same as disabled, except it will become enabled if the user hovers over it.
     Enabled, // Can use now, not the most likely thing to do next
     Expected, // The most likely/appropriate button to use next (e.g., Play right after recording)
     Active // Button now active (Play while playing; Record while held down)
@@ -158,9 +159,11 @@ export default class AudioRecording {
                     this.playESpeakPreview();
                 }
             });
+
         $("#audio-split")
             .off()
             .click(e => this.split());
+
         $("#audio-listen")
             .off()
             .click(e => this.listen());
@@ -2551,27 +2554,32 @@ export default class AudioRecording {
             });
     }
 
+    // Given a response (from "/bloom/api/audio/checkForAnyRecording?ids=..."), determines whether the response indicates that narration audio exists for any of the specified IDs
+    private static DoesNarrationExist(response: AxiosResponse<any>) {
+        // Note regarding Non-OK status codes: If there is no audio, it returns Request.Failed AKA it actually has Non-OK Status code!
+        //       This doesn't mean you need to log an error though, since it is "normal" for failed requests to return.
+        //       Just mark them as not-exist instead.
+
+        return (
+            response && response.status === 200 && response.statusText === "OK"
+        );
+    }
+
     private updateButtonStateHelper(
         expectedVerb: string, // e.g. "record", "play", "check", etc.
         textBoxResponse: AxiosResponse<any>,
         elementResponse: AxiosResponse<any>
     ): void {
-        // Note: If there is no audio, it returns Request.Failed AKA it actually has Non-OK Status code!
-        //       This doesn't mean you need to log an error though, since it is "normal" for failed requests to return.
-        //       Just mark them as not-exist instead.
-
         // This var is true if the Text Box containing the Currently Highlighted Element contains audio for any of the elements within the text box.
-        const doesTextBoxAudioExist: boolean =
-            textBoxResponse &&
-            textBoxResponse.status === 200 &&
-            textBoxResponse.statusText === "OK";
+        const doesTextBoxAudioExist: boolean = AudioRecording.DoesNarrationExist(
+            textBoxResponse
+        );
 
         // This var is true if the Currently Highlighted Element contains audio
         // (If RecordingMode=TextBox but PlaybackMode=Sentence, this means if any of the sentences of the currently highlighted element contain audio)
-        const doesElementAudioExist: boolean =
-            elementResponse &&
-            elementResponse.status === 200 &&
-            elementResponse.statusText === "OK";
+        const doesElementAudioExist: boolean = AudioRecording.DoesNarrationExist(
+            elementResponse
+        );
 
         // Clear and Play (Check) buttons
         if (doesElementAudioExist) {
@@ -2586,12 +2594,12 @@ export default class AudioRecording {
         const isSplitButtonVisible =
             this.audioRecordingMode === AudioRecordingMode.TextBox; // TODO: Could determine visibility from DOM instead. which is better?
         const currentPlaybackMode = this.getCurrentPlaybackMode();
-        if (
-            doesElementAudioExist &&
-            isSplitButtonVisible &&
-            currentPlaybackMode === AudioRecordingMode.TextBox
-        ) {
-            this.setEnabledOrExpecting("split", expectedVerb);
+        if (doesElementAudioExist && isSplitButtonVisible) {
+            if (currentPlaybackMode === AudioRecordingMode.TextBox) {
+                this.setEnabledOrExpecting("split", expectedVerb);
+            } else {
+                this.setStatus("split", Status.DisabledUnlessHover);
+            }
         } else {
             this.setStatus("split", Status.Disabled);
         }
@@ -2669,7 +2677,7 @@ export default class AudioRecording {
                     this.setStatus("listen", Status.Disabled);
                 }
             })
-            .catch(response => {
+            .catch(error => {
                 // This handles the case where AudioRecording.HandleCheckForAnyRecording() (in C#)
                 // sends back a request.Failed("no audio") and thereby avoids an uncaught js exception.
                 this.setStatus("listen", Status.Disabled);
@@ -2754,10 +2762,17 @@ export default class AudioRecording {
         if (buttonElement) {
             buttonElement.classList.remove("expected");
             buttonElement.classList.remove("disabled");
+            buttonElement.classList.remove("disabledUnlessHover");
             buttonElement.classList.remove("enabled");
             buttonElement.classList.remove("active");
 
-            buttonElement.classList.add(Status[to].toLowerCase());
+            // Convert names from PascalCase to camelCase.
+            // The enum uses PascalCase, but the CSS uses camelCase
+            const statusString: string = Status[to];
+            const className: string = AudioRecording.ToCamelCaseFromPascalCase(
+                statusString
+            );
+            buttonElement.classList.add(className);
         }
 
         const labelElement = document.getElementById(`audio-${which}-label`);
@@ -2786,6 +2801,11 @@ export default class AudioRecording {
             // Doesn't make sense to expect something while something else is active.
             this.removeExpectedStatusFromAll();
         }
+    }
+
+    // Review: Where is the best place to put this function?
+    public static ToCamelCaseFromPascalCase(text: string) {
+        return text[0].toLowerCase() + text.slice(1);
     }
 
     private removeExpectedStatusFromAll(): void {
