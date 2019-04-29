@@ -66,7 +66,6 @@ namespace Bloom.Publish.BloomLibrary
 			this._backgroundMusicCheckBox = new System.Windows.Forms.CheckBox();
 			this._labelFeatures = new System.Windows.Forms.Label();
 			this._blindCheckBox = new System.Windows.Forms.CheckBox();
-			this._visuallyImpairedCheckBox = new System.Windows.Forms.CheckBox();
 			this._signLanguageCheckBox = new System.Windows.Forms.CheckBox();
 			this.label4 = new System.Windows.Forms.Label();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -603,20 +602,6 @@ namespace Bloom.Publish.BloomLibrary
 			this._blindCheckBox.Text = "Accessible to the Blind";
 			this._blindCheckBox.CheckedChanged += new System.EventHandler(this._blindCheckBox_CheckedChanged);
 			// 
-			// _visuallyImpairedCheckBox
-			// 
-			this._visuallyImpairedCheckBox.AutoSize = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._visuallyImpairedCheckBox, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._visuallyImpairedCheckBox, null);
-			this._L10NSharpExtender.SetLocalizingId(this._visuallyImpairedCheckBox, "PublishTab.Upload.AccesibleToVisuallyImpaired");
-			this._visuallyImpairedCheckBox.Location = new System.Drawing.Point(174, 3);
-			this._visuallyImpairedCheckBox.Margin = new System.Windows.Forms.Padding(3, 3, 35, 3);
-			this._visuallyImpairedCheckBox.Name = "_visuallyImpairedCheckBox";
-			this._visuallyImpairedCheckBox.Size = new System.Drawing.Size(188, 17);
-			this._visuallyImpairedCheckBox.TabIndex = 2;
-			this._visuallyImpairedCheckBox.Text = "Accessible to the Visually Impaired";
-			this._visuallyImpairedCheckBox.CheckedChanged += new System.EventHandler(this._visuallyImpairedCheckBox_CheckedChanged);
-			// 
 			// _signLanguageCheckBox
 			// 
 			this._signLanguageCheckBox.AutoSize = true;
@@ -813,7 +798,6 @@ namespace Bloom.Publish.BloomLibrary
 			// 
 			this.flowLayoutPanel1.AutoSize = true;
 			this.flowLayoutPanel1.Controls.Add(this._blindCheckBox);
-			this.flowLayoutPanel1.Controls.Add(this._visuallyImpairedCheckBox);
 			this.flowLayoutPanel1.Controls.Add(this._signLanguageCheckBox);
 			this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 389);
@@ -918,7 +902,6 @@ namespace Bloom.Publish.BloomLibrary
 		private Panel panel5;
 		private FlowLayoutPanel flowLayoutPanel1;
 		private CheckBox _blindCheckBox;
-		private CheckBox _visuallyImpairedCheckBox;
 		private CheckBox _signLanguageCheckBox;
 		private Panel panel6;
 		private Label label4;
