@@ -5,6 +5,18 @@
         background-color: @bloom-darkestBackground;
     }
 }
+// BL-7074 Keep SL books from eating up memory by not displaying videos in book preview images.
+// Previews usually don't need to waste memory trying to display part of a video that
+// won't be shown here anyway. This works for:
+// 1- Collection tab book preview
+// 2- PDF preview/printing
+.bloom-videoContainer {
+    background: center no-repeat
+        url("../../templates/template books/Sign Language/video-placeholder.svg");
+    video {
+        display: none;
+    }
+}
 div.bloom-page.coverColor {
     background-color: @PreviewCoverColor;
 }
