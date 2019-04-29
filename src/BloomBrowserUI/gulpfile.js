@@ -4,6 +4,7 @@ var semver = require("semver");
 var { engines } = require("./package");
 var tap = require("gulp-tap");
 var replaceExt = require("replace-ext");
+var ts = require("gulp-typescript");
 
 //set up markdown with the extensions that we use to mark lines for localization
 var markdownIt = require("markdown-it")({
@@ -67,7 +68,9 @@ var paths = {
     ],
     nodeFilesNeededInOutput: [
         "./**/bloom-player/dist/bloomPlayer.js",
-        "./**/bloom-player/dist/bloomplayer.htm"
+        "./**/bloom-player/dist/simpleComprehensionQuiz.js",
+        "./**/bloom-player/dist/bloomplayer.htm",
+        "./**/bloom-player/dist/*.mp3"
     ],
     // List all the HTML files created by markdown or pug earlier in this gulp process.
     htmlFiles: ["../../output/browser/**/*-en.htm*"],
@@ -333,6 +336,21 @@ gulp.task("brandings", async function() {
     return child_process.exec("npm run buildBrandings");
 });
 
+gulp.task("compileTemplateTypescript", function() {
+    // Specifying no typeRoots is a kludge. Without it, the task reports large numbers of
+    // errors in vadrious .d.ts files in node_modules that aren't even referenced
+    // by the file we're supposed to be compiling. If we eventually get stuff in the template books
+    // directory that uses other modules and needs their types, we'll have to find another
+    // approach. But in that case, we'll probably want to switch to webpack anyway
+    // in order to produce a single minimal bundle as output. This is good enough for
+    // a simple transformation of simple typescript.
+    var tsProject = ts.createProject("tsconfig.json", { typeRoots: [] });
+    return gulp
+        .src("./templates/template books/**/*.ts")
+        .pipe(tsProject())
+        .js.pipe(gulp.dest(outputDir + "/templates/template books"));
+});
+
 gulp.task(
     "default",
     gulp.series(
@@ -347,7 +365,12 @@ gulp.task(
             "markdownInfoPages",
             "markdownDistInfo"
         ),
-        gulp.parallel("webpack", "translateHtmlFiles", "createXliffFiles")
+        gulp.parallel(
+            "webpack",
+            "translateHtmlFiles",
+            "createXliffFiles",
+            "compileTemplateTypescript"
+        )
     )
 );
 
@@ -367,7 +390,12 @@ gulp.task(
             "markdownInfoPages",
             "markdownDistInfo"
         ),
-        gulp.parallel("webpack-prod", "translateHtmlFiles", "createXliffFiles")
+        gulp.parallel(
+            "webpack-prod",
+            "translateHtmlFiles",
+            "createXliffFiles",
+            "compileTemplateTypescript"
+        )
     )
 );
 

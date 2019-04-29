@@ -114,6 +114,7 @@
         "gulp-pug": "^4.0.1",
         "gulp-sourcemaps": "^2.6.5",
         "gulp-tap": "^1.0.1",
+        "gulp-typescript": "^5.0.1",
         "gulp-watch": "^5.0.1",
         "husky": "^2.1.0",
         "jasmine": "^3.4.0",
