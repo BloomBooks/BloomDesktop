@@ -289,7 +289,7 @@
       <HintPath>..\..\lib\dotnet\YouTrackSharp.dll</HintPath>
     </Reference>
     <Reference Include="DialogAdapters">
-      <HintPath>..\..\lib\dotnet\DialogAdapters.dll</HintPath>
+      <HintPath>..\..\packages\DialogAdapters.0.1.5.17669\lib\net45\DialogAdapters.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -1323,7 +1323,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <!-- copy the appropriate Geckofx60 files to the output directory, first creating it if necessary -->
     <Exec Command="mkdir -p $(OutDir)" />
     <Exec Command="rm -rf $(OutDir)Firefox" />
-    <Exec Command="if [ &quot;`arch`&quot; = &quot;x86_64&quot; ]; then find $(SolutionDir)packages/Geckofx60.64.Linux.60.0.27 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx60.64.Linux.60.0.27 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; else find $(SolutionDir)packages/Geckofx60.32.Linux.60.0.27 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx60.32.Linux.60.0.27 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; fi" />
+    <Exec Command="if [ &quot;`arch`&quot; = &quot;x86_64&quot; ]; then find $(SolutionDir)packages/Geckofx60.64.Linux.60.0.30 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx60.64.Linux.60.0.30 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; else find $(SolutionDir)packages/Geckofx60.32.Linux.60.0.30 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx60.32.Linux.60.0.30 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; fi" />
   </Target>
   <ItemGroup>
     <BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />
