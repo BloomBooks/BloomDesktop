@@ -5,6 +5,9 @@
 // and wrong answers. It also adds an appropriate class to answers that are empty (to hide them or
 // dim them) and plays appropriate sounds when a right or wrong answer is chosen.
 // Eventually it will cooperate with reader code to handle analytics.
+// The output is also part of the bloom-player, which creates instances of the new simpleComprehensionQuiz
+// pages dynamically in order to handle old-style comprehension questions represented as json,
+// and needs the associated JS to make them work.
 
 // Master function, called when document is ready, initialized CQ pages
 function init(): void {

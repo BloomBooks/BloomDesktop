@@ -2016,7 +2016,7 @@ ansi-colors@1.1.0, ansi-colors@^1.0.1:
   dependencies:
     ansi-wrap "^0.1.0"
 
-ansi-colors@^3.0.0:
+ansi-colors@^3.0.0, ansi-colors@^3.0.5:
   version "3.2.4"
   resolved "https://registry.yarnpkg.com/ansi-colors/-/ansi-colors-3.2.4.tgz#e3a3da4bfbae6c86a9c285625de124a234026fbf"
   integrity sha512-hHUXGagefjN2iRrID63xckIvotOXOojhQKWIPUZ4mNUZ9nLZW+7FMNoE1lOkEhNWYsx/7ysGIuJYCiMAA9FnrA==
@@ -5822,6 +5822,18 @@ gulp-tap@^1.0.1:
   integrity sha1-5nESThJZtM6iGe0cqXt/WFwzRpA=
   dependencies:
     through2 "^2.0.3"
+
+gulp-typescript@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/gulp-typescript/-/gulp-typescript-5.0.1.tgz#96c6565a6eb31e08c2aae1c857b1a079e6226d94"
+  integrity sha512-YuMMlylyJtUSHG1/wuSVTrZp60k1dMEFKYOvDf7OvbAJWrDtxxD4oZon4ancdWwzjj30ztiidhe4VXJniF0pIQ==
+  dependencies:
+    ansi-colors "^3.0.5"
+    plugin-error "^1.0.1"
+    source-map "^0.7.3"
+    through2 "^3.0.0"
+    vinyl "^2.1.0"
+    vinyl-fs "^3.0.3"
 
 gulp-watch@^5.0.1:
   version "5.0.1"
@@ -9762,7 +9774,7 @@ read-pkg@^5.0.0:
     string_decoder "~1.1.1"
     util-deprecate "~1.0.1"
 
-readable-stream@^3.1.1:
+"readable-stream@2 || 3", readable-stream@^3.1.1:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-3.3.0.tgz#cb8011aad002eb717bf040291feba8569c986fb9"
   integrity sha512-EsI+s3k3XsW+fU8fQACLN59ky34AZ14LoeVZpYwmZvldCFo0r0gnelwF2TcMjLor/BTL5aDJVBMkss0dthToPw==
@@ -10923,13 +10935,6 @@ string_decoder@^1.0.0, string_decoder@^1.1.1:
   dependencies:
     safe-buffer "~5.1.0"
 
-string_decoder@^1.1.1:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/string_decoder/-/string_decoder-1.2.0.tgz#fe86e738b19544afe70469243b2a1ee9240eae8d"
-  integrity sha512-6YqyX6ZWEYguAxgZzHGL7SsCeGx3V2TtOTqZz1xSTSWnqsbWwbptafNyvf/ACquZUXV3DANr5BDIwNYe1mN42w==
-  dependencies:
-    safe-buffer "~5.1.0"
-
 string_decoder@~0.10.x:
   version "0.10.31"
   resolved "https://registry.yarnpkg.com/string_decoder/-/string_decoder-0.10.31.tgz#62e203bc41766c6c28c9fc84301dab1c5310fa94"
@@ -11211,6 +11216,13 @@ through2@^2.0.0, through2@^2.0.3, through2@~2.0.0:
   dependencies:
     readable-stream "~2.3.6"
     xtend "~4.0.1"
+
+through2@^3.0.0:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/through2/-/through2-3.0.1.tgz#39276e713c3302edf9e388dd9c812dd3b825bd5a"
+  integrity sha512-M96dvTalPT3YbYLaKaCuwu+j06D/8Jfib0o/PxbVt6Amhv3dUAtW6rTV1jPgJSBG83I/e04Y6xkVdVhSRhi0ww==
+  dependencies:
+    readable-stream "2 || 3"
 
 through@^2.3.6, through@^2.3.8, through@~2.3.7:
   version "2.3.8"
@@ -11864,7 +11876,7 @@ vinyl-file@^2.0.0:
     strip-bom-stream "^2.0.0"
     vinyl "^1.1.0"
 
-vinyl-fs@^3.0.0:
+vinyl-fs@^3.0.0, vinyl-fs@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/vinyl-fs/-/vinyl-fs-3.0.3.tgz#c85849405f67428feabbbd5c5dbdd64f47d31bc7"
   integrity sha512-vIu34EkyNyJxmP0jscNzWBSygh7VWhqun6RmqVfXePrOwi9lhvRs//dOaGOTRUQr4tx7/zd26Tk5WeSVZitgng==
