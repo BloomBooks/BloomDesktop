@@ -46,11 +46,12 @@ namespace Bloom.web
 			_clientContext = clientContext;
 		}
 
-		public void ErrorWithoutLocalizing(string message, params object[] args)
+		public void ErrorWithoutLocalizing(string message)
 		{
-			MessageWithoutLocalizing($"<span style='color:red'>{message}</span>", args);
-			SIL.Reporting.Logger.WriteEvent($"Error: {message}", args);
+			MessageWithoutLocalizing($"<span style='color:red'>{message}</span>");
+			SIL.Reporting.Logger.WriteEvent($"Error: {message}");
 		}
+
 		public void Error(string idSuffix, string message, bool useL10nIdPrefix=true)
 		{
 			var localizedMessage = LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message);
@@ -59,9 +60,9 @@ namespace Bloom.web
 				SIL.Reporting.Logger.WriteEvent($"Error: {message}");	// repeat message in the log unlocalized.
 		}
 
-		public void MessageWithoutLocalizing(string message, params object[] args)
+		public void MessageWithoutLocalizing(string message)
 		{
-			_bloomWebSocketServer.SendString(_clientContext, "progress", String.Format(message, args));
+			_bloomWebSocketServer.SendString(_clientContext, "progress", message);
 		}
 
 		public void MessageWithStyleWithoutLocalizing(string message, string cssStyleRules)
@@ -142,8 +143,8 @@ namespace Bloom.web
 	// use that way.
 	public interface IWebSocketProgress
 	{
-		void MessageWithoutLocalizing(string message, params object[] args);
-		void ErrorWithoutLocalizing(string message, params object[] args);
+		void MessageWithoutLocalizing(string message);
+		void ErrorWithoutLocalizing(string message);
 		void Message(string idSuffix, string comment, string message, bool useL10nIdPrefix = true);
 		void MessageWithParams(string id, string comment, string message, params object[] parameters);
 		void ErrorWithParams(string id, string comment, string message, params object[] parameters);
@@ -153,11 +154,11 @@ namespace Bloom.web
 	// Passing one of these where we don't need the progress report saves recipients handling nulls
 	public class NullWebSocketProgress : IWebSocketProgress
 	{
-		public void MessageWithoutLocalizing(string message, params object[] args)
+		public void MessageWithoutLocalizing(string message)
 		{
 		}
 
-		public void ErrorWithoutLocalizing(string message, params object[] args)
+		public void ErrorWithoutLocalizing(string message)
 		{
 		}
 
