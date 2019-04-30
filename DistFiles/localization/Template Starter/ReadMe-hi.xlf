@@ -121,8 +121,16 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
           <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: इन पुस्तकों को बाद में आगामी फोलियो फीचर का इस्तेमाल कर संयोजित किया जा सकता है। ध्यान दें कि ब्लूम अभी तक आपको कोई उपाय नहीं देता है जो संकेत दे कि कोई पन्ना स्वचालित रूप से नई पुस्तकों में शामिल किया जाना चाहिए; लेखक को पन्ना जोड़ें डायलॉग से हर एक पन्ने को जोड़ना होगा।</target>
         <note>ID: template.starter.nothingautomatic</note>
+        <alt-trans>
+          <target xml:lang="hi">
+          
+          
+          
+          <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: इन पुस्तकों को बाद में आगामी फोलियो फीचर का इस्तेमाल कर संयोजित किया जा सकता है। ध्यान दें कि ब्लूम अभी तक आपको कोई उपाय नहीं देता है जो संकेत दे कि कोई पन्ना स्वचालित रूप से नई पुस्तकों में शामिल किया जाना चाहिए; लेखक को पन्ना जोड़ें डायलॉग से हर एक पन्ने को जोड़ना होगा।</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi">
           
@@ -141,8 +149,16 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
           <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: यदि आप नहीं चाहते कि आपके टेंपलेट के पन्ने, पन्ना जोड़ें डायलॉग में दिखाई दे, तो आप पन्नाजोड़नेकेलिएनहीं.txt नाम के पुस्तक टेंपलेट फोल्डर में एक फाइल निर्माण करने के द्वारा ब्लूम को इसकी सूचना दे सकते हैं।</target>
         <note>ID: template.starter.nametonotaddpage</note>
+        <alt-trans>
+          <target xml:lang="hi">
+          
+          
+          
+          <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: यदि आप नहीं चाहते कि आपके टेंपलेट के पन्ने, पन्ना जोड़ें डायलॉग में दिखाई दे, तो आप पन्नाजोड़नेकेलिएनहीं.txt नाम के पुस्तक टेंपलेट फोल्डर में एक फाइल निर्माण करने के द्वारा ब्लूम को इसकी सूचना दे सकते हैं।</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi">
           
@@ -166,8 +182,16 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
           <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: लोग आपके लेबलों और विवरणों का अन्य राष्ट्रीय भाषाओं में अनुवाद नहीं कर पाएंगे। यदि यह एक समस्या है, तो कृपया ब्लूम टीम से संपर्क करें।</target>
         <note>ID: template.starter.labelsnottranslatable</note>
+        <alt-trans>
+          <target xml:lang="hi">
+          
+          
+          
+          <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: लोग आपके लेबलों और विवरणों का अन्य राष्ट्रीय भाषाओं में अनुवाद नहीं कर पाएंगे। यदि यह एक समस्या है, तो कृपया ब्लूम टीम से संपर्क करें।</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi">
           
@@ -186,8 +210,16 @@ There are two ways people can use your template. The first way is to start new b
           
           
           
+          
           <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: अगर आप आप चाहते हैं कि पन्ना जोड़ें स्क्रीन भी पन्ने पर एक संक्षिप्त विवरण दे, तो आपको ब्लूम को बंद करना होगा और नोटपैड में टेंपलेट के एचटीएमएल को एडिट करना होगा, जैसे की: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
+        <alt-trans>
+          <target xml:lang="hi">
+          
+          
+          
+          <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: अगर आप आप चाहते हैं कि पन्ना जोड़ें स्क्रीन भी पन्ने पर एक संक्षिप्त विवरण दे, तो आपको ब्लूम को बंद करना होगा और नोटपैड में टेंपलेट के एचटीएमएल को एडिट करना होगा, जैसे की: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="hi">
           
