@@ -34,21 +34,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.repeat.patterns" approved="yes">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
-        <target xml:lang="sw" state="translated">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-           <g id="genid-1" ctype="x-html-em">Uwezekano wa kutabiriwa</g>katika maandishi inamaanisha kuwa msomaji anaweza kubashiri kitakachofuata. Unaweza kuongeza uwezo wa kutabiri kwa kutumia mtindo wa kurudia. Hapa ni baadhi ya mitindo unayoweza kutumia:</target>
+        <target xml:lang="sw" state="translated"><g id="genid-1" ctype="x-html-em">Uwezekano wa kutabiriwa</g>katika maandishi inamaanisha kuwa msomaji anaweza kubashiri kitakachofuata. Unaweza kuongeza uwezo wa kutabiri kwa kutumia mtindo wa kurudia. Hapa ni baadhi ya mitindo unayoweza kutumia:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
         <alt-trans>
           <target xml:lang="sw">
@@ -64,6 +50,23 @@
           
           
           
+          
+           <g id="genid-1" ctype="x-html-em">Uwezekano wa kutabiriwa</g>katika maandishi inamaanisha kuwa msomaji anaweza kubashiri kitakachofuata. Unaweza kuongeza uwezo wa kutabiri kwa kutumia mtindo wa kurudia. Hapa ni baadhi ya mitindo unayoweza kutumia:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="sw">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
            <g id="genid-1" ctype="x-html-em">Uwezekano wa kutabiriwa</g>katika maandishi inamaanisha kuwa msomaji anaweza kubashiri kitakachofuata. Unaweza kuongeza uwezo wa kutabiri kwa kutumia mtindo wa kurudia. Hapa ni baadhi ya mitindo unayoweza kutumia:</target>
         </alt-trans>
         <alt-trans>
@@ -98,18 +101,6 @@
         <alt-trans>
           <target xml:lang="sw">
           
-          
-          
-          
-          
-          
-          
-          
-          
-           <g id="genid-1" ctype="x-html-em">Uwezekano wa kutabiriwa</g>katika maandishi inamaanisha kuwa msomaji anaweza kubashiri kitakachofuata. Unaweza kuongeza uwezo wa kutabiri kwa kutumia mtindo wa kurudia. Hapa ni baadhi ya mitindo unayoweza kutumia:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="sw">
           
           
           
@@ -142,8 +133,7 @@
 I see a red bird looking at me.
 Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
-Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g>
-      </source>
+Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g></source>
         <target xml:lang="sw" state="translated">Wimbo - Hadithi iliyo na mtindo au mfululizo ambao pia hujumuisha wimbo. Kwa mfano:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
           <g id="genid-3" ctype="x-html-pre"> Anna anna anna do,
@@ -152,22 +142,7 @@ ispiringi matido,
 anna kwa, anna kwa,
 duku duku lemba kwa fuus!</g>
           <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. na Eric Carle</g>
-        </g>
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
+        </g></target>
         <note>ID: leveled.reader.rhyme</note>
         <alt-trans>
           <target xml:lang="sw">Wimbo - Hadithi iliyo na mtindo au mfululizo ambao pia hujumuisha wimbo. Kwa mfano:
@@ -192,6 +167,32 @@ duku duku lemba kwa fuus!</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="sw">Wimbo - Hadithi iliyo na mtindo au mfululizo ambao pia hujumuisha wimbo. Kwa mfano:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre"> Anna anna anna do,
+kachanika basto,
+ispiringi matido,
+anna kwa, anna kwa,
+duku duku lemba kwa fuus!</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. na Eric Carle</g>
+        </g>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -252,27 +253,6 @@ duku duku lemba kwa fuus!</g>
           <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. na Eric Carle</g>
         </g>
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="sw">Wimbo - Hadithi iliyo na mtindo au mfululizo ambao pia hujumuisha wimbo. Kwa mfano:
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre"> Anna anna anna do,
-kachanika basto,
-ispiringi matido,
-anna kwa, anna kwa,
-duku duku lemba kwa fuus!</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. na Eric Carle</g>
-        </g>
       
       
       
@@ -291,24 +271,8 @@ duku duku lemba kwa fuus!</g>
         <note>ID: leveled.reader.illustrations</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help" approved="yes">
-        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
-    </source>
-        <target xml:lang="sw" state="translated">Maelezo hupeana usaidizi kwa hadithi. Maelezo huhusiana na hadithi kwa njia tofauti kwa ngazi tofauti <g id="genid-5" ctype="x-html-em">ngazi</g> na kwa wasomajii wa aina mbalimbali (tazama hapa chini). Kumbuka kuwa katika tamaduni nyingi ambazo huwa hazina maandishi mengi yaliyochapiswa, inaweza kuwa vigumu kuelewa picha ngumu.
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    </target>
+        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.</source>
+        <target xml:lang="sw" state="translated">Maelezo hupeana usaidizi kwa hadithi. Maelezo huhusiana na hadithi kwa njia tofauti kwa ngazi tofauti <g id="genid-5" ctype="x-html-em">ngazi</g> na kwa wasomajii wa aina mbalimbali (tazama hapa chini). Kumbuka kuwa katika tamaduni nyingi ambazo huwa hazina maandishi mengi yaliyochapiswa, inaweza kuwa vigumu kuelewa picha ngumu.</target>
         <note>ID: leveled.reader.illustrations.help</note>
         <alt-trans>
           <target xml:lang="sw">Maelezo hupeana usaidizi kwa hadithi. Maelezo huhusiana na hadithi kwa njia tofauti kwa ngazi tofauti <g id="genid-5" ctype="x-html-em">ngazi</g> na kwa wasomajii wa aina mbalimbali (tazama hapa chini). Kumbuka kuwa katika tamaduni nyingi ambazo huwa hazina maandishi mengi yaliyochapiswa, inaweza kuwa vigumu kuelewa picha ngumu.
@@ -325,6 +289,24 @@ duku duku lemba kwa fuus!</g>
     
     
     
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="sw">Maelezo hupeana usaidizi kwa hadithi. Maelezo huhusiana na hadithi kwa njia tofauti kwa ngazi tofauti <g id="genid-5" ctype="x-html-em">ngazi</g> na kwa wasomajii wa aina mbalimbali (tazama hapa chini). Kumbuka kuwa katika tamaduni nyingi ambazo huwa hazina maandishi mengi yaliyochapiswa, inaweza kuwa vigumu kuelewa picha ngumu.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     </target>
         </alt-trans>
         <alt-trans>
@@ -361,19 +343,6 @@ duku duku lemba kwa fuus!</g>
         <alt-trans>
           <target xml:lang="sw">Maelezo hupeana usaidizi kwa hadithi. Maelezo huhusiana na hadithi kwa njia tofauti kwa ngazi tofauti <g id="genid-5" ctype="x-html-em">ngazi</g> na kwa wasomajii wa aina mbalimbali (tazama hapa chini). Kumbuka kuwa katika tamaduni nyingi ambazo huwa hazina maandishi mengi yaliyochapiswa, inaweza kuwa vigumu kuelewa picha ngumu.
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="sw">Maelezo hupeana usaidizi kwa hadithi. Maelezo huhusiana na hadithi kwa njia tofauti kwa ngazi tofauti <g id="genid-5" ctype="x-html-em">ngazi</g> na kwa wasomajii wa aina mbalimbali (tazama hapa chini). Kumbuka kuwa katika tamaduni nyingi ambazo huwa hazina maandishi mengi yaliyochapiswa, inaweza kuwa vigumu kuelewa picha ngumu.
     
     
     
@@ -387,24 +356,8 @@ duku duku lemba kwa fuus!</g>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
-      </source>
-        <target xml:lang="sw" state="translated">Kwa <g id="genid-6" ctype="x-html-strong">Wasomaji wanaoibuka</g> picha zinapaswa kufanana kwa karibu na mfuatano wa hadithi. Msomaji anapaswa kuwa na uwezo wa kubahatisha mfuatano wa hadithi kwa kutazama picha tu. Maelezo katika ngazi hii yanapaswa kuwa rahisi.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.</source>
+        <target xml:lang="sw" state="translated">Kwa <g id="genid-6" ctype="x-html-strong">Wasomaji wanaoibuka</g> picha zinapaswa kufanana kwa karibu na mfuatano wa hadithi. Msomaji anapaswa kuwa na uwezo wa kubahatisha mfuatano wa hadithi kwa kutazama picha tu. Maelezo katika ngazi hii yanapaswa kuwa rahisi.</target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
         <alt-trans>
           <target xml:lang="sw">Kwa <g id="genid-6" ctype="x-html-strong">Wasomaji wanaoibuka</g> picha zinapaswa kufanana kwa karibu na mfuatano wa hadithi. Msomaji anapaswa kuwa na uwezo wa kubahatisha mfuatano wa hadithi kwa kutazama picha tu. Maelezo katika ngazi hii yanapaswa kuwa rahisi.
@@ -421,6 +374,24 @@ duku duku lemba kwa fuus!</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="sw">Kwa <g id="genid-6" ctype="x-html-strong">Wasomaji wanaoibuka</g> picha zinapaswa kufanana kwa karibu na mfuatano wa hadithi. Msomaji anapaswa kuwa na uwezo wa kubahatisha mfuatano wa hadithi kwa kutazama picha tu. Maelezo katika ngazi hii yanapaswa kuwa rahisi.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -457,19 +428,6 @@ duku duku lemba kwa fuus!</g>
         <alt-trans>
           <target xml:lang="sw">Kwa <g id="genid-6" ctype="x-html-strong">Wasomaji wanaoibuka</g> picha zinapaswa kufanana kwa karibu na mfuatano wa hadithi. Msomaji anapaswa kuwa na uwezo wa kubahatisha mfuatano wa hadithi kwa kutazama picha tu. Maelezo katika ngazi hii yanapaswa kuwa rahisi.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="sw">Kwa <g id="genid-6" ctype="x-html-strong">Wasomaji wanaoibuka</g> picha zinapaswa kufanana kwa karibu na mfuatano wa hadithi. Msomaji anapaswa kuwa na uwezo wa kubahatisha mfuatano wa hadithi kwa kutazama picha tu. Maelezo katika ngazi hii yanapaswa kuwa rahisi.
       
       
       
@@ -483,24 +441,8 @@ duku duku lemba kwa fuus!</g>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
-      </source>
-        <target xml:lang="sw" state="translated">Kwa <g id="genid-7" ctype="x-html-strong">Wasomaji wa mapema</g> picha zinapaswa kupeana baadhi ya usaidizi kwa mfuatano wa hadithi. Jinsi kiwango cha matini kinavyoongezeka, msomaji anaendelea kutotegemea picha sana na kupata maana zaidi kutoka kwa maandishi. Michoro inaweza kuwa magumu.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.</source>
+        <target xml:lang="sw" state="translated">Kwa <g id="genid-7" ctype="x-html-strong">Wasomaji wa mapema</g> picha zinapaswa kupeana baadhi ya usaidizi kwa mfuatano wa hadithi. Jinsi kiwango cha matini kinavyoongezeka, msomaji anaendelea kutotegemea picha sana na kupata maana zaidi kutoka kwa maandishi. Michoro inaweza kuwa magumu.</target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
         <alt-trans>
           <target xml:lang="sw">Kwa <g id="genid-7" ctype="x-html-strong">Wasomaji wa mapema</g> picha zinapaswa kupeana baadhi ya usaidizi kwa mfuatano wa hadithi. Jinsi kiwango cha matini kinavyoongezeka, msomaji anaendelea kutotegemea picha sana na kupata maana zaidi kutoka kwa maandishi. Michoro inaweza kuwa magumu.
@@ -517,6 +459,24 @@ duku duku lemba kwa fuus!</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="sw">Kwa <g id="genid-7" ctype="x-html-strong">Wasomaji wa mapema</g> picha zinapaswa kupeana baadhi ya usaidizi kwa mfuatano wa hadithi. Jinsi kiwango cha matini kinavyoongezeka, msomaji anaendelea kutotegemea picha sana na kupata maana zaidi kutoka kwa maandishi. Michoro inaweza kuwa magumu.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -553,19 +513,6 @@ duku duku lemba kwa fuus!</g>
         <alt-trans>
           <target xml:lang="sw">Kwa <g id="genid-7" ctype="x-html-strong">Wasomaji wa mapema</g> picha zinapaswa kupeana baadhi ya usaidizi kwa mfuatano wa hadithi. Jinsi kiwango cha matini kinavyoongezeka, msomaji anaendelea kutotegemea picha sana na kupata maana zaidi kutoka kwa maandishi. Michoro inaweza kuwa magumu.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="sw">Kwa <g id="genid-7" ctype="x-html-strong">Wasomaji wa mapema</g> picha zinapaswa kupeana baadhi ya usaidizi kwa mfuatano wa hadithi. Jinsi kiwango cha matini kinavyoongezeka, msomaji anaendelea kutotegemea picha sana na kupata maana zaidi kutoka kwa maandishi. Michoro inaweza kuwa magumu.
       
       
       
@@ -579,24 +526,8 @@ duku duku lemba kwa fuus!</g>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.fluent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
-      </source>
-        <target xml:lang="sw" state="translated">Kwa <g id="genid-8" ctype="x-html-strong">Msomaji aliye na ufasaha</g> picha zinapaswa kupeana usaidizi mdogo au kutosaidia kabisa katika kuelewa mfuatano wa hadithi. Msomaji anategemea sana matini kuliko picha ili kupata maana. Maelezo hata yanaweza kuwa magumu zaidi.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.</source>
+        <target xml:lang="sw" state="translated">Kwa <g id="genid-8" ctype="x-html-strong">Msomaji aliye na ufasaha</g> picha zinapaswa kupeana usaidizi mdogo au kutosaidia kabisa katika kuelewa mfuatano wa hadithi. Msomaji anategemea sana matini kuliko picha ili kupata maana. Maelezo hata yanaweza kuwa magumu zaidi.</target>
         <note>ID: leveled.reader.fluent.reader</note>
         <alt-trans>
           <target xml:lang="sw">Kwa <g id="genid-8" ctype="x-html-strong">Msomaji aliye na ufasaha</g> picha zinapaswa kupeana usaidizi mdogo au kutosaidia kabisa katika kuelewa mfuatano wa hadithi. Msomaji anategemea sana matini kuliko picha ili kupata maana. Maelezo hata yanaweza kuwa magumu zaidi.
@@ -613,6 +544,24 @@ duku duku lemba kwa fuus!</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="sw">Kwa <g id="genid-8" ctype="x-html-strong">Msomaji aliye na ufasaha</g> picha zinapaswa kupeana usaidizi mdogo au kutosaidia kabisa katika kuelewa mfuatano wa hadithi. Msomaji anategemea sana matini kuliko picha ili kupata maana. Maelezo hata yanaweza kuwa magumu zaidi.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -649,19 +598,6 @@ duku duku lemba kwa fuus!</g>
         <alt-trans>
           <target xml:lang="sw">Kwa <g id="genid-8" ctype="x-html-strong">Msomaji aliye na ufasaha</g> picha zinapaswa kupeana usaidizi mdogo au kutosaidia kabisa katika kuelewa mfuatano wa hadithi. Msomaji anategemea sana matini kuliko picha ili kupata maana. Maelezo hata yanaweza kuwa magumu zaidi.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="sw">Kwa <g id="genid-8" ctype="x-html-strong">Msomaji aliye na ufasaha</g> picha zinapaswa kupeana usaidizi mdogo au kutosaidia kabisa katika kuelewa mfuatano wa hadithi. Msomaji anategemea sana matini kuliko picha ili kupata maana. Maelezo hata yanaweza kuwa magumu zaidi.
       
       
       
@@ -685,24 +621,8 @@ duku duku lemba kwa fuus!</g>
         <note>ID: leveled.reader.topic.choice.discussion</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.emergent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.
-      </source>
-        <target xml:lang="sw" state="translated">Kwa <g id="genid-9" ctype="x-html-strong">Wasomaji wanaoibuka</g> kitabu kinapaswa kuwa kimekamilika, kinapaswa kulenga maudhui/dhana moja, kinapaswa kuwa kinajulikana na rahisi kukielewa.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.</source>
+        <target xml:lang="sw" state="translated">Kwa <g id="genid-9" ctype="x-html-strong">Wasomaji wanaoibuka</g> kitabu kinapaswa kuwa kimekamilika, kinapaswa kulenga maudhui/dhana moja, kinapaswa kuwa kinajulikana na rahisi kukielewa.</target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
         <alt-trans>
           <target xml:lang="sw">Kwa <g id="genid-9" ctype="x-html-strong">Wasomaji wanaoibuka</g> kitabu kinapaswa kuwa kimekamilika, kinapaswa kulenga maudhui/dhana moja, kinapaswa kuwa kinajulikana na rahisi kukielewa.
@@ -719,6 +639,24 @@ duku duku lemba kwa fuus!</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="sw">Kwa <g id="genid-9" ctype="x-html-strong">Wasomaji wanaoibuka</g> kitabu kinapaswa kuwa kimekamilika, kinapaswa kulenga maudhui/dhana moja, kinapaswa kuwa kinajulikana na rahisi kukielewa.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -755,19 +693,6 @@ duku duku lemba kwa fuus!</g>
         <alt-trans>
           <target xml:lang="sw">Kwa <g id="genid-9" ctype="x-html-strong">Wasomaji wanaoibuka</g> kitabu kinapaswa kuwa kimekamilika, kinapaswa kulenga maudhui/dhana moja, kinapaswa kuwa kinajulikana na rahisi kukielewa.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="sw">Kwa <g id="genid-9" ctype="x-html-strong">Wasomaji wanaoibuka</g> kitabu kinapaswa kuwa kimekamilika, kinapaswa kulenga maudhui/dhana moja, kinapaswa kuwa kinajulikana na rahisi kukielewa.
       
       
       
@@ -781,24 +706,8 @@ duku duku lemba kwa fuus!</g>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.early.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
-      </source>
-        <target xml:lang="sw" state="translated">Kwa <g id="genid-10" ctype="x-html-strong">Wasomaji wa mapema</g>, endeleza hadithi inayozunguka dhana fulani inayojulikana lakini kwa undani zaidi.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.</source>
+        <target xml:lang="sw" state="translated">Kwa <g id="genid-10" ctype="x-html-strong">Wasomaji wa mapema</g>, endeleza hadithi inayozunguka dhana fulani inayojulikana lakini kwa undani zaidi.</target>
         <note>ID: leveled.reader.topic.choice.early.reader</note>
         <alt-trans>
           <target xml:lang="sw">Kwa <g id="genid-10" ctype="x-html-strong">Wasomaji wa mapema</g>, endeleza hadithi inayozunguka dhana fulani inayojulikana lakini kwa undani zaidi.
@@ -815,6 +724,24 @@ duku duku lemba kwa fuus!</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="sw">Kwa <g id="genid-10" ctype="x-html-strong">Wasomaji wa mapema</g>, endeleza hadithi inayozunguka dhana fulani inayojulikana lakini kwa undani zaidi.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -851,19 +778,6 @@ duku duku lemba kwa fuus!</g>
         <alt-trans>
           <target xml:lang="sw">Kwa <g id="genid-10" ctype="x-html-strong">Wasomaji wa mapema</g>, endeleza hadithi inayozunguka dhana fulani inayojulikana lakini kwa undani zaidi.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="sw">Kwa <g id="genid-10" ctype="x-html-strong">Wasomaji wa mapema</g>, endeleza hadithi inayozunguka dhana fulani inayojulikana lakini kwa undani zaidi.
       
       
       
@@ -877,24 +791,8 @@ duku duku lemba kwa fuus!</g>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.fluent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
-      </source>
-        <target xml:lang="sw" state="translated">Kwa <g id="genid-11" ctype="x-html-strong">Msomaji fasaha</g> dhana zinaweza kupanuka kupita yale yanayojulikana, yawe ya aina nyingi zaidi, na dhahani.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.</source>
+        <target xml:lang="sw" state="translated">Kwa <g id="genid-11" ctype="x-html-strong">Msomaji fasaha</g> dhana zinaweza kupanuka kupita yale yanayojulikana, yawe ya aina nyingi zaidi, na dhahani.</target>
         <note>ID: leveled.reader.topic.choice.fluent.reader</note>
         <alt-trans>
           <target xml:lang="sw">Kwa <g id="genid-11" ctype="x-html-strong">Msomaji fasaha</g> dhana zinaweza kupanuka kupita yale yanayojulikana, yawe ya aina nyingi zaidi, na dhahani.
@@ -911,6 +809,24 @@ duku duku lemba kwa fuus!</g>
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="sw">Kwa <g id="genid-11" ctype="x-html-strong">Msomaji fasaha</g> dhana zinaweza kupanuka kupita yale yanayojulikana, yawe ya aina nyingi zaidi, na dhahani.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -947,19 +863,6 @@ duku duku lemba kwa fuus!</g>
         <alt-trans>
           <target xml:lang="sw">Kwa <g id="genid-11" ctype="x-html-strong">Msomaji fasaha</g> dhana zinaweza kupanuka kupita yale yanayojulikana, yawe ya aina nyingi zaidi, na dhahani.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="sw">Kwa <g id="genid-11" ctype="x-html-strong">Msomaji fasaha</g> dhana zinaweza kupanuka kupita yale yanayojulikana, yawe ya aina nyingi zaidi, na dhahani.
       
       
       
