@@ -132,6 +132,7 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
           
           
           
+          
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
         <note>ID: template.starter.nothingautomatic</note>
         <alt-trans>
@@ -141,6 +142,16 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
           
           
           
+          
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">
+          
+          
+          
+          
+          
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
         </alt-trans>
         <alt-trans>
@@ -161,11 +172,6 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
         <alt-trans>
           <target xml:lang="fr">
           
-          
-<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
           
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
         </alt-trans>
@@ -173,6 +179,7 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
       <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
         <target xml:lang="fr" state="translated">
+          
           
           
           
@@ -202,6 +209,23 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
           
           
           
+          
+<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si vous ne voulez pas que vos modèles s'affichent dans la boîte de dialogue "Ajouter une page", vous pouvez l'indiquer à Bloom en créant un fichier intitulé "NotForAddPage.txt" dans le dossier des modèles de ce livre.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 <g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si vous ne voulez pas que vos modèles s'affichent dans la boîte de dialogue "Ajouter une page", vous pouvez l'indiquer à Bloom en créant un fichier intitulé "NotForAddPage.txt" dans le dossier des modèles de ce livre.</target>
         </alt-trans>
         <alt-trans>
@@ -236,18 +260,6 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
         <alt-trans>
           <target xml:lang="fr">
           
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si vous ne voulez pas que vos modèles s'affichent dans la boîte de dialogue "Ajouter une page", vous pouvez l'indiquer à Bloom en créant un fichier intitulé "NotForAddPage.txt" dans le dossier des modèles de ce livre.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
           
           
           
@@ -322,6 +334,7 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
           
           
           
+          
 <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Si vous voulez qu'une brève description de la page figure sur l'écran "Ajouter une page", vous devrez quitter Bloom et éditer le fichier html du template dans "Notepad", comme ceci : <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
         <alt-trans>
@@ -338,6 +351,23 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
           
           
           
+          
+<g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Si vous voulez qu'une brève description de la page figure sur l'écran "Ajouter une page", vous devrez quitter Bloom et éditer le fichier html du template dans "Notepad", comme ceci : <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Si vous voulez qu'une brève description de la page figure sur l'écran "Ajouter une page", vous devrez quitter Bloom et éditer le fichier html du template dans "Notepad", comme ceci : <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         </alt-trans>
         <alt-trans>
@@ -372,18 +402,6 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
         <alt-trans>
           <target xml:lang="fr">
           
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Si vous voulez qu'une brève description de la page figure sur l'écran "Ajouter une page", vous devrez quitter Bloom et éditer le fichier html du template dans "Notepad", comme ceci : <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
           
           
           
