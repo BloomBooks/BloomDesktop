@@ -4928,6 +4928,7 @@
       <trans-unit id="PublishTab.Upload.AccesibleToVisuallyImpaired" approved="yes">
         <source xml:lang="en">Accessible to the Visually Impaired</source>
         <note>ID: PublishTab.Upload.AccesibleToVisuallyImpaired</note>
+        <note>last used in Bloom 4.4</note>
         <target xml:lang="hi" state="translated">धुंधली दृष्टी वालों के लिए उपलब्ध</target>
         <alt-trans>
           <target xml:lang="hi">धुंधली दृष्टी वालों के लिए एक्सेसिबल</target>

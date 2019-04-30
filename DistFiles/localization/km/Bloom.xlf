@@ -4046,6 +4046,7 @@
       <trans-unit id="PublishTab.Upload.AccesibleToVisuallyImpaired">
         <source xml:lang="en">Accessible to the Visually Impaired</source>
         <note>ID: PublishTab.Upload.AccesibleToVisuallyImpaired</note>
+        <note>last used in Bloom 4.4</note>
         <target xml:lang="km" state="needs-translation">Accessible to the Visually Impaired</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AccessibleToBlind">
