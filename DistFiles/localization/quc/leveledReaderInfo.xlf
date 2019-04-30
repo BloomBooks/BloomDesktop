@@ -49,7 +49,10 @@
       </trans-unit>
       <trans-unit id="leveled.reader.repeat.patterns" approved="yes">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
-        <target xml:lang="quc" state="translated">
+        <target xml:lang="quc" state="translated"><g id="genid-1" ctype="x-html-em"> Nab’e rilik</g> pa jun woktz’ib’ kub’ij chech jun sik’inel uwach wuj kkowinik kub’ij ri petinaq. Kuya'o knimarisax uwach majb'al rilik ruk' ri k’amab'al kamulinem. Chi ri' k’o jujun taq k’amab'al kamulinem katkowin chech ukojik:</target>
+        <note>ID: leveled.reader.repeat.patterns</note>
+        <alt-trans>
+          <target xml:lang="quc">
           
 <g id="genid-1" ctype="x-html-em"> Nab’e rilik</g> pa jun woktz’ib’ kub’ij chech jun sik’inel uwach wuj kkowinik kub’ij ri petinaq. Kuya'o knimarisax uwach majb'al rilik ruk' ri k’amab'al kamulinem. Chi ri' k’o jujun taq k’amab'al kamulinem katkowin chech ukojik: 
  
@@ -76,10 +79,37 @@
  
  
  <g id="genid-1" ctype="x-html-em"> Previsibilidad</g> en un texto significa que un lector puede adivinar lo que vendría después. El uso de patrones repetidos puede aumentar la previsibilidad. Aquí hay algunos patrones que usted puede utilizar:</target>
-        <note>ID: leveled.reader.repeat.patterns</note>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc">
-                    <g id="genid-1" ctype="x-html-em"> Nab’e rilik</g> pa jun woktz’ib’ kub’ij che jun sik’inel uwach uwo wuj  kkowinik kub’ij ri petenaq. Ri ukojik ri k’amal taq b’e kamulem  kunimarisaj ri nab’e rilik. Chi’ k’o jujun taq k’amal taq b’e kkowin la che ukoji:
+<g id="genid-1" ctype="x-html-em"> Nab’e rilik</g> pa jun woktz’ib’ kub’ij chech jun sik’inel uwach wuj kkowinik kub’ij ri petinaq. Kuya'o knimarisax uwach majb'al rilik ruk' ri k’amab'al kamulinem. Chi ri' k’o jujun taq k’amab'al kamulinem katkowin chech ukojik: 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <g id="genid-1" ctype="x-html-em"> Previsibilidad</g> en un texto significa que un lector puede adivinar lo que vendría después. El uso de patrones repetidos puede aumentar la previsibilidad. Aquí hay algunos patrones que usted puede utilizar:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">          <g id="genid-1" ctype="x-html-em"> Nab’e rilik</g> pa jun woktz’ib’ kub’ij che jun sik’inel uwach uwo wuj  kkowinik kub’ij ri petenaq. Ri ukojik ri k’amal taq b’e kamulem  kunimarisaj ri nab’e rilik. Chi’ k’o jujun taq k’amal taq b’e kkowin la che ukoji:
           
           
           
@@ -137,9 +167,18 @@
 I see a red bird looking at me.
 Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
-Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g>
-      </source>
+Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g></source>
         <target xml:lang="quc" state="translated">Pach'um tzij – jun tzijob’elil ruk’ jun k’amab'al kamulinem te'qne jun cholajim tzij k’o chi upam pach'um tzij. K’amab’al no’j:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre"> Ri tix koq’ik
+xa rumal man kawar taj
+Chatwaroq alaj tix
+xa rumal le ik' katuto</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- Adriano del Valle</g>
+        </g></target>
+        <note>ID: leveled.reader.rhyme</note>
+        <alt-trans>
+          <target xml:lang="quc">Pach'um tzij – jun tzijob’elil ruk’ jun k’amab'al kamulinem te'qne jun cholajim tzij k’o chi upam pach'um tzij. K’amab’al no’j:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
           <g id="genid-3" ctype="x-html-pre"> Ri tix koq’ik
 xa rumal man kawar taj
@@ -170,7 +209,39 @@ xa rumal le ik' katuto</g>
       
       
       </target>
-        <note>ID: leveled.reader.rhyme</note>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Pach'um tzij – jun tzijob’elil ruk’ jun k’amab'al kamulinem te'qne jun cholajim tzij k’o chi upam pach'um tzij. K’amab’al no’j:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre"> Ri tix koq’ik
+xa rumal man kawar taj
+Chatwaroq alaj tix
+xa rumal le ik' katuto</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- Adriano del Valle</g>
+        </g>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc">Rima – jun tzijob’elil tzij ruk’ jun k’amal b’e o ri ucholajil k’o chi upam rima. K’amb’al no’j:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
@@ -182,7 +253,6 @@ que la luna te va a oír</g>
         </g>
 
 
-      
       
       
       
@@ -222,9 +292,11 @@ que la luna te va a oír</g>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help" approved="yes">
-        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
-    </source>
-        <target xml:lang="quc" state="translated">Ri jalajoj taq wachib’al are jun chakub’al ri kto’b’an chech jun k'i'san tzijob'elil. Ri jalajoj taq wachib’al kajunamataj ruk’ ri k'i'san tzijob'elil pa k’i taq ub’antajik pa jalajoj <g id="genid-5" ctype="x-html-em"> niveles</g> xuquje’ chi kech jalajoj taq sik’ìnel taq uwach wuj (chawila chi uxe'). Chna’taj chi qech chi pa k’i taq tinamit man k’o ta k’i kiwuj b’anom, kraj ne k’ax kkiraq chech uch’ob’ik ri jalajoj taq wachib’al.
+        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.</source>
+        <target xml:lang="quc" state="translated">Ri jalajoj taq wachib’al are jun chakub’al ri kto’b’an chech jun k'i'san tzijob'elil. Ri jalajoj taq wachib’al kajunamataj ruk’ ri k'i'san tzijob'elil pa k’i taq ub’antajik pa jalajoj <g id="genid-5" ctype="x-html-em"> niveles</g> xuquje’ chi kech jalajoj taq sik’ìnel taq uwach wuj (chawila chi uxe'). Chna’taj chi qech chi pa k’i taq tinamit man k’o ta k’i kiwuj b’anom, kraj ne k’ax kkiraq chech uch’ob’ik ri jalajoj taq wachib’al.</target>
+        <note>ID: leveled.reader.illustrations.help</note>
+        <alt-trans>
+          <target xml:lang="quc">Ri jalajoj taq wachib’al are jun chakub’al ri kto’b’an chech jun k'i'san tzijob'elil. Ri jalajoj taq wachib’al kajunamataj ruk’ ri k'i'san tzijob'elil pa k’i taq ub’antajik pa jalajoj <g id="genid-5" ctype="x-html-em"> niveles</g> xuquje’ chi kech jalajoj taq sik’ìnel taq uwach wuj (chawila chi uxe'). Chna’taj chi qech chi pa k’i taq tinamit man k’o ta k’i kiwuj b’anom, kraj ne k’ax kkiraq chech uch’ob’ik ri jalajoj taq wachib’al.
     
     
     
@@ -253,10 +325,39 @@ que la luna te va a oír</g>
     
     
     </target>
-        <note>ID: leveled.reader.illustrations.help</note>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Ri jalajoj taq wachib’al are jun chakub’al ri kto’b’an chech jun k'i'san tzijob'elil. Ri jalajoj taq wachib’al kajunamataj ruk’ ri k'i'san tzijob'elil pa k’i taq ub’antajik pa jalajoj <g id="genid-5" ctype="x-html-em"> niveles</g> xuquje’ chi kech jalajoj taq sik’ìnel taq uwach wuj (chawila chi uxe'). Chna’taj chi qech chi pa k’i taq tinamit man k’o ta k’i kiwuj b’anom, kraj ne k’ax kkiraq chech uch’ob’ik ri jalajoj taq wachib’al.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc">Ri jalajoj taq wachib’al chakub’al rech to’b’anik che jun tzijob’elil tzij..  Ri jalajoj taq wachib’al kajunamataj ruk’ ri tzijob’elil  pa k’i taq ub’antajik pa jalajoj <g id="genid-5" ctype="x-html-em"> niveles</g> xuquje’ chi kech jalajoj  taq kb’antajik ri sik’ìnel taq uwach uwowuj (ver abajo). Chna’tasaj  k’i taq no’jib’al  man  k’o ta k’i  kiwuj b’anom, kaj ne k’ax kkiraq che uch’ob’ik ri jalajoj taq wachib’al.
-    
     
     
     
@@ -287,9 +388,11 @@ que la luna te va a oír</g>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
-      </source>
-        <target xml:lang="quc" state="translated">Chi kech <g id="genid-6" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g> ri jalajoj taq wachib’al rajawaxik kuk’ulaj rib’ ruk’ ri kematalik chech ri k'i'san tzijob'elil te'qne ri tzijob’elil. Are taq kil ri wachib’al, jun sik’inel uwach wuj kkowin chech unab’ejasaxik ub’ixik ri kematal wi. Rajawaxik chi ri jalajoj taq wachib’al chi upam we q’at ri' ma k’ax ta uch'ob'ik.      
+        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.</source>
+        <target xml:lang="quc" state="translated">Chi kech <g id="genid-6" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g> ri jalajoj taq wachib’al rajawaxik kuk’ulaj rib’ ruk’ ri kematalik chech ri k'i'san tzijob'elil te'qne ri tzijob’elil. Are taq kil ri wachib’al, jun sik’inel uwach wuj kkowin chech unab’ejasaxik ub’ixik ri kematal wi. Rajawaxik chi ri jalajoj taq wachib’al chi upam we q’at ri' ma k’ax ta uch'ob'ik.</target>
+        <note>ID: leveled.reader.illustrations.emergent.reader</note>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech <g id="genid-6" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g> ri jalajoj taq wachib’al rajawaxik kuk’ulaj rib’ ruk’ ri kematalik chech ri k'i'san tzijob'elil te'qne ri tzijob’elil. Are taq kil ri wachib’al, jun sik’inel uwach wuj kkowin chech unab’ejasaxik ub’ixik ri kematal wi. Rajawaxik chi ri jalajoj taq wachib’al chi upam we q’at ri' ma k’ax ta uch'ob'ik.      
       
       
 
@@ -321,7 +424,40 @@ que la luna te va a oír</g>
       
       
       </target>
-        <note>ID: leveled.reader.illustrations.emergent.reader</note>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech <g id="genid-6" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g> ri jalajoj taq wachib’al rajawaxik kuk’ulaj rib’ ruk’ ri kematalik chech ri k'i'san tzijob'elil te'qne ri tzijob’elil. Are taq kil ri wachib’al, jun sik’inel uwach wuj kkowin chech unab’ejasaxik ub’ixik ri kematal wi. Rajawaxik chi ri jalajoj taq wachib’al chi upam we q’at ri' ma k’ax ta uch'ob'ik.      
+      
+      
+
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc">Chi kech <g id="genid-6" ctype="x-html-strong"> Majb’al taq sik’inel wuj </g> ri k’i taq wachib’al  rajawaxik kuk’ulaj rib’ ruk’ ri kematalik chech ri tzijob’elil o b’ano’n. Are chi’ kil ri wachib’al, jun  sik’in uwach wuj kkowin che unab’ajasaxik ub’ixik ri kematal wi. Ri jalajoj taq wachib’al chi upam we q’at rajawaxik ma k’ax taj.      
       
@@ -353,20 +489,24 @@ que la luna te va a oír</g>
       
       
       
-      
       </target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
-      </source>
-        <target xml:lang="quc" state="translated">Chi kech ri <g id="genid-7" ctype="x-html-strong"> Nab'e taq sik’inel wuj </g> Rajawaxik ri wachib’al kkiya’ tob’anik chech ri kematalik. We kpaqi’ ri uk’iyal ri tz’ib’atalik, ri sik’inel uwach wuj man kuya chi uq'ij ri wachib’al, are kuch’ob’ ri tz’ib’atalik. Ri wachib’al utz kapaqi' uq'ij ri kel kub'ij.      
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.</source>
+        <target xml:lang="quc" state="translated">Chi kech ri <g id="genid-7" ctype="x-html-strong"> Nab'e taq sik’inel wuj </g> Rajawaxik ri wachib’al kkiya’ tob’anik chech ri kematalik. We kpaqi’ ri uk’iyal ri tz’ib’atalik, ri sik’inel uwach wuj man kuya chi uq'ij ri wachib’al, are kuch’ob’ ri tz’ib’atalik. Ri wachib’al utz kapaqi' uq'ij ri kel kub'ij.</target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
         <alt-trans>
-          <target xml:lang="quc">Chi kech ri <g id="genid-7" ctype="x-html-strong"> Majb’al taq sik’inel wuj </g>  Rajawaxik ri wachib’al kkiya’ tob’anik che ri kematalik. We kpaqi’ ri uk’iyal ri tz’ib’atalik, ri sikìnel rech ri uwo wuj kqaj lo rilik kb'ano che ri wachib’al  xuquje’  kch’ob’ na ri tz’ib’atalik. Ri wachib’al  k’ax chi na rilik. 
+          <target xml:lang="quc">Chi kech ri <g id="genid-7" ctype="x-html-strong"> Nab'e taq sik’inel wuj </g> Rajawaxik ri wachib’al kkiya’ tob’anik chech ri kematalik. We kpaqi’ ri uk’iyal ri tz’ib’atalik, ri sik’inel uwach wuj man kuya chi uq'ij ri wachib’al, are kuch’ob’ ri tz’ib’atalik. Ri wachib’al utz kapaqi' uq'ij ri kel kub'ij.      
       
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech ri <g id="genid-7" ctype="x-html-strong"> Nab'e taq sik’inel wuj </g> Rajawaxik ri wachib’al kkiya’ tob’anik chech ri kematalik. We kpaqi’ ri uk’iyal ri tz’ib’atalik, ri sik’inel uwach wuj man kuya chi uq'ij ri wachib’al, are kuch’ob’ ri tz’ib’atalik. Ri wachib’al utz kapaqi' uq'ij ri kel kub'ij.      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech ri <g id="genid-7" ctype="x-html-strong"> Majb’al taq sik’inel wuj </g>  Rajawaxik ri wachib’al kkiya’ tob’anik che ri kematalik. We kpaqi’ ri uk’iyal ri tz’ib’atalik, ri sikìnel rech ri uwo wuj kqaj lo rilik kb'ano che ri wachib’al  xuquje’  kch’ob’ na ri tz’ib’atalik. Ri wachib’al  k’ax chi na rilik. 
       
       
       
@@ -397,14 +537,18 @@ que la luna te va a oír</g>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.fluent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
-      </source>
-        <target xml:lang="quc" state="translated">Chi kech ri <g id="genid-8" ctype="x-html-strong">sak'aj taq sik’inel wuj</g> Ri jalajoj taq wachib’al kkiya’ jub’iq’ te'qne man katob’an ta chi chech ri kematalik. Ri uch’ob’onem rech sik’inel rech uwach wuj are ri kusik'ij uwach, man are ta chi ri wachib'al. Rajawaxik chi k’ax na uch'ob'ik ri kel kub'ij ri wachib'al.      
-      </target>
+        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.</source>
+        <target xml:lang="quc" state="translated">Chi kech ri <g id="genid-8" ctype="x-html-strong">sak'aj taq sik’inel wuj</g> Ri jalajoj taq wachib’al kkiya’ jub’iq’ te'qne man katob’an ta chi chech ri kematalik. Ri uch’ob’onem rech sik’inel rech uwach wuj are ri kusik'ij uwach, man are ta chi ri wachib'al. Rajawaxik chi k’ax na uch'ob'ik ri kel kub'ij ri wachib'al.</target>
         <note>ID: leveled.reader.fluent.reader</note>
         <alt-trans>
+          <target xml:lang="quc">Chi kech ri <g id="genid-8" ctype="x-html-strong">sak'aj taq sik’inel wuj</g> Ri jalajoj taq wachib’al kkiya’ jub’iq’ te'qne man katob’an ta chi chech ri kematalik. Ri uch’ob’onem rech sik’inel rech uwach wuj are ri kusik'ij uwach, man are ta chi ri wachib'al. Rajawaxik chi k’ax na uch'ob'ik ri kel kub'ij ri wachib'al.      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech ri <g id="genid-8" ctype="x-html-strong">sak'aj taq sik’inel wuj</g> Ri jalajoj taq wachib’al kkiya’ jub’iq’ te'qne man katob’an ta chi chech ri kematalik. Ri uch’ob’onem rech sik’inel rech uwach wuj are ri kusik'ij uwach, man are ta chi ri wachib'al. Rajawaxik chi k’ax na uch'ob'ik ri kel kub'ij ri wachib'al.      </target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="quc">Chi kech ri <g id="genid-8" ctype="x-html-strong">Suk’ sik’inel taq wuj </g> Ri wachib’al kkiya’ jub’iq’ o ma  jun tob’anik che ri kematalik. Ri uch’ob’anem ri sik’inel rech ri uwach uwowuj are kril na ri tz’ib’atalik chi uwach ri wachib’al. Wa’ k’ax chi na rilik. 
-      
       
       
       
@@ -447,14 +591,18 @@ que la luna te va a oír</g>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.emergent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.
-      </source>
-        <target xml:lang="quc" state="translated">Chi kech <g id="genid-9" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g> ri no'jwuj qas are kutzijoj ri no’jib’al, rajawaxik kajeqi’ xa pa jun chomab’al xuquje’ no'jinem ri man k’ax ta uch’ob’ik.      
-      </target>
+        <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.</source>
+        <target xml:lang="quc" state="translated">Chi kech <g id="genid-9" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g> ri no'jwuj qas are kutzijoj ri no’jib’al, rajawaxik kajeqi’ xa pa jun chomab’al xuquje’ no'jinem ri man k’ax ta uch’ob’ik.</target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
         <alt-trans>
+          <target xml:lang="quc">Chi kech <g id="genid-9" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g> ri no'jwuj qas are kutzijoj ri no’jib’al, rajawaxik kajeqi’ xa pa jun chomab’al xuquje’ no'jinem ri man k’ax ta uch’ob’ik.      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech <g id="genid-9" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g> ri no'jwuj qas are kutzijoj ri no’jib’al, rajawaxik kajeqi’ xa pa jun chomab’al xuquje’ no'jinem ri man k’ax ta uch’ob’ik.      </target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="quc">Chi kech <g id="genid-9" ctype="x-html-strong"> Sik’inel wuj k’ate’ tajan kumajo</g> ri wuj qas are kutzijoj ri no’jib’al, rajawaxik kajeqi’ pa jun chomab’al,  xuquje’ eta’mtal chi uwach  kumal rech ma k’axta uch’ob’ik..
-      
       
       
       
@@ -513,19 +661,22 @@ que la luna te va a oír</g>
       
       
       
-      
       </target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.early.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
-      </source>
-        <target xml:lang="quc" state="translated">Chi kech ri <g id="genid-10" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g>, rajawaxik kb’an jun k'i'san tzijob’elil pa uwi’ jun chomab’al eta’matal kumal xa are nim chi ub’antajik.      
-      </target>
+        <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.</source>
+        <target xml:lang="quc" state="translated">Chi kech ri <g id="genid-10" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g>, rajawaxik kb’an jun k'i'san tzijob’elil pa uwi’ jun chomab’al eta’matal kumal xa are nim chi ub’antajik.</target>
         <note>ID: leveled.reader.topic.choice.early.reader</note>
         <alt-trans>
+          <target xml:lang="quc">Chi kech ri <g id="genid-10" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g>, rajawaxik kb’an jun k'i'san tzijob’elil pa uwi’ jun chomab’al eta’matal kumal xa are nim chi ub’antajik.      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech ri <g id="genid-10" ctype="x-html-strong"> Nab'e taq sik’inel wuj</g>, rajawaxik kb’an jun k'i'san tzijob’elil pa uwi’ jun chomab’al eta’matal kumal xa are nim chi ub’antajik.      </target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="quc">Chi kech ri <g id="genid-10" ctype="x-html-strong"> Majb’al taq sik’inel wuj </g>, rajawaxik kb’an jun tzijob’elil tzij pa uwi’ jun chomab’al eta’m tal chik uwach ruk' nim, ub’antajik.
-      
       
       
       
@@ -557,14 +708,18 @@ que la luna te va a oír</g>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.fluent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
-      </source>
-        <target xml:lang="quc" state="translated">Chi kech ri <g id="genid-11" ctype="x-html-strong"> Sak'aj taq sik’inel wuj</g> ri jalajoj taq chomab’al man rajawaxik taj chi keta'm chik, utz la' we k'i uwach kya'ik xuquje’ chi xaq pa ri ri chomab’al k'o wi.      
-      </target>
+        <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.</source>
+        <target xml:lang="quc" state="translated">Chi kech ri <g id="genid-11" ctype="x-html-strong"> Sak'aj taq sik’inel wuj</g> ri jalajoj taq chomab’al man rajawaxik taj chi keta'm chik, utz la' we k'i uwach kya'ik xuquje’ chi xaq pa ri ri chomab’al k'o wi.</target>
         <note>ID: leveled.reader.topic.choice.fluent.reader</note>
         <alt-trans>
+          <target xml:lang="quc">Chi kech ri <g id="genid-11" ctype="x-html-strong"> Sak'aj taq sik’inel wuj</g> ri jalajoj taq chomab’al man rajawaxik taj chi keta'm chik, utz la' we k'i uwach kya'ik xuquje’ chi xaq pa ri ri chomab’al k'o wi.      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Chi kech ri <g id="genid-11" ctype="x-html-strong"> Sak'aj taq sik’inel wuj</g> ri jalajoj taq chomab’al man rajawaxik taj chi keta'm chik, utz la' we k'i uwach kya'ik xuquje’ chi xaq pa ri ri chomab’al k'o wi.      </target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="quc">Chi kech ri <g id="genid-11" ctype="x-html-strong"> Suk’ sik’inel taq wuj </g> k‘i taq chomab’al ma rajawaxik taj e alaxik, k’o kraj e jalajoj xuquje’ ri chomab’al kiltaj ta uwach.
-      
       
       
       
@@ -620,12 +775,10 @@ que la luna te va a oír</g>
       
       
       
-      
       </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="quc">Rech ri <g id="genid-11" ctype="x-html-strong">Lectores fluidos</g> k‘i taq chomab’al ma rajawaxik taj e alaxik, k’o kraj e jalajoj xuquje’ ri chomab’al kiltaj ta uwach.
-      
       
       
       

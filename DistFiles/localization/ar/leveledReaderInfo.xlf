@@ -34,21 +34,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.repeat.patterns" approved="yes">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
-        <target xml:lang="ar" state="translated">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-           <g id="genid-1" ctype="x-html-em">إمكانية التنبؤ</g> في النص تعني أنه يمكن للقارئ تخمين ما سيظهر بعد ذلك. ويمكنك زيادة مستوى إمكانية التنبؤ باستخدام أنماط متكررة. وفيما يلي بعض الأنماط التي يمكنك استخدامها:</target>
+        <target xml:lang="ar" state="translated"><g id="genid-1" ctype="x-html-em">إمكانية التنبؤ</g> في النص تعني أنه يمكن للقارئ تخمين ما سيظهر بعد ذلك. ويمكنك زيادة مستوى إمكانية التنبؤ باستخدام أنماط متكررة. وفيما يلي بعض الأنماط التي يمكنك استخدامها:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
         <alt-trans>
           <target xml:lang="ar">
@@ -64,6 +50,23 @@
           
           
           
+          
+           <g id="genid-1" ctype="x-html-em">إمكانية التنبؤ</g> في النص تعني أنه يمكن للقارئ تخمين ما سيظهر بعد ذلك. ويمكنك زيادة مستوى إمكانية التنبؤ باستخدام أنماط متكررة. وفيما يلي بعض الأنماط التي يمكنك استخدامها:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ar">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
            <g id="genid-1" ctype="x-html-em">إمكانية التنبؤ</g> في النص تعني أنه يمكن للقارئ تخمين ما سيظهر بعد ذلك. ويمكنك زيادة مستوى إمكانية التنبؤ باستخدام أنماط متكررة. وفيما يلي بعض الأنماط التي يمكنك استخدامها:</target>
         </alt-trans>
         <alt-trans>
@@ -98,18 +101,6 @@
         <alt-trans>
           <target xml:lang="ar">
           
-          
-          
-          
-          
-          
-          
-          
-          
-           <g id="genid-1" ctype="x-html-em">إمكانية التنبؤ</g> في النص تعني أنه يمكن للقارئ تخمين ما سيظهر بعد ذلك. ويمكنك زيادة مستوى إمكانية التنبؤ باستخدام أنماط متكررة. وفيما يلي بعض الأنماط التي يمكنك استخدامها:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ar">
           
           
           
@@ -142,8 +133,7 @@
 I see a red bird looking at me.
 Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
-Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g>
-      </source>
+Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g></source>
         <target xml:lang="ar" state="translated">السجع - خلق قصة ذات نمط أو تسلسل يتضمن سجعًا. مثل:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
           <g id="genid-3" ctype="x-html-pre"> ألف: أرنب يجري يلعب، يأكل جزراً كي لا يتعب
@@ -152,22 +142,7 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
 ثاء: ثعلب صاد دجاجة، وهو ماكر وقت الحاجة
 جيم: جمل في الصحراء، مثل سفينة فوق الماء</g>
           <g id="genid-4" ctype="x-html-div" html:class="author">- من أغاني الأطفال الشائعة بهذا النمط</g>
-        </g>
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
+        </g></target>
         <note>ID: leveled.reader.rhyme</note>
         <alt-trans>
           <target xml:lang="ar">السجع - خلق قصة ذات نمط أو تسلسل يتضمن سجعًا. مثل:
@@ -192,6 +167,32 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ar">السجع - خلق قصة ذات نمط أو تسلسل يتضمن سجعًا. مثل:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre"> ألف: أرنب يجري يلعب، يأكل جزراً كي لا يتعب
+باء: بطة نطت نطة، وقعت ضحكت منها القطة
+تاء: تاج فوق الراس، فيه الذهب وفيه الماس
+ثاء: ثعلب صاد دجاجة، وهو ماكر وقت الحاجة
+جيم: جمل في الصحراء، مثل سفينة فوق الماء</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- من أغاني الأطفال الشائعة بهذا النمط</g>
+        </g>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -252,27 +253,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <g id="genid-4" ctype="x-html-div" html:class="author">- من أغاني الأطفال الشائعة بهذا النمط</g>
         </g>
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ar">السجع - خلق قصة ذات نمط أو تسلسل يتضمن سجعًا. مثل:
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre"> ألف: أرنب يجري يلعب، يأكل جزراً كي لا يتعب
-باء: بطة نطت نطة، وقعت ضحكت منها القطة
-تاء: تاج فوق الراس، فيه الذهب وفيه الماس
-ثاء: ثعلب صاد دجاجة، وهو ماكر وقت الحاجة
-جيم: جمل في الصحراء، مثل سفينة فوق الماء</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author">- من أغاني الأطفال الشائعة بهذا النمط</g>
-        </g>
       
       
       
@@ -291,24 +271,8 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <note>ID: leveled.reader.illustrations</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help" approved="yes">
-        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
-    </source>
-        <target xml:lang="ar" state="translated">تشكل الرسوم أهمية كبيرة في دعم القصة. ويجب أن تكون الرسوم ذات صلة بالقصة بطرق مختلفة <g id="genid-5" ctype="x-html-em">ومستويات مختلفة</g> وأنواع مختلفة من القراء (راجع أدناه). لا تنس أنه في الكثير من الثقافات التي لم تعتاد على توافر مواد مطبوعة، قد يصعب استيعاب الصور المعقَّدة.
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    </target>
+        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.</source>
+        <target xml:lang="ar" state="translated">تشكل الرسوم أهمية كبيرة في دعم القصة. ويجب أن تكون الرسوم ذات صلة بالقصة بطرق مختلفة <g id="genid-5" ctype="x-html-em">ومستويات مختلفة</g> وأنواع مختلفة من القراء (راجع أدناه). لا تنس أنه في الكثير من الثقافات التي لم تعتاد على توافر مواد مطبوعة، قد يصعب استيعاب الصور المعقَّدة.</target>
         <note>ID: leveled.reader.illustrations.help</note>
         <alt-trans>
           <target xml:lang="ar">تشكل الرسوم أهمية كبيرة في دعم القصة. ويجب أن تكون الرسوم ذات صلة بالقصة بطرق مختلفة <g id="genid-5" ctype="x-html-em">ومستويات مختلفة</g> وأنواع مختلفة من القراء (راجع أدناه). لا تنس أنه في الكثير من الثقافات التي لم تعتاد على توافر مواد مطبوعة، قد يصعب استيعاب الصور المعقَّدة.
@@ -325,6 +289,24 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
     
     
     
+    
+    </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ar">تشكل الرسوم أهمية كبيرة في دعم القصة. ويجب أن تكون الرسوم ذات صلة بالقصة بطرق مختلفة <g id="genid-5" ctype="x-html-em">ومستويات مختلفة</g> وأنواع مختلفة من القراء (راجع أدناه). لا تنس أنه في الكثير من الثقافات التي لم تعتاد على توافر مواد مطبوعة، قد يصعب استيعاب الصور المعقَّدة.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     </target>
         </alt-trans>
         <alt-trans>
@@ -361,19 +343,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="ar">تشكل الرسوم أهمية كبيرة في دعم القصة. ويجب أن تكون الرسوم ذات صلة بالقصة بطرق مختلفة <g id="genid-5" ctype="x-html-em">ومستويات مختلفة</g> وأنواع مختلفة من القراء (راجع أدناه). لا تنس أنه في الكثير من الثقافات التي لم تعتاد على توافر مواد مطبوعة، قد يصعب استيعاب الصور المعقَّدة.
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ar">تشكل الرسوم أهمية كبيرة في دعم القصة. ويجب أن تكون الرسوم ذات صلة بالقصة بطرق مختلفة <g id="genid-5" ctype="x-html-em">ومستويات مختلفة</g> وأنواع مختلفة من القراء (راجع أدناه). لا تنس أنه في الكثير من الثقافات التي لم تعتاد على توافر مواد مطبوعة، قد يصعب استيعاب الصور المعقَّدة.
     
     
     
@@ -387,24 +356,8 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
-      </source>
-        <target xml:lang="ar" state="translated">بالنسبة إلى <g id="genid-6" ctype="x-html-strong">القارئ الناشئ</g> يجب أن تتطابق الصور تماماً مع حبكة القصة. يجب أن يتمكن القارئ من التنبؤ بمسار القصة من خلال النظر إلى الصور فقط. ولذلك يجب أن تكون الرسوم في هذا المستوى بسيطة.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.</source>
+        <target xml:lang="ar" state="translated">بالنسبة إلى <g id="genid-6" ctype="x-html-strong">القارئ الناشئ</g> يجب أن تتطابق الصور تماماً مع حبكة القصة. يجب أن يتمكن القارئ من التنبؤ بمسار القصة من خلال النظر إلى الصور فقط. ولذلك يجب أن تكون الرسوم في هذا المستوى بسيطة.</target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
         <alt-trans>
           <target xml:lang="ar">بالنسبة إلى <g id="genid-6" ctype="x-html-strong">القارئ الناشئ</g> يجب أن تتطابق الصور تماماً مع حبكة القصة. يجب أن يتمكن القارئ من التنبؤ بمسار القصة من خلال النظر إلى الصور فقط. ولذلك يجب أن تكون الرسوم في هذا المستوى بسيطة.
@@ -421,6 +374,24 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ar">بالنسبة إلى <g id="genid-6" ctype="x-html-strong">القارئ الناشئ</g> يجب أن تتطابق الصور تماماً مع حبكة القصة. يجب أن يتمكن القارئ من التنبؤ بمسار القصة من خلال النظر إلى الصور فقط. ولذلك يجب أن تكون الرسوم في هذا المستوى بسيطة.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -457,19 +428,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="ar">بالنسبة إلى <g id="genid-6" ctype="x-html-strong">القارئ الناشئ</g> يجب أن تتطابق الصور تماماً مع حبكة القصة. يجب أن يتمكن القارئ من التنبؤ بمسار القصة من خلال النظر إلى الصور فقط. ولذلك يجب أن تكون الرسوم في هذا المستوى بسيطة.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ar">بالنسبة إلى <g id="genid-6" ctype="x-html-strong">القارئ الناشئ</g> يجب أن تتطابق الصور تماماً مع حبكة القصة. يجب أن يتمكن القارئ من التنبؤ بمسار القصة من خلال النظر إلى الصور فقط. ولذلك يجب أن تكون الرسوم في هذا المستوى بسيطة.
       
       
       
@@ -483,24 +441,8 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
-      </source>
-        <target xml:lang="ar" state="translated">بالنسبة إلى <g id="genid-7" ctype="x-html-strong">القارئ المبتدئ</g> يجب أن تكون الصور مفيدة لدعم واستيعاب حبكة القصة. عندما يزيد حجم النص، يقل اعتماد القارئ على الصور ويزيد اعتماده على النص لاستيعاب المعنى. يمكن أن تكون الرسوم أكثر تعقيداً.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.</source>
+        <target xml:lang="ar" state="translated">بالنسبة إلى <g id="genid-7" ctype="x-html-strong">القارئ المبتدئ</g> يجب أن تكون الصور مفيدة لدعم واستيعاب حبكة القصة. عندما يزيد حجم النص، يقل اعتماد القارئ على الصور ويزيد اعتماده على النص لاستيعاب المعنى. يمكن أن تكون الرسوم أكثر تعقيداً.</target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
         <alt-trans>
           <target xml:lang="ar">بالنسبة إلى <g id="genid-7" ctype="x-html-strong">القارئ المبتدئ</g> يجب أن تكون الصور مفيدة لدعم واستيعاب حبكة القصة. عندما يزيد حجم النص، يقل اعتماد القارئ على الصور ويزيد اعتماده على النص لاستيعاب المعنى. يمكن أن تكون الرسوم أكثر تعقيداً.
@@ -517,6 +459,24 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ar">بالنسبة إلى <g id="genid-7" ctype="x-html-strong">القارئ المبتدئ</g> يجب أن تكون الصور مفيدة لدعم واستيعاب حبكة القصة. عندما يزيد حجم النص، يقل اعتماد القارئ على الصور ويزيد اعتماده على النص لاستيعاب المعنى. يمكن أن تكون الرسوم أكثر تعقيداً.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -553,19 +513,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="ar">بالنسبة إلى <g id="genid-7" ctype="x-html-strong">القارئ المبتدئ</g> يجب أن تكون الصور مفيدة لدعم واستيعاب حبكة القصة. عندما يزيد حجم النص، يقل اعتماد القارئ على الصور ويزيد اعتماده على النص لاستيعاب المعنى. يمكن أن تكون الرسوم أكثر تعقيداً.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ar">بالنسبة إلى <g id="genid-7" ctype="x-html-strong">القارئ المبتدئ</g> يجب أن تكون الصور مفيدة لدعم واستيعاب حبكة القصة. عندما يزيد حجم النص، يقل اعتماد القارئ على الصور ويزيد اعتماده على النص لاستيعاب المعنى. يمكن أن تكون الرسوم أكثر تعقيداً.
       
       
       
@@ -579,24 +526,8 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.fluent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
-      </source>
-        <target xml:lang="ar" state="translated">بالنسبة إلى <g id="genid-8" ctype="x-html-strong">القارئ الفصيح</g> يجب ألا تدعم الصور حبكة القصة كثيرا أو حتى تنعدم إضافتها. يعتمد القارئ في الاستيعاب على النص بشكل أكبر من اعتماده على الصور. يمكن أن تكون الرسوم أكثر تعقيدًا من نمط القارئ المبتدئ.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.</source>
+        <target xml:lang="ar" state="translated">بالنسبة إلى <g id="genid-8" ctype="x-html-strong">القارئ الفصيح</g> يجب ألا تدعم الصور حبكة القصة كثيرا أو حتى تنعدم إضافتها. يعتمد القارئ في الاستيعاب على النص بشكل أكبر من اعتماده على الصور. يمكن أن تكون الرسوم أكثر تعقيدًا من نمط القارئ المبتدئ.</target>
         <note>ID: leveled.reader.fluent.reader</note>
         <alt-trans>
           <target xml:lang="ar">بالنسبة إلى <g id="genid-8" ctype="x-html-strong">القارئ الفصيح</g> يجب ألا تدعم الصور حبكة القصة كثيرا أو حتى تنعدم إضافتها. يعتمد القارئ في الاستيعاب على النص بشكل أكبر من اعتماده على الصور. يمكن أن تكون الرسوم أكثر تعقيدًا من نمط القارئ المبتدئ.
@@ -613,6 +544,24 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ar">بالنسبة إلى <g id="genid-8" ctype="x-html-strong">القارئ الفصيح</g> يجب ألا تدعم الصور حبكة القصة كثيرا أو حتى تنعدم إضافتها. يعتمد القارئ في الاستيعاب على النص بشكل أكبر من اعتماده على الصور. يمكن أن تكون الرسوم أكثر تعقيدًا من نمط القارئ المبتدئ.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -649,19 +598,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="ar">بالنسبة إلى <g id="genid-8" ctype="x-html-strong">القارئ الفصيح</g> يجب ألا تدعم الصور حبكة القصة كثيرا أو حتى تنعدم إضافتها. يعتمد القارئ في الاستيعاب على النص بشكل أكبر من اعتماده على الصور. يمكن أن تكون الرسوم أكثر تعقيدًا من نمط القارئ المبتدئ.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ar">بالنسبة إلى <g id="genid-8" ctype="x-html-strong">القارئ الفصيح</g> يجب ألا تدعم الصور حبكة القصة كثيرا أو حتى تنعدم إضافتها. يعتمد القارئ في الاستيعاب على النص بشكل أكبر من اعتماده على الصور. يمكن أن تكون الرسوم أكثر تعقيدًا من نمط القارئ المبتدئ.
       
       
       
@@ -685,24 +621,8 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <note>ID: leveled.reader.topic.choice.discussion</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.emergent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.
-      </source>
-        <target xml:lang="ar" state="translated">بالنسبة إلى <g id="genid-9" ctype="x-html-strong">القارئ الناشئ</g> يجب أن يكون المحتوى ملموساً في الواقع، وأن يركز على فكرة واحدة أو موضوع واحد، وأن تكون لدى القارئ خلفية عن هذه الفكرة لبسهل عليهم استيعابها.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.</source>
+        <target xml:lang="ar" state="translated">بالنسبة إلى <g id="genid-9" ctype="x-html-strong">القارئ الناشئ</g> يجب أن يكون المحتوى ملموساً في الواقع، وأن يركز على فكرة واحدة أو موضوع واحد، وأن تكون لدى القارئ خلفية عن هذه الفكرة لبسهل عليهم استيعابها.</target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
         <alt-trans>
           <target xml:lang="ar">بالنسبة إلى <g id="genid-9" ctype="x-html-strong">القارئ الناشئ</g> يجب أن يكون المحتوى ملموساً في الواقع، وأن يركز على فكرة واحدة أو موضوع واحد، وأن تكون لدى القارئ خلفية عن هذه الفكرة لبسهل عليهم استيعابها.
@@ -719,6 +639,24 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ar">بالنسبة إلى <g id="genid-9" ctype="x-html-strong">القارئ الناشئ</g> يجب أن يكون المحتوى ملموساً في الواقع، وأن يركز على فكرة واحدة أو موضوع واحد، وأن تكون لدى القارئ خلفية عن هذه الفكرة لبسهل عليهم استيعابها.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -755,19 +693,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="ar">بالنسبة إلى <g id="genid-9" ctype="x-html-strong">القارئ الناشئ</g> يجب أن يكون المحتوى ملموساً في الواقع، وأن يركز على فكرة واحدة أو موضوع واحد، وأن تكون لدى القارئ خلفية عن هذه الفكرة لبسهل عليهم استيعابها.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ar">بالنسبة إلى <g id="genid-9" ctype="x-html-strong">القارئ الناشئ</g> يجب أن يكون المحتوى ملموساً في الواقع، وأن يركز على فكرة واحدة أو موضوع واحد، وأن تكون لدى القارئ خلفية عن هذه الفكرة لبسهل عليهم استيعابها.
       
       
       
@@ -781,24 +706,8 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.early.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
-      </source>
-        <target xml:lang="ar" state="translated">بالنسبة إلى <g id="genid-10" ctype="x-html-strong">القارئ المبتدئ</g>، ابتكر قصة تتمحور حول موضوع شائع، ولكن مع تناول تفاصيل بعمق أكبر.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.</source>
+        <target xml:lang="ar" state="translated">بالنسبة إلى <g id="genid-10" ctype="x-html-strong">القارئ المبتدئ</g>، ابتكر قصة تتمحور حول موضوع شائع، ولكن مع تناول تفاصيل بعمق أكبر.</target>
         <note>ID: leveled.reader.topic.choice.early.reader</note>
         <alt-trans>
           <target xml:lang="ar">بالنسبة إلى <g id="genid-10" ctype="x-html-strong">القارئ المبتدئ</g>، ابتكر قصة تتمحور حول موضوع شائع، ولكن مع تناول تفاصيل بعمق أكبر.
@@ -815,6 +724,24 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ar">بالنسبة إلى <g id="genid-10" ctype="x-html-strong">القارئ المبتدئ</g>، ابتكر قصة تتمحور حول موضوع شائع، ولكن مع تناول تفاصيل بعمق أكبر.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -851,19 +778,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="ar">بالنسبة إلى <g id="genid-10" ctype="x-html-strong">القارئ المبتدئ</g>، ابتكر قصة تتمحور حول موضوع شائع، ولكن مع تناول تفاصيل بعمق أكبر.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ar">بالنسبة إلى <g id="genid-10" ctype="x-html-strong">القارئ المبتدئ</g>، ابتكر قصة تتمحور حول موضوع شائع، ولكن مع تناول تفاصيل بعمق أكبر.
       
       
       
@@ -877,24 +791,8 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.fluent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
-      </source>
-        <target xml:lang="ar" state="translated">بالنسبة إلى <g id="genid-11" ctype="x-html-strong">القارئ الفصيح</g> يمكن أن تمتد المفاهيم إلى ما دون الشائع، حاول أن تتسم هذه المفاهيم بالتنوع ، وأن تكون مجرَّدة.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.</source>
+        <target xml:lang="ar" state="translated">بالنسبة إلى <g id="genid-11" ctype="x-html-strong">القارئ الفصيح</g> يمكن أن تمتد المفاهيم إلى ما دون الشائع، حاول أن تتسم هذه المفاهيم بالتنوع ، وأن تكون مجرَّدة.</target>
         <note>ID: leveled.reader.topic.choice.fluent.reader</note>
         <alt-trans>
           <target xml:lang="ar">بالنسبة إلى <g id="genid-11" ctype="x-html-strong">القارئ الفصيح</g> يمكن أن تمتد المفاهيم إلى ما دون الشائع، حاول أن تتسم هذه المفاهيم بالتنوع ، وأن تكون مجرَّدة.
@@ -911,6 +809,24 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
       
       
       
+      
+      </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ar">بالنسبة إلى <g id="genid-11" ctype="x-html-strong">القارئ الفصيح</g> يمكن أن تمتد المفاهيم إلى ما دون الشائع، حاول أن تتسم هذه المفاهيم بالتنوع ، وأن تكون مجرَّدة.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </target>
         </alt-trans>
         <alt-trans>
@@ -947,19 +863,6 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <alt-trans>
           <target xml:lang="ar">بالنسبة إلى <g id="genid-11" ctype="x-html-strong">القارئ الفصيح</g> يمكن أن تمتد المفاهيم إلى ما دون الشائع، حاول أن تتسم هذه المفاهيم بالتنوع ، وأن تكون مجرَّدة.
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ar">بالنسبة إلى <g id="genid-11" ctype="x-html-strong">القارئ الفصيح</g> يمكن أن تمتد المفاهيم إلى ما دون الشائع، حاول أن تتسم هذه المفاهيم بالتنوع ، وأن تكون مجرَّدة.
       
       
       
