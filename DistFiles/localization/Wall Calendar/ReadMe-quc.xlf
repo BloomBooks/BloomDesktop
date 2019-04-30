@@ -2,35 +2,48 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="quc">
     <body>
-      <trans-unit id="wall.calendar">
+      <trans-unit id="wall.calendar" approved="yes">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="quc" state="needs-translation">About the Wall Calendar Template</target>
+        <target xml:lang="quc" state="translated">Chi rij le Raqanib’al ri Cholq’ij
+</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.use">
+      <trans-unit id="wall.calendar.use" approved="yes">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="quc" state="needs-translation">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</target>
+        <target xml:lang="quc" state="translated">Ruk’ we raqanib’al ri', katkowinik kab’an jun cholq’ij rech kab’lajuj ik’ ruk' unimal A5, ruk’ jun wachib’al xuquje’ jun chomab’al pa uwi' chi jujunal ri uxaq wuj xuquje’ ri q’ij rech ri ik’ chi uxe’. Ri cholq’ij kuya'o kukoj ri b’i’aj rech taq ri ik’ xuquje’ ri q’ij rech ri atzijob’al.</target>
         <note>ID: wall.calendar.use</note>
+        <alt-trans>
+          <target xml:lang="quc">Ruk’ we aqanib’al, katkowinik kab’an jun cholq’ij re kab’alajuj ik’ ri unimal A5, ruk’ jun wachib’al xuquje’ jun chomab’al  ajasik che ri jujunal chi kech ri uxaq xuquje’ ri q’ij rech ri ik’ chi uxe’. Ri cholq’ij kukoj na ri b’i’aj rech taq ri ik’ xuquje’ ri q’ij  rech ri atzijob’al.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="wall.calendar.limits">
+      <trans-unit id="wall.calendar.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
         <target xml:lang="quc" state="translated">Ruk'ayewal re chak re</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.noshells">
+      <trans-unit id="wall.calendar.noshells" approved="yes">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="quc" state="needs-translation">Currently, you cannot make a "shell" for other languages to use.</target>
+        <target xml:lang="quc" state="translated">Chanim ri’, man kuya taj kab’an jun “cholq'ij wokotal chik” rech kokisax pa jule' taq tzijob’al chik.</target>
         <note>ID: wall.calendar.noshells</note>
+        <alt-trans>
+          <target xml:lang="quc">Kamik ri’, ma kuya taj kab’an jun “cholq’ij ya’om chi uloq” rech koksax pa nik’aj taq tzijob’al chik.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="wall.calendar.credits">
+      <trans-unit id="wall.calendar.credits" approved="yes">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="quc" state="translated">Rajaw</target>
+        <target xml:lang="quc" state="translated">Rajawab'</target>
         <note>ID: wall.calendar.credits</note>
+        <alt-trans>
+          <target xml:lang="quc">Rajaw</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="wall.calendar.thanks">
+      <trans-unit id="wall.calendar.thanks" approved="yes">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="quc" state="needs-translation">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</target>
+        <target xml:lang="quc" state="translated">Maltyox chech Bruce Cox (SIL Camerún) rumal umajik ub’anik we raqanib’al ri'.</target>
         <note>ID: wall.calendar.thanks</note>
+        <alt-trans>
+          <target xml:lang="quc">Maltyox che Bruce Cox (SIL Camerún) rumal umajik ub’anik we raqanib’al.</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>

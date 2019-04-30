@@ -52,10 +52,13 @@
         <target xml:lang="quc" state="needs-translation">Leveled Reader Level</target>
         <note>ID: leveled.reader.level</note>
       </trans-unit>
-      <trans-unit id="decodable.stage">
+      <trans-unit id="decodable.stage" approved="yes">
         <source xml:lang="en">Decodable Stage</source>
-        <target xml:lang="quc" state="needs-translation">Decodable Stage</target>
+        <target xml:lang="quc" state="translated">Uq’e’tal kch’ob’otajik</target>
         <note>ID: decodable.stage</note>
+        <alt-trans>
+          <target xml:lang="quc">Uq’e’tal kch’ob’atajik</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>

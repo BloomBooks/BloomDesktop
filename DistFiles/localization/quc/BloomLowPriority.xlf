@@ -2,86 +2,151 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="quc">
     <body>
-      <trans-unit id="Settings.Enterprise.Community">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed" approved="yes">
+        <source xml:lang="en">Conversion file used:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
+        <note>After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specificies a mapping which is used to convert the script for one language into the script for another.</note>
+        <target xml:lang="quc" state="translated">K’olchak rech kojom k’exenik:</target>
+        <alt-trans>
+          <target xml:lang="quc">K’olchak rech k’exnik kojom</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error" approved="yes">
+        <source xml:lang="en">eSpeak failed.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
+        <note>This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
+        <target xml:lang="quc" state="translated">eSpeak xub’an k’ax.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed" approved="yes">
+        <source xml:lang="en">eSpeak language:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed</note>
+        <note>After this text, the program will display the language code of the language settings that eSpeak used. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
+        <target xml:lang="quc" state="translated">eSpeak tzijob’al:</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion" approved="yes">
+        <source xml:lang="en">Result of orthography conversion:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
+        <note>After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file.</note>
+        <target xml:lang="quc" state="translated">Uwach ri k'exenem pa uwi’ ri taqatz’ib’anik:</target>
+        <alt-trans>
+          <target xml:lang="quc">Uwach ri tzijonem pa uwi’ ri suk’ tz’ib’:</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Community" approved="yes">
         <source xml:lang="en">Funded by the local community only</source>
         <note>ID: Settings.Enterprise.Community</note>
-        <target xml:lang="quc" state="needs-translation">Funded by the local community only</target>
+        <target xml:lang="quc" state="translated">Ya'tal xuwi rumal ajuxe’l komon</target>
+        <alt-trans>
+          <target xml:lang="quc">Rumal xuwi ajxe’el ri komon</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.CheckUpdates">
+      <trans-unit id="Settings.Enterprise.CheckUpdates" approved="yes">
         <source xml:lang="en">Check for updates</source>
         <note>ID: Settings.Enterprise.CheckUpdates</note>
-        <target xml:lang="quc" state="needs-translation">Check for updates</target>
+        <target xml:lang="quc" state="translated">Utzukuxik k'ak'arisaxik</target>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Expiration">
+      <trans-unit id="Settings.Enterprise.Expiration" approved="yes">
         <source xml:lang="en">Expires:</source>
         <note>ID: Settings.Enterprise.Expiration</note>
-        <target xml:lang="quc" state="needs-translation">Expires:</target>
+        <target xml:lang="quc" state="translated">Xk’is uq’ijol:</target>
+        <alt-trans>
+          <target xml:lang="quc">Xk’is uq’ijol</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Expired">
+      <trans-unit id="Settings.Enterprise.Expired" approved="yes">
         <source xml:lang="en">That code has expired.</source>
         <note>ID: Settings.Enterprise.Expired</note>
-        <target xml:lang="quc" state="needs-translation">That code has expired.</target>
+        <target xml:lang="quc" state="translated">Xk’is uq’ijol ri retal.</target>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Incomplete">
+      <trans-unit id="Settings.Enterprise.Incomplete" approved="yes">
         <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
         <note>ID: Settings.Enterprise.Incomplete</note>
-        <target xml:lang="quc" state="needs-translation"> The code should look like SOMENAME-123456-7890</target>
+        <target xml:lang="quc" state="translated"> Ri retal rajawaxik k’o ri q’inb'al B’I’AJ-123456-7890</target>
+        <alt-trans>
+          <target xml:lang="quc"> Ri retal rajawaxik k’o ri q’in B’I’AJ-123456-7890</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.LearnMore">
+      <trans-unit id="Settings.Enterprise.LearnMore" approved="yes">
         <source xml:lang="en">Learn More</source>
         <note>ID: Settings.Enterprise.LearnMore</note>
-        <target xml:lang="quc" state="needs-translation">Learn More</target>
+        <target xml:lang="quc" state="translated">K’i na eta’manik</target>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Overview">
+      <trans-unit id="Settings.Enterprise.Overview" approved="yes">
         <source xml:lang="en">
             Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
         </source>
         <note>ID: Settings.Enterprise.Overview</note>
-        <target xml:lang="quc" state="needs-translation">
-            Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
+        <target xml:lang="quc" state="translated">
+            Bloom wokk’ayinel kuya uwi’ ri chak xuquje’ upatanisaxik chi nim upatan chi kech le ja k’iyirisanem taq wuj, q’atab’al taq tzij rech amaq’, wokaj ajch’aqaja’ taq tinamit ri kepe wi xuquje’ nik’aj chik. Ri tz’ib’axik rech b’i’aj tojom chik, ya’talik kril ri rajawaxik chi iwech xuquje’ ktob’an chech ri k’iyirisanem rech Bloom chi kech konojel ri komon ri kekojowik.
         </target>
+        <alt-trans>
+          <target xml:lang="quc">
+            Bloom wokk’aynel kuya uwi’ ri chak xuquje’ patanisaxik che nim upatan chi kech le ja k’iyirisanem taq wuj, q’atab’al taq tzij rech amaq’, wokaj ch’aqaja’ taq tinamit kepe wi xuquje’ nik’aj chik. Ri tz’ib’axik b’i’aj tojom chik ya’talik kril ri rajawaxik  iwech xuquje’ kto’b’an che ri k’iyirisanem rech Bloom chi kech konojel ri komon ri kekojowik. 
+        </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.None">
+      <trans-unit id="Settings.Enterprise.None" approved="yes">
         <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
         <note>ID: Settings.Enterprise.None</note>
-        <target xml:lang="quc" state="needs-translation">None. Bloom will not show Enterprise features.</target>
+        <target xml:lang="quc" state="translated">Man k'o ta jun. Bloom man kk’ut ta na ri chak wokk’ayinel.</target>
+        <alt-trans>
+          <target xml:lang="quc">Majun. Bloom man kk’ut ta na ri chak wokk’ayinel.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.NeedsCode">
+      <trans-unit id="Settings.Enterprise.NeedsCode" approved="yes">
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
         <note>ID: Settings.Enterprise.NeedsCode</note>
         <note>%0 will be replaced with the name of the branding. Keep surrounding **...**. [here](%1) will become a hot link; %1 will not be seen, but will be the URL for the destination page. Translate "here" and keep the [](%1) around it.</note>
-        <target xml:lang="quc" state="needs-translation">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</target>
+        <target xml:lang="quc" state="translated">Pa jun ub’anik okib’al kanoq rech Bloom, we ch’ob’om chak xukujo **%0**. Rech utaqaxik ukojik rajawaxik katok ruk’ ri awetal xya’ik are taq xatz’ib’aj ab’i' kamik ri’. Ri retal rech k’utb’alil rech SIL kariqitaj pa [here](%1). Rech nik’aj chik tz’ib’am b’i’aj, rajawaxik katzukuj ri rajch’ab’em k'amal b'e rech ri ch’ob’om chak.</target>
+        <alt-trans>
+          <target xml:lang="quc">Pa jun  ub’anik okib’al kanoq rech Bloom, we ch’ob’om chak xukujo **%0**. Rech utaqaxik ukojik rajawaxik kat tok ruk’ ri awetal xya’ik are chi’ xatz’ib’aj ab’i kamik ri’. Ri retal rech k’utb’alil rech SIL karaqataj pa [here](%1). Rech nik’aj chik tz’ib’am  b’i’aj, rajawaxik katzukuj ri rajch’ab’em k'amalb'e rech ri ch’ob’om chak.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.NotValid">
+      <trans-unit id="Settings.Enterprise.NotValid" approved="yes">
         <source xml:lang="en">That code appears to be incorrect.</source>
         <note>ID: Settings.Enterprise.NotValid</note>
-        <target xml:lang="quc" state="needs-translation">That code appears to be incorrect.</target>
+        <target xml:lang="quc" state="translated">Le retal pacha’ man are ta ub’e.</target>
+        <alt-trans>
+          <target xml:lang="quc">Are la’ retal pa cha’ ne man are ta ub’e. </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Status">
+      <trans-unit id="Settings.Enterprise.Status" approved="yes">
         <source xml:lang="en">Bloom Enterprise Status</source>
         <note>ID: Settings.Enterprise.Status</note>
-        <target xml:lang="quc" state="needs-translation">Bloom Enterprise Status</target>
+        <target xml:lang="quc" state="translated">Ub'antajik ri Bloom wokk’ayinel</target>
+        <alt-trans>
+          <target xml:lang="quc">Ub'antajik ri Bloom wokk’aynel </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Subscription">
+      <trans-unit id="Settings.Enterprise.Subscription" approved="yes">
         <source xml:lang="en">Enterprise Subscription</source>
         <note>ID: Settings.Enterprise.Subscription</note>
-        <target xml:lang="quc" state="needs-translation">Enterprise Subscription</target>
+        <target xml:lang="quc" state="translated">Utz’ib’axik b’i’aj wokk’ayinel</target>
+        <alt-trans>
+          <target xml:lang="quc">Utz’ib’axik b’i’aj  wokk’aynel</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.SubscriptionCode">
+      <trans-unit id="Settings.Enterprise.SubscriptionCode" approved="yes">
         <source xml:lang="en">Subscription Code:</source>
         <note>ID: Settings.Enterprise.SubscriptionCode</note>
-        <target xml:lang="quc" state="needs-translation">Subscription Code:</target>
+        <target xml:lang="quc" state="translated">Retal rech utz’ib’axik b’i’aj: </target>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.UnknownCode">
+      <trans-unit id="Settings.Enterprise.UnknownCode" approved="yes">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
         <note>ID: Settings.Enterprise.UnknownCode</note>
-        <target xml:lang="quc" state="needs-translation">This version of Bloom does not have the artwork that goes with that subscription.</target>
+        <target xml:lang="quc" state="translated">We okib’al ub’anik rech ri Bloom man k’o ta chi upam ri jalajoj taq wachib’al chi b’enaq ruk’ utz’ib’axik b’i’aj.</target>
+        <alt-trans>
+          <target xml:lang="quc">We okib’al ub’anik rech ri Bloom ma k’o ta chi upam ri jalajoj taq wachib’al che b’enaq ruk’ utz’ib’axik b’i’aj.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.WhatsThis">
+      <trans-unit id="Settings.Enterprise.WhatsThis" approved="yes">
         <source xml:lang="en">What's This?</source>
         <note>ID: Settings.Enterprise.WhatsThis</note>
         <note>A link offering more information about the Funded Local Community Only option</note>
-        <target xml:lang="quc" state="needs-translation">What's This?</target>
+        <target xml:lang="quc" state="translated">¿Su we ri’?</target>
+        <alt-trans>
+          <target xml:lang="quc">¿Su wa we ri’?</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>
