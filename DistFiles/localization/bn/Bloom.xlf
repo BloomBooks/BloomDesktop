@@ -106,7 +106,10 @@
       <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No essential information by color</source>
         <note>ID: AccessibilityCheck.noEssentialInfoByColor</note>
-        <target xml:lang="bn" state="translated">রঙ দ্ৱারা কোন অপরিহার্য তথ্য নেই</target>
+        <target xml:lang="bn" state="translated">আর কোন অপরিহার্য তথ্য রঙিন করা নেই</target>
+        <alt-trans>
+          <target xml:lang="bn">রঙ দ্ৱারা কোন অপরিহার্য তথ্য নেই</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.WindowTitle" sil:dynamic="true">
         <source xml:lang="en">Bloom Accessibility Checker</source>
@@ -335,6 +338,12 @@
         <source xml:lang="en">Motion Simulation Hazard</source>
         <note>ID: BookMetadata.motionSimulationHazard</note>
         <target xml:lang="bn" state="translated">গতি নকলের বিপত্তি</target>
+        <alt-trans>
+          <target xml:lang="bn">গতি অনুকরণের বিপদ</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="bn">গতি অনুকরনের বিপদ</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BookMetadata.name" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Name</source>
@@ -383,9 +392,9 @@
       <trans-unit id="Browser.CopyTroubleshootingInfo" approved="yes">
         <source xml:lang="en">Copy Troubleshooting Information</source>
         <note>ID: Browser.CopyTroubleshootingInfo</note>
-        <target xml:lang="bn" state="translated">ট্রাবলশ্যুটিং ইনফরমেশন কপি করুন</target>
+        <target xml:lang="bn" state="translated">সমস্যা সংশোধন করা সংক্রান্ত তথ্যের অনুলিপি করুন</target>
         <alt-trans>
-          <target xml:lang="bn">সমস্যা সংশোধন করা সংক্রান্ত তথ্যের অনুলিপি করুন</target>
+          <target xml:lang="bn">ট্রাবলশ্যুটিং ইনফরমেশন কপি করুন</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="bn">ট্রাবলশ্যুটিং ইনিফরমেশন কপি করুন</target>
@@ -497,7 +506,10 @@
         <source xml:lang="en">Super Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts title page on the inside of the front cover and credits on the inside of the back cover</note>
-        <target xml:lang="bn" state="translated">সুপার কাগজ সাশ্রয়ী</target>
+        <target xml:lang="bn" state="translated">খুবই কাগজ সাশ্রয়ী</target>
+        <alt-trans>
+          <target xml:lang="bn">সুপার কাগজ সাশ্রয়ী</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Traditional</source>
@@ -567,9 +579,9 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Hebrew</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew</note>
-        <target xml:lang="bn" state="translated">ইব্রীয় </target>
+        <target xml:lang="bn" state="translated">হিব্রু</target>
         <alt-trans>
-          <target xml:lang="bn">হিব্রু</target>
+          <target xml:lang="bn">ইব্রীয় </target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="bn">ইব্রিয়</target>
@@ -1150,7 +1162,10 @@
       <trans-unit id="Common.Preview" approved="yes">
         <source xml:lang="en">Preview</source>
         <note>ID: Common.Preview</note>
-        <target xml:lang="bn" state="translated">প্রিভিউ/ পুনরায় দেখা</target>
+        <target xml:lang="bn" state="translated">পূর্বরুপ দেখুন</target>
+        <alt-trans>
+          <target xml:lang="bn">প্রিভিউ/ পুনরায় দেখা</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.Progress" approved="yes">
         <source xml:lang="en">Progress</source>
@@ -1193,9 +1208,9 @@
       <trans-unit id="Download.DownloadingDialogTitle" approved="yes">
         <source xml:lang="en">Downloading book</source>
         <note>ID: Download.DownloadingDialogTitle</note>
-        <target xml:lang="bn" state="translated">বই ডাউনলোড</target>
+        <target xml:lang="bn" state="translated">বই ডাউনলোড হচ্ছে</target>
         <alt-trans>
-          <target xml:lang="bn">বই ডাউনলোড হচ্ছে</target>
+          <target xml:lang="bn">বই ডাউনলোড</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="Download.GenericNetworkProblemNotice" approved="yes">
@@ -1431,9 +1446,9 @@
       <trans-unit id="EditTab.DeleteTextBoxFromImage" approved="yes">
         <source xml:lang="en">Delete Text Box From Image</source>
         <note>ID: EditTab.DeleteTextBoxFromImage</note>
-        <target xml:lang="bn" state="translated">ছবি থেকে লেখার বক্স মুছে ফেলুন</target>
+        <target xml:lang="bn" state="translated">ছবি থেকে লেখার বক্স/ টেক্স বক্স মুছে ফেলুন</target>
         <alt-trans>
-          <target xml:lang="bn">ছবি থেকে লেখার বক্স/ টেক্স বক্স মুছে ফেলুন</target>
+          <target xml:lang="bn">ছবি থেকে লেখার বক্স মুছে ফেলুন</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true" approved="yes">
@@ -1586,7 +1601,10 @@
         <source xml:lang="en">Image Description Edit</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.ImageDescriptionEdit-style</note>
         <note>Style appears when editing image descriptions. The trailing 'edit' indicates that it is just used for editing the description, not for publishing it.</note>
-        <target xml:lang="bn" state="translated">চিত্রের বিবরণ এডিট</target>
+        <target xml:lang="bn" state="translated">চিত্রের বিবরণ এডিট/ সম্পাদনা</target>
+        <alt-trans>
+          <target xml:lang="bn">চিত্রের বিবরণ এডিট</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Equation-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Equation</source>
@@ -1677,9 +1695,12 @@
       <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Indent</source>
         <note>ID: EditTab.FormatDialog.Indent</note>
-        <target xml:lang="bn" state="translated">প্রান্তভাগ থেকে ছাড় দিয়ে শুরু করা/Indent</target>
+        <target xml:lang="bn" state="translated">ইন্ডেন্ট</target>
         <alt-trans>
           <target xml:lang="bn">প্রান্তভাগ থেকে ফাক দিয়ে শুরু করা/Indent</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="bn">প্রান্তভাগ থেকে ছাড় দিয়ে শুরু করা/Indent</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.LineSpacingToolTip" sil:dynamic="true" approved="yes">
@@ -1947,6 +1968,9 @@
         <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
         <target xml:lang="bn" state="translated">এই শেলবইটি আনলক করতে ডানে টুলবক্সে যান, গিয়ার আইকন খুঁজুন, এবং 'এই শেলবুকটিতে পরিবর্তনের সম্মতি দিন' এ ক্লিক করুন।</target>
+        <alt-trans>
+          <target xml:lang="bn">এই শেলবইটি আনলক করতে, নিচের বাম কোণে তালা বদ্ধ আইকনে ক্লিক করুন।</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="bn">এই শেলবইটি আনলক করতে, নিচের বাম কোণে তালা আইকনে ক্লিক করুন।</target>
         </alt-trans>
@@ -4244,6 +4268,9 @@
         <note>ID: PublishTab.PdfMaker.BadPdf</note>
         <target xml:lang="bn" state="translated">এই বইটির পিডিএফ তৈরিতে ব্লুম সমস্যায় পড়েছিল। আপনার কারিগরি সহায়তার প্রয়োজন হতে পারে অথবা ডেভলাপারদের সাথে যোগাযোগ করতে হতে পারে। কিন্তু এখানে আপনি ব্যবহার করতে পারেন এমন কিছু আছে:</target>
         <alt-trans>
+          <target xml:lang="bn">এই বইটির পিডিএফ তৈরিতে ব্লুম সমস্যায় পড়েছিল। আপনার কারিগরি সহায়তার প্রয়োজন হতে পারে অথবা ডেভলাপারদের সাথে যোগাযোগ করতে হতে পারে। কিন্তু এখানে আপনি ব্যবহার করতে পারেন এমন কিছু বিকল্প ব্যবস্থা দেওয়া আছে:</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="bn">এই বইটির পিডিএফ তৈরিতে ব্লুম সমস্যায় পড়েছিল। আপনাকে প্রযুক্তিগত সহায়তা লাগতে পারে অথবা ডেভলাপারদের সাথে যোগাযোগ করতে হতে পারে। কিন্তু আপনি ব্যবহার করতে পারেন এমন কিছু আছে এখানে:</target>
         </alt-trans>
       </trans-unit>
@@ -4397,6 +4424,7 @@
       <trans-unit id="PublishTab.Upload.AccesibleToVisuallyImpaired" approved="yes">
         <source xml:lang="en">Accessible to the Visually Impaired</source>
         <note>ID: PublishTab.Upload.AccesibleToVisuallyImpaired</note>
+        <note>last used in Bloom 4.4</note>
         <target xml:lang="bn" state="translated">দৃশ্যত দুর্বল দৃষ্টির মানুষের জন্য প্রবেশযোগ্য</target>
         <alt-trans>
           <target xml:lang="bn">দৃশ্যত দৃষ্টিহীনদের জন্য প্রবেশযোগ্য</target>
@@ -5537,6 +5565,9 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
         <target xml:lang="bn" state="translated">মৌলিক লেখা ও &amp; ছবি</target>
         <alt-trans>
+          <target xml:lang="bn">প্রাথমিক লেখা ও &amp; ছবি</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="bn">মৌলিক লেখা&amp; ছবি</target>
         </alt-trans>
         <alt-trans>
@@ -5614,7 +5645,10 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Flyleaf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Flyleaf</source>
         <note>ID: TemplateBooks.PageLabel.Flyleaf</note>
-        <target xml:lang="bn" state="translated">ফ্লাইলীফ</target>
+        <target xml:lang="bn" state="translated">ফ্লাইলীফ(বাড়তি পৃষ্ঠা)</target>
+        <alt-trans>
+          <target xml:lang="bn">ফ্লাইলীফ</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Front Cover</source>

@@ -48,12 +48,12 @@
       <trans-unit id="AccessibilityCheck.FindingAce" sil:dynamic="true">
         <source xml:lang="en">Finding Ace by DAISY on this computer...</source>
         <note>ID: AccessibilityCheck.FindingAce</note>
-        <target xml:lang="az" state="needs-translation">Finding Ace by DAISY on this computer...</target>
+        <target xml:lang="az" state="translated">Bu kompüterdə DAISY tərəfindən Ace proqramı tapmaqdadır...</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.FoundAce" sil:dynamic="true">
         <source xml:lang="en">Found.</source>
         <note>ID: AccessibilityCheck.FoundAce</note>
-        <target xml:lang="az" state="needs-translation">Found.</target>
+        <target xml:lang="az" state="translated">Tapıldı.</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true">
         <source xml:lang="en">Learn About Accessibility</source>
@@ -105,7 +105,7 @@
       <trans-unit id="AccessibilityCheck.WindowTitle" sil:dynamic="true">
         <source xml:lang="en">Bloom Accessibility Checker</source>
         <note>ID: AccessibilityCheck.WindowTitle</note>
-        <target xml:lang="az" state="needs-translation">Bloom Accessibility Checker</target>
+        <target xml:lang="az" state="translated">Bloom Əlverişliliyi Yoxlayıcı</target>
       </trans-unit>
       <trans-unit id="BloomIntegrity.WindowTitle">
         <source xml:lang="en">Bloom Problem</source>
@@ -976,7 +976,7 @@
         <source xml:lang="en">Help us translate Bloom (web)</source>
         <note>ID: CollectionTab.UILanguageMenu.HelpTranslate</note>
         <note>The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.</note>
-        <target xml:lang="az" state="needs-translation">Help us translate Bloom (web)</target>
+        <target xml:lang="az" state="translated">Bizə Bloom (veb) tərcümə etməyə yardım edin</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip">
         <source xml:lang="en">{0}% translated</source>
@@ -1873,12 +1873,12 @@
       <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true">
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
         <note>ID: EditTab.Image.TryRestart</note>
-        <target xml:lang="az" state="needs-translation">Try closing other programs and restart your computer if necessary.</target>
+        <target xml:lang="az" state="translated">Lazım gələrsə digər proqramları bağlayıb kompüterinizi yenidən başladın.</target>
       </trans-unit>
       <trans-unit id="EditTab.Instructions.DeleteAllowed" sil:dynamic="true">
         <source xml:lang="en">Feel free to modify or delete this page.</source>
         <note>ID: EditTab.Instructions.DeleteAllowed</note>
-        <target xml:lang="az" state="needs-translation">Feel free to modify or delete this page.</target>
+        <target xml:lang="az" state="translated">Bu səhifəni dəyişdirməyə və ya silməyə çekinmeyin.</target>
       </trans-unit>
       <trans-unit id="EditTab.JpegWarningDialog.DoNotUse" approved="yes">
         <source xml:lang="en">Cancel this import</source>
@@ -1898,18 +1898,18 @@
       <trans-unit id="EditTab.JpegWarningDialog.WindowTitle">
         <source xml:lang="en">JPEG Warning</source>
         <note>ID: EditTab.JpegWarningDialog.WindowTitle</note>
-        <target xml:lang="az" state="needs-translation">JPEG Warning</target>
+        <target xml:lang="az" state="translated">JPEG Haqqında Xəbərdarlıq</target>
       </trans-unit>
       <trans-unit id="EditTab.LayoutInPublishTabOnlyNotice">
         <source xml:lang="en">This option is only available in the Publish tab.</source>
         <note>ID: EditTab.LayoutInPublishTabOnlyNotice</note>
-        <target xml:lang="az" state="needs-translation">This option is only available in the Publish tab.</target>
+        <target xml:lang="az" state="translated">Bu seçim yalnız Nəşr sekmesinde mövcuddur.</target>
       </trans-unit>
       <trans-unit id="EditTab.LockBook.ToolTip" sil:dynamic="true">
         <source xml:lang="en">This book is temporarily unlocked.</source>
         <note>ID: EditTab.LockBook.ToolTip</note>
         <note>Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation).</note>
-        <target xml:lang="az" state="needs-translation">This book is temporarily unlocked.</target>
+        <target xml:lang="az" state="translated">Bu kitab müvəqqəti olaraq dəyişdirməyə açıqlandı.</target>
       </trans-unit>
       <trans-unit id="EditTab.Monolingual" approved="yes">
         <source xml:lang="en">One Language</source>
@@ -1921,7 +1921,7 @@
         <source xml:lang="en">Books are never locked in a Source Collection.</source>
         <note>ID: EditTab.NeverLocked.ToolTip</note>
         <note>Button in a state that indicates books in this collection are always unlocked.</note>
-        <target xml:lang="az" state="needs-translation">Books are never locked in a Source Collection.</target>
+        <target xml:lang="az" state="translated">Kitablar Mənbə Toplamasında heç kilidlənməz.</target>
       </trans-unit>
       <trans-unit id="EditTab.NewBookName" approved="yes">
         <source xml:lang="en">Book</source>
@@ -4097,6 +4097,7 @@
       <trans-unit id="PublishTab.Upload.AccesibleToVisuallyImpaired">
         <source xml:lang="en">Accessible to the Visually Impaired</source>
         <note>ID: PublishTab.Upload.AccesibleToVisuallyImpaired</note>
+        <note>last used in Bloom 4.4</note>
         <target xml:lang="az" state="needs-translation">Accessible to the Visually Impaired</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AccessibleToBlind">
