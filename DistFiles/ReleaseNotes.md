@@ -12,7 +12,7 @@
 
 ### Talking Books
 
-⭐ In Bloom 4.4 we added the ability to record entire text boxes, instead of each sentence. Starting with Bloom 4.5, Bloom can find where in the recording each sentence starts, so that your book can still highlight individual sentences as they are read. We will be improving this feature in the next couple of versions.
+⭐ In Bloom 4.4 we added the ability to record entire text boxes, instead of each sentence. Starting with Bloom 4.5, Bloom can find where in the recording each sentence starts, so that your book can still highlight individual sentences as they are read. We will be improving this feature in the next couple of versions. Currently Windows only. If the default settings don't split your sentences well, see the helps for information on adapting your scripts, choosing a TTS language, and how to use CTRL+Click on "Check" to hear how the TTS language is reading your vernacular.
 
 ### Books for the Visually Impaired
 
@@ -42,7 +42,7 @@ The PDF generator can now handle books with Device 16x9 layouts, and you can upl
 
 For those of you helping us out by running and giving feedback on the Bloom beta channel, **thank you!** You are a vital part of the Bloom team. We are now moving on to building Bloom 4.5, and will release new editions of the 4.4 beta if you find any problems with it.
 
-Here's what's new in 4.4 beta:
+Here's what's new in 4.4:
 
 ### Settings
 

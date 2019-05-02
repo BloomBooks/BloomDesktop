@@ -451,9 +451,9 @@ LibSynphony.prototype.getWordsFromHtmlString = function(textHTML, letters) {
     // The following constants are Control(format) [p{Cf}] characters that should split words.
     // e.g. ZERO WIDTH SPACE is a Control(format) charactor
     // (See http://issues.bloomlibrary.org/youtrack/issue/BL-3933),
-    // but so is ZERO WIDTH JOINER (See https://issues.bloomlibrary.org/youtrack/issue/BL-7081).
+    // but so are ZERO WIDTH JOINER and NON JOINER (See https://issues.bloomlibrary.org/youtrack/issue/BL-7081).
     // See list at: https://www.compart.com/en/unicode/category/Cf
-    const zeroWidthSplitters = "\u200b\u200c"; // ZERO WIDTH SPACE / ZERO WIDTH NON-JOINER
+    const zeroWidthSplitters = "\u200b"; // ZERO WIDTH SPACE
     const ltrrtl = "\u200e\u200f"; // LEFT-TO-RIGHT MARK / RIGHT-TO-LEFT MARK
     const directional = "\u202A-\u202E"; // more LTR/RTL/directional markers
     const isolates = "\u2066-\u2069"; // directional "isolate" markers
