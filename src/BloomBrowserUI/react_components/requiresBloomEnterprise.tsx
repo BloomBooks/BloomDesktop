@@ -107,7 +107,7 @@ export function checkIfEnterpriseAvailable(): EnterpriseEnabledPromise {
 // A very minimal implementation of Promise which supports only then() taking a boolean function.
 // The function will be called with argument true if enterprise features are enabled, false otherwise.
 class EnterpriseEnabledPromise {
-    public then(resolve: (boolean) => void) {
+    public then(resolve: (enterpriseAvailable: boolean) => void) {
         BloomApi.get("common/enterpriseFeaturesEnabled", response => {
             resolve(response.data);
         });

@@ -3,7 +3,6 @@ import * as ReactDOM from "react-dom";
 import { Label } from "../../../react_components/l10n";
 import { ToolBox } from "../toolbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
-import { Range } from "rc-slider";
 import "./signLanguage.less";
 import {
     RequiresBloomEnterpriseWrapper,
@@ -16,6 +15,7 @@ import { UrlUtils } from "../../../utils/urlUtils";
 import { Expandable } from "../../../react_components/expandable";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import calculateAspectRatio from "calculate-aspect-ratio";
+import VideoTrimSlider from "../../../react_components/videoTrimSlider";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; red record button shows; stop button and all labels hidden
@@ -82,6 +82,17 @@ export class SignLanguageToolControls extends React.Component<
     {},
     IComponentState
 > {
+    constructor(props: Readonly<{}>) {
+        super(props);
+
+        // The following binding weirdness allows VideoTrimSlider to use these as callbacks
+        // and have 'this' refer to the right thing.
+        // See: https://reactjs.org/docs/handling-events.html
+        this.handleSliderRangeChange = this.handleSliderRangeChange.bind(this);
+        this.handleSliderRangeAfterChange = this.handleSliderRangeAfterChange.bind(
+            this
+        );
+    }
     public static kToolID = "signLanguage";
     public readonly state: IComponentState = {
         recording: false,
@@ -305,7 +316,7 @@ export class SignLanguageToolControls extends React.Component<
 
     private getEndSliderFromState(): number {
         let end = parseFloat(this.state.videoStatistics.endSeconds);
-        if (end == UNTRIMMED_TIMING_NUM) {
+        if (end === UNTRIMMED_TIMING_NUM) {
             // if the video has not been "end-trimmed", set the end slider to the equivalent of the
             // untrimmed video's duration, since the end of the video in seconds is equal to its duration
             // in seconds.
@@ -325,14 +336,14 @@ export class SignLanguageToolControls extends React.Component<
         // the video info hasn't yet been loaded from the file.
         return (
             this.state.haveRecording &&
-            this.state.videoStatistics.duration != ""
+            this.state.videoStatistics.duration !== ""
         );
     }
 
     // Used to determine the case where there is no video, but we want to show
     // the slider behind the "You don't have Enterprise" notification.
     private showDefaultSlider(): boolean {
-        return !this.doesVideoExist() && !this.state.enterprise;
+        return !this.state.enterprise && !this.doesVideoExist();
     }
 
     private getTrimSlider(): JSX.Element {
@@ -353,20 +364,11 @@ export class SignLanguageToolControls extends React.Component<
         }
         return (
             <div id="trimWrapper">
-                <Range
-                    className="videoTrimSlider"
-                    count={1}
-                    value={this.getCurrentTrimHandlePositionsFromState()}
-                    onChange={v => this.handleSliderRangeChange(v[0], v[1])}
-                    onAfterChange={
-                        // set video back to start point in case we were viewing the end point
-                        v => this.handleSliderRangeAfterChange(v[0])
-                    }
-                    step={0.1}
-                    min={UNTRIMMED_TIMING_NUM}
-                    allowCross={false}
-                    pushable={false}
-                    max={this.getMaxDurationFromState()}
+                <VideoTrimSlider
+                    maxDuration={this.getMaxDurationFromState()}
+                    trimHandlePositions={this.getCurrentTrimHandlePositionsFromState()}
+                    onChange={this.handleSliderRangeChange}
+                    onAfterChange={this.handleSliderRangeAfterChange}
                 />
                 <div id="trimLabelWrapper">
                     <Label
@@ -596,15 +598,13 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     public turnOnVideo() {
-        checkIfEnterpriseAvailable().then(enabled => {
+        if (this.state.enterprise) {
             const constraints = { video: true };
-            //if (enabled) {
             navigator.mediaDevices
                 .getUserMedia(constraints)
                 .then(stream => this.startMonitoring(stream))
                 .catch(reason => this.errorCallback(reason));
-            //}
-        });
+        }
     }
 
     public turnOffVideo() {
@@ -690,6 +690,13 @@ export class SignLanguageToolControls extends React.Component<
         document.removeEventListener("keydown", this.onKeyPress);
         window.clearTimeout(this.timerId);
         this.setState({ stateClass: "idle" });
+    }
+
+    public componentDidMount() {
+        // Several functions (e.g. the trim slider) need to know if 'enterpriseAvailable'.
+        checkIfEnterpriseAvailable().then(enabled => {
+            this.setState({ enterprise: enabled });
+        });
     }
 
     public componentDidUpdate(prevProps, prevState: IComponentState) {
