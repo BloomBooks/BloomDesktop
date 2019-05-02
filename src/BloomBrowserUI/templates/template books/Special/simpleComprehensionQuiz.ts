@@ -9,7 +9,7 @@
 // pages dynamically in order to handle old-style comprehension questions represented as json,
 // and needs the associated JS to make them work.
 
-// Master function, called when document is ready, initialized CQ pages
+// Master function, called when document is ready, initializes CQ pages
 function init(): void {
     ensureEditModeStyleSheet();
     initAnswerWidgets();
@@ -78,9 +78,37 @@ function handleReadModeClick(evt: Event): void {
         checkBox.checked = correct;
     }
 
-    // This might cause us to send analytics information...tell the app if it's interested.
-    if ((window as any).analyticsChange) {
-        (window as any).analyticsChange();
+    const page = currentTarget.closest(".bloom-page");
+
+    sendAnalytics(page!, correct);
+}
+
+export function sendAnalytics(page: Element, correct: boolean) {
+    // Send analytics information, if the page hosting the book has set things up to receive it.
+    if (
+        (window as any).acceptBloomAnalyticsData &&
+        (window as any).sendBloomAnalytics
+    ) {
+        (window as any).acceptBloomAnalyticsData(
+            page,
+            { correct: correct ? 1 : 0 },
+            false, // Don't overwrite...we only want to record the FIRST answer on this page.
+            values => {
+                // Values is an array, one per page, of the objects we sent as argument 2.
+                // This function is called only when this function has been called for every page
+                // with data-analytics "Questions Correct".
+                // We now have the data we need to actually send the analytics data.
+                let correct = 0;
+                for (let i = 0; i < values.length; i++) {
+                    correct += values[i].correct;
+                }
+                (window as any).sendBloomAnalytics("Questions correct", {
+                    questionCount: values.length,
+                    rightFirstTime: correct,
+                    percentRight: (correct * 100) / values.length
+                });
+            }
+        );
     }
 }
 
@@ -132,6 +160,8 @@ function hasContent(answer) {
     }
     return false;
 }
+
+//-------------- initialize -------------
 
 // In some cases (loading into a bloom reader carousel, for example) the page may already be loaded.
 if (document.readyState === "complete") {
