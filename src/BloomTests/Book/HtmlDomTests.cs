@@ -1244,5 +1244,51 @@ p {
 			Assert.IsFalse(result.Contains("*"), "Unexpected item \"*\" found");
 			Assert.IsFalse(result.Contains("z"), "Unexpected item \"z\" found");
 		}
+
+		[TestCase(true)]
+		[TestCase(false)]
+		public void SelectChildNarrationAudioElementsIncludeSplitTextBoxAudio_FindsTextBoxIfRequested(bool includeSplitTextBoxAudio)
+		{
+			XmlDocument doc = new XmlDocument();
+			doc.LoadXml(
+@"<html>
+	<div id='textbox1' class='bloom-editable' data-audiorecordingmode='TextBox'>
+		<p>
+			<span class='audio-sentence'>Sentence 1.</span>
+		</p>
+	</div>
+	<div  id='textbox2' class='bloom-editable' data-audiorecordingmode='Sentence'>
+		<p>
+			<span class='audio-sentence'>Sentence 1.</span>
+		</p>
+	</div>
+	<div class='bloom-editable' id='textbox3'>
+		<p>
+			<span>Sentence 2.</span>
+		</p>
+	</div>
+</html>");
+
+			XmlElement textBoxElement = (XmlElement)doc.FirstChild.FirstChild;
+
+			// System under test
+			var result = HtmlDom.SelectChildNarrationAudioElements(textBoxElement, includeSplitTextBoxAudio);
+
+			Assert.IsTrue(result.Count > 0, "Count should not be 0.");
+
+			var resultEnumerable = result.Cast<XmlNode>();
+			Assert.AreEqual(1, resultEnumerable.Where(node => node.Name == "span").Count(), "Matching span count");
+
+			if (includeSplitTextBoxAudio)
+			{
+				Assert.AreEqual(1, resultEnumerable.Where(node => node.Name == "div").Count(), "Matching div count");
+				Assert.AreEqual(2, result.Count, "The result had too many elements.");
+			}
+			else
+			{
+				Assert.AreEqual(0, resultEnumerable.Where(node => node.Name == "div").Count(), "Matching div count");
+				Assert.AreEqual(1, result.Count, "The result had too many elements.");
+			}
+		}
 	}
 }

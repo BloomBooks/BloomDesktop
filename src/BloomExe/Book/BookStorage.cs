@@ -62,7 +62,7 @@ namespace Bloom.Book
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
 		void CleanupUnusedImageFiles(bool keepFilesForEditing=true);
-		void CleanupUnusedAudioFiles();
+		void CleanupUnusedAudioFiles(bool isForPublish);
 		void CleanupUnusedVideoFiles();
         BookInfo BookInfo { get; set; }
 		string NormalBaseForRelativepaths { get; }
@@ -513,7 +513,7 @@ namespace Bloom.Book
 		/// Compare the audio we find in the audio folder in the book folder to those referenced
 		/// in the dom, and remove any unreferenced ones.
 		/// </summary>
-		public void CleanupUnusedAudioFiles()
+		public void CleanupUnusedAudioFiles(bool isForPublish)
 		{
 			if (IsStaticContent(_folderPath))
 				return;
@@ -524,6 +524,16 @@ namespace Bloom.Book
 
 			if (Directory.Exists(audioFolderPath))
 			{
+				if (isForPublish)
+				{
+					// Find files that end with _timings.tsv and delete them from the publish folder (which is supposed to be different than the source folder)
+					var timingFilePaths = Directory.EnumerateFiles(audioFolderPath, "*_timings.tsv");
+					foreach (var timingFilePath in timingFilePaths)
+					{
+						RobustFile.Delete(timingFilePath);
+					}
+				}
+
 				// Review: do we only want to delete files in this directory if they have certain file extensions?
 				audioFilesToDeleteIfNotUsed = new HashSet<string>(Directory.EnumerateFiles(audioFolderPath).Where(AudioProcessor.HasAudioFileExtension)
 					.Select(path => Path.GetFileName(GetNormalizedPathForOS(path))));
@@ -539,7 +549,7 @@ namespace Bloom.Book
 			var backgroundMusicFileNames = GetBackgroundMusicFileNamesReferencedInBook();
 			usedAudioFileNames.AddRange(backgroundMusicFileNames);
 
-			var narrationAudioFileNames = GetNarrationAudioFileNamesReferencedInBook(true);
+			var narrationAudioFileNames = GetNarrationAudioFileNamesReferencedInBook(true, includeSplitTextBoxAudio: !isForPublish);
 			usedAudioFileNames.AddRange(narrationAudioFileNames);
 
 			audioFilesToDeleteIfNotUsed.ExceptWith(usedAudioFileNames);
@@ -571,7 +581,19 @@ namespace Bloom.Book
 		/// <param name="includeWav">Optionally include/exclude .wav files</param>
 		public IEnumerable<string> GetNarrationAudioFileNamesReferencedInBook(bool includeWav)
 		{
-			var narrationIds = GetAudioSourceIdentifiers(HtmlDom.SelectChildNarrationAudioElements(Dom.RawDom.DocumentElement));
+			return GetNarrationAudioFileNamesReferencedInBook(includeWav, includeSplitTextBoxAudio: false);
+		}
+
+		/// <summary>
+		/// Returns all possible file names for audio narration which are referenced in the DOM.
+		/// This should include items from the data div.
+		/// </summary>
+		/// <param name="includeWav">Optionally include/exclude .wav files</param>
+		/// /// <param name="includeSplitTextBoxAudio">True if the function should also return the filenames for text boxes which are not audio sentences but contain sub-elements which are (e.g. after a hard split of whole-text-box audio)</param>
+		public IEnumerable<string> GetNarrationAudioFileNamesReferencedInBook(bool includeWav, bool includeSplitTextBoxAudio)
+		{
+			var narrationElements = HtmlDom.SelectChildNarrationAudioElements(Dom.RawDom.DocumentElement, includeSplitTextBoxAudio);
+			var narrationIds = narrationElements.Cast<XmlNode>().Select(node => node.GetOptionalStringAttribute("id", null)).Where(id => id != null);
 
 			var extensionsToInclude = AudioProcessor.NarrationAudioExtensions.ToList();
 			if (!includeWav)
@@ -1214,7 +1236,7 @@ namespace Bloom.Book
 				{
 					UpdateSupportFiles();
 					CleanupUnusedImageFiles();
-					CleanupUnusedAudioFiles();
+					CleanupUnusedAudioFiles(isForPublish: false);
 					CleanupUnusedVideoFiles();
 				}
 			}
