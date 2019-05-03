@@ -63,13 +63,13 @@
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.General</note>
-        <target xml:lang="quc" state="needs-translation">Another copy of the application is already running. If you cannot find it, restart your computer.</target>
+        <target xml:lang="quc" state="translated">Tajan kchakuxik jun uwachib'al chik rech ri nuk'wach. We man karaq taj, chab'ana k'ak' umajik ri akematz'ib'.</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.Specific">
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="quc" state="needs-translation">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</target>
+        <target xml:lang="quc" state="translated">Tajan kchakuxik jun uwachib'al chik rech  {0}. We man karaqo, chab'ana k'ak' umajik ri akematz'ib'.</target>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.General">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
@@ -476,8 +476,11 @@
       <trans-unit id="MetadataDisplay.Creator" approved="yes">
         <source xml:lang="en">Creator: {0}</source>
         <note>ID: MetadataDisplay.Creator</note>
-        <target xml:lang="quc" state="translated">Tikonel rech: {0}
+        <target xml:lang="quc" state="translated">Tikonel rech: {0}</target>
+        <alt-trans>
+          <target xml:lang="quc">Tikonel rech: {0}
 </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc">Tikol rech: {0}
 </target>
@@ -732,7 +735,10 @@
       <trans-unit id="WSFontControl.TestArea" approved="yes">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="quc" state="translated"> &amp; K’olib’al rech K’otow chi’aj:</target>
+        <target xml:lang="quc" state="translated">&amp; K’olib’al rech K’otow chi’aj:</target>
+        <alt-trans>
+          <target xml:lang="quc"> &amp; K’olib’al rech K’otow chi’aj:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>

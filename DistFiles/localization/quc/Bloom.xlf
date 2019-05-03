@@ -32,7 +32,10 @@
       <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Audio for all image descriptions</source>
         <note>ID: AccessibilityCheck.audioForAllImageDescriptions</note>
-        <target xml:lang="quc" state="translated"> Ch’ab’alil chi kech konojel ri ub'ixik ub'antajik ri wachib’al</target>
+        <target xml:lang="quc" state="translated">Ch’ab’alil chi kech konojel ri ub'ixik ub'antajik ri wachib’al</target>
+        <alt-trans>
+          <target xml:lang="quc"> Ch’ab’alil chi kech konojel ri ub'ixik ub'antajik ri wachib’al</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom can automatically check these for you:</source>
@@ -541,9 +544,12 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
       <trans-unit id="Browser.CopyTroubleshootingInfo" approved="yes">
         <source xml:lang="en">Copy Troubleshooting Information</source>
         <note>ID: Browser.CopyTroubleshootingInfo</note>
-        <target xml:lang="quc" state="translated">
+        <target xml:lang="quc" state="translated">Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil</target>
+        <alt-trans>
+          <target xml:lang="quc">
 Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil 
 </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Browser.OpenPageInFirefox" approved="yes">
         <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
@@ -774,9 +780,12 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Gurmukhi</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi</note>
-        <target xml:lang="quc" state="translated">Ri Gurmukhi     
+        <target xml:lang="quc" state="translated">Ri Gurmukhi</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri Gurmukhi     
 
 </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Hebrew</source>
@@ -1008,9 +1017,12 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName</note>
-        <target xml:lang="quc" state="translated">Ub'i' k'i taq uwach ri Bloom
+        <target xml:lang="quc" state="translated">Ub'i' k'i taq uwach ri Bloom</target>
+        <alt-trans>
+          <target xml:lang="quc">Ub'i' k'i taq uwach ri Bloom
 
 </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject" approved="yes">
         <source xml:lang="en">Bloom Enterprise Project</source>
@@ -1435,7 +1447,7 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
         <source xml:lang="en">Help us translate Bloom (web)</source>
         <note>ID: CollectionTab.UILanguageMenu.HelpTranslate</note>
         <note>The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.</note>
-        <target xml:lang="quc" state="needs-translation">Help us translate Bloom (web)</target>
+        <target xml:lang="quc" state="translated">Chujato’ che ri uq’axaxik Bloom (web)</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip" approved="yes">
         <source xml:lang="en">{0}% translated</source>
@@ -1450,89 +1462,89 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
         <note>ID: CollectionTab.UnableToCheckForUpdate</note>
         <note>Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc.</note>
-        <target xml:lang="quc" state="needs-translation">Could not connect to the server to check for an update. Are you connected to the internet?</target>
+        <target xml:lang="quc" state="translated">Man loq’ taj xat’iq awib’ ruk’ ri patanel che rilik we k’o jun k’ak’saxik ¿La at’iqom awib’ pa ri  nimk’atz?</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpToDate">
         <source xml:lang="en">Your Bloom is up to date.</source>
         <note>ID: CollectionTab.UpToDate</note>
-        <target xml:lang="quc" state="needs-translation">Your Bloom is up to date.</target>
+        <target xml:lang="quc" state="translated">Bloom xk'ak'arisaxik.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateCheckInProgress">
         <source xml:lang="en">Bloom is already working on checking for updates.</source>
         <note>ID: CollectionTab.UpdateCheckInProgress</note>
-        <target xml:lang="quc" state="needs-translation">Bloom is already working on checking for updates.</target>
+        <target xml:lang="quc" state="translated">Bloom tajan kutzukuj k'i taq k'ak'arisanem.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateFailed">
         <source xml:lang="en">A new version appears to be available, but Bloom could not install it.</source>
         <note>ID: CollectionTab.UpdateFailed</note>
-        <target xml:lang="quc" state="needs-translation">A new version appears to be available, but Bloom could not install it.</target>
+        <target xml:lang="quc" state="translated">Jun k’ak’ rilik ub’ixik pacha’ b’i jamal uwach, xa k’ut Bloom ma xkowin taj che ujeqab’axik.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateInstalled">
         <source xml:lang="en">Update for {0} is ready</source>
         <note>ID: CollectionTab.UpdateInstalled</note>
         <note>Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom.</note>
         <note xml:lang="en">OLD TEXT (before 3.9, period at end): Update for {0} is ready.</note>
-        <target xml:lang="quc" state="needs-translation">Update for {0} is ready</target>
+        <target xml:lang="quc" state="translated">Ri k'ak'arisaxik rech {0} xutzirik.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateNow">
         <source xml:lang="en">Update Now</source>
         <note>ID: CollectionTab.UpdateNow</note>
-        <target xml:lang="quc" state="needs-translation">Update Now</target>
+        <target xml:lang="quc" state="translated">Uk'ak'arisaxik kamik </target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdatesAvailable">
         <source xml:lang="en">A new version of Bloom is available.</source>
         <note>ID: CollectionTab.UpdatesAvailable</note>
-        <target xml:lang="quc" state="needs-translation">A new version of Bloom is available.</target>
+        <target xml:lang="quc" state="translated">Jun k'ak' rilik ub'anik ri Bloom jamal uwach. </target>
       </trans-unit>
       <trans-unit id="CollectionTab.Updating">
         <source xml:lang="en">Downloading update to {0} ({1}K)</source>
         <note>ID: CollectionTab.Updating</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Downloading update to {0} ({1}kb).</note>
-        <target xml:lang="quc" state="needs-translation">Downloading update to {0} ({1}K)</target>
+        <target xml:lang="quc" state="translated">Tajan uqasaxik ri k'ak'arisanem chech {0} ({1}kb)</target>
       </trans-unit>
       <trans-unit id="Common.Advanced">
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
-        <target xml:lang="quc" state="needs-translation">Advanced</target>
+        <target xml:lang="quc" state="translated">Nimab'anib'al</target>
       </trans-unit>
       <trans-unit id="Common.BackButton">
         <source xml:lang="en">Back</source>
         <note>ID: Common.BackButton</note>
         <note>In a wizard, this button takes you to the previous step.</note>
-        <target xml:lang="quc" state="needs-translation">Back</target>
+        <target xml:lang="quc" state="translated">Utzalijik</target>
       </trans-unit>
       <trans-unit id="Common.Cancel">
         <source xml:lang="en">Cancel</source>
         <note>ID: Common.Cancel</note>
-        <target xml:lang="quc" state="needs-translation">Cancel</target>
+        <target xml:lang="quc" state="translated">Uchupik</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="quc" state="needs-translation">&amp;Cancel</target>
+        <target xml:lang="quc" state="translated">&amp;uchupik</target>
       </trans-unit>
       <trans-unit id="Common.Finish">
         <source xml:lang="en">&amp;Finish</source>
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="quc" state="needs-translation">&amp;Finish</target>
+        <target xml:lang="quc" state="translated">&amp;To'tajik</target>
       </trans-unit>
       <trans-unit id="Common.Info">
         <source xml:lang="en">Info</source>
         <note>ID: Common.Info</note>
         <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
-        <target xml:lang="quc" state="needs-translation">Info</target>
+        <target xml:lang="quc" state="translated">Uya’ik ub’ixik</target>
       </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
-        <target xml:lang="quc" state="needs-translation">Help</target>
+        <target xml:lang="quc" state="translated">Tob’anik</target>
       </trans-unit>
       <trans-unit id="Common.HelpButton">
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
-        <target xml:lang="quc" state="needs-translation">&amp;Help</target>
+        <target xml:lang="quc" state="translated">&amp;Tob’anik</target>
       </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Loading...</source>
@@ -1547,13 +1559,13 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
         <source xml:lang="en">&amp;Next</source>
         <note>ID: Common.Next</note>
         <note>Used for the Next button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="quc" state="needs-translation">&amp;Next</target>
+        <target xml:lang="quc" state="translated">&amp;Jun chik</target>
       </trans-unit>
       <trans-unit id="Common.NextButton">
         <source xml:lang="en">Next</source>
         <note>ID: Common.NextButton</note>
         <note>In a wizard, this button takes you to the next step.</note>
-        <target xml:lang="quc" state="needs-translation">Next</target>
+        <target xml:lang="quc" state="translated">Jun chik</target>
       </trans-unit>
       <trans-unit id="Common.OK" approved="yes">
         <source xml:lang="en">OK</source>
@@ -1669,335 +1681,348 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
         <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
         <note>ID: Download.TimeoutProblemNotice</note>
         <note xml:lang="en">OLD TEXT (before 3.9, capitalization of website): There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@BloomLibrary.org if you cannot get the download to work from your location.</note>
-        <target xml:lang="quc" state="needs-translation">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</target>
+        <target xml:lang="quc" state="translated">Man xb’an ta kowinem chech uqajisaxik ri no’jwuj. Chb’ana jumul pa jun q’ij chik xuquje’ kaya ub’ixik chi qech chi upam we issues@bloomlibrary.org we man xatkowin ta chech uqajisaxik.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.AddPageButton" sil:dynamic="true">
         <source xml:lang="en">Add Page</source>
         <note>ID: EditTab.AddPageDialog.AddPageButton</note>
         <note>This is for the button that LAUNCHES the dialog, not the 'Add this page' button that is IN the dialog.</note>
-        <target xml:lang="quc" state="needs-translation">Add Page</target>
+        <target xml:lang="quc" state="translated">Uya'ik uwi' uxaq wuj</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.AddThisPageButton" sil:dynamic="true">
         <source xml:lang="en">Add This Page</source>
         <note>ID: EditTab.AddPageDialog.AddThisPageButton</note>
         <note>This is for the button inside the dialog</note>
-        <target xml:lang="quc" state="needs-translation">Add This Page</target>
+        <target xml:lang="quc" state="translated">Uya'ik uwi' uxaq wuj</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutButton" sil:dynamic="true">
         <source xml:lang="en">Use This Layout</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutButton</note>
-        <target xml:lang="quc" state="needs-translation">Use This Layout</target>
+        <target xml:lang="quc" state="translated">Ukojik we wokob’al</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutContinueCheckbox" sil:dynamic="true">
         <source xml:lang="en">Continue anyway</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutContinueCheckbox</note>
-        <target xml:lang="quc" state="needs-translation">Continue anyway</target>
+        <target xml:lang="quc" state="translated">Utaqaxik ronojel k’ut</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutConvertBookCheckbox" sil:dynamic="true">
         <source xml:lang="en">Change all similar pages in this book to this layout.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutConvertBookCheckbox</note>
-        <target xml:lang="quc" state="needs-translation">Change all similar pages in this book to this layout.</target>
+        <target xml:lang="quc" state="translated">Uk’exik ronojel taq uxaq wuj xaq junam pa we no’jwuj pa jun chik wokob’al.  
+</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true">
         <source xml:lang="en">Choose Different Layout...</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutTitle</note>
         <note>found in 3.9 and earlier</note>
-        <target xml:lang="quc" state="needs-translation">Choose Different Layout...</target>
+        <target xml:lang="quc" state="translated">Elegir un diseño diferente...</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutWillLoseData" sil:dynamic="true">
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
-        <target xml:lang="quc" state="needs-translation">Converting to this layout will cause some content to be lost.</target>
+        <target xml:lang="quc" state="translated">Ujalik we wokob’al kuya nik’aj taq tzaqinem chi k’o chi upam.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
         <source xml:lang="en">Could not find {0}</source>
         <note>ID: EditTab.AddPageDialog.NoTemplate</note>
         <note>Seen when the book's main template page file is missing.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): (no template file found)</note>
-        <target xml:lang="quc" state="needs-translation">Could not find {0}</target>
+        <target xml:lang="quc" state="translated">Man xraqataj taj {0}</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true">
         <source xml:lang="en">Add Page...</source>
         <note>ID: EditTab.AddPageDialog.Title</note>
         <note>found in 3.9 and earlier</note>
-        <target xml:lang="quc" state="needs-translation">Add Page...</target>
+        <target xml:lang="quc" state="translated">Uya'ik uwi' uxaq wuj...</target>
       </trans-unit>
       <trans-unit id="EditTab.AddTextBoxToImage">
         <source xml:lang="en">Add Text Box To Image</source>
         <note>ID: EditTab.AddTextBoxToImage</note>
-        <target xml:lang="quc" state="needs-translation">Add Text Box To Image</target>
+        <target xml:lang="quc" state="translated">Utiqik kajxukut reh woktz’ib’ chech ri wachib’al</target>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
         <note>ID: EditTab.BackMatter.InsideBackCoverTextPrompt</note>
-        <target xml:lang="quc" state="needs-translation">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</target>
+        <target xml:lang="quc" state="translated">We lal rajawaxik jun k’olib’al pa kya’ uwi’ ri q’alajisanemtzij pa uwi’ ri no’jwuj, utz koksax we uxaq wuj, che are’ ri upam chi rij ri no’j wuj.</target>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.OutsideBackCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</source>
         <note>ID: EditTab.BackMatter.OutsideBackCoverTextPrompt</note>
-        <target xml:lang="quc" state="needs-translation">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</target>
+        <target xml:lang="quc" state="translated">We lal rajawaxik jun k’olib’al pa kya’ uwi’ ri q’alajisanemtzij pa uwi’ ri no’jwuj, utz koksax we uxaq wuj, che are’ ri upam chi rij ri no’j wuj.</target>
       </trans-unit>
       <trans-unit id="EditTab.Bilingual">
         <source xml:lang="en">Two Languages</source>
         <note>ID: EditTab.Bilingual</note>
         <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
-        <target xml:lang="quc" state="needs-translation">Two Languages</target>
+        <target xml:lang="quc" state="translated">Keb' tzijob'al</target>
       </trans-unit>
       <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
         <source xml:lang="en">Open the HTML used to make this PDF, in Firefox (must be on path)</source>
         <note>ID: EditTab.BookContextMenu.openHtmlInBrowser</note>
-        <target xml:lang="quc" state="needs-translation">Open the HTML used to make this PDF, in Firefox (must be on path)</target>
+        <target xml:lang="quc" state="translated">Utorik ri HTML okisam chech uwokik we PDF, pa Firefox (rajawaxik k'o pa ri b'eyal)</target>
       </trans-unit>
       <trans-unit id="EditTab.CannotChangeCopyright">
         <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
         <note>ID: EditTab.CannotChangeCopyright</note>
-        <target xml:lang="quc" state="needs-translation">Sorry, the copyright and license for this book cannot be changed.</target>
+        <target xml:lang="quc" state="translated">K'ex kqana'o, ma kya'taj taj kk'exik ri ya'talik chech ri rajaw xuquje'  ri uwujil patanel rech we no'jwuj ri'.</target>
       </trans-unit>
       <trans-unit id="EditTab.CantPasteImageLocked">
         <source xml:lang="en">Sorry, this book is locked down so that images cannot be changed.</source>
         <note>ID: EditTab.CantPasteImageLocked</note>
-        <target xml:lang="quc" state="needs-translation">Sorry, this book is locked down so that images cannot be changed.</target>
+        <target xml:lang="quc" state="translated">K'ex kqana'o, we no'jwuj q'atum rij rech ri k'i taq wachib'al man kb'an ta kowinem che ri uk'exik.</target>
+        <alt-trans>
+          <target xml:lang="quc">K'ex kqana'o, we no'jwuj q'atum rij rech ri k'i taq wachib'al man kb'an ta kowinwm che ri uk'exik.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.ChooseLayoutButton">
         <source xml:lang="en">Choose Different Layout</source>
         <note>ID: EditTab.ChooseLayoutButton</note>
-        <target xml:lang="quc" state="needs-translation">Choose Different Layout</target>
+        <target xml:lang="quc" state="translated">Ucha'xik jun wokob'al jun wi chik</target>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
         <source xml:lang="en">Really Remove Page?</source>
         <note>ID: EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): Really Delete Page?</note>
-        <target xml:lang="quc" state="needs-translation">Really Remove Page?</target>
+        <target xml:lang="quc" state="translated">¿La qas tzij kariyij uchupik ri uxaq wuj?</target>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog.DeleteButton">
         <source xml:lang="en">&amp;Remove</source>
         <note>ID: EditTab.ConfirmRemovePageDialog.DeleteButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): &amp;Delete</note>
-        <target xml:lang="quc" state="needs-translation">&amp;Remove</target>
+        <target xml:lang="quc" state="translated">&amp;Uchupik</target>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel">
         <source xml:lang="en">This page will be permanently removed.</source>
         <note>ID: EditTab.ConfirmRemovePageDialog._messageLabel</note>
-        <target xml:lang="quc" state="needs-translation">This page will be permanently removed.</target>
+        <target xml:lang="quc" state="translated">We uxaq wuj junalik chupinaq.</target>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown">
         <source xml:lang="en">Multilingual Settings</source>
         <note>ID: EditTab.ContentLanguagesDropdown</note>
-        <target xml:lang="quc" state="needs-translation">Multilingual Settings</target>
+        <target xml:lang="quc" state="translated">Suk'manem k'i tzijob'al</target>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip">
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
         <note>ID: EditTab.ContentLanguagesDropdown.ToolTip</note>
-        <target xml:lang="quc" state="needs-translation">Choose language to make this a bilingual or trilingual book</target>
+        <target xml:lang="quc" state="translated">Chacha' jun tzijob'al che ub'anik we jun wuj pa keb' tzijob'al xuquje' pa oxib' tzijob'al</target>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown_ToolTip_">
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
         <note>ID: EditTab.ContentLanguagesDropdown_ToolTip_</note>
-        <target xml:lang="quc" state="needs-translation">Choose language to make this a bilingual or trilingual book</target>
+        <target xml:lang="quc" state="translated">Chcha' ri tzijob'al che uk'exwaxik we no'jwuj pa jun no'jwuj keb' tzijob'al o pa oxib'tzijob'al</target>
+        <alt-trans>
+          <target xml:lang="quc">Chcha' ri tzijob'al che uk'exwaxhik we no'wuj pa jun no'jwuj keb' tzijob'al o pa oxib'tzijob'al</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.CopyButton">
         <source xml:lang="en">Copy</source>
         <note>ID: EditTab.CopyButton</note>
-        <target xml:lang="quc" state="needs-translation">Copy</target>
+        <target xml:lang="quc" state="translated">Resaxik wachib’al</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyButton.ToolTip">
         <source xml:lang="en">Copy (Ctrl+C)</source>
         <note>ID: EditTab.CopyButton.ToolTip</note>
-        <target xml:lang="quc" state="needs-translation">Copy (Ctrl+C)</target>
+        <target xml:lang="quc" state="translated">Resaxik wachib'al (Ctrl+C)</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyButton.ToolTipWhenDisabled">
         <source xml:lang="en">You need to select some text before you can copy it</source>
         <note>ID: EditTab.CopyButton.ToolTipWhenDisabled</note>
-        <target xml:lang="quc" state="needs-translation">You need to select some text before you can copy it</target>
+        <target xml:lang="quc" state="translated">Rech kban kowinem chech resaxik uwach ri woktz'ib' rajawaxik ucha'xik chi uxe' kanoq</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyImageIPMetadataQuestion">
         <source xml:lang="en">Copy this information to all other pictures in this book?</source>
         <note>ID: EditTab.CopyImageIPMetadataQuestion</note>
         <note>get this after you edit the metadata of an image</note>
-        <target xml:lang="quc" state="needs-translation">Copy this information to all other pictures in this book?</target>
+        <target xml:lang="quc" state="translated">¿Resaxik uwach we q'alajisanem chi kech konojel ri nik'aj taq wachib'al chech we no'jwuj ri'?</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyPage">
         <source xml:lang="en">Copy Page</source>
         <note>ID: EditTab.CopyPage</note>
-        <target xml:lang="quc" state="needs-translation">Copy Page</target>
+        <target xml:lang="quc" state="translated">Resaxik uwach uxaq wuj</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true">
         <source xml:lang="en">Change Layout</source>
         <note>ID: EditTab.CustomPage.ChangeLayout</note>
-        <target xml:lang="quc" state="needs-translation">Change Layout</target>
+        <target xml:lang="quc" state="translated">K'exanik ri wokob'al</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true">
         <source xml:lang="en">or</source>
         <note>ID: EditTab.CustomPage.Or</note>
         <note>Shown between 'Picture' and 'Text' when Custom Page is in Layout mode</note>
         <note xml:lang="en">OLD TEXT (before 3.9, surrounding spaces):  or </note>
-        <target xml:lang="quc" state="needs-translation">or</target>
+        <target xml:lang="quc" state="translated">o</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Picture" sil:dynamic="true">
         <source xml:lang="en">Picture</source>
         <note>ID: EditTab.CustomPage.Picture</note>
-        <target xml:lang="quc" state="needs-translation">Picture</target>
+        <target xml:lang="quc" state="translated">Wachib’al</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Text" sil:dynamic="true">
         <source xml:lang="en">Text</source>
         <note>ID: EditTab.CustomPage.Text</note>
-        <target xml:lang="quc" state="needs-translation">Text</target>
+        <target xml:lang="quc" state="translated">Woktz’ib’</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Video" sil:dynamic="true">
         <source xml:lang="en">Video</source>
         <note>ID: EditTab.CustomPage.Video</note>
-        <target xml:lang="quc" state="needs-translation">Video</target>
+        <target xml:lang="quc" state="translated">Silob'wachib'al</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true">
         <source xml:lang="en">Text Box</source>
         <note>ID: EditTab.CustomPage.TextBox</note>
-        <target xml:lang="quc" state="needs-translation">Text Box</target>
+        <target xml:lang="quc" state="translated">Kajxukut rech woktz’ib’</target>
       </trans-unit>
       <trans-unit id="EditTab.CutButton">
         <source xml:lang="en">Cut</source>
         <note>ID: EditTab.CutButton</note>
-        <target xml:lang="quc" state="needs-translation">Cut</target>
+        <target xml:lang="quc" state="translated">Ramik</target>
       </trans-unit>
       <trans-unit id="EditTab.CutButton.ToolTip">
         <source xml:lang="en">Cut (Ctrl+X)</source>
         <note>ID: EditTab.CutButton.ToolTip</note>
-        <target xml:lang="quc" state="needs-translation">Cut (Ctrl+X)</target>
+        <target xml:lang="quc" state="translated">Ramik (Ctrl+X)</target>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton">
         <source xml:lang="en">Remove Page</source>
         <note>ID: EditTab.DeletePageButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Remove\n  Page</note>
-        <target xml:lang="quc" state="needs-translation">Remove Page</target>
+        <target xml:lang="quc" state="translated">Uchupik uxaq wuj</target>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton.ToolTip" sil:dynamic="true">
         <source xml:lang="en">Remove this page from the book</source>
         <note>ID: EditTab.DeletePageButton.ToolTip</note>
         <note>Button that tells Bloom to delete the currently selected page.</note>
-        <target xml:lang="quc" state="needs-translation">Remove this page from the book</target>
+        <target xml:lang="quc" state="translated">Uchupik we uxaq wuj rech ri no'jwuj</target>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton.ToolTipWhenDisabled" sil:dynamic="true">
         <source xml:lang="en">This page cannot be removed</source>
         <note>ID: EditTab.DeletePageButton.ToolTipWhenDisabled</note>
         <note>Button that tells Bloom to delete the currently selected page.</note>
-        <target xml:lang="quc" state="needs-translation">This page cannot be removed</target>
+        <target xml:lang="quc" state="translated">We uxaq wuj man kb'anta kowinem che uchupik</target>
       </trans-unit>
       <trans-unit id="EditTab.DeleteTextBoxFromImage">
         <source xml:lang="en">Delete Text Box From Image</source>
         <note>ID: EditTab.DeleteTextBoxFromImage</note>
-        <target xml:lang="quc" state="needs-translation">Delete Text Box From Image</target>
+        <target xml:lang="quc" state="translated">Uchupik kajxukut rech ri woktz'ib' rech ri wachib'al</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true">
         <source xml:lang="en">Bold</source>
         <note>ID: EditTab.DirectFormatting.Bold</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="quc" state="needs-translation">Bold</target>
+        <target xml:lang="quc" state="translated">Laj q'eq</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Italic" sil:dynamic="true">
         <source xml:lang="en">Italic</source>
         <note>ID: EditTab.DirectFormatting.Italic</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="quc" state="needs-translation">Italic</target>
+        <target xml:lang="quc" state="translated">K’olo’tz’ib’</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Superscript" sil:dynamic="true">
         <source xml:lang="en">Superscript</source>
         <note>ID: EditTab.DirectFormatting.Superscript</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="quc" state="needs-translation">Superscript</target>
+        <target xml:lang="quc" state="translated">Nimalaj ucholajil no'j</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Underline" sil:dynamic="true">
         <source xml:lang="en">Underline</source>
         <note>ID: EditTab.DirectFormatting.Underline</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="quc" state="needs-translation">Underline</target>
+        <target xml:lang="quc" state="translated">Juch’um</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton">
         <source xml:lang="en">Duplicate Page</source>
         <note>ID: EditTab.DuplicatePageButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Duplicate\n  Page</note>
-        <target xml:lang="quc" state="needs-translation">Duplicate Page</target>
+        <target xml:lang="quc" state="translated">Resaxik uwach uxaq wuj</target>
+        <alt-trans>
+          <target xml:lang="quc">Relesaxik uwach uxaq wuj</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton.ToolTip" sil:dynamic="true">
         <source xml:lang="en">Insert a new page which is a duplicate of this one</source>
         <note>ID: EditTab.DuplicatePageButton.ToolTip</note>
         <note>Button that tells Bloom to duplicate the currently selected page.</note>
-        <target xml:lang="quc" state="needs-translation">Insert a new page which is a duplicate of this one</target>
+        <target xml:lang="quc" state="translated">Unimik jun k'ak' uxaq wuj (jun resaxik uwach we ri')</target>
+        <alt-trans>
+          <target xml:lang="quc">Unimik jun k'ak' uxaq wuj (jun relesaxik uwach we ri')</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton.ToolTipWhenDisabled" sil:dynamic="true">
         <source xml:lang="en">This page cannot be duplicated</source>
         <note>ID: EditTab.DuplicatePageButton.ToolTipWhenDisabled</note>
         <note>Button that tells Bloom to duplicate the currently selected page.</note>
-        <target xml:lang="quc" state="needs-translation">This page cannot be duplicated</target>
+        <target xml:lang="quc" state="translated">We uxaq wuj ri' man kb'anta kowinem resaxik uwach</target>
       </trans-unit>
       <trans-unit id="EditTab.Edit">
         <source xml:lang="en">Edit</source>
         <note>ID: EditTab.Edit</note>
-        <target xml:lang="quc" state="needs-translation">Edit</target>
+        <target xml:lang="quc" state="translated">Ukolomaxik</target>
       </trans-unit>
       <trans-unit id="EditTab.EditNotAllowed" sil:dynamic="true">
         <source xml:lang="en">You cannot change these because this is not the original copy.</source>
         <note>ID: EditTab.EditNotAllowed</note>
-        <target xml:lang="quc" state="needs-translation">You cannot change these because this is not the original copy.</target>
+        <target xml:lang="quc" state="translated">Ma b'an k'exnik waral xa rumal man are ta qas uwach.</target>
       </trans-unit>
       <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord" sil:dynamic="true">
         <source xml:lang="en">Sight Word</source>
         <note>ID: EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord</note>
-        <target xml:lang="quc" state="needs-translation">Sight Word</target>
+        <target xml:lang="quc" state="translated">Ilom tzij</target>
       </trans-unit>
       <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable" sil:dynamic="true">
         <source xml:lang="en">This word is not decodable in this stage.</source>
         <note>ID: EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable</note>
-        <target xml:lang="quc" state="needs-translation">This word is not decodable in this stage.</target>
+        <target xml:lang="quc" state="translated">We tzij ri' man ksik'taj ta uwach pa we q'e'tal.</target>
       </trans-unit>
       <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true">
         <source xml:lang="en">This sentence is too long for this level.</source>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
-        <target xml:lang="quc" state="needs-translation">This sentence is too long for this level.</target>
+        <target xml:lang="quc" state="translated">We tz'aqat chomanik sib'alaj nim raqan chech we q'at.</target>
       </trans-unit>
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true">
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
         <note>ID: EditTab.ExperimentalNotice</note>
-        <target xml:lang="quc" state="needs-translation">This page is an experimental prototype which may have many problems, for which we apologize.</target>
+        <target xml:lang="quc" state="translated">We uxaq wuj are jun nab'e rilik su kub'ano kaj ne kak'uji' k'i taq k'axk'olil che, rumal ri' kaqata kuyba'l mak.</target>
       </trans-unit>
       <trans-unit id="EditTab.FileDialogVideoFiles">
         <source xml:lang="en">Video files</source>
         <note>ID: EditTab.FileDialogVideoFiles</note>
         <note>Used to identify the kind of files wanted in a file Open dialog</note>
-        <target xml:lang="quc" state="needs-translation">Video files</target>
+        <target xml:lang="quc" state="translated">K'olchak rech taq solob'ilb'al wachib'al.</target>
       </trans-unit>
       <trans-unit id="EditTab.FontMissing">
         <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
         <note>ID: EditTab.FontMissing</note>
-        <target xml:lang="quc" state="needs-translation">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</target>
+        <target xml:lang="quc" state="translated">Ri xel lo wi cha'om are  '{0}', xa k'ut ma jeqab'am taj chi upam we kematz'ib'. Jun chik ri xel lo wi koksax na.</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Alignment" sil:dynamic="true">
         <source xml:lang="en">Alignment</source>
         <note>ID: EditTab.FormatDialog.Alignment</note>
-        <target xml:lang="quc" state="needs-translation">Alignment</target>
+        <target xml:lang="quc" state="translated">Usuk'ub'axik</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.AlreadyExists" sil:dynamic="true">
         <source xml:lang="en">That style already exists. Please choose another name.</source>
         <note>ID: EditTab.FormatDialog.AlreadyExists</note>
-        <target xml:lang="quc" state="needs-translation">That style already exists. Please choose another name.</target>
+        <target xml:lang="quc" state="translated">K'o chik we retz'eb'alil. Chb'ana jun toq'ob' chacha' jun chik b'i'aj.</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.BorderToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the border and background</source>
         <note>ID: EditTab.FormatDialog.BorderToolTip</note>
-        <target xml:lang="quc" state="needs-translation">Change the border and background</target>
+        <target xml:lang="quc" state="translated">Uk'exik ri uchi' xuquje' ri upam</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.CharactersTab" sil:dynamic="true">
         <source xml:lang="en">Characters</source>
         <note>ID: EditTab.FormatDialog.CharactersTab</note>
-        <target xml:lang="quc" state="needs-translation">Characters</target>
+        <target xml:lang="quc" state="translated">K'i taq Retab'alil</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Create" sil:dynamic="true">
         <source xml:lang="en">Create</source>
         <note>ID: EditTab.FormatDialog.Create</note>
-        <target xml:lang="quc" state="needs-translation">Create</target>
+        <target xml:lang="quc" state="translated">Uwokik</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.CreateStyle" sil:dynamic="true">
         <source xml:lang="en">Create a new style</source>
         <note>ID: EditTab.FormatDialog.CreateStyle</note>
-        <target xml:lang="quc" state="needs-translation">Create a new style</target>
+        <target xml:lang="quc" state="translated">Uwokik jun k'ak' retz'eb'alil</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.BigWords-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Words</source>
@@ -2009,55 +2034,55 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
         <source xml:lang="en">Cover Default</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Cover-Default-style</note>
         <note>A default style for various fields usually on the Front Cover</note>
-        <target xml:lang="quc" state="needs-translation">Cover Default</target>
+        <target xml:lang="quc" state="translated">Upalaj ri no'j wuj ya'om chik uloq chech</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Credits-Page-style" sil:dynamic="true">
         <source xml:lang="en">Credits Page</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Credits-Page-style</note>
         <note>Used on the Credits page of most Front/Back Matter packs</note>
-        <target xml:lang="quc" state="needs-translation">Credits Page</target>
+        <target xml:lang="quc" state="translated">Uxaq wuj kech rajawib'</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.ImageDescriptionEdit-style" sil:dynamic="true">
         <source xml:lang="en">Image Description Edit</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.ImageDescriptionEdit-style</note>
         <note>Style appears when editing image descriptions. The trailing 'edit' indicates that it is just used for editing the description, not for publishing it.</note>
-        <target xml:lang="quc" state="needs-translation">Image Description Edit</target>
+        <target xml:lang="quc" state="translated">Ukolomaxik ri ub'ixik ri ub'antajik ri wachib'al</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Equation-style" sil:dynamic="true">
         <source xml:lang="en">Equation</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Equation-style</note>
         <note>Used on the Arithmetic template</note>
-        <target xml:lang="quc" state="needs-translation">Equation</target>
+        <target xml:lang="quc" state="translated">Ub'ek'i'alil</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading1-style" sil:dynamic="true">
         <source xml:lang="en">Heading 1</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Heading1-style</note>
         <note>Used on the Arithmetic template</note>
-        <target xml:lang="quc" state="needs-translation">Heading 1</target>
+        <target xml:lang="quc" state="translated">Majib'aluwi' 1</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading2-style" sil:dynamic="true">
         <source xml:lang="en">Heading 2</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Heading2-style</note>
         <note>A default style</note>
-        <target xml:lang="quc" state="needs-translation">Heading 2</target>
+        <target xml:lang="quc" state="translated">Majib'aluwi' 2</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.normal-style" sil:dynamic="true">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.normal-style</note>
         <note>Appears in most templates</note>
-        <target xml:lang="quc" state="needs-translation">Normal</target>
+        <target xml:lang="quc" state="translated">Je wi</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.quiz-style" sil:dynamic="true">
         <source xml:lang="en">Quiz</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.quiz-style</note>
         <note>Special template</note>
-        <target xml:lang="quc" state="needs-translation">Quiz</target>
+        <target xml:lang="quc" state="translated">K'amb'ejem</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true">
         <source xml:lang="en">Title On Cover</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style</note>
         <note>Used on the Front Cover page of most Front/Back Matter packs</note>
-        <target xml:lang="quc" state="needs-translation">Title On Cover</target>
+        <target xml:lang="quc" state="translated">Ub'i' pa ri upalaj ri no'jwuj</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style" sil:dynamic="true">
         <source xml:lang="en">Title On Title Page</source>
@@ -4589,6 +4614,7 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
       <trans-unit id="PublishTab.Upload.AccesibleToVisuallyImpaired">
         <source xml:lang="en">Accessible to the Visually Impaired</source>
         <note>ID: PublishTab.Upload.AccesibleToVisuallyImpaired</note>
+        <note>last used in Bloom 4.4</note>
         <target xml:lang="quc" state="needs-translation">Accessible to the Visually Impaired</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AccessibleToBlind">

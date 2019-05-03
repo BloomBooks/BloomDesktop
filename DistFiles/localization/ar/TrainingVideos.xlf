@@ -16,9 +16,7 @@
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
-        <target xml:lang="ar" state="translated">
-          <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">كل مقاطع الفيديو</g>
-        </target>
+        <target xml:lang="ar" state="translated"><g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">كل مقاطع الفيديو</g></target>
         <note>ID: training.videos.all</note>
       </trans-unit>
       <trans-unit id="training.videos.intro" approved="yes">
@@ -30,36 +28,28 @@
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
-        <target xml:lang="ar" state="translated">
-          <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">مَن المستهدف من Bloom</g>
-        </target>
+        <target xml:lang="ar" state="translated"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">مَن المستهدف من Bloom</g></target>
         <note>ID: training.videos.whofor</note>
       </trans-unit>
       <trans-unit id="training.videos.templates" approved="yes">
         <source xml:lang="en">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
         </source>
-        <target xml:lang="ar" state="translated">
-          <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">شرح النماذج وهياكل الكتب</g>
-        </target>
+        <target xml:lang="ar" state="translated"><g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">شرح النماذج وهياكل الكتب</g></target>
         <note>ID: training.videos.templates</note>
       </trans-unit>
       <trans-unit id="training.videos.basicbook" approved="yes">
         <source xml:lang="en">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Using the Basic Book template</g>
         </source>
-        <target xml:lang="ar" state="translated">
-          <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">استخدام نموذج الكتاب الأساسي</g>
-        </target>
+        <target xml:lang="ar" state="translated"><g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">استخدام نموذج الكتاب الأساسي</g></target>
         <note>ID: training.videos.basicbook</note>
       </trans-unit>
       <trans-unit id="training.videos.readers" approved="yes">
         <source xml:lang="en">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="ar" state="translated">
-          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">استخدام نماذج كتاب المستوى المحدد وكتاب مستويات القراءة (عدة مقاطع فيديو)</g>
-        </target>
+        <target xml:lang="ar" state="translated"><g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">استخدام نماذج كتاب المستوى المحدد وكتاب مستويات القراءة (عدة مقاطع فيديو)</g></target>
         <note>ID: training.videos.readers</note>
       </trans-unit>
       <trans-unit id="training.videos.advanced" approved="yes">
@@ -71,36 +61,28 @@
         <source xml:lang="en">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Changing the format of text</g>
         </source>
-        <target xml:lang="ar" state="translated">
-          <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">تغيير تنسيق النصوص</g>
-        </target>
+        <target xml:lang="ar" state="translated"><g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">تغيير تنسيق النصوص</g></target>
         <note>ID: training.videos.formatting</note>
       </trans-unit>
       <trans-unit id="training.videos.custompage" approved="yes">
         <source xml:lang="en">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
         </source>
-        <target xml:lang="ar" state="translated">
-          <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">استخدام نموذج الصفحات المخصصة</g>
-        </target>
+        <target xml:lang="ar" state="translated"><g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">استخدام نموذج الصفحات المخصصة</g></target>
         <note>ID: training.videos.custompage</note>
       </trans-unit>
       <trans-unit id="training.videos.specialcharacters" approved="yes">
         <source xml:lang="en">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Inserting special characters</g>
         </source>
-        <target xml:lang="ar" state="translated">
-          <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">إدراج أحرف خاصة</g>
-        </target>
+        <target xml:lang="ar" state="translated"><g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">إدراج أحرف خاصة</g></target>
         <note>ID: training.videos.specialcharacters</note>
       </trans-unit>
       <trans-unit id="training.videos.readertemplates" approved="yes">
         <source xml:lang="en">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="ar" state="translated">
-          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">إعداد مجموعة من نماذج كتاب المستوى المحدد وكتاب مستويات القراءة (عدة مقاطع فيديو)</g>
-        </target>
+        <target xml:lang="ar" state="translated"><g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">إعداد مجموعة من نماذج كتاب المستوى المحدد وكتاب مستويات القراءة (عدة مقاطع فيديو)</g></target>
         <note>ID: training.videos.readertemplates</note>
       </trans-unit>
       <trans-unit id="training.videos.offline" approved="yes">
@@ -115,22 +97,7 @@
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
-        <target xml:lang="ar" state="translated">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">دقة عالية</g> (ملفات كبيرة)</target>
+        <target xml:lang="ar" state="translated"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">دقة عالية</g> (ملفات كبيرة)</target>
         <note>ID: training.videos.hires</note>
         <alt-trans>
           <target xml:lang="ar">
@@ -147,6 +114,24 @@
           
           
           
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">دقة عالية</g> (ملفات كبيرة)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ar">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">دقة عالية</g> (ملفات كبيرة)</target>
         </alt-trans>
         <alt-trans>
@@ -183,19 +168,6 @@
         <alt-trans>
           <target xml:lang="ar">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">دقة عالية</g> (ملفات كبيرة)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ar">
           
           
           
@@ -210,22 +182,7 @@
       </trans-unit>
       <trans-unit id="training.videos.lores" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
-        <target xml:lang="ar" state="translated">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">دقة منخفضة</g> (ملفات صغيرة)</target>
+        <target xml:lang="ar" state="translated"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">دقة منخفضة</g> (ملفات صغيرة)</target>
         <note>ID: training.videos.lores</note>
         <alt-trans>
           <target xml:lang="ar">
@@ -242,6 +199,24 @@
           
           
           
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">دقة منخفضة</g> (ملفات صغيرة)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="ar">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">دقة منخفضة</g> (ملفات صغيرة)</target>
         </alt-trans>
         <alt-trans>
@@ -278,19 +253,6 @@
         <alt-trans>
           <target xml:lang="ar">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">دقة منخفضة</g> (ملفات صغيرة)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="ar">
           
           
           
