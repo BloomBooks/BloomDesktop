@@ -92,9 +92,12 @@ K’o keb’ uwach ri winaq kkowinik kukoj ri uraqanib’al. Ri nab’e ub’ani
       </trans-unit>
       <trans-unit id="template.starter.describeyours" approved="yes">
         <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
-        <target xml:lang="quc" state="translated">Xuquje’ chchomaj uya’ik ub’ixik ri ub’antajik ri raqanib’al, pacha’ ri katajin kasik’ij uwach chanim ri’. Rech ub’anik wa’, chkojo’ jun k’olchak rech woktz’ib’ ub’i’ <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> pa ri k’olyakb’al chak ri k’o chi upam ri raqanib’al. We k’olchak ri' rajawaxik kutaqej ri choltaqanik chak <g id="genid-9" ctype="x-html-a"
-html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Rech uya’ik taqanik pa nik’aj taq tzijob’al chik, rajawaxik kab’an nik’aj chik k’olchak kuk’ex ri “pa” keb’ uwach tz’ib’ rech ri retal chi jujunal chi kech ri tzijob’al. K'amna'oj <g id="genid-10" ctype="x-html-code">ReadMe-es.md</g> kk’ut rib’ are taq ri Bloom xsuk’amaxik chech uk’utik retal pa kaxla'n tzij. Xuquje’ kuk'ulaj ri esan wachaj, pacha’ k’o chi upam we wuj ri’. Chya ronojel taq ri wachib’al kakojo chi upam ri k’olyakb’al chak ub’i’am "ReadMeImages", rech ri wachib’al katzijob’ex uwach chi jewa’ ri’ ub’anik:</target>
+        <target xml:lang="quc" state="translated">Xuquje’ chchomaj uya’ik ub’ixik ri ub’antajik ri raqanib’al, pacha’ ri katajin kasik’ij uwach chanim ri’. Rech ub’anik wa’, chkojo’ jun k’olchak rech woktz’ib’ ub’i’ <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> pa ri k’olyakb’al chak ri k’o chi upam ri raqanib’al. We k’olchak ri' rajawaxik kutaqej ri choltaqanik chak <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Rech uya’ik taqanik pa nik’aj taq tzijob’al chik, rajawaxik kab’an nik’aj chik k’olchak kuk’ex ri “pa” keb’ uwach tz’ib’ rech ri retal chi jujunal chi kech ri tzijob’al. K'amna'oj <g id="genid-10" ctype="x-html-code">ReadMe-es.md</g> kk’ut rib’ are taq ri Bloom xsuk’amaxik chech uk’utik retal pa kaxla'n tzij. Xuquje’ kuk'ulaj ri esan wachaj, pacha’ k’o chi upam we wuj ri’. Chya ronojel taq ri wachib’al kakojo chi upam ri k’olyakb’al chak ub’i’am "ReadMeImages", rech ri wachib’al katzijob’ex uwach chi jewa’ ri’ ub’anik:</target>
         <note>ID: template.starter.describeyours</note>
+        <alt-trans>
+          <target xml:lang="quc">Xuquje’ chchomaj uya’ik ub’ixik ri ub’antajik ri raqanib’al, pacha’ ri katajin kasik’ij uwach chanim ri’. Rech ub’anik wa’, chkojo’ jun k’olchak rech woktz’ib’ ub’i’ <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> pa ri k’olyakb’al chak ri k’o chi upam ri raqanib’al. We k’olchak ri' rajawaxik kutaqej ri choltaqanik chak <g id="genid-9" ctype="x-html-a"
+html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Rech uya’ik taqanik pa nik’aj taq tzijob’al chik, rajawaxik kab’an nik’aj chik k’olchak kuk’ex ri “pa” keb’ uwach tz’ib’ rech ri retal chi jujunal chi kech ri tzijob’al. K'amna'oj <g id="genid-10" ctype="x-html-code">ReadMe-es.md</g> kk’ut rib’ are taq ri Bloom xsuk’amaxik chech uk’utik retal pa kaxla'n tzij. Xuquje’ kuk'ulaj ri esan wachaj, pacha’ k’o chi upam we wuj ri’. Chya ronojel taq ri wachib’al kakojo chi upam ri k’olyakb’al chak ub’i’am "ReadMeImages", rech ri wachib’al katzijob’ex uwach chi jewa’ ri’ ub’anik:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc">Xuquje’ chchomaj la uya’ik uwi’ ub’ixik ri ub’anatajik ri raqanib’al, pacha’ ri tajan kasik’ij uwach chanim ri’. Rech ub’anik wa’, chkojo’ jun k’olchak rech woktz’ib’ ub’i’ <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> pa ri k’olyakb’al chak che k’o chi upam ri raqanib’al.We k’olchak rajawaxik kutaqej ri choltaqanik chak <g id="genid-9" ctype="x-html-a"
 html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Rech uya’ik taqanik pa nik’aj  taq tzijob’al, rajawaxik kab’an nik’aj chik rech ri k’olchak kuk’ex ri “pa” keb’ uwach tz’ib’ rech ri retal chi jujunal chi kech ri tzijob’al. Pacha’ ri k’utub’al <g id="genid-10" ctype="x-html-code">ReadMe-es.md</g>  kk’ut rib’ are chi’ Bloom xsuk’amaxik  che uk’utik  retal  pa kaxlan tzij.  Xuquje’ kya’ chi upam ri  chapanik rech woilb’al wachaj, pacha’ k’o chi upam we wuj ri’. Chya ronojel taq ri wachib’al kakojo  chi upam ri k’olyakb’al chak ub’i’am "ReadMeImages", rech ri wachib’al xtzijob’exik  jewa’ ri’ ub’anik:</target>
@@ -142,13 +145,19 @@ html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Rech uya�
       </trans-unit>
       <trans-unit id="template.starter.nothingautomatic" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
-        <target xml:lang="quc" state="translated">
-          
-<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: We wuj ri' kuya'o kxo’lix upam chwe'q kab'ij ruk' uwach taq uxaq wuj. Chna'taj chi qech chi Bloom k'a maja’ k’o jun ub’anik chech ub’ixik chi jun uxaq wuj rajawaxik kya’ chi upam ri k’ak’ taq wuj, ri b’anal rech kuya na uwi’ jujunal chi kech ri uxaq wuj che ri kajxukut rech tzijonem "Uwiqik Uxaq Wuj".</target>
+        <target xml:lang="quc" state="translated"><g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: We wuj ri' kuya'o kxo’lix upam chwe'q kab'ij ruk' uwach taq uxaq wuj. Chna'taj chi qech chi Bloom k'a maja’ k’o jun ub’anik chech ub’ixik chi jun uxaq wuj rajawaxik kya’ chi upam ri k’ak’ taq wuj, ri b’anal rech kuya na uwi’ jujunal chi kech ri uxaq wuj che ri kajxukut rech tzijonem "Uwiqik Uxaq Wuj".</target>
         <note>ID: template.starter.nothingautomatic</note>
         <alt-trans>
           <target xml:lang="quc">
-          <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: We k’i wuj kxo’lix na upam kk’ulmataj na anaqil uchak ajlinem chi uwach ri uxaq wuj. Chwi la pe’ che ri Bloom maja’ k’o jun ub’anik che ub’ixik chi jun uxaq wuj rajawaxik kya’ chi upam ri k’ak’ taq wuj, ri b’anal rech kuya na uwi’ jujunal chi kech ri uxaq wuj  che ri kajxukut rech tzijonem "Uya’ik Uwi’ Uxaq Wuj".
+          
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: We wuj ri' kuya'o kxo’lix upam chwe'q kab'ij ruk' uwach taq uxaq wuj. Chna'taj chi qech chi Bloom k'a maja’ k’o jun ub’anik chech ub’ixik chi jun uxaq wuj rajawaxik kya’ chi upam ri k’ak’ taq wuj, ri b’anal rech kuya na uwi’ jujunal chi kech ri uxaq wuj che ri kajxukut rech tzijonem "Uwiqik Uxaq Wuj".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: We wuj ri' kuya'o kxo’lix upam chwe'q kab'ij ruk' uwach taq uxaq wuj. Chna'taj chi qech chi Bloom k'a maja’ k’o jun ub’anik chech ub’ixik chi jun uxaq wuj rajawaxik kya’ chi upam ri k’ak’ taq wuj, ri b’anal rech kuya na uwi’ jujunal chi kech ri uxaq wuj che ri kajxukut rech tzijonem "Uwiqik Uxaq Wuj".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc"><g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: We k’i wuj kxo’lix na upam kk’ulmataj na anaqil uchak ajlinem chi uwach ri uxaq wuj. Chwi la pe’ che ri Bloom maja’ k’o jun ub’anik che ub’ixik chi jun uxaq wuj rajawaxik kya’ chi upam ri k’ak’ taq wuj, ri b’anal rech kuya na uwi’ jujunal chi kech ri uxaq wuj  che ri kajxukut rech tzijonem "Uya’ik Uwi’ Uxaq Wuj".
  
 </target>
         </alt-trans>
@@ -158,34 +167,50 @@ html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Rech uya�
         <target xml:lang="quc" state="translated"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>:We man kawaj taj chi ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uwiqik Uxaq Wuj", kuya'o kaya ub'ixik chech Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’al taq rech No'jwuj.</target>
         <note>ID: template.starter.nametonotaddpage</note>
         <alt-trans>
-          <target xml:lang="quc"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>:We man kawaj taj che ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uya’ik Uwi’ Uxaq Wuj", lal kakowin la che ub’ixik we ri’ che Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’alib’ rech Wuj.</target>
+          <target xml:lang="quc">
+<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>:We man kawaj taj chi ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uwiqik Uxaq Wuj", kuya'o kaya ub'ixik chech Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’al taq rech No'jwuj.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">
+<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>:We man kawaj taj che ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uya’ik Uwi’ Uxaq Wuj", lal kakowin la che ub’ixik we ri’ che Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’alib’ rech Wuj.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
-        <target xml:lang="quc" state="translated">
-          
-<g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Jule' taq winaq chik, man kekowin ta chech uq’axexik pa jun tzijob'al chik ri retwokaj xuquje’ ub’ixik ri ub’antajik pa jule' taq tzijob’al chik rech uwachulew. We kuya k’axk’olil, chatch’aw kuk’ ri jupuq nima’q taq keta’mab’al rech Bloom.</target>
+        <target xml:lang="quc" state="translated"><g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Jule' taq winaq chik, man kekowin ta chech uq’axexik pa jun tzijob'al chik ri retwokaj xuquje’ ub’ixik ri ub’antajik pa jule' taq tzijob’al chik rech uwachulew. We kuya k’axk’olil, chatch’aw kuk’ ri jupuq nima’q taq keta’mab’al rech Bloom.</target>
         <note>ID: template.starter.labelsnottranslatable</note>
         <alt-trans>
           <target xml:lang="quc">
-          <g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Nik’aj taq winaq ma kekomin ta na che uq’axexik pa jun tzijobal chik ri retwokaj xuquje’ ub’ixik ri ub’antajik  pa nik’aj taq tzijob’al chik rech amaq’. We we ri’ kuya k’axk’olil, chatch’aw kuk’ ri jupuq nima’q taq keta’mab’al rech Bloom.</target>
+          
+<g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Jule' taq winaq chik, man kekowin ta chech uq’axexik pa jun tzijob'al chik ri retwokaj xuquje’ ub’ixik ri ub’antajik pa jule' taq tzijob’al chik rech uwachulew. We kuya k’axk’olil, chatch’aw kuk’ ri jupuq nima’q taq keta’mab’al rech Bloom.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">
+<g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Jule' taq winaq chik, man kekowin ta chech uq’axexik pa jun tzijob'al chik ri retwokaj xuquje’ ub’ixik ri ub’antajik pa jule' taq tzijob’al chik rech uwachulew. We kuya k’axk’olil, chatch’aw kuk’ ri jupuq nima’q taq keta’mab’al rech Bloom.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc"><g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Nik’aj taq winaq ma kekomin ta na che uq’axexik pa jun tzijobal chik ri retwokaj xuquje’ ub’ixik ri ub’antajik  pa nik’aj taq tzijob’al chik rech amaq’. We we ri’ kuya k’axk’olil, chatch’aw kuk’ ri jupuq nima’q taq keta’mab’al rech Bloom.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.editrawhtml" approved="yes">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
-        <target xml:lang="quc" state="translated">
-          
-<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kawaj chi le kutb'al wach rech "Uwiqik Uxaq wuj” xuquje’ chya’ ub’ixik jub’iq’ ri ub’antajik ri k’o chi upam ri uxaq wuj, rajawaxik katel na pa ri Bloom k'ate k'u ri' kab'an ukolomaxik le k’olchak html rech ri raqanib’al pa "Notepad", xaq jeri':<x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        <target xml:lang="quc" state="translated"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kawaj chi le kutb'al wach rech "Uwiqik Uxaq wuj” xuquje’ chya’ ub’ixik jub’iq’ ri ub’antajik ri k’o chi upam ri uxaq wuj, rajawaxik katel na pa ri Bloom k'ate k'u ri' kab'an ukolomaxik le k’olchak html rech ri raqanib’al pa "Notepad", xaq jeri':<x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
         <alt-trans>
           <target xml:lang="quc">
-          <g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kariyij che ri woilb’al rech "Uya’ik uwi’ Uxaq wuj” xuquje’ chya’ jun ub’ixik jub’iq’ ri ub’antajik ri k’o chi upam ri uxaq wuj, katel na pa ri Bloom xuquje’ ukolomaxik ri k’olchak html rech ri raqanib’al pa "Notepad", xuw xa je wa’:<x id="genid-15" ctype="image"
-html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+          
+<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kawaj chi le kutb'al wach rech "Uwiqik Uxaq wuj” xuquje’ chya’ ub’ixik jub’iq’ ri ub’antajik ri k’o chi upam ri uxaq wuj, rajawaxik katel na pa ri Bloom k'ate k'u ri' kab'an ukolomaxik le k’olchak html rech ri raqanib’al pa "Notepad", xaq jeri':<x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="quc">
-          <g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kariyij che ri woilb’al rech "Uya’ik uwi’ Uxaq wuj” xuquje’ chya’ jun ub’ixik jub’iq’ ri ub’antajik ri k’o chi upam ri uxaq wuj, katel na pa ri Bloom xuquje’ ukolomaxik ri k’olchak html rech ri raqanib’al pa "Notepad", xuw xa je wa’: <x id="genid-15" ctype="image"
+<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kawaj chi le kutb'al wach rech "Uwiqik Uxaq wuj” xuquje’ chya’ ub’ixik jub’iq’ ri ub’antajik ri k’o chi upam ri uxaq wuj, rajawaxik katel na pa ri Bloom k'ate k'u ri' kab'an ukolomaxik le k’olchak html rech ri raqanib’al pa "Notepad", xaq jeri':<x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kariyij che ri woilb’al rech "Uya’ik uwi’ Uxaq wuj” xuquje’ chya’ jun ub’ixik jub’iq’ ri ub’antajik ri k’o chi upam ri uxaq wuj, katel na pa ri Bloom xuquje’ ukolomaxik ri k’olchak html rech ri raqanib’al pa "Notepad", xuw xa je wa’:<x id="genid-15" ctype="image"
+html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kariyij che ri woilb’al rech "Uya’ik uwi’ Uxaq wuj” xuquje’ chya’ jun ub’ixik jub’iq’ ri ub’antajik ri k’o chi upam ri uxaq wuj, katel na pa ri Bloom xuquje’ ukolomaxik ri k’olchak html rech ri raqanib’al pa "Notepad", xuw xa je wa’: <x id="genid-15" ctype="image"
 html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         </alt-trans>
       </trans-unit>

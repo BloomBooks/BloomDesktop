@@ -6074,6 +6074,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="PublishTab.Upload.AccesibleToVisuallyImpaired">
         <source xml:lang="en">Accessible to the Visually Impaired</source>
         <note>ID: PublishTab.Upload.AccesibleToVisuallyImpaired</note>
+        <note>last used in Bloom 4.4</note>
         <target xml:lang="es-ES" state="translated">Accesible para los discapacitados visuales</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AccessibleToBlind">
