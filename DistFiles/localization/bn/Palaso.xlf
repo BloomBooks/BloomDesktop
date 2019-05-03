@@ -436,6 +436,9 @@
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
         <target xml:lang="bn" state="translated">ভাষা 639-3 কোড &amp;amp সম্পর্কে; তা কিভাবে নতুনটির জন্য তা প্রয়োগ করা যায়</target>
         <alt-trans>
+          <target xml:lang="bn">ভাষা 639-3 কোড &amp;amp সম্পর্কে; তা কিভাবে নতুনটির জন্য তা প্রয়োগ করা যায়</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="bn">ভাষা 639-3 কোড সম্পর্কে &amp; এবং কিভাবে নতুনটির জন্য তা প্রয়োগ করা যায়</target>
         </alt-trans>
         <alt-trans>

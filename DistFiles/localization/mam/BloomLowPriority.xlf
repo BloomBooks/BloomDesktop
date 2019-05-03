@@ -105,7 +105,10 @@
         <source xml:lang="en">What's This?</source>
         <note>ID: Settings.Enterprise.WhatsThis</note>
         <note>A link offering more information about the Funded Local Community Only option</note>
-        <target xml:lang="mam" state="needs-translation">What's This?</target>
+        <target xml:lang="mam" state="translated">Ti tqal jlu'?</target>
+        <alt-trans>
+          <target xml:lang="mam">Ti tqal lu'?</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>

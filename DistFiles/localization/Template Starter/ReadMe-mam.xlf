@@ -4,14 +4,14 @@
     <body>
       <trans-unit id="template.starter">
         <source xml:lang="en">How to use the Template Starter</source>
-        <target xml:lang="mam" state="needs-translation">How to use the Template Starter</target>
+        <target xml:lang="mam" state="translated">Tza'n qajb'el tnejil ttenb'il u'jb'il b'ananmaj</target>
         <note>ID: template.starter</note>
       </trans-unit>
       <trans-unit id="template.starter.firstusage">
         <source xml:lang="en">This special template lets you make your own templates. A template provides a set of related page layouts that an author can choose from in writing an original book. Usually the text blocks and picture blocks on template pages will be empty, ready for an author to fill in. Sometimes there may be standard text or pictures that should be on every copy of the page.
 There are two ways people can use your template. The first way is to start new books. For example, imagine student books that have one page for each school day of the week. You could make a template with 5 pages, each with places to type in text and choose pictures. Curriculum authors could select your template and make a new book, one for each week<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</source>
-        <target xml:lang="mam" state="needs-translation">This special template lets you make your own templates. A template provides a set of related page layouts that an author can choose from in writing an original book. Usually the text blocks and picture blocks on template pages will be empty, ready for an author to fill in. Sometimes there may be standard text or pictures that should be on every copy of the page.
-There are two ways people can use your template. The first way is to start new books. For example, imagine student books that have one page for each school day of the week. You could make a template with 5 pages, each with places to type in text and choose pictures. Curriculum authors could select your template and make a new book, one for each week<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
+        <target xml:lang="mam" state="translated">A ttenb'il u'jb'il b'ananmaj lu' axix ntzaj tq'o'n amb'il tu'n tkub' b'inchet qe tex ttenb'il u'jb'il b'ananmaj. Jun ttenb'il u'jb'il b'ananmaj ntzaj tq'o'n jun k'loj b'inchb'il qe t-xaq at kyxilen ex b'a'n tu'n tjaw tsak'o'n ajb'inchal te tz'ib'il jun u'jb'il txuylal. A qe swejin te txolyol ex qe swejin te tilb'ilal kyuj qe t-xaq te ttenb'il u'jb'il b'ananmaj minti' kyuj qe, noqx ayo'n tu'n tnojset tu'n jun ajb'inchal. At maj qkanetil txolyol mo tilb'ilal te junxix tumlal ilx ti'j tu'n kyten tuj ju'njun txolil aq'unb'il t-xaq.
+At kab'e tu'mel tu'n tajb'en kyu'n xjal qe ttenb'il u'jb'il b'ananmaj. Tnejil tu'mel a tu'n t-xi' qe' ak'aj u'jb'il. Noq na'nxa u'jb'il kye ajxnaq'tzanjtz te jun t-xaq tuj ju'njun q'ij txnaq'tzb'il tuj seman. Jaku kub' tb'inchana jun ttenb'il u'jb'il b'ananmaj te 5 t-xaq, teylex te ju'jun tuk'il tswejin tu'n tku'x tz'ib'et txolyol ex sak'ol tilb'ilal. Qe ajb'inchal txolxnaq'tz jaku kyjaw sak'o'n ttenb'il u'jb'il b'ananmaj tu'n tb'ant jun ak'aj u'jb'il, jun tuj ju'njun seman<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
         <note>ID: template.starter.firstusage</note>
       </trans-unit>
       <trans-unit id="template.starter.secondusage">

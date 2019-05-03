@@ -28,8 +28,8 @@
         <target xml:lang="id" state="translated">Tonton <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">video petunjuk ini</g>.</target>
         <note>ID: leveled.learn.videos</note>
       </trans-unit>
-      <trans-unit id="leveled.learn.helpindex" approved="yes">
-        <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Leveled Readers".</source>
+      <trans-unit id="leveled.learn.helpindex">
+        <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</source>
         <target xml:lang="id" state="translated">Buka menu Bantuan, pilih "Bantuan', dan cari dalam indeks pada "Pembaca yang Dapat Didekodekan".</target>
         <note>ID: leveled.learn.helpindex</note>
       </trans-unit>

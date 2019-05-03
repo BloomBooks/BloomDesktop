@@ -52,46 +52,67 @@
       <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="quc" state="translated">Ub'ixikil pa uwi' le q'atchak</target>
+        <target xml:lang="quc" state="translated">Ub'ixikil tzij</target>
         <alt-trans>
-          <target xml:lang="quc">Ub'ixikil tzij</target>
+          <target xml:lang="quc">Ub'ixikil pa uwi' le q'atchak</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="quc">Ub'ixkil tzij</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Application.AlreadyRunning.General">
+      <trans-unit id="Application.AlreadyRunning.General" approved="yes">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.General</note>
-        <target xml:lang="quc" state="translated">Tajan kchakuxik jun uwachib'al chik rech ri nuk'wach. We man karaq taj, chab'ana k'ak' umajik ri akematz'ib'.</target>
+        <target xml:lang="quc" state="translated">Katajin kchakub'ex jun uwach chik we kematal chak. We man kariqo, chab'ana k'ak'umajik le akematz'ib'.</target>
+        <alt-trans>
+          <target xml:lang="quc">Tajan kchakuxik jun uwachib'al chik rech ri nuk'wach. We man karaq taj, chab'ana k'ak' umajik ri akematz'ib'.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Application.AlreadyRunning.Specific">
+      <trans-unit id="Application.AlreadyRunning.Specific" approved="yes">
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="quc" state="translated">Tajan kchakuxik jun uwachib'al chik rech  {0}. We man karaqo, chab'ana k'ak' umajik ri akematz'ib'.</target>
+        <target xml:lang="quc" state="translated">Katajin kchakub'ex jun uwach chik rech {0}. We man kariqo, chab'ana k'ak'umajik le akematz'ib'.</target>
+        <alt-trans>
+          <target xml:lang="quc">Tajan kchakuxik jun uwachib'al chik rech  {0}. We man karaqo, chab'ana k'ak' umajik ri akematz'ib'.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Application.ProblemStarting.General">
+      <trans-unit id="Application.ProblemStarting.General" approved="yes">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
-        <target xml:lang="quc" state="needs-translation">There was a problem starting the application which might require that you restart your computer.</target>
+        <target xml:lang="quc" state="translated">Xk'ulmataj jun k'axk'olil pa majb'al rech le kematal chak. Wene rajawaxik kab'an na k'ak'umajik ri akematz'ib'.</target>
+        <alt-trans>
+          <target xml:lang="quc">Xk'ulmataj jun k'axk'olil pa majb'al rech le kematal chak. Wene rajawaxik na kab'an k'ak'umajik ri akematz'ib'.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Xk'ulmataj jun k'axk'olil pa majb'al rech ri nuk'wach chak. We ne rajawaxik na k'ak' umajik ri akematz'ib'.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Application.ProblemStarting.Specific">
+      <trans-unit id="Application.ProblemStarting.Specific" approved="yes">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="quc" state="needs-translation">There was a problem starting {0} which might require that you restart your computer.</target>
+        <target xml:lang="quc" state="translated">Xk'ulmataj jun k'axk'olil pa majb'al rech {0}. We ne rajawaxik na k'ak' umajik ri akematz'ib'.</target>
       </trans-unit>
-      <trans-unit id="Application.WaitingFinish.General">
+      <trans-unit id="Application.WaitingFinish.General" approved="yes">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
-        <target xml:lang="quc" state="needs-translation">Waiting for other application to finish...</target>
+        <target xml:lang="quc" state="translated">Katajin keye'xik rech jun kemchakub'al chik kk'isik...</target>
+        <alt-trans>
+          <target xml:lang="quc">Tajan kye'xik rech jun chik ukojik kak'isik...</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Tajan kye'xik rech jun chik ukojik kak'ixik...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Application.WaitingFinish.Specific">
+      <trans-unit id="Application.WaitingFinish.Specific" approved="yes">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="quc" state="needs-translation">Waiting for other {0} to finish...</target>
+        <target xml:lang="quc" state="translated">Katajin keye'xik rech {0} kak'isik...</target>
+        <alt-trans>
+          <target xml:lang="quc">Tajan kye'xik rech {0} kak'isik...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.AbortButton" approved="yes">
         <source xml:lang="en">&amp;Abort</source>
@@ -109,10 +130,13 @@
           <target xml:lang="quc">Uq'atexik</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.IgnoreButton">
+      <trans-unit id="Common.IgnoreButton" approved="yes">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="quc" state="needs-translation">&amp;Ignore</target>
+        <target xml:lang="quc" state="translated">&amp;man kaya ta uq'ij</target>
+        <alt-trans>
+          <target xml:lang="quc">&amp;Mawil panoq</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
@@ -162,17 +186,23 @@
         <note>ID: Common.YesButton</note>
         <target xml:lang="quc" state="translated">&amp;Je'</target>
       </trans-unit>
-      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
-        <target xml:lang="quc" state="needs-translation">{0} will be moved to the Recycle Bin.</target>
+        <target xml:lang="quc" state="translated">{0} ksilob'isax na pa ri k'olwujib'al rech kamulib'al mes.</target>
+        <alt-trans>
+          <target xml:lang="quc">{0} ksilob'ax na pa ri wujib'al k'olb'al rech k'ol chak xuquje' k'ol yakb'al chak.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Param {0} is a file name</note>
-        <target xml:lang="quc" state="needs-translation">{0} will be moved to the Recycle Bin.</target>
+        <target xml:lang="quc" state="translated">{0} ksilob'isax na pa ri k'olwujib'al rech kamulib'al mes.</target>
+        <alt-trans>
+          <target xml:lang="quc">{0} ksilob'ax na pa ri wujib'al k'olb'al rech k'ol chak xuquje' k'ol yakb'al chak.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Confirm Delete</source>
@@ -198,11 +228,14 @@
           <target xml:lang="quc">Resaxik</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.AlmostMatchingImages">
+      <trans-unit id="ImageToolbox.AlmostMatchingImages" approved="yes">
         <source xml:lang="en">Found {0} images with names close to “{1}”</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
-        <target xml:lang="quc" state="needs-translation">Found {0} images with names close to “{1}”</target>
+        <target xml:lang="quc" state="translated">Xuriq {0} wachib'al ri kjunumataj ub'i' pacha' {1}</target>
+        <alt-trans>
+          <target xml:lang="quc">Xaraq {0} wachib'al ruk' b'i'aj xaq junam pacha' {1}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.ArtOfReading" approved="yes">
         <source xml:lang="en">Art Of Reading</source>
@@ -235,21 +268,27 @@
 </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.DownloadArtOfReading">
+      <trans-unit id="ImageToolbox.DownloadArtOfReading" approved="yes">
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
-        <target xml:lang="quc" state="needs-translation">Download Art Of Reading Installer</target>
+        <target xml:lang="quc" state="translated">Uqajisaxik le jeqb'anel rech ri Je'l ub'anik ri sik'in wuj (Art of Reading)</target>
+        <alt-trans>
+          <target xml:lang="quc">Uqajisaxik ri jeqb'anel rech ri Je'l ub'anik ri Sik'in wuj (Art of Reading) </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.EditMetadataLink" approved="yes">
         <source xml:lang="en">Edit...</source>
         <note>ID: ImageToolbox.EditMetadataLink</note>
         <target xml:lang="quc" state="translated">Ukolomaxik</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.EnterSearchTerms">
+      <trans-unit id="ImageToolbox.EnterSearchTerms" approved="yes">
         <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
-        <target xml:lang="quc" state="needs-translation">In the box above, type what you are searching for, then press ENTER.</target>
+        <target xml:lang="quc" state="translated">Pa ri kajxukut k'o ajsik, chatz'ib'aj ri katajin katzukuj. K'ate k'u ri' chab'ana pitz'a' pa OKIK.</target>
+        <alt-trans>
+          <target xml:lang="quc">Pa ri kajxukut k'o ajsik, chatz'ib'aj ri tajan katzukuj. K'ate k'u ri' pitz'a' OKIk.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
@@ -259,26 +298,32 @@
           <target xml:lang="quc">K'olb'al chak</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.FileChooserTitle">
+      <trans-unit id="ImageToolbox.FileChooserTitle" approved="yes">
         <source xml:lang="en">Choose Picture File</source>
         <note>ID: ImageToolbox.FileChooserTitle</note>
         <note>Title shown for a file chooser dialog brought up by the ImageToolbox</note>
-        <target xml:lang="quc" state="needs-translation">Choose Picture File</target>
+        <target xml:lang="quc" state="translated">Chacha' jun k'olchak rech wachib'al</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Galleries" approved="yes">
         <source xml:lang="en">Galleries</source>
         <note>ID: ImageToolbox.Galleries</note>
         <target xml:lang="quc" state="translated">Cholb'al wach</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.GenericGettingImageProblem">
+      <trans-unit id="ImageToolbox.GenericGettingImageProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
         <note>ID: ImageToolbox.GenericGettingImageProblem</note>
-        <target xml:lang="quc" state="needs-translation">Sorry, something went wrong while getting the image.</target>
+        <target xml:lang="quc" state="translated">Man k'ax ta kqana'o, k'o ri man utz ta xelik are taq' xawaj uk'amik le wachib'al.</target>
+        <alt-trans>
+          <target xml:lang="quc">K'ex kqana'o, jub'iq' ma utz taj xelik are chi' xawaj uk'amik ri wachib'al.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.GenericProblem">
+      <trans-unit id="ImageToolbox.GenericProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
-        <target xml:lang="quc" state="needs-translation">Sorry, something went wrong with the ImageToolbox</target>
+        <target xml:lang="quc" state="translated">Man k'ax ta kqana'o, k'o ri man utz ta xelik ruk' Uk'olib'al taq Chakub'al rech taq wachib'al (ImageToolbox)</target>
+        <alt-trans>
+          <target xml:lang="quc">K'ex kaqana'o, jub'iq' ma utz taj xelik ruk' ri Koxon rech Chakub'al rech k'i taq wachib'al (ImageToolbox)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.GetPicture" approved="yes">
         <source xml:lang="en">Get Picture</source>
@@ -290,15 +335,21 @@
         <note>ID: ImageToolbox.ImageGalleries</note>
         <target xml:lang="quc" state="translated">K’olk'utb’al wachib'al</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.ImageToolboxWindowTitle">
+      <trans-unit id="ImageToolbox.ImageToolboxWindowTitle" approved="yes">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="quc" state="needs-translation">Image Toolbox</target>
+        <target xml:lang="quc" state="translated">Uk'olib'al taq Chakub'al rech taq wachib'al (ImageToolbox)</target>
+        <alt-trans>
+          <target xml:lang="quc">Koxon rech Chakub'al rech k'i taq wachib'al (ImageToolbox)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.InstallArtOfReading">
+      <trans-unit id="ImageToolbox.InstallArtOfReading" approved="yes">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
         <note>ID: ImageToolbox.InstallArtOfReading</note>
-        <target xml:lang="quc" state="needs-translation">Install the Art Of Reading package (this may be very slow)</target>
+        <target xml:lang="quc" state="translated">Ujeqeb'axik ri woktanaj rech Je'l ub'anik ri sik'in wuj (Art of Reading), (we ri' te'qne kb'eyetajik)</target>
+        <alt-trans>
+          <target xml:lang="quc">Jeqb'axik ri tanaj rech Je'l ub'anik ri Sik'in wuj (Art of Reading), (we ri' kb'eytajik)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.MatchingImages" approved="yes">
         <source xml:lang="en">Found {0} images</source>
@@ -311,26 +362,38 @@
 </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.NewMultilingual">
+      <trans-unit id="ImageToolbox.NewMultilingual" approved="yes">
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space): Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</note>
-        <target xml:lang="quc" state="needs-translation">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</target>
+        <target xml:lang="quc" state="translated">¿La aweta'm chi k'o jun k'ak' rilik ub'ixik we wokcha'talik che kuya'o katzukuj pa arábe, bengalí, chino, inglés, francés, indonesio, hindi, portugués, español, tailandés, o suajili? Xaq sipatalik xuquje' ya'talik rech kqasaxik.</target>
+        <alt-trans>
+          <target xml:lang="quc">¿Aweta'm che k'o jun k'ak' rilik ub'ixik we k'i taq uwach wuj tz'ib'am che kuya'o katzukuj pa arábe, bengalí, chino, inglés, francés, indonesio, hindi, portugués, español, tailandés, o suajili? Xaq sipatalik xuquje' k'olik ya'talik che uqajisaxik.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.NoArtOfReading">
+      <trans-unit id="ImageToolbox.NoArtOfReading" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
-        <target xml:lang="quc" state="needs-translation">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</target>
+        <target xml:lang="quc" state="translated">Pa we kematz'ib' ri' pacha' b'ik man jeqeb'am ta ri k’olk'utb’al 'Je'l ub'anik ri sik'in wuj' (Art of Reading).</target>
+        <alt-trans>
+          <target xml:lang="quc">We kematz'ib' pacha' b'ik ma jeqb'am ta ri cholb'al 'Je'l ub'anik ri Sik'in wuj' (Art of Reading).</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.NoGalleries">
+      <trans-unit id="ImageToolbox.NoGalleries" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
         <note>ID: ImageToolbox.NoGalleries</note>
-        <target xml:lang="quc" state="needs-translation">This computer doesn't appear to have any galleries installed yet.</target>
+        <target xml:lang="quc" state="translated">Pa we kematz'ib' ri' pacha' b'ik k'a maja' kjeqeb'ax le k’olk'utb’al chi upam.</target>
+        <alt-trans>
+          <target xml:lang="quc">Pacha' b'ik che we kematz'ib' maja' k'o chech ri cholb'al uwach jeqb'am.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.NoMatchingImages">
+      <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
         <note>ID: ImageToolbox.NoMatchingImages</note>
-        <target xml:lang="quc" state="needs-translation">Found no matching images</target>
+        <target xml:lang="quc" state="translated">Man xriqitaj ta k'i taq wachib'al ri kejunamatajik</target>
+        <alt-trans>
+          <target xml:lang="quc">Ma xraqataj taj k'i taq wachib'al che xaq ejunam</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.PictureFiles" approved="yes">
         <source xml:lang="en">picture files</source>
@@ -341,20 +404,32 @@
           <target xml:lang="quc">k’olb’al taq wachib’al</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice">
+      <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice" approved="yes">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="quc" state="needs-translation">Problem Getting Image</target>
+        <target xml:lang="quc" state="translated">Man xb'antaj ta kowinem chech uk'amik ri wachib'al</target>
+        <alt-trans>
+          <target xml:lang="quc">Ma xb'antaj ta kowinem che ri uk'amik ri wachib'al</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Ma kb'antaj ta kowinem che ri uk'amik ri wachib'al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.ProblemLoadingImage">
+      <trans-unit id="ImageToolbox.ProblemLoadingImage" approved="yes">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <note>ID: ImageToolbox.ProblemLoadingImage</note>
-        <target xml:lang="quc" state="needs-translation">Sorry, there was a problem loading that image.</target>
+        <target xml:lang="quc" state="translated">Man k'ax ta kqana'o, man xb'antaj ta kowinem chech upaqab'axik le wachib'al.</target>
+        <alt-trans>
+          <target xml:lang="quc">Ruk' mayowik, ma xb'antaj ta kowinem che upaqab'axik le wachib'al.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.PromptForMissingMetadata">
+      <trans-unit id="ImageToolbox.PromptForMissingMetadata" approved="yes">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
-        <target xml:lang="quc" state="needs-translation">This image does not know:\n\nWho created it?\nWho can use it?</target>
+        <target xml:lang="quc" state="translated">We wachib'al ri' ma reta'm taj:\n\n¿Jachin xwokonik?\n¿Jachin kkowin ukojik?</target>
+        <alt-trans>
+          <target xml:lang="quc">We wachib'al ri' ma reta'm taj:\n\n¿Jachin xwokinik?\n¿Jachin kakowinik kakojowik?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.Scanner" approved="yes">
         <source xml:lang="en">Scanner</source>
@@ -364,16 +439,22 @@
           <target xml:lang="quc">Chakub’al esab’al uwach wuj wachib’al</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.SearchArtOfReading">
+      <trans-unit id="ImageToolbox.SearchArtOfReading" approved="yes">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
-        <target xml:lang="quc" state="needs-translation">Search the Art of Reading Gallery</target>
+        <target xml:lang="quc" state="translated">Utzukuxik ri k’olk'utb’al rech Je'l ub'anik ri sik'in wuj (Art of Reading)</target>
+        <alt-trans>
+          <target xml:lang="quc">Utzukuxik ri cholb'al wach rech Je'l ub'anik ri sik'in wuj (Art of Reading)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.SearchLanguage">
+      <trans-unit id="ImageToolbox.SearchLanguage" approved="yes">
         <source xml:lang="en">The search box is currently set to {0}</source>
         <note>ID: ImageToolbox.SearchLanguage</note>
         <note>The {0} will be replaced by the name of the language used in the searches.</note>
-        <target xml:lang="quc" state="needs-translation">The search box is currently set to {0}</target>
+        <target xml:lang="quc" state="translated">Chanim ri' le kajxukut rech tzukunik k'o pa {0}</target>
+        <alt-trans>
+          <target xml:lang="quc">Kamik ri' ri kajxukut rech ri tzukunik k'o pa {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.SetUpMetadataLink" approved="yes">
         <source xml:lang="en">Set up metadata...</source>
@@ -388,10 +469,13 @@
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
         <target xml:lang="quc" state="translated">Nik'aj chik b’i’aj</target>
       </trans-unit>
-      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
+      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2" approved="yes">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
-        <target xml:lang="quc" state="needs-translation">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</target>
+        <target xml:lang="quc" state="translated">We cholb'i'aj ri' rajawaxik k'o chi upam konojel ri k'i taq tzijob'al rech ISO-639, kunim chi upam konojel taq ri b'i'aj rech nik'aj chik eta'matal ch'ob'otal rumal ethnologue.com.\n\nWe rajawaxik, chkojo' le ya'tal ucha'ik "tzijob'al man k'o ta chi upam ri choltzijob'al", we ya'tal ucha'ik utz kacha chanim.</target>
+        <alt-trans>
+          <target xml:lang="quc">We choltzijob'al rajawaxik k'o chi upam konojel ri k'i taq tzijob'al rech ISO-639, kunim chi upam konojel taq ri b'i'aj nik'aj chik eta'matal chik rumal ethnologue.com.\n\nSi rajawaxik, chkojo' ri cha'ik ub'eyal "tzijob'al ma k'ot chi upam ri choltzijob'al", we cha'ik ub'eyal are na ucha'xik kamik.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue" approved="yes">
         <source xml:lang="en">Ethnologue.com</source>
@@ -399,15 +483,21 @@
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
         <target xml:lang="quc" state="translated">Ethnologue.com</target>
       </trans-unit>
-      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes">
+      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="quc" state="needs-translation">About Language 639-3 Codes &amp; How To Apply For New Ones</target>
+        <target xml:lang="quc" state="translated">Chi rij le Retab'alil rech Tzijob'al 639-3 xuquje' jas uta'ik k'ak' taq tzijob'al</target>
+        <alt-trans>
+          <target xml:lang="quc">Chi rij le retalb'alil rech tzijob'al 639-3 xuquje' Su ta'ik k'i taq k'ak'</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle">
+      <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle" approved="yes">
         <source xml:lang="en">About The ISO Language Registry</source>
         <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
-        <target xml:lang="quc" state="needs-translation">About The ISO Language Registry</target>
+        <target xml:lang="quc" state="translated">Chi rij le Rajilab'al cholchak ISO rech taq k'i tzijob'al</target>
+        <alt-trans>
+          <target xml:lang="quc">Chi rij le ajilab'al cholchak ISO rech taq k'i taq tzijob'al</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup.CodeHeader" approved="yes">
         <source xml:lang="en">Code</source>
@@ -429,15 +519,21 @@
         <note>ID: LanguageLookup.CountryHeader</note>
         <target xml:lang="quc" state="translated">Amaq'</target>
       </trans-unit>
-      <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel">
+      <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel" approved="yes">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
         <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
-        <target xml:lang="quc" state="needs-translation">You can change how the language name will be displayed here:</target>
+        <target xml:lang="quc" state="translated">Chi ri' kuya'o kk'exik jas uk'utik ub'i' le tzijob'al:</target>
+        <alt-trans>
+          <target xml:lang="quc">Chi' katkowinik kak'ex jas uk'utik ri b'i'aj rech ri tzijob'al:</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle">
+      <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle" approved="yes">
         <source xml:lang="en">Lookup Language Code...</source>
         <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
-        <target xml:lang="quc" state="needs-translation">Lookup Language Code...</target>
+        <target xml:lang="quc" state="translated">Utzukuxik ri retab'alil rech le tzijob'al...</target>
+        <alt-trans>
+          <target xml:lang="quc">Tzukuxik ri retalb'alil rech ri tzijob'al...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup.PrimaryNameHeader" approved="yes">
         <source xml:lang="en">Name</source>
@@ -450,10 +546,13 @@
           <target xml:lang="quc">Biaj</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel">
+      <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel" approved="yes">
         <source xml:lang="en">Show regional dialects</source>
         <note>ID: LanguageLookup.ShowRegionalDialectsLabel</note>
-        <target xml:lang="quc" state="needs-translation">Show regional dialects</target>
+        <target xml:lang="quc" state="translated">Uk'utik uq'ab' taq tzijob'al pa ch'aqata'q taq rulewal</target>
+        <alt-trans>
+          <target xml:lang="quc">Uk'utik laj taq tzijob'al k'i taq rulewal</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup.UnlistedLanguage" approved="yes">
         <source xml:lang="en">Unlisted Language</source>
@@ -463,15 +562,21 @@
           <target xml:lang="quc">Tzijob'al man k’o taj pa cholajil.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="LanguageLookup._cannotFindLanguageLink">
+      <trans-unit id="LanguageLookup._cannotFindLanguageLink" approved="yes">
         <source xml:lang="en">Can't find your language?</source>
         <note>ID: LanguageLookup._cannotFindLanguageLink</note>
-        <target xml:lang="quc" state="needs-translation">Can't find your language?</target>
+        <target xml:lang="quc" state="translated">¿Man kariqitaj ta ri atzijob'al?</target>
+        <alt-trans>
+          <target xml:lang="quc">¿Ma karaqta ri atzijob'al?</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MemoryWarning">
+      <trans-unit id="MemoryWarning" approved="yes">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
         <note>ID: MemoryWarning</note>
-        <target xml:lang="quc" state="needs-translation">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</target>
+        <target xml:lang="quc" state="translated">Xaq chakuyu', {0} man k'o ta nim utzantzaq'orib'al xuquje' man kan taj te'qne kariq nik'aj taq k'axk'olil chik. Kaqoqxa'nij utz'apixik xuquje' kab'an k'ak'umajik we rajawaxik.</target>
+        <alt-trans>
+          <target xml:lang="quc">Ma k'ot uk'amalil, {0} ma k'ot nim utzantzaq'or xuquje' ma kkanta anaqil o kuna' nik'aj taq k'exk'olil. Koqxa'nej utz'apixik xuquje' k'ak' umajik are chi' rajawaxik.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Creator" approved="yes">
         <source xml:lang="en">Creator: {0}</source>
@@ -506,203 +611,308 @@
           <target xml:lang="quc">Uq'alajisaxik rech uwujil ya’talik</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="quc" state="needs-translation">You must keep the copyright and credits for authors, illustrators, etc.</target>
+        <target xml:lang="quc" state="translated">Rajawaxik kataqex ri ya'tal chech ri rajaw no'jwuj xuquje' ri b'i'aj kech xeb'anowik, ri e wachib'anel, jule' chik.</target>
+        <alt-trans>
+          <target xml:lang="quc">Kawil ri rajawil xuquje' ri b'i'aj kech xeb'anowik xuquje' xeto'b'anik, jalajoj taq wachibal, nik'aj chik.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You are free to make commercial use of this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="quc" state="needs-translation">You are free to make commercial use of this work.</target>
+        <target xml:lang="quc" state="translated">Utz kakoj chech k'ayij we chak ri'.</target>
+        <alt-trans>
+          <target xml:lang="quc">Utz kakoj che k'ayij we uwach chak ri'.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="quc" state="needs-translation">You may adapt and add to this work.</target>
+        <target xml:lang="quc" state="translated">Utz kakojo xuquje' kawiq we uwach chak ri'.</target>
+        <alt-trans>
+          <target xml:lang="quc">Utz kakojo xuquje' kaya' uw'i we uwach chak ri'.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="quc" state="needs-translation">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</target>
+        <target xml:lang="quc" state="translated">Kuya'o kakojik xuquje' kawiq chech we chak ri', xa are kjach le k'isb'al uwach chak ruk' junam wujya'talik te'qne xaq junam ruk' we ri'.</target>
+        <alt-trans>
+          <target xml:lang="quc">Lal utz kkoj la xuquje' kya la uwi' pa we uwach chak ri', xa k'ut lal utz kjach la we uwach we chak ri' xelik xuw ruk' uwujil ya'talik junam o xaq junam ruk' we ri'.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="quc" state="needs-translation">You may not make changes or build upon this work without permission.</target>
+        <target xml:lang="quc" state="translated">Man ya'tal taj kab'an k'exenik xuquje' kanimarisax uwach we chak ri' we man b'anom uta'ik okib'al.</target>
+        <alt-trans>
+          <target xml:lang="quc">Ma kab'an ta k'exnik xuquje' kanimarisaj ta we chak ri' ma ya'tal ta che kq'axik.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not use this work for commercial purposes.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="quc" state="needs-translation">You may not use this work for commercial purposes.</target>
+        <target xml:lang="quc" state="translated">Man ya'tal taj kab'an ukojik we chak ri' chech taq k'ayinik.</target>
+        <alt-trans>
+          <target xml:lang="quc">Man kat kowin taj kakoj we uwach chak ri' rech taq k'ayij.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.PublicDomain" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.PublicDomain" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="quc" state="needs-translation">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</target>
+        <target xml:lang="quc" state="translated">Ya'talik kesax uwach, kk'exik xuquje' kajach uwach we chak ri', xuquje' karaj ne chech taq k'ayij, xane man rajawaxik ta uta'ik okib'al.</target>
+        <alt-trans>
+          <target xml:lang="quc">Ya'talik kawesaj uwach, k'exanik xuquje' kajach uwach we chak ri', xuquje' rech taq k'iyij, ya'talik kq'axik.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
         <note>ID: MetadataDisplay.Licenses.NullLicense</note>
         <note>This is used when all we have is a copyright, no other license.</note>
-        <target xml:lang="quc" state="needs-translation">For permission to reuse, contact the copyright holder.</target>
+        <target xml:lang="quc" state="translated">Rech kya'taj le uta'ik okib'al chech ukamulixik ukojik, chb'an tzijonem ruk' ri qas kilow rech ri ya'tal chech ri rajaw.</target>
+        <alt-trans>
+          <target xml:lang="quc">Rech ya'talik kq'axik chech ukojik jumul chik, chatch'aw panoq ruk' ri qas kilowik rech ri ajchaq'e ri b'anol rech.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.NoLicense">
+      <trans-unit id="MetadataDisplay.NoLicense" approved="yes">
         <source xml:lang="en">No license specified</source>
         <note>ID: MetadataDisplay.NoLicense</note>
-        <target xml:lang="quc" state="needs-translation">No license specified</target>
+        <target xml:lang="quc" state="translated">Man k'o ta b'im chech le wujya'talik</target>
+        <alt-trans>
+          <target xml:lang="quc">Maj jun uwujil ya'atalik b'im</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.AllowCommercialUse">
+      <trans-unit id="MetadataEditor.AllowCommercialUse" approved="yes">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <note>ID: MetadataEditor.AllowCommercialUse</note>
-        <target xml:lang="quc" state="needs-translation">Allow commercial uses of your work?</target>
+        <target xml:lang="quc" state="translated">¿La kaya q'ij chi kab'an uk'ayixik le achak?</target>
+        <alt-trans>
+          <target xml:lang="quc">¿Kya'tajik kaba'n k'ayinik ruk' ri achak?</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.AllowDerivatives">
+      <trans-unit id="MetadataEditor.AllowDerivatives" approved="yes">
         <source xml:lang="en">Allow modifications of your work?</source>
         <note>ID: MetadataEditor.AllowDerivatives</note>
-        <target xml:lang="quc" state="needs-translation">Allow modifications of your work?</target>
+        <target xml:lang="quc" state="translated">¿La kaya q'ij chi kb'an k'exenik chech le achak?</target>
+        <alt-trans>
+          <target xml:lang="quc">¿Ya'talik kb'an k'exanik che ri achak?</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.CopyrightHolder">
+      <trans-unit id="MetadataEditor.CopyrightHolder" approved="yes">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: MetadataEditor.CopyrightHolder</note>
-        <target xml:lang="quc" state="needs-translation">Copyright Holder</target>
+        <target xml:lang="quc" state="translated">Nab'e Rajaw rech taq le ya'tal chech ri rajaw rech</target>
+        <alt-trans>
+          <target xml:lang="quc">Rajaw rech ri b'anol rech</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.CopyrightYear">
+      <trans-unit id="MetadataEditor.CopyrightYear" approved="yes">
         <source xml:lang="en">Copyright Year</source>
         <note>ID: MetadataEditor.CopyrightYear</note>
-        <target xml:lang="quc" state="needs-translation">Copyright Year</target>
+        <target xml:lang="quc" state="translated">Junab' rech ub'anik le ya'tal chech ri rajaw rech</target>
+        <alt-trans>
+          <target xml:lang="quc">Junab' rech ri rajaw rech ri b'anol rech</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.CreativeCommons">
+      <trans-unit id="MetadataEditor.CreativeCommons" approved="yes">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
-        <target xml:lang="quc" state="needs-translation">Creative Commons</target>
+        <target xml:lang="quc" state="translated">Tob'chak pa wokaj (Creative Commons)</target>
+        <alt-trans>
+          <target xml:lang="quc">Creative Commons</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental">
+      <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental" approved="yes">
         <source xml:lang="en">Intergovernmental Version</source>
         <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
-        <target xml:lang="quc" state="needs-translation">Intergovernmental Version</target>
+        <target xml:lang="quc" state="translated">Uwach chak chi kixo'l taq q'atab'al tzij</target>
+        <alt-trans>
+          <target xml:lang="quc">Jun rilik ub'ixik chkixo'l taq q'atab'al tzij</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataEditor.CreatorLabel</note>
-        <target xml:lang="quc" state="translated">Tikonel</target>
+        <target xml:lang="quc" state="translated">Rajaw</target>
         <alt-trans>
           <target xml:lang="quc">Tikonel rech: 
 </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.CustomLicense">
+      <trans-unit id="MetadataEditor.CustomLicense" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: MetadataEditor.CustomLicense</note>
-        <target xml:lang="quc" state="needs-translation">Custom</target>
+        <target xml:lang="quc" state="translated">Winaqirisam</target>
+        <alt-trans>
+          <target xml:lang="quc">Xrechb'exik</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.License">
+      <trans-unit id="MetadataEditor.License" approved="yes">
         <source xml:lang="en">License</source>
         <note>ID: MetadataEditor.License</note>
-        <target xml:lang="quc" state="needs-translation">License</target>
+        <target xml:lang="quc" state="translated">Wujya'talik</target>
+        <alt-trans>
+          <target xml:lang="quc">Ya'tal wuj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.TitleNoCredit">
+      <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
-        <target xml:lang="quc" state="needs-translation">Copyright and License</target>
+        <target xml:lang="quc" state="translated">Ya'tal chech ri rajaw xuquje' wujya'talik</target>
+        <alt-trans>
+          <target xml:lang="quc">Rajaw ri b'anol rech xuquje' ya'tal uwujil</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.TitleWithCredit">
+      <trans-unit id="MetadataEditor.TitleWithCredit" approved="yes">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="quc" state="needs-translation">Credit, Copyright, and License</target>
+        <target xml:lang="quc" state="translated">B'i'aj kech xeb'anowik, ya'tal chech ri rajaw xuquje' wujya'talik</target>
+        <alt-trans>
+          <target xml:lang="quc">B'i'aj, rajaw ri b'anol rech xuquje' ya'tal uwujil</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.UnknownLicense">
+      <trans-unit id="MetadataEditor.UnknownLicense" approved="yes">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense</note>
-        <target xml:lang="quc" state="needs-translation">Contact the copyright holder for any permissions</target>
+        <target xml:lang="quc" state="translated">Chattzijon ruk' nab'e rajaw pa uwi' le ya'tal chech ri rajaw chech uta'ik okib'al</target>
+        <alt-trans>
+          <target xml:lang="quc">Chatch'aw panoq ruk' ri rajaw rech ri b'anol rech kata che ri k'i taq q'axb'al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.YesShareAlike">
+      <trans-unit id="MetadataEditor.YesShareAlike" approved="yes">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
-        <target xml:lang="quc" state="needs-translation">Yes, as long as others share alike</target>
+        <target xml:lang="quc" state="translated">Je', are taq jule' chik junam ke'ula'nik</target>
+        <alt-trans>
+          <target xml:lang="quc">We, nik'aj chik kkijach chkiwach junam</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.additionalRequestsLabel">
+      <trans-unit id="MetadataEditor.additionalRequestsLabel" approved="yes">
         <source xml:lang="en">Additional Requests</source>
         <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
-        <target xml:lang="quc" state="needs-translation">Additional Requests</target>
+        <target xml:lang="quc" state="translated">Uwi' taq utz'onik</target>
+        <alt-trans>
+          <target xml:lang="quc">Q'axb'alib' pa uwi'</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.betterLinkLabel1">
+      <trans-unit id="MetadataEditor.betterLinkLabel1" approved="yes">
         <source xml:lang="en">more info</source>
         <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
-        <target xml:lang="quc" state="needs-translation">more info</target>
+        <target xml:lang="quc" state="translated">tz'aqatisab'al uya’ik ub’ixik</target>
+        <alt-trans>
+          <target xml:lang="quc">K'i q'alajisanem</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
+      <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons" approved="yes">
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
-        <target xml:lang="quc" state="needs-translation">Not Enforceable</target>
+        <target xml:lang="quc" state="translated">Man kokisax taj</target>
+        <alt-trans>
+          <target xml:lang="quc">Koksax taj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.AlsoHideOthersNotice">
+      <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
-        <target xml:lang="quc" state="needs-translation">This may also hide other buttons which are not needed by the non-advanced user.</target>
+        <target xml:lang="quc" state="translated">Wa' xuquje' kkowinik krawaj nik'aj taq pitz'ib'al chik chi man e rajawaxik taj chech ri kkojowik chi man nim ta reta'mab'al.</target>
+        <alt-trans>
+          <target xml:lang="quc">Wa' xuquje' kakowinik krawaj nik'aj chik pitz'ib'al che ma erajawaxik taj chech ri kakojowik che ma nim ta b'inaq.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.CtrlShiftHint">
+      <trans-unit id="SettingsProtection.CtrlShiftHint" approved="yes">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
-        <target xml:lang="quc" state="needs-translation">The button will show up when you hold down the Ctrl and Shift keys together.</target>
+        <target xml:lang="quc" state="translated">Le pitz'ib'al kk'ut rib' are taq junam upitz'ik kab'an chech le pitz'tz'ib' Ctrl y Mayús.</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri pitz'ib'al rech kk'utu na rib' are chi' kpitz' junam ri nak' taq tz'ib'ab'al Ctrl y Mayús.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.LauncherButtonLabel">
+      <trans-unit id="SettingsProtection.LauncherButtonLabel" approved="yes">
         <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
-        <target xml:lang="quc" state="needs-translation">Settings Protection...</target>
+        <target xml:lang="quc" state="translated">Uchajixik taq suk'umanem...</target>
+        <alt-trans>
+          <target xml:lang="quc">Chajixik rech taq suk'manem...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.NormallyHiddenCheckbox">
+      <trans-unit id="SettingsProtection.NormallyHiddenCheckbox" approved="yes">
         <source xml:lang="en">Hide the button that opens settings.</source>
         <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
-        <target xml:lang="quc" state="needs-translation">Hide the button that opens settings.</target>
+        <target xml:lang="quc" state="translated">Urawaxik pitz'ib'al le katorow le suk'umanem.</target>
+        <alt-trans>
+          <target xml:lang="quc">Rawajsaxik ri pitz'ib'al ktorow ri suk'manem.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword">
+      <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword" approved="yes">
         <source xml:lang="en">Factory Password</source>
         <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
-        <target xml:lang="quc" state="needs-translation">Factory Password</target>
+        <target xml:lang="quc" state="translated">Retal okib'al rech le ajb'anal rech</target>
+        <alt-trans>
+          <target xml:lang="quc">Retal okib'al rech ri b'anib'al rech</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation">
+      <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation" approved="yes">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
-        <target xml:lang="quc" state="needs-translation">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</target>
+        <target xml:lang="quc" state="translated">We jalajoj taq suk'umanem xq'atex uwach rech man xaq k'ate' kk'exik xa rumal kuq'atej ub'e ri uchak we chakub'al ri'.</target>
+        <alt-trans>
+          <target xml:lang="quc">We k'i taq suk'manem xq'atexik rech ma kya'taj ta k'exnem xaq k'a te' che kuq'atuj ri kchakun we chakub'al ri'.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle">
+      <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle" approved="yes">
         <source xml:lang="en">Settings Protection Password</source>
         <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
-        <target xml:lang="quc" state="needs-translation">Settings Protection Password</target>
+        <target xml:lang="quc" state="translated">Retal okib'al rech uchajixik ri suk'umanem</target>
+        <alt-trans>
+          <target xml:lang="quc">Retal okib'al rech uchajixik ri suk'manem</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox">
+      <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox" approved="yes">
         <source xml:lang="en">Show Characters</source>
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
-        <target xml:lang="quc" state="needs-translation">Show Characters</target>
+        <target xml:lang="quc" state="translated">Uk'utik k'i taq ka'yib'alil</target>
+        <alt-trans>
+          <target xml:lang="quc">K'utik k'i taq ka'yib'al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordNotice">
+      <trans-unit id="SettingsProtection.PasswordNotice" approved="yes">
         <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space, removed period): Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</note>
-        <target xml:lang="quc" state="needs-translation">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</target>
+        <target xml:lang="quc" state="translated">Le Retal okib'al rech le ajb'anal rech chi kech taq we utz'aqatisaxik are "{0}". We ksach chi awech, junalik kakoj ri Google chech utzukuxik "{1}" y "{2}"</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri retal okib'al rech ri b'anib'al rech taq we usuk'umaxik are "{0}". We ksach chi awech, junalik kakoj ri Google chech utzukuxik "{1}" y "{2}".</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.RequirePasswordCheckBox">
+      <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
-        <target xml:lang="quc" state="needs-translation">Require the factory password to get into settings.</target>
+        <target xml:lang="quc" state="translated">Chech le okem pa ri suk'manem rajawaxik le retal okib'al rech ri b'anib'al rech.</target>
+        <alt-trans>
+          <target xml:lang="quc">Rajawaxik ri retal okib'al rech ri b'anib'al rech che ri okem pa ri suk'manem.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.SettingProtectionDialogTitle">
+      <trans-unit id="SettingsProtection.SettingProtectionDialogTitle" approved="yes">
         <source xml:lang="en">Settings Protection</source>
         <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
-        <target xml:lang="quc" state="needs-translation">Settings Protection</target>
+        <target xml:lang="quc" state="translated">Uchajixik le suk'umanem</target>
+        <alt-trans>
+          <target xml:lang="quc">Chajixik rech ri suk'manem</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ShowReleaseNotesDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Release Notes</source>
@@ -712,20 +922,29 @@
           <target xml:lang="quc">Ub'ixkil tzij</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="WSFontControl.Font">
+      <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="quc" state="needs-translation">&amp;Font:</target>
+        <target xml:lang="quc" state="translated">&amp;Kemuxe':</target>
+        <alt-trans>
+          <target xml:lang="quc">&amp;Fuente:</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSFontControl.FontNotAvailable">
+      <trans-unit id="WSFontControl.FontNotAvailable" approved="yes">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="quc" state="needs-translation">(The selected font is not available on this machine. Using default.)</target>
+        <target xml:lang="quc" state="translated">(Le kemuxe' tz'ib' xcha'ik man k'o ta pa we kematz'ib'. Are kokisax ri kemuxe' tz'ib' ya'om chi uloq.)</target>
+        <alt-trans>
+          <target xml:lang="quc">(Ri fuente xcha'xik ma k'ota chanim pa we kematz'ib'. Koksix na ri fuente ya'omchi uloq.)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSFontControl.RightToLeftWS">
+      <trans-unit id="WSFontControl.RightToLeftWS" approved="yes">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="quc" state="needs-translation">This is a &amp;right to left writing system.</target>
+        <target xml:lang="quc" state="translated">Wa we ri' are jun &amp;tz'ib'anik kumaj pa wiqiq'ab' kak'is pa moxq'ab'.</target>
+        <alt-trans>
+          <target xml:lang="quc">Wa we ri' jun &amp;tz'ib'anik wiq'ab' pa moxq'ab'.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
@@ -740,40 +959,58 @@
           <target xml:lang="quc"> &amp; K’olib’al rech K’otow chi’aj:</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeyboardNotListed">
+      <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <note>ID: WSKeyboardControl.KeyboardNotListed</note>
-        <target xml:lang="quc" state="needs-translation">If the keyboard you need is not listed, click the appropriate link below to set it up</target>
+        <target xml:lang="quc" state="translated">We ri pitz'tz'ib'al rawaxik man k'o ta chi upam ri cholb'i'aj, chab'ana pitz' pa ri tiqb'al qas rech ikim rech kb'an ri suk'umanem</target>
+        <alt-trans>
+          <target xml:lang="quc">We ri nak' tz'ib'ab'al rawaxik man k'o taj chi upam ri chol b'i'aj, chab'ana pitz' pa ri tiqb'al qas rech ikim rech kb'an ri suk'manem</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardSettingsLink" approved="yes">
         <source xml:lang="en">Windows keyboard settings</source>
         <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
         <target xml:lang="quc" state="translated">Usuk’umaxik ri taq cholnak’tz’ib’ rech Windows</target>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeyboardsAvailable">
+      <trans-unit id="WSKeyboardControl.KeyboardsAvailable" approved="yes">
         <source xml:lang="en">Available keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
-        <target xml:lang="quc" state="needs-translation">Available keyboards</target>
+        <target xml:lang="quc" state="translated">Cholnak’tz’ib’ e jeqetalik</target>
+        <alt-trans>
+          <target xml:lang="quc">Nak' taq tz'ib'ab'al k'o che ri chak</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed">
+      <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed" approved="yes">
         <source xml:lang="en">Previously used keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
-        <target xml:lang="quc" state="needs-translation">Previously used keyboards</target>
+        <target xml:lang="quc" state="translated">Cholnak’tz’ib’ xe'okisax kanoq nab'e</target>
+        <alt-trans>
+          <target xml:lang="quc">Nak' taq tz'ib'ab'al xoksax kanoq nab'e</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeymanConfigurationLink">
+      <trans-unit id="WSKeyboardControl.KeymanConfigurationLink" approved="yes">
         <source xml:lang="en">Keyman Configuration</source>
         <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
-        <target xml:lang="quc" state="needs-translation">Keyman Configuration</target>
+        <target xml:lang="quc" state="translated">Suk'umanem rech Keyman</target>
+        <alt-trans>
+          <target xml:lang="quc">Suk'manem rech Keyman</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeymanNotInstalled">
+      <trans-unit id="WSKeyboardControl.KeymanNotInstalled" approved="yes">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="quc" state="needs-translation">Keyman 5.0 or later is not Installed.</target>
+        <target xml:lang="quc" state="translated">Keyman 5.0 wene jun k'ak' chik, ri man jeqeb'am taj.</target>
+        <alt-trans>
+          <target xml:lang="quc">Keyman 5.0 o más k'a te' naqaj ri' ma jeqb'am taj.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.SelectKeyboardLabel">
+      <trans-unit id="WSKeyboardControl.SelectKeyboardLabel" approved="yes">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="quc" state="needs-translation">Select the &amp;keyboard with which to type {0} text</target>
+        <target xml:lang="quc" state="translated">Chacha' le &amp;cholnak’tz’ib’ ruk' ri kjawajtaj ukojik le woktz'ib' {0}</target>
+        <alt-trans>
+          <target xml:lang="quc">Chacha' ri &amp;nak' tz'ib'ab'al ruk' ri kawaj rokik woktz'ib'{0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SetupKeyboards" approved="yes">
         <source xml:lang="en">Set up keyboards</source>
@@ -783,30 +1020,42 @@
           <target xml:lang="quc"> Usuk’maxik taq cholnak’tz’ib’</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.TestAreaCaption">
+      <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="quc" state="needs-translation">&amp;Test Area (Use this area to type something to test out your keyboard.)</target>
+        <target xml:lang="quc" state="translated">&amp;Uk'olib'al pajb'alil (Chakojo we k'olib'al ri' chech jub'iq' tz'ib'anik rech kapaj ukojik le cholnak'tz'ib'.)</target>
+        <alt-trans>
+          <target xml:lang="quc">&amp;Uqajb'al rech ri pajib'al (Chakojo we qajab'al che ri tz'ib'anik jub'iq' rech pajab'al ri nak' tz'ib'ab'al.)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Warning" approved="yes">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
         <target xml:lang="quc" state="translated">Q’ilb’al</target>
       </trans-unit>
-      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption">
+      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption" approved="yes">
         <source xml:lang="en">Unable to connect to SLDR</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
-        <target xml:lang="quc" state="needs-translation">Unable to connect to SLDR</target>
+        <target xml:lang="quc" state="translated">Man loq' taj ktiq ruk' le SLDR</target>
+        <alt-trans>
+          <target xml:lang="quc">Ma loq' taj unak'ik pa SLDR</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText">
+      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText" approved="yes">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
-        <target xml:lang="quc" state="needs-translation">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</target>
+        <target xml:lang="quc" state="translated">Le kemchakub'al man loq' taj ktiq ruk' le juwokaj ub'i' tzij rech SIL rech le uk'amik ri k'ak' taq q'alajisanem pa uwi' we tzijob'al ri'. We at kwok we wokchakub'al uwach tz'ib', ri suk'umanem ya'om chi uloq te'qne man utz ta chik wene man kachakun ta chik. ¿La qas tzij kwaj kawok jun k'ak' wokchakub'al rech uwach tz'ib'?</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri ukojik man loq' taj kunak' rib' ruk ri uxe' rech jalajoj taq tz'ib' rech SIL rech le uk'amik ri q'alajisanem k'ate naqaj pa uwi' we tzijob'al. We ri lal kwok la we wokchakub'al uwach tz'ib', ri suk'manem ya'omchi loq chech kaj ne man utz taj o q'e'l chik. ¿La qas tzij kaj la uwokik jun k'ak' wokchakub'al rech uwach tz'ib'?</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
+      <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard" approved="yes">
         <source xml:lang="en">[Missing] {0} ({1})</source>
         <note>ID: XkbKeyboardAdaptor.MissingKeyboard</note>
-        <target xml:lang="quc" state="needs-translation">[Missing] {0} ({1})</target>
+        <target xml:lang="quc" state="translated">[Karaj na] {0} ({1})</target>
+        <alt-trans>
+          <target xml:lang="quc">[Faltante] {0} ({1})</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>

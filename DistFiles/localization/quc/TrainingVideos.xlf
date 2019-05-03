@@ -49,7 +49,7 @@
         <source xml:lang="en">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="quc" state="needs-translation"><g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g></target>
+        <target xml:lang="quc" state="translated"><g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Ukojik ri k'i taq raqanib'al ri No'jwuj Sik'talik uwach xuquje' No'jwuj Cholaxo'l uwach (k'i taq solob'ilb'al uwach)</g></target>
         <note>ID: training.videos.readers</note>
       </trans-unit>
       <trans-unit id="training.videos.advanced">
@@ -68,7 +68,7 @@
         <source xml:lang="en">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
         </source>
-        <target xml:lang="quc" state="needs-translation"><g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g></target>
+        <target xml:lang="quc" state="translated"><g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Ukojik ri raqanib'al rech Uxaq Wuj Xrechb'exik</g></target>
         <note>ID: training.videos.custompage</note>
       </trans-unit>
       <trans-unit id="training.videos.specialcharacters">
@@ -82,7 +82,7 @@
         <source xml:lang="en">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="quc" state="needs-translation"><g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g></target>
+        <target xml:lang="quc" state="translated"><g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Tajan uwokik jun puq rech k'i taq raqanib'al chi kech ri No'jwuj Sik'talik uwach xuquje' No'jwuj Cholaxo'l uwach (k'i taq solob'ilb'al uwach)</g></target>
         <note>ID: training.videos.readertemplates</note>
       </trans-unit>
       <trans-unit id="training.videos.offline">
@@ -97,8 +97,11 @@
       </trans-unit>
       <trans-unit id="training.videos.hires">
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
-        <target xml:lang="quc" state="needs-translation"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</target>
+        <target xml:lang="quc" state="translated"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Nima'q taq k'olchak)</target>
         <note>ID: training.videos.hires</note>
+        <alt-trans>
+          <target xml:lang="quc"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Nima'q taq k'ochak)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.lores">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
