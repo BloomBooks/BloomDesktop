@@ -7,6 +7,9 @@
         <target xml:lang="fr" state="translated">Un <g id="genid-1" ctype="x-html-strong">livre par niveau de difficulté</g> est un livre rédigé pour des lecteurs ayant un niveau spécifique de lecture. Chaque niveau définit des objectifs pour la longueur de mots, des phrases, etc. Il détermine également le formatage, le vocabulaire, les illustrations et le thème.</target>
         <note>ID: leveled.definition</note>
         <alt-trans>
+          <target xml:lang="fr">Un <g id="genid-1" ctype="x-html-strong">livre par niveau de difficulté</g> est un livre rédigé pour des lecteurs ayant un niveau spécifique de lecture. Chaque niveau définit des objectifs pour la longueur de mots, des phrases, etc. Il détermine également la mise en forme, le vocabulaire, les images et le thème.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">Un <g id="genid-1" ctype="x-html-strong">livre de difficulté graduée</g> est un livre rédigé pour des lecteurs ayant un niveau spécifique de lecture. Chaque niveau définit des objectifs pour la longueur de mots, des phrases, etc. Il détermine également le formatage, le vocabulaire, les illustrations et le thème.</target>
         </alt-trans>
         <alt-trans>
@@ -51,10 +54,13 @@
           <target xml:lang="fr">Regardez <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">ces vidéos pédagogiques</g>.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.learn.helpindex" approved="yes">
-        <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Leveled Readers".</source>
-        <target xml:lang="fr" state="translated">Allez dans le menu aide, sélectionnez "Aide" et cherchez "livres par niveau de difficulté" dans l'index.</target>
+      <trans-unit id="leveled.learn.helpindex">
+        <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</source>
+        <target xml:lang="fr" state="translated">Dans le menu Aide, sélectionnez "Aide" et cherchez dans l'index sous "livres par niveau de difficulté".</target>
         <note>ID: leveled.learn.helpindex</note>
+        <alt-trans>
+          <target xml:lang="fr">Allez dans le menu aide, sélectionnez "Aide" et cherchez "livres par niveau de difficulté" dans l'index.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Allez dans le menu aide, sélectionnez "Aide" et cherchez "livres de difficulté graduée" dans l'index.</target>
         </alt-trans>
@@ -69,6 +75,9 @@
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
         <target xml:lang="fr" state="translated">Allez dans le menu Aide et sélectionnez "Créer des modèles de livres".</target>
         <note>ID: leveled.learn.helpmenu</note>
+        <alt-trans>
+          <target xml:lang="fr">Aller dans le menu Aide et sélectionnez "Créer des modèles de livres".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Rendez vous sur le menu Aide et sélectionnez "Créer des modèles de livres".</target>
         </alt-trans>
@@ -85,6 +94,9 @@
         <source xml:lang="en">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</source>
         <target xml:lang="fr" state="translated">Quelle est la relation entre les <g id="genid-5" ctype="x-html-em">niveaux</g> des livres par niveaux de difficulté et les <g id="genid-6" ctype="x-html-em">étapes</g> des livres déchiffrables ? Ces deux types d'ouvrages étant complémentaires, Bloom permet d'écrire un livre comportant à la fois des étapes de <g id="genid-7" ctype="x-html-em">déchiffrage</g> et un <g id="genid-8" ctype="x-html-em">niveau de difficulté</g>. Les livres de niveau 1, voire ceux de niveau 2, devront par exemple être écrits en gardant à l'esprit les différents <g id="genid-9" ctype="x-html-em">étapes de déchiffrage</g>. Les livres de niveau 1 et 2 devront aussi être <g id="genid-10" ctype="x-html-em">déchiffrables</g>, c'est-à-dire n'employer que des lettres déjà connue des lecteurs. Voici à quoi pourrait ressembler une suite de livres :</target>
         <note>ID: leveled.and.decodable</note>
+        <alt-trans>
+          <target xml:lang="fr">Quelle est la relation entre les <g id="genid-5" ctype="x-html-em">niveaux</g> des livres par niveaux de difficulté et les <g id="genid-6" ctype="x-html-em">étapes</g>; des livres déchiffrables ? Ces deux types d'ouvrages étant complémentaires, Bloom permet d'écrire un livre comportant à la fois des étapes de <g id="genid-7" ctype="x-html-em">déchiffrage</g> et un <g id="genid-8" ctype="x-html-em">;niveau de difficulté</g>. Les livres de niveau 1, voire ceux de niveau 2, devront par exemple être écrits en gardant à l'esprit les différents <g id="genid-9" ctype="x-html-em">étapes de déchiffrage</g>. Les livres de niveau 1 et 2 devront aussi être<g id="genid-10" ctype="x-html-em">déchiffrables</g>, c'est-à-dire n'employer que des lettres déjà connues des lecteurs. Voici à quoi pourrait ressembler une suite de livres :</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Quelle est la relation entre les <g id="genid-5" ctype="x-html-em">niveaux</g> des livres de difficulté graduée" et les <g id="genid-6" ctype="x-html-em">niveaux</g> des livres déchiffrables ? Ces deux types d'ouvrages étant complémentaires, Bloom permet d'écrire un livre comportant à la fois des niveaux de <g id="genid-7" ctype="x-html-em">déchiffrage</g> et un niveau de<g id="genid-8" ctype="x-html-em">difficulté graduée</g>. Les livres de niveau 1, voire ceux de niveau 2, devront par exemple être écrits en gardant à l'esprit les différents niveaux de <g id="genid-9" ctype="x-html-em">déchiffrage</g> . Les livres de niveau 1 et 2 devront aussi être <g id="genid-10" ctype="x-html-em">déchiffrables</g>, c'est-à-dire n'employer que des lettres déjà connue des lecteurs. Voici à quoi pourrait ressembler une suite de livres :</target>
         </alt-trans>

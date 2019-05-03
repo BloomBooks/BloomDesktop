@@ -28,6 +28,9 @@
         <target xml:lang="fr" state="translated">Ce livre est actuellement marqué "expérimental" parce que nous connaissons plusieurs problèmes de mise en page et de praticité.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
         <alt-trans>
+          <target xml:lang="fr">Ce livre est actuellement marqué "expérimental" parce que nous sommes conscients de plusieurs problèmes de mise en page et de praticité.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">Ce livre est actuellement marqué "expérimental" parce que nous connaissons plusieurs problèmes de mise en page et de commodité.</target>
         </alt-trans>
       </trans-unit>

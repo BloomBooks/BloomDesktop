@@ -31,8 +31,8 @@
         <target xml:lang="zh-CN" state="translated">观看<g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">这些教学视频</g>。</target>
         <note>ID: decodable.learn.videos</note>
       </trans-unit>
-      <trans-unit id="decodable.learn.helpindex" approved="yes">
-        <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".</source>
+      <trans-unit id="decodable.learn.helpindex">
+        <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
         <target xml:lang="zh-CN" state="translated">找到“帮助”菜单，选择“帮助”，然后查看“拼读读物”下面的索引。</target>
         <note>ID: decodable.learn.helpindex</note>
       </trans-unit>

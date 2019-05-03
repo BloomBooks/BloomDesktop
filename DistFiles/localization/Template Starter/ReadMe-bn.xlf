@@ -112,7 +112,7 @@ There are two ways people can use your template. The first way is to start new b
         <target xml:lang="bn" state="translated">টীকাসমুহ</target>
         <note>ID: template.starter.notes</note>
       </trans-unit>
-      <trans-unit id="template.starter.nothingautomatic" approved="yes">
+      <trans-unit id="template.starter.nothingautomatic">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
         <target xml:lang="bn" state="translated"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: পরবর্তীকালে এই বইগুলি ভাঁজ-করা কাগজ বৈশিষ্ট্য ব্যবহার করে মিলিত করা হতে পারে। মনে রাখবেন যে ব্লুম আপনাকে এখনও এমন কোন উপায় দেয় নি যা নির্দেশ দেয় যে কোন পৃষ্ঠা স্বয়ংক্রিয়ভাবে নতুন বইগুলিতে অন্তর্ভুক্ত হওয়া উচিত; লেখককে পৃষ্ঠা যুক্ত করুন ডায়ালগ থেকে প্রতিটি পৃষ্ঠা যোগ করতে হবে।</target>
         <note>ID: template.starter.nothingautomatic</note>
@@ -134,14 +134,14 @@ There are two ways people can use your template. The first way is to start new b
         </alt-trans>
         <alt-trans>
           <target xml:lang="bn"> 
-                   <g id="genid-11" ctype="x-html-a" html:id="note1">:</g> পরবর্তীকালে এই বইগুলি ভাঁজ-করা কাগজ বৈশিষ্ট্য ব্যবহার করে মিলিত করা হতে পারে। মনে রাখবেন যে ব্লুম আপনাকে এখনও এমন কোন উপায় দেয় নি যা নির্দেশ দেয় যে কোন পৃষ্ঠা স্বয়ংক্রিয়ভাবে নতুন বইগুলিতে অন্তর্ভুক্ত হওয়া উচিত; লেখককে পৃষ্ঠা যুক্ত করুন ডায়ালগ থেকে প্রতিটি পৃষ্ঠা যোগ করতে হবে।</target>
+                   <g id="genid-11" ctype="x-html-a" html:id="note1"></g>: পরবর্তীকালে এই বইগুলি ভাঁজ-করা কাগজ বৈশিষ্ট্য ব্যবহার করে মিলিত করা হতে পারে। মনে রাখবেন যে ব্লুম আপনাকে এখনও এমন কোন উপায় দেয় নি যা নির্দেশ দেয় যে কোন পৃষ্ঠা স্বয়ংক্রিয়ভাবে নতুন বইগুলিতে অন্তর্ভুক্ত হওয়া উচিত; লেখককে পৃষ্ঠা যুক্ত করুন ডায়ালগ থেকে প্রতিটি পৃষ্ঠা যোগ করতে হবে।</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="bn"> 
-                   <g id="genid-11" ctype="x-html-a" html:id="note1">:</g> পরবর্তীকালে এই বইগুলি ভাঁজ-করা কাগজ বৈশিষ্ট্য ব্যবহার করে মিলিত করা হতে পারে। মনে রাখবেন যে  ব্লুম আপনাকে এখনও এমন কোন উপায় দেয় নি যা নির্দেশ দেয় যে কোন পৃষ্ঠা স্বয়ংক্রিয়ভাবে নতুন বইগুলিতে অন্তর্ভুক্ত হওয়া উচিত; লেখককে পৃষ্ঠা যুক্ত করুন ডায়ালগ থেকে প্রতিটি পৃষ্ঠা যোগ করতে হবে।</target>
+                   <g id="genid-11" ctype="x-html-a" html:id="note1"></g>: পরবর্তীকালে এই বইগুলি ভাঁজ-করা কাগজ বৈশিষ্ট্য ব্যবহার করে মিলিত করা হতে পারে। মনে রাখবেন যে  ব্লুম আপনাকে এখনও এমন কোন উপায় দেয় নি যা নির্দেশ দেয় যে কোন পৃষ্ঠা স্বয়ংক্রিয়ভাবে নতুন বইগুলিতে অন্তর্ভুক্ত হওয়া উচিত; লেখককে পৃষ্ঠা যুক্ত করুন ডায়ালগ থেকে প্রতিটি পৃষ্ঠা যোগ করতে হবে।</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.nametonotaddpage" approved="yes">
+      <trans-unit id="template.starter.nametonotaddpage">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
         <target xml:lang="bn" state="translated"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: আপনি যদি আপনার টেমপ্লেটের পৃষ্ঠাগুলি 
 পৃষ্ঠা যুক্ত করুন ডায়ালগে দেখাতে না চান, তাহলে আপনি পৃষ্ঠাযুক্তকরারজন্যনয়.txt নামক বই এর টেমপ্লেট ফোল্ডারে একটি ফাইল তৈরি করে ব্লুমকে এই নির্দেশ করতে পারেন।</target>
@@ -161,11 +161,11 @@ There are two ways people can use your template. The first way is to start new b
         </alt-trans>
         <alt-trans>
           <target xml:lang="bn">
-<g id="genid-12" ctype="x-html-a" html:id="note2">:</g> আপনি যদি আপনার টেমপ্লেটের পৃষ্ঠাগুলি 
+<g id="genid-12" ctype="x-html-a" html:id="note2"></g>: আপনি যদি আপনার টেমপ্লেটের পৃষ্ঠাগুলি 
 পৃষ্ঠা যুক্ত করুন ডায়ালগে দেখাতে না চান, তাহলে আপনি পৃষ্ঠাযুক্তকরারজন্যনয়.txt নামক বই এর টেমপ্লেট ফোল্ডারে একটি ফাইল তৈরি করে ব্লুমকে এই নির্দেশ করতে পারেন।</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
+      <trans-unit id="template.starter.labelsnottranslatable">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
         <target xml:lang="bn" state="translated"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: মানুষ আপনার লেবেল সমুহ এবং বর্ণনা অন্যান্য জাতীয় ভাষায় অনুবাদ করতে সমর্থ হবে না। এই সমস্যা হয়ে থাকলে, দয়া করে ব্লুম দলের সাথে যোগাযোগ করুন।</target>
         <note>ID: template.starter.labelsnottranslatable</note>
@@ -182,10 +182,10 @@ There are two ways people can use your template. The first way is to start new b
         </alt-trans>
         <alt-trans>
           <target xml:lang="bn"> 
-         <g id="genid-13" ctype="x-html-a" html:id="note3">:</g> মানুষ আপনার লেবেল সমুহ এবং বর্ণনা অন্যান্য জাতীয় ভাষায় অনুবাদ করতে সমর্থ হবে না। এই সমস্যা হয়ে থাকলে, দয়া করে ব্লুম দলের সাথে যোগাযোগ করুন।</target>
+         <g id="genid-13" ctype="x-html-a" html:id="note3"></g>: মানুষ আপনার লেবেল সমুহ এবং বর্ণনা অন্যান্য জাতীয় ভাষায় অনুবাদ করতে সমর্থ হবে না। এই সমস্যা হয়ে থাকলে, দয়া করে ব্লুম দলের সাথে যোগাযোগ করুন।</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.editrawhtml" approved="yes">
+      <trans-unit id="template.starter.editrawhtml">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
         <target xml:lang="bn" state="translated"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: যদি আপনি চান পৃষ্ঠা পর্দা যুক্ত করুনও পৃষ্ঠার একটি সংক্ষিপ্ত বিবরণ প্রদান করুক, তাহলে আপনাকে ব্লুম বন্ধ করে দিতে হবে এবং নোটপ্যাডে টেমপ্লেট এর HTML সম্পাদনা করতে হবে, যেমন: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
@@ -199,7 +199,7 @@ There are two ways people can use your template. The first way is to start new b
                     <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: যদি আপনি চান পৃষ্ঠা পর্দা যুক্ত করুনও পৃষ্ঠার একটি সংক্ষিপ্ত বিবরণ প্রদান করুক, তাহলে আপনাকে ব্লুম বন্ধ করে দিতে হবে এবং নোটপ্যাডে টেমপ্লেট এর HTML সম্পাদনা করতে হবে, যেমন: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="bn">          <g id="genid-14" ctype="x-html-a" html:id="note4">:</g> যদি আপনি চান পৃষ্ঠা পর্দা যুক্ত করুনও পৃষ্ঠার একটি সংক্ষিপ্ত বিবরণ প্রদান করুক, তাহলে আপনাকে ব্লুম বন্ধ করে দিতে হবে এবং নোটপ্যাডে টেমপ্লেট এর HTML সম্পাদনা করতে হবে, যেমন: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+          <target xml:lang="bn">          <g id="genid-14" ctype="x-html-a" html:id="note4"></g>: যদি আপনি চান পৃষ্ঠা পর্দা যুক্ত করুনও পৃষ্ঠার একটি সংক্ষিপ্ত বিবরণ প্রদান করুক, তাহলে আপনাকে ব্লুম বন্ধ করে দিতে হবে এবং নোটপ্যাডে টেমপ্লেট এর HTML সম্পাদনা করতে হবে, যেমন: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         </alt-trans>
       </trans-unit>
     </body>
