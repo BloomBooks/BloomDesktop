@@ -1836,9 +1836,16 @@ namespace Bloom.Book
 			return element.SelectNodes(".//img | .//*[contains(@style,'background-image')]");
 		}
 
-		public static XmlNodeList SelectChildNarrationAudioElements(XmlElement element)
+		public static XmlNodeList SelectChildNarrationAudioElements(XmlElement element, bool includeSplitTextBoxAudio)
 		{
-			return element.SelectNodes("descendant-or-self::node()[contains(concat(' ', @class, ' '), ' audio-sentence ')]");
+			string xPath = "descendant-or-self::node()[contains(concat(' ', @class, ' '), ' audio-sentence ')]";
+			if (includeSplitTextBoxAudio)
+			{
+				// This will select bloom-editables (i.e. text boxes) recorded in TextBox mode which might not be audio-sentences, but do contain descendants which are.
+				// (That is, find cases where RecordingMode=TextBox but PlaybackMode=Sentence, a.k.a. the result of a Hard Split.
+				xPath += " | descendant-or-self::node()[contains(concat(' ', @class, ' '), ' audio-sentence ')]/ancestor::div[contains(concat(' ', @class, ' '), ' bloom-editable ') and @data-audiorecordingmode='TextBox']";
+			}
+			return element.SelectNodes(xPath);
 		}
 
 		public static XmlNodeList SelectChildBackgroundMusicElements(XmlElement element)

@@ -147,11 +147,15 @@ namespace BloomTests.Book
 			Assert.IsFalse(File.Exists(unusedVidOrigPath));
 		}
 
-		[Test]
-		public  void CleanupUnusedAudioFiles_BookHadUnusedAudio_AudiosRemoved()
+		[TestCase(true)]
+		[TestCase(false)]
+		public  void CleanupUnusedAudioFiles_BookHadUnusedAudio_AudiosRemoved(bool isForPublish)
 		{
 			const string usedAudioGuid = "i3afb14d9-6362-40bf-9dca-de1b24d793f3";   //The files to keep.
 			const string unusedAudioGuid = "d3afb14d9-6362-40bf-9dca-de1b24d793f3"; //The files to drop.
+			const string potentiallyUsefulAudioGuid = "textBox1";
+			const string usedSpanGuid1 = "span1";
+			const string usedSpanGuid2 = "span2";
 			const string usedFrontMatterAudioGuid = "usedFrontMatterAudioGuid"; // This file should be kept (even though it's not referenced in the normal section) because it's referenced in the bloomDataDiv instead
 			const string usedFrontMatterBackgroundAudio = "usedFrontMatterBackgroundAudio"; // This file should be kept (even though it's not referenced in the normal section) because it's referenced in the bloomDataDiv instead
 			const string usedBackgroundAudio = "Fur-elise-music-box";         //Background file to keep.
@@ -167,10 +171,15 @@ namespace BloomTests.Book
 			var usedMp3Filename = usedAudioGuid + ".mp3";
 			var unusedWavFilename = unusedAudioGuid + ".wav";
 			var unusedMp3Filename = unusedAudioGuid + ".mp3";
+			var potentiallyUsefulWavFilename = potentiallyUsefulAudioGuid + ".wav";
+			var potentiallyUsefulMp3Filename = potentiallyUsefulAudioGuid + ".mp3";
+			var usedSpan1WavFilename = usedSpanGuid1 + ".wav";
+			var usedSpan1Mp3Filename = usedSpanGuid1 + ".mp3";
+			var usedSpan2WavFilename = usedSpanGuid2 + ".wav";
+			var usedSpan2Mp3Filename = usedSpanGuid2 + ".mp3";
 			var unusedBgWavFilename = unusedBackgroundAudio + ".wav";
 			var unusedBgMp3Filename = unusedBackgroundAudio + ".mp3";
 			var unusedBgOggFilename = unusedBackgroundAudio + ".ogg";
-			var usedBGWavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedBgWavFilename), true, true).Path;
 			var usedFrontMatterWavFilename = usedFrontMatterAudioGuid + ".wav";
 			var usedFrontMatterMp3Filename = usedFrontMatterAudioGuid + ".mp3";
 			var usedFrontMatterBgWavFilename = usedFrontMatterBackgroundAudio + ".wav";
@@ -185,10 +194,17 @@ namespace BloomTests.Book
 					"id='ab5bf932-b9ea-432c-84e6-f37d58d2f632' data-pagelineage=" +
 					"'adcd48df-e9ab-4a07-afd4-6a24d0398383' data-page-number='1' " +
 					$"lang='' data-backgroundaudio='{usedBgWavFilename}'>" +
-					"<div class='marginBox'>" +
-					$"<p><span data-duration='2.300227' id='{usedAudioGuid}' " +
-					"class='audio-sentence' recordingmd5='undefined'>Who are you?</span></p>" +
-					"</div></div>" +
+						"<div class='marginBox'>" +
+							$"<p><span data-duration='2.300227' id='{usedAudioGuid}' " +
+							"class='audio-sentence' recordingmd5='undefined'>Who are you?</span></p>" +
+						"</div>" +
+						$"<div class='bloom-editable' data-audioRecordingMode='TextBox' id='{potentiallyUsefulAudioGuid}'>" +
+							"<p>" +
+								$"<span id='{usedSpanGuid1}' class='audio-sentence'>Sentence 1</span>" +
+								$"<span id='{usedSpanGuid2}' class='audio-sentence'>Sentence 2</span>" +
+							"</p>" +
+						"</div>" +
+					"</div>" +
 					"<div class='bloom-page numberedPage customPage bloom-combinedPage " +
 					"A5Portrait side-right bloom-monolingual' data-page-number='2' " +
 					$"lang='' data-backgroundaudio='{usedBgMp3Filename}'>" +
@@ -204,15 +220,26 @@ namespace BloomTests.Book
 					"</body></html>");
 
 			// Note: These must be executed after GetInitialStorage
+			var usedBGWavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedBgWavFilename), true, true).Path;
 			var usedBGMp3Path = Path.Combine(audioPath, usedBgMp3Filename);
 			var usedBGOggPath = Path.Combine(audioPath, usedBgOggFilename);
+
 			var unusedBGWavPath = MakeSampleWavAudio(Path.Combine(audioPath, unusedBgWavFilename), true, true).Path;
 			var unusedBGMp3Path = Path.Combine(audioPath, unusedBgMp3Filename);
 			var unusedBGOggPath = Path.Combine(audioPath, unusedBgOggFilename);
+
 			var usedWavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedWavFilename), true, true).Path;
 			var usedMp3Path = Path.Combine(audioPath, usedMp3Filename);
 			var unusedWavPath = MakeSampleWavAudio(Path.Combine(audioPath, unusedWavFilename), true, true).Path;
 			var unusedMp3Path = Path.Combine(audioPath, unusedMp3Filename);
+
+			var potentiallyUsefulWavPath = MakeSampleWavAudio(Path.Combine(audioPath, potentiallyUsefulWavFilename), true, false).Path;
+			var potentiallyUsefulMp3Path = Path.Combine(audioPath, potentiallyUsefulMp3Filename);
+			var usedSpan1WavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedSpan1WavFilename), true, false).Path;
+			var usedSpan1Mp3Path = Path.Combine(audioPath, usedSpan1Mp3Filename);
+			var usedSpan2WavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedSpan2WavFilename), true, false).Path;
+			var usedSpan2Mp3Path = Path.Combine(audioPath, usedSpan2Mp3Filename);
+
 			var usedFrontMatterWavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedFrontMatterWavFilename), true).Path;
 			var usedFrontMatterMp3Path = Path.Combine(audioPath, usedFrontMatterMp3Filename);
 			var usedFrontMatterBGWavPath = MakeSampleWavAudio(Path.Combine(audioPath, usedFrontMatterBgWavFilename), true).Path;
@@ -224,6 +251,12 @@ namespace BloomTests.Book
 			Assert.IsTrue(File.Exists(usedMp3Path), "Pre: Audio Sentence MP3");
 			Assert.IsTrue(File.Exists(unusedWavPath), "Pre: Unused Audio Sentence WAV");
 			Assert.IsTrue(File.Exists(unusedMp3Path), "Pre: Unused Audio Sentence MP3");
+			Assert.IsTrue(File.Exists(potentiallyUsefulWavPath), "Pre: Potentially Useful Audio (Text Box) WAV");
+			Assert.IsTrue(File.Exists(potentiallyUsefulMp3Path), "Pre: Potentially Useful Audio (Text Box) MP3");
+			Assert.IsTrue(File.Exists(usedSpan1WavPath), "Pre: Used Audio Sentence Span 1 WAV");
+			Assert.IsTrue(File.Exists(usedSpan1Mp3Path), "Pre: Used Audio Sentence Span 1 MP3");
+			Assert.IsTrue(File.Exists(usedSpan2WavPath), "Pre: Used Audio Sentence Span 2 WAV");
+			Assert.IsTrue(File.Exists(usedSpan2Mp3Path), "Pre: Used Audio Sentence Span 2 MP3");
 			Assert.IsTrue(File.Exists(usedBGWavPath), "Pre: Background Music WAV");
 			Assert.IsTrue(File.Exists(usedBGMp3Path), "Pre: Background Music MP3");
 			Assert.IsTrue(File.Exists(usedBGOggPath), "Pre: Background Music Ogg");
@@ -236,13 +269,22 @@ namespace BloomTests.Book
 			Assert.IsTrue(File.Exists(unusedFrontMatterBGMp3Path), "Pre: Front Matter Background Music MP3");
 
 			// SUT
-			storage.CleanupUnusedAudioFiles();
+			storage.CleanupUnusedAudioFiles(isForPublish);
 
 
 			Assert.IsTrue(File.Exists(usedWavPath), "Audio Sentence WAV");
 			Assert.IsTrue(File.Exists(usedMp3Path), "Audio Sentence MP3");
 			Assert.IsFalse(File.Exists(unusedWavPath), "Unused Audio Sentence WAV");
 			Assert.IsFalse(File.Exists(unusedMp3Path), "Unused Audio Sentence MP3");
+
+			bool isPotentiallyUsefulFileExpectedToExist = !isForPublish;
+			Assert.AreEqual(isPotentiallyUsefulFileExpectedToExist, File.Exists(potentiallyUsefulWavPath), "Potentially Useful Audio (Text Box) WAV");
+			Assert.AreEqual(isPotentiallyUsefulFileExpectedToExist, File.Exists(potentiallyUsefulMp3Path), "Potentially Useful Audio (Text Box) MP3");			
+			Assert.IsTrue(File.Exists(usedSpan1WavPath), "Used Audio Sentence Span 1 WAV");
+			Assert.IsTrue(File.Exists(usedSpan2Mp3Path), "Used Audio Sentence Span 1 MP3");
+			Assert.IsTrue(File.Exists(usedSpan2WavPath), "Used Audio Sentence Span 1 WAV");
+			Assert.IsTrue(File.Exists(usedSpan1Mp3Path), "Used Audio Sentence Span 1 MP3");
+
 			Assert.IsTrue(File.Exists(usedBGWavPath), "Background Music WAV");
 			Assert.IsTrue(File.Exists(usedBGMp3Path), "Background Music MP3");
 			Assert.IsFalse(File.Exists(unusedBGWavPath), "Unused Background Music WAV");
@@ -290,7 +332,7 @@ namespace BloomTests.Book
 			}
 						
 			// Test exercise //
-			storage.CleanupUnusedAudioFiles();
+			storage.CleanupUnusedAudioFiles(isForPublish: true);
 
 
 			// Test verification //
@@ -299,6 +341,30 @@ namespace BloomTests.Book
 			{
 				Assert.IsFalse(File.Exists(unneededPath), $"File path: {unneededPath}");
 			}
+		}
+
+		[TestCase(true)]
+		[TestCase(false)]
+		public void CleanupUnusedAudioFiles_TimingFile_DeleteOrPreservedAppropriately(bool isForPublish)
+		{
+			// Test setup //
+			var audioPath = Path.Combine(_folder.Path, "audio");              //Path to the audio files.
+			Directory.CreateDirectory(audioPath);
+
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body><div class='bloom-page><div class='bloom-editable' id='textBox1'>" +
+					"<p><span class='audio-sentence' id='span1'>Sentence 1</span></p>" +
+					"</div></div></body></html>");
+
+			string timingsFilepath = Path.Combine(audioPath, "span1_timings.tsv");
+			TempFile.WithFilename(timingsFilepath);
+
+			// Test exercise //
+			storage.CleanupUnusedAudioFiles(isForPublish);
+			
+			// Test verification //
+			Assert.AreEqual(!isForPublish, File.Exists(timingsFilepath));
 		}
 
 		[Test]
