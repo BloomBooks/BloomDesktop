@@ -4,9 +4,12 @@
     <body>
       <trans-unit id="wall.calendar" approved="yes">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="quc" state="translated">Chi rij le Raqanib’al ri Cholq’ij
-</target>
+        <target xml:lang="quc" state="translated">Chi rij le Raqanib’al ri Cholq’ij</target>
         <note>ID: wall.calendar</note>
+        <alt-trans>
+          <target xml:lang="quc">Chi rij le Raqanib’al ri Cholq’ij
+</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="wall.calendar.use" approved="yes">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
