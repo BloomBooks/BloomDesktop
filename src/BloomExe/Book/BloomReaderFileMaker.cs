@@ -56,7 +56,7 @@ namespace Bloom.Book
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6835.
 			RemoveInvisibleImageElements(modifiedBook);
 			modifiedBook.Storage.CleanupUnusedImageFiles(false);
-			modifiedBook.Storage.CleanupUnusedAudioFiles();
+			modifiedBook.Storage.CleanupUnusedAudioFiles(isForPublish: true);
 			modifiedBook.Storage.CleanupUnusedVideoFiles();
 
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
