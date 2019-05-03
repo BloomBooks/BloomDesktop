@@ -28,8 +28,8 @@
         <note>ID: leveled.learn.videos</note>
       </trans-unit>
       <trans-unit id="leveled.learn.helpindex">
-        <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Leveled Readers".</source>
-        <target xml:lang="ru" state="needs-translation">Go to the Help menu, choose 'Help', and look in the index under "Leveled Readers".</target>
+        <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</source>
+        <target xml:lang="ru" state="needs-translation">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</target>
         <note>ID: leveled.learn.helpindex</note>
       </trans-unit>
       <trans-unit id="leveled.learn.helpmenu">

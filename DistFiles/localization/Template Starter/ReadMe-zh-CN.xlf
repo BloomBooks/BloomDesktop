@@ -90,7 +90,7 @@ There are two ways people can use your template. The first way is to start new b
         <target xml:lang="zh-CN" state="translated">备注</target>
         <note>ID: template.starter.notes</note>
       </trans-unit>
-      <trans-unit id="template.starter.nothingautomatic" approved="yes">
+      <trans-unit id="template.starter.nothingautomatic">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
         <target xml:lang="zh-CN" state="translated"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: 即将到来的Folio功能可以将这些书整合在一起。注意Bloom不支持在新书中自动添加页面，作者必须通过“添加页面”功能添加每一个页面。</target>
         <note>ID: template.starter.nothingautomatic</note>
@@ -145,7 +145,7 @@ There are two ways people can use your template. The first way is to start new b
 <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: 即将到来的Folio功能可以将这些书整合在一起。注意Bloom不支持在新书中自动添加页面，作者必须通过“添加页面”功能添加每一个页面。</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.nametonotaddpage" approved="yes">
+      <trans-unit id="template.starter.nametonotaddpage">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
         <target xml:lang="zh-CN" state="translated"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>:如果不希望您制作的模板页面出现在“添加页面”对话框中，可以在该书的模板文件夹里添加一个名为“NotForAddPage.txt”的文档，Bloom将不再显示您的模板页面。</target>
         <note>ID: template.starter.nametonotaddpage</note>
@@ -220,7 +220,7 @@ There are two ways people can use your template. The first way is to start new b
 <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>:如果不希望您制作的模板页面出现在“添加页面”对话框中，可以在该书的模板文件夹里添加一个名为“NotForAddPage.txt”的文档，Bloom将不再显示您的模板页面。</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
+      <trans-unit id="template.starter.labelsnottranslatable">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
         <target xml:lang="zh-CN" state="translated"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: 别人无法将标签和描述翻译成其他语言。如果您觉得这是个问题，请联系Bloom团队。</target>
         <note>ID: template.starter.labelsnottranslatable</note>
@@ -295,7 +295,7 @@ There are two ways people can use your template. The first way is to start new b
 <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: 别人无法将标签和描述翻译成其他语言。如果您觉得这是个问题，请联系Bloom团队。</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.editrawhtml" approved="yes">
+      <trans-unit id="template.starter.editrawhtml">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
         <target xml:lang="zh-CN" state="translated"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: 如果您希望在“添加页面”时为页面加一段简短的描述，请先退出Bloom并在Notepad里编辑页面的html，像这样：<x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>

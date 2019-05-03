@@ -45,8 +45,8 @@
           <target xml:lang="es-ES">Ver <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">estos videos de capacitación</g>.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="decodable.learn.helpindex" approved="yes">
-        <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".</source>
+      <trans-unit id="decodable.learn.helpindex">
+        <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
         <target xml:lang="es-ES" state="translated">Vaya al menú de Ayuda, seleccione 'Ayuda' y busque "Libros Descifrables" en el índice.</target>
         <note>ID: decodable.learn.helpindex</note>
       </trans-unit>

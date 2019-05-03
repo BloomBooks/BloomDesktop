@@ -28,8 +28,8 @@
         <target xml:lang="ar" state="translated">مشاهدة <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">مقاطع الفيديو الإرشادية هذه</g>.</target>
         <note>ID: decodable.learn.videos</note>
       </trans-unit>
-      <trans-unit id="decodable.learn.helpindex" approved="yes">
-        <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".</source>
+      <trans-unit id="decodable.learn.helpindex">
+        <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
         <target xml:lang="ar" state="translated">اذهب إلى قائمة "مساعدة"، واختار"مساعدة" والاطلاع على الفهرس ضمن "كتب المستويات المحددة".</target>
         <note>ID: decodable.learn.helpindex</note>
       </trans-unit>
