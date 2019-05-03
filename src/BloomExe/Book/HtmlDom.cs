@@ -1843,7 +1843,7 @@ namespace Bloom.Book
 			{
 				// This will select bloom-editables (i.e. text boxes) recorded in TextBox mode which might not be audio-sentences, but do contain descendants which are.
 				// (That is, find cases where RecordingMode=TextBox but PlaybackMode=Sentence, a.k.a. the result of a Hard Split.
-				xPath += " | //*[contains(concat(' ', @class, ' '), ' audio-sentence ')]/ancestor::div[contains(concat(' ', @class, ' '), ' bloom-editable ') and @data-audiorecordingmode='TextBox']";
+				xPath += " | descendant-or-self::node()[contains(concat(' ', @class, ' '), ' audio-sentence ')]/ancestor::div[contains(concat(' ', @class, ' '), ' bloom-editable ') and @data-audiorecordingmode='TextBox']";
 			}
 			return element.SelectNodes(xPath);
 		}
