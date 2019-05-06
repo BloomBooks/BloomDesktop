@@ -409,19 +409,22 @@ describe("audio recording tests", () => {
             ).toBe("audio-sentence");
         });
 
-        // We can get something like this when we paste from Word
-        it("ignores empty span", () => {
+        // // We can get something like this when we paste from Word
+        it("handles empty span", () => {
+            // In the past we used to pass through <span> if stringToSentences() returned them.
+            // But now we will (in some cases) remove the old span and re-process its inner contents (possibly wrapping it in a new span, but in this case skipping over the empty space).
             const div = $(
                 '<div><p>This is the first sentence.<span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C"> </span></p></div>'
             );
             const recording = new AudioRecording();
             recording.makeAudioSentenceElements(div);
             const spans = div.find("span");
-            expect(spans.length).toBe(2);
+            expect(spans.length).toBe(1);
             expect(spans[0].innerHTML).toBe("This is the first sentence.");
-            expect(spans[1].innerHTML).toBe(" ");
+            expect(StripAllGuidIds(div[0].innerHTML)).toBe(
+                '<p><span class="audio-sentence">This is the first sentence.</span> </p>'
+            );
             expect(spans.first().attr("class")).toBe("audio-sentence");
-            expect(spans.last().attr("class")).not.toContain("audio-sentence");
         });
 
         // We can get something like this when we paste from Word
@@ -470,6 +473,19 @@ describe("audio recording tests", () => {
                     .next()
                     .attr("class")
             ).toBe("audio-sentence");
+        });
+
+        it("does not create nested spans", () => {
+            // This scenario could happen when trying to perform soft-split again on a text box that has already been soft-split previously.
+            const p = $(
+                '<div class="bloom-editable" data-audiorecordingmode="TextBox" class="audio-sentence"><p><span id="a">One.</span> <span id="b">Two.</span> <span id="c">Three.</span></p></div>'
+            );
+            const recording = new AudioRecording();
+            recording.audioRecordingMode = AudioRecordingMode.Sentence;
+            recording.makeAudioSentenceElements(p);
+            const spans = p.find("span");
+            // Should have removed the outer span and left the two inner ones and added a third one.
+            expect(spans.length).toBe(3); // If regresses, it would probably show twice as many (i.e. 6) instead of 3.
         });
 
         it("ensures full span coverage of paragraph", () => {
@@ -1546,6 +1562,32 @@ describe("audio recording tests", () => {
             "Title:  The Cat in the Hat  .",
             "Title:  The Cat in the Hat  ."
         );
+    });
+
+    it("isInSoftSplitMode() works on positive examples", () => {
+        SetupIFrameFromHtml(
+            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox' data-audioRecordingEndTimes='1.0 2.0 3.0'><p>One. Two. Three.</p></div>"
+        );
+
+        const recording = new AudioRecording();
+        const result = recording.isInSoftSplitMode();
+
+        expect(result).toBe(true);
+    });
+
+    it("isInSoftSplitMode() works on negative examples", () => {
+        const div1 =
+            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'><p>One. Two. Three.</p></div>";
+        const div2 =
+            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'><p><span id='s1' class='audioSentence'>One.</span> <span id='s2' class='audioSentence'>Two.</span> <span id='s3' class='audioSentence'>Three.</span></p></div>";
+        const div3 =
+            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='Sentence'><p><span id='s1' class='audioSentence'>One.</span> <span id='s2' class='audioSentence'>Two.</span> <span id='s3' class='audioSentence'>Three.</span></p></div>";
+        SetupIFrameFromHtml(div1 + div2 + div3);
+
+        const recording = new AudioRecording();
+        const result = recording.isInSoftSplitMode();
+
+        expect(result).toBe(false);
     });
 });
 
