@@ -288,6 +288,10 @@ namespace Bloom.Publish
 						//installed, or they had the PDF open in Word, or something like that.
 						ErrorReport.NotifyUserOfProblem(error.Message);
 					}
+					else if (error is PdfMaker.MakingPdfFailedException)
+					{
+						// Ignore this error here.  It will be reported elsewhere if desired.
+					}
 					else if (error is FileNotFoundException && ((FileNotFoundException) error).FileName == "BloomPdfMaker.exe")
 					{
 						ErrorReport.NotifyUserOfProblem(error, error.Message);
@@ -571,7 +575,7 @@ namespace Bloom.Publish
 				Controls.Remove(_uploadControl); ;
 			}
 
-			var libaryPublishModel = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection);
+			var libaryPublishModel = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
 			_uploadControl = new BloomLibraryUploadControl(this, libaryPublishModel, _loginDialog);
 			_uploadControl.Dock = DockStyle.Fill;
 			var saveBackColor = _uploadControl.BackColor;
