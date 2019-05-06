@@ -71,6 +71,8 @@ namespace Bloom.Publish.PDF
 						"Bloom unexpectedly failed to create the PDF. If this happens repeatedy please report it to the developers. Probably it will work if you just try again.",
 						"Pdf creation failed", MessageBoxButtons.OK);
 				}));
+				doWorkEventArgs.Result = MakingPdfFailedException.CreatePdfException();
+				return;
 			}
 
 			try
@@ -113,8 +115,22 @@ namespace Bloom.Publish.PDF
 						+ Environment.NewLine + "- "
 						+ LocalizationManager.GetString("PublishTab.PdfMaker.TryMoreMemory", "Try doing this on a computer with more memory"));
 
+				RobustFile.Move(outputPdfPath, outputPdfPath + "-BAD");
+				doWorkEventArgs.Result = MakingPdfFailedException.CreatePdfException();
 			}
 
+		}
+
+		public class MakingPdfFailedException : Exception
+		{
+			private MakingPdfFailedException(string message) : base(message)
+			{
+			}
+
+			public static MakingPdfFailedException CreatePdfException()
+			{
+				return new MakingPdfFailedException(LocalizationManager.GetString("PublishTab.PdfMaker.BadPdfShort", "Bloom had a problem making a PDF of this book."));
+			}
 		}
 
 		// This is a subset of what MakeBooklet normally does, just enough to make it process the PDF to the

@@ -754,7 +754,7 @@ namespace Bloom.WebLibraryIntegration
 				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, context.Settings, server, _thumbnailer);
 				publishModel.PageLayout = book.GetLayout();
 				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null, null, null, null, null);
-				var blPublishModel = new BloomLibraryPublishModel(this, book);
+				var blPublishModel = new BloomLibraryPublishModel(this, book, publishModel);
 				string dummy;
 
 				// Normally we let the user choose which languages to upload. Here, just the ones that have complete information.
@@ -831,6 +831,10 @@ namespace Bloom.WebLibraryIntegration
 				if (RobustFile.Exists(publishView.PdfPreviewPath))
 				{
 					RobustFile.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
+				}
+				else
+				{
+					return "";		// no PDF, no upload (See BL-6719)
 				}
 			}
 			if (progressBox.CancelRequested)

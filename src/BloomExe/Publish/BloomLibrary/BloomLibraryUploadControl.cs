@@ -418,7 +418,10 @@ namespace Bloom.Publish.BloomLibrary
 					else if (string.IsNullOrEmpty((string) completedEvent.Result))
 					{
 						// Something went wrong, typically already reported.
-						ReportTryAgainDuringUpload();
+						if (!_model.PublishModel.PdfGenerationSucceeded)
+							ReportPdfGenerationFailed();
+						else
+							ReportTryAgainDuringUpload();
 					}
 					else
 					{
@@ -433,6 +436,13 @@ namespace Bloom.Publish.BloomLibrary
 			};
 			SetStateOfNonUploadControls(false); // Last thing we do before launching the worker, so we can't get stuck in this state.
 			_uploadWorker.RunWorkerAsync(_model.Book);
+		}
+
+		private void ReportPdfGenerationFailed()
+		{
+			string message = LocalizationManager.GetString("PublishTab.Upload.Upload.PdfFailureNotice",
+				"Sorry, \"{0}\" was not successfully uploaded because generating the PDF failed.");
+			_progressBox.WriteError(message, _model.Title);
 		}
 
 		private void ReportTryAgainDuringUpload()
