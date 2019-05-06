@@ -18,11 +18,13 @@ namespace Bloom.Publish.BloomLibrary
 		private readonly Metadata _licenseMetadata;
 		private readonly LicenseInfo _license;
 		private readonly BookTransfer _transferrer;
+		internal readonly PublishModel PublishModel;
 
-		public BloomLibraryPublishModel(BookTransfer transferer, BookInstance book)
+		public BloomLibraryPublishModel(BookTransfer transferer, BookInstance book, PublishModel model)
 		{
 			Book = book;
 			_transferrer = transferer;
+			PublishModel = model;
 
 			_licenseMetadata = Book.GetLicenseMetadata();
 			// This is usually redundant, but might not be on old books where the license was set before the new

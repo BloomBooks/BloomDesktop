@@ -3184,6 +3184,10 @@
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
         <note>ID: PublishTab.PdfMaker.BadPdf</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.BadPdfShort">
+        <source xml:lang="en">Bloom had a problem making a PDF of this book.</source>
+        <note>ID: PublishTab.PdfMaker.BadPdfShort</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Compress">
         <source xml:lang="en">Compressing PDF</source>
         <note>ID: PublishTab.PdfMaker.Compress</note>
@@ -3480,6 +3484,11 @@
       <trans-unit id="PublishTab.Upload.OldVersion">
         <source xml:lang="en">Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
         <note>ID: PublishTab.Upload.OldVersion</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.PdfFailureNotice">
+        <source xml:lang="en">Sorry, "{0}" was not successfully uploaded because generating the PDF failed.</source>
+        <note>ID: PublishTab.Upload.PdfFailureNotice</note>
+        <note>{0} is replaced by the book's title</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.PleaseLogIn">
         <source xml:lang="en">Please log in to BloomLibrary.org (or sign up) before uploading</source>
