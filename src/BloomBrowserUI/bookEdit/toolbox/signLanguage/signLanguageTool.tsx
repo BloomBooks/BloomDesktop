@@ -3,11 +3,9 @@ import * as ReactDOM from "react-dom";
 import { Label } from "../../../react_components/l10n";
 import { ToolBox } from "../toolbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
-import { Range } from "rc-slider";
 import "./signLanguage.less";
 import {
     RequiresBloomEnterpriseWrapper,
-    checkIfEnterpriseAvailable,
     BloomEnterpriseAvailableContext
 } from "../../../react_components/requiresBloomEnterprise";
 import { BloomApi } from "../../../utils/bloomApi";
@@ -16,6 +14,7 @@ import { UrlUtils } from "../../../utils/urlUtils";
 import { Expandable } from "../../../react_components/expandable";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import calculateAspectRatio from "calculate-aspect-ratio";
+import VideoTrimSlider from "../../../react_components/videoTrimSlider";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; red record button shows; stop button and all labels hidden
@@ -48,7 +47,6 @@ interface IComponentState {
         endSeconds: string;
         aspectRatio: string;
     };
-    enterprise: boolean;
 }
 
 declare var MediaRecorder: {
@@ -82,6 +80,17 @@ export class SignLanguageToolControls extends React.Component<
     {},
     IComponentState
 > {
+    constructor(props: Readonly<{}>) {
+        super(props);
+
+        // The following binding weirdness allows VideoTrimSlider to use these as callbacks
+        // and have 'this' refer to the right thing.
+        // See: https://reactjs.org/docs/handling-events.html
+        this.handleSliderRangeChange = this.handleSliderRangeChange.bind(this);
+        this.handleSliderRangeAfterChange = this.handleSliderRangeAfterChange.bind(
+            this
+        );
+    }
     public static kToolID = "signLanguage";
     public readonly state: IComponentState = {
         recording: false,
@@ -93,8 +102,7 @@ export class SignLanguageToolControls extends React.Component<
         cameraUnavailable: false,
         minutesRecorded: "",
         secondsRecorded: "",
-        videoStatistics: emptyVideoStatistics,
-        enterprise: false
+        videoStatistics: emptyVideoStatistics
     };
     private videoStream: MediaStream | null;
     private chunks: Blob[];
@@ -196,7 +204,7 @@ export class SignLanguageToolControls extends React.Component<
                                             Press any key to stop
                                         </Label>
                                     </div>
-                                    {this.getTrimSlider()}
+                                    {this.getTrimSlider(enterpriseAvailable)}
                                 </div>
                             </div>
                             <div style={{ height: "210px" }}>
@@ -291,8 +299,8 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
-    private getMaxDurationFromState(): number {
-        return this.showDefaultSlider()
+    private getMaxDurationFromState(enterpriseAvailable: boolean): number {
+        return this.showDefaultSlider(enterpriseAvailable)
             ? 5
             : SignLanguageTool.convertTimeStringToSecondsNumber(
                   this.state.videoStatistics.duration
@@ -303,21 +311,26 @@ export class SignLanguageToolControls extends React.Component<
         return parseFloat(this.state.videoStatistics.startSeconds);
     }
 
-    private getEndSliderFromState(): number {
+    private getEndSliderFromState(enterpriseAvailable: boolean): number {
         let end = parseFloat(this.state.videoStatistics.endSeconds);
-        if (end == UNTRIMMED_TIMING_NUM) {
+        if (end === UNTRIMMED_TIMING_NUM) {
             // if the video has not been "end-trimmed", set the end slider to the equivalent of the
             // untrimmed video's duration, since the end of the video in seconds is equal to its duration
             // in seconds.
-            end = this.getMaxDurationFromState();
+            end = this.getMaxDurationFromState(enterpriseAvailable);
         }
         return end;
     }
 
-    private getCurrentTrimHandlePositionsFromState(): number[] {
-        return this.showDefaultSlider()
+    private getCurrentTrimHandlePositionsFromState(
+        enterpriseAvailable: boolean
+    ): number[] {
+        return this.showDefaultSlider(enterpriseAvailable)
             ? [0, 5]
-            : [this.getStartSliderFromState(), this.getEndSliderFromState()];
+            : [
+                  this.getStartSliderFromState(),
+                  this.getEndSliderFromState(enterpriseAvailable)
+              ];
     }
 
     private doesVideoExist(): boolean {
@@ -325,17 +338,17 @@ export class SignLanguageToolControls extends React.Component<
         // the video info hasn't yet been loaded from the file.
         return (
             this.state.haveRecording &&
-            this.state.videoStatistics.duration != ""
+            this.state.videoStatistics.duration !== ""
         );
     }
 
     // Used to determine the case where there is no video, but we want to show
     // the slider behind the "You don't have Enterprise" notification.
-    private showDefaultSlider(): boolean {
-        return !this.doesVideoExist() && !this.state.enterprise;
+    private showDefaultSlider(enterpriseAvailable: boolean): boolean {
+        return !enterpriseAvailable && !this.doesVideoExist();
     }
 
-    private getTrimSlider(): JSX.Element {
+    private getTrimSlider(enterpriseAvailable: boolean): JSX.Element {
         // Protect against Slider.Range onChange malfunctions on Windows when changing
         // pages.  Spurious onChange requests were happening that affected the wrong
         // video elements.  Not creating an actual Slider.Range (with its attached
@@ -347,26 +360,21 @@ export class SignLanguageToolControls extends React.Component<
         // even when the user is just sitting quietly staring at the wall.
         if (
             !this.PageAttached ||
-            (!this.doesVideoExist() && this.state.enterprise)
+            (!this.doesVideoExist() && enterpriseAvailable)
         ) {
             return <div id="trimWrapper" />;
         }
         return (
             <div id="trimWrapper">
-                <Range
-                    className="videoTrimSlider"
-                    count={1}
-                    value={this.getCurrentTrimHandlePositionsFromState()}
-                    onChange={v => this.handleSliderRangeChange(v[0], v[1])}
-                    onAfterChange={
-                        // set video back to start point in case we were viewing the end point
-                        v => this.handleSliderRangeAfterChange(v[0])
-                    }
-                    step={0.1}
-                    min={UNTRIMMED_TIMING_NUM}
-                    allowCross={false}
-                    pushable={false}
-                    max={this.getMaxDurationFromState()}
+                <VideoTrimSlider
+                    maxDuration={this.getMaxDurationFromState(
+                        enterpriseAvailable
+                    )}
+                    trimHandlePositions={this.getCurrentTrimHandlePositionsFromState(
+                        enterpriseAvailable
+                    )}
+                    onChange={this.handleSliderRangeChange}
+                    onAfterChange={this.handleSliderRangeAfterChange}
                 />
                 <div id="trimLabelWrapper">
                     <Label
@@ -596,15 +604,11 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     public turnOnVideo() {
-        checkIfEnterpriseAvailable().then(enabled => {
-            const constraints = { video: true };
-            //if (enabled) {
-            navigator.mediaDevices
-                .getUserMedia(constraints)
-                .then(stream => this.startMonitoring(stream))
-                .catch(reason => this.errorCallback(reason));
-            //}
-        });
+        const constraints = { video: true };
+        navigator.mediaDevices
+            .getUserMedia(constraints)
+            .then(stream => this.startMonitoring(stream))
+            .catch(reason => this.errorCallback(reason));
     }
 
     public turnOffVideo() {
