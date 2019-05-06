@@ -52,7 +52,6 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "checkAutoSegmentDependencies", CheckAutoSegmentDependenciesMet, handleOnUiThread: false, requiresSync: false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "autoSegmentAudio", AutoSegment, handleOnUiThread: false, requiresSync : false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getForcedAlignmentTimings", GetForcedAlignmentTimings, handleOnUiThread: false, requiresSync : false);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "checkAutoSegmentDependencies", CheckAutoSegmentDependenciesMet, handleOnUiThread: false, requiresSync: false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "eSpeakPreview", ESpeakPreview, handleOnUiThread: false, requiresSync: false);
 		}
 
@@ -212,16 +211,53 @@ namespace Bloom.web.controllers
 			// Parse the JSON containing the text segmentation data.
 			string json = request.RequiredPostJson();
 			AutoSegmentRequest requestParameters = ParseJson(json);
-			string directoryName = _bookSelection.CurrentSelection.FolderPath + "\\audio";
 
-			// The client was supposed to validate this already, but double-check in case something strange happened.
-			string inputAudioFilename = GetFileNameToSegment(directoryName, requestParameters.audioFilenameBase);
-			if (string.IsNullOrEmpty(inputAudioFilename))
+			string audioFilenameToSegment;
+			List<string> fragmentIds;
+			var timingStartEndRangeList = GetAeneasTimings(requestParameters, out audioFilenameToSegment, out fragmentIds);
+
+			if (timingStartEndRangeList == null)
 			{
-				Logger.WriteEvent("AudioSegmentationApi.AutoSegment(): No input audio file found.");
-				ErrorReport.ReportNonFatalMessageWithStackTrace("No audio file found. Please record audio first.");
 				request.ReplyWithBoolean(false);
 				return;
+			}
+
+			try
+			{
+				ExtractAudioSegments(fragmentIds, timingStartEndRangeList, audioFilenameToSegment);
+			}
+			catch (Exception e)
+			{
+				Logger.WriteError("AudioSegmentationApi.AutoSegment(): Exception thrown during split/extract stage", e);
+				ErrorReport.ReportNonFatalExceptionWithMessage(e, $"AutoSegment failed: {e.Message}");
+				request.ReplyWithBoolean(false);
+				return;
+			}
+
+			Logger.WriteEvent("AudioSegmentationApi.AutoSegment(): Completed successfully.");
+
+			request.ReplyWithBoolean(true); // Success
+		}
+
+		internal List<Tuple<string, string>> GetAeneasTimings(AutoSegmentRequest requestParameters)
+		{
+			string dummy1;
+			List<string> dummy2;
+			return GetAeneasTimings(requestParameters, out dummy1, out dummy2);
+		}
+
+		internal List<Tuple<string, string>> GetAeneasTimings(AutoSegmentRequest requestParameters, out string audioFilenameToSegment, out List<string> fragmentIds)
+		{
+			fragmentIds = null;
+
+			// The client was supposed to validate this already, but double-check in case something strange happened.
+			string directoryName = GetAudioDirectory();
+			audioFilenameToSegment = GetFileNameToSegment(directoryName, requestParameters.audioFilenameBase);
+			if (string.IsNullOrEmpty(audioFilenameToSegment))
+			{
+				Logger.WriteEvent("AudioSegmentationApi.GetAeneasTimings(): No input audio file found.");
+				ErrorReport.ReportNonFatalMessageWithStackTrace("No audio file found. Please record audio first.");
+				return null;
 			}
 
 			IEnumerable<AudioTextFragment> audioTextFragments = requestParameters.audioTextFragments;
@@ -237,8 +273,7 @@ namespace Bloom.web.controllers
 					"To split recordings into sentences, first install this {0} system.",
 					"The placeholder {0} will be replaced with the dependency that needs to be installed.");
 				ErrorReport.ReportNonFatalMessageWithStackTrace(string.Format(localizedFormatString, message));
-				request.ReplyWithBoolean(false);
-				return;
+				return null;
 			}
 
 			// When using TTS overrides, there's no Aeneas error message that tells us if the language is unsupported.
@@ -250,12 +285,11 @@ namespace Bloom.web.controllers
 			if (string.IsNullOrEmpty(langCode))
 			{
 				// FYI: The error message is expected to be in stdError with an empty stdOut, but I included both just in case.
-				Logger.WriteEvent("AudioSegmentationApi.AutoSegment(): eSpeak error.");
+				Logger.WriteEvent("AudioSegmentationApi.GetAeneasTimings(): eSpeak error.");
 				ErrorReport.ReportNonFatalMessageWithStackTrace($"eSpeak error: {stdOut}\n{stdErr}");
-				request.ReplyWithBoolean(false);
-				return;
+				return null;
 			}
-			Logger.WriteMinorEvent($"AudioSegmentationApi.AutoSegment(): Attempting to segment with langCode={langCode}");
+			Logger.WriteMinorEvent($"AudioSegmentationApi.GetAeneasTimings(): Attempting to segment with langCode={langCode}");
 
 			string textFragmentsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_fragments.txt");
 			string audioTimingsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}");
@@ -274,22 +308,20 @@ namespace Bloom.web.controllers
 			}
 
 			// Get the GUID filenames (without extension)
-			var idList = audioTextFragments.Select(obj => obj.id).ToList();
+			fragmentIds = audioTextFragments.Select(obj => obj.id).ToList();
 
+			List<Tuple<string, string>> timingStartEndRangeList = null;
 			try
 			{
 				File.WriteAllLines(textFragmentsFilename, fragmentList);
 
-				var timingStartEndRangeList = GetSplitStartEndTimings(inputAudioFilename, textFragmentsFilename, audioTimingsFilename, langCode);
-
-				ExtractAudioSegments(idList, timingStartEndRangeList, directoryName, inputAudioFilename);
+				timingStartEndRangeList = GetSplitStartEndTimings(audioFilenameToSegment, textFragmentsFilename, audioTimingsFilename, langCode);
 			}
 			catch (Exception e)
 			{
-				Logger.WriteError("AudioSegmentationApi.AutoSegment(): Exception thrown during split/extract stage", e);
+				Logger.WriteError("AudioSegmentationApi.GetAeneasTimings(): Exception thrown during split stage", e);
 				ErrorReport.ReportNonFatalExceptionWithMessage(e, $"AutoSegment failed: {e.Message}");
-				request.ReplyWithBoolean(false);
-				return;
+				return null;
 			}
 
 			try
@@ -302,13 +334,22 @@ namespace Bloom.web.controllers
 				Debug.Assert(false, $"Attempted to delete {textFragmentsFilename} but it threw an exception. Message={e.Message}, Stack={e.StackTrace}");
 			}
 
-			Logger.WriteEvent("AudioSegmentationApi.AutoSegment(): Completed successfully.");
-			request.ReplyWithBoolean(true); // Success
+			try
+			{
+				RobustFile.Delete(audioTimingsFilename);
+			}
+			catch (Exception e)
+			{
+				// These exceptions are unfortunate but not bad enough that we need to inform the user
+				Debug.Assert(false, $"Attempted to delete {audioTimingsFilename} but it threw an exception. Message={e.Message}, Stack={e.StackTrace}");
+			}
 
+			return timingStartEndRangeList;
+		}
 
-			// TODO: Think about our cleanup policy for the timings file
-			// While fragments is pretty useless and safe to delete sooner...
-			// The timings file seems hypothetically useful (fine-tuning? for playing a whole mp3 file?) so it's less clear when to delete it.
+		public string GetAudioDirectory()
+		{
+			return Path.Combine(_bookSelection.CurrentSelection.FolderPath, "audio");
 		}
 
 		private string GetBestSupportedLanguage(string requestedLangCode)
@@ -382,7 +423,7 @@ namespace Bloom.web.controllers
 
 		/// <summary>
 		/// "Soft Split": Performs Forced Alignment and responds with the start times of each segment.
-		/// Output format is a space-separated string of numbers representing the start time (calculated from the beginning) in seconds.
+		/// Output format is a space-separated string of numbers representing the end time (calculated from the beginning of the file) in seconds.
 		/// </summary>
 		/// <param name="request"></param>
 		public void GetForcedAlignmentTimings(ApiRequest request)
@@ -392,111 +433,20 @@ namespace Bloom.web.controllers
 			// Parse the JSON containing the text segmentation data.
 			string json = request.RequiredPostJson();
 			AutoSegmentRequest requestParameters = ParseJson(json);
-			string directoryName = _bookSelection.CurrentSelection.FolderPath + "\\audio";
 
-			// The client was supposed to validate this already, but double-check in case something strange happened.
-			string inputAudioFilename = GetFileNameToSegment(directoryName, requestParameters.audioFilenameBase);
-			if (string.IsNullOrEmpty(inputAudioFilename))
+			var timingStartEndRangeList = GetAeneasTimings(requestParameters);
+			if (timingStartEndRangeList == null)
 			{
-				Logger.WriteEvent("AudioSegmentationApi.GetForcedAlignmentTimings(): No input audio file found.");
-				ErrorReport.ReportNonFatalMessageWithStackTrace("No audio file found. Please record audio first.");
-				request.ReplyWithBoolean(false);
-				return;
-			}
-
-			IEnumerable<AudioTextFragment> audioTextFragments = requestParameters.audioTextFragments;
-			string requestedLangCode = requestParameters.lang;
-
-			// The client was supposed to validate this already, but double-check in case something strange happened.
-			// Since this is basically a desperate fallback that shouldn't ever happen we won't try to make the message
-			// contain a hot link here. That code is in Typescript.
-			string message;
-			if (!AreAutoSegmentDependenciesMet(out message))
-			{
-				var localizedFormatString = L10NSharp.LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.MissingDependency",
-					"To split recordings into sentences, first install this {0} system.",
-					"The placeholder {0} will be replaced with the dependency that needs to be installed.");
-				ErrorReport.ReportNonFatalMessageWithStackTrace(string.Format(localizedFormatString, message));
-				request.ReplyWithBoolean(false);
-				return;
-			}
-
-			// When using TTS overrides, there's no Aeneas error message that tells us if the language is unsupported.
-			// Therefore, we explicitly test if the language is supported by the dependency (eSpeak) before getting started.
-			string langCode = null;
-			var langCodesToTry = new[] { requestedLangCode, "eo", "en" }; // "eo" is Esperanto
-			var stdOut = "";
-			var stdErr = "";
-			foreach (var langCodeToTry in langCodesToTry)
-			{
-				if (!DoesCommandCauseError($"espeak -v {langCodeToTry} -q \"hello world\"", kWorkingDirectory, out stdOut, out stdErr))
-				{
-					langCode = langCodeToTry;
-					break;
-				}
-			}
-			if (string.IsNullOrEmpty(langCode))
-			{
-				// FYI: The error message is expected to be in stdError with an empty stdOut, but I included both just in case.
-				Logger.WriteEvent("AudioSegmentationApi.GetForcedAlignmentTimings(): eSpeak error.");
-				ErrorReport.ReportNonFatalMessageWithStackTrace($"eSpeak error: {stdOut}\n{stdErr}");
-				request.ReplyWithBoolean(false);
-				return;
-			}
-			Logger.WriteMinorEvent($"AudioSegmentationApi.GetForcedAlignmentTimings(): Attempting to segment with langCode={langCode}");
-
-			string textFragmentsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_fragments.txt");
-
-			audioTextFragments = audioTextFragments.Where(obj => !String.IsNullOrWhiteSpace(obj.fragmentText)); // Remove entries containing only whitespace
-			var fragmentList = audioTextFragments.Select(obj => TextUtils.TrimEndNewlines(obj.fragmentText));
-			var idList = audioTextFragments.Select(obj => obj.id).ToList();
-
-			try
-			{
-				File.WriteAllLines(textFragmentsFilename, fragmentList);
-
-				string audioTimingsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}");
-				string overrideTimingsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_timingsOverride.{kTimingsOutputFormat}");
-				string allTimingsStr;
-				if (!File.Exists(overrideTimingsFilename))
-				{
-					var timingStartEndRangeList = GetSplitStartEndTimings(inputAudioFilename, textFragmentsFilename, audioTimingsFilename, langCode);
-					allTimingsStr = String.Join(" ", timingStartEndRangeList.Select(tuple => tuple.Item1));
-				}
-				else
-				{
-					audioTimingsFilename = overrideTimingsFilename;
-					allTimingsStr = "Unimplemented";
-					// TODO: Parse the override file
-				}
-
-				request.ReplyWithText(allTimingsStr);
-			}
-			catch (Exception e)
-			{
-				Logger.WriteError("AudioSegmentationApi.GetForcedAlignmentTimings(): Exception thrown during split/extract stage", e);
-				ErrorReport.ReportNonFatalExceptionWithMessage(e, $"AutoSegment failed: {e.Message}");
 				request.ReplyWithText("");
 				return;
 			}
 
-			try
-			{
-				File.Delete(textFragmentsFilename);
-			}
-			catch (Exception e)
-			{
-				// These exceptions are unfortunate but not bad enough that we need to inform the user
-				Debug.Assert(false, $"Attempted to delete {textFragmentsFilename} but it threw an exception. Message={e.Message}, Stack={e.StackTrace}");
-			}
+			string allEndTimesStr = String.Join(" ", timingStartEndRangeList.Select(tuple => tuple.Item2));
 
-			Logger.WriteEvent("AudioSegmentationApi.AutoSegment(): Completed successfully.");
-
-
-			// TODO: Think about our cleanup policy for the timings file
-			// While fragments is pretty useless and safe to delete sooner...
-			// The timings file seems hypothetically useful (fine-tuning? for playing a whole mp3 file?) so it's less clear when to delete it.
+			Logger.WriteEvent("AudioSegmentationApi.GetForcedAlignmentTimings(): Completed successfully.");
+			request.ReplyWithText(allEndTimesStr);
 		}
+
 
 		/// <summary>
 		/// Given a filename base, finds the appropriate extension (if it exists) of a segmentable file.
@@ -722,7 +672,7 @@ namespace Bloom.web.controllers
 		/// <param name="timingStartEndRangeList"></param>
 		/// <param name="directoryName"></param>
 		/// <param name="inputAudioFilename"></param>
-		private void ExtractAudioSegments(IList<string> idList, IList<Tuple<string, string>> timingStartEndRangeList, string directoryName, string inputAudioFilename)
+		private void ExtractAudioSegments(IList<string> idList, IList<Tuple<string, string>> timingStartEndRangeList, string inputAudioFilename)
 		{
 			Debug.Assert(idList.Count == timingStartEndRangeList.Count, $"Number of text fragments ({idList.Count}) does not match number of extracted timings ({timingStartEndRangeList.Count}). The parsed timing ranges might be completely incorrect. The last parsed timing is: ({timingStartEndRangeList.Last()?.Item1 ?? "null"}, {timingStartEndRangeList.Last()?.Item2 ?? "null"}).");
 			int size = Math.Min(timingStartEndRangeList.Count, idList.Count);	// Note: it could differ if there is some discrepancy in line endings in the fragments file. This doesn't seem like it should happen but occasionally I see it.
@@ -743,7 +693,7 @@ namespace Bloom.web.controllers
 				var timingStartString = timingRange.Item1;
 				var timingEndString = timingRange.Item2;
 
-				string splitFilename = $"{directoryName}/{idList[i]}{extension}";
+				string splitFilename = $"{GetAudioDirectory()}/{idList[i]}{extension}";
 
 				tasksToWait[i] = ExtractAudioSegmentAsync(inputAudioFilename, timingStartString, timingEndString, splitFilename);
 			}
