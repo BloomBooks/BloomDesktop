@@ -6,7 +6,6 @@ import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import "./signLanguage.less";
 import {
     RequiresBloomEnterpriseWrapper,
-    checkIfEnterpriseAvailable,
     BloomEnterpriseAvailableContext
 } from "../../../react_components/requiresBloomEnterprise";
 import { BloomApi } from "../../../utils/bloomApi";
@@ -48,7 +47,6 @@ interface IComponentState {
         endSeconds: string;
         aspectRatio: string;
     };
-    enterprise: boolean;
 }
 
 declare var MediaRecorder: {
@@ -104,8 +102,7 @@ export class SignLanguageToolControls extends React.Component<
         cameraUnavailable: false,
         minutesRecorded: "",
         secondsRecorded: "",
-        videoStatistics: emptyVideoStatistics,
-        enterprise: false
+        videoStatistics: emptyVideoStatistics
     };
     private videoStream: MediaStream | null;
     private chunks: Blob[];
@@ -207,7 +204,7 @@ export class SignLanguageToolControls extends React.Component<
                                             Press any key to stop
                                         </Label>
                                     </div>
-                                    {this.getTrimSlider()}
+                                    {this.getTrimSlider(enterpriseAvailable)}
                                 </div>
                             </div>
                             <div style={{ height: "210px" }}>
@@ -302,8 +299,8 @@ export class SignLanguageToolControls extends React.Component<
         );
     }
 
-    private getMaxDurationFromState(): number {
-        return this.showDefaultSlider()
+    private getMaxDurationFromState(enterpriseAvailable: boolean): number {
+        return this.showDefaultSlider(enterpriseAvailable)
             ? 5
             : SignLanguageTool.convertTimeStringToSecondsNumber(
                   this.state.videoStatistics.duration
@@ -314,21 +311,26 @@ export class SignLanguageToolControls extends React.Component<
         return parseFloat(this.state.videoStatistics.startSeconds);
     }
 
-    private getEndSliderFromState(): number {
+    private getEndSliderFromState(enterpriseAvailable: boolean): number {
         let end = parseFloat(this.state.videoStatistics.endSeconds);
         if (end === UNTRIMMED_TIMING_NUM) {
             // if the video has not been "end-trimmed", set the end slider to the equivalent of the
             // untrimmed video's duration, since the end of the video in seconds is equal to its duration
             // in seconds.
-            end = this.getMaxDurationFromState();
+            end = this.getMaxDurationFromState(enterpriseAvailable);
         }
         return end;
     }
 
-    private getCurrentTrimHandlePositionsFromState(): number[] {
-        return this.showDefaultSlider()
+    private getCurrentTrimHandlePositionsFromState(
+        enterpriseAvailable: boolean
+    ): number[] {
+        return this.showDefaultSlider(enterpriseAvailable)
             ? [0, 5]
-            : [this.getStartSliderFromState(), this.getEndSliderFromState()];
+            : [
+                  this.getStartSliderFromState(),
+                  this.getEndSliderFromState(enterpriseAvailable)
+              ];
     }
 
     private doesVideoExist(): boolean {
@@ -342,11 +344,11 @@ export class SignLanguageToolControls extends React.Component<
 
     // Used to determine the case where there is no video, but we want to show
     // the slider behind the "You don't have Enterprise" notification.
-    private showDefaultSlider(): boolean {
-        return !this.state.enterprise && !this.doesVideoExist();
+    private showDefaultSlider(enterpriseAvailable: boolean): boolean {
+        return !enterpriseAvailable && !this.doesVideoExist();
     }
 
-    private getTrimSlider(): JSX.Element {
+    private getTrimSlider(enterpriseAvailable: boolean): JSX.Element {
         // Protect against Slider.Range onChange malfunctions on Windows when changing
         // pages.  Spurious onChange requests were happening that affected the wrong
         // video elements.  Not creating an actual Slider.Range (with its attached
@@ -358,15 +360,19 @@ export class SignLanguageToolControls extends React.Component<
         // even when the user is just sitting quietly staring at the wall.
         if (
             !this.PageAttached ||
-            (!this.doesVideoExist() && this.state.enterprise)
+            (!this.doesVideoExist() && enterpriseAvailable)
         ) {
             return <div id="trimWrapper" />;
         }
         return (
             <div id="trimWrapper">
                 <VideoTrimSlider
-                    maxDuration={this.getMaxDurationFromState()}
-                    trimHandlePositions={this.getCurrentTrimHandlePositionsFromState()}
+                    maxDuration={this.getMaxDurationFromState(
+                        enterpriseAvailable
+                    )}
+                    trimHandlePositions={this.getCurrentTrimHandlePositionsFromState(
+                        enterpriseAvailable
+                    )}
                     onChange={this.handleSliderRangeChange}
                     onAfterChange={this.handleSliderRangeAfterChange}
                 />
@@ -598,13 +604,11 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     public turnOnVideo() {
-        if (this.state.enterprise) {
-            const constraints = { video: true };
-            navigator.mediaDevices
-                .getUserMedia(constraints)
-                .then(stream => this.startMonitoring(stream))
-                .catch(reason => this.errorCallback(reason));
-        }
+        const constraints = { video: true };
+        navigator.mediaDevices
+            .getUserMedia(constraints)
+            .then(stream => this.startMonitoring(stream))
+            .catch(reason => this.errorCallback(reason));
     }
 
     public turnOffVideo() {
@@ -690,13 +694,6 @@ export class SignLanguageToolControls extends React.Component<
         document.removeEventListener("keydown", this.onKeyPress);
         window.clearTimeout(this.timerId);
         this.setState({ stateClass: "idle" });
-    }
-
-    public componentDidMount() {
-        // Several functions (e.g. the trim slider) need to know if 'enterpriseAvailable'.
-        checkIfEnterpriseAvailable().then(enabled => {
-            this.setState({ enterprise: enabled });
-        });
     }
 
     public componentDidUpdate(prevProps, prevState: IComponentState) {
