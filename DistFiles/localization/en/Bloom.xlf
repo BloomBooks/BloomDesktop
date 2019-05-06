@@ -3184,6 +3184,10 @@
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
         <note>ID: PublishTab.PdfMaker.BadPdf</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.BadPdfShort">
+        <source xml:lang="en">Bloom had a problem making a PDF of this book.</source>
+        <note>ID: PublishTab.PdfMaker.BadPdfShort</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Compress">
         <source xml:lang="en">Compressing PDF</source>
         <note>ID: PublishTab.PdfMaker.Compress</note>

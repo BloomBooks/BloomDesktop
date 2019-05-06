@@ -18,11 +18,13 @@ namespace Bloom.Publish.BloomLibrary
 		private readonly Metadata _licenseMetadata;
 		private readonly LicenseInfo _license;
 		private readonly BookTransfer _transferrer;
+		private readonly PublishModel _publishModel;
 
-		public BloomLibraryPublishModel(BookTransfer transferer, BookInstance book)
+		public BloomLibraryPublishModel(BookTransfer transferer, BookInstance book, PublishModel model)
 		{
 			Book = book;
 			_transferrer = transferer;
+			_publishModel = model;
 
 			_licenseMetadata = Book.GetLicenseMetadata();
 			// This is usually redundant, but might not be on old books where the license was set before the new
@@ -74,11 +76,17 @@ namespace Bloom.Publish.BloomLibrary
 		/// <summary>
 		/// Gets a user-friendly language name.
 		/// </summary>
-		/// <param name="code"></param>
-		/// <returns></returns>
 		internal string PrettyLanguageName(string code)
 		{
 			return Book.PrettyPrintLanguage(code);
+		}
+
+		/// <summary>
+		/// Whether the most recent PDF generation succeeded.
+		/// </summary>
+		public bool PdfGenerationSucceeded
+		{
+			get { return _publishModel.PdfGenerationSucceeded; }
 		}
 
 		private void EnsureBookAndUploaderId()

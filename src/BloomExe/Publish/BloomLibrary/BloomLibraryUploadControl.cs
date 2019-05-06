@@ -419,15 +419,17 @@ namespace Bloom.Publish.BloomLibrary
 				else {
 					if (completedEvent.Error != null)
 					{
-						string errorMessage = LocalizationManager.GetString("PublishTab.Upload.ErrorUploading",
-							"Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.");
+						string errorMessage = GetBasicErrorUploadingMessage();
 						_progressBox.WriteError(errorMessage, _model.Title);
 						_progressBox.WriteException(completedEvent.Error);
 					}
 					else if (string.IsNullOrEmpty((string) completedEvent.Result))
 					{
-						// Something went wrong, typically already reported.
-						ReportTryAgainDuringUpload();
+						// Something went wrong, possibly already reported.
+						if (!_model.PdfGenerationSucceeded)
+							ReportPdfGenerationFailed();
+						else
+							ReportTryAgainDuringUpload();
 					}
 					else
 					{
@@ -442,6 +444,20 @@ namespace Bloom.Publish.BloomLibrary
 			};
 			SetStateOfNonUploadControls(false); // Last thing we do before launching the worker, so we can't get stuck in this state.
 			_uploadWorker.RunWorkerAsync(_model.Book);
+		}
+
+		private string GetBasicErrorUploadingMessage()
+		{
+			return LocalizationManager.GetString("PublishTab.Upload.ErrorUploading",
+				"Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.");
+		}
+
+		private void ReportPdfGenerationFailed()
+		{
+			string message = GetBasicErrorUploadingMessage();
+			_progressBox.WriteError(message, _model.Title);
+			message = LocalizationManager.GetString("PublishTab.PdfMaker.BadPdfShort", "Bloom had a problem making a PDF of this book.");
+			_progressBox.WriteError(message, _model.Title);
 		}
 
 		private void ReportTryAgainDuringUpload()
