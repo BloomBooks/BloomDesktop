@@ -524,7 +524,7 @@ namespace Bloom.web.controllers
 			// of Bloom.
 			View.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 
-			// Likewise, this is probably overkill, but it's a probably-rare case. 
+			// Likewise, this is probably overkill, but it's a probably-rare case.
 			View.UpdateAllThumbnails();
 		}
 
@@ -536,7 +536,7 @@ namespace Bloom.web.controllers
 		/// <param name="sourceBookFolder">This is assumed to be a staging folder, we may replace videos here!</param>
 		/// <returns>the new filepath if a video file exists and was copied, empty string if no video file was found</returns>
 		public static string PrepareVideoForPublishing(XmlElement videoContainerElement,
-			string sourceBookFolder)
+			string sourceBookFolder, bool videoControls)
 		{
 			var videoFolder = Path.Combine(sourceBookFolder, "video");
 
@@ -579,20 +579,21 @@ namespace Bloom.web.controllers
 					tempName = originalVideoFilePath;
 				}
 			}
-			// Add attributes needed for videos to work in Readium and possibly other readers.
-			// Existence of the 'controls' attribute is enough to trigger controls
-			videoElement.SetAttribute("controls", string.Empty);
+
+			if (videoControls)
+			{
+				// Add playback controls needed for videos to work in Readium and possibly other epub readers.
+				videoElement.SetAttribute("controls", string.Empty);
+			}
+
 			return tempName;
 		}
 
 		/// <summary>
-		/// Loops through all the videoContainers and prepares them for publishing. This includes trimming and
-		/// adding the 'controls' attribute. EpubMaker has different requirements and uses a slightly different
-		/// process [in CopyVideos()], but BookCompressor.CompressDirectory() for Android and BloomS3Client.UploadBook()
-		/// for Upload use this method.
+		/// Loops through all the videoContainers and prepares them for publishing. This includes trimming.
+		/// EpubMaker has different requirements and uses a slightly different process [in CopyVideos()],
+		/// but BookCompressor.CompressDirectory() for Android and BloomS3Client.UploadBook() for Upload use this method.
 		/// </summary>
-		/// <param name="videoContainerElements"></param>
-		/// <param name="sourceFolder"></param>
 		public static void ProcessVideos(IEnumerable<XmlElement> videoContainerElements, string sourceFolder)
 		{
 			if (videoContainerElements == null) // probably a test
@@ -602,7 +603,7 @@ namespace Bloom.web.controllers
 			// We are also assuming that 'sourceFolder' is a staging folder (so we can delete modified videos).
 			foreach (var videoContainerElement in videoContainerElements)
 			{
-				PrepareVideoForPublishing(videoContainerElement, sourceFolder);
+				PrepareVideoForPublishing(videoContainerElement, sourceFolder, videoControls: false);
 			}
 
 		}
