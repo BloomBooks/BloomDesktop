@@ -2364,7 +2364,7 @@ namespace BloomTests.Book
 			bool result = book.HasAudio();
 
 
-			// Verification // 
+			// Verification //
 			Assert.AreEqual(true, result);
 		}
 
@@ -2391,7 +2391,7 @@ namespace BloomTests.Book
 			bool result = book.HasAudio();
 
 
-			// Verification // 
+			// Verification //
 			Assert.AreEqual(true, result);
 		}
 
@@ -2420,7 +2420,7 @@ namespace BloomTests.Book
 			bool result = book.HasFullAudioCoverage();
 
 
-			// Verification // 
+			// Verification //
 			Assert.AreEqual(false, result, $"ElementName: {elementName}");
 		}
 
@@ -2449,7 +2449,7 @@ namespace BloomTests.Book
 			bool result = book.HasFullAudioCoverage();
 
 
-			// Verification // 
+			// Verification //
 			Assert.AreEqual(true, result, $"ElementName: {elementName}");
 		}
 
@@ -2496,7 +2496,7 @@ namespace BloomTests.Book
 			// Process each discovered videoContainer
 			foreach (XmlElement videoContainerElement in videoContainerElements)
 			{
-				SignLanguageApi.PrepareVideoForPublishing(videoContainerElement, book.FolderPath);
+				SignLanguageApi.PrepareVideoForPublishing(videoContainerElement, book.FolderPath, videoControls: true);
 			}
 
 			const string videoWithControlsXpath = ".//video[@controls='']";
