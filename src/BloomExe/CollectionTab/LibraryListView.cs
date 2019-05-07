@@ -556,7 +556,10 @@ namespace Bloom.CollectionTab
 			}
 			// We could look for it in the main loop, but it seems safer to let the collection be fully constructed before
 			// we start trying to select things in it.
-			if (_bookSelection.CurrentSelection == null && !string.IsNullOrEmpty(Settings.Default.CurrentBookPath))
+			// Check the collection type to only allow the main, editable collection to select a book in the right preview pane.
+			//   Collections loaded to populate "Sources for New Shells" will not be allowed to select a book.
+			//   (FYI, when you load a book from BloomLibrary.org, it goes through a different code path to select the path)
+			if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection && _bookSelection.CurrentSelection == null && !string.IsNullOrEmpty(Settings.Default.CurrentBookPath))
 			{
 				foreach (var bookInfo in collection.GetBookInfos())
 				{
