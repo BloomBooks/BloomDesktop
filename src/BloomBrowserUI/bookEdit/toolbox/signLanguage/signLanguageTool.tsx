@@ -47,6 +47,7 @@ interface IComponentState {
         endSeconds: string;
         aspectRatio: string;
     };
+    videoInfoLoaded: boolean;
 }
 
 declare var MediaRecorder: {
@@ -102,15 +103,14 @@ export class SignLanguageToolControls extends React.Component<
         cameraUnavailable: false,
         minutesRecorded: "",
         secondsRecorded: "",
-        videoStatistics: emptyVideoStatistics
+        videoStatistics: emptyVideoStatistics,
+        videoInfoLoaded: false
     };
     private videoStream: MediaStream | null;
     private chunks: Blob[];
     private mediaRecorder: MediaRecorder;
     private timerId: number;
     private recordingStarted: number;
-    // set by SignLanguageTools.newPageReady()/detachFromPage()
-    public PageAttached: boolean = false;
 
     public render() {
         return (
@@ -359,8 +359,8 @@ export class SignLanguageToolControls extends React.Component<
         // Note that the render method (which calls this method) is called quite frequently,
         // even when the user is just sitting quietly staring at the wall.
         if (
-            !this.PageAttached ||
-            (!this.doesVideoExist() && enterpriseAvailable)
+            !this.state.videoInfoLoaded ||
+            (enterpriseAvailable && !this.doesVideoExist())
         ) {
             return <div id="trimWrapper" />;
         }
@@ -389,7 +389,7 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     private getVideoStatsDisplay(): JSX.Element {
-        if (!this.PageAttached || !this.doesVideoExist()) {
+        if (!this.state.videoInfoLoaded || !this.doesVideoExist()) {
             return <div id="videoStatsWrapper" />;
         }
         return (
@@ -440,6 +440,14 @@ export class SignLanguageToolControls extends React.Component<
 
     private handleSliderRangeAfterChange(newStartSeconds: number) {
         SignLanguageTool.setCurrentVideoPoint(newStartSeconds);
+    }
+
+    public setNoVideo(doneLoading: boolean) {
+        this.setState({
+            haveRecording: false,
+            videoStatistics: emptyVideoStatistics,
+            videoInfoLoaded: doneLoading
+        });
     }
 
     public getCameraMessageLabel() {
@@ -499,6 +507,7 @@ export class SignLanguageToolControls extends React.Component<
     public getVideoStatsFromFile() {
         const paramsObj = this.getParamsObjForCurrentVideo();
         if (!paramsObj) {
+            this.setNoVideo(true);
             return;
         }
         BloomApi.getWithConfig(
@@ -506,9 +515,7 @@ export class SignLanguageToolControls extends React.Component<
             { params: paramsObj },
             result => {
                 if (result.statusText != "OK") {
-                    this.setState({
-                        videoStatistics: emptyVideoStatistics
-                    });
+                    this.setNoVideo(true);
                 } else {
                     const frameSize: string = result.data.frameSize;
                     if (frameSize) {
@@ -522,7 +529,11 @@ export class SignLanguageToolControls extends React.Component<
                             ) as string;
                         }
                     }
-                    this.setState({ videoStatistics: result.data });
+                    this.setState({
+                        videoStatistics: result.data,
+                        haveRecording: true,
+                        videoInfoLoaded: true
+                    });
                 }
             }
         );
@@ -875,7 +886,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        this.reactControls.PageAttached = false;
+        this.reactControls.setNoVideo(false);
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
         // does anything with it) and leaving it allows us to keep the same one selected
         // when we come back to the page. This is especially important when refreshing the
@@ -945,7 +956,9 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             stateClass: "idle",
             // Clear out stale video statistics from any page previously shown.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-6752.
-            videoStatistics: emptyVideoStatistics
+            videoStatistics: emptyVideoStatistics,
+            haveRecording: false,
+            videoInfoLoaded: false
         });
         const containers = SignLanguageTool.getVideoContainers(false);
         if (!containers || containers.length === 0) {
@@ -987,7 +1000,6 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
                 this.reactControls.setState({ enabled: true });
             }
         }
-        this.reactControls.PageAttached = true;
     }
 
     // This (param) container has just been selected as the current one by either:
@@ -995,25 +1007,19 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     private updateStateForSelected(container: Element) {
         const videos = container.getElementsByTagName("video");
         if (videos.length === 0) {
-            this.reactControls.setState({
-                haveRecording: false
-            });
+            this.reactControls.setNoVideo(true);
             return;
         }
         const sources = videos[0].getElementsByTagName("source");
 
         if (sources.length === 0) {
-            this.reactControls.setState({
-                haveRecording: false
-            });
+            this.reactControls.setNoVideo(true);
             return;
         }
 
         const src = sources[0].getAttribute("src");
         if (!src) {
-            this.reactControls.setState({
-                haveRecording: false
-            });
+            this.reactControls.setNoVideo(true);
             return;
         }
         const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
@@ -1031,15 +1037,16 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             result => {
                 const fileExists: boolean = result.data;
                 if (fileExists) {
-                    this.reactControls.getVideoStatsFromFile();
+                    this.reactControls.getVideoStatsFromFile(); // (async) also sets reactControls state
                     SignLanguageTool.setCurrentVideoPoint(
                         parseFloat(
                             this.reactControls.state.videoStatistics
                                 .startSeconds
                         )
                     );
+                } else {
+                    this.reactControls.setNoVideo(true);
                 }
-                this.reactControls.setState({ haveRecording: fileExists });
             }
         );
     }
