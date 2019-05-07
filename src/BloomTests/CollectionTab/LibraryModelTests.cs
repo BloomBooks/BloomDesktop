@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Bloom.Book;
+using BloomTests.TestDoubles.CollectionTab;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.IO;
@@ -19,7 +20,7 @@ namespace BloomTests.CollectionTab
 	{
 		private TemporaryFolder _collection;
 		private TemporaryFolder _folder;
-		private TestLibraryModel _testLibraryModel;
+		private FakeLibraryModel _testLibraryModel;
 
 		[SetUp]
 		public void Setup()
@@ -28,7 +29,7 @@ namespace BloomTests.CollectionTab
 			_folder = new TemporaryFolder("LibraryModelTests");
 			_collection = new TemporaryFolder(_folder, "FakeCollection");
 			MakeFakeCssFile();
-			_testLibraryModel = new TestLibraryModel(_collection);
+			_testLibraryModel = new FakeLibraryModel(_collection);
 		}
 
 		private void MakeFakeCssFile()

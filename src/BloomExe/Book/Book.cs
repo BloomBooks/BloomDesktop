@@ -64,10 +64,11 @@ namespace Bloom.Book
 			Guard.Against(!Program.RunningUnitTests, "Only use this ctor for tests!");
 		}
 
-		public Book(BookInfo info = null):
+		public Book(BookInfo info = null, IBookStorage storage = null):
 			this()
 		{
 			BookInfo = info;
+			_storage = storage;
 		}
 
 		public Book(BookInfo info, IBookStorage storage, ITemplateFinder templateFinder,
