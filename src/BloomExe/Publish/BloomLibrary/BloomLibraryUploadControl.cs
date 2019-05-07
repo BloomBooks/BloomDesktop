@@ -164,7 +164,6 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			var bookInfoMetaData = _model.Book.BookInfo.MetaData;
 			_blindCheckBox.Checked = bookInfoMetaData.Feature_Blind;
-			_visuallyImpairedCheckBox.Checked = bookInfoMetaData.Feature_VisuallyImpaired;
 			_signLanguageCheckBox.Checked = bookInfoMetaData.Feature_SignLanguage;
 		}
 
@@ -483,11 +482,6 @@ namespace Bloom.Publish.BloomLibrary
 		private void _blindCheckBox_CheckedChanged(object sender, EventArgs e)
 		{
 			_model.Book.BookInfo.MetaData.Feature_Blind = _blindCheckBox.Checked;
-		}
-
-		private void _visuallyImpairedCheckBox_CheckedChanged(object sender, EventArgs e)
-		{
-			_model.Book.BookInfo.MetaData.Feature_VisuallyImpaired = _visuallyImpairedCheckBox.Checked;
 		}
 
 		private void _signLanguageCheckBox_CheckedChanged(object sender, EventArgs e)

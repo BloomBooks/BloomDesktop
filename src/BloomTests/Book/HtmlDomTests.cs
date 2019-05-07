@@ -1244,5 +1244,97 @@ p {
 			Assert.IsFalse(result.Contains("*"), "Unexpected item \"*\" found");
 			Assert.IsFalse(result.Contains("z"), "Unexpected item \"z\" found");
 		}
+
+		[TestCase(true)]
+		[TestCase(false)]
+		public void SelectChildNarrationAudioElements_IncludeSplitTextBoxAudio_FindsTextBoxIfRequested(bool includeSplitTextBoxAudio)
+		{
+			XmlDocument doc = new XmlDocument();
+			doc.LoadXml(
+@"<html>
+	<div id='textbox1' class='bloom-editable' data-audiorecordingmode='Sentence'>
+		<p>
+			<span class='audio-sentence'>Sentence 1.</span>
+		</p>
+	</div>
+	<div  id='textbox2' class='bloom-editable' data-audiorecordingmode='TextBox'>
+		<p>
+			<span class='audio-sentence'>Sentence 2.</span>
+		</p>
+	</div>
+	<div class='bloom-editable' id='textbox3'>
+		<p>
+			<span>Sentence 3.</span>
+		</p>
+	</div>
+</html>");
+
+			XmlElement htmlElement = (XmlElement)doc.FirstChild;
+
+			// System under test
+			var result = HtmlDom.SelectChildNarrationAudioElements(htmlElement, includeSplitTextBoxAudio);
+
+			Assert.IsTrue(result.Count > 0, "Count should not be 0.");
+
+			var resultEnumerable = result.Cast<XmlNode>();
+			Assert.AreEqual(2, resultEnumerable.Where(node => node.Name == "span").Count(), "Matching span count");
+
+			if (includeSplitTextBoxAudio)
+			{
+				Assert.AreEqual(1, resultEnumerable.Where(node => node.Name == "div").Count(), "Matching div count");
+				Assert.AreEqual("textbox2", resultEnumerable.Where(node => node.Name == "div").First().GetStringAttribute("id"));
+				Assert.AreEqual(3, result.Count, "The result had too many elements.");
+			}
+			else
+			{
+				Assert.AreEqual(0, resultEnumerable.Where(node => node.Name == "div").Count(), "Matching div count");
+				Assert.AreEqual(2, result.Count, "The result had too many elements.");
+			}
+		}
+
+		[TestCase(true)]
+		[TestCase(false)]
+		// Tests to make sure that the find works not only on all descendants, but on the element itself.
+		public void SelectChildNarrationAudioElements_RootIsTextBox_Matched(bool includeSplitTextBoxAudio)
+		{
+			XmlDocument doc = new XmlDocument();
+			doc.LoadXml(
+@"<html>
+	<div id='textbox1' class='bloom-editable audio-sentence'>
+		<p>
+			<span>Sentence 1.</span>
+		</p>
+	</div>
+	<div  id='textbox2' class='bloom-editable' data-audiorecordingmode='TextBox'>
+		<p>
+			<span class='audio-sentence'>Sentence 2.</span>
+		</p>
+	</div>
+</html>");
+
+			var nodeList = doc.GetElementsByTagName("div");
+
+			foreach (var node in nodeList)
+			{
+				var element = (XmlElement)node;
+				var result = HtmlDom.SelectChildNarrationAudioElements(element, includeSplitTextBoxAudio);
+
+				if (element.GetStringAttribute("id") == "textbox2")
+				{
+					if (includeSplitTextBoxAudio)
+					{
+						Assert.AreEqual(2, result.Count, "Count does not match. Both the text box and the span should match in this case.");
+					}
+					else
+					{
+						Assert.AreEqual(1, result.Count, "Count does not match. Only the span should match in this case.");
+					}
+				}
+				else
+				{
+					Assert.AreEqual(1, result.Count, "Count does not match. Only the text box should match in this case.");
+				}
+			}
+		}
 	}
 }

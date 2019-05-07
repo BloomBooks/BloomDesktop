@@ -16,9 +16,7 @@
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
-        <target xml:lang="sw" state="translated">
-          <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Video zote</g>
-        </target>
+        <target xml:lang="sw" state="translated"><g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Video zote</g></target>
         <note>ID: training.videos.all</note>
       </trans-unit>
       <trans-unit id="training.videos.intro" approved="yes">
@@ -30,36 +28,28 @@
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
-        <target xml:lang="sw" state="translated">
-          <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Bloom ni ya kutumiwa na nani</g>
-        </target>
+        <target xml:lang="sw" state="translated"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Bloom ni ya kutumiwa na nani</g></target>
         <note>ID: training.videos.whofor</note>
       </trans-unit>
       <trans-unit id="training.videos.templates" approved="yes">
         <source xml:lang="en">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
         </source>
-        <target xml:lang="sw" state="translated">
-          <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Kuelewa Vielelezo na Vitabu vya Sheli</g>
-        </target>
+        <target xml:lang="sw" state="translated"><g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Kuelewa Vielelezo na Vitabu vya Sheli</g></target>
         <note>ID: training.videos.templates</note>
       </trans-unit>
       <trans-unit id="training.videos.basicbook" approved="yes">
         <source xml:lang="en">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Using the Basic Book template</g>
         </source>
-        <target xml:lang="sw" state="translated">
-          <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Kutumia Vielelezo vya Kimsingi vya Vitabu</g>
-        </target>
+        <target xml:lang="sw" state="translated"><g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Kutumia Vielelezo vya Kimsingi vya Vitabu</g></target>
         <note>ID: training.videos.basicbook</note>
       </trans-unit>
       <trans-unit id="training.videos.readers" approved="yes">
         <source xml:lang="en">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="sw" state="translated">
-          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Kutumia Vidokezo vinavyoweza kufasiriwa na vilivyotambulishwa vya Kusoma (video kadhaa)</g>
-        </target>
+        <target xml:lang="sw" state="translated"><g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Kutumia Vidokezo vinavyoweza kufasiriwa na vilivyotambulishwa vya Kusoma (video kadhaa)</g></target>
         <note>ID: training.videos.readers</note>
       </trans-unit>
       <trans-unit id="training.videos.advanced" approved="yes">
@@ -71,36 +61,28 @@
         <source xml:lang="en">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Changing the format of text</g>
         </source>
-        <target xml:lang="sw" state="translated">
-          <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Kubadili umbo la matini</g>
-        </target>
+        <target xml:lang="sw" state="translated"><g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Kubadili umbo la matini</g></target>
         <note>ID: training.videos.formatting</note>
       </trans-unit>
       <trans-unit id="training.videos.custompage" approved="yes">
         <source xml:lang="en">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
         </source>
-        <target xml:lang="sw" state="translated">
-          <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Unatumia kielelezo cha Ukurasa wa Kaida</g>
-        </target>
+        <target xml:lang="sw" state="translated"><g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Unatumia kielelezo cha Ukurasa wa Kaida</g></target>
         <note>ID: training.videos.custompage</note>
       </trans-unit>
       <trans-unit id="training.videos.specialcharacters" approved="yes">
         <source xml:lang="en">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Inserting special characters</g>
         </source>
-        <target xml:lang="sw" state="translated">
-          <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Kuingiza herufi za kipekee</g>
-        </target>
+        <target xml:lang="sw" state="translated"><g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Kuingiza herufi za kipekee</g></target>
         <note>ID: training.videos.specialcharacters</note>
       </trans-unit>
       <trans-unit id="training.videos.readertemplates" approved="yes">
         <source xml:lang="en">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="sw" state="translated">
-          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Kutengeneza Vidokezo vinavyoweza Kufasiriwa na vilivyotambulishwa vya kusoma (video kadhaa)</g>
-        </target>
+        <target xml:lang="sw" state="translated"><g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Kutengeneza Vidokezo vinavyoweza Kufasiriwa na vilivyotambulishwa vya kusoma (video kadhaa)</g></target>
         <note>ID: training.videos.readertemplates</note>
       </trans-unit>
       <trans-unit id="training.videos.offline" approved="yes">
@@ -115,21 +97,7 @@
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
-        <target xml:lang="sw" state="translated">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Uthabiti wa Juu</g> (Faili kubwa)</target>
+        <target xml:lang="sw" state="translated"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Uthabiti wa Juu</g> (Faili kubwa)</target>
         <note>ID: training.videos.hires</note>
         <alt-trans>
           <target xml:lang="sw">
@@ -145,6 +113,41 @@
           
           
           
+          
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Uthabiti wa Juu</g> (Faili kubwa)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="sw">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Uthabiti wa Juu</g> (Faili kubwa)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="sw">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Uthabiti wa Juu</g> (Faili kubwa)</target>
         </alt-trans>
         <alt-trans>
@@ -166,31 +169,6 @@
           <target xml:lang="sw">
           
           
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Uthabiti wa Juu</g> (Faili kubwa)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="sw">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Uthabiti wa Juu</g> (Faili kubwa)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="sw">
           
           
           
@@ -204,21 +182,7 @@
       </trans-unit>
       <trans-unit id="training.videos.lores" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
-        <target xml:lang="sw" state="translated">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Uthabiti wa Chini</g> (Faili ndogo)</target>
+        <target xml:lang="sw" state="translated"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Uthabiti wa Chini</g> (Faili ndogo)</target>
         <note>ID: training.videos.lores</note>
         <alt-trans>
           <target xml:lang="sw">
@@ -234,6 +198,41 @@
           
           
           
+          
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Uthabiti wa Chini</g> (Faili ndogo)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="sw">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Uthabiti wa Chini</g> (Faili ndogo)</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="sw">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Uthabiti wa Chini</g> (Faili ndogo)</target>
         </alt-trans>
         <alt-trans>
@@ -255,31 +254,6 @@
           <target xml:lang="sw">
           
           
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Uthabiti wa Chini</g> (Faili ndogo)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="sw">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Uthabiti wa Chini</g> (Faili ndogo)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="sw">
           
           
           

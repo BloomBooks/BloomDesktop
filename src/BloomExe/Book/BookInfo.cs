@@ -1050,22 +1050,18 @@ namespace Bloom.Book
 			{
 				var features = new List<string>(3);
 				if (Feature_Blind) features.Add("blind");
-				if (Feature_VisuallyImpaired) features.Add("visuallyImpaired");
 				if (Feature_SignLanguage) features.Add("signLanguage");
 				return features.ToArray();
 			}
 			set
 			{
 				Feature_Blind = value.Contains("blind");
-				Feature_VisuallyImpaired = value.Contains("visuallyImpaired");
 				Feature_SignLanguage = value.Contains("signLanguage");
 			}
 		}
 
 		[JsonIgnore]
 		public bool Feature_Blind { get; set; }
-		[JsonIgnore]
-		public bool Feature_VisuallyImpaired { get; set; }
 		[JsonIgnore]
 		public bool Feature_SignLanguage { get; set; }
 	}

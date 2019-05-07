@@ -2170,6 +2170,30 @@ namespace Bloom.Book
 				}
 			}
 
+			// and again for scripts (but we currently only worry about ones in the page itself)
+			foreach (XmlElement scriptElt in newPageDiv.SafeSelectNodes(".//script[@src]"))
+			{
+				var fileName = scriptElt.Attributes["src"]?.Value;
+				if (string.IsNullOrEmpty(fileName))
+					continue;
+				var destinationPath = Path.Combine(FolderPath, fileName);
+				// In other similar operations above we don't overwrite an existing file (e.g., images, css).
+				// But our general policy for JS is to go with the latest from our templates.
+				// So we copy the smart page's current code; the page content may
+				// be specific to it. Of course, if the book contains existing pages that expect
+				// an old version of this code, anything could happen. Maintainers of released
+				// smart pages will need to consider this. But this will sure help while developing
+				// new smart pages.
+				// Note that if it's important for old pages to keep using old JS, the maintainer
+				// of the quiz page can simply rename the JS file; this code will copy the new JS
+				// and any copies of the old page will keep using the old JS which will still be around.
+				// But only this strategy allows the code to be updated (e.g., to make the old and new
+				// versions of the page work properly together).
+				var sourcePath = Path.Combine(templatePage.Book.FolderPath, fileName);
+				if (RobustFile.Exists(sourcePath))
+					RobustFile.Copy(sourcePath, destinationPath, true);
+			}
+
 			if (this.IsSuitableForMakingShells)
 			{
 				// If we just added the first template page to a template, it's now usable for adding

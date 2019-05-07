@@ -39,6 +39,16 @@
         <note>ID: AccessibilityCheck.descriptionsForAllImages</note>
         <target xml:lang="hi" state="translated">सारे चित्रों का विवरण</target>
       </trans-unit>
+      <trans-unit id="AccessibilityCheck.FindingAce" sil:dynamic="true">
+        <source xml:lang="en">Finding Ace by DAISY on this computer...</source>
+        <note>ID: AccessibilityCheck.FindingAce</note>
+        <target xml:lang="hi" state="needs-translation">Finding Ace by DAISY on this computer...</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.FoundAce" sil:dynamic="true">
+        <source xml:lang="en">Found.</source>
+        <note>ID: AccessibilityCheck.FoundAce</note>
+        <target xml:lang="hi" state="needs-translation">Found.</target>
+      </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Learn About Accessibility</source>
         <note>ID: AccessibilityCheck.LearnAbout</note>
@@ -94,6 +104,11 @@
         <source xml:lang="en">No essential information by color</source>
         <note>ID: AccessibilityCheck.noEssentialInfoByColor</note>
         <target xml:lang="hi" state="translated">रंग द्वारा महत्वपूर्ण जानकारी नहीं</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.WindowTitle" sil:dynamic="true">
+        <source xml:lang="en">Bloom Accessibility Checker</source>
+        <note>ID: AccessibilityCheck.WindowTitle</note>
+        <target xml:lang="hi" state="needs-translation">Bloom Accessibility Checker</target>
       </trans-unit>
       <trans-unit id="BloomIntegrity.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom Problem</source>
@@ -1082,6 +1097,12 @@
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
         <target xml:lang="hi" state="translated">शीर्षक नहीं है</target>
       </trans-unit>
+      <trans-unit id="CollectionTab.UILanguageMenu.HelpTranslate">
+        <source xml:lang="en">Help us translate Bloom (web)</source>
+        <note>ID: CollectionTab.UILanguageMenu.HelpTranslate</note>
+        <note>The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.</note>
+        <target xml:lang="hi" state="needs-translation">Help us translate Bloom (web)</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip" approved="yes">
         <source xml:lang="en">{0}% translated</source>
         <note>ID: CollectionTab.UILanguageMenu.ItemTooltip</note>
@@ -1818,7 +1839,7 @@
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.quiz-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Quiz</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.quiz-style</note>
-        <note>Multimedia template</note>
+        <note>Special template</note>
         <target xml:lang="hi" state="translated">प्रश्नोत्तरी</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true" approved="yes">
@@ -3277,6 +3298,12 @@
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible, but without the number</note>
         <target xml:lang="hi" state="needs-translation">Speak</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitError">
+        <source xml:lang="en">Something went wrong while splitting the recording.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.SplitError</note>
+        <note>This text appears if an error occurs while perfoming automatic splitting of audio (an audio file corresponding to an entire text box will be split into multiple sections, one section per sentence).</note>
+        <target xml:lang="hi" state="needs-translation">Something went wrong while splitting the recording.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel">
         <source xml:lang="en">Split recording into sentences for highlighting.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
@@ -4559,6 +4586,12 @@
         <note>Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc.</note>
         <target xml:lang="hi" state="translated">एक्सेसिबिलिटी</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.BuildingEPub">
+        <source xml:lang="en">Building ePUB</source>
+        <note>ID: PublishTab.Epub.BuildingEPub</note>
+        <note>Shown in a progress box when Bloom is starting to create an ePUB</note>
+        <target xml:lang="hi" state="needs-translation">Building ePUB</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.Done" approved="yes">
         <source xml:lang="en">Done</source>
         <note>ID: PublishTab.Epub.Done</note>
@@ -4895,6 +4928,7 @@
       <trans-unit id="PublishTab.Upload.AccesibleToVisuallyImpaired" approved="yes">
         <source xml:lang="en">Accessible to the Visually Impaired</source>
         <note>ID: PublishTab.Upload.AccesibleToVisuallyImpaired</note>
+        <note>last used in Bloom 4.4</note>
         <target xml:lang="hi" state="translated">धुंधली दृष्टी वालों के लिए उपलब्ध</target>
         <alt-trans>
           <target xml:lang="hi">धुंधली दृष्टी वालों के लिए एक्सेसिबल</target>
@@ -5592,6 +5626,11 @@ Do you want to go ahead?</note>
         <note>ID: ReaderSetup.Letters.LetterHelp4</note>
         <target xml:lang="hi" state="translated">।</target>
       </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp5" sil:dynamic="true">
+        <source xml:lang="en">Do not include punctuation in this list. Bloom does not support the inclusion of punctuation in decodable stages.</source>
+        <note>ID: ReaderSetup.Letters.LetterHelp5</note>
+        <target xml:lang="hi" state="needs-translation">Do not include punctuation in this list. Bloom does not support the inclusion of punctuation in decodable stages.</target>
+      </trans-unit>
       <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level</source>
         <note>ID: ReaderSetup.LevelHeader</note>
@@ -6143,14 +6182,10 @@ Do you want to go ahead?</note>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
         <target xml:lang="hi" state="translated">इस स्क्रिप्ट में टॉलर लाइन की आवश्यकता है</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Arithmetic Template</source>
-        <note>ID: TemplateBooks.BookName.Arithmetic Template</note>
-        <note xml:lang="en">OLD TEXT (before 4.0): Arithmetic</note>
-        <target xml:lang="hi" state="translated">अंकगणितीय टेंपलेट</target>
-        <alt-trans>
-          <target xml:lang="hi">अंकगणितीय टेम्पलेट</target>
-        </alt-trans>
+      <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
+        <source xml:lang="en">Arithmetic</source>
+        <note>ID: TemplateBooks.BookName.Arithmetic</note>
+        <target xml:lang="hi" state="needs-translation">Arithmetic</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Book</source>
@@ -6184,11 +6219,6 @@ Do you want to go ahead?</note>
           <target xml:lang="hi">लगाया पाठक</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Multimedia" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Multimedia</source>
-        <note>ID: TemplateBooks.BookName.Multimedia</note>
-        <target xml:lang="hi" state="translated">मल्टीमीडिया</target>
-      </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture Dictionary</source>
         <note>ID: TemplateBooks.BookName.Picture Dictionary</note>
@@ -6198,6 +6228,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Sign Language</source>
         <note>ID: TemplateBooks.BookName.Sign Language</note>
         <target xml:lang="hi" state="needs-translation">Sign Language</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Special" sil:dynamic="true">
+        <source xml:lang="en">Special</source>
+        <note>ID: TemplateBooks.BookName.Special</note>
+        <target xml:lang="hi" state="needs-translation">Special</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Template Starter</source>
@@ -6219,6 +6254,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.BookName.Wall Calendar</note>
         <target xml:lang="hi" state="translated">दीवार कैलेंडर</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Bloom Reader Quiz" sil:dynamic="true">
+        <source xml:lang="en">Use for comprehension testing on devices.</source>
+        <note>ID: TemplateBooks.PageDescription.Bloom Reader Quiz</note>
+        <target xml:lang="hi" state="needs-translation">Use for comprehension testing on devices.</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A blank page that allows you to add items.</source>
         <note>ID: TemplateBooks.PageDescription.Custom</note>
@@ -6239,6 +6279,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
         <note>New string in Bloom 4.2</note>
         <target xml:lang="hi" state="translated">लैंडस्केप ओरिएंटेशन के साथ उपयोग के लिए।</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true">
+        <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
+        <note>ID: TemplateBooks.PageDescription.Translation Instructions</note>
+        <target xml:lang="hi" state="needs-translation">A page of instructions to translators which appears only in the Edit tab.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1</source>
@@ -6544,6 +6589,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Instructions</source>
         <note>ID: TemplateBooks.PageLabel.Instructions</note>
+        <note>Used for Big Book Teacher instructions</note>
         <target xml:lang="hi" state="translated">निर्देश</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just Text" sil:dynamic="true" approved="yes">
@@ -6635,6 +6681,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Super Paper Saver</source>
         <note>ID: TemplateBooks.PageLabel.Super Paper Saver</note>
         <target xml:lang="hi" state="translated">सुपर कागज सेवर</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Text Over Video" sil:dynamic="true">
+        <source xml:lang="en">Text Over Video</source>
+        <note>ID: TemplateBooks.PageLabel.Text Over Video</note>
+        <target xml:lang="hi" state="needs-translation">Text Over Video</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.The End" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The End</source>

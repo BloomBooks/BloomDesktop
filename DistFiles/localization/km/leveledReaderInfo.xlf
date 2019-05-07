@@ -34,9 +34,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.repeat.patterns">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
-        <target xml:lang="km" state="needs-translation">
-          
-          <g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</target>
+        <target xml:lang="km" state="needs-translation"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
       </trans-unit>
       <trans-unit id="leveled.reader.repetition">
@@ -60,8 +58,7 @@
 I see a red bird looking at me.
 Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
-Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g>
-      </source>
+Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g></source>
         <target xml:lang="km" state="needs-translation">Rhyme - a story with a pattern or sequence that also includes rhyme. For example:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
           <g id="genid-3" ctype="x-html-pre">Brown Bear, Brown Bear, What do you see?
@@ -70,9 +67,7 @@ Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
 Yellow Duck, Yellow Duck, What do you see?</g>
           <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g>
-        </g>
-      
-      </target>
+        </g></target>
         <note>ID: leveled.reader.rhyme</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations">
@@ -81,35 +76,23 @@ Yellow Duck, Yellow Duck, What do you see?</g>
         <note>ID: leveled.reader.illustrations</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help">
-        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
-    </source>
-        <target xml:lang="km" state="needs-translation">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
-    
-    </target>
+        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.</source>
+        <target xml:lang="km" state="needs-translation">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.</target>
         <note>ID: leveled.reader.illustrations.help</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader">
-        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
-      </source>
-        <target xml:lang="km" state="needs-translation">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.</source>
+        <target xml:lang="km" state="needs-translation">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.</target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader">
-        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
-      </source>
-        <target xml:lang="km" state="needs-translation">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.</source>
+        <target xml:lang="km" state="needs-translation">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.</target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
       </trans-unit>
       <trans-unit id="leveled.reader.fluent.reader">
-        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
-      </source>
-        <target xml:lang="km" state="needs-translation">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.</source>
+        <target xml:lang="km" state="needs-translation">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.</target>
         <note>ID: leveled.reader.fluent.reader</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice">
@@ -123,27 +106,18 @@ Yellow Duck, Yellow Duck, What do you see?</g>
         <note>ID: leveled.reader.topic.choice.discussion</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.emergent.reader">
-        <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.
-      </source>
-        <target xml:lang="km" state="needs-translation">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.</source>
+        <target xml:lang="km" state="needs-translation">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.</target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.early.reader">
-        <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
-      </source>
-        <target xml:lang="km" state="needs-translation">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.</source>
+        <target xml:lang="km" state="needs-translation">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.</target>
         <note>ID: leveled.reader.topic.choice.early.reader</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.fluent.reader">
-        <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
-      </source>
-        <target xml:lang="km" state="needs-translation">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
-      
-      </target>
+        <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.</source>
+        <target xml:lang="km" state="needs-translation">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.</target>
         <note>ID: leveled.reader.topic.choice.fluent.reader</note>
       </trans-unit>
     </body>

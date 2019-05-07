@@ -7,7 +7,10 @@ html.accessibilityCheckScreen {
     #accessibilityCheckScreen,
     #accessibilityCheckReactRoot {
         background-color: @bloom-panelBackground;
-        height: 100%;
+        // Set the height to just less than the actual window view height.
+        // (The reduction preserves the white border around the black border.)
+        // See https://issues.bloomlibrary.org/youtrack/issue/BL-7153.
+        height: calc(100vh - 20px);
     }
 
     .header {

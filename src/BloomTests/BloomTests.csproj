@@ -203,6 +203,7 @@
     <Compile Include="Publish\EpubValidAndAccessible.cs" />
     <Compile Include="Publish\MockUsbPublisher.cs" />
     <Compile Include="Publish\UsbPublisherTests.cs" />
+    <Compile Include="Publish\PublishModelTests.cs" />
     <Compile Include="ToPalaso\XmlExtensionsTests.cs" />
     <Compile Include="UrlPathStringTests.cs" />
     <Compile Include="ElementProxyTests.cs" />

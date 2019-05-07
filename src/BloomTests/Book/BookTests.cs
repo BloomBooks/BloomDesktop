@@ -609,6 +609,24 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void InsertPageAfter_TemplateRefsScript_ScriptCopied()
+		{
+			var book = CreateBook();
+			var existingPage = book.GetPages().First();
+			Mock<IPage> templatePage = CreateTemplatePage("<div class='bloom-page'  data-page='extra' >hello<script src='something.js'/></div>");
+			using (var tempFolder = new TemporaryFolder("InsertPageAfter_TemplateRefsScript_ScriptCopied"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.FolderPath, "something.js"), @"Console.log('here we go')");
+				var mockTemplateBook = new Moq.Mock<Bloom.Book.Book>();
+				mockTemplateBook.Setup(x => x.FolderPath).Returns(tempFolder.FolderPath);
+				mockTemplateBook.Setup(x => x.OurHtmlDom.GetTemplateStyleSheets()).Returns(new string[] { });
+				templatePage.Setup(x => x.Book).Returns(mockTemplateBook.Object);
+				book.InsertPageAfter(existingPage, templatePage.Object);
+			}
+			Assert.That(File.Exists(Path.Combine(book.FolderPath, "something.js")));
+		}
+
+		[Test]
 		public void InsertPageAfter_SourcePageHasLineage_GetsLineageOfSourcePlusItsAncestor()
 		{
 			//enhance: move to book starter tests, since that's what implements the actual behavior
@@ -2364,7 +2382,7 @@ namespace BloomTests.Book
 			bool result = book.HasAudio();
 
 
-			// Verification // 
+			// Verification //
 			Assert.AreEqual(true, result);
 		}
 
@@ -2391,7 +2409,7 @@ namespace BloomTests.Book
 			bool result = book.HasAudio();
 
 
-			// Verification // 
+			// Verification //
 			Assert.AreEqual(true, result);
 		}
 
@@ -2420,7 +2438,7 @@ namespace BloomTests.Book
 			bool result = book.HasFullAudioCoverage();
 
 
-			// Verification // 
+			// Verification //
 			Assert.AreEqual(false, result, $"ElementName: {elementName}");
 		}
 
@@ -2449,7 +2467,7 @@ namespace BloomTests.Book
 			bool result = book.HasFullAudioCoverage();
 
 
-			// Verification // 
+			// Verification //
 			Assert.AreEqual(true, result, $"ElementName: {elementName}");
 		}
 
@@ -2496,7 +2514,7 @@ namespace BloomTests.Book
 			// Process each discovered videoContainer
 			foreach (XmlElement videoContainerElement in videoContainerElements)
 			{
-				SignLanguageApi.PrepareVideoForPublishing(videoContainerElement, book.FolderPath);
+				SignLanguageApi.PrepareVideoForPublishing(videoContainerElement, book.FolderPath, videoControls: true);
 			}
 
 			const string videoWithControlsXpath = ".//video[@controls='']";

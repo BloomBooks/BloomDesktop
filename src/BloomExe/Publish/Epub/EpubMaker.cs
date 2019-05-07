@@ -1384,7 +1384,7 @@ namespace Bloom.Publish.Epub
 		{
 			foreach (XmlElement videoContainerElement in HtmlDom.SelectChildVideoElements(pageDom.RawDom.DocumentElement).Cast<XmlElement>())
 			{
-				var trimmedFilePath = SignLanguageApi.PrepareVideoForPublishing(videoContainerElement, Book.FolderPath);
+				var trimmedFilePath = SignLanguageApi.PrepareVideoForPublishing(videoContainerElement, Book.FolderPath, videoControls: true);
 				if (string.IsNullOrEmpty(trimmedFilePath))
 					continue;
 				var dstPath = CopyFileToEpub(trimmedFilePath, subfolder:kVideoFolder);
