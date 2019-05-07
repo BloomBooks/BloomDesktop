@@ -82,7 +82,7 @@ To handling the mis-match.*/
     font-size: 10pt;
 }
 
-// when making a thumbnail for a template page, add a kind of text mockup to text areas
+// When making a thumbnail for a template page, add a kind of text mockup to text areas
 .bloom-templateThumbnail {
     .numberedPage:after {
         display: none;
@@ -90,13 +90,15 @@ To handling the mis-match.*/
     .bloom-editable {
         background-image: url("templateThumbnailText.svg");
         background-repeat: repeat-y;
-        //height in ems so it is sentitive to font size. The '3' here is not necessarily
-        //ideal, and was just arrived at through experimentation, balancing accuracy
-        //(how many lines of text really fit in this box) with visual appeal.
+        // Height in ems so it is sentitive to font size. The '3' here is not necessarily
+        // ideal, and was just arrived at through experimentation, balancing accuracy
+        // (how many lines of text really fit in this box) with visual appeal.
         background-size: 100% 3em;
 
-        //don't show any text that might be in the text block
+        // Don't show any text that might be in the text block.
         color: transparent;
+        // BL-6582 But do display the div, because otherwise the text mockup won't show.
+        display: block;
     }
 }
 
