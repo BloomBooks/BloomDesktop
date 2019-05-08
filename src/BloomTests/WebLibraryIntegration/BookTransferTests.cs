@@ -116,7 +116,7 @@ namespace BloomTests.WebLibraryIntegration
 
 			var uploadMessages = progress.Text.Split(new string[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries);
 
-			Assert.That(uploadMessages.Length, Is.EqualTo(fileCount + 2)); // should get one per file, plus one for metadata, plus one for book order
+			Assert.That(uploadMessages.Length, Is.EqualTo(fileCount + 3)); // should get one per file, plus one for metadata, plus one for book order, plus one for S3 ID
 			Assert.That(progress.Text, Does.Contain(
 				LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata",
 				"In this step, Bloom is uploading things like title, languages, & topic tags to the bloomlibrary.org database.")));
