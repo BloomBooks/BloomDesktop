@@ -615,9 +615,7 @@ namespace BloomTests.Publish
 				assertionsOnResultingHtmlString: html =>
 				{
 					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
-					AssertThatXmlIn.Dom(htmlDom)
-						.HasSpecifiedNumberOfMatchesForXpath(
-							"//video[@controls]", 2);
+					AssertThatXmlIn.Dom(htmlDom).HasSpecifiedNumberOfMatchesForXpath("//video[@controls]", 0); //BL-7083
 					// Crow.mp4 should have been trimmed and had a name change
 					AssertThatXmlIn.Dom(htmlDom)
 						.HasNoMatchForXpath("//source[@src='video/Crow.mp4']");
