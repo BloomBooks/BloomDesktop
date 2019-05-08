@@ -13,26 +13,6 @@ export interface IProps {
 }
 
 export class SubjectChooser extends React.Component<IProps> {
-    public componentDidMount() {
-        this.loadMetadata(this.props.subjects.value);
-    }
-
-    private loadMetadata(subjects: any[]) {
-        let subjectList: SubjectTreeNode[] = [];
-        if (subjects) {
-            subjects.forEach(subject => {
-                let newSubj = new SubjectTreeNode(
-                    subject["value"],
-                    subject["label"],
-                    "",
-                    true
-                );
-                subjectList.push(newSubj);
-            });
-        }
-        this.props.subjects.value = subjectList;
-    }
-
     public render() {
         SubjectTreeNode.markSelectedSubjectNodes(
             themaSubjectData,
