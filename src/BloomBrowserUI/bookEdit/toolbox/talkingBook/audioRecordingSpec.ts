@@ -409,22 +409,19 @@ describe("audio recording tests", () => {
             ).toBe("audio-sentence");
         });
 
-        // // We can get something like this when we paste from Word
-        it("handles empty span", () => {
-            // In the past we used to pass through <span> if stringToSentences() returned them.
-            // But now we will (in some cases) remove the old span and re-process its inner contents (possibly wrapping it in a new span, but in this case skipping over the empty space).
+        // We can get something like this when we paste from Word
+        it("ignores empty span", () => {
             const div = $(
                 '<div><p>This is the first sentence.<span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C"> </span></p></div>'
             );
             const recording = new AudioRecording();
             recording.makeAudioSentenceElements(div);
             const spans = div.find("span");
-            expect(spans.length).toBe(1);
+            expect(spans.length).toBe(2);
             expect(spans[0].innerHTML).toBe("This is the first sentence.");
-            expect(StripAllGuidIds(div[0].innerHTML)).toBe(
-                '<p><span class="audio-sentence">This is the first sentence.</span> </p>'
-            );
+            expect(spans[1].innerHTML).toBe(" ");
             expect(spans.first().attr("class")).toBe("audio-sentence");
+            expect(spans.last().attr("class")).not.toContain("audio-sentence");
         });
 
         // We can get something like this when we paste from Word
@@ -478,7 +475,7 @@ describe("audio recording tests", () => {
         it("does not create nested spans", () => {
             // This scenario could happen when trying to perform soft-split again on a text box that has already been soft-split previously.
             const p = $(
-                '<div class="bloom-editable" data-audiorecordingmode="TextBox" class="audio-sentence"><p><span id="a">One.</span> <span id="b">Two.</span> <span id="c">Three.</span></p></div>'
+                '<div class="bloom-editable" data-audiorecordingmode="TextBox" class="audio-sentence"><p><span id="a" class="bloom-highlightSegment">One.</span> <span id="b" class="bloom-highlightSegment">Two.</span> <span id="c" class="bloom-highlightSegment">Three.</span></p></div>'
             );
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.Sentence;

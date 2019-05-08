@@ -51,6 +51,7 @@ export enum AudioRecordingMode {
 }
 
 const kWebsocketContext = "audio-recording";
+const kSegmentClass = "bloom-highlightSegment";
 const kAudioSentence = "audio-sentence"; // Even though these can now encompass more than strict sentences, we continue to use this class name for backwards compatability reasons
 const kAudioCurrent = "ui-audioCurrent";
 const kAudioSentenceClassSelector = "." + kAudioSentence;
@@ -83,10 +84,9 @@ export default class AudioRecording {
     private levelCanvasWidth: number = 15;
     private levelCanvasHeight: number = 80;
     private hiddenSourceBubbles: JQuery;
-    private nextElementIdToPlay: string;
+    private currentAudioId: string;
     private elementsToPlayConsecutivelyStack: Element[] = []; // When we are playing audio, this holds the segments we haven't yet finished playing, including the one currently playing. Thus, when it's empty we are not playing audio at all
-    private endTimesInSecsStack: number[];
-    private elementsToHighlightStack: HTMLElement[];
+    private subElementsWithTimings: [Element, number][] = [];
     private awaitingNewRecording: boolean;
 
     private audioSplitButton: HTMLButtonElement;
@@ -131,9 +131,6 @@ export default class AudioRecording {
             // to initialize things on startup.
             this.recordingModeInput.disabled = true;
         }
-
-        this.elementsToHighlightStack = [];
-        this.endTimesInSecsStack = [];
     }
 
     // Class method called by exported function of the same name.
@@ -523,7 +520,7 @@ export default class AudioRecording {
 
         const next = this.getNextAudioElement();
         if (!next) return;
-        this.setCurrentAudioElement(next);
+        this.setSoundAndHighlight(next);
         this.changeStateAndSetExpectedAsync("record");
     }
 
@@ -538,7 +535,7 @@ export default class AudioRecording {
         if (currentIndex === 0) return;
         const prev = this.getPreviousAudioElement();
         if (prev == null) return;
-        this.setCurrentAudioElement(prev);
+        this.setSoundAndHighlight(prev);
         this.changeStateAndSetExpectedAsync("record"); // Enhance: I think it'd actually be better to dynamically assign Expected based on what audio is available etc., instead of based on state transitions. Especially when doing Prev.
     }
 
@@ -696,64 +693,55 @@ export default class AudioRecording {
         > = parentElement.getElementsByClassName("ui-audioCurrent");
 
         // Convert to an array whose length won't be changed
-        const audioCurrentArray: Element[] = Array.prototype.slice.call(
-            audioCurrentCollection
-        );
+        const audioCurrentArray: Element[] = Array.from(audioCurrentCollection);
 
         for (let i = 0; i < audioCurrentArray.length; i++) {
-            audioCurrentArray[i].classList.remove("ui-audioCurrent");
-        }
-    }
-
-    private setCurrentAudioElement(
-        elementToChangeTo: Element,
-        disableHighlightIfNoAudio?: boolean,
-        isUpdateAudioPlayerOn: boolean = true
-    ): void {
-        let firstExistingAudioCurrentElement: Element | null = null;
-        const pageDocBody = this.getPageDocBody();
-        if (pageDocBody) {
-            firstExistingAudioCurrentElement = pageDocBody.querySelector(
-                ".ui-audioCurrent"
-            );
-        }
-        this.setCurrentAudioElementFrom(
-            firstExistingAudioCurrentElement,
-            elementToChangeTo,
-            disableHighlightIfNoAudio,
-            isUpdateAudioPlayerOn
-        );
-    }
-
-    private setCurrentAudioElementFrom(
-        currentElement: Element | null | undefined,
-        elementToChangeTo: Element,
-        disableHighlightIfNoAudio?: boolean,
-        isUpdateAudioPlayerOn: boolean = true
-    ): void {
-        if (currentElement == elementToChangeTo) {
-            // No need to do much, and better not to so we can avoid any temporary flashes as the highlight is removed and re-applied
-            this.setNextElementIdToPlay(elementToChangeTo.id);
-            return;
-        }
-
-        if (currentElement) {
-            currentElement.classList.remove(
+            audioCurrentArray[i].classList.remove(
                 "ui-audioCurrent",
                 "disableHighlight"
             );
         }
+    }
+
+    public setSoundAndHighlight(
+        elementToChangeTo: Element,
+        disableHighlightIfNoAudio?: boolean,
+        currentElement: Element | null | undefined = undefined // Optional. Provides some minor optimization if set.
+    ): void {
+        // Note: setHighlightTo() should be run first so that ui-audioCurrent points to the correct element when setSoundFrom() is run.
+        this.setHighlightTo(
+            elementToChangeTo,
+            disableHighlightIfNoAudio,
+            currentElement
+        );
+        this.setSoundFrom(elementToChangeTo);
+    }
+
+    // Changes the visually highlighted element (i.e, the element corresponding to .ui-audioCurrent) to the specified element.
+    public setHighlightTo(
+        newElement: Element,
+        disableHighlightIfNoAudio?: boolean,
+        oldElement: Element | null | undefined = undefined // Optional. Provides some minor optimization if set.
+    ): void {
+        if (!oldElement) {
+            oldElement = this.getCurrentHighlight();
+        }
+
+        if (oldElement == newElement) {
+            // No need to do much, and better not to so we can avoid any temporary flashes as the highlight is removed and re-applied
+            return;
+        }
+
+        // Get rid of all the audio-currents just to be sure.
+        this.removeAudioCurrentFromPageDocBody();
 
         if (disableHighlightIfNoAudio) {
-            elementToChangeTo.classList.add("disableHighlight"); // prevents highlight showing at once
+            newElement.classList.add("disableHighlight"); // prevents highlight showing at once
             axios
-                .get(
-                    "/bloom/api/audio/checkForSegment?id=" +
-                        elementToChangeTo.id
-                )
+                .get("/bloom/api/audio/checkForSegment?id=" + newElement.id)
                 .then(response => {
                     if (response.data === "exists") {
-                        elementToChangeTo.classList.remove("disableHighlight");
+                        newElement.classList.remove("disableHighlight");
                     }
                 })
                 .catch(error => {
@@ -764,31 +752,33 @@ export default class AudioRecording {
                 });
         }
 
-        elementToChangeTo.classList.add("ui-audioCurrent");
+        newElement.classList.add("ui-audioCurrent");
+    }
 
+    // Given the specified element, updates the audio player's source and other necessary things in order to make the specified element's audio the next audio to play
+    //
+    // Precondition: element (the element to change the audio to) should also already be the currently highlighted element
+    public setSoundFrom(element: Element): void {
         // Adjust the audio file that will get played by the Play (Check) button.
         // Note: The next element to be PLAYED may not be the same as the new element with the current RECORDING highlight.
         //       The element to be played might be a strict child of the element to be recorded.
         const firstAudioSentence = this.getFirstAudioSentenceWithinElement(
-            elementToChangeTo
+            element
         );
+        let id: string;
         if (firstAudioSentence) {
-            this.setNextElementIdToPlay(
-                firstAudioSentence.id,
-                isUpdateAudioPlayerOn
-            );
+            id = firstAudioSentence.id;
         } else {
             console.assert(
-                "Unexpected state: The element is expected to have at least one audio sentence"
+                false,
+                "setSoundFrom(): Element expected to contain an audio sentence"
             );
-            this.setNextElementIdToPlay(
-                elementToChangeTo.id,
-                isUpdateAudioPlayerOn
-            );
+            id = element.id;
         }
+        this.setCurrentAudioId(id);
 
         // Before updating the controls, we need to update the audioRecordingMode. It might've changed.
-        this.initializeAudioRecordingMode();
+        this.initializeAudioRecordingMode(); // Not necessarily safe unless SetHighlightTo() was applied first()!
     }
 
     // If we have an mp3 file but not a wav file, the file server will return that instead.
@@ -804,16 +794,12 @@ export default class AudioRecording {
     }
 
     // Setter for idOfNextElementToPlay
-    public setNextElementIdToPlay(
-        id: string, // The next ID to set
-        isUpdateAudioPlayerOn: boolean = true // If true, will update the player src for the audio player HTML element. Set to false to skip updating the audio source.
+    public setCurrentAudioId(
+        id: string // The next ID to set
     ) {
-        if (!this.nextElementIdToPlay || this.nextElementIdToPlay != id) {
-            this.nextElementIdToPlay = id;
-
-            if (isUpdateAudioPlayerOn) {
-                this.updatePlayerStatus(); // May be redundant sometimes, but safer to trigger player update whenever the next element changes.
-            }
+        if (!this.currentAudioId || this.currentAudioId != id) {
+            this.currentAudioId = id;
+            this.updatePlayerStatus();
         }
     }
 
@@ -823,12 +809,12 @@ export default class AudioRecording {
     // based on the current time so that it asks the server for the file again.
     // Fixes BL-3161
     private updatePlayerStatus() {
-        console.assert(this.nextElementIdToPlay != null);
+        console.assert(this.currentAudioId != null);
 
         const player = $("#player");
         player.attr(
             "src",
-            this.currentAudioUrl(this.nextElementIdToPlay) +
+            this.currentAudioUrl(this.currentAudioId) +
                 "&nocache=" +
                 new Date().getTime()
         );
@@ -919,11 +905,34 @@ export default class AudioRecording {
     // or even just stepping through with Next.
     private durationChanged(): void {
         this.awaitingNewRecording = false;
-        var current = this.getPageDocBodyJQuery().find(".ui-audioCurrent");
-        current.attr(
-            "data-duration",
-            (<HTMLAudioElement>$("#player").get(0)).duration
-        );
+
+        const current = this.getCurrentAudioSentence();
+        if (current) {
+            const player = <HTMLMediaElement>document.getElementById("player")!;
+            current.setAttribute("data-duration", player.duration.toString());
+        }
+    }
+
+    // Returns the audio-sentence corresponding to audio-current
+    // In many cases the two are one and the same.
+    // However, in Soft Split mode, the two are different. The audio-current is the visually-highlighted sub-element. Its parent though is the one with audio-sentence class (and has a physical audio file associated with it)
+    public getCurrentAudioSentence(): HTMLElement | null {
+        const currentHighlight = this.getCurrentHighlight();
+        if (!currentHighlight) {
+            return null;
+        }
+
+        let currToExamine: HTMLElement | null = currentHighlight;
+
+        while (
+            currToExamine &&
+            !currToExamine.classList.contains(kAudioSentence)
+        ) {
+            // Recursively go up the tree to find the enclosing div, if necessary
+            currToExamine = currToExamine.parentElement; // Will return null if no parent
+        }
+
+        return currToExamine;
     }
 
     public getCurrentPlaybackMode(): AudioRecordingMode {
@@ -989,7 +998,7 @@ export default class AudioRecording {
             }
         }
 
-        this.setCurrentAudioElement(
+        this.setSoundAndHighlight(
             this.elementsToPlayConsecutivelyStack[
                 this.elementsToPlayConsecutivelyStack.length - 1
             ],
@@ -1017,21 +1026,25 @@ export default class AudioRecording {
                 kEndTimeAttributeName
             );
             if (timingsStr) {
+                const childSpanElements = currentTextBox.querySelectorAll(
+                    `span.${kSegmentClass}`
+                );
                 const fields = timingsStr.split(" ");
-
-                this.endTimesInSecsStack = [];
-                for (let i = fields.length - 1; i >= 0; --i) {
-                    this.endTimesInSecsStack.push(Number(fields[i]));
-                }
-                const childSpanElements = currentTextBox.getElementsByTagName(
-                    "span"
+                const subElementCount = Math.min(
+                    fields.length,
+                    childSpanElements.length
                 );
 
-                this.elementsToHighlightStack = [];
-                for (let i = childSpanElements.length - 1; i >= 0; --i) {
-                    this.elementsToHighlightStack.push(
-                        childSpanElements.item(i)!
-                    );
+                this.subElementsWithTimings = [];
+                for (let i = subElementCount - 1; i >= 0; --i) {
+                    const durationSecs: number = Number(fields[i]);
+                    if (isNaN(durationSecs)) {
+                        continue;
+                    }
+                    this.subElementsWithTimings.push([
+                        childSpanElements.item(i),
+                        durationSecs
+                    ]);
                 }
             }
 
@@ -1039,32 +1052,25 @@ export default class AudioRecording {
             mediaPlayer.play();
 
             // Now set in motion what is needed to advance the highlighting (if applicable)
-            this.playNextSubElement();
+            this.highlightNextSubElement();
         }
     }
 
-    private playNextSubElement() {
+    private highlightNextSubElement() {
         // the item should not be popped off the stack until it's completely done with.
-        const highlightCount = this.elementsToHighlightStack.length;
-        const endTimesCount = this.endTimesInSecsStack.length;
+        const subElementCount = this.subElementsWithTimings.length;
 
-        if (highlightCount <= 0 || endTimesCount <= 0) {
+        if (subElementCount <= 0) {
             return;
         }
 
-        const endTimeInSecs: number = this.endTimesInSecsStack[
-            endTimesCount - 1
-        ];
-        const element: HTMLElement = this.elementsToHighlightStack[
-            highlightCount - 1
-        ];
+        const topTuple = this.subElementsWithTimings[subElementCount - 1];
+        const element = topTuple[0];
+        const endTimeInSecs: number = topTuple[1];
 
-        // Should be false when playing subelements, becuase the highlighted sub-element doesn't have audio. The audio belongs to parent.
-        const isDisableHighlightIfNoAudioOn = false;
-        this.setCurrentAudioElement(
+        this.setHighlightTo(
             element,
-            isDisableHighlightIfNoAudioOn,
-            false
+            false // disableHighlightIfNoAudio: Should be false when playing sub-elements, because the highlighted sub-element doesn't have audio. The audio belongs to parent.
         );
 
         let currentTimeInSecs: number;
@@ -1073,22 +1079,25 @@ export default class AudioRecording {
         )! as HTMLMediaElement;
         currentTimeInSecs = mediaPlayer.currentTime;
 
-        let durationInSecs = endTimeInSecs - currentTimeInSecs;
-
         // Handle cases where the currentTime has already exceeded the nextStartTime
         //   (might happen if you're unlucky in the thread queue... or if in debugger, etc.)
-        const minHighlightThresholdInSecs = 0.1;
-        if (durationInSecs <= minHighlightThresholdInSecs) {
-            durationInSecs = minHighlightThresholdInSecs;
-        }
+        // But instead of setting time to 0, set the minimum highlight time threshold to 0.1 (this threshold is arbitrary).
+        const durationInSecs = Math.max(endTimeInSecs - currentTimeInSecs, 0.1);
 
         setTimeout(() => {
-            this.playSubElementEnded();
+            this.onSubElementHighlightTimeEnded();
         }, durationInSecs * 1000);
     }
 
-    private playSubElementEnded() {
-        if (this.endTimesInSecsStack.length <= 0) {
+    // Handles a timeout indicating that the expected time for highlighting the current subElement has ended.
+    // If we've really played to the end of that subElement, highlight the next one (if any).
+    private onSubElementHighlightTimeEnded() {
+        const subElementCount = this.subElementsWithTimings.length;
+        if (subElementCount <= 0) {
+            console.assert(
+                false,
+                "Unexpected: subElementsWithTimings is empty but the function was expecting at least one element. If this happens deterministically, it is an error."
+            );
             return;
         }
 
@@ -1096,16 +1105,17 @@ export default class AudioRecording {
             "player"
         )! as HTMLMediaElement;
         if (mediaPlayer.ended || mediaPlayer.error) {
-            this.removeAudioCurrentFromPageDocBody(); // When playback has ended, the last highlight should be removed.
             return;
         }
         const playedDurationInSecs: number | undefined | null =
             mediaPlayer.currentTime;
 
         // Peek at the next sentence and see if we're ready to start that one. (We might not be ready to play the next audio if the current audio got paused).
-        const nextStartTimeInSecs = this.endTimesInSecsStack[
-            this.endTimesInSecsStack.length - 1
+        const subElementWithTiming = this.subElementsWithTimings[
+            subElementCount - 1
         ];
+        const nextStartTimeInSecs = subElementWithTiming[1];
+
         if (
             playedDurationInSecs &&
             playedDurationInSecs < nextStartTimeInSecs
@@ -1114,16 +1124,15 @@ export default class AudioRecording {
             const minRemainingDurationInSecs =
                 nextStartTimeInSecs - playedDurationInSecs;
             setTimeout(() => {
-                this.playSubElementEnded();
+                this.onSubElementHighlightTimeEnded();
             }, minRemainingDurationInSecs * 1000);
 
             return;
         }
 
-        this.endTimesInSecsStack.pop();
-        this.elementsToHighlightStack.pop();
+        this.subElementsWithTimings.pop();
 
-        this.playNextSubElement();
+        this.highlightNextSubElement();
     }
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
@@ -1140,7 +1149,7 @@ export default class AudioRecording {
             stackSize - 1
         ]; // Remember to pop it when you're done playing it. (i.e., in playEnded)
 
-        this.setCurrentAudioElement(firstElementToPlay, true);
+        this.setSoundAndHighlight(firstElementToPlay, true);
         this.setStatus("listen", Status.Active);
         this.playCurrentInternal();
     }
@@ -1164,18 +1173,13 @@ export default class AudioRecording {
                 const nextElement = this.elementsToPlayConsecutivelyStack[
                     newStackCount - 1
                 ];
-                this.setCurrentAudioElementFrom(
-                    currentElement,
-                    nextElement,
-                    true
-                );
+                this.setSoundAndHighlight(nextElement, true, currentElement);
                 this.playCurrentInternal();
                 return;
             } else {
                 // Nothing left to play
                 this.elementsToPlayConsecutivelyStack = [];
-                this.elementsToHighlightStack = [];
-                this.endTimesInSecsStack = [];
+                this.subElementsWithTimings = [];
 
                 if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
                     // The playback mode could've been playing in Sentence mode (and highlighted the Playback Segment: a sentence)
@@ -1330,7 +1334,7 @@ export default class AudioRecording {
         // First determine which IDs we need to delete.
         const elementIdsToDelete: string[] = [];
         if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
-            elementIdsToDelete.push(this.nextElementIdToPlay);
+            elementIdsToDelete.push(this.currentAudioId);
         } else {
             // i.e., AudioRecordingMode = TextBox
             // In particular, AudioRecordingMode = TextBox but PlaybackMode = Sentence is more complicated.
@@ -1704,7 +1708,7 @@ export default class AudioRecording {
     // This happens even if audioRecordingMode=Sentence. It is caller's responsibility to either ensure that this operation is valid,
     // or to be able to handle the resulting state (possibly in Sentence mode but a div is selected), for example by calling updateMarkupForCurrentText() to re-update the state.
     private moveCurrentHighlightToTextBox(newSelectedTextBox): void {
-        this.setCurrentAudioElement(newSelectedTextBox);
+        this.setSoundAndHighlight(newSelectedTextBox);
     }
 
     public newPageReady() {
@@ -1884,7 +1888,7 @@ export default class AudioRecording {
         }
         const changeTo = this.getTextBoxOfElement(element);
         if (changeTo) {
-            this.setCurrentAudioElementFrom(audioCurrent, changeTo);
+            this.setSoundAndHighlight(changeTo, undefined, audioCurrent);
         }
     }
 
@@ -1933,7 +1937,7 @@ export default class AudioRecording {
         }
 
         if (changeTo) {
-            this.setCurrentAudioElement(changeTo);
+            this.setSoundAndHighlight(changeTo);
         }
     }
 
@@ -1947,7 +1951,7 @@ export default class AudioRecording {
         }
 
         const firstSentence = firstSentenceJQuery[0];
-        this.setCurrentAudioElement(firstSentence); // typically first arg matches nothing.
+        this.setSoundAndHighlight(firstSentence);
 
         // In Sentence/Sentence mode: OK to move.
         // Text/Sentence mode: Ok to swap.
@@ -2449,7 +2453,7 @@ export default class AudioRecording {
         for (let i = 0; i < htmlFragments.length; i++) {
             const htmlFragment = htmlFragments[i];
 
-            // Check if  the fragment is already wrapped by a span. (If so, strip out the existing span and let this code replace the span ID's and such).
+            // Check if the fragment is already wrapped by a .bloom-highlightSegment (kSegmentClass) span. (If so, strip out the existing span and let this code replace the span ID's and such).
             if (htmlFragment.text.startsWith("<span")) {
                 const doc = new DOMParser().parseFromString(
                     htmlFragment.text,
@@ -2459,7 +2463,10 @@ export default class AudioRecording {
                     doc != null &&
                     doc.getElementsByTagName("parsererror").length == 0
                 ) {
-                    htmlFragment.text = (doc.firstChild! as Element).innerHTML;
+                    const spanElement = doc.firstChild! as Element;
+                    if (spanElement.classList.contains(kSegmentClass)) {
+                        htmlFragment.text = spanElement.innerHTML;
+                    }
                 }
             }
 
@@ -2551,7 +2558,7 @@ export default class AudioRecording {
 
         const parent = element.parentElement;
 
-        const childNodesCopy = Array.prototype.slice.call(element.childNodes); // Create a copy because e.childNodes is getting modified as we go
+        const childNodesCopy = Array.from(element.childNodes); // Create a copy because e.childNodes is getting modified as we go
         for (let i = 0; i < childNodesCopy.length; ++i) {
             parent.insertBefore(childNodesCopy[i], element);
         }
@@ -2777,7 +2784,8 @@ export default class AudioRecording {
             this.audioRecordingMode === AudioRecordingMode.TextBox; // Could determine visibility from DOM instead. which is better?
         const currentPlaybackMode = this.getCurrentPlaybackMode();
         if (doesElementAudioExist && isSplitButtonVisible) {
-            if (currentPlaybackMode === AudioRecordingMode.TextBox &&
+            if (
+                currentPlaybackMode === AudioRecordingMode.TextBox &&
                 !this.isInSoftSplitMode()
             ) {
                 this.setEnabledOrExpecting("split", expectedVerb);
@@ -3113,6 +3121,8 @@ export default class AudioRecording {
             });
     }
 
+    // Soft Split mode: Split is done by noting the start/end times of each sentence, but the actual audio files is not actually physically split. (e.g. if opening books created in 4.6+)
+    // Hard Split mode: Perform split by physically splitting a single audio file into multiple audio files, one per sentence. (e.g. if opening books created in 4.5)
     public isInSoftSplitMode(): boolean {
         const currentTextBox = this.getCurrentTextBox();
         if (
@@ -3212,7 +3222,6 @@ export default class AudioRecording {
     }
 
     private showBusy(): void {
-        // Note: if there are any enabled buttons, you need to overwrite theirs too. But disabled buttons will work for free.
         const elementsToUpdate = this.getElementsToUpdateForCursor();
 
         for (let i = 0; i < elementsToUpdate.length; ++i) {
@@ -3224,7 +3233,6 @@ export default class AudioRecording {
     }
 
     private endBusy(): void {
-        // Note: if there are any enabled buttons, you need to overwrite theirs too. But disabled buttons will work for free.
         const elementsToUpdate = this.getElementsToUpdateForCursor();
 
         for (let i = 0; i < elementsToUpdate.length; ++i) {
@@ -3291,13 +3299,14 @@ export default class AudioRecording {
                 );
                 if (audioSentenceElement) {
                     audioSentenceElement.classList.remove(kAudioSentence);
+                    audioSentenceElement.classList.add(kSegmentClass);
                 } else {
                     ++collectionIndex;
                 }
             }
 
             currentTextBox.classList.add(kAudioSentence);
-            this.setNextElementIdToPlay(currentTextBox.id);
+            this.setCurrentAudioId(currentTextBox.id);
         }
     }
 
