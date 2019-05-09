@@ -114,3 +114,5 @@ DistFiles/infoPages/TrainingVideos-*.htm
 DistFiles/localization/*.htm
 
 src/BloomBrowserUI/yarn-error\.log
+
+src/BloomBrowserUI/updateFiles.bat

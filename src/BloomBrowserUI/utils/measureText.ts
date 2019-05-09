@@ -96,21 +96,21 @@ export class MeasureText {
 
         //document.body.removeChild(testingCanvas); // reinstate if you put it in for debugging
         const t1 = performance.now();
-        console.log(
-            "measured descent of " +
-                text +
-                " in " +
-                fontSize +
-                "px " +
-                fontFamily +
-                " to be " +
-                descent +
-                " but estimated as " +
-                fontDescent +
-                " (calculation took " +
-                (t1 - t0) +
-                " ms)"
-        );
+        // console.log(
+        //     "measured descent of " +
+        //         text +
+        //         " in " +
+        //         fontSize +
+        //         "px " +
+        //         fontFamily +
+        //         " to be " +
+        //         descent +
+        //         " but estimated as " +
+        //         fontDescent +
+        //         " (calculation took " +
+        //         (t1 - t0) +
+        //         " ms)"
+        // );
         return {
             fontDescent: fontDescent,
             actualDescent: descent,
