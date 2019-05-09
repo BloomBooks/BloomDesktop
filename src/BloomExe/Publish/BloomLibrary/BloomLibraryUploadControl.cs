@@ -113,6 +113,15 @@ namespace Bloom.Publish.BloomLibrary
 						"(incomplete translation)",
 						"This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.");
 				}
+				// Disable clicking on languages that have been selected for display in this book.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-7166.
+				if (lang == _model.Book.CollectionSettings.Language1Iso639Code ||
+					lang == _model.Book.MultilingualContentLanguage2 ||
+					lang == _model.Book.MultilingualContentLanguage3)
+				{
+					checkBox.Checked = true;	// even if partial
+					checkBox.AutoCheck = false;
+				}
 				checkBox.Margin = _checkBoxMargin;
 				checkBox.AutoSize = true;
 				checkBox.Tag = lang;
