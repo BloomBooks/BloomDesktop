@@ -123,7 +123,7 @@ namespace Bloom.web
 		}
 
 		/// <summary>
-		/// Check whether or not the internet is currently available.  This may delay 2.5 seconds if the computer
+		/// Check whether or not the internet is currently available.  This may delay 5 seconds if the computer
 		/// is on a local network, but the internet is inaccessible. It does not check for connectivity to
 		/// an Amazon or other site we actually use, though. Those could be blocked.
 		/// </summary>
@@ -149,21 +149,30 @@ namespace Bloom.web
 
 			// Test whether we can talk to a known site of interest on the internet.  This will tell us
 			// close enough whether or not the internet is available.
+			// From https://www.reddit.com/r/sysadmin/comments/1f9kv4/what_are_some_public_ips_that_are_ok_to/ it's
+			// not clear if it's better to use google.com or example.com. Since google is blocked in some countries,
+			// I think example.com (run by the  Internet Assigned Numbers Authority) is safer.
+			_internetAvailable = TestInternetConnection("https://example.com");
+			// If that fails, try another website: at least one tester could not access example.com.  If neither
+			// can be contacted, then give up and say the internet isn't available.
+			if (!_internetAvailable)
+				_internetAvailable = TestInternetConnection("https://mit.edu");
+			return _internetAvailable;
+		}
+
+		private static bool TestInternetConnection(string url)
+		{
 			try
 			{
-				// From https://www.reddit.com/r/sysadmin/comments/1f9kv4/what_are_some_public_ips_that_are_ok_to/
-				// not clear if it's better to use 8.8.8.8 (goolge or example.com. Since google is blocked in some
-				// countries, I think example.com (run by the  Internet Assigned Numbers Authority) is safer.
-				var iNetRequest = (HttpWebRequest)WebRequest.Create("http://example.com");
+				var iNetRequest = (HttpWebRequest) WebRequest.Create(url);
 				iNetRequest.Timeout = 2500;
+				iNetRequest.KeepAlive = false;
 				var iNetResponse = iNetRequest.GetResponse();
 				iNetResponse.Close();
-				_internetAvailable = true;
 				return true;
 			}
 			catch (WebException ex)
 			{
-				_internetAvailable = false;
 				return false;
 			}
 		}
