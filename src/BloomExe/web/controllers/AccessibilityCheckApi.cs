@@ -159,15 +159,19 @@ namespace Bloom.web.controllers
 
 		private void MakeAceByDaisyReport(ApiRequest request)
 		{
+			// First check whether ace has been installed.
+			var daisyDirectory = FindAceByDaisyOrTellUser(request); // this method does the request.fail() if needed
+			if (string.IsNullOrEmpty(daisyDirectory))
+				return;
+			// As of version 1.0.2, the ace report has stylesheets on the internet.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6118.
+			// To be specific, https://cdn.datatables.net/1.10.15/css/dataTables.bootstrap4.min.css and
+			// https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css.
 			if (!UrlLookup.CheckGeneralInternetAvailability(true))
 			{
 				_webSocketProgress.ErrorWithoutLocalizing("Sorry, you must have an internet connection in order to view the Ace by DAISY report.");
 				request.Failed();
 				return;
 			}
-			var daisyDirectory = FindAceByDaisyOrTellUser(request); // this should do the request.fail() if needed
-			if (string.IsNullOrEmpty(daisyDirectory))
-				return;
 
 			var reportRootDirectory = Path.Combine(System.IO.Path.GetTempPath(), "daisy-ace-reports");
 			// Do our best at clearing out previous runs.
