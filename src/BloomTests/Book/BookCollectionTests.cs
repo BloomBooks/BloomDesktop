@@ -42,9 +42,14 @@ namespace BloomTests.Book
 
 		private void AddBook()
 		{
-			string path = _folder.Combine("alpha");
+			AddBook(_folder, "alpha");
+		}
+
+		internal static void AddBook(TemporaryFolder collectionFolder, string bookTitle)
+		{
+			string path = collectionFolder.Combine(bookTitle);
 			Directory.CreateDirectory(path);
-			File.WriteAllText(Path.Combine(path, "alpha.htm"), @"<html></html>");
+			File.WriteAllText(Path.Combine(path, $"{bookTitle}.htm"), @"<html></html>");
 		}
 
 		[Test]
