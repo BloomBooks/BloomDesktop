@@ -40,7 +40,7 @@
                             '">$&</a>'
                     );
                     data = tryToEncodeLink(data);
-                } else {
+                } else if (data.match(validUrlRegex)) {
                     // https://dev.ckeditor.com/ticket/13419
                     data = data.replace(
                         validUrlRegex,

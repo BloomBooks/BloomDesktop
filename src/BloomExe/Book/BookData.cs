@@ -168,6 +168,9 @@ namespace Bloom.Book
 
 		public void UpdateVariablesAndDataDivThroughDOM(BookInfo info = null)
 		{
+			var div = _dom.Body.SelectSingleNode("div[@id='bloomDataDiv']") as XmlElement;
+			if (div != null)
+				HtmlDom.CleanupAElements(div);
 			UpdateVariablesAndDataDiv(_dom.RawDom.FirstChild, info);
 		}
 
