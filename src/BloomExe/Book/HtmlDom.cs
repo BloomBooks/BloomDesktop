@@ -1314,6 +1314,26 @@ namespace Bloom.Book
 				string currentValue = node.Attributes["class"].Value;
 				node.Attributes["class"].Value = currentValue.Replace("origami-layout-mode", "");
 			}
+
+			// Remove any empty <a> elements left by editing.  These cause trouble when the book/page is reopened.
+			// Also remove the extraneous data-cke-saved-href attribute gratuitously inserted.
+			CleanupAnchorElements(destinationPageDiv);
+		}
+
+		/// <summary>
+		/// Remove any empty &lt;a&gt; elements left by editing.  These cause trouble when the book/page is reopened.
+		/// Also remove the gratuitous data-cke-saved-href attribute added by ckeditor.  (It may have been involved
+		/// with the troublesome behavior noticed by the programmer.  It's certainly not needed.)
+		/// </summary>
+		public static void CleanupAnchorElements(XmlElement topElement)
+		{
+			foreach (var element in topElement.SafeSelectNodes(".//a").Cast<XmlElement>().ToArray())
+			{
+				if (element.InnerText == "")
+					element.ParentNode.RemoveChild(element);
+				else if (element.HasAttribute("data-cke-saved-href"))
+					element.RemoveAttribute("data-cke-saved-href");
+			}
 		}
 
 		internal static void RemoveCkEditorMarkup(XmlElement edittedPageDiv)
