@@ -243,6 +243,16 @@ namespace Bloom.Book
 			{
 					return lang == settings.Language1Iso639Code || lang == contentLanguageIso2 || lang == contentLanguageIso3;
 			}
+			else if ((lang == contentLanguageIso2 || lang == contentLanguageIso3) &&
+				dataDefaultLanguages.Length > 1 &&
+				dataDefaultLanguages[1].Equals("auto",StringComparison.InvariantCultureIgnoreCase))
+			{
+				// If the language is used for content, return it if auto is the second value.
+				// In other words, treat "V,auto,N1" the same as "V,N2,N1" if N2 is used for content
+				// but N2 is not.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6830.
+				return true;
+			}
+
 			else
 			{
 				// Hote there are (perhaps unfortunately) two different labelling systems, but they have a 1-to-1 correspondence:

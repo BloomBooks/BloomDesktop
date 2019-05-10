@@ -1703,7 +1703,9 @@ namespace Bloom.Book
 
 			if (MultilingualContentLanguage2 != null)
 			{
-				languagesOfBook += ", " + _collectionSettings.GetLanguage2Name(codeOfNationalLanguage);
+				languagesOfBook += ", " + ((MultilingualContentLanguage2 == _collectionSettings.Language2Iso639Code) ?
+					_collectionSettings.GetLanguage2Name(codeOfNationalLanguage) :
+					_collectionSettings.GetLanguage3Name(codeOfNationalLanguage));
 			}
 			if (MultilingualContentLanguage3 != null)
 			{

@@ -50,7 +50,7 @@ mixin underLogo
 mixin afg-outsideFrontCover
 	// FRONT COVER
 	+page-cover('Front Cover')(data-export='front-matter-cover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
-		+field-prototypeDeclaredExplicity("V,N1").bookTitle
+		+field-prototypeDeclaredExplicity("V,auto,N1").bookTitle
 			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style(data-book='bookTitle')
 		+underLogo

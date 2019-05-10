@@ -97,7 +97,7 @@ mixin standard-cover-contents
 	//- This current pattern is born of pre-jade days when it didn't matter much, but now in the
 	//- light of jade it is overly complicated.
 
-	+field-prototypeDeclaredExplicity("V,N1").bookTitle
+	+field-prototypeDeclaredExplicity("V,auto,N1").bookTitle
 		label.bubble Book title in {lang}
 		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
 
@@ -193,7 +193,7 @@ mixin standard-creditsPage-back-cover
 
 mixin title-page-contents
 	// TITLE PAGE
-	+field-prototypeDeclaredExplicity("V,N1")#titlePageTitleBlock
+	+field-prototypeDeclaredExplicity("V,auto,N1")#titlePageTitleBlock
 		label.bubble Book title in {lang}
 		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style.bloom-padForOverflow(data-book='bookTitle')
 	div.largeFlexGap
