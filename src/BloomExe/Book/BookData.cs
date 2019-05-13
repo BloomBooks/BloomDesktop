@@ -168,6 +168,11 @@ namespace Bloom.Book
 
 		public void UpdateVariablesAndDataDivThroughDOM(BookInfo info = null)
 		{
+			// For some reason, cleaning up the anchor elements in the div#bloomDataDiv doesn't work
+			// when called from HtmlDom.ProcessPageAfterEditing.  Doing it here works.
+			var div = _dom.Body.SelectSingleNode("div[@id='bloomDataDiv']") as XmlElement;
+			if (div != null)
+				HtmlDom.CleanupAnchorElements(div);
 			UpdateVariablesAndDataDiv(_dom.RawDom.FirstChild, info);
 		}
 
