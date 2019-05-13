@@ -1530,9 +1530,9 @@
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
       </trans-unit>
       <trans-unit id="EditTab.NoOtherLayouts">
-        <source xml:lang="en">There are no other layout options for this template.</source>
+        <source xml:lang="en">There are no other options for this template.</source>
         <note>ID: EditTab.NoOtherLayouts</note>
-        <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
+        <note>Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice</note>
       </trans-unit>
       <trans-unit id="EditTab.Overflow" sil:dynamic="true">
         <source xml:lang="en">This box has more text than will fit</source>
