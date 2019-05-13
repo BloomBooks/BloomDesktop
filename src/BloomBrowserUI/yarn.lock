@@ -2897,10 +2897,10 @@ blob@0.0.5:
   resolved "https://registry.yarnpkg.com/blob/-/blob-0.0.5.tgz#d680eeef25f8cd91ad533f5b01eed48e64caf683"
   integrity sha512-gaqbzQPqOoamawKg0LGVd7SzLgXS+JH61oWprSLH+P+abTczqJbhTR8CmJ2u9/bUYNmHTGJx/UEmn6doAvvuig==
 
-bloom-player@^0.6.4:
-  version "0.6.4"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-0.6.4.tgz#1d6353037cd91696322e4a8b4b92ef5797fbafac"
-  integrity sha512-EaeI40rEzG2D2+wkRxtYXZmDzss0C5cgpTrTeOuAE4B7Drshj/XEWdD+2TFhTnJZj08sBUUNd6+EKtUmffekYw==
+bloom-player@^0.6.5:
+  version "0.6.5"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-0.6.5.tgz#b4c49f2afbf168e71b843472a1860eda6bfb6bbe"
+  integrity sha512-AVAl1cU/2hziEtzsZXcimsSHxbw0Rh/tJiQP9LM9Tjd2m589NvDu2Iw/giVJQUn4vOdJEOTHlJCYnAt7XC44Ew==
   dependencies:
     "@types/react" "^16.8.10"
     axios "^0.18.0"
