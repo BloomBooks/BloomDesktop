@@ -1229,11 +1229,15 @@ namespace Bloom
 			// For now unimportant JS errors are still quite common, sadly. Per BL-4301, we don't want
 			// more than a toast, even for developers. But they should now be reported through CommonApi.HandleJavascriptError.
 			// Any that still come here we want to know about.
-			// But, myseriously, we're still getting more than we can deal with, so going back to toast-only for now.
+			// But, mysteriously, we're still getting more than we can deal with, so going back to toast-only for now.
 			// This one is particularly common while playing videos, and seems harmless, and being from the depths of
 			// Gecko, not something we can do anything about. (We've observed these coming at least 27 times per second,
 			// so decided not to clutter the log with them.)
 			if (ex.Message.Contains("file: \"chrome://global/content/bindings/videocontrols.xml\""))
+				return;
+			// This error is one we can't do anything about that doesn't seem to hurt anything.  It frequently happens when
+			// Bloom is just sitting idle with the user occupied elsewhere. (BL-7076)
+			if (ex.Message.Contains("Async statement execution returned with '1', 'no such table: moz_favicons'"))
 				return;
 			// This one apparently can't be stopped in Javascript  (it comes from WebSocketManager.getOrCreateWebSocket).
 			// It's something to do with preventing malicious code from probing for open sockets.
