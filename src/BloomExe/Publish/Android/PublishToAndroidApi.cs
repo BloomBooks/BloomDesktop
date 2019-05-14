@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
@@ -320,8 +319,8 @@ namespace Bloom.Publish.Android
 				progress.Message("CompressingAudio", "Compressing audio files");
 				AudioProcessor.TryCompressingAudioAsNeeded(book.FolderPath, book.RawDom);
 			}
-			var htmPath = BookStorage.FindBookHtmlInFolder(book.FolderPath);
-			var fileName = Path.GetFileNameWithoutExtension(htmPath);
+			// We don't use the folder found here, but this method does some checks we want done.
+			BookStorage.FindBookHtmlInFolder(book.FolderPath);
 			_stagingFolder = new TemporaryFolder("PlaceForStagingBook");
 			var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book, bookServer, _stagingFolder, backColor, progress);
 			return modifiedBook.FolderPath.ToLocalhost();
