@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Xml;
 using SIL.Xml;
 using Bloom.Publish.Epub;
+using Bloom.web.controllers;
 using SIL.Progress;
 
 namespace Bloom.Publish
@@ -257,6 +258,12 @@ namespace Bloom.Publish
 			modifiedBook.BringBookUpToDate(new NullProgress(), true);
 			modifiedBook.AdjustCollectionStylesToBookFolder();
 			modifiedBook.RemoveNonPublishablePages();
+			var domForVideoProcessing = modifiedBook.OurHtmlDom;
+			var videoContainerElements = HtmlDom.SelectChildVideoElements(domForVideoProcessing.RawDom.DocumentElement).Cast<XmlElement>();
+			if (videoContainerElements.Any())
+			{
+				SignLanguageApi.ProcessVideos(videoContainerElements, modifiedBook.FolderPath);
+			}
 			modifiedBook.Save();
 			modifiedBook.Storage.UpdateSupportFiles();
 			// Copy the possibly modified stylesheets after UpdateSupportFiles so that they don't
