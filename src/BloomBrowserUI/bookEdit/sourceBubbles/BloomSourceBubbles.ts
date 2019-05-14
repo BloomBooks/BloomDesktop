@@ -518,6 +518,24 @@ export default class BloomSourceBubbles {
                                     }
                                 });
                             }
+
+                            // For clicks in the dropdown menu of the source bubble's final tab, we need to prevent
+                            // the default behavior in order for the click to get through to styledSelectChangeHandler()
+                            // reliably.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6940.
+                            // But if we always prevent the default behavior, it won't be possible to select and copy
+                            // text from inside the source bubble.
+                            api.elements.tooltip.mousedown(ev => {
+                                const cls = ev.target.getAttribute("class");
+                                const href = ev.target.getAttribute("href");
+                                if (
+                                    cls == "sourceTextTab" &&
+                                    href &&
+                                    href.startsWith("#")
+                                ) {
+                                    ev.preventDefault();
+                                }
+                            });
+
                             // This started out as an attempt to keep the bubble from getting focus, but didn't do that
                             // reliably for some undetermined reason. It's still useful so that clicking on a tooltip focuses its element.
                             // Otherwise the bubble may stay hidden behind something else even when clicked.
