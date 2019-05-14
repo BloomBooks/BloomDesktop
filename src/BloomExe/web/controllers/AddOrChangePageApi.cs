@@ -81,6 +81,8 @@ namespace Bloom.web.controllers
 			{
 				CopyVideoPlaceHolderIfNeeded(templatePage);
 				var pageToChange = _pageSelection.CurrentSelection;
+				if (templatePage.Book != null) // may be null in unit tests that are unconcerned with stylesheets
+					HtmlDom.AddStylesheetFromAnotherBook(templatePage.Book.OurHtmlDom, pageToChange.Book.OurHtmlDom);
 				if (changeWholeBook)
 					ChangeSimilarPagesInEntireBook(pageToChange, templatePage);
 				else
