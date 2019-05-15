@@ -173,9 +173,7 @@ function AddEditKeyHandlers(container) {
                 document.execCommand(
                     "insertHTML",
                     false,
-                    "<span class='superscript'>" +
-                        document.getSelection() +
-                        "</span>"
+                    "<sup>" + document.getSelection() + "</sup>"
                 );
             }
         });
@@ -490,16 +488,6 @@ export function SetupElements(container) {
                 document.execCommand("insertText", false, s);
                 //NB: odd that this doesn't work?! document.execCommand("paste", false, s);
                 return;
-            }
-            const re = new RegExp("\\\\v\\s(\\d+)", "g");
-            const matches = re.exec(s);
-            if (matches == null) {
-                //just let it paste
-            } else {
-                e.preventDefault();
-                const x = s.replace(re, "<span class='superscript'>$1</span>");
-                document.execCommand("insertHtml", false, x);
-                //NB: this would undo, but it doesn't work document.execCommand("paste", false, x);
             }
         });
 

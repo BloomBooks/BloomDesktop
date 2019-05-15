@@ -452,6 +452,8 @@ label.bubble,
 label.placeholder {
     display: none;
 }
+// Previously (<= 4.5), we used to use this class to do superscripting. Now we use <sup> to be consistent with ckeditor.
+// But we have to keep this styling here for legacy books.
 .superscript {
     vertical-align: super;
     font-size: 80%;
