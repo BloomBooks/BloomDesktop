@@ -218,9 +218,10 @@ function getChangedSettings(): ReaderSettings {
 
     // stages
     const stages: JQuery = $("#stages-table").find("tbody tr");
-    for (let i: number = 0; i < stages.length; i++) {
-        const stage: ReaderStage = new ReaderStage((i + 1).toString());
-        const row: HTMLTableRowElement = <HTMLTableRowElement>stages[i];
+    let iStage: number = 1;
+    for (let iRow: number = 0; iRow < stages.length; iRow++) {
+        const stage: ReaderStage = new ReaderStage(iStage.toString());
+        const row: HTMLTableRowElement = <HTMLTableRowElement>stages[iRow];
         stage.letters = (<HTMLTableCellElement>row.cells[1]).innerHTML;
         stage.sightWords = cleanSpaceDelimitedList(
             (<HTMLTableCellElement>row.cells[2]).innerHTML
@@ -228,8 +229,10 @@ function getChangedSettings(): ReaderSettings {
         stage.allowedWordsFile = (<HTMLTableCellElement>row.cells[3]).innerHTML;
 
         // do not save stage with no data
-        if (stage.letters || stage.sightWords || stage.allowedWordsFile)
+        if (stage.letters || stage.sightWords || stage.allowedWordsFile) {
             settings.stages.push(stage);
+            iStage++;
+        }
     }
 
     // levels
