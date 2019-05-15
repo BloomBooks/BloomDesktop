@@ -757,7 +757,7 @@ export default class AudioRecording {
 
     // Given the specified element, updates the audio player's source and other necessary things in order to make the specified element's audio the next audio to play
     //
-    // Precondition: element (the element to change the audio to) should also already be the currently highlighted element
+    // Precondition: element (the element to change the audio to) should also already be the currently highlighted element (even if we will later shrink the selection to one of its segments)
     public setSoundFrom(element: Element): void {
         // Adjust the audio file that will get played by the Play (Check) button.
         // Note: The next element to be PLAYED may not be the same as the new element with the current RECORDING highlight.
@@ -2397,7 +2397,9 @@ export default class AudioRecording {
         const formatButton = elt.find("#formatButton");
         formatButton.remove(); // nothing happens if not found
 
-        const markedSentences = elt.find(kAudioSentenceClassSelector);
+        const markedSentences = elt.find(
+            `${kAudioSentenceClassSelector},.${kSegmentClass}`
+        );
         //  TODO: Shouldn't re-use audio if the text box has a different lang associated. "Jesus" pronounced differently in differently langs.
         const reuse: any[] = []; // an array of id/md5 pairs for any existing sentences marked up for audio in the element.
         // If caller has manually specified a custom ID list, then let's say (for now) that we won't allow IDs to be re-used
@@ -2452,23 +2454,6 @@ export default class AudioRecording {
         let newHtml = "";
         for (let i = 0; i < htmlFragments.length; i++) {
             const htmlFragment = htmlFragments[i];
-
-            // Check if the fragment is already wrapped by a .bloom-highlightSegment (kSegmentClass) span. (If so, strip out the existing span and let this code replace the span ID's and such).
-            if (htmlFragment.text.startsWith("<span")) {
-                const doc = new DOMParser().parseFromString(
-                    htmlFragment.text,
-                    "text/xml"
-                );
-                if (
-                    doc != null &&
-                    doc.getElementsByTagName("parsererror").length == 0
-                ) {
-                    const spanElement = doc.firstChild! as Element;
-                    if (spanElement.classList.contains(kSegmentClass)) {
-                        htmlFragment.text = spanElement.innerHTML;
-                    }
-                }
-            }
 
             if (!this.isRecordable(htmlFragment)) {
                 // this is inter-sentence space (or white space before first sentence).
