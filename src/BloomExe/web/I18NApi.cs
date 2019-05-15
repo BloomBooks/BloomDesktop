@@ -230,7 +230,7 @@ namespace Bloom.Api
 
 		private static void ReportL10NMissingString(string id, string englishText, string comment)
 		{
-			if (LocalizationManager.IgnoreExistingEnglishXliffFiles)
+			if (LocalizationManager.IgnoreExistingEnglishTranslationFiles)
 			{
 				// This will store it in the generated xliff file.
 				LocalizationManager.GetDynamicString("Bloom", id, englishText, comment);
