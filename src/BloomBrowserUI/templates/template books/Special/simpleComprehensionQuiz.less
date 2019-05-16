@@ -3,7 +3,7 @@
         margin-bottom: 10px;
         flex-grow: 1;
     }
-    .checkbox-and-textbox-answer {
+    .checkbox-and-textbox-choice {
         display: flex; // horizontal;
 
         // styled-check-box and its ::after make a box and position a check mark in the box.
@@ -43,10 +43,10 @@
 // In edit mode, the check boxes are checked if marked correct.
 body.editMode
     .bloom-page.simple-comprehension-quiz
-    .checkbox-and-textbox-answer {
+    .checkbox-and-textbox-choice {
     &.empty {
         opacity: 0.5; // dim empty ones.
-        // It happens that we do want a checkbox-and-textbox-answer to display:flex,
+        // It happens that we do want a checkbox-and-textbox-choice to display:flex,
         // but the key point of this very specific rule is to beat the one
         // below which makes it display:none in read mode.
         display: flex;
@@ -62,14 +62,14 @@ body.editMode
     }
 }
 
-// In read mode, the check boxes are checked if marked correct AND user-selected
+// In read mode, the check boxes are checked if marked correct AND wasSelectedAtOnePoint
 // We would like to mark this rule body:not(.editMode)
 // but when loaded into bloom reader, all the rules are preceded by something like [__scoped_1],
 // and any rule that begins [__scoped_1] body...won't match.
-// So we have to rely on something else. In this case, user-selected will
+// So we have to rely on something else. In this case, wasSelectedAtOnePoint will
 // never occur in editMode.
 .bloom-page.simple-comprehension-quiz
-    .checkbox-and-textbox-answer.correct-answer.user-selected {
+    .checkbox-and-textbox-choice.correct-answer.wasSelectedAtOnePoint {
     .styled-check-box {
         background-color: green;
     }
@@ -79,13 +79,13 @@ body.editMode
     }
 }
 .bloom-page.simple-comprehension-quiz {
-    .checkbox-and-textbox-answer {
+    .checkbox-and-textbox-choice {
         &.empty {
             // Javascript adds this class if the answer contains nothing visible.
             // This rule is overridden by a more specific one in edit mode.
             display: none;
         }
-        &.user-selected:not(.correct-answer) {
+        &.wasSelectedAtOnePoint:not(.correct-answer) {
             // In read mode, if they are selected but not correct, the whole answer dims
             opacity: 0.5;
         }

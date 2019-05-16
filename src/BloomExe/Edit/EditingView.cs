@@ -1252,8 +1252,8 @@ namespace Bloom.Edit
 				if(layoutChoices.Count() < 2)
 				{
 					var text = LocalizationManager.GetString("EditTab.NoOtherLayouts",
-						"There are no other layout options for this template.",
-						"Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice");
+						"There are no other options for this template.",
+						"Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice");
 					var item = AddDropdownItemSafely(_layoutChoices, text);
 					item.Tag = null;
 					item.Enabled = false;

@@ -1,7 +1,7 @@
 // The js generated from this file is used in the template page generated from simpleComprehensionQuiz.pug.
 // It makes sure the body element has the editMode class (if the editMode stylesheet is loaded)
 // and installs appropriate click handlers (depending on edit mode) which manipulate the classes
-// of .checkbox-and-textbox-answer elements to produce the desired checking and dimming of right
+// of .checkbox-and-textbox-choice elements to produce the desired checking and dimming of right
 // and wrong answers. It also adds an appropriate class to answers that are empty (to hide them or
 // dim them) and plays appropriate sounds when a right or wrong answer is chosen.
 // Eventually it will cooperate with reader code to handle analytics.
@@ -9,14 +9,14 @@
 // pages dynamically in order to handle old-style comprehension questions represented as json,
 // and needs the associated JS to make them work.
 
-// Master function, called when document is ready, initialized CQ pages
+// Master function, called when document is ready, initializes CQ pages
 function init(): void {
     ensureEditModeStyleSheet();
-    initAnswerWidgets();
+    initChoiceWidgets();
 }
 
 //------------ Code involved in setting the editMode class on the body element when appropriate-----
-function ensureEditModeStyleSheet() {
+function ensureEditModeStyleSheet(): void {
     if (!inEditMode()) {
         return;
     }
@@ -25,8 +25,8 @@ function ensureEditModeStyleSheet() {
     document.body.classList.add("editMode");
 }
 
-function inEditMode() {
-    for (var i = 0; i < document.styleSheets.length; i++) {
+function inEditMode(): boolean {
+    for (let i = 0; i < document.styleSheets.length; i++) {
         const href = document.styleSheets[i].href;
         if (href && href.endsWith("editMode.css")) {
             return true;
@@ -35,22 +35,36 @@ function inEditMode() {
     return false;
 }
 
-//------------ Code for managing the answer widgets-------
+// The value we store to indicate that at some point the user
+// chose this answer. We don't really need the value, because if the key for
+// that answer has a value, it will be this. But may as well
+// be consistent, in case we later add other options.
+const kwasSelectedAtOnePoint = "wasSelectedAtOnePoint";
+//------------ Code for managing the choice widgets-------
 
-// Initialize the answer widgets, arranging for the appropriate click actions
-// and for maintaining the class that indicates empty answers.
+// Initialize the choice widgets, arranging for the appropriate click actions
+// and for maintaining the class that indicates empty choice.
 // Assumes the code that sets up the editMode class on the body element if appropriate has already been run.
-function initAnswerWidgets(): void {
-    markEmptyAnswers();
-    const observer = new MutationObserver(markEmptyAnswers);
+function initChoiceWidgets(): void {
+    markEmptyChoices();
+    const observer = new MutationObserver(markEmptyChoices);
     observer.observe(document.body, { characterData: true, subtree: true });
     const list = document.getElementsByClassName("styled-check-box");
     for (let i = 0; i < list.length; i++) {
-        let x = list[i];
+        const x = list[i];
         if (document.body.classList.contains("editMode")) {
             x.addEventListener("click", handleEditModeClick);
         } else {
             x!.parentElement!.addEventListener("click", handleReadModeClick);
+            const key = getStorageKeyForChoice(x!.parentElement!);
+            if (
+                (window as any).BloomPlayer.getPageData(
+                    x.closest(".bloom-page"),
+                    key
+                ) === kwasSelectedAtOnePoint
+            ) {
+                choiceWasClicked(x!.parentElement!);
+            }
         }
     }
 }
@@ -62,29 +76,78 @@ function handleEditModeClick(evt: Event): void {
     }
 }
 
+// Get a key for a checkbox. It only needs to be unique on this page.
+// Enhance: If a new version of the book is downloaded with a different
+// set of choices on this page, this sort of positional ID could select
+// the wrong one. To fix this, we could make something generate a persistent
+// id for a choice; but the author could still edit the text of the choice,
+// making the stored choice invalid. Better: find a way to clear the relevant
+// storage when downloading a new version of a book.
+function getStorageKeyForChoice(choice: HTMLElement): string {
+    const page = choice.closest(".bloom-page") as HTMLElement;
+
+    // what is my index among the other choices on the page
+    const choices = Array.from(
+        page.getElementsByClassName("checkbox-and-textbox-choice")
+    );
+    const index = choices.indexOf(choice);
+    const id = page.getAttribute("id");
+    return "cbstate_" + index;
+}
+
 function handleReadModeClick(evt: Event): void {
     const currentTarget = evt.currentTarget as HTMLElement;
-    const classes = currentTarget.classList;
-    classes.add("user-selected");
-    const correct = classes.contains("correct-answer");
+    choiceWasClicked(currentTarget);
+    const correct = currentTarget.classList.contains("correct-answer");
     const soundUrl = correct ? "right_answer.mp3" : "wrong_answer.mp3";
     playSound(soundUrl);
+    // The ui shows items that were (selected but wrong) differently than
+    // items that were never tried.
+    const key = getStorageKeyForChoice(currentTarget);
+    (window as any).BloomPlayer.storePageData(
+        currentTarget.closest(".bloom-page"),
+        key,
+        kwasSelectedAtOnePoint
+    );
+
+    reportScore(correct);
+}
+
+// it was either clicked just now, or we're loading from storage
+// and we need to make it look like it looke last time we were on this
+// page
+function choiceWasClicked(choice: HTMLElement): void {
+    const classes = choice.classList;
+    classes.add(kwasSelectedAtOnePoint);
     // Make the state of the hidden input conform (for screen readers). Only if the
     // correct answer was clicked does the checkbox get checked.
-    const checkBox = currentTarget.getElementsByClassName(
+    const checkBox = choice.getElementsByClassName(
         "hiddenCheckbox"
     )[0] as HTMLInputElement;
+    // at this point, we only actually make the check happen if
+    // this was the correct answer
     if (checkBox) {
-        checkBox.checked = correct;
-    }
-
-    // This might cause us to send analytics information...tell the app if it's interested.
-    if ((window as any).analyticsChange) {
-        (window as any).analyticsChange();
+        checkBox.checked = classes.contains("correct-answer");
     }
 }
 
-function playSound(url) {
+function reportScore(correct: boolean): void {
+    // Send the score and info for analytics.
+    // Note: the Bloom Player is smart enough to only
+    // record the analytics part the very first time we report a score for this page,
+    // and only send it when it has been reported for all pages using the same
+    // analyticsCategory as this page.
+    // Note, it is up to the host of BloomPlayer whether it actually is sending the analytics to some server.
+    if ((window as any).BloomPlayer) {
+        (window as any).BloomPlayer.reportScoreForCurrentPage(
+            1, // possible score on page
+            correct ? 1 : 0, // actual score
+            "comprehension"
+        );
+    }
+}
+
+function playSound(url: string): void {
     const player = getPagePlayer();
     player.setAttribute("src", url);
     player.play();
@@ -106,32 +169,30 @@ function getPagePlayer(): HTMLAudioElement {
     return player;
 }
 
-function markEmptyAnswers() {
-    const answers = document.getElementsByClassName(
-        "checkbox-and-textbox-answer"
+function markEmptyChoices(): void {
+    const choices = document.getElementsByClassName(
+        "checkbox-and-textbox-choice"
     );
-    for (let i = 0; i < answers.length; i++) {
-        if (hasContent(answers[i])) {
-            answers[i].classList.remove("empty");
+    for (let i = 0; i < choices.length; i++) {
+        if (hasVisibleContent(choices[i])) {
+            choices[i].classList.remove("empty");
         } else {
-            answers[i].classList.add("empty");
+            choices[i].classList.add("empty");
         }
     }
 }
 
-function hasContent(answer) {
-    const editables = answer.getElementsByClassName("bloom-editable");
-    for (let j = 0; j < editables.length; j++) {
-        const editable = editables[j];
-        if (
-            editable.classList.contains("bloom-visibility-code-on") &&
-            editable.textContent.trim()
-        ) {
-            return true;
-        }
-    }
-    return false;
+function hasVisibleContent(choice: Element): boolean {
+    const editables = choice.getElementsByClassName("bloom-editable");
+
+    return Array.from(editables).some(
+        e =>
+            e.classList.contains("bloom-visibility-code-on") &&
+            (e.textContent || "").trim() !== ""
+    );
 }
+
+//-------------- initialize -------------
 
 // In some cases (loading into a bloom reader carousel, for example) the page may already be loaded.
 if (document.readyState === "complete") {

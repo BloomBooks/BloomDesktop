@@ -3,34 +3,38 @@
  * For licensing, see LICENSE.md or http://ckeditor.com/license
  */
 
-CKEDITOR.editorConfig = function (config) {
+CKEDITOR.editorConfig = function(config) {
     // Define changes to default configuration here.
     // For complete reference see:
     // http://docs.ckeditor.com/#!/api/CKEDITOR.config
 
     // The toolbar groups arrangement, optimized for a single toolbar row.
     config.toolbarGroups = [
-        { name: 'document', groups: ['mode', 'document', 'doctools'] },
-        { name: 'clipboard', groups: ['clipboard', 'undo'] },
-        { name: 'editing', groups: ['find', 'selection', 'spellchecker'] },
-        { name: 'forms' },
-        { name: 'basicstyles', groups: ['basicstyles', 'cleanup'] },
-        { name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi'] },
-        { name: 'links' },
-        { name: 'insert' },
-        { name: 'styles' },
-        { name: 'colors' },
-        { name: 'tools' },
-        { name: 'others' },
-        { name: 'about' }
+        { name: "document", groups: ["mode", "document", "doctools"] },
+        { name: "clipboard", groups: ["clipboard", "undo"] },
+        { name: "editing", groups: ["find", "selection", "spellchecker"] },
+        { name: "forms" },
+        { name: "basicstyles", groups: ["basicstyles", "cleanup"] },
+        {
+            name: "paragraph",
+            groups: ["list", "indent", "blocks", "align", "bidi"]
+        },
+        { name: "links" },
+        { name: "insert" },
+        { name: "styles" },
+        { name: "colors" },
+        { name: "tools" },
+        { name: "others" },
+        { name: "about" }
     ];
 
     // The default plugins included in the basic setup define some buttons that
     // are not needed in a basic editor. They are removed here.
-    config.removeButtons = 'Cut,Copy,Paste,Undo,Redo,Anchor,Strike,Subscript,About';
+    config.removeButtons =
+        "Cut,Copy,Paste,Undo,Redo,Anchor,Strike,Subscript,About";
 
     // Dialog windows are also simplified.
-    config.removeDialogTabs = 'link:advanced';
+    config.removeDialogTabs = "link:advanced";
 
     // this aligns to tool bar with the right side fo the edit field
     config.floatSpacePreferRight = true;
@@ -40,7 +44,6 @@ CKEDITOR.editorConfig = function (config) {
 
     // Remove the annoying tooltip "Rich Text Editor, editorN".
     config.title = false;
-
 
     // See http://docs.ckeditor.com/#!/guide/dev_acf for a description of this setting.
     config.allowedContent = true;
@@ -60,7 +63,7 @@ CKEDITOR.editorConfig = function (config) {
     // but by letting people paste things that cannot be duplicated by a user doing a translation, are
     // we leading people to expect formatting in Bloom that translators will not actually be able to replicate?
     // Therefore for now we're limiting pasting to things that a translator could also do:
-    config.pasteFilter = 'p b br em i strong sup u;';
+    config.pasteFilter = "p b br em i strong sup u;";
 
     //BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
     //http://stackoverflow.com/a/23983357/723299
@@ -72,4 +75,8 @@ CKEDITOR.editorConfig = function (config) {
     //in order to stop pictures; the on('paste') stops working if you enable this, at least for pastes that come from Word
     //CKEDITOR.config.extraPlugins  = 'pasteFromWord';
     // CKEDITOR.config.pasteFromWordPromptCleanup = true;
+
+    // Add the autolink plugin to make it easy for users to make live internet/email links in ebooks.
+    // See https://issues.bloomlibrary.org/youtrack/issue/BL-6845.
+    CKEDITOR.config.extraPlugins = "autolink";
 };

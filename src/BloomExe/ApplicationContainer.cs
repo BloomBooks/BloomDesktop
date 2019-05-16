@@ -67,7 +67,7 @@ namespace Bloom
 				return _container.Resolve<OpenAndCreateCollectionDialog>();
 			}
 
-			public LocalizationManager LocalizationManager;
+			public ILocalizationManager LocalizationManager;
 
 			public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
 

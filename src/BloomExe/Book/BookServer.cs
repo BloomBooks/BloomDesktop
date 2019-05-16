@@ -22,7 +22,7 @@ namespace Bloom.Book
 			_configuratorFactory = configuratorFactory;
 		}
 
-		public Book GetBookFromBookInfo(BookInfo bookInfo, bool forSelectedBook = false)
+		public virtual Book GetBookFromBookInfo(BookInfo bookInfo, bool forSelectedBook = false)
 		{
 			//Review: Note that this isn't doing any caching yet... worried that caching will just eat up memory, but if anybody is holding onto these, then the memory won't be freed anyhow
 			if(bookInfo is ErrorBookInfo)

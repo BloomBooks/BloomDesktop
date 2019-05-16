@@ -4,7 +4,7 @@
         "module": "commonjs",
         "sourceMap": true,
         "jsx": "react",
-        "lib": ["dom", "es6", "scripthost", "es2017.object"],
+        "lib": ["dom", "es6", "scripthost", "es2017"],
         "experimentalDecorators": true,
         "alwaysStrict": true,
         "noImplicitReturns": true,
