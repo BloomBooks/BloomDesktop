@@ -215,9 +215,8 @@ namespace Bloom.Publish
 
 		/// <summary>
 		/// Ampersand in book title was causing Publish problems
+		/// So were non-ASCII characters
 		/// </summary>
-		/// <param name="fileName"></param>
-		/// <returns></returns>
 		private static string SanitizeFileName(string fileName)
 		{
 			fileName = Path.GetInvalidFileNameChars().Aggregate(
@@ -225,7 +224,18 @@ namespace Bloom.Publish
 			// I (GJM) set this up to keep ampersand out of the book title,
 			// but discovered that ampersand isn't one of the characters that GetInvalidFileNameChars returns!
 			fileName = fileName.Replace('&', ' ');
-			return fileName;
+			// Ghostscript on Linux chokes on at least some non-ASCII filenames.
+			// This filename is used only internally, as a separate value is suggested when/if
+			// the user saves the PDF file.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-7177.
+			for (int i = 0; i < fileName.Length; ++i)
+			{
+				if (fileName[i] > 127)
+					fileName = fileName.Replace(fileName[i], ' ');
+			}
+			if (String.IsNullOrWhiteSpace(fileName))
+				return "BloomPublishPdf";
+			return fileName.Trim();
 		}
 
 		DisplayModes _currentDisplayMode = DisplayModes.WaitForUserToChooseSomething;
