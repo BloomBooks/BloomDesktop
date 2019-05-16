@@ -193,7 +193,18 @@ namespace Bloom.Publish
 
 			// Sanitize fileName first
 			string fileName = SanitizeFileName(fname);
-
+			// Ghostscript on Linux chokes on at least some non-ASCII filenames.
+			// This filename is used only internally, as a separate value is suggested when/if
+			// the user saves the PDF file.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-7177.
+			for (int i = 0; i < fileName.Length; ++i)
+			{
+				if (fileName[i] > 127)
+				{
+					fileName = "TemporaryFileForBloom";
+					break;
+				}
+			}
 			for (int i = 0; i < 100; i++)
 			{
 				path = Path.Combine(Path.GetTempPath(), string.Format("{0}-{1}.pdf", fileName, i));

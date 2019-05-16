@@ -61,7 +61,7 @@ namespace Bloom.Publish.PDF
 					var fromDirectory = String.Empty;
 					var progress = new NullProgress();	// I can't figure out how to use any IProgress based code, but we show progress okay as is.
 					var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
-					if (res.DidTimeOut || !RobustFile.Exists(tempPdfFile.Path))
+					if (res.ExitCode == 1 || res.DidTimeOut || !RobustFile.Exists(tempPdfFile.Path))
 					{
 						if (_inputPdfPath != _outputPdfPath)
 							RobustFile.Copy(_inputPdfPath, _outputPdfPath, true);
