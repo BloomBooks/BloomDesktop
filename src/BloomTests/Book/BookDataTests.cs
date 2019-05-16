@@ -21,8 +21,8 @@ namespace BloomTests.Book
 	public sealed class BookDataTests
 	{
 		private CollectionSettings _collectionSettings;
-		private LocalizationManager _localizationManager;
-		private LocalizationManager _palasoLocalizationManager;
+		private ILocalizationManager _localizationManager;
+		private ILocalizationManager _palasoLocalizationManager;
 
 		[SetUp]
 		public void Setup()
@@ -38,9 +38,9 @@ namespace BloomTests.Book
 
 			LocalizationManager.UseLanguageCodeFolders = true;
 			var localizationDirectory = FileLocationUtilities.GetDirectoryDistributedWithApplication("localization");
-			_localizationManager = LocalizationManager.Create("fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom",
+			_localizationManager = LocalizationManager.Create(TranslationMemory.XLiff, "fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom",
 				null, "");
-			_palasoLocalizationManager = LocalizationManager.Create("fr", "Palaso","Palaso", "1.0.0", localizationDirectory, "SIL/Palaso",
+			_palasoLocalizationManager = LocalizationManager.Create(TranslationMemory.XLiff, "fr", "Palaso","Palaso", "1.0.0", localizationDirectory, "SIL/Palaso",
 				null, "");
 		}
 
@@ -509,7 +509,7 @@ namespace BloomTests.Book
 
 				if (dataDivName == "licenseNotes")
 					Assert.That(metadata.License.RightsStatement, Is.EqualTo("Some extra notes"));
-				else 
+				else
 				Assert.That(metadata.License.RightsStatement, Is.Null.Or.Empty);
 			}
 		}

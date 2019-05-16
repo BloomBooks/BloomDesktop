@@ -188,14 +188,14 @@ namespace Bloom
 				if (args.Length > 0)
 				{
 					if (IsLocalizationHarvestingLaunch(args))
-						LocalizationManager.IgnoreExistingEnglishXliffFiles = true;
+						LocalizationManager.IgnoreExistingEnglishTranslationFiles = true;
 					else
 						// This allows us to debug things like  interpreting a URL.
 						MessageBox.Show("Attach debugger now");
 				}
 				var harvest = Environment.GetEnvironmentVariable("HARVEST_FOR_LOCALIZATION");
 				if (!String.IsNullOrWhiteSpace(harvest) && (harvest.ToLowerInvariant() == "on" || harvest.ToLowerInvariant() == "yes"))
-					LocalizationManager.IgnoreExistingEnglishXliffFiles = true;
+					LocalizationManager.IgnoreExistingEnglishTranslationFiles = true;
 #endif
 
 				using (InitializeAnalytics())
@@ -392,11 +392,11 @@ namespace Bloom
 #if DEBUG
 			lock(_harvestLock)
 			{
-				if (LocalizationManager.IgnoreExistingEnglishXliffFiles && !_harvestFinalized)
+				if (LocalizationManager.IgnoreExistingEnglishTranslationFiles && !_harvestFinalized)
 				{
 					var installedStringFileFolder = FileLocationUtilities.GetDirectoryDistributedWithApplication(true,"localization");
-					LocalizationManager.MergeExistingEnglishXliffFileIntoNew(installedStringFileFolder, "Bloom");
-					LocalizationManager.MergeExistingEnglishXliffFileIntoNew(installedStringFileFolder, "Palaso");
+					LocalizationManager.MergeExistingEnglishTranslationFileIntoNew(installedStringFileFolder, "Bloom");
+					LocalizationManager.MergeExistingEnglishTranslationFileIntoNew(installedStringFileFolder, "Palaso");
 				}
 				_harvestFinalized = true;
 			}
@@ -959,10 +959,12 @@ namespace Bloom
 				// Ideally we would dispose this at some point, but I don't know when we safely can. Normally this should never happen,
 				// so I'm not very worried.
 				var fakeLocalDir = new TemporaryFolder("Bloom fake localization").FolderPath;
-				applicationContainer.LocalizationManager = LocalizationManager.Create("en", "Bloom", "Bloom", Application.ProductVersion, fakeLocalDir, "SIL/Bloom",
-										   Resources.BloomIcon, "issues@bloomlibrary.org",
-											//the parameters that follow are namespace beginnings:
-										   "Bloom");
+				applicationContainer.LocalizationManager = LocalizationManager.Create(
+					TranslationMemory.XLiff, "en",
+					"Bloom", "Bloom", Application.ProductVersion, fakeLocalDir, "SIL/Bloom",
+					Resources.BloomIcon, "issues@bloomlibrary.org",
+					//the parameters that follow are namespace beginnings:
+					"Bloom");
 				return;
 			}
 
@@ -971,13 +973,14 @@ namespace Bloom
 				// If the user has not set the interface language, try to use the system language if we can.
 				// (See http://issues.bloomlibrary.org/youtrack/issue/BL-4393.)
 				var desiredLanguage = GetDesiredUiLanguage(installedStringFileFolder);
-				applicationContainer.LocalizationManager = LocalizationManager.Create(desiredLanguage,
-										   "Bloom", "Bloom", Application.ProductVersion,
-										   installedStringFileFolder,
-										   "SIL/Bloom",
-										   Resources.BloomIcon, "issues@bloomlibrary.org",
-										   //the parameters that follow are namespace beginnings:
-										   "Bloom");
+				applicationContainer.LocalizationManager = LocalizationManager.Create(
+					TranslationMemory.XLiff, desiredLanguage,
+					"Bloom", "Bloom", Application.ProductVersion,
+					installedStringFileFolder,
+					"SIL/Bloom",
+					Resources.BloomIcon, "issues@bloomlibrary.org",
+					//the parameters that follow are namespace beginnings:
+					"Bloom");
 
 				//We had a case where someone translated stuff into another language, and sent in their tmx. But their tmx had soaked up a bunch of string
 				//from their various templates, which were not Bloom standard templates. So then someone else sitting down to localize bloom would be
@@ -995,19 +998,19 @@ namespace Bloom
 				if (uiLanguage != desiredLanguage)
 					Settings.Default.UserInterfaceLanguageSetExplicitly = true;
 
-				LocalizationManager.Create(uiLanguage,
+				LocalizationManager.Create(TranslationMemory.XLiff, uiLanguage,
 										   "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
 										   installedStringFileFolder,
 											"SIL/Bloom",
 											Resources.BloomIcon, "issues@bloomlibrary.org", "SIL");
 
-				LocalizationManager.Create(uiLanguage,
+				LocalizationManager.Create(TranslationMemory.XLiff, uiLanguage,
 					"BloomMediumPriority", "BloomMediumPriority", Application.ProductVersion,
 					installedStringFileFolder,
 					"SIL/Bloom",
 					Resources.BloomIcon, "issues@bloomlibrary.org", "Bloom");
 
-				LocalizationManager.Create(uiLanguage,
+				LocalizationManager.Create(TranslationMemory.XLiff, uiLanguage,
 					"BloomLowPriority", "BloomLowPriority", Application.ProductVersion,
 					installedStringFileFolder,
 					"SIL/Bloom",
