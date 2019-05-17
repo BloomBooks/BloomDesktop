@@ -1080,6 +1080,12 @@ namespace Bloom.Book
 
 		#endregion
 
+		// ExpensiveInitialization is called repeatedly during idle time and thus can check the
+		// same book for errors repeatedly.  This could result in dozens of open error message dialogs
+		// at the same time reporting the same error.  So we keep track of what we've complained about
+		// already to prevent this from happening.
+		private static HashSet<string> _booksWithMultipleHtmlFiles = new HashSet<string>();
+
 		/// <summary>
 		/// Do whatever is needed to do more than just show a title and thumbnail
 		/// </summary>
@@ -1102,25 +1108,70 @@ namespace Bloom.Book
 			}
 			var backupPath = GetBackupFilePath();
 
-			// if we don't have an html file, but we're looking at the selected book and we do have a backup file
-			// go ahead and try to restore it.
+			// If we have a single html file, or an html file whose name matches the folder, then we can proceed.
+			// ALternatively, if this is the selected book and we have a backup file, then we'll use that to proceed.
+			// If neither of these cases apply, then we'll need to complain to the user and hope that he or she can
+			// figure out how to recover since it's beyond what a program can handle.  (probably multiple html files
+			// that don't match the folder name and no backup file in the folder)
 			if (!RobustFile.Exists(pathToExistingHtml) && (!forSelectedBook || !RobustFile.Exists(backupPath)))
 			{
+				ErrorAllowsReporting = false;
 				// Error out
 				var files = new List<string>(Directory.GetFiles(_folderPath));
-				var b = new StringBuilder();
-				b.AppendLine("Could not determine which html file in the folder to use.");
-				if (files.Count == 0)
-					b.AppendLine("***There are no files.");
-				else
+				var htmlCount = 0;
+				foreach (var f in files)
 				{
-					b.AppendLine("Files in this book are:");
+					var ext = Path.GetExtension(f).ToLowerInvariant();
+					if (ext == ".htm" || ext == ".html")
+						++htmlCount;
+				}
+				if (htmlCount > 1)
+				{
+					// Note: Corresponding error messages have not be localized, so this one isn't either.
+					ErrorMessagesHtml = "More than one html file in the book's folder";
+					if (_booksWithMultipleHtmlFiles.Contains(_folderPath))
+						return;		// we already complained about this book.
+					_booksWithMultipleHtmlFiles.Add(_folderPath);
+					var b = new StringBuilder();
+					var msg1 = LocalizationManager.GetString("Errors.MultipleHtmlFiles",
+						"Bloom book folders must have only one file ending in .htm.  In the book \"{0}\", these are the files ending in .htm:",
+						"{0} will get the name of the book");
+					var msg2 = LocalizationManager.GetString("Errors.RemoveExcessHtml",
+						"Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.",
+						"This follows the Errors.MultipleHtmlFiles message and a list of HTML files.");
+					b.AppendLineFormat(msg1, Path.GetFileName(_folderPath));
 					foreach (var f in files)
 					{
-						b.AppendLine("  " + f);
+						var ext = Path.GetExtension(f).ToLowerInvariant();
+						if (ext == ".htm" || ext == ".html")
+							b.AppendLine("  * " + Path.GetFileName(f));
 					}
+					b.AppendLine(msg2);
+					ErrorReport.NotifyUserOfProblem(b.ToString());
+					// Open the file explorer on the book's folder to allow the user to delete (or move?) the unwanted file.
+					System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo() {
+						FileName = _folderPath + Path.DirectorySeparatorChar,	// trailing separator char is important!
+						UseShellExecute = true,
+						Verb = "open"
+					});
 				}
-				throw new ApplicationException(b.ToString());
+				else
+				{
+					// NOTE:  I'm not sure we ever hit this code even when there's not any html files in the book's folder.
+					var b = new StringBuilder();
+					b.AppendLine("Could not find an html file in the folder to use.");
+					if (files.Count == 0)
+					{
+						b.AppendLine("***There are no files.");
+					}
+					else
+					{
+						b.AppendLine("Files in this book are:");
+						foreach (var f in files)
+							b.AppendLine("  " + f);
+					}
+					throw new ApplicationException(b.ToString());
+				}
 			}
 			else
 			{
