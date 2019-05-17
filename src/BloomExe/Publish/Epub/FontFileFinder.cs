@@ -98,18 +98,8 @@ namespace Bloom.Publish.Epub
 					}
 				}
 #else
-			foreach (var fontFile in Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.Fonts)))
+			foreach (var fontFile in FindWindowsFonts())
 			{
-				// ePUB only understands these types, so skip anything else.
-				switch (Path.GetExtension(fontFile).ToLowerInvariant())
-				{
-					case ".ttf":
-					case ".otf":
-					case ".woff":
-						break;
-					default:
-						continue;
-				}
 				GlyphTypeface gtf;
 				try
 				{
@@ -171,27 +161,51 @@ namespace Bloom.Publish.Epub
 		IEnumerable<string> FindLinuxFonts()
 		{
 			var fontFiles = new List<string>();
-			fontFiles.AddRange(FindLinuxFonts("/usr/share/fonts"));
-			fontFiles.AddRange(FindLinuxFonts(Environment.GetFolderPath(Environment.SpecialFolder.Fonts)));	// $HOME/.fonts
+			fontFiles.AddRange(FindFontsInFolder("/usr/share/fonts"));				// primary system location for fonts shared by all users
+			fontFiles.AddRange(FindFontsInFolder("/usr/local/share/fonts"));		// secondary system location for fonts shared by all users
+			fontFiles.AddRange(FindFontsInFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"fonts")));	// $HOME/.local/share/fonts - used by font-manager
+			fontFiles.AddRange(FindFontsInFolder(Environment.GetFolderPath(Environment.SpecialFolder.Fonts)));		// $HOME/.fonts (used for manually added user specific fonts)
 			return fontFiles;
 		}
+#else
+		IEnumerable<string> FindWindowsFonts()
+		{
+			var fontFiles = new List<string>();
+			fontFiles.AddRange(FindFontsInFolder(Environment.GetFolderPath(Environment.SpecialFolder.Fonts)));
+			// Starting with Windows 10 build 1809, it is possible to install fonts without administrator privilege in the
+			// user directory %userprofile%\AppData\Local\Microsoft\Windows\Fonts.  For details, see https://github.com/matplotlib/matplotlib/issues/12954 and
+			// https://social.technet.microsoft.com/Forums/Windows/en-US/4434bb03-953b-4f61-bfad-9876c1703dca/set-default-windows-font-install-location-back-to-cwindowsfonts-for-all-users-clicking?forum=win10itprogeneral.
+			// For the effect on Bloom, see https://issues.bloomlibrary.org/youtrack/issue/BL-7043.
+			fontFiles.AddRange(FindFontsInFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Microsoft","Windows","Fonts")));
+			return fontFiles;
+		}
+#endif
 
-		IEnumerable<string> FindLinuxFonts(string folder)
+		IEnumerable<string> FindFontsInFolder(string folder)
 		{
 			var fontFiles = new List<string>();
 			if (Directory.Exists(folder))
 			{
 				foreach (var subfolder in Directory.EnumerateDirectories(folder))
-					fontFiles.AddRange(FindLinuxFonts(subfolder));
-				foreach (var file in Directory.EnumerateFiles(folder))
+					fontFiles.AddRange(FindFontsInFolder(subfolder));
+				foreach (var file in Directory.GetFiles(folder))
 				{
-					if (file.EndsWith(".ttf") || file.EndsWith(".otf"))
-						fontFiles.Add(file);
+					// ePUB only understands these types, so skip anything else.
+					switch (Path.GetExtension(file).ToLowerInvariant())
+					{
+						case ".ttf":
+						case ".otf":
+						case ".woff":
+						case ".woff2":
+							fontFiles.Add(file);
+							break;
+						default:
+							break;
+					}
 				}
 			}
 			return fontFiles;
 		}
-#endif
 	}
 
 	// its public interface (for purposes of test stubbing)
