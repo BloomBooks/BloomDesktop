@@ -1109,18 +1109,32 @@ namespace Bloom.Book
 				// Error out
 				var files = new List<string>(Directory.GetFiles(_folderPath));
 				var b = new StringBuilder();
-				b.AppendLine("Could not determine which html file in the folder to use.");
+				var msg1 = LocalizationManager.GetString("Errors.MultipleHtmlFiles",
+					"Bloom book folders must have only one file ending in .htm. In the book \"{0}\", these are the files ending in .htm:",
+					"{0} will get the name of the book");
+				var msg2 = LocalizationManager.GetString("Errors.RemoveExcessHtml",
+					"Please remove all but one of them.  Bloom will now open this folder for you.",
+					"This follows the Errors.MultipleHtmlFiles message and a list of HTML files.");
+				b.AppendLineFormat(msg1, Path.GetFileName(_folderPath));
 				if (files.Count == 0)
 					b.AppendLine("***There are no files.");
 				else
 				{
-					b.AppendLine("Files in this book are:");
 					foreach (var f in files)
 					{
-						b.AppendLine("  " + f);
+						var ext = Path.GetExtension(f).ToLowerInvariant();
+						if (ext == ".htm" || ext == ".html")
+							b.AppendLine("  * " + Path.GetFileName(f));
 					}
 				}
-				throw new ApplicationException(b.ToString());
+				b.AppendLine(msg2);
+				ErrorReport.NotifyUserOfProblem(b.ToString());
+				// Open the file explorer on the book's folder to allow the user to delete (or move?) the unwanted file.
+				System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo() {
+					FileName = _folderPath + Path.DirectorySeparatorChar,
+					UseShellExecute = true,
+					Verb = "open"
+				});
 			}
 			else
 			{
