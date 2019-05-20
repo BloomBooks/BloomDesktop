@@ -152,10 +152,12 @@ export default class BloomField {
         (<any>bloomEditableDiv).bloomCkEditor = ckeditor;
     }
 
-    private static convertStandardFormatVerseMarkersToSuperscript(
+    // Not private so we can unit test it. It is too difficult to get the actual paste
+    // event to get fired and handled correctly in tests.
+    public static convertStandardFormatVerseMarkersToSuperscript(
         inputText: any
     ): any {
-        const re = new RegExp("\\\\v\\s(\\d+)", "g");
+        const re = /\\v\s(\d+)/g;
         const matches = re.exec(inputText);
         if (matches == null) {
             //just let it paste
