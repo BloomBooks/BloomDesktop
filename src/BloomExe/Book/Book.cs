@@ -1398,6 +1398,7 @@ namespace Bloom.Book
 			if (!OurHtmlDom.UpdatePageToTemplate(pageDom, templatePage.GetDivNodeForThisPage(), pageId, allowDataLoss))
 				return false;
 			AddMissingStylesFromTemplatePage(templatePage);
+			CopyMissingStylesheetFiles(templatePage);
 			UpdateEditableAreasOfElement(pageDom);
 			return true;
 		}
@@ -2162,16 +2163,7 @@ namespace Bloom.Book
 			}
 
 			//similarly, if the page has stylesheet files we don't have, copy them
-			foreach(string sheetName in templatePage.Book.OurHtmlDom.GetTemplateStyleSheets())
-			{
-				var destinationPath = Path.Combine(FolderPath, sheetName);
-				if (!RobustFile.Exists(destinationPath))
-				{
-					var sourcePath = Path.Combine(templatePage.Book.FolderPath, sheetName);
-					if (RobustFile.Exists(sourcePath))
-						RobustFile.Copy(sourcePath, destinationPath);
-				}
-			}
+			CopyMissingStylesheetFiles(templatePage);
 
 			// and again for scripts (but we currently only worry about ones in the page itself)
 			foreach (XmlElement scriptElt in newPageDiv.SafeSelectNodes(".//script[@src]"))
@@ -2217,6 +2209,26 @@ namespace Bloom.Book
 			_pageSelection.SelectPage(newPage, true);
 
 			InvokeContentsChanged(null);
+		}
+
+		/// <summary>
+		/// Copy stylesheet files referenced by the template page that this book doesn't yet have.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7170.
+		/// </remarks>
+		private void CopyMissingStylesheetFiles(IPage templatePage)
+		{
+			foreach (string sheetName in templatePage.Book.OurHtmlDom.GetTemplateStyleSheets())
+			{
+				var destinationPath = Path.Combine(FolderPath, sheetName);
+				if (!RobustFile.Exists(destinationPath))
+				{
+					var sourcePath = Path.Combine(templatePage.Book.FolderPath, sheetName);
+					if (RobustFile.Exists(sourcePath))
+						RobustFile.Copy(sourcePath, destinationPath);
+				}
+			}
 		}
 
 		/// <summary>
