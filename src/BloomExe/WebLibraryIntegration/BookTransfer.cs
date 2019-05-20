@@ -395,6 +395,12 @@ namespace Bloom.WebLibraryIntegration
 				}
 				metadata.SetUploader(UserId);
 				s3BookId = S3BookId(metadata);
+#if DEBUG
+				// S3 URL can be reasonably deduced, as long as we have the S3 ID, so print that out in Debug mode.
+				// Format: $"https://s3.amazonaws.com/BloomLibraryBooks{isSandbox}/{s3BookId}/{title}"
+				// Example: https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/jeffrey_su@sil.org/8d0d9043-a1bb-422d-aa5b-29726cdcd96a/AutoSplit+Timings
+				progress.WriteMessage("s3BookId: " + s3BookId);
+#endif
 				metadata.DownloadSource = s3BookId;
 				// Any updated ID at least needs to become a permanent part of the book.
 				// The file uploaded must also contain the correct DownloadSource data, so that it can be used

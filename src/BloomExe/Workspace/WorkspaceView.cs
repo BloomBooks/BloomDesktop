@@ -60,7 +60,7 @@ namespace Bloom.Workspace
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
-		private readonly LocalizationManager _localizationManager;
+		private readonly ILocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
 		private ZoomControl _zoomControl;
 		private static LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
@@ -81,7 +81,7 @@ namespace Bloom.Workspace
 							LocalizationChangedEvent localizationChangedEvent,
 							ProblemReporterDialog.Factory problemReportDialogFactory,
 							//ChorusSystem chorusSystem,
-							LocalizationManager localizationManager,
+							ILocalizationManager localizationManager,
 							CollectionSettings collectionSettings
 
 			)
