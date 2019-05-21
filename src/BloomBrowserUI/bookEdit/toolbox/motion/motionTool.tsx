@@ -912,7 +912,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
                 "; animation-duration: " +
                 duration +
                 "s; animation-fill-mode: forwards; " +
-                "animation-timing-function: linear;}",
+                "animation-timing-function: ease-in-out;}",
             1
         );
     }
