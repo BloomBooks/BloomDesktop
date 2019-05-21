@@ -625,6 +625,12 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                 >
                                     About Bloom Reader
                                 </HelpLink>
+                                <HelpLink
+                                    l10nKey="PublishTab.Android.AboutBookFeatures"
+                                    helpId="Tasks/Publish_tasks/Features.htm"
+                                >
+                                    About Book Features
+                                </HelpLink>
                                 <HtmlHelpLink
                                     l10nKey="PublishTab.Android.Troubleshooting"
                                     fileid="Publish-Android-Troubleshooting"
