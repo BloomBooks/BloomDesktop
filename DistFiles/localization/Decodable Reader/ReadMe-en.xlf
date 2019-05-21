@@ -28,7 +28,7 @@
         <note>ID: decodable.learn.videos</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpindex">
-        <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".</source>
+        <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
         <target />
         <note>ID: decodable.learn.helpindex</note>
       </trans-unit>

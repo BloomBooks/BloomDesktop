@@ -7,7 +7,7 @@ You can also make a Bloom Pack of *templates* that others can use to quickly cre
 To learn about using Leveled Readers in Bloom, you can: {i18n="leveled.learn"}
 
 - Watch [these instructional videos](http://tiny.cc/8vbwux).{i18n="leveled.learn.videos"}
-- Go to the Help menu, choose 'Help', and look in the index under "Leveled Readers".{i18n="leveled.learn.helpindex"}
+- Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".{i18n="leveled.learn.helpindex"}
 - Go to the Help menu and choose: "Building Reader Templates".{i18n="leveled.learn.helpmenu"}
 
 ### Relationship to Decodable Readers {i18n="leveled.vs.decodable"}
