@@ -219,6 +219,11 @@ namespace Bloom.Book
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "TemplateBooks.PageDescription.Flyleaf",
 				"This page was automatically inserted because the following page is marked as part of a two page spread.");
 
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "TemplateBooks.Quiz.HintBubble.Answer",
+				"Put a possible answer here. Check it if it is correct.");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "TemplateBooks.Quiz.HintBubble.Question",
+				"Put a comprehension question here");
+
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.PasteImage", "Paste Image");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.ChangeImage", "Change Image");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.EditMetadata",
@@ -267,8 +272,8 @@ namespace Bloom.Book
 				: LocalizationManager.GetString(key, defaultText);
 
 			//We have to match on some key. Ideally, we'd match on something "key-ish", like BookEditor.FrontMatter.BookTitlePrompt
-			//But that would require changes to all the templates to have that key somehow, in adition to or in place of the current English
-			//So for now, we're just keeping the real key on the c#/tmx side of things, and letting the javascript work by matching our defaultText to the English text in the html
+			//But that would require changes to all the templates to have that key somehow, in addition to or in place of the current English
+			//So for now, we're just keeping the real key on the c#/xlf side of things, and letting the javascript work by matching our defaultText to the English text in the html
 			var keyUsedInTheJavascriptDictionary = defaultText;
 			if (!dictionary.ContainsKey(keyUsedInTheJavascriptDictionary))
 			{
