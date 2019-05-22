@@ -1331,7 +1331,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />
   </ItemGroup>
   <ItemGroup>
-    <SourceFiles Include="..\..\lib\dotnet\*.config" />
+    <SourceFiles Include="..\..\lib\dotnet\*.config" Exclude="..\..\lib\dotnet\GeckofxHtmlToPdf.exe.config" />
   </ItemGroup>
   <ItemGroup>
     <LameFiles Include="..\..\lib\lame\lame*.*" />
