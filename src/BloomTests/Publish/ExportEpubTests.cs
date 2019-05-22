@@ -1364,6 +1364,10 @@ namespace BloomTests.Publish
 		public void AddAudioOverlay_SubElementPlaybackModes_ProducesCorrectTimings(bool mergeAudio)
 		{
 			// Setup //
+			double expectedDurationPerClip = GetFakeAudioDurationSecs();
+			double expectedDurationPerSegment = expectedDurationPerClip / 2;
+
+			var extraEditDivClassesAndAttributes = $"audio-sentence' id='audio1' data-audiorecordingendtimes='{expectedDurationPerSegment} {expectedDurationPerClip}";  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
 			string firstDivContents =
 @"<p>
 	<span id='text1' class='bloom-highlightSegment'>Sentence 1</span>
@@ -1371,8 +1375,8 @@ namespace BloomTests.Publish
 </p>";
 
 			string secondDivHtml =
-@"<div class='bloom-translationGroup'>
-	<div lang='xyz' class='bloom-editable audio-sentence' id='audio2' data-audiorecordingendtimes='0.836 1.672'>
+$@"<div class='bloom-translationGroup'>
+	<div lang='xyz' class='bloom-editable audio-sentence' id='audio2' data-audiorecordingendtimes='{expectedDurationPerSegment} {expectedDurationPerClip}'>
 		<p>
 			<span id='text3' class='bloom-highlightSegment'>Sentence 3.</span>
 			<span id='text4' class='bloom-highlightSegment'>Sentence 4.</span>
@@ -1380,7 +1384,6 @@ namespace BloomTests.Publish
 	</div>
 </div>";
 
-			var extraEditDivClassesAndAttributes = "audio-sentence' id='audio1' data-audiorecordingendtimes='0.836 1.672";  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
 			var book = SetupBookLong(
 				text: firstDivContents,
 				lang: "xyz",
@@ -1400,13 +1403,11 @@ namespace BloomTests.Publish
 			var assertSmil = AssertThatXmlIn.String(FixContentForXPathValueSlash(smilData));
 
 			string smilSeqPrefix = "smil:smil/smil:body/smil:seq";
-			double expectedDurationPerSegment = GetFakeAudioDurationSecs() / 2.0;
 
 			for (int divIndex = 0; divIndex < 2; ++divIndex)
 			{
-				string expectedFilename = mergeAudio ? "page1" : $"audio{divIndex+1}";
-				
-				double divStartTime = mergeAudio ? (divIndex*0.836*2) : 0;
+				string expectedFilename = mergeAudio ? "page1" : $"audio{divIndex+1}";				
+				double divStartTime = mergeAudio ? (divIndex * expectedDurationPerClip) : 0;
 
 				for (int j = 0; j < 2; ++j)
 				{
