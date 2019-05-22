@@ -15,7 +15,7 @@
             cursor: pointer;
             height: 15px;
             width: 15px;
-            border: 1px solid black;
+            border: 2px solid black;
             margin-right: 10px;
         }
 
@@ -40,6 +40,14 @@
     }
 }
 
+// The quiz page is formatted with just enough space for each question/answer, so a format button in
+// the usual place on the left overlaps the text annoyingly. So for these pages we move it to the
+// right. (Not sure why that wouldn't always be better.)
+.quiz #formatButton {
+    left: unset;
+    right: 0;
+}
+
 // In edit mode, the check boxes are checked if marked correct.
 body.editMode
     .bloom-page.simple-comprehension-quiz
@@ -54,6 +62,7 @@ body.editMode
     &.correct-answer {
         .styled-check-box {
             background-color: green;
+            border-color: green;
         }
 
         .styled-check-box::after {
@@ -72,6 +81,7 @@ body.editMode
     .checkbox-and-textbox-choice.correct-answer.wasSelectedAtOnePoint {
     .styled-check-box {
         background-color: green;
+        border-color: green;
     }
 
     .styled-check-box::after {

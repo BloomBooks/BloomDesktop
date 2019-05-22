@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.Publish.Epub;
 using Bloom.web;
 using BloomTemp;
+using NuGet;
 using SIL.IO;
 using SIL.Xml;
 
@@ -60,6 +61,10 @@ namespace Bloom.Publish.Android
 				ExtractQuestionGroups(page, questions);
 				page.ParentNode.RemoveChild(page);
 			}
+			var quizPages = modifiedBook.RawDom.SafeSelectNodes(
+				"//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'simple-comprehension-quiz')]");
+			foreach (var page in quizPages.Cast<XmlElement>().ToArray())
+				AddQuizQuestionGroup(page, questions);
 			var builder = new StringBuilder("[");
 			foreach (var question in questions)
 			{
@@ -101,6 +106,46 @@ namespace Bloom.Publish.Android
 			modifiedBook.Save();
 
 			return modifiedBook;
+		}
+
+		// Given a page built using the new simple-comprehension-quiz template, generate JSON to produce the same
+		// effect (more-or-less) in BloomReader 1.x. These pages are NOT deleted like the old question pages,
+		// so we need to mark the JSON onlyForBloomReader1 to prevent BR2 from duplicating them.
+		private static void AddQuizQuestionGroup(XmlElement page, List<QuestionGroup> questions)
+		{
+			var questionElts =
+				page.SafeSelectNodes(
+					".//div[contains(@class, 'bloom-editable') and contains(@class, 'bloom-content1') and contains(@class, 'QuizQuestion-style')]");
+			var answerElts =
+				page.SafeSelectNodes(
+					".//div[contains(@class, 'bloom-editable') and contains(@class, 'bloom-content1') and contains(@class, 'QuizAnswer-style')]")
+				.Cast<XmlElement>()
+				.Where(a => !string.IsNullOrWhiteSpace(a.InnerText));
+			if (questionElts.Count == 0 || !answerElts.Any())
+			{
+				return;
+			}
+
+			var questionElt = questionElts[0];
+			if (string.IsNullOrWhiteSpace(questionElt.InnerText))
+				return;
+			var lang = questionElt.Attributes["lang"]?.Value ?? "";
+			if (string.IsNullOrEmpty(lang))
+				return; // paranoia, bloom-editable without lang should not be content1
+
+			var group = new QuestionGroup() { lang = lang, onlyForBloomReader1 = true};
+			var question = new Question()
+			{
+				question = questionElt.InnerText.Trim(),
+				answers = answerElts.Select(a => new Answer()
+				{
+					text= a.InnerText.Trim(),
+					correct = ((a.ParentNode?.ParentNode as XmlElement)?.Attributes["class"]?.Value ??"").Contains("correct-answer")
+				}).ToArray()
+			};
+			group.questions = new [] {question};
+
+			questions.Add(group);
 		}
 
 

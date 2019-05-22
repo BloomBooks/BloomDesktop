@@ -464,6 +464,8 @@ namespace BloomTests.Publish
 					Assert.That(groups[0].lang, Is.EqualTo("en"));
 					Assert.That(groups[1].lang, Is.EqualTo("fr"));
 
+					Assert.That(groups[0].onlyForBloomReader1, Is.False);
+
 					Assert.That(groups[0].questions[0].question, Is.EqualTo("Where do questions belong?"));
 					Assert.That(groups[0].questions[0].answers, Has.Length.EqualTo(3));
 					Assert.That(groups[0].questions[0].answers[0].text, Is.EqualTo("At the end"));
@@ -495,6 +497,93 @@ namespace BloomTests.Publish
 
 					// Make sure we don't miss the last answer of the last question.
 					Assert.That(groups[2].questions[3].answers[3].text, Is.EqualTo("Wherever"));
+				}
+			);
+		}
+
+		[Test]
+		public void CompressbookForDevice_ConvertsNewQuizPagesToJson_AndKeepsThem()
+		{
+			var bookHtml = @"<html>
+<head>
+	<meta charset='UTF-8'></meta>
+	<link rel='stylesheet' href='../settingsCollectionStyles.css' type='text/css'></link>
+	<link rel='stylesheet' href='../customCollectionStyles.css' type='text/css'></link>
+</head>
+<body>
+	<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+		<div  contenteditable='true'>This page should make it into the book</div>
+	</div>
+    <div class='bloom-page simple-comprehension-quiz bloom-interactive-page Device16x9Portrait side-right bloom-monolingual' id='86574a93-a50f-42da-b88f-574ef790c481' data-page='' data-pagelineage='F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D' data-page-number='1' lang=''>
+        <div class='pageLabel' lang='en'>
+            Quiz Page
+        </div>
+        <div class='pageDescription' lang='en'></div>
+
+        <div class='marginBox'>
+            <div class='quiz'>
+                <div class='bloom-translationGroup bloom-trailingElement cc-style' data-default-languages='auto'>
+                    <div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable cke_editable QuizQuestion-style cke_focus bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
+                        <p>Where do questions belong?</p>
+					</div>
+				</div>
+				<div class='checkbox-and-textbox-choice'>
+					<div class='bloom-translationGroup bloom-trailingElement cc-style' data-default-languages='auto'>
+						<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable cke_editable QuizAnswer-style cke_focus bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
+							<p>At the end</p>
+						</div>
+					</div>
+				</div>
+				<div class='checkbox-and-textbox-choice'>
+					<div class='bloom-translationGroup bloom-trailingElement cc-style' data-default-languages='auto'>
+						<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable cke_editable QuizAnswer-style cke_focus bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
+							<p>At the start</p>
+						</div>
+					</div>
+				</div>
+				<div class='checkbox-and-textbox-choice correct-answer'>
+					<div class='bloom-translationGroup bloom-trailingElement cc-style' data-default-languages='auto'>
+						<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable cke_editable QuizAnswer-style cke_focus bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
+							<p>In the middle</p>
+						</div>
+					</div>
+				</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>";
+			TestHtmlAfterCompression(bookHtml,
+				assertionsOnResultingHtmlString:
+				html =>
+				{
+					// The quiz pages should not be removed.
+					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+					AssertThatXmlIn.Dom(htmlDom)
+						.HasSpecifiedNumberOfMatchesForXpath("//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'simple-comprehension-quiz')]", 1);
+				},
+
+				assertionsOnZipArchive: paramObj =>
+				{
+					var zip = paramObj.ZipFile;
+					var json = GetEntryContents(zip, BloomReaderFileMaker.QuestionFileName);
+					var groups = QuestionGroup.FromJson(json);
+					Assert.That(groups, Has.Length.EqualTo(1));
+					Assert.That(groups[0].lang, Is.EqualTo("xyz"));
+					Assert.That(groups[0].questions, Has.Length.EqualTo(1));
+					Assert.That(groups[0].onlyForBloomReader1, Is.True);
+
+					var question = groups[0].questions[0];
+					Assert.That(question.question, Is.EqualTo("Where do questions belong?"));
+
+					var answers = question.answers;
+					Assert.That(answers.Length, Is.EqualTo(3));
+					Assert.That(answers[0].text, Is.EqualTo("At the end"));
+					Assert.That(answers[1].text, Is.EqualTo("At the start"));
+					Assert.That(answers[2].text, Is.EqualTo("In the middle"));
+					Assert.That(answers[0].correct, Is.False);
+					Assert.That(answers[1].correct, Is.False);
+					Assert.That(answers[2].correct, Is.True);
 				}
 			);
 		}

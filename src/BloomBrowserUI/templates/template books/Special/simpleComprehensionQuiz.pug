@@ -17,6 +17,6 @@ mixin quizPage
 	+page('Quiz Page', 'Use for comprehension testing.').simple-comprehension-quiz.bloom-interactive-page#F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D(data-page='extra' data-analyticsCategories="comprehension")
 		.quiz
 			+field("auto").QuizQuestion-style(data-hint="Put a comprehension question here")
-			each dummy in new Array(8)
+			each dummy in new Array(7)
 				+choice()
 			script(src="simpleComprehensionQuiz.js")

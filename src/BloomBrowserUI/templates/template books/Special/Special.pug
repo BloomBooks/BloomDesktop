@@ -14,56 +14,13 @@ html
 		+stylesheets('Special.css')
 		+standardStyles
 			= '\n'
-			| .quiz-style { font-size: 11pt !important;}
-			| .QuizQuestion-style {font-weight: bold !important;}
+			| .QuizAnswer-style { font-size: 12pt !important;}
+			| .QuizQuestion-style {font-size: 12pt !important; font-weight: bold !important;}
 	body
 		+dataDiv
 			+bookVariable-title('en', 'Special')
 			+bookVariable('styleNumberSequence', '*', '0')
 
-		//- note that these pages are NOT numbered. This is unusual for insertable pages, but we don't
-		//- want them in the printed output so the numbering of other pages should not be affected.
-		//- Enhance: we need to figure out a way to handle localization.
-		//- One option is to localize by adding resular xlf ids (i18n="EditTab.AddPageDialog.CC.EnterQuestions")) to each block.
-		//- But then we have to mess with injecting it, and end up with multiple Basic Book-xx.htm files, and have to pick the
-		//- right one to show, and the book created from the template will only have the instructions in one language
-		//- which could be a nuisance later.
-		//- A more desirable outcome would be that the one Basic Book.htm contains all the localizations in a (non-editable)
-		//- translation group, and all of them get copied into any shell that is made with CQs, and the right one(s) are displayed
-		//- in the usual way. It's not obvious how that fits into our crowdin approach to getting the localizations, though.
-		//- Then again, we may end up with a special affordance for creating CQ pages and localizing a page of Basic Book will
-		//- not be a problem after all.
-		//- Yet another option is to have one or more placeholders for the instructions here and have the
-		//- Add Page dialog code insert localizations.
-		//- Warning: be careful not to use the 'questions' class anywhere else! Bloom publishing expects pages whose class list contains
-		//- 'questions' to be this one special type, and deletes them from publications (after extracting certain data to json for .bloomd).
-		+page('Bloom Reader Quiz', 'Use for comprehension testing.' ).questions.bloom-nonprinting#4140d100-e4c3-49c4-af05-dda5789e019b(data-page='extra').screen-only
-			.split-pane.vertical-percent
-				.split-pane-component.position-left
-					.split-pane-component-inner
-						div.quizIntructions
-							h1 Bloom Reader Quiz
-							p When the Bloom Reader Android app shows the book, it will present an interactive quiz at the end.
-							p Note, it will show the quiz only if you publish this book from a project that is participating in the
-								+link('https://docs.google.com/document/d/e/2PACX-1vQP50XgYhdlyre7KZOtlm_b7KEbEgXYRv_MMuSFng_eQg6SOS00Lm7esFCdSlnbvsPGBDjzysVHnxJO/pub') Bloom Enterprise Service.
-							h1 Instructions
-							p Enter your comprehension questions for this book. Add more "Comprehension Question" pages if you need more room.
-							h2 Example
-							p.key * marks correct answer
-							p
-							p How did the boy lose his cap?
-							p The bully took it
-							p *The wind blew it away
-							p He left it on the bus
-							p
-							p What did the moon do?
-							p Sent him a lollipop
-							p Hid behind clouds
-							p *Appeared to wear the cap
-				.split-pane-divider.vertical-divider
-				.split-pane-component.position-right
-					.split-pane-component-inner.adding
-						+field("auto").quiz-style.quizContents.bloom-userCannotModifyStyles.bloom-noAudio
 		+quizPage
 
 		+page('Translation Instructions', 'A page of instructions to translators which appears only in the Edit tab.' )#d054bb76-dc6b-4452-a4ab-f4b83ffa10cc(data-page='extra').bloom-noreader.bloom-nonprinting.screen-only
