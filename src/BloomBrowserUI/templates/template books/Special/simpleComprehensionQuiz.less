@@ -48,6 +48,17 @@
     right: 0;
 }
 
+// overrides a rule in EditMode.less to push the language label over and make room for cog on right.
+.bloom-editable.QuizAnswer-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
+.bloom-editable.QuizQuestion-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
+    margin-right: 24px;
+}
+// Also hide the label except in the focused item.
+.bloom-editable.QuizAnswer-style:not(.cke_focus)[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
+.bloom-editable.QuizQuestion-style:not(.cke_focus)[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
+    content: "";
+}
+
 // In edit mode, the check boxes are checked if marked correct.
 body.editMode
     .bloom-page.simple-comprehension-quiz
