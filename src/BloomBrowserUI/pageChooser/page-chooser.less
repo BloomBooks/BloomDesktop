@@ -143,10 +143,13 @@ body {
     background: inherit;
     border: 1px solid @bloom-buff;
 
-    //todo: this will have to change depending on orientation
     width: 60px;
     //take the height proportionally, from the width
     margin-left: 20px; //centers the thumbnail in the enclosing grid item
+
+    height: unset;
+    max-height: 85px;
+    object-fit: contain;
 }
 
 .disabled .thumbnail {
@@ -158,6 +161,9 @@ body {
         width: unset;
         height: 60px;
         margin-left: 6px;
+
+        max-width: 85px;
+        object-fit: contain;
     }
 }
 .gridItem {
