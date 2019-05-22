@@ -289,6 +289,17 @@ namespace Bloom.ImageProcessing
 		}
 		private static Image MakePngBackgroundTransparent(PalasoImage originalImage)
 		{
+			// If the image is indexed and opaque, convert the palette to have a transparent background.  This produces
+			// a much smaller image file than the process of redrawing the image with a transparent conversion.  That
+			// process always produces a 32-bit RGBA format image.  Changing the palette should also be faster than
+			// redrawing in a new size and format.
+			// libgdiplus on Linux doesn't handle Alpha (transparency) information for indexed format images.
+			if (SIL.PlatformUtilities.Platform.IsWindows && ImageUtils.IsIndexedAndOpaque(originalImage.Image))
+			{
+				var revisedBitmap = originalImage.Image.Clone() as Image;
+				revisedBitmap.Palette = GivePaletteTransparentBackground(revisedBitmap);
+				return revisedBitmap;
+			}
 			//impose a maximum size because in BL-2871 "Opposites" had about 6k x 6k and we got an ArgumentException
 			//from the new BitMap()
 			var destinationWidth = Math.Min(1000, originalImage.Image.Width);
@@ -306,6 +317,22 @@ namespace Bloom.ImageProcessing
 			return processedBitmap;
 		}
 
+		private static ColorPalette GivePaletteTransparentBackground(Image bitmap)
+		{
+			Debug.Assert((bitmap.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed);
+			var palette = bitmap.Palette;
+			for (var i = 0; i < palette.Entries.Length; i++)
+			{
+				var color = palette.Entries[i];
+				if (color.R >= 253 && color.R <= 255 &&
+					color.G >= 253 && color.G <= 255 &&
+					color.B >= 253 && color.B <= 255)
+				{
+					palette.Entries[i] = Color.FromArgb(0, color.R, color.G, color.B);
+				}
+			}
+			return palette;		// assigning this back to the bitmap will actually update it.
+		}
 
 		private bool MakePngBackgroundTransparent(string originalPath, string pathToProcessedImage)
 		{
