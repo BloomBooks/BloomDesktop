@@ -16,6 +16,7 @@ namespace Bloom.Book
 	{
 		public Question[] questions { get; set; }
 		public string lang { get; set; }
+		public bool onlyForBloomReader1 { get; set; }
 
 		public string GetJson()
 		{
