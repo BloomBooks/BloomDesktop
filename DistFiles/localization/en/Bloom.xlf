@@ -2318,6 +2318,11 @@
         <note>The placeholder {0} represents the required version of Bloom. For example, {0} might be replaced with "4.4"</note>
         <note>The placeholder {1} represents a short description of the feature For example, {1} might be replaced with "Whole Text Audio"</note>
       </trans-unit>
+      <trans-unit id="Errors.MultipleHtmlFiles">
+        <source xml:lang="en">Bloom book folders must have only one file ending in .htm.  In the book "{0}", these are the files ending in .htm:</source>
+        <note>ID: Errors.MultipleHtmlFiles</note>
+        <note>{0} will get the name of the book</note>
+      </trans-unit>
       <trans-unit id="Errors.NeedNewerVersion">
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}</source>
         <note>ID: Errors.NeedNewerVersion</note>
@@ -2339,6 +2344,11 @@
       <trans-unit id="Errors.ProblemImportingVideo">
         <source xml:lang="en">Bloom had a problem importing this video.</source>
         <note>ID: Errors.ProblemImportingVideo</note>
+      </trans-unit>
+      <trans-unit id="Errors.RemoveExcessHtml">
+        <source xml:lang="en">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</source>
+        <note>ID: Errors.RemoveExcessHtml</note>
+        <note>This follows the Errors.MultipleHtmlFiles message and a list of HTML files.</note>
       </trans-unit>
       <trans-unit id="Errors.ReportThisProblemButton">
         <source xml:lang="en">Report this problem to Bloom Support</source>
@@ -2796,7 +2806,7 @@
       <trans-unit id="PublishTab.Android.Features" sil:dynamic="true">
         <source xml:lang="en">Features</source>
         <note>ID: PublishTab.Android.Features</note>
-		<note>The second heading in the Settings section, which shows a checklist of various features.</note>
+        <note>The second heading in the Settings section, which shows a checklist of various features.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true">
         <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
@@ -2876,7 +2886,7 @@
       <trans-unit id="PublishTab.Android.Thumbnail" sil:dynamic="true">
         <source xml:lang="en">Thumbnail</source>
         <note>ID: PublishTab.Android.Thumbnail</note>
-		<note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
+        <note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Troubleshooting" sil:dynamic="true">
         <source xml:lang="en">Troubleshooting Tips</source>
