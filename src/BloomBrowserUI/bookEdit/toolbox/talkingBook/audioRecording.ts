@@ -1612,9 +1612,9 @@ export default class AudioRecording {
                     kAudioSentence
                 );
                 for (let i = 0; i < collection.length; ++i) {
-                    const element = collection.item(i);
-                    if (element) {
-                        audioSegments.push(element);
+                    const audioSentenceElement = collection.item(i);
+                    if (audioSentenceElement) {
+                        audioSegments.push(audioSentenceElement);
                     }
                 }
             }
