@@ -1,3 +1,7 @@
+@import (reference) "../../../bloomUI.less";
+
+@vertical-space: 10px;
+
 .bloom-page.simple-comprehension-quiz {
     // These are usually defined under :root. But in bloom-player, any rules
     // using things above the "actual-page-preview" element where we attach the
@@ -10,8 +14,15 @@
     --pure-material-onsurface-rgb: 0, 0, 0;
 
     .bloom-translationGroup {
-        margin-bottom: 10px;
+        margin-bottom: @vertical-space;
         flex-grow: 1;
+    }
+    h1 {
+        text-align: center;
+        padding: 5px;
+        color: white;
+        background-color: @bloom-red;
+        margin-bottom: @vertical-space;
     }
     .checkbox-and-textbox-choice {
         display: flex; // horizontal;
