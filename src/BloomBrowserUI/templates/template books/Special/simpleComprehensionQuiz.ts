@@ -49,14 +49,20 @@ function initChoiceWidgets(): void {
     markEmptyChoices();
     const observer = new MutationObserver(markEmptyChoices);
     observer.observe(document.body, { characterData: true, subtree: true });
-    const list = document.getElementsByClassName("styled-check-box");
+    const list = document.getElementsByClassName("checkbox-and-textbox-choice");
     for (let i = 0; i < list.length; i++) {
-        const x = list[i];
+        const x = list[i] as HTMLElement;
+        const checkbox = getCheckBox(x);
+        const correct = x.classList.contains("correct-answer");
         if (document.body.classList.contains("editMode")) {
-            x.addEventListener("click", handleEditModeClick);
+            checkbox.addEventListener("click", handleEditModeClick);
+            // Not sure why this doesn't get persisted along with the correct-answer class,
+            // but glad it doesn't, because we don't want it to show up even as a flash
+            // in reader mode.
+            checkbox.checked = correct;
         } else {
-            x!.parentElement!.addEventListener("click", handleReadModeClick);
-            const key = getStorageKeyForChoice(x!.parentElement!);
+            x.addEventListener("click", handleReadModeClick, { capture: true });
+            const key = getStorageKeyForChoice(x! as HTMLElement);
             if (
                 (window as any).BloomPlayer &&
                 (window as any).BloomPlayer.getPageData(
@@ -64,16 +70,28 @@ function initChoiceWidgets(): void {
                     key
                 ) === kwasSelectedAtOnePoint
             ) {
-                choiceWasClicked(x!.parentElement!);
+                choiceWasClicked(x! as HTMLElement);
+            } else {
+                checkbox.checked = false; // just to make sure
             }
         }
     }
 }
 
+function getCheckBox(holder: HTMLElement): HTMLInputElement {
+    return holder.firstElementChild as HTMLInputElement;
+}
+
 function handleEditModeClick(evt: Event): void {
-    const target = evt.target as HTMLElement;
-    if (target && target.parentElement) {
-        target.parentElement.classList.toggle("correct-answer");
+    const target = evt.target as HTMLInputElement;
+    if (!target) {
+        return;
+    }
+    const wrapper = (evt.currentTarget as HTMLElement).parentElement;
+    if (target.checked) {
+        wrapper!.classList.add("correct-answer");
+    } else {
+        wrapper!.classList.remove("correct-answer");
     }
 }
 
@@ -97,6 +115,9 @@ function getStorageKeyForChoice(choice: HTMLElement): string {
 }
 
 function handleReadModeClick(evt: Event): void {
+    // prevent the browser messing with the check box checked state
+    evt.stopPropagation();
+    evt.preventDefault();
     const currentTarget = evt.currentTarget as HTMLElement;
     choiceWasClicked(currentTarget);
     const correct = currentTarget.classList.contains("correct-answer");
@@ -117,20 +138,24 @@ function handleReadModeClick(evt: Event): void {
 }
 
 // it was either clicked just now, or we're loading from storage
-// and we need to make it look like it looke last time we were on this
+// and we need to make it look like it looked last time we were on this
 // page
 function choiceWasClicked(choice: HTMLElement): void {
     const classes = choice.classList;
     classes.add(kwasSelectedAtOnePoint);
-    // Make the state of the hidden input conform (for screen readers). Only if the
+    // Make the state of the hidden input conform. Only if the
     // correct answer was clicked does the checkbox get checked.
-    const checkBox = choice.getElementsByClassName(
-        "hiddenCheckbox"
-    )[0] as HTMLInputElement;
+    const checkBox = getCheckBox(choice);
     // at this point, we only actually make the check happen if
     // this was the correct answer
     if (checkBox) {
-        checkBox.checked = classes.contains("correct-answer");
+        const desiredState = classes.contains("correct-answer");
+        checkBox.checked = desiredState;
+        // Something I can't track down resets it to unchecked
+        // if the user clicks on the input itself. Even with zero delay,
+        // this makes something happen in the next event cycle that
+        // keeps it the way we want.
+        window.setTimeout(() => (checkBox.checked = desiredState), 0);
     }
 }
 
