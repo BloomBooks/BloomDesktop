@@ -27,9 +27,29 @@
                 }
 
                 // If we found "<" it means that most likely there's some tag and we don't want to touch it.
+                // Chrome gratuitously wraps the copied data with "<!--StartFragment-->" and "<!--EndFragment-->"
+                // when copying from the address bar.  Copying from inside VS-Code does the same on Windows but
+                // also adds "<p class='removeMe'></p>" at the end of the data before that even on Linux.  On
+                // Linux, these two sources also terminate the data with "\u0000".
+                // These shouldn't prevent the paste from automatically inserting a link.
+                // See https://issues.bloomlibrary.org/youtrack/issue/BL-6845.
+                if (
+                    data.startsWith("<!--StartFragment-->") &&
+                    data.endsWith("<!--EndFragment-->")
+                ) {
+                    data = data.substring(20);
+                    data = data.substring(0, data.length - 18);
+                }
+                if (data.endsWith("\u0000")) {
+                    data = data.substring(0, data.length - "\u0000".length);
+                }
+                if (data.endsWith("<p class='removeMe'></p>")) {
+                    data = data.substring(0, data.length - 24);
+                }
                 if (data.indexOf("<") > -1) {
                     return;
                 }
+                const unlinkedData = data;
 
                 // Create valid email links (#1761).
                 if (data.match(validEmailRegex)) {
@@ -52,11 +72,10 @@
 
                 // If link was discovered, change the type to 'html'. This is important e.g. when pasting plain text in Chrome
                 // where real type is correctly recognized.
-                if (data != evt.data.dataValue) {
+                if (data != unlinkedData) {
                     evt.data.type = "html";
+                    evt.data.dataValue = data;
                 }
-
-                evt.data.dataValue = data;
             });
 
             function tryToEncodeLink(data) {
