@@ -58,6 +58,7 @@ function initChoiceWidgets(): void {
             x!.parentElement!.addEventListener("click", handleReadModeClick);
             const key = getStorageKeyForChoice(x!.parentElement!);
             if (
+                (window as any).BloomPlayer &&
                 (window as any).BloomPlayer.getPageData(
                     x.closest(".bloom-page"),
                     key
@@ -104,11 +105,13 @@ function handleReadModeClick(evt: Event): void {
     // The ui shows items that were (selected but wrong) differently than
     // items that were never tried.
     const key = getStorageKeyForChoice(currentTarget);
-    (window as any).BloomPlayer.storePageData(
-        currentTarget.closest(".bloom-page"),
-        key,
-        kwasSelectedAtOnePoint
-    );
+    if ((window as any).BloomPlayer) {
+        (window as any).BloomPlayer.storePageData(
+            currentTarget.closest(".bloom-page"),
+            key,
+            kwasSelectedAtOnePoint
+        );
+    }
 
     reportScore(correct);
 }
