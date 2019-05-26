@@ -1,6 +1,10 @@
 import * as React from "react";
 import HelpLink from "../../react_components/helpLink";
-import { IUILanguageAwareProps, P, String } from "../../react_components/l10n";
+import {
+    IUILanguageAwareProps,
+    P,
+    String
+} from "../../react_components/l10nComponents";
 import Link from "../../react_components/link";
 
 import "./learnAboutAccessibility.less";

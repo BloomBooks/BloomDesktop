@@ -2,7 +2,7 @@ import * as React from "react";
 import ReactTable from "react-table";
 import * as mobxReact from "mobx-react";
 import { StringListCheckbox } from "../../react_components/stringListCheckbox";
-import { Label } from "../../react_components/l10n";
+import { Label } from "../../react_components/l10nComponents";
 import { Link } from "../../react_components/link";
 import "./BookMetadataTable.less";
 import SubjectChooser from "./SubjectChooser";

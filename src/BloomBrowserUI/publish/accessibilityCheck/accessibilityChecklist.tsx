@@ -1,5 +1,8 @@
 ﻿import * as React from "react";
-import { IUILanguageAwareProps, H1 } from "../../react_components/l10n";
+import {
+    IUILanguageAwareProps,
+    H1
+} from "../../react_components/l10nComponents";
 
 import "./accessibilityChecklist.less";
 import { CheckItem } from "./checkItem";

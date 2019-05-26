@@ -1,5 +1,5 @@
 import * as React from "react";
-import { IUILanguageAwareProps } from "../../react_components/l10n";
+import { IUILanguageAwareProps } from "../../react_components/l10nComponents";
 import WebSocketManager from "../../utils/WebSocketManager";
 import "errorHandler";
 

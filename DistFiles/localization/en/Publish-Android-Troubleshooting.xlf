@@ -48,7 +48,9 @@
         <note>ID: android.publish.usb.not.connect</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.consider.wifi">
-        <source xml:lang="en"><g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g></source>
+        <source xml:lang="en">
+<g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
+</source>
         <target />
         <note>ID: android.publish.usb.consider.wifi</note>
       </trans-unit>

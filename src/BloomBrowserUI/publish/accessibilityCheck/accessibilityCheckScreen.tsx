@@ -7,7 +7,7 @@ import { AccessibilityChecklist } from "./accessibilityChecklist";
 import { DaisyChecks } from "./daisyChecks";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { BloomApi } from "../../utils/bloomApi";
-import { String } from "../../react_components/l10n";
+import { String } from "../../react_components/l10nComponents";
 
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs

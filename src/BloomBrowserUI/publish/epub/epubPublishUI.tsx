@@ -12,10 +12,10 @@ import {
     H1,
     H2,
     IUILanguageAwareProps
-} from "../../react_components/l10n";
+} from "../../react_components/l10nComponents";
 import PWithLink from "../../react_components/pWithLink";
 import "./epubPublishUI.less";
-import "../previewCommon.less";
+import "./previewCommon.less";
 import EpubPreview from "./EpubPreview";
 // import { RadioGroup, Radio } from "../../react_components/radio";
 import WebSocketManager from "../../utils/WebSocketManager";
@@ -99,7 +99,7 @@ class EpubPublishUI extends React.Component<
                             <BloomButton
                                 className="save-button"
                                 enabled={true}
-                                clickEndpoint={"publish/epub/save"}
+                                clickApiEndpoint={"publish/epub/save"}
                                 hasText={true}
                                 l10nKey="PublishTab.Save"
                             >

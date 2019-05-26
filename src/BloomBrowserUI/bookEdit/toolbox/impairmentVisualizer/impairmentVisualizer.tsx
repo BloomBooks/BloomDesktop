@@ -1,6 +1,6 @@
 import * as React from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
-import { Div, Label } from "../../../react_components/l10n";
+import { Div, Label } from "../../../react_components/l10nComponents";
 import { BloomApi } from "../../../utils/bloomApi";
 import { ToolBox, ITool } from "../toolbox";
 import { ApiBackedCheckbox } from "../../../react_components/apiBackedCheckbox";

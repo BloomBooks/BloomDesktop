@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
     <body>
@@ -825,6 +825,16 @@
         <source xml:lang="en">Info</source>
         <note>ID: Common.Info</note>
         <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
+      </trans-unit>
+      <trans-unit id="Common.Warning">
+        <source xml:lang="en">Info</source>
+        <note>ID: Common.Warning</note>
+        <note>A heading shown above some messages.</note>
+      </trans-unit>
+      <trans-unit id="Common.Note">
+        <source xml:lang="en">Note</source>
+        <note>ID: Common.Note</note>
+        <note>A heading shown above some messages.</note>
       </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true">
         <source xml:lang="en">Help</source>
@@ -2791,7 +2801,7 @@
         <note>ID: PublishTab.Android.ChooseUSB</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseWifi" sil:dynamic="true">
-        <source xml:lang="en">Serve on WiFi Network</source>
+        <source xml:lang="en">Share over Wi-Fi</source>
         <note>ID: PublishTab.Android.ChooseWifi</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Control" sil:dynamic="true">
@@ -2819,12 +2829,12 @@
         <note>{1} is a number with one decimal place, the number of megabytes the font file takes up</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
-        <source xml:lang="en">Checking {0} font: License does not permit embedding.</source>
+        <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
         <note>{0} is a font name</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
-        <source xml:lang="en">Checking {0} font: No font found to embed.</source>
+        <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
         <note>{0} is a font name</note>
       </trans-unit>
@@ -2839,9 +2849,9 @@
         <note>{0} is a file path</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
-        <source xml:lang="en">Substituting "{0}" for "{1}"</source>
+        <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
-        <note>{0} and {1} are font names</note>
+        <note>{0} is a font name</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
         <source xml:lang="en">Get Bloom Reader App</source>
@@ -3001,14 +3011,9 @@
         <note>ID: PublishTab.Android.Wifi.Progress.beginAdvertising</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Start" sil:dynamic="true">
-        <source xml:lang="en">Start Serving</source>
+        <source xml:lang="en">Share</source>
         <note>ID: PublishTab.Android.Wifi.Start</note>
         <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Stop" sil:dynamic="true">
-        <source xml:lang="en">Stop Serving</source>
-        <note>ID: PublishTab.Android.Wifi.Stop</note>
-        <note>Button that tells Bloom to stop offering this book on the wifi network.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WrongLayout.Message">
         <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
@@ -3114,7 +3119,6 @@
         <note>ID: PublishTab.Epub.ReadiumCredit</note>
         <note>[Readium] should be left untranslated as a noun.  It will be changed into an HTML link to the Readium web page (https://readium.org/).  If the term "Readium" has been translated on a translated version of that web page, then the translated term may be substituted within the square brackets.  (Be sure to keep the square brackets [] around Readium or its translation!)</note>
       </trans-unit>
-
       <trans-unit id="PublishTab.Epub.RemoveFontSizes">
         <source xml:lang="en">Use ePUB reader's text size</source>
         <note>ID: PublishTab.Epub.RemoveFontSizes</note>
@@ -3146,17 +3150,17 @@
       </trans-unit>
       <trans-unit id="PublishTab.LessMemoryPdfMode">
         <source xml:lang="en">Use less memory (slower)</source>
-                <note>ID: PublishTab.LessMemoryPdfMode</note>
-                <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
-            </trans-unit>
-            <trans-unit id="PublishTab.NoBookletsMessage">
-                <source xml:lang="en">Bloom cannot make booklets using the current page size.</source>
-                <note>ID: PublishTab.NoBookletsMessage</note>
-                <note>If a book has a paper size that is too big (like A4), Bloom does not know how to make booklets with it. So the controls for booklets get disabled and this message is shown.</note>
-            </trans-unit>
-            <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation">
-                <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
-                <note>ID: PublishTab.Notifications.AdobeReaderRecommendation</note>
+        <note>ID: PublishTab.LessMemoryPdfMode</note>
+        <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.NoBookletsMessage">
+        <source xml:lang="en">Bloom cannot make booklets using the current page size.</source>
+        <note>ID: PublishTab.NoBookletsMessage</note>
+        <note>If a book has a paper size that is too big (like A4), Bloom does not know how to make booklets with it. So the controls for booklets get disabled and this message is shown.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation">
+        <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
+        <note>ID: PublishTab.Notifications.AdobeReaderRecommendation</note>
       </trans-unit>
       <trans-unit id="PublishTab.OnePagePerPaperRadio">
         <source xml:lang="en">Simple</source>

@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Label } from "../react_components/l10n";
+import { Label } from "../react_components/l10nComponents";
 import { Markdown } from "../react_components/markdown";
 import { Link } from "../react_components/link";
 import { HelpLink } from "../react_components/helpLink";

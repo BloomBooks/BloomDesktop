@@ -84,22 +84,26 @@ There are two ways people can use your template. The first way is to start new b
         <note>ID: template.starter.notes</note>
       </trans-unit>
       <trans-unit id="template.starter.nothingautomatic">
-        <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
+        <source xml:lang="en">
+          <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
         <target />
         <note>ID: template.starter.nothingautomatic</note>
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage">
-        <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
+        <source xml:lang="en">
+          <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
         <target />
         <note>ID: template.starter.nametonotaddpage</note>
       </trans-unit>
       <trans-unit id="template.starter.labelsnottranslatable">
-        <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
+        <source xml:lang="en">
+          <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
         <target />
         <note>ID: template.starter.labelsnottranslatable</note>
       </trans-unit>
       <trans-unit id="template.starter.editrawhtml">
-        <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt="" /></source>
+        <source xml:lang="en">
+          <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt="" /></source>
         <target />
         <note>ID: template.starter.editrawhtml</note>
       </trans-unit>

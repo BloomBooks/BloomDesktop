@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Label } from "./l10n";
-import { ILocalizationProps, LocalizableElement } from "./l10n";
+import { Label } from "./l10nComponents";
+import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
 import "./expandable.less";
 
 // Expandable implements an area with a heading (e.g., Advanced in Sign Language tool)
