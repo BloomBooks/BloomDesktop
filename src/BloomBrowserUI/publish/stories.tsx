@@ -12,6 +12,7 @@ import { ProgressDialog, ProgressState } from "./commonPublish/ProgressDialog";
 import { loremIpsum } from "lorem-ipsum";
 import { withA11y } from "@storybook/addon-a11y";
 import { LibraryPreview } from "./LibraryPublish/LibraryPreview";
+import { EPUBPublishScreen } from "./ePUBPublish/ePUBPublishScreen";
 
 addDecorator(withA11y);
 
@@ -35,7 +36,7 @@ storiesOf("Publish/ProgressDialog", module)
         <div>
             <ProgressDialog
                 progressState={ProgressState.Working}
-                messages={testText}
+                progressMessages={testText}
                 onUserClosed={() => {}}
                 onUserCanceled={() => {}}
                 onUserStopped={() => {}}
@@ -46,7 +47,7 @@ storiesOf("Publish/ProgressDialog", module)
         <div>
             <ProgressDialog
                 progressState={ProgressState.Done}
-                messages={testText}
+                progressMessages={testText}
                 onUserClosed={() => {}}
                 onUserCanceled={() => {}}
                 onUserStopped={() => {}}
@@ -58,7 +59,7 @@ storiesOf("Publish/ProgressDialog", module)
             <ProgressDialog
                 progressState={ProgressState.Done}
                 errorEncountered={true}
-                messages={testText}
+                progressMessages={testText}
                 onUserClosed={() => {}}
                 onUserCanceled={() => {}}
                 onUserStopped={() => {}}
@@ -95,6 +96,9 @@ storiesOf("Publish/DeviceFrame", module)
         </DeviceAndControls>
     ));
 
-storiesOf("Publish/Reader", module).add("BRPublishScreen", () => (
+storiesOf("Publish/Reader", module).add("ReaderPublishScreen", () => (
     <ReaderPublishScreen />
+));
+storiesOf("Publish/ePUB", module).add("EPUBPublishScreen", () => (
+    <EPUBPublishScreen />
 ));
