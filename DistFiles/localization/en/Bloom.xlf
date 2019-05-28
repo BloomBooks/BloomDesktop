@@ -4336,6 +4336,10 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Quiz</note>
         <note>Used in page preview for Comprehension Question pages. Should be short.</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Quiz Page" sil:dynamic="true">
+        <source xml:lang="en">Quiz Page</source>
+        <note>ID: TemplateBooks.PageLabel.Quiz Page</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
         <source xml:lang="en">SIL-Cameroon</source>
         <note>ID: TemplateBooks.PageLabel.SIL-Cameroon</note>
