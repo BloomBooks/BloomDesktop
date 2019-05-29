@@ -3112,6 +3112,11 @@ namespace Bloom.Book
 			}
 		}
 
+		public bool getHasMotionPages()
+		{
+			return OurHtmlDom.GetContainsMotion();
+		}
+
 		// This is a shorthand for a whole set of features.
 		// Note: we are currently planning to eventually store this primarily in the data-div, with the
 		// body feature attributes present only so that CSS can base things on it. This method would then

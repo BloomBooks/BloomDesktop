@@ -1,17 +1,18 @@
 import { BloomApi } from "../utils/bloomApi";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import {
     ILocalizationProps,
     ILocalizationState,
     LocalizableElement
-} from "./l10n";
+} from "./l10nComponents";
+import { Button } from "@material-ui/core";
 
 export interface IButtonProps extends ILocalizationProps {
     id?: string;
     enabled: boolean;
-    clickEndpoint?: string;
+    clickApiEndpoint?: string;
     onClick?: () => void;
+    transparent?: boolean;
     mightNavigate?: boolean; // true if the post of clickEndpoint might navigate to a new page.
     hasText: boolean; // allows us to define buttons with only images and no text.
     // If neither enabled or disabled image file is provided, no image will show.
@@ -52,31 +53,39 @@ export default class BloomButton extends LocalizableElement<
         ) {
             tip = this.getLocalizedTooltip(this.props.enabled);
         }
-        return (
-            <button
-                id={this.props.id}
-                className={
-                    this.props.className + (this.props.hidden ? " hidden" : "")
-                }
-                title={tip}
-                onClick={() => {
-                    if (this.props.onClick) {
-                        this.props.onClick();
-                    } else if (this.props.clickEndpoint) {
-                        if (this.props.mightNavigate) {
-                            BloomApi.postThatMightNavigate(
-                                this.props.clickEndpoint
-                            );
-                        } else {
-                            BloomApi.post(this.props.clickEndpoint);
-                        }
-                    }
-                }}
-                disabled={!this.props.enabled}
-            >
-                {image}
-                {this.props.hasText && this.getLocalizedContent()}
-            </button>
+        const commonProps = {
+            id: this.props.id,
+            title: tip,
+            onClick: () => this.onClick(),
+            disabled: !this.props.enabled,
+            className:
+                this.props.className + (this.props.hidden ? " hidden" : "")
+        };
+        const commonChildren = [
+            image,
+            this.props.hasText && this.getLocalizedContent()
+        ];
+        return this.props.transparent ? (
+            // I don't know how to make a material-ui button transparent at the moment,
+            /// so use a plain html one
+            <button {...commonProps}>{commonChildren}</button>
+        ) : (
+            // if not transparent, then we can use Material-ui
+            <Button {...commonProps} variant="contained" color="primary">
+                {commonChildren}
+            </Button>
         );
+    }
+
+    private onClick() {
+        if (this.props.onClick) {
+            this.props.onClick();
+        } else if (this.props.clickApiEndpoint) {
+            if (this.props.mightNavigate) {
+                BloomApi.postThatMightNavigate(this.props.clickApiEndpoint);
+            } else {
+                BloomApi.post(this.props.clickApiEndpoint);
+            }
+        }
     }
 }

@@ -836,6 +836,11 @@
         <note>ID: Common.Note</note>
         <note>A heading shown above some messages.</note>
       </trans-unit>
+      <trans-unit id="Common.Done">
+        <source xml:lang="en">Done</source>
+        <note>ID: Common.Done</note>
+        <note>Shown in a list of messages when Bloom has completed a task.</note>
+      </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>

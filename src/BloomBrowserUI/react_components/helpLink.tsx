@@ -1,5 +1,6 @@
 import * as React from "react";
-import { ILocalizationProps, LocalizableElement } from "./l10n";
+import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
+import { Link } from "@material-ui/core";
 
 interface IHelpLinkProps extends ILocalizationProps {
     helpId: string;
@@ -10,12 +11,12 @@ interface IHelpLinkProps extends ILocalizationProps {
 export class HelpLink extends LocalizableElement<IHelpLinkProps, {}> {
     public render() {
         return (
-            <a
+            <Link
                 style={this.props.style}
                 href={"/bloom/api/help/" + this.props.helpId}
             >
                 {this.getLocalizedContent()}
-            </a>
+            </Link>
         );
     }
 }

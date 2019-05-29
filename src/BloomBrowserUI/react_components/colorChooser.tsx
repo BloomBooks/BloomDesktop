@@ -57,6 +57,19 @@ export const ColorChooser: React.FunctionComponent<
                     (props.menuLeft ? " cc-pulldown-left" : "")
                 }
             >
+                <div className="cc-image-wrapper">
+                    <img
+                        className="cc-image"
+                        // the api ignores the color parameter, but it
+                        // causes this to re-request the img whenever the backcolor changes
+                        src={this.props.imagePath + this.props.backColorSetting}
+                        // When we're just looking at this in storybook, we want to show something
+                        // even though we don't have Bloom exe running to act as a server to deliver the actual thumbnail
+                        // so we can show the current color:
+                        style={{ backgroundColor: this.props.backColorSetting }}
+                        aria-label="color picker"
+                    />
+                </div>
                 <div
                     className="cc-pulldown-wrapper"
                     style={{

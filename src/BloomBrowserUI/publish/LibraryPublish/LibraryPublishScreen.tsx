@@ -11,7 +11,7 @@ import {
 } from "../commonPublish/BasePublishScreen";
 
 import { LibraryPublishSteps } from "./LibraryPublishSteps";
-import { PublishFeaturesGroup } from "../commonPublish/PublishFeaturesGroup";
+import { PublishFeaturesGroup } from "../ReaderPublish/PublishFeaturesGroup";
 import { LanguageGroup } from "../commonPublish/LanguageGroup";
 import { AudioGroup } from "../commonPublish/AudioGroup";
 import { LibraryPreview } from "./LibraryPreview";

@@ -9,8 +9,8 @@ import {
     SettingsPanel
 } from "../commonPublish/BasePublishScreen";
 import { MethodChooser } from "./MethodChooser";
-import { PublishFeaturesGroup } from "../commonPublish/PublishFeaturesGroup";
-import { ThumbnailGroup } from "../commonPublish/ThumbnailGroup";
+import { PublishFeaturesGroup } from "./PublishFeaturesGroup";
+import { ThumbnailGroup } from "./ThumbnailGroup";
 import "./ReaderPublish.less";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import ReactDOM = require("react-dom");
@@ -25,6 +25,24 @@ import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import Link from "../../react_components/link";
 
 export const ReaderPublishScreen = () => {
+    // When the user changes some features, included languages, etc., we
+    // need to rebuild the book and re-run all of our Bloom API queries.
+    // This requires a hard-reset of the whole screen, which we do by
+    // incrementing a `key` prop on the core of this screen.
+    const [keyForReset, setKeyForReset] = useState(0);
+    return (
+        <ReaderPublishScreenInternal
+            key={keyForReset}
+            onReset={() => {
+                setKeyForReset(keyForReset + 1);
+            }}
+        />
+    );
+};
+
+const ReaderPublishScreenInternal: React.FunctionComponent<{
+    onReset: () => void;
+}> = props => {
     const inStorybookMode = useContext(StorybookContext);
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
@@ -50,7 +68,6 @@ export const ReaderPublishScreen = () => {
             setBookUrl(url);
         }
     );
-
     const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
 
     return (
@@ -71,14 +88,18 @@ export const ReaderPublishScreen = () => {
                     <MethodChooser />
                 </PublishPanel>
                 <SettingsPanel>
-                    <PublishFeaturesGroup />
-                    <ThumbnailGroup />
+                    <PublishFeaturesGroup
+                        onChange={() => {
+                            props.onReset();
+                        }}
+                    />
+                    <ThumbnailGroup onChange={() => props.onReset()} />
                     <HelpGroup>
                         <HelpLink
-                            l10nKey="PublishTab.Android.AboutBloomReader"
-                            helpId="Concepts/Bloom_Reader_App.htm"
+                            l10nKey="PublishTab.Android.AboutBookFeatures"
+                            helpId="Tasks/Publish_tasks/Features.htm"
                         >
-                            About Bloom Reader
+                            About Book Features
                         </HelpLink>
                         <HtmlHelpLink
                             l10nKey="PublishTab.Android.Troubleshooting"
@@ -86,6 +107,12 @@ export const ReaderPublishScreen = () => {
                         >
                             Troubleshooting Tips
                         </HtmlHelpLink>
+                        <HelpLink
+                            l10nKey="PublishTab.Android.AboutBloomReader"
+                            helpId="Concepts/Bloom_Reader_App.htm"
+                        >
+                            About Bloom Reader
+                        </HelpLink>
                         <div className="icon-link-row get-bloom-reader">
                             <a href="https://play.google.com/store/search?q=%22sil%20international%22%2B%22bloom%20reader%22&amp;c=apps">
                                 <img

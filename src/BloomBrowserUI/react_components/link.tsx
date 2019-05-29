@@ -1,5 +1,7 @@
 import * as React from "react";
-import { ILocalizationProps, LocalizableElement } from "./l10n";
+import * as MUI from "@material-ui/core";
+
+import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
 
 interface ILinkProps extends ILocalizationProps {
     id?: string;
@@ -7,11 +9,11 @@ interface ILinkProps extends ILocalizationProps {
     onClick?: any; // overrides following any href.
 }
 
-// A normal html anchor element that is localizable.
+// A link element that is localizable.
 export class Link extends LocalizableElement<ILinkProps, {}> {
     public render() {
         // prettier-ignore
-        return (<a
+        return (<MUI.Link
                 className={this.props.className}
                 id={"" + this.props.id}
                 // href must be defined in order to maintain normal link UI
@@ -27,7 +29,7 @@ export class Link extends LocalizableElement<ILinkProps, {}> {
                         this.props.onClick();
                     }
                 }}
-            >{this.getLocalizedContent()}</a>);
+            >{this.getLocalizedContent()}</MUI.Link>);
     }
 }
 

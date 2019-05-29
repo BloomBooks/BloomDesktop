@@ -1,6 +1,8 @@
 import axios, { AxiosResponse, AxiosRequestConfig, AxiosPromise } from "axios";
 import * as StackTrace from "stacktrace-js";
 import { reportError, reportPreliminaryError } from "../lib/errorHandler";
+import { useState } from "react";
+import React = require("react");
 
 export class BloomApi {
     private static kBloomApiPrefix = "/bloom/api/";
@@ -112,6 +114,15 @@ export class BloomApi {
         BloomApi.pageIsClosing = true;
     }
 
+    public static getString(
+        urlSuffix: string,
+        successCallback: (value: string) => void
+    ) {
+        BloomApi.get(urlSuffix, result => {
+            successCallback(result.data);
+        });
+    }
+
     // This method is used to get a result from Bloom.
     public static get(
         urlSuffix: string,
@@ -120,6 +131,61 @@ export class BloomApi {
         BloomApi.wrapAxios(
             axios.get(this.kBloomApiPrefix + urlSuffix).then(successCallback)
         );
+    }
+
+    // A react hook for controlling an API-backed boolean from a React pure functional component
+    // Returns a tuple of [theCurrentValue, aFunctionForChangingTheValue(newValue)]
+    // When you call the returned function, two things happen: 1) we POST the value to the Bloom API
+    // and 2) we tell react that the value changed. It will then re-render the component;
+    // the component will call this again, but this time the tuple will contain the new value.
+    public static useApiBoolean(
+        urlSuffix: string,
+        defaultValue: boolean
+    ): [boolean, (value: boolean) => void] {
+        const [value, setValue] = React.useState(defaultValue);
+        React.useEffect(() => {
+            BloomApi.getBoolean(urlSuffix, c => {
+                setValue(c);
+            });
+        }, []);
+
+        const fn = (value: boolean) => {
+            BloomApi.postBoolean(urlSuffix, value);
+            setValue(value);
+        };
+        return [value, fn];
+    }
+
+    // A react hook for controlling an API-backed boolean from a React pure functional component
+    // Returns a tuple of [theCurrentValue, aFunctionForChangingTheValue(newValue)]
+    // When you call the returned function, two things happen: 1) we POST the value to the Bloom API
+    // and 2) we tell react that the value changed. It will then re-render the component;
+    // the component will call this again, but this time the tuple will contain the new value.
+    public static useApiString(
+        urlSuffix: string,
+        defaultValue: string
+    ): [string, (value: string) => void] {
+        const [value, setValue] = React.useState(defaultValue);
+        React.useEffect(() => {
+            BloomApi.getString(urlSuffix, c => {
+                setValue(c);
+            });
+        }, []);
+
+        const fn = (value: string) => {
+            BloomApi.postString(urlSuffix, value);
+            setValue(value);
+        };
+        return [value, fn];
+    }
+
+    public static getBoolean(
+        urlSuffix: string,
+        successCallback: (value: boolean) => void
+    ) {
+        return BloomApi.get(urlSuffix, result => {
+            successCallback(result.data);
+        });
     }
 
     // This method is used to get a result from Bloom, passing paramaters to the nested axios call.
@@ -132,6 +198,25 @@ export class BloomApi {
             axios
                 .get(this.kBloomApiPrefix + urlSuffix, config)
                 .then(successCallback)
+        );
+    }
+
+    public static postString(urlSuffix: string, value: string) {
+        BloomApi.wrapAxios(
+            axios.post(this.kBloomApiPrefix + urlSuffix, value, {
+                headers: {
+                    "Content-Type": "text/plain"
+                }
+            })
+        );
+    }
+    public static postBoolean(urlSuffix: string, value: boolean) {
+        BloomApi.wrapAxios(
+            axios.post(this.kBloomApiPrefix + urlSuffix, value, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
         );
     }
 
