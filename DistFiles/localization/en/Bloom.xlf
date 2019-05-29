@@ -1174,6 +1174,11 @@
         <source xml:lang="en">This sentence is too long for this level.</source>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
       </trans-unit>
+      <trans-unit id="EditTab.EnterpriseSettingsButton" sil:dynamic="true">
+        <source xml:lang="en">Bloom Enterprise Settings</source>
+        <note>ID: EditTab.EnterpriseSettingsButton</note>
+        <note>Text of button that appears when Bloom Enterprise is needed for access to a feature.</note>
+      </trans-unit>
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true">
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
         <note>ID: EditTab.ExperimentalNotice</note>
@@ -1604,6 +1609,11 @@
       <trans-unit id="EditTab.ReadOnlyInAuthorMode" sil:dynamic="true">
         <source xml:lang="en">You cannot put anything in there while making an original book.</source>
         <note>ID: EditTab.ReadOnlyInAuthorMode</note>
+      </trans-unit>
+      <trans-unit id="EditTab.RequiresEnterprise" sil:dynamic="true">
+        <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
+        <note>ID: EditTab.RequiresEnterprise</note>
+        <note>Appears in notice (possibly obscuring other controls when they may not be used) because no Bloom Enterprise project has been selected.</note>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
         <source xml:lang="en">Saving...</source>
@@ -2040,11 +2050,6 @@
       <trans-unit id="EditTab.Toolbox.More" sil:dynamic="true">
         <source xml:lang="en">More...</source>
         <note>ID: EditTab.Toolbox.More</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.RequiresEnterprise" sil:dynamic="true">
-        <source xml:lang="en">This feature requires Bloom Enterprise.</source>
-        <note>ID: EditTab.Toolbox.RequiresEnterprise</note>
-        <note>Appears in notice obscuring other controls when they may not be used because no Bloom Enterprise project has been selected.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
         <source xml:lang="en">Allow changes to this shellbook</source>

@@ -1,11 +1,16 @@
 ﻿/// <reference path="../lib/localizationManager/localizationManager.ts" />
 import * as $ from "jquery";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import axios from "axios";
 import { BloomApi } from "../utils/bloomApi";
-import { getEditViewFrameExports } from "../bookEdit/js/bloomFrames";
 import "errorHandler";
+import TemplatePagePreview from "./templatePagePreview";
+import { getEditViewFrameExports } from "../bookEdit/js/bloomFrames";
+import { ThemeProvider } from "@material-ui/styles";
+import theme from "../bloomMaterialUITheme";
 
 $(window).ready(() => {
     BloomApi.get("pageTemplates", result => {
@@ -21,7 +26,7 @@ $(window).ready(() => {
 //   \"groups\":[{\"templateBookFolderUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryGroups/Templates/Basic Book\",
 //                     \"templateBookUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryGroups/Templates/Basic Book/Basic Book.htm\"}]}"
 
-class PageChooser {
+export class PageChooser {
     private _templateBookUrls: string;
     private _defaultPageToSelect: string;
     private _orientation: string;
@@ -30,10 +35,9 @@ class PageChooser {
     private _scrollingDiv: JQuery;
     private _scrollTopOfTheScrollingDiv: number;
     private _forChooseLayout: boolean;
-    private _convertWholeBook: boolean;
 
     constructor(initializationJsonString: string) {
-        let initializationObject;
+        let initializationObject: object;
         if (initializationJsonString) {
             try {
                 initializationObject = $.parseJSON(initializationJsonString);
@@ -53,10 +57,6 @@ class PageChooser {
         this._selectedGridItem = $();
         this._indexOfPageToSelect = 0;
         this._scrollTopOfTheScrollingDiv = 0;
-        this._convertWholeBook = false;
-        if (this._forChooseLayout) {
-            $("#mainContainer").addClass("chooseLayout"); // reveals convert whole book checkbox
-        }
     }
 
     private thumbnailClickHandler(clickedDiv, evt): void {
@@ -92,55 +92,48 @@ class PageChooser {
         }
 
         // Display large preview
-        const caption = $("#previewCaption");
-        const defaultCaptionText = $(
+        // This is now done with React via the TemplatePagePreview component.
+        // Localization will happen there, so we just send english strings from the page templates.
+        const englishCaptionText = $(
             ".gridItemCaption",
             this._selectedGridItem
         ).text();
-        this.setLocalizedText(
-            caption,
-            "TemplateBooks.PageLabel.",
-            defaultCaptionText
+        const englishPageDescription = $(
+            ".pageDescription",
+            this._selectedGridItem
+        ).text();
+        const isEnterprise = $(this._selectedGridItem).hasClass(
+            "enterprise-only-flag"
         );
-        caption.attr("style", "display: block;");
-        $("#preview").attr(
-            "src",
-            $(this._selectedGridItem)
-                .find("img")
-                .first()
-                .attr("src")
+        const imgSrc = $(this._selectedGridItem)
+            .find("img")
+            .first()
+            .attr("src");
+        const previewElement = document.getElementById(
+            "singlePagePreview"
+        ) as HTMLDivElement;
+        ReactDOM.render(
+            React.createElement(
+                ThemeProvider,
+                { theme: theme },
+                React.createElement(TemplatePagePreview, {
+                    caption: englishCaptionText,
+                    imageSource: imgSrc,
+                    pageDescription: englishPageDescription,
+                    pageIsEnterpriseOnly: isEnterprise,
+                    templateBookPath: this._selectedGridItem
+                        .closest(".group")
+                        .attr("data-template-book-path"),
+                    pageId: this._selectedGridItem.attr("data-pageId"),
+                    forChangeLayout: this._forChooseLayout,
+                    willLoseData: this._forChooseLayout
+                        ? this.willLoseData()
+                        : false
+                })
+            ),
+            previewElement
         );
-        this.setLocalizedText(
-            $("#previewDescriptionText"),
-            "TemplateBooks.PageDescription.",
-            $(".pageDescription", this._selectedGridItem).text(),
-            defaultCaptionText
-        );
-        if (this._forChooseLayout) {
-            const willLoseData = this.willLoseData();
-            if (willLoseData) {
-                $("#mainContainer").addClass("willLoseData");
-            } else {
-                $("#mainContainer").removeClass("willLoseData");
-            }
-            $("#convertAnywayCheckbox").prop("checked", !willLoseData);
-            this.enableWholeBookCheck(!willLoseData);
-            this.continueCheckBoxChanged(); // possibly redundant
-        }
     } // thumbnailClickHandler
-
-    // Enable/disable both the checkbox and the associated label for converting all similar pages
-    // in the book.
-    private enableWholeBookCheck(enable: boolean): void {
-        if (enable) {
-            $("#convertWholeBook").removeClass("disabled");
-        } else {
-            $("#convertWholeBook").addClass("disabled");
-        }
-        const convertBook = $("#convertWholeBookCheckbox");
-        convertBook.prop("disabled", !enable);
-        convertBook.prop("checked", false);
-    }
 
     // Return true if choosing the current layout will cause loss of data
     private willLoseData(): boolean {
@@ -252,51 +245,41 @@ class PageChooser {
         }
     }
 
-    private addPageClickHandler(): void {
-        if (
-            this._selectedGridItem == undefined ||
-            this._templateBookUrls == undefined
-        )
-            return;
-        if (
-            this._forChooseLayout &&
-            !$("#convertAnywayCheckbox").is(":checked")
-        )
-            return;
-
-        const id = this._selectedGridItem.attr("data-pageId");
-        const templateBookPath = this._selectedGridItem
-            .closest(".group")
-            .attr("data-template-book-path");
-        if (this._forChooseLayout) {
-            // using axios direct because we already had a catch...BloomApi catch might be better?
-            axios
-                .post("/bloom/api/changeLayout", {
-                    pageId: id,
+    public static addPageClickHandler(
+        forChangeLayout: boolean,
+        pageId: string,
+        templateBookPath: string,
+        convertAnywayChecked: boolean,
+        willLoseData: boolean,
+        convertWholeBookChecked: boolean
+    ): void {
+        if (forChangeLayout) {
+            if (willLoseData && !convertAnywayChecked) {
+                return;
+            }
+            BloomApi.postData(
+                "changeLayout",
+                {
+                    pageId: pageId,
                     templateBookPath: templateBookPath,
-                    convertWholeBook: this._convertWholeBook
-                })
-                .catch(error => {
-                    // we seem to get unimportant errors here, possibly because the dialog gets closed before the post completes.
-                    console.log(error);
-                })
-                .then(() => this.closeup());
+                    convertWholeBook: convertWholeBookChecked
+                },
+                PageChooser.closeup
+            );
         } else {
-            // using axios direct because we already had a catch...BloomApi catch might be better?
-            axios
-                .post("/bloom/api/addPage", {
+            BloomApi.postData(
+                "addPage",
+                {
                     templateBookPath: templateBookPath,
-                    pageId: id,
+                    pageId: pageId,
                     convertWholeBook: false
-                })
-                .catch(error => {
-                    console.log(error);
-                })
-                .then(() => this.closeup());
+                },
+                PageChooser.closeup
+            );
         }
     }
 
-    private closeup(): void {
+    private static closeup(): void {
         // End the disabling of other panes for the modal dialog. The final argument is because in this
         // method the current window is the dialog, and it's the parent window's document that is being
         // monitored for this event.
@@ -305,21 +288,6 @@ class PageChooser {
         // by code loaded into the window that opened it.
         //$(parent.document.getElementById('addPageConfig')).dialog('close');
         getEditViewFrameExports().closeDialog("addPageConfig");
-    }
-
-    private continueCheckBoxChanged(): void {
-        if (!this._forChooseLayout) return;
-        const continueChecked = $("#convertAnywayCheckbox").is(":checked");
-        // If the user explicitly allows possible data loss, also allow every similar page
-        // to change.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6921.
-        this.enableWholeBookCheck(continueChecked);
-        $("#addPageButton").prop("disabled", !continueChecked);
-    }
-
-    private convertBookCheckBoxChanged(): void {
-        if (!this._forChooseLayout) return;
-        const cb = $("#convertWholeBookCheckbox");
-        this._convertWholeBook = cb.is(":checked");
     }
 
     // This is the starting-point method that is invoked to initialize the dialog.
@@ -352,52 +320,6 @@ class PageChooser {
                 0
             );
         }
-        $("#addPageButton", document)
-            .button()
-            .click(() => {
-                this.addPageClickHandler();
-            });
-        $("#convertAnywayCheckbox", document)
-            .button()
-            .change(() => {
-                this.continueCheckBoxChanged();
-            });
-        $("#convertWholeBookCheckbox", document)
-            .button()
-            .change(() => {
-                this.convertBookCheckBoxChanged();
-            });
-        const pageButton = $("#addPageButton", document);
-        let okButtonLabelId = "EditTab.AddPageDialog.AddThisPageButton";
-        let okButtonLabelText = "Add This Page";
-
-        if (this._forChooseLayout) {
-            okButtonLabelId = "EditTab.AddPageDialog.ChooseLayoutButton";
-            okButtonLabelText = "Use This Layout";
-            this.setLocalizedText(
-                $("#convertAnywayCheckbox"),
-                "EditTab.AddPageDialog.",
-                "Continue anyway",
-                "ChooseLayoutContinueCheckbox"
-            );
-            this.setLocalizedText(
-                $("#convertLosesMaterial"),
-                "EditTab.AddPageDialog.",
-                "Converting to this layout will cause some content to be lost.",
-                "ChooseLayoutWillLoseData"
-            );
-            this.setLocalizedText(
-                $("#convertWholeBookCheckbox"),
-                "EditTab.AddPageDialog.",
-                "Change all similar pages in this book to this layout.",
-                "ChooseLayoutConvertBookCheckbox"
-            );
-        }
-        theOneLocalizationManager
-            .asyncGetText(okButtonLabelId, okButtonLabelText, "")
-            .done(translation => {
-                pageButton.attr("value", translation);
-            });
 
         if (this._orientation === "landscape") {
             $("#mainContainer").addClass("landscape");
@@ -471,8 +393,9 @@ class PageChooser {
                     "data-template-book-path",
                     order.templateBookPath
                 );
+                const captionDiv = $(groupToAdd).find(".groupCaption");
                 this.setLocalizedText(
-                    $(groupToAdd).find(".groupCaption"),
+                    captionDiv,
                     "TemplateBooks.BookName.",
                     groupTitle
                 );
@@ -560,23 +483,27 @@ class PageChooser {
         let gotSelectedPage = false;
         // insert a template page for each page with the correct #id on the url
         $(pageArray).each((index, div) => {
-            if ($(div).attr("data-page") === "singleton") return; // skip this one
+            const divQuery = $(div);
+            if (divQuery.attr("data-page") === "singleton") return; // skip this one
 
             const currentGridItemHtml = $(gridItemTemplate).clone();
 
-            const currentId = $(div).attr("id");
-            $(currentGridItemHtml).attr("data-pageId", currentId);
-            $(currentGridItemHtml).attr(
+            if (divQuery.hasClass("enterprise-only")) {
+                currentGridItemHtml.addClass("enterprise-only-flag");
+            }
+            const currentId = divQuery.attr("id");
+            currentGridItemHtml.attr("data-pageId", currentId);
+            currentGridItemHtml.attr(
                 "data-textDivCount",
-                this.countTranslationGroupsForChangeLayout($(div))
+                this.countTranslationGroupsForChangeLayout(divQuery)
             );
-            $(currentGridItemHtml).attr(
+            currentGridItemHtml.attr(
                 "data-pictureCount",
-                $(div).find(".bloom-imageContainer").length
+                divQuery.find(".bloom-imageContainer").length
             );
-            $(currentGridItemHtml).attr(
+            currentGridItemHtml.attr(
                 "data-videoCount",
-                $(div).find(".bloom-videoContainer").length
+                divQuery.find(".bloom-videoContainer").length
             );
 
             // The check for _indexOfPageToSelect here keeps the selection on the *first* matching page. In BL-4500, we found
@@ -617,7 +544,29 @@ class PageChooser {
         // once the template pages are installed, attach click handler to them.
         $(".invisibleThumbCover", currentGroup).each((index, div) => {
             $(div).dblclick(() => {
-                this.addPageClickHandler();
+                if (!this._selectedGridItem || !this._templateBookUrls) {
+                    return;
+                }
+                const convertAnywayCheckbox = document.getElementById(
+                    "convertAnywayCheckbox"
+                ) as HTMLInputElement;
+                const convertWholeBookCheckbox = document.getElementById(
+                    "convertWholeBookCheckbox"
+                ) as HTMLInputElement;
+                PageChooser.addPageClickHandler(
+                    this._forChooseLayout,
+                    this._selectedGridItem.attr("data-pageId"),
+                    this._selectedGridItem
+                        .closest(".group")
+                        .attr("data-template-book-path"),
+                    convertAnywayCheckbox
+                        ? convertAnywayCheckbox.checked
+                        : false,
+                    this.willLoseData(),
+                    convertWholeBookCheckbox
+                        ? convertWholeBookCheckbox.checked
+                        : false
+                );
             }); // invisibleThumbCover double click
 
             $(div).click(evt => {
@@ -672,14 +621,31 @@ class PageChooser {
     }
 } // End OF PageChooserClass
 
-/**
- * Fires an event for C# to handle
- * @param {String} eventName
- * @param {String} eventData
- * @param {boolean} dispatchWindow if not null, use this window's document to dispatch the event
- */
+export function addPageClickHandler(
+    forChangeLayout: boolean,
+    pageId: string,
+    templateBookPath: string,
+    convertAnywayChecked: boolean,
+    willLoseData: boolean,
+    convertWholeBookChecked: boolean
+) {
+    PageChooser.addPageClickHandler(
+        forChangeLayout,
+        pageId,
+        templateBookPath,
+        convertAnywayChecked,
+        willLoseData,
+        convertWholeBookChecked
+    );
+}
+
+// Fires an event for C# to handle
 // Enhance: JT notes that this method pops up from time to time; can we consolidate?
-function fireCSharpEvent(eventName, eventData, dispatchWindow?: Window) {
+function fireCSharpEvent(
+    eventName: string,
+    eventData: string,
+    dispatchWindow?: Window
+) {
     const event = new MessageEvent(eventName, {
         /*'view' : window,*/ bubbles: true,
         cancelable: true,

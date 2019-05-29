@@ -41,27 +41,33 @@ body {
     height: auto;
     min-width: 320px;
     max-width: 370px; // in the standard dialog width, allows the other pane to be wide enough for 3 columns with scroll bar
-    padding-left: @PreviewPaneLeftPadding;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 
     img {
         border: 1px solid @HighlightColor;
-        //center it
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
+        max-width: 98%;
+    }
+    .previewWrapper {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        align-items: center;
     }
 }
-#preview {
+.previewImage {
     max-height: 232px;
 }
 
 .landscape {
-    #preview {
+    .previewImage {
         width: unset;
         height: 200px;
     }
 }
-#previewCaption {
+.previewCaption {
     font-weight: bold;
     text-align: center;
 }
@@ -69,14 +75,6 @@ body {
 #missingMsg {
     padding-left: @PreviewPaneLeftPadding * 2;
 }
-//#previewDescription {
-//	height: 90px;
-//	border: none;
-//	.DescriptionHeader {
-//		font-weight: bold;
-//	}
-//
-//}
 
 .DescriptionText {
     white-space: normal;
@@ -87,6 +85,7 @@ body {
     overflow-y: auto;
     margin-right: @PreviewPaneLeftPadding;
     margin-left: @PreviewPaneLeftPadding;
+    align-self: flex-start;
 }
 
 // Currently unused
@@ -156,7 +155,16 @@ body {
     opacity: 0.3;
 }
 
+.gridItem.enterprise-only-flag::after {
+    position: absolute;
+    top: -5px;
+    right: 10px;
+}
+
 .landscape {
+    .gridItem.enterprise-only-flag::after {
+        right: 0;
+    }
     .thumbnail {
         width: unset;
         height: 60px;
@@ -234,15 +242,13 @@ body {
     display: none;
 }
 
-#addPageButton {
+#addOrChoosePageButton {
     //center it
     display: block;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 20px;
 
     padding: 10px;
     width: 200px;
-    border: 5px solid @HighlightColor;
     font-weight: bold;
     background-image: none;
 
@@ -252,41 +258,32 @@ body {
     }
 }
 
-#convertWholeBook {
-    visibility: hidden;
+.convertWholeBook {
     margin-left: @PreviewPaneLeftPadding;
     margin-right: @PreviewPaneLeftPadding;
     display: block;
     padding-left: @CheckboxPadding;
     text-indent: -@CheckboxPadding;
-    &.disabled {
+    .disabled {
         color: @bloom-buff;
     }
 }
 
-.chooseLayout #convertWholeBook {
-    visibility: visible;
-}
-
-#convertAnyway {
+.convertAnyway {
     color: @WarningColor;
-    visibility: hidden;
     margin-left: @PreviewPaneLeftPadding;
     margin-right: @PreviewPaneLeftPadding;
 }
-#convertLosesMaterial {
+.convertLosesMaterial {
     color: @WarningColor;
-    visibility: hidden;
     margin-left: @PreviewPaneLeftPadding; // rather arbitrary. I'd like it to be left-aligned with the picture.
     margin-right: @PreviewPaneLeftPadding;
     line-height: 1.5em;
 }
 
-.willLoseData {
-    #convertAnyway {
-        visibility: visible;
-    }
-    #convertLosesMaterial {
-        visibility: visible;
-    }
+.pushToBottom {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    flex: 1;
 }
