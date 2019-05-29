@@ -121,3 +121,15 @@ input[type="checkbox"]:indeterminate::after {
     -ms-user-select: text; // Edge/Internet Explorer
     user-select: text; // Chrome
 }
+
+// Moved from toolbox.less to here so it can be used by templatePagePreview
+.enterprise-only-flag::after {
+    content: "BE";
+    cursor: default;
+    color: @bloom-purple;
+    margin-left: 4px;
+    vertical-align: super;
+    font-style: italic;
+    font-weight: bold;
+    font-size: smaller;
+}
