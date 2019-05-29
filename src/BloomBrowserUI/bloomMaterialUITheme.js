@@ -24,7 +24,8 @@ const theme = createMuiTheme({
         warning: { main: "#F3AA18" }
     },
     typography: {
-        fontSize: 12
+        fontSize: 12,
+        fontFamily: ["NotoSans", "Roboto", "sans-serif"]
     },
     props: {
         MuiLink: {
