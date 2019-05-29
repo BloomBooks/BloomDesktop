@@ -20,7 +20,7 @@ mixin choice
 		.placeToPutVariableCircle
 
 mixin quizPage
-	+page('Quiz Page', 'Use for comprehension testing.').simple-comprehension-quiz.bloom-interactive-page#F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D(data-page='extra' data-analyticsCategories="comprehension" data-reader-version="2")
+	+page('Quiz Page', 'Use for comprehension testing.').simple-comprehension-quiz.bloom-interactive-page.enterprise-only#F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D(data-page='extra' data-analyticsCategories="comprehension" data-reader-version="2")
 		.quiz
 			h1(data-i18n="Quiz.CheckYourUnderstanding") Check Your Understanding
 			+field("auto").QuizQuestion-style(data-hint="Put a comprehension question here")
