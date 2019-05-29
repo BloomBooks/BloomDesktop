@@ -1,13 +1,8 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
-using SIL.Extensions;
-using SIL.Xml;
 
 namespace Bloom.web.controllers
 {
