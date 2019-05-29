@@ -160,7 +160,15 @@ export class LocalizableElement<
             return;
         }
         const english = this.getOriginalStringContent();
-        if (!english.startsWith("ERROR: must have exactly one child")) {
+        // Prevent unnecessary translation lookup for image-only buttons. (BL-7204)
+        let wantTranslation = true;
+        if (!english && "hasText" in this.props) {
+            wantTranslation = this.props["hasText"];
+        }
+        if (
+            wantTranslation &&
+            !english.startsWith("ERROR: must have exactly one child")
+        ) {
             getLocalization({
                 english,
                 l10nKey: this.props.l10nKey,
