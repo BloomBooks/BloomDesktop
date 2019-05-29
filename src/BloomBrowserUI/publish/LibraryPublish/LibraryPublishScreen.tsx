@@ -1,4 +1,4 @@
-import * as React from "react";
+/*import * as React from "react";
 import ReactDOM = require("react-dom");
 import { Link } from "@material-ui/core";
 
@@ -49,3 +49,4 @@ if (document.getElementById("LibraryPublishScreen")) {
         document.getElementById("LibraryPublishScreen")
     );
 }
+*/

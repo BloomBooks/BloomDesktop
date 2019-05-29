@@ -20,7 +20,6 @@ export const DeviceAndControls: React.FunctionComponent<{
         setLandscape(props.defaultLandscape);
     }, [props]);
 
-    console.log("^^^^^^^^landscape " + landscape.toString());
     return (
         <div className="deviceAndControls">
             <div

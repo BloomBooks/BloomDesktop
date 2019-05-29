@@ -1,0 +1,15 @@
+// Styles used only by BloomReader, inserted into a book when published.
+
+// An electronic publication, even of the same content, requires a distinct ISBN if any.
+// But we're not aware of a need for Bloom Reader books to have ISBNs.
+// And many print books don't either, which results in a need to hide the ISBN label.
+// For now, we're just going to hide it always.
+.ISBNContainer {
+    display: none;
+}
+
+// we want pages centered in the device screen
+.bloom-page {
+    margin-right: auto;
+    margin-left: auto;
+}

@@ -19,7 +19,7 @@ export enum ProgressState {
 
 export const ProgressDialog: React.FunctionComponent<{
     heading?: string;
-    progressMessages: string;
+    messages: string;
     progressState: ProgressState;
     errorEncountered?: boolean; // do something visual to indicate there was a problem
     onUserClosed: () => void;
@@ -50,7 +50,7 @@ export const ProgressDialog: React.FunctionComponent<{
                 messageEndRef.current!.scrollIntoView();
             }
         }, 100);
-    }, [props.progressMessages]); // do this every time the message text changes
+    }, [props.messages]); // do this every time the message text changes
 
     return (
         <Dialog
@@ -81,7 +81,7 @@ export const ProgressDialog: React.FunctionComponent<{
                     <div
                         ref={messagesDivRef}
                         dangerouslySetInnerHTML={{
-                            __html: props.progressMessages
+                            __html: props.messages
                         }}
                     />
                 </Typography>

@@ -1,9 +1,6 @@
 ﻿var path = require("path");
-var webpack = require("webpack");
 const merge = require("webpack-merge");
 var node_modules = path.resolve(__dirname, "node_modules");
-var pathToReact = path.resolve(node_modules, "react/dist/react.js");
-var pathToReactDom = path.resolve(node_modules, "react-dom/dist/react-dom.js");
 var pathToOriginalJavascriptFilesInLib = path.resolve(__dirname, "lib");
 var pathToBookEditJS = path.resolve(__dirname, "bookEdit/js");
 var pathToOriginalJavascriptFilesInModified_Libraries = path.resolve(

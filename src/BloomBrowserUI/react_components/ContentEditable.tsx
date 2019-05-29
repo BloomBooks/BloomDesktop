@@ -37,6 +37,7 @@ export default class ContentEditable extends React.Component<
                         this.props.onEnterKeyPressed();
                     }
                 }}
+                suppressContentEditableWarning={true}
                 contentEditable={true}
             >
                 {this.props.content}

@@ -6,42 +6,41 @@ import WebSocketManager, {
     useWebSocketListenerForOneEvent
 } from "../../utils/WebSocketManager";
 
-let globalError = false;
-
 export const ReaderPublishProgressDialog = () => {
+    const [closePending, setClosePending] = useState(false);
     const [accumulatedMessages, setAccumulatedMessages] = useState("");
     const [progressState, setProgressState] = useState(ProgressState.Working);
     //TODO Localize
     const [heading, setHeading] = useState("Creating Digital Book");
     const [errorEncountered, setErrorEncountered] = useState(false);
 
-    const closeIfNoError = () => {
-        //review: why is errorEncountered always false here?
-        // we think there hasn't been a react cycle to actually
-        // let the setErrorEncountered change the value of errorEncountered yet.
-        // I've hacked around it with globalError.
-        if (errorEncountered || globalError) {
-            //TODO: replace with a function that then accesses errorEncountered
-            //setProgressState(ProgressState.Done);
-            setProgressState(() =>
-                errorEncountered ? ProgressState.Done : ProgressState.Closed
-            );
-        } else {
-            // set up for next time
-            setAccumulatedMessages("");
-            setErrorEncountered(false);
-            globalError = false;
-            // close it
-            setProgressState(ProgressState.Closed);
+    //Note, originally this was just a function, closeIfNoError().
+    // However that would be called before the errorEncountered had been updated.
+    // So now we make it happen by calling setClosePending() and then in the next
+    // update we notice that and see about closing.
+    React.useEffect(() => {
+        if (closePending) {
+            if (errorEncountered) {
+                setProgressState(() =>
+                    errorEncountered ? ProgressState.Done : ProgressState.Closed
+                );
+            } else {
+                // set up for next time
+                setAccumulatedMessages("");
+                setErrorEncountered(false);
+                // close it
+                setProgressState(ProgressState.Closed);
+            }
         }
-    };
+    }, [closePending]);
+
     useWebSocketListenerForOneEvent(
         "publish-android",
         "publish/android/state",
         e => {
             switch (e.message) {
                 case "stopped":
-                    closeIfNoError();
+                    setClosePending(true);
                     break;
                 case "UsbStarted":
                     //TODO Localize
@@ -68,7 +67,6 @@ export const ReaderPublishProgressDialog = () => {
                 case "Error":
                 case "Warning":
                     setErrorEncountered(true);
-                    globalError = true;
                 // deliberately fall through
                 case "Progress":
                 case "Instruction":
@@ -89,7 +87,7 @@ export const ReaderPublishProgressDialog = () => {
             // do something (change the state of the dialog) when the postData's promise is satisfied.
             // (That is, when the preview construction is complete).
             BloomApi.postData("publish/android/updatePreview", {}, () =>
-                closeIfNoError()
+                setClosePending(true)
             );
         });
     }, []);
@@ -97,7 +95,7 @@ export const ReaderPublishProgressDialog = () => {
     return (
         <ProgressDialog
             heading={heading}
-            progressMessages={accumulatedMessages}
+            messages={accumulatedMessages}
             progressState={progressState}
             onUserStopped={() => {
                 BloomApi.postData("publish/android/usb/stop", {});

@@ -99,7 +99,7 @@ namespace Bloom.Publish.Android
 			StripImgIfWeCannotFindFile(modifiedBook.RawDom, bookFile);
 			StripContentEditableAndTabIndex(modifiedBook.RawDom);
 			InsertReaderStylesheet(modifiedBook.RawDom);
-			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot,"publish","android","readerStyles.css"),
+			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot,"publish","ReaderPublish","readerStyles.css"),
 				Path.Combine(bookFolderPath, "readerStyles.css"));
 			ConvertImagesToBackground(modifiedBook.RawDom);
 

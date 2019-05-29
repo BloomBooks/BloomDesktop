@@ -68,6 +68,7 @@
             transform: translate(143px, 0);
         }
         iframe {
+            border: none;
             width: 100%;
             height: 100%;
         }
@@ -78,20 +79,26 @@
             rotate(-90deg /*counter clockwise*/) scale(var(--scale));
 
         iframe {
-            height: (900% / 16); // roughly 9/16, fine tuned
-            width: (1600%/9); // roughly 16/9
+            height: (900% / 16); //  9/16
+            width: (1600%/9); //  16/9
             flex-shrink: 0;
             border: none;
+            transform-origin: top left;
+            transform: rotate(90deg /* clockwise*/)
+                translate(0, -200px + (2 * @bezelWidth));
         }
     }
 
     // speaker
     &:before {
+        // NOTE: the commented-out bits here work in modern browsers, but not in Bloom 4.6's browser.
         --speakerWidth: ~"calc(var(--screenWidth) / 3)";
-        width: var(--speakerWidth);
+        width: calc(9px * @scale / 3); //var(--speakerWidth);
         height: @speakerHeight;
         margin-top: -12px;
-        margin-left: ~"calc((var(--screenWidth)/2) - (var(--speakerWidth)/2))";
+        margin-left: calc(
+            (9px * @scale / 2) - ((9px * @scale / 3) / 2)
+        ); // ~"calc((var(--screenWidth)/2) - (var(--speakerWidth)/2))";
         border-radius: @speakerHeight;
         background-color: @phoneFeaturesColor;
         content: "";

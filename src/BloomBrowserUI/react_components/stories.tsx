@@ -5,16 +5,28 @@ import { Checkbox } from "./checkbox";
 import { MuiCheckbox } from "./muiCheckBox";
 import { useState } from "react";
 import { ApiCheckbox } from "./ApiCheckbox";
+import BloomButton from "./bloomButton";
 
-storiesOf("Localizable Widgets", module).add("Expandable", () => (
-    <Expandable
-        l10nKey="bogus"
-        expandedHeight="30px"
-        headingText="I am so advanced"
-    >
-        Look at this!
-    </Expandable>
-));
+storiesOf("Localizable Widgets", module)
+    .add("Expandable", () => (
+        <Expandable
+            l10nKey="bogus"
+            expandedHeight="30px"
+            headingText="I am so advanced"
+        >
+            Look at this!
+        </Expandable>
+    ))
+    .add("BloomButton", () => (
+        <BloomButton
+            l10nKey="bogus"
+            l10nComment="hello"
+            enabled={true}
+            hasText={true}
+        >
+            Look at this!
+        </BloomButton>
+    ));
 
 storiesOf("Localizable Widgets/Checkbox", module)
     .add("off", () => <Checkbox l10nKey="bogus">Click me</Checkbox>)
@@ -30,7 +42,7 @@ storiesOf("Localizable Widgets/Checkbox", module)
     ));
 // see https://github.com/storybooks/storybook/issues/5721
 
-storiesOf("MUI Localizable Widgets/Checkbox", module)
+storiesOf("Localizable Widgets/MuiCheckbox", module)
     .add("off", () =>
         React.createElement(() => {
             const [checked, setChecked] = useState<boolean | null>(false);
@@ -71,7 +83,7 @@ storiesOf("MUI Localizable Widgets/Checkbox", module)
             );
         })
     );
-storiesOf("ApiCheckbox", module).add("MotionBook", () =>
+storiesOf("Localizable Widgets/ApiCheckbox", module).add("ApiCheckbox", () =>
     React.createElement(() => (
         <ApiCheckbox
             english="Motion Book"
