@@ -1,4 +1,5 @@
 @import (reference) "../../bookLayout/basePage";
+@import "../../bloomWebFonts.less";
 // Common styles to be applied to htm-js-css dialogs in Bloom
 @backgroundColorWhite: rgb(255, 255, 255);
 @backgroundColorLight: rgb(240, 240, 240);
@@ -130,25 +131,27 @@
 .bloomDialogContainer .control-section {
     margin: 0 0 12px 0;
 }
-.bloomDialogContainer button,
-.bloomDialogContainer input {
-    background: linear-gradient(@backgroundColorLight, @backgroundColorDark);
-}
+// Interferes with Material UI background-color
+// .bloomDialogContainer button,
+// .bloomDialogContainer input {
+//     background: linear-gradient(@backgroundColorLight, @backgroundColorDark);
+// }
 .bloomDialogContainer button {
     .bdRounded;
     border: 1px solid @buttonBorder;
     box-shadow: 1px 2px 7px @buttonShadow;
 }
-.bloomDialogContainer button:hover,
-.bloomDialogContainer input:hover,
-.bloomDialogContainer select:hover,
-.bloomDialogContainer .select2-container--default:hover,
-.bloomDialogContainer .select2-container--focus {
-    background: linear-gradient(
-        @backgroundColorHoverLight,
-        @backgroundColorHoverDark
-    );
-}
+// Interferes with Material UI background-color
+// .bloomDialogContainer button:hover,
+// .bloomDialogContainer input:hover,
+// .bloomDialogContainer select:hover,
+// .bloomDialogContainer .select2-container--default:hover,
+// .bloomDialogContainer .select2-container--focus {
+//     background: linear-gradient(
+//         @backgroundColorHoverLight,
+//         @backgroundColorHoverDark
+//     );
+// }
 .bloomDialogContainer button[disabled] {
     border: 1px solid @disabledText;
     background: @backgroundColorLight;
@@ -170,7 +173,7 @@
     z-index: @dialogZindex;
     position: absolute;
     line-height: 1.8;
-    font-family: Segoe UI, Open Sans, Arial, sans-serif;
+    font-family: @UIFontStack;
 }
 .bloomDialogContainer .bloomDialogTitleBar {
     background-color: @backgroundColorTitleBar;
@@ -185,7 +188,6 @@
 .bloomDialogContainer .bloomDialogMainPage {
     background: @backgroundColorWhite;
     margin-left: 1em;
-    font-family: Segoe UI, Open Sans, Arial, sans-serif;
     font-size: 10pt;
 }
 
