@@ -1,10 +1,15 @@
 import * as React from "react";
+import { useState, createContext, useEffect } from "react";
 import "./requiresBloomEnterprise.less";
 import { Link } from "./link";
 import { BloomApi } from "../utils/bloomApi";
 
 export interface IComponentState {
     visible: boolean;
+}
+
+export interface IProps {
+    className?: string;
 }
 
 // This element displays a notice saying that a certain feature requires a Bloom Enterprise subscription,
@@ -16,7 +21,7 @@ export interface IComponentState {
 // Often it will be convenient to use this by embedding the controls to be hidden in a
 // RequiresBloomEnterpriseWrapper, also defined in this file.
 export class RequiresBloomEnterprise extends React.Component<
-    {},
+    IProps,
     IComponentState
 > {
     public readonly state: IComponentState = {
@@ -33,20 +38,21 @@ export class RequiresBloomEnterprise extends React.Component<
     public render() {
         return (
             <div
-                className="requiresBloomEnterprise"
+                className={this.props.className + " requiresBloomEnterprise"}
                 style={this.state.visible ? {} : { display: "none" }}
             >
                 <div className="messageSettingsDialogWrapper">
                     <div className="requiresEnterpriseNotice">
                         <Link
-                            l10nKey="EditTab.Toolbox.RequiresEnterprise"
+                            l10nKey="EditTab.RequiresEnterprise"
                             onClick={() =>
                                 BloomApi.post(
                                     "common/showSettingsDialog?tab=enterprise"
                                 )
                             }
                         >
-                            This feature requires Bloom Enterprise.
+                            This feature requires a Bloom Enterprise
+                            subscription
                         </Link>
                     </div>
                 </div>
@@ -64,7 +70,7 @@ export interface IRequiresBloomEnterpriseProps {
 }
 
 // A note about the default value (false): this would only be used if a component had a context-consumer but no parent had created a context-provider.
-export const BloomEnterpriseAvailableContext = React.createContext(false);
+export const BloomEnterpriseAvailableContext = createContext(false);
 
 // The children of this component will be enabled and displayed if an enterprise project has been
 // selected; otherwise, the RequiresBloomEnterprise message will be displayed and the children
@@ -73,7 +79,7 @@ export class RequiresBloomEnterpriseWrapper extends React.Component<
     IRequiresBloomEnterpriseProps,
     IWrapperComponentState
 > {
-    constructor(props) {
+    constructor(props: IRequiresBloomEnterpriseProps) {
         super(props);
         this.state = { enterpriseAvailable: true };
         checkIfEnterpriseAvailable().then(enabled =>
@@ -113,3 +119,22 @@ class EnterpriseEnabledPromise {
         });
     }
 }
+
+// This component provides the BloomEnterpriseAvailableContext to all of its children,
+// but the children get to determine how they respond to the context that they read with
+// the new useContext hook.
+export const NonOpinionatedRequiresBEWrapper: React.FunctionComponent = props => {
+    const [enterpriseAvailable, setEnterpriseAvailable] = useState(true);
+
+    useEffect(() => {
+        BloomApi.get("common/enterpriseFeaturesEnabled", response => {
+            setEnterpriseAvailable(response.data);
+        });
+    }, []);
+
+    return (
+        <BloomEnterpriseAvailableContext.Provider value={enterpriseAvailable}>
+            {props.children}
+        </BloomEnterpriseAvailableContext.Provider>
+    );
+};

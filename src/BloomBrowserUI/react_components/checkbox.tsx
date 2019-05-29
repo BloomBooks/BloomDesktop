@@ -41,7 +41,7 @@ export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
         // We expect the effect of clicking the label will be to set the check to the
         // opposite state, so that's what we pass. (But whether it really changes is
         // up to the owner changing the prop value. So it won't have happened yet.)
-        if (this.input) {
+        if (this.input && !this.props.disabled) {
             if (!this.props.tristate) {
                 this.input.checked = !this.input.checked;
             }
@@ -68,6 +68,7 @@ export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
                     l10nKey={this.props.l10nKey}
                     alreadyLocalized={this.props.alreadyLocalized}
                     onClick={() => this.onLabelClicked()}
+                    className={this.props.disabled ? "disabled" : ""}
                 >
                     {/* this.props.children is the English text */}
                     {this.props.children}
