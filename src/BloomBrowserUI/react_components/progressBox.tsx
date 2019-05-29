@@ -1,8 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import WebSocketManager from "../utils/WebSocketManager";
+import { string } from "prop-types";
 
-interface IProgressBoxProps {
+export interface IProgressBoxProps {
     clientContext: string;
     // If the client is going to start doing something right away that will
     // cause progress messages to happen, it had better wait until this is invoked;
@@ -10,6 +11,9 @@ interface IProgressBoxProps {
     // once, immediately if the socket is already open, otherwise, as soon as
     // it is in the "OPEN" state where messages can be received (and sent).
     onReadyToReceive?: () => void;
+    testProgressHtml?: string;
+    onGotErrorMessage?: () => void;
+    progressBoxId?: string;
 }
 
 interface IProgressState {
@@ -23,15 +27,20 @@ export default class ProgressBox extends React.Component<
     IProgressState
 > {
     public readonly state: IProgressState = {
-        progress: ""
+        progress: this.props.testProgressHtml || ""
     };
 
     constructor(props: IProgressBoxProps) {
         super(props);
-        let self = this;
+        //alert("constructing progress box for " + this.props.clientContext);
         //get progress messages from c#
         WebSocketManager.addListener(props.clientContext, e => {
             if (e.id === "progress") {
+                if (e.message!.indexOf("error") > -1) {
+                    if (props.onGotErrorMessage) {
+                        props.onGotErrorMessage();
+                    }
+                }
                 if (e.cssStyleRule) {
                     this.writeLine(
                         `<span style='${e.cssStyleRule}'>${e.message}</span>`
@@ -45,7 +54,7 @@ export default class ProgressBox extends React.Component<
     }
 
     public componentDidMount() {
-        //alert("constructing progress box for " + this.props.clientContext);
+        //alert("mounting progress box for " + this.props.clientContext);
         if (this.props.onReadyToReceive) {
             WebSocketManager.notifyReady(
                 this.props.clientContext,
@@ -66,7 +75,7 @@ export default class ProgressBox extends React.Component<
     private tryScrollToBottom() {
         // Must be done AFTER painting once, so we
         // get a real current scroll height.
-        let progressDiv = document.getElementById("progress-box");
+        const progressDiv = document.getElementById("progress-box");
 
         // in my testing in FF, this worked the first time
         if (progressDiv) progressDiv.scrollTop = progressDiv.scrollHeight;
@@ -82,7 +91,7 @@ export default class ProgressBox extends React.Component<
     public render() {
         return (
             <div
-                id="progress-box"
+                id={this.props.progressBoxId || ""}
                 dangerouslySetInnerHTML={{ __html: this.state.progress }}
             />
         );

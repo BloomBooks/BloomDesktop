@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ILocalizationProps } from "./l10n";
+import { ILocalizationProps } from "./l10nComponents";
 import { BloomApi } from "../utils/bloomApi";
 import { Checkbox } from "./checkbox";
 

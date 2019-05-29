@@ -99,7 +99,7 @@ namespace Bloom.Publish.Android
 			StripImgIfWeCannotFindFile(modifiedBook.RawDom, bookFile);
 			StripContentEditableAndTabIndex(modifiedBook.RawDom);
 			InsertReaderStylesheet(modifiedBook.RawDom);
-			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot,"publish","android","readerStyles.css"),
+			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot,"publish","ReaderPublish","readerStyles.css"),
 				Path.Combine(bookFolderPath, "readerStyles.css"));
 			ConvertImagesToBackground(modifiedBook.RawDom);
 
@@ -270,26 +270,27 @@ namespace Bloom.Publish.Android
 				if (fontFiles.Count() > 0)
 				{
 					filesToEmbed.AddRange(fontFiles);
-					progress.MessageWithParams("CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", font);
+					progress.MessageWithParams("CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", MessageKind.Progress, font);
 					// Assumes only one font file per font; if we embed multiple ones will need to enhance this.
 					var size = new FileInfo(fontFiles.First()).Length;
 					var sizeToReport = (size / 1000000.0).ToString("F1"); // purposely locale-specific; might be e.g. 1,2
-					progress.MessageWithColorAndParams("Embedding",
+					progress.MessageWithParams("Embedding",
 						"{1} is a number with one decimal place, the number of megabytes the font file takes up",
-						"blue",
 						"Embedding font {0} at a cost of {1} megs",
+						MessageKind.Note,
 						font, sizeToReport);
 					continue;
 				}
 				if (fontFileFinder.FontsWeCantInstall.Contains(font))
 				{
-					progress.ErrorWithParams("LicenseForbids","{0} is a font name", "Checking {0} font: License does not permit embedding.", font);
+					//progress.Error("Common.Warning", "Warning");
+					progress.MessageWithParams("LicenseForbids","{0} is a font name", "This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.",MessageKind.Error, font);
 				}
 				else
 				{
-					progress.ErrorWithParams("NoFontFound", "{0} is a font name", "Checking {0} font: No font found to embed.", font);
+					progress.MessageWithParams("NoFontFound", "{0} is a font name", "This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.", MessageKind.Error, font);
 				}
-				progress.ErrorWithParams("SubstitutingAndika", "{0} and {1} are font names", "Substituting \"{0}\" for \"{1}\"", defaultFont, font);
+				progress.MessageWithParams("SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", MessageKind.Error, defaultFont, font);
 			}
 			foreach (var file in filesToEmbed)
 			{

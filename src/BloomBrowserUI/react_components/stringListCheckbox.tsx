@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as mobxReact from "mobx-react";
 import { Checkbox } from "./checkbox";
-import { ILocalizationProps, LocalizableElement } from "./l10n";
+import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
 
 interface IProps extends ILocalizationProps {
     list: string;

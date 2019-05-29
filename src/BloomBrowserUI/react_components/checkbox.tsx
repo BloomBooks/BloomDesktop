@@ -1,5 +1,9 @@
 import * as React from "react";
-import { ILocalizationProps, LocalizableElement, Label } from "./l10n";
+import {
+    ILocalizationProps,
+    LocalizableElement,
+    Label
+} from "./l10nComponents";
 
 interface ICheckboxProps extends ILocalizationProps {
     id?: string;

@@ -3,7 +3,7 @@ import {
     ILocalizationProps,
     ILocalizationState,
     LocalizableElement
-} from "./l10n";
+} from "./l10nComponents";
 
 export interface ILocalizationPropsWithLink extends ILocalizationProps {
     href: string;

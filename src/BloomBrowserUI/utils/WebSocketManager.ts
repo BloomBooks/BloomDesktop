@@ -1,10 +1,47 @@
 import { BloomApi } from "./bloomApi";
+import { useEffect } from "react";
 
 interface IBloomWebSocketEvent {
     clientContext: string;
     id: string;
     message?: string;
+    kind?: string;
     cssStyleRule?: string;
+}
+
+export function useWebSocketListener(
+    clientContext: string,
+    listener: (messageEvent: IBloomWebSocketEvent) => void
+) {
+    useEffect(() => {
+        WebSocketManager.addListener(clientContext, listener);
+    }, []);
+}
+export function useWebSocketListenerForOneEvent(
+    clientContext: string,
+    messageId: string,
+    listener: (e: IBloomWebSocketEvent) => void
+) {
+    useEffect(() => {
+        WebSocketManager.addListener(clientContext, e => {
+            if (e.id === messageId && e.message) {
+                listener(e);
+            }
+        });
+    }, []);
+}
+export function useWebSocketListenerForOneMessage(
+    clientContext: string,
+    messageId: string,
+    listener: (message: string) => void
+) {
+    useEffect(() => {
+        WebSocketManager.addListener(clientContext, e => {
+            if (e.id === messageId && e.message) {
+                listener(e.message);
+            }
+        });
+    }, []);
 }
 
 // This class manages a websocket, currently at the WebSocketManager.socketMap level, currently with
@@ -33,7 +70,7 @@ export default class WebSocketManager {
      * Instead the client should call "addListener(clientContext)" and then when cleaning
      * up, call "closeSocket(clientContext)".
      */
-    private static getOrCreateWebSocket(clientContext: string): WebSocket {
+    public static getOrCreateWebSocket(clientContext: string): WebSocket {
         if (!WebSocketManager.socketMap[clientContext]) {
             //currently we use a different port for this websocket, and it's the main port + 1
             let websocketPort = parseInt(window.location.port, 10) + 1;

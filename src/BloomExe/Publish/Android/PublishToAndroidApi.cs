@@ -120,21 +120,16 @@ namespace Bloom.Publish.Android
 				}
 			}, true);
 
-
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "motionBookMode", request =>
-			{
-				if (request.HttpMethod == HttpMethods.Get)
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "motionBookMode",
+				readRequest =>
 				{
-					// this is temporary, just trying to get support for full screen pan & zoom out quickly in 4.2
-					request.ReplyWithText(request.CurrentBook.UseMotionModeInBloomReader.ToString()
-						.ToLowerInvariant());  // "false", not "False"
-				}
-				else // post
+					return readRequest.CurrentBook.UseMotionModeInBloomReader;
+				},
+				(writeRequest, value) =>
 				{
-					request.CurrentBook.UseMotionModeInBloomReader = bool.Parse(request.RequiredPostString());
-					request.PostSucceeded();
+					writeRequest.CurrentBook.UseMotionModeInBloomReader = value;
 				}
-			}, true);
+			, true);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
 			{
@@ -153,6 +148,7 @@ namespace Bloom.Publish.Android
 					}
 					PreviewUrl = StageBloomD(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor);
 					_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
+					
 					request.PostSucceeded();
 				}
 			}, false);
@@ -197,8 +193,9 @@ namespace Bloom.Publish.Android
 			}, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "wifi/start", request =>
 			{
-				_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _thumbnailBackgroundColor);
 				SetState("ServingOnWifi");
+				_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _thumbnailBackgroundColor);
+				
 				request.PostSucceeded();
 			}, true);
 
@@ -227,6 +224,33 @@ namespace Bloom.Publish.Android
 				PortableClipboard.SetText(request.RequiredPostString());
 				request.PostSucceeded();
 			}, true);
+
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "canHaveMotionMode",
+				request =>
+				{
+					return request.CurrentBook.getHasMotionPages();
+				},
+				null, // no write action
+				false,
+				true); // we don't really know, just safe default
+
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "canRotate",
+				request =>
+				{
+					return request.CurrentBook.UseMotionModeInBloomReader && request.CurrentBook.getHasMotionPages();
+				},
+				null, // no write action
+				false,
+				true); // we don't really know, just safe default
+
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "defaultLandscape",
+				request =>
+				{
+					return request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape;
+				},
+				null, // no write action
+				false,
+				true); // we don't really know, just safe default
 		}
 
 		public void Stop()
@@ -303,7 +327,7 @@ namespace Bloom.Publish.Android
 				// save file...user has supplied name, there is no further action.
 				Debug.Assert(sendAction == null, "further actions are not supported when passing a path name");
 				BloomReaderFileMaker.CreateBloomReaderBook(destFileName, book, bookServer, backColor, progress);
-				progress.Message("PublishTab.Epub.Done", "Done", false);	// share message string with epub publishing
+				progress.Message("PublishTab.Epub.Done", "Done", useL10nIdPrefix: false);	// share message string with epub publishing
 			}
 
 		}
@@ -313,6 +337,7 @@ namespace Bloom.Publish.Android
 		public static string StageBloomD(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor)
 		{
 			progress.Message("PreparingPreview", "Preparing preview");
+
 			_stagingFolder?.Dispose();
 			if (AudioProcessor.IsAnyCompressedAudioMissing(book.FolderPath, book.RawDom))
 			{
@@ -323,6 +348,7 @@ namespace Bloom.Publish.Android
 			BookStorage.FindBookHtmlInFolder(book.FolderPath);
 			_stagingFolder = new TemporaryFolder("PlaceForStagingBook");
 			var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book, bookServer, _stagingFolder, backColor, progress);
+			progress.Message("Common.Done", "Shown in a list of messages when Bloom has completed a task.", "Done");
 			return modifiedBook.FolderPath.ToLocalhost();
 		}
 
@@ -341,12 +367,15 @@ namespace Bloom.Publish.Android
 			{
 				// The progress object has been initialized to use an id prefix.  So we'll access L10NSharp explicitly here.  We also want to make the string blue,
 				// which requires a special argument.
-				var msgFormat = L10NSharp.LocalizationManager.GetString("PublishTab.Android.WrongLayout.Message",
+				var msgFormat = L10NSharp.LocalizationManager.GetString("Common.Note",
+					"Note", "A heading shown above some messages.");
+				progress.MessageWithoutLocalizing(msgFormat, MessageKind.Note);
+				 msgFormat = L10NSharp.LocalizationManager.GetString("PublishTab.Android.WrongLayout.Message",
 					"The layout of this book is currently \"{0}\". Bloom Reader will display it using \"{1}\", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to \"{1}\".",
 					"{0} and {1} are book layout tags.");
 				var desiredLayout = desiredLayoutSize + layout.SizeAndOrientation.OrientationName;
 				var msg = String.Format(msgFormat, layout.SizeAndOrientation.ToString(), desiredLayout, Environment.NewLine);
-				progress.MessageWithStyleWithoutLocalizing(msg, "color:blue");
+				progress.MessageWithoutLocalizing(msg, MessageKind.Note);
 			}
 		}
 	}
