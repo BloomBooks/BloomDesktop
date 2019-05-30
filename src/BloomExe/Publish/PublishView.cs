@@ -537,7 +537,7 @@ namespace Bloom.Publish
 					// We still get them in the output window, in case we really want to look for one.
 					Browser.SuppressJavaScriptErrors = true;
 					PublishEpubApi.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
-					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "epub", "epubPublishUI.html"));
+					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "ePUBPublish", "loader.html"));
 					break;
 			}
 			UpdateSaveButton();

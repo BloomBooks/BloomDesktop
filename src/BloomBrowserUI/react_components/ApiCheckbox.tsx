@@ -21,10 +21,10 @@ export const ApiCheckbox: React.FunctionComponent<{
         <MuiCheckbox
             checked={checked}
             disabled={props.disabled}
-            english={props.english}
+            label={props.english}
             l10nKey={props.l10nKey}
             l10nComment={props.l10nComment}
-            onCheckChanged={(newState: boolean | null) => {
+            onCheckChanged={(newState: boolean | undefined) => {
                 setChecked(!!newState);
                 if (props.onChange) {
                     props.onChange();

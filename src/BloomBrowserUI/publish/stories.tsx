@@ -13,6 +13,9 @@ import { loremIpsum } from "lorem-ipsum";
 import { withA11y } from "@storybook/addon-a11y";
 import { LibraryPreview } from "./LibraryPublish/LibraryPreview";
 import { EPUBPublishScreen } from "./ePUBPublish/ePUBPublishScreen";
+import BookMetadataDialog from "./metadata/BookMetadataDialog";
+import "./storiesApiMocks";
+import { AccessibilityCheckScreen } from "./accessibilityCheck/accessibilityCheckScreen";
 
 addDecorator(withA11y);
 
@@ -36,7 +39,7 @@ storiesOf("Publish/ProgressDialog", module)
         <div>
             <ProgressDialog
                 progressState={ProgressState.Working}
-                progressMessages={testText}
+                messages={testText}
                 onUserClosed={() => {}}
                 onUserCanceled={() => {}}
                 onUserStopped={() => {}}
@@ -47,7 +50,7 @@ storiesOf("Publish/ProgressDialog", module)
         <div>
             <ProgressDialog
                 progressState={ProgressState.Done}
-                progressMessages={testText}
+                messages={testText}
                 onUserClosed={() => {}}
                 onUserCanceled={() => {}}
                 onUserStopped={() => {}}
@@ -59,7 +62,7 @@ storiesOf("Publish/ProgressDialog", module)
             <ProgressDialog
                 progressState={ProgressState.Done}
                 errorEncountered={true}
-                progressMessages={testText}
+                messages={testText}
                 onUserClosed={() => {}}
                 onUserCanceled={() => {}}
                 onUserStopped={() => {}}
@@ -96,9 +99,11 @@ storiesOf("Publish/DeviceFrame", module)
         </DeviceAndControls>
     ));
 
-storiesOf("Publish/Reader", module).add("ReaderPublishScreen", () => (
+storiesOf("Publish/Bloom Reader", module).add("ReaderPublishScreen", () => (
     <ReaderPublishScreen />
 ));
-storiesOf("Publish/ePUB", module).add("EPUBPublishScreen", () => (
-    <EPUBPublishScreen />
-));
+
+storiesOf("Publish/ePUB", module)
+    .add("EPUBPublishScreen", () => <EPUBPublishScreen />)
+    .add("Book Metadata Dialog", () => <BookMetadataDialog startOpen={true} />)
+    .add("AccessibilityCheckScreen", () => <AccessibilityCheckScreen />);

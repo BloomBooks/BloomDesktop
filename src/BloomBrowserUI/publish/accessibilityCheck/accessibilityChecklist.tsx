@@ -8,7 +8,7 @@ import "./accessibilityChecklist.less";
 import { CheckItem } from "./checkItem";
 import { ApiBackedCheckbox } from "../../react_components/apiBackedCheckbox";
 import WebSocketManager from "../../utils/WebSocketManager";
-import "errorHandler";
+import "../../lib/errorHandler";
 
 export class AccessibilityChecklist extends React.Component<
     IUILanguageAwareProps

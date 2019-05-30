@@ -1,8 +1,18 @@
 import axios, { AxiosResponse, AxiosRequestConfig, AxiosPromise } from "axios";
 import * as StackTrace from "stacktrace-js";
 import { reportError, reportPreliminaryError } from "../lib/errorHandler";
-import { useState } from "react";
 import React = require("react");
+
+// You can modify mockReplies in order to work on UI components without the Bloom backed... namely, storybook.
+// It's surely too fragile for use in unit tests.
+// Mocks things that go through get(). That includes getString(), getBoolean(), useApiBoolean(), etc.
+// Example:
+// mockReplies["book/metadata"] = {
+//     data: {
+//         metadata: {
+//             author: { ...
+
+export let mockReplies = {};
 
 export class BloomApi {
     private static kBloomApiPrefix = "/bloom/api/";
@@ -128,6 +138,9 @@ export class BloomApi {
         urlSuffix: string,
         successCallback: (r: AxiosResponse) => void
     ) {
+        if (mockReplies[urlSuffix]) {
+            successCallback(mockReplies[urlSuffix]);
+        }
         BloomApi.wrapAxios(
             axios.get(this.kBloomApiPrefix + urlSuffix).then(successCallback)
         );

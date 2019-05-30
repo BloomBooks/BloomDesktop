@@ -18,6 +18,9 @@ import BloomButton from "../../react_components/bloomButton";
 import { EPUBHelpGroup } from "./ePUBHelpGroup";
 import PWithLink from "../../react_components/pWithLink";
 import { EPUBSettingsGroup } from "./ePUBSettingsGroup";
+import { Typography } from "@material-ui/core";
+import { EPUBPublishProgressDialog } from "./ePUBPublishProgressDialog";
+import BookMetadataDialog from "../metadata/BookMetadataDialog";
 
 export const EPUBPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -48,48 +51,29 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloomd
     );
 
-    // TODO: generalize this backend call out of android
-    const [defaultLandscape] = BloomApi.useApiBoolean(
-        "publish/android/defaultLandscape",
-        false
-    );
-    // TODO: generalize this backend call out of android
-    const [canRotate] = BloomApi.useApiBoolean(
-        "publish/android/canRotate",
-        false
-    );
-    // TODO: get epub preview
-    useWebSocketListenerForOneMessage(
-        "publish-android",
-        "androidPreview",
-        url => {
-            setBookUrl(url);
-        }
-    );
+    useWebSocketListenerForOneMessage("publish-epub", "epubPreview", url => {
+        setBookUrl(url);
+    });
     const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
 
     return (
         <>
-            <BasePublishScreen className="ReaderPublishScreen">
+            <BasePublishScreen className="ePUBPublishScreen">
                 <PreviewPanel>
                     <DeviceAndControls
-                        defaultLandscape={defaultLandscape}
-                        canRotate={canRotate}
-                        url={
-                            pathToOutputBrowser +
-                            "bloom-player/dist/bloomplayer.htm?url=" +
-                            bookUrl
-                        }
+                        defaultLandscape={false}
+                        canRotate={false}
+                        url={bookUrl}
                     />
-
-                    <PWithLink
-                        className="readium-credit"
-                        l10nKey="PublishTab.Epub.ReadiumCredit"
-                        href="https://readium.org/"
-                    >
-                        This ePUB preview is provided by [Readium]. This book
-                        may render differently in various ePUB readers.
-                    </PWithLink>
+                    <Typography className="readium-credit">
+                        <PWithLink
+                            l10nKey="PublishTab.Epub.ReadiumCredit"
+                            href="https://readium.org/"
+                        >
+                            This ePUB preview is provided by [Readium]. This
+                            book may render differently in various ePUB readers.
+                        </PWithLink>
+                    </Typography>
                 </PreviewPanel>
                 <PublishPanel>
                     <BloomButton
@@ -108,7 +92,8 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                 </SettingsPanel>
             </BasePublishScreen>
             {/* In storybook, there's no bloom backend to run the progress dialog */}
-            {/* {inStorybookMode || <ReaderPublishProgressDialog />} */}
+            <EPUBPublishProgressDialog />
+            <BookMetadataDialog />
         </>
     );
 };

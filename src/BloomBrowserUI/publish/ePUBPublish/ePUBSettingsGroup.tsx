@@ -5,18 +5,18 @@ import { Typography, FormGroup } from "@material-ui/core";
 import { String } from "../../react_components/l10nComponents";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { Link } from "../../react_components/link";
+import { SettingsGroup } from "../commonPublish/BasePublishScreen";
+import { useL10n } from "../../react_components/l10nHooks";
 export const EPUBSettingsGroup = () => {
     //const [includeImageDescriptionOnPage,setIncludeImageDescriptionOnPage] = BloomApi.useApiBoolean("publish/epub/imageDescriptionSetting", true);
     return (
-        <>
-            <Typography component="h1" variant="h6">
-                <String
-                    l10nKey="PublishTab.Epub.Accessibility"
-                    l10nComment="Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc."
-                >
-                    Accessibility
-                </String>
-            </Typography>
+        <SettingsGroup
+            label={useL10n(
+                "Accessibility",
+                "PublishTab.Epub.Accessibility",
+                "Here, the English 'Accessibility' is a common way of referring to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc."
+            )}
+        >
             <ApiCheckbox
                 english="Include image descriptions on page"
                 apiEndpoint="publish/epub/imageDescriptionSetting"
@@ -47,6 +47,6 @@ export const EPUBSettingsGroup = () => {
             >
                 Book Metadata
             </Link>
-        </>
+        </SettingsGroup>
     );
 };
