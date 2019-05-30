@@ -989,7 +989,20 @@ export default class AudioRecording {
             const currentTextBox = this.getCurrentTextBox();
             if (currentTextBox) {
                 currentTextBox.classList.remove("bloom-postAudioSplit");
-                this.elementsToPlayConsecutivelyStack.push(currentTextBox);
+
+                const audioSegments = this.getAudioSegmentsWithinElement(
+                    currentTextBox
+                );
+
+                if (audioSegments && audioSegments.length > 0) {
+                    // This text box is in 4.5 Format (Hard Split) where it contains audio-sentence elements within it
+                    this.elementsToPlayConsecutivelyStack = jQuery
+                        .makeArray(audioSegments)
+                        .reverse();
+                } else {
+                    // Nope, no audio-sentence elements within it. Uses 4.6 Format (Soft Split)
+                    this.elementsToPlayConsecutivelyStack.push(currentTextBox);
+                }
             }
         } else {
             const currentHighlight = this.getCurrentHighlight();
