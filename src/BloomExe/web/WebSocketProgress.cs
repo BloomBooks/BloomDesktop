@@ -61,7 +61,7 @@ namespace Bloom.web
 		[Obsolete("Instead, use normal messages with an kind=Error")]
 		public virtual void ErrorWithoutLocalizing(string message)
 		{
-			MessageWithoutLocalizing($"<span data-errorMessage style='color:red'>{message}</span>", kind:MessageKind.Error);
+			MessageWithoutLocalizing($"<span style='color:red'>{message}</span>", kind:MessageKind.Error);
 			SIL.Reporting.Logger.WriteEvent($"Error: {message}");
 		}
 

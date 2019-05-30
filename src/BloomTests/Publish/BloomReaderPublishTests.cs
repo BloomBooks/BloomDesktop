@@ -1018,14 +1018,14 @@ namespace BloomTests.Publish
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, timesNewRomanFileName)));
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, calibreFileName)));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Times New Roman font: License OK for embedding."));
-				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("<span style='color:blue'>Embedding font Times New Roman at a cost of 0.0 megs</span>"));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Embedding font Times New Roman at a cost of 0.0 megs"));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Calibre font: License OK for embedding."));
-				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("<span style='color:blue'>Embedding font Calibre at a cost of 0.2 megs</span>"));
+				Assert.That(stubProgress.MessagesNotLocalized,  Has.Member("Embedding font Calibre at a cost of 0.2 megs"));
 
-				Assert.That(stubProgress.ErrorsNotLocalized, Has.Member("Checking NotAllowed font: License does not permit embedding."));
-				Assert.That(stubProgress.ErrorsNotLocalized, Has.Member("Substituting \"Andika New Basic\" for \"NotAllowed\""));
-				Assert.That(stubProgress.ErrorsNotLocalized, Has.Member("Checking NotFound font: No font found to embed."));
-				Assert.That(stubProgress.ErrorsNotLocalized, Has.Member("Substituting \"Andika New Basic\" for \"NotFound\""));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("This book has text in a font named \"NotAllowed\". The license for \"NotAllowed\" does not permit Bloom to embed the font in the book."));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika New Basic\" instead."));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("This book has text in a font named \"NotFound\", but Bloom could not find that font on this computer."));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika New Basic\" instead."));
 
 				var fontSourceRulesPath = Path.Combine(testBook.FolderPath, "fonts.css");
 				var fontSource = RobustFile.ReadAllText(fontSourceRulesPath);
