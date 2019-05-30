@@ -1,6 +1,6 @@
 [Desktop Entry]
 Version=1.0
-Name=Bloom BetaInternal
+Name=Bloom Beta
 Comment=Literacy materials development for language communities
 Exec=bloom-beta %u
 Icon=bloom-beta
