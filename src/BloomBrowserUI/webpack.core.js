@@ -5,7 +5,7 @@
 // then we can move those webpack rules here.
 
 var webpack = require("webpack");
-var WebpackBuildNotifierPlugin = require("webpack-build-notifier");
+//var WebpackBuildNotifierPlugin = require("webpack-build-notifier");
 module.exports = {
     module: {
         rules: [
@@ -53,8 +53,8 @@ module.exports = {
             $: "jquery",
             jQuery: "jquery",
             "window.jQuery": "jquery"
-        }),
-        new WebpackBuildNotifierPlugin({})
+        })
+        //new WebpackBuildNotifierPlugin({})
     ],
     resolve: {
         extensions: [".ts", ".tsx"]
