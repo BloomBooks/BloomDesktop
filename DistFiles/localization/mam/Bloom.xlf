@@ -35,6 +35,18 @@
           <target xml:lang="mam">B'ijtz tib'aj kyaqil tz'ib'an maj</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage">
+        <source xml:lang="en">Some text is missing a recording for an image description on page {0}</source>
+        <note>ID: AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage</note>
+        <note>The {0} is where the page number will be inserted.</note>
+        <target xml:lang="mam" state="translated">At txolyol atx taj tu'n tkyaj tuj xk'ub'ib'il te jun chikb'ab'itz tib'aj tilb'ilal tuj t-xaq {0}</target>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.AudioForAllText.MissingOnPage">
+        <source xml:lang="en">Some text is missing a recording on page {0}</source>
+        <note>ID: AccessibilityCheck.AudioForAllText.MissingOnPage</note>
+        <note>The {0} is where the page number will be inserted.</note>
+        <target xml:lang="mam" state="translated">Atx taj txolyol tuj xk'ub'ib'il tuj t-xaq {0}</target>
+      </trans-unit>
       <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom can automatically check these for you:</source>
         <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
@@ -59,6 +71,12 @@
         <alt-trans>
           <target xml:lang="mam">Q'amalte kyb'aj kyaqil qe tib'lal</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="AccessibilityCheck.DescriptionsForAllImages.MissingOnPage">
+        <source xml:lang="en">Missing image description on page {0}</source>
+        <note>ID: AccessibilityCheck.DescriptionsForAllImages.MissingOnPage</note>
+        <note>The {0} is where the page number will be inserted.</note>
+        <target xml:lang="mam" state="translated">Atx taj jun chikb'ab'il tib'aj tilb'ilal tuj t-xaq {0}</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.FindingAce" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Finding Ace by DAISY on this computer...</source>
@@ -144,7 +162,7 @@
           <target xml:lang="mam">Ti'j tk'a' tok nti' b'ib'itz</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.WindowTitle" sil:dynamic="true" approved="yes">
+      <trans-unit id="AccessibilityCheck.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom Accessibility Checker</source>
         <note>ID: AccessibilityCheck.WindowTitle</note>
         <target xml:lang="mam" state="translated">Ka'yb'il qokix te Bloom</target>
@@ -327,17 +345,17 @@
           <target xml:lang="mam">Najsama, nlay ch'ixpet txolb'ab'il aq'untl b'anan maj tuj aq'unb'il xk'utz'ib'.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yCertifier" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.a11yCertifier" approved="yes">
         <source xml:lang="en">Level certified by</source>
         <note>ID: BookMetadata.a11yCertifier</note>
         <target xml:lang="mam" state="translated">Kol kyusa'n tu'n</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yFeatures" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.a11yFeatures" approved="yes">
         <source xml:lang="en">Accessibility features</source>
         <note>ID: BookMetadata.a11yFeatures</note>
         <target xml:lang="mam" state="translated">Aq'umb'il tu'n qokx</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yLevel" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.a11yLevel" approved="yes">
         <source xml:lang="en">Accessibility level</source>
         <note>ID: BookMetadata.a11yLevel</note>
         <target xml:lang="mam" state="translated">Jni' tu'mel tu'n qokx</target>
@@ -375,7 +393,7 @@
           <target xml:lang="mam">At txilen kol AAA</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.alternativeText" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.alternativeText" approved="yes">
         <source xml:lang="en">Has Image Descriptions</source>
         <note>ID: BookMetadata.alternativeText</note>
         <target xml:lang="mam" state="translated">At yol tz'ib'a'nmaj ti'j tilb'ilal</target>
@@ -383,7 +401,7 @@
           <target xml:lang="mam">Juntl tumlal txol yol tz'ib'anmaj</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.author" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.author" approved="yes">
         <source xml:lang="en">Author</source>
         <note>ID: BookMetadata.author</note>
         <target xml:lang="mam" state="translated">Ajb'inchal</target>
@@ -391,7 +409,7 @@
           <target xml:lang="mam">Aj b'inchal</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.flashingHazard" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.flashingHazard" approved="yes">
         <source xml:lang="en">Flashing Hazard</source>
         <note>ID: BookMetadata.flashingHazard</note>
         <target xml:lang="mam" state="translated">Xob'ajil: Nchi qoptz'aj tib'lal</target>
@@ -399,7 +417,7 @@
           <target xml:lang="mam">Atx tna'na: Nchi k'optz'aj qe tib'lal</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.hazards" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.hazards" approved="yes">
         <source xml:lang="en">Hazards</source>
         <note>ID: BookMetadata.hazards</note>
         <target xml:lang="mam" state="translated">Xob'ajil</target>
@@ -407,12 +425,12 @@
           <target xml:lang="mam">Tchiqe</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.inLanguage" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.inLanguage" approved="yes">
         <source xml:lang="en">Language</source>
         <note>ID: BookMetadata.inLanguage</note>
         <target xml:lang="mam" state="translated">Yol</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.level" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.level" approved="yes">
         <source xml:lang="en">Reading level</source>
         <note>ID: BookMetadata.level</note>
         <target xml:lang="mam" state="translated">Tkolil u'jb'il</target>
@@ -420,12 +438,12 @@
           <target xml:lang="mam">Oksqib'il sch'ib'il</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.License" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.License" approved="yes">
         <source xml:lang="en">License</source>
         <note>ID: BookMetadata.License</note>
         <target xml:lang="mam" state="translated">Tu'jil amb'il</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.metapicture" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.metapicture" approved="yes">
         <source xml:lang="en">Picture</source>
         <note>ID: BookMetadata.metapicture</note>
         <target xml:lang="mam" state="translated">Tilb'ilal</target>
@@ -433,7 +451,7 @@
           <target xml:lang="mam">Tib'lal</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.motionSimulationHazard" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.motionSimulationHazard" approved="yes">
         <source xml:lang="en">Motion Simulation Hazard</source>
         <note>ID: BookMetadata.motionSimulationHazard</note>
         <target xml:lang="mam" state="translated">Xob'ajil: Yukchb'il noqx yek'b'il</target>
@@ -441,27 +459,27 @@
           <target xml:lang="mam">Atx tna'na: Yukẍb'el e'lx</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookMetadata.name" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.name" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: BookMetadata.name</note>
         <target xml:lang="mam" state="translated">B'ib'aj</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.numberOfPages" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.numberOfPages" approved="yes">
         <source xml:lang="en">Number of pages</source>
         <note>ID: BookMetadata.numberOfPages</note>
         <target xml:lang="mam" state="translated">Tajlal t-xaq u'j</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.signLanguage" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.signLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
         <note>ID: BookMetadata.signLanguage</note>
         <target xml:lang="mam" state="translated">Yol tu'n techil</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.subjects" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.subjects" approved="yes">
         <source xml:lang="en">Subjects</source>
         <note>ID: BookMetadata.subjects</note>
         <target xml:lang="mam" state="translated">Kyb'i xnaq'tz</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.typicalAgeRange" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookMetadata.typicalAgeRange" approved="yes">
         <source xml:lang="en">Typical age range</source>
         <note>ID: BookMetadata.typicalAgeRange</note>
         <target xml:lang="mam" state="translated">Ttxolil ajlab'il ab'q'i</target>
@@ -552,8 +570,11 @@
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate1</note>
-        <target xml:lang="mam" state="translated">Ma jaw ttx'ixpu'n Bloom tzib'b'il te "{0}" tu'n tajb'en ak'aj tz'ib'b'il "Andika New Basic".
+        <target xml:lang="mam" state="translated">Ma jaw ttx'ixpu'n Bloom tzib'b'il te "{0}" tu'n tajb'en ak'aj tz'ib'b'il "Andika New Basic".</target>
+        <alt-trans>
+          <target xml:lang="mam">Ma jaw ttx'ixpu'n Bloom tzib'b'il te "{0}" tu'n tajb'en ak'aj tz'ib'b'il "Andika New Basic".
  </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">In ch'ixpet tu'n Bloom tloq' aq'unb'il bananmaj te "{0}" ak'aj tloq' "Andika New Basic".</target>
         </alt-trans>
@@ -1084,337 +1105,460 @@
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
         <target xml:lang="mam" state="translated">B'inchab'il aq'unb'il xk'utz'ib' te Bloom...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
+      <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip" approved="yes">
         <source xml:lang="en">Update Book</source>
         <note>ID: CollectionTab.BookMenu.UpdateFrontMatterToolStrip</note>
-        <target xml:lang="mam" state="translated">Ak'aj txel u'j</target>
+        <target xml:lang="mam" state="translated">Ak'aj tqanil ti'j u'j</target>
+        <alt-trans>
+          <target xml:lang="mam">Ak'aj txel u'j</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.UpdateThumbnail">
+      <trans-unit id="CollectionTab.BookMenu.UpdateThumbnail" approved="yes">
         <source xml:lang="en">Update Thumbnail</source>
         <note>ID: CollectionTab.BookMenu.UpdateThumbnail</note>
         <target xml:lang="mam" state="translated">Ak'aj txel ni tal ch'in</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookSourceHeading">
+      <trans-unit id="CollectionTab.BookSourceHeading" approved="yes">
         <source xml:lang="en">Sources For New Books</source>
         <note>ID: CollectionTab.BookSourceHeading</note>
-        <target xml:lang="mam" state="translated">Toloq'b'il kye ak'aj u'j</target>
+        <target xml:lang="mam" state="translated">Tolok'b'il kye ak'aj u'j</target>
+        <alt-trans>
+          <target xml:lang="mam">Toloq'b'il kye ak'aj u'j</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookSourcesLockNotice">
+      <trans-unit id="CollectionTab.BookSourcesLockNotice" approved="yes">
         <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
         <note>ID: CollectionTab.BookSourcesLockNotice</note>
         <target xml:lang="mam" state="translated">Maqo'n k'loj te ila' wiq lu', nlayx tu'n tok mo tu'n tel qe ak'aj u'j.</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true">
+      <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Books From BloomLibrary.org</source>
         <note>ID: CollectionTab.Books From BloomLibrary.org</note>
         <target xml:lang="mam" state="translated">U'j te BloomLibrary.org</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
+      <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks" approved="yes">
         <source xml:lang="en">Do Updates of All Books</source>
         <note>ID: CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks</note>
-        <target xml:lang="mam" state="translated">Ak'aj txel te kyaqil u'j</target>
+        <target xml:lang="mam" state="translated">Ak'aj t-xel te kykyaqil u'j</target>
+        <alt-trans>
+          <target xml:lang="mam">Ak'aj txel te kyaqil u'j</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks">
+      <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks" approved="yes">
         <source xml:lang="en">Do Checks of All Books</source>
         <note>ID: CollectionTab.CollectionMenu.doChecksOfAllBooks</note>
-        <target xml:lang="mam" state="translated">Kb'el ka'yit juntil maj kyaqil qe u'j</target>
+        <target xml:lang="mam" state="translated">Kb'el ka'yit juntil maj kykyaqil qe' u'j</target>
+        <alt-trans>
+          <target xml:lang="mam">Kb'el ka'yit juntil maj kyaqil qe u'j</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages">
+      <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages" approved="yes">
         <source xml:lang="en">Rescue Missing Images...</source>
         <note>ID: CollectionTab.CollectionMenu.rescueMissingImages</note>
-        <target xml:lang="mam" state="translated">Tu'n tb'aj kanet qe tilb'ilal atx taj...</target>
+        <target xml:lang="mam" state="translated">Tu'n tb'aj kanet qe' tilb'ilal atx taj...</target>
+        <alt-trans>
+          <target xml:lang="mam">Tu'n tb'aj kanet qe tilb'ilal atx taj...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.showHistory">
+      <trans-unit id="CollectionTab.CollectionMenu.showHistory" approved="yes">
         <source xml:lang="en">Collection History...</source>
         <note>ID: CollectionTab.CollectionMenu.showHistory</note>
         <target xml:lang="mam" state="translated">B'ib'itz tib'aj k'loj te ila' wiq...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.showNotes">
+      <trans-unit id="CollectionTab.CollectionMenu.showNotes" approved="yes">
         <source xml:lang="en">Collection Notes...</source>
         <note>ID: CollectionTab.CollectionMenu.showNotes</note>
-        <target xml:lang="mam" state="translated">Ttxol yol tib'aj k'loj te ila' wiq...</target>
+        <target xml:lang="mam" state="translated">Tqanil tib'aj k'loj te ila' wiq...</target>
+        <alt-trans>
+          <target xml:lang="mam">Ttxol yol tib'aj k'loj te ila' wiq...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionTabLabel">
+      <trans-unit id="CollectionTab.CollectionTabLabel" approved="yes">
         <source xml:lang="en">Collections</source>
         <note>ID: CollectionTab.CollectionTabLabel</note>
         <target xml:lang="mam" state="translated">K'lojb'il te ila' wiq</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Collections">
+      <trans-unit id="CollectionTab.Collections" approved="yes">
         <source xml:lang="en">Collections</source>
         <note>ID: CollectionTab.Collections</note>
         <target xml:lang="mam" state="translated">K'lojb'il te ila' wiq</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.ConfiguringBookMessage">
+      <trans-unit id="CollectionTab.ConfiguringBookMessage" approved="yes">
         <source xml:lang="en">Building...</source>
         <note>ID: CollectionTab.ConfiguringBookMessage</note>
         <target xml:lang="mam" state="translated">Nb'inchet...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.ConfirmRecycleDescription">
+      <trans-unit id="CollectionTab.ConfirmRecycleDescription" approved="yes">
         <source xml:lang="en">The book '{0}'</source>
         <note>ID: CollectionTab.ConfirmRecycleDescription</note>
         <target xml:lang="mam" state="translated">Aj u'j '{0}'</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk">
+      <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk" approved="yes">
         <source xml:lang="en">Open Folder on Disk</source>
         <note>ID: CollectionTab.ContextMenu.OpenFolderOnDisk</note>
-        <target xml:lang="mam" state="translated">Qjaqetil k'ub'il tuj disco</target>
+        <target xml:lang="mam" state="translated">Kjaqetil k'ub'il tuj disco</target>
+        <alt-trans>
+          <target xml:lang="mam">Qjaqetil k'ub'il tuj disco</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.EditBookButton">
+      <trans-unit id="CollectionTab.EditBookButton" approved="yes">
         <source xml:lang="en">Edit this book</source>
         <note>ID: CollectionTab.EditBookButton</note>
-        <target xml:lang="mam" state="translated">B'inchetil u'j lu'</target>
+        <target xml:lang="mam" state="translated">Kb'inchetil u'j lu'</target>
+        <alt-trans>
+          <target xml:lang="mam">B'inchetil u'j lu'</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
+      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-        <target xml:lang="mam" state="translated">Tu'ntlaj nokx jun k'loj tloq'b'il u'j lu', Bloom nti' ntzaj tq'o'n u'jb'il b'ananmaj ex atqe, ikytzan tloq'b'il ak'aj u'jb'il b'ananmaj. Qa tajb'ila tu'n tok jun yolb'il ti'j jun u'jb'il b'ananmaj, ilx ti'j tu'n t-xi' b'inchit k'loj te ila' wiq at u'jb'il b'ananmaj tuj ttxel tilb'ilal. Nlayx tajb'en Txolq'ij tu'n tkub' b'inchet jun ak'aj u'jb'il b'ananmaj.</target>
+        <target xml:lang="mam" state="translated">Tu'ntlaj nokx jun k'loj tlok'b'il u'j lu', te' Bloom nti' ntzaj tq'o'n u'jb'il b'ananmaj ex atqe, ikytzan tlok'b'il ak'aj u'jb'il b'ananmaj. Qa tajb'ila tu'n tok jun yolb'il ti'j jun u'jb'il b'ananmaj, ilx ti'j tu'n t-xi' b'inchet k'loj te ila' wiq at u'jb'il b'ananmaj tuj ttxel tilb'ilal. Nlayx tajb'en Txolq'ij tu'n tkub' b'inchet jun ak'aj u'jb'il b'ananmaj.</target>
+        <alt-trans>
+          <target xml:lang="mam">Tu'ntlaj nokx jun k'loj tlok'b'il u'j lu', Bloom nti' ntzaj tq'o'n u'jb'il b'ananmaj ex atqe, ikytzan tloq'b'il ak'aj u'jb'il b'ananmaj. Qa tajb'ila tu'n tok jun yolb'il ti'j jun u'jb'il b'ananmaj, ilx ti'j tu'n t-xi' b'inchit k'loj te ila' wiq at u'jb'il b'ananmaj tuj ttxel tilb'ilal. Nlayx tajb'en Txolq'ij tu'n tkub' b'inchet jun ak'aj u'jb'il b'ananmaj.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="mam">Tu'ntlaj nokx jun k'loj tloq'b'il u'j lu', Bloom nti' ntzaj tq'o'n u'jb'il b'ananmaj ex atqe, ikytzan tloq'b'il ak'aj u'jb'il b'ananmaj. Qa tajb'ila tu'n tok jun yolb'il ti'j jun u'jb'il b'ananmaj, ilx ti'j tu'n t-xi' b'inchit k'loj te ila' wiq at u'jb'il b'ananmaj tuj ttxel tilb'ilal. Nlayx tajb'en Txolq'ij tu'n tkub' b'inchet jun ak'aj u'jb'il b'ananmaj.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.MakeBloomPackButton">
+      <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
         <note>ID: CollectionTab.MakeBloomPackButton</note>
         <target xml:lang="mam" state="translated">B'inchab'il jun Bloom Pack</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
+      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate" approved="yes">
         <source xml:lang="en">Make a book using this source</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate</note>
-        <target xml:lang="mam" state="translated">Qajb'ela tloq'b'il u'j lu' tu'n tb'ant jun u'j</target>
+        <target xml:lang="mam" state="translated">Ok b'inchetil jun ak'aj u'j ja tu'mel  ok ajb'el Tlok'bil u'j lu</target>
+        <alt-trans>
+          <target xml:lang="mam">Qajb'ela tloq'b'il u'j lu' tu'n tb'ant jun u'j</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_">
+      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_" approved="yes">
         <source xml:lang="en">Create a book in my language using this source book</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate_ToolTip_</note>
-        <target xml:lang="mam" state="translated">Qajb'ela tloq'b'il u'j lu' tu'n tb'ant jun u'j tuj nyolb'ila</target>
+        <target xml:lang="mam" state="translated">Kajb'el tlok'b'il u'j lu' tu'n tb'ant jun u'j tuj nyola</target>
+        <alt-trans>
+          <target xml:lang="mam">Qajb'ela tloq'b'il u'j lu' tu'n tb'ant jun u'j tuj nyolb'ila</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.MoreLanguagesMenuItem">
+      <trans-unit id="CollectionTab.MoreLanguagesMenuItem" approved="yes">
         <source xml:lang="en">More...</source>
         <note>ID: CollectionTab.MoreLanguagesMenuItem</note>
         <note>Brings up the localization dialog</note>
         <note xml:lang="en">used in 3.9 and earlier; feature removed in 4.0</note>
-        <target xml:lang="mam" state="translated">Juntil...</target>
+        <target xml:lang="mam" state="translated">Txqantl...</target>
+        <alt-trans>
+          <target xml:lang="mam">Juntil...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Open/CreateCollectionButton">
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton" approved="yes">
         <source xml:lang="en">Other Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton</note>
         <note>This is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
         <target xml:lang="mam" state="translated">Juntil k'loj te ila' wiq</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Open/CreateCollectionButton_ToolTip_">
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton_ToolTip_" approved="yes">
         <source xml:lang="en">Open/Create/Get Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton_ToolTip_</note>
         <note>This is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
-        <target xml:lang="mam" state="translated">Jqol/Kb'el b'inchet/Q'ob'il k'loj te ila' wiq</target>
+        <target xml:lang="mam" state="translated">Jqol/B'inchal/K'amol k'loj te ila' wiq</target>
+        <alt-trans>
+          <target xml:lang="mam">Jqol/Kb'el b'inchet/Q'ob'il k'loj te ila' wiq</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.OpenCreateCollectionMenuItem">
+      <trans-unit id="CollectionTab.OpenCreateCollectionMenuItem" approved="yes">
         <source xml:lang="en">Open or Create Another Collection</source>
         <note>ID: CollectionTab.OpenCreateCollectionMenuItem</note>
         <target xml:lang="mam" state="translated">Jqol mo kb'el b'inchet juntil k'loj te ila' wiq</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Progress">
+      <trans-unit id="CollectionTab.Progress" approved="yes">
         <source xml:lang="en">({0}% complete)</source>
         <note>ID: CollectionTab.Progress</note>
         <target xml:lang="mam" state="translated">({0}% Tz'aqsa'n)</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.RestartToUpdate">
+      <trans-unit id="CollectionTab.RestartToUpdate" approved="yes">
         <source xml:lang="en">Restart Bloom to Update</source>
         <note>ID: CollectionTab.RestartToUpdate</note>
         <note>Restart the Bloom program, not Windows</note>
-        <target xml:lang="mam" state="translated">Txqoktza juntil maj tu'n kyoq qe ak'aj txel aq'unb'il</target>
+        <target xml:lang="mam" state="translated">Txqoktza juntil maj tu'n kyoq qe ak'aj t-xel aq'unb'il</target>
+        <alt-trans>
+          <target xml:lang="mam">Txqoktza juntil maj tu'n kyoq qe ak'aj txel aq'unb'il</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
+      <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample Shells</source>
         <note>ID: CollectionTab.Sample Shells</note>
         <target xml:lang="mam" state="translated">U'j b'ananmaj te yek'b'il</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.SendReceive">
+      <trans-unit id="CollectionTab.SendReceive" approved="yes">
         <source xml:lang="en">Send/Receive</source>
         <note>ID: CollectionTab.SendReceive</note>
         <target xml:lang="mam" state="translated">Samab'il/K'amob'il</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.SettingsButton">
+      <trans-unit id="CollectionTab.SettingsButton" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionTab.SettingsButton</note>
-        <target xml:lang="mam" state="translated">Q'ol tilb'ilal</target>
+        <target xml:lang="mam" state="translated"> B'inchal ttxolil aq'unb'il xk'utz'ib'</target>
+        <alt-trans>
+          <target xml:lang="mam">Q'ol tilb'ilal</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+      <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections" approved="yes">
         <source xml:lang="en">Open Additional Collections Folder</source>
         <note>ID: CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections</note>
-        <target xml:lang="mam" state="translated">Qjaqetil juntl tk'ub'il k'loj te ila' wiq</target>
+        <target xml:lang="mam" state="translated">Kjaqetil juntl tk'ub'il k'loj te ila' wiq</target>
+        <alt-trans>
+          <target xml:lang="mam">Qjaqetil juntl tk'ub'il k'loj te ila' wiq</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.SourcesForNewShellsHeading">
+      <trans-unit id="CollectionTab.SourcesForNewShellsHeading" approved="yes">
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
-        <target xml:lang="mam" state="translated">Qe tloq'b'il ak'aj u'j b'ananmaj</target>
+        <target xml:lang="mam" state="translated">Qe tlok'b'il ak'aj u'j b'ananmaj</target>
+        <alt-trans>
+          <target xml:lang="mam">Qe tloq'b'il ak'aj u'j b'ananmaj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Templates" sil:dynamic="true">
+      <trans-unit id="CollectionTab.Templates" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Templates</source>
         <note>ID: CollectionTab.Templates</note>
-        <target xml:lang="mam" state="translated">Ttenb'il b'inchil u'jb'il b'anan maj</target>
+        <target xml:lang="mam" state="translated">Ttenb'il b'inchil u'jb'il b'ananmaj</target>
+        <alt-trans>
+          <target xml:lang="mam">Ttenb'il b'inchil u'jb'il b'anan maj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.TitleMissing">
+      <trans-unit id="CollectionTab.TitleMissing" approved="yes">
         <source xml:lang="en">Title Missing</source>
         <note>ID: CollectionTab.TitleMissing</note>
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
-        <target xml:lang="mam" state="translated">Atx taj tb'i u'j</target>
+        <target xml:lang="mam" state="translated">At-x taj tb'i u'j</target>
+        <alt-trans>
+          <target xml:lang="mam">Atx taj tb'i u'j</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.UILanguageMenu.HelpTranslate">
+      <trans-unit id="CollectionTab.UILanguageMenu.HelpTranslate" approved="yes">
         <source xml:lang="en">Help us translate Bloom (web)</source>
         <note>ID: CollectionTab.UILanguageMenu.HelpTranslate</note>
         <note>The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.</note>
-        <target xml:lang="mam" state="translated">Onb'il tu'n tik'x tuj Bloom (web)</target>
+        <target xml:lang="mam" state="translated">Qo tonintza tu'n tmiltz'et yol tuj Bloom (web)</target>
+        <alt-trans>
+          <target xml:lang="mam">Onb'il tu'n tik'x tuj Bloom (web)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip">
+      <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip" approved="yes">
         <source xml:lang="en">{0}% translated</source>
         <note>ID: CollectionTab.UILanguageMenu.ItemTooltip</note>
         <note>Shown when hovering over an item in the UI Language menu. The {0} marker is filled in by a number between 1 and 100.</note>
-        <target xml:lang="mam" state="translated">‎{0}% meltz'u'n maj</target>
+        <target xml:lang="mam" state="translated">‎{0}% meltz'u'n</target>
+        <alt-trans>
+          <target xml:lang="mam">‎{0}% meltz'u'n maj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.UnableToCheckForUpdate">
+      <trans-unit id="CollectionTab.UnableToCheckForUpdate" approved="yes">
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
         <note>ID: CollectionTab.UnableToCheckForUpdate</note>
         <note>Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc.</note>
-        <target xml:lang="mam" state="translated">Nti' b'ant soqtq'o'n tib' ti'j onil sipil tu'n tb'aj ka'yit qa at ak'aj tu'n tok. Tokpiya ti'j Chemajxin?</target>
+        <target xml:lang="mam" state="translated">Nti' b'ant soktq'o'n tib' ti'j onil sipil tu'n tb'aj ka'yit qa at ak'aj tu'n tok. Tokpiya ti'j Chemxin?</target>
+        <alt-trans>
+          <target xml:lang="mam">Nti' b'ant soqtq'o'n tib' ti'j onil sipil tu'n tb'aj ka'yit qa at ak'aj tu'n tok. Tokpiya ti'j Chemajxin?</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpToDate">
+      <trans-unit id="CollectionTab.UpToDate" approved="yes">
         <source xml:lang="en">Your Bloom is up to date.</source>
         <note>ID: CollectionTab.UpToDate</note>
-        <target xml:lang="mam" state="translated">Ma tz'ok ak'aj ttxel Bloom.</target>
+        <target xml:lang="mam" state="translated">Ma tz'ok ak'aj t-xel Bloom.</target>
+        <alt-trans>
+          <target xml:lang="mam">Ma tz'ok ak'aj ttxel Bloom.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpdateCheckInProgress">
+      <trans-unit id="CollectionTab.UpdateCheckInProgress" approved="yes">
         <source xml:lang="en">Bloom is already working on checking for updates.</source>
         <note>ID: CollectionTab.UpdateCheckInProgress</note>
-        <target xml:lang="mam" state="translated">Njyon Bloom qe ak'aj txel.</target>
+        <target xml:lang="mam" state="translated">Njyon Bloom kyi'j ak'aj ttxolil aq'unb'il.</target>
+        <alt-trans>
+          <target xml:lang="mam">Njyon Bloom kyi'j ak'aj ttxolil aq'unb'il.-</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="mam">Njyon Bloom qe ak'aj txel.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpdateFailed">
+      <trans-unit id="CollectionTab.UpdateFailed" approved="yes">
         <source xml:lang="en">A new version appears to be available, but Bloom could not install it.</source>
         <note>ID: CollectionTab.UpdateFailed</note>
-        <target xml:lang="mam" state="translated">Tzanqa at jun ak'aj tu'mel b'a'n tu'n tok, nokx nti'x xb'ant tok tq'o'n tu'n Bloom.</target>
+        <target xml:lang="mam" state="translated">Tzanqa at jun ak'aj ttxolil aq'unb'il, noq aju nti'x xb'ant tok tq'o'n Bloom.</target>
+        <alt-trans>
+          <target xml:lang="mam">Tzanqa at jun ak'aj tu'mel b'a'n tu'n tok, nokx nti'x xb'ant tok tq'o'n tu'n Bloom.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpdateInstalled">
+      <trans-unit id="CollectionTab.UpdateInstalled" approved="yes">
         <source xml:lang="en">Update for {0} is ready</source>
         <note>ID: CollectionTab.UpdateInstalled</note>
         <note>Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom.</note>
         <note xml:lang="en">OLD TEXT (before 3.9, period at end): Update for {0} is ready.</note>
-        <target xml:lang="mam" state="translated">Ak'aj ttxel te {0} ma b'ant tten</target>
+        <target xml:lang="mam" state="translated">Ak'aj t-xel te {0} ma b'ant tten</target>
+        <alt-trans>
+          <target xml:lang="mam">Ak'aj ttxel te {0} ma b'ant tten</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpdateNow">
+      <trans-unit id="CollectionTab.UpdateNow" approved="yes">
         <source xml:lang="en">Update Now</source>
         <note>ID: CollectionTab.UpdateNow</note>
-        <target xml:lang="mam" state="translated">Ak'aj ttxel tu'n tok ja'lo</target>
+        <target xml:lang="mam" state="translated">Ak'aj ttxolil aq'unb'il tu'n tok ja'lo</target>
+        <alt-trans>
+          <target xml:lang="mam">Ak'aj ttxel tu'n tok ja'lo</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpdatesAvailable">
+      <trans-unit id="CollectionTab.UpdatesAvailable" approved="yes">
         <source xml:lang="en">A new version of Bloom is available.</source>
         <note>ID: CollectionTab.UpdatesAvailable</note>
-        <target xml:lang="mam" state="translated">At jun ak'aj ttxel Bloom b'a'n tu'n tok ja'lo.</target>
+        <target xml:lang="mam" state="translated">At jun ak'aj ttxolil aq'unb'il Bloom b'a'n tu'n tok ja'lo.</target>
+        <alt-trans>
+          <target xml:lang="mam">At jun ak'aj ttxel Bloom b'a'n tu'n tok ja'lo.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Updating">
+      <trans-unit id="CollectionTab.Updating" approved="yes">
         <source xml:lang="en">Downloading update to {0} ({1}K)</source>
         <note>ID: CollectionTab.Updating</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Downloading update to {0} ({1}kb).</note>
-        <target xml:lang="mam" state="translated">Nipan tku'tz ak'aj txel te {0} ({1}kb)</target>
+        <target xml:lang="mam" state="translated">Nipan tku'tz ak'aj ttxolil aq'unb'il {0} ({1}kb)</target>
+        <alt-trans>
+          <target xml:lang="mam">Nipan tku'tz ak'aj txel te {0} ({1}kb)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Advanced">
+      <trans-unit id="Common.Advanced" approved="yes">
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
         <target xml:lang="mam" state="translated">B'a'nxix tu'n</target>
       </trans-unit>
-      <trans-unit id="Common.BackButton">
+      <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
         <note>ID: Common.BackButton</note>
         <note>In a wizard, this button takes you to the previous step.</note>
-        <target xml:lang="mam" state="translated">Ok qmeltz'ija</target>
+        <target xml:lang="mam" state="translated">Tanjtz ti'ja</target>
+        <alt-trans>
+          <target xml:lang="mam">Ok qmeltz'ija</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Cancel">
+      <trans-unit id="Common.Cancel" approved="yes">
         <source xml:lang="en">Cancel</source>
         <note>ID: Common.Cancel</note>
         <target xml:lang="mam" state="translated">Mi'n lajet</target>
       </trans-unit>
-      <trans-unit id="Common.CancelButton">
+      <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
         <target xml:lang="mam" state="translated">&amp;Mi'n lajet</target>
       </trans-unit>
-      <trans-unit id="Common.Finish">
+      <trans-unit id="Common.Finish" approved="yes">
         <source xml:lang="en">&amp;Finish</source>
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
         <target xml:lang="mam" state="translated">&amp;B'ajsal</target>
       </trans-unit>
-      <trans-unit id="Common.Info">
+      <trans-unit id="Common.Info" approved="yes">
         <source xml:lang="en">Info</source>
         <note>ID: Common.Info</note>
         <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
-        <target xml:lang="mam" state="translated">Poqb'al</target>
+        <target xml:lang="mam" state="translated">Tqanil</target>
+        <alt-trans>
+          <target xml:lang="mam">Poqb'al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Warning">
+      <trans-unit id="Common.Warning" approved="yes">
         <source xml:lang="en">Info</source>
         <note>ID: Common.Warning</note>
         <note>A heading shown above some messages.</note>
-        <target xml:lang="mam" state="translated">Pakb'ab'il</target>
+        <target xml:lang="mam" state="translated">Tqanil</target>
+        <alt-trans>
+          <target xml:lang="mam">Pakb'ab'il</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Note">
+      <trans-unit id="Common.Note" approved="yes">
         <source xml:lang="en">Note</source>
         <note>ID: Common.Note</note>
         <note>A heading shown above some messages.</note>
-        <target xml:lang="mam" state="translated">Tz'ib'ajt txolyol</target>
+        <target xml:lang="mam" state="translated">Ch'in tpakb'alil</target>
+        <alt-trans>
+          <target xml:lang="mam">Tz'ib'ajt txolyol</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Done">
+      <trans-unit id="Common.Done" approved="yes">
         <source xml:lang="en">Done</source>
         <note>ID: Common.Done</note>
         <note>Shown in a list of messages when Bloom has completed a task.</note>
         <target xml:lang="mam" state="translated">O b'aj b'ant</target>
       </trans-unit>
-      <trans-unit id="Common.Help" sil:dynamic="true">
+      <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
         <target xml:lang="mam" state="translated">Onb'il</target>
       </trans-unit>
-      <trans-unit id="Common.HelpButton">
+      <trans-unit id="Common.HelpButton" approved="yes">
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
         <target xml:lang="mam" state="translated">&amp;Onb'il</target>
       </trans-unit>
-      <trans-unit id="Common.Loading" sil:dynamic="true">
+      <trans-unit id="Common.Loading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Loading...</source>
         <note>ID: Common.Loading</note>
         <note>This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.</note>
-        <target xml:lang="mam" state="translated">Ma n-nok tu'n...</target>
+        <target xml:lang="mam" state="translated">Tzma n-ok tu'n...</target>
+        <alt-trans>
+          <target xml:lang="mam">Ma n-ok tu'n...</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="mam">Ma n-nok tu'n...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Next">
+      <trans-unit id="Common.Next" approved="yes">
         <source xml:lang="en">&amp;Next</source>
         <note>ID: Common.Next</note>
         <note>Used for the Next button in wizards, like that used for making a New Collection</note>
         <target xml:lang="mam" state="translated">&amp;Tik'xa tuj juntl</target>
       </trans-unit>
-      <trans-unit id="Common.NextButton">
+      <trans-unit id="Common.NextButton" approved="yes">
         <source xml:lang="en">Next</source>
         <note>ID: Common.NextButton</note>
         <note>In a wizard, this button takes you to the next step.</note>
         <target xml:lang="mam" state="translated">Tik'xa tuj juntl</target>
       </trans-unit>
-      <trans-unit id="Common.OK">
+      <trans-unit id="Common.OK" approved="yes">
         <source xml:lang="en">OK</source>
         <note>ID: Common.OK</note>
-        <target xml:lang="mam" state="translated">K'amob'il</target>
+        <target xml:lang="mam" state="translated">B'a'n</target>
+        <alt-trans>
+          <target xml:lang="mam">K'amob'il</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.OKButton">
+      <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
         <target xml:lang="mam" state="translated">&amp;K'amob'il</target>
       </trans-unit>
-      <trans-unit id="Common.Optional">
+      <trans-unit id="Common.Optional" approved="yes">
         <source xml:lang="en">optional</source>
         <note>ID: Common.Optional</note>
         <target xml:lang="mam" state="translated">qa tajb'ila</target>
       </trans-unit>
-      <trans-unit id="Common.Preview">
+      <trans-unit id="Common.Preview" approved="yes">
         <source xml:lang="en">Preview</source>
         <note>ID: Common.Preview</note>
-        <target xml:lang="mam" state="translated">Ke'yb'il namxtaq t-xi qe'</target>
+        <target xml:lang="mam" state="translated">Ka'yb'il na'mxtaq t-xi qe'</target>
+        <alt-trans>
+          <target xml:lang="mam">Ke'yb'il na'mxtaq t-xi qe'</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="mam">Ke'yb'il namxtaq t-xi qe'</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Progress">
+      <trans-unit id="Common.Progress" approved="yes">
         <source xml:lang="en">Progress</source>
         <note>ID: Common.Progress</note>
-        <target xml:lang="mam" state="translated">At ch'in ma b'ant tu'n</target>
+        <target xml:lang="mam" state="translated">Ti' ma b'ant</target>
+        <alt-trans>
+          <target xml:lang="mam">At ch'in ma b'ant tu'n</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Nipun b'aj tz'aq'unan</target>
         </alt-trans>
@@ -1425,22 +1569,28 @@
           <target xml:lang="mam">In naq'unan</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Refresh">
+      <trans-unit id="Common.Refresh" approved="yes">
         <source xml:lang="en">Refresh</source>
         <note>ID: Common.Refresh</note>
         <note>Sense of refreshing a web page.</note>
-        <target xml:lang="mam" state="translated">Ak'aj ttxel</target>
+        <target xml:lang="mam" state="translated">Ak'aj tqanil</target>
+        <alt-trans>
+          <target xml:lang="mam">Ak'aj ttxel</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.SeeWebPage">
+      <trans-unit id="Common.SeeWebPage" approved="yes">
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
         <note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
         <target xml:lang="mam" state="translated">Ka'yinxa {0}.</target>
       </trans-unit>
-      <trans-unit id="Common.Settings">
+      <trans-unit id="Common.Settings" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: Common.Settings</note>
-        <target xml:lang="mam" state="translated">Q'ol tilb'ilal</target>
+        <target xml:lang="mam" state="translated">Ttxolil aq'unb'il xk'utz'ib'</target>
+        <alt-trans>
+          <target xml:lang="mam">Q'ol tilb'ilal</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
@@ -1782,6 +1932,12 @@
         <source xml:lang="en">This sentence is too long for this level.</source>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
         <target xml:lang="mam" state="translated">Matij txolyol lu' tuj kol lu'.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.EnterpriseSettingsButton" sil:dynamic="true">
+        <source xml:lang="en">Bloom Enterprise Settings</source>
+        <note>ID: EditTab.EnterpriseSettingsButton</note>
+        <note>Text of button that appears when Bloom Enterprise is needed for access to a feature.</note>
+        <target xml:lang="mam" state="translated">Ttxolil aq'unb'il xk'utz'ib' te Bloom Empresarial</target>
       </trans-unit>
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true">
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
@@ -2162,7 +2318,7 @@
         <note>ID: EditTab.HowToUnlockBook</note>
         <target xml:lang="mam" state="translated">Tu'n tel tzoqpaj aj u'jb'il b'anamaj, b'inchanxa clic tib'aj tilb'ilal tal ja at kub'ni tuj tb'utx' tnayaja.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Image.AltMsg" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.AltMsg">
         <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
         <note>ID: EditTab.Image.AltMsg</note>
         <note>The {0} is replaced by the filename of the picture.</note>
@@ -2330,6 +2486,12 @@
         <source xml:lang="en">You cannot put anything in there while making an original book.</source>
         <note>ID: EditTab.ReadOnlyInAuthorMode</note>
         <target xml:lang="mam" state="translated">Nlay tz'ok tq'ona mijun atzunju qa kukx ttz'ib'ana jun txuylal u'jb'il.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.RequiresEnterprise" sil:dynamic="true">
+        <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
+        <note>ID: EditTab.RequiresEnterprise</note>
+        <note>Appears in notice (possibly obscuring other controls when they may not be used) because no Bloom Enterprise project has been selected.</note>
+        <target xml:lang="mam" state="translated">Tu'n tajb'en aq'unab'itz lu, il ti'j tu'n t-xi' amb'il te Bloom Empresarial.</target>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
         <source xml:lang="en">Saving...</source>
@@ -2883,12 +3045,6 @@
         <note>ID: EditTab.Toolbox.More</note>
         <target xml:lang="mam" state="translated">Txqantl...</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.RequiresEnterprise" sil:dynamic="true">
-        <source xml:lang="en">This feature requires Bloom Enterprise.</source>
-        <note>ID: EditTab.Toolbox.RequiresEnterprise</note>
-        <note>Appears in notice obscuring other controls when they may not be used because no Bloom Enterprise project has been selected.</note>
-        <target xml:lang="mam" state="translated">Tajb'il t-xi qanet amb'il te Bloom Empresarial.</target>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
         <source xml:lang="en">Allow changes to this shellbook</source>
         <note>ID: EditTab.Toolbox.Settings.Unlock</note>
@@ -2915,7 +3071,7 @@
         <target xml:lang="mam" state="translated">B'inchb'il ti'jxa Bloom</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.FileDialogVideoFiles">
-        <source xml:lang="en">Video Files</source>
+        <source xml:lang="en">Video files</source>
         <note>ID: EditTab.Toolbox.SignLanguage.FileDialogVideoFiles</note>
         <target xml:lang="mam" state="translated">Tk'ub'il ke'yb'il</target>
       </trans-unit>
@@ -2925,7 +3081,7 @@
         <target xml:lang="mam" state="translated">Tzajilq'it ke'yb'il</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.ShowInFolder" sil:dynamic="true">
-        <source xml:lang="en">Show In Folder</source>
+        <source xml:lang="en">Show in Folder</source>
         <note>ID: EditTab.Toolbox.SignLanguage.ShowInFolder</note>
         <target xml:lang="mam" state="translated">Yek'il tuj tk'ub'il</target>
       </trans-unit>
@@ -2960,7 +3116,7 @@
         <note>ID: EditTab.Toolbox.SignLanguage.RestoreOriginal</note>
         <target xml:lang="mam" state="translated">Tzajx b'inchetil txuylal</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.SelectedVideo" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.SelectedVideo">
         <source xml:lang="en">The selected video</source>
         <note>ID: EditTab.Toolbox.SignLanguage.SelectedVideo</note>
         <note>Appears in the context "X will be moved to the recycle bin"</note>
@@ -2976,11 +3132,22 @@
         <note>ID: EditTab.Toolbox.SignLanguage.StartRecording</note>
         <target xml:lang="mam" state="translated">Qtzyetil xk'ub'ib'il</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.Timeout">
+        <source xml:lang="en">The initial processing of the video file timed out after one minute.  The raw video output will be stored.</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.Timeout</note>
+        <target xml:lang="mam" state="translated">Aj tnejil b'inchab'itz nak'ub'il aq'unb'il te kyb'il ma we' xb'ajlen jun amb'il (un minuto). Qxel k'u't kyb'il tza'nx tzaj samet.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Trim" sil:dynamic="true">
         <source xml:lang="en">Trim</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Trim</note>
         <note>Appears above sign language video trimming sliders</note>
         <target xml:lang="mam" state="translated">Qmatzetil</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.VideoProcessingError">
+        <source xml:lang="en">Error output from ffmpeg trying to produce {0}: {1}{2}The raw video output will be stored.</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.VideoProcessingError</note>
+        <note>{0} is the path to the video file, {1} is the error message from the ffmpeg program, and {2} is a newline character</note>
+        <target xml:lang="mam" state="translated">Nya' tuj tu'mel saj samet kyb'il te ffmpeg tu'n tzaj tyek'an {0}: {1}{2}Qxel k'u't kyb'il tza'nx tzaj samet.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.WhatCameraSees" sil:dynamic="true">
         <source xml:lang="en">Here is what your camera sees:</source>
@@ -3069,6 +3236,12 @@
         <note>As in, "CLEAR" (or delete) the existing recording file.</note>
         <target xml:lang="mam" state="translated">Q'uchil</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
+        <source xml:lang="en">eSpeak failed.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
+        <note>This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
+        <target xml:lang="mam" state="translated">ma tz'el naj eSpeak.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true">
         <source xml:lang="en">Listen to the whole page</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Listen</note>
@@ -3105,7 +3278,7 @@
         <target xml:lang="mam" state="translated">Tuj txolin yol qxel k'u't</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordByTextBox" sil:dynamic="true">
-        <source xml:lang="en">Record the whole text box, then let Bloom split it into sentences later.</source>
+        <source xml:lang="en">Record by whole text box, then let Bloom split it into sentences later.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordByTextBox</note>
         <target xml:lang="mam" state="translated">K'u'nxa kyaqil txol yol tuj swejin ex q'onkyaja te Bloom tu'n tb'aj tpa'n tuj ch'in tqan yol yajxi.</target>
       </trans-unit>
@@ -3148,7 +3321,7 @@
         <target xml:lang="mam" state="translated">At nti' xab'ant tuj tu'mel aj xb'aj pa't mataq chi b'aj k'u't.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel">
-        <source xml:lang="en">Split recording into sentences for highlighting.</source>
+        <source xml:lang="en">Split</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
         <note>This text appears on the button the user can press to trigger automatic splitting of audio. An audio file corresponding to an entire text box will be split into multiple audio files (one per sentence) instead. (Also known as "Forced Alignment" in technical terms)</note>
         <target xml:lang="mam" state="translated">Aj q'ajq'ajel yol ma t-xi' k'u't, piẍin kub'a tuj txolin yol tu'ntzan q'ancha'lxix.</target>
@@ -3256,7 +3429,7 @@
         <target xml:lang="mam" state="translated">A te u'jb'il lu' tajb'il ti Bloom {0} mo ky'itzqe'yin b'ant tuntlaj najb'en tu'n aju qe aq'unb'il lu':</target>
       </trans-unit>
       <trans-unit id="Errors.FeatureRequiresNewerVersionSingular">
-        <source xml:lang="en">This book requires Bloom {0} or greater because it uses the feature \"{1}\".</source>
+        <source xml:lang="en">This book requires Bloom {0} or greater because it uses the feature "{1}".</source>
         <note>ID: Errors.FeatureRequiresNewerVersionSingular</note>
         <note>The placeholder {0} represents the required version of Bloom. For example, {0} might be replaced with "4.4"</note>
         <note>The placeholder {1} represents a short description of the feature For example, {1} might be replaced with "Whole Text Audio"</note>
@@ -3266,7 +3439,7 @@
         <source xml:lang="en">Bloom book folders must have only one file ending in .htm.  In the book "{0}", these are the files ending in .htm:</source>
         <note>ID: Errors.MultipleHtmlFiles</note>
         <note>{0} will get the name of the book</note>
-        <target xml:lang="mam" state="needs-translation">Bloom book folders must have only one file ending in .htm.  In the book "{0}", these are the files ending in .htm:</target>
+        <target xml:lang="mam" state="translated">Qe  tk’ub’il aqe tku’x qe u’jb'il Bloom tuj, o’kxten jun nak’ub’il aq'unb'il ktel ti’j tuk' taq’il .htm.  Tuj u’jb'il "{0}", aqetzan qe nak’ub’il aq'unb'il lu’ tuk’ taq’il .htm:</target>
       </trans-unit>
       <trans-unit id="Errors.NeedNewerVersion">
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}</source>
@@ -3299,7 +3472,7 @@
         <source xml:lang="en">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</source>
         <note>ID: Errors.RemoveExcessHtml</note>
         <note>This follows the Errors.MultipleHtmlFiles message and a list of HTML files.</note>
-        <target xml:lang="mam" state="needs-translation">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</target>
+        <target xml:lang="mam" state="translated">Q’om xtalb’il q’in ela kyaqil qe nak’ub’il aq'unb'il, o’kxten jun kyjel tuk' taq’el .htm. Qjaqetil ja'lo tu'n Bloom k’ub’il lu’.</target>
       </trans-unit>
       <trans-unit id="Errors.ReportThisProblemButton">
         <source xml:lang="en">Report this problem to Bloom Support</source>
@@ -3430,7 +3603,7 @@
         <target xml:lang="mam" state="translated">BloomPDFMaker.exe, jun tzemel te Bloom, tzanka mi-a'l at. Tu'n tlaj nlayx qila qe tilb'il na'mxtaq chex ex qe q'ol tilb'ilal. Qe ttxolil aq'unb'il xk'utz'ib' tok te kalo'b'il yab'il ti'j ntzaj tq'o'n jlu'. Jaka b'ant tu'n tok tkye'yan tu'n jun ajbi'nchal ti'j, tu'ntzan txi' jiqinin toklen Bloom ex tu'n tkolet nak'ub'il aq'unb'il lu' tu'n min tel.</target>
       </trans-unit>
       <trans-unit id="LameEncoder.DeleteFailedShort">
-        <source xml:lang="en">Cannot replace mp3 file</source>
+        <source xml:lang="en">Cannot replace mp3 file. Check antivirus</source>
         <note>ID: LameEncoder.DeleteFailedShort</note>
         <note>short message for a popup toast notification</note>
         <target xml:lang="mam" state="translated">Nti' xb'ant ch'ixpet k'ub'il mp3</target>
@@ -3518,6 +3691,11 @@
         <note>ID: LayoutChoices.Device16x9Portrait</note>
         <target xml:lang="mam" state="translated">Makb'il aq'unb'il xk'utz'ib'16x9Wa'l</target>
       </trans-unit>
+      <trans-unit id="LayoutChoices.HalfLetterLandscape" sil:dynamic="true">
+        <source xml:lang="en">HalfLetterLandscape</source>
+        <note>ID: LayoutChoices.HalfLetterLandscape</note>
+        <target xml:lang="mam" state="translated">Mij ẍkut T-Xaq U’jQ'e'l</target>
+      </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterPortrait" sil:dynamic="true">
         <source xml:lang="en">HalfLetterPortrait</source>
         <note>ID: LayoutChoices.HalfLetterPortrait</note>
@@ -3537,6 +3715,11 @@
         <source xml:lang="en">QuarterLetterLandscape</source>
         <note>ID: LayoutChoices.QuarterLetterLandscape</note>
         <target xml:lang="mam" state="translated">Tkyajin pix twa'lẍkut T-Xaq U’jQ'e'l</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.QuarterLetterPortrait" sil:dynamic="true">
+        <source xml:lang="en">QuarterLetterPortrait</source>
+        <note>ID: LayoutChoices.QuarterLetterPortrait</note>
+        <target xml:lang="mam" state="translated">T-kyajin piẍ mij ẍkut T-xaq U’jWa'l</target>
       </trans-unit>
       <trans-unit id="LicenseDialog.WindowTitle">
         <source xml:lang="en">Bloom {0}</source>
@@ -3806,6 +3989,18 @@
           <target xml:lang="mam">Ke'yin tk'a' tok ti'j tu'jil amb'il te Adobe</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="PublishTab.Common.Publishing">
+        <source xml:lang="en">Publishing</source>
+        <note>This is shown while Bloom is sharing a book over wifi, over a usb cable, or uploading. </note>
+        <note>ID: PublishTab.Common.Publishing</note>
+        <target xml:lang="mam" state="translated">Q'amab'il poqb'al</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Common.StopPublishing">
+        <source xml:lang="en">Stop Publishing</source>
+        <note>This is shown while Bloom is sharing a book over wifi or over a usb cable. </note>
+        <note>ID: PublishTab.Common.StopPublishing</note>
+        <target xml:lang="mam" state="translated">Ok web'il tu'n tex poqb'al</target>
+      </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
         <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.NotInstalled</note>
@@ -3908,10 +4103,10 @@
         <target xml:lang="mam" state="translated">Nxi tk'u'n ikytzan {0}</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
-        <source xml:lang="en">Substituting "{0}" for "{1}"</source>
+        <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
         <note>{0} is a font name</note>
-        <target xml:lang="mam" state="translated">Nch'ixpun "{0}" tu'n "{1}"</target>
+        <target xml:lang="mam" state="translated">Nch'ixpun "{0}" tu'n</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
         <source xml:lang="en">Get Bloom Reader App</source>
@@ -3947,6 +4142,11 @@
         <note>ID: PublishTab.Android.Publish</note>
         <target xml:lang="mam" state="translated">Q'amab'il poqb'al</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.Creating" sil:dynamic="true">
+        <source xml:lang="en">Creating Digital Book</source>
+        <note>ID: PublishTab.Android.Creating</note>
+        <target xml:lang="mam" state="translated">Nb'ant u'jb'il ajtzaj</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.AboutBloomReader" sil:dynamic="true">
         <source xml:lang="en">About Bloom Reader</source>
         <note>ID: PublishTab.Android.AboutBloomReader</note>
@@ -3955,7 +4155,7 @@
       <trans-unit id="PublishTab.Android.AboutBookFeatures" sil:dynamic="true">
         <source xml:lang="en">About Book Features</source>
         <note>ID: PublishTab.Android.AboutBookFeatures</note>
-        <target xml:lang="mam" state="needs-translation">About Book Features</target>
+        <target xml:lang="mam" state="translated">Nab'il tib'aj aq'unab'il u'jb'il</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true">
         <source xml:lang="en">Settings</source>
@@ -4133,6 +4333,12 @@
         <note>ID: PublishTab.AndroidButton-tooltip</note>
         <target xml:lang="mam" state="translated">Qelex poqb'al te jun makb'il aq'unb'il xk'utz'ib' Android.</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Audio.ElementsMissingId">
+        <source xml:lang="en">Some audio elements are missing ids</source>
+        <note>ID: PublishTab.Audio.ElementsMissingId</note>
+        <note>Message briefly displayed to the user in a toast</note>
+        <target xml:lang="mam" state="translated">At ju'njun b'ijtz atx taj tu'n tok b'ib'aj</target>
+      </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio">
         <source xml:lang="en">Booklet Insides</source>
         <note>ID: PublishTab.BodyOnlyRadio</note>
@@ -4171,7 +4377,17 @@
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
         <target xml:lang="mam" state="translated">Qb'antel jun PDF o'kx ti'j tnejil t-xaq (te kab'e ttxlaj) tu'n tetz tilb'ilal tuj u'j tok tk'a'.</target>
       </trans-unit>
-      <!-- "PublishTab.Epub.BackLinkLabel might go here if we restore BL-6017 image description links -->
+      <trans-unit id="PublishTab.Epub.BackLinkLabel">
+        <source xml:lang="en">Back</source>
+        <note>ID: PublishTab.Epub.BackLinkLabel</note>
+        <note>Used in Epubs as the text of a link that leads from the image description back to the main page</note>
+        <target xml:lang="mam" state="translated">Ok qmeltz'ija</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Accessible.MainContent">
+        <source xml:lang="en">Main Content</source>
+        <note>ID: PublishTab.Epub.Accessible.MainContent</note>
+        <target xml:lang="mam" state="translated">B'ixnaq'tz ilx ti'j</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.Accessibility">
         <source xml:lang="en">Accessibility</source>
         <note>ID: PublishTab.Epub.Accessibility</note>
@@ -4183,6 +4399,11 @@
         <note>ID: PublishTab.Epub.BuildingEPub</note>
         <note>Shown in a progress box when Bloom is starting to create an ePUB</note>
         <target xml:lang="mam" state="translated">Njaw b'inchet ePUB</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Creating">
+        <source xml:lang="en">Creating ePUB...</source>
+        <note>ID: PublishTab.Epub.Creating</note>
+        <target xml:lang="mam" state="translated">Nb'aj b'inchet ePUB...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Done">
         <source xml:lang="en">Done</source>
@@ -4207,13 +4428,17 @@
         <note>ID: PublishTab.Epub.Help.Publishing</note>
         <target xml:lang="mam" state="translated">Ma nchi ok qe ePUBs ti'j jun makb'il aq'unb'il xk'utz'ib'</target>
       </trans-unit>
-      <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
+      <trans-unit id="PublishTab.Epub.ImageDescriptionLinkLabel">
+        <source xml:lang="en">Image Description</source>
+        <note>ID: PublishTab.Epub.ImageDescriptionLinkLabel</note>
+        <note>Used in Epubs as the text of a link that leads to the description of an image</note>
+        <target xml:lang="mam" state="translated">Txolyol tib'aj tilb'ilal</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.IncludeOnPage">
         <source xml:lang="en">Include image descriptions on page</source>
         <note>ID: PublishTab.Epub.IncludeOnPage</note>
         <target xml:lang="mam" state="translated">Kb'elex poqb'al tib'aj tilb'ilal tuj t-xaq</target>
       </trans-unit>
-      <!-- "PublishTab.Epub.ImageDescriptionLinkLabel might go here if we restore BL-6017 image description links -->
       <trans-unit id="PublishTab.Epub.NoAudioDescriptions">
         <source xml:lang="en">No recorded audio image descriptions</source>
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
@@ -4231,12 +4456,12 @@
         <target xml:lang="mam" state="translated">Ma nb'inchet u'j</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PreparingPreview">
-        <source xml:lang="en">Preparing preview</source>
+        <source xml:lang="en">Preparing Preview</source>
         <note>ID: PublishTab.Epub.PreparingPreview</note>
         <target xml:lang="mam" state="translated">Ma nb'inchet ke'yb'il namxtaq t-xi qe'</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.ReadiumCredit">
-        <source xml:lang="en">This ePUB preview is provided by [Readium].  This book may render differently in various ePUB readers.</source>
+        <source xml:lang="en">This ePUB preview is provided by [Readium]. This book may render differently in various ePUB readers.</source>
         <note>ID: PublishTab.Epub.ReadiumCredit</note>
         <note>[Readium] should be left untranslated as a noun.  It will be changed into an HTML link to the Readium web page (https://readium.org/).  If the term "Readium" has been translated on a translated version of that web page, then the translated term may be substituted within the square brackets.  (Be sure to keep the square brackets [] around Readium or its translation!)</note>
         <target xml:lang="mam" state="translated">A ke'yb'il namxtaq t-xi qe' ePUB ma tzaj q'o'n tu'n   [Readium]. Qmeltz'aj ke'yb'il u'jb'il tu'n tlaj sch'ib'il ePUB n-najb'en.</target>
@@ -4399,6 +4624,12 @@
         <note>ID: PublishTab.PdfMaker.MakingPageOfPdf</note>
         <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
         <target xml:lang="mam" state="translated">Nb'inchet t-xaq {0} te PDF</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.OutOfMemory">
+        <source xml:lang="en">Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.</source>
+        <note>ID: PublishTab.PdfMaker.OutOfMemory</note>
+        <note>{0} and {1} are HTML link markup.  You can think of them as fancy quotation marks.</note>
+        <target xml:lang="mam" state="translated">Ma kub' b'aj tnab'xk'utz'ib' tu'n Bloom aj xit b'incha'n PDF. Ka'yinxa {0}txolyol lu'{1} te ju'njun tumlal b'a'n tu'n t-xi' tnik'ana.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
         <source xml:lang="en">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</source>
@@ -4836,6 +5067,12 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
         <target xml:lang="mam" state="translated">N-iqin {0}</target>
       </trans-unit>
+      <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true">
+        <source xml:lang="en">Check Your Understanding</source>
+        <note>ID: Quiz.CheckYourUnderstanding</note>
+        <note>This string is intentionally duplicated in Bloom Reader's translation file</note>
+        <target xml:lang="mam" state="translated">Malo'b'il tna'b'ila</target>
+      </trans-unit>
       <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true">
         <source xml:lang="en">Add Level</source>
         <note>ID: ReaderSetup.AddLevel</note>
@@ -5065,6 +5302,11 @@ Do you want to go ahead?</note>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
         <target xml:lang="mam" state="translated">Mamb'ilxix tajlal qe twitz yol tu'n t-xi' tuj ju'njun txolyol</target>
       </trans-unit>
+      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
+        <source xml:lang="en">Special Sentence-Ending Punctuation</source>
+        <note>ID: ReaderSetup.SentencePunctuation.Header</note>
+        <target xml:lang="mam" state="translated">Chmob'il tajlal ok tjapn b'aj ju'n txolyol</target>
+      </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
@@ -5166,6 +5408,11 @@ Do you want to go ahead?</note>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
         <note xml:lang="en">OLD TEXT (before 3.9, remove unwanted backslashes): In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this Bloom Pack, who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</note>
         <target xml:lang="mam" state="translated">Ax ikyx, aju tenej aq'unb'ill te Bloom kokel manqb'il q'ol tilb'ilal kye u'jb'il n-nel qniky' ex qe u'jb'il tuj kolin te yol "{0}". Noq alkyex ok tjaqet tenej te Bloom lu', ex ok tjaqet jun k'loj te ila' wiq tuj "{0}", tzultzn tq'o'n tilb'ilal qe u'jb'il najb'en te ja'lo kye u'jb'il n-nel qniky' ex u'jb'il tuj kolin ch'ixpu'nmaj tu'n q'ob'il tilb'ilal te tenej te Bloom lu'. Ax ikyx chi k'amol jun ak'aj k'loj qe yol, tu'n kyajb'en ti'j qe u'jb'il n-nel qniky'.</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.HelpButtonLabel">
+        <source xml:lang="en">Help</source>
+        <note>ID: ReaderTemplateBloomPackDialog.HelpButtonLabel</note>
+        <target xml:lang="mam" state="translated">Onb'il</target>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.IntroLabel">
         <source xml:lang="en">The following books will be made into templates:</source>
@@ -5341,6 +5588,11 @@ Do you want to go ahead?</note>
         <note>ID: ScriptSettingsDialog.DefaultLineSpacing</note>
         <target xml:lang="mam" state="translated">B'ananmaj sqitb'il txol tib'</target>
       </trans-unit>
+      <trans-unit id="ScriptSettingsDialog.LineBreakCheckBox">
+        <source xml:lang="en">Do not use special Asian script word breaking</source>
+        <note>ID: ScriptSettingsDialog.LineBreakCheckBox</note>
+        <target xml:lang="mam" state="translated">Min tajb'en tu'na pab'il at toklen te tz'ib'il yol asiática</target>
+      </trans-unit>
       <trans-unit id="ScriptSettingsDialog.RightToLeftScriptCheckBox">
         <source xml:lang="en">This script is right to left</source>
         <note>ID: ScriptSettingsDialog.RightToLeftScriptCheckBox</note>
@@ -5356,10 +5608,48 @@ Do you want to go ahead?</note>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
         <target xml:lang="mam" state="translated">Tajb'il tz'ib'il lu' sqitb'il ma' twe'</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
-        <source xml:lang="en">Arithmetic</source>
-        <note>ID: TemplateBooks.BookName.Arithmetic</note>
-        <target xml:lang="mam" state="translated">Kyxilen qe ajla'b'il</target>
+      <trans-unit id="Settings.Enterprise.Community" sil:dynamic="true">
+        <source xml:lang="en">Funded by the local community only</source>
+        <note>ID: Settings.Enterprise.Community</note>
+        <target xml:lang="mam" state="translated">Onb'il o'kxten kyu'n qe k'loj xjal te tzalu'</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.LearnMore" sil:dynamic="true">
+        <source xml:lang="en">Learn More</source>
+        <note>ID: Settings.Enterprise.LearnMore</note>
+        <target xml:lang="mam" state="translated">U'jil txqantl</target>
+        <alt-trans>
+          <target xml:lang="mam">Xnaq'tzb'il txqantl</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.None" sil:dynamic="true">
+        <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
+        <note>ID: Settings.Enterprise.None</note>
+        <target xml:lang="mam" state="translated">Mijun. Bloom min tzaj tye'k'an alkye twitz aq'untl empresariales.</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Overview" sil:dynamic="true">
+        <source xml:lang="en">Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.</source>
+        <note>ID: Settings.Enterprise.Overview</note>
+        <target xml:lang="mam" state="translated">Bloom Empresarial no'k tq'o'n taq'nab'il ex qe ajb'el nim txilen kye qe t-ximb'il aq'untl, te wi'xin, qe chemb'il te kyaqil twitz tx'otx' ex txqantl. Alkyeqe ku'x kyb'i ex o chjet kyu'n, ntzaj tq'o'n alkyexix tajb'il, tajlal n-onin tu'n tch'iy Bloom te kyaqil k'loj xjal n-najb'en kyu'n.</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Status" sil:dynamic="true">
+        <source xml:lang="en">Bloom Enterprise Status</source>
+        <note>ID: Settings.Enterprise.Status</note>
+        <target xml:lang="mam" state="translated">Tza'n ta' Bloom Empresarial</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Subscription" sil:dynamic="true">
+        <source xml:lang="en">Enterprise Subscription</source>
+        <note>ID: Settings.Enterprise.Subscription</note>
+        <target xml:lang="mam" state="translated">Chojb'il tu'n tku'x b'ib'aj Empresarial</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.SubscriptionCode" sil:dynamic="true">
+        <source xml:lang="en">Subscription Code:</source>
+        <note>ID: Settings.Enterprise.SubscriptionCode</note>
+        <target xml:lang="mam" state="translated">Techil tajlal chjob'il tu'n tku'x b'ib'aj:</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true">
+        <source xml:lang="en">Arithmetic Template</source>
+        <note>ID: TemplateBooks.BookName.Arithmetic Template</note>
+        <target xml:lang="mam" state="translated">Txolb'ab'il aq'untl b'incha'nmaj ti'j kyxilen qe ajla'b'il</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true">
         <source xml:lang="en">Basic Book</source>
@@ -5849,12 +6139,12 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.Quiz.HintBubble.Answer" sil:dynamic="true">
         <source xml:lang="en">Put a possible answer here. Check it if it is correct.</source>
         <note>ID: TemplateBooks.Quiz.HintBubble.Answer</note>
-        <target xml:lang="mam" state="needs-translation">Put a possible answer here. Check it if it is correct.</target>
+        <target xml:lang="mam" state="translated">Q’o'n oka jun tz’aq’web’il tzalu’. Q’on oka jun sqtin qa tuj tu’melxix tzaq’we’b’il.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.Quiz.HintBubble.Question" sil:dynamic="true">
         <source xml:lang="en">Put a comprehension question here</source>
         <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
-        <target xml:lang="mam" state="needs-translation">Put a comprehension question here</target>
+        <target xml:lang="mam" state="translated">Q’o’n oka jun xjelb’il ti’j nab’il tzalu’</target>
       </trans-unit>
       <trans-unit id="Topics.Agriculture" sil:dynamic="true">
         <source xml:lang="en">Agriculture</source>

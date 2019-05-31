@@ -35,10 +35,10 @@
       </trans-unit>
       <trans-unit id="integrity.todo.ideas" approved="yes">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
-        <target xml:lang="fr" state="translated">Une fois que vous aurez envoyé ce signalement, nous vous contacterons pour vous aider à résoudre ce problème. En attendant, vous pouvez essayer de faire ceci :</target>
+        <target xml:lang="fr" state="translated">Une fois que vous aurez envoyé ce signalement, nous vous contacterons pour vous aider à résoudre ce problème. En attendant, vous pouvez essayer de faire comme suit :</target>
         <note>ID: integrity.todo.ideas</note>
         <alt-trans>
-          <target xml:lang="fr">Une fois que vous aurez envoyé ce signalement, nous vous contacterons pour vous aider à résoudre ce problème. En attendant, vous pouvez essayer de faire comme suit :</target>
+          <target xml:lang="fr">Une fois que vous aurez envoyé ce signalement, nous vous contacterons pour vous aider à résoudre ce problème. En attendant, vous pouvez essayer de faire ceci :</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Une fois que vous aurez rempli ce signalement, nous vous contacterons et vous aiderons à résoudre le problème. D'ici là, vous pouvez essayer les actions suivantes :</target>
@@ -57,10 +57,10 @@
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Antivirus" approved="yes">
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
-        <target xml:lang="fr" state="translated">Si cela ne règle pas le problème, il va vous falloir intervenir sur votre antivirus. Si un ou plusieurs fichiers avec l'extension .exe figure dans la section "fichiers manquants", pensez à ajouter à la "liste blanche" le dossier contenant le programme Bloom, dont l'emplacement est <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
+        <target xml:lang="fr" state="translated">Si cela ne règle pas le problème, il faut penser à votre antivirus. Si un ou plusieurs fichiers avec l'extension .exe figure dans la section "fichiers manquants", pensez à ajouter à la "liste blanche" le dossier contenant le logiciel Bloom, dont l'emplacement est <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
         <alt-trans>
-          <target xml:lang="fr">Si cela ne règle pas le problème, il faut penser à votre antivirus. Si un ou plusieurs fichiers avec l'extension .exe figure dans la section "fichiers manquants", pensez à ajouter à la "liste blanche" le dossier contenant le logiciel Bloom, dont l'emplacement est <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
+          <target xml:lang="fr">Si cela ne règle pas le problème, il va vous falloir intervenir sur votre antivirus. Si un ou plusieurs fichiers avec l'extension .exe figure dans la section "fichiers manquants", pensez à ajouter à la "liste blanche" le dossier contenant le programme Bloom, dont l'emplacement est <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Si cela ne règle pas le problème, il va vous falloir intervenir au niveau de votre programme antivirus. Si un ou plusieurs fichiers avec l'extension .exe figure dans la section "fichiers manquants", pensez à ajouter à la "liste blanche" le dossier contenant le programme Bloom, dont l'emplacement est <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
@@ -98,18 +98,15 @@
         <target xml:lang="fr" state="translated">Lancer à nouveau le programme d'installation de Bloom et voir si cette fois, il démarre correctement.</target>
         <note>ID: integrity.todo.ideas.Restart</note>
         <alt-trans>
-          <target xml:lang="fr">Lancer à nouveau le logiciel d'installation de Bloom et voir si, cette fois, il démarre correctement.</target>
-        </alt-trans>
-        <alt-trans>
           <target xml:lang="fr">Lancez à nouveau l'installateur Bloom et vérifiez si cette fois, il démarre correctement.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Retrieve" approved="yes">
         <source xml:lang="en">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.</source>
-        <target xml:lang="fr" state="translated">Vous pouvez aussi essayer de récupérer les éléments de Bloom retirés par votre anti-virus. Pour AVG, il vous faut aller dans le menu "options" de ce logiciel et cliquer sur "Quarantaine". Vous cliquerez sur le fichier Bloom en quarantaine, puis sur "restaurer". Vous trouverez la procédure en image, sur : <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">cette image</g>.</target>
+        <target xml:lang="fr" state="translated">Vous pouvez aussi essayer de récupérer les éléments de Bloom enlevés par votre anti-virus. Pour AVG, il faut aller dans le menu "options" de ce logiciel et cliquer sur "Quarantaine". Cliquez sur le fichier Bloom en quarantaine, puis sur "restaurer". Vous trouverez la procédure en image, sur :<g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">cette image</g>.</target>
         <note>ID: integrity.todo.ideas.Retrieve</note>
         <alt-trans>
-          <target xml:lang="fr">Vous pouvez aussi essayer de récupérer les éléments de Bloom enlevés par votre anti-virus. Pour AVG, il faut aller dans le menu "options" de ce logiciel et cliquer sur "Quarantaine". Cliquez sur le fichier Bloom en quarantaine, puis sur "restaurer". Vous trouverez la procédure en image, sur :<g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">cette image</g>.</target>
+          <target xml:lang="fr">Vous pouvez aussi essayer de récupérer les éléments de Bloom retirés par votre anti-virus. Pour AVG, il vous faut aller dans le menu "options" de ce logiciel et cliquer sur "Quarantaine". Vous cliquerez sur le fichier Bloom en quarantaine, puis sur "restaurer". Vous trouverez la procédure en image, sur : <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">cette image</g>.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Vous pouvez aussi essayer de récupérer les éléments de Bloom retirés par votre programme anti-virus Pour l'anti-virus AVG, trouvez le menu "options" de ce logiciel, cliquez sur "Quarantaine", cliquez sur le fichier Bloom en quarantaine, puis sur "restaurer". Guide en image : <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">cette image</g>.</target>

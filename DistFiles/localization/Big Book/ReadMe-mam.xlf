@@ -4,45 +4,42 @@
     <body>
       <trans-unit id="bigbook.title">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="mam" state="needs-translation">About Big Books</target>
+        <target xml:lang="mam" state="translated">Nab'il tib'aj qe matij u'jb'il</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
       <trans-unit id="bigbook.use">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="mam" state="needs-translation">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</target>
+        <target xml:lang="mam" state="translated">Qe matij u'jb'il b'inchan maj tu'n tajb'en kyu'nqe ajxnaq'tzal tu'n t-xi' kyek'an ex tu'n tjaw sch'in kywitz qe ajxnaq'tzanjtz. Tu'n tkanet txqantl pakb'ab'il tib'aj jlu', sch'i'n jawa jlu' <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF te Scholastic</g>.</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
       <trans-unit id="bigbook.printing">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="mam" state="needs-translation">Printing a Big Book</target>
+        <target xml:lang="mam" state="translated">Ne'tz q'it tilb'ilal jun matij u'jb'il</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
       <trans-unit id="bigbook.printing.enlargeA4">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="mam" state="needs-translation">To make things more manageable, this template is set at A4 Landscape, with large fonts.
-You can easily produce books that are A3 (twice as large).
-Just take your A4 PDF to a printer and ask them to enlarge it to A3.</target>
+        <target xml:lang="mam" state="translated">Tu'n tb'ant taq'nanjtz qe tichaq, aju txolb'ab'il aq'untl b'incha'nmaj lu' najb'en tu'n A4 twa'l Q'el tten, tuk' matij tiloq'b'il. Jaka b'ant tzaj i'tz'j qe u'jb'il A3 (kab'e maj ma' twitz).
+O'kx q'inxa tPDF a twa'l A4 tuj jun ja poq'salu'j ex q'amanxa kye tu'n tch'iy ch'intl tuj A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
       </trans-unit>
       <trans-unit id="bigbook.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="mam" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="mam" state="translated">Alchaqkye qe nchi maqan ti'j aq'unb'il lu'</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="mam" state="needs-translation">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</target>
+        <target xml:lang="mam" state="translated">Qa n-najb'en jun kye'yb'itz ch'in twitz, kyw ti'j tu'n tjaw sch'it t-xaq te qe u'jb'il toklen. B'inchan kub'a zoom ex tu'n tajb'en control+/- te zoom tuj tb'utx' te jawn tuj tb'an q'ab'a te kye'yb'itz tib'lal tu'ntzan tb'inchet.</target>
         <note>ID: bigbook.limits.smallscreen</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="mam" state="needs-translation">This version includes an "Instructions for Teachers" page that is already filled out, in English.
-If you would like to have instructions in a different language, you can delete that text and type in your own.
-If you send us that text, we can include it in a future version of the template.</target>
+        <target xml:lang="mam" state="translated">Aj aq'na'b'il lu' tok ti'j jun t-xaq u'j te "Chikb'ab'il kye qe Ajxnaq'tzal" o' kux nojset tuj inglés. Qa taja qe chikb'ab'il tuj ju'nxitl yol, q'uchinxa txolyol lu' ex q'o'n okxa txolyol meltz'u'nmaj. Qa ma tzaj t-sama'na txolyol meltz'u'nmaj, jaka tz'okx q-q'o'ne tuj juntl ak'aj tu'mel te txolb'ab'il aq'untl b'incha'nmaj.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
       </trans-unit>
     </body>
