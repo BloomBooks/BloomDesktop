@@ -270,11 +270,11 @@ namespace Bloom.Publish.Android
 				if (fontFiles.Count() > 0)
 				{
 					filesToEmbed.AddRange(fontFiles);
-					progress.MessageWithParams("CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", MessageKind.Progress, font);
+					progress.MessageWithParams("PublishTab.Android.File.Progress.CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", MessageKind.Progress, font);
 					// Assumes only one font file per font; if we embed multiple ones will need to enhance this.
 					var size = new FileInfo(fontFiles.First()).Length;
 					var sizeToReport = (size / 1000000.0).ToString("F1"); // purposely locale-specific; might be e.g. 1,2
-					progress.MessageWithParams("Embedding",
+					progress.MessageWithParams("PublishTab.Android.File.Progress.Embedding",
 						"{1} is a number with one decimal place, the number of megabytes the font file takes up",
 						"Embedding font {0} at a cost of {1} megs",
 						MessageKind.Note,
