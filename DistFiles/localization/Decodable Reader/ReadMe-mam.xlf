@@ -24,17 +24,17 @@
       </trans-unit>
       <trans-unit id="decodable.learn.videos">
         <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="mam" state="needs-translation">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</target>
+        <target xml:lang="mam" state="translated">Ka'yinxa <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">qe kyb'il tib'aj aq'unb'il</g>.</target>
         <note>ID: decodable.learn.videos</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpindex">
-        <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".</source>
-        <target xml:lang="mam" state="needs-translation">Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".</target>
+        <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
+        <target xml:lang="mam" state="translated">Txi'ya tuj menú te onb'il, sak'onqtza 'Onb'il' ex jyonxa "U'jb'il n-nel qniky'" tuj txolb'ab'il tb'i nab'il.</target>
         <note>ID: decodable.learn.helpindex</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="mam" state="needs-translation">Go to the Help menu and choose: "Building Reader Templates".</target>
+        <target xml:lang="mam" state="translated">Txi'ya tuj menú te onb'il, sak'onqtza "N-b'inchet qe ttenb'il u'jb'il b'ananmaj".</target>
         <note>ID: decodable.learn.helpmenu</note>
       </trans-unit>
     </body>

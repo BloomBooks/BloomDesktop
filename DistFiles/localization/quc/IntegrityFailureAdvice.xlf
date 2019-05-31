@@ -2,45 +2,66 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="IntegrityFailureAdvice-en.md" datatype="html" source-language="en" target-language="quc">
     <body>
-      <trans-unit id="integrity.title">
+      <trans-unit id="integrity.title" approved="yes">
         <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
-        <target xml:lang="quc" state="needs-translation">Bloom cannot find some of its own files, and cannot continue</target>
+        <target xml:lang="quc" state="translated">Bloom man kuriq ta nik'aj taq chi kech ri k'olchak xuquje' man kuya taj kutaqej</target>
         <note>ID: integrity.title</note>
+        <alt-trans>
+          <target xml:lang="quc">Bloom ma kuraq ta nik'aj taq chi kech ri k'olchak xuquje' man kuya taj kutaqej</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.causes">
+      <trans-unit id="integrity.causes" approved="yes">
         <source xml:lang="en">Possible Causes</source>
-        <target xml:lang="quc" state="needs-translation">Possible Causes</target>
+        <target xml:lang="quc" state="translated">Karaj ne rumal ub'antajikil</target>
         <note>ID: integrity.causes</note>
+        <alt-trans>
+          <target xml:lang="quc">Kaj ne rumal are'</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.causes.1">
+      <trans-unit id="integrity.causes.1" approved="yes">
         <source xml:lang="en">Your antivirus may have "quarantined" one or more Bloom files.</source>
-        <target xml:lang="quc" state="needs-translation">Your antivirus may have "quarantined" one or more Bloom files.</target>
+        <target xml:lang="quc" state="translated">Le aq'atel uchikopil te'qne xkowin che "ukojik pa ukawinaq q'ij" chech jun te'qne k'i taq k'olchak rech Bloom.</target>
         <note>ID: integrity.causes.1</note>
+        <alt-trans>
+          <target xml:lang="quc">Ri aq'atel chikop xkowin ne che "ukojik pa kawinaq q'ij" chech jun o k'i taq k'olchak rech Bloom.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.causes.2">
+      <trans-unit id="integrity.causes.2" approved="yes">
         <source xml:lang="en">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </source>
-        <target xml:lang="quc" state="needs-translation">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </target>
+        <target xml:lang="quc" state="translated">Karaj ne ri k'ak'ale'nel rech ri kematz'ib' "q'atum rij" rech uq'atexik k'ex taq jastaq, xa k'ut xub'ano rech ri Bloom man xkowin taj chech ukojik we k'i taq suk' k'olchak. </target>
         <note>ID: integrity.causes.2</note>
+        <alt-trans>
+          <target xml:lang="quc">Kajne ri k'ak'le'nik rech ri akematz'ib' "q'atum rij" rech uq'atuxik k'ex taq sutaq, xa k'ut xub'ano rech ri Bloom ma xkowin taj che ukojik we k'i taq suk' k'olchak. </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo" approved="yes">
         <source xml:lang="en">What To Do</source>
         <target xml:lang="quc" state="translated">Su kb'anik</target>
         <note>ID: integrity.todo</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas">
+      <trans-unit id="integrity.todo.ideas" approved="yes">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
-        <target xml:lang="quc" state="needs-translation">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</target>
+        <target xml:lang="quc" state="translated">Are taq xtaqtaj ub'ik le woktzijob'al, katqach'ab'ej rech katqato'o. Rech kopan ri', waral k'o nik'aj taq no'jib'al:</target>
         <note>ID: integrity.todo.ideas</note>
+        <alt-trans>
+          <target xml:lang="quc">K'a te k'u ri che utaqik we woktzijob'al, katqataq b'i ruk' ri ajch'ab'em rech katuto'. Rech kopan ri', waral k'o nik'aj taq no'j:</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Reinstall">
+      <trans-unit id="integrity.todo.ideas.Reinstall" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
-        <target xml:lang="quc" state="needs-translation">Run the Bloom installer again, and see if it starts up OK this time.</target>
+        <target xml:lang="quc" state="translated">Chatzalij uchakuxik ri jaqb'anel rech Bloom rech kiltajik we utz umajik kub'ano.</target>
         <note>ID: integrity.todo.ideas.Reinstall</note>
+        <alt-trans>
+          <target xml:lang="quc">Chatzelej uchakuxik ri jaqb'anel rech Bloom che rilik we mul ri' kumaj suk'ulik.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Antivirus">
+      <trans-unit id="integrity.todo.ideas.Antivirus" approved="yes">
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
-        <target xml:lang="quc" state="needs-translation">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
+        <target xml:lang="quc" state="translated">We man kusol taj, xopan ri q'ij katzukuj ri kematal chak rech uq'atel uchikopil. We ri wokutas rech "K'olchak Karaj na" ("Missing Files") kuk'ut k'olchak ri kak'is pa ".exe", chawila ukojik ri kematal chak Bloom pa ri "saq cholib'al" ("white list"), k'o chi upam ubicada en <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
+        <alt-trans>
+          <target xml:lang="quc">We jeri' ma kusol taj, xopan ri q'ij katzukuj akem chak rech kuna'o xuquje' kuchup ri chikop. We ri utas rech "K'olchak Karaj na" ("Missing Files") k'utb'al k'olchak kak'is pa ".exe", chawila ukojik ri k'olyakb'al chak rech ri nuk'wach Bloom pa ri "chol saq" ("white list"), k'o chi upam ubicada en <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVAST">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</source>
