@@ -107,6 +107,18 @@
         <note>ID: Common.YesButton</note>
         <target xml:lang="ar" state="needs-translation">&amp;Yes</target>
       </trans-unit>
+      <trans-unit id="CustomIdentifierView.betterLabel1">
+        <source xml:lang="en">RFC5646 code:</source>
+        <note>ID: CustomIdentifierView.betterLabel1</note>
+        <note>label describes the code for a custom identifier. Translate only 'code'</note>
+        <target xml:lang="ar" state="needs-translation">RFC5646 code:</target>
+      </trans-unit>
+      <trans-unit id="CustomIdentifierView.linkLabel1">
+        <source xml:lang="en">Read about language identifiers on the web</source>
+        <note>ID: CustomIdentifierView.linkLabel1</note>
+        <note>text used in the link to a webpage that describes the language identifiers</note>
+        <target xml:lang="ar" state="needs-translation">Read about language identifiers on the web</target>
+      </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
@@ -292,6 +304,18 @@
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
         <target xml:lang="ar" state="translated">قم بإعداد البيانات الوصفية...</target>
       </trans-unit>
+      <trans-unit id="IpaIdentifierView.betterLabel1">
+        <source xml:lang="en">Purpose:</source>
+        <note>ID: IpaIdentifierView.betterLabel1</note>
+        <note>In writing system setup when IPA special option is selected: Label for the purpose combo box</note>
+        <target xml:lang="ar" state="needs-translation">Purpose:</target>
+      </trans-unit>
+      <trans-unit id="IpaIdentifierView.linkLabel1">
+        <source xml:lang="en">Read about IPA transcription on the web</source>
+        <note>ID: IpaIdentifierView.linkLabel1</note>
+        <note>In writing system setup when IPA special option is selected: text used in link to a webpage describing IPA transcription</note>
+        <target xml:lang="ar" state="needs-translation">Read about IPA transcription on the web</target>
+      </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
@@ -363,6 +387,16 @@
         <source xml:lang="en">Can't find your language?</source>
         <note>ID: LanguageLookup._cannotFindLanguageLink</note>
         <target xml:lang="ar" state="translated">لا يمكن العثور على لغتك؟</target>
+      </trans-unit>
+      <trans-unit id="LanguageLookup._scriptsAndVariantsLabel">
+        <source xml:lang="en">my script variant label</source>
+        <note>ID: LanguageLookup._scriptsAndVariantsLabel</note>
+        <target xml:lang="ar" state="needs-translation">my script variant label</target>
+      </trans-unit>
+      <trans-unit id="LanguageLookup._scriptsAndVariantsLink">
+        <source xml:lang="en">Script and Variant</source>
+        <note>ID: LanguageLookup._scriptsAndVariantsLink</note>
+        <target xml:lang="ar" state="needs-translation">Script and Variant</target>
       </trans-unit>
       <trans-unit id="MemoryWarning" approved="yes">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
@@ -482,6 +516,11 @@
         <note>ID: MetadataEditor.License</note>
         <target xml:lang="ar" state="needs-translation">License</target>
       </trans-unit>
+      <trans-unit id="MetadataEditor.PublicDomain">
+        <source xml:lang="en">The copyright holder waives all rights</source>
+        <note>ID: MetadataEditor.PublicDomain</note>
+        <target xml:lang="ar" state="needs-translation">The copyright holder waives all rights</target>
+      </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
@@ -514,11 +553,32 @@
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
         <target xml:lang="ar" state="translated">مزيد من المعلومات</target>
       </trans-unit>
+      <trans-unit id="MetadataEditor.linkToPublicDomainCC0">
+        <source xml:lang="en">about {0} Public Domain</source>
+        <note>ID: MetadataEditor.linkToPublicDomainCC0</note>
+        <note>{0} is replaced by an untranslatable abbreviation functioning as an adjective ("CC0")</note>
+        <target xml:lang="ar" state="needs-translation">about {0} Public Domain</target>
+      </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons" approved="yes">
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
         <target xml:lang="ar" state="translated">غير قابل للتنفيذ</target>
+      </trans-unit>
+      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton">
+        <source xml:lang="en">Cancel</source>
+        <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton</note>
+        <target xml:lang="ar" state="needs-translation">Cancel</target>
+      </trans-unit>
+      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._okButton">
+        <source xml:lang="en">OK</source>
+        <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._okButton</note>
+        <target xml:lang="ar" state="needs-translation">OK</target>
+      </trans-unit>
+      <trans-unit id="ScriptsAndVariantsDialog.ScriptsAndVariants">
+        <source xml:lang="en">Script and Variant</source>
+        <note>ID: ScriptsAndVariantsDialog.ScriptsAndVariants</note>
+        <target xml:lang="ar" state="needs-translation">Script and Variant</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
@@ -561,12 +621,17 @@
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
         <target xml:lang="ar" state="translated">إظهار الأحرف</target>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordNotice" approved="yes">
+      <trans-unit id="SettingsProtection.PasswordNotice">
         <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
-        <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
-        <note xml:lang="en">OLD TEXT (before 4.0, added space, removed period): Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</note>
+        <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
         <target xml:lang="ar" state="translated">كلمة مرور المصنع لهذه الإعدادات هي "{0}". إذا نسيتها، فيمكنك دائمًا البحث عن "{1}" و"{2}" في Google</target>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl">
+        <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
+        <note>ID: SettingsProtection.PasswordNoticeWithSupportUrl</note>
+        <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNotice". Param 0: Factory password; Param 1: product name; Param 2: URL of support page</note>
+        <target xml:lang="ar" state="needs-translation">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
@@ -582,6 +647,12 @@
         <source xml:lang="en">Release Notes</source>
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
         <target xml:lang="ar" state="translated">ملاحظات الإصدار</target>
+      </trans-unit>
+      <trans-unit id="VoiceIdentifierView.betterLabel1">
+        <source xml:lang="en">In applications which support this option, fields with this input system will be able to play and record voice.</source>
+        <note>ID: VoiceIdentifierView.betterLabel1</note>
+        <note>Displayed if a user selects the voice special option in writing system setup</note>
+        <target xml:lang="ar" state="needs-translation">In applications which support this option, fields with this input system will be able to play and record voice.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
@@ -607,6 +678,36 @@
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
         <target xml:lang="ar" state="translated">&amp;منطقة الاختبار:</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifierView.betterLabel4">
+        <source xml:lang="en">Abbreviation</source>
+        <note>ID: WSIdentifierView.betterLabel4</note>
+        <note>In writing system setup general tab: label before abbreviation text box</note>
+        <target xml:lang="ar" state="needs-translation">Abbreviation</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifierView.betterLabel5">
+        <source xml:lang="en">Special:</source>
+        <note>ID: WSIdentifierView.betterLabel5</note>
+        <note>In writing system setup general tab:  Label before combo box with 'Special' choices</note>
+        <target xml:lang="ar" state="needs-translation">Special:</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Default">
+        <source xml:lang="en">Default</source>
+        <note>ID: WSIdentifiers.IpaIdentifierView.Default</note>
+        <note>Choice for most users</note>
+        <target xml:lang="ar" state="needs-translation">Default</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Emic">
+        <source xml:lang="en">Emic (uses phonology of the language)</source>
+        <note>ID: WSIdentifiers.IpaIdentifierView.Emic</note>
+        <note>Only translate text inside of the parentheses ()</note>
+        <target xml:lang="ar" state="needs-translation">Emic (uses phonology of the language)</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Etic">
+        <source xml:lang="en">Etic (raw phonetic transcription)</source>
+        <note>ID: WSIdentifiers.IpaIdentifierView.Etic</note>
+        <note>Only translate text inside of the parentheses ()</note>
+        <target xml:lang="ar" state="needs-translation">Etic (raw phonetic transcription)</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
