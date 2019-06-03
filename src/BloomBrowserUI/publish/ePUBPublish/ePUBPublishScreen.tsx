@@ -63,7 +63,6 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             "publish-epub",
             "startingEbookCreation",
             e => {
-                //setHeading("blah");
                 setProgressState(ProgressState.Working);
             }
         );

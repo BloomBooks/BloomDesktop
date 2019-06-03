@@ -77,6 +77,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         }
     );
     const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
+    const usbWorking = useL10n("Progress", "Common.Progress");
+    const wifiWorking = useL10n("Progress", "Common.Progress");
     const wireUpStateListeners = (
         setClosePending: (boolean) => void,
         setProgressState: (ProgressState) => void
@@ -90,13 +92,11 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                         setClosePending(true);
                         break;
                     case "UsbStarted":
-                        //TODO Localize
-                        setHeading("Sending via USB Cable");
+                        setHeading(usbWorking);
                         setProgressState(ProgressState.Serving);
                         break;
                     case "ServingOnWifi":
-                        //TODO Localize
-                        setHeading("Sharing");
+                        setHeading(wifiWorking);
                         setProgressState(ProgressState.Serving);
                         break;
                     default:
