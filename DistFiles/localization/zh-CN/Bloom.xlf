@@ -1065,6 +1065,24 @@
         <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
         <target xml:lang="zh-CN" state="translated">信息</target>
       </trans-unit>
+      <trans-unit id="Common.Warning">
+        <source xml:lang="en">Info</source>
+        <note>ID: Common.Warning</note>
+        <note>A heading shown above some messages.</note>
+        <target xml:lang="zh-CN" state="needs-translation">Info</target>
+      </trans-unit>
+      <trans-unit id="Common.Note">
+        <source xml:lang="en">Note</source>
+        <note>ID: Common.Note</note>
+        <note>A heading shown above some messages.</note>
+        <target xml:lang="zh-CN" state="needs-translation">Note</target>
+      </trans-unit>
+      <trans-unit id="Common.Done">
+        <source xml:lang="en">Done</source>
+        <note>ID: Common.Done</note>
+        <note>Shown in a list of messages when Bloom has completed a task.</note>
+        <target xml:lang="zh-CN" state="needs-translation">Done</target>
+      </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
@@ -1949,10 +1967,10 @@
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
         <target xml:lang="zh-CN" state="translated">粘贴图像前,请先用其他程序把图像复制到剪贴板上。</target>
       </trans-unit>
-      <trans-unit id="EditTab.NoOtherLayouts" approved="yes">
-        <source xml:lang="en">There are no other layout options for this template.</source>
+      <trans-unit id="EditTab.NoOtherLayouts">
+        <source xml:lang="en">There are no other options for this template.</source>
         <note>ID: EditTab.NoOtherLayouts</note>
-        <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
+        <note>Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice</note>
         <target xml:lang="zh-CN" state="translated">该模板没有其他布局选项。</target>
       </trans-unit>
       <trans-unit id="EditTab.Overflow" sil:dynamic="true" approved="yes">
@@ -2955,6 +2973,12 @@
           <target xml:lang="zh-CN">这本书需要 bloom {0} 或更高版本, 因为它将使用\"{1}\"功能。</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="Errors.MultipleHtmlFiles">
+        <source xml:lang="en">Bloom book folders must have only one file ending in .htm.  In the book "{0}", these are the files ending in .htm:</source>
+        <note>ID: Errors.MultipleHtmlFiles</note>
+        <note>{0} will get the name of the book</note>
+        <target xml:lang="zh-CN" state="needs-translation">Bloom book folders must have only one file ending in .htm.  In the book "{0}", these are the files ending in .htm:</target>
+      </trans-unit>
       <trans-unit id="Errors.NeedNewerVersion" approved="yes">
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}</source>
         <note>ID: Errors.NeedNewerVersion</note>
@@ -2981,6 +3005,12 @@
         <source xml:lang="en">Bloom had a problem importing this video.</source>
         <note>ID: Errors.ProblemImportingVideo</note>
         <target xml:lang="zh-CN" state="translated">Bloom在导入视频时遇到问题。</target>
+      </trans-unit>
+      <trans-unit id="Errors.RemoveExcessHtml">
+        <source xml:lang="en">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</source>
+        <note>ID: Errors.RemoveExcessHtml</note>
+        <note>This follows the Errors.MultipleHtmlFiles message and a list of HTML files.</note>
+        <target xml:lang="zh-CN" state="needs-translation">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</target>
       </trans-unit>
       <trans-unit id="Errors.ReportThisProblemButton" approved="yes">
         <source xml:lang="en">Report this problem to Bloom Support</source>
@@ -3551,8 +3581,8 @@
         <note>ID: PublishTab.Android.ChooseUSB</note>
         <target xml:lang="zh-CN" state="translated">通过USB数据线发送</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseWifi" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Serve on WiFi Network</source>
+      <trans-unit id="PublishTab.Android.ChooseWifi" sil:dynamic="true">
+        <source xml:lang="en">Share over Wi-Fi</source>
         <note>ID: PublishTab.Android.ChooseWifi</note>
         <target xml:lang="zh-CN" state="translated">通过WiFi推送</target>
       </trans-unit>
@@ -3585,14 +3615,14 @@
         <note>{1} is a number with one decimal place, the number of megabytes the font file takes up</note>
         <target xml:lang="zh-CN" state="translated">嵌入{0} 字体将占用{1} 兆空间</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Checking {0} font: License does not permit embedding.</source>
+      <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
+        <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
         <note>{0} is a font name</note>
         <target xml:lang="zh-CN" state="translated">正在检查 {0} 字体: 许可证不允许嵌入。</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Checking {0} font: No font found to embed.</source>
+      <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
+        <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
         <note>{0} is a font name</note>
         <target xml:lang="zh-CN" state="translated">正在检查 {0} 字体: 没找要嵌入的字体。</target>
@@ -3609,10 +3639,10 @@
         <note>{0} is a file path</note>
         <target xml:lang="zh-CN" state="translated">保存为 {0}</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true" approved="yes">
+      <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
         <source xml:lang="en">Substituting "{0}" for "{1}"</source>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
-        <note>{0} and {1} are font names</note>
+        <note>{0} is a font name</note>
         <target xml:lang="zh-CN" state="translated">把{1} 换成{0}</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true" approved="yes">
@@ -3656,6 +3686,11 @@
         <source xml:lang="en">About Bloom Reader</source>
         <note>ID: PublishTab.Android.AboutBloomReader</note>
         <target xml:lang="zh-CN" state="translated">关于Bloom阅读器</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.AboutBookFeatures" sil:dynamic="true">
+        <source xml:lang="en">About Book Features</source>
+        <note>ID: PublishTab.Android.AboutBookFeatures</note>
+        <target xml:lang="zh-CN" state="needs-translation">About Book Features</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Settings</source>
@@ -3808,17 +3843,11 @@
         <note>ID: PublishTab.Android.Wifi.Progress.beginAdvertising</note>
         <target xml:lang="zh-CN" state="translated">通过本地网络把图书推送到Bloom阅读器上</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Start" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Start Serving</source>
+      <trans-unit id="PublishTab.Android.Wifi.Start" sil:dynamic="true">
+        <source xml:lang="en">Share</source>
         <note>ID: PublishTab.Android.Wifi.Start</note>
         <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
         <target xml:lang="zh-CN" state="translated">开始推送</target>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Stop" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Stop Serving</source>
-        <note>ID: PublishTab.Android.Wifi.Stop</note>
-        <note>Button that tells Bloom to stop offering this book on the wifi network.</note>
-        <target xml:lang="zh-CN" state="translated">停止推送</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WrongLayout.Message" approved="yes">
         <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
@@ -4060,6 +4089,11 @@
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
         <note>ID: PublishTab.PdfMaker.BadPdf</note>
         <target xml:lang="zh-CN" state="translated">Bloom无法生成此书的PDF格式。请寻求技术帮助或联系软件开发者，也可以尝试这些做法：</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.BadPdfShort">
+        <source xml:lang="en">Bloom had a problem making a PDF of this book.</source>
+        <note>ID: PublishTab.PdfMaker.BadPdfShort</note>
+        <target xml:lang="zh-CN" state="needs-translation">Bloom had a problem making a PDF of this book.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Compress" approved="yes">
         <source xml:lang="en">Compressing PDF</source>
@@ -5478,6 +5512,11 @@ Do you want to go ahead?</note>
         <note>Used in page preview for Comprehension Question pages. Should be short.</note>
         <target xml:lang="zh-CN" state="translated">测试</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Quiz Page" sil:dynamic="true">
+        <source xml:lang="en">Quiz Page</source>
+        <note>ID: TemplateBooks.PageLabel.Quiz Page</note>
+        <target xml:lang="zh-CN" state="needs-translation">Quiz Page</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true" approved="yes">
         <source xml:lang="en">SIL-Cameroon</source>
         <note>ID: TemplateBooks.PageLabel.SIL-Cameroon</note>
@@ -5529,6 +5568,16 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>
         <note>This is the dialog used to set up the wall calendar</note>
         <target xml:lang="zh-CN" state="translated">设置</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.Quiz.HintBubble.Answer" sil:dynamic="true">
+        <source xml:lang="en">Put a possible answer here. Check it if it is correct.</source>
+        <note>ID: TemplateBooks.Quiz.HintBubble.Answer</note>
+        <target xml:lang="zh-CN" state="needs-translation">Put a possible answer here. Check it if it is correct.</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.Quiz.HintBubble.Question" sil:dynamic="true">
+        <source xml:lang="en">Put a comprehension question here</source>
+        <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
+        <target xml:lang="zh-CN" state="needs-translation">Put a comprehension question here</target>
       </trans-unit>
       <trans-unit id="Topics.Agriculture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Agriculture</source>

@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="wall.calendar">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="mam" state="needs-translation">About the Wall Calendar Template</target>
+        <target xml:lang="mam" state="translated">Nab'il tib'aj ttenb'il b'inchil u'jb'il b'ananmaj te txolq'ij</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use">
@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="wall.calendar.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="mam" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="mam" state="translated">Alchaqkyeqe nchi maqan ti'j aq'unb'il lu'</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="wall.calendar.credits">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="mam" state="needs-translation">Credits</target>
+        <target xml:lang="mam" state="translated">Tu'jil toklen</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks">

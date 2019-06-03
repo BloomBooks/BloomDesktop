@@ -12,6 +12,9 @@
         <target xml:lang="fr" state="translated">À l'aide de ce modèle, vous pouvez créer un calendrier annuel au format A5, avec une image et une citation en haut de la page et les jours en dessous. Le calendrier comportera les noms de mois et de jours dans votre langue.</target>
         <note>ID: wall.calendar.use</note>
         <alt-trans>
+          <target xml:lang="fr">À l'aide de ce modèle, on peut créer un calendrier annuel au format A5, avec une image et une citation en haut de la page et les jours en dessous. Le calendrier comportera les noms des mois et des jours dans votre langue.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">À l'aide de ce modèle, vous pouvez créer un calendrier en format A5 pour 12 mois, avec une image et une citation sur la page supérieure, et des jours sur la page en bas.  Le calendrier utilisera les noms de mois et de jours dans votre langue.</target>
         </alt-trans>
       </trans-unit>
@@ -27,6 +30,9 @@
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
         <target xml:lang="fr" state="translated">Actuellement, vous ne pouvez pas faire un "canevas" à utiliser dans d'autres langues.</target>
         <note>ID: wall.calendar.noshells</note>
+        <alt-trans>
+          <target xml:lang="fr">Actuellement, on ne peut pas faire un "canevas" à utiliser dans d'autres langues.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Actuellement, vous ne pouvez pas créer un  calendrier canevas pour les autres langues à utiliser.</target>
         </alt-trans>

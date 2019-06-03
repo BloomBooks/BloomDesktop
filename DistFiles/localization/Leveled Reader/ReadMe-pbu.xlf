@@ -30,8 +30,8 @@
         <target xml:lang="pbu" state="translated">وګورئ <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">دا ښوونیزې ویډیوګانې</g>.</target>
         <note>ID: leveled.learn.videos</note>
       </trans-unit>
-      <trans-unit id="leveled.learn.helpindex" approved="yes">
-        <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Leveled Readers".</source>
+      <trans-unit id="leveled.learn.helpindex">
+        <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</source>
         <target xml:lang="pbu" state="translated">د مرستې مینیو ته لاړ شئ، مرسته انتخاب کړئ، او لاندې "د زده کوونکو له سویې سره برابر کتابونو ته" وګورئ.</target>
         <note>ID: leveled.learn.helpindex</note>
       </trans-unit>

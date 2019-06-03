@@ -28,8 +28,8 @@
         <note>ID: decodable.learn.videos</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpindex">
-        <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".</source>
-        <target xml:lang="te" state="needs-translation">Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".</target>
+        <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
+        <target xml:lang="te" state="needs-translation">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</target>
         <note>ID: decodable.learn.helpindex</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu">

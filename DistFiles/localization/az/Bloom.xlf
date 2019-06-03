@@ -1062,6 +1062,24 @@
         <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
         <target xml:lang="az" state="translated">Məlumat</target>
       </trans-unit>
+      <trans-unit id="Common.Warning">
+        <source xml:lang="en">Info</source>
+        <note>ID: Common.Warning</note>
+        <note>A heading shown above some messages.</note>
+        <target xml:lang="az" state="needs-translation">Info</target>
+      </trans-unit>
+      <trans-unit id="Common.Note">
+        <source xml:lang="en">Note</source>
+        <note>ID: Common.Note</note>
+        <note>A heading shown above some messages.</note>
+        <target xml:lang="az" state="needs-translation">Note</target>
+      </trans-unit>
+      <trans-unit id="Common.Done">
+        <source xml:lang="en">Done</source>
+        <note>ID: Common.Done</note>
+        <note>Shown in a list of messages when Bloom has completed a task.</note>
+        <target xml:lang="az" state="needs-translation">Done</target>
+      </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
@@ -1932,29 +1950,29 @@
       <trans-unit id="EditTab.NoImageFoundOnClipboard">
         <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
-        <target xml:lang="az" state="needs-translation">Before you can paste an image, copy one onto your 'clipboard', from another program.</target>
+        <target xml:lang="az" state="translated">Bir şəkili əlavə etməzdən əvvəl, bir 'panonunuzu' başqa proqramdan köçərin.</target>
       </trans-unit>
-      <trans-unit id="EditTab.NoOtherLayouts" approved="yes">
-        <source xml:lang="en">There are no other layout options for this template.</source>
+      <trans-unit id="EditTab.NoOtherLayouts">
+        <source xml:lang="en">There are no other options for this template.</source>
         <note>ID: EditTab.NoOtherLayouts</note>
-        <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
+        <note>Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice</note>
         <target xml:lang="az" state="translated">Bu şablon üçün heç bir başqa maketi variantlar yoxdur.</target>
       </trans-unit>
       <trans-unit id="EditTab.Overflow" sil:dynamic="true">
         <source xml:lang="en">This box has more text than will fit</source>
         <note>ID: EditTab.Overflow</note>
-        <target xml:lang="az" state="needs-translation">This box has more text than will fit</target>
+        <target xml:lang="az" state="translated">Bu qutuya uyğun gələn daha çox mətn var</target>
       </trans-unit>
       <trans-unit id="EditTab.OverflowContainer" sil:dynamic="true">
         <source xml:lang="en">A container on this page is overflowing</source>
         <note>ID: EditTab.OverflowContainer</note>
         <note>This shows up in pages like the cover where sizing is very flexible. No one thing is too big, but not everything on the page will fit. To see it, put a lot of text on a cover page, until a red bar appears at the bottom; then hover over the bar. </note>
-        <target xml:lang="az" state="needs-translation">A container on this page is overflowing</target>
+        <target xml:lang="az" state="translated">Bu səhifədə bir qab daşdı</target>
       </trans-unit>
       <trans-unit id="EditTab.PageList.CantMoveXMatter">
         <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>
         <note>ID: EditTab.PageList.CantMoveXMatter</note>
-        <target xml:lang="az" state="needs-translation">That change is not allowed. Front matter and back matter pages must remain where they are.</target>
+        <target xml:lang="az" state="translated">Bu dəyişikliyə icazə verilmir. Ön maddə və arxa maddələri olduğu yerlər qalmalıdır.</target>
       </trans-unit>
       <trans-unit id="EditTab.PageList.Heading" approved="yes">
         <source xml:lang="en">Pages</source>
@@ -1984,22 +2002,22 @@
       <trans-unit id="EditTab.PastePage">
         <source xml:lang="en">Paste Page</source>
         <note>ID: EditTab.PastePage</note>
-        <target xml:lang="az" state="needs-translation">Paste Page</target>
+        <target xml:lang="az" state="translated">Səhifə Əlavə Etmək</target>
       </trans-unit>
       <trans-unit id="EditTab.ReadOnlyInAuthorMode" sil:dynamic="true">
         <source xml:lang="en">You cannot put anything in there while making an original book.</source>
         <note>ID: EditTab.ReadOnlyInAuthorMode</note>
-        <target xml:lang="az" state="needs-translation">You cannot put anything in there while making an original book.</target>
+        <target xml:lang="az" state="translated">Orijinal bir kitab edərkən oraya həç bir şey qoya bilməz.</target>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
         <source xml:lang="en">Saving...</source>
         <note>ID: EditTab.SavingNotification</note>
-        <target xml:lang="az" state="needs-translation">Saving...</target>
+        <target xml:lang="az" state="translated">Saxlanılır...</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Alignment" sil:dynamic="true">
         <source xml:lang="en">Alignment</source>
         <note>ID: EditTab.TextBoxProperties.Alignment</note>
-        <target xml:lang="az" state="needs-translation">Alignment</target>
+        <target xml:lang="az" state="translated">Yerini tənzimləmə</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Background" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Background</source>
@@ -2009,29 +2027,29 @@
       <trans-unit id="EditTab.TextBoxProperties.BorderSides" sil:dynamic="true">
         <source xml:lang="en">Border Sides</source>
         <note>ID: EditTab.TextBoxProperties.BorderSides</note>
-        <target xml:lang="az" state="needs-translation">Border Sides</target>
+        <target xml:lang="az" state="translated">Sərhəd Tərəfləri</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.BorderStyle" sil:dynamic="true">
         <source xml:lang="en">Border Style</source>
         <note>ID: EditTab.TextBoxProperties.BorderStyle</note>
-        <target xml:lang="az" state="needs-translation">Border Style</target>
+        <target xml:lang="az" state="translated">Sərhəd Üslubu</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.BordersAndBackground" sil:dynamic="true">
         <source xml:lang="en">Borders &amp; Background</source>
         <note>ID: EditTab.TextBoxProperties.BordersAndBackground</note>
-        <target xml:lang="az" state="needs-translation">Borders &amp; Background</target>
+        <target xml:lang="az" state="translated">Sərhədlər &amp; Fon</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.HintBubbles" sil:dynamic="true">
         <source xml:lang="en">Hint Bubbles</source>
         <note>ID: EditTab.TextBoxProperties.HintBubbles</note>
         <note>This is the label of a tab in the text properties dialog that appears when you click a cog icon in a text box while changing the layout of a page</note>
-        <target xml:lang="az" state="needs-translation">Hint Bubbles</target>
+        <target xml:lang="az" state="translated">İpucu Köpükləri</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.IncludeLang" sil:dynamic="true">
         <source xml:lang="en">Include the name of the language using {lang}. For example: "Enter color in {lang}".</source>
         <note>ID: EditTab.TextBoxProperties.IncludeLang</note>
         <note>Becomes visible when "Show on each" option is chosen in combo. Do NOT translate {lang}.</note>
-        <target xml:lang="az" state="needs-translation">Include the name of the language using {lang}. For example: "Enter color in {lang}".</target>
+        <target xml:lang="az" state="translated">{lang} istifadə edərək dil adını daxil edin. Məsələn: "{lang} -da rəng daxil edin".</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.LanguageTab" sil:dynamic="true">
         <source xml:lang="en">Language</source>
@@ -2051,7 +2069,7 @@
       <trans-unit id="EditTab.TextBoxProperties.Normal" sil:dynamic="true">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.TextBoxProperties.Normal</note>
-        <target xml:lang="az" state="needs-translation">Normal</target>
+        <target xml:lang="az" state="translated">Standart</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.NormalLabel" sil:dynamic="true">
         <source xml:lang="en">"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</source>
@@ -2093,7 +2111,7 @@
         <source xml:lang="en">Vertical Alignment</source>
         <note>ID: EditTab.TextBoxProperties.VerticalAlignment</note>
         <note>Label above the set of options, Top/Center/Bottom</note>
-        <target xml:lang="az" state="needs-translation">Vertical Alignment</target>
+        <target xml:lang="az" state="translated">Şaquli Düzləndirmə</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.WhatToPut" sil:dynamic="true">
         <source xml:lang="en">What should authors put in this box?</source>
@@ -2244,12 +2262,12 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles">
         <source xml:lang="en">Text files</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles</note>
-        <target xml:lang="az" state="needs-translation">Text files</target>
+        <target xml:lang="az" state="translated">Mətn faylları</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters">
         <source xml:lang="en">Letters: {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters</note>
-        <target xml:lang="az" state="needs-translation">Letters: {0}</target>
+        <target xml:lang="az" state="translated">Hərflər:{0}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage">
         <source xml:lang="en">The following is a generated report of the decodable stages for {0}.  You can make any changes you want to this file, but Bloom will not notice your changes.  It is just a report.</source>
@@ -2353,17 +2371,17 @@
         <source xml:lang="en">Keep it **short**.</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.KeepItShort</note>
         <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
-        <target xml:lang="az" state="needs-translation">Keep it **short**.</target>
+        <target xml:lang="az" state="translated">**Qısaca** saxlanmalıdır.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox" sil:dynamic="true">
         <source xml:lang="en">Otherwise, check this box:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckThisBox</note>
-        <target xml:lang="az" state="needs-translation">Otherwise, check this box:</target>
+        <target xml:lang="az" state="translated">Ya olmazsa, bu qutudan işarələyin:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe" sil:dynamic="true">
         <source xml:lang="en">This image should not be described.</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe</note>
-        <target xml:lang="az" state="needs-translation">This image should not be described.</target>
+        <target xml:lang="az" state="translated">Bu şəkil təsvir edilməməlidir.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true">
         <source xml:lang="en">Be Concise</source>
@@ -2575,65 +2593,68 @@
       <trans-unit id="EditTab.Toolbox.SignLanguage.ShowInFolder" sil:dynamic="true">
         <source xml:lang="en">Show In Folder</source>
         <note>ID: EditTab.Toolbox.SignLanguage.ShowInFolder</note>
-        <target xml:lang="az" state="needs-translation">Show In Folder</target>
+        <target xml:lang="az" state="translated">Qovluqda göstər</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.NoCameraFound" sil:dynamic="true">
         <source xml:lang="en">No camera found</source>
         <note>ID: EditTab.Toolbox.SignLanguage.NoCameraFound</note>
-        <target xml:lang="az" state="needs-translation">No camera found</target>
+        <target xml:lang="az" state="translated">Həç bir kamera tapımayıb</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.PressCancel" sil:dynamic="true">
         <source xml:lang="en">Press any key to cancel</source>
         <note>ID: EditTab.Toolbox.SignLanguage.PressCancel</note>
-        <target xml:lang="az" state="needs-translation">Press any key to cancel</target>
+        <target xml:lang="az" state="translated">Ləğv etmək üçün, hər hansı bir düyməni basın</target>
+        <alt-trans>
+          <target xml:lang="az">Ləğv etmək üçün, hər hansı düyməni basın</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.PressStop" sil:dynamic="true">
         <source xml:lang="en">Press any key to stop</source>
         <note>ID: EditTab.Toolbox.SignLanguage.PressStop</note>
-        <target xml:lang="az" state="needs-translation">Press any key to stop</target>
+        <target xml:lang="az" state="translated">Dayanmaq üçün hər hansı bir düyməni basın</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Processing" sil:dynamic="true">
         <source xml:lang="en">Processing</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Processing</note>
         <note>Displayed while video just recorded is processed into a more compressed form</note>
-        <target xml:lang="az" state="needs-translation">Processing</target>
+        <target xml:lang="az" state="translated">Emal etməkdədir</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Recording" sil:dynamic="true">
         <source xml:lang="en">Recording</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Recording</note>
-        <target xml:lang="az" state="needs-translation">Recording</target>
+        <target xml:lang="az" state="translated">Yazır</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.RestoreOriginal" sil:dynamic="true">
         <source xml:lang="en">Restore Original</source>
         <note>ID: EditTab.Toolbox.SignLanguage.RestoreOriginal</note>
-        <target xml:lang="az" state="needs-translation">Restore Original</target>
+        <target xml:lang="az" state="translated">Orijinalı Bərpə Etmək</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.SelectedVideo" sil:dynamic="true">
         <source xml:lang="en">The selected video</source>
         <note>ID: EditTab.Toolbox.SignLanguage.SelectedVideo</note>
         <note>Appears in the context "X will be moved to the recycle bin"</note>
-        <target xml:lang="az" state="needs-translation">The selected video</target>
+        <target xml:lang="az" state="translated">Seçilmiş video</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.SelectSignLanguageBox" sil:dynamic="true">
         <source xml:lang="en">To use this tool, select a sign language box on the page.</source>
         <note>ID: EditTab.Toolbox.SignLanguage.SelectSignLanguageBox</note>
-        <target xml:lang="az" state="needs-translation">To use this tool, select a sign language box on the page.</target>
+        <target xml:lang="az" state="translated">Bu alətdən istifadə etmək üçün səhifədə bir işarə dili qutusunu seçin.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.StartRecording" sil:dynamic="true">
         <source xml:lang="en">Start Recording</source>
         <note>ID: EditTab.Toolbox.SignLanguage.StartRecording</note>
-        <target xml:lang="az" state="needs-translation">Start Recording</target>
+        <target xml:lang="az" state="translated">Yazmağa başlat</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Trim" sil:dynamic="true">
         <source xml:lang="en">Trim</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Trim</note>
         <note>Appears above sign language video trimming sliders</note>
-        <target xml:lang="az" state="needs-translation">Trim</target>
+        <target xml:lang="az" state="translated">Kəs</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.WhatCameraSees" sil:dynamic="true">
         <source xml:lang="en">Here is what your camera sees:</source>
         <note>ID: EditTab.Toolbox.SignLanguage.WhatCameraSees</note>
-        <target xml:lang="az" state="needs-translation">Here is what your camera sees:</target>
+        <target xml:lang="az" state="translated">Kameranız nə görür belədir:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguageTool" sil:dynamic="true">
         <source xml:lang="en">Sign Language Tool</source>
@@ -2904,6 +2925,12 @@
         <note>The placeholder {1} represents a short description of the feature For example, {1} might be replaced with "Whole Text Audio"</note>
         <target xml:lang="az" state="needs-translation">This book requires Bloom {0} or greater because it uses the feature \"{1}\".</target>
       </trans-unit>
+      <trans-unit id="Errors.MultipleHtmlFiles">
+        <source xml:lang="en">Bloom book folders must have only one file ending in .htm.  In the book "{0}", these are the files ending in .htm:</source>
+        <note>ID: Errors.MultipleHtmlFiles</note>
+        <note>{0} will get the name of the book</note>
+        <target xml:lang="az" state="needs-translation">Bloom book folders must have only one file ending in .htm.  In the book "{0}", these are the files ending in .htm:</target>
+      </trans-unit>
       <trans-unit id="Errors.NeedNewerVersion">
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}</source>
         <note>ID: Errors.NeedNewerVersion</note>
@@ -2930,6 +2957,12 @@
         <source xml:lang="en">Bloom had a problem importing this video.</source>
         <note>ID: Errors.ProblemImportingVideo</note>
         <target xml:lang="az" state="needs-translation">Bloom had a problem importing this video.</target>
+      </trans-unit>
+      <trans-unit id="Errors.RemoveExcessHtml">
+        <source xml:lang="en">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</source>
+        <note>ID: Errors.RemoveExcessHtml</note>
+        <note>This follows the Errors.MultipleHtmlFiles message and a list of HTML files.</note>
+        <target xml:lang="az" state="needs-translation">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</target>
       </trans-unit>
       <trans-unit id="Errors.ReportThisProblemButton">
         <source xml:lang="en">Report this problem to Bloom Support</source>
@@ -3477,9 +3510,9 @@
         <target xml:lang="az" state="needs-translation">Send over USB Cable</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseWifi" sil:dynamic="true">
-        <source xml:lang="en">Serve on WiFi Network</source>
+        <source xml:lang="en">Share over Wi-Fi</source>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-        <target xml:lang="az" state="needs-translation">Serve on WiFi Network</target>
+        <target xml:lang="az" state="needs-translation">Share over Wi-Fi</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Control" sil:dynamic="true">
         <source xml:lang="en">Send or Save</source>
@@ -3511,16 +3544,16 @@
         <target xml:lang="az" state="needs-translation">Embedding font {0} at a cost of {1} megs</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
-        <source xml:lang="en">Checking {0} font: License does not permit embedding.</source>
+        <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
         <note>{0} is a font name</note>
-        <target xml:lang="az" state="needs-translation">Checking {0} font: License does not permit embedding.</target>
+        <target xml:lang="az" state="needs-translation">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
-        <source xml:lang="en">Checking {0} font: No font found to embed.</source>
+        <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
         <note>{0} is a font name</note>
-        <target xml:lang="az" state="needs-translation">Checking {0} font: No font found to embed.</target>
+        <target xml:lang="az" state="needs-translation">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true">
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
@@ -3537,7 +3570,7 @@
       <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
         <source xml:lang="en">Substituting "{0}" for "{1}"</source>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
-        <note>{0} and {1} are font names</note>
+        <note>{0} is a font name</note>
         <target xml:lang="az" state="needs-translation">Substituting "{0}" for "{1}"</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
@@ -3578,6 +3611,11 @@
         <source xml:lang="en">About Bloom Reader</source>
         <note>ID: PublishTab.Android.AboutBloomReader</note>
         <target xml:lang="az" state="needs-translation">About Bloom Reader</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.AboutBookFeatures" sil:dynamic="true">
+        <source xml:lang="en">About Book Features</source>
+        <note>ID: PublishTab.Android.AboutBookFeatures</note>
+        <target xml:lang="az" state="needs-translation">About Book Features</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true">
         <source xml:lang="en">Settings</source>
@@ -3728,16 +3766,10 @@
         <target xml:lang="az" state="needs-translation">Advertising book to Bloom Readers on local network...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Start" sil:dynamic="true">
-        <source xml:lang="en">Start Serving</source>
+        <source xml:lang="en">Share</source>
         <note>ID: PublishTab.Android.Wifi.Start</note>
         <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
-        <target xml:lang="az" state="needs-translation">Start Serving</target>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Stop" sil:dynamic="true">
-        <source xml:lang="en">Stop Serving</source>
-        <note>ID: PublishTab.Android.Wifi.Stop</note>
-        <note>Button that tells Bloom to stop offering this book on the wifi network.</note>
-        <target xml:lang="az" state="needs-translation">Stop Serving</target>
+        <target xml:lang="az" state="needs-translation">Share</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WrongLayout.Message">
         <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
@@ -3967,6 +3999,11 @@
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
         <note>ID: PublishTab.PdfMaker.BadPdf</note>
         <target xml:lang="az" state="needs-translation">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.BadPdfShort">
+        <source xml:lang="en">Bloom had a problem making a PDF of this book.</source>
+        <note>ID: PublishTab.PdfMaker.BadPdfShort</note>
+        <target xml:lang="az" state="needs-translation">Bloom had a problem making a PDF of this book.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Compress">
         <source xml:lang="en">Compressing PDF</source>
@@ -5373,6 +5410,11 @@ Do you want to go ahead?</note>
         <note>Used in page preview for Comprehension Question pages. Should be short.</note>
         <target xml:lang="az" state="needs-translation">Quiz</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Quiz Page" sil:dynamic="true">
+        <source xml:lang="en">Quiz Page</source>
+        <note>ID: TemplateBooks.PageLabel.Quiz Page</note>
+        <target xml:lang="az" state="needs-translation">Quiz Page</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
         <source xml:lang="en">SIL-Cameroon</source>
         <note>ID: TemplateBooks.PageLabel.SIL-Cameroon</note>
@@ -5424,6 +5466,16 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>
         <note>This is the dialog used to set up the wall calendar</note>
         <target xml:lang="az" state="translated">Proqramın Qurulması</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.Quiz.HintBubble.Answer" sil:dynamic="true">
+        <source xml:lang="en">Put a possible answer here. Check it if it is correct.</source>
+        <note>ID: TemplateBooks.Quiz.HintBubble.Answer</note>
+        <target xml:lang="az" state="needs-translation">Put a possible answer here. Check it if it is correct.</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.Quiz.HintBubble.Question" sil:dynamic="true">
+        <source xml:lang="en">Put a comprehension question here</source>
+        <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
+        <target xml:lang="az" state="needs-translation">Put a comprehension question here</target>
       </trans-unit>
       <trans-unit id="Topics.Agriculture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Agriculture</source>
