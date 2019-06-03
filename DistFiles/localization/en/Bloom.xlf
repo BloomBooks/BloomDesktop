@@ -3602,6 +3602,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Uploading {0}</source>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
       </trans-unit>
+      <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true">
+        <source xml:lang="en">Check Your Understanding</source>
+        <note>ID: Quiz.CheckYourUnderstanding</note>
+        <note>This string is intentionally duplicated in Bloom Reader's translation file</note>
+      </trans-unit>
       <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true">
         <source xml:lang="en">Add Level</source>
         <note>ID: ReaderSetup.AddLevel</note>
