@@ -67,7 +67,7 @@ var paths = {
         "!./**/node_modules/**/*.*"
     ],
     nodeFilesNeededInOutput: [
-        "./**/bloom-player/dist/bloomPlayer.js",
+        "./**/bloom-player/dist/bloomPlayer.min.js",
         "./**/bloom-player/dist/simpleComprehensionQuiz.js",
         "./**/bloom-player/dist/bloomplayer.htm",
         "./**/bloom-player/dist/*.mp3"
