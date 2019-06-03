@@ -1690,7 +1690,7 @@ namespace Bloom.Publish.Epub
 				{
 					div.SetAttribute ("role", "main");
 					string languageIdUsed;
-					var label = L10NSharp.LocalizationManager.GetString("PublishTab.AccessibleEpub.Main Content", "Main Content", "",
+					var label = L10NSharp.LocalizationManager.GetString("PublishTab.Epub.Accessible.MainContent", "Main Content", "",
 						_langsForLocalization, out languageIdUsed);
 					div.SetAttribute("aria-label", label);
 					_firstNumberedPageSeen = true;

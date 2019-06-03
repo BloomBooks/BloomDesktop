@@ -129,7 +129,7 @@
 			this._helpButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._helpButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._helpButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._helpButton, "ReaderTemplateBloomPackDialog.button1");
+			this._L10NSharpExtender.SetLocalizingId(this._helpButton, "ReaderTemplateBloomPackDialog.HelpButtonLabel");
 			this._helpButton.Location = new System.Drawing.Point(279, 348);
 			this._helpButton.Name = "_helpButton";
 			this._helpButton.Size = new System.Drawing.Size(75, 23);

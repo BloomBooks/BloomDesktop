@@ -26,7 +26,7 @@ namespace Bloom.web.controllers
 		/// <returns>returns an enumerator of strings describing any problems it finds</returns>
 		public static IEnumerable<Problem> CheckDescriptionsForAllImages(Book.Book book)
 		{
-			var messageTemplate = L10NSharp.LocalizationManager.GetString("Accessibility.DescriptionsForAllImages.Missing",
+			var messageTemplate = L10NSharp.LocalizationManager.GetString("AccessibilityCheck.DescriptionsForAllImages.MissingOnPage",
 				"Missing image description on page {0}",
 				"The {0} is where the page number will be inserted.");
 
@@ -62,7 +62,7 @@ namespace Bloom.web.controllers
 		/// <returns>returns an enumerator of strings describing any problems it finds</returns>
 		public static IEnumerable<Problem> CheckAudioForAllImageDescriptions(Book.Book book)
 		{
-			var messageTemplate = L10NSharp.LocalizationManager.GetString("Accessibility.AudioForAllImageDescriptions.MissingOnPage",
+			var messageTemplate = L10NSharp.LocalizationManager.GetString("AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage",
 				"Some text is missing a recording for an image description on page {0}",
 				"The {0} is where the page number will be inserted.");
 
@@ -76,7 +76,7 @@ namespace Bloom.web.controllers
 		/// <returns>returns an enumerator of strings describing any problems it finds</returns>
 		public static IEnumerable<Problem> CheckAudioForAllText(Book.Book book)
 		{
-			var messageTemplate = L10NSharp.LocalizationManager.GetString("Accessibility.AudioForAllText.MissingOnPage",
+			var messageTemplate = L10NSharp.LocalizationManager.GetString("AccessibilityCheck.AudioForAllText.MissingOnPage",
 				"Some text is missing a recording on page {0}",
 				"The {0} is where the page number will be inserted.");
 

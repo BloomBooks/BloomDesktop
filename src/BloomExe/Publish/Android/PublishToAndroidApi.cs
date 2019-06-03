@@ -336,7 +336,7 @@ namespace Bloom.Publish.Android
 
 		public static string StageBloomD(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor)
 		{
-			progress.Message("PreparingPreview", "Preparing preview");
+			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");	// message shared with Epub publishing
 
 			_stagingFolder?.Dispose();
 			if (AudioProcessor.IsAnyCompressedAudioMissing(book.FolderPath, book.RawDom))
