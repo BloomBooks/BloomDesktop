@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="leveled.reader.vocabulary">
         <source xml:lang="en">Vocabulary</source>
-        <target xml:lang="mam" state="needs-translation">Vocabulary</target>
+        <target xml:lang="mam" state="translated">Saqlajpakab</target>
         <note>ID: leveled.reader.vocabulary</note>
       </trans-unit>
       <trans-unit id="leveled.reader.start.simple">
@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.formatting">
         <source xml:lang="en">Formatting</source>
-        <target xml:lang="mam" state="needs-translation">Formatting</target>
+        <target xml:lang="mam" state="translated">Tu'mel yek'b'il</target>
         <note>ID: leveled.reader.formatting</note>
       </trans-unit>
       <trans-unit id="leveled.reader.start.large">
@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.predictability">
         <source xml:lang="en">Predictability</source>
-        <target xml:lang="mam" state="needs-translation">Predictability</target>
+        <target xml:lang="mam" state="translated">Tu'n min b'aj</target>
         <note>ID: leveled.reader.predictability</note>
       </trans-unit>
       <trans-unit id="leveled.reader.repeat.patterns">
@@ -72,7 +72,7 @@ Yellow Duck, Yellow Duck, What do you see?</g>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations">
         <source xml:lang="en">Illustration Support</source>
-        <target xml:lang="mam" state="needs-translation">Illustration Support</target>
+        <target xml:lang="mam" state="translated">Onb'il te b'inchb'il tilb'ilal</target>
         <note>ID: leveled.reader.illustrations</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help">
@@ -97,7 +97,7 @@ Yellow Duck, Yellow Duck, What do you see?</g>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice">
         <source xml:lang="en">Choice of Topic</source>
-        <target xml:lang="mam" state="needs-translation">Choice of Topic</target>
+        <target xml:lang="mam" state="translated">Sik'ob'il tb'i nab'il</target>
         <note>ID: leveled.reader.topic.choice</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.discussion">

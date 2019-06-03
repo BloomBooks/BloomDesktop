@@ -12,6 +12,9 @@
         <target xml:lang="fr" state="translated">Pour les grands débutants, employez des mots simples, bien connus des enfants. Dans la mesure du possible, employez des mots monosyllabiques. Au fur et à mesure que les enfants progressent, utilisez des mots de plusieurs syllabes. Vous pouvez commencer à employer des termes moins connus. Les enfants doivent pouvoir deviner le sens de ces derniers grâce aux autres mots et phrases du contexte ainsi que grâce aux illustrations.</target>
         <note>ID: leveled.reader.start.simple</note>
         <alt-trans>
+          <target xml:lang="fr">Pour les grands débutants, employez des mots simples, bien connus des enfants. Dans la mesure du possible, employez des mots monosyllabes. Au fur et à mesure que les enfants progressent, utilisez des mots de plusieurs syllabes. Vous pouvez commencer à employer des termes moins connus. Les enfants doivent pouvoir deviner le sens de ces derniers grâce aux autres mots et phrases du contexte ainsi que grâce aux images.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">Pour les niveaux débutants, employez des mots simples, utilisables par des enfants. Dans la mesure du possible, employez des mots monosyllabiques. Au fur et à mesure que les enfants progressent, utilisez des mots de plus d'une syllabe. Vous pouvez commencer à employer des termes d'un registre plus sophistiqué. Les enfants doivent pouvoir comprendre le sens de ces termes d'un registre plus sophistiqué d'après les illustrations et le contexte global du texte.</target>
         </alt-trans>
       </trans-unit>
@@ -24,6 +27,9 @@
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
         <target xml:lang="fr" state="translated">Pour les livres destinés aux débutants, il vaut mieux employer de gros caractères et un clair espacement entre les mots. Il est également préférable de disposer les mots ou les phrases au même endroit sur chaque page. Au fur et à mesure que les livres de lecture deviennent plus difficiles, la taille de la police et l'espacement diminueront et les phrases figureront à différents endroits sur la page.</target>
         <note>ID: leveled.reader.start.large</note>
+        <alt-trans>
+          <target xml:lang="fr">Pour les livres destinés aux débutants, il vaut mieux employer de gros caractères et un espacement net entre les mots. Il est également préférable de disposer les mots ou les phrases au même endroit sur chaque page. Au fur et à mesure que les livres de lecture deviennent plus difficiles, la taille de la police et l'espacement diminueront et les phrases figureront à différents endroits sur la page.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Une police et un espacement entre les mots relativement importants sont préférables pour des lecteurs débutants. Il est également préférable de disposer les mots ou les phrases au même emplacement sur chaque page. Au fur et à mesure que les lecteurs progressent et montent en niveau, la taille de la police et l'espacement peuvent être réduits, et les phrases peuvent être disposées à différents emplacements des pages.</target>
         </alt-trans>
@@ -46,6 +52,9 @@
         <target xml:lang="fr" state="translated">La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite de l'histoire. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
         <note>ID: leveled.reader.repeat.patterns</note>
         <alt-trans>
+          <target xml:lang="fr">La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite du récit. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">
           
           
@@ -108,23 +117,6 @@ La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que
         <alt-trans>
           <target xml:lang="fr">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que le lecteur peut deviner la suite de l'histoire. Il est possible de rendre un texte plus prévisible en utilisant certaines techniques. Parmi ces techniques :</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
           
           
           
@@ -146,6 +138,9 @@ La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que
         <target xml:lang="fr" state="translated">La répétition - c'est-à-dire, répéter des parties du texte, par exemple, utiliser une même phrase dans chaque page en en changeant un seul mot</target>
         <note>ID: leveled.reader.repetition</note>
         <alt-trans>
+          <target xml:lang="fr">La répétition - c'est-à-dire, répéter des parties du texte, par exemple, utiliser une même phrase sur chaque page en modifiant un seul mot</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">La répétition - c'est-à-dire, répéter des parties du texte, par exemple, utiliser une même phrase dans chaque page en en changeant juste un mot</target>
         </alt-trans>
       </trans-unit>
@@ -154,6 +149,9 @@ La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que
         <target xml:lang="fr" state="translated">Les successions : histoire dont la structure comporte une succession connue telles que les jours de la semaine ou des chiffres</target>
         <note>ID: leveled.reader.sequencing</note>
         <alt-trans>
+          <target xml:lang="fr">Les successions : récit dont la structure comporte une succession connue telles que les jours de la semaine ou des chiffres</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">Le séquençage - cette technique s'applique à une histoire découpée, ou séquencée, en vertu d'éléments bien définis, calendaires ou numériques, par exemple</target>
         </alt-trans>
       </trans-unit>
@@ -161,6 +159,9 @@ La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que
         <source xml:lang="en">Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
         <target xml:lang="fr" state="translated">Succession structurante : histoire qui comporte la répétition d'une même structure à laquelle s'ajoute à chaque page un nouvel élément</target>
         <note>ID: leveled.reader.building.sequence</note>
+        <alt-trans>
+          <target xml:lang="fr">Succession structurante : récit qui comporte la répétition d'une même structure à laquelle s'ajoute à chaque page un nouvel élément</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Sucession structurante : histoire qui comporte la répétition d'une même structure à laquelle s'ajoute à chaque page un nouvel élément</target>
         </alt-trans>
@@ -314,6 +315,9 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <target xml:lang="fr" state="translated">À propos des illustrations</target>
         <note>ID: leveled.reader.illustrations</note>
         <alt-trans>
+          <target xml:lang="fr">À propos des images</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">Illustration</target>
         </alt-trans>
         <alt-trans>
@@ -325,6 +329,9 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <target xml:lang="fr" state="translated">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.</target>
         <note>ID: leveled.reader.illustrations.help</note>
         <alt-trans>
+          <target xml:lang="fr">Les images facilitent la compréhension du récit. Elles entretiennent des liens de différentes natures au récit, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Rappelez-vous que dans beaucoup de cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre des images complexes.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
     
     
@@ -417,33 +424,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <alt-trans>
           <target xml:lang="fr">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Les illustrations facilitent la compréhension de l'histoire. Elles entretiennent des liens de différentes natures à l'histoire, en fonction des <g id="genid-5" ctype="x-html-em">niveaux</g> et des catégories de lecteurs (cf. ci-dessous). Pensez que dans les cultures où il y a peu d'écrits, les gens peuvent avoir du mal à comprendre les illustrations complexes.
     
     
     
@@ -472,9 +452,15 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.</source>
-        <target xml:lang="fr" state="translated">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.</target>
+        <target xml:lang="fr" state="translated">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs grands débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.</target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
         <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs grands débutants</g> les images doivent correspondre au récit. Il faut qu'un lecteur qui regarde uniquement les images, arrive à prévoir le déroulement du récit. A ce niveau, les images doivent être simples.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
       
       
@@ -539,61 +525,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
           <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
       
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-6" ctype="x-html-strong">les lecteurs débutants</g> les illustrations doivent correspondre à l'histoire. Il faut qu'en regardant uniquement les illustrations, le lecteur arrive à prévoir quelle sera l'histoire. A ce niveau, les illustrations doivent être simples.
       
       
       
@@ -750,6 +681,9 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <target xml:lang="fr" state="translated">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.</target>
         <note>ID: leveled.reader.fluent.reader</note>
         <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">; les lecteurs avancés</g> les images ne doivent pas, à elles seules, permettre de comprendre le récit. Le lecteur s'appuie davantage sur le texte que sur les images pour comprendre le récit. Les images peuvent d'ailleurs gagner en complexité.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
       
       
@@ -826,21 +760,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-8" ctype="x-html-strong">les lecteurs avancés</g> les illustrations ne doivent pas, à elles seules, permettre de comprendre l'histoire. Le lecteur s'appuie davantage sur le texte que sur les illustrations pour comprendre l'histoire. Les illustrations peuvent d'ailleurs gagner en complexité.      
       
       
       
@@ -860,6 +779,9 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <target xml:lang="fr" state="translated">Choix du sujet</target>
         <note>ID: leveled.reader.topic.choice</note>
         <alt-trans>
+          <target xml:lang="fr">Choix de thème</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">Choix du thème</target>
         </alt-trans>
       </trans-unit>
@@ -867,6 +789,9 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <source xml:lang="en">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
         <target xml:lang="fr" state="translated">Les livres peuvent porter sur de nombreux sujets. Lorsque vous rédigez des livres destinés aux lecteurs débutants, choisissez des sujets qu'ils connaissent. Les lecteurs liront plus volontiers des textes portant sur des sujets qu'ils trouvent intéressant et qui leur sont familiers. Les livres destinés aux lecteurs plus expérimentés peuvent apporter aux lecteurs des informations nouvelles.</target>
         <note>ID: leveled.reader.topic.choice.discussion</note>
+        <alt-trans>
+          <target xml:lang="fr">Les livres peuvent porter sur de nombreux thèmes. En rédigeant des livres destinés aux lecteurs débutants, choisissez des thèmes connus. Les lecteurs liront plus volontiers des textes portant sur des thèmes qu'ils trouvent intéressants et familiers. Les livres destinés aux lecteurs plus expérimentés peuvent apporter aux lecteurs des informations nouvelles.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Les livres peuvent porter sur un large éventail de thèmes. En ce qui concerne les livres pour lecteurs débutants, il conviendra de choisir des thèmes leur étant familiers. Les lecteurs liront plus volontiers des textes portant sur des thèmes qui les intéressent et leur sont familiers. Les lecteurs plus expérimentés sont susceptibles de lire des textes portant sur des thèmes qui ne leur sont pas forcément familiers.</target>
         </alt-trans>
@@ -986,6 +911,9 @@ Canard, canard, qu'est-ce que tu vois ?</g>
       </target>
         </alt-trans>
         <alt-trans>
+          <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">lecteurs débutants</g>, le récit portera sur un concept familier, mais sera développé davantage.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">les lecteurs débutants</g>, il faut développer une histoire autour d'un concept familier mais plus en profondeur.      
       
       
@@ -1045,32 +973,6 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <alt-trans>
           <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">les lecteurs débutants</g>, il faut développer une histoire autour d'un concept familier mais plus en profondeur.      
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Pour <g id="genid-10" ctype="x-html-strong">les lecteurs débutants</g>, il faut développer une histoire autour d'un concept familier mais plus en profondeur.      
       
       
       

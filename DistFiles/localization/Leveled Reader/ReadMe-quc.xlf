@@ -2,54 +2,81 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="quc">
     <body>
-      <trans-unit id="leveled.definition">
+      <trans-unit id="leveled.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
-        <target xml:lang="quc" state="needs-translation">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</target>
+        <target xml:lang="quc" state="translated">Jun <g id="genid-1" ctype="x-html-strong">No'jwuj Choluxo'l</g> are jun no'jwuj tz'ib'am chech jun tijoxel chi k'o pa jun q'at k'iyirisanem chech ri sik'in uwach wuj. Ri taq q'at kuya ub'ixik ri kopan wi chi' chech ri raqanal ri k'i taq tzij, raqanal k'i taq tz'aqat chomanik, nik'aj chik. Xuquje' kukoj retal ri q'in qas taqalik, ri tzij, ri tob'anik chech k'i taq wachib'al xuquje' ub'i' no'jinem.</target>
         <note>ID: leveled.definition</note>
+        <alt-trans>
+          <target xml:lang="quc">Un <g id="genid-1" ctype="x-html-strong">No'jwuj Cholaxo'l</g> are jun no'jwuj tz'ib'am che jun tijoxel che k'o pa jun q'at k'iyirisanem chech ri sik'in wuj. Ri taq q'at kuya ub'ixik ri kopan wi chi' chech ri raqanal ri k'i taq tzij, raqanal k'i taq tz'aqat chomanik, nik'aj chik. Xuquje' kojom ri q'in qas taqalik, ri tzij, ri tob'anik chech k'i taq wachib'al xuquje' ub'i' ch'ob'oj.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.levels">
+      <trans-unit id="leveled.levels" approved="yes">
         <source xml:lang="en">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
-        <target xml:lang="quc" state="needs-translation">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</target>
+        <target xml:lang="quc" state="translated">Are taq xch'ob'otaj jun cholajinel rech <g id="genid-2" ctype="x-html-em">juq'at</g>, katkowin chech uya'ik juq'at chi kech ri taq no'jwuj che xwok la ruk' wa' we raqanib'al te'qne ruk' "Raqanib'al rech No'jwuj Sik'it uwach". Are taq kanim le woktz'ib' pa ri no'jwuj, Bloom katob'anik chech ri k'olem pa ri chomab'al xuquje' ub'ixik na are taq kq'ax uwi' chech ri q'at.</target>
         <note>ID: leveled.levels</note>
+        <alt-trans>
+          <target xml:lang="quc">K'ate k'u ri' xch'ob'ataj jun cholajinel rech <g id="genid-2" ctype="x-html-em">niveles</g>, kkowin la uya'ik jun q'at chi kech ri k'i taq no'jwuj che xwok la ruk' wa' we raqanib'al o ruk' "Raqanib'al rech No'jwuj Sik'talik uwach". We knim la woktz'ib' pa ri no'jwuj, Bloom kuto' na la chech ri k'olem pa ri chomab'al xuquje' ub'ixik na are chi' kq'ax uwi' chech ri q'at.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.templates">
+      <trans-unit id="leveled.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-3" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="quc" state="needs-translation">You can also make a Bloom Pack of <g id="genid-3" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</target>
+        <target xml:lang="quc" state="translated">Xuquje’ katkowinik kab’an jun Woktanaj rech Bloom rech <g id="genid-3" ctype="x-html-em">raqanib'al</g> rech jule' chik kekowinik kkikojo chech utikik k'ak' taq no'jwuj chi upam ri q’at xuquje’ q’e’tal ri kib'anom kumal ri nima'q taq kino'jib'al rech tijonik.</target>
         <note>ID: leveled.templates</note>
+        <alt-trans>
+          <target xml:lang="quc">Xuquje’ katkowinik kab’an jun Woktanaj rech Bloom rech <g id="genid-3" ctype="x-html-em">plantillas</g> rech nik’aj chik kekowinik kkikojo chech utikik k'ak' taq no'jwuj chi upam ri q’at xuquje’ q’e’tal ri kib'anom kumal ri nima'q taq kino'jib'al rech tijonik.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.learn">
+      <trans-unit id="leveled.learn" approved="yes">
         <source xml:lang="en">To learn about using Leveled Readers in Bloom, you can:</source>
-        <target xml:lang="quc" state="needs-translation">To learn about using Leveled Readers in Bloom, you can:</target>
+        <target xml:lang="quc" state="translated">Chech reta’maxik jas ukojik le No'jwuj Choluxo'l pa Bloom, katkowinik:</target>
         <note>ID: leveled.learn</note>
+        <alt-trans>
+          <target xml:lang="quc">Chech reta’maxik jas ukojik Wuj Sik’ital uwach chi upam ri Bloom, katkowinik:</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.learn.videos">
+      <trans-unit id="leveled.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="quc" state="needs-translation">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</target>
+        <target xml:lang="quc" state="translated">Chawila' <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">we silob'wachib'al rech uya’ik no'jib'al</g>.</target>
         <note>ID: leveled.learn.videos</note>
+        <alt-trans>
+          <target xml:lang="quc">Chwila' <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">we silob'wachib'al rech uya’ik no'jib'al</g>.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.learn.helpindex">
-        <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Leveled Readers".</source>
-        <target xml:lang="quc" state="needs-translation">Go to the Help menu, choose 'Help', and look in the index under "Leveled Readers".</target>
+        <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</source>
+        <target xml:lang="quc" state="translated">Jat pa Cholb’al chak rech Tob'anem, chacha’ ‘Tob’anem’ xuquje’ chatzukuj "No'jwuj Choluxo'l" pa le cholupam wuj.</target>
         <note>ID: leveled.learn.helpindex</note>
+        <alt-trans>
+          <target xml:lang="quc">Jat pa cholb’al chak rech Tob'anem, chcha’ ‘Tob’anem’ xuquje’ chatzukuj "Wuj sik’ital uwach" pa le cholupam wuj.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.learn.helpmenu">
+      <trans-unit id="leveled.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="quc" state="needs-translation">Go to the Help menu and choose: "Building Reader Templates".</target>
+        <target xml:lang="quc" state="translated">Jat pa Cholb’al chak rech Tob'anem, chacha’: “Katajin uwokik k'i taq raqanib'al rech taq no'jwuj”.</target>
         <note>ID: leveled.learn.helpmenu</note>
+        <alt-trans>
+          <target xml:lang="quc">Jat pa ri Tob'cholb’al chak k'ate k'u ri' chacha’: “Tajan Uwokik k'i taq Raqanib’al rech no'jwuj”.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.vs.decodable">
+      <trans-unit id="leveled.vs.decodable" approved="yes">
         <source xml:lang="en">Relationship to Decodable Readers</source>
-        <target xml:lang="quc" state="needs-translation">Relationship to Decodable Readers</target>
+        <target xml:lang="quc" state="translated">Kajunamataj ruk' taq No'jwuj sik’ital uwach</target>
         <note>ID: leveled.vs.decodable</note>
+        <alt-trans>
+          <target xml:lang="quc">Kajunamataj ruk' taq No'jwuj Sik'talik Uwach</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.and.decodable">
+      <trans-unit id="leveled.and.decodable" approved="yes">
         <source xml:lang="en">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</source>
-        <target xml:lang="quc" state="needs-translation">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</target>
+        <target xml:lang="quc" state="translated">¿Jas kech chech ri <g id="genid-5" ctype="x-html-em">juq'at</g> rech ri k'i taq No'jwuj Choluxo'l ruk' le <g id="genid-6" ctype="x-html-em">uq'e'tal</g> rech No'jwuj sik’ital uwach? Le keb' no'jib'al kikitz'aqatij kib'. Bloom kuya'o kakojo jun <g id="genid-7" ctype="x-html-em">uq'e'tal sik’ital uwach</g> ruk' jun <g id="genid-8" ctype="x-html-em">nivel de libro graduado</g> chech ri no'jwuj tajan katz'ib'aj. Je wi, ri k'i taq no'jwuj rech ri cholajil q'at 1xuquje' kaj ne che ri cholajil q'at 2 xuquje' rajawaxik ktz'ib'axik kya' pa ri chomaba'l ri <g id="genid-9" ctype="x-html-em">Uq'e'tal Choluxo'l</g>.Xuquje' rajawaxik kchajixik rech ri no'jwuj pa ri nab'e xuquje' jeri' pa ri ukab' cholajil are <g id="genid-10" ctype="x-html-em">sik’ital uwach</g> (Are kub'ij chi kukoj xuwi taq ri tz'ib' eta'mam chik). Rumal la' jun ucholajil ri taq no'jwuj pacha' b'i we ri':</target>
         <note>ID: leveled.and.decodable</note>
+        <alt-trans>
+          <target xml:lang="quc">¿Kilowik ri <g id="genid-5" ctype="x-html-em">niveles</g> rech ri k'i taq no'jwuj cholaxo'l uwach ruk' ri <g id="genid-6" ctype="x-html-em">etapas</g> rech no'jwuj sik'talik uwach? Ri keb' taq no'jib'al kikitz'aqatij kib'.Bloom kuya'o kakojo jun <g id="genid-7" ctype="x-html-em">etapa descifrable</g> y un <g id="genid-8" ctype="x-html-em">nivel de libro graduado</g> chech ri no'jwuj tajan katz'ib'aj. Je wi, ri k'i taq no'jwuj rech ri cholajil q'at 1xuquje' kaj ne che ri cholajil q'at 2 xuquje' rajawaxik ktz'ib'axik kya' pa ri chomaba'l ri <g id="genid-9" ctype="x-html-em">etapas descifrables</g>.Xuquje' rajawaxik kchajixik rech ri k'i taq no'jwuj pa ri nab'e xuquje' jeri' pa ri ukab' cholajil are <g id="genid-10" ctype="x-html-em">descifrables</g> (kcha'', chkikojo' xuw ri k'i taq tz'ib' eta'mam chik). Rumal la' jun ucholajil ri k'i taq no'jwuj pacha' b'i we ri':</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.level">
+      <trans-unit id="leveled.reader.level" approved="yes">
         <source xml:lang="en">Leveled Reader Level</source>
-        <target xml:lang="quc" state="needs-translation">Leveled Reader Level</target>
+        <target xml:lang="quc" state="translated">Cholajil q'at rech ri No'jwuj Cholaxo'l uwach</target>
         <note>ID: leveled.reader.level</note>
       </trans-unit>
       <trans-unit id="decodable.stage" approved="yes">
