@@ -2886,6 +2886,10 @@
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Android.Publish</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.Creating" sil:dynamic="true">
+        <source xml:lang="en">Creating Digital Book</source>
+        <note>ID: PublishTab.Android.Creating</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.AboutBloomReader" sil:dynamic="true">
         <source xml:lang="en">About Bloom Reader</source>
         <note>ID: PublishTab.Android.AboutBloomReader</note>
@@ -3079,6 +3083,10 @@
         <source xml:lang="en">Building ePUB</source>
         <note>ID: PublishTab.Epub.BuildingEPub</note>
         <note>Shown in a progress box when Bloom is starting to create an ePUB</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Creating">
+        <source xml:lang="en">Creating ePUB...</source>
+        <note>ID: PublishTab.Epub.Creating</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Done">
         <source xml:lang="en">Done</source>

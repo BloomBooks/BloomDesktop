@@ -104,4 +104,13 @@
         content: "";
         position: absolute;
     }
+
+    // Make readium think we have a larger screen area
+    .readium {
+        width: 200% !important;
+        height: 200% !important;
+        flex-shrink: 0; // without this, the height doesn't grow
+        transform-origin: top left;
+        transform: scale(0.5);
+    }
 }

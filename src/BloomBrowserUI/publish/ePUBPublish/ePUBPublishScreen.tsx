@@ -13,14 +13,14 @@ import { ThemeProvider } from "@material-ui/styles";
 import theme from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { useWebSocketListenerForOneMessage } from "../../utils/WebSocketManager";
-import { BloomApi } from "../../utils/bloomApi";
 import BloomButton from "../../react_components/bloomButton";
 import { EPUBHelpGroup } from "./ePUBHelpGroup";
 import PWithLink from "../../react_components/pWithLink";
 import { EPUBSettingsGroup } from "./ePUBSettingsGroup";
 import { Typography } from "@material-ui/core";
-import { EPUBPublishProgressDialog } from "./ePUBPublishProgressDialog";
+import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
+import { useL10n } from "../../react_components/l10nHooks";
 
 export const EPUBPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -40,7 +40,7 @@ export const EPUBPublishScreen = () => {
 
 const EPUBPublishScreenInternal: React.FunctionComponent<{
     onReset: () => void;
-}> = props => {
+}> = () => {
     const inStorybookMode = useContext(StorybookContext);
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
@@ -52,9 +52,9 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
     );
 
     useWebSocketListenerForOneMessage("publish-epub", "epubPreview", url => {
-        setBookUrl(url);
+        // add a random component so that react will reload the iframe
+        setBookUrl(url + "&random=" + Math.random().toString());
     });
-    const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
 
     return (
         <>
@@ -64,6 +64,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                         defaultLandscape={false}
                         canRotate={false}
                         url={bookUrl}
+                        iframeClass="readium"
                     />
                     <Typography className="readium-credit">
                         <PWithLink
@@ -92,7 +93,11 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                 </SettingsPanel>
             </BasePublishScreen>
             {/* In storybook, there's no bloom backend to run the progress dialog */}
-            <EPUBPublishProgressDialog />
+            <PublishProgressDialog
+                heading={useL10n("Creating ePUB", "PublishTab.Epub.Creating")}
+                webSocketClientContext="publish-epub"
+                startApiEndpoint="publish/epub/updatePreview"
+            />
             <BookMetadataDialog />
         </>
     );

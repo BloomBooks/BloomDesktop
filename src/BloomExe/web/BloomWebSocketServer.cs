@@ -53,9 +53,16 @@ namespace Bloom.Api
 					};
 					socket.OnClose = () =>
 					{
+					//NB: In May 2019, we found that chrome could not open a socket, and we'd immediately get here and close.
+					// WebSocketManager.ts:87 WebSocket connection to 'ws://127.0.0.1:8090/' failed: Error during WebSocket
+					// handshake: Sent non-empty 'Sec-WebSocket-Protocol' header but no response was received
 						Debug.WriteLine($"Closing websocket \"{socket.ConnectionInfo?.SubProtocol}\"");
 						_allSockets.Remove(socket);
 						socket.Close();
+					};
+					socket.OnError = (err) =>
+					{
+						Debug.WriteLine($"Error on websocket \"{socket.ConnectionInfo?.SubProtocol}\": {err.ToString()}");
 					};
 				});
 			}

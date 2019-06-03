@@ -37,7 +37,7 @@ export const ProgressDialog: React.FunctionComponent<{
             { headers: { "Content-Type": "text/plain" } }
         );
     };
-    //React.useEffect(() => alert("constructing ProgressDialog"), []);
+
     const somethingStillGoing =
         props.progressState == ProgressState.Working ||
         props.progressState == ProgressState.Serving;
@@ -88,7 +88,8 @@ export const ProgressDialog: React.FunctionComponent<{
                 <div ref={messageEndRef} />
             </DialogContent>
             <DialogActions>
-                {somethingStillGoing || (
+                {/* This && "" is needed because there's something about DialogActions that choaks if given a `false` in its children */}
+                {(somethingStillGoing && "") || (
                     <Button
                         onClick={() => onCopy()}
                         color="secondary"
@@ -113,15 +114,15 @@ export const ProgressDialog: React.FunctionComponent<{
 
                         case ProgressState.Working:
                             return null;
-                        /* eventually we'll want this, but at the moment, we only use this state
-                                    for making previews, and in that state Bloom doesn't have a way of
-                                    cancelling.
-                                <Button
-                                    onClick={props.onUserCanceled}
-                                    color="primary"
-                                >
-                                    Cancel
-                                </Button>*/
+                        //  eventually we'll want this, but at the moment, we only use this state
+                        //             for making previews, and in that state Bloom doesn't have a way of
+                        //             cancelling.
+                        //         <Button
+                        //             onClick={props.onUserCanceled}
+                        //             color="primary"
+                        //         >
+                        //             Cancel
+                        //         </Button>
                         case ProgressState.Done:
                             return (
                                 <Button

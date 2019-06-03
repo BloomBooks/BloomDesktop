@@ -164,15 +164,18 @@ namespace Bloom.Publish.Epub
 				}
 			}, false);
 
-			// At this point, this is a checkbox backed by an enum (YAGNI?) that the user ticks to say
-			// "put my image descriptions on the epub page"
-			apiHandler.RegisterEnumEndpointHandler(kApiUrlPart + "imageDescriptionSetting",
-				request => request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions,
-				(request, enumSetting) => {
-					request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions = enumSetting;
+			// The backend here was written with an enum that had two choices for how to publish descriptions, but we only ever
+			// have used one of them so far in the UI. So this is a boolean api that converts to an enum underlying value.
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "imageDescriptionSetting",
+				request => request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions == BookInfo.HowToPublishImageDescriptions.OnPage,
+				(request, onPage) =>
+				{
+					request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions = onPage
+						? BookInfo.HowToPublishImageDescriptions.OnPage
+						: BookInfo.HowToPublishImageDescriptions.None;
 					request.CurrentBook.BookInfo.Save();
 					var newSettings = _desiredEpubSettings.Clone();
-					newSettings.howToPublishImageDescriptions = enumSetting;
+					newSettings.howToPublishImageDescriptions = request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions;
 					RefreshPreview(newSettings);
 				},
 				false);
