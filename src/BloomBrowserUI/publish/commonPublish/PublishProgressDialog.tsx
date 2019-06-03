@@ -10,6 +10,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
     heading: string; // up to client to localize
     webSocketClientContext: string;
     startApiEndpoint: string;
+    onUserStopped?: () => void;
     wireUpStateListeners?: (
         setClosePending: (boolean) => void,
         setProgressState: (ProgressState) => void
@@ -20,7 +21,10 @@ export const PublishProgressDialog: React.FunctionComponent<{
     const [progressState, setProgressState] = useState(ProgressState.Working);
     const [errorEncountered, setErrorEncountered] = useState(false);
 
+    // Allow our parents to control our state
     if (props.wireUpStateListeners) {
+        // Note: the things we're calling here have their own hooks, so we don't need to (and we're not allowed to)
+        // put this inside a useEffect().
         props.wireUpStateListeners(setClosePending, setProgressState);
     }
 
@@ -40,6 +44,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
                 setErrorEncountered(false);
                 // close it
                 setProgressState(ProgressState.Closed);
+                setClosePending(false);
             }
         }
     }, [closePending]);
@@ -64,6 +69,10 @@ export const PublishProgressDialog: React.FunctionComponent<{
         props.webSocketClientContext,
         "message",
         e => {
+            // // the epub maker
+            // if(progressState === ProgressState.Closed){
+            //     setProgressState(ProgressState.Working);
+            // }
             const html = `<span class='${e.kind}'>${e.message}</span><br/>`;
             if (e.id == "message") {
                 switch (e.kind) {
@@ -87,7 +96,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
             heading={props.heading}
             messages={accumulatedMessages}
             progressState={progressState}
-            onUserStopped={() => {}}
+            onUserStopped={() => props.onUserStopped && props.onUserStopped()}
             onUserCanceled={() => {}}
             onUserClosed={() => {
                 setAccumulatedMessages("");

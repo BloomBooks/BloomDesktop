@@ -9,6 +9,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogContent from "@material-ui/core/DialogContent";
 import { useTheme } from "@material-ui/styles";
 import "./ProgressDialog.less";
+import { CircularProgress, LinearProgress } from "@material-ui/core";
 
 export enum ProgressState {
     Closed,
@@ -76,6 +77,7 @@ export const ProgressDialog: React.FunctionComponent<{
             >
                 {props.heading || "Progress"}
             </DialogTitle>
+            <CircularProgress className={"circle-progress"} />
             <DialogContent style={{ width: "500px", height: "300px" }}>
                 <Typography>
                     <div

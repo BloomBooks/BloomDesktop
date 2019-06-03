@@ -12,7 +12,10 @@ import ReactDOM = require("react-dom");
 import { ThemeProvider } from "@material-ui/styles";
 import theme from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
-import { useWebSocketListenerForOneMessage } from "../../utils/WebSocketManager";
+import {
+    useWebSocketListenerForOneMessage,
+    useWebSocketListenerForOneEvent
+} from "../../utils/WebSocketManager";
 import BloomButton from "../../react_components/bloomButton";
 import { EPUBHelpGroup } from "./ePUBHelpGroup";
 import PWithLink from "../../react_components/pWithLink";
@@ -21,6 +24,7 @@ import { Typography } from "@material-ui/core";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import { useL10n } from "../../react_components/l10nHooks";
+import { ProgressState } from "../commonPublish/ProgressDialog";
 
 export const EPUBPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -51,10 +55,31 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloomd
     );
 
-    useWebSocketListenerForOneMessage("publish-epub", "epubPreview", url => {
-        // add a random component so that react will reload the iframe
-        setBookUrl(url + "&random=" + Math.random().toString());
-    });
+    const wireUpStateListeners = (
+        setClosePending: (boolean) => void,
+        setProgressState: (ProgressState) => void
+    ) => {
+        useWebSocketListenerForOneEvent(
+            "publish-epub",
+            "startingEbookCreation",
+            e => {
+                //setHeading("blah");
+                setProgressState(ProgressState.Working);
+            }
+        );
+
+        // The c# api responds to changes of settings by auto-starting a new epub build. When
+        // it is done, it calls this (but actually the same url, alas).
+        useWebSocketListenerForOneMessage(
+            "publish-epub",
+            "newEpubReady",
+            url => {
+                // add a random component so that react will reload the iframe
+                setBookUrl(url + "&random=" + Math.random().toString());
+                setClosePending(true);
+            }
+        );
+    };
 
     return (
         <>
@@ -97,6 +122,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                 heading={useL10n("Creating ePUB", "PublishTab.Epub.Creating")}
                 webSocketClientContext="publish-epub"
                 startApiEndpoint="publish/epub/updatePreview"
+                wireUpStateListeners={wireUpStateListeners}
             />
             <BookMetadataDialog />
         </>

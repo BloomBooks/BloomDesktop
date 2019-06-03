@@ -72,8 +72,7 @@ namespace Bloom.Publish.Epub
 		// down to the context (usualy a screen) that requested them.
 		private const string kWebsocketContext = "publish-epub";
 
-		// This constant must match the ID that is used for the listener set up in the React component EpubPreview
-		private const string kWebsocketEventId_Preview = "epubPreview";
+		private const string kWebsocketEventId_epubReady = "newEpubReady";
 
 		private string _lastDirectory; // where we saved the most recent previous epub, if any
 
@@ -231,7 +230,7 @@ namespace Bloom.Publish.Epub
 				try
 				{
 					if (UpdatePreview(newSettings, true))
-						_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_Preview, _previewSrc);
+						_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_epubReady, _previewSrc);
 					return;
 				}
 				catch (Exception e)
@@ -382,6 +381,8 @@ namespace Bloom.Publish.Epub
 
 			try
 			{
+				_webSocketServer.SendString(kWebsocketContext, "startingEbookCreation", _previewSrc);
+
 				var htmlPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
 				var newVersion = Book.Book.MakeVersionCode(File.ReadAllText(htmlPath), htmlPath);
 				bool previewIsAlreadyCurrent;
@@ -401,7 +402,7 @@ namespace Bloom.Publish.Epub
 
 				// clear the obsolete preview, if any; this also ensures that when the new one gets done,
 				// we will really be changing the src attr in the preview iframe so the display will update.
-				_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_Preview);
+				_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_epubReady);
 				_bookVersion = newVersion;
 				ReportProgress(LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
 
