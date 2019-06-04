@@ -64,15 +64,20 @@ namespace Bloom.WebLibraryIntegration
 			//appropriate change of access keys, thus requiring changing AmazonS3Client objects.
 			if(bucketName != _previousBucketName)
 			{
-				var accessKeys = AccessKeys.GetAccessKeys(bucketName);
 				if (_amazonS3 != null)
 					_amazonS3.Dispose();
-				_amazonS3 = new AmazonS3Client(accessKeys.S3AccessKey,
-					accessKeys.S3SecretAccessKey, _s3Config);
+				_amazonS3 = CreateAmazonS3Client(bucketName, _s3Config);
 
 				_previousBucketName = bucketName;
 			}
 			return _amazonS3; // we keep this so that we can dispose of it later.
+		}
+
+		protected virtual IAmazonS3 CreateAmazonS3Client(string bucketName, AmazonS3Config s3Config)
+		{
+			var accessKeys = AccessKeys.GetAccessKeys(bucketName);
+			return new AmazonS3Client(accessKeys.S3AccessKey,
+				accessKeys.S3SecretAccessKey, s3Config);
 		}
 
 		/// <summary>
@@ -564,10 +569,13 @@ namespace Bloom.WebLibraryIntegration
 			if(totalItems == 0)
 				throw new DirectoryNotFoundException("The book we tried to download is no longer in the BloomLibrary");
 
-			Debug.Assert(matching.S3Objects[0].Key.StartsWith(storageKeyOfBookFolder + "/"));
+			if (!storageKeyOfBookFolder.EndsWith("/"))
+				storageKeyOfBookFolder += '/';
+			
+			Debug.Assert(matching.S3Objects[0].Key.StartsWith(storageKeyOfBookFolder), "Matched object does not start with storageKey");
 
 			// Get the top-level directory name of the book from the first object key.
-			var bookFolderName = matching.S3Objects[0].Key.Substring(storageKeyOfBookFolder.Length + 1);
+			var bookFolderName = matching.S3Objects[0].Key.Substring(storageKeyOfBookFolder.Length);
 			while(bookFolderName.Contains("/"))
 				bookFolderName = Path.GetDirectoryName(bookFolderName);
 
@@ -597,7 +605,7 @@ namespace Bloom.WebLibraryIntegration
 							continue;
 						// Removing the book's prefix from the object key, then using the remainder of the key
 						// in the filepath allows for nested subdirectories.
-						var filepath = objKey.Substring(storageKeyOfBookFolder.Length + 1);
+						var filepath = objKey.Substring(storageKeyOfBookFolder.Length);
 						// Download this file then bump progress.
 						var req = new TransferUtilityDownloadRequest()
 						{
