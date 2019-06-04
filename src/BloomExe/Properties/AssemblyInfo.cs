@@ -38,4 +38,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("4.6.000.0")]
 [assembly: AssemblyInformationalVersion("4.6.000.0")]
 [assembly: InternalsVisibleTo("BloomTests")]
+[assembly: InternalsVisibleTo("BloomHarvester")]
+[assembly: InternalsVisibleTo("BloomHarvesterTests")]
 [assembly: AssemblyMetadata("SquirrelAwareVersion", "1")]
