@@ -72,8 +72,11 @@ namespace Bloom
 
 			Size = new Size(1024,720);
 #else
-			// We only want this screen size context menu in Debug mode
-			ContextMenuStrip = null;
+			// We only want this screen size context menu in Debug mode or Developer or Alpha channel
+			var channel = ApplicationUpdateSupport.ChannelName.ToLowerInvariant();
+			if (!new[]{"alpha", "developer"}.Any(s => channel.Contains(s))) {
+				ContextMenuStrip = null;
+			}
 #endif
 			_workspaceView = projectViewFactory();
 			_workspaceView.CloseCurrentProject += ((x, y) =>
