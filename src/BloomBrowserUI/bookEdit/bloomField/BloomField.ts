@@ -63,14 +63,7 @@ export default class BloomField {
         // 2) Text-over-picture elements with no paragraph, only a span containing two words on exactly one line will get messed up by CKEditor when the page is saved (including some tool activations may trigger saves)
         // 3) Some styling rules (e.g. indentation) assume it is in paragraphs and probably won't be applied immediately.
         // 4) probably others
-        // The Wordfind page for the Story Primer template was written assuming no paragraphs.  Inserting paragraphs breaks it.  See BL-7061.
-        if (
-            !$(bloomEditableDiv).hasClass("bloom-noParagraphs") && // test for possible explicit markup by a class
-            (!$(bloomEditableDiv).hasClass("WordFind-style") || // test for Story Primer Wordfind markup by both a class and an attribute
-                !$(bloomEditableDiv).hasAttr("data-placeholder"))
-        ) {
-            BloomField.EnsureParagraphsPresent(bloomEditableDiv);
-        }
+        BloomField.EnsureParagraphsPresent(bloomEditableDiv);
     }
 
     private static MakeTabEnterTabElement(field: HTMLElement) {
@@ -376,6 +369,12 @@ export default class BloomField {
     // 2) when this field was already used by the user, and then later switched to paragraph mode.
     // 3) corner cases that aren't handled by as-you-edit events. E.g., pressing "ctrl+a DEL"
     private static EnsureParagraphsPresent(field: HTMLElement) {
+        // Allow designers freedom to work without paragraphs
+        if ($(field).hasClass("bloom-noParagraphs")) return;
+        // The Wordfind page for the Story Primer template was written assuming no paragraphs for the grid cells.
+        // Inserting paragraphs into the cells breaks the grid.  See BL-7061.
+        if ($(field).hasClass("WordFind-style")) return;
+
         BloomField.ConvertTopLevelTextNodesToParagraphs(field);
         $(field)
             .find("br")
