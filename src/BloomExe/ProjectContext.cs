@@ -367,7 +367,7 @@ namespace Bloom
 			yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/toolbox/talkingBook"));
 
 			yield return BloomFileLocator.GetInstalledXMatterDirectory();
-			yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "publish/epub"));
+			yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "publish/ePUBPublish"));
 
 		}
 
