@@ -1162,6 +1162,13 @@
     react-transition-group "^4.0.0"
     warning "^4.0.1"
 
+"@material-ui/icons@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@material-ui/icons/-/icons-4.0.1.tgz#f63990f731c6206c82023c96d510bd7bdda44250"
+  integrity sha512-03zUfksGXXbaWX2piB1LCmC28eydlT8ah8MbYT4n4mgiX9BTL4HH50lkFn9JIJJSk2oO5kRy4FvpXRGRBI+oxw==
+  dependencies:
+    "@babel/runtime" "^7.2.0"
+
 "@material-ui/styles@^4.0.1":
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/@material-ui/styles/-/styles-4.0.1.tgz#67e880d490f010c9f2956c572b07d218bfa255d7"
@@ -3111,11 +3118,13 @@ blob@0.0.5:
   resolved "https://registry.yarnpkg.com/blob/-/blob-0.0.5.tgz#d680eeef25f8cd91ad533f5b01eed48e64caf683"
   integrity sha512-gaqbzQPqOoamawKg0LGVd7SzLgXS+JH61oWprSLH+P+abTczqJbhTR8CmJ2u9/bUYNmHTGJx/UEmn6doAvvuig==
 
-bloom-player@^0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-0.9.0.tgz#fd0bc949e17d76d6ed75ed7e351edc0da18fa7fb"
-  integrity sha512-b8oSDWcjEOVFA+0myddLCeoSU/eVMGpFw7kVNpfB0GRIMpNJOS3VmG7ZzBqiI4ZIpmoiHh1MpQYT2xwcZXV20w==
+bloom-player@latest:
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-0.9.1.tgz#2528b12bb36c75e9a5bac66e0f757d9fa763bbd3"
+  integrity sha512-WGS280N4Xl87jRjXU7Afaxg3XoZ7oZ/GfUnY3KrwdMP9kMWNRKtmpGTLQCBVsoo53NgupLIgKr4SI+vGVwwHpw==
   dependencies:
+    "@material-ui/core" "^4.0.1"
+    "@material-ui/icons" "^4.0.1"
     "@types/react" "^16.8.10"
     axios "^0.18.0"
     jquery "^3.4.1"
