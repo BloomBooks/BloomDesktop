@@ -2652,7 +2652,7 @@ namespace Bloom.Book
 					{
 						var bookFolderName = Path.GetFileName(bookInfo.FolderPath);
 						var path = HtmlDom.GetImageElementUrl(img);
-						var pathRelativeToFolioFolder = "../" + bookFolderName + "/" + path.NotEncoded;
+						var pathRelativeToFolioFolder = "../" + bookFolderName + "/" + path.NotEncoded;	// want query as well as filepath
 						//NB: URLEncode would replace spaces with '+', which is ok in the parameter section, but not the URL
 						//So we are using UrlPathEncode
 
@@ -3009,7 +3009,7 @@ namespace Bloom.Book
 			if (coverImgElt == null)
 				return null;
 			var coverImageUrl = HtmlDom.GetImageElementUrl(coverImgElt);
-			var coverImageFileName = coverImageUrl.NotEncoded;
+			var coverImageFileName = coverImageUrl.PathOnly.NotEncoded;
 			if (string.IsNullOrEmpty(coverImageFileName))
 				return null;
 			var coverImagePath = Path.Combine(StoragePageFolder, coverImageFileName);
@@ -3068,7 +3068,7 @@ namespace Bloom.Book
 			}
 			foreach (XmlElement div in page.SafeSelectNodes(".//div[contains(@class, 'bloom-imageContainer')]"))
 			{
-				var imgUrl = HtmlDom.GetImageElementUrl(div).NotEncoded;
+				var imgUrl = HtmlDom.GetImageElementUrl(div).PathOnly.NotEncoded;
 				// Actually getting a background img url is a good indication that it's one we want.
 				if (!string.IsNullOrEmpty(imgUrl) && imgUrl != "placeHolder.png")
 					return true;

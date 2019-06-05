@@ -43,7 +43,7 @@ namespace Bloom.Edit
 		{
 			if (src!=null)
 			{
-				var path = Path.Combine(bookFolderPath, src.NotEncoded);
+				var path = Path.Combine(bookFolderPath, src.PathOnly.NotEncoded);
 				if (path == imageInfo.OriginalFilePath)
 					return true;
 			}
