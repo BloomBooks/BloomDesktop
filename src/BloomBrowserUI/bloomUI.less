@@ -1,6 +1,6 @@
 /* Common Bloom UI styling */
+@import "./bloomWebFonts.less";
 
-@ui-fonts: "Segoe UI", "Sans";
 // Working towards making this the source of truth for the font size we use in our UI.
 // Currently all the toolbox panes have default font 11px based on a rule in jqueryui that applies
 // to everything in accordion panels.
@@ -30,7 +30,7 @@
 @bloom-purple: #96668f;
 @DisabledButtonColor: @bloom-gray;
 @ControlColor: @bloom-purple;
-
+@DialogTopBottomBar: #f1f3f4;
 @WarningColor: #d65649;
 @OrigamiActiveColor: #e48c84;
 @PreviewCoverColor: #d8adad;
@@ -42,6 +42,9 @@
 @accordion-active-element: #59b4d4;
 @form-background: #f0f0f0;
 
+body {
+    font-family: @UIFontStack;
+}
 .react-tabs {
     margin: 20px;
 }

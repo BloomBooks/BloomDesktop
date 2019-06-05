@@ -8,6 +8,7 @@ using System.Threading;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.web;
+using L10NSharp;
 using Newtonsoft.Json;
 
 namespace Bloom.Publish.Android.wifi
@@ -92,13 +93,14 @@ namespace Bloom.Publish.Android.wifi
 			PublishToAndroidApi.CheckBookLayout(book, _progress);
 			_wifiAdvertiser.Start();
 
-			_progress.Message(idSuffix: "WifiInstructions1",
-				message: "On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'.",
-				kind: MessageKind.Instruction);
+			var part1 = LocalizationManager.GetDynamicString(appId: "Bloom", id: "PublishTab.Android.Wifi.Progress.WifiInstructions1",
+				englishText: "On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'.");
+			var part2 = LocalizationManager.GetDynamicString(appId: "Bloom", id: "PublishTab.Android.Wifi.Progress.WifiInstructions2",
+				englishText: "You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.");
 
-			_progress.Message(idSuffix: "WifiInstructions2",
-				message: "You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.",
-				kind: MessageKind.Instruction);
+			// can only have one instruction up at a time, so we concatenate these
+			_progress.MessageWithoutLocalizing(part1+" "+part2, MessageKind.Instruction);
+
 		}
 
 		public void Stop()

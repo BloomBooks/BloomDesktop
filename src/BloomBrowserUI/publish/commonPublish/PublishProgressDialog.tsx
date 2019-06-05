@@ -1,18 +1,35 @@
 import * as React from "react";
-import { useState, useContext } from "react";
-import { ProgressDialog, ProgressState } from "../commonPublish/ProgressDialog";
+import { useState } from "react";
+import { ProgressDialog, ProgressState } from "./ProgressDialog";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager, {
     useWebSocketListenerForOneEvent
 } from "../../utils/WebSocketManager";
 
-export const ReaderPublishProgressDialog = () => {
+export const PublishProgressDialog: React.FunctionComponent<{
+    heading: string; // up to client to localize
+    webSocketClientContext: string;
+    startApiEndpoint: string;
+    onUserStopped?: () => void;
+    wireUpStateListeners?: (
+        setClosePending: (boolean) => void,
+        setProgressState: (ProgressState) => void
+    ) => void;
+}> = props => {
     const [closePending, setClosePending] = useState(false);
+    const [instructionMessage, setInstructionMessage] = useState<
+        string | undefined
+    >(undefined);
     const [accumulatedMessages, setAccumulatedMessages] = useState("");
     const [progressState, setProgressState] = useState(ProgressState.Working);
-    //TODO Localize
-    const [heading, setHeading] = useState("Creating Digital Book");
     const [errorEncountered, setErrorEncountered] = useState(false);
+
+    // Allow our parents to control our state
+    if (props.wireUpStateListeners) {
+        // Note: the things we're calling here have their own hooks, so we don't need to (and we're not allowed to)
+        // put this inside a useEffect().
+        props.wireUpStateListeners(setClosePending, setProgressState);
+    }
 
     //Note, originally this was just a function, closeIfNoError().
     // However that would be called before the errorEncountered had been updated.
@@ -27,80 +44,67 @@ export const ReaderPublishProgressDialog = () => {
             } else {
                 // set up for next time
                 setAccumulatedMessages("");
+                setInstructionMessage(undefined);
                 setErrorEncountered(false);
                 // close it
                 setProgressState(ProgressState.Closed);
+                setClosePending(false);
             }
         }
     }, [closePending]);
 
-    useWebSocketListenerForOneEvent(
-        "publish-android",
-        "publish/android/state",
-        e => {
-            switch (e.message) {
-                case "stopped":
-                    setClosePending(true);
-                    break;
-                case "UsbStarted":
-                    //TODO Localize
-                    setHeading("Sending via USB Cable");
-                    setProgressState(ProgressState.Serving);
-                    break;
-                case "ServingOnWifi":
-                    //TODO Localize
-                    setHeading("Sharing");
-                    setProgressState(ProgressState.Serving);
-                    break;
-                default:
-                    throw new Error(
-                        "Method Chooser does not understand the state: " +
-                            e.message
-                    );
-            }
-        }
-    );
-    useWebSocketListenerForOneEvent("publish-android", "message", e => {
-        const html = `<span class='${e.kind}'>${e.message}</span><br/>`;
-        if (e.id == "message") {
-            switch (e.kind) {
-                case "Error":
-                case "Warning":
-                    setErrorEncountered(true);
-                // deliberately fall through
-                case "Progress":
-                case "Instruction":
-                case "Note":
-                    setAccumulatedMessages(oldMessages => oldMessages + html);
-            }
-        }
-    });
-
     React.useEffect(() => {
         // we need to be ready to listen to progress messages from the server,
         // before we kick anything off on the server.
-        WebSocketManager.notifyReady("publish-android", () => {
+        WebSocketManager.notifyReady(props.webSocketClientContext, () => {
             // We agonized over the fact that "updatePreview" doesn't have anything to do with displaying progress.
             // It just so happens that 1) this is the first thing we do in this screen and 2) after it, we
             // need to do something to the state of the dialog.
             // But the alternative gets complicated too... the weirdness here is that we need to
             // do something (change the state of the dialog) when the postData's promise is satisfied.
             // (That is, when the preview construction is complete).
-            BloomApi.postData("publish/android/updatePreview", {}, () =>
+            BloomApi.postData(props.startApiEndpoint, {}, () =>
                 setClosePending(true)
             );
         });
     }, []);
 
+    useWebSocketListenerForOneEvent(
+        props.webSocketClientContext,
+        "message",
+        e => {
+            // // the epub maker
+            // if(progressState === ProgressState.Closed){
+            //     setProgressState(ProgressState.Working);
+            // }
+            const html = `<span class='${e.kind}'>${e.message}</span><br/>`;
+            if (e.id == "message") {
+                switch (e.kind) {
+                    case "Error":
+                    case "Warning":
+                        setErrorEncountered(true);
+                    // deliberately fall through
+                    case "Progress":
+
+                    case "Note":
+                        setAccumulatedMessages(
+                            oldMessages => oldMessages + html
+                        );
+                        break;
+                    case "Instruction":
+                        setInstructionMessage(e.message);
+                }
+            }
+        }
+    );
+
     return (
         <ProgressDialog
-            heading={heading}
+            heading={props.heading}
+            instruction={instructionMessage}
             messages={accumulatedMessages}
             progressState={progressState}
-            onUserStopped={() => {
-                BloomApi.postData("publish/android/usb/stop", {});
-                BloomApi.postData("publish/android/wifi/stop", {});
-            }}
+            onUserStopped={() => props.onUserStopped && props.onUserStopped()}
             onUserCanceled={() => {}}
             onUserClosed={() => {
                 setAccumulatedMessages("");

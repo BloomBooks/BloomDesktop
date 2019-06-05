@@ -45,10 +45,10 @@ storiesOf("Localizable Widgets/Checkbox", module)
 storiesOf("Localizable Widgets/MuiCheckbox", module)
     .add("off", () =>
         React.createElement(() => {
-            const [checked, setChecked] = useState<boolean | null>(false);
+            const [checked, setChecked] = useState<boolean | undefined>(false);
             return (
                 <MuiCheckbox
-                    english=" Click me"
+                    label=" Click me"
                     checked={checked}
                     onCheckChanged={newState => setChecked(newState)}
                     l10nKey="bogus"
@@ -58,10 +58,10 @@ storiesOf("Localizable Widgets/MuiCheckbox", module)
     )
     .add("on", () =>
         React.createElement(() => {
-            const [checked, setChecked] = useState<boolean | null>(true);
+            const [checked, setChecked] = useState<boolean | undefined>(true);
             return (
                 <MuiCheckbox
-                    english=" Click me"
+                    label=" Click me"
                     checked={checked}
                     onCheckChanged={newState => setChecked(newState)}
                     l10nKey="bogus"
@@ -71,10 +71,12 @@ storiesOf("Localizable Widgets/MuiCheckbox", module)
     )
     .add("indeterminate", () =>
         React.createElement(() => {
-            const [checked, setChecked] = useState<boolean | null>(null);
+            const [checked, setChecked] = useState<boolean | undefined>(
+                undefined
+            );
             return (
                 <MuiCheckbox
-                    english=" Click me"
+                    label=" Click me"
                     checked={checked}
                     tristate={true}
                     onCheckChanged={newState => setChecked(newState)}

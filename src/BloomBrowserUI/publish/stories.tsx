@@ -12,6 +12,10 @@ import { ProgressDialog, ProgressState } from "./commonPublish/ProgressDialog";
 import { loremIpsum } from "lorem-ipsum";
 import { withA11y } from "@storybook/addon-a11y";
 import { LibraryPreview } from "./LibraryPublish/LibraryPreview";
+import { EPUBPublishScreen } from "./ePUBPublish/ePUBPublishScreen";
+import BookMetadataDialog from "./metadata/BookMetadataDialog";
+import "./storiesApiMocks";
+import { AccessibilityCheckScreen } from "./accessibilityCheck/accessibilityCheckScreen";
 
 addDecorator(withA11y);
 
@@ -95,6 +99,11 @@ storiesOf("Publish/DeviceFrame", module)
         </DeviceAndControls>
     ));
 
-storiesOf("Publish/Reader", module).add("BRPublishScreen", () => (
+storiesOf("Publish/Bloom Reader", module).add("ReaderPublishScreen", () => (
     <ReaderPublishScreen />
 ));
+
+storiesOf("Publish/ePUB", module)
+    .add("EPUBPublishScreen", () => <EPUBPublishScreen />)
+    .add("Book Metadata Dialog", () => <BookMetadataDialog startOpen={true} />)
+    .add("AccessibilityCheckScreen", () => <AccessibilityCheckScreen />);

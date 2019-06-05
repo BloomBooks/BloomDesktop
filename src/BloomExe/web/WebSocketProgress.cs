@@ -139,10 +139,10 @@ namespace Bloom.web
 			return formatted;
 		}
 
-		public void MessageUsingTitle(string idSuffix, string message, string bookTitle, bool useL10nIdPrefix = true)
+		public void MessageUsingTitle(string idSuffix, string message, string bookTitle, MessageKind kind, bool useL10nIdPrefix = true)
 		{
 			var formatted = GetTitleMessage(idSuffix, message, bookTitle, useL10nIdPrefix);
-			MessageWithoutLocalizing(formatted);
+			MessageWithoutLocalizing(formatted, kind);
 		}
 
 		public string GetTitleMessage(string idSuffix, string message, string bookTitle, bool useL10nIdPrefix = true)

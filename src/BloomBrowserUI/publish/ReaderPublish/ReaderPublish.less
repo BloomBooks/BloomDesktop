@@ -6,14 +6,34 @@
         display: flex;
         flex-direction: row;
 
+        .column1 {
+            display: flex;
+            flex-direction: column;
+            // leave room for the image, wrap radios if translations are really long
+            max-width: calc(100% - 280px);
+            button {
+                // without this, it grows to the width of the column
+                align-self: flex-start;
+            }
+        }
         img {
             width: 200px;
-            margin-left: 50px;
+            margin-left: 30px;
+            object-fit: contain;
         }
     }
 
     .playIcon {
         height: 1.5em;
         margin-right: 10px;
+    }
+
+    // Reduce vertical spacing. We're trying to leave as much space as possible for the preview, on small screens.
+    // This has the problem that the hover shadow goes elliptical because
+    // the horizontal padding is larger, but if we reduce the horizontal padding, then the
+    // action (e.g. "Share") button isn't aligned. Good enough for now (JH).
+    .MuiRadio-root {
+        padding-top: 5px;
+        padding-bottom: 5px;
     }
 }

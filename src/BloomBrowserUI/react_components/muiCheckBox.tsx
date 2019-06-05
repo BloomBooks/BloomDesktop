@@ -5,21 +5,22 @@ import { useL10n } from "./l10nHooks";
 
 // wrap up the complex material-ui checkbox in something simple and make it handle tristate
 export const MuiCheckbox: React.FunctionComponent<{
-    english: string;
+    label: string;
     l10nKey: string;
     l10nComment?: string;
-    checked: boolean | null;
+    checked: boolean | undefined;
     tristate?: boolean;
     disabled?: boolean;
-    onCheckChanged: (v: boolean | null) => void;
+    alreadyLocalized?: boolean;
+    onCheckChanged: (v: boolean | undefined) => void;
 }> = props => {
-    const [previousTriState, setPreviousTriState] = useState<boolean | null>(
-        props.checked
-    );
+    const [previousTriState, setPreviousTriState] = useState<
+        boolean | undefined
+    >(props.checked);
 
     const localizedLabel = useL10n(
-        props.english,
-        props.l10nKey,
+        props.label,
+        props.alreadyLocalized ? null : props.l10nKey,
         props.l10nComment
     );
 
@@ -35,13 +36,13 @@ export const MuiCheckbox: React.FunctionComponent<{
                         if (!props.tristate) {
                             props.onCheckChanged(newState);
                         } else {
-                            let next: boolean | null = false;
+                            let next: boolean | undefined = false;
                             switch (previousTriState) {
                                 case null:
                                     next = false;
                                     break;
                                 case true:
-                                    next = null;
+                                    next = undefined;
                                     break;
                                 case false:
                                     next = true;

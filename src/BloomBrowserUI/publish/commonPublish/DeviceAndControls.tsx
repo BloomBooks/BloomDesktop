@@ -14,6 +14,7 @@ export const DeviceAndControls: React.FunctionComponent<{
     defaultLandscape: boolean;
     canRotate: boolean;
     url: string;
+    iframeClass?: string;
 }> = props => {
     const [landscape, setLandscape] = useState(props.defaultLandscape);
     useEffect(() => {
@@ -28,7 +29,11 @@ export const DeviceAndControls: React.FunctionComponent<{
                     (landscape ? "landscape" : "portrait")
                 }
             >
-                <iframe title="book preview" src={props.url} />
+                <iframe
+                    title="book preview"
+                    src={props.url}
+                    className={props.iframeClass}
+                />
             </div>
             {props.canRotate && (
                 <>
