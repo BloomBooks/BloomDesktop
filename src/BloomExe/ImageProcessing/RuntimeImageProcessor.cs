@@ -102,7 +102,7 @@ namespace Bloom.ImageProcessing
 			}
 		}
 
-		public string GetPathToResizedImage(string originalPath, bool getThumbnail = false)
+		public string GetPathToResizedImage(string originalPath, bool getThumbnail = false, bool makeTransparent = false)
 		{
 			//don't mess with Bloom UI images
 			if (new[] {"/img/", "placeHolder", "Button"}.Any(s => originalPath.Contains(s)))
@@ -143,21 +143,23 @@ namespace Bloom.ImageProcessing
 					Directory.CreateDirectory(Path.GetDirectoryName(pathToProcessedImage));
 
 				// BL-1112: images not loading in page thumbnails
-				bool success;
+				var success = true;
+				var wantOriginal = !getThumbnail && !makeTransparent;
 				if (getThumbnail)
 				{
 					// The HTML div that contains the thumbnails is 80 pixels wide, so make the thumbnails 80 pixels wide
 					success = GenerateThumbnail(originalPath, pathToProcessedImage, 80);
 				}
-				else
+				else if (makeTransparent)
 				{
 					success = MakePngBackgroundTransparent(originalPath, pathToProcessedImage);
 				}
 
-				if (!success)
+				if (wantOriginal || !success)
 				{
 					// add this image to the do-not-process list so we don't waste time doing this again
-					_imageFilesToReturnUnprocessed.TryAdd(cacheFileName, true);
+					if (!success)
+						_imageFilesToReturnUnprocessed.TryAdd(cacheFileName, true);
 					return originalPath;
 				}
 

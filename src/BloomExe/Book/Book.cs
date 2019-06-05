@@ -2991,6 +2991,8 @@ namespace Bloom.Book
 
 		public string GetCoverImagePath()
 		{
+			if (_storage == null)
+				return null;	// can happen in tests
 			// This first branch covers the currently obsolete approach to images using background-image.
 			// In that approach the data-book attribute is on the imageContainer.
 			// We also have to check for @style here, because if we don't check something beyond the data-book attribute, this xpath
