@@ -17,6 +17,9 @@ export const PublishProgressDialog: React.FunctionComponent<{
     ) => void;
 }> = props => {
     const [closePending, setClosePending] = useState(false);
+    const [instructionMessage, setInstructionMessage] = useState<
+        string | undefined
+    >(undefined);
     const [accumulatedMessages, setAccumulatedMessages] = useState("");
     const [progressState, setProgressState] = useState(ProgressState.Working);
     const [errorEncountered, setErrorEncountered] = useState(false);
@@ -41,6 +44,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
             } else {
                 // set up for next time
                 setAccumulatedMessages("");
+                setInstructionMessage(undefined);
                 setErrorEncountered(false);
                 // close it
                 setProgressState(ProgressState.Closed);
@@ -81,11 +85,14 @@ export const PublishProgressDialog: React.FunctionComponent<{
                         setErrorEncountered(true);
                     // deliberately fall through
                     case "Progress":
-                    case "Instruction":
+
                     case "Note":
                         setAccumulatedMessages(
                             oldMessages => oldMessages + html
                         );
+                        break;
+                    case "Instruction":
+                        setInstructionMessage(e.message);
                 }
             }
         }
@@ -94,6 +101,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
     return (
         <ProgressDialog
             heading={props.heading}
+            instruction={instructionMessage}
             messages={accumulatedMessages}
             progressState={progressState}
             onUserStopped={() => props.onUserStopped && props.onUserStopped()}

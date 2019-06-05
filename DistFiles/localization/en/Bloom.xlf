@@ -2770,6 +2770,16 @@
         <note>ID: PublishTab.AdobeEulaTitle</note>
         <note>dialog title for license agreement</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Common.Publishing">
+        <source xml:lang="en">Publishing</source>
+        <note>This is shown while Bloom is sharing a book over wifi, over a usb cable, or uploading. </note>
+        <note>ID: PublishTab.Common.Publishing</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Common.StopPublishing">
+        <source xml:lang="en">Stop Publishing</source>
+        <note>This is shown while Bloom is sharing a book over wifi or over a usb cable. </note>
+        <note>ID: PublishTab.Common.StopPublishing</note>
+      </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
         <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.NotInstalled</note>

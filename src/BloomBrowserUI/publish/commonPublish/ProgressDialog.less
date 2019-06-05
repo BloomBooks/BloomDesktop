@@ -1,4 +1,8 @@
-.progressDialog {
+@import "../../bloomUI.less";
+
+@paddingAroundDialog: 24px;
+
+.progress-dialog {
     .Error {
         color: red;
     }
@@ -6,26 +10,47 @@
         color: orange;
     }
     .Note {
-        color: blue;
-    }
-    .Instruction {
-        color: blue;
+        color: @bloom-blue;
+        font-weight: bold;
     }
     .Progress {
         color: darkslategray;
     }
 
     .MuiDialogContent-root {
+        display: flex;
+        flex-direction: column;
+    }
+    .MuiDialogTitle-root {
+        padding-bottom: 0;
+    }
+    .MuiDialogActions-root {
+        padding-left: @paddingAroundDialog;
+        padding-right: @paddingAroundDialog;
+    }
+    .progress-messages-typography {
+        flex-grow: 1;
         overflow-y: scroll;
+        background-color: @DialogTopBottomBar;
+    }
+    .progress-messages {
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-top: 1em;
+        height: 100%;
+    }
+    .instruction {
+        margin-bottom: 1em;
     }
 
     .circle-progress {
         position: absolute;
         right: 0;
-        color: lightgray;
+        color: @bloom-blue; // lightgray;
         margin-top: 10px;
-        margin-right: 10px;
+        margin-right: @paddingAroundDialog;
         width: 15px;
         height: 10px;
+        padding: 10px; // makes it smaller
     }
 }

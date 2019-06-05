@@ -77,8 +77,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         }
     );
     const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
-    const usbWorking = useL10n("Progress", "Common.Progress");
-    const wifiWorking = useL10n("Progress", "Common.Progress");
+    const usbWorking = useL10n("Publishing", "PublishTab.Common.Publishing");
+    const wifiWorking = useL10n("Publishing", "PublishTab.Common.Publishing");
     const wireUpStateListeners = (
         setClosePending: (boolean) => void,
         setProgressState: (ProgressState) => void
