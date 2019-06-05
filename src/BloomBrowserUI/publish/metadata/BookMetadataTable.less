@@ -1,8 +1,100 @@
-.bookMetadataTable {
-    max-height: 700px; // allows/enforces scrolling of content if it gets too tall
-    // React-table will prevent a position:absolute dropdown from growing larger than the cell we give it.
-    // This is needed by the subject chooser (and any future drop-downs)
-    .rt-td {
-        overflow: visible !important; // allow Select to drop down
+@fieldVerticalPadding: 0;
+
+.bookMetadataDialog {
+    .bookMetadataTable {
+        max-height: 700px; // allows/enforces scrolling of content if it gets too tall
+        // React-table will prevent a position:absolute dropdown from growing larger than the cell we give it.
+        // This is needed by the subject chooser (and any future drop-downs)
+        .rt-td {
+            overflow: visible !important; // allow Select to drop down
+        }
+
+        .MuiFormControl-root {
+            margin-top: 0;
+        }
+        .checkbox-list {
+            display: flex;
+            flex-direction: column;
+            .MuiButtonBase-root {
+                padding-top: 0;
+                padding-bottom: 0;
+            }
+        }
+        border: none;
+        a.whatsthis {
+            text-align: right;
+            text-decoration: none;
+            font-size: 9px;
+            &:focus {
+                outline: 0;
+            }
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+        .rt-tr-group {
+            border-bottom: none;
+            margin-bottom: 10px;
+        }
+        .rt-td {
+            border-right: none;
+        }
+        width: 500px;
+        .rt-thead.-header {
+            display: none;
+        }
+        .rt-td.label {
+            padding-top: @fieldVerticalPadding;
+            padding-bottom: @fieldVerticalPadding;
+            text-align: right;
+            margin-right: 10px;
+        }
+        .rt-td.value {
+            // Enhance in the future: if this dialog actually gets used much, someone somewhere
+            // will need it to be a different font in order to show the title or the author's name.
+            // I (JH) am consciously choosing to not put the effort right now into building an API
+            // endpoint for that and then calling and setting it in the tsx file.
+            // Changed my mind on this... looks really ugly. Let's see how we do with just the system's font.
+            // font-family: "Andika New Basic";
+
+            // Some cells, we want grey (readonly), some are white (editable).
+            // Since we don't have a way of putting a class on the rt-dt that
+            // is the container of the cell, if it has padding, then both kinds
+            // of cells will have the same background color surrounding the text or textarea.
+            // So we take out the padding of the cell and leave it to the contents to add back
+            // that space as padding.
+            padding: 0;
+
+            & > textarea {
+                height: 2em;
+                width: 100%;
+                border: none;
+                resize: none;
+                padding-top: @fieldVerticalPadding;
+                padding-bottom: @fieldVerticalPadding;
+            }
+        }
+        // cover art
+        img {
+            height: 70px;
+        }
+        .loading {
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 2em;
+        }
+
+        .a11y-level-chooser {
+            padding: 0 !important;
+            margin-top: @fieldVerticalPadding;
+            margin-bottom: @fieldVerticalPadding;
+            & > div {
+                background-color: white;
+            }
+        }
+    }
+
+    #okButton {
+        margin-right: 15px;
     }
 }

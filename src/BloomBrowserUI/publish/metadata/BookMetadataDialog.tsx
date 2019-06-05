@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactModal from "react-modal";
+import Dialog from "@material-ui/core/Dialog";
 import "./BookMetadataDialog.less";
 import CloseOnEscape from "react-close-on-escape";
 import BookMetadataTable from "./BookMetadataTable";
@@ -8,7 +8,9 @@ import * as mobx from "mobx";
 import * as mobxReact from "mobx-react";
 import BloomButton from "../../react_components/bloomButton";
 import { Div } from "../../react_components/l10nComponents";
-
+import { useL10n } from "../../react_components/l10nHooks";
+import { DialogTitle, DialogActions, DialogContent } from "@material-ui/core";
+import { String } from "../../react_components/l10nComponents";
 // tslint:disable-next-line:no-empty-interface
 interface IState {
     isOpen: boolean;
@@ -17,7 +19,10 @@ interface IState {
 // @observer means mobx will automatically track which observables this component uses
 // in its render() function, and then re-render when they change.
 @mobxReact.observer
-export default class BookMetadataDialog extends React.Component<{}, IState> {
+export default class BookMetadataDialog extends React.Component<
+    { startOpen?: boolean },
+    IState
+> {
     private static singleton: BookMetadataDialog;
     public readonly state: IState = { isOpen: false };
 
@@ -31,6 +36,11 @@ export default class BookMetadataDialog extends React.Component<{}, IState> {
     constructor(props) {
         super(props);
         BookMetadataDialog.singleton = this;
+    }
+    public componentDidMount() {
+        if (this.props.startOpen) {
+            BookMetadataDialog.show();
+        }
     }
 
     private handleCloseModal(doSave: boolean) {
@@ -59,56 +69,54 @@ export default class BookMetadataDialog extends React.Component<{}, IState> {
                     this.handleCloseModal(false);
                 }}
             >
-                <ReactModal
-                    ariaHideApp={false} //we're not trying to make Bloom work with screen readers
-                    className="bookMetadataDialog"
-                    isOpen={this.state.isOpen}
-                    shouldCloseOnOverlayClick={false}
-                    onRequestClose={() => this.handleCloseModal(false)}
-                >
-                    <Div
-                        className={"dialogTitle"}
-                        l10nKey="PublishTab.BookMetadata"
-                    >
-                        Book Metadata
-                    </Div>
-                    <div className="dialogContent">
+                <Dialog className="bookMetadataDialog" open={this.state.isOpen}>
+                    <DialogTitle>
+                        <String
+                            l10nKey="PublishTab.BookMetadata"
+                            l10nComment="title of metadata dialog box"
+                        >
+                            Book Metadata
+                        </String>
+                    </DialogTitle>
+                    <DialogContent>
                         <BookMetadataTable
                             metadata={this.metadata}
                             translatedControlStrings={
                                 this.translatedControlStrings
                             }
                         />
-                        <div className={"bottomButtonRow"}>
-                            <BloomButton
-                                id="helpButton"
-                                enabled={true}
-                                l10nKey="Common.Help"
-                                clickApiEndpoint="help/User_Interface/Dialog_boxes/Book_Metadata_dialog_box.htm"
-                                hasText={true}
-                            >
-                                Help
-                            </BloomButton>
-                            <BloomButton
-                                id="okButton"
-                                enabled={true}
-                                l10nKey="Common.OK"
-                                hasText={true}
-                                onClick={() => this.handleCloseModal(true)}
-                            >
-                                OK
-                            </BloomButton>
-                            <BloomButton
-                                enabled={true}
-                                l10nKey="Common.Cancel"
-                                hasText={true}
-                                onClick={() => this.handleCloseModal(false)}
-                            >
-                                Cancel
-                            </BloomButton>
-                        </div>
-                    </div>
-                </ReactModal>
+                    </DialogContent>
+                    <DialogActions>
+                        <BloomButton
+                            id="helpButton"
+                            variant="outlined"
+                            enabled={true}
+                            l10nKey="Common.Help"
+                            clickApiEndpoint="help/User_Interface/Dialog_boxes/Book_Metadata_dialog_box.htm"
+                            hasText={true}
+                        >
+                            Help
+                        </BloomButton>
+                        <BloomButton
+                            id="okButton"
+                            enabled={true}
+                            l10nKey="Common.OK"
+                            hasText={true}
+                            onClick={() => this.handleCloseModal(true)}
+                        >
+                            OK
+                        </BloomButton>
+                        <BloomButton
+                            enabled={true}
+                            variant="outlined"
+                            l10nKey="Common.Cancel"
+                            hasText={true}
+                            onClick={() => this.handleCloseModal(false)}
+                        >
+                            Cancel
+                        </BloomButton>
+                    </DialogActions>
+                </Dialog>
             </CloseOnEscape>
         );
     }

@@ -2,6 +2,7 @@ import * as React from "react";
 import * as mobxReact from "mobx-react";
 import { Checkbox } from "./checkbox";
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
+import { MuiCheckbox } from "./muiCheckBox";
 
 interface IProps extends ILocalizationProps {
     list: string;
@@ -10,6 +11,7 @@ interface IProps extends ILocalizationProps {
     // supply this for a tristate list, where off must be represented by an item in the list
     // and indeterminate is represented by a total absence from the list.
     tristateItemOffName?: string;
+    label: string;
 }
 
 // A StringListCheckbox is a control that can add and remove a value from a string of comma-separated values.
@@ -23,7 +25,7 @@ export class StringListCheckbox extends LocalizableElement<IProps, {}> {
         super(props);
     }
 
-    private getNewList(buttonState: boolean): string {
+    private getNewList(buttonState: boolean | undefined): string {
         const parts: string[] =
             this.props.list.trim().length > 0 ? this.props.list.split(",") : [];
 
@@ -69,17 +71,16 @@ export class StringListCheckbox extends LocalizableElement<IProps, {}> {
     public render() {
         const checkStatus = this.getCheckStatus();
         return (
-            <Checkbox
-                tristate={this.props.tristateItemOffName !== undefined}
+            <MuiCheckbox
+                tristate={true} //this.props.tristateItemOffName !== undefined}
                 l10nKey={this.props.l10nKey}
                 alreadyLocalized={this.props.alreadyLocalized}
                 checked={checkStatus}
                 onCheckChanged={checked => {
                     this.props.onChange(this.getNewList(checked));
                 }}
-            >
-                {this.props.children}
-            </Checkbox>
+                label={this.props.label}
+            />
         );
     }
 }

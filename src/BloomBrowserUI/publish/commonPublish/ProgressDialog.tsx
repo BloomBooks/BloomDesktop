@@ -9,6 +9,8 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogContent from "@material-ui/core/DialogContent";
 import { useTheme } from "@material-ui/styles";
 import "./ProgressDialog.less";
+import { CircularProgress, LinearProgress } from "@material-ui/core";
+import BloomButton from "../../react_components/bloomButton";
 
 export enum ProgressState {
     Closed,
@@ -19,6 +21,7 @@ export enum ProgressState {
 
 export const ProgressDialog: React.FunctionComponent<{
     heading?: string;
+    instruction?: string;
     messages: string;
     progressState: ProgressState;
     errorEncountered?: boolean; // do something visual to indicate there was a problem
@@ -37,7 +40,7 @@ export const ProgressDialog: React.FunctionComponent<{
             { headers: { "Content-Type": "text/plain" } }
         );
     };
-    //React.useEffect(() => alert("constructing ProgressDialog"), []);
+
     const somethingStillGoing =
         props.progressState == ProgressState.Working ||
         props.progressState == ProgressState.Serving;
@@ -54,7 +57,7 @@ export const ProgressDialog: React.FunctionComponent<{
 
     return (
         <Dialog
-            className="progressDialog"
+            className="progress-dialog"
             open={props.progressState !== ProgressState.Closed}
             onBackdropClick={() => {
                 // allow just clicking out of the dialog to close, unless we're still working,
@@ -71,27 +74,36 @@ export const ProgressDialog: React.FunctionComponent<{
                               backgroundColor: (theme as any).palette.warning
                                   .main
                           }
-                        : {}
+                        : {
+                              backgroundColor: "white"
+                          }
                 }
             >
                 {props.heading || "Progress"}
             </DialogTitle>
+            <CircularProgress className={"circle-progress"} />
             <DialogContent style={{ width: "500px", height: "300px" }}>
-                <Typography>
+                <Typography className="instruction">
+                    {props.instruction || ""}
+                </Typography>
+
+                <Typography className="progress-messages-typography">
                     <div
+                        className="progress-messages"
                         ref={messagesDivRef}
                         dangerouslySetInnerHTML={{
                             __html: props.messages
                         }}
                     />
+                    <div ref={messageEndRef} />
                 </Typography>
-                <div ref={messageEndRef} />
             </DialogContent>
             <DialogActions>
-                {somethingStillGoing || (
+                {/* This && "" is needed because there's something about DialogActions that choaks if given a `false` in its children */}
+                {(somethingStillGoing && "") || (
                     <Button
                         onClick={() => onCopy()}
-                        color="secondary"
+                        color="primary"
                         style={{ marginRight: "auto" }}
                     >
                         Copy to Clipboard
@@ -102,26 +114,27 @@ export const ProgressDialog: React.FunctionComponent<{
                     switch (props.progressState) {
                         case ProgressState.Serving:
                             return (
-                                <Button
+                                <BloomButton
+                                    enabled={true}
+                                    l10nKey="PublishTab.Common.StopPublishing"
+                                    hasText={true}
                                     onClick={props.onUserStopped}
-                                    color="primary"
-                                    variant="contained"
                                 >
-                                    Stop Sharing
-                                </Button>
+                                    Stop Publishing
+                                </BloomButton>
                             );
 
                         case ProgressState.Working:
                             return null;
-                        /* eventually we'll want this, but at the moment, we only use this state
-                                    for making previews, and in that state Bloom doesn't have a way of
-                                    cancelling.
-                                <Button
-                                    onClick={props.onUserCanceled}
-                                    color="primary"
-                                >
-                                    Cancel
-                                </Button>*/
+                        //  eventually we'll want this, but at the moment, we only use this state
+                        //             for making previews, and in that state Bloom doesn't have a way of
+                        //             cancelling.
+                        //         <Button
+                        //             onClick={props.onUserCanceled}
+                        //             color="primary"
+                        //         >
+                        //             Cancel
+                        //         </Button>
                         case ProgressState.Done:
                             return (
                                 <Button

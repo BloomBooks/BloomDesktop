@@ -7,7 +7,7 @@
 @speaker-length : 80px; // prettier extension changes speakerLength to speakerlength. So weird.
 @speakerHeight: 5px;
 
-@scale: 20;
+@scale: 23;
 @buttonScale: 0.2;
 // gets filled by the components children, if there are any
 
@@ -103,5 +103,14 @@
         background-color: @phoneFeaturesColor;
         content: "";
         position: absolute;
+    }
+
+    // Make readium think we have a larger screen area
+    .readium {
+        width: 200% !important;
+        height: 200% !important;
+        flex-shrink: 0; // without this, the height doesn't grow
+        transform-origin: top left;
+        transform: scale(0.5);
     }
 }

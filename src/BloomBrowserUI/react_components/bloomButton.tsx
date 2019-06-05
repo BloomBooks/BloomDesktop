@@ -13,6 +13,7 @@ export interface IButtonProps extends ILocalizationProps {
     clickApiEndpoint?: string;
     onClick?: () => void;
     transparent?: boolean;
+    variant?: "text" | "outlined" | "contained" | undefined; // see https://material-ui.com/api/button/
     mightNavigate?: boolean; // true if the post of clickEndpoint might navigate to a new page.
     hasText: boolean; // allows us to define buttons with only images and no text.
     // If neither enabled or disabled image file is provided, no image will show.
@@ -71,7 +72,11 @@ export default class BloomButton extends LocalizableElement<
             <button {...commonProps}>{commonChildren}</button>
         ) : (
             // if not transparent, then we can use Material-ui
-            <Button {...commonProps} variant="contained" color="primary">
+            <Button
+                {...commonProps}
+                variant={this.props.variant || "contained"}
+                color="primary"
+            >
                 {commonChildren}
             </Button>
         );

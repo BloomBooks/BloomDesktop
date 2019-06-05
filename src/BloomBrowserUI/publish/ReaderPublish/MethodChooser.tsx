@@ -28,31 +28,32 @@ export const MethodChooser: React.FunctionComponent = () => {
     return (
         <>
             <div className={"methodChooserRoot"}>
-                <RadioGroup
-                    value={method}
-                    onChange={m => setMethod(m)}
-                    choices={{
-                        wifi: useL10n(
-                            "Share over Wi-Fi",
-                            "PublishTab.Android.ChooseWifi"
-                        ),
-                        file: useL10n(
-                            "Save Bloom Reader File",
-                            "PublishTab.Android.ChooseFile"
-                        ),
-                        usb: useL10n(
-                            "Send over USB Cable",
-                            "PublishTab.Android.ChooseUSB"
-                        )
-                    }}
-                />
+                <div className={"column1"}>
+                    <RadioGroup
+                        value={method}
+                        onChange={m => setMethod(m)}
+                        choices={{
+                            wifi: useL10n(
+                                "Share over Wi-Fi",
+                                "PublishTab.Android.ChooseWifi"
+                            ),
+                            file: useL10n(
+                                "Save Bloom Reader File",
+                                "PublishTab.Android.ChooseFile"
+                            ),
+                            usb: useL10n(
+                                "Send over USB Cable",
+                                "PublishTab.Android.ChooseUSB"
+                            )
+                        }}
+                    />
+                    {getStartButton(method)}
+                </div>
                 <img
                     src={methodImage}
                     alt="An image that just illustrates the currently selected publishing method."
                 />
             </div>
-
-            {getStartButton(method)}
         </>
     );
 };

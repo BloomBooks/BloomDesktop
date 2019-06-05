@@ -17,12 +17,17 @@ import ReactDOM = require("react-dom");
 import { ThemeProvider } from "@material-ui/styles";
 import theme from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
-import { useWebSocketListenerForOneMessage } from "../../utils/WebSocketManager";
-import { ReaderPublishProgressDialog } from "./ReaderPublishProgressDialog";
+import {
+    useWebSocketListenerForOneMessage,
+    useWebSocketListenerForOneEvent
+} from "../../utils/WebSocketManager";
 import { BloomApi } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import Link from "../../react_components/link";
+import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
+import { useL10n } from "../../react_components/l10nHooks";
+import { ProgressState } from "../commonPublish/ProgressDialog";
 
 export const ReaderPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -44,6 +49,9 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     onReset: () => void;
 }> = props => {
     const inStorybookMode = useContext(StorybookContext);
+    const [heading, setHeading] = useState(
+        useL10n("Creating Digital Book", "PublishTab.Android.Creating")
+    );
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
             ? window.location.protocol +
@@ -69,7 +77,37 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         }
     );
     const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
-
+    const usbWorking = useL10n("Publishing", "PublishTab.Common.Publishing");
+    const wifiWorking = useL10n("Publishing", "PublishTab.Common.Publishing");
+    const wireUpStateListeners = (
+        setClosePending: (boolean) => void,
+        setProgressState: (ProgressState) => void
+    ) => {
+        useWebSocketListenerForOneEvent(
+            "publish-android",
+            "publish/android/state",
+            e => {
+                switch (e.message) {
+                    case "stopped":
+                        setClosePending(true);
+                        break;
+                    case "UsbStarted":
+                        setHeading(usbWorking);
+                        setProgressState(ProgressState.Serving);
+                        break;
+                    case "ServingOnWifi":
+                        setHeading(wifiWorking);
+                        setProgressState(ProgressState.Serving);
+                        break;
+                    default:
+                        throw new Error(
+                            "Method Chooser does not understand the state: " +
+                                e.message
+                        );
+                }
+            }
+        );
+    };
     return (
         <>
             <BasePublishScreen className="ReaderPublishScreen">
@@ -133,7 +171,18 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                 </SettingsPanel>
             </BasePublishScreen>
             {/* In storybook, there's no bloom backend to run the progress dialog */}
-            {inStorybookMode || <ReaderPublishProgressDialog />}
+            {inStorybookMode || (
+                <PublishProgressDialog
+                    heading={heading}
+                    startApiEndpoint="publish/android/updatePreview"
+                    webSocketClientContext="publish-android"
+                    wireUpStateListeners={wireUpStateListeners}
+                    onUserStopped={() => {
+                        BloomApi.postData("publish/android/usb/stop", {});
+                        BloomApi.postData("publish/android/wifi/stop", {});
+                    }}
+                />
+            )}
         </>
     );
 };
