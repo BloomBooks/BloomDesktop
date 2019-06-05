@@ -78,20 +78,20 @@ cd -
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build/", "MSBuild.Community.Tasks.Targets"=>"build/"}
-# [1] build: BloomPlayer-Master-Continuous (BPContinuous)
-#     project: BloomPlayer
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=BPContinuous
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"*.*"=>"DistFiles/"}
-#     VCS: https://github.com/BloomBooks/BloomPlayer [refs/heads/master]
-# [2] build: YouTrackSharp (Bloom_YouTrackSharp)
+# [1] build: YouTrackSharp (Bloom_YouTrackSharp)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_YouTrackSharp
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"bin/YouTrackSharp.dll*"=>"lib/dotnet", "bin/YouTrackSharp.pdb"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/YouTrackSharp.git [LinuxCompatible]
+# [2] build: BloomPlayer-Master-Continuous (BPContinuous)
+#     project: BloomPlayer
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=BPContinuous
+#     clean: false
+#     revision: latest.lastSuccessful
+#     paths: {"*.*"=>"DistFiles/"}
+#     VCS: https://github.com/BloomBooks/BloomPlayer [refs/heads/master]
 # [3] build: Bloom Help 4.6 (Bloom_Help_BloomHelp46)
 #     project: Help
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp46
@@ -112,13 +112,13 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/geckofxHtmlToPdf [refs/heads/master]
-# [6] build: L10NSharp xliff Mono continuous (L10NSharpXliffMonoContinuous)
+# [6] build: L10NSharp master Mono continuous (L10NSharp_L10NSharpMasterMonoContinuous)
 #     project: L10NSharp
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=L10NSharpXliffMonoContinuous
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=L10NSharp_L10NSharpMasterMonoContinuous
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"L10NSharp.dll*"=>"lib/dotnet/", "CheckOrFixXliff.exe*"=>"lib/dotnet/"}
-#     VCS: https://github.com/sillsdev/l10nsharp [xliff]
+#     VCS: https://github.com/sillsdev/l10nsharp [master]
 # [7] build: PdfDroplet-Linux-Dev-Continuous (bt344)
 #     project: PdfDroplet
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt344
@@ -161,20 +161,19 @@ mkdir -p ../lib/dotnet/
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
-copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/latest.lastSuccessful/bloomPagePlayer.js ../DistFiles/bloomPagePlayer.js
-copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/latest.lastSuccessful/bloomPlayer.js ../DistFiles/bloomPlayer.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.dll ../lib/dotnet/YouTrackSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.pdb ../lib/dotnet/YouTrackSharp.pdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/latest.lastSuccessful/bloomPagePlayer.js ../DistFiles/bloomPagePlayer.js
+copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/latest.lastSuccessful/bloomPlayer.js ../DistFiles/bloomPlayer.js
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp46/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/latest.lastSuccessful/GeckofxHtmlToPdf.exe.config ../lib/dotnet/GeckofxHtmlToPdf.exe.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharpXliffMonoContinuous/latest.lastSuccessful/L10NSharp.dll ../lib/dotnet/L10NSharp.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharpXliffMonoContinuous/latest.lastSuccessful/L10NSharp.dll.mdb ../lib/dotnet/L10NSharp.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharpXliffMonoContinuous/latest.lastSuccessful/CheckOrFixXliff.exe ../lib/dotnet/CheckOrFixXliff.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharpXliffMonoContinuous/latest.lastSuccessful/CheckOrFixXliff.exe.config ../lib/dotnet/CheckOrFixXliff.exe.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharpXliffMonoContinuous/latest.lastSuccessful/CheckOrFixXliff.exe.mdb ../lib/dotnet/CheckOrFixXliff.exe.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterMonoContinuous/latest.lastSuccessful/L10NSharp.dll ../lib/dotnet/L10NSharp.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterMonoContinuous/latest.lastSuccessful/L10NSharp.dll.config ../lib/dotnet/L10NSharp.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterMonoContinuous/latest.lastSuccessful/CheckOrFixXliff.exe ../lib/dotnet/CheckOrFixXliff.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterMonoContinuous/latest.lastSuccessful/CheckOrFixXliff.exe.config ../lib/dotnet/CheckOrFixXliff.exe.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt344/latest.lastSuccessful/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt344/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/latest.lastSuccessful/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
