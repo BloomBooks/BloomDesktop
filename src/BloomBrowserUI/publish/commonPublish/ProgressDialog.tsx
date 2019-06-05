@@ -9,7 +9,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogContent from "@material-ui/core/DialogContent";
 import { useTheme } from "@material-ui/styles";
 import "./ProgressDialog.less";
-import { CircularProgress, LinearProgress } from "@material-ui/core";
+import { CircularProgress } from "@material-ui/core";
 import BloomButton from "../../react_components/bloomButton";
 
 export enum ProgressState {

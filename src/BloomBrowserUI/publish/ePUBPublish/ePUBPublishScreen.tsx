@@ -46,6 +46,8 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
     onReset: () => void;
 }> = () => {
     const inStorybookMode = useContext(StorybookContext);
+    const [closePending, setClosePending] = useState(false);
+    const [progressState, setProgressState] = useState(ProgressState.Working);
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
             ? window.location.protocol +
@@ -55,30 +57,21 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloomd
     );
 
-    const wireUpStateListeners = (
-        setClosePending: (boolean) => void,
-        setProgressState: (ProgressState) => void
-    ) => {
-        useWebSocketListenerForOneEvent(
-            "publish-epub",
-            "startingEbookCreation",
-            e => {
-                setProgressState(ProgressState.Working);
-            }
-        );
+    useWebSocketListenerForOneEvent(
+        "publish-epub",
+        "startingEbookCreation",
+        e => {
+            setProgressState(ProgressState.Working);
+        }
+    );
 
-        // The c# api responds to changes of settings by auto-starting a new epub build. When
-        // it is done, it calls this (but actually the same url, alas).
-        useWebSocketListenerForOneMessage(
-            "publish-epub",
-            "newEpubReady",
-            url => {
-                // add a random component so that react will reload the iframe
-                setBookUrl(url + "&random=" + Math.random().toString());
-                setClosePending(true);
-            }
-        );
-    };
+    // The c# api responds to changes of settings by auto-starting a new epub build. When
+    // it is done, it calls this (but actually the same url, alas).
+    useWebSocketListenerForOneMessage("publish-epub", "newEpubReady", url => {
+        // add a random component so that react will reload the iframe
+        setBookUrl(url + "&random=" + Math.random().toString());
+        setClosePending(true);
+    });
 
     return (
         <>
@@ -121,7 +114,10 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                 heading={useL10n("Creating ePUB", "PublishTab.Epub.Creating")}
                 webSocketClientContext="publish-epub"
                 startApiEndpoint="publish/epub/updatePreview"
-                wireUpStateListeners={wireUpStateListeners}
+                progressState={progressState}
+                setProgressState={setProgressState}
+                closePending={closePending}
+                setClosePending={setClosePending}
             />
             <BookMetadataDialog />
         </>

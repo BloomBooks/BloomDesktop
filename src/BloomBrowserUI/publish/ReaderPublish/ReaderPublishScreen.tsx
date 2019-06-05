@@ -52,6 +52,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     const [heading, setHeading] = useState(
         useL10n("Creating Digital Book", "PublishTab.Android.Creating")
     );
+    const [closePending, setClosePending] = useState(false);
+    const [progressState, setProgressState] = useState(ProgressState.Working);
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
             ? window.location.protocol +
@@ -79,35 +81,34 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
     const usbWorking = useL10n("Publishing", "PublishTab.Common.Publishing");
     const wifiWorking = useL10n("Publishing", "PublishTab.Common.Publishing");
-    const wireUpStateListeners = (
-        setClosePending: (boolean) => void,
-        setProgressState: (ProgressState) => void
-    ) => {
-        useWebSocketListenerForOneEvent(
-            "publish-android",
-            "publish/android/state",
-            e => {
-                switch (e.message) {
-                    case "stopped":
-                        setClosePending(true);
-                        break;
-                    case "UsbStarted":
-                        setHeading(usbWorking);
-                        setProgressState(ProgressState.Serving);
-                        break;
-                    case "ServingOnWifi":
-                        setHeading(wifiWorking);
-                        setProgressState(ProgressState.Serving);
-                        break;
-                    default:
-                        throw new Error(
-                            "Method Chooser does not understand the state: " +
-                                e.message
-                        );
-                }
+
+    useWebSocketListenerForOneEvent(
+        "publish-android",
+        "publish/android/state",
+        e => {
+            switch (e.message) {
+                case "stopped":
+                    setClosePending(true);
+                    break;
+                case "UsbStarted":
+                    setClosePending(false);
+                    setHeading(usbWorking);
+                    setProgressState(ProgressState.Serving);
+                    break;
+                case "ServingOnWifi":
+                    setClosePending(false);
+                    setHeading(wifiWorking);
+                    setProgressState(ProgressState.Serving);
+                    break;
+                default:
+                    throw new Error(
+                        "Method Chooser does not understand the state: " +
+                            e.message
+                    );
             }
-        );
-    };
+        }
+    );
+
     return (
         <>
             <BasePublishScreen className="ReaderPublishScreen">
@@ -176,10 +177,14 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     heading={heading}
                     startApiEndpoint="publish/android/updatePreview"
                     webSocketClientContext="publish-android"
-                    wireUpStateListeners={wireUpStateListeners}
+                    progressState={progressState}
+                    setProgressState={setProgressState}
+                    closePending={closePending}
+                    setClosePending={setClosePending}
                     onUserStopped={() => {
                         BloomApi.postData("publish/android/usb/stop", {});
                         BloomApi.postData("publish/android/wifi/stop", {});
+                        setClosePending(true);
                     }}
                 />
             )}

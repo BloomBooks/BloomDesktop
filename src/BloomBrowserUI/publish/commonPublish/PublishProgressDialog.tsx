@@ -11,34 +11,26 @@ export const PublishProgressDialog: React.FunctionComponent<{
     webSocketClientContext: string;
     startApiEndpoint: string;
     onUserStopped?: () => void;
-    wireUpStateListeners?: (
-        setClosePending: (boolean) => void,
-        setProgressState: (ProgressState) => void
-    ) => void;
+    closePending: boolean;
+    setClosePending: (boolean) => void;
+    progressState: ProgressState;
+    setProgressState: (ProgressState) => void;
 }> = props => {
-    const [closePending, setClosePending] = useState(false);
     const [instructionMessage, setInstructionMessage] = useState<
         string | undefined
     >(undefined);
     const [accumulatedMessages, setAccumulatedMessages] = useState("");
-    const [progressState, setProgressState] = useState(ProgressState.Working);
-    const [errorEncountered, setErrorEncountered] = useState(false);
 
-    // Allow our parents to control our state
-    if (props.wireUpStateListeners) {
-        // Note: the things we're calling here have their own hooks, so we don't need to (and we're not allowed to)
-        // put this inside a useEffect().
-        props.wireUpStateListeners(setClosePending, setProgressState);
-    }
+    const [errorEncountered, setErrorEncountered] = useState(false);
 
     //Note, originally this was just a function, closeIfNoError().
     // However that would be called before the errorEncountered had been updated.
     // So now we make it happen by calling setClosePending() and then in the next
     // update we notice that and see about closing.
     React.useEffect(() => {
-        if (closePending) {
+        if (props.closePending) {
             if (errorEncountered) {
-                setProgressState(() =>
+                props.setProgressState(() =>
                     errorEncountered ? ProgressState.Done : ProgressState.Closed
                 );
             } else {
@@ -47,11 +39,11 @@ export const PublishProgressDialog: React.FunctionComponent<{
                 setInstructionMessage(undefined);
                 setErrorEncountered(false);
                 // close it
-                setProgressState(ProgressState.Closed);
-                setClosePending(false);
+                props.setProgressState(ProgressState.Closed);
+                props.setClosePending(false);
             }
         }
-    }, [closePending]);
+    }, [props.closePending]);
 
     React.useEffect(() => {
         // we need to be ready to listen to progress messages from the server,
@@ -64,7 +56,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
             // do something (change the state of the dialog) when the postData's promise is satisfied.
             // (That is, when the preview construction is complete).
             BloomApi.postData(props.startApiEndpoint, {}, () =>
-                setClosePending(true)
+                props.setClosePending(true)
             );
         });
     }, []);
@@ -103,13 +95,13 @@ export const PublishProgressDialog: React.FunctionComponent<{
             heading={props.heading}
             instruction={instructionMessage}
             messages={accumulatedMessages}
-            progressState={progressState}
+            progressState={props.progressState}
             onUserStopped={() => props.onUserStopped && props.onUserStopped()}
             onUserCanceled={() => {}}
             onUserClosed={() => {
                 setAccumulatedMessages("");
                 setErrorEncountered(false);
-                setProgressState(ProgressState.Closed);
+                props.setProgressState(ProgressState.Closed);
             }}
             errorEncountered={errorEncountered}
         />

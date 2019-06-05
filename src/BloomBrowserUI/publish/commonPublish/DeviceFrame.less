@@ -15,14 +15,13 @@
     display: flex;
     flex-direction: row;
 }
-
+@screenWidth: 9px * @scale;
 .deviceFrame {
     --screenHeight: calc(16px * @scale);
-    --screenWidth: calc(9px * @scale);
 
     background: rgb(241, 241, 241);
     box-sizing: content-box; // Our width & height are sizing the screen (the glass). All the bezel and stuff doesn't count.
-    width: var(--screenWidth);
+    width: @screenWidth;
     height: var(--screenHeight);
     border-width: @bezelWidth;
     border-style: solid;
@@ -75,24 +74,25 @@
     }
     &.landscape {
         transform-origin: top left;
-        transform: translate(0, 200px /* down*/)
+        transform: translate(0, @screenWidth+ (2 * @bezelWidth) /* down*/)
             rotate(-90deg /*counter clockwise*/) scale(var(--scale));
-
+        /*@bezelWidth*/
         iframe {
             height: (900% / 16); //  9/16
             width: (1600%/9); //  16/9
             flex-shrink: 0;
             border: none;
             transform-origin: top left;
-            transform: rotate(90deg /* clockwise*/)
-                translate(0, -200px + (2 * @bezelWidth));
+
+            transform: rotate(90deg /* clockwise*/) translate(0, -@screenWidth);
+            /*translate(0, -@screenWidth + (2 * @bezelWidth));*/
         }
     }
 
     // speaker
     &:before {
         // NOTE: the commented-out bits here work in modern browsers, but not in Bloom 4.6's browser.
-        --speakerWidth: ~"calc(var(--screenWidth) / 3)";
+        --speakerWidth: @screenWidth / 3;
         width: calc(9px * @scale / 3); //var(--speakerWidth);
         height: @speakerHeight;
         margin-top: -12px;

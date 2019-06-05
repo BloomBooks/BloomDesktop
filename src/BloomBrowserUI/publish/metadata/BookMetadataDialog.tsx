@@ -8,7 +8,6 @@ import * as mobx from "mobx";
 import * as mobxReact from "mobx-react";
 import BloomButton from "../../react_components/bloomButton";
 import { Div } from "../../react_components/l10nComponents";
-import { useL10n } from "../../react_components/l10nHooks";
 import { DialogTitle, DialogActions, DialogContent } from "@material-ui/core";
 import { String } from "../../react_components/l10nComponents";
 // tslint:disable-next-line:no-empty-interface
