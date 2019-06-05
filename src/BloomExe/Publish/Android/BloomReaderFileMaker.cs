@@ -154,7 +154,7 @@ namespace Bloom.Publish.Android
 			var folderPath = Path.GetDirectoryName(bookFile);
 			foreach (var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<XmlElement>().ToArray())
 			{
-				var file = UrlPathString.CreateFromUrlEncodedString(imgElt.Attributes["src"].Value).NotEncoded.Split('?')[0];
+				var file = UrlPathString.CreateFromUrlEncodedString(imgElt.Attributes["src"].Value).PathOnly.NotEncoded;
 				if (!File.Exists(Path.Combine(folderPath, file)))
 				{
 					imgElt.ParentNode.RemoveChild(imgElt);

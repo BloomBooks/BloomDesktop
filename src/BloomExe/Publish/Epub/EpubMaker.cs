@@ -1478,7 +1478,7 @@ namespace Bloom.Publish.Epub
 		{
 			isBrandingFile = false;
 			var url = HtmlDom.GetImageElementUrl(img);
-			if (url == null || url.PathOnly == null || String.IsNullOrEmpty(url.NotEncoded))
+			if (url == null || String.IsNullOrEmpty(url.PathOnly.NotEncoded))
 				return null; // very weird, but all we can do is ignore it.
 			// Notice that we use only the path part of the url. For some unknown reason, some bloom books
 			// (e.g., El Nino in the library) have a query in some image sources, and at least some ePUB readers
@@ -1496,7 +1496,7 @@ namespace Bloom.Publish.Epub
 		private string FindVideoFileIfPossible(XmlElement vid)
 		{
 			var url = HtmlDom.GetVideoElementUrl(vid);
-			if (url == null || url.PathOnly == null || String.IsNullOrEmpty(url.NotEncoded))
+			if (url == null || String.IsNullOrEmpty(url.PathOnly.NotEncoded))
 				return null;
 			return url.PathOnly.NotEncoded;
 		}

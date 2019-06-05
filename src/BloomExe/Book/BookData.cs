@@ -499,7 +499,7 @@ namespace Bloom.Book
 			{
 				// Reference: BL-3235
 				//remove the url path encoding
-				form = UrlPathString.CreateFromUrlEncodedString(form).NotEncoded;
+				form = UrlPathString.CreateFromUrlEncodedString(form).NotEncoded;	// want query as well as filepath
 				//switch to html/xml encoding
 				form = HttpUtility.HtmlEncode(form);
 			}

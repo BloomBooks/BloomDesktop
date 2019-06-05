@@ -381,14 +381,14 @@ namespace Bloom.web.controllers
 			var fileName = request.Parameters.Get("source");
 			timings = new[] {0.0m, 0.0m};
 
-			string rawTimings = UrlPathString.CreateFromUrlEncodedString(request.Parameters.Get("timings")).NotEncoded;
+			string rawTimings = UrlPathString.CreateFromUrlEncodedString(request.Parameters.Get("timings")).NotEncoded;	// UrlPathString used only for decoding
 
 			videoFilePath = Path.Combine(CurrentBook.FolderPath, fileName);
 			// Some callers need this file to exist, others don't, but decoding is required for all.
 			if (!RobustFile.Exists(videoFilePath) && Regex.IsMatch(fileName, "%[0-9A-Fa-f][0-9A-Fa-f]"))
 			{
 				videoFilePath = Path.Combine(CurrentBook.FolderPath,
-					UrlPathString.CreateFromUrlEncodedString(fileName).NotEncoded);
+					UrlPathString.CreateFromUrlEncodedString(fileName).NotEncoded);	// UrlPathString used only for decoding
 			}
 
 			if (forEditing && WarnIfVideoCantChange(videoFilePath))
@@ -555,7 +555,7 @@ namespace Bloom.web.controllers
 
 			// Check for valid video file to match url
 			var urlWithoutPrefix = UrlPathString.CreateFromUrlEncodedString(videoUrl.Substring(6)); // grab everything after 'video/'
-			var originalVideoFilePath = Path.Combine(videoFolder, urlWithoutPrefix.NotEncoded);
+			var originalVideoFilePath = Path.Combine(videoFolder, urlWithoutPrefix.NotEncoded);	// any query already removed
 			if (!RobustFile.Exists(originalVideoFilePath))
 				return string.Empty;
 

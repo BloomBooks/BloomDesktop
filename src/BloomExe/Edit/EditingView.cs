@@ -678,7 +678,7 @@ namespace Bloom.Edit
 			var imageElement = GetImageNode(ge);
 			if(imageElement == null)
 				return;
-			string fileName = HtmlDom.GetImageElementUrl(imageElement).NotEncoded;
+			string fileName = HtmlDom.GetImageElementUrl(imageElement).PathOnly.NotEncoded;
 
 			var imageInfo = ImageUpdater.GetImageInfoSafelyFromFilePath(_model.CurrentBook.FolderPath, fileName);
 			if (imageInfo == null)
@@ -883,10 +883,10 @@ namespace Bloom.Edit
 			if(imageElement != null)
 			{
 				var url = HtmlDom.GetImageElementUrl(imageElement);
-				if(String.IsNullOrEmpty(url.NotEncoded))
+				if(String.IsNullOrEmpty(url.PathOnly.NotEncoded))
 					return false;
 
-				var path = Path.Combine(bookFolderPath, url.NotEncoded);
+				var path = Path.Combine(bookFolderPath, url.PathOnly.NotEncoded);
 				try
 				{
 					using(var image = PalasoImage.FromFileRobustly(path))
@@ -986,7 +986,7 @@ namespace Bloom.Edit
 			var imageElement = GetImageNode(ge);
 			if(imageElement == null)
 				return;
-			string currentPath = HtmlDom.GetImageElementUrl(imageElement).NotEncoded;
+			string currentPath = HtmlDom.GetImageElementUrl(imageElement).PathOnly.NotEncoded;
 
 			if(!CheckIfLockedAndWarn(currentPath))
 				return;

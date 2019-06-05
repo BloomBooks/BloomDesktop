@@ -121,12 +121,7 @@ namespace Bloom.Book
 		{
 			//see also PageEditingModel.UpdateMetadataAttributesOnImage(), which does the same thing but on the browser dom
 			var url = HtmlDom.GetImageElementUrl(new ElementProxy(imgElement));
-			var end = url.NotEncoded.IndexOf('?');
-			string fileName = url.NotEncoded;
-			if (end > 0)
-			{
-				fileName = fileName.Substring(0, end);
-			}
+			string fileName = url.PathOnly.NotEncoded;
 			if (fileName.ToLowerInvariant() == "placeholder.png" || fileName.ToLowerInvariant() == "license.png")
 				return;
 			if (string.IsNullOrEmpty(fileName))
