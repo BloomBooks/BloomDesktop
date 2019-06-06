@@ -2991,6 +2991,8 @@ namespace Bloom.Book
 
 		public string GetCoverImagePath()
 		{
+			if (_storage == null)
+				return null;	// can happen in tests
 			// This first branch covers the currently obsolete approach to images using background-image.
 			// In that approach the data-book attribute is on the imageContainer.
 			// We also have to check for @style here, because if we don't check something beyond the data-book attribute, this xpath
@@ -3016,6 +3018,19 @@ namespace Bloom.Book
 			if (!File.Exists(coverImagePath))
 				return null;
 			return coverImagePath;
+		}
+
+		/// <summary>
+		/// Check whether the given image file should have a transparent background.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-4816 for why we want to limit
+		/// which image files are given a transparent background.
+		/// </remarks>
+		public bool ImageFileShouldBeRenderedWithTransparency(string imageFile)
+		{
+			// At the moment, only the cover image needs a transparent background.
+			return imageFile == GetCoverImagePath();
 		}
 
 		/// <summary>
