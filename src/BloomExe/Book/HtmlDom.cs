@@ -1815,10 +1815,6 @@ namespace Bloom.Book
 		/// adding the supplied params. If urlEncodePath is true, we will take the encoded path version
 		/// of the url argument. Caller is responsible to encode the paramString if necessary.
 		/// </summary>
-		/// <param name="url"></param>
-		/// <param name="srcElement"></param>
-		/// <param name="urlEncodePath"></param>
-		/// <param name="encodedParamString"></param>
 		public static void SetSrcOfVideoElement(UrlPathString url, ElementProxy srcElement, bool urlEncodePath, string encodedParamString = "")
 		{
 			if (encodedParamString == null)
@@ -1826,7 +1822,7 @@ namespace Bloom.Book
 			if (!string.IsNullOrEmpty(encodedParamString) && !(encodedParamString.StartsWith("?")))
 				encodedParamString = "?" + encodedParamString;
 			srcElement.SetAttribute("src",
-				(urlEncodePath ? url.UrlEncodedForHttpPath : url.NotEncoded) + encodedParamString);
+				(urlEncodePath ? url.PathOnly.UrlEncodedForHttpPath : url.PathOnly.NotEncoded) + encodedParamString);
 		}
 
 		public static string RemoveClass(string className, string input)

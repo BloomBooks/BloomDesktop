@@ -494,7 +494,7 @@ namespace Bloom.Api
 			string modPath = localPath;
 			string path = null;
 			var urlPath = UrlPathString.CreateFromUrlEncodedString(modPath);
-			var tempPath = urlPath.NotEncoded;
+			var tempPath = urlPath.PathOnly.NotEncoded;
 			if (RobustFile.Exists(tempPath))
 				modPath = tempPath;
 			try
