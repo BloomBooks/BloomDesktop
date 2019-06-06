@@ -349,6 +349,12 @@ export default class StyleEditor {
                 return "Title On Title Page";
             case "ImageDescriptionEdit":
                 return "Image Description Edit";
+            case "QuizHeader":
+                return "Quiz Header";
+            case "QuizQuestion":
+                return "Quiz Question";
+            case "QuizAnswer":
+                return "Quiz Answer";
             case "Equation": // If the id is the same as the English, just fall through to default.
             default:
                 return ruleId;
