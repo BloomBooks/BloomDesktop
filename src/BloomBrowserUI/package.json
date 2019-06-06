@@ -24,7 +24,7 @@
         "buildBrandings": "npm-run-all --parallel buildBrandingLess buildBrandingFiles ",
         "build": "gulp",
         "build-prod": "gulp build-prod",
-        "watchCode": "webpack --watch",
+        "watchCode": "set NODE_ENV=debug&& webpack --watch",
         "watchBrandingFiles": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm}\" ../../output/browser/branding --watch",
         "// note: there is no less watcher that can supports globs such that you could say 'everything, minus node_modules. See BL-6270': ['./**/*.less', '!./node_modules/**/*.less']": "",
         "// ... once there is, we can replace all these existing scripts with a single call.": "",
