@@ -101,6 +101,7 @@ namespace Bloom.Publish
 			if (this != _latestInstance)
 				return;
 
+			var haveEnterpriseFeatures = book.CollectionSettings.HaveEnterpriseFeatures;
 			var toBeDeleted = new List<XmlElement> ();
 			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
 			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
@@ -108,7 +109,7 @@ namespace Bloom.Publish
 			{
 				foreach (XmlElement elt in page.SafeSelectNodes(kSelectThingsThatCanBeHidden))
 				{
-					if (!IsDisplayed(elt))
+					if (!IsDisplayed(elt) && !IsDesiredImageDescription(elt, haveEnterpriseFeatures))
 						toBeDeleted.Add(elt);
 				}
 				foreach (var elt in toBeDeleted)
@@ -201,6 +202,25 @@ namespace Bloom.Publish
 			var id = elt.Attributes["id"].Value;
 			var display = _browser.RunJavaScript ("getComputedStyle(document.getElementById('" + id + "'), null).display");
 			return display != "none";
+		}
+
+		/// <summary>
+		/// Even when they are not displayed we want to keep image descriptions for Bloom Enterprise books.
+		/// This is necessary for retaining any associated audio files to play.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7237.
+		/// </remarks>
+		private bool IsDesiredImageDescription(XmlElement elt, bool haveEnterpriseFeatures)
+		{
+			var classes = elt.Attributes["class"]?.Value;
+			if (!String.IsNullOrEmpty(classes) &&
+				(classes.Contains("ImageDescriptionEdit-style") ||
+					classes.Contains("bloom-imageDescription")))
+			{
+				return haveEnterpriseFeatures;
+			}
+			return false;
 		}
 
 		internal const string kTempIdMarker = "PublishTempIdXXYY";
