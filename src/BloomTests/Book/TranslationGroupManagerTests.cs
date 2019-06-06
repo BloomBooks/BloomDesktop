@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Xml;
+﻿using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using L10NSharp;
 using Moq;
 using NUnit.Framework;
+using SIL.IO;
 using SIL.Reporting;
-using SIL.TestUtilities;
 using SIL.Xml;
 
 namespace BloomTests.Book
@@ -14,17 +14,28 @@ namespace BloomTests.Book
 	public class TranslationGroupManagerTests
 	{
 		private Mock<CollectionSettings> _collectionSettings;
+		private ILocalizationManager _localizationManager;
 
 		[SetUp]
 		public void Setup()
 		{
-			_collectionSettings = new Moq.Mock<CollectionSettings>();
+			_collectionSettings = new Mock<CollectionSettings>();
 			_collectionSettings.SetupGet(x => x.IsSourceCollection).Returns(false);
 			_collectionSettings.SetupGet(x => x.Language1Iso639Code).Returns("xyz");
 			_collectionSettings.SetupGet(x => x.Language2Iso639Code).Returns("fr");
 			_collectionSettings.SetupGet(x => x.Language3Iso639Code).Returns("es");
 			_collectionSettings.SetupGet(x => x.XMatterPackName).Returns("Factory");
 			ErrorReport.IsOkToInteractWithUser = false;
+
+			LocalizationManager.UseLanguageCodeFolders = true;
+			var localizationDirectory = FileLocationUtilities.GetDirectoryDistributedWithApplication("src/BloomTests/TestLocalization");
+			_localizationManager = LocalizationManager.Create(TranslationMemory.XLiff, "en", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/BloomTests", null, "");
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			_localizationManager.Dispose();
 		}
 
 		[Test]
@@ -458,6 +469,38 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-translationGroup']/div[not(contains(@class, 'bloom-editable') or contains(@class, 'normal-style'))]", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'normal-style') and contains(@class, 'bloom-translationGroup')]", 0);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-translationGroup']", 1);
+		}
+
+		[Test]
+		public void PrepareElementsInPageOrDocument_HasGenerateTranslationsDiv_GeneratesTranslations()
+		{
+			var contents = @"<div class='bloom-page'>
+						<div class='bloom-translationGroup'>
+							<div class='bloom-editable' lang='en' data-generate-translations='true' data-i18n='Test.L10N.ID'>English Text</div>
+						</div>
+					</div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-generate-translations]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-i18n]", 1);
+
+			//SUT
+			TranslationGroupManager.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _collectionSettings.Object);
+
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-translationGroup']", 1);
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@data-generate-translations]");
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@data-i18n]");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-translationGroup']/div", 5);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable')]", 5);
+			// We start with an English div
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @lang='en' and text()='English Text']", 1);
+			// These three are included because they are languages of the collection. (We also have a translation for French.)
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @lang='fr' and not(text())]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @lang='xyz' and not(text())]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @lang='es' and text()='Spanish Text']", 1);
+			// This one is included because we have a translation available
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @lang='zh-CN' and text()='Chinese Text']", 1);
 		}
 
 		[Test]

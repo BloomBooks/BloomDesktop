@@ -248,7 +248,7 @@ namespace Bloom.ToPalaso
 		/// <summary>
 		/// Remove any country or script identifier from a language code, except leave zh-CN alone.
 		/// </summary>
-		private static string GetGeneralCode(string code)
+		public static string GetGeneralCode(string code)
 		{
 			var idxCountry = code.IndexOf("-");
 			if (idxCountry == -1 || code == "zh-CN")
