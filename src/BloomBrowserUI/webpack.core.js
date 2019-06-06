@@ -5,7 +5,12 @@
 // then we can move those webpack rules here.
 
 var webpack = require("webpack");
-//var WebpackBuildNotifierPlugin = require("webpack-build-notifier");
+var WebpackBuildNotifierPlugin = require("webpack-build-notifier");
+
+function NothingPlugin() {
+    this.apply = function() {};
+}
+
 module.exports = {
     module: {
         rules: [
@@ -53,8 +58,11 @@ module.exports = {
             $: "jquery",
             jQuery: "jquery",
             "window.jQuery": "jquery"
-        })
-        //new WebpackBuildNotifierPlugin({})
+        }),
+        // don't include the notifier when building on server, which uses production
+        process.env.NODE_ENV === "debug"
+            ? new WebpackBuildNotifierPlugin({})
+            : new NothingPlugin()
     ],
     resolve: {
         extensions: [".ts", ".tsx"]
