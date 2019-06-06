@@ -59,8 +59,11 @@ namespace Bloom.Publish
 				RemoveUnwantedContentInternal(dom, book, epubMaker);
 		}
 
+		private bool _haveEnterpriseFeatures;
+
 		private void RemoveUnwantedContentInternal(HtmlDom dom, Book.Book book, EpubMaker epubMaker)
 		{
+			_haveEnterpriseFeatures = book.CollectionSettings.HaveEnterpriseFeatures;
 			// The ControlForInvoke can be null for tests.  If it's not null, we better not need an Invoke!
 			Debug.Assert(ControlForInvoke==null || !ControlForInvoke.InvokeRequired); // should be called on UI thread.
 			Debug.Assert(dom != null && dom.Body != null);
@@ -108,7 +111,7 @@ namespace Bloom.Publish
 			{
 				foreach (XmlElement elt in page.SafeSelectNodes(kSelectThingsThatCanBeHidden))
 				{
-					if (!IsDisplayed(elt))
+					if (!IsDisplayed(elt) && !IsDesiredImageDescription(elt))
 						toBeDeleted.Add(elt);
 				}
 				foreach (var elt in toBeDeleted)
@@ -201,6 +204,25 @@ namespace Bloom.Publish
 			var id = elt.Attributes["id"].Value;
 			var display = _browser.RunJavaScript ("getComputedStyle(document.getElementById('" + id + "'), null).display");
 			return display != "none";
+		}
+
+		/// <summary>
+		/// Even when they are not displayed we want to keep image descriptions for Bloom Enterprise books.
+		/// This is necessary for retaining any associated audio files to play.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7237.
+		/// </remarks>
+		private bool IsDesiredImageDescription(XmlElement elt)
+		{
+			var classes = elt.Attributes["class"]?.Value;
+			if (!String.IsNullOrEmpty(classes) &&
+				(classes.Contains("ImageDescriptionEdit-style") ||
+					classes.Contains("bloom-imageDescription")))
+			{
+				return _haveEnterpriseFeatures;
+			}
+			return false;
 		}
 
 		internal const string kTempIdMarker = "PublishTempIdXXYY";
