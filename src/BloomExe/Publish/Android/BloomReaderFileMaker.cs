@@ -86,7 +86,9 @@ namespace Bloom.Publish.Android
 
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6835.
 			RemoveInvisibleImageElements(modifiedBook);
-			modifiedBook.Storage.CleanupUnusedImageFiles(false);
+			modifiedBook.Storage.CleanupUnusedImageFiles(keepFilesForEditing: false);
+			if (RobustFile.Exists(Path.Combine(bookFolderPath, "placeHolder.png")))
+				RobustFile.Delete(Path.Combine(bookFolderPath, "placeHolder.png"));
 			modifiedBook.Storage.CleanupUnusedAudioFiles(isForPublish: true);
 			modifiedBook.Storage.CleanupUnusedVideoFiles();
 

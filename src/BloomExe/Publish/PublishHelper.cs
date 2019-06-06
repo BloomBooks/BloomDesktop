@@ -156,12 +156,12 @@ namespace Bloom.Publish
 				div.RemoveAttribute("content-editable");	// too late for editing in an ebook
 			}
 
-			// Clean up img elements (BL-6035/BL-6036)
+			// Clean up img elements (BL-6035/BL-6036 and BL-7218)
 			foreach (var img in dom.Body.SelectNodes("//img").Cast<XmlElement>())
 			{
 				// Ensuring a proper alt attribute is handled elsewhere
 				var src = img.GetOptionalStringAttribute("src", null);
-				if (String.IsNullOrEmpty(src))
+				if (String.IsNullOrEmpty(src) || src == "placeHolder.png")
 				{
 					// If the image file doesn't exist, we want to find out about it.  But if there is no
 					// image file, epubcheck complains and it doesn't do any good anyway.
