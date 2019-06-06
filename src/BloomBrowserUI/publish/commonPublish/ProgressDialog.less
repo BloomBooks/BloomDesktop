@@ -3,6 +3,11 @@
 @paddingAroundDialog: 24px;
 
 .progress-dialog {
+    // For some reason, in Firefox 45, in progress dialog, the spinning progress circle,
+    // the "top" says 41.6px, whereas it says 0px in modern browsers. A mystery. Anyhow this resets it.
+    div {
+        top: unset;
+    }
     .Error {
         color: red;
     }

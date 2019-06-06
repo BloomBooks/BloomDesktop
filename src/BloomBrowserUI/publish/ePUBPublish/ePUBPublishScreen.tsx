@@ -81,7 +81,6 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                         defaultLandscape={false}
                         canRotate={false}
                         url={bookUrl}
-                        iframeClass="readium"
                     />
                     <Typography className="readium-credit">
                         <PWithLink
