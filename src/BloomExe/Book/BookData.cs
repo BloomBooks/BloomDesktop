@@ -708,7 +708,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// walk through the sourceDom, collecting up values from elements that have data-book or data-collection or data-xmatter-page attributes.
 		/// </summary>
-		private void GatherDataItemsFromXElement(DataSet data,
+		public void GatherDataItemsFromXElement(DataSet data,
 			XmlNode sourceElement, // can be the whole sourceDom or just a page
 			HashSet<Tuple<string, string>> itemsToDelete = null) // records key, lang pairs for which we found an empty element in the source.
 		{
