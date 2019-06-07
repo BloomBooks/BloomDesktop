@@ -1,11 +1,12 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { ITool } from "./toolbox";
+import { ITool, IReactTool } from "./toolbox";
 import { ReactElement } from "react";
 
 // Provides a base class with some common code for react-based tools that live
 // in Bloom's Edit Page Toolbox.
-export default abstract class ToolboxToolReactAdaptor implements ITool {
+export default abstract class ToolboxToolReactAdaptor
+    implements ITool, IReactTool {
     public hasRestoredSettings: boolean;
     public abstract makeRootElement(): HTMLDivElement;
     public abstract id(): string;
@@ -21,6 +22,9 @@ export default abstract class ToolboxToolReactAdaptor implements ITool {
         return false;
     }
     public isExperimental(): boolean {
+        return false;
+    }
+    public toolRequiresEnterprise(): boolean {
         return false;
     }
     public beginRestoreSettings(settings: string): JQueryPromise<void> {

@@ -5,6 +5,7 @@
 
 @toolboxBackgroundColor: @bloom-panelBackground;
 @helpLinkTopMargin: 45px;
+@bloomEnterpriseBadgeSize: 24px;
 
 div.toolboxRoot {
     display: inline-block;
@@ -158,6 +159,21 @@ div.checkbox-and-label {
 
 .ui-accordion h3[data-toolId="talkingBookTool"] span.ui-accordion-header-icon {
     background-image: url("/bloom/images/microphone-white.svg") !important;
+}
+
+// Add Bloom Enterprise badges to appropriate tools
+.ui-accordion .requiresEnterprise {
+    // Add Bloom Enterprise badge to tool header
+    &:after {
+        content: " ";
+        background: no-repeat center/80%
+            url("../../../images/bloom-enterprise-badge.svg") !important;
+        position: absolute;
+        right: 5px;
+        height: @bloomEnterpriseBadgeSize;
+        width: @bloomEnterpriseBadgeSize;
+        bottom: 2px;
+    }
 }
 
 // Dialogs launched from the toolbox need to be in front of everything,

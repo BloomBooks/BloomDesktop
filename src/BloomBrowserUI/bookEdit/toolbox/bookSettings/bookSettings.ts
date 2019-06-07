@@ -1,5 +1,5 @@
 ﻿import { BloomApi } from "../../../utils/bloomApi";
-import { ITool, ToolBox } from "../toolbox";
+import { ITool } from "../toolbox";
 
 $(document).ready(() => {
     // request our model and set the controls
@@ -56,7 +56,8 @@ export class BookSettings implements ITool {
     }
     public isExperimental(): boolean {
         return false;
-    } // We need these to implement the interface, but don't need them to do anything.
+    }
+    // We need these to implement the interface, but don't need them to do anything.
     /* tslint:disable:no-empty */ public configureElements(
         container: HTMLElement
     ) {}
