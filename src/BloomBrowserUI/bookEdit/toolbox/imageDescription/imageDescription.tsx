@@ -42,7 +42,7 @@ export class ImageDescriptionToolControls extends React.Component<
     // to the link destination?)
     public render() {
         return (
-            <RequiresBloomEnterpriseWrapper className="imageDescriptionToolOuterWrapper">
+            <RequiresBloomEnterpriseWrapper>
                 <div
                     className={
                         "imageDescriptionTool" +

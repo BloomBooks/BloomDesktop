@@ -1,11 +1,13 @@
 import * as React from "react";
-import { useState, createContext, useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
 import "./requiresBloomEnterprise.less";
-import { Link } from "./link";
 import { BloomApi } from "../utils/bloomApi";
+import Button from "@material-ui/core/Button";
+import theme from "../bloomMaterialUITheme";
+import { Div } from "./l10nComponents";
 
-export interface IComponentState {
-    visible: boolean;
+export interface IThemeProps {
+    darkTheme?: boolean;
 }
 
 // This element displays a notice saying that a certain feature requires a Bloom Enterprise subscription,
@@ -16,52 +18,54 @@ export interface IComponentState {
 // on the content page body.
 // Often it will be convenient to use this by embedding the controls to be hidden in a
 // RequiresBloomEnterpriseWrapper, also defined in this file.
-export class RequiresBloomEnterprise extends React.Component<
-    {},
-    IComponentState
-> {
-    public readonly state: IComponentState = {
-        visible: false
-    };
+export const RequiresBloomEnterprise: React.FunctionComponent<IThemeProps> = ({
+    darkTheme
+}) => {
+    const [visible, setVisible] = useState(false);
 
-    constructor(props) {
-        super(props);
-        checkIfEnterpriseAvailable().then(enabled =>
-            this.setState({ visible: !enabled })
-        );
-    }
+    useEffect(() => {
+        BloomApi.get("common/enterpriseFeaturesEnabled", response => {
+            setVisible(!response.data);
+        });
+    }, []);
 
-    public render() {
-        return (
-            <div
-                className="requiresBloomEnterprise"
-                style={this.state.visible ? {} : { display: "none" }}
-            >
-                <div className="messageSettingsDialogWrapper">
-                    <div className="requiresEnterpriseNotice">
-                        <Link
-                            l10nKey="EditTab.EnterpriseSettingsButton"
-                            onClick={() =>
-                                BloomApi.post(
-                                    "common/showSettingsDialog?tab=enterprise"
-                                )
-                            }
-                        >
+    const noticeClasses =
+        "requiresEnterpriseNotice" + (darkTheme ? " darkTheme" : "");
+
+    return (
+        <div
+            className="requiresBloomEnterprise"
+            style={visible ? {} : { display: "none" }}
+        >
+            <div className="messageSettingsDialogWrapper">
+                <div className={noticeClasses}>
+                    <Div
+                        className="requiresEnterpriseEnablingLabel"
+                        l10nKey="EditTab.RequiresEnterprise"
+                    />
+                    <Button
+                        className="requiresEnterpriseButton"
+                        variant="contained"
+                        color={theme.palette.primary}
+                        onClick={() =>
+                            BloomApi.post(
+                                "common/showSettingsDialog?tab=enterprise"
+                            )
+                        }
+                    >
+                        <img src="../images/bloom-enterprise-badge.svg" />
+                        <Div l10nKey="EditTab.EnterpriseSettingsButton">
                             Bloom Enterprise Settings
-                        </Link>
-                    </div>
+                        </Div>
+                    </Button>
                 </div>
             </div>
-        );
-    }
-}
+        </div>
+    );
+};
 
 export interface IWrapperComponentState {
     enterpriseAvailable: boolean;
-}
-
-export interface IRequiresBloomEnterpriseProps {
-    className?: string;
 }
 
 // A note about the default value (false): this would only be used if a component had a context-consumer but no parent had created a context-provider.
@@ -71,10 +75,10 @@ export const BloomEnterpriseAvailableContext = createContext(false);
 // selected; otherwise, the RequiresBloomEnterprise message will be displayed and the children
 // will be disabled and partially obscured.
 export class RequiresBloomEnterpriseWrapper extends React.Component<
-    IRequiresBloomEnterpriseProps,
+    {},
     IWrapperComponentState
 > {
-    constructor(props: IRequiresBloomEnterpriseProps) {
+    constructor(props: Readonly<{}>) {
         super(props);
         this.state = { enterpriseAvailable: true };
         checkIfEnterpriseAvailable().then(enabled =>
@@ -92,7 +96,7 @@ export class RequiresBloomEnterpriseWrapper extends React.Component<
                     </div>
                     {this.state.enterpriseAvailable || (
                         <div className="requiresEnterpriseOverlay">
-                            <RequiresBloomEnterprise />
+                            <RequiresBloomEnterprise darkTheme={true} />
                         </div>
                     )}
                 </div>
