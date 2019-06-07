@@ -1,35 +1,43 @@
 @import "../bloomUI.less";
 @noticeColor: #d0ff00;
-.requiresBloomEnterprise {
-    background-color: @bloom-purple;
-    border-radius: 10px;
-    margin: 20px;
-    color: black;
-    padding: 5px;
-    display: flex;
-}
+@marginSize: 10px;
+@bloom-enterprise-notice-padding: 15px;
+@buttonRadius: 4px;
+@bloom-enterprise-notice-width: 250px;
+@bloom-enterprise-notice-height: 120px;
+@bloom-enterprise-button-width: 150px;
+@bloom-enterprise-button-height: 60px;
 
-// Rule has to be very specific to override jquery rule
-.ui-widget-content {
+.requiresBloomEnterprise {
+    padding: 5px;
     .requiresEnterpriseNotice {
-        a {
+        text-align: center;
+        padding: @bloom-enterprise-notice-padding;
+        padding-bottom: @bloom-enterprise-notice-padding + 5px;
+        color: black;
+        background-color: @form-background;
+        height: @bloom-enterprise-notice-height;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        max-width: @bloom-enterprise-notice-width;
+        &.darkTheme {
             color: white;
+            background-color: @bloom-gray;
+        }
+        .requiresEnterpriseEnablingLabel {
+            margin: 0 5px;
+            font-size: small;
+        }
+        .requiresEnterpriseButton {
+            max-width: @bloom-enterprise-button-width;
+            max-height: @bloom-enterprise-button-height;
+            align-self: center;
+            background-color: white;
+            line-height: 1.1;
+            font-size: small;
         }
     }
-}
-
-.requiresEnterpriseNotice {
-    text-align: center;
-    margin: 10px;
-    color: white;
-    a {
-        color: white;
-        text-decoration: none;
-    }
-}
-
-.messageSettingsDialogWrapper {
-    margin-left: 5px;
 }
 
 .requiresEnterpriseOverlay {

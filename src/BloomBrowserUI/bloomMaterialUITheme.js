@@ -8,6 +8,8 @@ import { createMuiTheme } from "@material-ui/core/styles";
 
 const bloomBlue = "#1d94a4";
 const bloomPurple = "#96668f";
+const bloomGray = "#575757";
+const white = "#ffffff";
 const kDialogTopBottomGray = "#F1F3F4";
 // the value that gets us to the 4.5 AA ratio depends on the background.
 // So the "aside"/features right-panel color effects this.
@@ -21,6 +23,7 @@ const theme = createMuiTheme({
     palette: {
         primary: { main: bloomBlue },
         secondary: { main: bloomPurple },
+        background: { main: white, dark: bloomGray },
         warning: { main: "#F3AA18" }
     },
     typography: {

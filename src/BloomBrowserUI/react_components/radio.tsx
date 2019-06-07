@@ -42,6 +42,7 @@ export class Radio extends LocalizableElement<IRadioProps, {}> {
                         this.props.inputClass
                     )}
                     value={this.props.value}
+                    readOnly={true}
                     checked={this.props.defaultChecked} // use defaultChecked instead of checked to avoid warning
                     onClick={() => {
                         if (this.props.onSelected) {
