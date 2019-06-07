@@ -1,4 +1,7 @@
 /* Common Bloom UI styling */
+// This import needs to NOT be by "(reference)", since the UIFontStack variable we need is not a constant.
+// That also means that if you want this bloomUI file to govern the font-family of your Less that
+// imports this file, it should do a normal full import of bloomUI.less.
 @import "./bloomWebFonts.less";
 
 // Working towards making this the source of truth for the font size we use in our UI.
@@ -139,4 +142,16 @@ input[type="checkbox"]:indeterminate::after {
     -moz-user-select: text; // Firefox
     -ms-user-select: text; // Edge/Internet Explorer
     user-select: text; // Chrome
+}
+
+// Moved from toolbox.less to here so it can be used by templatePagePreview
+.enterprise-only-flag::after {
+    content: "BE";
+    cursor: default;
+    color: @bloom-purple;
+    margin-left: 4px;
+    vertical-align: super;
+    font-style: italic;
+    font-weight: bold;
+    font-size: smaller;
 }

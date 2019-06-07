@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState, createContext, useEffect } from "react";
 import "./requiresBloomEnterprise.less";
 import { Link } from "./link";
 import { BloomApi } from "../utils/bloomApi";
@@ -39,14 +40,14 @@ export class RequiresBloomEnterprise extends React.Component<
                 <div className="messageSettingsDialogWrapper">
                     <div className="requiresEnterpriseNotice">
                         <Link
-                            l10nKey="EditTab.Toolbox.RequiresEnterprise"
+                            l10nKey="EditTab.EnterpriseSettingsButton"
                             onClick={() =>
                                 BloomApi.post(
                                     "common/showSettingsDialog?tab=enterprise"
                                 )
                             }
                         >
-                            This feature requires Bloom Enterprise.
+                            Bloom Enterprise Settings
                         </Link>
                     </div>
                 </div>
@@ -64,7 +65,7 @@ export interface IRequiresBloomEnterpriseProps {
 }
 
 // A note about the default value (false): this would only be used if a component had a context-consumer but no parent had created a context-provider.
-export const BloomEnterpriseAvailableContext = React.createContext(false);
+export const BloomEnterpriseAvailableContext = createContext(false);
 
 // The children of this component will be enabled and displayed if an enterprise project has been
 // selected; otherwise, the RequiresBloomEnterprise message will be displayed and the children
@@ -73,7 +74,7 @@ export class RequiresBloomEnterpriseWrapper extends React.Component<
     IRequiresBloomEnterpriseProps,
     IWrapperComponentState
 > {
-    constructor(props) {
+    constructor(props: IRequiresBloomEnterpriseProps) {
         super(props);
         this.state = { enterpriseAvailable: true };
         checkIfEnterpriseAvailable().then(enabled =>
