@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { BloomApi } from "../../../utils/bloomApi";
-import { ToolBox, ITool } from "../toolbox";
+import { ToolBox } from "../toolbox";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import "./imageDescription.less";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
@@ -42,7 +42,7 @@ export class ImageDescriptionToolControls extends React.Component<
     // to the link destination?)
     public render() {
         return (
-            <RequiresBloomEnterpriseWrapper className="imageDescriptionToolOuterWrapper">
+            <RequiresBloomEnterpriseWrapper>
                 <div
                     className={
                         "imageDescriptionTool" +
@@ -222,6 +222,11 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     public isExperimental(): boolean {
         return false;
     }
+
+    public toolRequiresEnterprise(): boolean {
+        return true;
+    }
+
     public id(): string {
         return ImageDescriptionAdapter.kToolID;
     }

@@ -15,6 +15,10 @@
 @TransparentHiglightColor: hsla(186.9, 49.1%, 65%, 0.45);
 @CheckboxPadding: 20px; // used to get hanging indent to work on convert whole book checkbox
 
+// The badge in Add Page/Change Layout on pages that are BE-only is larger than the ones
+// on the toolbox More checkboxes.
+@bloom-enterprise-only-badge-font-size: 24px;
+
 body {
     margin: 4px;
 }
@@ -45,7 +49,7 @@ body {
     flex-direction: row;
     align-items: center;
 
-    img {
+    .previewImage {
         border: 1px solid @HighlightColor;
         max-width: 98%;
     }
@@ -157,13 +161,14 @@ body {
 
 .gridItem.enterprise-only-flag::after {
     position: absolute;
-    top: -5px;
-    right: 10px;
+    top: -15px;
+    right: 18px;
+    font-size: @bloom-enterprise-only-badge-font-size;
 }
 
 .landscape {
     .gridItem.enterprise-only-flag::after {
-        right: 0;
+        right: 8px;
     }
     .thumbnail {
         width: unset;

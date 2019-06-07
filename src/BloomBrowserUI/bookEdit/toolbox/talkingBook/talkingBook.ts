@@ -24,6 +24,10 @@ export default class TalkingBookTool implements ITool {
         return false;
     }
 
+    public toolRequiresEnterprise(): boolean {
+        return false;
+    }
+
     public configureElements(container: HTMLElement) {}
 
     public showTool() {

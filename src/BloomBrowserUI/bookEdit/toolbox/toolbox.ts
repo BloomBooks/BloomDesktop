@@ -38,6 +38,8 @@ export interface ITool {
     hasRestoredSettings: boolean;
     isAlwaysEnabled(): boolean;
     isExperimental(): boolean;
+    // toolbox beginAddTool() calls this to determine if this is a Bloom Enterprise only tool
+    toolRequiresEnterprise(): boolean;
 
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
@@ -812,9 +814,13 @@ function beginAddTool(
         const header = $(
             "<h3 data-i18n='" + i18Id + "'>" + toolLabel + "</h3>"
         );
+        const requiresEnterprise = tool.toolRequiresEnterprise();
         // must both have this attr and value for removing if disabled.
         header.attr("data-toolId", toolName);
         content.attr("data-toolId", toolName);
+        if (requiresEnterprise) {
+            header.addClass("requiresEnterprise");
+        }
         loadToolboxTool(header, content, toolId, openTool);
         if (whenLoaded) {
             whenLoaded();

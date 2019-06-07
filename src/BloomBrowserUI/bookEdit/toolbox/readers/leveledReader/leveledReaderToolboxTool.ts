@@ -38,6 +38,10 @@ export class LeveledReaderToolboxTool implements ITool {
         return false;
     }
 
+    public toolRequiresEnterprise(): boolean {
+        return false;
+    }
+
     public showTool() {
         // change markup based on visible options
         getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
