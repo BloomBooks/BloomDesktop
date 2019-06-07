@@ -1779,6 +1779,7 @@ namespace Bloom.Book
 			}
 			else
 			{
+				// The string formatting must match BookCompressor.kBackgroundImage
 				imgOrDivWithBackgroundImage.SetAttribute("style", String.Format("background-image:url('{0}')", urlEncode ? url.UrlEncoded : url.NotEncoded));
 			}
 		}

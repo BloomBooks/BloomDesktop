@@ -3027,10 +3027,19 @@ namespace Bloom.Book
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-4816 for why we want to limit
 		/// which image files are given a transparent background.
 		/// </remarks>
-		public bool ImageFileShouldBeRenderedWithTransparency(string imageFile)
+		public bool ImageFileShouldBeRenderedWithTransparency(string imagePath)
 		{
 			// At the moment, only the cover image needs a transparent background.
-			return imageFile == GetCoverImagePath();
+			// Note that if an image file is used more than once in a book, it gets a different
+			// name each time.
+			// For publishing, the imagePath will be in a temporary folder location instead of
+			// the Bloom collection folder, so comparing the full paths does not work.  In publishing,
+			// we do get a few images requested from the PDF framework whose names may inadvertently
+			// match files we use, so we double-check by also comparing file sizes.
+			var coverImagePath = GetCoverImagePath();
+			if (Path.GetFileName(imagePath) == Path.GetFileName(coverImagePath))
+				return (new FileInfo(imagePath).Length == new FileInfo(coverImagePath).Length);
+			return false;;
 		}
 
 		/// <summary>
