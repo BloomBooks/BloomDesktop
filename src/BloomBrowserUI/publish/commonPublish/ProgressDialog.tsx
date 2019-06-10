@@ -81,7 +81,9 @@ export const ProgressDialog: React.FunctionComponent<{
             >
                 {props.heading || "Progress"}
             </DialogTitle>
-            <CircularProgress className={"circle-progress"} />
+            {somethingStillGoing && (
+                <CircularProgress className={"circle-progress"} />
+            )}
             <DialogContent style={{ width: "500px", height: "300px" }}>
                 <Typography className="instruction">
                     {props.instruction || ""}

@@ -7,22 +7,27 @@
 @speaker-length : 80px; // prettier extension changes speakerLength to speakerlength. So weird.
 @speakerHeight: 5px;
 
-@scale: 23;
+@scale: 25;
+@screenWidth: 9px * @scale;
+@screenHeight: 16px * @scale;
 @buttonScale: 0.2;
 // gets filled by the components children, if there are any
+
+// Desktop pixels are much larger, so things come out bloated.
+// For now what we do is make the player & readium think we have twice the pixels,
+// then shrink it all.
+@pixelDensityMultiplier: 2;
 
 .deviceAndControls {
     display: flex;
     flex-direction: row;
 }
-@screenWidth: 9px * @scale;
-.deviceFrame {
-    --screenHeight: calc(16px * @scale);
 
+.deviceFrame {
     background: rgb(241, 241, 241);
     box-sizing: content-box; // Our width & height are sizing the screen (the glass). All the bezel and stuff doesn't count.
     width: @screenWidth;
-    height: var(--screenHeight);
+    height: @screenHeight;
     border-width: @bezelWidth;
     border-style: solid;
     border-color: #636363;
@@ -42,7 +47,7 @@
         transform-origin: top;
         &.portrait {
             margin-right: -60px;
-            margin-left: 100px;
+            margin-left: 150px;
             transform: translate(0, 65px) scale(@buttonScale);
         }
         &.landscape {
@@ -55,36 +60,43 @@
         .selectedOrientation {
             border: solid @bloom-blue; // @bloom-yellow;
             margin: -46px;
-            width: 148%;
+            width: 132%;
             height: 132%;
             border-radius: 18px;
             border-width: 7px;
         }
     }
     transition: all 200ms;
+
+    iframe {
+        background-color: black;
+
+        border: none;
+
+        flex-shrink: 0; // without this, the height doesn't grow
+        transform-origin: top left;
+    }
     &.portrait {
         &.fullSize {
             transform: translate(143px, 0);
         }
         iframe {
-            border: none;
-            width: 100%;
-            height: 100%;
+            width: @pixelDensityMultiplier * 100% !important;
+            height: @pixelDensityMultiplier * 100% !important;
+            transform: scale(1 / @pixelDensityMultiplier);
         }
     }
+
     &.landscape {
         transform-origin: top left;
         transform: translate(0, @screenWidth+ (2 * @bezelWidth) /* down*/)
             rotate(-90deg /*counter clockwise*/) scale(var(--scale));
         /*@bezelWidth*/
         iframe {
-            height: (900% / 16); //  9/16
-            width: (1600%/9); //  16/9
-            flex-shrink: 0;
-            border: none;
-            transform-origin: top left;
-
-            transform: rotate(90deg /* clockwise*/) translate(0, -@screenWidth);
+            height: (@pixelDensityMultiplier * 900% / 16); //  9/16
+            width: (@pixelDensityMultiplier * 1600%/9); //  16/9
+            transform: rotate(90deg /* clockwise*/) translate(0, -@screenWidth)
+                scale(1 / @pixelDensityMultiplier);
             /*translate(0, -@screenWidth + (2 * @bezelWidth));*/
         }
     }
@@ -103,14 +115,5 @@
         background-color: @phoneFeaturesColor;
         content: "";
         position: absolute;
-    }
-
-    // Make readium think we have a larger screen area
-    .readium {
-        width: 200% !important;
-        height: 200% !important;
-        flex-shrink: 0; // without this, the height doesn't grow
-        transform-origin: top left;
-        transform: scale(0.5);
     }
 }
