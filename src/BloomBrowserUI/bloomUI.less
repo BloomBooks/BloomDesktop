@@ -89,22 +89,6 @@ body.highlightTranslatedStrings.developer .assumedTranslated {
     color: lightgreen;
 }
 
-// The center of a selected radio button is drawn with an <svg> element by materialui.
-// For some reason, in Firefox 45, in Publish:Reader, the "left" says 20.4667px, whereas
-// it says 0px in modern browsers. A mystery. Anyhow this resets it.
-svg {
-    left: 0;
-}
-
-// For some reason, in Firefox 45, in progress dialog, the spinning progress circle,
-// the "top" says 41.6px, whereas it says 0px in modern browsers. A mystery. Anyhow this resets it.
-div {
-    // AP: but, this is causing all kinds of issues elsewhere in the app (BL-7270), so I'm backing it out for now.
-    // Not sure why we would want such a far-reaching rule, anyway.
-
-    //top: 0;
-}
-
 /* all of this worked in the latest firefox, but not Bloom.
     We may want it someday, as it sure seems clearer to put
     in a ? than the black box that FF normally uses, to mean
