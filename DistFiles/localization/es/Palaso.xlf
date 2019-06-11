@@ -155,6 +155,18 @@
           <target xml:lang="es-ES">&amp;Si</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="CustomIdentifierView.betterLabel1" approved="yes">
+        <source xml:lang="en">RFC5646 code:</source>
+        <note>ID: CustomIdentifierView.betterLabel1</note>
+        <note>label describes the code for a custom identifier. Translate only 'code'</note>
+        <target xml:lang="es-ES" state="translated">Código RFC5646:</target>
+      </trans-unit>
+      <trans-unit id="CustomIdentifierView.linkLabel1" approved="yes">
+        <source xml:lang="en">Read about language identifiers on the web</source>
+        <note>ID: CustomIdentifierView.linkLabel1</note>
+        <note>text used in the link to a webpage that describes the language identifiers</note>
+        <target xml:lang="es-ES" state="translated">Lee acerca de los identificadores de idiomas en la web</target>
+      </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
@@ -451,6 +463,18 @@
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
         <target xml:lang="es-ES" state="translated">Configurar metadatos...</target>
       </trans-unit>
+      <trans-unit id="IpaIdentifierView.betterLabel1" approved="yes">
+        <source xml:lang="en">Purpose:</source>
+        <note>ID: IpaIdentifierView.betterLabel1</note>
+        <note>In writing system setup when IPA special option is selected: Label for the purpose combo box</note>
+        <target xml:lang="es-ES" state="translated">Propósito:</target>
+      </trans-unit>
+      <trans-unit id="IpaIdentifierView.linkLabel1" approved="yes">
+        <source xml:lang="en">Read about IPA transcription on the web</source>
+        <note>ID: IpaIdentifierView.linkLabel1</note>
+        <note>In writing system setup when IPA special option is selected: text used in link to a webpage describing IPA transcription</note>
+        <target xml:lang="es-ES" state="translated">Lee sobre la transcripción en AFI (Alfabeto Fonético Internacional) en la web</target>
+      </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
@@ -556,6 +580,22 @@
         <note>ID: LanguageLookup._cannotFindLanguageLink</note>
         <target xml:lang="es-ES" state="translated">¿No encuentra su idioma?</target>
       </trans-unit>
+      <trans-unit id="LanguageLookup._scriptsAndVariantsLabel" approved="yes">
+        <source xml:lang="en">my script variant label</source>
+        <note>ID: LanguageLookup._scriptsAndVariantsLabel</note>
+        <target xml:lang="es-ES" state="translated">mi etiqueta variante de escritura</target>
+        <alt-trans>
+          <target xml:lang="es-ES">mi etiqueta varianted de escritura</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">mi etiqueta alternativa de escritura</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="LanguageLookup._scriptsAndVariantsLink" approved="yes">
+        <source xml:lang="en">Script and Variant</source>
+        <note>ID: LanguageLookup._scriptsAndVariantsLink</note>
+        <target xml:lang="es-ES" state="translated">Escritura y variante</target>
+      </trans-unit>
       <trans-unit id="MemoryWarning" approved="yes">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
         <note>ID: MemoryWarning</note>
@@ -586,7 +626,10 @@
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">Debe mantener el derecho de autor y créditos de autores, ilustradores, etc.</target>
+        <target xml:lang="es-ES" state="translated">Se debe mantener el derecho de autor así como los créditos de los autores, ilustradores, etc.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Debe mantener el derecho de autor y créditos de autores, ilustradores, etc.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Debe mantener el derecho de autor y créditos de autores, ilustradores, etc...</target>
         </alt-trans>
@@ -595,13 +638,19 @@
         <source xml:lang="en">You are free to make commercial use of this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">Puede hacer uso comercial de esta obra.</target>
+        <target xml:lang="es-ES" state="translated">Se puede hacer uso comercial de esta obra.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Puede hacer uso comercial de esta obra.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">Puede adaptar y añadir a esta obra.</target>
+        <target xml:lang="es-ES" state="translated">Se puede adaptar y añadir a esta obra.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Puede adaptar y añadir a esta obra.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Puede adaptar y añadir a este trabajo.</target>
         </alt-trans>
@@ -610,37 +659,37 @@
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">Usted puede adaptar y añadir a esta obra, pero usted puede distribuir la obra resultante sólo bajo una licencia igual o similar a ésta.</target>
+        <target xml:lang="es-ES" state="translated">Se puede adaptar y añadir a esta obra, pero la obra resultante solo se puede distribuir bajo una licencia igual o similar a esta.</target>
         <alt-trans>
-          <target xml:lang="es-ES">Usted puede adaptar y añadir a esta obra, pero debe distribuir el trabajo resultante solo bajo una licencia igual o similar a ésta.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Usted puede adaptar y añadir a esta obra, pero usted puede distribuir el trabajo resultante sólo bajo una licencia igual o similar a ésta.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Usted puede adaptar y añadir a esta obra, pero usted puede distribuir el trabajo resultante sólo bajo licencia igual o similar a ésta.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Usted puede adaptar y añadir a este trabajo, pero usted puede distribuir el trabajo resultante sólo bajo licencia igual o similar a ésta.</target>
+          <target xml:lang="es-ES">Usted puede adaptar y añadir a esta obra, pero usted puede distribuir la obra resultante sólo bajo una licencia igual o similar a ésta.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">No puede hacer cambios o ampliar este trabajo sin permiso.</target>
+        <target xml:lang="es-ES" state="translated">No se puede hacer cambios o ampliar este trabajo sin permiso.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No puede hacer cambios o ampliar este trabajo sin permiso.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not use this work for commercial purposes.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">No puede utilizar esta obra para fines comerciales.</target>
+        <target xml:lang="es-ES" state="translated">No se puede utilizar esta obra para fines comerciales.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No puede utilizar esta obra para fines comerciales.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.PublicDomain" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">Puede copiar, modificar y distribuir esta obra, incluso para fines comerciales, sin pedir permiso.</target>
+        <target xml:lang="es-ES" state="translated">Se puede copiar, modificar y distribuir esta obra, incluso para fines comerciales, sin pedir permiso.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Puede copiar, modificar y distribuir esta obra, incluso para fines comerciales, sin pedir permiso.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
@@ -716,6 +765,11 @@
         <note>ID: MetadataEditor.License</note>
         <target xml:lang="es-ES" state="translated">Licencia</target>
       </trans-unit>
+      <trans-unit id="MetadataEditor.PublicDomain" approved="yes">
+        <source xml:lang="en">The copyright holder waives all rights</source>
+        <note>ID: MetadataEditor.PublicDomain</note>
+        <target xml:lang="es-ES" state="translated">El títular de derchos de autor renuncia todos sus derechos</target>
+      </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
@@ -769,6 +823,12 @@
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
         <target xml:lang="es-ES" state="translated">más información</target>
       </trans-unit>
+      <trans-unit id="MetadataEditor.linkToPublicDomainCC0" approved="yes">
+        <source xml:lang="en">about {0} Public Domain</source>
+        <note>ID: MetadataEditor.linkToPublicDomainCC0</note>
+        <note>{0} is replaced by an untranslatable abbreviation functioning as an adjective ("CC0")</note>
+        <target xml:lang="es-ES" state="translated">acerca del dominio público {0}</target>
+      </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons" approved="yes">
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
@@ -777,6 +837,21 @@
         <alt-trans>
           <target xml:lang="es-ES">No exigible</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton" approved="yes">
+        <source xml:lang="en">Cancel</source>
+        <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton</note>
+        <target xml:lang="es-ES" state="translated">Cancelar</target>
+      </trans-unit>
+      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._okButton" approved="yes">
+        <source xml:lang="en">OK</source>
+        <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._okButton</note>
+        <target xml:lang="es-ES" state="translated">Aceptar</target>
+      </trans-unit>
+      <trans-unit id="ScriptsAndVariantsDialog.ScriptsAndVariants" approved="yes">
+        <source xml:lang="en">Script and Variant</source>
+        <note>ID: ScriptsAndVariantsDialog.ScriptsAndVariants</note>
+        <target xml:lang="es-ES" state="translated">Escritura y variante</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
@@ -852,18 +927,14 @@
       <trans-unit id="SettingsProtection.PasswordNotice" approved="yes">
         <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
-        <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
-        <note xml:lang="en">OLD TEXT (before 4.0, added space, removed period): Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</note>
-        <target xml:lang="es-ES" state="translated">La contraseña de fábrica para estos ajustes es "{0}". Si la olvida, siempre puede usar Google para buscar "{1}" y "{2}".</target>
-        <alt-trans>
-          <target xml:lang="es-ES">La contraseña de fábrica para estos ajustes es "{0}". Si lo olvida, siempre puedes usar Google para buscar "{1}" y "{2}".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Contraseña de fábrica para estos ajustes es "{0}". Si lo olvida, siempre puedes usar Google para buscar "{1}" y "{2}".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Contraseña de fábrica para estos ajustes es "{0}".  Si lo olvida, siempre puedes usar Google para buscar "{1}" y "{2}"</target>
-        </alt-trans>
+        <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
+        <target xml:lang="es-ES" state="translated">La contraseña de fábrica para estas configuraciones es "{0}". Si la olvida, siempre puede visitar la página de apoyo de {1}.</target>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl" approved="yes">
+        <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
+        <note>ID: SettingsProtection.PasswordNoticeWithSupportUrl</note>
+        <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNotice". Param 0: Factory password; Param 1: product name; Param 2: URL of support page</note>
+        <target xml:lang="es-ES" state="translated">La contraseña de fábrica para estas configuraciones es "{0}". Si la olvida, siempre puede visitar la página de apoyo {1} en: {2}</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
@@ -885,6 +956,12 @@
         <source xml:lang="en">Release Notes</source>
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
         <target xml:lang="es-ES" state="translated">Notas de la versión</target>
+      </trans-unit>
+      <trans-unit id="VoiceIdentifierView.betterLabel1" approved="yes">
+        <source xml:lang="en">In applications which support this option, fields with this input system will be able to play and record voice.</source>
+        <note>ID: VoiceIdentifierView.betterLabel1</note>
+        <note>Displayed if a user selects the voice special option in writing system setup</note>
+        <target xml:lang="es-ES" state="translated">En las aplicaciones que soportan esta opción, los campos con esta sistema de ingreso podrán grabar y reproducir la voz.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
@@ -922,6 +999,36 @@
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
         <target xml:lang="es-ES" state="translated">&amp;Área de prueba:</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifierView.betterLabel4" approved="yes">
+        <source xml:lang="en">Abbreviation</source>
+        <note>ID: WSIdentifierView.betterLabel4</note>
+        <note>In writing system setup general tab: label before abbreviation text box</note>
+        <target xml:lang="es-ES" state="translated">Abreviatura</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifierView.betterLabel5" approved="yes">
+        <source xml:lang="en">Special:</source>
+        <note>ID: WSIdentifierView.betterLabel5</note>
+        <note>In writing system setup general tab:  Label before combo box with 'Special' choices</note>
+        <target xml:lang="es-ES" state="translated">Especial:</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Default" approved="yes">
+        <source xml:lang="en">Default</source>
+        <note>ID: WSIdentifiers.IpaIdentifierView.Default</note>
+        <note>Choice for most users</note>
+        <target xml:lang="es-ES" state="translated">Predetermindado</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Emic" approved="yes">
+        <source xml:lang="en">Emic (uses phonology of the language)</source>
+        <note>ID: WSIdentifiers.IpaIdentifierView.Emic</note>
+        <note>Only translate text inside of the parentheses ()</note>
+        <target xml:lang="es-ES" state="translated">Emic (utiliza la fonología del idioma)</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Etic" approved="yes">
+        <source xml:lang="en">Etic (raw phonetic transcription)</source>
+        <note>ID: WSIdentifiers.IpaIdentifierView.Etic</note>
+        <note>Only translate text inside of the parentheses ()</note>
+        <target xml:lang="es-ES" state="translated">Etic (transcripción fonética automática)</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>

@@ -45,10 +45,13 @@
           <target xml:lang="es-ES">Ver <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">estos videos de capacitación</g>.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="decodable.learn.helpindex">
+      <trans-unit id="decodable.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
-        <target xml:lang="es-ES" state="translated">Vaya al menú de Ayuda, seleccione 'Ayuda' y busque "Libros Descifrables" en el índice.</target>
+        <target xml:lang="es-ES" state="translated">Vaya al menú de Ayuda, seleccione 'Documentación (inglés)' y busque "Decodable Readers" en el índice.</target>
         <note>ID: decodable.learn.helpindex</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Vaya al menú de Ayuda, seleccione 'Ayuda' y busque "Libros Descifrables" en el índice.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>

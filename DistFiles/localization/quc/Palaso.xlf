@@ -186,6 +186,21 @@
         <note>ID: Common.YesButton</note>
         <target xml:lang="quc" state="translated">&amp;Je'</target>
       </trans-unit>
+      <trans-unit id="CustomIdentifierView.betterLabel1" approved="yes">
+        <source xml:lang="en">RFC5646 code:</source>
+        <note>ID: CustomIdentifierView.betterLabel1</note>
+        <note>label describes the code for a custom identifier. Translate only 'code'</note>
+        <target xml:lang="quc" state="translated">Retalb'alil RFC5646:</target>
+      </trans-unit>
+      <trans-unit id="CustomIdentifierView.linkLabel1" approved="yes">
+        <source xml:lang="en">Read about language identifiers on the web</source>
+        <note>ID: CustomIdentifierView.linkLabel1</note>
+        <note>text used in the link to a webpage that describes the language identifiers</note>
+        <target xml:lang="quc" state="translated">Chasik'ij uwach pa kiwi' le q'alajisanelab' rech tzijob'alib' pa le web</target>
+        <alt-trans>
+          <target xml:lang="quc">Chsik'ij uwach pa uwi' ri q'alajisanelab' rech tzijob'alib' pa ri web</target>
+        </alt-trans>
+      </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
@@ -464,6 +479,24 @@
           <target xml:lang="quc">Usuk'maxik jalajoj taq tz'ib'...</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="IpaIdentifierView.betterLabel1" approved="yes">
+        <source xml:lang="en">Purpose:</source>
+        <note>ID: IpaIdentifierView.betterLabel1</note>
+        <note>In writing system setup when IPA special option is selected: Label for the purpose combo box</note>
+        <target xml:lang="quc" state="translated">Rayib'al k'u'x</target>
+        <alt-trans>
+          <target xml:lang="quc">Rayib'al</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="IpaIdentifierView.linkLabel1" approved="yes">
+        <source xml:lang="en">Read about IPA transcription on the web</source>
+        <note>ID: IpaIdentifierView.linkLabel1</note>
+        <note>In writing system setup when IPA special option is selected: text used in link to a webpage describing IPA transcription</note>
+        <target xml:lang="quc" state="translated">Chasik'ij uwach pa uwi' ri q'axib'al pa AFI (Ch'ab'alil Choltz'ib' Ch'aqaja'; Alfabeto Fonético Internacional) pa ri web</target>
+        <alt-trans>
+          <target xml:lang="quc">Chasik'ij uwach pa uwi' ri q'axb'al pa AFI (Alfabeto Fonético Internacional) Ch'ab'alil choltz'ib' ch'aqaja' pa ri web</target>
+        </alt-trans>
+      </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
@@ -569,6 +602,19 @@
         <alt-trans>
           <target xml:lang="quc">¿Ma karaqta ri atzijob'al?</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="LanguageLookup._scriptsAndVariantsLabel" approved="yes">
+        <source xml:lang="en">my script variant label</source>
+        <note>ID: LanguageLookup._scriptsAndVariantsLabel</note>
+        <target xml:lang="quc" state="translated">nuretwokaj rech jalajoj tz'ib'anik</target>
+        <alt-trans>
+          <target xml:lang="quc">Nuretwokaj jalajoj rech tz'ib'anik</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="LanguageLookup._scriptsAndVariantsLink" approved="yes">
+        <source xml:lang="en">Script and Variant</source>
+        <note>ID: LanguageLookup._scriptsAndVariantsLink</note>
+        <target xml:lang="quc" state="translated">Tz'ib'anik xuquje' ri jalajoj</target>
       </trans-unit>
       <trans-unit id="MemoryWarning" approved="yes">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
@@ -764,6 +810,14 @@
           <target xml:lang="quc">Ya'tal wuj</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="MetadataEditor.PublicDomain" approved="yes">
+        <source xml:lang="en">The copyright holder waives all rights</source>
+        <note>ID: MetadataEditor.PublicDomain</note>
+        <target xml:lang="quc" state="translated">Le nab'e rajaw rech ya'talik rajaw kutzaq ronojel le ya'tal chech</target>
+        <alt-trans>
+          <target xml:lang="quc">Ri ajchaq'e ri ya'talik chech ri rajaw kutzaq ronojel ri ya'talik che</target>
+        </alt-trans>
+      </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
@@ -814,6 +868,15 @@
           <target xml:lang="quc">K'i q'alajisanem</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="MetadataEditor.linkToPublicDomainCC0" approved="yes">
+        <source xml:lang="en">about {0} Public Domain</source>
+        <note>ID: MetadataEditor.linkToPublicDomainCC0</note>
+        <note>{0} is replaced by an untranslatable abbreviation functioning as an adjective ("CC0")</note>
+        <target xml:lang="quc" state="translated">pa uwi' ri tikch'ab'alil kech winaqil {0}</target>
+        <alt-trans>
+          <target xml:lang="quc">Pa uwi' ri ret'amab'al ri winaqil {0}</target>
+        </alt-trans>
+      </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons" approved="yes">
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
@@ -822,6 +885,24 @@
         <alt-trans>
           <target xml:lang="quc">Koksax taj</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton" approved="yes">
+        <source xml:lang="en">Cancel</source>
+        <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton</note>
+        <target xml:lang="quc" state="translated">Uq'atexik</target>
+      </trans-unit>
+      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._okButton" approved="yes">
+        <source xml:lang="en">OK</source>
+        <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._okButton</note>
+        <target xml:lang="quc" state="translated">Uk'ulaxi</target>
+        <alt-trans>
+          <target xml:lang="quc">K'amik</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="ScriptsAndVariantsDialog.ScriptsAndVariants" approved="yes">
+        <source xml:lang="en">Script and Variant</source>
+        <note>ID: ScriptsAndVariantsDialog.ScriptsAndVariants</note>
+        <target xml:lang="quc" state="translated">Tz'ib'anik xuquje' ri jalajoj</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
@@ -888,15 +969,20 @@
           <target xml:lang="quc">K'utik k'i taq ka'yib'al</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordNotice" approved="yes">
+      <trans-unit id="SettingsProtection.PasswordNotice">
         <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
-        <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
-        <note xml:lang="en">OLD TEXT (before 4.0, added space, removed period): Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</note>
+        <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
         <target xml:lang="quc" state="translated">Le Retal okib'al rech le ajb'anal rech chi kech taq we utz'aqatisaxik are "{0}". We ksach chi awech, junalik kakoj ri Google chech utzukuxik "{1}" y "{2}"</target>
         <alt-trans>
           <target xml:lang="quc">Ri retal okib'al rech ri b'anib'al rech taq we usuk'umaxik are "{0}". We ksach chi awech, junalik kakoj ri Google chech utzukuxik "{1}" y "{2}".</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl">
+        <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
+        <note>ID: SettingsProtection.PasswordNoticeWithSupportUrl</note>
+        <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNotice". Param 0: Factory password; Param 1: product name; Param 2: URL of support page</note>
+        <target xml:lang="quc" state="translated">Le retal rech la ajb'anale rech chi kech usuk'umaxik are "{0}". We ksach chi awech, junalik kakoj ri uxaq che to'b'anem {1} en: {2}</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
@@ -921,6 +1007,12 @@
         <alt-trans>
           <target xml:lang="quc">Ub'ixkil tzij</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="VoiceIdentifierView.betterLabel1">
+        <source xml:lang="en">In applications which support this option, fields with this input system will be able to play and record voice.</source>
+        <note>ID: VoiceIdentifierView.betterLabel1</note>
+        <note>Displayed if a user selects the voice special option in writing system setup</note>
+        <target xml:lang="quc" state="translated">Pa taq ri ukojik che kuq'iy we jun ub'eyal, ri upam ruk' wa' we wokchakub'al rech okib'al kixkowinik kik'olo xuquje' kik'iyirisaj ri ch'ab'alil.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
@@ -957,6 +1049,48 @@
         <target xml:lang="quc" state="translated">&amp; K’olib’al rech K’otow chi’aj:</target>
         <alt-trans>
           <target xml:lang="quc"> &amp; K’olib’al rech K’otow chi’aj:</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="WSIdentifierView.betterLabel4" approved="yes">
+        <source xml:lang="en">Abbreviation</source>
+        <note>ID: WSIdentifierView.betterLabel4</note>
+        <note>In writing system setup general tab: label before abbreviation text box</note>
+        <target xml:lang="quc" state="translated">Jik'tzij</target>
+        <alt-trans>
+          <target xml:lang="quc">Jek'tzij</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="WSIdentifierView.betterLabel5" approved="yes">
+        <source xml:lang="en">Special:</source>
+        <note>ID: WSIdentifierView.betterLabel5</note>
+        <note>In writing system setup general tab:  Label before combo box with 'Special' choices</note>
+        <target xml:lang="quc" state="translated">Nim uq'ij:</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Default" approved="yes">
+        <source xml:lang="en">Default</source>
+        <note>ID: WSIdentifiers.IpaIdentifierView.Default</note>
+        <note>Choice for most users</note>
+        <target xml:lang="quc" state="translated">Ya'om chik uloq chech</target>
+        <alt-trans>
+          <target xml:lang="quc">Ya'om chik uloq che</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Emic" approved="yes">
+        <source xml:lang="en">Emic (uses phonology of the language)</source>
+        <note>ID: WSIdentifiers.IpaIdentifierView.Emic</note>
+        <note>Only translate text inside of the parentheses ()</note>
+        <target xml:lang="quc" state="translated">Emic (kukoj le uch'ab'alil rech le tzijob'al)</target>
+        <alt-trans>
+          <target xml:lang="quc">Emic (kukoj ri uch'ab'alil rech ri tzijob'al)</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Etic" approved="yes">
+        <source xml:lang="en">Etic (raw phonetic transcription)</source>
+        <note>ID: WSIdentifiers.IpaIdentifierView.Etic</note>
+        <note>Only translate text inside of the parentheses ()</note>
+        <target xml:lang="quc" state="translated">Etic (uq'axib'al ch'ab'alil pa utukel wi)</target>
+        <alt-trans>
+          <target xml:lang="quc">Etic (uq'axb'al ch'ab'ilil pa utukel wi)</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">

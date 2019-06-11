@@ -25,10 +25,10 @@
       </trans-unit>
       <trans-unit id="picture.dictionary.stillexperimental" approved="yes">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
-        <target xml:lang="fr" state="translated">Ce livre est actuellement marqué "expérimental" parce que nous connaissons plusieurs problèmes de mise en page et de praticité.</target>
+        <target xml:lang="fr" state="translated">Ce livre est actuellement marqué "expérimental" parce que nous sommes conscients de plusieurs problèmes de mise en page et de praticité.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
         <alt-trans>
-          <target xml:lang="fr">Ce livre est actuellement marqué "expérimental" parce que nous sommes conscients de plusieurs problèmes de mise en page et de praticité.</target>
+          <target xml:lang="fr">Ce livre est actuellement marqué "expérimental" parce que nous connaissons plusieurs problèmes de mise en page et de praticité.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Ce livre est actuellement marqué "expérimental" parce que nous connaissons plusieurs problèmes de mise en page et de commodité.</target>
