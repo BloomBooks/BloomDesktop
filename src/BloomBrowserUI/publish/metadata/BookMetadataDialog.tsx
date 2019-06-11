@@ -9,7 +9,7 @@ import * as mobxReact from "mobx-react";
 import BloomButton from "../../react_components/bloomButton";
 import { Div } from "../../react_components/l10nComponents";
 import { DialogTitle, DialogActions, DialogContent } from "@material-ui/core";
-import { String } from "../../react_components/l10nComponents";
+import { LocalizedString } from "../../react_components/l10nComponents";
 // tslint:disable-next-line:no-empty-interface
 interface IState {
     isOpen: boolean;
@@ -70,12 +70,12 @@ export default class BookMetadataDialog extends React.Component<
             >
                 <Dialog className="bookMetadataDialog" open={this.state.isOpen}>
                     <DialogTitle>
-                        <String
+                        <LocalizedString
                             l10nKey="PublishTab.BookMetadata"
                             l10nComment="title of metadata dialog box"
                         >
                             Book Metadata
-                        </String>
+                        </LocalizedString>
                     </DialogTitle>
                     <DialogContent>
                         <BookMetadataTable

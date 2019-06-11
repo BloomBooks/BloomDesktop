@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Typography } from "@material-ui/core";
 import "./BasePublishScreen.less";
-import { String } from "../../react_components/l10nComponents";
+import { LocalizedString } from "../../react_components/l10nComponents";
 
 // This file contains a collection of components which together comprise the BasePublishScreen,
 // which creates the basic layout of a publishing screen in Bloom.
@@ -61,7 +61,7 @@ export const HelpGroup: React.FunctionComponent = props => {
     return (
         <section className={"helpGroup"}>
             <Typography component="h1" variant="h6">
-                <String l10nKey="Common.Help">Help</String>
+                <LocalizedString l10nKey="Common.Help">Help</LocalizedString>
             </Typography>
             {props.children}
         </section>

@@ -7,7 +7,7 @@ import { AccessibilityChecklist } from "./accessibilityChecklist";
 import { DaisyChecks } from "./daisyChecks";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { BloomApi } from "../../utils/bloomApi";
-import { String } from "../../react_components/l10nComponents";
+import { LocalizedString } from "../../react_components/l10nComponents";
 import theme from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 // This is a screen of controls that gives the user instructions and controls
@@ -53,28 +53,28 @@ export class AccessibilityCheckScreen extends React.Component<{}, IState> {
                 <Tabs defaultIndex={1}>
                     <TabList>
                         <Tab>
-                            <String
+                            <LocalizedString
                                 l10nKey="AccessibilityCheck.LearnAbout"
                                 l10nComment="Used as the name on a tab of the Accessibility Checks screen."
                             >
                                 Learn About Accessibility
-                            </String>
+                            </LocalizedString>
                         </Tab>
                         <Tab>
-                            <String
+                            <LocalizedString
                                 l10nKey="AccessibilityCheck.Checklist"
                                 l10nComment="Used as the name on a tab of the Accessibility Checks screen."
                             >
                                 Accessibility Checklist
-                            </String>
+                            </LocalizedString>
                         </Tab>
                         <Tab>
-                            <String
+                            <LocalizedString
                                 l10nKey="AccessibilityCheck.ACEByDaisy"
                                 l10nComment="Used as the name on a tab of the Accessibility Checks screen."
                             >
                                 Ace by DAISY Automated Checks
-                            </String>
+                            </LocalizedString>
                         </Tab>
                     </TabList>
                     <TabPanel>
