@@ -29,7 +29,7 @@
         <target xml:lang="bn" state="translated">দেখুন <g id="genid-3" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">এই নির্দেশনামূলক ভিডিওসমূহ</g>।</target>
         <note>ID: leveled.learn.videos</note>
       </trans-unit>
-      <trans-unit id="leveled.learn.helpindex">
+      <trans-unit id="leveled.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</source>
         <target xml:lang="bn" state="translated">সহায়তা তালিকায় যান, "দলিল রচনা/ডকুমেন্টেশন" নির্বাচন করুন এবং "লেভেলড রিডার" এর নীচে সূচিপত্র দেখুন।</target>
         <note>ID: leveled.learn.helpindex</note>

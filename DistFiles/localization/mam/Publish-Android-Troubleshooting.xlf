@@ -66,12 +66,12 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.windows">
         <source xml:lang="en">The device should be showing up in Windows File Explorer (this feature is Windows-only)</source>
-        <target xml:lang="mam" state="needs-translation">The device should be showing up in Windows File Explorer (this feature is Windows-only)</target>
+        <target xml:lang="mam" state="translated">Aju makb'il aq'unb'il xk'utz'ib' il ti'j tu'n tetz tye'k'an tib' tuj jyob'il nak'ub'il aq'unb'il te Windows (Qe ti'chaq tok ti'j nkanet o'kxten tuj Windows)</target>
         <note>ID: android.publish.usb.windows</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.cable.or.port">
         <source xml:lang="en">Try a different cable, or a different USB port.</source>
-        <target xml:lang="mam" state="needs-translation">Try a different cable, or a different USB port.</target>
+        <target xml:lang="mam" state="translated">Nib'enxa tu'n tok tq'ona junxitl taq'al mo junxitl tenb'il USB.</target>
         <note>ID: android.publish.usb.cable.or.port</note>
       </trans-unit>
     </body>
