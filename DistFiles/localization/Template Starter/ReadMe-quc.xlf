@@ -143,10 +143,13 @@ html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Rech uya�
           <target xml:lang="quc">Taq ub’ixkil</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.nothingautomatic">
+      <trans-unit id="template.starter.nothingautomatic" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
-        <target xml:lang="quc" state="translated"><g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: We k’i taq no’jwuj kaj ne kexo’lix chwe’q kb’ij rumal ri nim uchak  rech retalb’alil ajilab’al uxaq. Chaya pa ajolom che ri Bloom maja’ k’o  jun ub’eyal rech ri taqanik che jun uxaq rajawaxik  kya’  pa utukel wi  chi upam ri k’ak’  taq no’jwuj; ri ajchaq’e kuya na uwi’ jujunal chi kech ri uxaq chi upam ri kajxukut rech tzijonem "uwiqik Uxaq Wuj".</target>
+        <target xml:lang="quc" state="translated"><g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: We no’jtaq wuj ri' kraj ne kexo’lix chwe’q kb’ij ruk' le nim uchak rech retalb’alil ajilab’al uxaq. Chaya pa ajolom chi Bloom k'a maja’ k’o jun ub’eyal rech ri taqanik chech uya'ik ub'ixik jun uxaq rajawaxik kya’ pa utukelal wi chi upam k’ak’ taq no’jwuj; le ajchaq’e kuwiq chi jujunal taq le uxaq wuj ruk' le kajxukut rech tzijonem "Uwiqik Uxaq Wuj".</target>
         <note>ID: template.starter.nothingautomatic</note>
+        <alt-trans>
+          <target xml:lang="quc"><g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: We k’i taq no’jwuj kaj ne kexo’lix chwe’q kb’ij rumal ri nim uchak  rech retalb’alil ajilab’al uxaq. Chaya pa ajolom che ri Bloom maja’ k’o  jun ub’eyal rech ri taqanik che jun uxaq rajawaxik  kya’  pa utukel wi  chi upam ri k’ak’  taq no’jwuj; ri ajchaq’e kuya na uwi’ jujunal chi kech ri uxaq chi upam ri kajxukut rech tzijonem "uwiqik Uxaq Wuj".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc"><g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: We wuj ri' kuya'o kxo’lix upam chwe'q kab'ij ruk' uwach taq uxaq wuj. Chna'taj chi qech chi Bloom k'a maja’ k’o jun ub’anik chech ub’ixik chi jun uxaq wuj rajawaxik kya’ chi upam ri k’ak’ taq wuj, ri b’anal rech kuya na uwi’ jujunal chi kech ri uxaq wuj che ri kajxukut rech tzijonem "Uwiqik Uxaq Wuj".</target>
         </alt-trans>
@@ -165,26 +168,33 @@ html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Rech uya�
 </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.nametonotaddpage">
+      <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
-        <target xml:lang="quc" state="translated"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: We man kawaj taj che ri uxaq rech ri raqanib’al kuk’ut rib’ pa ri kajxukut rech ri tzijob’em "Agregar Página", lal kakowin la che ub’ixik wa’ che ri Bloom ruk’ ri uwokik jun k’olchak ub’i’am "NotForAddPage.txt." pa ri  k’olyakb’al  chak rech raqanib’al rech no’jwuj.</target>
+        <target xml:lang="quc" state="translated">
+<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>:We man kawaj taj chi ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uwiqik Uxaq Wuj", kuya'o kaya ub'ixik chech Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’al taq rech No'jwuj.</target>
         <note>ID: template.starter.nametonotaddpage</note>
         <alt-trans>
-          <target xml:lang="quc"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>:We man kawaj taj chi ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uwiqik Uxaq Wuj", kuya'o kaya ub'ixik chech Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’al taq rech No'jwuj.</target>
+          <target xml:lang="quc"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: We man kawaj taj che ri uxaq rech ri raqanib’al kuk’ut rib’ pa ri kajxukut rech ri tzijob’em "Agregar Página", lal kakowin la che ub’ixik wa’ che ri Bloom ruk’ ri uwokik jun k’olchak ub’i’am "NotForAddPage.txt." pa ri  k’olyakb’al  chak rech raqanib’al rech no’jwuj.</target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="quc">
-<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>:We man kawaj taj chi ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uwiqik Uxaq Wuj", kuya'o kaya ub'ixik chech Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’al taq rech No'jwuj.</target>
+          <target xml:lang="quc"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: We man kawaj taj che ri uxaq rech ri raqanib’al kuk’ut rib’ pa ri kajxukut rech ri tzijob’em "Agregar Página", lal kakowin la che ub’ixik wa’ che ri Bloom ruk’ ri uwokik jun k’olchak ub’i’am "NotForAddPage.txt." pa ri  k’olyakb’al  chak rech raqanib’al rech no’jwuj.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>:We man kawaj taj chi ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uwiqik Uxaq Wuj", kuya'o kaya ub'ixik chech Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’al taq rech No'jwuj.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="quc">
 <g id="genid-12" ctype="x-html-a" html:name="note2">2</g>:We man kawaj taj che ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uya’ik Uwi’ Uxaq Wuj", lal kakowin la che ub’ixik we ri’ che Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’alib’ rech Wuj.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.labelsnottranslatable">
+      <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
-        <target xml:lang="quc" state="translated"><g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Nik’aj taq winaq ma kekowin ta che uq’axexik ri retalb’alil xuquje’ ub’ixik ub’antajik pa nik’ak chik tzijob’al rech amaq’. We we ri’ kuya k’axk’olil, chach’ab’ej ri k’o keta’mab’al chi rech ri Bloom.</target>
+        <target xml:lang="quc" state="translated">
+<g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Jule' taq winaq chik, man kekowin ta chech uq’axexik pa jun tzijob'al chik ri retwokaj xuquje’ ub’ixik ri ub’antajik pa jule' taq tzijob’al chik rech uwachulew. We kuya k’axk’olil, chatch’aw kuk’ ri jupuq nima’q taq keta’mab’al rech Bloom.</target>
         <note>ID: template.starter.labelsnottranslatable</note>
+        <alt-trans>
+          <target xml:lang="quc"><g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Nik’aj taq winaq ma kekowin ta che uq’axexik ri retalb’alil xuquje’ ub’ixik ub’antajik pa nik’ak chik tzijob’al rech amaq’. We we ri’ kuya k’axk’olil, chach’ab’ej ri k’o keta’mab’al chi rech ri Bloom.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc"><g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Jule' taq winaq chik, man kekowin ta chech uq’axexik pa jun tzijob'al chik ri retwokaj xuquje’ ub’ixik ri ub’antajik pa jule' taq tzijob’al chik rech uwachulew. We kuya k’axk’olil, chatch’aw kuk’ ri jupuq nima’q taq keta’mab’al rech Bloom.</target>
         </alt-trans>
@@ -194,19 +204,15 @@ html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Rech uya�
 <g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Jule' taq winaq chik, man kekowin ta chech uq’axexik pa jun tzijob'al chik ri retwokaj xuquje’ ub’ixik ri ub’antajik pa jule' taq tzijob’al chik rech uwachulew. We kuya k’axk’olil, chatch’aw kuk’ ri jupuq nima’q taq keta’mab’al rech Bloom.</target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="quc">
-<g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Jule' taq winaq chik, man kekowin ta chech uq’axexik pa jun tzijob'al chik ri retwokaj xuquje’ ub’ixik ri ub’antajik pa jule' taq tzijob’al chik rech uwachulew. We kuya k’axk’olil, chatch’aw kuk’ ri jupuq nima’q taq keta’mab’al rech Bloom.</target>
-        </alt-trans>
-        <alt-trans>
           <target xml:lang="quc"><g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Nik’aj taq winaq ma kekomin ta na che uq’axexik pa jun tzijobal chik ri retwokaj xuquje’ ub’ixik ri ub’antajik  pa nik’aj taq tzijob’al chik rech amaq’. We we ri’ kuya k’axk’olil, chatch’aw kuk’ ri jupuq nima’q taq keta’mab’al rech Bloom.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.editrawhtml">
+      <trans-unit id="template.starter.editrawhtml" approved="yes">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
-        <target xml:lang="quc" state="translated"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kariyij che ri wokilb’al uwach rech"Agregar Página" xuquje’ chaya jun ub’ixik ub’antajik jub’iq’ ri uxaq, katel na che Bloom xuquje’ ukolomaxik ri k’olchak html rech ri raqanib’al pa "Notepad", jewa’ ub’anik: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        <target xml:lang="quc" state="translated"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kawaj chi le kutb'al wach rech "Uwiqik Uxaq wuj” xuquje’ chya’ ub’ixik jub’iq’ ri ub’antajik ri k’o chi upam ri uxaq wuj, rajawaxik katel na pa ri Bloom k'ate k'u ri' kab'an ukolomaxik le k’olchak html rech ri raqanib’al pa "Notepad", xaq jeri':<x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
         <alt-trans>
-          <target xml:lang="quc"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kawaj chi le kutb'al wach rech "Uwiqik Uxaq wuj” xuquje’ chya’ ub’ixik jub’iq’ ri ub’antajik ri k’o chi upam ri uxaq wuj, rajawaxik katel na pa ri Bloom k'ate k'u ri' kab'an ukolomaxik le k’olchak html rech ri raqanib’al pa "Notepad", xaq jeri':<x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+          <target xml:lang="quc"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: We kariyij che ri wokilb’al uwach rech"Agregar Página" xuquje’ chaya jun ub’ixik ub’antajik jub’iq’ ri uxaq, katel na che Bloom xuquje’ ukolomaxik ri k’olchak html rech ri raqanib’al pa "Notepad", jewa’ ub’anik: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="quc">

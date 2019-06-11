@@ -685,10 +685,10 @@
         <target xml:lang="pbu" state="translated">کرکټرونه ښکاره کړئ</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice">
-        <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
+        <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page.</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
-        <target xml:lang="pbu" state="translated">دې تنظیمونو لپاره د فابریکې رمز {0} دی. که تاسو یې له یاده وباسئ تاسې هرکله د "{1}" او "{2}" لپاره ګوګل کې لټون کولی شئ</target>
+        <target xml:lang="pbu" state="translated">دې تنظیمونو لپاره د فابریکې رمز {0} دی. که تاسو یې له یاده وباسئ تاسې هرکله د "{1}" او لپاره ګوګل کې لټون کولی شئ</target>
         <alt-trans>
           <target xml:lang="pbu">دې تنظیمونو لپاره د فابریکې رمز {0}‏ دی. که تاسو یې له یاده وباسئ تاسې هرکله د "‎{1}‏"‏ او "‎{2}‏"‏ لپاره ګوګل کی لټون کولی شئ.</target>
         </alt-trans>
