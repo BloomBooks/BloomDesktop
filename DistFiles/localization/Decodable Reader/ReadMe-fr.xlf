@@ -2,10 +2,13 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="fr">
     <body>
-      <trans-unit id="decodable.definition" approved="yes">
+      <trans-unit id="decodable.definition">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
-        <target xml:lang="fr" state="translated">Un <g id="genid-1" ctype="x-html-strong">livre déchiffrable</g> est un livre dont les lettres et les mots se limitent à ceux lisibles par un lecteur débutant. En général, les apprenants doivent passer, suivant les langues, par 5 à 10 <g id="genid-2" ctype="x-html-em">étapes de déchiffrage</g>.</target>
+        <target xml:lang="fr" state="translated">Un <g id="genid-1" ctype="x-html-strong">livre déchiffrable</g> est un livre dont les lettres et les mots se limitent à ceux qu'un lecteur débutant sait lire. En général, les apprenants doivent passer, suivant les langues, par 5 à 10 <g id="genid-2" ctype="x-html-em">étapes de déchiffrage</g>.</target>
         <note>ID: decodable.definition</note>
+        <alt-trans>
+          <target xml:lang="fr">Un <g id="genid-1" ctype="x-html-strong">livre déchiffrable</g> est un livre dont les lettres et les mots se limitent à ceux qu'un lecteur débutant peut lire. En général, les apprenants doivent passer, suivant les langues, par 5 à 10 <g id="genid-2" ctype="x-html-em">étapes de déchiffrage</g>.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Un <g id="genid-1" ctype="x-html-strong">livre déchiffrable</g> est un livre dont les lettres et les mots se limitent à ceux qu'un lecteur débutant est capable de lire. En général, les apprenants doivent passer, suivant les langues, par 5 à 10 <g id="genid-2" ctype="x-html-em">niveaux de déchiffrage</g>.</target>
         </alt-trans>
@@ -34,8 +37,11 @@
       </trans-unit>
       <trans-unit id="decodable.learn" approved="yes">
         <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
-        <target xml:lang="fr" state="translated">Pour en savoir plus sur l'utilisation des livres déchiffrables dans Bloom :</target>
+        <target xml:lang="fr" state="translated">Pour en savoir plus sur l'utilisation des livres déchiffrables dans Bloom, vous pouvez :</target>
         <note>ID: decodable.learn</note>
+        <alt-trans>
+          <target xml:lang="fr">Pour en savoir plus sur l'utilisation des livres déchiffrables dans Bloom :</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>

@@ -710,7 +710,7 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink" approved="yes">
         <source xml:lang="en">Set...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink</note>
-        <note>If there is no third language specified, the link changes to this.</note>
+        <note>If there is no third or sign language specified, the link changes to this.</note>
         <target xml:lang="hi" state="translated">सेट करें...</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel" approved="yes">
@@ -734,6 +734,11 @@
         <alt-trans>
           <target xml:lang="hi">3 (उदाहरण के लिए क्षेत्रीय भाषा) भाषा (वैकल्पिक)</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
+        <source xml:lang="en">Sign Language   (Optional)</source>
+        <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
+        <target xml:lang="hi" state="needs-translation">Sign Language   (Optional)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
@@ -1011,6 +1016,11 @@
           <target xml:lang="hi">क्योंकि यह एक स्रोत संग्रह है, खिले नई गोले के लिए स्रोतों के रूप में किसी भी मौजूदा गोले की पेशकश नहीं है। यदि आप एक भाषा एक खोल करने के लिए जोड़ने के लिए चाहते हैं, तो इसके बजाय आप संपादित संग्रह खोल से युक्त, बजाय इसे की एक प्रतिलिपि बनाने के लिए की जरूरत है। इसके अलावा, वॉल कैलेंडर वर्तमान में एक नया खोल करने के लिए उपयोग किया जा सकता।</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
+        <source xml:lang="en">Show translations which have not been approved yet</source>
+        <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
+        <target xml:lang="hi" state="needs-translation">Show translations which have not been approved yet</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
         <note>ID: CollectionTab.MakeBloomPackButton</note>
@@ -1182,6 +1192,12 @@
         <note>ID: Common.Advanced</note>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
         <target xml:lang="hi" state="translated">उन्नत</target>
+      </trans-unit>
+      <trans-unit id="Common.LearnMore" sil:dynamic="true">
+        <source xml:lang="en">Learn More</source>
+        <note>ID: Common.LearnMore</note>
+        <note>This is the same as Settings.Enterprise.LearnMore</note>
+        <target xml:lang="hi" state="needs-translation">Learn More</target>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
@@ -1422,6 +1438,11 @@
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
         <target xml:lang="hi" state="translated">इस लेआउट में बदलने से कुछ सामग्री गुम हो जाएगी।</target>
+      </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true">
+        <source xml:lang="en">This kind of page will be included only in digital book outputs, not in PDF.</source>
+        <note>ID: EditTab.AddPageDialog.DigitalPage</note>
+        <target xml:lang="hi" state="needs-translation">This kind of page will be included only in digital book outputs, not in PDF.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Could not find {0}</source>
@@ -1883,6 +1904,21 @@
         <note>ID: EditTab.FormatDialog.DefaultStyles.quiz-style</note>
         <note>Special template</note>
         <target xml:lang="hi" state="translated">प्रश्नोत्तरी</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizAnswer-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Answer</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizAnswer-style</note>
+        <target xml:lang="hi" state="needs-translation">Quiz Answer</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizHeader-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Header</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizHeader-style</note>
+        <target xml:lang="hi" state="needs-translation">Quiz Header</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizQuestion-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Question</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizQuestion-style</note>
+        <target xml:lang="hi" state="needs-translation">Quiz Question</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Title On Cover</source>
@@ -4284,6 +4320,46 @@
           <target xml:lang="hi">दुखद खबर। खिले तो ब्लूम अपनी पूरी किताब दिखा सकता एडोब रीडर यहाँ, दिखाने के लिए प्राप्त करने में सक्षम नहीं था।\nकृपया 'एडोब रीडर' के अपने मौजूदा संस्करण की स्थापना रद्द करें और 'एडोब रीडर' (पुनः) स्थापित करें।\nजब तक आप कि तय हो, तुम अभी भी पीडीएफ किताब बचाने कर सकते हैं और इसे कुछ अन्य प्रोग्राम में खोलें।</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en">Sharing .bloomd Files</source>
+        <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
+        <note/>
+        <target xml:lang="hi" state="needs-translation">Sharing .bloomd Files</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
+        <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
+        <note>ID: PublishTab.Android.BloomD.Hint</note>
+        <note/>
+        <target xml:lang="hi" state="needs-translation">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en"> USB is Difficult</source>
+        <note>ID: PublishTab.Android.USB.Hint.Heading</note>
+        <note/>
+        <target xml:lang="hi" state="needs-translation"> USB is Difficult</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
+        <source xml:lang="en">To Send via USB, you may need to get the right
+                            cable, install phone drivers on your computer, or
+                            modify settings on your phone.</source>
+        <note>ID: PublishTab.Android.USB.Hint</note>
+        <note/>
+        <target xml:lang="hi" state="needs-translation">To Send via USB, you may need to get the right
+                            cable, install phone drivers on your computer, or
+                            modify settings on your phone.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en">No Wi-Fi Network?</source>
+        <note>ID: PublishTab.Android.WiFi.Hint.Heading</note>
+        <note/>
+        <target xml:lang="hi" state="needs-translation">No Wi-Fi Network?</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
+        <source xml:lang="en">There are several ways to start a temporary one.</source>
+        <note>ID: </note>
+        <note>This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network.</note>
+        <target xml:lang="hi" state="needs-translation">There are several ways to start a temporary one.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About Motion Books</source>
         <note>ID: PublishTab.Android.AboutMotionBooks</note>
@@ -4375,6 +4451,9 @@
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
         <note>{0} is a font name</note>
         <target xml:lang="hi" state="translated">की जगह "{0}" रखा जा रहा है</target>
+        <alt-trans>
+          <target xml:lang="hi">"{1}" की जगह "{0}" रखा जा रहा है</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Get Bloom Reader App</source>
@@ -4745,6 +4824,12 @@
         <source xml:lang="en">No recorded audio image descriptions</source>
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
         <target xml:lang="hi" state="translated">रिकॉर्ड किया हुआ आवाज चित्र विवरण नहीं है</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.OmittedPages">
+        <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
+        <note>ID: PublishTab.Epub.OmittedPages</note>
+        <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
+        <target xml:lang="hi" state="needs-translation">The following pages were removed because they are not supported in ePUBs:</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content" approved="yes">
         <source xml:lang="en">Content</source>
@@ -5120,6 +5205,11 @@
           <target xml:lang="hi">प्रतिलिपि द्वारा नेकां</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
+        <source xml:lang="en">Please choose the sign language for this book</source>
+        <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
+        <target xml:lang="hi" state="needs-translation">Please choose the sign language for this book</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting" approved="yes">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
@@ -5452,6 +5542,11 @@
         <alt-trans>
           <target xml:lang="hi">कृपया इस संपादन टैब से सेट करें</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
+        <source xml:lang="en">Set Sign Language...</source>
+        <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
+        <target xml:lang="hi" state="needs-translation">Set Sign Language...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
@@ -6468,6 +6563,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
         <note>New string in Bloom 4.2</note>
         <target xml:lang="hi" state="translated">लैंडस्केप ओरिएंटेशन के साथ उपयोग के लिए।</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
+        <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
+        <target xml:lang="hi" state="needs-translation">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>

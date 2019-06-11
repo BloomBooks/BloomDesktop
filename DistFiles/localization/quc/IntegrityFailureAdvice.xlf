@@ -63,41 +63,53 @@
           <target xml:lang="quc">We jeri' ma kusol taj, xopan ri q'ij katzukuj akem chak rech kuna'o xuquje' kuchup ri chikop. We ri utas rech "K'olchak Karaj na" ("Missing Files") k'utb'al k'olchak kak'is pa ".exe", chawila ukojik ri k'olyakb'al chak rech ri nuk'wach Bloom pa ri "chol saq" ("white list"), k'o chi upam ubicada en <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.AVAST">
+      <trans-unit id="integrity.todo.ideas.AVAST" approved="yes">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</source>
         <target xml:lang="quc" state="translated">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instrucciones</g>.</target>
         <note>ID: integrity.todo.ideas.AVAST</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Norton">
+      <trans-unit id="integrity.todo.ideas.Norton" approved="yes">
         <source xml:lang="en">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>.</source>
-        <target xml:lang="quc" state="translated">Antivirus Norton: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instrucciones de Symantec</g>.</target>
+        <target xml:lang="quc" state="translated">Uq'atel chikopil Norton: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Choltaqanik rech Symantec</g>.</target>
         <note>ID: integrity.todo.ideas.Norton</note>
+        <alt-trans>
+          <target xml:lang="quc">Antivirus Norton: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instrucciones de Symantec</g>.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.AVG">
+      <trans-unit id="integrity.todo.ideas.AVG" approved="yes">
         <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
-        <target xml:lang="quc" state="translated">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instrucciones de AVG</g>.</target>
+        <target xml:lang="quc" state="translated">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Choltaqanik rech AVG</g>.</target>
         <note>ID: integrity.todo.ideas.AVG</note>
         <note>The former source text had an incorrect &amp;amp; following l=en_US in the href attribute value.</note>
+        <alt-trans>
+          <target xml:lang="quc">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instrucciones de AVG</g>.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Others">
+      <trans-unit id="integrity.todo.ideas.Others" approved="yes">
         <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>
         <target xml:lang="quc" state="translated">Jun chik: Utzukuxik "whitelist directory name-of-your-antivirus" ("directorio de lista blanca nombre-de-su-antivirus") en Google</target>
         <note>ID: integrity.todo.ideas.Others</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Restart">
+      <trans-unit id="integrity.todo.ideas.Restart" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
         <target xml:lang="quc" state="translated">Chatzalij uchakuxik ri jaqb'anel rech Bloom rech kiltajik we utz umajik kub'ano.</target>
         <note>ID: integrity.todo.ideas.Restart</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Retrieve">
+      <trans-unit id="integrity.todo.ideas.Retrieve" approved="yes">
         <source xml:lang="en">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.</source>
-        <target xml:lang="quc" state="translated">Xuquje' kakowinik uraqik chik jumul ri tz'aqatil Bloom che xk'exik rumal ri nuk'uwach chak rech ri q'atelchikop. Rech AVG, rajawaxik uraqik ri cholb'al rech "Opciones". Chab'ana pitz' pa "Bóveda de Virus", chab'ana pitz' pa ri k'olchak rech Bloom pa ri laj taq k'olib'al xuquje' chb'ana pitz' pa "Restaurar". Rech jun k'amal b'e ilib'al, rilik <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">esta imagen</g>.</target>
+        <target xml:lang="quc" state="translated">Xuquje' kakowinik uriqik chik jumul ri tz'aqatil Bloom chi xk'exik uk'olib'al rumal ri kematal chak rech ri uq'atel chikopil. Chech AVG, rajawaxik uriqik ri cholb'al rech "ya'tal ucha'ik". Chab'ana pitz' pa "Uk'olib'al chikopil", chab'ana pitz' pa ri k'olchak rech Bloom pa ri laj taq k'olib'al xuquje' chab'ana pitz' pa "k'ak' ujeqeb'axik". Rech jun k'amal b'e ilib'al, rilik <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">we wachib'al ri'</g>.</target>
         <note>ID: integrity.todo.ideas.Retrieve</note>
+        <alt-trans>
+          <target xml:lang="quc">Xuquje' kakowinik uraqik chik jumul ri tz'aqatil Bloom che xk'exik rumal ri nuk'uwach chak rech ri q'atelchikop. Rech AVG, rajawaxik uraqik ri cholb'al rech "Opciones". Chab'ana pitz' pa "Bóveda de Virus", chab'ana pitz' pa ri k'olchak rech Bloom pa ri laj taq k'olib'al xuquje' chb'ana pitz' pa "Restaurar". Rech jun k'amal b'e ilib'al, rilik <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">esta imagen</g>.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.missing">
+      <trans-unit id="integrity.missing" approved="yes">
         <source xml:lang="en">Missing Files</source>
-        <target xml:lang="quc" state="translated">K'ol taq chak kraj na</target>
+        <target xml:lang="quc" state="translated">K'oltaq chak kraj na</target>
         <note>ID: integrity.missing</note>
+        <alt-trans>
+          <target xml:lang="quc">K'ol taq chak kraj na</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>
