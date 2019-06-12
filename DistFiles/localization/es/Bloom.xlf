@@ -1296,6 +1296,11 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
           <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo "shells" existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations" approved="yes">
+        <source xml:lang="en">Show translations which have not been approved yet</source>
+        <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
+        <target xml:lang="es-ES">Mostrar traducciones todavía no aprobadas</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
         <note>ID: CollectionTab.MakeBloomPackButton</note>
