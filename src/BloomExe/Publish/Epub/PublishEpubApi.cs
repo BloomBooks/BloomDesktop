@@ -72,8 +72,7 @@ namespace Bloom.Publish.Epub
 		// down to the context (usualy a screen) that requested them.
 		private const string kWebsocketContext = "publish-epub";
 
-		// This constant must match the ID that is used for the listener set up in the React component EpubPreview
-		private const string kWebsocketEventId_Preview = "epubPreview";
+		private const string kWebsocketEventId_epubReady = "newEpubReady";
 
 		private string _lastDirectory; // where we saved the most recent previous epub, if any
 
@@ -164,15 +163,18 @@ namespace Bloom.Publish.Epub
 				}
 			}, false);
 
-			// At this point, this is a checkbox backed by an enum (YAGNI?) that the user ticks to say
-			// "put my image descriptions on the epub page"
-			apiHandler.RegisterEnumEndpointHandler(kApiUrlPart + "imageDescriptionSetting",
-				request => request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions,
-				(request, enumSetting) => {
-					request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions = enumSetting;
+			// The backend here was written with an enum that had two choices for how to publish descriptions, but we only ever
+			// have used one of them so far in the UI. So this is a boolean api that converts to an enum underlying value.
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "imageDescriptionSetting",
+				request => request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions == BookInfo.HowToPublishImageDescriptions.OnPage,
+				(request, onPage) =>
+				{
+					request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions = onPage
+						? BookInfo.HowToPublishImageDescriptions.OnPage
+						: BookInfo.HowToPublishImageDescriptions.None;
 					request.CurrentBook.BookInfo.Save();
 					var newSettings = _desiredEpubSettings.Clone();
-					newSettings.howToPublishImageDescriptions = enumSetting;
+					newSettings.howToPublishImageDescriptions = request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions;
 					RefreshPreview(newSettings);
 				},
 				false);
@@ -228,7 +230,7 @@ namespace Bloom.Publish.Epub
 				try
 				{
 					if (UpdatePreview(newSettings, true))
-						_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_Preview, _previewSrc);
+						_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_epubReady, _previewSrc);
 					return;
 				}
 				catch (Exception e)
@@ -379,6 +381,8 @@ namespace Bloom.Publish.Epub
 
 			try
 			{
+				_webSocketServer.SendString(kWebsocketContext, "startingEbookCreation", _previewSrc);
+
 				var htmlPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
 				var newVersion = Book.Book.MakeVersionCode(File.ReadAllText(htmlPath), htmlPath);
 				bool previewIsAlreadyCurrent;
@@ -398,7 +402,7 @@ namespace Bloom.Publish.Epub
 
 				// clear the obsolete preview, if any; this also ensures that when the new one gets done,
 				// we will really be changing the src attr in the preview iframe so the display will update.
-				_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_Preview);
+				_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_epubReady);
 				_bookVersion = newVersion;
 				ReportProgress(LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
 

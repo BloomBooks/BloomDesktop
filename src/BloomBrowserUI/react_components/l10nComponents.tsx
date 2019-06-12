@@ -2,7 +2,7 @@ import { CancelTokenStatic } from "axios";
 import * as React from "react";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import { BloomApi } from "../utils/bloomApi";
-import { JSXElement } from "babel-types";
+import { getLocalization } from "./l10n";
 
 // set the following boolean to highlight all translated strings to see if any are missing
 const highlightTranslatedStrings: boolean = false;
@@ -160,31 +160,28 @@ export class LocalizableElement<
             return;
         }
         const english = this.getOriginalStringContent();
-        if (!english.startsWith("ERROR: must have exactly one child")) {
-            theOneLocalizationManager
-                .asyncGetTextAndSuccessInfo(
-                    this.props.l10nKey,
-                    english,
-                    this.props.l10nComment
-                )
-                .done(result => {
-                    // TODO: This isMounted approach is an official antipattern, to swallow exception if the result comes back
-                    // after this component is no longer visible. See note on componentWillUnmount()
-                    let text = result.text;
-                    if (this.props.l10nParam0) {
-                        text = text.replace("%0", this.props.l10nParam0);
-                        if (this.props.l10nParam1) {
-                            text = text.replace("%1", this.props.l10nParam1);
-                        }
-                    }
-                    this.localizedText = text;
+        // Prevent unnecessary translation lookup for image-only buttons. (BL-7204)
+        const wantTranslation =
+            !english && "hasText" in this.props
+                ? this.props["hasText"]
+                : !english.startsWith("ERROR: must have exactly one child");
+        if (wantTranslation) {
+            getLocalization({
+                english,
+                l10nKey: this.props.l10nKey,
+                l10nComment: this.props.l10nComment,
+                l10nParam0: this.props.l10nParam0,
+                l10nParam1: this.props.l10nParam1,
+                callback: (localizedText, success) => {
+                    this.localizedText = localizedText;
                     if (this.isComponentMounted) {
                         this.setState({
-                            translation: text,
-                            lookupSuccessful: result.success
+                            translation: localizedText,
+                            lookupSuccessful: success
                         });
                     }
-                });
+                }
+            });
         }
         if (this.props.l10nTipEnglishEnabled) {
             theOneLocalizationManager

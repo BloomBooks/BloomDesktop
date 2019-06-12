@@ -1,5 +1,8 @@
 import * as React from "react";
-import { IUILanguageAwareProps, Label } from "../../react_components/l10n";
+import {
+    IUILanguageAwareProps,
+    Label
+} from "../../react_components/l10nComponents";
 import axios from "axios";
 
 interface IProps extends IUILanguageAwareProps {

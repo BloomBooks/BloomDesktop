@@ -1,6 +1,6 @@
 import * as React from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
-import { Div, Label } from "../../../react_components/l10n";
+import { Div, Label } from "../../../react_components/l10nComponents";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import { BloomApi } from "../../../utils/bloomApi";
 import Slider from "rc-slider";

@@ -54,8 +54,8 @@
 </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="decodable.learn.helpindex" approved="yes">
-        <source xml:lang="en">Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".</source>
+      <trans-unit id="decodable.learn.helpindex">
+        <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
         <target xml:lang="quc" state="translated">Jat pa cholb’al chak rech Tob'anem, chcha’ ‘Tob’anem’ xuquje’ chatzukuj "Wuj sik’ital uwach" pa le cholupam wuj.</target>
         <note>ID: decodable.learn.helpindex</note>
         <alt-trans>

@@ -233,12 +233,36 @@ namespace Bloom.Book
 			}
 		}
 
+		private const string kBackgroundImage = "background-image:url('";	// must match format string in HtmlDom.SetImageElementUrl()
+
 		private static List<string> FindCoverImages (XmlDocument xmlDom)
 		{
 			var transparentImageFiles = new List<string>();
-			foreach (var img in xmlDom.SafeSelectNodes("//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-imageContainer')]//img[@src]").Cast<XmlElement>())
-				transparentImageFiles.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
+			foreach (var div in xmlDom.SafeSelectNodes("//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-imageContainer')]").Cast<XmlElement>())
+			{
+				var style = div.GetStringAttribute("style");
+				if (!String.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
+				{
+					System.Diagnostics.Debug.Assert(div.GetStringAttribute("class").Contains("bloom-backgroundImage"));
+					// extract filename from the background-image style
+					transparentImageFiles.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
+				}
+				else
+				{
+					// extract filename from child img element
+					var img = div.SelectSingleNode("//img[@src]");
+					if (img != null)
+						transparentImageFiles.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
+				}
+			}
 			return transparentImageFiles;
+		}
+
+		private static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
+		{
+			var filename = style.Substring(style.IndexOf(kBackgroundImage) + kBackgroundImage.Length);
+			filename = filename.Substring(0, filename.IndexOf("'"));
+			return System.Web.HttpUtility.UrlDecode(filename);
 		}
 
 		private static void MakeExtraEntry(ZipOutputStream zipStream, string name, string content)

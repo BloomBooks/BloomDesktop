@@ -299,7 +299,7 @@ namespace Bloom.Publish
 					else if (error is OutOfMemoryException)
 					{
 						// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5467.
-						var fmt = LocalizationManager.GetString("Publish.PdfMaker.OutOfMemory",
+						var fmt = LocalizationManager.GetString("PublishTab.PdfMaker.OutOfMemory",
 							"Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.",
 							"{0} and {1} are HTML link markup.  You can think of them as fancy quotation marks.");
 						var msg = String.Format(fmt, "<a href='https://community.software.sil.org/t/solving-memory-problems-while-printing/500'>", "</a>");
@@ -526,7 +526,7 @@ namespace Bloom.Publish
 				case PublishModel.DisplayModes.Android:
 					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
 					BloomReaderFileMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
-					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "android", "androidPublishUI.html"));
+					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "ReaderPublish", "loader.html"));
 					break;
 				case PublishModel.DisplayModes.EPUB:
 					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
@@ -537,7 +537,7 @@ namespace Bloom.Publish
 					// We still get them in the output window, in case we really want to look for one.
 					Browser.SuppressJavaScriptErrors = true;
 					PublishEpubApi.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
-					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "epub", "epubPublishUI.html"));
+					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "ePUBPublish", "loader.html"));
 					break;
 			}
 			UpdateSaveButton();

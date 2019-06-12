@@ -7,5 +7,5 @@ You can also make a Bloom Pack of *templates* that others can use to quickly cre
 To learn about using Decodable Readers in Bloom, you can: {i18n="decodable.learn"}
 
 - Watch [these instructional videos](http://tiny.cc/8vbwux).{i18n="decodable.learn.videos"}
-- Go to the Help menu, choose 'Help', and look in the index under "Decodable Readers".{i18n="decodable.learn.helpindex"}
+- Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".{i18n="decodable.learn.helpindex"}
 - Go to the Help menu and choose: "Building Reader Templates".{i18n="decodable.learn.helpmenu"}

@@ -600,7 +600,7 @@ namespace Bloom.Collection
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseTab, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._enterpriseTab, null);
-			this._L10NSharpExtender.SetLocalizingId(this._enterpriseTab, "tabPage5");
+			this._L10NSharpExtender.SetLocalizingId(this._enterpriseTab, "CollectionSettingsDialog.EnterpriseTab.TabLabel");
 			this._enterpriseTab.Location = new System.Drawing.Point(4, 26);
 			this._enterpriseTab.Name = "_enterpriseTab";
 			this._enterpriseTab.Padding = new System.Windows.Forms.Padding(3);

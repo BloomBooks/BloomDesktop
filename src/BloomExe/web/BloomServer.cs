@@ -411,7 +411,8 @@ namespace Bloom.Api
 			{
 				// thumbnail requests have the thumbnail parameter set in the query string
 				var thumb = info.GetQueryParameters()["thumbnail"] != null;
-				imageFile = _cache.GetPathToResizedImage(imageFile, thumb);
+				var transparent = CurrentBook?.ImageFileShouldBeRenderedWithTransparency(imageFile);
+				imageFile = _cache.GetPathToResizedImage(imageFile, thumb, transparent ?? false);
 
 				if (String.IsNullOrEmpty(imageFile)) return false;
 			}
@@ -494,7 +495,7 @@ namespace Bloom.Api
 			string modPath = localPath;
 			string path = null;
 			var urlPath = UrlPathString.CreateFromUrlEncodedString(modPath);
-			var tempPath = urlPath.NotEncoded;
+			var tempPath = urlPath.PathOnly.NotEncoded;
 			if (RobustFile.Exists(tempPath))
 				modPath = tempPath;
 			try

@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="wall.calendar">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="mam" state="needs-translation">About the Wall Calendar Template</target>
+        <target xml:lang="mam" state="translated">Nab'il tib'aj ttenb'il b'inchil u'jb'il b'ananmaj te txolq'ij</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="mam" state="needs-translation">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</target>
+        <target xml:lang="mam" state="translated">Tu'n txolb'ab'il aq'untl b'incha'nmaj lu', b'a'n tu'n tkub' b'inchet jun txolq'ij te 12 xjaw, twa'l A5, tuk'il jun tilb'ilal ex jun txolyol ch'in tib'aj plaj te jawni te ju'njun t-xaq ex qe q'ij te xjaw tuj plaj te kub'ni. Qajb'ela tuj txolq'ij qe b'ib'aj xjaw ex qe q'ij tuj tyolb'ila.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="mam" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="mam" state="translated">Alchaqkyeqe nchi maqan ti'j aq'unb'il lu'</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="mam" state="needs-translation">Currently, you cannot make a "shell" for other languages to use.</target>
+        <target xml:lang="mam" state="translated">Ja'lo, mib'ax kub' b'inchet jun "txolq'ij b'incha'nmaj" tu'n tajb'en kyuj qe juntl yol.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="mam" state="needs-translation">Credits</target>
+        <target xml:lang="mam" state="translated">Tu'jil toklen</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="mam" state="needs-translation">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</target>
+        <target xml:lang="mam" state="translated">Chjonte te Bruce Cox (SIL Camerún) tu'n ma t-xi' qe' txolb'ab'il aq'untl b'incha'nmaj lu'.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>

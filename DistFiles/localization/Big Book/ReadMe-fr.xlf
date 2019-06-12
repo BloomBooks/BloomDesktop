@@ -61,8 +61,11 @@ Il suffit de prendre votre PDF A4 à une imprimerie et leur demander de l'agrand
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="fr" state="translated">Si votre écran est petit, il sera difficile de lire la page des crédits. Pour pouvoir la modifier, essayez de zoomer avec le zoom +/- en haut à droite de votre écran.</target>
+        <target xml:lang="fr" state="translated">Si votre écran est petit, il sera difficile de lire la page des mentions. Pour pouvoir la modifier, essayez de zoomer avec le zoom +/- en haut à droite de votre écran.</target>
         <note>ID: bigbook.limits.smallscreen</note>
+        <alt-trans>
+          <target xml:lang="fr">Si votre écran est petit, il sera difficile de lire la page des crédits. Pour pouvoir la modifier, essayez de zoomer avec le zoom +/- en haut à droite de votre écran.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Si vous utilisez un petit écran, il peut être difficile de lire la page de crédits.  Essayez d'utiliser CTRL + molette de la souris pour zoomer sur la page afin que vous puissiez la modifier.</target>
         </alt-trans>

@@ -1,88 +1,189 @@
+@import (reference) "../../../bloomUI.less";
+
+@vertical-space: 10px;
+
 .bloom-page.simple-comprehension-quiz {
+    // These are usually defined under :root. But in bloom-player, any rules
+    // using things above the "actual-page-preview" element where we attach the
+    // 'scoped' style rules don't work. The rule will emerge as something like
+    // [_scoped_2] :root; but root is not inside the [_scoped_2] element so
+    // the rule does not match. So just put them at the highest level that
+    // covers comprehension quizzes.
+    --pure-material-primary-rgb: 214, 86, 73;
+    --pure-material-onprimary-rgb: 255, 255, 255;
+    --pure-material-onsurface-rgb: 0, 0, 0;
+
     .bloom-translationGroup {
-        margin-bottom: 10px;
+        margin-bottom: @vertical-space;
         flex-grow: 1;
+    }
+    h1 {
+        text-align: center;
+        padding: 5px;
+        color: white;
+        background-color: @bloom-red;
+        margin-bottom: @vertical-space;
     }
     .checkbox-and-textbox-choice {
         display: flex; // horizontal;
+        // starts a new stacking context, so the z-index:-1 shadows behind the check boxes
+        // are not hidden by the non-transparent bloom-page.
+        z-index: 0;
 
-        // styled-check-box and its ::after make a box and position a check mark in the box.
-        // The default rules here then hide the check mark.
-        // If the relevant classes indicate it should be checked, the
-        // opacity rule is overridden (and the background made green).
-        .styled-check-box {
-            display: inline-block;
-            cursor: pointer;
-            height: 15px;
-            width: 15px;
-            border: 1px solid black;
-            margin-right: 10px;
-        }
-
-        .styled-check-box::after {
-            position: absolute;
+        input {
+            // This input is sized to fill the space of the circle we draw around the
+            // check box. Also makes a bigger target on devices.
+            // It is hidden by opacity:0 but can still be clicked.
+            z-index: 11; // in front of the :before, :after etc, so it can really get clicked
+            // We want to be able to click on it anywhere in the 40px square that holds the
+            // active circle around the check box. So make the actual input that big, and adjust its
+            // position so it occupies the space that the higlight circle does.
             display: block;
-            content: "\2713";
-            opacity: 0;
-            top: -4px;
-            left: 1px;
-            color: white;
+            left: -10px;
+            top: -8px;
+            display: block;
+            margin: 0;
+            margin-right: -10px; // to avoid 10px apparent extra margin from left:-10px.
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            opacity: 0; // We can click on this but can't see it...gets rid of default appearance.
         }
 
-        .hiddenCheckbox {
-            position: absolute; // occupies no space
-            // hidden, but in a way that deceives a screen reader; can still be tabbed to
-            // and selected with space key (behaves as a click, still intercepted by parent)
-            // Unfortunately, no visual indication of selecting it; the focus rectangle is
-            // hidden also. But we mainly want this for blind accessibility.
-            opacity: 0;
+        .placeToPutVariableCircle {
+            z-index: -1; // Behind the checkbox and check mark
+            // Same size and position as the input (checkbox).
+            // Properties make it a circle.
+            // When no overrides are applied, it is 60% red, but entirely hidden by scale:0
+            // Various combinations of hover, focus, active, and checked
+            // cause it to appear, sometimes with transition.
+            position: absolute;
+            left: -10px;
+            top: -8px;
+            display: block;
+            margin: 0;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(var(--pure-material-onsurface-rgb), 0.6);
+            box-shadow: none;
+            outline: none;
+            opacity: 1;
+            transform: scale(
+                0
+            ); // a starting point for a transition that animates as it is clicked
+        }
+        // We make the box of the check box as a before element on the div.
+        // (NOT on the placeToPutVariableCircle, though it's tempting to put
+        // all the magic on the extra element, because its before: and after:
+        // get hidden when it does.)
+        & > input + div:before {
+            content: "";
+            display: block;
+            position: absolute;
+            box-sizing: border-box;
+            left: -30px;
+            top: 3px;
+            border: solid 2px;
+            border-color: rgba(var(--pure-material-onsurface-rgb), 0.6);
+            border-radius: 2px;
+            width: 18px;
+            height: 18px;
+        }
+        /* Checkmark is done as a rotated half-bordered box that is the :before of the div */
+        & > input + div::after {
+            content: "";
+            display: block;
+            position: absolute;
+            top: 3px;
+            left: -30px;
+            width: 10px;
+            height: 5px;
+            border: solid 2px transparent;
+            border-right: none;
+            border-top: none;
+            transform: translate(3px, 4px) rotate(-45deg);
+        }
+        // When the check box is checked, the starting point for coloring the circle
+        // is the red. This changes the effect of all the opacities that might be
+        // used in hover, focus, active.
+        & > input:checked ~ .placeToPutVariableCircle {
+            background-color: rgb(var(--pure-material-primary-rgb));
+        }
+        // When checked, the box (and its border) take on this color.
+        & > input:checked + div::before {
+            border-color: rgb(var(--pure-material-primary-rgb));
+            background-color: rgb(var(--pure-material-primary-rgb));
+        }
+        // When checked, the check mark goes from transparent to the appropriate color
+        // for stuff like text on the primary color
+        > input:checked + div::after {
+            border-color: rgb(var(--pure-material-onprimary-rgb));
+        }
+        // This makes the circle faintly visible when hovered over.
+        // However, it would interfere with the growing-circle effect
+        // when the button is then clicked.
+        // &:hover > input ~ .placeToPutVariableCircle {
+        //     opacity: 0.04;
+        // }
+        // These rules can be used to make the circle indicate a focused control.
+        // Current material design guidelines don't do this in general,
+        // though at least one site has an animated pulsing circle iff the user
+        // tabbed to the check box. Not sure if this state can be detected using
+        // simple css.
+        // input:focus ~ .placeToPutVariableCircle {
+        //     opacity: 0.12;
+        // }
+        // &:hover input:focus ~ .placeToPutVariableCircle {
+        //     opacity: 0.16;
+        // }
+        // As we click on the input, the variable circle goes from full brightness
+        // to a fainter outline, and grows to its full size, a circle around the box.
+        // This is done with the short transition indicated here.
+        // When we release the mouse, we go back to the non-active transition time (0),
+        // and scale (0), so the circle disappears at once.
+        // Note: in Gecko45, for some reason, we very briefly get a square version of
+        // the placeToPutVariableCircle when turning off. Can't find any reason for it,
+        // and it doesn't happen in current FF, so inclined to live with it until Gecko60.
+        input:active ~ .placeToPutVariableCircle {
+            opacity: 0.5;
+            transform: scale(1);
+            transition: opacity 0.3s, transform 0.2s; //opacity 0.3s, transform 0.2s;
         }
     }
 }
-
+// The quiz page is formatted with just enough space for each question/answer, so a format button in
+// the usual place on the left overlaps the text annoyingly. So for these pages we move it to the
+// right. (Not sure why that wouldn't always be better.)
+.quiz #formatButton {
+    left: unset;
+    right: 0;
+}
+// overrides a rule in EditMode.less to push the language label over and make room for cog on right.
+.bloom-editable.QuizAnswer-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
+.bloom-editable.QuizQuestion-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
+    margin-right: 24px;
+}
+// Also hide the label except in the focused item.
+.bloom-editable.QuizAnswer-style:not(.cke_focus)[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
+.bloom-editable.QuizQuestion-style:not(.cke_focus)[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
+    content: "";
+}
 // In edit mode, the check boxes are checked if marked correct.
 body.editMode
     .bloom-page.simple-comprehension-quiz
     .checkbox-and-textbox-choice {
     &.empty {
-        opacity: 0.5; // dim empty ones.
-        // It happens that we do want a checkbox-and-textbox-choice to display:flex,
+        opacity: 0.5; // dim empty ones. // It happens that we do want a checkbox-and-textbox-choice to display:flex,
         // but the key point of this very specific rule is to beat the one
         // below which makes it display:none in read mode.
         display: flex;
-    }
-    &.correct-answer {
-        .styled-check-box {
-            background-color: green;
-        }
-
-        .styled-check-box::after {
-            opacity: 1;
-        }
-    }
-}
-
-// In read mode, the check boxes are checked if marked correct AND wasSelectedAtOnePoint
-// We would like to mark this rule body:not(.editMode)
-// but when loaded into bloom reader, all the rules are preceded by something like [__scoped_1],
-// and any rule that begins [__scoped_1] body...won't match.
-// So we have to rely on something else. In this case, wasSelectedAtOnePoint will
-// never occur in editMode.
-.bloom-page.simple-comprehension-quiz
-    .checkbox-and-textbox-choice.correct-answer.wasSelectedAtOnePoint {
-    .styled-check-box {
-        background-color: green;
-    }
-
-    .styled-check-box::after {
-        opacity: 1;
     }
 }
 .bloom-page.simple-comprehension-quiz {
     .checkbox-and-textbox-choice {
         &.empty {
-            // Javascript adds this class if the answer contains nothing visible.
-            // This rule is overridden by a more specific one in edit mode.
+            // Javascript adds this class if the answer contains nothing visible. // This rule is overridden by a more specific one in edit mode.
             display: none;
         }
         &.wasSelectedAtOnePoint:not(.correct-answer) {

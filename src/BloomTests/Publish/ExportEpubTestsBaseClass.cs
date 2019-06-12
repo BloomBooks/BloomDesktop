@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -275,23 +275,21 @@ namespace BloomTests.Publish
 				imageDivs += MakeImageContainer(image, imageDescription: imageDescription, descriptionLang: lang);
 			}
 
-			string containedImageDivs = "";
-			var body = optionalDataDiv + string.Format(
-				  @"<div class='bloom-page" + extraPageClass + @"'>
-						<div id='" + parentDivId + @"' class='marginBox'>
-							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs {7}' lang='' data-default-languages='{8}'>
-								<div class='bloom-editable {6}' lang='{0}' contenteditable='true'>
-									{1}
+			var body = optionalDataDiv +
+				  $@"<div class='bloom-page{extraPageClass}'>
+						<div id='{parentDivId}' class='marginBox'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs {extraEditGroupClasses}' lang='' data-default-languages='{defaultLanguages}'>
+								<div class='bloom-editable {extraEditDivClasses}' lang='{lang}' contenteditable='true'>
+									{text}
 								</div>
-								{2}
+								{extraContent}
 								<div lang = '*'>more text</div>
 							</div>
-							{3}
-							{4}
+							{imageDivs}
+							{extraContentOutsideTranslationGroup}
 						</div>
 					</div>
-					{5}",
-				lang, text, extraContent, imageDivs, extraContentOutsideTranslationGroup, extraPages, extraEditDivClasses, extraEditGroupClasses, defaultLanguages);
+					{extraPages}";
 
 			return CreateTestBook(body, createPhysicalFile, extraHeadContent);
 		}

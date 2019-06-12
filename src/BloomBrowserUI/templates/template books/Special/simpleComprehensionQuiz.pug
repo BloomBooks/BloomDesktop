@@ -1,22 +1,29 @@
 mixin choice
-	//- JS intercepts clicks on this and sets classes on it which produce the right appearance for the the .styled-check-box div
-	//- that provides the appearance of the checkbox, as well as setting the state of the actual invisible input one.
+	//- JS intercepts clicks on this (in the player) and its input (in the editor) and sets classes on it which produce
+	//- the right appearance in both modes.
 	//- Notice that this works over a whole Bloom Field, not just the box itself, which is why it is a bit more complicated
 	//- than checkbox-styling solutions which don't require JS. Also, there are different behaviors in edit mode and in the reader.
 	.checkbox-and-textbox-choice
-		//- This div is styled by CSS to look like a checkbox, because a regular input is hard to give the look we want.
-		//- For accessibility, there is also a proper input element, whose value is kept in sync, but which is hidden.
-		.styled-check-box
-		//- This input widget is here for the benefit of screen readers. It is kept in sync by JS that we attach to the checkbox-and-textbox-choice div.
-		//- Not sure how easily a blind reader will associate the right check box with the reader reading the answer aloud,
-		//- but at least a screen reader will see an input.
-		input.hiddenCheckbox(type="checkbox", name="Correct")
+		//- The choice is made up of an input, which provides some of the click behavior and also some accessibility.
+		//- It also takes up an appropriate amount of space on the screen.
+		//- However, we can't make it look the way we want, so styles give it an opacity of zero, which hides it
+		//- but does not interfere with clicks.
+		//- Three different things are then overlayed on top of the input to produce the various appearances we want.
+		//- the :before of the bloom-translationGroup (produced by the +field) is used to draw the checkbox.
+		//- the :after of the bloom-translationGroup is used to draw the check mark (transparent unless the input is checked).
+		//- the following .placeToPutVariableCircle is there to support drawing an animated circle around
+		//- the checkbox while it is active (mouse down) to conform to material design guidelines.
+		//- It seems as if it should be possible to do without .placeToPutVariableCircle, but I haven't found
+		//- a way so far.
+		input.styled-check-box(type="checkbox", name="Correct")
 		+field("auto").QuizAnswer-style(data-hint="Put a possible answer here. Check it if it is correct.")
+		.placeToPutVariableCircle
 
 mixin quizPage
-	+page('Quiz Page', 'Use for comprehension testing.').simple-comprehension-quiz.bloom-interactive-page#F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D(data-page='extra' data-analyticsCategories="comprehension")
+	+page('Quiz Page', 'Use for comprehension testing.').simple-comprehension-quiz.bloom-interactive-page.enterprise-only#F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D(data-page='extra' data-analyticsCategories="comprehension" data-reader-version="2")
 		.quiz
+			h1(data-i18n="Quiz.CheckYourUnderstanding") Check Your Understanding
 			+field("auto").QuizQuestion-style(data-hint="Put a comprehension question here")
-			each dummy in new Array(8)
+			each dummy in new Array(7)
 				+choice()
 			script(src="simpleComprehensionQuiz.js")

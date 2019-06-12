@@ -20,9 +20,9 @@ namespace Bloom.Publish.Android
 	/// Much of the logic is still in BookCompressor. Eventually we might move more of it here,
 	/// so that making a bloomd actually starts here and calls BookCompressor.
 	/// </summary>
-	public class BloomReaderFileMaker
+	public static class BloomReaderFileMaker
 	{
-		public const string QuestionFileName = "questions.json";
+		public const string kQuestionFileName = "questions.json";
 
 		public static Control ControlForInvoke { get; set; }
 
@@ -51,7 +51,7 @@ namespace Bloom.Publish.Android
 			Directory.CreateDirectory(bookFolderPath);
 			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(book, bookServer, bookFolderPath);
 
-			var jsonPath = Path.Combine(bookFolderPath, QuestionFileName);
+			var jsonPath = Path.Combine(bookFolderPath, kQuestionFileName);
 			var questionPages = modifiedBook.RawDom.SafeSelectNodes(
 				"//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'questions')]");
 			var questions = new List<QuestionGroup>();
@@ -60,6 +60,10 @@ namespace Bloom.Publish.Android
 				ExtractQuestionGroups(page, questions);
 				page.ParentNode.RemoveChild(page);
 			}
+			var quizPages = modifiedBook.RawDom.SafeSelectNodes(
+				"//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'simple-comprehension-quiz')]");
+			foreach (var page in quizPages.Cast<XmlElement>().ToArray())
+				AddQuizQuestionGroup(page, questions);
 			var builder = new StringBuilder("[");
 			foreach (var question in questions)
 			{
@@ -81,7 +85,9 @@ namespace Bloom.Publish.Android
 
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6835.
 			RemoveInvisibleImageElements(modifiedBook);
-			modifiedBook.Storage.CleanupUnusedImageFiles(false);
+			modifiedBook.Storage.CleanupUnusedImageFiles(keepFilesForEditing: false);
+			if (RobustFile.Exists(Path.Combine(bookFolderPath, "placeHolder.png")))
+				RobustFile.Delete(Path.Combine(bookFolderPath, "placeHolder.png"));
 			modifiedBook.Storage.CleanupUnusedAudioFiles(isForPublish: true);
 			modifiedBook.Storage.CleanupUnusedVideoFiles();
 
@@ -94,7 +100,7 @@ namespace Bloom.Publish.Android
 			StripImgIfWeCannotFindFile(modifiedBook.RawDom, bookFile);
 			StripContentEditableAndTabIndex(modifiedBook.RawDom);
 			InsertReaderStylesheet(modifiedBook.RawDom);
-			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot,"publish","android","readerStyles.css"),
+			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot,"publish","ReaderPublish","readerStyles.css"),
 				Path.Combine(bookFolderPath, "readerStyles.css"));
 			ConvertImagesToBackground(modifiedBook.RawDom);
 
@@ -103,13 +109,53 @@ namespace Bloom.Publish.Android
 			return modifiedBook;
 		}
 
+		// Given a page built using the new simple-comprehension-quiz template, generate JSON to produce the same
+		// effect (more-or-less) in BloomReader 1.x. These pages are NOT deleted like the old question pages,
+		// so we need to mark the JSON onlyForBloomReader1 to prevent BR2 from duplicating them.
+		private static void AddQuizQuestionGroup(XmlElement page, List<QuestionGroup> questions)
+		{
+			var questionElts =
+				page.SafeSelectNodes(
+					".//div[contains(@class, 'bloom-editable') and contains(@class, 'bloom-content1') and contains(@class, 'QuizQuestion-style')]");
+			var answerElts =
+				page.SafeSelectNodes(
+					".//div[contains(@class, 'bloom-editable') and contains(@class, 'bloom-content1') and contains(@class, 'QuizAnswer-style')]")
+				.Cast<XmlElement>()
+				.Where(a => !string.IsNullOrWhiteSpace(a.InnerText));
+			if (questionElts.Count == 0 || !answerElts.Any())
+			{
+				return;
+			}
+
+			var questionElt = questionElts[0];
+			if (string.IsNullOrWhiteSpace(questionElt.InnerText))
+				return;
+			var lang = questionElt.Attributes["lang"]?.Value ?? "";
+			if (string.IsNullOrEmpty(lang))
+				return; // paranoia, bloom-editable without lang should not be content1
+
+			var group = new QuestionGroup() { lang = lang, onlyForBloomReader1 = true};
+			var question = new Question()
+			{
+				question = questionElt.InnerText.Trim(),
+				answers = answerElts.Select(a => new Answer()
+				{
+					text= a.InnerText.Trim(),
+					correct = ((a.ParentNode?.ParentNode as XmlElement)?.Attributes["class"]?.Value ??"").Contains("correct-answer")
+				}).ToArray()
+			};
+			group.questions = new [] {question};
+
+			questions.Add(group);
+		}
+
 
 		private static void StripImgIfWeCannotFindFile(XmlDocument dom, string bookFile)
 		{
 			var folderPath = Path.GetDirectoryName(bookFile);
 			foreach (var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<XmlElement>().ToArray())
 			{
-				var file = UrlPathString.CreateFromUrlEncodedString(imgElt.Attributes["src"].Value).NotEncoded.Split('?')[0];
+				var file = UrlPathString.CreateFromUrlEncodedString(imgElt.Attributes["src"].Value).PathOnly.NotEncoded;
 				if (!File.Exists(Path.Combine(folderPath, file)))
 				{
 					imgElt.ParentNode.RemoveChild(imgElt);
@@ -225,26 +271,27 @@ namespace Bloom.Publish.Android
 				if (fontFiles.Count() > 0)
 				{
 					filesToEmbed.AddRange(fontFiles);
-					progress.MessageWithParams("CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", font);
+					progress.MessageWithParams("PublishTab.Android.File.Progress.CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", MessageKind.Progress, font);
 					// Assumes only one font file per font; if we embed multiple ones will need to enhance this.
 					var size = new FileInfo(fontFiles.First()).Length;
 					var sizeToReport = (size / 1000000.0).ToString("F1"); // purposely locale-specific; might be e.g. 1,2
-					progress.MessageWithColorAndParams("Embedding",
+					progress.MessageWithParams("PublishTab.Android.File.Progress.Embedding",
 						"{1} is a number with one decimal place, the number of megabytes the font file takes up",
-						"blue",
 						"Embedding font {0} at a cost of {1} megs",
+						MessageKind.Note,
 						font, sizeToReport);
 					continue;
 				}
 				if (fontFileFinder.FontsWeCantInstall.Contains(font))
 				{
-					progress.ErrorWithParams("LicenseForbids","{0} is a font name", "Checking {0} font: License does not permit embedding.", font);
+					//progress.Error("Common.Warning", "Warning");
+					progress.MessageWithParams("LicenseForbids","{0} is a font name", "This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.",MessageKind.Error, font);
 				}
 				else
 				{
-					progress.ErrorWithParams("NoFontFound", "{0} is a font name", "Checking {0} font: No font found to embed.", font);
+					progress.MessageWithParams("NoFontFound", "{0} is a font name", "This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.", MessageKind.Error, font);
 				}
-				progress.ErrorWithParams("SubstitutingAndika", "{0} and {1} are font names", "Substituting \"{0}\" for \"{1}\"", defaultFont, font);
+				progress.MessageWithParams("SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", MessageKind.Error, defaultFont, font);
 			}
 			foreach (var file in filesToEmbed)
 			{

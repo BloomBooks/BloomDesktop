@@ -5,6 +5,11 @@
 // then we can move those webpack rules here.
 
 var webpack = require("webpack");
+var WebpackBuildNotifierPlugin = require("webpack-build-notifier");
+
+function NothingPlugin() {
+    this.apply = function() {};
+}
 
 module.exports = {
     module: {
@@ -34,6 +39,14 @@ module.exports = {
             {
                 test: /\.css$/,
                 loader: "style-loader!css-loader"
+            },
+            {
+                // this allows things like background-image: url("myComponentsButton.svg") and have the resulting path look for the svg in the stylesheet's folder
+                // the last few seem to be needed for (at least) slick-carousel to build.
+                test: /\.(svg|jpg|png|ttf|eot|gif)$/,
+                use: {
+                    loader: "file-loader"
+                }
             }
         ]
     },
@@ -45,7 +58,11 @@ module.exports = {
             $: "jquery",
             jQuery: "jquery",
             "window.jQuery": "jquery"
-        })
+        }),
+        // don't include the notifier when building on server, which uses production
+        process.env.NODE_ENV === "debug"
+            ? new WebpackBuildNotifierPlugin({})
+            : new NothingPlugin()
     ],
     resolve: {
         extensions: [".ts", ".tsx"]

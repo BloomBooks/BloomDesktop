@@ -64,9 +64,15 @@ namespace Bloom.ImageProcessing
 				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
 				if (!isEncodedAsJpeg)
 				{
-					// The original imageInfo.Image is disposed of in the setter.
-					// As of now (9/2016) this is safe because there are no other references to it higher in the stack.
-					imageInfo.Image = CreateImageWithoutTransparentBackground(imageInfo.Image);
+					// As explained in the comments for RemoveTransparencyOfImagesInFolder(), some PDF viewers don't
+					// handle transparent images very well, so if we aren't sure this image is opaque, replace it with
+					// one that is opaque.
+					if (!IsIndexedAndOpaque(imageInfo.Image))
+					{
+						// The original imageInfo.Image is disposed of in the setter.
+						// As of now (9/2016) this is safe because there are no other references to it higher in the stack.
+						imageInfo.Image = CreateImageWithoutTransparentBackground(imageInfo.Image);
+					}
 				}
 
 				var shouldConvertToJpeg = !isEncodedAsJpeg && ShouldChangeFormatToJpeg(imageInfo.Image);
@@ -211,7 +217,10 @@ namespace Bloom.ImageProcessing
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)imageFiles.Length);
 				using(var pi = PalasoImage.FromFileRobustly(path))
 				{
-					if (!AppearsToBeJpeg(pi))
+					// If the image isn't jpeg, and we can't be sure it's already opaque, change the
+					// image to be opaque.  As explained above, some PDF viewers don't handle transparent
+					// images very well.
+					if (!AppearsToBeJpeg(pi) && !IsIndexedAndOpaque(pi.Image))
 					{
 						RemoveTransparency(pi, path, progress);
 					}
@@ -231,6 +240,32 @@ namespace Bloom.ImageProcessing
 			}
 		}
 
+		/// <summary>
+		/// Check whether this image has an indexed format, and if so, whether all of its colors are totally opaque.
+		/// (If so, we won't need to create a copy of the image without any transparency.
+		/// </summary>
+		/// <remarks>
+		/// It's too hard/expensive to check all the pixels in a non-indexed image to see if they're all opaque.
+		/// </remarks>
+		public static bool IsIndexedAndOpaque(Image image)
+		{
+			if ((image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
+			{
+				foreach (var color in image.Palette.Entries)
+				{
+					if (color.A != 255)
+						return false;	// 255 == opaque, other values varying amount of transparency
+				}
+				return true;
+			}
+			// Too hard / expensive to determine transparency/opacity
+			return false;
+		}
+
+		/// <summary>
+		/// Create an image with a solid white background.  Note that the new image will be 32-bit RGBA
+		/// even if the original is 1-bit black and white.
+		/// </summary>
 		private static Image CreateImageWithoutTransparentBackground(Image image)
 		{
 			var b = new Bitmap(image.Width, image.Height);

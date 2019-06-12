@@ -453,7 +453,7 @@ namespace BloomTests.Publish
 				assertionsOnZipArchive: paramObj =>
 				{
 					var zip = paramObj.ZipFile;
-					var json = GetEntryContents(zip, BloomReaderFileMaker.QuestionFileName);
+					var json = GetEntryContents(zip, BloomReaderFileMaker.kQuestionFileName);
 					var groups = QuestionGroup.FromJson(json);
 					// Two (non-z-language) groups in first question page, one in second.
 					Assert.That(groups, Has.Length.EqualTo(3));
@@ -463,6 +463,8 @@ namespace BloomTests.Publish
 
 					Assert.That(groups[0].lang, Is.EqualTo("en"));
 					Assert.That(groups[1].lang, Is.EqualTo("fr"));
+
+					Assert.That(groups[0].onlyForBloomReader1, Is.False);
 
 					Assert.That(groups[0].questions[0].question, Is.EqualTo("Where do questions belong?"));
 					Assert.That(groups[0].questions[0].answers, Has.Length.EqualTo(3));
@@ -495,6 +497,93 @@ namespace BloomTests.Publish
 
 					// Make sure we don't miss the last answer of the last question.
 					Assert.That(groups[2].questions[3].answers[3].text, Is.EqualTo("Wherever"));
+				}
+			);
+		}
+
+		[Test]
+		public void CompressbookForDevice_ConvertsNewQuizPagesToJson_AndKeepsThem()
+		{
+			var bookHtml = @"<html>
+<head>
+	<meta charset='UTF-8'></meta>
+	<link rel='stylesheet' href='../settingsCollectionStyles.css' type='text/css'></link>
+	<link rel='stylesheet' href='../customCollectionStyles.css' type='text/css'></link>
+</head>
+<body>
+	<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+		<div  contenteditable='true'>This page should make it into the book</div>
+	</div>
+    <div class='bloom-page simple-comprehension-quiz bloom-interactive-page Device16x9Portrait side-right bloom-monolingual' id='86574a93-a50f-42da-b88f-574ef790c481' data-page='' data-pagelineage='F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D' data-page-number='1' lang=''>
+        <div class='pageLabel' lang='en'>
+            Quiz Page
+        </div>
+        <div class='pageDescription' lang='en'></div>
+
+        <div class='marginBox'>
+            <div class='quiz'>
+                <div class='bloom-translationGroup bloom-trailingElement cc-style' data-default-languages='auto'>
+                    <div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable cke_editable QuizQuestion-style cke_focus bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
+                        <p>Where do questions belong?</p>
+					</div>
+				</div>
+				<div class='checkbox-and-textbox-choice'>
+					<div class='bloom-translationGroup bloom-trailingElement cc-style' data-default-languages='auto'>
+						<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable cke_editable QuizAnswer-style cke_focus bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
+							<p>At the end</p>
+						</div>
+					</div>
+				</div>
+				<div class='checkbox-and-textbox-choice'>
+					<div class='bloom-translationGroup bloom-trailingElement cc-style' data-default-languages='auto'>
+						<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable cke_editable QuizAnswer-style cke_focus bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
+							<p>At the start</p>
+						</div>
+					</div>
+				</div>
+				<div class='checkbox-and-textbox-choice correct-answer'>
+					<div class='bloom-translationGroup bloom-trailingElement cc-style' data-default-languages='auto'>
+						<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable cke_editable QuizAnswer-style cke_focus bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
+							<p>In the middle</p>
+						</div>
+					</div>
+				</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>";
+			TestHtmlAfterCompression(bookHtml,
+				assertionsOnResultingHtmlString:
+				html =>
+				{
+					// The quiz pages should not be removed.
+					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+					AssertThatXmlIn.Dom(htmlDom)
+						.HasSpecifiedNumberOfMatchesForXpath("//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'simple-comprehension-quiz')]", 1);
+				},
+
+				assertionsOnZipArchive: paramObj =>
+				{
+					var zip = paramObj.ZipFile;
+					var json = GetEntryContents(zip, BloomReaderFileMaker.kQuestionFileName);
+					var groups = QuestionGroup.FromJson(json);
+					Assert.That(groups, Has.Length.EqualTo(1));
+					Assert.That(groups[0].lang, Is.EqualTo("xyz"));
+					Assert.That(groups[0].questions, Has.Length.EqualTo(1));
+					Assert.That(groups[0].onlyForBloomReader1, Is.True);
+
+					var question = groups[0].questions[0];
+					Assert.That(question.question, Is.EqualTo("Where do questions belong?"));
+
+					var answers = question.answers;
+					Assert.That(answers.Length, Is.EqualTo(3));
+					Assert.That(answers[0].text, Is.EqualTo("At the end"));
+					Assert.That(answers[1].text, Is.EqualTo("At the start"));
+					Assert.That(answers[2].text, Is.EqualTo("In the middle"));
+					Assert.That(answers[0].correct, Is.False);
+					Assert.That(answers[1].correct, Is.False);
+					Assert.That(answers[2].correct, Is.True);
 				}
 			);
 		}
@@ -819,7 +908,7 @@ namespace BloomTests.Publish
 		class StubProgress : WebSocketProgress
 		{
 			public readonly List<string> MessagesNotLocalized = new List<string>();
-			public override void MessageWithoutLocalizing(string message)
+			public override void MessageWithoutLocalizing(string message, MessageKind kind)
 			{
 				MessagesNotLocalized.Add(message);
 			}
@@ -829,12 +918,12 @@ namespace BloomTests.Publish
 				ErrorsNotLocalized.Add(message);
 			}
 
-			public override void Message(string idSuffix, string comment, string message, bool useL10nIdPrefix = true)
+			public override void Message(string idSuffix, string comment, string message, MessageKind kind, bool useL10nIdPrefix = true)
 			{
 				MessagesNotLocalized.Add(string.Format(message));
 			}
 
-			public override void MessageWithParams(string id, string comment, string message, params object[] parameters)
+			public override void MessageWithParams(string id, string comment, string message, MessageKind kind, params object[] parameters)
 			{
 				MessagesNotLocalized.Add(string.Format(message, parameters));
 			}
@@ -929,14 +1018,14 @@ namespace BloomTests.Publish
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, timesNewRomanFileName)));
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, calibreFileName)));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Times New Roman font: License OK for embedding."));
-				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("<span style='color:blue'>Embedding font Times New Roman at a cost of 0.0 megs</span>"));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Embedding font Times New Roman at a cost of 0.0 megs"));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Calibre font: License OK for embedding."));
-				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("<span style='color:blue'>Embedding font Calibre at a cost of 0.2 megs</span>"));
+				Assert.That(stubProgress.MessagesNotLocalized,  Has.Member("Embedding font Calibre at a cost of 0.2 megs"));
 
-				Assert.That(stubProgress.ErrorsNotLocalized, Has.Member("Checking NotAllowed font: License does not permit embedding."));
-				Assert.That(stubProgress.ErrorsNotLocalized, Has.Member("Substituting \"Andika New Basic\" for \"NotAllowed\""));
-				Assert.That(stubProgress.ErrorsNotLocalized, Has.Member("Checking NotFound font: No font found to embed."));
-				Assert.That(stubProgress.ErrorsNotLocalized, Has.Member("Substituting \"Andika New Basic\" for \"NotFound\""));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("This book has text in a font named \"NotAllowed\". The license for \"NotAllowed\" does not permit Bloom to embed the font in the book."));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika New Basic\" instead."));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("This book has text in a font named \"NotFound\", but Bloom could not find that font on this computer."));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika New Basic\" instead."));
 
 				var fontSourceRulesPath = Path.Combine(testBook.FolderPath, "fonts.css");
 				var fontSource = RobustFile.ReadAllText(fontSourceRulesPath);

@@ -8,8 +8,8 @@ using System.Threading;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.web;
+using L10NSharp;
 using Newtonsoft.Json;
-using SIL.IO;
 
 namespace Bloom.Publish.Android.wifi
 {
@@ -73,11 +73,12 @@ namespace Bloom.Publish.Android.wifi
 				// just ignore the request.
 				catch (Exception ex) when (ex is JsonReaderException || ex is JsonSerializationException)
 				{
-					_progress.Error(idSuffix: "BadBookRequest",
-						message: "Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?");
+					_progress.Message(idSuffix: "BadBookRequest",
+						message: "Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?",
+						kind:MessageKind.Error);
 
 					//this is too technical/hard to translate
-					_progress.ErrorWithoutLocalizing($" Request contains {json}; trying to interpret as JSON we got {ex.Message}");
+					_progress.MessageWithoutLocalizing($" Request contains {json}; trying to interpret as JSON we got {ex.Message}", kind: MessageKind.Error);
 				}
 			};
 
@@ -92,10 +93,14 @@ namespace Bloom.Publish.Android.wifi
 			PublishToAndroidApi.CheckBookLayout(book, _progress);
 			_wifiAdvertiser.Start();
 
-			_progress.Message(idSuffix: "WifiInstructions1",
-				message: "On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'.");
-			_progress.Message(idSuffix: "WifiInstructions2",
-				message: "You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.");
+			var part1 = LocalizationManager.GetDynamicString(appId: "Bloom", id: "PublishTab.Android.Wifi.Progress.WifiInstructions1",
+				englishText: "On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'.");
+			var part2 = LocalizationManager.GetDynamicString(appId: "Bloom", id: "PublishTab.Android.Wifi.Progress.WifiInstructions2",
+				englishText: "You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.");
+
+			// can only have one instruction up at a time, so we concatenate these
+			_progress.MessageWithoutLocalizing(part1+" "+part2, MessageKind.Instruction);
+
 		}
 
 		public void Stop()
@@ -247,9 +252,10 @@ namespace Bloom.Publish.Android.wifi
 			{
 				// This method is called on a background thread in response to receiving a request from Bloom Reader.
 				// Exceptions somehow get discarded, so there is no point in letting them propagate further.
-				_progress.Error(idSuffix: "Failed",
+				_progress.Message(idSuffix: "Failed",
 					message: "There was an error while sending the book. Possibly the device was disconnected? If you can't see a "
-					         + "reason for this the following may be helpful to report to the developers:");
+					         + "reason for this the following may be helpful to report to the developers:",
+					kind: MessageKind.Error);
 				_progress.Exception(e);
 			}
 			Debug.Fail("got exception " + e.Message + " sending book");

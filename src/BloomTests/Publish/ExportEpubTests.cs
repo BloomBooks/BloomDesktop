@@ -1068,6 +1068,7 @@ namespace BloomTests.Publish
 				+ "%; height:auto; margin-left: " + picIndentPercent.ToString("F1") + "%; margin-top: 0px;']", _ns);
 		}
 
+		#region Audio Overlay tests
 		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
 		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
 		public void BookWithAudio_ProducesOverlay_OmitsInvalidAttrs(TalkingBookApi.AudioRecordingMode audioRecordingMode)
@@ -1255,29 +1256,174 @@ namespace BloomTests.Publish
 			var assertManifest = AssertThatXmlIn.String(FixContentForXPathValueSlash(_manifestContent));
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
-			if (Platform.IsLinux)
+
+			double totalExpectedDuration = GetFakeAudioDurationSecs() * 2;
+			string expectedDurationFormatted = "00:00:0" + totalExpectedDuration.ToString("0.0000000");
+			assertManifest.HasAtLeastOneMatchForXpath($"package/metadata/meta[@property='media:duration' and not(@refines) and text()='{expectedDurationFormatted}']");
+			assertManifest.HasAtLeastOneMatchForXpath($"package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='{expectedDurationFormatted}']");
+
+			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
+			var assertSmil = AssertThatXmlIn.String(FixContentForXPathValueSlash(smilData));
+			string smilSeqPrefix = "smil:smil/smil:body/smil:seq";
+			assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", _ns);
+			assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s1']/smil:text[@src='1.xhtml#e993d14a-0ec3-4316-840b-ac9143d59a2c']", _ns);
+			assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s2']/smil:text[@src='1.xhtml#i0d8e9910-dfa3-4376-9373-a869e109b763']", _ns);
+
+			assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s1']/smil:audio[@src='{kAudioSlash}e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3']", _ns);
+			assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s2']/smil:audio[@src='{kAudioSlash}i0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", _ns);
+			VerifyEpubItemExists("content/" + EpubMaker.kAudioFolder + "/e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3");
+			VerifyEpubItemExists("content/" + EpubMaker.kAudioFolder + "/i0d8e9910-dfa3-4376-9373-a869e109b763.mp3");
+		}
+
+		/// <summary>
+		/// Tests that the correct audio overlay is produced for each of the playback modes that do not include sub-element playback
+		/// </summary>
+		[TestCase("Sentence", true)]
+		[TestCase("Sentence", false)]
+		[TestCase("HardSplit", true)]
+		[TestCase("HardSplit", false)]
+		[TestCase("TextBox", true)]
+		[TestCase("TextBox", false)]
+		public void AddAudioOverlay_NoSubElementPlaybackModes_ProducesCorrectTimings(string audioRecordingMode, bool mergeAudio)
+		{
+			// Setup //
+			var expectedIds = new string[] { "id1", "id2" };
+			BloomBook book;
+
+			if (audioRecordingMode == "Sentence")
 			{
-				// Ffmpeg based audio time calculations on Linux don't quite match what NAudio produces on Windows.
-				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and not(@refines) and text()='00:00:03.2000000']");
-				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='00:00:03.2000000']");
+				book = SetupBook("<p><span class='audio-sentence' id='id1'>Sentence 1.</span><span class='audio-sentence' id='id2'>Sentence 2</span></p>", "xyz");
+			}
+			else if (audioRecordingMode == "HardSplit")
+			{
+				string divContents =
+@"<p>
+	<span id='id1' class='audio-sentence'>Sentence 1</span>
+	<span id='id2' class='audio-sentence'>Sentence 2</span>
+</p>";
+				var extraEditDivClassesAndAttributes = "' id='textBoxId";  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
+				book = SetupBookLong(
+					text: divContents,
+					lang: "xyz",
+					extraEditDivClasses: extraEditDivClassesAndAttributes
+				);
+			}
+			else if (audioRecordingMode == "TextBox")
+			{
+				string extraEditDivClassesAndAttributes = "audio-sentence' id='id1";  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
+				string extraContentOutsideTranslationGroup = "<div class='bloom-translationGroup'><div lang='xyz' class='bloom-editable audio-sentence' id='id2'><p>Text for editable 2</p></div></div>";
+				book = SetupBookLong(
+					text: "<p>Text for Editable 1</p>",
+					lang: "xyz",
+					extraEditDivClasses: extraEditDivClassesAndAttributes,
+					extraContentOutsideTranslationGroup: extraContentOutsideTranslationGroup
+				);
 			}
 			else
 			{
-				// We don't much care how many decimals follow the 3.344 but this is what the default TimeSpan.ToString currently does.
-				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and not(@refines) and text()='00:00:03.3440000']");
-				assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='00:00:03.3440000']");
+				book = null;
+				Assert.Fail("Invalid test input");
 			}
+
+			foreach (string expectedId in expectedIds)
+			{
+				MakeFakeAudio(book.FolderPath.CombineForPath("audio", $"{expectedId}.mp3"));
+			}
+
+			// Cause the system under test to be executed.
+			MakeEpub("output", $"AddAudioOverlay_SentencePlaybackModes_ProducesCorrectOverlay_{audioRecordingMode}_{mergeAudio}", book,
+				extraInit: maker => maker.OneAudioPerPage = mergeAudio);
+
+			// Verification //
 			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
 			var assertSmil = AssertThatXmlIn.String(FixContentForXPathValueSlash(smilData));
-			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", _ns);
-			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#e993d14a-0ec3-4316-840b-ac9143d59a2c']", _ns);
-			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#i0d8e9910-dfa3-4376-9373-a869e109b763']", _ns);
-			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3']", _ns);
-			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"i0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", _ns);
 
-			VerifyEpubItemExists("content/"+EpubMaker.kAudioFolder+"/e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3");
-			VerifyEpubItemExists("content/"+EpubMaker.kAudioFolder+"/i0d8e9910-dfa3-4376-9373-a869e109b763.mp3");
+			string smilSeqPrefix = "smil:smil/smil:body/smil:seq";
+			double expectedDurationPerClip = GetFakeAudioDurationSecs();
+
+			for (int i = 0; i < expectedIds.Length; ++i)
+			{
+				string expectedId = expectedIds[i];
+				string expectedFilename = mergeAudio ? "page1" : expectedId;
+				double expectedClipBegin = mergeAudio ? (expectedDurationPerClip * i) : 0;
+				double expectedClipEnd = expectedClipBegin + expectedDurationPerClip;
+				string expectedClipBeginFormatted = "0:00:0" + expectedClipBegin.ToString("0.000");
+				string expectedClipEndFormatted = "0:00:0" + expectedClipEnd.ToString("0.000");
+
+				assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s{i + 1}']/smil:text[@src='1.xhtml#{expectedId}']", _ns);
+				assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s{i + 1}']/smil:audio[@src='{kAudioSlash}{expectedFilename}.mp3'][@clipBegin='{expectedClipBeginFormatted}'][@clipEnd='{expectedClipEndFormatted}']", _ns);
+				VerifyEpubItemExists($"content/{EpubMaker.kAudioFolder}/{expectedFilename}.mp3");
+			}
 		}
+
+		/// <summary>
+		/// Tests that the correct audio overlay is produced for a text box that has been Soft Split
+		/// </summary>
+		[TestCase(true)]
+		[TestCase(false)]
+		public void AddAudioOverlay_SubElementPlaybackModes_ProducesCorrectTimings(bool mergeAudio)
+		{
+			// Setup //
+			double expectedDurationPerClip = GetFakeAudioDurationSecs();
+			double expectedDurationPerSegment = expectedDurationPerClip / 2;
+
+			var extraEditDivClassesAndAttributes = $"audio-sentence' id='audio1' data-audiorecordingendtimes='{expectedDurationPerSegment} {expectedDurationPerClip}";  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
+			string firstDivContents =
+@"<p>
+	<span id='text1' class='bloom-highlightSegment'>Sentence 1</span>
+	<span id='text2' class='bloom-highlightSegment'>Sentence 2</span>
+</p>";
+
+			string secondDivHtml =
+$@"<div class='bloom-translationGroup'>
+	<div lang='xyz' class='bloom-editable audio-sentence' id='audio2' data-audiorecordingendtimes='{expectedDurationPerSegment} {expectedDurationPerClip}'>
+		<p>
+			<span id='text3' class='bloom-highlightSegment'>Sentence 3.</span>
+			<span id='text4' class='bloom-highlightSegment'>Sentence 4.</span>
+		</p>
+	</div>
+</div>";
+
+			var book = SetupBookLong(
+				text: firstDivContents,
+				lang: "xyz",
+				extraEditDivClasses: extraEditDivClassesAndAttributes,
+				extraContentOutsideTranslationGroup: secondDivHtml
+			);
+
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", $"audio1.mp3"));
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", $"audio2.mp3"));
+
+			// Cause the system under test to be executed.
+			MakeEpub("output", $"AddAudioOverlay_SubElementPlaybackModes_ProducesCorrectTimings_{mergeAudio}", book,
+				extraInit: maker => maker.OneAudioPerPage = mergeAudio);
+
+			// Verification //
+			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
+			var assertSmil = AssertThatXmlIn.String(FixContentForXPathValueSlash(smilData));
+
+			string smilSeqPrefix = "smil:smil/smil:body/smil:seq";
+
+			for (int divIndex = 0; divIndex < 2; ++divIndex)
+			{
+				string expectedFilename = mergeAudio ? "page1" : $"audio{divIndex+1}";				
+				double divStartTime = mergeAudio ? (divIndex * expectedDurationPerClip) : 0;
+
+				for (int j = 0; j < 2; ++j)
+				{
+					int expectedIndex = (divIndex) * 2 + j + 1;
+					double expectedClipBegin = divStartTime + expectedDurationPerSegment * j;
+					double expectedClipEnd = expectedClipBegin + expectedDurationPerSegment;
+					string expectedClipBeginFormatted = "0:00:0" + expectedClipBegin.ToString("0.000");
+					string expectedClipEndFormatted = "0:00:0" + expectedClipEnd.ToString("0.000");
+					
+					assertSmil.HasAtLeastOneMatchForXpath($"smil:smil/smil:body/smil:seq/smil:par[@id='s{expectedIndex}']/smil:text[@src='1.xhtml#text{expectedIndex}']", _ns);
+					assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s{expectedIndex}']/smil:audio[@src='{kAudioSlash}{expectedFilename}.mp3'][@clipBegin='{expectedClipBeginFormatted}'][@clipEnd='{expectedClipEndFormatted}']", _ns);
+				}
+				VerifyEpubItemExists($"content/{EpubMaker.kAudioFolder}/{expectedFilename}.mp3");
+			}
+		}
+		#endregion
 
 		// Sometimes the tests were failing on TeamCity because the file was in use by another process
 		// (I'm assuming that was another test since a few use the same path).
@@ -1297,6 +1443,22 @@ namespace BloomTests.Publish
 					File.Copy(wavSrc, Path.ChangeExtension(path, "wav"), true);
 				}
 			}
+		}
+
+		/// <summary>
+		/// The duration, in seconds, of the audio produced by MakeFakeAudio()
+		/// </summary>
+		/// <returns></returns>
+		protected static double GetFakeAudioDurationSecs()
+		{
+			double expectedDurationPerClip = 1.672;
+			if (Platform.IsLinux)
+			{
+				// Ffmpeg based audio time calculations on Linux don't quite match what NAudio produces on Windows.
+				expectedDurationPerClip = 1.6;
+			}
+
+			return expectedDurationPerClip;
 		}
 
 		[TestCase("abc", ExpectedResult = "abc")]

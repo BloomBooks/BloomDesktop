@@ -101,6 +101,7 @@ namespace Bloom.Publish
 			if (this != _latestInstance)
 				return;
 
+			var haveEnterpriseFeatures = book.CollectionSettings.HaveEnterpriseFeatures;
 			var toBeDeleted = new List<XmlElement> ();
 			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
 			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
@@ -108,7 +109,7 @@ namespace Bloom.Publish
 			{
 				foreach (XmlElement elt in page.SafeSelectNodes(kSelectThingsThatCanBeHidden))
 				{
-					if (!IsDisplayed(elt))
+					if (!IsDisplayed(elt) && !IsDesiredImageDescription(elt, haveEnterpriseFeatures))
 						toBeDeleted.Add(elt);
 				}
 				foreach (var elt in toBeDeleted)
@@ -156,12 +157,12 @@ namespace Bloom.Publish
 				div.RemoveAttribute("content-editable");	// too late for editing in an ebook
 			}
 
-			// Clean up img elements (BL-6035/BL-6036)
+			// Clean up img elements (BL-6035/BL-6036 and BL-7218)
 			foreach (var img in dom.Body.SelectNodes("//img").Cast<XmlElement>())
 			{
 				// Ensuring a proper alt attribute is handled elsewhere
 				var src = img.GetOptionalStringAttribute("src", null);
-				if (String.IsNullOrEmpty(src))
+				if (String.IsNullOrEmpty(src) || src == "placeHolder.png")
 				{
 					// If the image file doesn't exist, we want to find out about it.  But if there is no
 					// image file, epubcheck complains and it doesn't do any good anyway.
@@ -201,6 +202,25 @@ namespace Bloom.Publish
 			var id = elt.Attributes["id"].Value;
 			var display = _browser.RunJavaScript ("getComputedStyle(document.getElementById('" + id + "'), null).display");
 			return display != "none";
+		}
+
+		/// <summary>
+		/// Even when they are not displayed we want to keep image descriptions for Bloom Enterprise books.
+		/// This is necessary for retaining any associated audio files to play.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7237.
+		/// </remarks>
+		private bool IsDesiredImageDescription(XmlElement elt, bool haveEnterpriseFeatures)
+		{
+			var classes = elt.Attributes["class"]?.Value;
+			if (!String.IsNullOrEmpty(classes) &&
+				(classes.Contains("ImageDescriptionEdit-style") ||
+					classes.Contains("bloom-imageDescription")))
+			{
+				return haveEnterpriseFeatures;
+			}
+			return false;
 		}
 
 		internal const string kTempIdMarker = "PublishTempIdXXYY";

@@ -135,7 +135,10 @@
       <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="mam" state="translated">&amp;Mi kb'antel</target>
+        <target xml:lang="mam" state="translated">&amp;Min kb'antel</target>
+        <alt-trans>
+          <target xml:lang="mam">&amp;Mi kb'antel</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">&amp;Nti' tojtzqi'n</target>
         </alt-trans>
@@ -185,6 +188,18 @@
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
         <target xml:lang="mam" state="translated">&amp;Ok</target>
+      </trans-unit>
+      <trans-unit id="CustomIdentifierView.betterLabel1">
+        <source xml:lang="en">RFC5646 code:</source>
+        <note>ID: CustomIdentifierView.betterLabel1</note>
+        <note>label describes the code for a custom identifier. Translate only 'code'</note>
+        <target xml:lang="mam" state="translated">Techil tajlal RFC5646:</target>
+      </trans-unit>
+      <trans-unit id="CustomIdentifierView.linkLabel1">
+        <source xml:lang="en">Read about language identifiers on the web</source>
+        <note>ID: CustomIdentifierView.linkLabel1</note>
+        <note>text used in the link to a webpage that describes the language identifiers</note>
+        <target xml:lang="mam" state="translated">N-sch'in nab'il tib'aj qe nchi ka'yin twitz yol tuj chemaj xin</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -484,6 +499,18 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">B'inchal ke'yin q'amab'il kyaqil...</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="IpaIdentifierView.betterLabel1">
+        <source xml:lang="en">Purpose:</source>
+        <note>ID: IpaIdentifierView.betterLabel1</note>
+        <note>In writing system setup when IPA special option is selected: Label for the purpose combo box</note>
+        <target xml:lang="mam" state="translated">Tajb'il:</target>
+      </trans-unit>
+      <trans-unit id="IpaIdentifierView.linkLabel1">
+        <source xml:lang="en">Read about IPA transcription on the web</source>
+        <note>ID: IpaIdentifierView.linkLabel1</note>
+        <note>In writing system setup when IPA special option is selected: text used in link to a webpage describing IPA transcription</note>
+        <target xml:lang="mam" state="translated">N-sch'in tib'aj tu'mel tz'ib'ajtz tuj AFI (Alfabeto Fonético Internacional) tuj chemaj xin</target>
+      </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
@@ -592,6 +619,16 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">¿Nti' nkanet tyolb'ila?</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="LanguageLookup._scriptsAndVariantsLabel">
+        <source xml:lang="en">my script variant label</source>
+        <note>ID: LanguageLookup._scriptsAndVariantsLabel</note>
+        <target xml:lang="mam" state="translated">n-techila b'ib'aj juntl tu'mel tz'ib'ajtz</target>
+      </trans-unit>
+      <trans-unit id="LanguageLookup._scriptsAndVariantsLink">
+        <source xml:lang="en">Script and Variant</source>
+        <note>ID: LanguageLookup._scriptsAndVariantsLink</note>
+        <target xml:lang="mam" state="translated">Tz'ib'ajtz ex juntl tu'mel</target>
+      </trans-unit>
       <trans-unit id="MemoryWarning" approved="yes">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
         <note>ID: MemoryWarning</note>
@@ -603,7 +640,10 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataDisplay.Creator">
         <source xml:lang="en">Creator: {0}</source>
         <note>ID: MetadataDisplay.Creator</note>
-        <target xml:lang="mam" state="translated">Ajb'inchal:{0}</target>
+        <target xml:lang="mam" state="translated">Ajb'inchal: {0}</target>
+        <alt-trans>
+          <target xml:lang="mam">Ajb'inchal:{0}</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Aj b'inchal:{0}</target>
         </alt-trans>
@@ -770,6 +810,11 @@ Kyusab'il tu'n tel</target>
         <note>ID: MetadataEditor.License</note>
         <target xml:lang="mam" state="translated">Tu'jil amb'il</target>
       </trans-unit>
+      <trans-unit id="MetadataEditor.PublicDomain">
+        <source xml:lang="en">The copyright holder waives all rights</source>
+        <note>ID: MetadataEditor.PublicDomain</note>
+        <target xml:lang="mam" state="translated">Aj tajwil at toklen b'inchalte n-nelti'n kyaqil toklenj</target>
+      </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
@@ -814,6 +859,12 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">txqantl q'amab'itz</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="MetadataEditor.linkToPublicDomainCC0">
+        <source xml:lang="en">about {0} Public Domain</source>
+        <note>ID: MetadataEditor.linkToPublicDomainCC0</note>
+        <note>{0} is replaced by an untranslatable abbreviation functioning as an adjective ("CC0")</note>
+        <target xml:lang="mam" state="translated">nab'il tib'aj kyaqil tzqi'n kyu'n xjal {0}</target>
+      </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons" approved="yes">
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
@@ -822,6 +873,21 @@ Kyusab'il tu'n tel</target>
         <alt-trans>
           <target xml:lang="mam">Nlayx b'ant ti'j</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton">
+        <source xml:lang="en">Cancel</source>
+        <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton</note>
+        <target xml:lang="mam" state="translated">Min lajet</target>
+      </trans-unit>
+      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._okButton">
+        <source xml:lang="en">OK</source>
+        <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._okButton</note>
+        <target xml:lang="mam" state="translated">K'amol</target>
+      </trans-unit>
+      <trans-unit id="ScriptsAndVariantsDialog.ScriptsAndVariants">
+        <source xml:lang="en">Script and Variant</source>
+        <note>ID: ScriptsAndVariantsDialog.ScriptsAndVariants</note>
+        <target xml:lang="mam" state="translated">Tz'ib'ajtz ex juntl tu'mel</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
@@ -843,7 +909,10 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
-        <target xml:lang="mam" state="translated">Kolib'il ttxolil aq'unb'il xk'utz'ib'...</target>
+        <target xml:lang="mam" state="translated">Kolb'il ttxolil aq'unb'il xk'utz'ib'...</target>
+        <alt-trans>
+          <target xml:lang="mam">Kolib'il ttxolil aq'unb'il xk'utz'ib'...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Kolil kye meltz'ul aq'untl...</target>
         </alt-trans>
@@ -891,12 +960,17 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">Yek'b'il txilen b'ib'ajtz</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordNotice" approved="yes">
+      <trans-unit id="SettingsProtection.PasswordNotice">
         <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
-        <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
-        <note xml:lang="en">OLD TEXT (before 4.0, added space, removed period): Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</note>
+        <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
         <target xml:lang="mam" state="translated">Aj techil ja b'inchalte tu'n tajb'lan kyi'j qe tz'ajsab'il lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na "{1}" ex "{2}"</target>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl">
+        <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
+        <note>ID: SettingsProtection.PasswordNoticeWithSupportUrl</note>
+        <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNotice". Param 0: Factory password; Param 1: product name; Param 2: URL of support page</note>
+        <target xml:lang="mam" state="translated">Aj techil jab'inchalte tu'n tajb'lan kyi'j qe ttxolil aq'unb'il xk'utz'ib' lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan t-xaq te onb'il {1} tuj: {2}</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
@@ -925,6 +999,12 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">Kolil meltz'ul aq'untl</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="VoiceIdentifierView.betterLabel1">
+        <source xml:lang="en">In applications which support this option, fields with this input system will be able to play and record voice.</source>
+        <note>ID: VoiceIdentifierView.betterLabel1</note>
+        <note>Displayed if a user selects the voice special option in writing system setup</note>
+        <target xml:lang="mam" state="translated">Kyuj qe aq'unb'il xk'utz'ib' nq'on tipumal tu'mel lu', a qe ttenb'il xk'utz'ib' tuk' tu'mel tu'n qoqx b'a'n tu'n tb'ant xk'ub'ib'il ex tu'n t-xi' qb'i'n qwi'.</target>
+      </trans-unit>
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
@@ -941,85 +1021,163 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">(Aju tloq'b'il ma jaw saq'et nti' toksa'n tuj xk'utz'ib'. Qajb'lal tloq'b'il q'i'n tu'n xk'utz'ib'.)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="WSFontControl.RightToLeftWS">
+      <trans-unit id="WSFontControl.RightToLeftWS" approved="yes">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="mam" state="translated">A te jlu' jun &amp; tu'mel tz'ib'il tzyetil tuj manq'ab'aj tu'n tponb'aj tuj na'yaj.</target>
+        <target xml:lang="mam" state="translated">A te lu' jun &amp; tu'mel tz'ib'b'il tu'n ttzyet tuj manq'ab'aj tu'n tpon b'aj tuj na'yaj.</target>
+        <alt-trans>
+          <target xml:lang="mam">A te jlu' jun &amp; tu'mel tz'ib'il tzyetil tuj manq'ab'aj tu'n tponb'aj tuj na'yaj.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSFontControl.Size">
+      <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
         <target xml:lang="mam" state="translated">&amp;Nik'pun:</target>
       </trans-unit>
-      <trans-unit id="WSFontControl.TestArea">
+      <trans-unit id="WSFontControl.TestArea" approved="yes">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="mam" state="translated">&amp;Ttenb'il b'inchb'il:</target>
+        <target xml:lang="mam" state="translated">&amp;Ttenb'il xniky'chab'il:</target>
+        <alt-trans>
+          <target xml:lang="mam">&amp;Ttenb'il xnik'chab'il:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="mam">&amp;Ttenb'il malb'il:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="mam">&amp;Ttenb'il b'inchb'il:</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeyboardNotListed">
+      <trans-unit id="WSIdentifierView.betterLabel4">
+        <source xml:lang="en">Abbreviation</source>
+        <note>ID: WSIdentifierView.betterLabel4</note>
+        <note>In writing system setup general tab: label before abbreviation text box</note>
+        <target xml:lang="mam" state="translated">Aqe' tz'epona</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifierView.betterLabel5">
+        <source xml:lang="en">Special:</source>
+        <note>ID: WSIdentifierView.betterLabel5</note>
+        <note>In writing system setup general tab:  Label before combo box with 'Special' choices</note>
+        <target xml:lang="mam" state="translated">Tb'anil:</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Default">
+        <source xml:lang="en">Default</source>
+        <note>ID: WSIdentifiers.IpaIdentifierView.Default</note>
+        <note>Choice for most users</note>
+        <target xml:lang="mam" state="translated">B'incha'nmaj</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Emic">
+        <source xml:lang="en">Emic (uses phonology of the language)</source>
+        <note>ID: WSIdentifiers.IpaIdentifierView.Emic</note>
+        <note>Only translate text inside of the parentheses ()</note>
+        <target xml:lang="mam" state="translated">Emic (n-nab'en q'ajq'ajel yol)</target>
+      </trans-unit>
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Etic">
+        <source xml:lang="en">Etic (raw phonetic transcription)</source>
+        <note>ID: WSIdentifiers.IpaIdentifierView.Etic</note>
+        <note>Only translate text inside of the parentheses ()</note>
+        <target xml:lang="mam" state="translated">Etic (tu'mel tz'ib'ajtz q'ajyol tu'nx)</target>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <note>ID: WSKeyboardControl.KeyboardNotListed</note>
-        <target xml:lang="mam" state="translated">Qa nti' tokx qe tu'mel tz'ib'il tuj ttxolil, b'inchanxa clic tib'aj techil b'a'nxix at kub'ni tu'n meltz'ut aq'untl</target>
+        <target xml:lang="mam" state="translated">Qa nti' tokx tu'mel tz'ib'b'il tuj k'loj lu, b'inchanxa klik tib'aj tb'anil techil at kub'ni tu'n ttxolb'et aq'unb'il</target>
+        <alt-trans>
+          <target xml:lang="mam">Qa nti' tokx qe tu'mel tz'ib'il tuj ttxolil, b'inchanxa clic tib'aj techil b'a'nxix at kub'ni tu'n meltz'ut aq'untl</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeyboardSettingsLink">
+      <trans-unit id="WSKeyboardControl.KeyboardSettingsLink" approved="yes">
         <source xml:lang="en">Windows keyboard settings</source>
         <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
-        <target xml:lang="mam" state="translated">Meltz'ul aq'untl te tu'mel tz'ib'il te Windows</target>
+        <target xml:lang="mam" state="translated">Txolb'al aq'unb'il ti'j tz'ib'b'il te Windows</target>
+        <alt-trans>
+          <target xml:lang="mam">Meltz'ul aq'untl te tu'mel tz'ib'il te Windows</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeyboardsAvailable">
+      <trans-unit id="WSKeyboardControl.KeyboardsAvailable" approved="yes">
         <source xml:lang="en">Available keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
-        <target xml:lang="mam" state="translated">Atqe tu'mel tz'ib'il</target>
+        <target xml:lang="mam" state="translated">Alkyechaq tu'mel tz'ib'b'il at</target>
+        <alt-trans>
+          <target xml:lang="mam">Atqe tu'mel tz'ib'il</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed">
+      <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed" approved="yes">
         <source xml:lang="en">Previously used keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
-        <target xml:lang="mam" state="translated">Tu'mel tz'ib'il o' chajb'enxa</target>
+        <target xml:lang="mam" state="translated">Tu'mel tz'ib'b'il o chi ajb'en</target>
+        <alt-trans>
+          <target xml:lang="mam">Tu'mel tz'ib'il o' chajb'enxa</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeymanConfigurationLink">
+      <trans-unit id="WSKeyboardControl.KeymanConfigurationLink" approved="yes">
         <source xml:lang="en">Keyman Configuration</source>
         <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
-        <target xml:lang="mam" state="translated">Meltz'ul aq'untl te Keyman</target>
+        <target xml:lang="mam" state="translated">Txolb'al aq'unb'il te Keyman</target>
+        <alt-trans>
+          <target xml:lang="mam">Meltz'ul aq'untl te Keyman</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeymanNotInstalled">
+      <trans-unit id="WSKeyboardControl.KeymanNotInstalled" approved="yes">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="mam" state="translated">Keyman 5.0 mo ak'ax nti' tok.</target>
+        <target xml:lang="mam" state="translated">Aju keyman 5.0 mo juntl ak'aj twitz lu, nti' tokx.</target>
+        <alt-trans>
+          <target xml:lang="mam">Keyman 5.0 mo ak'ax nti' tok.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.SelectKeyboardLabel">
+      <trans-unit id="WSKeyboardControl.SelectKeyboardLabel" approved="yes">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="mam" state="translated">Saq'onxa &amp;alkye tu'mel tz'ib'il taja tu'n tz'ib'ana {0}</target>
+        <target xml:lang="mam" state="translated">Sak'onxa &amp;alkye tu'mel tz'ib'b'il taja tu'n tajb'en tu'na {0}</target>
+        <alt-trans>
+          <target xml:lang="mam">Saq'onxa &amp;alkye tu'mel tz'ib'il taja tu'n tz'ib'ana {0}</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.SetupKeyboards">
+      <trans-unit id="WSKeyboardControl.SetupKeyboards" approved="yes">
         <source xml:lang="en">Set up keyboards</source>
         <note>ID: WSKeyboardControl.SetupKeyboards</note>
-        <target xml:lang="mam" state="translated">Meltz'ul tu'mel tz'ib'el</target>
+        <target xml:lang="mam" state="translated">Txolb'al tu'mel tz'ib'b'il</target>
+        <alt-trans>
+          <target xml:lang="mam">Meltz'ul tu'mel tz'ib'el</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.TestAreaCaption">
+      <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="mam" state="translated">&amp;Ttenb'il b'inchb'il (Tz'ib'anxa nokx alkye tuj amb'il lu' tu'n tok nik'b'et tu'mel tz'ib'el.)</target>
+        <target xml:lang="mam" state="translated">&amp;Ttenb'il xniky'chab'il (Tz'ib'an okxa ti'chaq tuj tenb'il lu' tu'n tok nik'b'et tu'mel tz'ib'b'il.)</target>
+        <alt-trans>
+          <target xml:lang="mam">&amp;Ttenb'il b'inchb'il (Tz'ib'anxa nokx alkye tuj amb'il lu' tu'n tok nik'b'et tu'mel tz'ib'el.)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Warning">
+      <trans-unit id="Warning" approved="yes">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
         <target xml:lang="mam" state="translated">Yol tu'n t-xi' qb'i'n</target>
       </trans-unit>
-      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption">
+      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption" approved="yes">
         <source xml:lang="en">Unable to connect to SLDR</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
-        <target xml:lang="mam" state="translated">Nti' nok tq'on tib' ti'j SLDR</target>
+        <target xml:lang="mam" state="translated">Nti' nok tmujb'a'n tib' ti'j SLDR</target>
+        <alt-trans>
+          <target xml:lang="mam">Nti' nok tq'on tib' ti'j SLDR</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText">
+      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText" approved="yes">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
-        <target xml:lang="mam" state="translated">Nti' nok tq'on tib' b'inchab'il ti'j txwilal tkub'il yol te SILtu'n tzaj tq'o'n pokb'al ma yin n-netz tib'aj yolb'il lu'. Qa ma kub' tb'inchana tu'mel tz'ib'il lu', nalyx kb'antel tu'n tlaj a meltz'ul aq'untl nya b'a'n mo ojtxa o kub' b'inchet. ¿Tajxixya tu'n tkub' tb'inchana jun ak'aj tumel tz'ib'il?</target>
+        <target xml:lang="mam" state="translated">Nti' nok tmujb'a'n tib' aq'unb'il xk'utz'ib' ti'j t-xmilal tk'ub'il yol te SIL tu'n ttzaj tq'o'n ak'aj tpokb'al ti'j yolb'il lu'. Qa ma kub' tb'inchana tu'mel tz'ib'b'il lu', jaku mlayx kb'antel tu'n tlaj a txolb'al aq'untl nya b'a'n mo ojtxi o kub' b'inchet. ¿Tajxixya tu'n tkub' tb'inchana jun ak'aj tu'mel tz'ib'b'il?</target>
+        <alt-trans>
+          <target xml:lang="mam">Nti' nok tq'on tib' b'inchab'il ti'j txwilal tkub'il yol te SILtu'n tzaj tq'o'n pokb'al ma yin n-netz tib'aj yolb'il lu'. Qa ma kub' tb'inchana tu'mel tz'ib'il lu', nalyx kb'antel tu'n tlaj a meltz'ul aq'untl nya b'a'n mo ojtxa o kub' b'inchet. ¿Tajxixya tu'n tkub' tb'inchana jun ak'aj tumel tz'ib'il?</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
+      <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard" approved="yes">
         <source xml:lang="en">[Missing] {0} ({1})</source>
         <note>ID: XkbKeyboardAdaptor.MissingKeyboard</note>
-        <target xml:lang="mam" state="translated">[Atx taj] {0} ({1})</target>
+        <target xml:lang="mam" state="translated">[At-x taj] {0} ({1})</target>
+        <alt-trans>
+          <target xml:lang="mam">[Atx taj] {0} ({1})</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>

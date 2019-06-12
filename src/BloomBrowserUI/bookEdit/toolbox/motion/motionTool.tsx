@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Div } from "../../../react_components/l10n";
+import { Div } from "../../../react_components/l10nComponents";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 // These are for Motion:
 import { EditableDivUtils } from "../../js/editableDivUtils";

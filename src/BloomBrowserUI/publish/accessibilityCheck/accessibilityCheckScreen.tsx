@@ -7,14 +7,15 @@ import { AccessibilityChecklist } from "./accessibilityChecklist";
 import { DaisyChecks } from "./daisyChecks";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { BloomApi } from "../../utils/bloomApi";
-import { String } from "../../react_components/l10n";
-
+import { String } from "../../react_components/l10nComponents";
+import theme from "../../bloomMaterialUITheme";
+import { ThemeProvider } from "@material-ui/styles";
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs
 interface IState {
     bookName: string;
 }
-class AccessibilityCheckScreen extends React.Component<{}, IState> {
+export class AccessibilityCheckScreen extends React.Component<{}, IState> {
     public readonly state: IState = {
         bookName: "?"
     };
@@ -93,5 +94,10 @@ class AccessibilityCheckScreen extends React.Component<{}, IState> {
 
 // allow plain 'ol javascript in the html to connect up react
 (window as any).connectAccessibilityCheckScreen = element => {
-    ReactDOM.render(<AccessibilityCheckScreen />, element);
+    ReactDOM.render(
+        <ThemeProvider theme={theme}>
+            <AccessibilityCheckScreen />
+        </ThemeProvider>,
+        element
+    );
 };

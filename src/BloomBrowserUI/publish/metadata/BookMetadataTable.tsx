@@ -2,11 +2,12 @@ import * as React from "react";
 import ReactTable from "react-table";
 import * as mobxReact from "mobx-react";
 import { StringListCheckbox } from "../../react_components/stringListCheckbox";
-import { Label } from "../../react_components/l10n";
+import { Label } from "../../react_components/l10nComponents";
 import { Link } from "../../react_components/link";
 import "./BookMetadataTable.less";
 import SubjectChooser from "./SubjectChooser";
 import A11yLevelChooser from "./A11yLevelChooser";
+import { TextField } from "@material-ui/core";
 
 interface IProps {
     // We don't know or care what the top level elements are to this. We will show a row for each
@@ -98,7 +99,11 @@ export default class BookMetadataTable extends React.Component<IProps> {
 
                                     case "editableText":
                                         return (
-                                            <textarea
+                                            <TextField
+                                                id="outlined-bare"
+                                                defaultValue={f.value}
+                                                margin="normal"
+                                                variant="outlined"
                                                 onBlur={(
                                                     event: React.FocusEvent<
                                                         HTMLTextAreaElement
@@ -109,7 +114,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                                     ].value =
                                                         event.currentTarget.value;
                                                 }}
-                                                defaultValue={f.value}
+                                                // value={f.value}
                                             />
                                         );
 
@@ -147,7 +152,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
 
     private makeHazardControls() {
         return (
-            <div>
+            <div className="checkbox-list">
                 {/* from https://www.w3.org/wiki/WebSchemas/Accessibility*/}
                 {/* "Sound Hazard" is too hard to explain (BL-6947) */}
                 {["flashingHazard", "motionSimulationHazard"].map(
@@ -165,13 +170,12 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                 onChange={list =>
                                     (this.props.metadata.hazards.value = list)
                                 }
-                            >
-                                {
+                                label={
                                     this.props.translatedControlStrings[
                                         hazardName
                                     ]
                                 }
-                            </StringListCheckbox>
+                            />
                         );
                     }
                 )}
@@ -184,7 +188,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
     }
     private makeA11yFeaturesControls() {
         return (
-            <div>
+            <div className="checkbox-list">
                 {/* from https://www.w3.org/wiki/WebSchemas/Accessibility*/}
                 {["alternativeText", "signLanguage"].map(featureName => {
                     return (
@@ -197,9 +201,10 @@ export default class BookMetadataTable extends React.Component<IProps> {
                             onChange={list =>
                                 (this.props.metadata.a11yFeatures.value = list)
                             }
-                        >
-                            {this.props.translatedControlStrings[featureName]}
-                        </StringListCheckbox>
+                            label={
+                                this.props.translatedControlStrings[featureName]
+                            }
+                        />
                     );
                 })}
             </div>

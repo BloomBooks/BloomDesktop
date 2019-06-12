@@ -1,0 +1,119 @@
+// didn't help with the Bloom vs. modern browser disparity (see  &:after below)
+// : @import "../../node_modules/normalize.css/normalize.css";
+@import "../../bloomUI.less";
+
+@phoneFeaturesColor: #ababab;
+@bezelWidth: 10px;
+@speaker-length : 80px; // prettier extension changes speakerLength to speakerlength. So weird.
+@speakerHeight: 5px;
+
+@scale: 25;
+@screenWidth: 9px * @scale;
+@screenHeight: 16px * @scale;
+@buttonScale: 0.2;
+// gets filled by the components children, if there are any
+
+// Desktop pixels are much larger, so things come out bloated.
+// For now what we do is make the player & readium think we have twice the pixels,
+// then shrink it all.
+@pixelDensityMultiplier: 2;
+
+.deviceAndControls {
+    display: flex;
+    flex-direction: row;
+}
+
+.deviceFrame {
+    background: rgb(241, 241, 241);
+    box-sizing: content-box; // Our width & height are sizing the screen (the glass). All the bezel and stuff doesn't count.
+    width: @screenWidth;
+    height: @screenHeight;
+    border-width: @bezelWidth;
+    border-style: solid;
+    border-color: #636363;
+    border-top-width: 20px;
+    border-bottom-width: 20px;
+    border-radius: 15px;
+
+    position: relative;
+    flex-direction: column;
+    flex-shrink: 0;
+
+    display: flex !important;
+    --scale: 1;
+
+    &.orientation-button {
+        --scale: @buttonScale;
+        transform-origin: top;
+        &.portrait {
+            margin-right: -60px;
+            margin-left: 150px;
+            transform: translate(0, 65px) scale(@buttonScale);
+        }
+        &.landscape {
+            transform: translate(0, 117px) rotate(-90deg /*counter clockwise*/)
+                scale(@buttonScale);
+        }
+        &.disabled {
+            opacity: 0.5;
+        }
+        .selectedOrientation {
+            border: solid @bloom-blue; // @bloom-yellow;
+            margin: -46px;
+            width: 132%;
+            height: 132%;
+            border-radius: 18px;
+            border-width: 7px;
+        }
+    }
+    transition: all 200ms;
+
+    iframe {
+        background-color: black;
+
+        border: none;
+
+        flex-shrink: 0; // without this, the height doesn't grow
+        transform-origin: top left;
+    }
+    &.portrait {
+        &.fullSize {
+            transform: translate(143px, 0);
+        }
+        iframe {
+            width: @pixelDensityMultiplier * 100% !important;
+            height: @pixelDensityMultiplier * 100% !important;
+            transform: scale(1 / @pixelDensityMultiplier);
+        }
+    }
+
+    &.landscape {
+        transform-origin: top left;
+        transform: translate(0, @screenWidth+ (2 * @bezelWidth) /* down*/)
+            rotate(-90deg /*counter clockwise*/) scale(var(--scale));
+        /*@bezelWidth*/
+        iframe {
+            height: (@pixelDensityMultiplier * 900% / 16); //  9/16
+            width: (@pixelDensityMultiplier * 1600%/9); //  16/9
+            transform: rotate(90deg /* clockwise*/) translate(0, -@screenWidth)
+                scale(1 / @pixelDensityMultiplier);
+            /*translate(0, -@screenWidth + (2 * @bezelWidth));*/
+        }
+    }
+
+    // speaker
+    &:before {
+        // NOTE: the commented-out bits here work in modern browsers, but not in Bloom 4.6's browser.
+        --speakerWidth: @screenWidth / 3;
+        width: calc(9px * @scale / 3); //var(--speakerWidth);
+        height: @speakerHeight;
+        margin-top: -12px;
+        margin-left: calc(
+            (9px * @scale / 2) - ((9px * @scale / 3) / 2)
+        ); // ~"calc((var(--screenWidth)/2) - (var(--speakerWidth)/2))";
+        border-radius: @speakerHeight;
+        background-color: @phoneFeaturesColor;
+        content: "";
+        position: absolute;
+    }
+}

@@ -61,7 +61,21 @@ namespace Bloom.Publish.PDF
 					var fromDirectory = String.Empty;
 					var progress = new NullProgress();	// I can't figure out how to use any IProgress based code, but we show progress okay as is.
 					var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
-					if (res.DidTimeOut || !RobustFile.Exists(tempPdfFile.Path))
+					if (res.ExitCode != 0)
+					{
+						// On Linux, ghostscript doesn't deal well with some Unicode filenames.  Try renaming the input
+						// file temporarily to something innocuous to see if this makes the ghostscript process succeed.
+						// See https://issues.bloomlibrary.org/youtrack/issue/BL-7177.
+						using (var tempInputFile = TempFile.WithExtension(".pdf"))
+						{
+							RobustFile.Delete(tempInputFile.Path);		// Move won't replace even empty files.
+							RobustFile.Move(_inputPdfPath, tempInputFile.Path);
+							arguments = GetArguments(tempPdfFile.Path, tempInputFile.Path);
+							res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
+							RobustFile.Move(tempInputFile.Path, _inputPdfPath);
+						}
+					}
+					if (res.ExitCode != 0 || res.DidTimeOut || !RobustFile.Exists(tempPdfFile.Path))
 					{
 						if (_inputPdfPath != _outputPdfPath)
 							RobustFile.Copy(_inputPdfPath, _outputPdfPath, true);
@@ -153,7 +167,7 @@ namespace Bloom.Publish.PDF
 			return null;
 		}
 
-		private string GetArguments(string tempFile)
+		private string GetArguments(string tempFile, string inputFile = null)
 		{
 			var bldr = new StringBuilder();
 			// CompatibilityLevel=1.4 - Acrobat 5.0
@@ -187,7 +201,9 @@ namespace Bloom.Publish.PDF
 			bldr.Append(" -dDownsampleColorImages=true -dColorImageDownsampleThreshold=1.0");
 			bldr.Append(" -dDownsampleGrayImages=true -dGrayImageDownsampleThreshold=1.0");
 			bldr.Append(" -dDownsampleMonoImages=true -dMonoImageDownsampleThreshold=1.0");
-			bldr.AppendFormat($" -sOutputFile=\"{tempFile}\" \"{DoubleBracesInInputPath(_inputPdfPath)}\"");
+			if (String.IsNullOrEmpty(inputFile))
+				inputFile = _inputPdfPath;
+			bldr.AppendFormat($" -sOutputFile=\"{tempFile}\" \"{DoubleBracesInInputPath(inputFile)}\"");
 			return bldr.ToString();
 		}
 

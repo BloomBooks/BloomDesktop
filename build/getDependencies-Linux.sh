@@ -112,13 +112,13 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/geckofxHtmlToPdf [Geckofx60]
-# [6] build: L10NSharp xliff Mono continuous (L10NSharpXliffMonoContinuous)
+# [6] build: L10NSharp master Mono continuous (L10NSharp_L10NSharpMasterMonoContinuous)
 #     project: L10NSharp
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=L10NSharpXliffMonoContinuous
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=L10NSharp_L10NSharpMasterMonoContinuous
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"L10NSharp.dll*"=>"lib/dotnet/", "CheckOrFixXliff.exe*"=>"lib/dotnet/"}
-#     VCS: https://github.com/sillsdev/l10nsharp [xliff]
+#     VCS: https://github.com/sillsdev/l10nsharp [master]
 # [7] build: icucil-linux64-Continuous (bt281)
 #     project: Libraries
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt281
@@ -194,11 +194,10 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64Geckofx60continuous/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64Geckofx60continuous/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64Geckofx60continuous/latest.lastSuccessful/GeckofxHtmlToPdf.exe.config ../lib/dotnet/GeckofxHtmlToPdf.exe.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharpXliffMonoContinuous/latest.lastSuccessful/L10NSharp.dll ../lib/dotnet/L10NSharp.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharpXliffMonoContinuous/latest.lastSuccessful/L10NSharp.dll.mdb ../lib/dotnet/L10NSharp.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharpXliffMonoContinuous/latest.lastSuccessful/CheckOrFixXliff.exe ../lib/dotnet/CheckOrFixXliff.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharpXliffMonoContinuous/latest.lastSuccessful/CheckOrFixXliff.exe.config ../lib/dotnet/CheckOrFixXliff.exe.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharpXliffMonoContinuous/latest.lastSuccessful/CheckOrFixXliff.exe.mdb ../lib/dotnet/CheckOrFixXliff.exe.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterMonoContinuous/latest.lastSuccessful/L10NSharp.dll ../lib/dotnet/L10NSharp.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterMonoContinuous/latest.lastSuccessful/L10NSharp.dll.config ../lib/dotnet/L10NSharp.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterMonoContinuous/latest.lastSuccessful/CheckOrFixXliff.exe ../lib/dotnet/CheckOrFixXliff.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterMonoContinuous/latest.lastSuccessful/CheckOrFixXliff.exe.config ../lib/dotnet/CheckOrFixXliff.exe.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/latest.lastSuccessful/icu.net.0.0.0.0.nupkg ../lib/dotnet/icu48/icu.net.0.0.0.0.nupkg
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu48/icu.net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/latest.lastSuccessful/icu.net.dll.config ../lib/dotnet/icu48/icu.net.dll.config

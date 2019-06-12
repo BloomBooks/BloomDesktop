@@ -113,8 +113,11 @@ export default class BloomField {
         //     alert(event.data.dataValue);
         // });
         ckeditor.on("paste", event => {
-            var endMkr = "";
-            let paras = event.data.dataValue.match(/<p>/g);
+            event.data.dataValue = this.convertStandardFormatVerseMarkersToSuperscript(
+                event.data.dataValue
+            );
+
+            const paras = event.data.dataValue.match(/<p>/g);
             if (!paras) {
                 // Enhance: should we remove the probable <span> and just leave the text?
                 // But it might be carrying some important style info.
@@ -124,6 +127,7 @@ export default class BloomField {
             // This prevents a typically unwanted extra line break being inserted before the
             // start of the material copied. Without the <p> wrapper, that material just
             // gets inserted into the current paragraph.
+            let endMkr = "";
             if (paras.length === 1) {
                 // Unwrapping the one and only <p> will leave no break between what used to be that
                 // paragraph and the following text, which should now start a new paragraph.
@@ -146,6 +150,22 @@ export default class BloomField {
         // This makes it easy to find the right editor instance. There may be some ckeditor built-in way, but
         // I wasn't able to find one.
         (<any>bloomEditableDiv).bloomCkEditor = ckeditor;
+    }
+
+    // Not private so we can unit test it. It is too difficult to get the actual paste
+    // event to get fired and handled correctly in tests.
+    public static convertStandardFormatVerseMarkersToSuperscript(
+        inputText: any
+    ): any {
+        const re = /\\v\s(\d+)/g;
+        const matches = re.exec(inputText);
+        if (matches == null) {
+            //just let it paste
+            return inputText;
+        } else {
+            // Use <sup> because that is what ckeditor uses
+            return inputText.replace(re, "<sup>$1</sup>");
+        }
     }
 
     private static MakeShiftEnterInsertLineBreak(field: HTMLElement) {
@@ -349,6 +369,12 @@ export default class BloomField {
     // 2) when this field was already used by the user, and then later switched to paragraph mode.
     // 3) corner cases that aren't handled by as-you-edit events. E.g., pressing "ctrl+a DEL"
     private static EnsureParagraphsPresent(field: HTMLElement) {
+        // Allow designers freedom to work without paragraphs
+        if ($(field).hasClass("bloom-noParagraphs")) return;
+        // The Wordfind page for the Story Primer template was written assuming no paragraphs for the grid cells.
+        // Inserting paragraphs into the cells breaks the grid.  See BL-7061.
+        if ($(field).hasClass("WordFind-style")) return;
+
         BloomField.ConvertTopLevelTextNodesToParagraphs(field);
         $(field)
             .find("br")

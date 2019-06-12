@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="integrity.title">
         <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
-        <target xml:lang="az" state="needs-translation">Bloom cannot find some of its own files, and cannot continue</target>
+        <target xml:lang="az" state="translated">Bloom bəzi fayllarını tapa bilmir və davam edə bilmir</target>
         <note>ID: integrity.title</note>
       </trans-unit>
       <trans-unit id="integrity.causes">
         <source xml:lang="en">Possible Causes</source>
-        <target xml:lang="az" state="needs-translation">Possible Causes</target>
+        <target xml:lang="az" state="translated">Mümkün Olan Səbəblər</target>
         <note>ID: integrity.causes</note>
       </trans-unit>
       <trans-unit id="integrity.causes.1">
@@ -75,7 +75,7 @@
       </trans-unit>
       <trans-unit id="integrity.missing">
         <source xml:lang="en">Missing Files</source>
-        <target xml:lang="az" state="needs-translation">Missing Files</target>
+        <target xml:lang="az" state="translated">Əskik fayllar</target>
         <note>ID: integrity.missing</note>
       </trans-unit>
     </body>

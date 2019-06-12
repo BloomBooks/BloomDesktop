@@ -17,7 +17,6 @@ using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.MiscUI;
 using Bloom.web;
-using Bloom.web.controllers;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
@@ -94,7 +93,6 @@ namespace Bloom.Book
 		internal const string kBloomFormatVersion = "2.0";
 
 		public const string PrefixForCorruptHtmFiles = "_broken_";
-		private  string _folderPath;
 		private IChangeableFileLocator _fileLocator;
 		private BookRenamedEvent _bookRenamedEvent;
 		private readonly CollectionSettings _collectionSettings;
@@ -114,7 +112,7 @@ namespace Bloom.Book
 			get
 			{
 				if (_metaData == null)
-					_metaData = new BookInfo(_folderPath, false);
+					_metaData = new BookInfo(FolderPath, false);
 				return _metaData;
 			}
 			set { _metaData = value; }
@@ -128,7 +126,7 @@ namespace Bloom.Book
 		public BookStorage(string folderPath, bool forSelectedBook, IChangeableFileLocator baseFileLocator,
 						   BookRenamedEvent bookRenamedEvent, CollectionSettings collectionSettings)
 		{
-			_folderPath = folderPath;
+			FolderPath = folderPath;
 
 			// We clone this because we'll be customizing it for use by just this book
 			_fileLocator = (IChangeableFileLocator) baseFileLocator.CloneAndCustomize(new string[]{});
@@ -161,23 +159,11 @@ namespace Bloom.Book
 			}
 		}
 
-		public string FileName
-		{
-			get { return Path.GetFileNameWithoutExtension(_folderPath); }
-		}
+		public string FileName => Path.GetFileNameWithoutExtension(FolderPath);
 
-		public string FolderPath
-		{
-			get { return _folderPath; }
-		}
+		public string FolderPath { get; private set; }
 
-		public string Key
-		{
-			get
-			{
-				return _folderPath;
-			}
-		}
+		public string Key => FolderPath;
 
 		/// <summary>
 		///
@@ -186,7 +172,7 @@ namespace Bloom.Book
 		/// <returns>false if we shouldn't mess with the thumbnail</returns>
 		public bool RemoveBookThumbnail(string fileName)
 		{
-			string path = Path.Combine(_folderPath, fileName);
+			string path = Path.Combine(FolderPath, fileName);
 			if(RobustFile.Exists(path) &&
 			 (new FileInfo(path).IsReadOnly)) //readonly is good when you've put in a custom thumbnail
 			{
@@ -212,7 +198,7 @@ namespace Bloom.Book
 
 		public bool TryGetPremadeThumbnail(string fileName, out Image image)
 		{
-			string path = Path.Combine(_folderPath, fileName);
+			string path = Path.Combine(FolderPath, fileName);
 			if (RobustFile.Exists(path))
 			{
 				image = ImageUtils.GetImageFromFile(path);
@@ -226,7 +212,7 @@ namespace Bloom.Book
 
 		public static string GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(HtmlDom dom, string path)
 		{
-			var versionString = dom.GetMetaValue("BloomFormatVersion", "").Trim();			
+			var versionString = dom.GetMetaValue("BloomFormatVersion", "").Trim();
 			if (string.IsNullOrEmpty(versionString))
 				return "";// "This file lacks the following required element: <meta name='BloomFormatVersion' content='x.y'>";
 
@@ -238,8 +224,8 @@ namespace Bloom.Book
 			{
 				var msg = LocalizationManager.GetString("Errors.NeedNewerVersion",
 					"{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}", "{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.");
-				msg = string.Format(msg, path, string.Format("<a href='{0}'>BloomLibrary.org</a>", UrlLookup.LookupUrl(UrlType.LibrarySite)));
-				msg += string.Format(". (Format {0} vs. {1})", versionString, kBloomFormatVersion);
+				msg = string.Format(msg, path, $"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite)}'>BloomLibrary.org</a>");
+				msg += $". (Format {versionString} vs. {kBloomFormatVersion})";
 				return msg;
 			}
 
@@ -276,8 +262,8 @@ namespace Bloom.Book
 
 				var breakingFeatureRequirements = featureVersionRequirementList.Where(x => currentBloomDesktopVersion < new Version(x.BloomDesktopMinVersion));
 
-				// Note: even though versionRequirements is guaranated non-empty by now, the ones that actually break our current version of Bloom DESKTOP could be empty.
-				if (breakingFeatureRequirements.Count() >= 1)
+				// Note: even though versionRequirements is guaranteed non-empty by now, the ones that actually break our current version of Bloom DESKTOP could be empty.
+				if (breakingFeatureRequirements.Any())
 				{
 					string messageNewVersionNeededHeader = LocalizationManager.GetString("Errors.NewVersionNeededHeader", "This book needs a new version of Bloom.");
 					string messageCurrentRunningVersion = String.Format(LocalizationManager.GetString("Errors.CurrentRunningVersion", "You are running Bloom {0}"), currentBloomDesktopVersion);
@@ -367,7 +353,7 @@ namespace Bloom.Book
 					RobustFile.ReadAllText(badFilePath));
 				var ex = new XmlSyntaxException(errors);
 
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
+				ErrorReport.NotifyUserOfProblem(ex, "Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
 				Process.GetCurrentProcess().Kill();
 			}
 			else
@@ -441,13 +427,13 @@ namespace Bloom.Book
 		/// </summary>
 		public void CleanupUnusedImageFiles(bool keepFilesForEditing = true)
 		{
-			if (IsStaticContent(_folderPath))
+			if (IsStaticContent(FolderPath))
 				return;
 			//Collect up all the image files in our book's directory
 			var imageFiles = new List<string>();
 			var imageExtentions = new HashSet<string>(new []{ ".jpg", ".png", ".svg" });
 			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "placeholder", "license", "video-placeholder" });
-			foreach (var path in Directory.EnumerateFiles(this._folderPath).Where(
+			foreach (var path in Directory.EnumerateFiles(FolderPath).Where(
 				s => imageExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
 			{
 				var filename = Path.GetFileName(path);
@@ -467,7 +453,7 @@ namespace Bloom.Book
 				pathsToNotDelete.AddRange (from XmlElement dataDivImage
 											in Dom.RawDom.SelectNodes ("//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]")
 											select UrlPathString.CreateFromUrlEncodedString (dataDivImage.InnerText.Trim ()).PathOnly.NotEncoded);
-				pathsToNotDelete.AddRange (this._brandingImageNames);
+				pathsToNotDelete.AddRange (_brandingImageNames);
 			}
 
 			foreach (var path in pathsToNotDelete)
@@ -478,7 +464,7 @@ namespace Bloom.Book
 			//Delete any files still in the list
 			foreach (var fileName in imageFiles)
 			{
-				var path = Path.Combine(_folderPath, fileName);
+				var path = Path.Combine(FolderPath, fileName);
 				try
 				{
 					Debug.WriteLine("Removed unused image: "+path);
@@ -515,11 +501,11 @@ namespace Bloom.Book
 		/// </summary>
 		public void CleanupUnusedAudioFiles(bool isForPublish)
 		{
-			if (IsStaticContent(_folderPath))
+			if (IsStaticContent(FolderPath))
 				return;
 
 			//Collect up all the audio files in our book's audio directory
-			var audioFolderPath = AudioProcessor.GetAudioFolderPath(_folderPath);
+			var audioFolderPath = AudioProcessor.GetAudioFolderPath(FolderPath);
 			HashSet<string> audioFilesToDeleteIfNotUsed;    // Should be a HashSet or something we can delete a specific item from repeatedly
 
 			if (Directory.Exists(audioFolderPath))
@@ -637,11 +623,11 @@ namespace Bloom.Book
 		/// </summary>
 		public void CleanupUnusedVideoFiles()
 		{
-			if (IsStaticContent(_folderPath))
+			if (IsStaticContent(FolderPath))
 				return;
 
 			//Collect up all the video files in our book's video directory
-			var videoFolderPath = GetVideoFolderPath(_folderPath);
+			var videoFolderPath = GetVideoFolderPath(FolderPath);
 			var videoFilesToDeleteIfNotUsed = new List<string>();
 			const string videoExtension = ".mp4";  // .mov, .avi...?
 
@@ -692,10 +678,7 @@ namespace Bloom.Book
 			}
 		}
 
-		internal static string GetVideoFolderName
-		{
-			get { return "video/"; }
-		}
+		internal static string GetVideoFolderName => "video/";
 
 		internal static string GetVideoFolderPath(string bookFolderPath)
 		{
@@ -775,7 +758,7 @@ namespace Bloom.Book
 
 			HtmlDom relocatableDom = Dom.Clone();
 
-			SetBaseForRelativePaths(relocatableDom, _folderPath);
+			SetBaseForRelativePaths(relocatableDom, FolderPath);
 			EnsureHasLinksToStylesheets(relocatableDom);
 
 			return relocatableDom;
@@ -790,7 +773,7 @@ namespace Bloom.Book
 		{
 			var relocatableDom = dom.Clone();
 
-			SetBaseForRelativePaths(relocatableDom, _folderPath);
+			SetBaseForRelativePaths(relocatableDom, FolderPath);
 			EnsureHasLinksToStylesheets(relocatableDom);
 
 			return relocatableDom;
@@ -798,15 +781,13 @@ namespace Bloom.Book
 
 		public void SetBookName(string name)
 		{
-			if (!Directory.Exists(_folderPath)) //bl-290 (user had 4 month-old version, so the bug may well be long gone)
+			if (!Directory.Exists(FolderPath)) //bl-290 (user had 4 month-old version, so the bug may well be long gone)
 			{
 				var msg = LocalizationManager.GetString("BookStorage.FolderMoved",
 					"It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.");
 				ErrorReport.NotifyUserOfProblem(
 					new ApplicationException(
-						String.Format(
-							"In SetBookName('{0}'), BookStorage thinks the existing folder is '{1}', but that does not exist. (ref bl-290)",
-							name, _folderPath)),
+						$"In SetBookName('{name}'), BookStorage thinks the existing folder is '{FolderPath}', but that does not exist. (ref bl-290)"),
 					msg);
 				// Application.Exit() is not drastic enough to terminate all the call paths here and all the code
 				// that tries to make sure we save on exit. Get lots of flashing windows during shutdown.
@@ -844,7 +825,7 @@ namespace Bloom.Book
 				_fileLocator.RemovePath(FolderPath);
 				_fileLocator.AddPath(newFolderPath);
 
-				_folderPath = newFolderPath;
+				FolderPath = newFolderPath;
 			}
 			catch (Exception e)
 			{
@@ -859,8 +840,7 @@ namespace Bloom.Book
 
 		protected virtual void OnFolderPathChanged()
 		{
-			var handler = FolderPathChanged;
-			if (handler != null) handler(this, EventArgs.Empty);
+			FolderPathChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 
@@ -868,9 +848,9 @@ namespace Bloom.Book
 		{
 			if (!String.IsNullOrEmpty(ErrorMessagesHtml))
 				return "";
-			if (!Directory.Exists(_folderPath))
+			if (!Directory.Exists(FolderPath))
 			{
-				return "The directory (" + _folderPath + ") could not be found.";
+				return "The directory (" + FolderPath + ") could not be found.";
 			}
 			if (!RobustFile.Exists(PathToExistingHtml))
 			{
@@ -928,18 +908,18 @@ namespace Bloom.Book
 				while (Uri.UnescapeDataString(imageFileName) != imageFileName)
 					imageFileName = Uri.UnescapeDataString(imageFileName);
 
-				if (!RobustFile.Exists(Path.Combine(_folderPath, imageFileName)))
+				if (!RobustFile.Exists(Path.Combine(FolderPath, imageFileName)))
 				{
 					if (!String.IsNullOrEmpty(pathToFolderOfReplacementImages))
 					{
 						if (!AttemptToReplaceMissingImage(imageFileName, pathToFolderOfReplacementImages, progress))
 						{
-							progress.WriteWarning(String.Format("Could not find replacement for image {0} in {1}", imageFileName, _folderPath));
+							progress.WriteWarning($"Could not find replacement for image {imageFileName} in {FolderPath}");
 						}
 					}
 					else
 					{
-						progress.WriteWarning(String.Format("Image {0} is missing from the folder {1}", imageFileName, _folderPath));
+						progress.WriteWarning($"Image {imageFileName} is missing from the folder {FolderPath}");
 					}
 				}
 			}
@@ -951,9 +931,8 @@ namespace Bloom.Book
 			{
 				foreach (var imageFilePath in Directory.GetFiles(pathToFolderOfReplacementImages, missingFile))
 				{
-					RobustFile.Copy(imageFilePath, Path.Combine(_folderPath, missingFile));
-					progress.WriteMessage(String.Format("Replaced image {0} from a copy in {1}", missingFile,
-														pathToFolderOfReplacementImages));
+					RobustFile.Copy(imageFilePath, Path.Combine(FolderPath, missingFile));
+					progress.WriteMessage($"Replaced image {missingFile} from a copy in {pathToFolderOfReplacementImages}");
 					return true;
 				}
 				foreach (var dir in Directory.GetDirectories(pathToFolderOfReplacementImages))
@@ -1005,14 +984,14 @@ namespace Bloom.Book
 				//in version 1.012 I got this because I had tried to delete the folder on disk that had a book
 				//open in Bloom.
 				ErrorReport.NotifyUserOfProblem("There's a problem; Bloom can't save this book. Did you perhaps delete or rename the folder that this book is (was) in?");
-				throw new ApplicationException(String.Format("In FindBookHtmlInFolder('{0}'), the folder does not exist. (ref bl-291)", folderPath));
+				throw new ApplicationException($"In FindBookHtmlInFolder('{folderPath}'), the folder does not exist. (ref bl-291)");
 			}
 
 			//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
 			// BL-3572 when the only file in the directory is "Big Book.html", it matches both filters in Windows (tho' not in Linux?)
 			// so Union works better here. (And we'll change the name of the book too.)
 			var candidates = new List<string>(Directory.GetFiles(folderPath, "*.htm").Union(Directory.GetFiles(folderPath, "*.html")));
-			var decoyMarkers = new string[] {"configuration",
+			var decoyMarkers = new[] {"configuration",
 				PrefixForCorruptHtmFiles, // Used to rename corrupt htm files before restoring backup
 				"_conflict", // owncloud
 				"[conflict]", // Google Drive
@@ -1041,10 +1020,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// Base for relative paths when editing the book (not generating PDF or anything special).
 		/// </summary>
-		public string NormalBaseForRelativepaths
-		{
-			get {  return GetBaseForRelativePaths(_folderPath);}
-		}
+		public string NormalBaseForRelativepaths => GetBaseForRelativePaths(FolderPath);
 
 		private static string GetBaseForRelativePaths(string folderPath)
 		{
@@ -1071,7 +1047,7 @@ namespace Bloom.Book
 
 		private string ValidateBook(HtmlDom dom, string path)
 		{
-			Debug.WriteLine(String.Format("ValidateBook({0})", path));
+			Debug.WriteLine($"ValidateBook({path})");
 			var msg= GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(dom,path);
 			return !String.IsNullOrEmpty(msg) ? msg : dom.ValidateBook(path, !BookInfo.IsSuitableForMakingTemplates);
 		}
@@ -1080,16 +1056,22 @@ namespace Bloom.Book
 
 		#endregion
 
+		// ExpensiveInitialization is called repeatedly during idle time and thus can check the
+		// same book for errors repeatedly.  This could result in dozens of open error message dialogs
+		// at the same time reporting the same error.  So we keep track of what we've complained about
+		// already to prevent this from happening.
+		private static HashSet<string> _booksWithMultipleHtmlFiles = new HashSet<string>();
+
 		/// <summary>
 		/// Do whatever is needed to do more than just show a title and thumbnail
 		/// </summary>
 		private void ExpensiveInitialization(bool forSelectedBook = false)
 		{
-			Debug.WriteLine(String.Format("ExpensiveInitialization({0})", _folderPath));
+			Debug.WriteLine($"ExpensiveInitialization({FolderPath})");
 			Dom = new HtmlDom();
 			//the fileLocator we get doesn't know anything about this particular book.
-			_fileLocator.AddPath(_folderPath);
-			RequireThat.Directory(_folderPath).Exists();
+			_fileLocator.AddPath(FolderPath);
+			RequireThat.Directory(FolderPath).Exists();
 			string pathToExistingHtml;
 			try
 			{
@@ -1102,25 +1084,70 @@ namespace Bloom.Book
 			}
 			var backupPath = GetBackupFilePath();
 
-			// if we don't have an html file, but we're looking at the selected book and we do have a backup file
-			// go ahead and try to restore it.
+			// If we have a single html file, or an html file whose name matches the folder, then we can proceed.
+			// ALternatively, if this is the selected book and we have a backup file, then we'll use that to proceed.
+			// If neither of these cases apply, then we'll need to complain to the user and hope that he or she can
+			// figure out how to recover since it's beyond what a program can handle.  (probably multiple html files
+			// that don't match the folder name and no backup file in the folder)
 			if (!RobustFile.Exists(pathToExistingHtml) && (!forSelectedBook || !RobustFile.Exists(backupPath)))
 			{
+				ErrorAllowsReporting = false;
 				// Error out
-				var files = new List<string>(Directory.GetFiles(_folderPath));
-				var b = new StringBuilder();
-				b.AppendLine("Could not determine which html file in the folder to use.");
-				if (files.Count == 0)
-					b.AppendLine("***There are no files.");
-				else
+				var files = new List<string>(Directory.GetFiles(FolderPath));
+				var htmlCount = 0;
+				foreach (var f in files)
 				{
-					b.AppendLine("Files in this book are:");
+					var ext = Path.GetExtension(f).ToLowerInvariant();
+					if (ext == ".htm" || ext == ".html")
+						++htmlCount;
+				}
+				if (htmlCount > 1)
+				{
+					// Note: Corresponding error messages have not be localized, so this one isn't either.
+					ErrorMessagesHtml = "More than one html file in the book's folder";
+					if (_booksWithMultipleHtmlFiles.Contains(FolderPath))
+						return;		// we already complained about this book.
+					_booksWithMultipleHtmlFiles.Add(FolderPath);
+					var b = new StringBuilder();
+					var msg1 = LocalizationManager.GetString("Errors.MultipleHtmlFiles",
+						"Bloom book folders must have only one file ending in .htm.  In the book \"{0}\", these are the files ending in .htm:",
+						"{0} will get the name of the book");
+					var msg2 = LocalizationManager.GetString("Errors.RemoveExcessHtml",
+						"Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.",
+						"This follows the Errors.MultipleHtmlFiles message and a list of HTML files.");
+					b.AppendLineFormat(msg1, Path.GetFileName(FolderPath));
 					foreach (var f in files)
 					{
-						b.AppendLine("  " + f);
+						var ext = Path.GetExtension(f).ToLowerInvariant();
+						if (ext == ".htm" || ext == ".html")
+							b.AppendLine("  * " + Path.GetFileName(f));
 					}
+					b.AppendLine(msg2);
+					ErrorReport.NotifyUserOfProblem(b.ToString());
+					// Open the file explorer on the book's folder to allow the user to delete (or move?) the unwanted file.
+					Process.Start(new ProcessStartInfo {
+						FileName = FolderPath + Path.DirectorySeparatorChar,	// trailing separator char is important!
+						UseShellExecute = true,
+						Verb = "open"
+					});
 				}
-				throw new ApplicationException(b.ToString());
+				else
+				{
+					// NOTE:  I'm not sure we ever hit this code even when there's not any html files in the book's folder.
+					var b = new StringBuilder();
+					b.AppendLine("Could not find an html file in the folder to use.");
+					if (files.Count == 0)
+					{
+						b.AppendLine("***There are no files.");
+					}
+					else
+					{
+						b.AppendLine("Files in this book are:");
+						foreach (var f in files)
+							b.AppendLine("  " + f);
+					}
+					throw new ApplicationException(b.ToString());
+				}
 			}
 			else
 			{
@@ -1194,7 +1221,7 @@ namespace Bloom.Book
 					//The following is a patch pushed out on the 25th build after 1.0 was released in order to give us a bit of backwards version protection (I should have done this originally and in a less kludgy fashion than I'm forced to do now)
 				else
 				{
-					var incompatibleVersionMessage = GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(Dom,this.PathToExistingHtml);
+					var incompatibleVersionMessage = GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(Dom, PathToExistingHtml);
 					if (!String.IsNullOrWhiteSpace(incompatibleVersionMessage))
 					{
 						ErrorMessagesHtml = incompatibleVersionMessage;
@@ -1300,9 +1327,9 @@ namespace Bloom.Book
 		/// </summary>
 		public void UpdateSupportFiles()
 		{
-			if (IsPathReadonly(_folderPath))
+			if (IsPathReadonly(FolderPath))
 			{
-				Logger.WriteEvent("Not updating files in folder {0} because the directory is read-only.", _folderPath);
+				Logger.WriteEvent("Not updating files in folder {0} because the directory is read-only.", FolderPath);
 			}
 			else
 			{
@@ -1312,7 +1339,7 @@ namespace Bloom.Book
 				Update("origami.css");
 				Update("languageDisplay.css");
 
-				foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
+				foreach (var path in Directory.GetFiles(FolderPath, "*.css"))
 				{
 					var file = Path.GetFileName(path);
 
@@ -1411,7 +1438,7 @@ namespace Bloom.Book
 			}
 
 			// do not attempt to copy files to the installation directory
-			var targetDirInfo = new DirectoryInfo(_folderPath);
+			var targetDirInfo = new DirectoryInfo(FolderPath);
 			if (Platform.IsMono)
 			{
 				// do not attempt to copy files to the "/usr" directory
@@ -1449,7 +1476,7 @@ namespace Bloom.Book
 				if(String.IsNullOrEmpty(factoryPath))//happens during unit testing
 					return;
 
-				documentPath = Path.Combine(_folderPath, fileName);
+				documentPath = Path.Combine(FolderPath, fileName);
 				if(!RobustFile.Exists(documentPath))
 				{
 					Logger.WriteMinorEvent("BookStorage.Update() Copying missing file {0} to {1}", factoryPath, documentPath);
@@ -1468,7 +1495,7 @@ namespace Bloom.Book
 					return; // no point in trying to update self!
 				if (IsPathReadonly(documentPath))
 				{
-					var msg = String.Format("Could not update one of the support files in this document ({0}) because the destination was marked ReadOnly.", documentPath);
+					var msg = $"Could not update one of the support files in this document ({documentPath}) because the destination was marked ReadOnly.";
 					Logger.WriteEvent(msg);
 					ErrorReport.NotifyUserOfProblem(msg);
 					return;
@@ -1490,14 +1517,14 @@ namespace Bloom.Book
 				if(_alreadyNotifiedAboutOneFailedCopy)
 					return;//don't keep bugging them
 				_alreadyNotifiedAboutOneFailedCopy = true;
-				var msg = String.Format("Could not update one of the support files in this document ({0} to {1}).", documentPath, factoryPath);
+				var msg = $"Could not update one of the support files in this document ({documentPath} to {factoryPath}).";
 				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Can't Update Support File", msg, exception: e);
 			}
 		}
 
 		private void RemoveExistingFilesBySuffix(string suffix)
 		{
-			foreach(var file in Directory.GetFiles(_folderPath, "*"+suffix))
+			foreach(var file in Directory.GetFiles(FolderPath, "*"+suffix))
 			{
 				try
 				{
@@ -1520,14 +1547,14 @@ namespace Bloom.Book
 		{
 			get
 			{
-				if(_folderPath.Contains(Path.GetTempPath()))
+				if(FolderPath.Contains(Path.GetTempPath()))
 					return true;
 				if(String.IsNullOrEmpty(_collectionSettings.FolderPath))
 				{
 					//this happens when we are just hydrating the book via a command-line command
 					return true;
 				}
-				else return _folderPath.Contains(_collectionSettings.FolderPath);
+				else return FolderPath.Contains(_collectionSettings.FolderPath);
 			}
 		}
 
@@ -1543,7 +1570,7 @@ namespace Bloom.Book
 
 			EnsureHasLocalOrParentLink(dom, "customCollectionStyles.css");
 
-			if (RobustFile.Exists(Path.Combine(_folderPath, "customBookStyles.css")))
+			if (RobustFile.Exists(Path.Combine(FolderPath, "customBookStyles.css")))
 				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
 			else
 				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
@@ -1560,7 +1587,7 @@ namespace Bloom.Book
 		/// <param name="fileName"></param>
 		private void EnsureHasLocalOrParentLink(HtmlDom dom, string fileName)
 		{
-			var localPath = Path.Combine(_folderPath, fileName);
+			var localPath = Path.Combine(FolderPath, fileName);
 			if (RobustFile.Exists(localPath))
 			{
 				EnsureHasLinkToStyleSheet(dom, fileName);
@@ -1570,7 +1597,7 @@ namespace Bloom.Book
 			// Don't use Path.DirectorySeparatorChar here...we're going to use this path in an href
 			// where it should definitely be forward slash. And it works fine in a Windows path too.
 			var parentRelativePath = "../" + fileName;
-			if (RobustFile.Exists(Path.Combine(_folderPath, parentRelativePath)))
+			if (RobustFile.Exists(Path.Combine(FolderPath, parentRelativePath)))
 				EnsureHasLinkToStyleSheet(dom, parentRelativePath);
 		}
 
@@ -1670,11 +1697,11 @@ namespace Bloom.Book
 			{
 				name = name.Replace(c, ' ');
 			}
-			name = name.TrimStart(new [] {'.',' ','\t'});
+			name = name.TrimStart('.', ' ', '\t');
 			// Windows does not allow directory names ending in period.
 			// If we give it a chance, it will make a directory without the dots,
 			// but all our code that thinks the folder name has the dots will break (e.g., BL-
-			name = name.TrimEnd(new[] {'.'});
+			name = name.TrimEnd('.');
 			return name.Trim();
 		}
 
@@ -1723,24 +1750,18 @@ namespace Bloom.Book
 		public string GetBrokenBookRecommendationHtml()
 		{
 			string s = "";
-			if (!this._errorAlreadyContainsInstructions)
+			if (!_errorAlreadyContainsInstructions)
 			{
 				s = GenericBookProblemNotice;
 			}
 			return s + "<p>" + ErrorMessagesHtml + "</p>";
 		}
 
-		public static string GenericBookProblemNotice
-		{
-			get
-			{
-				return "<p>" + LocalizationManager.GetString("Errors.BookProblem",
-					"Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.")
-				       + "</p>";
-			}
-		}
+		public static string GenericBookProblemNotice => "<p>" + LocalizationManager.GetString("Errors.BookProblem",
+			                                                       "Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.")
+		                                                       + "</p>";
 
-		//enchance: move to SIL.IO.RobustIO
+		//enhance: move to SIL.IO.RobustIO
 		public static void CopyDirectory(string sourceDir, string targetDir, string[] skipFileExtensionsLowerCase = null)
 		{
 			Directory.CreateDirectory(targetDir);
@@ -1770,7 +1791,7 @@ namespace Bloom.Book
 			var collectionDir = Path.GetDirectoryName(bookDir);
 			var settings = Path.Combine(collectionDir, "settingsCollectionStyles.css");
 			if (File.Exists(settings))
-				RobustFile.Copy(settings, Path.Combine(targetDir,"settingsCollectionStyles.css"), overwriteInTargetDir);	
+				RobustFile.Copy(settings, Path.Combine(targetDir,"settingsCollectionStyles.css"), overwriteInTargetDir);
 			var custom = Path.Combine(collectionDir, "customCollectionStyles.css");
 			if (File.Exists(custom))
 				RobustFile.Copy(custom, Path.Combine(targetDir,"customCollectionStyles.css"), overwriteInTargetDir);
@@ -1806,7 +1827,7 @@ namespace Bloom.Book
 			Directory.CreateDirectory(newBookDir);
 
 			// copy files
-			BookStorage.CopyDirectory(FolderPath, newBookDir, new[]{".bak", ".bloombookorder", ".pdf", ".map"});
+			CopyDirectory(FolderPath, newBookDir, new[]{".bak", ".bloombookorder", ".pdf", ".map"});
 			var metaPath = Path.Combine(newBookDir, "meta.json");
 
 			// Update the InstanceId. This was not done prior to Bloom 4.2.104

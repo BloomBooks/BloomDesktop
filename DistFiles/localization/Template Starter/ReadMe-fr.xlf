@@ -4,8 +4,11 @@
     <body>
       <trans-unit id="template.starter" approved="yes">
         <source xml:lang="en">How to use the Template Starter</source>
-        <target xml:lang="fr" state="translated">Comment utiliser ce modèle Starter</target>
+        <target xml:lang="fr" state="translated">Comment utiliser le Modèle Starter</target>
         <note>ID: template.starter</note>
+        <alt-trans>
+          <target xml:lang="fr">Comment utiliser ce modèle Starter</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Comment utiliser ce modèle d'initiation</target>
         </alt-trans>
@@ -13,25 +16,35 @@
       <trans-unit id="template.starter.firstusage" approved="yes">
         <source xml:lang="en">This special template lets you make your own templates. A template provides a set of related page layouts that an author can choose from in writing an original book. Usually the text blocks and picture blocks on template pages will be empty, ready for an author to fill in. Sometimes there may be standard text or pictures that should be on every copy of the page.
 There are two ways people can use your template. The first way is to start new books. For example, imagine student books that have one page for each school day of the week. You could make a template with 5 pages, each with places to type in text and choose pictures. Curriculum authors could select your template and make a new book, one for each week<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</source>
-        <target xml:lang="fr" state="translated">Ce modèle spécial vous permet de faire vos propres modèles. Un modèle fournit une série de mises en page de même style qu'un auteur peut choisir pour écrire son livre. En général, les blocs de texte et les blocs d'image sur les pages du modèle seront vierges, prêt à être remplis par l'auteur. Parfois il peut y avoir texte ou des images standard qui doivent figurer sur chaque copie de la page. 
+        <target xml:lang="fr" state="translated">Ce modèle spécial vous permet de faire vos propres modèles. Un modèle fournit une série de mises en page de même style qu'un auteur peut choisir pour écrire son livre. En général, les blocs de texte et les blocs d'image sur les pages du modèle seront vierges, prêts à être remplis par l'auteur. Parfois il peut y avoir texte ou des images standard qui doivent figurer sur chaque copie de la page. 
 Il existe deux manières d'utiliser le modèle que vous avez créé. La première est de rédiger de nouveaux livres. Par exemple, imaginons que les livres de l'élève aient une page pour chaque jour de classe de la semaine. Vous pourriez faire un modèle comportant 5 pages, chacune avec des endroits où taper le texte et choisir des images. Les auteurs du cursus scolaire pourraient sélectionner votre modèle et faire un livre pour chaque semaine<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
         <note>ID: template.starter.firstusage</note>
+        <alt-trans>
+          <target xml:lang="fr">Ce modèle spécial vous permet de faire vos propres modèles. Un modèle fournit une série de mises en page de même style qu'un auteur peut choisir pour écrire son livre. En général, les blocs de texte et les blocs d'image sur les pages du modèle seront vierges, prêt à être remplis par l'auteur. Parfois il peut y avoir texte ou des images standard qui doivent figurer sur chaque copie de la page. 
+Il existe deux manières d'utiliser le modèle que vous avez créé. La première est de rédiger de nouveaux livres. Par exemple, imaginons que les livres de l'élève aient une page pour chaque jour de classe de la semaine. Vous pourriez faire un modèle comportant 5 pages, chacune avec des endroits où taper le texte et choisir des images. Les auteurs du cursus scolaire pourraient sélectionner votre modèle et faire un livre pour chaque semaine<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Ce modèle spécial vous permet de faire vos propres modèles. Un modèle fournit une série de mises en page de même style qu'un auteur peut choisir pour écrire son livre. En général, les blocs de texte et les blocs de photo sur les pages du modèle seront vierges, prêt à être remplis par l'auteur. Parfois il peut y avoir texte ou des photos standard qui doivent figurer sur chaque copie de la page. Il existe deux manière d'utiliser le modèle que vous avez créé. La première est de rédiger de nouveaux livres. Par exemple, imaginons que les livres de l'élève aient une page pour chaque jour de classe de la semaine. Vous pourriez faire un modèle comportant 5 pages, chacune avec des endroits où taper le texte et choisir des images. Les auteurs du cursus scolaire pourraient sélectionner votre modèle et faire un livre pour chaque semaine <g id="genid-1" ctype="x-html-sup"> <g id="genid-2" ctype="x-html-a" html:href="#note1"> 1</g></g>.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.secondusage" approved="yes">
         <source xml:lang="en">The second way people can use templates is as source of new pages, regardless of how they started the book. For example, in some places, each book requires a page as part of a government approval process. You might make a template containing that page and give it to others in your country. Then, when people translate a shellbook, they go to the end of the book and click “Add Page”. The page you made will appear in their list of choices. Some other ideas for templates are alphabet charts, glossaries, and instructions on how to use the book in a classroom. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></source>
-        <target xml:lang="fr" state="translated">La deuxième manière d'utiliser les modèles, c'est d'en faire la source de nouvelles pages, indépendamment du début du livre. Par exemple, dans certains endroits, il faut pour chaque livre fournir une page lors de la demande d'approbation auprès du gouvernement. Vous pourriez faire un modèle contenant cette page et la donner à d'autres personnes dans ce pays. Puis, quand quelqu'un traduit un livre canevas, il va à la fin du livre et clique sur "ajouter une page". La page que vous avez rédigée figurera dans la liste de leurs choix. Les modèles peuvent aussi servir à faire des tables de l'alphabet, des glossaires, des instructions sur la manière d'utiliser le livre en classe. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
+        <target xml:lang="fr" state="translated">La deuxième manière d'utiliser les modèles, c'est d'en faire la source de nouvelles pages, indépendamment du début du livre. Par exemple, dans certaines pays le gouvernement pourrait exiger dans chaque livre l'insertion d'une page particulière qui fera partie de la demande d'approbation. On pourrait créer un modèle avec cette page et le donner à d'autres personnes dans ce pays. Ainsi quand on traduit un livre canevas, on va à la fin du livre et on clique sur "ajouter une page". La page que vous avez rédigée figurera dans la liste des choix. Les mo dèles peuvent aussi servir à faire des tableaux d'alphabet, des glossaires, des instructions sur le mode d'emploi du livre en classe. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
         <note>ID: template.starter.secondusage</note>
+        <alt-trans>
+          <target xml:lang="fr">La deuxième manière d'utiliser les modèles, c'est d'en faire la source de nouvelles pages, indépendamment du début du livre. Par exemple, dans certains endroits, il faut pour chaque livre fournir une page lors de la demande d'approbation auprès du gouvernement. Vous pourriez faire un modèle contenant cette page et la donner à d'autres personnes dans ce pays. Puis, quand quelqu'un traduit un livre canevas, il va à la fin du livre et clique sur "ajouter une page". La page que vous avez rédigée figurera dans la liste de leurs choix. Les modèles peuvent aussi servir à faire des tables de l'alphabet, des glossaires, des instructions sur la manière d'utiliser le livre en classe. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">La deuxième manière d'utiliser les modèles, c'est d'ne faire la source de nouvelles pages, indépendamment du début du livre. Par exemple, dans certains endroits, il faut pour chaque livre fournir une page lors de la demande d'approbation auprès du gouvernement. Vous pourriez faire un modèle contenant cette page et la donner à d'autres personnes dans ce pays. Puis, quand quelqu'un traduit un livre canevas, il va à la fin du livre et clique sur "ajouter une page". La page que vous avez rédigée figurera dans la liste de leurs choix. Les modèles peuvent aussi servir à faire des table de l'alphabet, des glossaires, des instructions sur la manière d'utiliser le livre en classe. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.waystohelp" approved="yes">
         <source xml:lang="en">Making templates is just like making any other custom book; all the same controls are available for making and customizing pages. But since you will probably be sharing with other people, there are a number of things you can do to help users of your template:</source>
-        <target xml:lang="fr" state="translated">Les modèles sont réalisés de la même manière que tout autre livre personnalisable. Vous disposez des mêmes contrôles pour créer les pages et les personnaliser. Mais comme vous partagerez probablement vos modèles avec d'autres personnes, voici plusieurs choses à faire pour aider les utilisateurs de votre modèle‎ :</target>
+        <target xml:lang="fr" state="translated">Les modèles sont réalisés de la même manière que tout autre livre personnalisable. Vous disposez des mêmes contrôles pour créer les pages et les personnaliser. Mais comme vous les partagerez probablement avec d'autres personnes, voici plusieurs choses à faire pour aider ceux qui se serviront de votre modèle‎ :</target>
         <note>ID: template.starter.waystohelp</note>
+        <alt-trans>
+          <target xml:lang="fr">Les modèles sont réalisés de la même manière que tout autre livre personnalisable. Vous disposez des mêmes contrôles pour créer les pages et les personnaliser. Mais comme vous partagerez probablement vos modèles avec d'autres personnes, voici plusieurs choses à faire pour aider les utilisateurs de votre modèle‎ :</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Les modèles sont réalisés de la même manière que tout autre livre personnalisable ‎; Vous disposez des mêmes commandes pour créer les pages et les personnaliser. Mais comme vous partagerez probablement vos modèles avec d'autres personnes, voici plusieurs choses à faire pour aider les utilisateurs de votre modèle‎ :</target>
         </alt-trans>
@@ -49,8 +62,11 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage" approved="yes">
         <source xml:lang="en">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</source>
-        <target xml:lang="fr" state="translated">Lorsque vous ajoutez des pages à votre modèle, vous devez donner à chacune un nom utile<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
+        <target xml:lang="fr" state="translated">Lorsqu'on ajoute des pages au modèle, on doit donner à chacune un nom utile<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
         <note>ID: template.starter.labeleachpage</note>
+        <alt-trans>
+          <target xml:lang="fr">Lorsque vous ajoutez des pages à votre modèle, vous devez donner à chacune un nom utile<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Lorsque vous ajoutez des pages à votre modèle, vous devez donner à chacune un nom utile <g id="genid-5" ctype="x-html-sup"> <g id="genid-6" ctype="x-html-a" html:href="#note3"> 3</g>, <g id="genid-7" ctype="x-html-a" html:href="#note4"> 4</g></g> :</target>
         </alt-trans>
@@ -125,9 +141,12 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
       </trans-unit>
       <trans-unit id="template.starter.nothingautomatic" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
-        <target xml:lang="fr" state="translated"><g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
+        <target xml:lang="fr" state="translated"><g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être réunis en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans de nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
         <note>ID: template.starter.nothingautomatic</note>
         <alt-trans>
+          <target xml:lang="fr"><g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">
           
           
@@ -160,13 +179,6 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
         <alt-trans>
           <target xml:lang="fr">
           
-          
-          
-          
-<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Ces livres pourraient à l'avenir être assemblés en un volume grâce à la future fonctionnalité "Folio". Notez que Bloom n'a pas encore la possibilité de vous indiquer qu'une page devrait figurer automatiquement dans les nouveaux livres‎ ; l'auteur devra ajouter chaque page à partir de la boîte de dialogue "Ajouter une page".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
           
           
           
@@ -298,9 +310,12 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
       </trans-unit>
       <trans-unit id="template.starter.editrawhtml" approved="yes">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
-        <target xml:lang="fr" state="translated"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Si vous voulez qu'une brève description de la page figure sur l'écran "Ajouter une page", vous devrez quitter Bloom et éditer le fichier html du template dans "Notepad", comme ceci : <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        <target xml:lang="fr" state="translated"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Si vous voulez qu'une brève description de la page figure sur l'écran "Ajouter une page", vous devrez quitter Bloom et éditer le fichier html du template dans "Notepad", ainsi : <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
         <alt-trans>
+          <target xml:lang="fr"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Si vous voulez qu'une brève description de la page figure sur l'écran "Ajouter une page", vous devrez quitter Bloom et éditer le fichier html du template dans "Notepad", comme ceci : <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="fr">
           
           
@@ -354,20 +369,6 @@ Il existe deux manières d'utiliser le modèle que vous avez créé. La premièr
         <alt-trans>
           <target xml:lang="fr">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Si vous voulez qu'une brève description de la page figure sur l'écran "Ajouter une page", vous devrez quitter Bloom et éditer le fichier html du template dans "Notepad", comme ceci : <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">
           
           
           

@@ -663,74 +663,149 @@ namespace Bloom.Publish.Epub
 				mergedAudioPath = MergeAudioElements(audioSentenceElementsWithRecordedAudio);
 			foreach(var audioSentenceElement in audioSentenceElementsWithRecordedAudio)
 			{
+				// These are going to be the same regardless of whether this audio sentence has sub-elements to highlight.
 				var audioId = audioSentenceElement.Attributes["id"].Value;
 				var path = AudioProcessor.GetOrCreateCompressedAudio(Storage.FolderPath, audioId);
-				var dataDurationAttr = audioSentenceElement.Attributes["data-duration"];
-				TimeSpan clipTimeSpan;
-				if(dataDurationAttr != null)
+				string epubPath = mergedAudioPath ?? CopyFileToEpub(path, subfolder: kAudioFolder);
+				var newSrc = epubPath.Substring(_contentFolder.Length + 1).Replace('\\', '/');
+
+				var highlightSegments = audioSentenceElement.SelectNodes(".//*[contains(concat(' ', normalize-space(@class), ' '),' bloom-highlightSegment ')]");
+				if (highlightSegments.Count == 0)
 				{
-					// Make sure we parse "3.14159" properly since that's the form we'll see regardless of current locale.
-					// (See http://issues.bloomlibrary.org/youtrack/issue/BL-4374.)
-					clipTimeSpan = TimeSpan.FromSeconds(Double.Parse(dataDurationAttr.Value, System.Globalization.CultureInfo.InvariantCulture));
+					// Traditional approach, no sub-elements.
+					var dataDurationAttr = audioSentenceElement.Attributes["data-duration"];
+					TimeSpan clipTimeSpan;
+					if(dataDurationAttr != null)
+					{
+						// Make sure we parse "3.14159" properly since that's the form we'll see regardless of current locale.
+						// (See http://issues.bloomlibrary.org/youtrack/issue/BL-4374.)
+						clipTimeSpan = TimeSpan.FromSeconds(Double.Parse(dataDurationAttr.Value, System.Globalization.CultureInfo.InvariantCulture));
+					}
+					else
+					{
+						try
+						{
+#if __MonoCS__
+							// ffmpeg can provide the length of the audio, but you have to strip it out of the command line output
+							// See https://stackoverflow.com/a/33115316/7442826 or https://stackoverflow.com/a/53648234/7442826
+							// The output (which is sent to stderr, not stdout) looks something like this:
+							// "size=N/A time=00:03:36.13 bitrate=N/A speed= 432x    \rsize=N/A time=00:07:13.16 bitrate=N/A speed= 433x    \rsize=N/A time=00:08:42.97 bitrate=N/A speed= 434x"
+							// When seen on the console screen interactively, it looks like a single line that is updated frequently.
+							// A short file may have only one carriage-return separated section of output, while a very long file may
+							// have more sections than this.
+							var args = String.Format("-v quiet -stats -i \"{0}\" -f null -", path);
+							var result = CommandLineRunner.Run("/usr/bin/ffmpeg", args, "", 20 * 10, new SIL.Progress.NullProgress());
+							var output = result.ExitCode == 0 ? result.StandardError : null;
+							string timeString = null;
+							if (!string.IsNullOrEmpty(output))
+							{
+								var idxTime = output.LastIndexOf("time=");
+								if (idxTime > 0)
+									timeString = output.Substring(idxTime + 5, 11);
+							}
+							clipTimeSpan = TimeSpan.Parse(timeString, CultureInfo.InvariantCulture);
+#else
+							using (var reader = new Mp3FileReader(path))
+								clipTimeSpan = reader.TotalTime;
+#endif
+						}
+						catch
+						{
+							NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
+								"Bloom could not accurately determine the length of the audio file and will only make a very rough estimate.");
+							// Crude estimate. In one sample, a 61K mp3 is 7s long.
+							// So, multiply by 7 and divide by 61K to get seconds.
+							// Then, to make a TimeSpan we need ticks, which are 0.1 microseconds,
+							// hence the 10000000.
+							clipTimeSpan = new TimeSpan(new FileInfo(path).Length * 7 * 10000000 / 61000);
+						}
+					}
+
+					// Determine start time based on whether we have oneAudioPerPage (implies that we need to merge all the aduio files into one big file) or not
+					TimeSpan clipStart = mergedAudioPath != null ? pageDuration : new TimeSpan(0);
+					TimeSpan clipEnd = clipStart + clipTimeSpan;
+					pageDuration += clipTimeSpan;
+
+					AddEpubAudioParagraph(seq, smil, ref index, pageDocName, audioId, newSrc, clipStart, clipEnd);
 				}
 				else
 				{
-					try
-					{
-#if __MonoCS__
-						// ffmpeg can provide the length of the audio, but you have to strip it out of the command line output
-						// See https://stackoverflow.com/a/33115316/7442826 or https://stackoverflow.com/a/53648234/7442826
-						// The output (which is sent to stderr, not stdout) looks something like this:
-						// "size=N/A time=00:03:36.13 bitrate=N/A speed= 432x    \rsize=N/A time=00:07:13.16 bitrate=N/A speed= 433x    \rsize=N/A time=00:08:42.97 bitrate=N/A speed= 434x"
-						// When seen on the console screen interactively, it looks like a single line that is updated frequently.
-						// A short file may have only one carriage-return separated section of output, while a very long file may
-						// have more sections than this.
-						var args = String.Format("-v quiet -stats -i \"{0}\" -f null -", path);
-						var result = CommandLineRunner.Run("/usr/bin/ffmpeg", args, "", 20 * 10, new SIL.Progress.NullProgress());
-						var output = result.ExitCode == 0 ? result.StandardError : null;
-						string timeString = null;
-						if (!string.IsNullOrEmpty(output))
-						{
-							var idxTime = output.LastIndexOf("time=");
-							if (idxTime > 0)
-								timeString = output.Substring(idxTime + 5, 11);
-						}
-						clipTimeSpan = TimeSpan.Parse(timeString, CultureInfo.InvariantCulture);
-#else
-						using (var reader = new Mp3FileReader(path))
-							clipTimeSpan = reader.TotalTime;
-#endif
-					}
-					catch
-					{
-						NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
-							"Bloom could not accurately determine the length of the audio file and will only make a very rough estimate.");
-						// Crude estimate. In one sample, a 61K mp3 is 7s long.
-						// So, multiply by 7 and divide by 61K to get seconds.
-						// Then, to make a TimeSpan we need ticks, which are 0.1 microseconds,
-						// hence the 10000000.
-						clipTimeSpan = new TimeSpan(new FileInfo(path).Length * 7 * 10000000 / 61000);
-					}
-				}
+					// We have some subelements to worry about.
 
-				var clipStart = pageDuration;
-				pageDuration += clipTimeSpan;
-				string epubPath = mergedAudioPath ?? CopyFileToEpub(path, subfolder:kAudioFolder);
-				var newSrc = epubPath.Substring(_contentFolder.Length+1).Replace('\\','/');
-				seq.Add(new XElement(smil + "par",
-					new XAttribute("id", "s" + index++),
-					new XElement(smil + "text",
-						new XAttribute("src", pageDocName + "#" + audioId)),
-					new XElement(smil + "audio",
-						new XAttribute("src", newSrc),
-						new XAttribute("clipBegin", mergedAudioPath != null ? clipStart.ToString(@"h\:mm\:ss\.fff") : "0:00:00.000"),
-						new XAttribute("clipEnd", mergedAudioPath != null ? pageDuration.ToString(@"h\:mm\:ss\.fff") : clipTimeSpan.ToString(@"h\:mm\:ss\.fff")))));
+					string timingsStr = audioSentenceElement.GetAttribute("data-audiorecordingendtimes");    // These should be in seconds
+
+					string[] timingFields = timingsStr.Split(' ');
+					var segmentEndTimesSecs = new List<float>(timingFields.Length);
+					for (int i = 0; i < timingFields.Length; ++i)
+					{
+						float time;
+						if (!float.TryParse(timingFields[i], out time))
+						{
+							time = float.NaN;
+						}
+						segmentEndTimesSecs.Add(time);
+					}
+
+					// Keeps track of the duration of the current element including all sub-elements, but not any earlier elements on the page)
+					// (In contrast with the page duration, which does include all earlier elements)
+					TimeSpan currentElementDuration = new TimeSpan();
+					double previousEndTimeSecs = 0;
+
+					for (int i = 0; i < highlightSegments.Count && i < segmentEndTimesSecs.Count; ++i)
+					{
+						float clipEndTimeSecs = segmentEndTimesSecs[i];
+						if (float.IsNaN(clipEndTimeSecs))
+						{
+							// Don't know how long this clip is -> don't know how long to highlight for -> just skip this segment and go to the next one.
+							continue;
+						}
+						double clipDurationSecs = clipEndTimeSecs - previousEndTimeSecs;
+						previousEndTimeSecs = clipEndTimeSecs;
+
+						TimeSpan clipTimeSpan = TimeSpan.FromSeconds(clipDurationSecs);
+
+						var segment = highlightSegments[i];
+						string segmentId = segment.GetStringAttribute("id");
+
+						// Determine start time based on whether we have oneAudioPerPage (implies that we need to merge all the aduio files into one big file) or not
+						TimeSpan clipStart = (mergedAudioPath != null) ?  pageDuration + currentElementDuration : currentElementDuration;
+						TimeSpan clipEnd = clipStart + clipTimeSpan;
+						currentElementDuration += clipTimeSpan;
+
+						AddEpubAudioParagraph(seq, smil, ref index, pageDocName, segmentId, newSrc, clipStart, clipEnd);
+					}
+
+					pageDuration += currentElementDuration;
+				}
 			}
 			_pageDurations[GetIdOfFile(overlayName)] = pageDuration;
 			var overlayPath = Path.Combine(_contentFolder, overlayName);
 			using(var writer = XmlWriter.Create(overlayPath))
 				root.WriteTo(writer);
 
+		}
+
+		/// <summary>
+		/// Adds a narrated piece of text into an overlay sequence
+		/// </summary>
+		/// <param name="seq">The element to add to</param>
+		/// <param name="smil">The namespace</param>
+		/// <param name="index">Pass by Reference. The 1-based index of the element. This function will increment it after adding the new element</param>
+		/// <param name="pageDocName">The name of the page, e.g. 1.xhtml, which will be used as the filename of a URL</param>
+		/// <param name="segmentId">The ID (as in the ID used in the Named Anchor fragment of a URL) of the TEXT to be highlighted (as opposed to the ID of the audio to be played)</param>
+		/// <param name="newSrc">The source of the AUDIO file</param>
+		/// <param name="clipStartSecs">The start time (in seconds) of this segment within the audio file</param>
+		/// <param name="clipEndSecs">The end time (in seconds) of this segment within the audio file</param>
+		private void AddEpubAudioParagraph(XElement seq, XNamespace smil, ref int index, string pageDocName, string segmentId, string newSrc, TimeSpan clipStartSecs, TimeSpan clipEndSecs)
+		{
+			seq.Add(new XElement(smil + "par",
+				new XAttribute("id", "s" + index++),
+				new XElement(smil + "text",
+					new XAttribute("src", pageDocName + "#" + segmentId)),
+				new XElement(smil + "audio",
+					new XAttribute("src", newSrc),
+					new XAttribute("clipBegin", clipStartSecs.ToString(@"h\:mm\:ss\.fff")),
+					new XAttribute("clipEnd", clipEndSecs.ToString(@"h\:mm\:ss\.fff")))));
 		}
 
 		/// <summary>
@@ -1403,7 +1478,7 @@ namespace Bloom.Publish.Epub
 		{
 			isBrandingFile = false;
 			var url = HtmlDom.GetImageElementUrl(img);
-			if (url == null || url.PathOnly == null || String.IsNullOrEmpty(url.NotEncoded))
+			if (url == null || String.IsNullOrEmpty(url.PathOnly.NotEncoded))
 				return null; // very weird, but all we can do is ignore it.
 			// Notice that we use only the path part of the url. For some unknown reason, some bloom books
 			// (e.g., El Nino in the library) have a query in some image sources, and at least some ePUB readers
@@ -1421,7 +1496,7 @@ namespace Bloom.Publish.Epub
 		private string FindVideoFileIfPossible(XmlElement vid)
 		{
 			var url = HtmlDom.GetVideoElementUrl(vid);
-			if (url == null || url.PathOnly == null || String.IsNullOrEmpty(url.NotEncoded))
+			if (url == null || String.IsNullOrEmpty(url.PathOnly.NotEncoded))
 				return null;
 			return url.PathOnly.NotEncoded;
 		}
@@ -1615,7 +1690,7 @@ namespace Bloom.Publish.Epub
 				{
 					div.SetAttribute ("role", "main");
 					string languageIdUsed;
-					var label = L10NSharp.LocalizationManager.GetString("PublishTab.AccessibleEpub.Main Content", "Main Content", "",
+					var label = L10NSharp.LocalizationManager.GetString("PublishTab.Epub.Accessible.MainContent", "Main Content", "",
 						_langsForLocalization, out languageIdUsed);
 					div.SetAttribute("aria-label", label);
 					_firstNumberedPageSeen = true;

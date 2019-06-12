@@ -107,6 +107,10 @@ namespace Bloom.Api
 				}
 				else // post
 				{
+					if (writeAction == null)
+					{
+						throw new ApplicationException($"Endpoint {pattern} is read only but received a post");
+					}
 					writeAction(request, request.RequiredPostEnumAsJson<T>());
 					request.PostSucceeded();
 				}

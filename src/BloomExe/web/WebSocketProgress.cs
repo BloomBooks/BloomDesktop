@@ -5,11 +5,19 @@ using L10NSharp;
 
 namespace Bloom.web
 {
+	public enum MessageKind
+	{
+		Error, Warning, Instruction, Note, Progress
+	};
+
+
 	/// <summary>
 	/// Sends localized messages to a websocket, intended for html display
 	/// </summary>
 	public class WebSocketProgress
 	{
+
+
 		private readonly IBloomWebSocketServer _bloomWebSocketServer;
 		private readonly string _clientContext;
 		private string _l10IdPrefix;
@@ -50,25 +58,34 @@ namespace Bloom.web
 			_clientContext = clientContext;
 		}
 
+		[Obsolete("Instead, use normal messages with an kind=Error")]
 		public virtual void ErrorWithoutLocalizing(string message)
 		{
-			MessageWithoutLocalizing($"<span style='color:red'>{message}</span>");
+			MessageWithoutLocalizing($"<span style='color:red'>{message}</span>", kind:MessageKind.Error);
 			SIL.Reporting.Logger.WriteEvent($"Error: {message}");
 		}
 
-		public void Error(string idSuffix, string message, bool useL10nIdPrefix=true)
+		[Obsolete("Instead, use normal messages with an kind=Error")]
+		public void Error(string idSuffix, string message, bool useL10nIdPrefix = true)
 		{
-			var localizedMessage = LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message);
+			var localizedMessage = LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix),
+				englishText: message);
 			ErrorWithoutLocalizing(localizedMessage);
 			if (localizedMessage != message)
-				SIL.Reporting.Logger.WriteEvent($"Error: {message}");	// repeat message in the log unlocalized.
+				SIL.Reporting.Logger.WriteEvent($"Error: {message}"); // repeat message in the log unlocalized.
 		}
 
-		public virtual void MessageWithoutLocalizing(string message)
+		public virtual void MessageWithoutLocalizing(string message, MessageKind kind=MessageKind.Progress)
 		{
+			dynamic messageBundle = new DynamicJson();
+			messageBundle.message = message;
+			messageBundle.kind = kind.ToString();
+			_bloomWebSocketServer.SendBundle(_clientContext, "message", messageBundle);
+			// for any old-style listeners
 			_bloomWebSocketServer.SendString(_clientContext, "progress", message);
 		}
 
+		[Obsolete("Instead, use normal messages with a kind parameter, and leave it to the front-end to do the styling")]
 		public virtual void MessageWithStyleWithoutLocalizing(string message, string cssStyleRules)
 		{
 			dynamic messageBundle = new DynamicJson();
@@ -77,23 +94,24 @@ namespace Bloom.web
 			_bloomWebSocketServer.SendBundle(_clientContext, "progress", messageBundle);
 		}
 
-		public virtual void Message(string idSuffix, string comment, string message, bool useL10nIdPrefix=true)
+		public virtual void Message(string idSuffix, string comment, string message, MessageKind kind = MessageKind.Progress, bool useL10nIdPrefix =true)
 		{
-			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message, comment: comment));
+			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message, comment: comment),kind:kind);
 		}
-		public void Message(string idSuffix, string message, bool useL10nIdPrefix = true)
+		public void Message(string idSuffix, string message, MessageKind kind=MessageKind.Progress, bool useL10nIdPrefix = true)
 		{
-			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message));
+			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, useL10nIdPrefix), englishText: message), kind:kind);
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
-		public virtual void MessageWithParams(string idSuffix, string comment, string message, params object[] parameters)
+		public virtual void MessageWithParams(string idSuffix, string comment, string message, MessageKind kind, params object[] parameters)
 		{
 			var formatted = GetMessageWithParams(idSuffix, comment, message, parameters);
-			MessageWithoutLocalizing(formatted);
+			MessageWithoutLocalizing(formatted, kind);
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
+		[Obsolete("Instead, use normal messages with an kind=Error")]
 		public virtual void ErrorWithParams(string idSuffix, string comment, string message, params object[] parameters)
 		{
 			var formatted = GetMessageWithParams(idSuffix, comment, message, parameters);
@@ -104,6 +122,7 @@ namespace Bloom.web
 		}
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
+		[Obsolete("Instead, use normal messages with a kind parameter, and leave it to the front-end to do the styling")]
 		public virtual void MessageWithColorAndParams(string idSuffix, string comment, string color, string message, params object[] parameters)
 		{
 			var formatted = GetMessageWithParams(idSuffix, comment, message, parameters);
@@ -120,10 +139,10 @@ namespace Bloom.web
 			return formatted;
 		}
 
-		public void MessageUsingTitle(string idSuffix, string message, string bookTitle, bool useL10nIdPrefix = true)
+		public void MessageUsingTitle(string idSuffix, string message, string bookTitle, MessageKind kind, bool useL10nIdPrefix = true)
 		{
 			var formatted = GetTitleMessage(idSuffix, message, bookTitle, useL10nIdPrefix);
-			MessageWithoutLocalizing(formatted);
+			MessageWithoutLocalizing(formatted, kind);
 		}
 
 		public string GetTitleMessage(string idSuffix, string message, string bookTitle, bool useL10nIdPrefix = true)
@@ -146,7 +165,7 @@ namespace Bloom.web
 	// Passing one of these where we don't need the progress report saves recipients handling nulls
 	public class NullWebSocketProgress : WebSocketProgress
 	{
-		public override void MessageWithoutLocalizing(string message)
+		public override void MessageWithoutLocalizing(string message, MessageKind kind)
 		{
 		}
 
