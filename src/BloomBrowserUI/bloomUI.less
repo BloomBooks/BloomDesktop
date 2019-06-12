@@ -44,6 +44,7 @@
 // Naming it here allows us to make various things match it.
 @accordion-active-element: #59b4d4;
 @form-background: #f0f0f0;
+@bloom-solid-circle-badge-character: "\25cf";
 
 body {
     font-family: @UIFontStack;
@@ -130,12 +131,10 @@ input[type="checkbox"]:indeterminate::after {
 
 // Moved from toolbox.less to here so it can be used by templatePagePreview
 .enterprise-only-flag::after {
-    content: "BE";
+    content: @bloom-solid-circle-badge-character;
     cursor: default;
     color: @bloom-purple;
-    margin-left: 4px;
-    vertical-align: super;
-    font-style: italic;
-    font-weight: bold;
-    font-size: smaller;
+    font-size: 14px;
+    position: absolute;
+    top: -8px;
 }
