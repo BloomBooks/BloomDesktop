@@ -5,9 +5,12 @@ using System.Globalization;
 using System.Linq;
 using System.Xml;
 using Bloom.Collection;
+using Bloom.ToPalaso;
+using L10NSharp;
 using SIL.Extensions;
 using SIL.Linq;
 using SIL.Reporting;
+using SIL.Windows.Forms.WritingSystems;
 using SIL.Xml;
 
 namespace Bloom.Book
@@ -35,6 +38,8 @@ namespace Bloom.Book
 		/// </summary>
 		public static void PrepareElementsInPageOrDocument(XmlNode pageOrDocumentNode, CollectionSettings collectionSettings)
 		{
+			GenerateEditableDivsWithPreTranslatedContent(pageOrDocumentNode);
+
 			PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language1Iso639Code);
 			PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language2Iso639Code);
 
@@ -109,6 +114,33 @@ namespace Bloom.Book
 				currentBook.MultilingualContentLanguage2, currentBook.MultilingualContentLanguage3);
 
 			return containerElement.InnerXml;
+		}
+
+		private static void GenerateEditableDivsWithPreTranslatedContent(XmlNode elementOrDom)
+		{
+			foreach (XmlElement editableDiv in elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-editable') and @data-generate-translations and @data-i18n]"))
+			{
+				var englishText = editableDiv.InnerText;
+				var l10nId = editableDiv.Attributes["data-i18n"].Value;
+				if (string.IsNullOrWhiteSpace(l10nId))
+					continue;
+
+				foreach (var uiLanguage in LocalizationManager.GetAvailableLocalizedLanguages())
+				{
+					var translation = LocalizationManager.GetDynamicStringOrEnglish("Bloom", l10nId, englishText, null, uiLanguage);
+					if (translation == englishText)
+						continue;
+
+					var newEditableDiv = elementOrDom.OwnerDocument.CreateElement("div");
+					newEditableDiv.SetAttribute("class", "bloom-editable");
+					newEditableDiv.SetAttribute("lang", LanguageLookupModelExtensions.GetGeneralCode(uiLanguage));
+					newEditableDiv.InnerText = translation;
+					editableDiv.ParentNode.AppendChild(newEditableDiv);
+				}
+
+				editableDiv.RemoveAttribute("data-generate-translations");
+				editableDiv.RemoveAttribute("data-i18n");
+			}
 		}
 
 		/// <summary>
@@ -249,8 +281,8 @@ namespace Bloom.Book
 				// The V/N1/N2 system feels natural in vernacular book contexts
 				// The L1/L2/L3 system is more natural in source book contexts.
 				return (lang == settings.Language1Iso639Code && dataDefaultLanguages.Contains("V")) ||
-				   (lang == settings.Language1Iso639Code && dataDefaultLanguages.Contains("L1")) || 
-				   
+				   (lang == settings.Language1Iso639Code && dataDefaultLanguages.Contains("L1")) ||
+
 				   (lang == settings.Language2Iso639Code && dataDefaultLanguages.Contains("N1")) ||
 				   (lang == settings.Language2Iso639Code && dataDefaultLanguages.Contains("L2")) ||
 

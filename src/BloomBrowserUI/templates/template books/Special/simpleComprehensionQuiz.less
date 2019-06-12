@@ -17,12 +17,11 @@
         margin-bottom: @vertical-space;
         flex-grow: 1;
     }
-    h1 {
+    .QuizHeader-style {
+        font-size: 20pt;
         text-align: center;
-        padding: 5px;
         color: white;
         background-color: @bloom-red;
-        margin-bottom: @vertical-space;
     }
     .checkbox-and-textbox-choice {
         display: flex; // horizontal;
@@ -171,6 +170,7 @@
 }
 
 // overrides a rule in EditMode.less to push the language label over and make room for cog on right.
+.bloom-editable.QuizHeader-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
 .bloom-editable.QuizAnswer-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
 .bloom-editable.QuizQuestion-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
     margin-right: 24px;

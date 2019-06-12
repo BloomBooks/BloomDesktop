@@ -1261,6 +1261,18 @@
         <note>ID: EditTab.FormatDialog.DefaultStyles.quiz-style</note>
         <note>Special template</note>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizAnswer-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Answer</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizAnswer-style</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizHeader-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Header</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizHeader-style</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizQuestion-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Question</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizQuestion-style</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true">
         <source xml:lang="en">Title On Cover</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style</note>
