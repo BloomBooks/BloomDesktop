@@ -93,7 +93,8 @@ namespace Bloom
 			// We use crowdin for localizing, and they require a directory per language setup.
 			LocalizationManager.UseLanguageCodeFolders = true;
 			// We want only good localizations in Bloom.
-			LocalizationManager.ReturnOnlyApprovedStrings = true;
+			// REVIEW: should the setting be used only for alpha and beta?
+			LocalizationManager.ReturnOnlyApprovedStrings = !Settings.Default.ShowUnapprovedLocalizations;
 
 #if DEBUG
 			//MessageBox.Show("Attach debugger now");
