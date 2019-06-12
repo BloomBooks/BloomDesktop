@@ -21,6 +21,14 @@
             margin-left: 30px;
             object-fit: contain;
         }
+
+        // The center of a selected radio button is drawn with an <svg> element by materialui.
+        // For some reason, in Firefox 45, in Publish:Reader, the "left" says 20.4667px, whereas
+        // it says 0px in modern browsers. A mystery. Anyhow this resets it.
+        // (I expected unset to fix it, but it doesn't.)
+        .MuiRadio-root svg {
+            left: 0;
+        }
     }
 
     .playIcon {
