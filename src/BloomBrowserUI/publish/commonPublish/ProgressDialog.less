@@ -8,11 +8,23 @@
     div {
         top: unset;
     }
+    .MuiDialogTitle-root {
+        h6 {
+            // make the whole thing taller so that the text is vertically centered
+            margin-bottom: 1em;
+        }
+    }
+
+    .title-bar-error-mode {
+        // We aren't distinguishing between "error" and "warning" so far
+        background-color: @bloom-warning;
+    }
     .Error {
+        // Intentionally not "bloom-red"
         color: red;
     }
     .Warning {
-        color: orange;
+        color: @bloom-warning;
     }
     .Note {
         color: @bloom-blue;
@@ -50,6 +62,7 @@
 
     .circle-progress {
         position: absolute;
+        top: 0;
         right: 0;
         color: @bloom-blue; // lightgray;
         margin-top: 10px;

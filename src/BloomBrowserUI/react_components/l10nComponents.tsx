@@ -379,7 +379,7 @@ export class Div extends LocalizableElement<
     }
 }
 
-export class String extends LocalizableElement<
+export class LocalizedString extends LocalizableElement<
     ILocalizationProps,
     ILocalizationState
 > {

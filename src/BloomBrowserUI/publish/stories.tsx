@@ -40,6 +40,8 @@ storiesOf("Publish/ProgressDialog", module)
             <ProgressDialog
                 progressState={ProgressState.Working}
                 messages={testText}
+                heading={"Working hard..."}
+                instruction={"Just sit there and watch it spin."}
                 onUserClosed={() => {}}
                 onUserCanceled={() => {}}
                 onUserStopped={() => {}}
@@ -63,6 +65,7 @@ storiesOf("Publish/ProgressDialog", module)
                 progressState={ProgressState.Done}
                 errorEncountered={true}
                 messages={testText}
+                heading={"Sky is falling"}
                 onUserClosed={() => {}}
                 onUserCanceled={() => {}}
                 onUserStopped={() => {}}

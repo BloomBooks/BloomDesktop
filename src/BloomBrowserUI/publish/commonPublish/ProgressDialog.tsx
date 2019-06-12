@@ -68,21 +68,12 @@ export const ProgressDialog: React.FunctionComponent<{
             }}
         >
             <DialogTitle
-                style={
-                    props.errorEncountered
-                        ? {
-                              backgroundColor: (theme as any).palette.warning
-                                  .main
-                          }
-                        : {
-                              backgroundColor: "white"
-                          }
-                }
+                className={props.errorEncountered ? "title-bar-error-mode" : ""}
             >
                 {props.heading || "Progress"}
             </DialogTitle>
             {somethingStillGoing && (
-                <CircularProgress className={"circle-progress"} />
+                <CircularProgress size={20} className={"circle-progress"} />
             )}
             <DialogContent style={{ width: "500px", height: "300px" }}>
                 <Typography className="instruction">
