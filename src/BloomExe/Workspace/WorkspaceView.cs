@@ -306,9 +306,20 @@ namespace Bloom.Workspace
 			//LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = !SettingsProtectionSettings.Default.NormallyHidden;
 		}
 
+		ToolStripMenuItem _showAllTranslationsItem;
+
 		private void SetupUiLanguageMenu()
 		{
 			SetupUiLanguageMenuCommon(_uiLanguageMenu, FinishUiLanguageMenuItemClick);
+
+			// REVIEW: should this be part of SetupUiLanguageMenuCommon()?  should it be added only for alpha and beta?
+			_uiLanguageMenu.DropDownItems.Add("-");
+			_showAllTranslationsItem = new ToolStripMenuItem();
+			_showAllTranslationsItem.Text = GetShowUnapprovedTranslationsMenuText();
+			_showAllTranslationsItem.Checked = Settings.Default.ShowUnapprovedLocalizations;
+			_showAllTranslationsItem.Click += (sender, args) => ToggleShowingOnlyApprovedTranslations();
+			_uiLanguageMenu.DropDownItems.Add(_showAllTranslationsItem);
+
 			_uiLanguageMenu.DropDown.Closing += DropDown_Closing;
 			_helpMenu.DropDown.Closing += DropDown_Closing;
 			_uiLanguageMenu.DropDown.Opening += DropDown_Opening;
@@ -331,6 +342,14 @@ namespace Bloom.Workspace
 			//	// See http://issues.bloomlibrary.org/youtrack/issue/BL-3444.
 			//	AdjustButtonTextsForLocale();
 			//});
+		}
+
+		private void ToggleShowingOnlyApprovedTranslations()
+		{
+			Settings.Default.ShowUnapprovedLocalizations = !Settings.Default.ShowUnapprovedLocalizations;
+			LocalizationManager.ReturnOnlyApprovedStrings = !Settings.Default.ShowUnapprovedLocalizations;
+			SetupUiLanguageMenu();
+			FinishUiLanguageMenuItemClick();	// apply newly revealed/hidden localizations
 		}
 
 		private bool _ignoreNextAppFocusChange;
@@ -390,7 +409,9 @@ namespace Bloom.Workspace
 			{
 				// Require that at least 1% of the strings have been translated and approved for alphas,
 				// or 25% translated and approved for betas and release.
-				var approved = LocalizationManager.FractionApproved(lang);
+				var approved = FractionApproved(lang);
+				if (Settings.Default.ShowUnapprovedLocalizations)
+					approved = FractionTranslated(lang);
 				var alpha = ApplicationUpdateSupport.IsDevOrAlpha;
 				if ((alpha && approved < 0.01F) || (!alpha && approved < 0.25F))
 					continue;
@@ -405,7 +426,10 @@ namespace Bloom.Workspace
 			{
 				var item = uiMenuControl.DropDownItems.Add(langItem.MenuText);
 				item.Tag = langItem;
-				item.ToolTipText = String.Format(tooltipFormat, (int)(langItem.FractionApproved * 100.0F));
+				var fraction = langItem.FractionApproved;
+				if (Settings.Default.ShowUnapprovedLocalizations)
+					fraction = langItem.FractionTranslated;
+				item.ToolTipText = String.Format(tooltipFormat, (int)(fraction * 100.0F));
 				item.Click += (sender, args) => UiLanguageMenuItemClickHandler(uiMenuControl, sender as ToolStripItem, finishClickAction);
 				if (langItem.IsoCode == Settings.Default.UserInterfaceLanguage)
 					UpdateMenuTextToShorterNameOfSelection(uiMenuControl, langItem.MenuText);
@@ -443,7 +467,13 @@ namespace Bloom.Workspace
 			// these lines deal with having a smaller workspace window and minimizing the button texts for smaller windows
 			SaveOriginalButtonTexts();
 			AdjustButtonTextsForLocale();
+			_showAllTranslationsItem.Text = GetShowUnapprovedTranslationsMenuText();
 			_localizationChangedEvent.Raise(null);
+		}
+
+		private string GetShowUnapprovedTranslationsMenuText()
+		{
+			return LocalizationManager.GetString("CollectionTab.LanguageMenu.ShowUnapprovedTranslations", "Show translations which have not been approved yet");
 		}
 
 		public static LanguageItem CreateLanguageItem(string code)
@@ -452,8 +482,38 @@ namespace Bloom.Workspace
 			// Add an English name suffix if it's not in a Latin script.
 			var menuText = _lookupIsoCode.GetNativeLanguageNameWithEnglishSubtitle(code);
 			var englishName = _lookupIsoCode.GetLocalizedLanguageName(code, "en");
-			return new LanguageItem {EnglishName = englishName, IsoCode = code, MenuText = menuText,
-				FractionApproved = LocalizationManager.FractionApproved(code) };
+			return new LanguageItem { EnglishName = englishName, IsoCode = code, MenuText = menuText,
+				FractionApproved = FractionApproved(code), FractionTranslated = FractionTranslated(code) };
+		}
+
+		/// <summary>
+		/// LocalizationManager.FractionApproved(code) divides by the number of English strings
+		/// which is always larger because it includes strings from outside Bloom and Palaso
+		/// that have been dynamically discovered.  There are some other things going on in
+		/// the dynamic scanning that result in strings being duplicated in multiple .xlf files.
+		/// So we calculate the number based solely on the particular language's counts.  Since
+		/// Crowdin is supposed to pass through all strings to all localizations, this should be
+		/// fairly accurate and give numbers similar to what Crowdin reports.  (Crowdin counts by
+		/// word instead of by string.)
+		/// </summary>
+		public static float FractionApproved(string code)
+		{
+			var totalCount = LocalizationManager.StringCount(code);
+			var approvedCount = LocalizationManager.NumberApproved(code);
+			return (float)approvedCount / (float)totalCount;
+		}
+
+		/// <summary>
+		/// LocalizationManager.FractionTranslated(code) divides by the number of English strings
+		/// which is always larger because it includes strings from outside Bloom and Palaso
+		/// that have been dynamically discovered.  So we use the language's counts directly to
+		/// compute this fraction.
+		/// </summary>
+		public static float FractionTranslated(string code)
+		{
+			var totalCount = LocalizationManager.StringCount(code);
+			var translatedCount = LocalizationManager.NumberTranslated(code);
+			return (float)translatedCount / (float)totalCount;
 		}
 
 		public static void UpdateMenuTextToShorterNameOfSelection(ToolStripDropDownButton toolStripButton, string itemText)
@@ -1167,6 +1227,7 @@ namespace Bloom.Workspace
 		public string EnglishName;
 		public string MenuText;
 		public float FractionApproved;
+		public float FractionTranslated;
 	}
 	/// <summary>
 	/// This class follows a recommendation at
