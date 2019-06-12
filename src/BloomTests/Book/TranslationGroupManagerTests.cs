@@ -36,6 +36,7 @@ namespace BloomTests.Book
 		public void TearDown()
 		{
 			_localizationManager.Dispose();
+			LocalizationManager.ForgetDisposedManagers();
 		}
 
 		[Test]
