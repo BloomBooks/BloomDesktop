@@ -350,6 +350,9 @@ namespace Bloom.Workspace
 			LocalizationManager.ReturnOnlyApprovedStrings = !Settings.Default.ShowUnapprovedLocalizations;
 			SetupUiLanguageMenu();
 			FinishUiLanguageMenuItemClick();	// apply newly revealed/hidden localizations
+			// until L10nSharp changes to allow dynamic response to setting change
+			Settings.Default.Save();
+			Program.RestartBloom();
 		}
 
 		private bool _ignoreNextAppFocusChange;
