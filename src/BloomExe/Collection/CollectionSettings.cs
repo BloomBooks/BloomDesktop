@@ -80,12 +80,14 @@ namespace Bloom.Collection
 				{ "Gurmukhi", "੦੧੨੩੪੫੬੭੮੯"}, // from pa-IN
 				// { "Hebrew", ""}, // he-IL yields 0123456789; not true Hebrew, which uses a non-positional letter-value system, so we can't do it.
 				{ "Kannada", "೦೧೨೩೪೫೬೭೮೯"}, // from kn-IN
+				{ "Kayah", "꤀꤁꤂꤃꤄꤅꤆꤇꤈꤉" },
 				{ "Lao", "໐໑໒໓໔໕໖໗໘໙"}, // from lo-LA
 				{ "Malayalam", "൦൧൨൩൪൫൬൭൮൯"}, // ml-IN
 				{ "Mongolian", "᠐᠑᠒᠓᠔᠕᠖᠗᠘᠙"}, // from https://en.wikipedia.org/wiki/Mongolian_numerals; was mn-Mong-MN, which would wrongly be used as a digit string.
 				{ "Myanmar", "၀၁၂၃၄၅၆၇၈၉"}, // from my-MM
 				{ "Oriya", "୦୧୨୩୪୫୬୭୮୯"}, // haven't found a culture for this
 				{ "Persian", "۰۱۲۳۴۵۶۷۸۹"}, // from fa-IR
+				{ "Shan", "႐႑႒႓႔႕႖႗႘႙" },
 				{ "Tamil", "௦௧௨௩௪௫௬௭௮௯"}, // from ta-IN"
 				{ "Telugu", "౦౧౨౩౪౫౬౭౮౯"}, // from te-IN
 				{ "Thai", "๐๑๒๓๔๕๖๗๘๙"}, // from th-TH
