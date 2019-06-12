@@ -10,7 +10,6 @@ using Bloom.Book;
 using Bloom.Publish.Epub;
 using Bloom.web;
 using BloomTemp;
-using NuGet;
 using SIL.IO;
 using SIL.Xml;
 
@@ -21,9 +20,9 @@ namespace Bloom.Publish.Android
 	/// Much of the logic is still in BookCompressor. Eventually we might move more of it here,
 	/// so that making a bloomd actually starts here and calls BookCompressor.
 	/// </summary>
-	public class BloomReaderFileMaker
+	public static class BloomReaderFileMaker
 	{
-		public const string QuestionFileName = "questions.json";
+		public const string kQuestionFileName = "questions.json";
 
 		public static Control ControlForInvoke { get; set; }
 
@@ -52,7 +51,7 @@ namespace Bloom.Publish.Android
 			Directory.CreateDirectory(bookFolderPath);
 			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(book, bookServer, bookFolderPath);
 
-			var jsonPath = Path.Combine(bookFolderPath, QuestionFileName);
+			var jsonPath = Path.Combine(bookFolderPath, kQuestionFileName);
 			var questionPages = modifiedBook.RawDom.SafeSelectNodes(
 				"//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'questions')]");
 			var questions = new List<QuestionGroup>();

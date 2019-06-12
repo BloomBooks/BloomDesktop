@@ -453,7 +453,7 @@ namespace BloomTests.Publish
 				assertionsOnZipArchive: paramObj =>
 				{
 					var zip = paramObj.ZipFile;
-					var json = GetEntryContents(zip, BloomReaderFileMaker.QuestionFileName);
+					var json = GetEntryContents(zip, BloomReaderFileMaker.kQuestionFileName);
 					var groups = QuestionGroup.FromJson(json);
 					// Two (non-z-language) groups in first question page, one in second.
 					Assert.That(groups, Has.Length.EqualTo(3));
@@ -566,7 +566,7 @@ namespace BloomTests.Publish
 				assertionsOnZipArchive: paramObj =>
 				{
 					var zip = paramObj.ZipFile;
-					var json = GetEntryContents(zip, BloomReaderFileMaker.QuestionFileName);
+					var json = GetEntryContents(zip, BloomReaderFileMaker.kQuestionFileName);
 					var groups = QuestionGroup.FromJson(json);
 					Assert.That(groups, Has.Length.EqualTo(1));
 					Assert.That(groups[0].lang, Is.EqualTo("xyz"));
