@@ -143,6 +143,19 @@ namespace Bloom.Properties {
         [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowUnapprovedLocalizations {
+            get {
+                return ((bool)(this["ShowUnapprovedLocalizations"]));
+            }
+            set {
+                this["ShowUnapprovedLocalizations"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool ShowExperimentalBooks {
             get {
                 return ((bool)(this["ShowExperimentalBooks"]));
