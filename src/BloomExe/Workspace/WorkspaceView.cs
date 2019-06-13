@@ -352,7 +352,7 @@ namespace Bloom.Workspace
 			FinishUiLanguageMenuItemClick();	// apply newly revealed/hidden localizations
 			// until L10nSharp changes to allow dynamic response to setting change
 			Settings.Default.Save();
-			Program.RestartBloom();
+			Program.RestartBloom(false);
 		}
 
 		private bool _ignoreNextAppFocusChange;
