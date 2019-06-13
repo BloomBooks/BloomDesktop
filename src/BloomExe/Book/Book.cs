@@ -1848,11 +1848,23 @@ namespace Bloom.Book
 
 		// Book Information should show only for templates, not for created books.
 		// See https://issues.bloomlibrary.org/youtrack/issue/BL-5190.
-		public bool HasAboutBookInformationToShow => Storage?.FolderPath != null &&
-		                                             Storage.FolderPath.Replace("\\", "/").Contains("/browser/templates/") &&
-		                                             RobustFile.Exists(AboutBookHtmlPath);
+		public bool HasAboutBookInformationToShow
+		{
+			get
+			{
+				if (Storage.FolderPath == null)
+					return false;
+				if (Storage.FolderPath.Replace("\\", "/").Contains("/browser/templates/"))
+					return RobustFile.Exists(AboutBookHtmlPath);	// built-in template shipped with Bloom
+				if (BookInfo.IsSuitableForMakingShells || BookInfo.IsSuitableForMakingTemplates)
+					return RobustFile.Exists(AboutBookMdPath);
+				return false;
+			}
+		}
 
 		public string AboutBookHtmlPath => BloomFileLocator.GetBestLocalizedFile(Storage.FolderPath.CombineForPath("ReadMe-en.htm"));
+
+		public string AboutBookMdPath => BloomFileLocator.GetBestLocalizedFile(Storage.FolderPath.CombineForPath("ReadMe-en.md"));
 
 		public void InitCoverColor()
 		{

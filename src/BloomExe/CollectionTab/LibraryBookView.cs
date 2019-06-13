@@ -5,6 +5,8 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Gecko;
+using MarkdownDeep;
+using SIL.IO;
 
 namespace Bloom.CollectionTab
 {
@@ -139,9 +141,20 @@ namespace Bloom.CollectionTab
 				_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = true;
 				if (_bookSelection.CurrentSelection.HasAboutBookInformationToShow)
 				{
-					_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = false;
-					_readmeBrowser.Navigate(_bookSelection.CurrentSelection.AboutBookHtmlPath, false);
-					_readmeBrowser.Visible = true;
+					if (RobustFile.Exists(_bookSelection.CurrentSelection.AboutBookHtmlPath))
+					{
+						_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = false;
+						_readmeBrowser.Navigate(_bookSelection.CurrentSelection.AboutBookHtmlPath, false);
+						_readmeBrowser.Visible = true;
+					}
+					else if (RobustFile.Exists(_bookSelection.CurrentSelection.AboutBookMdPath))
+					{
+						_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = false;
+						var md = new Markdown();
+						var contents = RobustFile.ReadAllText(_bookSelection.CurrentSelection.AboutBookMdPath);
+						_readmeBrowser.NavigateRawHtml( string.Format("<html><head><meta charset=\"utf-8\"/></head><body>{0}</body></html>", md.Transform(contents)));
+						_readmeBrowser.Visible = true;
+					}
 				}
 				_reshowPending = false;
 			}
