@@ -456,7 +456,7 @@ namespace Bloom
 			}
 		}
 
-		public static void RestartBloom(string args = null)
+		public static void RestartBloom(bool hardExit, string args = null)
 		{
 			try
 			{
@@ -467,9 +467,16 @@ namespace Bloom
 
 				//give some time for that process.start to finish staring the new instance, which will see
 				//we have a mutex and wait for us to die.
-
+				
 				Thread.Sleep(2000);
-				Application.Exit(); // Shut this instance down cleanly
+				if (hardExit || _projectContext?.ProjectWindow == null)
+				{
+					Application.Exit(); 
+				}
+				else
+				{
+					_projectContext.ProjectWindow.Close();
+				}
 			}
 			catch (Exception e)
 			{
