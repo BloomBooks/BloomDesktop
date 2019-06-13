@@ -1848,11 +1848,44 @@ namespace Bloom.Book
 
 		// Book Information should show only for templates, not for created books.
 		// See https://issues.bloomlibrary.org/youtrack/issue/BL-5190.
-		public bool HasAboutBookInformationToShow => Storage?.FolderPath != null &&
-		                                             Storage.FolderPath.Replace("\\", "/").Contains("/browser/templates/") &&
-		                                             RobustFile.Exists(AboutBookHtmlPath);
+		public bool HasAboutBookInformationToShow
+		{
+			get
+			{
+				if (Storage.FolderPath == null)
+					return false;
+				if (Storage.FolderPath.Replace("\\", "/").Contains("/browser/templates/") &&
+					RobustFile.Exists(AboutBookHtmlPath))
+				{
+					return true;	// built-in template shipped with Bloom
+				}
+				if (IsATemplateBook())
+				{
+					return RobustFile.Exists(AboutBookMdPath);
+				}
+				return false;
+			}
+		}
 
 		public string AboutBookHtmlPath => BloomFileLocator.GetBestLocalizedFile(Storage.FolderPath.CombineForPath("ReadMe-en.htm"));
+		public string AboutBookMdPath => BloomFileLocator.GetBestLocalizedFile(Storage.FolderPath.CombineForPath("ReadMe-en.md"));
+
+		/// <summary>
+		/// Test whether the current book appears to be a template book from the types of pages it contains.
+		/// </summary>
+		private bool IsATemplateBook()
+		{
+			foreach (var div in RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>())
+			{
+				var classes = div.GetAttribute("class");
+				if (classes.Contains("bloom-frontMatter") || classes.Contains("bloom-backMatter"))
+					continue;
+				var dataPage = div.GetAttribute("data-page");
+				if (dataPage != "extra")
+					return false;
+			}
+			return true;
+		}
 
 		public void InitCoverColor()
 		{
