@@ -129,7 +129,7 @@ namespace Bloom
 					var parentDirectory = Path.GetDirectoryName(existingDirectoryPath);
 					var newDirectoryPath = Path.Combine(parentDirectory, _nameToChangeCollectionUponClosing);
 
-					Program.RestartBloom(string.Format("--rename \"{0}\" \"{1}\" ", existingDirectoryPath, newDirectoryPath));
+					Program.RestartBloom(true, string.Format("--rename \"{0}\" \"{1}\" ", existingDirectoryPath, newDirectoryPath));
 				}
 				catch (Exception error)
 				{
