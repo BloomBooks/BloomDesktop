@@ -1900,24 +1900,25 @@ namespace Bloom.Book
 			return !string.IsNullOrEmpty(file) && RobustFile.Exists(Path.Combine(Storage.FolderPath, file));
 		}
 
+		// Book Information should show only for templates, not for created books.
+		// See https://issues.bloomlibrary.org/youtrack/issue/BL-5190.
 		public bool HasAboutBookInformationToShow
 		{
 			get
 			{
-				// Book Information should show only for templates, not for created books.
-				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5190.
-				return _storage != null &&
-					_storage.FolderPath != null &&
-					_storage.FolderPath.Replace("\\", "/").Contains("/browser/templates/") &&
-					RobustFile.Exists(AboutBookHtmlPath);
+				if (Storage.FolderPath == null)
+					return false;
+				if (Storage.FolderPath.Replace("\\", "/").Contains("/browser/templates/"))
+					return RobustFile.Exists(AboutBookHtmlPath);	// built-in template shipped with Bloom
+				if (BookInfo.IsSuitableForMakingShells || BookInfo.IsSuitableForMakingTemplates)
+					return RobustFile.Exists(AboutBookMdPath);
+				return false;
 			}
 		}
-		public string AboutBookHtmlPath  {
-			get
-			{
-				return BloomFileLocator.GetBestLocalizedFile(_storage.FolderPath.CombineForPath("ReadMe-en.htm"));
-			}
-		}
+
+		public string AboutBookHtmlPath => BloomFileLocator.GetBestLocalizedFile(Storage.FolderPath.CombineForPath("ReadMe-en.htm"));
+
+		public string AboutBookMdPath => BloomFileLocator.GetBestLocalizedFile(Storage.FolderPath.CombineForPath("ReadMe-en.md"));
 
 		public void InitCoverColor()
 		{
