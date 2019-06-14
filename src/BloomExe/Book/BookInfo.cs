@@ -1051,12 +1051,16 @@ namespace Bloom.Book
 				var features = new List<string>(3);
 				if (Feature_Blind) features.Add("blind");
 				if (Feature_SignLanguage) features.Add("signLanguage");
+				if (Feature_TalkingBook) features.Add("talkingBook");
+				if (Feature_Motion) features.Add("motion");
 				return features.ToArray();
 			}
 			set
 			{
 				Feature_Blind = value.Contains("blind");
 				Feature_SignLanguage = value.Contains("signLanguage");
+				Feature_TalkingBook = value.Contains("talkingBook");
+				Feature_Motion = value.Contains("motion");
 			}
 		}
 
@@ -1064,6 +1068,11 @@ namespace Bloom.Book
 		public bool Feature_Blind { get; set; }
 		[JsonIgnore]
 		public bool Feature_SignLanguage { get; set; }
+		[JsonIgnore]
+		public bool Feature_TalkingBook { get; set; }
+		[JsonIgnore]
+		public bool Feature_Motion { get; set; }
+
 	}
 
 	/// <summary>

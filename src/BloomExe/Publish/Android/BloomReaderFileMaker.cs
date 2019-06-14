@@ -75,6 +75,13 @@ namespace Bloom.Publish.Android
 			builder.Append("]");
 			File.WriteAllText(jsonPath, builder.ToString());
 
+			// We have to do this before removeUnwantedContent, which currently strips out the bloom-imageDescription
+			// stuff (though somehow the audio for it plays in BR). We rule out xmatter pages, because some versions
+			// of xmatter always have image description nodes.
+			modifiedBook.Storage.BookInfo.MetaData.Feature_Blind =
+				modifiedBook.RawDom.SelectSingleNode(".//*[contains(@class, 'bloom-page') and not(@data-xmatter-page)]//*[contains(@class, 'bloom-imageDescription')]") != null;
+			modifiedBook.Storage.BookInfo.MetaData.Feature_Motion = modifiedBook.UseMotionModeInBloomReader;
+
 			// Do this after making questions, as they satisfy the criteria for being 'blank'
 			using (var helper = new PublishHelper())
 			{
@@ -89,7 +96,11 @@ namespace Bloom.Publish.Android
 			if (RobustFile.Exists(Path.Combine(bookFolderPath, "placeHolder.png")))
 				RobustFile.Delete(Path.Combine(bookFolderPath, "placeHolder.png"));
 			modifiedBook.Storage.CleanupUnusedAudioFiles(isForPublish: true);
+			modifiedBook.Storage.BookInfo.MetaData.Feature_TalkingBook = modifiedBook.HasAudio();
 			modifiedBook.Storage.CleanupUnusedVideoFiles();
+			var videoFolderPath = BookStorage.GetVideoFolderPath(modifiedBook.FolderPath);
+			modifiedBook.Storage.BookInfo.MetaData.Feature_SignLanguage =
+				Directory.Exists(videoFolderPath) && Directory.EnumerateFiles(videoFolderPath).Any();
 
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
 
