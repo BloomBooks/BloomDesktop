@@ -111,6 +111,13 @@ namespace BloomTests.Publish
 					{
 						Assert.AreNotEqual(-1, zip.FindEntry(Path.GetFileName(name), true), "expected " + name + " to be part of .bloomd zip");
 					}
+					// A convenient place to check defaults on meta.json
+					var meta = BookMetaData.FromString(GetEntryContents(zip, "meta.json"));
+					Assert.That(meta.Feature_SignLanguage, Is.False);
+					Assert.That(meta.Feature_Blind, Is.False);
+					Assert.That(meta.Feature_TalkingBook, Is.False);
+					Assert.That(meta.Feature_Motion, Is.False);
+					Assert.That(meta.BloomdVersion, Is.EqualTo(1));
 				});
 		}
 
@@ -194,6 +201,97 @@ namespace BloomTests.Publish
 					AssertThatXmlIn.Dom(htmlDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='nonsence.svg']", 0);
 					AssertThatXmlIn.Dom(htmlDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='rubbish']", 0);
 					AssertThatXmlIn.Dom(htmlDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='license.png']", 1);
+				});
+		}
+
+		/// <summary>
+		/// We test in IncludesWantedFiles that by default all metadata features are off.
+		/// We test in HandlsVideosAndModifiesSrcAttribute that Feature_SignLanguage is set when appropriate.
+		/// This method needs to handle motion, image descriptions, and talking book.
+		/// </summary>
+		[Test]
+		public void CompressBookForDevice_SetsExpectedFeatures()
+		{
+			const string imgsToRemove = "<img src='nonsence.svg'/><img src=\"rubbish\"/>";
+			var htmlTemplate = @"
+<html>
+<body data-bfautoadvance='landscape;bloomReader' data-bfcanrotate='allOrientations;bloomReader' data-bfplayanimations='landscape;bloomReader' data-bfplaymusic='landscape;bloomReader' data-bfplaynarration='landscape;bloomReader' data-bffullscreenpicture='landscape;bloomReader'>
+	<div class='bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual' data-page='' id='3dba74c5-adc9-4c0d-9934-e8484fb6e2e2' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398382' data-page-number='4' lang=''>
+		<div class='marginBox'>
+            <div style='min-height: 42px;' class='split-pane horizontal-percent'>
+                <div class='split-pane-component position-top' style='bottom: 50%'>
+                    <div class='split-pane-component-inner'>
+                        <div title='aor_BRD11.png 41.36 KB 1500 x 581 716 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer bloom-leadingElement'>
+                            <img data-license='cc-by-sa' data-creator='' data-copyright='Copyright SIL International 2009' src='aor_BRD11.png' alt='Two birds on a branch with beak tips touching'></img>
+
+                            <div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement'>
+                                <div data-audiorecordingmode='Sentence' data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
+                                    <p><span data-duration='3.984739' id='aace3497-02e1-46e7-9af3-52bb74010fcc' class='audio-sentence' recordingmd5='undefined'>Two birds on a branch with beak tips touching</span></p>
+                                </div>
+
+                                <div data-languagetipcontent='German, Standard' style='' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-contentNational2' contenteditable='true' lang='de'>
+                                    <p></p>
+                                </div>
+
+                                <div data-languagetipcontent='español' style='' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-contentNational1' contenteditable='true' lang='es'>
+                                    <p></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class='split-pane-divider horizontal-divider' style='bottom: 50%'></div>
+
+                <div class='split-pane-component position-bottom' style='height: 50%'>
+                    <div class='split-pane-component-inner'>
+                        <div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto'>
+                            <div data-audiorecordingmode='Sentence' data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 36px;' class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
+                                <p><span data-duration='3.070453' id='i2335f5ae-2cff-4029-a85c-951cc33256a4' class='audio-sentence' recordingmd5='undefined'>These two birds look very affectionate.</span></p>
+                            </div>
+
+                            <div data-languagetipcontent='German, Standard' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 36px;' class='bloom-editable normal-style bloom-contentNational2' contenteditable='true' lang='de'>
+                                <p></p>
+                            </div>
+
+                            <div data-languagetipcontent='español' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable normal-style bloom-contentNational1' contenteditable='true' lang='es'>
+                                <p></p>
+                            </div>
+
+                            <div style='' class='bloom-editable normal-style' contenteditable='true' lang='z'>
+                                <p></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</div>
+</body>
+</html>";
+			var htmlOriginal = string.Format(htmlTemplate, imgsToRemove);
+			var testBook = CreateBookWithPhysicalFile(htmlOriginal, bringBookUpToDate: true);
+
+			TestHtmlAfterCompression(htmlOriginal,
+				actionsOnFolderBeforeCompressing:
+				bookFolderPath =>
+				{
+					// The page above expects these two audio files to exist. Their content doesn't matter.
+					var audioFolder = Path.Combine(bookFolderPath, "audio");
+					Directory.CreateDirectory(audioFolder);
+					File.WriteAllText(Path.Combine(audioFolder, "aace3497-02e1-46e7-9af3-52bb74010fcc.wav"),
+						@"this is a fake for testing");
+					File.WriteAllText(Path.Combine(audioFolder, "i2335f5ae-2cff-4029-a85c-951cc33256a4.wav"),
+						@"this is a fake for testing");
+				},
+
+				assertionsOnZipArchive: paramObj =>
+				{
+					var zip = paramObj.ZipFile;
+					var meta = BookMetaData.FromString(GetEntryContents(zip, "meta.json"));
+					Assert.That(meta.Feature_TalkingBook, Is.True);
+					Assert.That(meta.Feature_Blind, Is.True);
+					Assert.That(meta.Feature_Motion, Is.True);
 				});
 		}
 
@@ -700,6 +798,9 @@ namespace BloomTests.Publish
 					var entry = zip.GetEntry(srcAttr);
 					// 100000 here is a semi-random quantification of 'considerably'.
 					Assert.Less(entry.Size, originalCrowSize - 100000, "Should have trimmed the file considerably.");
+					var meta = BookMetaData.FromString(GetEntryContents(zip,"meta.json"));
+					Assert.That(meta.Feature_SignLanguage, Is.True);
+
 				},
 				assertionsOnResultingHtmlString: html =>
 				{
