@@ -17,6 +17,15 @@
 @ToggleWidth: 60px;
 @ToggleBorderThickness: 2px;
 
+.origami-ui {
+    visibility: hidden;
+    font-family: @UIFontStack;
+}
+
+.origami-layout-mode .origami-ui {
+    visibility: visible;
+}
+
 .split-pane-divider {
     visibility: visible !important; // should be enough to include this after origami, but make sure
 }

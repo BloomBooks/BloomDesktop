@@ -6,18 +6,10 @@
 // origamiEditing.less. The initial goal of splitting them up was to avoid
 // getting the origami editing behaviors while reading in BloomReader.
 @import (inline) "../../lib/split-pane/split-pane.css";
-@import "../../bloomUI.less";
+@import (reference) "../../bloomUI.less"; // importing by reference only brings in the constants
 
 @flowerPetalGrey: #7e7e7e; // shouldn't this just be @bloom-gray?
 @inactiveColor: @bloom-buff;
-
-.origami-ui {
-    visibility: hidden;
-    font-family: @UIFontStack;
-}
-.origami-layout-mode .origami-ui {
-    visibility: visible;
-}
 
 .split-pane > .split-pane-component {
     overflow: hidden !important; // override split-pane.css rules that call for overflow: auto

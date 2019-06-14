@@ -1,0 +1,44 @@
+@import "../../bloomUI.less";
+
+// These rules are only for editing legacy quiz pages (version <= 4.5).
+@quizContentPadding: 10px;
+
+// These rules are only for legacy comprehension quiz pages
+.enterprise-off .bloom-page.questions {
+    .bloom-translationGroup:before {
+        color: red;
+        background-color: @bloom-lightgray;
+        text-align: center;
+        content: "This collection is not Bloom Enterprise-enabled";
+    }
+}
+
+.bloom-page.questions {
+    background-color: @bloom-blue;
+
+    .quizIntructions {
+        background-color: @bloom-lightgray;
+        font-size: 10pt;
+        font-family: @UIFontStack;
+        // Top and bottom padding are set to 0 so as not to clip scrolled text at the bottom.
+        // Left and right padding of 4px gives a nice appearance,
+        // but still allows room for the text on (smaller) Device layouts.
+        padding: 0 4px 0 4px;
+        height: 100%;
+        p + h1 {
+            margin-top: 1em;
+        }
+        .key {
+            font-style: italic;
+        }
+        overflow-y: scroll;
+    }
+    .bloom-translationGroup {
+        height: 100%;
+        background-color: white;
+    }
+    .quizContents {
+        padding: @quizContentPadding;
+        box-sizing: border-box;
+    }
+}
