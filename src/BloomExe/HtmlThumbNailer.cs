@@ -385,7 +385,7 @@ namespace Bloom
 								return new Bitmap(image);
 							}
 
-							var newLastLine = GetLastLineOfImage(coverColor, top, bottom, image);
+							var newLastLine = GetLastLineOfImage(coverColor, Math.Min(top, image.Height), Math.Min(bottom, image.Height), image);
 
 							// If nothing has been drawn yet, we want to keep trying until something is.
 							// If something has been drawn, we want to keep trying until a cycle when
