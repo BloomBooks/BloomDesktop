@@ -504,6 +504,15 @@ namespace Bloom.Book
 				form = HttpUtility.HtmlEncode(form);
 			}
 			node.InnerXml = form;
+			if (node.Attributes["data-textonly"]?.Value == "true")
+			{
+				// In most contexts, it's fine for Bloom to wrap the content of a div in P elements and so forth.
+				// If we want to synchronize to something like a text element in an SVG, the result must be only
+				// text.
+				// This operation looks like a no-op, but actually it removes any markup and just keeps the text
+				// that was synchronized.
+				node.InnerText = node.InnerText;
+			}
 		}
 
 		public void AddDataDivElementContainingBookVariable(string key, string lang, string form)
