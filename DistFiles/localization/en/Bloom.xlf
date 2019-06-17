@@ -984,6 +984,10 @@
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
       </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true">
+        <source xml:lang="en">This kind of page will be included only in digital book outputs, not in PDF.</source>
+        <note>ID: EditTab.AddPageDialog.DigitalPage</note>
+      </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
         <source xml:lang="en">Could not find {0}</source>
         <note>ID: EditTab.AddPageDialog.NoTemplate</note>
@@ -4258,6 +4262,10 @@ Do you want to go ahead?</note>
         <source xml:lang="en">For use with Landscape orientation.</source>
         <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
         <note>New string in Bloom 4.2</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
+        <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>

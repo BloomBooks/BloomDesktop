@@ -36,8 +36,8 @@ export function showAddPageDialog(forChooseLayout: boolean) {
             autoOpen: false,
             resizable: false,
             modal: true,
-            width: 795,
-            height: 550,
+            width: 845,
+            height: 650,
             position: {
                 my: "left bottom",
                 at: "left bottom",
