@@ -13,6 +13,8 @@ export const MuiCheckbox: React.FunctionComponent<{
     disabled?: boolean;
     alreadyLocalized?: boolean;
     onCheckChanged: (v: boolean | undefined) => void;
+    l10nParam0?: string;
+    l10nParam1?: string;
 }> = props => {
     const [previousTriState, setPreviousTriState] = useState<
         boolean | undefined
@@ -21,7 +23,9 @@ export const MuiCheckbox: React.FunctionComponent<{
     const localizedLabel = useL10n(
         props.label,
         props.alreadyLocalized ? null : props.l10nKey,
-        props.l10nComment
+        props.l10nComment,
+        props.l10nParam0,
+        props.l10nParam1
     );
 
     return (
