@@ -1174,8 +1174,9 @@ namespace Bloom
 			GeckoDocument doc = WebBrowser.Document;
 			var head = doc.GetElementsByTagName("head").First();
 			GeckoScriptElement script = doc.CreateElement("script") as GeckoScriptElement;
-			script.Type = "text/javascript";
-			script.Src = filename;
+			// Geckofx60 doesn't implement the GeckoScriptElement .Type and .Src properties
+			script.SetAttribute("type", "text/javascript");
+			script.SetAttribute("src", filename);
 			head.AppendChild(script);
 		}
 
@@ -1185,8 +1186,9 @@ namespace Bloom
 			GeckoDocument doc = WebBrowser.Document;
 			var head = doc.GetElementsByTagName("head").First();
 			GeckoScriptElement script = doc.CreateElement("script") as GeckoScriptElement;
-			script.Type = "text/javascript";
-			script.Text = content;
+			// Geckofx60 doesn't implement the GeckoScriptElement .Type and .Text properties
+			script.SetAttribute("type", "text/javascript");
+			script.TextContent = content;
 			head.AppendChild(script);
 		}
 
