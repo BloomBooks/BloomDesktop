@@ -1,0 +1,92 @@
+.progress-dialog {
+    .content {
+        #please_help_us {
+            flex: 0 0 100%;
+            margin-top: 8px;
+            margin-bottom: 25px;
+        }
+        #row2 {
+            display: flex;
+            flex-direction: row;
+            .column1 {
+                margin-right: 30px;
+                float: left;
+
+                width: 350px;
+                .what_were_you_doing {
+                    margin-bottom: 16px;
+                    width: 100%;
+                }
+                #how_much_group {
+                    height: 4em;
+                    margin-bottom: 8px;
+                    #slider {
+                        margin-top: -6px;
+                        .MuiSlider-mark {
+                            width: 6px;
+                            height: 6px;
+                            //border-radius: 4px;
+                            margin-top: -2px;
+                        }
+                        .MuiSlider-mark,
+                        // .MuiSlider-track,
+                         .MuiSlider-rail {
+                            background-color: darkgray;
+                        }
+                    }
+                    #scale_labels {
+                        margin-top: -11px;
+                        display: flex;
+                        :first-child {
+                            flex-grow: 1;
+                        }
+                    }
+                }
+                .email {
+                    width: 250px;
+                    input {
+                        padding: 15px;
+                        font-family: "roboto";
+                    }
+                }
+            }
+            .column2 {
+                margin-top: -12px; // want first checkbox to line up with the start of the other column
+                label {
+                    display: block;
+                }
+                img {
+                    margin-left: 30px; // indent
+                    width: 200px;
+                    height: 140px;
+                    background-color: #404040;
+                    margin-bottom: 32px;
+                }
+                #privacy {
+                    width: 250px;
+                    p {
+                        // there's got to be a better way, but this is the best I can come up with
+                        margin-left: 29px;
+                        margin-top: -27px;
+                    }
+                    button {
+                        padding-left: 0;
+                        margin-left: 29px;
+                    }
+                }
+            }
+        }
+        .drawAttention {
+            animation: shakeMe 75ms 5 ease-in alternate;
+        }
+        @keyframes shakeMe {
+            0% {
+                margin-left: 10px;
+            }
+
+            100% {
+                margin-left: 0;
+            }
+        }
+    }
+}
