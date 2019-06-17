@@ -306,6 +306,12 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Book\LicenseChecker.cs" />
+    <Compile Include="MiscUI\BrowserDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MiscUI\BrowserDialog.Designer.cs">
+      <DependentUpon>BrowserDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="CLI\CreateArtifactsCommand.cs" />
     <Compile Include="Collection\WritingSystem.cs" />
     <Compile Include="Publish\Android\AndroidPublishSettings.cs" />
@@ -629,6 +635,8 @@
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
     <Compile Include="WebLibraryIntegration\IProgressDialog.cs" />
     <Compile Include="web\controllers\AudioSegmentationApi.cs" />
+    <Compile Include="web\controllers\ProblemReportApi.cs" />
+    <Compile Include="web\controllers\BrowserDialogApi.cs" />
     <Compile Include="web\controllers\CollectionSettingsApi.cs" />
     <Compile Include="web\controllers\AccessibilityCheckApi.cs" />
     <Compile Include="Book\AccessibilityCheckers.cs" />
@@ -850,6 +858,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\BloomIntegrityDialog.resx">
       <DependentUpon>BloomIntegrityDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MiscUI\BrowserDialog.resx">
+      <DependentUpon>BrowserDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\HtmlLinkDialog.resx">
       <DependentUpon>HtmlLinkDialog.cs</DependentUpon>

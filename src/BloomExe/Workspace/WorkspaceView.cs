@@ -36,7 +36,6 @@ namespace Bloom.Workspace
 		private readonly SelectedTabAboutToChangeEvent _selectedTabAboutToChangeEvent;
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
-		private readonly ProblemReporterDialog.Factory _problemReportDialogFactory;
 		private readonly CollectionSettings _collectionSettings;
 #if CHORUS
 			private readonly ChorusSystem _chorusSystem;
@@ -79,7 +78,6 @@ namespace Bloom.Workspace
 							 SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
 							LocalizationChangedEvent localizationChangedEvent,
-							ProblemReporterDialog.Factory problemReportDialogFactory,
 							//ChorusSystem chorusSystem,
 							ILocalizationManager localizationManager,
 							CollectionSettings collectionSettings
@@ -91,7 +89,7 @@ namespace Bloom.Workspace
 			_selectedTabAboutToChangeEvent = selectedTabAboutToChangeEvent;
 			_selectedTabChangedEvent = selectedTabChangedEvent;
 			_localizationChangedEvent = localizationChangedEvent;
-			_problemReportDialogFactory = problemReportDialogFactory;
+
 			_collectionSettings = collectionSettings;
 			//_chorusSystem = chorusSystem;
 			_localizationManager = localizationManager;
@@ -920,11 +918,12 @@ namespace Bloom.Workspace
 		private void StartProblemReport(object sender, EventArgs e)
 		{
 			Application.Idle -= StartProblemReport;
-			using (var dlg = _problemReportDialogFactory(this))
-			{
-				dlg.SetDefaultIncludeBookSetting(true);
-				dlg.ShowDialog();
-			}
+//			var rootFile = BloomFileLocator.GetBrowserFile(false,  "problemDialog", "loader.html");
+//			using (var dlg = new BrowserDialog(rootFile.ToLocalhost()))
+//			{
+//				dlg.ShowDialog();
+//			}
+			ProblemReportApi.ShowProblemDialog(this);
 		}
 
 		public void SetStateOfNonPublishTabs(bool enable)
