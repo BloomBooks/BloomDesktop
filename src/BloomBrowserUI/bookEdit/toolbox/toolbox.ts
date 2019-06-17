@@ -53,6 +53,12 @@ export interface ITool {
     makeRootElement(): HTMLDivElement;
 }
 
+// The newer React tools also implement this interface
+export interface IReactTool {
+    // toolbox beginAddTool() calls this to determine if this is a Bloom Enterprise only tool
+    toolRequiresEnterprise(): boolean;
+}
+
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
 export class ToolBox {
     public toolboxIsShowing() {
@@ -812,9 +818,16 @@ function beginAddTool(
         const header = $(
             "<h3 data-i18n='" + i18Id + "'>" + toolLabel + "</h3>"
         );
+        const reactTool = (tool as unknown) as IReactTool;
+        const requiresEnterprise = reactTool
+            ? reactTool.toolRequiresEnterprise()
+            : false;
         // must both have this attr and value for removing if disabled.
         header.attr("data-toolId", toolName);
         content.attr("data-toolId", toolName);
+        if (requiresEnterprise) {
+            header.addClass("requiresEnterprise");
+        }
         loadToolboxTool(header, content, toolId, openTool);
         if (whenLoaded) {
             whenLoaded();

@@ -843,6 +843,10 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return false;
     }
 
+    public toolRequiresEnterprise(): boolean {
+        return true;
+    }
+
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         const result = $.Deferred<void>();

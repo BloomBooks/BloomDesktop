@@ -27,6 +27,7 @@ namespace BloomTests.web
 		private TemporaryFolder _folder;
 		private BloomFileLocator _fileLocator;
 		private string _collectionPath;
+		private ILocalizationManager _localizationManager;
 
 		[SetUp]
 		public void Setup()
@@ -35,7 +36,7 @@ namespace BloomTests.web
 			_folder = new TemporaryFolder("BloomServerTests");
 			LocalizationManager.UseLanguageCodeFolders = true;
 			var localizationDirectory = FileLocationUtilities.GetDirectoryDistributedWithApplication("localization");
-			LocalizationManager.Create(TranslationMemory.XLiff, "fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom", null, "", new string[] { });
+			_localizationManager = LocalizationManager.Create(TranslationMemory.XLiff, "fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom", null, "", new string[] { });
 
 
 			ErrorReport.IsOkToInteractWithUser = false;
@@ -48,6 +49,8 @@ namespace BloomTests.web
 		[TearDown]
 		public void TearDown()
 		{
+			_localizationManager.Dispose();
+			LocalizationManager.ForgetDisposedManagers();
 			_folder.Dispose();
 			Logger.ShutDown();
 		}

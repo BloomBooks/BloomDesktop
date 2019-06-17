@@ -385,7 +385,10 @@ namespace Bloom
 								return new Bitmap(image);
 							}
 
-							var newLastLine = GetLastLineOfImage(coverColor, top, bottom, image);
+							// I'm not sure how top or bottom can get to be greater than image.Height, but if they do,
+							// it causes a crash. It makes no sense to look for the last line drawn beyond the end of the
+							// image, so if something tries, just start looking at the bottom.
+							var newLastLine = GetLastLineOfImage(coverColor, Math.Min(top, image.Height), Math.Min(bottom, image.Height), image);
 
 							// If nothing has been drawn yet, we want to keep trying until something is.
 							// If something has been drawn, we want to keep trying until a cycle when

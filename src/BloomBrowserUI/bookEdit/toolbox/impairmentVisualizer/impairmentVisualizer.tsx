@@ -1,8 +1,7 @@
 import * as React from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
-import { Div, Label } from "../../../react_components/l10nComponents";
+import { Div } from "../../../react_components/l10nComponents";
 import { BloomApi } from "../../../utils/bloomApi";
-import { ToolBox, ITool } from "../toolbox";
 import { ApiBackedCheckbox } from "../../../react_components/apiBackedCheckbox";
 import "./impairmentVisualizer.less";
 import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
@@ -34,7 +33,7 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
 
     public render() {
         return (
-            <RequiresBloomEnterpriseWrapper className="impairmentVisualizerOuterWrapper">
+            <RequiresBloomEnterpriseWrapper>
                 <div className="impairmentVisualizerBody">
                     <div className="impairmentVisualizerInnerWrapper">
                         <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
@@ -298,5 +297,9 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
 
     public isExperimental(): boolean {
         return false;
+    }
+
+    public toolRequiresEnterprise(): boolean {
+        return true;
     }
 }

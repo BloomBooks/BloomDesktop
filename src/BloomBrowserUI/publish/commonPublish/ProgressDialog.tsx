@@ -47,16 +47,13 @@ export const ProgressDialog: React.FunctionComponent<{
 
     // every time there are new messages, scroll to the bottom by scrolling into view
     // an empty element that is always at the end.
-    useLayoutEffect(
-        () => {
-            window.setTimeout(() => {
-                if (messageEndRef.current) {
-                    messageEndRef.current!.scrollIntoView();
-                }
-            }, 100);
-        },
-        [props.messages]
-    ); // do this every time the message text changes
+    useLayoutEffect(() => {
+        window.setTimeout(() => {
+            if (messageEndRef.current) {
+                messageEndRef.current!.scrollIntoView();
+            }
+        }, 100);
+    }, [props.messages]); // do this every time the message text changes
 
     return (
         <Dialog
@@ -71,21 +68,12 @@ export const ProgressDialog: React.FunctionComponent<{
             }}
         >
             <DialogTitle
-                style={
-                    props.errorEncountered
-                        ? {
-                              backgroundColor: (theme as any).palette.warning
-                                  .main
-                          }
-                        : {
-                              backgroundColor: "white"
-                          }
-                }
+                className={props.errorEncountered ? "title-bar-error-mode" : ""}
             >
                 {props.heading || "Progress"}
             </DialogTitle>
             {somethingStillGoing && (
-                <CircularProgress className={"circle-progress"} />
+                <CircularProgress size={20} className={"circle-progress"} />
             )}
             <DialogContent style={{ width: "500px", height: "300px" }}>
                 <Typography className="instruction">

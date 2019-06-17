@@ -697,6 +697,10 @@
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
+        <source xml:lang="en">Show translations which have not been approved yet</source>
+        <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton">
         <source xml:lang="en">Make Bloom Pack</source>
         <note>ID: CollectionTab.MakeBloomPackButton</note>
@@ -817,6 +821,11 @@
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
+      </trans-unit>
+      <trans-unit id="Common.LearnMore" sil:dynamic="true">
+        <source xml:lang="en">Learn More</source>
+        <note>ID: Common.LearnMore</note>
+        <note>This is the same as Settings.Enterprise.LearnMore</note>
       </trans-unit>
       <trans-unit id="Common.BackButton">
         <source xml:lang="en">Back</source>
@@ -1260,6 +1269,18 @@
         <source xml:lang="en">Quiz</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.quiz-style</note>
         <note>Special template</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizAnswer-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Answer</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizAnswer-style</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizHeader-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Header</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizHeader-style</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizQuestion-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Question</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizQuestion-style</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true">
         <source xml:lang="en">Title On Cover</source>
@@ -2833,6 +2854,38 @@
       <trans-unit id="PublishTab.AdobeReaderControl.UnknownError">
         <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en">Sharing .bloomd Files</source>
+        <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
+        <note></note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
+        <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
+        <note>ID: PublishTab.Android.BloomD.Hint</note>
+        <note></note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en"> USB is Difficult</source>
+        <note>ID: PublishTab.Android.USB.Hint.Heading</note>
+        <note></note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
+        <source xml:lang="en">To Send via USB, you may need to get the right
+                            cable, install phone drivers on your computer, or
+                            modify settings on your phone.</source>
+        <note>ID: PublishTab.Android.USB.Hint</note>
+        <note></note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en">No Wi-Fi Network?</source>
+        <note>ID: PublishTab.Android.WiFi.Hint.Heading</note>
+        <note></note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
+        <source xml:lang="en">There are several ways to start a temporary one.</source>
+        <note>ID: </note>
+        <note>This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true">
         <source xml:lang="en">About Motion Books</source>

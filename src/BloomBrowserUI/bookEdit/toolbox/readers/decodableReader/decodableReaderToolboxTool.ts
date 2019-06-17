@@ -8,8 +8,6 @@ import {
 } from "../readerToolsModel";
 import { beginInitializeDecodableReaderTool } from "../readerTools";
 import { ITool } from "../../toolbox";
-import { ToolBox } from "../../toolbox";
-import { theOneLibSynphony } from "./../libSynphony/synphony_lib";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 import { BloomApi } from "../../../../utils/bloomApi";
 

@@ -267,8 +267,8 @@ export class LocalizableElement<
             (controlIsEnabled
                 ? this.state.tipEnabledTranslation
                 : this.state.tipDisabledTranslation
-                    ? this.state.tipDisabledTranslation
-                    : this.state.tipEnabledTranslation) || ""
+                ? this.state.tipDisabledTranslation
+                : this.state.tipEnabledTranslation) || ""
         );
     }
 
@@ -379,7 +379,7 @@ export class Div extends LocalizableElement<
     }
 }
 
-export class String extends LocalizableElement<
+export class LocalizedString extends LocalizableElement<
     ILocalizationProps,
     ILocalizationState
 > {

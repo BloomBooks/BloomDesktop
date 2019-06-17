@@ -93,7 +93,8 @@ namespace Bloom
 			// We use crowdin for localizing, and they require a directory per language setup.
 			LocalizationManager.UseLanguageCodeFolders = true;
 			// We want only good localizations in Bloom.
-			LocalizationManager.ReturnOnlyApprovedStrings = true;
+			// REVIEW: should the setting be used only for alpha and beta?
+			LocalizationManager.ReturnOnlyApprovedStrings = !Settings.Default.ShowUnapprovedLocalizations;
 
 #if DEBUG
 			//MessageBox.Show("Attach debugger now");
@@ -459,7 +460,7 @@ namespace Bloom
 			}
 		}
 
-		public static void RestartBloom(string args = null)
+		public static void RestartBloom(bool hardExit, string args = null)
 		{
 			try
 			{
@@ -470,9 +471,16 @@ namespace Bloom
 
 				//give some time for that process.start to finish staring the new instance, which will see
 				//we have a mutex and wait for us to die.
-
+				
 				Thread.Sleep(2000);
-				Application.Exit(); // Shut this instance down cleanly
+				if (hardExit || _projectContext?.ProjectWindow == null)
+				{
+					Application.Exit(); 
+				}
+				else
+				{
+					_projectContext.ProjectWindow.Close();
+				}
 			}
 			catch (Exception e)
 			{

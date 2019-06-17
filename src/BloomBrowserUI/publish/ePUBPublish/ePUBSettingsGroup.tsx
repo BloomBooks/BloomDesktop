@@ -2,7 +2,7 @@ import React = require("react");
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import { BloomApi } from "../../utils/bloomApi";
 import { Typography, FormGroup } from "@material-ui/core";
-import { String } from "../../react_components/l10nComponents";
+import { LocalizedString } from "../../react_components/l10nComponents";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { Link } from "../../react_components/link";
 import { SettingsGroup } from "../commonPublish/BasePublishScreen";

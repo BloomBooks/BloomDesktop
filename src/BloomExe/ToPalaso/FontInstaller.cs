@@ -46,7 +46,7 @@ namespace Bloom.ToPalaso
 			{
 				Process.Start(info);
 				if (needsRestart)
-					Program.RestartBloom();
+					Program.RestartBloom(true);
 				return true;
 			}
 			// I hate catching 'Exception' but the one that is likely to happen, the user refused the privilege escalation

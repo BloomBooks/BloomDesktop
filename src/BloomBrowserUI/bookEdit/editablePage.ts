@@ -44,7 +44,8 @@ var styleSheets = [
     "bookEdit/TextBoxProperties/TextBoxProperties.css",
     "bookEdit/css/bloomDialog.css",
     "lib/long-press/longpress.css",
-    "bookEdit/toolbox/talkingBook/audioRecording.css"
+    "bookEdit/toolbox/talkingBook/audioRecording.css",
+    "bookEdit/css/legacyQuizEditing.css"
 ];
 
 // This is using an implementation secret of a particular version of ckeditor; but it seems to
