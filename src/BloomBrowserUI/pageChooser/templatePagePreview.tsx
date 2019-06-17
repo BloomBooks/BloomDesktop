@@ -11,6 +11,7 @@ interface ITemplatePagePreviewProps {
     caption?: string;
     imageSource?: string;
     pageDescription?: string;
+    pageIsDigitalOnly: boolean;
     pageIsEnterpriseOnly?: boolean;
     templateBookPath: string;
     pageId: string;
@@ -64,9 +65,15 @@ export const TemplatePagePreview: React.FunctionComponent<
             <Div className="previewCaption" l10nKey={captionKey}>
                 {props.caption}
             </Div>
-            <Div className="DescriptionText" l10nKey={descriptionKey}>
-                {props.pageDescription}
-            </Div>
+            <div id="previewDescriptionTextContainer">
+                <Div l10nKey={descriptionKey}>{props.pageDescription}</Div>
+                {props.pageIsDigitalOnly && (
+                    <Div l10nKey="EditTab.AddPageDialog.DigitalPage">
+                        This kind of page will be included only in digital book
+                        outputs, not in PDF.
+                    </Div>
+                )}
+            </div>
             {props.forChangeLayout &&
                 !enterpriseSubscriptionFault(props.pageIsEnterpriseOnly) && (
                     <div>
