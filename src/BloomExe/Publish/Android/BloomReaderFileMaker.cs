@@ -75,6 +75,17 @@ namespace Bloom.Publish.Android
 			builder.Append("]");
 			File.WriteAllText(jsonPath, builder.ToString());
 
+			// Right here, let's maintain the history of what the BloomdVersion signifies to a reader.
+			// Version 1 (as opposed to no BloomdVersion field): the bookFeatures property may be
+			// used to report features analytics (with earlier bloomd's, the reader must use its own logic)
+			modifiedBook.Storage.BookInfo.MetaData.BloomdVersion = 1;
+
+			// We have to do this before removeUnwantedContent, which currently strips out the bloom-imageDescription
+			// stuff (though somehow the audio for it plays in BR). We rule out xmatter pages, because some versions
+			// of xmatter always have image description nodes.
+			PublishHelper.SetBlindFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
+			PublishHelper.SetMotionFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
+
 			// Do this after making questions, as they satisfy the criteria for being 'blank'
 			using (var helper = new PublishHelper())
 			{
@@ -89,7 +100,9 @@ namespace Bloom.Publish.Android
 			if (RobustFile.Exists(Path.Combine(bookFolderPath, "placeHolder.png")))
 				RobustFile.Delete(Path.Combine(bookFolderPath, "placeHolder.png"));
 			modifiedBook.Storage.CleanupUnusedAudioFiles(isForPublish: true);
+			PublishHelper.SetTalkingBookFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
 			modifiedBook.Storage.CleanupUnusedVideoFiles();
+			PublishHelper.SetSignLanguageFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
 
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
 
