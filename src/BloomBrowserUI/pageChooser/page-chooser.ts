@@ -120,6 +120,9 @@ export class PageChooser {
                     caption: englishCaptionText,
                     imageSource: imgSrc,
                     pageDescription: englishPageDescription,
+                    pageIsDigitalOnly: this.isDigitalOnly(
+                        this._selectedGridItem[0]
+                    ),
                     pageIsEnterpriseOnly: isEnterprise,
                     templateBookPath: this._selectedGridItem
                         .closest(".group")
@@ -173,6 +176,14 @@ export class PageChooser {
                 currentTranslationGroupCount ||
             selectedTemplatePictureCount < currentPictureCount ||
             selectedTemplateVideoCount < currentVideoCount
+        );
+    }
+
+    private isDigitalOnly(element: HTMLElement): boolean {
+        const classList = element.classList;
+        return (
+            classList.contains("bloom-nonprinting") &&
+            !classList.contains("bloom-noreader")
         );
     }
 
@@ -524,6 +535,15 @@ export class PageChooser {
             $(".pageDescription", currentGridItemHtml)
                 .first()
                 .text(pageDescription);
+
+            // We can use these classes to determine how to display the preview.
+            // Currently, this is used to determine if a template page is digital-only
+            // (meaning not for PDF publication) which results in a message to the user.
+            // See the classes referenced in isDigitalOnly().
+            Array.from(div.classList).forEach(cssClass => {
+                if (cssClass.startsWith("bloom-"))
+                    currentGridItemHtml.addClass(cssClass);
+            });
 
             const pageLabel = $(".pageLabel", div)
                 .first()
