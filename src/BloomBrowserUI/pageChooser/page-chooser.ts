@@ -1,24 +1,27 @@
 ﻿/// <reference path="../lib/localizationManager/localizationManager.ts" />
-import * as $ from "jquery";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
-import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import axios from "axios";
 import { BloomApi } from "../utils/bloomApi";
 import "errorHandler";
-import TemplatePagePreview from "./templatePagePreview";
+import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import { getEditViewFrameExports } from "../bookEdit/js/bloomFrames";
 import { ThemeProvider } from "@material-ui/styles";
 import theme from "../bloomMaterialUITheme";
 
-$(window).ready(() => {
+document.addEventListener("DOMContentLoaded", () => {
     BloomApi.get("pageTemplates", result => {
         const templatesJSON = result.data;
         const pageChooser = new PageChooser(JSON.stringify(templatesJSON));
         pageChooser.loadPageGroups();
     });
 });
+
+interface IGroupData {
+    templateBookFolderUrl: string;
+    templateBookPath: string;
+}
 
 // latest version of the expected JSON initialization string (from PageTemplatesApi.HandleTemplatesRequest)
 // "{\"defaultPageToSelect\":\"(guid of template page)\",
@@ -27,20 +30,19 @@ $(window).ready(() => {
 //                     \"templateBookUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryGroups/Templates/Basic Book/Basic Book.htm\"}]}"
 
 export class PageChooser {
-    private _templateBookUrls: string;
+    private _templateBookUrls: Array<IGroupData>;
     private _defaultPageToSelect: string;
     private _orientation: string;
-    private _selectedGridItem: JQuery;
+    private _selectedGridItem: HTMLElement | undefined;
     private _indexOfPageToSelect: number;
-    private _scrollingDiv: JQuery;
-    private _scrollTopOfTheScrollingDiv: number;
+    private _scrollingDiv: HTMLDivElement;
     private _forChooseLayout: boolean;
 
     constructor(initializationJsonString: string) {
         let initializationObject: object;
         if (initializationJsonString) {
             try {
-                initializationObject = $.parseJSON(initializationJsonString);
+                initializationObject = JSON.parse(initializationJsonString);
             } catch (e) {
                 alert("Received bad JSON string: " + e);
                 return;
@@ -54,22 +56,38 @@ export class PageChooser {
             alert("Expected url in PageChooser ctor!");
         }
 
-        this._selectedGridItem = $();
+        this._selectedGridItem = undefined;
         this._indexOfPageToSelect = 0;
-        this._scrollTopOfTheScrollingDiv = 0;
     }
 
-    private thumbnailClickHandler(clickedDiv, evt): void {
-        // 'div' is an .invisibleThumbCover
+    // "Safely" from a type-checking point of view. The calling code is responsible
+    // to make sure that empty string is handled.
+    private getTextOfFirstElementByClassNameSafely(
+        element: Element,
+        className: string
+    ): string {
+        if (!element) {
+            return "";
+        }
+        const queryResult = element.querySelector("." + className);
+        if (!queryResult) {
+            return "";
+        }
+        const text = (queryResult as Element).textContent;
+        return text ? text : "";
+    }
+
+    private thumbnailClickHandler(clickedDiv: HTMLElement): void {
+        // 'clickedDiv' is an .invisibleThumbCover
         // Select new thumbnail
-        const newsel = this.findProperElement(clickedDiv, evt);
-        if (newsel == null) return;
+        const newsel = clickedDiv.parentElement;
+        if (newsel === null) return;
         // Mark any previously selected thumbnail as no longer selected
         if (this._selectedGridItem != undefined) {
-            $(this._selectedGridItem).removeClass("ui-selected");
+            this._selectedGridItem.classList.remove("ui-selected");
         }
         this._selectedGridItem = newsel;
-        $(this._selectedGridItem).addClass("ui-selected");
+        this._selectedGridItem.classList.add("ui-selected");
 
         // Scroll to show it (useful for original selection). So far this only scrolls DOWN
         // to make sure we can see the BOTTOM of the clicked item; that's good enough for when
@@ -77,57 +95,58 @@ export class PageChooser {
         // an item partly scrolled off the bottom. There's no way currently to select an item
         // that's entirely scrolled off the top, and it doesn't seem worth the complication
         // to force a partly-visible one at the top to become wholly visible.
-        const container = $(".gridItemDisplay");
-        const positionOfTopOfSelected =
-            $(this._selectedGridItem).offset().top + container.scrollTop();
-        const positionOfBottomOfSelected =
-            $(this._selectedGridItem).height() + positionOfTopOfSelected;
-        if (
-            container.height() + container.scrollTop() <
-            positionOfBottomOfSelected
-        ) {
-            container.scrollTop(
-                positionOfBottomOfSelected - container.height()
-            );
+        const container = this._selectedGridItem.closest(".gridItemDisplay");
+        // block: "nearest" is best, but "nearest" and "center" are not supported until FF v58
+        // container.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        if (container) {
+            container.scrollIntoView({ behavior: "smooth", block: "start" });
         }
 
         // Display large preview
         // This is now done with React via the TemplatePagePreview component.
         // Localization will happen there, so we just send english strings from the page templates.
-        const englishCaptionText = $(
-            ".gridItemCaption",
-            this._selectedGridItem
-        ).text();
-        const englishPageDescription = $(
-            ".pageDescription",
-            this._selectedGridItem
-        ).text();
-        const isEnterprise = $(this._selectedGridItem).hasClass(
+        // 'gridItemCaption' and 'pageDescription' will exist... they may not have content.
+        const englishCaptionText = this.getTextOfFirstElementByClassNameSafely(
+            this._selectedGridItem,
+            "gridItemCaption"
+        );
+        const englishPageDescription = this.getTextOfFirstElementByClassNameSafely(
+            this._selectedGridItem,
+            "pageDescription"
+        );
+        const isEnterprise = this._selectedGridItem.classList.contains(
             "enterprise-only-flag"
         );
-        const imgSrc = $(this._selectedGridItem)
-            .find("img")
-            .first()
-            .attr("src");
+        const imgSrc = this.getAttributeStringSafely(
+            this._selectedGridItem.getElementsByTagName("img")[0],
+            "src"
+        );
         const previewElement = document.getElementById(
             "singlePagePreview"
         ) as HTMLDivElement;
+        const groupElement = this._selectedGridItem.closest(".group");
         ReactDOM.render(
             React.createElement(
                 ThemeProvider,
                 { theme: theme },
-                React.createElement(TemplatePagePreview, {
-                    caption: englishCaptionText,
+                React.createElement(SelectedTemplatePageControls, {
+                    caption: englishCaptionText ? englishCaptionText : "",
                     imageSource: imgSrc,
-                    pageDescription: englishPageDescription,
+                    pageDescription: englishPageDescription
+                        ? englishPageDescription
+                        : "",
                     pageIsDigitalOnly: this.isDigitalOnly(
-                        this._selectedGridItem[0]
+                        this._selectedGridItem
                     ),
                     pageIsEnterpriseOnly: isEnterprise,
-                    templateBookPath: this._selectedGridItem
-                        .closest(".group")
-                        .attr("data-template-book-path"),
-                    pageId: this._selectedGridItem.attr("data-pageId"),
+                    templateBookPath: this.getAttributeStringSafely(
+                        groupElement,
+                        "data-template-book-path"
+                    ),
+                    pageId: this.getAttributeStringSafely(
+                        this._selectedGridItem,
+                        "data-pageId"
+                    ),
                     forChangeLayout: this._forChooseLayout,
                     willLoseData: this._forChooseLayout
                         ? this.willLoseData()
@@ -138,19 +157,43 @@ export class PageChooser {
         );
     } // thumbnailClickHandler
 
+    // "Safely" from a type-checking point of view. The calling code is responsible to make sure
+    // that empty string is handled.
+    private getAttributeStringSafely(
+        element: Element | null,
+        attributeName: string
+    ): string {
+        if (!element || !element.hasAttribute(attributeName)) {
+            return "";
+        }
+        const value = element.getAttribute(attributeName);
+        return value ? value : "";
+    }
+
     // Return true if choosing the current layout will cause loss of data
     private willLoseData(): boolean {
-        const selected = $(this._selectedGridItem);
+        if (this._selectedGridItem === undefined) {
+            return true;
+        }
         const selectedTemplateTranslationGroupCount = parseInt(
-            selected.attr("data-textDivCount"),
+            this.getAttributeStringSafely(
+                this._selectedGridItem,
+                "data-textDivCount"
+            ),
             10
         );
         const selectedTemplatePictureCount = parseInt(
-            selected.attr("data-pictureCount"),
+            this.getAttributeStringSafely(
+                this._selectedGridItem,
+                "data-pictureCount"
+            ),
             10
         );
         const selectedTemplateVideoCount = parseInt(
-            selected.attr("data-videoCount"),
+            this.getAttributeStringSafely(
+                this._selectedGridItem,
+                "data-videoCount"
+            ),
             10
         );
 
@@ -158,18 +201,26 @@ export class PageChooser {
             window.parent.document.getElementById("page")
         );
         const current =
-            page && page.contentWindow ? $(page.contentWindow.document) : $();
+            page && page.contentWindow
+                ? page.contentWindow.document.body
+                : undefined;
+        if (current === undefined) {
+            return true;
+        }
         const currentTranslationGroupCount = this.countTranslationGroupsForChangeLayout(
             current
         );
-        const currentPictureCount = current.find(".bloom-imageContainer")
-            .length;
+        const currentPictureCount = current.getElementsByClassName(
+            "bloom-imageContainer"
+        ).length;
         // ".bloom-videoContainer:not(.bloom-noVideoSelected)" is not working reliably as a selector.
         // It's also insufficient if we allow the user to change multiple pages at once to look at
         // only the current page for content.  Not checking for actual video content matches what is
         // done for text and pictures, and means that the check is equally valid for any number of
         // pages with the same layout.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6921.
-        const currentVideoCount = current.find(".bloom-videoContainer").length;
+        const currentVideoCount = current.getElementsByClassName(
+            "bloom-videoContainer"
+        ).length;
 
         return (
             selectedTemplateTranslationGroupCount <
@@ -187,47 +238,6 @@ export class PageChooser {
         );
     }
 
-    // There's a bug deep in javascript that doesn't take into account the scrolling
-    // of a div element before something inside it is clicked on.  The following code
-    // detects whether the scrolling has changed since the last mouse click, and if so,
-    // searches for the item which should have matched.  For the initial bug report,
-    // see https://silbloom.myjetbrains.com/youtrack/issue/BL-2623.
-    // Note that the offset().top values returned by jquery properly take into account
-    // the scrollTop of the scrolling parent div.  Which makes me think the bug may be
-    // below the jquery level!?
-    private findProperElement(clickedDiv, evt): JQuery {
-        const gridItem = $(clickedDiv).parent();
-        if (evt) {
-            const currentScrollTop = this._scrollingDiv.scrollTop();
-            if (currentScrollTop !== this._scrollTopOfTheScrollingDiv) {
-                // The scrolling position has changed, so we need to explicitly search
-                // for the proper object.
-                const y = evt["clientY"]; // retrieve the original click position
-                const x = evt["clientX"];
-                const container = $(clickedDiv)
-                    .parent()
-                    .parent();
-                const childs = $(container).children();
-                for (let i = 0; i < childs.length; ++i) {
-                    const child = childs.eq(i);
-                    const top = child.offset().top;
-                    const bottom = top + child.height();
-                    const left = child.offset().left;
-                    const right = left + child.width();
-                    if (top <= y && y <= bottom && left <= x && x <= right) {
-                        // Remember the new scroll position and return the proper object.
-                        this._scrollTopOfTheScrollingDiv = currentScrollTop;
-                        return child;
-                    }
-                }
-                // We couldn't find the proper object, so don't do anything.  The user
-                // apparently clicked on a visually empty spot that got misidentified.
-                return $();
-            }
-        }
-        return gridItem;
-    }
-
     // Set the text of the given element to the appropriate localization of defaultText
     // (or to defaultText, if no localization is available).
     // If defaultText is empty, set the element text to empty.
@@ -235,28 +245,28 @@ export class PageChooser {
     // parameter, which defaults to the defaultText since we often use the English text of a
     // label as the last part of its ID.
     private setLocalizedText(
-        elt: JQuery,
+        elt: HTMLElement,
         idPrefix: string,
         defaultText: string,
         id: string = defaultText
     ) {
         defaultText = defaultText.trim();
         if (defaultText) {
+            const comment = this.getAttributeStringSafely(elt, "l10nComment");
             theOneLocalizationManager
-                .asyncGetText(
-                    idPrefix + id,
-                    defaultText,
-                    elt.attr("l10nComment")
-                )
+                .asyncGetText(idPrefix + id, defaultText, comment)
                 .done(translation => {
-                    elt.text(translation);
+                    elt.textContent = translation;
                 });
         } else {
-            elt.text("");
+            elt.textContent = "";
         }
     }
 
-    public static addPageClickHandler(
+    // This static method handles the button click in the Add Page or Change Layout dialog
+    // It gets passed (through an exported function after this class) to the React component that displays
+    // the page preview and deals with all the various checkbox logic.
+    public static handleAddPageOrChooseLayoutButtonClick(
         forChangeLayout: boolean,
         pageId: string,
         templateBookPath: string,
@@ -305,24 +315,24 @@ export class PageChooser {
     // At the point where it is called, the json parameters that control what will be displayed
     public loadPageGroups(): void {
         // Save a reference to the scrolling div that contains the various page items.
-        this._scrollingDiv = $(".gridItemDisplay", document);
-
-        // Originally (now maybe YAGNI) the dialog handled more than one group of template pages.
-        // Right now it only handles one, so the cloning of stub html is perhaps unnecessary,
-        // but I've left it in case we need it later.
+        this._scrollingDiv = document.querySelector(
+            ".gridItemDisplay"
+        ) as HTMLDivElement;
 
         // Save html sections that will get cloned later
         // there should only be one 'group' at this point; a stub with one default template page
-        const groupHtml = $(".group", document)
-            .first()
-            .clone();
+        const groupHtml = (this._scrollingDiv.querySelector(
+            ".group"
+        ) as HTMLElement).cloneNode(true) as HTMLElement;
         // there should only be the one default 'gridItem' at this point
-        const gridItemHtml = $(".gridItem", groupHtml)
-            .first()
-            .clone();
-        if ($(this._templateBookUrls).length > 0) {
+        const gridItemHtml = (groupHtml.querySelector(
+            ".gridItem"
+        ) as HTMLElement).cloneNode(true) as HTMLElement;
+        if (this._templateBookUrls.length > 0) {
             // Remove original stub section
-            $(".outerGroupContainer", document).empty();
+            this.emptyOutElementChildren(
+                this._scrollingDiv.querySelector(".outerGroupContainer")
+            );
             this.loadNextPageGroup(
                 this._templateBookUrls,
                 groupHtml,
@@ -333,9 +343,19 @@ export class PageChooser {
         }
 
         if (this._orientation === "landscape") {
-            $("#mainContainer").addClass("landscape");
+            const mainContainer = document.getElementById("mainContainer");
+            if (mainContainer) {
+                // just to satisfy compiler
+                mainContainer.classList.add("landscape");
+            }
         }
     } // loadPageGroups
+
+    private emptyOutElementChildren(element: Element | null) {
+        while (element && element.firstChild) {
+            element.removeChild(element.firstChild);
+        }
+    }
 
     // This pops one template book order from the queue, does the async get,
     // loads it in the dialog, then recursively goes back for another.
@@ -344,9 +364,9 @@ export class PageChooser {
     // at once). Secondly, it ensures we get the most important template pages shown and ready
     // to use as quickly as possible.
     private loadNextPageGroup(
-        queue,
-        groupHTML,
-        gridItemHTML,
+        queue: IGroupData[],
+        groupHTML: HTMLElement,
+        gridItemHTML: HTMLElement,
         defaultPageToSelect: string,
         previousPagesCount: number
     ): void {
@@ -357,25 +377,18 @@ export class PageChooser {
         axios
             .get("/bloom/" + order.templateBookPath)
             .then(result => {
-                const pageData = result.data;
+                const pageData: HTMLElement = new DOMParser().parseFromString(
+                    result.data,
+                    "text/html"
+                ).body;
 
-                // Grab all pages in this group
-                // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
-                // Creating a jquery object via $(pageData) causes any img elements in the html string to be dereferenced,
-                // which can cause the Bloom server to complain about not finding files of the form "pageChooser/read.png".
-                // So we must remove the img elements from the returned string before the conversion to a jquery object.
-                // Note that none of the img elements in the template file are needed at this point for laying out the
-                // Add Page dialog, or for creating thumbnails, so it's safe to delete them.  See
-                // https://silbloom.myjetbrains.com/youtrack/issue/BL-3819 for details of the symptoms experienced when
-                // running Bloom without this ugly hack.
-                const pageNoImg = (<string>pageData).replace(
-                    /<img[^>]*><\/img>/g,
-                    ""
+                const originalPages: HTMLElement[] = Array.from(
+                    pageData.querySelectorAll(".bloom-page")
                 );
-                let pages = $(pageNoImg)
-                    .filter(".bloom-page[id]")
-                    .filter('[data-page="extra"]');
-
+                let pages = originalPages.filter(
+                    (elem: HTMLElement) =>
+                        elem.id && elem.getAttribute("data-page") === "extra"
+                );
                 if (pages.length == 0) {
                     console.log(
                         "Could not find any template pages in " +
@@ -393,32 +406,44 @@ export class PageChooser {
                     return; // suppress adding this group.
                 }
 
-                const dataBookArray = $(
-                    "div[data-book='bookTitle']",
-                    pageNoImg
+                const bookTitleElement = pageData.querySelector(
+                    "div[data-book='bookTitle']"
                 );
-                const groupTitle = $(dataBookArray.first()).text();
+                let groupTitle = "";
+                if (bookTitleElement) {
+                    groupTitle = bookTitleElement.textContent
+                        ? bookTitleElement.textContent
+                        : "";
+                }
                 // Add title and container to dialog
-                const groupToAdd = $(groupHTML).clone();
-                groupToAdd.attr(
+                const groupToAdd = groupHTML.cloneNode(true) as HTMLElement;
+                groupToAdd.setAttribute(
                     "data-template-book-path",
                     order.templateBookPath
                 );
-                const captionDiv = $(groupToAdd).find(".groupCaption");
+                const captionDiv = groupToAdd.querySelector(
+                    ".groupCaption"
+                ) as HTMLElement;
                 this.setLocalizedText(
                     captionDiv,
                     "TemplateBooks.BookName.",
                     groupTitle
                 );
-                $(".outerGroupContainer", document).append(groupToAdd);
+                (this._scrollingDiv.querySelector(
+                    ".outerGroupContainer"
+                ) as HTMLElement).appendChild(groupToAdd);
 
                 if (this._forChooseLayout) {
-                    // This filters out the (empty) custom page, which is currently never a useful layout change, since all data would be lost.
-                    pages = pages.not(
-                        '.bloom-page[id="5dcd48df-e9ab-4a07-afd4-6a24d0398386"]'
+                    // This filters out the (empty) custom page, which is currently never a useful layout change,
+                    // since all data would be lost.
+                    pages = pages.filter(
+                        (elem: HTMLElement) =>
+                            elem.id != "5dcd48df-e9ab-4a07-afd4-6a24d0398386"
                     );
                 }
-                //console.log("loadPageFromGroup("+order.templateBookFolderUrl+")");
+                // console.log(
+                //     "loadPageFromGroup(" + order.templateBookFolderUrl + ")"
+                // );
                 this.loadPageFromGroup(
                     groupToAdd,
                     pages,
@@ -427,7 +452,7 @@ export class PageChooser {
                     defaultPageToSelect,
                     previousPagesCount
                 );
-                const pagesCountSoFar = previousPagesCount + $(pages).length;
+                const pagesCountSoFar = previousPagesCount + pages.length;
 
                 this.loadNextPageGroup(
                     queue,
@@ -444,15 +469,17 @@ export class PageChooser {
                 const index = path.lastIndexOf("/");
                 const templateName = path.substring(index + 1, path.length);
                 const templateTitle = templateName.replace(".html", "");
-                const groupToAdd = $(groupHTML).clone();
+                const groupToAdd = groupHTML.cloneNode(true) as HTMLElement;
                 this.setLocalizedText(
-                    $(groupToAdd).find(".groupCaption"),
+                    groupToAdd.querySelector(".groupCaption") as HTMLElement,
                     "TemplateBooks.BookName.",
                     templateTitle
                 );
-                const innerGroup = groupToAdd.find(".innerGroupContainer");
+                const innerGroup = groupToAdd.querySelector(
+                    ".innerGroupContainer"
+                ) as HTMLElement;
                 innerGroup.remove();
-                groupToAdd.append("<div id='missingMsg'/>");
+                groupToAdd.innerHTML = "<div id='missingMsg'/>";
                 theOneLocalizationManager
                     .asyncGetText(
                         "EditTab.AddPageDialog.NoTemplate",
@@ -460,11 +487,18 @@ export class PageChooser {
                         ""
                     )
                     .done(translation => {
-                        groupToAdd
-                            .find("#missingMsg")
-                            .text(translation.replace("{0}", templateName));
+                        const msgGroup = groupToAdd.querySelector(
+                            "#missingMsg"
+                        );
+                        if (msgGroup === null) return; // safety net: shouldn't be able to occur
+                        msgGroup.textContent = translation.replace(
+                            "{0}",
+                            templateName
+                        );
                     });
-                $(".outerGroupContainer", document).append(groupToAdd);
+                (this._scrollingDiv.querySelector(
+                    ".outerGroupContainer"
+                ) as HTMLElement).appendChild(groupToAdd);
 
                 this.loadNextPageGroup(
                     queue,
@@ -477,44 +511,52 @@ export class PageChooser {
     }
 
     private loadPageFromGroup(
-        currentGroup,
-        pageArray,
-        gridItemTemplate,
-        templateBookFolderUrl,
+        currentGroup: HTMLElement,
+        pageArray: Array<HTMLElement>,
+        gridItemTemplate: HTMLElement,
+        templateBookFolderUrl: string,
         defaultPageToSelect: string,
         previousPagesCount: number
     ): void {
-        if ($(pageArray).length < 1) {
+        if (pageArray.length < 1) {
             console.log("pageArray empty for " + templateBookFolderUrl);
             return;
         }
 
         // Remove default template page
-        $(".innerGroupContainer", currentGroup).empty();
+        (currentGroup.querySelector(".gridItem") as HTMLElement).remove();
         let gotSelectedPage = false;
         // insert a template page for each page with the correct #id on the url
-        $(pageArray).each((index, div) => {
-            const divQuery = $(div);
-            if (divQuery.attr("data-page") === "singleton") return; // skip this one
+        pageArray.forEach((currentPageDiv: HTMLElement, index) => {
+            if (currentPageDiv.getAttribute("data-page") === "singleton")
+                return; // skip this one
 
-            const currentGridItemHtml = $(gridItemTemplate).clone();
+            const currentGridItemHtml = gridItemTemplate.cloneNode(
+                true
+            ) as HTMLElement;
 
-            if (divQuery.hasClass("enterprise-only")) {
-                currentGridItemHtml.addClass("enterprise-only-flag");
+            if (currentPageDiv.classList.contains("enterprise-only")) {
+                currentGridItemHtml.classList.add("enterprise-only-flag");
             }
-            const currentId = divQuery.attr("id");
-            currentGridItemHtml.attr("data-pageId", currentId);
-            currentGridItemHtml.attr(
+            const currentId = currentPageDiv.id;
+            currentGridItemHtml.setAttribute("data-pageId", currentId);
+            currentGridItemHtml.setAttribute(
                 "data-textDivCount",
-                this.countTranslationGroupsForChangeLayout(divQuery)
+                this.countTranslationGroupsForChangeLayout(
+                    currentPageDiv
+                ).toString()
             );
-            currentGridItemHtml.attr(
+            currentGridItemHtml.setAttribute(
                 "data-pictureCount",
-                divQuery.find(".bloom-imageContainer").length
+                currentPageDiv
+                    .getElementsByClassName("bloom-imageContainer")
+                    .length.toString()
             );
-            currentGridItemHtml.attr(
+            currentGridItemHtml.setAttribute(
                 "data-videoCount",
-                divQuery.find(".bloom-videoContainer").length
+                currentPageDiv
+                    .getElementsByClassName("bloom-videoContainer")
+                    .length.toString()
             );
 
             // The check for _indexOfPageToSelect here keeps the selection on the *first* matching page. In BL-4500, we found
@@ -523,47 +565,58 @@ export class PageChooser {
             // on what templates the user has installed.
             if (
                 currentId === defaultPageToSelect &&
-                this._indexOfPageToSelect == 0
+                this._indexOfPageToSelect === 0
             ) {
                 this._indexOfPageToSelect = index + previousPagesCount;
                 gotSelectedPage = true;
             }
 
-            const pageDescription = $(".pageDescription", div)
-                .first()
-                .text();
-            $(".pageDescription", currentGridItemHtml)
-                .first()
-                .text(pageDescription);
+            const pageDescription = this.getTextOfFirstElementByClassNameSafely(
+                currentPageDiv,
+                "pageDescription"
+            );
+            (currentGridItemHtml.querySelector(
+                ".pageDescription"
+            ) as HTMLElement).textContent = pageDescription;
 
             // We can use these classes to determine how to display the preview.
             // Currently, this is used to determine if a template page is digital-only
             // (meaning not for PDF publication) which results in a message to the user.
             // See the classes referenced in isDigitalOnly().
-            Array.from(div.classList).forEach(cssClass => {
+            Array.from(currentPageDiv.classList).forEach(cssClass => {
                 if (cssClass.startsWith("bloom-"))
-                    currentGridItemHtml.addClass(cssClass);
+                    currentGridItemHtml.classList.add(cssClass);
             });
 
-            const pageLabel = $(".pageLabel", div)
-                .first()
-                .text()
-                .trim();
-            $(".gridItemCaption", currentGridItemHtml)
-                .first()
-                .text(pageLabel);
-
+            const rawPageLabel = this.getTextOfFirstElementByClassNameSafely(
+                currentPageDiv,
+                "pageLabel"
+            );
+            let pageLabel = "";
+            if (rawPageLabel) {
+                pageLabel = rawPageLabel.trim();
+                (currentGridItemHtml.querySelector(
+                    ".gridItemCaption"
+                ) as HTMLElement).textContent = pageLabel;
+            }
             const possibleImageUrl = this.getPossibleImageUrl(
                 templateBookFolderUrl,
                 pageLabel
             );
-            $("img", currentGridItemHtml).attr("src", possibleImageUrl);
+            currentGridItemHtml
+                .getElementsByTagName("img")[0]
+                .setAttribute("src", possibleImageUrl);
 
-            $(".innerGroupContainer", currentGroup).append(currentGridItemHtml);
+            (currentGroup.querySelector(
+                ".innerGroupContainer"
+            ) as HTMLElement).appendChild(currentGridItemHtml);
         }); // each
         // once the template pages are installed, attach click handler to them.
-        $(".invisibleThumbCover", currentGroup).each((index, div) => {
-            $(div).dblclick(() => {
+        const thumbCovers = currentGroup.querySelectorAll(
+            ".invisibleThumbCover"
+        );
+        Array.from(thumbCovers).forEach((thumbCover: HTMLElement) => {
+            thumbCover.addEventListener("dblclick", () => {
                 if (!this._selectedGridItem || !this._templateBookUrls) {
                     return;
                 }
@@ -573,12 +626,21 @@ export class PageChooser {
                 const convertWholeBookCheckbox = document.getElementById(
                     "convertWholeBookCheckbox"
                 ) as HTMLInputElement;
-                PageChooser.addPageClickHandler(
+                const closestGroupAncestor = this._selectedGridItem.closest(
+                    ".group"
+                );
+                const bookPath = this.getAttributeStringSafely(
+                    closestGroupAncestor,
+                    "data-template-book-path"
+                );
+                const pageId = this.getAttributeStringSafely(
+                    this._selectedGridItem,
+                    "data-pageId"
+                );
+                PageChooser.handleAddPageOrChooseLayoutButtonClick(
                     this._forChooseLayout,
-                    this._selectedGridItem.attr("data-pageId"),
-                    this._selectedGridItem
-                        .closest(".group")
-                        .attr("data-template-book-path"),
+                    pageId,
+                    bookPath,
                     convertAnywayCheckbox
                         ? convertAnywayCheckbox.checked
                         : false,
@@ -587,12 +649,12 @@ export class PageChooser {
                         ? convertWholeBookCheckbox.checked
                         : false
                 );
-            }); // invisibleThumbCover double click
+            }); // invisibleThumbCover double click handler
 
-            $(div).click(evt => {
-                this.thumbnailClickHandler(div, evt);
-            }); // invisibleThumbCover click
-        }); // each
+            thumbCover.addEventListener("click", () =>
+                this.thumbnailClickHandler(thumbCover)
+            ); // invisibleThumbCover click
+        }); // forEach
         // If we found the specified page to select in this group, it is the one indicated by
         // this._indexOfPageToSelect; select that now.
         // In case we were not provided with a default page to select, this._indexOfPageToSelect remains 0,
@@ -601,10 +663,9 @@ export class PageChooser {
             gotSelectedPage ||
             (defaultPageToSelect === "" && previousPagesCount == 0)
         ) {
-            this.thumbnailClickHandler(
-                $(".invisibleThumbCover").eq(this._indexOfPageToSelect),
-                null
-            );
+            this.thumbnailClickHandler(thumbCovers[
+                this._indexOfPageToSelect
+            ] as HTMLElement);
         }
     } // loadPageFromGroup
 
@@ -613,12 +674,16 @@ export class PageChooser {
     // and these are completely independent of the template page. We need to count regular translationGroups and
     // also ensure that translationGroups inside of images get migrated correctly. If this algorithm changes, be
     // sure to also change 'GetTranslationGroupsInternal()' in HtmlDom.cs.
-    private countTranslationGroupsForChangeLayout(pageDiv: JQuery): number {
-        return pageDiv
-            .find(".bloom-translationGroup:not(.box-header-off)")
-            .filter(
-                (index, elt) => elt.closest(".bloom-imageContainer") == null
-            ).length;
+    private countTranslationGroupsForChangeLayout(
+        pageDiv: HTMLElement
+    ): number {
+        const allTranslationGroups = pageDiv.querySelectorAll(
+            ".bloom-translationGroup:not(.box-header-off)"
+        );
+        return Array.from(allTranslationGroups).filter(
+            translationGroup =>
+                translationGroup.closest(".bloom-imageContainer") === null
+        ).length;
     }
 
     private getPossibleImageUrl(
@@ -641,7 +706,7 @@ export class PageChooser {
     }
 } // End OF PageChooserClass
 
-export function addPageClickHandler(
+export function handleAddPageOrChooseLayoutButtonClick(
     forChangeLayout: boolean,
     pageId: string,
     templateBookPath: string,
@@ -649,7 +714,7 @@ export function addPageClickHandler(
     willLoseData: boolean,
     convertWholeBookChecked: boolean
 ) {
-    PageChooser.addPageClickHandler(
+    PageChooser.handleAddPageOrChooseLayoutButtonClick(
         forChangeLayout,
         pageId,
         templateBookPath,
