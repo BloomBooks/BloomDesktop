@@ -1,18 +1,18 @@
 # 4.6
 
 ## User Interface
-⭐ We added smarts to Bloom's user interface to use different fonts, as needed, in order to display various non-roman languages. This is not related to what you see in books, just the Bloom interface. Bloom now ships with Googles' "noto" fonts for Arabic, Bengali, Devenagari, Thai, and CJK (Chinese, Japanese, Korean). 
+⭐ We added smarts to Bloom's user interface to use different fonts, as needed, in order to display various non-roman languages. This is not related to what you see in books, just the Bloom interface. Bloom now ships with Googles' "noto" fonts for Arabic, Bengali, Devenagari, Thai, and CJK (Chinese, Japanese, Korean).
 
 ⭐ This version is the beginning of a multi-version effort to move Bloom's UI to a more consistent and contemporary visual design language. We have chosen to move towards Google's Material Design, which is what users will be familiar with from their phones.
 
 ### Talking Books
 
-⭐ Improved the smoothness of Talking Book playback by now playing on a single audio file per page, so that highlighting is now based on timestamps, rather than starting up individual audio files for each sentence. 
+⭐ Improved the smoothness of Talking Book playback by now playing on a single audio file per page, so that highlighting is now based on timestamps, rather than starting up individual audio files for each sentence.
 
 ## Collection Tab
 
 In Settings, we've added the option to use Kayah and Shan numeral systems.
-When opening a different colleciton, Bloom now offers you the last 9 collections you opened. 
+When opening a different collection, Bloom now offers you the last 9 collections you opened.
 
 ## Edit Tab
 
@@ -24,7 +24,7 @@ The "Add Page" dialog now clearly indicates which template pages are available o
 
 ### Sign Language Books
 
-We have improved computer performance when working with sign language videos. Page thumbnails no longer include the first frame fo the video (this was hard on memory and cpu).
+We have improved computer performance when working with sign language videos. Page thumbnails no longer include the first frame for the video (this was hard on memory and cpu).
 
 ⭐Added a "Text above Video" template page.
 
@@ -38,6 +38,7 @@ We have improved computer performance when working with sign language videos. Pa
 
 ### ePUB Publish
 ⭐ New, cleaner ePUB publish screen
+
 
 # 4.5
 
