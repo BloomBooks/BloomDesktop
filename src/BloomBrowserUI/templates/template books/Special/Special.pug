@@ -1,5 +1,4 @@
 include ../standard-page-mixins.pug
-include ./simpleComprehensionQuiz.pug
 
 doctype html
 html
@@ -13,15 +12,10 @@ html
 		title 'Special'
 		+stylesheets('Special.css')
 		+standardStyles
-			= '\n'
-			| .QuizAnswer-style { font-size: 12pt !important;}
-			| .QuizQuestion-style {font-size: 12pt !important; font-weight: bold !important;}
 	body
 		+dataDiv
 			+bookVariable-title('en', 'Special')
 			+bookVariable('styleNumberSequence', '*', '0')
-
-		+quizPage
 
 		+page('Translation Instructions', 'A page of instructions to translators which appears only in the Edit tab.' )#d054bb76-dc6b-4452-a4ab-f4b83ffa10cc(data-page='extra').bloom-noreader.bloom-nonprinting.screen-only
 			.split-pane-component-inner
