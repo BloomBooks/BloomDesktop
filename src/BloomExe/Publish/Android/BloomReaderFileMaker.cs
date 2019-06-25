@@ -28,30 +28,53 @@ namespace Bloom.Publish.Android
 
 		public static void CreateBloomReaderBook(string outputPath, Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress)
 		{
-			using (var temp = new TemporaryFolder("BloomReaderExport"))
+			CreateBloomReaderBook(outputPath, book.FolderPath, bookServer, backColor, progress);
+		}
+
+		// Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
+		public static void CreateBloomReaderBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor, WebSocketProgress progress, string tempFolderName = "BloomReaderExport")
+		{
+			using (var temp = new TemporaryFolder(tempFolderName))
 			{
-				var modifiedBook = PrepareBookForBloomReader(book, bookServer, temp, backColor, progress);
-				// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
-				// 64dp in Bloom Reader.
-
-				BookCompressor.MakeSizedThumbnail(modifiedBook, backColor, modifiedBook.FolderPath, 256);
-
-				BookCompressor.CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
-					pathToFileForSha: BookStorage.FindBookHtmlInFolder(book.FolderPath));
+				CreateBloomReaderBook(outputPath, bookFolderPath, bookServer, backColor, progress, temp);
 			}
 		}
 
-		public static Book.Book PrepareBookForBloomReader(Book.Book book, BookServer bookServer, TemporaryFolder temp, Color backColor,
+		/// <summary>
+		/// Create a BloomReader book (the zipped .bloomd file)
+		/// </summary>
+		/// <param name="outputPath">The path to create the zipped .bloomd output file at</param>
+		/// <param name="bookFolderPath">The path to the input book</param>
+		/// <param name="bookServer"></param>
+		/// <param name="backColor"></param> 
+		/// <param name="progress"></param>
+		/// <param name="tempFolder">A temporary folder. This function will not dispose of it when done</param>
+		/// <returns>Path to the unzipped .bloomd</returns>
+		public static string CreateBloomReaderBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor, WebSocketProgress progress, TemporaryFolder tempFolder)
+		{
+			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, backColor, progress);
+			// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
+			// 64dp in Bloom Reader.
+
+			BookCompressor.MakeSizedThumbnail(modifiedBook, backColor, modifiedBook.FolderPath, 256);
+
+			BookCompressor.CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
+				pathToFileForSha: BookStorage.FindBookHtmlInFolder(bookFolderPath));
+
+			return modifiedBook.FolderPath;
+		}
+
+		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer, TemporaryFolder temp, Color backColor,
 			WebSocketProgress progress)
 		{
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
 			// And bloom-player expects folder name to match html file name.
-			var htmPath = BookStorage.FindBookHtmlInFolder(book.FolderPath);
-			var bookFolderPath = Path.Combine(temp.FolderPath, Path.GetFileNameWithoutExtension(htmPath));
-			Directory.CreateDirectory(bookFolderPath);
-			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(book, bookServer, bookFolderPath);
+			var htmPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
+			var modifiedBookFolderPath = Path.Combine(temp.FolderPath, Path.GetFileNameWithoutExtension(htmPath));
+			Directory.CreateDirectory(modifiedBookFolderPath);
+			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer, modifiedBookFolderPath);
 
-			var jsonPath = Path.Combine(bookFolderPath, kQuestionFileName);
+			var jsonPath = Path.Combine(modifiedBookFolderPath, kQuestionFileName);
 			var questionPages = modifiedBook.RawDom.SafeSelectNodes(
 				"//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'questions')]");
 			var questions = new List<QuestionGroup>();
@@ -97,8 +120,8 @@ namespace Bloom.Publish.Android
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6835.
 			RemoveInvisibleImageElements(modifiedBook);
 			modifiedBook.Storage.CleanupUnusedImageFiles(keepFilesForEditing: false);
-			if (RobustFile.Exists(Path.Combine(bookFolderPath, "placeHolder.png")))
-				RobustFile.Delete(Path.Combine(bookFolderPath, "placeHolder.png"));
+			if (RobustFile.Exists(Path.Combine(modifiedBookFolderPath, "placeHolder.png")))
+				RobustFile.Delete(Path.Combine(modifiedBookFolderPath, "placeHolder.png"));
 			modifiedBook.Storage.CleanupUnusedAudioFiles(isForPublish: true);
 			PublishHelper.SetTalkingBookFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
 			modifiedBook.Storage.CleanupUnusedVideoFiles();
@@ -114,7 +137,7 @@ namespace Bloom.Publish.Android
 			StripContentEditableAndTabIndex(modifiedBook.RawDom);
 			InsertReaderStylesheet(modifiedBook.RawDom);
 			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot,"publish","ReaderPublish","readerStyles.css"),
-				Path.Combine(bookFolderPath, "readerStyles.css"));
+				Path.Combine(modifiedBookFolderPath, "readerStyles.css"));
 			ConvertImagesToBackground(modifiedBook.RawDom);
 
 			modifiedBook.Save();
