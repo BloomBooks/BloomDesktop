@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -783,18 +783,24 @@ namespace Bloom
 
 		public static void ClearCache()
 		{
-			try
-			{
-				var instance = Xpcom.CreateInstance<nsICacheStorageService>("@mozilla.org/netwerk/cache-storage-service;1");
-				instance.Clear();
-			}
-			catch (InvalidCastException e)
-			{
-				// For some reason, Release builds (only) sometimes run into this when uploading.
-				// Don't let it stop us just to clear a cache.
-				Logger.WriteError(e);
-			}
-		}
+            try
+            {
+				// Review: is this supposed to say "netwerk" or "network"?
+                var instance = Xpcom.CreateInstance<nsICacheStorageService>("@mozilla.org/netwerk/cache-storage-service;1");
+                instance.Clear();
+            }
+            catch (InvalidCastException e)
+            {
+                // For some reason, Release builds (only) sometimes run into this when uploading.
+                // Don't let it stop us just to clear a cache.
+                Logger.WriteError(e);
+            }
+            catch (NullReferenceException e)
+            {
+				// TODO: Investigate the error, but for now this is not super blocking
+            }
+
+        }
 
 		public void SetEditDom(HtmlDom editDom)
 		{
