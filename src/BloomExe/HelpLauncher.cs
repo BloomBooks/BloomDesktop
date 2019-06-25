@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using SIL.IO;
+using System.Diagnostics;
 
 namespace Bloom
 {
@@ -40,7 +41,7 @@ namespace Bloom
 			if (!String.IsNullOrEmpty(libpath))
 				Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", null);
 
-			Help.ShowHelp(parent, FileLocationUtilities.GetFileDistributedWithApplication(helpFileName), topic);
+			ShowHelpWithTopic(parent, FileLocationUtilities.GetFileDistributedWithApplication(helpFileName), topic);
 
 			if (!String.IsNullOrEmpty(libpath))
 				Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", libpath);
@@ -55,6 +56,56 @@ namespace Bloom
 				//if this is called from a simple html anchor, we don't want the browser to do anything
 				request.ExternalLinkSucceeded();
 			}, true); // opening a form, definitely UI thread
+		}
+
+		private static void ShowHelpWithTopic(Control parent, string helpFile, string helpTopic)
+		{
+			// The Mono runtime pretends to handle MONO_HELP_VIEWER, defaulting to "chmsee", but formats the
+			// argument according to chmsee's specification which doesn't work for other viewers.
+			// On Windows, this variable shouldn't be set.
+			string helpViewer = Environment.GetEnvironmentVariable("MONO_HELP_VIEWER");
+			if (SIL.PlatformUtilities.Platform.IsWindows ||
+				String.IsNullOrEmpty(helpViewer) || helpViewer == "chmsee" || helpViewer == "/usr/bin/chmsee")
+			{
+				Help.ShowHelp(parent, helpFile, helpTopic);
+				return;
+			}
+			if (helpFile == null)
+				throw new ArgumentNullException ();
+			if (helpFile == String.Empty)
+				throw new ArgumentException ();
+			string arguments = String.Empty;
+			if (helpViewer == "kchmviewer" || helpViewer == "/usr/bin/kchmviewer")
+			{
+				arguments = String.Format("-showPage \"{0}\" \"{1}\"", helpTopic, helpFile);
+			}
+			else //if (helpViewer == "xchm" || helpViewer == "/usr/bin/xchm")
+			{
+				// xchm is rather dumb: it can't specify a topic on the command line.  (I did post
+				// an issue asking about this: the developer is still active to some degree.)
+				// We don't know anything about any other viewers, but assume the help file is okay.
+				arguments = String.Format ("\"{0}\"", helpFile);
+			}
+			try
+			{
+				using (Process process = new Process ())
+				{
+					process.StartInfo.FileName = helpViewer;
+					process.StartInfo.Arguments = arguments;
+					process.StartInfo.UseShellExecute = false;
+					process.Start ();
+				}
+
+			}
+			catch (Exception e)
+			{	// (copied from mono code in Help.cs)
+				// Don't crash if the help viewer couldn't be launched. There
+				// won't be an exception thrown if the help viewer can't find
+				// the help file; it's up to the help viewer to display such an error.
+				string message = String.Format ("The help viewer could not load. Maybe you don't have {0} installed or haven't set MONO_HELP_VIEWER. The specific error message was: {1}", helpViewer, e.Message);
+				Console.Error.WriteLine (message);
+				MessageBox.Show(message);
+			}
 		}
 	}
 }

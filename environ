@@ -21,6 +21,19 @@ MONO_PATH="${GDK_SHARP}:${GECKOFX}"
 MONO_DEBUG=explicit-null-checks
 MONO_ENV_OPTIONS="-O=-gshared"
 
+################################################################################################
+
+# chmsee was phased out by Ubuntu in bionic (18.04)
+
+if [ -z "$MONO_HELP_VIEWER" ]; then
+	if [ -f /usr/bin/chmsee ]; then
+		export MONO_HELP_VIEWER=chmsee
+	elif [ -f /usr/bin/kchmviewer ]; then
+		export MONO_HELP_VIEWER=kchmviewer
+	elif [ -f /usr/bin/xchm ]; then
+		export MONO_HELP_VIEWER=xchm
+	fi
+fi
 
 ################################################################################################
 
