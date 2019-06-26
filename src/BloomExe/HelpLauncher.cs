@@ -79,12 +79,16 @@ namespace Bloom
 			{
 				arguments = String.Format("-showPage \"{0}\" \"{1}\"", helpTopic, helpFile);
 			}
-			else //if (helpViewer == "xchm" || helpViewer == "/usr/bin/xchm")
+			else if (helpViewer == "xchm" || helpViewer == "/usr/bin/xchm")
 			{
-				// xchm is rather dumb: it can't specify a topic on the command line.  (I did post
-				// an issue asking about this: the developer is still active to some degree.)
+				// According to the xchm developer, something like this should work:
+				// xchm file:jdk150.chm#xchm:/jdk150/api/java/applet/package-summary.html
+				arguments = String.Format("\"file:{0}#xchm:{1}\"", helpFile, helpTopic);
+			}
+			else
+			{
 				// We don't know anything about any other viewers, but assume the help file is okay.
-				arguments = String.Format ("\"{0}\"", helpFile);
+				arguments = String.Format("\"{0}\"", helpFile);
 			}
 			try
 			{
