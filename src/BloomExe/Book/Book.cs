@@ -3123,7 +3123,7 @@ namespace Bloom.Book
 		/// BL-5886 Translation Instructions page should not end up in BR (or Epub or Pdf, but other classes ensure that).
 		/// N.B. This is only intended for use on temporary files.
 		/// </summary>
-		public void RemoveNonPublishablePages()
+		public void RemoveNonPublishablePages(HashSet<string> removedLabels = null)
 		{
 			const string xpath = "//div[contains(@class,'bloom-noreader')]";
 
@@ -3131,6 +3131,7 @@ namespace Bloom.Book
 			var nonpublishablePages = dom.SafeSelectNodes(xpath);
 			foreach (XmlNode doomedPage in nonpublishablePages)
 			{
+				PublishHelper.CollectPageLabel((XmlElement)doomedPage, removedLabels);
 				doomedPage.ParentNode.RemoveChild(doomedPage);
 			}
 		}
