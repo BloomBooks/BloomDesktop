@@ -501,6 +501,16 @@ namespace BloomTests.Publish
 								<div lang = '*'>more text</div>
 							</div>
 						</div>
+					</div>
+					<div class='bloom-page bloom-interactive-page'>
+						<div id='anotherId' class='marginBox'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
+								<div aria-describedby='qtip-1' class='bloom-editable' lang='en'>
+									Page two text
+								</div>
+								<div lang = '*'>more text</div>
+							</div>
+						</div>
 					</div>");
 			MakeEpub("output", "OmitsNonPrintingPages", book);
 			CheckBasicsInManifest();
