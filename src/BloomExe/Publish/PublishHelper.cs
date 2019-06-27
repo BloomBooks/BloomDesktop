@@ -102,7 +102,7 @@ namespace Bloom.Publish
 				return;
 
 			var haveEnterpriseFeatures = book.CollectionSettings.HaveEnterpriseFeatures;
-			var toBeDeleted = new List<XmlElement> ();
+			var toBeDeleted = new List<XmlElement>();
 			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
 			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
 			foreach (XmlElement page in pageElts)
@@ -263,7 +263,7 @@ namespace Bloom.Publish
 		/// <param name="bookServer"></param>
 		/// <param name="tempFolderPath"></param>
 		/// <returns></returns>
-		public static Book.Book MakeDeviceXmatterTempBook(Book.Book book, BookServer bookServer, string tempFolderPath)
+		public static Book.Book MakeDeviceXmatterTempBook(Book.Book book, BookServer bookServer, string tempFolderPath, HashSet<string> omittedPageLabels = null)
 		{
 			BookStorage.CopyDirectory(book.FolderPath, tempFolderPath);
 			// We will later copy these into the book's own folder and adjust the style sheet refs.
@@ -277,7 +277,7 @@ namespace Bloom.Publish
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
 			modifiedBook.BringBookUpToDate(new NullProgress(), true);
 			modifiedBook.AdjustCollectionStylesToBookFolder();
-			modifiedBook.RemoveNonPublishablePages();
+			modifiedBook.RemoveNonPublishablePages(omittedPageLabels);
 			var domForVideoProcessing = modifiedBook.OurHtmlDom;
 			var videoContainerElements = HtmlDom.SelectChildVideoElements(domForVideoProcessing.RawDom.DocumentElement).Cast<XmlElement>();
 			if (videoContainerElements.Any())
@@ -371,5 +371,19 @@ namespace Bloom.Publish
 		}
 		#endregion
 
+		/// <summary>
+		/// If the page element has a label, collect it into the page labels set (if there is one;
+		/// it might be null).
+		/// </summary>
+		public static void CollectPageLabel(XmlElement pageElement, HashSet<string> omittedPageLabels)
+		{
+			if (omittedPageLabels == null)
+				return;
+			var label = pageElement.SelectSingleNode(".//div[@class='pageLabel']")?.InnerText;
+			if (!String.IsNullOrWhiteSpace(label))
+			{
+				omittedPageLabels.Add(label);
+			}
+		}
 	}
 }

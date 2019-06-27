@@ -501,6 +501,16 @@ namespace BloomTests.Publish
 								<div lang = '*'>more text</div>
 							</div>
 						</div>
+					</div>
+					<div class='bloom-page bloom-interactive-page'>
+						<div id='anotherId' class='marginBox'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
+								<div aria-describedby='qtip-1' class='bloom-editable' lang='en'>
+									Page two text
+								</div>
+								<div lang = '*'>more text</div>
+							</div>
+						</div>
 					</div>");
 			MakeEpub("output", "OmitsNonPrintingPages", book);
 			CheckBasicsInManifest();
@@ -509,7 +519,7 @@ namespace BloomTests.Publish
 			CheckEpubTypeAttributes(_page1Data, null);
 
 			var page2entry = _epub.GetEntry(Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
-			Assert.That(page2entry, Is.Null, "nonprinting page should be omitted");
+			Assert.That(page2entry, Is.Null, "nonprinting and interactive pages should be omitted");
 		}
 
 		/// <summary>
