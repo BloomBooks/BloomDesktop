@@ -1281,6 +1281,8 @@ namespace Bloom.Publish.Epub
 						aside.SetAttribute("class", "imageDescription ImageDescriptionEdit-style");
 						asideContainer.AppendChild(aside);
 					}
+					// Delete the original image description since its content has been copied elsewhere (BL-7308).
+					description.ParentNode.RemoveChild(description);
 				}
 			}
 			else if (PublishImageDescriptions == BookInfo.HowToPublishImageDescriptions.Links)
@@ -1385,9 +1387,14 @@ namespace Bloom.Publish.Epub
 						aside.SetAttribute("role", "doc-footnote");
 						aside.SetAttribute("type", kEpubNamespace, "footnote");
 					}
+					// Delete the original image description since its content has been copied elsewhere (BL-7308).
+					description.ParentNode.RemoveChild(description);
 				}
 			}
-			// If HowToPublishImageDescriptions.None, leave alone, and they will be deleted as invisible. (Todo: that's apparently wrong)
+			// If HowToPublishImageDescriptions.None, leave alone, and they will be invisible, but not deleted.
+			// This allows the image description audio to play even when the description isn't displayed in
+			// written form (BL-7237).  (For broken readers, the text might still be visible, but then it's
+			// likely the video wouldn't play anyway.)
 		}
 
 		/// <summary>
