@@ -5,12 +5,13 @@ import { Checkbox } from "../react_components/checkbox";
 import BloomButton from "../react_components/bloomButton";
 import { BloomApi } from "../utils/bloomApi";
 import { RequiresBloomEnterprise } from "../react_components/requiresBloomEnterprise";
-import { addPageClickHandler as addOrChoosePageClickHandler } from "./page-chooser";
+import { handleAddPageOrChooseLayoutButtonClick } from "./page-chooser";
 
-interface ITemplatePagePreviewProps {
+interface ISelectedTemplatePageProps {
     caption?: string;
     imageSource?: string;
     pageDescription?: string;
+    pageIsDigitalOnly: boolean;
     pageIsEnterpriseOnly?: boolean;
     templateBookPath: string;
     pageId: string;
@@ -19,9 +20,9 @@ interface ITemplatePagePreviewProps {
 }
 
 // Displays a large preview of a template page in the Add Page or Change Layout dialog.
-export const TemplatePagePreview: React.FunctionComponent<
-    ITemplatePagePreviewProps
-> = (props: ITemplatePagePreviewProps) => {
+export const SelectedTemplatePageControls: React.FunctionComponent<
+    ISelectedTemplatePageProps
+> = (props: ISelectedTemplatePageProps) => {
     const [enterpriseAvailable, setEnterpriseAvailable] = useState(true);
     const [continueChecked, setContinueChecked] = useState(false);
     const [convertWholeBookChecked, setConvertWholeBookChecked] = useState(
@@ -64,9 +65,15 @@ export const TemplatePagePreview: React.FunctionComponent<
             <Div className="previewCaption" l10nKey={captionKey}>
                 {props.caption}
             </Div>
-            <Div className="DescriptionText" l10nKey={descriptionKey}>
-                {props.pageDescription}
-            </Div>
+            <div id="previewDescriptionTextContainer">
+                <Div l10nKey={descriptionKey}>{props.pageDescription}</Div>
+                {props.pageIsDigitalOnly && (
+                    <Div l10nKey="EditTab.AddPageDialog.DigitalPage">
+                        This kind of page will be included only in digital book
+                        outputs, not in PDF.
+                    </Div>
+                )}
+            </div>
             {props.forChangeLayout &&
                 !enterpriseSubscriptionFault(props.pageIsEnterpriseOnly) && (
                     <div>
@@ -118,7 +125,7 @@ export const TemplatePagePreview: React.FunctionComponent<
                         hasText={true}
                         enabled={isAddOrChoosePageButtonEnabled()}
                         onClick={() =>
-                            addOrChoosePageClickHandler(
+                            handleAddPageOrChooseLayoutButtonClick(
                                 !!props.forChangeLayout,
                                 props.pageId,
                                 props.templateBookPath,
@@ -141,4 +148,4 @@ export const TemplatePagePreview: React.FunctionComponent<
     );
 };
 
-export default TemplatePagePreview;
+export default SelectedTemplatePageControls;

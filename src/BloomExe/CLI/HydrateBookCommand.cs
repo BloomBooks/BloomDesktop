@@ -59,19 +59,6 @@ namespace Bloom.CLI
 			var book = new Book.Book(bookInfo, new BookStorage(options.Path, locator, new BookRenamedEvent(), collectionSettings),
 				null, collectionSettings, null, null, new BookRefreshEvent(), new BookSavedEvent());
 
-			if (collectionSettings.XMatterPackName == "Video")
-			{
-				if (null == book.OurHtmlDom.SelectSingleNodeHonoringDefaultNS("//script[contains(text(),'bloomPlayer.js')]"))
-				{
-					var element = book.OurHtmlDom.Head.AppendChild(book.OurHtmlDom.RawDom.CreateElement("script")) as XmlElement;
-					element.IsEmpty = false;
-					element.SetAttribute("type", "text/javascript");
-					element.SetAttribute("src", "bloomPlayer.js");
-				}
-
-				AddRequisiteJsFiles(options.Path);
-			}
-
 			//we might change this later, or make it optional, but for now, this will prevent surprises to processes
 			//running this CLI... the folder name won't change out from under it.
 			book.LockDownTheFileAndFolderName = true;
@@ -82,25 +69,17 @@ namespace Bloom.CLI
 			Debug.WriteLine("Finished Hydrating.");
 			return 0;
 		}
-
-		private static void AddRequisiteJsFiles(string path)
-		{
-			const string bloomPlayerFileName = "bloomPlayer.js";
-			var bloomLibraryJsPath = FileLocationUtilities.GetFileDistributedWithApplication(bloomPlayerFileName);
-			RobustFile.Copy(bloomLibraryJsPath, Path.Combine(path, bloomPlayerFileName), true);
-		}
 	}
 }
 
 // Used with https://github.com/gsscoder/commandline, which we get via nuget.
 // (using the beta of commandline 2.0, as of Bloom 3.8)
 
-[Verb("hydrate", HelpText = "Apply XMatter, Page Size/Orientation, and Languages. Used by automated converters and app makers.")]
+[Verb("hydrate", HelpText = "Apply XMatter, Page Size/Orientation, and Languages. Used by automated converters.")]
 public class HydrateParameters
 {
 	public enum PresetOption
 	{
-		App,
 		Shellbook
 	}
 
@@ -113,6 +92,9 @@ public class HydrateParameters
 	[Option("bookpath", HelpText = "path to the book", Required = true)]
 	public string Path { get; set; }
 
+	// Originally, the idea here was to take an existing book and make an app out of it. However, we
+	// no longer support that use case. Leaving this legacy comment here to help us understand the original purpose:
+	//
 	// When a book is opened in a collection, Bloom gathers the vernacular, national, and regional languages
 	// from the collection settings and makes changes to the html so that, for example, the current vernacular
 	// shows on each page, rather than in the source bubbles. It does that by adding classes such as "content1".
@@ -140,25 +122,20 @@ public class HydrateParameters
 		set { _nationalLanguage2IsoCode = value; }
 	}
 
-	[Option("preset", HelpText = "alternative to specifying layout and xmatter. Supported values are 'app' and 'shellbook'", Required = false)]
+	[Option("preset", HelpText = "alternative to specifying layout and xmatter. Only current option is 'shellbook'.", Required = false)]
 	public string Preset {
 		get { return _preset.ToString().ToLowerInvariant(); }
 		set
 		{
 			switch (value.ToLowerInvariant())
 			{
-				case "app":
-					_preset = PresetOption.App;
-					SizeAndOrientation = "Device16x9Landscape";
-					XMatter = "Video";
-					break;
 				case "shellbook":
 					_preset = PresetOption.Shellbook;
 					SizeAndOrientation = "Device16x9Portrait";
 					XMatter = "Device";
 					break;
 				default:
-					throw new ArgumentException("{0} is not a valid preset. Valid values are 'app' and 'shellbook'.", value);
+					throw new ArgumentException("{0} is not a valid preset. Only current option is 'shellbook'.", value);
 			}
 		}
 	}
@@ -178,14 +155,14 @@ public class HydrateParameters
 		set { _sizeAndOrientation = value; }
 	}
 
-	[Option("xmatter", HelpText = "front/back matter pack to apply. E.g. 'Video', 'Factory'", Required = false)]
+	[Option("xmatter", HelpText = "front/back matter pack to apply. E.g. 'Device', 'Factory'", Required = false)]
 	public string XMatter
 	{
 		get
 		{
 			if (string.IsNullOrEmpty(_xMatter))
 			{
-				return "Video";
+				return "Device";
 			}
 
 			return _xMatter;
@@ -200,6 +177,3 @@ public class HydrateParameters
 }
 
 
-//Enhance: someday we could gather more info. For now, we assume the caller
-//wants to make an app. We assume Bloom can look inside the app to determine
-//if a video-style or book-style xmatter is appropriate.

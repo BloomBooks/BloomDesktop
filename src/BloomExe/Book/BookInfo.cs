@@ -820,6 +820,20 @@ namespace Bloom.Book
 		[JsonProperty("suitableForVernacularLibrary")]
 		public bool IsSuitableForVernacularLibrary { get; set; }
 
+		/// <summary>
+		/// This version number is set when making a meta.json to embed in a bloomd file.
+		/// We increment it whenever something changes that bloom-player or some other
+		/// client might need to know about. It is NOT intended that the player would
+		/// refuse to open a book with a higher number than it knows about; we may one day
+		/// implement another mechanism for that. Rather, this is intended to allow a
+		/// newer player which accommodates older books to know which of those accommodations
+		/// are needed.
+		/// See the one place where it is set for a history of the versions and what each
+		/// indicates about the bloomd content.
+		/// </summary>
+		[JsonProperty("bloomdVersion")]
+		public int BloomdVersion { get; set; }
+
 		//SeeAlso: commented IsExperimental on Book
 		[JsonProperty("experimental")]
 		public bool IsExperimental { get; set; }
@@ -1048,15 +1062,19 @@ namespace Bloom.Book
 		{
 			get
 			{
-				var features = new List<string>(3);
+				var features = new List<string>(4);
 				if (Feature_Blind) features.Add("blind");
 				if (Feature_SignLanguage) features.Add("signLanguage");
+				if (Feature_TalkingBook) features.Add("talkingBook");
+				if (Feature_Motion) features.Add("motion");
 				return features.ToArray();
 			}
 			set
 			{
 				Feature_Blind = value.Contains("blind");
 				Feature_SignLanguage = value.Contains("signLanguage");
+				Feature_TalkingBook = value.Contains("talkingBook");
+				Feature_Motion = value.Contains("motion");
 			}
 		}
 
@@ -1064,6 +1082,11 @@ namespace Bloom.Book
 		public bool Feature_Blind { get; set; }
 		[JsonIgnore]
 		public bool Feature_SignLanguage { get; set; }
+		[JsonIgnore]
+		public bool Feature_TalkingBook { get; set; }
+		[JsonIgnore]
+		public bool Feature_Motion { get; set; }
+
 	}
 
 	/// <summary>

@@ -56,7 +56,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		private IAmazonS3 GetAmazonS3(string bucketName)
+		protected IAmazonS3 GetAmazonS3(string bucketName)
 		{
 			//Note, it would probably be fine to just generate this each time,
 			//but this was the more conservative approach when refactoring
@@ -341,7 +341,7 @@ namespace Bloom.WebLibraryIntegration
 		private static readonly string[] excludedFileExtensionsLowerCase = { ".db", ".bloompack", ".bak", ".userprefs", ".md", ".map" };
 		private AmazonS3Config _s3Config;
 		private string _previousBucketName;
-		private string _bucketName;
+		protected string _bucketName;
 
 		/// <summary>
 		/// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"

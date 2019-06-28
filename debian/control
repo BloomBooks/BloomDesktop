@@ -17,10 +17,10 @@ Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
 
 Package: bloom-desktop-alpha
 Architecture: any
-Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
+Depends: ${shlibs:Depends}, ${misc:Depends},
  mono4-sil, libgdiplus4-sil, gtk-sharp4-sil, gtklp,
  libgtk-3-0, libgtk3.0-cil,
- chmsee, libtidy-sil,
+ chmsee | xchm | kchmviewer, libtidy-sil,
  fonts-sil-andika-new-basic | fonts-sil-andikanewbasic,
  optipng, libsndfile1,
  wmctrl, lame, ghostscript,

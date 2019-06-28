@@ -102,7 +102,7 @@ namespace Bloom.Publish
 				return;
 
 			var haveEnterpriseFeatures = book.CollectionSettings.HaveEnterpriseFeatures;
-			var toBeDeleted = new List<XmlElement> ();
+			var toBeDeleted = new List<XmlElement>();
 			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
 			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
 			foreach (XmlElement page in pageElts)
@@ -263,7 +263,7 @@ namespace Bloom.Publish
 		/// <param name="bookServer"></param>
 		/// <param name="tempFolderPath"></param>
 		/// <returns></returns>
-		public static Book.Book MakeDeviceXmatterTempBook(Book.Book book, BookServer bookServer, string tempFolderPath)
+		public static Book.Book MakeDeviceXmatterTempBook(Book.Book book, BookServer bookServer, string tempFolderPath, HashSet<string> omittedPageLabels = null)
 		{
 			BookStorage.CopyDirectory(book.FolderPath, tempFolderPath);
 			// We will later copy these into the book's own folder and adjust the style sheet refs.
@@ -277,7 +277,7 @@ namespace Bloom.Publish
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
 			modifiedBook.BringBookUpToDate(new NullProgress(), true);
 			modifiedBook.AdjustCollectionStylesToBookFolder();
-			modifiedBook.RemoveNonPublishablePages();
+			modifiedBook.RemoveNonPublishablePages(omittedPageLabels);
 			var domForVideoProcessing = modifiedBook.OurHtmlDom;
 			var videoContainerElements = HtmlDom.SelectChildVideoElements(domForVideoProcessing.RawDom.DocumentElement).Cast<XmlElement>();
 			if (videoContainerElements.Any())
@@ -292,6 +292,47 @@ namespace Bloom.Publish
 			return modifiedBook;
 		}
 
+		// These four methods currently only apply to device publishing, because epubs don't use meta.json
+		// (though they have some of the same features in other metadata), and the features for bloom library
+		// publishing are affected by a very different UI. ('Blind' and 'sign language' are entirely
+		// controlled by the user, and uploading of audio by another set of controls, and there is no
+		// way currently to set the features that specify a motion book.)
+
+		// Set the metadata feature that indicates a book is accessible to the blind. Our current automated
+		// definition of this is the presence of image descriptions in the non-xmatter part of the book.
+		// This is very imperfect. Minimally, to be accessible to the blind, it should also be a talking book
+		// and everything, including image descriptions, should have audio; but talkingBook is a separate feature.
+		// Also we aren't checking that EVERY image has a description. What we have is therefore too weak,
+		// but EVERY image might be too strong...some may just be decorative. Then there are considerations
+		// like contrast and no essential information conveyed by color and other stuff that the DAISY code
+		// checks. If we were going to use this feature to actually help blind people find books they could
+		// use, we might well want a control (like in upload to BL) to allow the author to specify whether
+		// to claim the book is accessible to the blind. But currently this is just used for reporting the
+		// feature in analytics, so it's not worth bothering the author with something that has no obvious
+		// effect. If it has image descriptions, there's been at least some effort to make it accessible
+		// to the blind.
+		public static void SetBlindFeature(Book.Book book, BookMetaData metaData)
+		{
+			metaData.Feature_Blind =
+				book.RawDom.SelectSingleNode(".//*[contains(@class, 'bloom-page') and not(@data-xmatter-page)]//*[contains(@class, 'bloom-imageDescription')]") != null;
+		}
+
+		public static void SetMotionFeature(Book.Book book, BookMetaData metaData)
+		{
+			metaData.Feature_Motion = book.UseMotionModeInBloomReader;
+		}
+
+		public static void SetTalkingBookFeature(Book.Book book, BookMetaData metaData)
+		{
+			metaData.Feature_TalkingBook = book.HasAudio();
+		}
+
+		public static void SetSignLanguageFeature(Book.Book book, BookMetaData metaData)
+		{
+			var videoFolderPath = BookStorage.GetVideoFolderPath(book.FolderPath);
+			metaData.Feature_SignLanguage =
+				Directory.Exists(videoFolderPath) && Directory.EnumerateFiles(videoFolderPath).Any();
+		}
 		#region IDisposable Support
 		// This code added to correctly implement the disposable pattern.
 		private bool _isDisposed = false; // To detect redundant calls
@@ -330,5 +371,19 @@ namespace Bloom.Publish
 		}
 		#endregion
 
+		/// <summary>
+		/// If the page element has a label, collect it into the page labels set (if there is one;
+		/// it might be null).
+		/// </summary>
+		public static void CollectPageLabel(XmlElement pageElement, HashSet<string> omittedPageLabels)
+		{
+			if (omittedPageLabels == null)
+				return;
+			var label = pageElement.SelectSingleNode(".//div[@class='pageLabel']")?.InnerText;
+			if (!String.IsNullOrWhiteSpace(label))
+			{
+				omittedPageLabels.Add(label);
+			}
+		}
 	}
 }

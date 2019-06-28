@@ -124,7 +124,8 @@ input[type="checkbox"]:indeterminate::after {
     user-select: none; // Chrome
 }
 
-[contenteditable="true"] * {
+[contenteditable="true"] *,
+*[contenteditable="true"] {
     -moz-user-select: text; // Firefox
     -ms-user-select: text; // Edge/Internet Explorer
     user-select: text; // Chrome

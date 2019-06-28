@@ -479,6 +479,7 @@ namespace Bloom.Publish.BloomLibrary
 			var book = (Book.Book) e.Argument;
 			var languages = _languagesFlow.Controls.Cast<CheckBox>().Where(b => b.Checked).Select(b => b.Tag).Cast<string>().ToArray();
 			var includeNarrationAudio = _narrationAudioCheckBox.Checked;
+			book.BookInfo.MetaData.Feature_TalkingBook = includeNarrationAudio;
 			var includeBackgroundMusic = _backgroundMusicCheckBox.Checked;
 			var result = _model.UploadOneBook(book, _progressBox, _parentView, languages, !includeNarrationAudio, !includeBackgroundMusic, out _parseId);
 			e.Result = result;

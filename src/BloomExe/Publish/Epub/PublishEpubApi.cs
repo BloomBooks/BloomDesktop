@@ -288,6 +288,8 @@ namespace Bloom.Publish.Epub
 		{
 			// Enhance: this could be optimized (but it will require changes to EpubMaker, it assumes it only stages once)
 			PrepareToStageEpub();
+			// Initialize the settings to affect the first epub preview.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7316.
+			GetEpubSettingsForCurrentBook(_desiredEpubSettings);
 			EpubMaker.PublishImageDescriptions = _desiredEpubSettings.howToPublishImageDescriptions;
 			EpubMaker.RemoveFontSizes = _desiredEpubSettings.removeFontSizes;
 			return SetupEpubControlContent();
@@ -357,7 +359,10 @@ namespace Bloom.Publish.Epub
 				{
 					succeeded = UpdatePreview(newSettings, force, progress);
 					if (succeeded)
+					{
 						EpubMaker.SaveEpub(path, _progress);
+						_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_epubReady, _previewSrc);
+					}
 				}
 			} while (!succeeded && !EpubMaker.AbortRequested); // try until we get a complete epub, not interrupted by user changing something.
 		}

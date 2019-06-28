@@ -14,19 +14,19 @@
 // tried to figure out exactly what would achieve that.
 @TransparentHiglightColor: hsla(186.9, 49.1%, 65%, 0.45);
 @CheckboxPadding: 20px; // used to get hanging indent to work on convert whole book checkbox
+@VerticalMarginBetweenPreviewItems: 10px;
 
 // The badge in Add Page/Change Layout on pages that are BE-only is larger than the ones
 // on the toolbox More checkboxes.
 @bloom-enterprise-only-badge-font-size: 24px;
 
 body {
-    margin: 4px;
+    margin: 0px;
 }
 #mainContainer {
     border: none;
     margin: 0;
-    height: 490px;
-    width: 790px;
+    height: 600px;
     display: flex;
     flex-direction: row;
     box-sizing: border-box;
@@ -43,8 +43,8 @@ body {
     flex: 2;
     order: 2;
     height: auto;
-    min-width: 320px;
-    max-width: 370px; // in the standard dialog width, allows the other pane to be wide enough for 3 columns with scroll bar
+    min-width: 370px;
+    max-width: 420px; // in the standard dialog width, allows the other pane to be wide enough for 3 columns with scroll bar
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -68,7 +68,7 @@ body {
 .landscape {
     .previewImage {
         width: unset;
-        height: 200px;
+        height: 150px;
     }
 }
 .previewCaption {
@@ -80,12 +80,10 @@ body {
     padding-left: @PreviewPaneLeftPadding * 2;
 }
 
-.DescriptionText {
+#previewDescriptionTextContainer {
     white-space: normal;
-    max-height: 119px;
+    max-height: 150px;
     line-height: 1.5em;
-    overflow: hidden;
-    text-overflow: ellipsis;
     overflow-y: auto;
     margin-right: @PreviewPaneLeftPadding;
     margin-left: @PreviewPaneLeftPadding;
@@ -251,6 +249,7 @@ body {
     //center it
     display: block;
     margin: 20px;
+    margin-top: @VerticalMarginBetweenPreviewItems;
 
     padding: 10px;
     width: 200px;
@@ -266,6 +265,7 @@ body {
 .convertWholeBook {
     margin-left: @PreviewPaneLeftPadding;
     margin-right: @PreviewPaneLeftPadding;
+    margin-top: @VerticalMarginBetweenPreviewItems;
     display: block;
     padding-left: @CheckboxPadding;
     text-indent: -@CheckboxPadding;
@@ -283,6 +283,7 @@ body {
     color: @WarningColor;
     margin-left: @PreviewPaneLeftPadding; // rather arbitrary. I'd like it to be left-aligned with the picture.
     margin-right: @PreviewPaneLeftPadding;
+    margin-top: @VerticalMarginBetweenPreviewItems;
     line-height: 1.5em;
 }
 

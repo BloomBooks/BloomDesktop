@@ -1,3 +1,42 @@
+# 4.6
+
+## User Interface
+We added smarts to Bloom's user interface to use different fonts, as needed, in order to display various non-roman languages. This is not related to what you see in books, just the Bloom interface. Bloom now ships with Google's "noto" fonts for Arabic, Bengali, Devanagari, Thai, and CJK (Chinese, Japanese, Korean).
+
+This version is the beginning of a multi-version effort to move Bloom's UI to a more consistent and contemporary visual design language. We have chosen to move towards Google's Material Design, which is what users will be familiar with from their phones.
+
+## Collection Tab
+
+In Settings, we've added the option to use Kayah and Shan numeral systems.
+When opening a different collection, Bloom now offers you the last 9 collections you opened.
+
+## Edit Tab
+
+⭐ We added a completely new WYSIWYG Quiz page. You can control formatting, location in the book, and the content of the heading.
+⭐ You can now paste hyperlinks into books which will work when people use the digital verison of the book.
+⭐ You can now copy text from language translation speech bubbles.
+
+The "Add Page" dialog now clearly indicates which template pages are available only with Bloom Enterprise enabled.
+
+### Sign Language Books
+
+We have improved computer performance when working with sign language videos. Page thumbnails no longer include the first frame for the video (this was hard on memory and CPU).
+
+⭐We added a "Text above Video" template page.
+
+## Publish Tab
+
+### Bloom Reader Publish
+
+⭐ New, easier publish screen
+We added a preview that lets you interact with the book before publishing to a real device.
+We added new hints about publishing with USB and Wi-FI.
+We improved the smoothness of Talking Book playback by now playing only a single audio file per page. This means that highlighting is now based on timestamps, rather than on starting up individual audio files for each sentence.
+
+### ePUB Publish
+⭐ New, cleaner ePUB publish screen
+
+
 # 4.5
 
 ⭐ We have adjusted the background colors in order to provide a higher contrast for those with poor screens, lighting, or vision.

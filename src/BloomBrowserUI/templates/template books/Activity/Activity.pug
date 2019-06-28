@@ -1,0 +1,25 @@
+include ../standard-page-mixins.pug
+include ./simpleComprehensionQuiz.pug
+
+doctype html
+html
+	head
+		+metadata-standard
+		//- This "Book" name is used for saving the file, until the user enters a title
+		meta(name='defaultNameForDerivedBooks', content='Book')
+		meta(name='bloomBookId', content='b6794c5f-f7db-4ee9-a674-8cfeab8853d4')
+		//- Eventually, we'll remove Bloom's need for this.
+		meta(name='pageTemplateSource', content='Activity')
+		title 'Activity'
+		+stylesheets('Activity.css')
+		+standardStyles
+			= '\n'
+			| .QuizAnswer-style { font-size: 12pt !important;}
+			| .QuizQuestion-style {font-size: 12pt !important; font-weight: bold !important;}
+	body
+		+dataDiv
+			+bookVariable-title('en', 'Activity')
+			+bookVariable('styleNumberSequence', '*', '0')
+
+		//- Make sure any pages you (developers) add here include the '.enterprise-only' class at the page level.
+		+quizPage
