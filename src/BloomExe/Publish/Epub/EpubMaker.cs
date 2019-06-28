@@ -85,6 +85,7 @@ namespace Bloom.Publish.Epub
 		public const string kFontsFolder = "fonts";
 		public const string kVideoFolder = "video";
 		private Guid _thumbnailRequestId;
+		private HashSet<string> _omittedPageLabels = new HashSet<string>();
 
 		public static readonly string EpubExportRootFolder = Path.Combine(Path.GetTempPath(), kEPUBExportFolder);
 
@@ -270,7 +271,7 @@ namespace Bloom.Publish.Epub
 				// It should only be null while running unit tests.
 				// Eventually, we want a unit test that checks this device xmatter behavior.
 				// But don't have time for now.
-				_book = PublishHelper.MakeDeviceXmatterTempBook(_book, _bookServer, tempBookPath);
+				_book = PublishHelper.MakeDeviceXmatterTempBook(_book, _bookServer, tempBookPath, _omittedPageLabels);
 			}
 
 			// The readium control remembers the current page for each book.
@@ -300,12 +301,25 @@ namespace Bloom.Publish.Epub
 			var pageLabelProgress = progress.WithL10NPrefix("TemplateBooks.PageLabel.");
 			foreach (XmlElement pageElement in Book.GetPageElements())
 			{
-				var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
-				pageLabelProgress.Message(pageLabelEnglish, pageLabelEnglish);
 				// We could check for this in a few more places, but once per page seems enough in practice.
 				if (AbortRequested)
 					break;
-				MakePageFile(pageElement);
+				if (MakePageFile(pageElement, progress))
+				{
+					var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
+					pageLabelProgress.Message(pageLabelEnglish, pageLabelEnglish);
+				};
+			}
+
+			if (_omittedPageLabels.Any())
+			{
+				progress.Message("OmittedPages",
+					"The following pages were removed because they are not supported in ePUBs:",
+					MessageKind.Warning);
+				foreach (var label in _omittedPageLabels.OrderBy(x => x))
+				{
+					progress.MessageWithoutLocalizing(label, MessageKind.Warning);
+				}
 			}
 
 			string coverPageImageFile = "thumbnail-256.png";
@@ -959,11 +973,20 @@ namespace Bloom.Publish.Epub
 		/// <remarks>
 		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4288 for discussion of blank pages.
 		/// </remarks>
-		private void MakePageFile(XmlElement pageElement)
+		private bool MakePageFile(XmlElement pageElement, WebSocketProgress progress)
 		{
-			// nonprinting pages (e.g., comprehension questions) are omitted for now
-			if (pageElement.Attributes["class"]?.Value?.Contains("bloom-nonprinting") ?? false)
-				return;
+			// nonprinting pages (e.g., old-style comprehension questions) are omitted for now
+			// interactive pages (e.g., new-style quiz pages) are also omitted. We're drastically
+			// simplifying the layout of epub pages, and omitting most style sheets, and not including
+			// javascript, so even if the player supports all those things perfectly, they're not likely
+			// to work properly.
+			if ((pageElement.Attributes["class"]?.Value?.Contains("bloom-nonprinting") ?? false)
+			    || (pageElement.Attributes["class"]?.Value?.Contains("bloom-interactive-page") ?? false))
+			{
+				PublishHelper.CollectPageLabel(pageElement, _omittedPageLabels);
+				return false;
+			}
+
 			var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
 
 			// Note, the following stylsheet stuff can be quite bewildering...
@@ -1013,7 +1036,7 @@ namespace Bloom.Publish.Epub
 
 			// Check for a blank page before storing any data from this page or copying any files on disk.
 			if (IsBlankPage(pageDom.RawDom.DocumentElement))
-				return;
+				return false;
 
 			// Do this as the last cleanup step, since other things may be looking for these elements
 			// expecting them to be divs.
@@ -1070,6 +1093,8 @@ namespace Bloom.Publish.Epub
 				foreach (var pendingBackLink in pendingBackLinks)
 					pendingBackLink.Item1.SetAttribute("href", pageDocName + "#" + pendingBackLink.Item2);
 			}
+
+			return true;
 		}
 
 		/// <summary>

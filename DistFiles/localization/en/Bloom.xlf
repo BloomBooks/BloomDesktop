@@ -3239,6 +3239,11 @@
         <source xml:lang="en">No recorded audio image descriptions</source>
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.OmittedPages">
+        <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
+        <note>ID: PublishTab.Epub.OmittedPages</note>
+        <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content">
         <source xml:lang="en">Content</source>
         <note>ID: PublishTab.Epub.PageLabel.Content</note>
