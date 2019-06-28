@@ -81,47 +81,28 @@ namespace BloomTests.CLI
 		}
 
 		[Test]
-		public void PresetIsApp_A5LandscapeChangedToDevice16x9Landscape()
+		public void A5LandscapeChangedToDevice16x9Portrait()
 		{
 			var code = HydrateBookCommand.Handle(new HydrateParameters()
 			{
 				Path = _bookFolder.FolderPath,
-				Preset = "app",
+				Preset = "shellbook",
 				VernacularIsoCode = "en"
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
 			var html = File.ReadAllText(_eventualHtmlPath);
 			var xhtml = XmlHtmlConverter.GetXmlDomFromHtml(html);
-			AssertThatXmlIn.Dom(xhtml).HasAtLeastOneMatchForXpath("//div[contains(@class,'bloom-page') and contains(@class,'Device16x9Landscape')]");
+			AssertThatXmlIn.Dom(xhtml).HasAtLeastOneMatchForXpath("//div[contains(@class,'bloom-page') and contains(@class,'Device16x9Portrait')]");
 			Assert.That(!html.Contains("A5Landscape"));
 		}
 
-		/// <summary>
-		/// Eventually we need to have the app preset investigate whether to use the video xmatter or
-		/// the (at this time, non-existant) book-app xmatter. For now, we expect it to assume we have
-		/// a multimedia book.
-		/// </summary>
 		[Test]
-		public void PresetIsApp_XmatterSetToVideo()
+		public void XMatterIsFilledIn()
 		{
 			var code = HydrateBookCommand.Handle(new HydrateParameters()
 			{
 				Path = _bookFolder.FolderPath,
-				Preset = "app",
-				VernacularIsoCode = "en"
-			});
-			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
-			var html = File.ReadAllText(_eventualHtmlPath);
-			Assert.That(html.Contains("Opening Screen"));
-		}
-
-		[Test]
-		public void PresetIsApp_XMatterIsFilledIn()
-		{
-			var code = HydrateBookCommand.Handle(new HydrateParameters()
-			{
-				Path = _bookFolder.FolderPath,
-				Preset = "app",
+				Preset = "shellbook",
 				VernacularIsoCode = "en"
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
@@ -151,12 +132,12 @@ namespace BloomTests.CLI
 		}
 
 		[Test]
-		public void PresetIsApp_StylesheetAreRelativePaths()
+		public void StylesheetAreRelativePaths()
 		{
 			var code = HydrateBookCommand.Handle(new HydrateParameters()
 			{
 				Path = _bookFolder.FolderPath,
-				Preset = "app",
+				Preset = "shellbook",
 				VernacularIsoCode = "en"
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
@@ -169,16 +150,16 @@ namespace BloomTests.CLI
 			AssertThatXmlIn.Dom(dom)
 				.HasSpecifiedNumberOfMatchesForXpath("//link[@href='languageDisplay.css']", 1);
 			AssertThatXmlIn.Dom(dom)
-				.HasSpecifiedNumberOfMatchesForXpath("//link[@href='Video-XMatter.css']", 1);
+				.HasSpecifiedNumberOfMatchesForXpath("//link[@href='Device-XMatter.css']", 1);
 		}
 
 		[Test]
-		public void PresetIsApp_CreativeCommonsLicenseImageAdded()
+		public void CreativeCommonsLicenseImageAdded()
 		{
 			var code = HydrateBookCommand.Handle(new HydrateParameters
 			{
 				Path = _bookFolder.FolderPath,
-				Preset = "app",
+				Preset = "shellbook",
 				VernacularIsoCode = "en"
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
@@ -191,14 +172,14 @@ namespace BloomTests.CLI
 			var code = HydrateBookCommand.Handle(new HydrateParameters
 			{
 				Path = _bookFolder.FolderPath,
-				Preset = "app",
+				Preset = "shellbook",
 				VernacularIsoCode = "en"
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
 			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)
 				.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='contentLanguage1' and @lang='*' and text()='en']", 1);
 			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)
-				.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @contenteditable='true' and @lang='en']", 1);
+				.HasAtLeastOneMatchForXpath("//div[@data-book='bookTitle' and @contenteditable='true' and @lang='en']");
 		}
 
 		[Test]
@@ -207,66 +188,16 @@ namespace BloomTests.CLI
 			var code = HydrateBookCommand.Handle(new HydrateParameters
 			{
 				Path = _bookFolder.FolderPath,
-				Preset = "app",
+				Preset = "shellbook",
 				VernacularIsoCode = "en",
 				NationalLanguage1IsoCode = "fr",
 				NationalLanguage2IsoCode = "sp"
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
 			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)
-				.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @contenteditable='true' and @lang='fr' and contains(@class,'bloom-contentNational1')]", 1);
+				.HasAtLeastOneMatchForXpath("//div[@data-book='bookTitle' and @contenteditable='true' and @lang='fr' and contains(@class,'bloom-contentNational1')]");
 			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)
-				.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @contenteditable='true' and @lang='sp' and contains(@class,'bloom-contentNational2')]", 1);
-		}
-
-		[Test]
-		public void HasNoBloomPlayerScript_AddsOne()
-		{
-			var code = HydrateBookCommand.Handle(new HydrateParameters
-			{
-				Path = _bookFolder.FolderPath,
-				Preset = "app",
-				VernacularIsoCode = "en"
-			});
-			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
-			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)
-				.HasSpecifiedNumberOfMatchesForXpath("//head/script[contains(@src,'bloomPlayer.js')]",1);
-		}
-
-		[Test]
-		public void AlreadyBloomPlayerScript_DoesNotAddOne()
-		{
-			//TODO
-		}
-
-		[Test]
-		public void HasNoBloomPlayerFile_AddsOne()
-		{
-			var bloomPlayerPath = Path.Combine(Path.GetDirectoryName(_eventualHtmlPath), "bloomPlayer.js");
-			Assert.False(File.Exists(bloomPlayerPath));
-			HydrateBookCommand.Handle(new HydrateParameters
-			{
-				Path = _bookFolder.FolderPath,
-				Preset = "app",
-				VernacularIsoCode = "en"
-			});
-			Assert.True(File.Exists(bloomPlayerPath));
-		}
-
-		[Test]
-		public void AlreadyHasBloomPlayerFile_ReplacesIt()
-		{
-			var bloomPlayerPath = Path.Combine(Path.GetDirectoryName(_eventualHtmlPath), "bloomPlayer.js");
-			File.WriteAllText(bloomPlayerPath, "Some initial text in the file");
-			Assert.True(File.Exists(bloomPlayerPath));
-			Assert.True(new FileInfo(bloomPlayerPath).Length < 100);
-			HydrateBookCommand.Handle(new HydrateParameters
-			{
-				Path = _bookFolder.FolderPath,
-				Preset = "app",
-				VernacularIsoCode = "en"
-			});
-			Assert.True(new FileInfo(bloomPlayerPath).Length > 100);
+				.HasAtLeastOneMatchForXpath("//div[@data-book='bookTitle' and @contenteditable='true' and @lang='sp' and contains(@class,'bloom-contentNational2')]");
 		}
 	}
 }
