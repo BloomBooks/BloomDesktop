@@ -679,9 +679,19 @@ namespace Bloom.Edit
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 		}
 
+		private DataSet _pageDataBeforeEdits;
+
+		private DataSet GetPageData(XmlNode page)
+		{
+			var data = new DataSet();
+			CurrentBook.BookData.GatherDataItemsFromXElement(data, page, new HashSet<Tuple<string, string>>());
+			return data;
+		}
+
 		public void SetupServerWithCurrentPageIframeContents()
 		{
 			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
+			_pageDataBeforeEdits = GetPageData(_domForCurrentPage.RawDom);
 			CheckForBL2634("setup");
 			SetupPageZoom();
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
@@ -1019,7 +1029,8 @@ namespace Bloom.Edit
 					}
 					CheckForBL2634("save");
 					//OK, looks safe, time to save.
-					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage);
+					var newPageData = GetPageData(_domForCurrentPage.RawDom);
+					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage, !newPageData.SameAs(_pageDataBeforeEdits));
 					CheckForBL2634("finished save");
 				}
 				finally

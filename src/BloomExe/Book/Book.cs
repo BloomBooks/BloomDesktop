@@ -2329,12 +2329,13 @@ namespace Bloom.Book
 			return lastPageNumber;
 		}
 
+		public BookData BookData => _bookData;
 
 		/// <summary>
 		/// Earlier, we handed out a single-page version of the document. Now it has been edited,
 		/// so we now we need to fold changes back in
 		/// </summary>
-		public void SavePage(HtmlDom editedPageDom)
+		public void SavePage(HtmlDom editedPageDom, bool sharedDataWasChanged = true)
 		{
 			Debug.Assert(IsEditable);
 			try
@@ -2351,17 +2352,40 @@ namespace Bloom.Book
 				HtmlDom.ProcessPageAfterEditing(pageFromStorage, pageFromEditedDom);
 				HtmlDom.SetImageAltAttrsFromDescriptions(pageFromStorage, CollectionSettings.Language1Iso639Code);
 
-				_bookData.SuckInDataFromEditedDom(editedPageDom); //this will do an updatetitle
+				// The main condition for being able to just write the page is that no shareable data on the
+				// page changed during editing. If that's so we can skip this step.
+				if (sharedDataWasChanged)
+					_bookData.SuckInDataFromEditedDom(editedPageDom); //this will do an updatetitle
 
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles".
 				// Here we copy that over to the book DOM.
 				var userModifiedStyles = HtmlDom.GetUserModifiedStyleElement(editedPageDom.Head);
+				var stylesChanged = false;
 				if (userModifiedStyles != null)
 				{
-					GetOrCreateUserModifiedStyleElementFromStorage().InnerXml = userModifiedStyles.InnerXml;
+					var userModifiedStyleElementFromStorage = GetOrCreateUserModifiedStyleElementFromStorage();
+					if (userModifiedStyleElementFromStorage.InnerXml != userModifiedStyles.InnerXml)
+					{
+						userModifiedStyleElementFromStorage.InnerXml = userModifiedStyles.InnerXml;
+						stylesChanged = true; // note, this is not shared data in the sense that needs SuckInDataFromEditedDom
+					}
+
 					//Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
 				}
-				Save();
+
+				if (!sharedDataWasChanged && !stylesChanged)
+				{
+					// nothing changed outside this page. We can do a much more efficient write operation.
+					// (On a 200+ page book, like the one in BL-7253, this version of updating the page
+					// runs in about a half second instead of two and a half. Moreover, on such a book,
+					// running the full Save rather quickly fragments the heap...allocating about 16 7-megabyte
+					// memory chunks in each Save...to the point where Bloom runs out of memory.)
+					SaveForPageChanged(pageId, pageFromStorage);
+				}
+				else
+				{
+					Save();
+				}
 
 				Storage.UpdateBookFileAndFolderName(CollectionSettings);
 				//review used to have   UpdateBookFolderAndFileNames(data);
@@ -2766,6 +2790,14 @@ namespace Bloom.Book
 
 		public void Save()
 		{
+			// If you add something here, consider whether it is needed in SaveForPageChanged().
+			// I believe all the things currently here before the actual Save are not needed
+			// in the cases where we use SaveForPageChanged(). We switch to Save if any
+			// book data changed, which will be true if we're changing the title and thus
+			// the book's location. We also do a full Save after bringing the book up to date;
+			// after that, there shouldn't be any obsolete sound attributes.
+			// (In fact, since we bring a book up to date before editing, and that code
+			// does the removal, I don't see why it's needed here either.)
 			Guard.Against(HasFatalError, "Save failed: " + FatalErrorDescription);
 			Guard.Against(!IsEditable, "Tried to save a non-editable book.");
 			RemoveObsoleteSoundAttributes(OurHtmlDom);
@@ -2782,6 +2814,19 @@ namespace Bloom.Book
 			}
 			Storage.Save();
 
+			DoPostSaveTasks();
+		}
+
+		public void SaveForPageChanged(string pageId, XmlElement modifiedPage)
+		{
+			Guard.Against(HasFatalError, "Save failed: " + FatalErrorDescription);
+			Guard.Against(!IsEditable, "Tried to save a non-editable book.");
+			Storage.SaveForPageChanged(pageId, modifiedPage);
+			DoPostSaveTasks();
+		}
+
+		private void DoPostSaveTasks()
+		{
 			// Tell the accessibility checker window (and any future subscriber) to re-compute.
 			// This Task.Delay() helps even with a delay of 0, becuase it means we get to finish with this command.
 			// I'm chooing 1 second at the moment as that feels about the longest I would want to
