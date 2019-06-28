@@ -240,7 +240,7 @@ namespace Bloom.Book
 			var transparentImageFiles = new List<string>();
 			foreach (var div in xmlDom.SafeSelectNodes("//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-imageContainer')]").Cast<XmlElement>())
 			{
-				var style = div.GetStringAttribute("style");
+				var style = div.GetAttribute("style");
 				if (!String.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
 				{
 					System.Diagnostics.Debug.Assert(div.GetStringAttribute("class").Contains("bloom-backgroundImage"));
