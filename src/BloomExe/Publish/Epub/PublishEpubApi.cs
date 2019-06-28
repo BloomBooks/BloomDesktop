@@ -359,7 +359,10 @@ namespace Bloom.Publish.Epub
 				{
 					succeeded = UpdatePreview(newSettings, force, progress);
 					if (succeeded)
+					{
 						EpubMaker.SaveEpub(path, _progress);
+						_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_epubReady, _previewSrc);
+					}
 				}
 			} while (!succeeded && !EpubMaker.AbortRequested); // try until we get a complete epub, not interrupted by user changing something.
 		}
