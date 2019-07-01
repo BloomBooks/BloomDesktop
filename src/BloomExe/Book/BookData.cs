@@ -836,7 +836,12 @@ namespace Bloom.Book
 			foreach (XmlAttribute attribute in element.Attributes)
 			{
 				if (attribute.Name != kDataXmatterPage && attribute.Name.StartsWith("data-"))
+				{
+					// xmatter pages are not numbered.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7303.
+					if (attribute.Name == "data-page-number")
+						continue;
 					attributes.Add(new KeyValuePair<string, string>(attribute.Name, attribute.Value));
+				}
 			}
 
 			if (dataSet.XmatterPageDataAttributeSets.ContainsKey(xmatterPageKey))
