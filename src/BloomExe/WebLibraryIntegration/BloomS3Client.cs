@@ -243,9 +243,32 @@ namespace Bloom.WebLibraryIntegration
 			// Don't upload corrupt htms that have been repaired
 			foreach (var path in Directory.EnumerateFiles(destDirName, BookStorage.PrefixForCorruptHtmFiles + "*.htm"))
 				RobustFile.Delete(path);
+
+			CopyCollectionSettings(pathToBloomBookDirectory, destDirName);
+
 			UploadDirectory(prefix, wrapperPath, progress);
 
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
+		}
+
+		/// <summary>
+		/// Copy the collection settings files to a folder under the book being uploaded.  This
+		/// will provide the Harvester the necessary information to create eBook artifacts.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7343.
+		/// </remarks>
+		private void CopyCollectionSettings(string originalBookFolder, string uploadBookFolder)
+		{
+			var originalCollectionFolder = Path.GetDirectoryName(originalBookFolder);
+			var filesToCopy = new List<string>();
+			filesToCopy.AddRange(Directory.GetFiles(originalCollectionFolder, "*.css"));
+			filesToCopy.AddRange(Directory.GetFiles(originalCollectionFolder, "*.bloomCollection"));
+			filesToCopy.AddRange(Directory.GetFiles(originalCollectionFolder, "*.json"));
+			var settingsFolder = Path.Combine(uploadBookFolder, "collectionSettings");
+			Directory.CreateDirectory(settingsFolder);
+			foreach (var filepath in filesToCopy)
+				RobustFile.Copy(filepath, Path.Combine(settingsFolder, Path.GetFileName(filepath)));
 		}
 
 		private void ProcessVideosInTempDirectory(string destDirName)
