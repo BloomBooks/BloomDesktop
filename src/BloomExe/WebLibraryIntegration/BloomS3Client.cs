@@ -535,6 +535,9 @@ namespace Bloom.WebLibraryIntegration
 					return Guid.TryParse(match.Groups[2].Value, out dummy);
 				}
 			}
+			// We don't want the author's settings on the local machine.  (BL-7343)
+			if (objectKey.Contains("/collectionSettings/"))
+				return true;
 			return false;
 		}
 
