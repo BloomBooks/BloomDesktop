@@ -271,7 +271,7 @@ namespace Bloom.Publish.Epub
 				// It should only be null while running unit tests.
 				// Eventually, we want a unit test that checks this device xmatter behavior.
 				// But don't have time for now.
-				_book = PublishHelper.MakeDeviceXmatterTempBook(_book, _bookServer, tempBookPath, _omittedPageLabels);
+				_book = PublishHelper.MakeDeviceXmatterTempBook(_book.FolderPath, _bookServer, tempBookPath, _omittedPageLabels);
 			}
 
 			// The readium control remembers the current page for each book.
