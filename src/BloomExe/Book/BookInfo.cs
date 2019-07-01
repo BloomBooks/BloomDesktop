@@ -68,7 +68,7 @@ namespace Bloom.Book
 
 		public enum HowToPublishImageDescriptions
 		{
-			None, OnPage, Links
+			None, OnPage	//Removed Links in Bloom 4.6 on June 28, 2019.
 		}
 
 		public string Id

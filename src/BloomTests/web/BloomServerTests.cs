@@ -202,11 +202,12 @@ namespace BloomTests.web
 				// Verify get
 				Assert.That(transaction.ReplyContents, Is.EqualTo("None"));
 
+				// HowToPublishImageDescriptions.Links was removed in Bloom 4.6
 				// Try another
 				server.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions =
-					BookInfo.HowToPublishImageDescriptions.Links;
+					BookInfo.HowToPublishImageDescriptions.OnPage;
 				server.MakeReply(transaction);
-				Assert.That(transaction.ReplyContents, Is.EqualTo("Links"));
+				Assert.That(transaction.ReplyContents, Is.EqualTo("OnPage"));
 
 				// Post
 				transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/imageDesc",
