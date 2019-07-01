@@ -2129,6 +2129,9 @@ namespace Bloom.Book
 				// But only this strategy allows the code to be updated (e.g., to make the old and new
 				// versions of the page work properly together).
 				var sourcePath = Path.Combine(templatePage.Book.FolderPath, fileName);
+				// Don't try to copy a file over itself.  (See https://issues.bloomlibrary.org/youtrack/issue/BL-7349.)
+				if (sourcePath == destinationPath)
+					continue;
 				if (RobustFile.Exists(sourcePath))
 					RobustFile.Copy(sourcePath, destinationPath, true);
 			}
