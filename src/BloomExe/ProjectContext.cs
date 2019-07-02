@@ -526,10 +526,12 @@ namespace Bloom
 			get { return (BloomFileLocator)_scope.Resolve<IChangeableFileLocator>(); }
 		}
 
-		internal BookServer BookServer
+		public BookServer BookServer
 		{
 			get { return _scope.Resolve<BookServer>(); }
 		}
+
+		public BookThumbNailer ThumbNailer => _scope.Resolve<BookThumbNailer>();
 
 
 		public static string GetBloomAppDataFolder()
