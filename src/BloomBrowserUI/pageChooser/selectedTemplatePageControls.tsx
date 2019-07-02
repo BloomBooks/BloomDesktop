@@ -1,13 +1,13 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Div } from "../react_components/l10nComponents";
 import { Checkbox } from "../react_components/checkbox";
 import BloomButton from "../react_components/bloomButton";
-import { BloomApi } from "../utils/bloomApi";
 import { RequiresBloomEnterprise } from "../react_components/requiresBloomEnterprise";
 import { handleAddPageOrChooseLayoutButtonClick } from "./page-chooser";
 
 interface ISelectedTemplatePageProps {
+    enterpriseAvailable: boolean;
     caption?: string;
     imageSource?: string;
     pageDescription?: string;
@@ -23,17 +23,10 @@ interface ISelectedTemplatePageProps {
 export const SelectedTemplatePageControls: React.FunctionComponent<
     ISelectedTemplatePageProps
 > = (props: ISelectedTemplatePageProps) => {
-    const [enterpriseAvailable, setEnterpriseAvailable] = useState(true);
     const [continueChecked, setContinueChecked] = useState(false);
     const [convertWholeBookChecked, setConvertWholeBookChecked] = useState(
         false
     );
-
-    useEffect(() => {
-        BloomApi.get("common/enterpriseFeaturesEnabled", response => {
-            setEnterpriseAvailable(response.data);
-        });
-    }, []);
 
     const captionKey = "TemplateBooks.PageLabel." + props.caption;
     const descriptionKey =
@@ -50,7 +43,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<
     const enterpriseSubscriptionFault = (
         pageNeedsEnterprise: boolean | undefined
     ): boolean => {
-        return !enterpriseAvailable && !!pageNeedsEnterprise;
+        return !props.enterpriseAvailable && !!pageNeedsEnterprise;
     };
 
     const isAddOrChoosePageButtonEnabled = (): boolean => {

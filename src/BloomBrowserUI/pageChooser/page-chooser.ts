@@ -30,6 +30,7 @@ interface IGroupData {
 //                     \"templateBookUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryGroups/Templates/Basic Book/Basic Book.htm\"}]}"
 
 export class PageChooser {
+    private _enterpriseAvailable: boolean;
     private _templateBookUrls: Array<IGroupData>;
     private _defaultPageToSelect: string;
     private _orientation: string;
@@ -58,6 +59,10 @@ export class PageChooser {
 
         this._selectedGridItem = undefined;
         this._indexOfPageToSelect = 0;
+        // I was hoping to confine this to 'selectedTemplatePageControls.tsx', but we need it for the double-click handler.
+        BloomApi.get("common/enterpriseFeaturesEnabled", enterpriseResult => {
+            this._enterpriseAvailable = enterpriseResult.data;
+        });
     }
 
     // "Safely" from a type-checking point of view. The calling code is responsible
@@ -130,6 +135,7 @@ export class PageChooser {
                 ThemeProvider,
                 { theme: theme },
                 React.createElement(SelectedTemplatePageControls, {
+                    enterpriseAvailable: this._enterpriseAvailable,
                     caption: englishCaptionText ? englishCaptionText : "",
                     imageSource: imgSrc,
                     pageDescription: englishPageDescription
@@ -618,6 +624,12 @@ export class PageChooser {
         Array.from(thumbCovers).forEach((thumbCover: HTMLElement) => {
             thumbCover.addEventListener("dblclick", () => {
                 if (!this._selectedGridItem || !this._templateBookUrls) {
+                    return;
+                }
+                const pageIsEnterpriseOnly = this._selectedGridItem.classList.contains(
+                    "enterprise-only-flag"
+                );
+                if (pageIsEnterpriseOnly && !this._enterpriseAvailable) {
                     return;
                 }
                 const convertAnywayCheckbox = document.getElementById(
