@@ -910,6 +910,28 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void UpdatePageNumberAndSideClassOfPages_EmptyXmatterPageNumbers()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+					<div id='frontCover' class='bloom-page frontCover'/>
+					<div id='insideFrontCover' class='bloom-page insideFrontCover'/>
+					<div id='page-1' class='bloom-page numberedPage'/>
+					<div id='page-2' class='bloom-page numberedPage'/>
+					<div id='page-3' class='bloom-page numberedPage'/>
+					<div id='insideBackCover' class='bloom-page insideBackCover'/>
+					<div id='backCover' class='bloom-page backCover'/>
+				</body></html>");
+			dom.UpdatePageNumberAndSideClassOfPages("", false /* not rtl */);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='frontCover' and @data-page-number='']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='insideFrontCover' and @data-page-number='']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='page-1' and @data-page-number='1']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='page-2' and @data-page-number='2']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='page-3' and @data-page-number='3']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='insideBackCover' and @data-page-number='']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='backCover' and @data-page-number='']", 1);
+		}
+
+		[Test]
 		public void StripUnwantedTagsPreservingText_StripsEmbeddedSpan()
 		{
 			var tagsToPreserve = new[] { "div", "p", "br" };

@@ -1594,5 +1594,31 @@ namespace BloomTests.Book
 			var foo = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@id='foo']");
 			Assert.That(foo.InnerXml, Contains.Substring("<label>some label</label>"));
 		}
+
+		[Test]
+		public void GatherDataItemsFromXElement_OmitsDataPageNumber()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-xmatter-page='insideBackCover' data-page='required singleton' data-export='back-matter-inside-back-cover' data-page-number='3'></div>
+ 					<div data-xmatter-page='outsideBackCover' data-page='required singleton' data-export='back-matter-back-cover' data-page-number=''></div>
+				</div>
+				<div class='bloom-page'>
+					 <div id='foo' class='bloom-content1 bloom-editable' data-book='insideBackCover' lang='en'>
+						<label>some label</label>
+					</div>
+				</div>
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+
+			var pageNumber = data.GetXmatterPageDataAttributeValue("insideBackCover", "data-page-number");
+			var dataPage = data.GetXmatterPageDataAttributeValue("insideBackCover", "data-page");
+			Assert.That(pageNumber, Is.EqualTo(""));
+			Assert.That(dataPage, Is.EqualTo("required singleton"));
+			pageNumber = data.GetXmatterPageDataAttributeValue("outsideBackCover", "data-page-number");
+			dataPage = data.GetXmatterPageDataAttributeValue("outsideBackCover", "data-page");
+			Assert.That(pageNumber, Is.EqualTo(""));
+			Assert.That(dataPage, Is.EqualTo("required singleton"));
+		}
 	}
 }

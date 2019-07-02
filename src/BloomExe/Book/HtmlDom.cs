@@ -2088,7 +2088,8 @@ namespace Bloom.Book
 				// we could keep going through the back cover so long as the stylesheet
 				// ignores the numbers on those so no one will see them?
 				var number = GetPageNumberOfPage(pageDiv);
-				var numberInScript = number > 0 ? GetNumberStringRepresentation(number, charactersForDigits) : "";
+				// Don't set data-page-number for xmatter (or other unnumbered) pages.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7303.
+				var numberInScript = (number > 0 && HtmlDom.HasClass(pageDiv, "numberedPage")) ? GetNumberStringRepresentation(number, charactersForDigits) : "";
 				pageDiv.SetAttribute("data-page-number", numberInScript);
 				i++;
 			}
