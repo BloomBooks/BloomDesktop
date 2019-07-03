@@ -300,7 +300,7 @@ namespace BloomTests.Publish
 			string head = @"<meta charset='UTF-8'/>
 				<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
 				<link rel='stylesheet' href='basePage.css' type='text/css'/>
-				<link rel='stylesheet' href='languageDisplay.css' type='text/css'/>
+				<link rel='stylesheet' href='langVisibility.css' type='text/css'/>
 				<link rel='stylesheet' href='../customCollectionStyles.css'/>
 				<link rel='stylesheet' href='customBookStyles.css'/>" + extraHeadContent;
 			if (createPhysicalFile)

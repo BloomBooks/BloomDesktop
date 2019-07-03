@@ -314,7 +314,7 @@ namespace Bloom.Book
 			AddCreationTypeAttribute(pageDom);
 
 			pageDom.AddStyleSheet("editPaneGlobal.css");
-			pageDom.AddStyleSheet("languageDisplay.css");
+			pageDom.AddStyleSheet("");
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, CollectionSettings);
@@ -444,7 +444,7 @@ namespace Bloom.Book
 			pageDom.RemoveModeStyleSheets();
 			// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
 			// such time as it's clear if it matters.
-			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css", "languageDisplay.css"})
+			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css", "langVisibility.css"})
 			{
 				pageDom.AddStyleSheet(cssFileName);
 			}
@@ -978,6 +978,9 @@ namespace Bloom.Book
 			RepairBrokenSmallCoverCredits(bookDOM);
 			RepairCoverImageDescriptions(bookDOM);
 
+			progress.WriteStatus("Updating collection settings...");
+			UpdateCollectionSettings(bookDOM);
+
 			progress.WriteStatus("Repair page label localization");
 			RepairPageLabelLocalization(bookDOM);
 
@@ -1041,6 +1044,27 @@ namespace Bloom.Book
 
 			//we've removed and possible added pages, so our page cache is invalid
 			_pagesCache = null;
+		}
+
+		private void UpdateCollectionSettings(HtmlDom bookDom)
+		{
+			foreach (XmlElement link in bookDom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var fileName = link.GetStringAttribute("href");
+				if (fileName == "languageDisplay.css")
+					link.SetAttribute("href", "langVisibility.css");
+			}
+			if (bookDom == OurHtmlDom)
+			{
+				// Rename/remove files that have changed names.
+				if (RobustFile.Exists(Path.Combine(FolderPath, "languageDisplay.css")))
+				{
+					if (RobustFile.Exists(Path.Combine(FolderPath, "langVisibility.css")))
+						RobustFile.Delete(Path.Combine(FolderPath, "languageDisplay.css"));
+					else
+						RobustFile.Copy(Path.Combine(FolderPath, "languageDisplay.css"), Path.Combine(FolderPath, "langVisibility.css"));
+				}
+			}
 		}
 
 		/// <summary>
