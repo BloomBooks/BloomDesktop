@@ -125,14 +125,15 @@ namespace Bloom.Collection
 			_language2FontLabel.Text = string.Format(defaultFontText, lang2UiName);
 
 			var lang3UiName = string.Empty;
+			const string unsetLanguageName = "--";
 			if (string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
 			{
-				_language3Name.Text = "--";
+				_language3Name.Text = unsetLanguageName;
 				_removeLanguage3Link.Visible = false;
 				_language3FontLabel.Visible = false;
 				_fontComboLanguage3.Visible = false;
 				_fontSettings3Link.Visible = false;
-				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink", "Set...", "If there is no third language specified, the link changes to this.");
+				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink", "Set...", "If there is no third or sign language specified, the link changes to this.");
 			}
 			else
 			{
@@ -144,6 +145,24 @@ namespace Bloom.Collection
 				_fontComboLanguage3.Visible = true;
 				_fontSettings3Link.Visible = true;
 				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.ChangeLanguageLink", "Change...");
+			}
+
+			var signLangUiName = string.Empty;
+			if (string.IsNullOrEmpty(_collectionSettings.SignLanguageIso639Code))
+			{
+				_signLanguageName.Text = unsetLanguageName;
+				_removeSignLanguageLink.Visible = false;
+				_changeSignLanguageLink.Text = LocalizationManager.GetString(
+					"CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink", "Set...",
+					"If there is no third or sign language specified, the link changes to this.");
+			}
+			else
+			{
+				signLangUiName = _collectionSettings.GetSignLanguageName();
+				_signLanguageName.Text = string.Format("{0} ({1})", signLangUiName, _collectionSettings.SignLanguageIso639Code);
+				_removeSignLanguageLink.Visible = true;
+				_changeSignLanguageLink.Text =
+					LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.ChangeLanguageLink", "Change...");
 			}
 
 			_restartReminder.Visible = AnyReasonToRestart();
@@ -188,18 +207,35 @@ namespace Bloom.Collection
 		}
 		private void _removeSecondNationalLanguageButton_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			_collectionSettings.Language3Iso639Code = String.Empty;	// null causes a crash in trying to set it again (BL-5795)
+			_collectionSettings.Language3Iso639Code = string.Empty;	// null causes a crash in trying to set it again (BL-5795)
 			ChangeThatRequiresRestart();
 		}
 
-		private static LanguageInfo ChangeLanguage(string languageIdentifier, string potentiallyCustomName=null)
+		private void _signLanguageChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			var potentiallyCustomName = _collectionSettings.SignLanguageName;
+			var l = ChangeLanguage(_collectionSettings.SignLanguageIso639Code, potentiallyCustomName, false);
+			if (l != null)
+			{
+				_collectionSettings.SignLanguageIso639Code = l.LanguageTag;
+				_collectionSettings.SignLanguageName = l.DesiredName;
+				ChangeThatRequiresRestart();
+			}
+		}
+		private void _removeSignLanguageButton_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			_collectionSettings.SignLanguageIso639Code = string.Empty;
+			ChangeThatRequiresRestart();
+		}
+
+		private static LanguageInfo ChangeLanguage(string languageIdentifier, string potentiallyCustomName=null, bool showScriptAndVariantLink=true)
 		{
 			using (var dlg = new LanguageLookupDialog())
 			{
 				//at this point, we don't let them customize the national languages
 				dlg.IsDesiredLanguageNameFieldVisible = potentiallyCustomName != null;
 				dlg.IsShowRegionalDialectsCheckBoxVisible = true;
-				dlg.IsScriptAndVariantLinkVisible = true;
+				dlg.IsScriptAndVariantLinkVisible = showScriptAndVariantLink;
 
 				var language = new LanguageInfo() { LanguageTag = languageIdentifier};
 				if (!string.IsNullOrEmpty(potentiallyCustomName))
