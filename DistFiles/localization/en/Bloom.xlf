@@ -520,7 +520,7 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
         <source xml:lang="en">Set...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink</note>
-        <note>If there is no third language specified, the link changes to this.</note>
+        <note>If there is no third or sign language specified, the link changes to this.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
         <source xml:lang="en">Local Language</source>
@@ -534,6 +534,10 @@
         <source xml:lang="en">Language 3 (e.g. Regional Language)   (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language3Label</note>
         <note xml:lang="en">OLD TEXT (before 3.9, 1 fewer space): Language 3 (e.g. Regional Language)  (Optional)</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
+        <source xml:lang="en">Sign Language   (Optional)</source>
+        <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
         <source xml:lang="en">Bloom Collection Name</source>

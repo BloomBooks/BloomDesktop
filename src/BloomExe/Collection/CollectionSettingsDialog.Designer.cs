@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Bloom.Collection
@@ -80,6 +80,10 @@ namespace Bloom.Collection
 			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this._signLanguageLabel = new System.Windows.Forms.Label();
+			this._signLanguageName = new System.Windows.Forms.Label();
+			this._removeSignLanguageLink = new System.Windows.Forms.LinkLabel();
+			this._changeSignLanguageLink = new System.Windows.Forms.LinkLabel();
 			this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
@@ -108,6 +112,10 @@ namespace Bloom.Collection
 			// 
 			// tabPage1
 			// 
+			this.tabPage1.Controls.Add(this._removeSignLanguageLink);
+			this.tabPage1.Controls.Add(this._changeSignLanguageLink);
+			this.tabPage1.Controls.Add(this._signLanguageName);
+			this.tabPage1.Controls.Add(this._signLanguageLabel);
 			this.tabPage1.Controls.Add(this._removeLanguage3Link);
 			this.tabPage1.Controls.Add(this._changeLanguage3Link);
 			this.tabPage1.Controls.Add(this._changeLanguage2Link);
@@ -128,6 +136,61 @@ namespace Bloom.Collection
 			this.tabPage1.TabIndex = 0;
 			this.tabPage1.Text = "Languages";
 			this.tabPage1.UseVisualStyleBackColor = true;
+			// 
+			// _signLanguageLabel
+			// 
+			this._signLanguageLabel.AutoSize = true;
+			this._signLanguageLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._signLanguageLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._signLanguageLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._signLanguageLabel, "CollectionSettingsDialog.LanguageTab.SignLanguageOptional");
+			this._signLanguageLabel.Location = new System.Drawing.Point(27, 288);
+			this._signLanguageLabel.Name = "_signLanguageLabel";
+			this._signLanguageLabel.Size = new System.Drawing.Size(101, 19);
+			this._signLanguageLabel.TabIndex = 19;
+			this._signLanguageLabel.Text = "Sign Language   (Optional)";
+			// 
+			// _signLanguageName
+			// 
+			this._signLanguageName.AutoSize = true;
+			this._signLanguageName.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._signLanguageName, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._signLanguageName, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._signLanguageName, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._signLanguageName, "CollectionSettingsDialog._signLanguageLabel");
+			this._signLanguageName.Location = new System.Drawing.Point(26, 307);
+			this._signLanguageName.Name = "_signLanguageName";
+			this._signLanguageName.Size = new System.Drawing.Size(49, 19);
+			this._signLanguageName.TabIndex = 20;
+			this._signLanguageName.Text = "foobar";
+			// 
+			// _removeSignLanguageLink
+			// 
+			this._removeSignLanguageLink.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._removeSignLanguageLink, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._removeSignLanguageLink, null);
+			this._L10NSharpExtender.SetLocalizingId(this._removeSignLanguageLink, "CollectionSettingsDialog.LanguageTab.RemoveLanguageLink");
+			this._removeSignLanguageLink.Location = new System.Drawing.Point(159, 329);
+			this._removeSignLanguageLink.Name = "_removeSignLanguageLink";
+			this._removeSignLanguageLink.Size = new System.Drawing.Size(58, 19);
+			this._removeSignLanguageLink.TabIndex = 22;
+			this._removeSignLanguageLink.TabStop = true;
+			this._removeSignLanguageLink.Text = "Remove";
+			this._removeSignLanguageLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._removeSignLanguageButton_LinkClicked);
+			// 
+			// _changeSignLanguageLink
+			// 
+			this._changeSignLanguageLink.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._changeSignLanguageLink, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._changeSignLanguageLink, null);
+			this._L10NSharpExtender.SetLocalizingId(this._changeSignLanguageLink, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
+			this._changeSignLanguageLink.Location = new System.Drawing.Point(27, 329);
+			this._changeSignLanguageLink.Name = "_changeSignLanguageLink";
+			this._changeSignLanguageLink.Size = new System.Drawing.Size(65, 19);
+			this._changeSignLanguageLink.TabIndex = 21;
+			this._changeSignLanguageLink.TabStop = true;
+			this._changeSignLanguageLink.Text = "Change...";
+			this._changeSignLanguageLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._signLanguageChangeLink_LinkClicked);
 			// 
 			// _removeLanguage3Link
 			// 
@@ -835,5 +898,9 @@ namespace Bloom.Collection
 		private Label label3;
 		private CheckBox showTroubleShooterCheckBox;
 		private TabPage _enterpriseTab;
+		private LinkLabel _removeSignLanguageLink;
+		private LinkLabel _changeSignLanguageLink;
+		protected Label _signLanguageName;
+		protected Label _signLanguageLabel;
 	}
 }
