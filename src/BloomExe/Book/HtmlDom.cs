@@ -562,7 +562,7 @@ namespace Bloom.Book
 			var stylesheetsToIgnore = new List<string>();
 			// Remember, Linux filenames are case sensitive!
 			stylesheetsToIgnore.Add("basePage.css");
-			stylesheetsToIgnore.Add("languageDisplay.css");
+			stylesheetsToIgnore.Add("langVisibility.css");
 			stylesheetsToIgnore.Add("editMode.css");
 			stylesheetsToIgnore.Add("editOriginalMode.css");
 			stylesheetsToIgnore.Add("previewMode.css");

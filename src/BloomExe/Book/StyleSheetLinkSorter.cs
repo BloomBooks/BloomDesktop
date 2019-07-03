@@ -32,7 +32,7 @@ namespace Bloom.Book
 				//for the template-specific stuff, but we don't know those names
 
 				//NB: I (JH) don't for sure know yet what the order of this should be. I think it should be last-ish.
-				_values.Add("languageDisplay.css".ToLowerInvariant(), 1000);
+				_values.Add("langVisibility.css".ToLowerInvariant(), 1000);
 				_values.Add("settingsCollectionStyles.css".ToLowerInvariant(), 1500);
 				_values.Add("customCollectionStyles.css".ToLowerInvariant(), 2000); // the almost last word
 				_values.Add("customBookStyles.css".ToLowerInvariant(), 3000); // the very last word

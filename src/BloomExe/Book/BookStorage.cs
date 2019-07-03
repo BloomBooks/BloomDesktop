@@ -1608,7 +1608,7 @@ namespace Bloom.Book
 				Update("basePage.css");
 				Update("previewMode.css");
 				Update("origami.css");
-				Update("languageDisplay.css");
+				Update("langVisibility.css");
 
 				foreach (var path in Directory.GetFiles(FolderPath, "*.css"))
 				{
@@ -1924,7 +1924,7 @@ namespace Bloom.Book
 			dom.AddStyleSheet("previewMode.css");
 			dom.AddStyleSheet("basePage.css");
 			dom.AddStyleSheet("origami.css");
-			dom.AddStyleSheet("languageDisplay.css");
+			dom.AddStyleSheet("langVisibility.css");
 
 			// only add brandingCSS is there is one for the current branding
 			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", _collectionSettings.BrandingProjectKey, "branding.css");

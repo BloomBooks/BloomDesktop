@@ -76,7 +76,7 @@ namespace BloomTests.Book
 			_fileLocator = new Moq.Mock<IFileLocator>();
 			string root = FileLocationUtilities.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 			string xMatter = BloomFileLocator.GetInstalledXMatterDirectory();
-			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplay.css")).Returns("../notareallocation/languageDisplay.css");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("langVisibility.css")).Returns("../notareallocation/langVisibility.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("origami.css")).Returns("../notareallocation/origami.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("origamiEditing.css")).Returns("../notareallocation/origamiEditing.css");
