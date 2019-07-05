@@ -528,14 +528,14 @@ namespace Bloom.Collection
 
 				if (newLs != _collectionSettings.GetLanguageLineHeight(langNum))
 				{
-					// Clicking "OK" writes out settingsCollectionStyles.css which is all that is needed
+					// Clicking "OK" will lead to defaultLangStyles.css being written out, which is all that is needed
 					// for this to take immediate effect.
 					_collectionSettings.SetLanguageLineHeight(langNum, newLs);
 				}
 
 				if (newBreak != _collectionSettings.GetBreakLinesOnlyAtSpaces(langNum))
 				{
-					// Clicking "OK" writes out settingsCollectionStyles.css which is all that is needed
+					// Clicking "OK" will lead to defaultLangStyles.css being written out, which is all that is needed
 					// for this to take immediate effect.
 					_collectionSettings.SetBreakLinesOnlyAtSpaces(langNum, newBreak);
 				}

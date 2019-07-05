@@ -1837,7 +1837,7 @@ namespace Bloom.Book
 
 			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(PathToXMatterStylesheet));
 
-			EnsureHasLocalOrParentLink(dom, "settingsCollectionStyles.css");
+			EnsureHasLinkToStyleSheet(dom, "defaultLangStyles.css");
 
 			EnsureHasLocalOrParentLink(dom, "customCollectionStyles.css");
 
@@ -1848,14 +1848,12 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Files like CustomCollectionStyles or settingsCollectionStyles are usually found
-		/// in the parent directory, and we want a link with href like ../CustomCollectionStyles.css.
+		/// The master copy of customCollectionStyles.css is found in the parent directory, and
+		/// there may be a link with an href like "../customCollectionStyles.css".
 		/// But when publishing (e.g., to Android or Epub), we put those files in the book folder,
 		/// and the link needs to point there. In that case the file is typically found in both
 		/// places, so we preferentially link to the local one if found, though usually it isn't.
 		/// </summary>
-		/// <param name="dom"></param>
-		/// <param name="fileName"></param>
 		private void EnsureHasLocalOrParentLink(HtmlDom dom, string fileName)
 		{
 			var localPath = Path.Combine(FolderPath, fileName);
@@ -2060,9 +2058,6 @@ namespace Bloom.Book
 			bool overwriteInTargetDir = true;
 
 			var collectionDir = Path.GetDirectoryName(bookDir);
-			var settings = Path.Combine(collectionDir, "settingsCollectionStyles.css");
-			if (File.Exists(settings))
-				RobustFile.Copy(settings, Path.Combine(targetDir,"settingsCollectionStyles.css"), overwriteInTargetDir);
 			var custom = Path.Combine(collectionDir, "customCollectionStyles.css");
 			if (File.Exists(custom))
 				RobustFile.Copy(custom, Path.Combine(targetDir,"customCollectionStyles.css"), overwriteInTargetDir);
