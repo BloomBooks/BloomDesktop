@@ -565,15 +565,17 @@ namespace Bloom.Collection
 
 				if (newLs != _collectionSettings.GetLanguageLineHeight(langNum))
 				{
-					// Clicking "OK" writes out settingsCollectionStyles.css which is all that is needed
-					// for this to take immediate effect.
+					// Clicking "OK" will save the values into the .bloomCollection file.  (Later when a book
+					// is edited, defaultLangStyles.css will be written out in the book's folder, which is all
+					// that is needed for this setting to take effect.)
 					_collectionSettings.SetLanguageLineHeight(langNum, newLs);
 				}
 
 				if (newBreak != _collectionSettings.GetBreakLinesOnlyAtSpaces(langNum))
 				{
-					// Clicking "OK" writes out settingsCollectionStyles.css which is all that is needed
-					// for this to take immediate effect.
+					// Clicking "OK" will save the values into the .bloomCollection file.  (Later when a book
+					// is edited, defaultLangStyles.css will be written out in the book's folder, which is all
+					// that is needed for this setting to take effect.)
 					_collectionSettings.SetBreakLinesOnlyAtSpaces(langNum, newBreak);
 				}
 			}

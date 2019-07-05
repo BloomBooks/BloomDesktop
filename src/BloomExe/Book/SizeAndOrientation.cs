@@ -143,7 +143,7 @@ namespace Bloom.Book
 				// (This can happen even on Windows:  see https://issues.bloomlibrary.org/youtrack/issue/BL-7047.)
 				fileName = fileName.Replace("\\", "/");
 				var path = fileLocator.LocateFile(fileName);
-				// "../customCollectionStyles.css" and "../settingsCollectionStyles.css" won't be found when
+				// "../customCollectionStyles.css" won't be found when
 				// creating a book from a BloomPack shell book.
 				if (string.IsNullOrEmpty(path) && fileName.StartsWith("../"))
 					path = fileLocator.LocateFile(fileName.Substring(3));
