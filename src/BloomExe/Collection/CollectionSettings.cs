@@ -39,6 +39,7 @@ namespace Bloom.Collection
 		private string _language1Iso639Code;
 		private string _language2Iso639Code;
 		private string _language3Iso639Code;
+		private string _signLanguageIso639Code;
 		private LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
 		private const int kDefaultAudioRecordingTrimEndMilliseconds = 40;
 
@@ -219,10 +220,20 @@ namespace Bloom.Collection
 				Language3Name = GetLanguage3Name_NoCache(Language2Iso639Code);
 			}
 		}
+		public virtual string SignLanguageIso639Code
+		{
+			get { return _signLanguageIso639Code; }
+			set
+			{
+				_signLanguageIso639Code = value;
+				SignLanguageName = GetSignLanguageName_NoCache();
+			}
+		}
 
 		public virtual string Language1Name { get; set; }
 		public virtual string Language2Name { get; set; }
 		public virtual string Language3Name { get; set; }
+		public virtual string SignLanguageName { get; set; }
 
 		public virtual bool IsLanguage1Rtl { get; set; }
 		public virtual bool IsLanguage2Rtl { get; set; }
@@ -441,6 +452,26 @@ namespace Bloom.Collection
 				return "L2N-Unknown-" + Language3Iso639Code;
 			}
 		}
+		public string GetSignLanguageName()
+		{
+			if (!string.IsNullOrEmpty(SignLanguageIso639Code) && !string.IsNullOrEmpty(SignLanguageName))
+				return SignLanguageName;
+			return GetSignLanguageName_NoCache();
+		}
+		private string GetSignLanguageName_NoCache()
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(SignLanguageIso639Code))
+					return string.Empty;
+
+				return GetLanguageName(SignLanguageIso639Code, "");
+			}
+			catch (Exception)
+			{
+				return "SL-Unknown-" + SignLanguageIso639Code;
+			}
+		}
 		#endregion
 
 		/// ------------------------------------------------------------------------------------
@@ -453,9 +484,11 @@ namespace Bloom.Collection
 			library.Add(new XElement("Language1Name", Language1Name));
 			library.Add(new XElement("Language2Name", Language2Name));
 			library.Add(new XElement("Language3Name", Language3Name));
+			library.Add(new XElement("SignLanguageName", SignLanguageName));
 			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));
 			library.Add(new XElement("Language2Iso639Code", Language2Iso639Code));
 			library.Add(new XElement("Language3Iso639Code", Language3Iso639Code));
+			library.Add(new XElement("SignLanguageIso639Code", SignLanguageIso639Code));
 			library.Add(new XElement("DefaultLanguage1FontName", DefaultLanguage1FontName));
 			library.Add(new XElement("DefaultLanguage2FontName", DefaultLanguage2FontName));
 			library.Add(new XElement("DefaultLanguage3FontName", DefaultLanguage3FontName));
@@ -560,6 +593,7 @@ namespace Bloom.Collection
 				Language1Iso639Code = GetValue(library, "Language1Iso639Code", /* old name */GetValue(library, "Language1Iso639Code", ""));
 				Language2Iso639Code = GetValue(library, "Language2Iso639Code",  /* old name */GetValue(library, "National1Iso639Code", "en"));
 				Language3Iso639Code = GetValue(library, "Language3Iso639Code",  /* old name */GetValue(library, "National2Iso639Code", ""));
+				SignLanguageIso639Code = GetValue(library, "SignLanguageIso639Code",  /* old name */GetValue(library, "SignLanguageIso639Code", ""));
 				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
 
 				var style = GetValue(library, "PageNumberStyle", "Decimal");
@@ -590,6 +624,7 @@ namespace Bloom.Collection
 				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
 				Language2Name = GetValue(library, "Language2Name", GetLanguage2Name_NoCache(Language2Iso639Code));
 				Language3Name = GetValue(library, "Language3Name", GetLanguage3Name_NoCache(Language2Iso639Code));
+				SignLanguageName = GetValue(library, "SignLanguageName", GetSignLanguageName_NoCache());
 				DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
 				DefaultLanguage2FontName = GetValue(library, "DefaultLanguage2FontName", GetDefaultFontName());
 				DefaultLanguage3FontName = GetValue(library, "DefaultLanguage3FontName", GetDefaultFontName());
