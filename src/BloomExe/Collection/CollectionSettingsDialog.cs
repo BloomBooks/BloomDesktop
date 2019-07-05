@@ -228,7 +228,8 @@ namespace Bloom.Collection
 			ChangeThatRequiresRestart();
 		}
 
-		private static LanguageInfo ChangeLanguage(string languageIdentifier, string potentiallyCustomName=null, bool showScriptAndVariantLink=true)
+		public static LanguageInfo ChangeLanguage(string languageIdentifier, string potentiallyCustomName = null,
+			bool showScriptAndVariantLink = true)
 		{
 			using (var dlg = new LanguageLookupDialog())
 			{
