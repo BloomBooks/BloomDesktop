@@ -53,6 +53,40 @@ describe("Splitting text into sentences", function() {
         theOneLibSynphony.setExtraSentencePunctuation("");
     });
 
+    it("Split into sentences, get word count, multiple unicode characters in extra sentence punctuation", function() {
+        var extraPunctuationToTest = [
+            "\\u2013\\u2014",
+            "\\u2014\\u2013", // reversed order
+            "\\u2013 \\u2014", // space-delimited
+            "\\u2013\n\\u2014", // new line-delimited
+            "\\U2013 \\u2014", // first upper "u"
+            "\\u2013 \\U2014", // second upper "u"
+            "\\U2013 \\U2014", // both upper "u"
+            " \\U2013 \\U2014", // leading whitespace
+            "\\U2013 \\U2014 ", // trailing whitespace
+            "\\U2013  \\U2014" // extra whitespace
+        ];
+        var inputText =
+            "This is a sentence— This is a second– This is a third.";
+
+        for (var i = 0; i < extraPunctuationToTest.length; i++) {
+            theOneLibSynphony.setExtraSentencePunctuation(
+                extraPunctuationToTest[i]
+            );
+            var fragments = theOneLibSynphony.stringToSentences(inputText);
+            var sentences = _.filter(fragments, function(frag) {
+                return frag.isSentence;
+            });
+            expect(sentences.length).toBe(3);
+            expect(sentences[0].wordCount()).toBe(4);
+            expect(sentences[1].wordCount()).toBe(4);
+            expect(sentences[2].wordCount()).toBe(4);
+        }
+
+        // Reset it for the next test
+        theOneLibSynphony.setExtraSentencePunctuation("");
+    });
+
     it("Split into sentences, get word count (space is sentence-separating) - Thai", function() {
         var extraPunctuationToTest = ["\\u0020", "\\U0020"];
         var inputText = "ฉัน​มี​ยุง​ใน​บ้าน ฉัน​มี​ยุง​ใน​บ้าน";
