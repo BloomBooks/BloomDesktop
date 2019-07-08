@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Bloom.Collection;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
@@ -174,6 +175,13 @@ namespace Bloom.Publish.BloomLibrary
 			var bookInfoMetaData = _model.Book.BookInfo.MetaData;
 			_blindCheckBox.Checked = bookInfoMetaData.Feature_Blind;
 			_signLanguageCheckBox.Checked = bookInfoMetaData.Feature_SignLanguage;
+
+			// Set Sign Language link
+			_changeSignLanguageLinkLabel.Visible = _signLanguageCheckBox.Checked;
+			if (!string.IsNullOrEmpty(CurrentSignLanguageName))
+			{
+				_changeSignLanguageLinkLabel.Text = CurrentSignLanguageName;
+			}
 		}
 
 		private void UpdateAudioCheckBoxDisplay()
@@ -352,6 +360,15 @@ namespace Bloom.Publish.BloomLibrary
 			ScrollControlIntoView(_progressBox);
 			_progressBox.Clear();
 
+			if (_signLanguageCheckBox.Checked && string.IsNullOrEmpty(CurrentSignLanguageName))
+			{
+				// report error in progress and bail
+				_progressBox.WriteMessageWithColor(Color.Red,
+					LocalizationManager.GetString("PublishTab.Upload.ChooseSignLanguageWarning",
+					"Please choose the sign language for this book"));
+				return;
+			}
+
 			if (_model.IsTemplate)
 			{
 				var msg = LocalizationManager.GetString("PublishTab.Upload.Template",
@@ -477,11 +494,16 @@ namespace Bloom.Publish.BloomLibrary
 		void BackgroundUpload(object sender, DoWorkEventArgs e)
 		{
 			var book = (Book.Book) e.Argument;
-			var languages = _languagesFlow.Controls.Cast<CheckBox>().Where(b => b.Checked).Select(b => b.Tag).Cast<string>().ToArray();
+			var languages = _languagesFlow.Controls.Cast<CheckBox>().
+				Where(b => b.Checked).Select(b => b.Tag).Cast<string>().ToList();
+			if (_signLanguageCheckBox.Checked && !string.IsNullOrEmpty(book.CollectionSettings.SignLanguageIso639Code))
+			{
+				languages.Insert(0, book.CollectionSettings.SignLanguageIso639Code);
+			}
 			var includeNarrationAudio = _narrationAudioCheckBox.Checked;
 			book.BookInfo.MetaData.Feature_TalkingBook = includeNarrationAudio;
 			var includeBackgroundMusic = _backgroundMusicCheckBox.Checked;
-			var result = _model.UploadOneBook(book, _progressBox, _parentView, languages, !includeNarrationAudio, !includeBackgroundMusic, out _parseId);
+			var result = _model.UploadOneBook(book, _progressBox, _parentView, languages.ToArray(), !includeNarrationAudio, !includeBackgroundMusic, out _parseId);
 			e.Result = result;
 		}
 
@@ -513,6 +535,30 @@ namespace Bloom.Publish.BloomLibrary
 		private void _signLanguageCheckBox_CheckedChanged(object sender, EventArgs e)
 		{
 			_model.Book.BookInfo.MetaData.Feature_SignLanguage = _signLanguageCheckBox.Checked;
+			_changeSignLanguageLinkLabel.Visible = _signLanguageCheckBox.Checked;
+		}
+
+		private void _changeSignLanguageLinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			var collectionSettings = _model.Book.CollectionSettings;
+			var l = CollectionSettingsDialog.ChangeLanguage(collectionSettings.SignLanguageIso639Code, CurrentSignLanguageName, false);
+			if (l == null)
+			{
+				// no change; dialog cancelled
+				return;
+			}
+			_changeSignLanguageLinkLabel.Text = l.DesiredName;
+			collectionSettings.SignLanguageIso639Code = l.LanguageTag;
+			collectionSettings.SignLanguageName = l.DesiredName;
+			collectionSettings.Save();
+		}
+
+		private string CurrentSignLanguageName
+		{
+			get
+			{
+				return _model.Book.CollectionSettings.SignLanguageName;
+			}
 		}
 	}
 }

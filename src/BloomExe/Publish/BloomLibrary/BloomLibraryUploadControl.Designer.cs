@@ -68,6 +68,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._blindCheckBox = new System.Windows.Forms.CheckBox();
 			this._signLanguageCheckBox = new System.Windows.Forms.CheckBox();
 			this.label4 = new System.Windows.Forms.Label();
+			this._changeSignLanguageLinkLabel = new System.Windows.Forms.LinkLabel();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this._ccPanel = new System.Windows.Forms.Panel();
@@ -608,7 +609,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizableToolTip(this._signLanguageCheckBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._signLanguageCheckBox, null);
 			this._L10NSharpExtender.SetLocalizingId(this._signLanguageCheckBox, "PublishTab.Upload.SignLanguage");
-			this._signLanguageCheckBox.Location = new System.Drawing.Point(400, 3);
+			this._signLanguageCheckBox.Location = new System.Drawing.Point(174, 3);
 			this._signLanguageCheckBox.Margin = new System.Windows.Forms.Padding(3, 3, 35, 3);
 			this._signLanguageCheckBox.Name = "_signLanguageCheckBox";
 			this._signLanguageCheckBox.Size = new System.Drawing.Size(98, 17);
@@ -628,6 +629,22 @@ namespace Bloom.Publish.BloomLibrary
 			this.label4.Size = new System.Drawing.Size(44, 13);
 			this.label4.TabIndex = 24;
 			this.label4.Text = "optional";
+			// 
+			// _changeSignLanguageLinkLabel
+			// 
+			this._changeSignLanguageLinkLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+			this._changeSignLanguageLinkLabel.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._changeSignLanguageLinkLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._changeSignLanguageLinkLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._changeSignLanguageLinkLabel, "PublishTab.Upload.SetSignLanguageLink");
+			this._changeSignLanguageLinkLabel.Location = new System.Drawing.Point(310, 5);
+			this._changeSignLanguageLinkLabel.Name = "_changeSignLanguageLinkLabel";
+			this._changeSignLanguageLinkLabel.Size = new System.Drawing.Size(107, 13);
+			this._changeSignLanguageLinkLabel.TabIndex = 26;
+			this._changeSignLanguageLinkLabel.TabStop = true;
+			this._changeSignLanguageLinkLabel.Text = "Set Sign Language...";
+			this._changeSignLanguageLinkLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			this._changeSignLanguageLinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._changeSignLanguageLinkLabel_LinkClicked);
 			// 
 			// tableLayoutPanel1
 			// 
@@ -799,6 +816,7 @@ namespace Bloom.Publish.BloomLibrary
 			this.flowLayoutPanel1.AutoSize = true;
 			this.flowLayoutPanel1.Controls.Add(this._blindCheckBox);
 			this.flowLayoutPanel1.Controls.Add(this._signLanguageCheckBox);
+			this.flowLayoutPanel1.Controls.Add(this._changeSignLanguageLinkLabel);
 			this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 389);
 			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
@@ -905,5 +923,6 @@ namespace Bloom.Publish.BloomLibrary
 		private CheckBox _signLanguageCheckBox;
 		private Panel panel6;
 		private Label label4;
+		private LinkLabel _changeSignLanguageLinkLabel;
 	}
 }

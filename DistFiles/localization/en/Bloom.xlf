@@ -3495,6 +3495,10 @@
         <source xml:lang="en">CC-BY-NC</source>
         <note>ID: PublishTab.Upload.CcLink</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
+        <source xml:lang="en">Please choose the sign language for this book</source>
+        <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
@@ -3663,6 +3667,10 @@
         <source xml:lang="en">Please set this from the edit tab</source>
         <note>ID: PublishTab.Upload.PleaseSetThis</note>
         <note>This shows next to the license, if the license has not yet been set.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
+        <source xml:lang="en">Set Sign Language...</source>
+        <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage">
         <source xml:lang="en">Sign Language</source>
