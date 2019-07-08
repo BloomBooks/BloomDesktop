@@ -575,6 +575,8 @@ namespace Bloom.Collection
 			sb.AppendLine("}");
 		}
 
+		public static bool HarvesterMode { get; set; }
+
 		/// ------------------------------------------------------------------------------------
 		public void Load()
 		{
@@ -610,7 +612,7 @@ namespace Bloom.Collection
 					BrandingProjectKey = "Local-Community";
 				}
 
-				if (BrandingProjectKey != "Default" && BrandingProjectKey != "Local-Community")
+				if (BrandingProjectKey != "Default" && BrandingProjectKey != "Local-Community" && !HarvesterMode)
 				{
 					// Validate branding, so things can't be circumvented by just typing something into settings
 					var expirationDate = CollectionSettingsApi.GetExpirationDate(SubscriptionCode);
