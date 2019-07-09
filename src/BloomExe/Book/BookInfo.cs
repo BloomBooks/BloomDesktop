@@ -1087,6 +1087,11 @@ namespace Bloom.Book
 		[JsonIgnore]
 		public bool Feature_Motion { get; set; }
 
+		[JsonProperty("page-number-style")]
+		public string PageNumberStyle { get; set; }
+
+		[JsonProperty("language-display-names")]
+		public Dictionary<string,string> DisplayNames { get; set; }
 	}
 
 	/// <summary>

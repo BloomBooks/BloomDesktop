@@ -81,8 +81,8 @@ namespace BloomTests.Publish
 				"meta.json", // should be left alone
 				"readerStyles.css", // gets added
 				"Device-XMatter.css", // added when we apply this xmatter
-				"customCollectionStyles.css", // should be moved from parent directory
-				"settingsCollectionStyles.css" // should be moved from parent directory
+				"customCollectionStyles.css", // should be copied from parent directory
+				"defaultLangStyles.css"
 			};
 
 			TestHtmlAfterCompression(kMinimumValidBookHtml,
@@ -93,14 +93,12 @@ namespace BloomTests.Publish
 					File.Copy(SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"),
 						Path.Combine(folderPath, "thumbnail.png"));
 					File.WriteAllText(Path.Combine(folderPath, "previewMode.css"), @"This is wanted");
-					File.WriteAllText(Path.Combine(Path.GetDirectoryName(folderPath), "customCollectionStyles.css"), @"This is wanted");
-					File.WriteAllText(Path.Combine(Path.GetDirectoryName(folderPath), "settingsCollectionStyles.css"), @"This is wanted");
 				},
 				assertionsOnResultingHtmlString: html =>
 				{
-					// These two files get moved into the book folder, the links must get fixed
+					// These two files get moved/created into the book folder, the links must get fixed
 					Assert.That(html, Does.Contain("href=\"customCollectionStyles.css\""));
-					Assert.That(html, Does.Contain("href=\"settingsCollectionStyles.css\""));
+					Assert.That(html, Does.Contain("href=\"defaultLangStyles.css\""));
 					// The parent folder doesn't go with the book, so we shouldn't be referencing anything there
 					Assert.That(html, Does.Not.Contain("href=\"../"));
 				},
@@ -348,8 +346,8 @@ namespace BloomTests.Publish
 			var bookHtml = @"<html>
 								<head>
 									<meta charset='UTF-8'></meta>
-									<link rel='stylesheet' href='../settingsCollectionStyles.css' type='text/css'></link>
-									<link rel='stylesheet' href='../customCollectionStyles.css' type='text/css'></link>
+									<link rel='stylesheet' href='defaultLangStyles.css' type='text/css'></link>
+									<link rel='stylesheet' href='customCollectionStyles.css' type='text/css'></link>
 								</head>
 								<body>
 									<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
@@ -401,8 +399,8 @@ namespace BloomTests.Publish
 			var bookHtml = @"<html>
 <head>
 	<meta charset='UTF-8'></meta>
-	<link rel='stylesheet' href='../settingsCollectionStyles.css' type='text/css'></link>
-	<link rel='stylesheet' href='../customCollectionStyles.css' type='text/css'></link>
+	<link rel='stylesheet' href='defaultLangStyles.css' type='text/css'></link>
+	<link rel='stylesheet' href='customCollectionStyles.css' type='text/css'></link>
 </head>
 <body>
 	<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
@@ -605,8 +603,8 @@ namespace BloomTests.Publish
 			var bookHtml = @"<html>
 <head>
 	<meta charset='UTF-8'></meta>
-	<link rel='stylesheet' href='../settingsCollectionStyles.css' type='text/css'></link>
-	<link rel='stylesheet' href='../customCollectionStyles.css' type='text/css'></link>
+	<link rel='stylesheet' href='defaultLangStyles.css' type='text/css'></link>
+	<link rel='stylesheet' href='customCollectionStyles.css' type='text/css'></link>
 </head>
 <body>
 	<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
@@ -693,8 +691,8 @@ namespace BloomTests.Publish
 			var bookHtml = @"<html>
 								<head>
 									<meta charset='UTF-8'></meta>
-									<link rel='stylesheet' href='../settingsCollectionStyles.css' type='text/css'></link>
-									<link rel='stylesheet' href='../customCollectionStyles.css' type='text/css'></link>
+									<link rel='stylesheet' href='defaultLangStyles.css' type='text/css'></link>
+									<link rel='stylesheet' href='customCollectionStyles.css' type='text/css'></link>
 								</head>
 								<body>
 									<div id='bloomDataDiv'>

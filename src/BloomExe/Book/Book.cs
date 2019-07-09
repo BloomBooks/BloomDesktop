@@ -314,7 +314,7 @@ namespace Bloom.Book
 			AddCreationTypeAttribute(pageDom);
 
 			pageDom.AddStyleSheet("editPaneGlobal.css");
-			pageDom.AddStyleSheet("languageDisplay.css");
+			pageDom.AddStyleSheet("");
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, CollectionSettings);
@@ -444,7 +444,7 @@ namespace Bloom.Book
 			pageDom.RemoveModeStyleSheets();
 			// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
 			// such time as it's clear if it matters.
-			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css", "languageDisplay.css"})
+			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css", "langVisibility.css"})
 			{
 				pageDom.AddStyleSheet(cssFileName);
 			}
@@ -806,23 +806,6 @@ namespace Bloom.Book
 			}
 		}
 
-		/// <summary>
-		/// For Bloom Reader books (and ePUBs), we need to copy the collection level settings files
-		/// to go with the book.  Since these end up in the zip file with the book files, the link
-		/// references to them need to be adjusted to use the current directory, not the parent
-		/// directory (which won't really exist).
-		/// </summary>
-		public void AdjustCollectionStylesToBookFolder()
-		{
-			foreach (XmlElement styleLink in OurHtmlDom.SafeSelectNodes("/html/head/link[@rel='stylesheet']"))
-			{
-				if (styleLink.Attributes["href"].Value == "../settingsCollectionStyles.css")
-					styleLink.Attributes["href"].Value = "settingsCollectionStyles.css";
-				else if (styleLink.Attributes["href"].Value == "../customCollectionStyles.css")
-					styleLink.Attributes["href"].Value = "customCollectionStyles.css";
-			}
-		}
-
 		class GuidAndPath
 		{
 			public string Guid; // replacement guid
@@ -978,6 +961,9 @@ namespace Bloom.Book
 			RepairBrokenSmallCoverCredits(bookDOM);
 			RepairCoverImageDescriptions(bookDOM);
 
+			progress.WriteStatus("Updating collection settings...");
+			UpdateCollectionRelatedStylesAndSettings(bookDOM);
+
 			progress.WriteStatus("Repair page label localization");
 			RepairPageLabelLocalization(bookDOM);
 
@@ -1041,6 +1027,108 @@ namespace Bloom.Book
 
 			//we've removed and possible added pages, so our page cache is invalid
 			_pagesCache = null;
+		}
+
+		const string kCustomStyles = "customCollectionStyles.css";
+		const string kOldCollectionStyles = "settingsCollectionStyles.css";
+		/// <summary>
+		/// Adjust several external stylesheet links and associated files.  Also adjust some book level
+		/// settings (in json or html) to match current collection settings.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7343.
+		/// </remarks>
+		private void UpdateCollectionRelatedStylesAndSettings(HtmlDom bookDom)
+		{
+			foreach (XmlElement link in bookDom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var fileName = link.GetStringAttribute("href");
+				if (fileName == "languageDisplay.css")
+					link.SetAttribute("href", "langVisibility.css");
+				else if (fileName == kOldCollectionStyles || fileName == "../"+kOldCollectionStyles || fileName == "..\\"+kOldCollectionStyles)
+					link.SetAttribute("href", "defaultLangStyles.css");
+				else if (fileName == "../"+kCustomStyles || fileName == "..\\"+kCustomStyles)
+					link.SetAttribute("href", kCustomStyles);
+			}
+			// Rename/remove/create files that have changed names or locations to match link href changes above.
+			if (RobustFile.Exists(Path.Combine(FolderPath, "languageDisplay.css")))
+			{
+				if (RobustFile.Exists(Path.Combine(FolderPath, "langVisibility.css")))
+					RobustFile.Delete(Path.Combine(FolderPath, "languageDisplay.css"));
+				else
+					RobustFile.Move(Path.Combine(FolderPath, "languageDisplay.css"), Path.Combine(FolderPath, "langVisibility.css"));
+			}
+			if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles)))
+				RobustFile.Delete(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles));
+			CreateOrUpdateDefaultLangStyles();
+			// Copy files from collection to book folders to match link href changes above.
+			if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles)))
+				RobustFile.Copy(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles), Path.Combine(FolderPath, kCustomStyles), true);
+			// Update book settings from collection settings
+			UpdateCollectionSettingsInBookMetaData();
+			// Set primary book language attributes.
+			foreach (XmlElement body in bookDom.SafeSelectNodes("//body"))
+			{
+				body.SetAttribute("lang", CollectionSettings.Language1Iso639Code);
+			}
+			foreach (XmlElement pageDiv in bookDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			{
+				pageDiv.SetAttribute("lang", CollectionSettings.Language1Iso639Code);
+			}
+		}
+
+		private void CreateOrUpdateDefaultLangStyles()
+		{
+			Debug.WriteLine($"writing {FolderPath}/defaultLangStyles.css");
+			var path = Path.Combine(FolderPath, "defaultLangStyles.css");
+			var collectionStylesCss = CollectionSettings.GetCollectionStylesCss(false);
+			var cssBuilder = new StringBuilder(collectionStylesCss);
+			if (RobustFile.Exists(path))
+			{
+				var cssLangs = new HashSet<string>();
+				cssLangs.Add(CollectionSettings.Language1Iso639Code);
+				cssLangs.Add(CollectionSettings.Language2Iso639Code);
+				if (!String.IsNullOrEmpty(CollectionSettings.Language3Iso639Code))
+					cssLangs.Add(CollectionSettings.Language3Iso639Code);
+
+				var cssLines = RobustFile.ReadAllLines(path);
+				const string kLangTag = "[lang='";
+				var copyCurrentRule = false;
+				for (var index = 0 ; index < cssLines.Length; ++index)
+				{
+					var line = cssLines[index].Trim();
+					if (line.StartsWith(kLangTag))
+					{
+						var idxQuote = line.IndexOf("'", kLangTag.Length);
+						if (idxQuote > 0)
+						{
+							var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
+							copyCurrentRule = !cssLangs.Contains(lang);
+						}
+					}
+					if (copyCurrentRule)
+						cssBuilder.AppendLine(cssLines[index]);
+				}
+			}
+			RobustFile.WriteAllText(path, cssBuilder.ToString());
+		}
+
+		private void UpdateCollectionSettingsInBookMetaData()
+		{
+			Debug.WriteLine($"updating page number style and language display names in {FolderPath}/meta.json");
+			BookInfo.MetaData.PageNumberStyle = CollectionSettings.PageNumberStyle;
+			if (BookInfo.MetaData.DisplayNames == null)
+				BookInfo.MetaData.DisplayNames = new Dictionary<string,string>();
+			BookInfo.MetaData.DisplayNames[CollectionSettings.Language1Iso639Code] = CollectionSettings.Language1Name;
+			if (CollectionSettings.Language2Iso639Code != CollectionSettings.Language1Iso639Code)
+				BookInfo.MetaData.DisplayNames[CollectionSettings.Language2Iso639Code] = CollectionSettings.Language2Name;
+			if (!String.IsNullOrEmpty(CollectionSettings.Language3Iso639Code) &&
+				CollectionSettings.Language3Iso639Code != CollectionSettings.Language1Iso639Code &&
+				CollectionSettings.Language3Iso639Code != CollectionSettings.Language2Iso639Code)
+			{
+				BookInfo.MetaData.DisplayNames[CollectionSettings.Language3Iso639Code] = CollectionSettings.Language3Name;
+			}
+			// These settings will be saved to the meta.json file the next time the book itself is saved.
 		}
 
 		/// <summary>

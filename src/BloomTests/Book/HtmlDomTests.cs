@@ -182,13 +182,13 @@ namespace BloomTests.Book
 				<link rel='stylesheet' href='my special b.css' type='text/css' />
 				<link rel='stylesheet' href='Factory-Xmatter.css' type='text/css' />
 				<link rel='stylesheet' href='my special a.css' type='text/css' />
-				<link rel='stylesheet' href='../settingsCollectionStyles.css' type='text/css' />
+				<link rel='stylesheet' href='defaultLangStyles.css' type='text/css' />
 				<link rel='stylesheet' href='my special c.css' type='text/css' />
 				<link rel='stylesheet' href='Basic book.css' type='text/css' />
-				<link rel='stylesheet' href='../customCollectionStyles.css' type='text/css' />
+				<link rel='stylesheet' href='customCollectionStyles.css' type='text/css' />
 				<link rel='stylesheet' href='customBookStyles.css' type='text/css' />
 				<link rel='stylesheet' href='basePage.css' type='text/css' />
-				<link rel='stylesheet' href='languageDisplay.css' type='text/css' />
+				<link rel='stylesheet' href='langVisibility.css' type='text/css' />
 				<link rel='stylesheet' href='../../editMode.css' type='text/css' />
 
 				</head></html>";
@@ -207,10 +207,10 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[7][@href='my special c.css']", 1);
 
 			//NB: I (JH) don't for sure know yet what the order of this should be. I think it should be last-ish.
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[8][@href='languageDisplay.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[8][@href='langVisibility.css']", 1);
 
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[9][@href='../settingsCollectionStyles.css']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[10][@href='../customCollectionStyles.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[9][@href='defaultLangStyles.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[10][@href='customCollectionStyles.css']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[11][@href='customBookStyles.css']", 1);
 
 		}

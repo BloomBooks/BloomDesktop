@@ -886,20 +886,18 @@ namespace Bloom.Publish.Epub
 				if(name == "fonts.css")
 					continue; // generated file for this book, already copied to output.
 				string path;
-				if (name == "customCollectionStyles.css" || name == "settingsCollectionStyles.css")
+				if (name == "customCollectionStyles.css" || name == "defaultLangStyles.css")
 				{
-					// These two files should be in the original book's parent folder, not in some arbitrary place
-					// in our search path.
-					path = Path.Combine(Path.GetDirectoryName(_originalBook.FolderPath), name);
+					// These files should be in the book's folder, not in some arbitrary place in our search path.
+					path = Path.Combine(_originalBook.FolderPath, name);
 					// It's OK not to find these.
 					if (!File.Exists(path))
 					{
-						path = null;
+						continue;
 					}
-					else if (name == "settingsCollectionStyles.css")
+					else if (name == "defaultLangStyles.css")
 					{
 						ProcessSettingsForTextDirectionality(path);
-						continue;
 					}
 				}
 				else
@@ -907,8 +905,7 @@ namespace Bloom.Publish.Epub
 					var fl = Storage.GetFileLocator();
 					path = fl.LocateFileWithThrow(name);
 				}
-				if (path != null)
-					CopyFileToEpub(path, subfolder:kCssFolder);
+				CopyFileToEpub(path, subfolder:kCssFolder);
 			}
 		}
 
@@ -925,13 +922,6 @@ namespace Bloom.Publish.Epub
 				_directionSettings.Add(this.Book.CollectionSettings.Language2Iso639Code, this.Book.CollectionSettings.IsLanguage2Rtl ? "rtl" : "ltr");
 			if (!String.IsNullOrEmpty(this.Book.CollectionSettings.Language3Iso639Code) && !_directionSettings.ContainsKey(this.Book.CollectionSettings.Language3Iso639Code))
 				_directionSettings.Add(this.Book.CollectionSettings.Language3Iso639Code, this.Book.CollectionSettings.IsLanguage3Rtl ? "rtl" : "ltr");
-
-			using (var tmpdir = new BloomTemp.TemporaryFolder("settings"))
-			{
-				var newpath = Path.Combine(tmpdir.FolderPath, Path.GetFileName(path));
-				this.Book.CollectionSettings.SaveCollectionStylesCss(newpath, true);
-				CopyFileToEpub(newpath, subfolder:kCssFolder);
-			}
 		}
 
 		private void SetDirAttributes(HtmlDom pageDom)
@@ -2121,7 +2111,7 @@ namespace Bloom.Publish.Epub
 				var href = link.Attributes ["href"];
 				if (href != null && Path.GetFileName (href.Value).StartsWith ("custom"))
 					continue;
-				if (href != null && Path.GetFileName (href.Value) == "settingsCollectionStyles.css")
+				if (href != null && Path.GetFileName (href.Value) == "defaultLangStyles.css")
 					continue;
 				link.ParentNode.RemoveChild (link);
 			}

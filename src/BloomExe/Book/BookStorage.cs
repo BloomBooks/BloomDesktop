@@ -1608,7 +1608,7 @@ namespace Bloom.Book
 				Update("basePage.css");
 				Update("previewMode.css");
 				Update("origami.css");
-				Update("languageDisplay.css");
+				Update("langVisibility.css");
 
 				foreach (var path in Directory.GetFiles(FolderPath, "*.css"))
 				{
@@ -1617,10 +1617,13 @@ namespace Bloom.Book
 					// In BL-5824, we got bit by design decisions we made that allow stylesheets installed via bloompack and by new Bloom versions
 					// to replace local ones. This was done so that we could send out new Bloom implementation stylesheets via bloompack and in new Bloom versions
 					// and have those used in all the books. This works well for most stylesheets.
-					// But customBookStyles.css needs to be an exception; it's whole purpose is to let the local book override Bloom's normal
-					// behavior or anything in a bloompack.
-					// So customBookStyles.css is not overridden (BloomServer) or replaced (here)..
-					if (!file.ToLowerInvariant().Contains("custombookstyles"))
+					// But customBookStyles.css  and customCollectionStyles.css are exceptions; their whole purpose is to let the local book or collection
+					// override Bloom's normal behavior or anything in a bloompack.
+					// defaultLangStyles.css is another file that should not be updated because it is always generated from the local collection settings.
+					// So customBookStyles.css, customCollectionStyles.css, and defaultLangStyles.css are not overridden (BloomServer) or replaced (here).
+					if (!file.ToLowerInvariant().Contains("custombookstyles") &&
+						!file.ToLowerInvariant().Contains("customcollectionstyles") &&
+						!file.ToLowerInvariant().Contains("defaultlangstyles"))
 					{
 						Update(file);
 					}
@@ -1837,39 +1840,14 @@ namespace Bloom.Book
 
 			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(PathToXMatterStylesheet));
 
-			EnsureHasLocalOrParentLink(dom, "settingsCollectionStyles.css");
+			EnsureHasLinkToStyleSheet(dom, "defaultLangStyles.css");
 
-			EnsureHasLocalOrParentLink(dom, "customCollectionStyles.css");
+			EnsureHasLinkToStyleSheet(dom, "customCollectionStyles.css");
 
 			if (RobustFile.Exists(Path.Combine(FolderPath, "customBookStyles.css")))
 				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
 			else
 				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
-		}
-
-		/// <summary>
-		/// Files like CustomCollectionStyles or settingsCollectionStyles are usually found
-		/// in the parent directory, and we want a link with href like ../CustomCollectionStyles.css.
-		/// But when publishing (e.g., to Android or Epub), we put those files in the book folder,
-		/// and the link needs to point there. In that case the file is typically found in both
-		/// places, so we preferentially link to the local one if found, though usually it isn't.
-		/// </summary>
-		/// <param name="dom"></param>
-		/// <param name="fileName"></param>
-		private void EnsureHasLocalOrParentLink(HtmlDom dom, string fileName)
-		{
-			var localPath = Path.Combine(FolderPath, fileName);
-			if (RobustFile.Exists(localPath))
-			{
-				EnsureHasLinkToStyleSheet(dom, fileName);
-				return;
-			}
-
-			// Don't use Path.DirectorySeparatorChar here...we're going to use this path in an href
-			// where it should definitely be forward slash. And it works fine in a Windows path too.
-			var parentRelativePath = "../" + fileName;
-			if (RobustFile.Exists(Path.Combine(FolderPath, parentRelativePath)))
-				EnsureHasLinkToStyleSheet(dom, parentRelativePath);
 		}
 
 		public string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack)
@@ -1924,7 +1902,7 @@ namespace Bloom.Book
 			dom.AddStyleSheet("previewMode.css");
 			dom.AddStyleSheet("basePage.css");
 			dom.AddStyleSheet("origami.css");
-			dom.AddStyleSheet("languageDisplay.css");
+			dom.AddStyleSheet("langVisibility.css");
 
 			// only add brandingCSS is there is one for the current branding
 			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", _collectionSettings.BrandingProjectKey, "branding.css");
@@ -2047,27 +2025,6 @@ namespace Bloom.Book
 			foreach (var directory in Directory.GetDirectories(sourceDir))
 				CopyDirectory(directory, Path.Combine(targetDir, Path.GetFileName(directory)));
 		}
-
-		/// <summary>
-		/// Copy the collection level style files to the given folder.
-		/// </summary>
-		public static void CopyCollectionStyles(string bookDir, string targetDir)
-		{
-			// Overwrite any existing file in the target directory.
-			// If a file is present, that seems to mean the user has extraneous copy of a file which normally belongs in their collection folder in their book folder as well.
-			// Our policy is to ignore the one in the book folder and just use the one in their collection folder (which is where it belongs).
-			// (Note that we're only overwriting it in the target directory which is a temp directory. We're not overwriting anything in their book folder.)
-			bool overwriteInTargetDir = true;
-
-			var collectionDir = Path.GetDirectoryName(bookDir);
-			var settings = Path.Combine(collectionDir, "settingsCollectionStyles.css");
-			if (File.Exists(settings))
-				RobustFile.Copy(settings, Path.Combine(targetDir,"settingsCollectionStyles.css"), overwriteInTargetDir);
-			var custom = Path.Combine(collectionDir, "customCollectionStyles.css");
-			if (File.Exists(custom))
-				RobustFile.Copy(custom, Path.Combine(targetDir,"customCollectionStyles.css"), overwriteInTargetDir);
-		}
-
 
 		/// <summary>
 		/// Makes a copy of the book on disk and gives the new copy a unique guid

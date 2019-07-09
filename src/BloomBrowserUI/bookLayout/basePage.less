@@ -470,7 +470,7 @@ h2 {
     font-size: 1.2em;
 }
 /* we will have UI that switches this .box-header-on if th user wants it*/
-/* If this is not important, it can be overridden by display:flex in languageDisplayTemplate.css (BL-3555, BL-3711) */
+/* If this is not important, it can be overridden by display:flex in langVisibility.css (BL-3555, BL-3711) */
 .box-header-off {
     display: none !important;
 }
@@ -538,7 +538,7 @@ h2 {
 // We don't make the bloom-editable div display:flex here because that
 // would conflict with the rules that determine which of them are
 // visible. The rules that make them something other than display:none
-// must use display:flex. I think all of those are in languageDisplay.less.
+// must use display:flex. I think all of those are in langVisibility.less.
 .bloom-vertical-align-center {
     justify-content: center;
     &:not(.bloom-bilingual):not(.bloom-trilingual) .bloom-editable {
@@ -660,7 +660,7 @@ div[data-book*="branding"] {
     }
 }
 
-//... to be continued. We sandwich most other sheets between this one and the languageDisplay.css, which comes last-ish
+//... to be continued. We sandwich most other sheets between this one and the langVisibility.css, which comes last-ish
 
 // now apply any book features
 @import "bookFeatures.less";
