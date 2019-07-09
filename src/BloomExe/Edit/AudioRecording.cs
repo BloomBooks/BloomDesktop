@@ -208,6 +208,12 @@ namespace Bloom.Edit
 					_startRecordingTimer.Enabled = false;//we don't want it firing in a few milliseconds from now
 					return;
 				}
+				if (RecordingDevice == null && Recorder.RecordingState == RecordingState.NotYetStarted)
+				{
+					// We've already complained about no recording device, no need to complain about not recording.
+					request.PostSucceeded();
+					return;
+				}
 
 				//but this would handle it if there was some other reason
 				request.Failed("Got endRecording, but was not recording");
