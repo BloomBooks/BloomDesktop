@@ -70,7 +70,8 @@ var paths = {
         "./**/bloom-player/dist/bloomPlayer.min.js",
         "./**/bloom-player/dist/simpleComprehensionQuiz.js",
         "./**/bloom-player/dist/bloomplayer.htm",
-        "./**/bloom-player/dist/*.mp3"
+        "./**/bloom-player/dist/*.mp3",
+        "./**/bloom-player/dist/*.css"
     ],
     // List all the HTML files created by markdown or pug earlier in this gulp process.
     htmlFiles: ["../../output/browser/**/*-en.htm*"],
