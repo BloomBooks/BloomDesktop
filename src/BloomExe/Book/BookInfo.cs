@@ -802,6 +802,7 @@ namespace Bloom.Book
 						province = ProvinceName,
 						district = DistrictName,
 						features = Features,
+						internetLimits = InternetLimits
 						// Other fields are not needed by the web site and we don't expect they will be.
 					});
 			}
@@ -1092,6 +1093,14 @@ namespace Bloom.Book
 
 		[JsonProperty("language-display-names")]
 		public Dictionary<string,string> DisplayNames { get; set; }
+
+		// A json string used to limit what the user has access to (such as based on their location)
+		// example:
+		// {"downloadShell":{"countryCode":"PG"}}
+		// which would mean only users in Papua New Guinea can download this book for use as a shell.
+		// Currently, there is no UI for this. So, whatever the user enters in manually in meta.json gets passed to parse.
+		[JsonProperty("internetLimits")]
+		public dynamic InternetLimits { get; set; }
 	}
 
 	/// <summary>
