@@ -317,7 +317,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                         l10nKey="Settings.Enterprise.None"
                         value="None"
                     >
-                        None. Bloom will not show Enterprise features.
+                        None. Enterprise features will be unavailable.
                     </Radio>
                 </RadioGroup>
             </div>
