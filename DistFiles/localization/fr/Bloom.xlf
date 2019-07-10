@@ -768,7 +768,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink" approved="yes">
         <source xml:lang="en">Set...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink</note>
-        <note>If there is no third language specified, the link changes to this.</note>
+        <note>If there is no third or sign language specified, the link changes to this.</note>
         <target xml:lang="fr" state="translated">Choisir...</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel" approved="yes">
@@ -792,6 +792,11 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <note>ID: CollectionSettingsDialog.LanguageTab._language3Label</note>
         <note xml:lang="en">OLD TEXT (before 3.9, 1 fewer space): Language 3 (e.g. Regional Language)  (Optional)</note>
         <target xml:lang="fr" state="translated">Langue 3 (ex : langue régionale)   (facultatif)</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
+        <source xml:lang="en">Sign Language   (Optional)</source>
+        <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
+        <target xml:lang="fr" state="needs-translation">Sign Language   (Optional)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
@@ -1036,6 +1041,11 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
           <target xml:lang="fr">Étant donné qu'il s'agit d'une collection source, Bloom ne propose pas de canevas existants pour servir de sources à de nouveaux canevas. Pour ajouter une langue à un livre canevas, il vous faut éditer la collection qui contient le canevas concerné, plutôt que d'en faire une copie. En outre, le calendrier mural ne peut actuellement être utilisé pour créer un nouveau canevas.</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
+        <source xml:lang="en">Show translations which have not been approved yet</source>
+        <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
+        <target xml:lang="fr" state="needs-translation">Show translations which have not been approved yet</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
         <note>ID: CollectionTab.MakeBloomPackButton</note>
@@ -1198,6 +1208,12 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <note>ID: Common.Advanced</note>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
         <target xml:lang="fr" state="translated">Avancés</target>
+      </trans-unit>
+      <trans-unit id="Common.LearnMore" sil:dynamic="true">
+        <source xml:lang="en">Learn More</source>
+        <note>ID: Common.LearnMore</note>
+        <note>This is the same as Settings.Enterprise.LearnMore</note>
+        <target xml:lang="fr" state="translated">En savoir plus</target>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
@@ -1408,6 +1424,11 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
         <target xml:lang="fr" state="translated">La conversion à cette mise en page occasionnera une perte de contenu.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true">
+        <source xml:lang="en">This kind of page will be included only in digital book outputs, not in PDF.</source>
+        <note>ID: EditTab.AddPageDialog.DigitalPage</note>
+        <target xml:lang="fr" state="needs-translation">This kind of page will be included only in digital book outputs, not in PDF.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Could not find {0}</source>
@@ -1777,6 +1798,21 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
           <target xml:lang="fr">Quiz</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizAnswer-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Answer</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizAnswer-style</note>
+        <target xml:lang="fr" state="needs-translation">Quiz Answer</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizHeader-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Header</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizHeader-style</note>
+        <target xml:lang="fr" state="needs-translation">Quiz Header</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizQuestion-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Question</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizQuestion-style</note>
+        <target xml:lang="fr" state="needs-translation">Quiz Question</target>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Title On Cover</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style</note>
@@ -2135,10 +2171,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="EditTab.Image.CopyImageFailed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom had problems using your computer's clipboard. Some other program may be interfering.</source>
         <note>ID: EditTab.Image.CopyImageFailed</note>
-        <target xml:lang="fr" state="translated">Bloom n'a pas pu utiliser le presse-papiers de votre ordinateur. Il se peut qu'un autre logiciel interfère.</target>
-        <alt-trans>
-          <target xml:lang="fr">Bloom n'a pas pu utiliser le presse-papiers de votre ordinateur. Il se peut qu'un autre programme interfère.</target>
-        </alt-trans>
+        <target xml:lang="fr" state="translated">Bloom n'a pas pu utiliser le presse-papiers de votre ordinateur. Il se peut qu'un autre programme interfère.</target>
         <alt-trans>
           <target xml:lang="fr">Bloom ne pouvait pas utiliser le presse-papiers de son ordinateur. Il est possible qu'il y ait un conflit avec un autre programme.</target>
         </alt-trans>
@@ -2153,6 +2186,12 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <note>ID: EditTab.Image.EditMetadata</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Edit Image Credits, Copyright, and License</note>
         <target xml:lang="fr" state="translated">Modifier les mentions pour les Images, les Droits d'auteur &amp; la Licence</target>
+        <alt-trans>
+          <target xml:lang="fr">Modifier les crédits pour les Images, le copyright &amp; la licence</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Modifier les crédits pour les Images, le Copyright &amp; la Licence</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Modifier la licence, les droits d'auteur &amp; les mentions pour l'image</target>
         </alt-trans>
@@ -2436,7 +2475,10 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="EditTab.TextBoxProperties.OtherLanguagesLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use one of these for simple text boxes that are always in only one language.</source>
         <note>ID: EditTab.TextBoxProperties.OtherLanguagesLabel</note>
-        <target xml:lang="fr" state="translated">Utilisez l'un de ceux-ci pour un encadré simple toujours dans une seule langue.</target>
+        <target xml:lang="fr" state="translated">Utilisez l'une d'elles pour les zones de texte simples qui ne sont que dans une seule langue.</target>
+        <alt-trans>
+          <target xml:lang="fr">Utilisez l'une d'elle pour les zones de texte simples qui ne sont que dans une seule langue.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Utilisez l'une d'elles pour les simples encadrés qui ne sont que dans une seule langue.</target>
         </alt-trans>
@@ -4090,6 +4132,46 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
           <target xml:lang="fr">Mauvaise nouvelle. Faute de parvenir à faire s'afficher Adobe Reader, Bloom ne peut afficher votre livre terminé.\nMerci de désinstaller la version d'Adobe Reader existant sur votre ordinateur, puis de réinstaller ce logiciel.\nJusqu'à ce que vous ayez réglé ce problème, vous pouvez sauvegarder votre livre en PDF et l'ouvrir à partir d'un autre programme.</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en">Sharing .bloomd Files</source>
+        <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
+        <note />
+        <target xml:lang="fr" state="needs-translation">Sharing .bloomd Files</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
+        <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
+        <note>ID: PublishTab.Android.BloomD.Hint</note>
+        <note />
+        <target xml:lang="fr" state="needs-translation">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en"> USB is Difficult</source>
+        <note>ID: PublishTab.Android.USB.Hint.Heading</note>
+        <note />
+        <target xml:lang="fr" state="needs-translation"> USB is Difficult</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
+        <source xml:lang="en">To Send via USB, you may need to get the right
+                            cable, install phone drivers on your computer, or
+                            modify settings on your phone.</source>
+        <note>ID: PublishTab.Android.USB.Hint</note>
+        <note />
+        <target xml:lang="fr" state="needs-translation">To Send via USB, you may need to get the right
+                            cable, install phone drivers on your computer, or
+                            modify settings on your phone.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en">No Wi-Fi Network?</source>
+        <note>ID: PublishTab.Android.WiFi.Hint.Heading</note>
+        <note />
+        <target xml:lang="fr" state="needs-translation">No Wi-Fi Network?</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
+        <source xml:lang="en">There are several ways to start a temporary one.</source>
+        <note>ID: </note>
+        <note>This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network.</note>
+        <target xml:lang="fr" state="needs-translation">There are several ways to start a temporary one.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About Motion Books</source>
         <note>ID: PublishTab.Android.AboutMotionBooks</note>
@@ -4710,6 +4792,12 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
         <target xml:lang="fr" state="translated">Aucune description d'image enregistrée sous forme audio</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.OmittedPages">
+        <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
+        <note>ID: PublishTab.Epub.OmittedPages</note>
+        <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
+        <target xml:lang="fr" state="needs-translation">The following pages were removed because they are not supported in ePUBs:</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content" approved="yes">
         <source xml:lang="en">Content</source>
         <note>ID: PublishTab.Epub.PageLabel.Content</note>
@@ -5066,6 +5154,11 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <note>ID: PublishTab.Upload.CcLink</note>
         <target xml:lang="fr" state="translated">CC-BY-NC</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
+        <source xml:lang="en">Please choose the sign language for this book</source>
+        <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
+        <target xml:lang="fr" state="needs-translation">Please choose the sign language for this book</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting" approved="yes">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
@@ -5166,7 +5259,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</source>
         <note>ID: PublishTab.Upload.Login.AlreadyHaveAccount</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added space): We cannot sign you up with that address, because we already have an account with that address. Would you like to log in instead?</note>
-        <target xml:lang="fr" state="translated">Nous ne pouvons pas vous inscrire avec cette adresse, parce que nous avons déjà un compte avec cette adresse. Souhaitez-vous agir autrement et vous connecter ?</target>
+        <target xml:lang="fr" state="translated">Nous ne pouvons pas vous inscrire avec cette adresse, parce qu'un compte avec cette adresse existe déjà. Souhaitez-vous à la place vous connecter ?</target>
         <alt-trans>
           <target xml:lang="fr">Nous ne pouvons pas vous inscrire avec cette adresse, parce que nous avons déjà un compte avec cette adresse. Souhaitez-vous à la place vous connecter ?</target>
         </alt-trans>
@@ -5308,6 +5401,11 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <alt-trans>
           <target xml:lang="fr">Merci de la définir depuis l'onglet éditer</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
+        <source xml:lang="en">Set Sign Language...</source>
+        <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
+        <target xml:lang="fr" state="needs-translation">Set Sign Language...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
@@ -6010,7 +6108,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ScriptSettingsDialog.TallerLinesCheckBox" approved="yes">
         <source xml:lang="en">This script requires taller lines</source>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
-        <target xml:lang="fr" state="translated">Cette écriture a besoin d’un espace interligne plus large</target>
+        <target xml:lang="fr" state="translated">Cette écriture a besoin d’un interligne plus grand</target>
         <alt-trans>
           <target xml:lang="fr">Cette écriture a besoin de lignes plus larges</target>
         </alt-trans>
@@ -6165,6 +6263,11 @@ Do you want to go ahead?</note>
         <alt-trans>
           <target xml:lang="fr">A employer avec le format paysage.</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
+        <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
+        <target xml:lang="fr" state="needs-translation">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>

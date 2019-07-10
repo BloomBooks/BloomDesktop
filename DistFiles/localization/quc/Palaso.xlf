@@ -969,20 +969,29 @@
           <target xml:lang="quc">K'utik k'i taq ka'yib'al</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordNotice">
-        <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
+      <trans-unit id="SettingsProtection.PasswordNotice" approved="yes">
+        <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page.</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
-        <target xml:lang="quc" state="translated">Le Retal okib'al rech le ajb'anal rech chi kech taq we utz'aqatisaxik are "{0}". We ksach chi awech, junalik kakoj ri Google chech utzukuxik "{1}" y "{2}"</target>
+        <target xml:lang="quc" state="translated">Le retal okib'al rech le b'anal rech chi kech taq we utz'aqatisaxik are "{0}". We ksach chi awech, junalik kuya'o kasolij le uxaq rech tob'anik {1}.</target>
+        <alt-trans>
+          <target xml:lang="quc">Le Retal okib'al rech le ajb'anal rech chi kech taq we utz'aqatisaxik are "{0}". We ksach chi awech, junalik kakoj ri Google chech utzukuxik "{1}" y "{2}"</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc">Ri retal okib'al rech ri b'anib'al rech taq we usuk'umaxik are "{0}". We ksach chi awech, junalik kakoj ri Google chech utzukuxik "{1}" y "{2}".</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl">
+      <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl" approved="yes">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
         <note>ID: SettingsProtection.PasswordNoticeWithSupportUrl</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNotice". Param 0: Factory password; Param 1: product name; Param 2: URL of support page</note>
-        <target xml:lang="quc" state="translated">Le retal rech la ajb'anale rech chi kech usuk'umaxik are "{0}". We ksach chi awech, junalik kakoj ri uxaq che to'b'anem {1} en: {2}</target>
+        <target xml:lang="quc" state="translated">Le retal okib'al rech le b'anal rech chi kech taq we utz'aqatisaxik are "{0}". We ksach chi awech, junalik kuya'o kasolij le uxaq rech tob'anik {1} pa: {2}</target>
+        <alt-trans>
+          <target xml:lang="quc">Le retal okib'al rech le b'anal rech chi kech taq we utz'aqatisaxik are "{0}". We ksach chi awech, junalik kuya'o kasolij le uxaq rech tob'anik {1} en: {2}</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">Le retal rech la ajb'anale rech chi kech usuk'umaxik are "{0}". We ksach chi awech, junalik kakoj ri uxaq che to'b'anem {1} en: {2}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
@@ -1008,11 +1017,14 @@
           <target xml:lang="quc">Ub'ixkil tzij</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="VoiceIdentifierView.betterLabel1">
+      <trans-unit id="VoiceIdentifierView.betterLabel1" approved="yes">
         <source xml:lang="en">In applications which support this option, fields with this input system will be able to play and record voice.</source>
         <note>ID: VoiceIdentifierView.betterLabel1</note>
         <note>Displayed if a user selects the voice special option in writing system setup</note>
-        <target xml:lang="quc" state="translated">Pa taq ri ukojik che kuq'iy we jun ub'eyal, ri upam ruk' wa' we wokchakub'al rech okib'al kixkowinik kik'olo xuquje' kik'iyirisaj ri ch'ab'alil.</target>
+        <target xml:lang="quc" state="translated">Pa taq le kemchakub'al ri kuq'i' we ya'tal ucha'ik, le upam ruk' we wokchakub'al ri' rech okib'al kab'an kowinik kk'olik xuquje' kk'iyirisaj ri ch'ab'alil.</target>
+        <alt-trans>
+          <target xml:lang="quc">Pa taq ri ukojik che kuq'iy we jun ub'eyal, ri upam ruk' wa' we wokchakub'al rech okib'al kixkowinik kik'olo xuquje' kik'iyirisaj ri ch'ab'alil.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>

@@ -735,7 +735,7 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink" approved="yes">
         <source xml:lang="en">Set...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink</note>
-        <note>If there is no third language specified, the link changes to this.</note>
+        <note>If there is no third or sign language specified, the link changes to this.</note>
         <target xml:lang="bn" state="translated">সেট...</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel" approved="yes">
@@ -753,6 +753,11 @@
         <note>ID: CollectionSettingsDialog.LanguageTab._language3Label</note>
         <note xml:lang="en">OLD TEXT (before 3.9, 1 fewer space): Language 3 (e.g. Regional Language)  (Optional)</note>
         <target xml:lang="bn" state="translated">ভাষা 3 (উদাহরণস্বরূপ আঞ্চলিক ভাষা) (ঐচ্ছিক)</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
+        <source xml:lang="en">Sign Language   (Optional)</source>
+        <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
+        <target xml:lang="bn" state="needs-translation">Sign Language   (Optional)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
@@ -955,6 +960,11 @@
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
         <target xml:lang="bn" state="translated">কারণ এটি উৎসের সংগ্রহ, ব্লুম নতুন শেলের জন্য কোন বিদ্যমান শেল অফার করছে না।যদি আপনি শেলে একটি ভাষা যুক্ত করতে চান, শেলটির সংগ্রহ সম্পাদন করার চেয়ে একটি কপি তৈরি করুন।এছাড়াও, বর্তমানে দেওয়াল ক্যালেন্ডার নতুন শেল তৈরি করতে পারছে না।</target>
       </trans-unit>
+      <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
+        <source xml:lang="en">Show translations which have not been approved yet</source>
+        <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
+        <target xml:lang="bn" state="needs-translation">Show translations which have not been approved yet</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
         <note>ID: CollectionTab.MakeBloomPackButton</note>
@@ -1105,6 +1115,12 @@
         <alt-trans>
           <target xml:lang="bn">অ্যাডভান্সড</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="Common.LearnMore" sil:dynamic="true">
+        <source xml:lang="en">Learn More</source>
+        <note>ID: Common.LearnMore</note>
+        <note>This is the same as Settings.Enterprise.LearnMore</note>
+        <target xml:lang="bn" state="needs-translation">Learn More</target>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
@@ -1309,6 +1325,11 @@
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
         <target xml:lang="bn" state="translated">এই লেআউটে রূপান্তর করা হলে কিছু জিনিস হারিয়ে যেতে পারে।</target>
+      </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true">
+        <source xml:lang="en">This kind of page will be included only in digital book outputs, not in PDF.</source>
+        <note>ID: EditTab.AddPageDialog.DigitalPage</note>
+        <target xml:lang="bn" state="needs-translation">This kind of page will be included only in digital book outputs, not in PDF.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Could not find {0}</source>
@@ -1686,6 +1707,21 @@
         <alt-trans>
           <target xml:lang="bn">কুইজ</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizAnswer-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Answer</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizAnswer-style</note>
+        <target xml:lang="bn" state="needs-translation">Quiz Answer</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizHeader-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Header</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizHeader-style</note>
+        <target xml:lang="bn" state="needs-translation">Quiz Header</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizQuestion-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Question</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizQuestion-style</note>
+        <target xml:lang="bn" state="needs-translation">Quiz Question</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Title On Cover</source>
@@ -3076,7 +3112,7 @@
         <note>This text appears if an error occurs while perfoming automatic splitting of audio (an audio file corresponding to an entire text box will be split into multiple sections, one section per sentence).</note>
         <target xml:lang="bn" state="needs-translation">Something went wrong while splitting the recording.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel" approved="yes">
         <source xml:lang="en">Split</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
         <note>This text appears on the button the user can press to trigger automatic splitting of audio. An audio file corresponding to an entire text box will be split into multiple audio files (one per sentence) instead. (Also known as "Forced Alignment" in technical terms)</note>
@@ -3829,6 +3865,46 @@
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
         <target xml:lang="bn" state="translated">দুঃখের খবর। ব্লুম এখানে এডোবি রিডারে দেখানোর জন্য সমর্থ ছিল না, তাই ব্লুম আপনার সম্পূর্ণ বইটি দেখাতে পারছে না।\nঅনুগ্রহ করে 'এডোবি রিডার' এর বিদ্যমান সংস্করণ আনইনস্টল করুন এবং 'এডোবি রিডার' (পুনরায়) ইনস্টল করুন।\nআপনি সেটি সমাধান না করা পর্যন্ত, আপনি তখনও পিডিএফ বইটি সংরক্ষণ করতে পারেন এবং অন্যান্য প্রোগ্রামে এটি খুলতে পারবেন।</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en">Sharing .bloomd Files</source>
+        <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
+        <note/>
+        <target xml:lang="bn" state="needs-translation">Sharing .bloomd Files</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
+        <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
+        <note>ID: PublishTab.Android.BloomD.Hint</note>
+        <note/>
+        <target xml:lang="bn" state="needs-translation">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en"> USB is Difficult</source>
+        <note>ID: PublishTab.Android.USB.Hint.Heading</note>
+        <note/>
+        <target xml:lang="bn" state="needs-translation"> USB is Difficult</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
+        <source xml:lang="en">To Send via USB, you may need to get the right
+                            cable, install phone drivers on your computer, or
+                            modify settings on your phone.</source>
+        <note>ID: PublishTab.Android.USB.Hint</note>
+        <note/>
+        <target xml:lang="bn" state="needs-translation">To Send via USB, you may need to get the right
+                            cable, install phone drivers on your computer, or
+                            modify settings on your phone.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en">No Wi-Fi Network?</source>
+        <note>ID: PublishTab.Android.WiFi.Hint.Heading</note>
+        <note/>
+        <target xml:lang="bn" state="needs-translation">No Wi-Fi Network?</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
+        <source xml:lang="en">There are several ways to start a temporary one.</source>
+        <note>ID: </note>
+        <note>This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network.</note>
+        <target xml:lang="bn" state="needs-translation">There are several ways to start a temporary one.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About Motion Books</source>
         <note>ID: PublishTab.Android.AboutMotionBooks</note>
@@ -3909,11 +3985,14 @@
           <target xml:lang="bn">{0} ফন্ট পরীক্ষা হচ্ছে: স্থাপনের জন্য লাইসেন্স অনুমতি দেয় না।</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
         <note>{0} is a font name</note>
-        <target xml:lang="bn" state="translated">{0} ফন্ট পরীক্ষা হচ্ছে: স্থাপন করার কোন ফন্ট পাওয়া যায় নি।</target>
+        <target xml:lang="bn" state="translated">বইটিতে {0} অক্ষর ব্যবহার করা হয়েছে কিন্তু ব্লুমে সেই অক্ষর এই কম্পিউটারে খুঁজে পায়নি।</target>
+        <alt-trans>
+          <target xml:lang="bn">{0} ফন্ট পরীক্ষা হচ্ছে: স্থাপন করার কোন ফন্ট পাওয়া যায় নি।</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
@@ -3927,11 +4006,17 @@
         <note>{0} is a file path</note>
         <target xml:lang="bn" state="translated">{0} রুপে সংরক্ষিত হচ্ছে</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
-        <source xml:lang="en">Bloom will substitute "{0}" instead."</source>
+      <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
         <note>{0} is a font name</note>
-        <target xml:lang="bn" state="translated">এর পরিবর্তে "{0}" </target>
+        <target xml:lang="bn" state="translated">এর পরিবর্তে ব্লুম \"{0}\" ব্যাবহার করবে</target>
+        <alt-trans>
+          <target xml:lang="bn">এর পরিবর্তে "{0}"</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="bn">"{1}" এর পরিবর্তে "{0}" </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Get Bloom Reader App</source>
@@ -4157,11 +4242,14 @@
         <note>ID: PublishTab.Android.Wifi.Progress.beginAdvertising</note>
         <target xml:lang="bn" state="translated">স্থানীয় নেটওয়ার্কের ব্লুম পাঠকদের জন্য বই এর বিজ্ঞাপন দেওয়া হচ্ছে...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Start" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Wifi.Start" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Share</source>
         <note>ID: PublishTab.Android.Wifi.Start</note>
         <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
-        <target xml:lang="bn" state="translated">সরবরাহ করা আরম্ভ করুন</target>
+        <target xml:lang="bn" state="translated">বণ্টন করা আরম্ভ করুন</target>
+        <alt-trans>
+          <target xml:lang="bn">সরবরাহ করা আরম্ভ করুন</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="bn"> সরবরাহ করা আরম্ভ করুন</target>
         </alt-trans>
@@ -4305,6 +4393,12 @@
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
         <target xml:lang="bn" state="translated">ছবির রেকর্ড করা কোন অডিও বিবরণ নেই</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.OmittedPages">
+        <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
+        <note>ID: PublishTab.Epub.OmittedPages</note>
+        <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
+        <target xml:lang="bn" state="needs-translation">The following pages were removed because they are not supported in ePUBs:</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content" approved="yes">
         <source xml:lang="en">Content</source>
         <note>ID: PublishTab.Epub.PageLabel.Content</note>
@@ -4316,16 +4410,19 @@
         <note>ID: PublishTab.Epub.PreparingDoc</note>
         <target xml:lang="bn" state="translated">নথী প্রস্তুত করা হচ্ছে</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.PreparingPreview">
+      <trans-unit id="PublishTab.Epub.PreparingPreview" approved="yes">
         <source xml:lang="en">Preparing Preview</source>
         <note>ID: PublishTab.Epub.PreparingPreview</note>
         <target xml:lang="bn" state="translated">পূর্বরূপ প্রস্তুত করা হচ্ছে</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.ReadiumCredit">
+      <trans-unit id="PublishTab.Epub.ReadiumCredit" approved="yes">
         <source xml:lang="en">This ePUB preview is provided by [Readium]. This book may render differently in various ePUB readers.</source>
         <note>ID: PublishTab.Epub.ReadiumCredit</note>
         <note>[Readium] should be left untranslated as a noun.  It will be changed into an HTML link to the Readium web page (https://readium.org/).  If the term "Readium" has been translated on a translated version of that web page, then the translated term may be substituted within the square brackets.  (Be sure to keep the square brackets [] around Readium or its translation!)</note>
-        <target xml:lang="bn" state="translated">এই ePUB পূর্বদৃশ্য [Readium] দ্বারা প্রদান করা হয়।  এই বই বিভিন্ন ePUB পুস্তকে বিভিন্নভাবে পেশ করা হতে পারে।</target>
+        <target xml:lang="bn" state="translated">এই ePUB পূর্বদৃশ্য [Readium] দ্বারা প্রদান করা হয়। এই বই বিভিন্ন ePUB পুস্তকে বিভিন্নভাবে পরিবেশিত করা হতে পারে।</target>
+        <alt-trans>
+          <target xml:lang="bn">এই ePUB পূর্বদৃশ্য [Readium] দ্বারা প্রদান করা হয়।  এই বই বিভিন্ন ePUB পুস্তকে বিভিন্নভাবে পেশ করা হতে পারে।</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.RemoveFontSizes" approved="yes">
         <source xml:lang="en">Use ePUB reader's text size</source>
@@ -4646,6 +4743,11 @@
         <note>ID: PublishTab.Upload.CcLink</note>
         <target xml:lang="bn" state="translated">সিসি-বাই-এনসি</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
+        <source xml:lang="en">Please choose the sign language for this book</source>
+        <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
+        <target xml:lang="bn" state="needs-translation">Please choose the sign language for this book</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting" approved="yes">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
@@ -4855,6 +4957,11 @@
         <note>ID: PublishTab.Upload.PleaseSetThis</note>
         <note>This shows next to the license, if the license has not yet been set.</note>
         <target xml:lang="bn" state="translated">অনুগ্রহ করে সম্পাদন ট্যাব থেকে এটি সেট করুন</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
+        <source xml:lang="en">Set Sign Language...</source>
+        <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
+        <target xml:lang="bn" state="needs-translation">Set Sign Language...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
@@ -5643,6 +5750,11 @@ Do you want to go ahead?</note>
         <alt-trans>
           <target xml:lang="bn">আড়াআড়ি স্থিতিবিন্যাসের সাথে ব্যবহারের জন্য।</target>
         </alt-trans>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
+        <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
+        <target xml:lang="bn" state="needs-translation">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>

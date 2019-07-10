@@ -6,7 +6,10 @@
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
-        <target xml:lang="mam" state="translated">B'inchanmaj tuj {0}</target>
+        <target xml:lang="mam" state="translated">B'inchanmaja tuj {0}</target>
+        <alt-trans>
+          <target xml:lang="mam">B'inchanmaj tuj {0}</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">B'inchanmaj tuj</target>
         </alt-trans>
@@ -126,7 +129,10 @@
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="mam" state="translated">&amp;M'in lajet</target>
+        <target xml:lang="mam" state="translated">&amp;Qweb'il</target>
+        <alt-trans>
+          <target xml:lang="mam">&amp;M'in lajet</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">&amp;M'in lajet
 </target>
@@ -137,6 +143,9 @@
         <note>ID: Common.IgnoreButton</note>
         <target xml:lang="mam" state="translated">&amp;Min kb'antel</target>
         <alt-trans>
+          <target xml:lang="mam">&amp;Min qb'antel</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="mam">&amp;Mi kb'antel</target>
         </alt-trans>
         <alt-trans>
@@ -146,7 +155,10 @@
       <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="mam" state="translated">Mi'n</target>
+        <target xml:lang="mam" state="translated">Min</target>
+        <alt-trans>
+          <target xml:lang="mam">Mi'n</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Mi'</target>
         </alt-trans>
@@ -154,7 +166,10 @@
       <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
-        <target xml:lang="mam" state="translated">&amp;Mi'n</target>
+        <target xml:lang="mam" state="translated">&amp;Min</target>
+        <alt-trans>
+          <target xml:lang="mam">&amp;Mi'n</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">&amp;Mi'</target>
         </alt-trans>
@@ -282,7 +297,13 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.Crop">
         <source xml:lang="en">Crop</source>
         <note>ID: ImageToolbox.Crop</note>
-        <target xml:lang="mam" state="translated">Matzetil</target>
+        <target xml:lang="mam" state="translated">K'elel</target>
+        <alt-trans>
+          <target xml:lang="mam">Piẍil</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="mam">Matzetil</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Matz'ol</target>
         </alt-trans>
@@ -312,7 +333,10 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.FileButton">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
-        <target xml:lang="mam" state="translated">K'ub'il aq'untl</target>
+        <target xml:lang="mam" state="translated">Nak'ub'il aq'unb'il</target>
+        <alt-trans>
+          <target xml:lang="mam">K'ub'il aq'untl</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">K'ub'il tu'mel aq'untl</target>
         </alt-trans>
@@ -321,7 +345,10 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Choose Picture File</source>
         <note>ID: ImageToolbox.FileChooserTitle</note>
         <note>Title shown for a file chooser dialog brought up by the ImageToolbox</note>
-        <target xml:lang="mam" state="translated">Sak'onqtza k'ub'il tib'lal</target>
+        <target xml:lang="mam" state="translated">Sak'onqtza nak'ub'il aq'unb'il tilb'ilal</target>
+        <alt-trans>
+          <target xml:lang="mam">Sak'onqtza k'ub'il tib'lal</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">B'a'n tu'n tlajet k'ub'il aq'untl te tib'lal</target>
         </alt-trans>
@@ -417,7 +444,10 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.NoGalleries">
         <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
         <note>ID: ImageToolbox.NoGalleries</note>
-        <target xml:lang="mam" state="translated">Na'x tok ti'j xk'utz'ib' q'ol te ttenb'il ti'chaq.</target>
+        <target xml:lang="mam" state="translated">Na'x tok ti'j xk'utz'ib' lu' qe q'ol ttenb'il ti'chaq.</target>
+        <alt-trans>
+          <target xml:lang="mam">Na'x tok ti'j xk'utz'ib' q'ol te ttenb'il ti'chaq.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
@@ -622,7 +652,10 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLabel">
         <source xml:lang="en">my script variant label</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLabel</note>
-        <target xml:lang="mam" state="translated">n-techila b'ib'aj juntl tu'mel tz'ib'ajtz</target>
+        <target xml:lang="mam" state="translated">juntl tu'mel tz'ib'ajtz n-techila</target>
+        <alt-trans>
+          <target xml:lang="mam">n-techila b'ib'aj juntl tu'mel tz'ib'ajtz</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLink">
         <source xml:lang="en">Script and Variant</source>
@@ -813,7 +846,10 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataEditor.PublicDomain">
         <source xml:lang="en">The copyright holder waives all rights</source>
         <note>ID: MetadataEditor.PublicDomain</note>
-        <target xml:lang="mam" state="translated">Aj tajwil at toklen b'inchalte n-nelti'n kyaqil toklenj</target>
+        <target xml:lang="mam" state="translated">Aj tajwil at toklen b'inchalte n-nelti'n tib' kyaqil toklenj</target>
+        <alt-trans>
+          <target xml:lang="mam">Aj tajwil at toklen b'inchalte n-nelti'n kyaqil toklenj</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
@@ -874,17 +910,20 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">Nlayx b'ant ti'j</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton">
+      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton" approved="yes">
         <source xml:lang="en">Cancel</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton</note>
         <target xml:lang="mam" state="translated">Min lajet</target>
       </trans-unit>
-      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._okButton">
+      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._okButton" approved="yes">
         <source xml:lang="en">OK</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._okButton</note>
-        <target xml:lang="mam" state="translated">K'amol</target>
+        <target xml:lang="mam" state="translated">b'a'n</target>
+        <alt-trans>
+          <target xml:lang="mam">K'amol</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ScriptsAndVariantsDialog.ScriptsAndVariants">
+      <trans-unit id="ScriptsAndVariantsDialog.ScriptsAndVariants" approved="yes">
         <source xml:lang="en">Script and Variant</source>
         <note>ID: ScriptsAndVariantsDialog.ScriptsAndVariants</note>
         <target xml:lang="mam" state="translated">Tz'ib'ajtz ex juntl tu'mel</target>
@@ -961,10 +1000,13 @@ Kyusab'il tu'n tel</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice">
-        <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
+        <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page.</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
-        <target xml:lang="mam" state="translated">Aj techil ja b'inchalte tu'n tajb'lan kyi'j qe tz'ajsab'il lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na "{1}" ex "{2}"</target>
+        <target xml:lang="mam" state="translated">Aj techil jab'inchalte tu'n tajb'lan kyi'j qe tz'ajsab'il lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na "{1}" ex.</target>
+        <alt-trans>
+          <target xml:lang="mam">Aj techil ja b'inchalte tu'n tajb'lan kyi'j qe tz'ajsab'il lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na "{1}" ex "{2}"</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
@@ -1052,7 +1094,10 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Abbreviation</source>
         <note>ID: WSIdentifierView.betterLabel4</note>
         <note>In writing system setup general tab: label before abbreviation text box</note>
-        <target xml:lang="mam" state="translated">Aqe' tz'epona</target>
+        <target xml:lang="mam" state="translated">Ch'inyol</target>
+        <alt-trans>
+          <target xml:lang="mam">Aqe' tz'epona</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSIdentifierView.betterLabel5">
         <source xml:lang="en">Special:</source>
