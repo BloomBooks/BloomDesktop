@@ -84,10 +84,13 @@
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Others" approved="yes">
         <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>
-        <target xml:lang="fr" state="translated">Autres : Cherchez sur Google "liste blanche" + "nom de votre antivirus" (en anglais) : "whitelist directory" + "nom de votre antivirus"</target>
+        <target xml:lang="fr" state="translated">Autres : Cherchez sur Google "liste blanche" + "nom de votre antivirus"</target>
         <note>ID: integrity.todo.ideas.Others</note>
         <alt-trans>
           <target xml:lang="fr">Autres : Cherchez sur Google "liste blanche nom de votre antivirus"</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="fr">Autres : Cherchez sur Google "liste blanche" + "nom de votre antivirus" (en anglais) : "whitelist directory" + "nom de votre antivirus"</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Autres : résultats Google pour la "liste blanche" (en anglais) : "whitelist directory name-of-your-antivirus"</target>

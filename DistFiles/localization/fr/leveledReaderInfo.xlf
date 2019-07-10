@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.start.simple" approved="yes">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
-        <target xml:lang="fr" state="translated">Pour les grands débutants, employez des mots simples, bien connus des enfants. Dans la mesure du possible, employez des mots monosyllabes. Au fur et à mesure que les enfants progressent, utilisez des mots de plusieurs syllabes. Vous pouvez commencer à employer des termes moins connus. Les enfants doivent pouvoir deviner le sens de ces derniers grâce aux autres mots et phrases du contexte ainsi que grâce aux images.</target>
+        <target xml:lang="fr" state="translated">Pour les grands débutants, employez des mots simples, bien connus des enfants. Dans la mesure du possible, employez des monosyllabes. Au fur et à mesure que les enfants progressent, utilisez des mots de plusieurs syllabes. Vous pouvez commencer à employer des termes moins connus. Les enfants doivent pouvoir deviner le sens de ces derniers grâce aux autres mots et phrases du contexte ainsi que grâce aux images.</target>
         <note>ID: leveled.reader.start.simple</note>
         <alt-trans>
           <target xml:lang="fr">Pour les grands débutants, employez des mots simples, bien connus des enfants. Dans la mesure du possible, employez des mots monosyllabiques. Au fur et à mesure que les enfants progressent, utilisez des mots de plusieurs syllabes. Vous pouvez commencer à employer des termes moins connus. Les enfants doivent pouvoir deviner le sens de ces derniers grâce aux autres mots et phrases du contexte ainsi que grâce aux illustrations.</target>
@@ -25,7 +25,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.start.large" approved="yes">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
-        <target xml:lang="fr" state="translated">Pour les livres destinés aux grands débutants, il vaut mieux employer de gros caractères et un clair espacement entre les mots. Il est également préférable de disposer les mots ou les phrases au même endroit sur chaque page. Au fur et à mesure que les livres de lecture deviennent plus difficiles, la taille de la police et l'espacement diminueront et les phrases figureront à différents endroits sur la page.</target>
+        <target xml:lang="fr" state="translated">Pour les livres destinés aux grands débutants, il vaut mieux employer de gros caractères et un large espacement entre les mots. Il est également préférable de disposer les mots ou les phrases au même endroit sur chaque page. Au fur et à mesure que les livres de lecture deviennent plus difficiles, la taille de la police et l'espacement diminueront et les phrases figureront à différents endroits sur la page.</target>
         <note>ID: leveled.reader.start.large</note>
         <alt-trans>
           <target xml:lang="fr">Pour les livres destinés aux débutants, il vaut mieux employer de gros caractères et un espacement net entre les mots. Il est également préférable de disposer les mots ou les phrases au même endroit sur chaque page. Au fur et à mesure que les livres de lecture deviennent plus difficiles, la taille de la police et l'espacement diminueront et les phrases figureront à différents endroits sur la page.</target>
@@ -149,10 +149,10 @@ La <g id="genid-1" ctype="x-html-em">Prévisibilité</g> d'un texte signifie que
       </trans-unit>
       <trans-unit id="leveled.reader.sequencing" approved="yes">
         <source xml:lang="en">Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</source>
-        <target xml:lang="fr" state="translated">Les successions : histoire dont la structure comporte une succession connue telles que les jours de la semaine ou des chiffres</target>
+        <target xml:lang="fr" state="translated">Les successions : récit dont la structure comporte une succession connue telles que les jours de la semaine ou des chiffres</target>
         <note>ID: leveled.reader.sequencing</note>
         <alt-trans>
-          <target xml:lang="fr">Les successions : récit dont la structure comporte une succession connue telles que les jours de la semaine ou des chiffres</target>
+          <target xml:lang="fr">Les successions : histoire dont la structure comporte une succession connue telles que les jours de la semaine ou des chiffres</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Le séquençage - cette technique s'applique à une histoire découpée, ou séquencée, en vertu d'éléments bien définis, calendaires ou numériques, par exemple</target>
@@ -779,15 +779,15 @@ Canard, canard, qu'est-ce que tu vois ?</g>
         <target xml:lang="fr" state="translated">Choix de thème</target>
         <note>ID: leveled.reader.topic.choice</note>
         <alt-trans>
-          <target xml:lang="fr">Choix du sujet</target>
+          <target xml:lang="fr">Choix du thème</target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="fr">Choix du thème</target>
+          <target xml:lang="fr">Choix du sujet</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.discussion" approved="yes">
         <source xml:lang="en">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
-        <target xml:lang="fr" state="translated">Les livres peuvent porter sur de nombreux thèmes. En rédigeant des livres destinés aux lecteurs débutants, choisissez des thèmes connus. Les lecteurs liront plus volontiers des textes portant sur des thèmes qu'ils trouvent intéressants et familiers. Les livres destinés aux lecteurs plus expérimentés peuvent apporter aux lecteurs des informations nouvelles.</target>
+        <target xml:lang="fr" state="translated">Les livres peuvent porter sur de nombreux sujets. En rédigeant des livres destinés aux lecteurs débutants, choisissez des thèmes qu'ils connaissent. Ils liront plus volontiers des textes sur des thèmes familiers qu'ils trouvent intéressants. Si les lecteurs sont plus expérimentés, les livres peuvent contenir des informations nouvelles.</target>
         <note>ID: leveled.reader.topic.choice.discussion</note>
         <alt-trans>
           <target xml:lang="fr">Les livres peuvent porter sur de nombreux sujets. Lorsque vous rédigez des livres destinés aux lecteurs débutants, choisissez des sujets qu'ils connaissent. Les lecteurs liront plus volontiers des textes portant sur des sujets qu'ils trouvent intéressant et qui leur sont familiers. Les livres destinés aux lecteurs plus expérimentés peuvent apporter aux lecteurs des informations nouvelles.</target>

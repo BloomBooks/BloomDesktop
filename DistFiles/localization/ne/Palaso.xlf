@@ -622,10 +622,10 @@
         <target xml:lang="ne-NP" state="translated">वर्णहरू देखाउनुहोस्</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice">
-        <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
+        <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page.</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
-        <target xml:lang="ne-NP" state="translated">यी सेटिङहरूको फ्याक्ट्री पासवर्ड "{0}" हो। यसलाई बिर्सनुभएको खण्डमा, तपाईंले जुन सुकै बेला "{1}" र "{2}" लाई Google मा खोज्न सक्नुहुन्छ।</target>
+        <target xml:lang="ne-NP" state="translated">यी सेटिङहरूको फ्याक्ट्री पासवर्ड "{0}" हो। यसलाई बिर्सनुभएको खण्डमा, तपाईंले जुन सुकै बेला "{1}" र लाई Google मा खोज्न सक्नुहुन्छ।</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>

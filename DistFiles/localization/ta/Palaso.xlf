@@ -622,10 +622,10 @@
         <target xml:lang="ta" state="translated">எழுத்துக்குறிகளைக் காண்பி</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice">
-        <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
+        <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page.</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
-        <target xml:lang="ta" state="translated">இந்த அமைப்புகளை தொழிற்சாலை கடவுச்சொல்லை உள்ளது "{0}".  நீங்கள் அதை மறந்து, என்றால் நீங்கள் முடியும் எப்போதும் google "{1}" மற்றும் "{2}"</target>
+        <target xml:lang="ta" state="translated">இந்த அமைப்புகளை தொழிற்சாலை கடவுச்சொல்லை உள்ளது "{0}".  நீங்கள் அதை மறந்து, என்றால் நீங்கள் முடியும் எப்போதும் google "{1}" மற்றும்</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>

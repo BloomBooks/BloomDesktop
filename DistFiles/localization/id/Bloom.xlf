@@ -642,7 +642,7 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink" approved="yes">
         <source xml:lang="en">Set...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink</note>
-        <note>If there is no third language specified, the link changes to this.</note>
+        <note>If there is no third or sign language specified, the link changes to this.</note>
         <target xml:lang="id" state="translated">Atur...</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel" approved="yes">
@@ -660,6 +660,11 @@
         <note>ID: CollectionSettingsDialog.LanguageTab._language3Label</note>
         <note xml:lang="en">OLD TEXT (before 3.9, 1 fewer space): Language 3 (e.g. Regional Language)  (Optional)</note>
         <target xml:lang="id" state="translated">Bahasa 3 (mis. Bahasa Regional) (Tidak Wajib)</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
+        <source xml:lang="en">Sign Language   (Optional)</source>
+        <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
+        <target xml:lang="id" state="needs-translation">Sign Language   (Optional)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
@@ -862,6 +867,11 @@
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
         <target xml:lang="id" state="translated">Karena ini merupakan koleksi sumber, Bloom tidak menawarkan kerangka apa pun yang ada sebagai sumber untuk kerangka baru.Jika Anda ingin menambahkan bahasa ke suatu kerangka, Anda harus mengedit koleksi yang berisi kerangka, dan bukan membuat salinannya.Selain itu, Kalender Dinding saat ini tidak bisa dipakai untuk membuat Kerangka baru.</target>
       </trans-unit>
+      <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
+        <source xml:lang="en">Show translations which have not been approved yet</source>
+        <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
+        <target xml:lang="id" state="needs-translation">Show translations which have not been approved yet</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
         <note>ID: CollectionTab.MakeBloomPackButton</note>
@@ -1009,6 +1019,12 @@
         <note>ID: Common.Advanced</note>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
         <target xml:lang="id" state="needs-translation">Advanced</target>
+      </trans-unit>
+      <trans-unit id="Common.LearnMore" sil:dynamic="true">
+        <source xml:lang="en">Learn More</source>
+        <note>ID: Common.LearnMore</note>
+        <note>This is the same as Settings.Enterprise.LearnMore</note>
+        <target xml:lang="id" state="needs-translation">Learn More</target>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
@@ -1201,6 +1217,11 @@
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
         <target xml:lang="id" state="translated">Mengubah layout ini akan menyebabkan sebagian isinya hilang.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true">
+        <source xml:lang="en">This kind of page will be included only in digital book outputs, not in PDF.</source>
+        <note>ID: EditTab.AddPageDialog.DigitalPage</note>
+        <target xml:lang="id" state="needs-translation">This kind of page will be included only in digital book outputs, not in PDF.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
         <source xml:lang="en">Could not find {0}</source>
@@ -1551,6 +1572,21 @@
         <note>ID: EditTab.FormatDialog.DefaultStyles.quiz-style</note>
         <note>Special template</note>
         <target xml:lang="id" state="needs-translation">Quiz</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizAnswer-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Answer</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizAnswer-style</note>
+        <target xml:lang="id" state="needs-translation">Quiz Answer</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizHeader-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Header</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizHeader-style</note>
+        <target xml:lang="id" state="needs-translation">Quiz Header</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizQuestion-style" sil:dynamic="true">
+        <source xml:lang="en">Quiz Question</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.QuizQuestion-style</note>
+        <target xml:lang="id" state="needs-translation">Quiz Question</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true">
         <source xml:lang="en">Title On Cover</source>
@@ -3490,6 +3526,46 @@
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
         <target xml:lang="id" state="translated">Kabar Buruk. Bloom tidak bisa meminta Adobe Reader untuk ditampilkan di sini, jadi Bloom tidak bisa menampilkan buku Anda yang sudah selesai.\n Hapus versi 'Adobe Reader' saat ini dan pasang (kembali) 'Adobe Reader'.\n Sebelum Anda memperbaikinya, Anda masih bisa menyimpan Buku PDF dan membukanya di program yang lain.</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en">Sharing .bloomd Files</source>
+        <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
+        <note/>
+        <target xml:lang="id" state="needs-translation">Sharing .bloomd Files</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
+        <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
+        <note>ID: PublishTab.Android.BloomD.Hint</note>
+        <note/>
+        <target xml:lang="id" state="needs-translation">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en"> USB is Difficult</source>
+        <note>ID: PublishTab.Android.USB.Hint.Heading</note>
+        <note/>
+        <target xml:lang="id" state="needs-translation"> USB is Difficult</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
+        <source xml:lang="en">To Send via USB, you may need to get the right
+                            cable, install phone drivers on your computer, or
+                            modify settings on your phone.</source>
+        <note>ID: PublishTab.Android.USB.Hint</note>
+        <note/>
+        <target xml:lang="id" state="needs-translation">To Send via USB, you may need to get the right
+                            cable, install phone drivers on your computer, or
+                            modify settings on your phone.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en">No Wi-Fi Network?</source>
+        <note>ID: PublishTab.Android.WiFi.Hint.Heading</note>
+        <note/>
+        <target xml:lang="id" state="needs-translation">No Wi-Fi Network?</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
+        <source xml:lang="en">There are several ways to start a temporary one.</source>
+        <note>ID: </note>
+        <note>This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network.</note>
+        <target xml:lang="id" state="needs-translation">There are several ways to start a temporary one.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true">
         <source xml:lang="en">About Motion Books</source>
         <note>ID: PublishTab.Android.AboutMotionBooks</note>
@@ -3915,6 +3991,12 @@
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
         <target xml:lang="id" state="needs-translation">No recorded audio image descriptions</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.OmittedPages">
+        <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
+        <note>ID: PublishTab.Epub.OmittedPages</note>
+        <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
+        <target xml:lang="id" state="needs-translation">The following pages were removed because they are not supported in ePUBs:</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content">
         <source xml:lang="en">Content</source>
         <note>ID: PublishTab.Epub.PageLabel.Content</note>
@@ -4217,6 +4299,11 @@
         <note>ID: PublishTab.Upload.CcLink</note>
         <target xml:lang="id" state="translated">CC-BY-NC</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
+        <source xml:lang="en">Please choose the sign language for this book</source>
+        <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
+        <target xml:lang="id" state="needs-translation">Please choose the sign language for this book</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting" approved="yes">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
@@ -4426,6 +4513,11 @@
         <note>ID: PublishTab.Upload.PleaseSetThis</note>
         <note>This shows next to the license, if the license has not yet been set.</note>
         <target xml:lang="id" state="translated">Atur ini di label edit</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
+        <source xml:lang="en">Set Sign Language...</source>
+        <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
+        <target xml:lang="id" state="needs-translation">Set Sign Language...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage">
         <source xml:lang="en">Sign Language</source>
@@ -5181,6 +5273,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
         <note>New string in Bloom 4.2</note>
         <target xml:lang="id" state="needs-translation">For use with Landscape orientation.</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
+        <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
+        <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
+        <target xml:lang="id" state="needs-translation">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>

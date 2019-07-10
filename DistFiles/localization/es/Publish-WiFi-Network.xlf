@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="Publish-WiFi-Network-en.htm" datatype="html" source-language="en" target-language="es-ES">
+    <body>
+      <trans-unit id="publish.help.tips.tempWiFi.title">
+        <source xml:lang="en">Ways to make a temporary Wi-Fi Network</source>
+        <target xml:lang="es-ES" state="needs-translation">Ways to make a temporary Wi-Fi Network</target>
+        <note>ID: publish.help.tips.tempWiFi.title</note>
+      </trans-unit>
+      <trans-unit id="publish.help.tips.tempWiFi.hotspot">
+        <source xml:lang="en">Start a phone hotspot</source>
+        <target xml:lang="es-ES" state="needs-translation">Start a phone hotspot</target>
+        <note>ID: publish.help.tips.tempWiFi.hotspot</note>
+      </trans-unit>
+      <trans-unit id="publish.help.tips.tempWiFi.hostednetwork">
+        <source xml:lang="en">Start a network using your laptop</source>
+        <target xml:lang="es-ES" state="needs-translation">Start a network using your laptop</target>
+        <note>ID: publish.help.tips.tempWiFi.hostednetwork</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

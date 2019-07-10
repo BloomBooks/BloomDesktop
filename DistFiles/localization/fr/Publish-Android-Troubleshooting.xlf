@@ -98,10 +98,10 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.automatic" approved="yes">
         <source xml:lang="en">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
-        <target xml:lang="fr" state="translated">En utilisant cette méthode, aucun besoin d'aller dans un mode spécial pour recevoir des livres. Il suffit de lancer Bloom Reader. Les livres apparaissent automatiquement dès leur transfert.</target>
+        <target xml:lang="fr" state="translated">Quand vous utilisez cette méthode, vous n'avez pas besoin d'aller dans un mode spécial pour recevoir des livres. Il vous suffit de lancer Bloom Reader. Les livres apparaissent automatiquement dès leur transfert.</target>
         <note>ID: android.publish.usb.automatic</note>
         <alt-trans>
-          <target xml:lang="fr">Quand vous utilisez cette méthode, vous n'avez pas besoin d'aller dans un mode spécial pour recevoir des livres. Il vous suffit de lancer Bloom Reader. Les livres apparaissent automatiquement dès leur transfert.</target>
+          <target xml:lang="fr">En utilisant cette méthode, aucun besoin d'aller dans un mode spécial pour recevoir des livres. Il suffit de lancer Bloom Reader. Les livres apparaissent automatiquement dès leur transfert.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Mientras que utiliza este método, no tiene que entrar en ningún modo especial para recibir libros. Basta con ejecutar el LecteurBloom. Los libros deben aparecer automáticamente cuando se transfieran.</target>
