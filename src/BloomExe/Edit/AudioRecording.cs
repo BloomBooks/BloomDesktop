@@ -151,22 +151,32 @@ namespace Bloom.Edit
 		/// </summary>
 		public void HandleAudioDevices(ApiRequest request)
 		{
-			var sb = new StringBuilder("{\"devices\":[");
-			sb.Append(string.Join(",", RecordingDevice.Devices.Select(d => "\""+d.ProductName+"\"")));
-			sb.Append("],\"productName\":");
-			if (CurrentRecording.RecordingDevice != null)
-				sb.Append("\"" + CurrentRecording.RecordingDevice.ProductName + "\"");
-			else
-				sb.Append("null");
+			try
+			{
+				var sb = new StringBuilder("{\"devices\":[");
+				sb.Append(string.Join(",", RecordingDevice.Devices.Select(d => "\""+d.ProductName+"\"")));
+				sb.Append("],\"productName\":");
+				if (CurrentRecording.RecordingDevice != null)
+					sb.Append("\"" + CurrentRecording.RecordingDevice.ProductName + "\"");
+				else
+					sb.Append("null");
 
-			sb.Append(",\"genericName\":");
-			if (CurrentRecording.RecordingDevice != null)
-				sb.Append("\"" + CurrentRecording.RecordingDevice.GenericName + "\"");
-			else
-				sb.Append("null");
+				sb.Append(",\"genericName\":");
+				if (CurrentRecording.RecordingDevice != null)
+					sb.Append("\"" + CurrentRecording.RecordingDevice.GenericName + "\"");
+				else
+					sb.Append("null");
 
-			sb.Append("}");
-			request.ReplyWithJson(sb.ToString());
+				sb.Append("}");
+				request.ReplyWithJson(sb.ToString());
+			}
+			catch (Exception e)
+			{
+				Logger.WriteError("AudioRecording could not find devices: ", e);
+				// BL-7272 shows an exception occurred somewhere, and it may have been here.
+				// If so, we just assume no input devices could be found.
+				request.ReplyWithJson("{\"devices\":[],\"productName\":null,\"genericName\":null}");
+			}
 		}
 
 		/// <summary>
