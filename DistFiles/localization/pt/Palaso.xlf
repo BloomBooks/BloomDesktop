@@ -645,6 +645,9 @@
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
         <target xml:lang="pt-PT" state="translated">Senha de fábrica para estas configurações é "{0}". Se você esquecer, você sempre pode buscar "{1}" e no Google</target>
         <alt-trans>
+          <target xml:lang="pt-PT">Senha de fábrica para estas configurações é "{0}". Se você esquecer, você sempre pode buscar "{1}" e "{2}" no Google</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="pt-PT">Senha de fábrica para estas configurações é "{0}". Se você esquecer, você sempre pode buscar "{1}" e "{2}" no Google.</target>
         </alt-trans>
       </trans-unit>
