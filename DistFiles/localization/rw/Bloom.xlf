@@ -142,7 +142,7 @@
       <trans-unit id="BloomPackInstallDialog.BloomPackInstalled" approved="yes">
         <source xml:lang="en">The {0} Collection is now ready to use on this computer.</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstalled</note>
-        <target xml:lang="rw" state="translated">Ikuzanya {0} riratunganye ku buryo ryakoreshwa kuri iyi mudasobwa.</target>
+        <target xml:lang="rw" state="final">Ikuzanya {0} riratunganye ku buryo ryakoreshwa kuri iyi mudasobwa.</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BloomPackInstaller">
         <source xml:lang="en">Bloom Pack Installer</source>
@@ -163,18 +163,18 @@
       <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack" approved="yes">
         <source xml:lang="en">Bloom was not able to install that Bloom Pack</source>
         <note>ID: BloomPackInstallDialog.ErrorInstallingBloomPack</note>
-        <target xml:lang="rw" state="translated">Bloom ntiyashoboye kwensitara iyo paki ya Bloom</target>
+        <target xml:lang="rw" state="final">Bloom ntiyashoboye kwensitara iyo paki ya Bloom</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Extracting" approved="yes">
         <source xml:lang="en">Extracting...</source>
         <note>ID: BloomPackInstallDialog.Extracting</note>
         <note>Shown while Bloom Packs are being installed</note>
-        <target xml:lang="rw" state="translated">Ehambura...</target>
+        <target xml:lang="rw" state="final">Ehambura...</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.MustRestartToSee" approved="yes">
         <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
         <note>ID: BloomPackInstallDialog.MustRestartToSee</note>
-        <target xml:lang="rw" state="translated">Bloom yamaze gufunguka, ariko amakuru ayirimo ntagaragara kugeza ikindi gihe uri bwongere kuyifungura</target>
+        <target xml:lang="rw" state="final">Bloom yamaze gufunguka, ariko amakuru ayirimo ntagaragara kugeza ikindi gihe uri bwongere kuyifungura</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.NotInstalled">
         <source xml:lang="en">The Bloom collection will not be installed.</source>
@@ -184,7 +184,7 @@
       <trans-unit id="BloomPackInstallDialog.Opening" approved="yes">
         <source xml:lang="en">Opening {0}...</source>
         <note>ID: BloomPackInstallDialog.Opening</note>
-        <target xml:lang="rw" state="translated">Indimi eshatu</target>
+        <target xml:lang="rw" state="final">Indimi eshatu</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Replace">
         <source xml:lang="en">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</source>
@@ -374,7 +374,7 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
         <source xml:lang="en">Advanced Program Settings</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel</note>
-        <target xml:lang="rw" state="translated">Itunganya ryimbitse rya porogaramu</target>
+        <target xml:lang="rw" state="final">Itunganya ryimbitse rya porogaramu</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
         <source xml:lang="en">Automatically update Bloom</source>
@@ -391,7 +391,7 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates" approved="yes">
         <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates</note>
-        <target xml:lang="rw" state="translated">KwerekanaIntangarugero z'igerageza (urg. Inkoranya y'amashusho)</target>
+        <target xml:lang="rw" state="final">KwerekanaIntangarugero z'igerageza (urg. Inkoranya y'amashusho)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
@@ -406,7 +406,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel" approved="yes">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
-        <target xml:lang="rw" state="translated">Ugukora Igitabo</target>
+        <target xml:lang="rw" state="final">Ugukora Igitabo</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding">
         <source xml:lang="en">Branding</source>
@@ -428,7 +428,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack" approved="yes">
         <source xml:lang="en">Front/Back Matter Pack</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
-        <target xml:lang="rw" state="translated">Inyuguti/Ipaki y'inyuma ni ingenzi</target>
+        <target xml:lang="rw" state="final">Inyuguti/Ipaki y'inyuma ni ingenzi</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device" sil:dynamic="true">
         <source xml:lang="en">Device</source>
@@ -604,62 +604,62 @@
       <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
-        <target xml:lang="rw" state="translated">Itunganya</target>
+        <target xml:lang="rw" state="final">Itunganya</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink" approved="yes">
         <source xml:lang="en">Change...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
-        <target xml:lang="rw" state="translated">Guhindura...</target>
+        <target xml:lang="rw" state="final">Guhindura...</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection" approved="yes">
         <source xml:lang="en">Language 1</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language1InSourceCollection</note>
         <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
-        <target xml:lang="rw" state="translated">Ururimi rwa 1</target>
+        <target xml:lang="rw" state="final">Ururimi rwa 1</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection" approved="yes">
         <source xml:lang="en">Language 2</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language2InSourceCollection</note>
         <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
-        <target xml:lang="rw" state="translated">Ururimi rwa 2</target>
+        <target xml:lang="rw" state="final">Ururimi rwa 2</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection" approved="yes">
         <source xml:lang="en">Language 3</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language3InSourceCollection</note>
         <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
-        <target xml:lang="rw" state="translated">Ururimi rwa 3</target>
+        <target xml:lang="rw" state="final">Ururimi rwa 3</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel" approved="yes">
         <source xml:lang="en">Languages</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.LanguageTabLabel</note>
-        <target xml:lang="rw" state="translated">Indimi</target>
+        <target xml:lang="rw" state="final">Indimi</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink" approved="yes">
         <source xml:lang="en">Remove</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.RemoveLanguageLink</note>
-        <target xml:lang="rw" state="translated">Gukuramo</target>
+        <target xml:lang="rw" state="final">Gukuramo</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink" approved="yes">
         <source xml:lang="en">Set...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink</note>
         <note>If there is no third or sign language specified, the link changes to this.</note>
-        <target xml:lang="rw" state="translated">Gutunganya...</target>
+        <target xml:lang="rw" state="final">Gutunganya...</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel" approved="yes">
         <source xml:lang="en">Local Language</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
-        <target xml:lang="rw" state="translated">Ururimi kavukire</target>
+        <target xml:lang="rw" state="final">Ururimi kavukire</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label" approved="yes">
         <source xml:lang="en">Language 2 (e.g. National Language)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language2Label</note>
-        <target xml:lang="rw" state="translated">Ururimi 2 (urg. Ururimi rw'igihugu)</target>
+        <target xml:lang="rw" state="final">Ururimi 2 (urg. Ururimi rw'igihugu)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label" approved="yes">
         <source xml:lang="en">Language 3 (e.g. Regional Language)   (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language3Label</note>
         <note xml:lang="en">OLD TEXT (before 3.9, 1 fewer space): Language 3 (e.g. Regional Language)  (Optional)</note>
-        <target xml:lang="rw" state="translated">Ururimi 3 (urg. Ururimi rw'Akarere) (Si itegeko)</target>
+        <target xml:lang="rw" state="final">Ururimi 3 (urg. Ururimi rw'Akarere) (Si itegeko)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
         <source xml:lang="en">Sign Language   (Optional)</source>
@@ -669,7 +669,7 @@
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName</note>
-        <target xml:lang="rw" state="translated">Izina ry'ikusanyirizo rya Bloom</target>
+        <target xml:lang="rw" state="final">Izina ry'ikusanyirizo rya Bloom</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject">
         <source xml:lang="en">Bloom Enterprise Project</source>
@@ -680,38 +680,38 @@
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Country</note>
-        <target xml:lang="rw" state="translated">Igihugu</target>
+        <target xml:lang="rw" state="final">Igihugu</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District" approved="yes">
         <source xml:lang="en">District</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.District</note>
-        <target xml:lang="rw" state="translated">Akarere</target>
+        <target xml:lang="rw" state="final">Akarere</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel" approved="yes">
         <source xml:lang="en">Project Information</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel</note>
-        <target xml:lang="rw" state="translated">Amakuru ku mushinga</target>
+        <target xml:lang="rw" state="final">Amakuru ku mushinga</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province" approved="yes">
         <source xml:lang="en">Province</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
-        <target xml:lang="rw" state="translated">Intara</target>
+        <target xml:lang="rw" state="final">Intara</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart" approved="yes">
         <source xml:lang="en">Restart</source>
         <note>ID: CollectionSettingsDialog.Restart</note>
         <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
-        <target xml:lang="rw" state="translated">Kongera gutangira</target>
+        <target xml:lang="rw" state="final">Kongera gutangira</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.RestartMessage" approved="yes">
         <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
         <note>ID: CollectionSettingsDialog.RestartMessage</note>
-        <target xml:lang="rw" state="translated">Bloom igiye kwifunga yongere ifungure uyu mushinga mu yindi mitunganyirize.</target>
+        <target xml:lang="rw" state="final">Bloom igiye kwifunga yongere ifungure uyu mushinga mu yindi mitunganyirize.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem" approved="yes">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
-        <target xml:lang="rw" state="translated">Gukora Ipaki ntangarugero ya Bloom y'umusomyi...</target>
+        <target xml:lang="rw" state="final">Gukora Ipaki ntangarugero ya Bloom y'umusomyi...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.AdminManagesUpdates">
         <source xml:lang="en">Your system administrator manages Bloom updates for this computer.</source>
@@ -721,7 +721,7 @@
       <trans-unit id="CollectionTab.AdvancedToolStripMenuItem" approved="yes">
         <source xml:lang="en">Advanced</source>
         <note>ID: CollectionTab.AdvancedToolStripMenuItem</note>
-        <target xml:lang="rw" state="translated">Ku rwego rwo hejuru</target>
+        <target xml:lang="rw" state="final">Ku rwego rwo hejuru</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Applying">
         <source xml:lang="en">Applying updates</source>
@@ -732,7 +732,7 @@
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
         <note>ID: CollectionTab.BloomLibraryLinkLabel</note>
         <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
-        <target xml:lang="rw" state="translated">Habwa ibindi bitabo ntangarugero kuri BloomLibrary.org</target>
+        <target xml:lang="rw" state="final">Habwa ibindi bitabo ntangarugero kuri BloomLibrary.org</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part1">
         <source xml:lang="en">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</source>
@@ -750,12 +750,12 @@
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="rw" state="translated">Ikusanyirizo ntangarugero</target>
+        <target xml:lang="rw" state="final">Ikusanyirizo ntangarugero</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.DeleteBook" approved="yes">
         <source xml:lang="en">Delete Book</source>
         <note>ID: CollectionTab.BookMenu.DeleteBook</note>
-        <target xml:lang="rw" state="translated">Gusiba Igitabo</target>
+        <target xml:lang="rw" state="final">Gusiba Igitabo</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.DuplicateBook">
         <source xml:lang="en">Duplicate Book</source>
@@ -770,12 +770,12 @@
       <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice" approved="yes">
         <source xml:lang="en">Export to Word or LibreOffice...</source>
         <note>ID: CollectionTab.BookMenu.ExportToWordOrLibreOffice</note>
-        <target xml:lang="rw" state="translated">Kwimurira muri Word cyangwa LibreOffice...</target>
+        <target xml:lang="rw" state="final">Kwimurira muri Word cyangwa LibreOffice...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ExportToXMLForInDesign" approved="yes">
         <source xml:lang="en">Export to XML for InDesign...</source>
         <note>ID: CollectionTab.BookMenu.ExportToXMLForInDesign</note>
-        <target xml:lang="rw" state="translated">Kwimurira muri XML igenewe InDesign...</target>
+        <target xml:lang="rw" state="final">Kwimurira muri XML igenewe InDesign...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MakeBloomPack">
         <source xml:lang="en">Make Bloom Pack...</source>
@@ -785,82 +785,82 @@
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip" approved="yes">
         <source xml:lang="en">Update Book</source>
         <note>ID: CollectionTab.BookMenu.UpdateFrontMatterToolStrip</note>
-        <target xml:lang="rw" state="translated">Gukosora Igitabo</target>
+        <target xml:lang="rw" state="final">Gukosora Igitabo</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateThumbnail" approved="yes">
         <source xml:lang="en">Update Thumbnail</source>
         <note>ID: CollectionTab.BookMenu.UpdateThumbnail</note>
-        <target xml:lang="rw" state="translated">Guhuza n'igihe ishusho ntubyangano</target>
+        <target xml:lang="rw" state="final">Guhuza n'igihe ishusho ntubyangano</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookSourceHeading" approved="yes">
         <source xml:lang="en">Sources For New Books</source>
         <note>ID: CollectionTab.BookSourceHeading</note>
-        <target xml:lang="rw" state="translated">Inkomoko y'ibitabo bishya</target>
+        <target xml:lang="rw" state="final">Inkomoko y'ibitabo bishya</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookSourcesLockNotice" approved="yes">
         <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
         <note>ID: CollectionTab.BookSourcesLockNotice</note>
-        <target xml:lang="rw" state="translated">Iri kusanyirizo rirafunze, bityo nta bitabo bishya bishobora kongerwamo/gukurwamo</target>
+        <target xml:lang="rw" state="final">Iri kusanyirizo rirafunze, bityo nta bitabo bishya bishobora kongerwamo/gukurwamo</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Books From BloomLibrary.org</source>
         <note>ID: CollectionTab.Books From BloomLibrary.org</note>
-        <target xml:lang="rw" state="translated">Ibitabo byavanywe kuri BloomLibrary.org</target>
+        <target xml:lang="rw" state="final">Ibitabo byavanywe kuri BloomLibrary.org</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks" approved="yes">
         <source xml:lang="en">Do Updates of All Books</source>
         <note>ID: CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks</note>
-        <target xml:lang="rw" state="translated">Guhuza n'igihe ibitabo byose</target>
+        <target xml:lang="rw" state="final">Guhuza n'igihe ibitabo byose</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks" approved="yes">
         <source xml:lang="en">Do Checks of All Books</source>
         <note>ID: CollectionTab.CollectionMenu.doChecksOfAllBooks</note>
-        <target xml:lang="rw" state="translated">Kontorora ibitabo byose</target>
+        <target xml:lang="rw" state="final">Kontorora ibitabo byose</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages" approved="yes">
         <source xml:lang="en">Rescue Missing Images...</source>
         <note>ID: CollectionTab.CollectionMenu.rescueMissingImages</note>
-        <target xml:lang="rw" state="translated">Garura amashusho yose abura...</target>
+        <target xml:lang="rw" state="final">Garura amashusho yose abura...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.showHistory" approved="yes">
         <source xml:lang="en">Collection History...</source>
         <note>ID: CollectionTab.CollectionMenu.showHistory</note>
-        <target xml:lang="rw" state="translated">Amateka y'ikusanyirizo...</target>
+        <target xml:lang="rw" state="final">Amateka y'ikusanyirizo...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.showNotes" approved="yes">
         <source xml:lang="en">Collection Notes...</source>
         <note>ID: CollectionTab.CollectionMenu.showNotes</note>
-        <target xml:lang="rw" state="translated">Note z'ikusanyirizo...</target>
+        <target xml:lang="rw" state="final">Note z'ikusanyirizo...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionTabLabel" approved="yes">
         <source xml:lang="en">Collections</source>
         <note>ID: CollectionTab.CollectionTabLabel</note>
-        <target xml:lang="rw" state="translated">Amakusanyirizo</target>
+        <target xml:lang="rw" state="final">Amakusanyirizo</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Collections" approved="yes">
         <source xml:lang="en">Collections</source>
         <note>ID: CollectionTab.Collections</note>
-        <target xml:lang="rw" state="translated">Amasanyirizo</target>
+        <target xml:lang="rw" state="final">Amasanyirizo</target>
       </trans-unit>
       <trans-unit id="CollectionTab.ConfiguringBookMessage" approved="yes">
         <source xml:lang="en">Building...</source>
         <note>ID: CollectionTab.ConfiguringBookMessage</note>
-        <target xml:lang="rw" state="translated">Iyubakwa...</target>
+        <target xml:lang="rw" state="final">Iyubakwa...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.ConfirmRecycleDescription" approved="yes">
         <source xml:lang="en">The book '{0}'</source>
         <note>ID: CollectionTab.ConfirmRecycleDescription</note>
-        <target xml:lang="rw" state="translated">Igitabo '{0}'</target>
+        <target xml:lang="rw" state="final">Igitabo '{0}'</target>
       </trans-unit>
       <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk" approved="yes">
         <source xml:lang="en">Open Folder on Disk</source>
         <note>ID: CollectionTab.ContextMenu.OpenFolderOnDisk</note>
-        <target xml:lang="rw" state="translated">Gufungura idosiye iri ku idisiki</target>
+        <target xml:lang="rw" state="final">Gufungura idosiye iri ku idisiki</target>
       </trans-unit>
       <trans-unit id="CollectionTab.EditBookButton" approved="yes">
         <source xml:lang="en">Edit this book</source>
         <note>ID: CollectionTab.EditBookButton</note>
-        <target xml:lang="rw" state="translated">Nonosora iki gitabo</target>
+        <target xml:lang="rw" state="final">Nonosora iki gitabo</target>
       </trans-unit>
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
@@ -875,12 +875,12 @@
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
         <note>ID: CollectionTab.MakeBloomPackButton</note>
-        <target xml:lang="rw" state="translated">Gukora ipaki ya Bloom</target>
+        <target xml:lang="rw" state="final">Gukora ipaki ya Bloom</target>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate" approved="yes">
         <source xml:lang="en">Make a book using this source</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate</note>
-        <target xml:lang="rw" state="translated">Gukora igitabo ukoresheje ibi</target>
+        <target xml:lang="rw" state="final">Gukora igitabo ukoresheje ibi</target>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_">
         <source xml:lang="en">Create a book in my language using this source book</source>
@@ -892,13 +892,13 @@
         <note>ID: CollectionTab.MoreLanguagesMenuItem</note>
         <note>Brings up the localization dialog</note>
         <note xml:lang="en">used in 3.9 and earlier; feature removed in 4.0</note>
-        <target xml:lang="rw" state="translated">Ibindi...</target>
+        <target xml:lang="rw" state="final">Ibindi...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Open/CreateCollectionButton" approved="yes">
         <source xml:lang="en">Other Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton</note>
         <note>This is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
-        <target xml:lang="rw" state="translated">Irindi kusanyirizo</target>
+        <target xml:lang="rw" state="final">Irindi kusanyirizo</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Open/CreateCollectionButton_ToolTip_">
         <source xml:lang="en">Open/Create/Get Collection</source>
@@ -925,32 +925,32 @@
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample Shells</source>
         <note>ID: CollectionTab.Sample Shells</note>
-        <target xml:lang="rw" state="translated">Imiterere ntangarugero</target>
+        <target xml:lang="rw" state="final">Imiterere ntangarugero</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SendReceive" approved="yes">
         <source xml:lang="en">Send/Receive</source>
         <note>ID: CollectionTab.SendReceive</note>
-        <target xml:lang="rw" state="translated">Kwakira/Kohereza</target>
+        <target xml:lang="rw" state="final">Kwakira/Kohereza</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SettingsButton" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionTab.SettingsButton</note>
-        <target xml:lang="rw" state="translated">Itunganya</target>
+        <target xml:lang="rw" state="final">Itunganya</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections" approved="yes">
         <source xml:lang="en">Open Additional Collections Folder</source>
         <note>ID: CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections</note>
-        <target xml:lang="rw" state="translated">Gufungura Idosye y'ikusanyirizo ry'inyongera</target>
+        <target xml:lang="rw" state="final">Gufungura Idosye y'ikusanyirizo ry'inyongera</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading" approved="yes">
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
-        <target xml:lang="rw" state="translated">Intangarugero ku miterere mishya y'ibitabo</target>
+        <target xml:lang="rw" state="final">Intangarugero ku miterere mishya y'ibitabo</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Templates" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Templates</source>
         <note>ID: CollectionTab.Templates</note>
-        <target xml:lang="rw" state="translated">Imbata ntangarugero</target>
+        <target xml:lang="rw" state="final">Imbata ntangarugero</target>
       </trans-unit>
       <trans-unit id="CollectionTab.TitleMissing">
         <source xml:lang="en">Title Missing</source>
@@ -1020,6 +1020,26 @@
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
         <target xml:lang="rw" state="needs-translation">Advanced</target>
       </trans-unit>
+      <trans-unit id="Common.Colors.Black">
+        <source xml:lang="en">Black</source>
+        <note>ID: Common.Colors.Black</note>
+        <target xml:lang="rw" state="needs-translation">Black</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Crimson">
+        <source xml:lang="en">Crimson</source>
+        <note>ID: Common.Colors.Crimson</note>
+        <target xml:lang="rw" state="needs-translation">Crimson</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Yellow">
+        <source xml:lang="en">Yellow</source>
+        <note>ID: Common.Colors.Yellow</note>
+        <target xml:lang="rw" state="needs-translation">Yellow</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.White">
+        <source xml:lang="en">White</source>
+        <note>ID: Common.Colors.White</note>
+        <target xml:lang="rw" state="needs-translation">White</target>
+      </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true">
         <source xml:lang="en">Learn More</source>
         <note>ID: Common.LearnMore</note>
@@ -1040,13 +1060,13 @@
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="rw" state="translated">&amp;Hagarika</target>
+        <target xml:lang="rw" state="final">&amp;Hagarika</target>
       </trans-unit>
       <trans-unit id="Common.Finish" approved="yes">
         <source xml:lang="en">&amp;Finish</source>
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="rw" state="translated">&amp;Kurangiza</target>
+        <target xml:lang="rw" state="final">&amp;Kurangiza</target>
       </trans-unit>
       <trans-unit id="Common.Info">
         <source xml:lang="en">Info</source>
@@ -1075,7 +1095,7 @@
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
-        <target xml:lang="rw" state="translated">Nkunganire</target>
+        <target xml:lang="rw" state="final">Nkunganire</target>
       </trans-unit>
       <trans-unit id="Common.HelpButton">
         <source xml:lang="en">&amp;Help</source>
@@ -1092,7 +1112,7 @@
         <source xml:lang="en">&amp;Next</source>
         <note>ID: Common.Next</note>
         <note>Used for the Next button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="rw" state="translated">&amp;Ibikurikira</target>
+        <target xml:lang="rw" state="final">&amp;Ibikurikira</target>
       </trans-unit>
       <trans-unit id="Common.NextButton">
         <source xml:lang="en">Next</source>
@@ -1113,7 +1133,7 @@
       <trans-unit id="Common.Optional" approved="yes">
         <source xml:lang="en">optional</source>
         <note>ID: Common.Optional</note>
-        <target xml:lang="rw" state="translated">ukoresha ushatse</target>
+        <target xml:lang="rw" state="final">ukoresha ushatse</target>
       </trans-unit>
       <trans-unit id="Common.Preview">
         <source xml:lang="en">Preview</source>
@@ -1131,6 +1151,11 @@
         <note>Sense of refreshing a web page.</note>
         <target xml:lang="rw" state="needs-translation">Refresh</target>
       </trans-unit>
+      <trans-unit id="Common.Replace">
+        <source xml:lang="en">Replace</source>
+        <note>ID: Common.Replace</note>
+        <target xml:lang="rw" state="needs-translation">Replace</target>
+      </trans-unit>
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
@@ -1145,12 +1170,12 @@
       <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
-        <target xml:lang="rw" state="translated">Ibyo wakururaga ({0}) byarangiye. Ushobora kubisanga mu gice cyitwa 'Ikusanyabitabo rya Bloom' kiboneka mu makusanyirizo yawe. Niba usa n'udafite ikintu uri gukora, Bloom iribukikugaragarize ubwayo.</target>
+        <target xml:lang="rw" state="final">Ibyo wakururaga ({0}) byarangiye. Ushobora kubisanga mu gice cyitwa 'Ikusanyabitabo rya Bloom' kiboneka mu makusanyirizo yawe. Niba usa n'udafite ikintu uri gukora, Bloom iribukikugaragarize ubwayo.</target>
       </trans-unit>
       <trans-unit id="Download.CompletedCaption" approved="yes">
         <source xml:lang="en">Download complete</source>
         <note>ID: Download.CompletedCaption</note>
-        <target xml:lang="rw" state="translated">Gukurura byarangiye</target>
+        <target xml:lang="rw" state="final">Gukurura byarangiye</target>
       </trans-unit>
       <trans-unit id="Download.CopyFailed">
         <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers</source>
@@ -1161,18 +1186,18 @@
       <trans-unit id="Download.DownloadingDialogTitle" approved="yes">
         <source xml:lang="en">Downloading book</source>
         <note>ID: Download.DownloadingDialogTitle</note>
-        <target xml:lang="rw" state="translated">Gukurura igitabo</target>
+        <target xml:lang="rw" state="final">Gukurura igitabo</target>
       </trans-unit>
       <trans-unit id="Download.GenericNetworkProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
         <note>ID: Download.GenericNetworkProblemNotice</note>
         <note xml:lang="en">OLD TEXT (before 3.9): There was a problem downloading your book.</note>
-        <target xml:lang="rw" state="translated">Habaye ikibazo mu gukurura igitabo cyawe</target>
+        <target xml:lang="rw" state="final">Habaye ikibazo mu gukurura igitabo cyawe</target>
       </trans-unit>
       <trans-unit id="Download.ProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
         <note>ID: Download.ProblemNotice</note>
-        <target xml:lang="rw" state="translated">Habaye ikibazo cyo gukurura igitabo cyawe. Urasabwa kongera gutangira Bloom cyangwa gushaka ubufasha bwa tekiniki.</target>
+        <target xml:lang="rw" state="final">Habaye ikibazo cyo gukurura igitabo cyawe. Urasabwa kongera gutangira Bloom cyangwa gushaka ubufasha bwa tekiniki.</target>
       </trans-unit>
       <trans-unit id="Download.TimeoutProblemNotice">
         <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
@@ -1244,33 +1269,33 @@
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
         <note>ID: EditTab.BackMatter.InsideBackCoverTextPrompt</note>
-        <target xml:lang="rw" state="translated">Niba ukeneye ahantu ho gushyira amakuru y'inyongera kuri iki gitabo, ushobora gukoresha iyiu paji, ariyo gikobokobo cy'inyuma ku gice cyacyo cy'imbere.</target>
+        <target xml:lang="rw" state="final">Niba ukeneye ahantu ho gushyira amakuru y'inyongera kuri iki gitabo, ushobora gukoresha iyiu paji, ariyo gikobokobo cy'inyuma ku gice cyacyo cy'imbere.</target>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.OutsideBackCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</source>
         <note>ID: EditTab.BackMatter.OutsideBackCoverTextPrompt</note>
-        <target xml:lang="rw" state="translated">Niba ukeneye ahantu ho gushyira amakuru y'inyongera kuri iki gitabo, ushobora gukoresha iyi paji, ariyo gikobokobo cy'inyuma ku gice cyacyo cy'inyuma.</target>
+        <target xml:lang="rw" state="final">Niba ukeneye ahantu ho gushyira amakuru y'inyongera kuri iki gitabo, ushobora gukoresha iyi paji, ariyo gikobokobo cy'inyuma ku gice cyacyo cy'inyuma.</target>
       </trans-unit>
       <trans-unit id="EditTab.Bilingual" approved="yes">
         <source xml:lang="en">Two Languages</source>
         <note>ID: EditTab.Bilingual</note>
         <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
-        <target xml:lang="rw" state="translated">Indimi ebyiri</target>
+        <target xml:lang="rw" state="final">Indimi ebyiri</target>
       </trans-unit>
       <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser" approved="yes">
         <source xml:lang="en">Open the HTML used to make this PDF, in Firefox (must be on path)</source>
         <note>ID: EditTab.BookContextMenu.openHtmlInBrowser</note>
-        <target xml:lang="rw" state="translated">Gufungura Html yakoreshejwe hakorwa iyi PDF, muri Chrom (igomba kuba iri ku nzira)</target>
+        <target xml:lang="rw" state="final">Gufungura Html yakoreshejwe hakorwa iyi PDF, muri Chrom (igomba kuba iri ku nzira)</target>
       </trans-unit>
       <trans-unit id="EditTab.CannotChangeCopyright" approved="yes">
         <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
         <note>ID: EditTab.CannotChangeCopyright</note>
-        <target xml:lang="rw" state="translated">Tukwiseguyeho, uburenganzira bw'umwanditsi kimwe n'uburenganzira kuri iki gitabo ntibishobora guhindurwa.</target>
+        <target xml:lang="rw" state="final">Tukwiseguyeho, uburenganzira bw'umwanditsi kimwe n'uburenganzira kuri iki gitabo ntibishobora guhindurwa.</target>
       </trans-unit>
       <trans-unit id="EditTab.CantPasteImageLocked" approved="yes">
         <source xml:lang="en">Sorry, this book is locked down so that images cannot be changed.</source>
         <note>ID: EditTab.CantPasteImageLocked</note>
-        <target xml:lang="rw" state="translated">Tukwiseguyeho, iki gitabo kirafunzwe kugira ngo amashusho yacyo adahindurwa.</target>
+        <target xml:lang="rw" state="final">Tukwiseguyeho, iki gitabo kirafunzwe kugira ngo amashusho yacyo adahindurwa.</target>
       </trans-unit>
       <trans-unit id="EditTab.ChooseLayoutButton">
         <source xml:lang="en">Choose Different Layout</source>
@@ -1281,18 +1306,18 @@
         <source xml:lang="en">Really Remove Page?</source>
         <note>ID: EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): Really Delete Page?</note>
-        <target xml:lang="rw" state="translated">Ushaka koko guhanagura iyi paji?</target>
+        <target xml:lang="rw" state="final">Ushaka koko guhanagura iyi paji?</target>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog.DeleteButton" approved="yes">
         <source xml:lang="en">&amp;Remove</source>
         <note>ID: EditTab.ConfirmRemovePageDialog.DeleteButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): &amp;Delete</note>
-        <target xml:lang="rw" state="translated">&amp;Guhanagura</target>
+        <target xml:lang="rw" state="final">&amp;Guhanagura</target>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel" approved="yes">
         <source xml:lang="en">This page will be permanently removed.</source>
         <note>ID: EditTab.ConfirmRemovePageDialog._messageLabel</note>
-        <target xml:lang="rw" state="translated">irahita yoherezwa mu gakangara k'ibyasiibwe</target>
+        <target xml:lang="rw" state="final">irahita yoherezwa mu gakangara k'ibyasiibwe</target>
         <alt-trans>
           <target xml:lang="rw">{0} irahita yoherezwa mu gakangara k'ibyasiibwe</target>
         </alt-trans>
@@ -1300,7 +1325,7 @@
       <trans-unit id="EditTab.ContentLanguagesDropdown" approved="yes">
         <source xml:lang="en">Multilingual Settings</source>
         <note>ID: EditTab.ContentLanguagesDropdown</note>
-        <target xml:lang="rw" state="translated">Imitunganyirize y'indimi nyinshi</target>
+        <target xml:lang="rw" state="final">Imitunganyirize y'indimi nyinshi</target>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip">
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
@@ -1315,7 +1340,7 @@
       <trans-unit id="EditTab.CopyButton" approved="yes">
         <source xml:lang="en">Copy</source>
         <note>ID: EditTab.CopyButton</note>
-        <target xml:lang="rw" state="translated">Koporora</target>
+        <target xml:lang="rw" state="final">Koporora</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyButton.ToolTip">
         <source xml:lang="en">Copy (Ctrl+C)</source>
@@ -1373,7 +1398,7 @@
       <trans-unit id="EditTab.CutButton" approved="yes">
         <source xml:lang="en">Cut</source>
         <note>ID: EditTab.CutButton</note>
-        <target xml:lang="rw" state="translated">Kata</target>
+        <target xml:lang="rw" state="final">Kata</target>
       </trans-unit>
       <trans-unit id="EditTab.CutButton.ToolTip">
         <source xml:lang="en">Cut (Ctrl+X)</source>
@@ -1384,7 +1409,7 @@
         <source xml:lang="en">Remove Page</source>
         <note>ID: EditTab.DeletePageButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Remove\n  Page</note>
-        <target xml:lang="rw" state="translated">Kuramo ipaji</target>
+        <target xml:lang="rw" state="final">Kuramo ipaji</target>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton.ToolTip" sil:dynamic="true">
         <source xml:lang="en">Remove this page from the book</source>
@@ -1431,7 +1456,7 @@
         <source xml:lang="en">Duplicate Page</source>
         <note>ID: EditTab.DuplicatePageButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Duplicate\n  Page</note>
-        <target xml:lang="rw" state="translated">Koramo\n   Ebyiri</target>
+        <target xml:lang="rw" state="final">Koramo\n   Ebyiri</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton.ToolTip" sil:dynamic="true">
         <source xml:lang="en">Insert a new page which is a duplicate of this one</source>
@@ -1448,7 +1473,7 @@
       <trans-unit id="EditTab.Edit" approved="yes">
         <source xml:lang="en">Edit</source>
         <note>ID: EditTab.Edit</note>
-        <target xml:lang="rw" state="translated">Kunoza</target>
+        <target xml:lang="rw" state="final">Kunoza</target>
       </trans-unit>
       <trans-unit id="EditTab.EditNotAllowed" sil:dynamic="true">
         <source xml:lang="en">You cannot change these because this is not the original copy.</source>
@@ -1490,7 +1515,7 @@
       <trans-unit id="EditTab.FontMissing" approved="yes">
         <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
         <note>ID: EditTab.FontMissing</note>
-        <target xml:lang="rw" state="translated">Inyuguti yatoranyijwe ubu ni '{0}', ariko rero ntyensitaye kuri iyi mudasobwa. Izindi nyuguti ziri bukoreshwe mu mwanya wayo.</target>
+        <target xml:lang="rw" state="final">Inyuguti yatoranyijwe ubu ni '{0}', ariko rero ntyensitaye kuri iyi mudasobwa. Izindi nyuguti ziri bukoreshwe mu mwanya wayo.</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Alignment" sil:dynamic="true">
         <source xml:lang="en">Alignment</source>
@@ -1626,7 +1651,7 @@
       <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
         <note>ID: EditTab.FormatDialog.FontSizeTip</note>
-        <target xml:lang="rw" state="translated">Guhindura ubunini bw'inyuguti zigize umwandiko ku tuzu twose dufite inyuguti '{0}' n'ururimi '{1}'.\nubunini bw'iki gihe ni {2}pt.</target>
+        <target xml:lang="rw" state="final">Guhindura ubunini bw'inyuguti zigize umwandiko ku tuzu twose dufite inyuguti '{0}' n'ururimi '{1}'.\nubunini bw'iki gihe ni {2}pt.</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the font size</source>
@@ -1729,12 +1754,12 @@
         <source xml:lang="en">Book title in {lang}</source>
         <note>ID: EditTab.FrontMatter.BookTitlePrompt</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
-        <target xml:lang="rw" state="translated">Umutwe w'igitabo mu {lang}</target>
+        <target xml:lang="rw" state="final">Umutwe w'igitabo mu {lang}</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to Edit Copyright &amp; License</source>
         <note>ID: EditTab.FrontMatter.CopyrightPrompt</note>
-        <target xml:lang="rw" state="translated">Kanda uhindure Uburenganzira bw'umwanditsi &amp; n'amabwiriza</target>
+        <target xml:lang="rw" state="final">Kanda uhindure Uburenganzira bw'umwanditsi &amp; n'amabwiriza</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true">
         <source xml:lang="en">Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.</source>
@@ -1745,12 +1770,12 @@
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
         <note>ID: EditTab.FrontMatter.FundingAgenciesPrompt</note>
-        <target xml:lang="rw" state="translated">Koresha aha mu gushimira urwego urwo ari rwo rwose rwaguteye inkunga.</target>
+        <target xml:lang="rw" state="final">Koresha aha mu gushimira urwego urwo ari rwo rwose rwaguteye inkunga.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.ISBNPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">International Standard Book Number. Leave blank if you don't have one of these.</source>
         <note>ID: EditTab.FrontMatter.ISBNPrompt</note>
-        <target xml:lang="rw" state="translated">Inomero mpuzamahanga ndangabuziranenge bw'igitabo. Siga uyu mwanya urimo ubusa niba nta yo ufite.</target>
+        <target xml:lang="rw" state="final">Inomero mpuzamahanga ndangabuziranenge bw'igitabo. Siga uyu mwanya urimo ubusa niba nta yo ufite.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.ImageCreditMissing">
         <source xml:lang="en"> {0} (page {1})</source>
@@ -1795,12 +1820,12 @@
       <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalAcknowledgmentsPrompt</note>
-        <target xml:lang="rw" state="translated">Ugushimira umwimerere (cyangwa Intangarugero) wakoreshejwe mu {lang}</target>
+        <target xml:lang="rw" state="final">Ugushimira umwimerere (cyangwa Intangarugero) wakoreshejwe mu {lang}</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalContributorsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The contributions made by writers, illustrators, editors, etc., in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalContributorsPrompt</note>
-        <target xml:lang="rw" state="translated">Ibyatanzwe n'abanditsi, abashushanyi, abanonosoranyandiko, nbd., mu {lang}</target>
+        <target xml:lang="rw" state="final">Ibyatanzwe n'abanditsi, abashushanyi, abanonosoranyandiko, nbd., mu {lang}</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence">
         <source xml:lang="en">Adapted from original, {0}.</source>
@@ -1846,12 +1871,12 @@
       <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to choose topic</source>
         <note>ID: EditTab.FrontMatter.TopicPrompt</note>
-        <target xml:lang="rw" state="translated">Kanda uhitemo insanganyamatsiko</target>
+        <target xml:lang="rw" state="final">Kanda uhitemo insanganyamatsiko</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
-        <target xml:lang="rw" state="translated">Ugushimira inonosora rishingiye ku ihindurandimi, mu {lang}</target>
+        <target xml:lang="rw" state="final">Ugushimira inonosora rishingiye ku ihindurandimi, mu {lang}</target>
       </trans-unit>
       <trans-unit id="EditTab.HowToUnlockBook">
         <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
@@ -1867,7 +1892,7 @@
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Image</source>
         <note>ID: EditTab.Image.ChangeImage</note>
-        <target xml:lang="rw" state="translated">Guhindura ishusho</target>
+        <target xml:lang="rw" state="final">Guhindura ishusho</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.CopyImage" sil:dynamic="true">
         <source xml:lang="en">Copy Image</source>
@@ -1898,7 +1923,7 @@
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paste Image</source>
         <note>ID: EditTab.Image.PasteImage</note>
-        <target xml:lang="rw" state="translated">Kubambikaho ishusho</target>
+        <target xml:lang="rw" state="final">Kubambikaho ishusho</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true">
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
@@ -1945,7 +1970,7 @@
         <source xml:lang="en">One Language</source>
         <note>ID: EditTab.Monolingual</note>
         <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
-        <target xml:lang="rw" state="translated">Ururimi rumwe</target>
+        <target xml:lang="rw" state="final">Ururimi rumwe</target>
       </trans-unit>
       <trans-unit id="EditTab.NeverLocked.ToolTip" sil:dynamic="true">
         <source xml:lang="en">Books are never locked in a Source Collection.</source>
@@ -1984,22 +2009,22 @@
       <trans-unit id="EditTab.PageList.CantMoveXMatter" approved="yes">
         <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>
         <note>ID: EditTab.PageList.CantMoveXMatter</note>
-        <target xml:lang="rw" state="translated">Iri hindura ntiryemewe. Igikobokobo cy'imbere n'igikobokobo cy'inyuma bigomba kuguma aho biri</target>
+        <target xml:lang="rw" state="final">Iri hindura ntiryemewe. Igikobokobo cy'imbere n'igikobokobo cy'inyuma bigomba kuguma aho biri</target>
       </trans-unit>
       <trans-unit id="EditTab.PageList.Heading" approved="yes">
         <source xml:lang="en">Pages</source>
         <note>ID: EditTab.PageList.Heading</note>
-        <target xml:lang="rw" state="translated">Amapaji</target>
+        <target xml:lang="rw" state="final">Amapaji</target>
       </trans-unit>
       <trans-unit id="EditTab.PageSizeAndOrientation.Tooltip" approved="yes">
         <source xml:lang="en">Choose a page size and orientation</source>
         <note>ID: EditTab.PageSizeAndOrientation.Tooltip</note>
-        <target xml:lang="rw" state="translated">Guhitamo ubunini bw'urupapuro n'icyerekezo</target>
+        <target xml:lang="rw" state="final">Guhitamo ubunini bw'urupapuro n'icyerekezo</target>
       </trans-unit>
       <trans-unit id="EditTab.PasteButton" approved="yes">
         <source xml:lang="en">Paste</source>
         <note>ID: EditTab.PasteButton</note>
-        <target xml:lang="rw" state="translated">Bambika</target>
+        <target xml:lang="rw" state="final">Bambika</target>
       </trans-unit>
       <trans-unit id="EditTab.PasteButton.ToolTip">
         <source xml:lang="en">Paste (Ctrl+V)</source>
@@ -2139,7 +2164,117 @@
       <trans-unit id="EditTab.TitleOfCopyIPToWholeBooksDialog" approved="yes">
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
-        <target xml:lang="rw" state="translated">Amakuru kuri nyir'ifoto</target>
+        <target xml:lang="rw" state="final">Amakuru kuri nyir'ifoto</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool" sil:dynamic="true">
+        <source xml:lang="en">Comic Tool</source>
+        <note>ID: EditTab.Toolbox.CalloutTool</note>
+        <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
+        <target xml:lang="rw" state="needs-translation">Comic Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.AddChildBubble" sil:dynamic="true">
+        <source xml:lang="en">Add Child Bubble</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.AddChildBubble</note>
+        <target xml:lang="rw" state="needs-translation">Add Child Bubble</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor" sil:dynamic="true">
+        <source xml:lang="en">Background Color</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor</note>
+        <note>Refers to the Background Color of the bubble used by the callout</note>
+        <target xml:lang="rw" state="needs-translation">Background Color</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.OldLace" sil:dynamic="true">
+        <source xml:lang="en">Old Lace</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.OldLace</note>
+        <note>A background color that looks like old lace</note>
+        <target xml:lang="rw" state="needs-translation">Old Lace</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToCalico" sil:dynamic="true">
+        <source xml:lang="en">White to Calico</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToCalico</note>
+        <note>A background color that is a gradient starting with white blending into calico color</note>
+        <target xml:lang="rw" state="needs-translation">White to Calico</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
+        <source xml:lang="en">White to French Pass</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToFrenchPass</note>
+        <note>A background color that is a gradient starting with white blending into the "French pass" color</note>
+        <target xml:lang="rw" state="needs-translation">White to French Pass</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true">
+        <source xml:lang="en">White to Portafino</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToPortafino</note>
+        <note>A background color that is a gradient starting with white blending into the "Portafino" color</note>
+        <target xml:lang="rw" state="needs-translation">White to Portafino</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor" sil:dynamic="true">
+        <source xml:lang="en">Outer Outline Color</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor</note>
+        <note>Refers to the Outer Outline Color of the bubble used by the callout</note>
+        <target xml:lang="rw" state="needs-translation">Outer Outline Color</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor.None" sil:dynamic="true">
+        <source xml:lang="en">None</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor.None</note>
+        <target xml:lang="rw" state="needs-translation">None</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style" sil:dynamic="true">
+        <source xml:lang="en">Style</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style</note>
+        <note>Refers to the STYLE of bubble used by the callout</note>
+        <target xml:lang="rw" state="needs-translation">Style</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Caption" sil:dynamic="true">
+        <source xml:lang="en">Caption</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Caption</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents a description which is not directly stated by any characters.</note>
+        <target xml:lang="rw" state="needs-translation">Caption</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Ellipse" sil:dynamic="true">
+        <source xml:lang="en">Ellipse</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Ellipse</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents a round bubble shaped like an ellipse.</note>
+        <target xml:lang="rw" state="needs-translation">Ellipse</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Exclamation" sil:dynamic="true">
+        <source xml:lang="en">Exclamation</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Exclamation</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents a shout or exclamatory statement. Like this: "Watch out!"</note>
+        <target xml:lang="rw" state="needs-translation">Exclamation</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.JustText" sil:dynamic="true">
+        <source xml:lang="en">Just Text</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.JustText</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style does not have any bubble at all.</note>
+        <target xml:lang="rw" state="needs-translation">Just Text</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Speech" sil:dynamic="true">
+        <source xml:lang="en">Speech</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Speech</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents standard speech/dialogue.</note>
+        <target xml:lang="rw" state="needs-translation">Speech</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Thought" sil:dynamic="true">
+        <source xml:lang="en">Thought</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Thought</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents the thoughts of a person who is thinking.</note>
+        <target xml:lang="rw" state="needs-translation">Thought</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.TextColor" sil:dynamic="true">
+        <source xml:lang="en">Text Color</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.TextColor</note>
+        <target xml:lang="rw" state="needs-translation">Text Color</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.ControlsAvailable" sil:dynamic="true">
+        <source xml:lang="en">The selected item has these controls:</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.ControlsAvailable</note>
+        <target xml:lang="rw" state="needs-translation">The selected item has these controls:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
@@ -2265,7 +2400,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool</note>
-        <target xml:lang="rw" state="translated">Igikoresho gifasha umusomyi gusobanukirwa</target>
+        <target xml:lang="rw" state="final">Igikoresho gifasha umusomyi gusobanukirwa</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated" sil:dynamic="true">
         <source xml:lang="en">Bloom can handle only the first {0} words.</source>
@@ -2331,7 +2466,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SetUpStages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Stages</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SetUpStages</note>
-        <target xml:lang="rw" state="translated">Guteganya intambwe</target>
+        <target xml:lang="rw" state="final">Guteganya intambwe</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortAlphabetically" sil:dynamic="true">
         <source xml:lang="en">Sort alphabetically</source>
@@ -2351,12 +2486,12 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.Stage</note>
-        <target xml:lang="rw" state="translated">Intambwe</target>
+        <target xml:lang="rw" state="final">Intambwe</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
-        <target xml:lang="rw" state="translated">cya</target>
+        <target xml:lang="rw" state="final">cya</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
         <source xml:lang="en">Image Description Tool</source>
@@ -2458,12 +2593,12 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader Tool</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool</note>
-        <target xml:lang="rw" state="translated">Igikoresho cy'umusomyi umenyereye</target>
+        <target xml:lang="rw" state="final">Igikoresho cy'umusomyi umenyereye</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Actual" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Actual</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Actual</note>
-        <target xml:lang="rw" state="translated">Cy'ukuri</target>
+        <target xml:lang="rw" state="final">Cy'ukuri</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Average" sil:dynamic="true">
         <source xml:lang="en">avg per sentence</source>
@@ -2478,7 +2613,7 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.FoThisLevel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For this Level</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.FoThisLevel</note>
-        <target xml:lang="rw" state="translated">By'iyi ntambwe</target>
+        <target xml:lang="rw" state="final">By'iyi ntambwe</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Formatting" sil:dynamic="true">
         <source xml:lang="en">Formatting</source>
@@ -2493,29 +2628,29 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.KeepInMind" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Keep in mind</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.KeepInMind</note>
-        <target xml:lang="rw" state="translated">Kuzirikana</target>
+        <target xml:lang="rw" state="final">Kuzirikana</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Level" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Level</note>
         <note>Used to create string "Level # of #". The space after this word is added programmatically.</note>
-        <target xml:lang="rw" state="translated">Urwego</target>
+        <target xml:lang="rw" state="final">Urwego</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelOf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelOf</note>
         <note>Used to create string "Level # of #". The spaces on each side of this word are added programmatically.</note>
-        <target xml:lang="rw" state="translated">cya</target>
+        <target xml:lang="rw" state="final">cya</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Max</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Max</note>
-        <target xml:lang="rw" state="translated">Hejuru</target>
+        <target xml:lang="rw" state="final">Hejuru</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">per page</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.PerPage</note>
-        <target xml:lang="rw" state="translated">ku ipaji</target>
+        <target xml:lang="rw" state="final">ku ipaji</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerSentence" sil:dynamic="true">
         <source xml:lang="en">longest sentence</source>
@@ -2530,27 +2665,27 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SetUpLevels" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Levels</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.SetUpLevels</note>
-        <target xml:lang="rw" state="translated">Guteganya inzego</target>
+        <target xml:lang="rw" state="final">Guteganya inzego</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisBook" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This Book</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.ThisBook</note>
-        <target xml:lang="rw" state="translated">Iki gitabo</target>
+        <target xml:lang="rw" state="final">Iki gitabo</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This Page</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.ThisPage</note>
-        <target xml:lang="rw" state="translated">Iyi paji</target>
+        <target xml:lang="rw" state="final">Iyi paji</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true" approved="yes">
         <source xml:lang="en">total</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Total</note>
-        <target xml:lang="rw" state="translated">igiteranyo</target>
+        <target xml:lang="rw" state="final">igiteranyo</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true" approved="yes">
         <source xml:lang="en">unique</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Unique</note>
-        <target xml:lang="rw" state="translated">cyihariye</target>
+        <target xml:lang="rw" state="final">cyihariye</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Vocabulary" sil:dynamic="true">
         <source xml:lang="en">Vocabulary</source>
@@ -2560,12 +2695,12 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WordCounts" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Word Counts</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.WordCounts</note>
-        <target xml:lang="rw" state="translated">Ukubara amagambo</target>
+        <target xml:lang="rw" state="final">Ukubara amagambo</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.More" sil:dynamic="true" approved="yes">
         <source xml:lang="en">More...</source>
         <note>ID: EditTab.Toolbox.More</note>
-        <target xml:lang="rw" state="translated">Ibindi...</target>
+        <target xml:lang="rw" state="final">Ibindi...</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
         <source xml:lang="en">Allow changes to this shellbook</source>
@@ -2763,6 +2898,21 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.Listen</note>
         <target xml:lang="rw" state="needs-translation">Listen to the whole page</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
+        <source xml:lang="en">Import Recording</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
+        <target xml:lang="rw" state="needs-translation">Import Recording</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true">
+        <source xml:lang="en">Replace with new audio?</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace</note>
+        <target xml:lang="rw" state="needs-translation">Replace with new audio?</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true">
+        <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
+        <target xml:lang="rw" state="needs-translation">If you import this recording, it will replace all the audio for this text box.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
         <source xml:lang="en">2) Look at the highlighted text</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
@@ -2851,12 +3001,12 @@
         <source xml:lang="en">Three Languages</source>
         <note>ID: EditTab.Trilingual</note>
         <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
-        <target xml:lang="rw" state="translated">Indimi eshatu</target>
+        <target xml:lang="rw" state="final">Indimi eshatu</target>
       </trans-unit>
       <trans-unit id="EditTab.UndoButton" approved="yes">
         <source xml:lang="en">Undo</source>
         <note>ID: EditTab.UndoButton</note>
-        <target xml:lang="rw" state="translated">Subizayo</target>
+        <target xml:lang="rw" state="final">Subizayo</target>
       </trans-unit>
       <trans-unit id="EditTab.UndoButton.ToolTip">
         <source xml:lang="en">Undo (Ctrl+Z)</source>
@@ -3042,23 +3192,23 @@
       <trans-unit id="HelpMenu.CheckForNewVersionMenuItem" approved="yes">
         <source xml:lang="en">Check For New Version</source>
         <note>ID: HelpMenu.CheckForNewVersionMenuItem</note>
-        <target xml:lang="rw" state="translated">Reba niba nta nonosora rishya ryasohotse</target>
+        <target xml:lang="rw" state="final">Reba niba nta nonosora rishya ryasohotse</target>
       </trans-unit>
       <trans-unit id="HelpMenu.CreditsMenuItem" approved="yes">
         <source xml:lang="en">About Bloom...</source>
         <note>ID: HelpMenu.CreditsMenuItem</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added dots): About Bloom</note>
-        <target xml:lang="rw" state="translated">Ibirebana na Bloom</target>
+        <target xml:lang="rw" state="final">Ibirebana na Bloom</target>
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem" approved="yes">
         <source xml:lang="en">Documentation</source>
         <note>ID: HelpMenu.DocumentationMenuItem</note>
-        <target xml:lang="rw" state="translated">Ishyinguranyandiko</target>
+        <target xml:lang="rw" state="final">Ishyinguranyandiko</target>
       </trans-unit>
       <trans-unit id="HelpMenu.Help Menu" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: HelpMenu.Help Menu</note>
-        <target xml:lang="rw" state="translated">Nkunganire</target>
+        <target xml:lang="rw" state="final">Nkunganire</target>
       </trans-unit>
       <trans-unit id="HelpMenu.Help Menu_ToolTip_">
         <source xml:lang="en">Get Help</source>
@@ -3074,18 +3224,18 @@
         <source xml:lang="en">Request a Feature</source>
         <note>ID: HelpMenu.MakeASuggestionMenuItem</note>
         <note xml:lang="en">OLD TEXT (before 3.9, shortened): Request a Feature (web)</note>
-        <target xml:lang="rw" state="translated">Vuga uko wifuza ko byamera</target>
+        <target xml:lang="rw" state="final">Vuga uko wifuza ko byamera</target>
       </trans-unit>
       <trans-unit id="HelpMenu.RegistrationMenuItem" approved="yes">
         <source xml:lang="en">Registration...</source>
         <note>ID: HelpMenu.RegistrationMenuItem</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added dots): Registration</note>
-        <target xml:lang="rw" state="translated">Ukwiyandikisha</target>
+        <target xml:lang="rw" state="final">Ukwiyandikisha</target>
       </trans-unit>
       <trans-unit id="HelpMenu.ReleaseNotesMenuItem" approved="yes">
         <source xml:lang="en">Release Notes...</source>
         <note>ID: HelpMenu.ReleaseNotesMenuItem</note>
-        <target xml:lang="rw" state="translated">Amakuru kuri porogaramu yasohotse</target>
+        <target xml:lang="rw" state="final">Amakuru kuri porogaramu yasohotse</target>
       </trans-unit>
       <trans-unit id="HelpMenu.ReportAProblemToolStripMenuItem">
         <source xml:lang="en">Report a Problem...</source>
@@ -3095,7 +3245,7 @@
       <trans-unit id="HelpMenu.ShowEventLogMenuItem" approved="yes">
         <source xml:lang="en">Show Event Log</source>
         <note>ID: HelpMenu.ShowEventLogMenuItem</note>
-        <target xml:lang="rw" state="translated">Kwerekana uko abantu bagije binjira</target>
+        <target xml:lang="rw" state="final">Kwerekana uko abantu bagije binjira</target>
       </trans-unit>
       <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem">
         <source xml:lang="en">Using Reader Templates </source>
@@ -3106,7 +3256,7 @@
         <source xml:lang="en">BloomLibrary.org</source>
         <note>ID: HelpMenu.WebSiteMenuItem</note>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): Web Site</note>
-        <target xml:lang="rw" state="translated">Site ya interineti</target>
+        <target xml:lang="rw" state="final">Site ya interineti</target>
       </trans-unit>
       <trans-unit id="HelpMenu.trainingVideos">
         <source xml:lang="en">Training Videos</source>
@@ -3155,22 +3305,22 @@
       <trans-unit id="LayoutChoices.A4Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Landscape</source>
         <note>ID: LayoutChoices.A4Landscape</note>
-        <target xml:lang="rw" state="translated">Urupapuro rutambitse A4</target>
+        <target xml:lang="rw" state="final">Urupapuro rutambitse A4</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Landscape SideBySide</source>
         <note>ID: LayoutChoices.A4Landscape SideBySide</note>
-        <target xml:lang="rw" state="translated">Urupapuro rutambitse A4 Uruhande ku ruhande</target>
+        <target xml:lang="rw" state="final">Urupapuro rutambitse A4 Uruhande ku ruhande</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Landscape SplitAcrossPages</source>
         <note>ID: LayoutChoices.A4Landscape SplitAcrossPages</note>
-        <target xml:lang="rw" state="translated">Urupapuro rutambitse A4 Rusatuye amapaji yose</target>
+        <target xml:lang="rw" state="final">Urupapuro rutambitse A4 Rusatuye amapaji yose</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Portrait</source>
         <note>ID: LayoutChoices.A4Portrait</note>
-        <target xml:lang="rw" state="translated">Urupapuro ruhagaze A4</target>
+        <target xml:lang="rw" state="final">Urupapuro ruhagaze A4</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A5Landscape" sil:dynamic="true">
         <source xml:lang="en">A5Landscape</source>
@@ -3180,7 +3330,7 @@
       <trans-unit id="LayoutChoices.A5Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A5Portrait</source>
         <note>ID: LayoutChoices.A5Portrait</note>
-        <target xml:lang="rw" state="translated">Urupapuro ruhagaze A5</target>
+        <target xml:lang="rw" state="final">Urupapuro ruhagaze A5</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A6Landscape" sil:dynamic="true">
         <source xml:lang="en">A6Landscape</source>
@@ -3195,7 +3345,7 @@
       <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">B5Portrait</source>
         <note>ID: LayoutChoices.B5Portrait</note>
-        <target xml:lang="rw" state="translated">Urupapuro ruhagaze B5</target>
+        <target xml:lang="rw" state="final">Urupapuro ruhagaze B5</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true">
         <source xml:lang="en">Device16x9Landscape</source>
@@ -3250,62 +3400,62 @@
       <trans-unit id="LoginDialog.AgreeToTerms" approved="yes">
         <source xml:lang="en">I agree to the Bloom Library's Terms of Use</source>
         <note>ID: LoginDialog.AgreeToTerms</note>
-        <target xml:lang="rw" state="translated">Nemeranya n'amabwiriza yagenwe mu ikoreshwa ry'Ikusanyabitabo rya Bloom</target>
+        <target xml:lang="rw" state="final">Nemeranya n'amabwiriza yagenwe mu ikoreshwa ry'Ikusanyabitabo rya Bloom</target>
       </trans-unit>
       <trans-unit id="LoginDialog.Email" approved="yes">
         <source xml:lang="en">Email Address</source>
         <note>ID: LoginDialog.Email</note>
-        <target xml:lang="rw" state="translated">Aderese ya Imeyili</target>
+        <target xml:lang="rw" state="final">Aderese ya Imeyili</target>
       </trans-unit>
       <trans-unit id="LoginDialog.ForgotPassword" approved="yes">
         <source xml:lang="en">Forgot Password</source>
         <note>ID: LoginDialog.ForgotPassword</note>
-        <target xml:lang="rw" state="translated">Kwibagirwa ijambobanga</target>
+        <target xml:lang="rw" state="final">Kwibagirwa ijambobanga</target>
       </trans-unit>
       <trans-unit id="LoginDialog.LoginButton" approved="yes">
         <source xml:lang="en">&amp;Login</source>
         <note>ID: LoginDialog.LoginButton</note>
-        <target xml:lang="rw" state="translated">&amp;Kwinjira</target>
+        <target xml:lang="rw" state="final">&amp;Kwinjira</target>
       </trans-unit>
       <trans-unit id="LoginDialog.Password" approved="yes">
         <source xml:lang="en">Password</source>
         <note>ID: LoginDialog.Password</note>
-        <target xml:lang="rw" state="translated">Ijambobanga</target>
+        <target xml:lang="rw" state="final">Ijambobanga</target>
       </trans-unit>
       <trans-unit id="LoginDialog.ShowPassword" approved="yes">
         <source xml:lang="en">&amp;Show Password</source>
         <note>ID: LoginDialog.ShowPassword</note>
-        <target xml:lang="rw" state="translated">&amp;Kwerekana Ijambobanga</target>
+        <target xml:lang="rw" state="final">&amp;Kwerekana Ijambobanga</target>
       </trans-unit>
       <trans-unit id="LoginDialog.ShowTerms" approved="yes">
         <source xml:lang="en">Show Terms of Use</source>
         <note>ID: LoginDialog.ShowTerms</note>
-        <target xml:lang="rw" state="translated">Kwerkana amabwiriza y'imikoreshereze</target>
+        <target xml:lang="rw" state="final">Kwerkana amabwiriza y'imikoreshereze</target>
       </trans-unit>
       <trans-unit id="LoginDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Log in to BloomLibrary.org</source>
         <note>ID: LoginDialog.WindowTitle</note>
-        <target xml:lang="rw" state="translated">Injira muri BloomLibrary.org</target>
+        <target xml:lang="rw" state="final">Injira muri BloomLibrary.org</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName" approved="yes">
         <source xml:lang="en">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</source>
         <note>ID: NewCollectionWizard.AlreadyCollectionWithThatName</note>
-        <target xml:lang="rw" state="translated">Ikusanyirizo rifite izina nk'iri risanzweho, warisanga kuri &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nTwagusabaga guhitamo izina rindi.</target>
+        <target xml:lang="rw" state="final">Ikusanyirizo rifite izina nk'iri risanzweho, warisanga kuri &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nTwagusabaga guhitamo izina rindi.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
         <source xml:lang="en">Choose the main language for this collection.</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
-        <target xml:lang="rw" state="translated">Guhitamo ururimo rw'ibanze rw'iri kisanyirizo</target>
+        <target xml:lang="rw" state="final">Guhitamo ururimo rw'ibanze rw'iri kisanyirizo</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText" approved="yes">
         <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
         <note>ID: NewCollectionWizard.CollectionNamePage.ExampleText</note>
-        <target xml:lang="rw" state="translated">Ingero: "Ibitabo by'ubuzima", "Inkuru z'inyamaswa PNG"</target>
+        <target xml:lang="rw" state="final">Ingero: "Ibitabo by'ubuzima", "Inkuru z'inyamaswa PNG"</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNamePage.NameCollectionLabel" approved="yes">
         <source xml:lang="en">What would you like to call this collection?</source>
         <note>ID: NewCollectionWizard.CollectionNamePage.NameCollectionLabel</note>
-        <target xml:lang="rw" state="translated">Wifuza kwita ute iri kusanyirizo?</target>
+        <target xml:lang="rw" state="final">Wifuza kwita ute iri kusanyirizo?</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNameProblem">
         <source xml:lang="en">Collection Name Problem</source>
@@ -3315,12 +3465,12 @@
       <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt" approved="yes">
         <source xml:lang="en">Collection will be created at: {0}</source>
         <note>ID: NewCollectionWizard.CollectionWillBeCreatedAt</note>
-        <target xml:lang="rw" state="translated">Ikusanyirizo riri bushyirwe kuri: {0}</target>
+        <target xml:lang="rw" state="final">Ikusanyirizo riri bushyirwe kuri: {0}</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.FinishPage" approved="yes">
         <source xml:lang="en">Ready To Create New Collection</source>
         <note>ID: NewCollectionWizard.FinishPage</note>
-        <target xml:lang="rw" state="translated">Itegure gukora ikusanyirizo rishya</target>
+        <target xml:lang="rw" state="final">Itegure gukora ikusanyirizo rishya</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.FinishPageContent">
         <source xml:lang="en">OK, that's all we need to get started with your new '{0}' collection.\nClick on the 'Finish' button.</source>
@@ -3336,7 +3486,7 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
         <source xml:lang="en">Choose the collection type.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-        <target xml:lang="rw" state="translated">Guhitamo ubwoko bw'ikusanyirizo</target>
+        <target xml:lang="rw" state="final">Guhitamo ubwoko bw'ikusanyirizo</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions">
         <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
@@ -3346,7 +3496,7 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
         <source xml:lang="en">Source Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-        <target xml:lang="rw" state="translated">Inkomoko y'ikusanyirizo</target>
+        <target xml:lang="rw" state="final">Inkomoko y'ikusanyirizo</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
         <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
@@ -3356,27 +3506,27 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
         <source xml:lang="en">Local Language Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-        <target xml:lang="rw" state="translated">Ikusanyirizo mu rurimi kavukire/Ururimi gakondo</target>
+        <target xml:lang="rw" state="final">Ikusanyirizo mu rurimi kavukire/Ururimi gakondo</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
         <source xml:lang="en">A collection of books in a local language.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
-        <target xml:lang="rw" state="translated">Ikusanyirizo ry'ibitabo mu rurimi gakondo.</target>
+        <target xml:lang="rw" state="final">Ikusanyirizo ry'ibitabo mu rurimi gakondo.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
         <note>ID: NewCollectionWizard.LocationPage</note>
-        <target xml:lang="rw" state="translated">Gutanga aho ururimi ruvugwa</target>
+        <target xml:lang="rw" state="final">Gutanga aho ururimi ruvugwa</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage.Country" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: NewCollectionWizard.LocationPage.Country</note>
-        <target xml:lang="rw" state="translated">Igihugu</target>
+        <target xml:lang="rw" state="final">Igihugu</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage.District" approved="yes">
         <source xml:lang="en">District</source>
         <note>ID: NewCollectionWizard.LocationPage.District</note>
-        <target xml:lang="rw" state="translated">Akarere</target>
+        <target xml:lang="rw" state="final">Akarere</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
         <source xml:lang="en">These are optional. Bloom will place them in the right places on title page of books you create.</source>
@@ -3386,18 +3536,18 @@
       <trans-unit id="NewCollectionWizard.LocationPage.Province" approved="yes">
         <source xml:lang="en">Province</source>
         <note>ID: NewCollectionWizard.LocationPage.Province</note>
-        <target xml:lang="rw" state="translated">Intara</target>
+        <target xml:lang="rw" state="final">Intara</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.NewBookPattern" approved="yes">
         <source xml:lang="en">{0} Books</source>
         <note>ID: NewCollectionWizard.NewBookPattern</note>
         <note>The {0} is replaced by the name of the language.</note>
-        <target xml:lang="rw" state="translated">Ibitabo {0}</target>
+        <target xml:lang="rw" state="final">Ibitabo {0}</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.NewCollectionWindowTitle" approved="yes">
         <source xml:lang="en">Create New Bloom Collection</source>
         <note>ID: NewCollectionWizard.NewCollectionWindowTitle</note>
-        <target xml:lang="rw" state="translated">Gukora ikusanyirizo rishya rya Bloom</target>
+        <target xml:lang="rw" state="final">Gukora ikusanyirizo rishya rya Bloom</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ProjectName">
         <source xml:lang="en">Project Name</source>
@@ -3407,17 +3557,17 @@
       <trans-unit id="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName" approved="yes">
         <source xml:lang="en">Unable to create a new collection using that name.</source>
         <note>ID: NewCollectionWizard.UnableToCreateANewCollectionUsingThatName</note>
-        <target xml:lang="rw" state="translated">Gukora ikusanyirizo rishya  ukoresheje iri zina ntibyashobotse</target>
+        <target xml:lang="rw" state="final">Gukora ikusanyirizo rishya  ukoresheje iri zina ntibyashobotse</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.WelcomePage" approved="yes">
         <source xml:lang="en">Welcome To Bloom!</source>
         <note>ID: NewCollectionWizard.WelcomePage</note>
-        <target xml:lang="rw" state="translated">Ikaze kuri Bloom!</target>
+        <target xml:lang="rw" state="final">Ikaze kuri Bloom!</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine1" approved="yes">
         <source xml:lang="en">You are almost ready to start making books.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine1</note>
-        <target xml:lang="rw" state="translated">Uri hafi gutangira gukora ibitabo.</target>
+        <target xml:lang="rw" state="final">Uri hafi gutangira gukora ibitabo.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2">
         <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. The first thing we need to do is make one for you.</source>
@@ -3427,7 +3577,7 @@
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine3" approved="yes">
         <source xml:lang="en">Click 'Next' to get started.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine3</note>
-        <target xml:lang="rw" state="translated">Kanda 'Ibikurikira' kugira ngo utangire</target>
+        <target xml:lang="rw" state="final">Kanda 'Ibikurikira' kugira ngo utangire</target>
       </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InDropboxMessage">
         <source xml:lang="en">Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.</source>
@@ -3443,43 +3593,43 @@
         <source xml:lang="en">Bloom Collections</source>
         <note>ID: OpenCreateNewCollectionsDialog.Bloom Collections</note>
         <note>This shows in the file-open dialog that you use to open a different bloom collection</note>
-        <target xml:lang="rw" state="translated">Amakusanyirizo ya Bloom</target>
+        <target xml:lang="rw" state="final">Amakusanyirizo ya Bloom</target>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.BrowseForOtherCollections" approved="yes">
         <source xml:lang="en">Browse for another collection on this computer</source>
         <note>ID: OpenCreateNewCollectionsDialog.BrowseForOtherCollections</note>
-        <target xml:lang="rw" state="translated">Shakisha irindi kusanyirizo kuri iyi mudasobwa</target>
+        <target xml:lang="rw" state="final">Shakisha irindi kusanyirizo kuri iyi mudasobwa</target>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromChorusHub" approved="yes">
         <source xml:lang="en">Copy From Chorus Hub on Local Network</source>
         <note>ID: OpenCreateNewCollectionsDialog.CopyFromChorusHub</note>
-        <target xml:lang="rw" state="translated">Koporora ubikuye kuri Chorus Hub ku rusobesangano lokali</target>
+        <target xml:lang="rw" state="final">Koporora ubikuye kuri Chorus Hub ku rusobesangano lokali</target>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromInternet" approved="yes">
         <source xml:lang="en">Copy from Internet</source>
         <note>ID: OpenCreateNewCollectionsDialog.CopyFromInternet</note>
-        <target xml:lang="rw" state="translated">Gukoporora bivuye kuri interineti</target>
+        <target xml:lang="rw" state="final">Gukoporora bivuye kuri interineti</target>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromUsbDrive" approved="yes">
         <source xml:lang="en">Copy from USB Drive</source>
         <note>ID: OpenCreateNewCollectionsDialog.CopyFromUsbDrive</note>
-        <target xml:lang="rw" state="translated">Gukopororo bivuye kuri USB</target>
+        <target xml:lang="rw" state="final">Gukopororo bivuye kuri USB</target>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.CreateNewCollection" approved="yes">
         <source xml:lang="en">Create New Collection</source>
         <note>ID: OpenCreateNewCollectionsDialog.CreateNewCollection</note>
-        <target xml:lang="rw" state="translated">Gukora ikusanyirizo rishya</target>
+        <target xml:lang="rw" state="final">Gukora ikusanyirizo rishya</target>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle" approved="yes">
         <source xml:lang="en">Open/Create Collections</source>
         <note>ID: OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle</note>
-        <target xml:lang="rw" state="translated">Gufungura/Gukora amakusanyirizo</target>
+        <target xml:lang="rw" state="final">Gufungura/Gukora amakusanyirizo</target>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.ReadMoreLink" approved="yes">
         <source xml:lang="en">Read More</source>
         <note>ID: OpenCreateNewCollectionsDialog.ReadMoreLink</note>
         <note>This opens the Chorus Help to learn more about send/receive.</note>
-        <target xml:lang="rw" state="translated">Soma n'ibindi</target>
+        <target xml:lang="rw" state="final">Soma n'ibindi</target>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus">
         <source xml:lang="en">Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</source>
@@ -3517,17 +3667,17 @@
       <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled" approved="yes">
         <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.NotInstalled</note>
-        <target xml:lang="rw" state="translated">Turasaba ko wakwensitara Adobe Reader kugira ngo Bloom ibe yagaragaza igitabo kirangiye. Kugeza igihe uzabikorera, ushobora gukomeza kubika igitabo muri PDF no kugifungurira mu zindi porogaramu.</target>
+        <target xml:lang="rw" state="final">Turasaba ko wakwensitara Adobe Reader kugira ngo Bloom ibe yagaragaza igitabo kirangiye. Kugeza igihe uzabikorera, ushobora gukomeza kubika igitabo muri PDF no kugifungurira mu zindi porogaramu.</target>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF" approved="yes">
         <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
         <note>ID: PublishTab.AdobeReaderControl.ProblemShowingPDF</note>
-        <target xml:lang="rw" state="translated">Ntibisanzwe... Adobe Reader yagaragaje ko habaye ikosa mu gihe hageragezwaga kugaragaza iyo PDF. Ushobora gukomeza kugerageza kubika igitabo cya PDF.</target>
+        <target xml:lang="rw" state="final">Ntibisanzwe... Adobe Reader yagaragaje ko habaye ikosa mu gihe hageragezwaga kugaragaza iyo PDF. Ushobora gukomeza kugerageza kubika igitabo cya PDF.</target>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.UnknownError" approved="yes">
         <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
-        <target xml:lang="rw" state="translated">Amakuru ababaje. Bloom ntiyashoboye kubona Adobe Reader yo kwerekana hano, ubwo rero Bloom ntishobora kugaragaza igitabo cyuzuye.\nUbwo rero wakuramo inonosora ufite rya 'Adobe Reader' ukongera kwensitara 'Adobe Reader".\nKugeza igihe biri bukosokere, ushobora gukomeza kubika igitabo muri PDF no kugifungura mu zindi porogaramu.</target>
+        <target xml:lang="rw" state="final">Amakuru ababaje. Bloom ntiyashoboye kubona Adobe Reader yo kwerekana hano, ubwo rero Bloom ntishobora kugaragaza igitabo cyuzuye.\nUbwo rero wakuramo inonosora ufite rya 'Adobe Reader' ukongera kwensitara 'Adobe Reader".\nKugeza igihe biri bukosokere, ushobora gukomeza kubika igitabo muri PDF no kugifungura mu zindi porogaramu.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">Sharing .bloomd Files</source>
@@ -3895,13 +4045,13 @@
       <trans-unit id="PublishTab.BodyOnlyRadio" approved="yes">
         <source xml:lang="en">Booklet Insides</source>
         <note>ID: PublishTab.BodyOnlyRadio</note>
-        <target xml:lang="rw" state="translated">Imbere h'agatabo</target>
+        <target xml:lang="rw" state="final">Imbere h'agatabo</target>
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
         <note xml:lang="en">OLD TEXT (before 3.9, add newline): Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</note>
-        <target xml:lang="rw" state="translated">Kora agatabo ukoresheje amapaji y'imbere muri iki gitabo. Amapaji araramburwa ku buryo yipanga ku murongo maze igihe uyazinze aze gutanga agatabo.</target>
+        <target xml:lang="rw" state="final">Kora agatabo ukoresheje amapaji y'imbere muri iki gitabo. Amapaji araramburwa ku buryo yipanga ku murongo maze igihe uyazinze aze gutanga agatabo.</target>
       </trans-unit>
       <trans-unit id="PublishTab.BookMetadata">
         <source xml:lang="en">Book Metadata</source>
@@ -3913,17 +4063,17 @@
         <source xml:lang="en">Share on the Web</source>
         <note>ID: PublishTab.ButtonThatShowsUploadForm</note>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): Upload</note>
-        <target xml:lang="rw" state="translated">Koherezayo</target>
+        <target xml:lang="rw" state="final">Koherezayo</target>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Upload to BloomLibrary.org, where others can download and localize into their own language.</source>
         <note>ID: PublishTab.ButtonThatShowsUploadForm-tooltip</note>
-        <target xml:lang="rw" state="translated">Kohereza kuri BloomLibrary.org, aho abandi bashobora gukurura igitabo cyawe bakagihindura mu ndimi kavukire z'iwabo.</target>
+        <target xml:lang="rw" state="final">Kohereza kuri BloomLibrary.org, aho abandi bashobora gukurura igitabo cyawe bakagihindura mu ndimi kavukire z'iwabo.</target>
       </trans-unit>
       <trans-unit id="PublishTab.CoverOnlyRadio" approved="yes">
         <source xml:lang="en">Booklet Cover</source>
         <note>ID: PublishTab.CoverOnlyRadio</note>
-        <target xml:lang="rw" state="translated">Igifubiko cy'agatabo</target>
+        <target xml:lang="rw" state="final">Igifubiko cy'agatabo</target>
       </trans-unit>
       <trans-unit id="PublishTab.CoverOnlyRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
@@ -4050,13 +4200,13 @@
       <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton" approved="yes">
         <source xml:lang="en">Don't Show This Again</source>
         <note>ID: PublishTab.InDesignDialog.DontShowThisAgainButton</note>
-        <target xml:lang="rw" state="translated">Ntiwongere kwerekana ibi ukundi</target>
+        <target xml:lang="rw" state="final">Ntiwongere kwerekana ibi ukundi</target>
       </trans-unit>
       <trans-unit id="PublishTab.InDesignDialog.WindowTitle" approved="yes">
         <source xml:lang="en">InDesign XML Information</source>
         <note>ID: PublishTab.InDesignDialog.WindowTitle</note>
         <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
-        <target xml:lang="rw" state="translated">Amakuru kuri XML ya InDesign</target>
+        <target xml:lang="rw" state="final">Amakuru kuri XML ya InDesign</target>
       </trans-unit>
       <trans-unit id="PublishTab.LessMemoryPdfMode">
         <source xml:lang="en">Use less memory (slower)</source>
@@ -4079,17 +4229,17 @@
         <source xml:lang="en">Simple</source>
         <note>ID: PublishTab.OnePagePerPaperRadio</note>
         <note>Instead of making a booklet, just make normal pages</note>
-        <target xml:lang="rw" state="translated">Cyoroheje</target>
+        <target xml:lang="rw" state="final">Cyoroheje</target>
       </trans-unit>
       <trans-unit id="PublishTab.OnePagePerPaperRadio-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make a PDF of every page of the book, one page per piece of paper.</source>
         <note>ID: PublishTab.OnePagePerPaperRadio-tooltip</note>
-        <target xml:lang="rw" state="translated">Kora PDF ya buri paji y'igitabo,ipaji imwe ku urupapuro rumwe.</target>
+        <target xml:lang="rw" state="final">Kora PDF ya buri paji y'igitabo,ipaji imwe ku urupapuro rumwe.</target>
       </trans-unit>
       <trans-unit id="PublishTab.OpenThePDFInTheSystemPDFViewer" approved="yes">
         <source xml:lang="en">Open the PDF in the default system PDF viewer</source>
         <note>ID: PublishTab.OpenThePDFInTheSystemPDFViewer</note>
-        <target xml:lang="rw" state="translated">Fungura PDF muri sisitemu ntangarugero isoma pdf</target>
+        <target xml:lang="rw" state="final">Fungura PDF muri sisitemu ntangarugero isoma pdf</target>
       </trans-unit>
       <trans-unit id="PublishTab.Options">
         <source xml:lang="en">Options</source>
@@ -4112,12 +4262,12 @@
       <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton" approved="yes">
         <source xml:lang="en">Replace Existing</source>
         <note>ID: PublishTab.OverwriteWarning.ReplaceExistingButton</note>
-        <target xml:lang="rw" state="translated">Simbuza ibisanzwemo</target>
+        <target xml:lang="rw" state="final">Simbuza ibisanzwemo</target>
       </trans-unit>
       <trans-unit id="PublishTab.OverwriteWarning.WindowTitle" approved="yes">
         <source xml:lang="en">Notice</source>
         <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
-        <target xml:lang="rw" state="translated">Icyitonderwa</target>
+        <target xml:lang="rw" state="final">Icyitonderwa</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.BadPdf">
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
@@ -4232,7 +4382,7 @@
       <trans-unit id="PublishTab.PrintButton" approved="yes">
         <source xml:lang="en">&amp;Print...</source>
         <note>ID: PublishTab.PrintButton</note>
-        <target xml:lang="rw" state="translated">&amp;Capurura...</target>
+        <target xml:lang="rw" state="final">&amp;Capurura...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrologToAdobeEula">
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
@@ -4243,7 +4393,7 @@
       <trans-unit id="PublishTab.Publish" approved="yes">
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
-        <target xml:lang="rw" state="translated">Gutangaza</target>
+        <target xml:lang="rw" state="final">Gutangaza</target>
       </trans-unit>
       <trans-unit id="PublishTab.Save" sil:dynamic="true">
         <source xml:lang="en">Save...</source>
@@ -4254,7 +4404,7 @@
       <trans-unit id="PublishTab.SaveButton" approved="yes">
         <source xml:lang="en">&amp;Save PDF...</source>
         <note>ID: PublishTab.SaveButton</note>
-        <target xml:lang="rw" state="translated">&amp;Kubika PDF...</target>
+        <target xml:lang="rw" state="final">&amp;Kubika PDF...</target>
       </trans-unit>
       <trans-unit id="PublishTab.SaveEpub">
         <source xml:lang="en">&amp;Save ePUB...</source>
@@ -4275,17 +4425,17 @@
       <trans-unit id="PublishTab.Upload.Acknowledgments" approved="yes">
         <source xml:lang="en">Acknowledgments</source>
         <note>ID: PublishTab.Upload.Acknowledgments</note>
-        <target xml:lang="rw" state="translated">Ugushimira</target>
+        <target xml:lang="rw" state="final">Ugushimira</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AdditionalRequests" approved="yes">
         <source xml:lang="en">Additional Requests: </source>
         <note>ID: PublishTab.Upload.AdditionalRequests</note>
-        <target xml:lang="rw" state="translated">Ibisabwa by'inyongera: </target>
+        <target xml:lang="rw" state="final">Ibisabwa by'inyongera: </target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AllReserved" approved="yes">
         <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
         <note>ID: PublishTab.Upload.AllReserved</note>
-        <target xml:lang="rw" state="translated">Uburenganzira bw'umwanditsi bugomba kubahirizwa (Vugana n'ufite uburenganzira kuri iyi nyandiko ku burenganzira bwose waba wifuza.)</target>
+        <target xml:lang="rw" state="final">Uburenganzira bw'umwanditsi bugomba kubahirizwa (Vugana n'ufite uburenganzira kuri iyi nyandiko ku burenganzira bwose waba wifuza.)</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.BackgroundMusic">
         <source xml:lang="en">Background Music</source>
@@ -4311,22 +4461,22 @@
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added space): BloomLibrary.org already has a previous version of this book from you. If you upload it again, it will be replaced with your current version.</note>
-        <target xml:lang="rw" state="translated">BloomLibrary.org yamaze kwakira inonosora rya mbere ry'iki gitabo wanditse. Niba wongeye kucyinjizamo, kirasimburwa n'igishya ushaka gushyiramo.</target>
+        <target xml:lang="rw" state="final">BloomLibrary.org yamaze kwakira inonosora rya mbere ry'iki gitabo wanditse. Niba wongeye kucyinjizamo, kirasimburwa n'igishya ushaka gushyiramo.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Copyright" approved="yes">
         <source xml:lang="en">Copyright</source>
         <note>ID: PublishTab.Upload.Copyright</note>
-        <target xml:lang="rw" state="translated">Uburenganzira bw'umuhanzi</target>
+        <target xml:lang="rw" state="final">Uburenganzira bw'umuhanzi</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Credits" approved="yes">
         <source xml:lang="en">credits</source>
         <note>ID: PublishTab.Upload.Credits</note>
-        <target xml:lang="rw" state="translated">Abashimirwa by'umwihariko</target>
+        <target xml:lang="rw" state="final">Abashimirwa by'umwihariko</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ErrorUploading" approved="yes">
         <source xml:lang="en">Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</source>
         <note>ID: PublishTab.Upload.ErrorUploading</note>
-        <target xml:lang="rw" state="translated">Tukwiseguyeho, habaye ikibazo cyo kwinjizamo {0}. Amakuru arambuye ni akurikira. Ushobora gukenera ubufasha bwa tekiniki.</target>
+        <target xml:lang="rw" state="final">Tukwiseguyeho, habaye ikibazo cyo kwinjizamo {0}. Amakuru arambuye ni akurikira. Ushobora gukenera ubufasha bwa tekiniki.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Features">
         <source xml:lang="en">Features</source>
@@ -4336,22 +4486,22 @@
       <trans-unit id="PublishTab.Upload.FieldsNeedAttention" approved="yes">
         <source xml:lang="en">One or more fields above need your attention before uploading.</source>
         <note>ID: PublishTab.Upload.FieldsNeedAttention</note>
-        <target xml:lang="rw" state="translated">Umwe cyanwa myinshi mu myanya yo hejuru ikeneye ko uyitaho mbere yo kwinjizamo</target>
+        <target xml:lang="rw" state="final">Umwe cyanwa myinshi mu myanya yo hejuru ikeneye ko uyitaho mbere yo kwinjizamo</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.FinalUploadFailureNotice" approved="yes">
         <source xml:lang="en">Sorry, "{0}" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.</source>
         <note>ID: PublishTab.Upload.FinalUploadFailureNotice</note>
-        <target xml:lang="rw" state="translated">Tukwiseguyeho, "{0}" kwinjizamo ibitabo ntibyakunze</target>
+        <target xml:lang="rw" state="final">Tukwiseguyeho, "{0}" kwinjizamo ibitabo ntibyakunze</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Gaurantee" approved="yes">
         <source xml:lang="en">By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes.</source>
         <note>ID: PublishTab.Upload.Gaurantee</note>
-        <target xml:lang="rw" state="translated">Mu gihe winjijemo, wemeye amabwiriza y'ubwumvikane bw'imikoreshereze ya Bloom Library kandi utanze uburenganzira ayo masezerano avuga.</target>
+        <target xml:lang="rw" state="final">Mu gihe winjijemo, wemeye amabwiriza y'ubwumvikane bw'imikoreshereze ya Bloom Library kandi utanze uburenganzira ayo masezerano avuga.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.GenericUploadProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem uploading your book.</source>
         <note>ID: PublishTab.Upload.GenericUploadProblemNotice</note>
-        <target xml:lang="rw" state="translated">Habaye ikibazo mu kwinjizamo igitabo cyawe.</target>
+        <target xml:lang="rw" state="final">Habaye ikibazo mu kwinjizamo igitabo cyawe.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.GiveBack">
         <source xml:lang="en">It’s easy to “give back”</source>
@@ -4373,98 +4523,98 @@
         <source xml:lang="en">Upload Text</source>
         <note>ID: PublishTab.Upload.Languages</note>
         <note>Prior to 4.4, this was "Languages"</note>
-        <target xml:lang="rw" state="translated">Indimi</target>
+        <target xml:lang="rw" state="final">Indimi</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.License" approved="yes">
         <source xml:lang="en">Usage/License</source>
         <note>ID: PublishTab.Upload.License</note>
-        <target xml:lang="rw" state="translated">Ikoreshwa/Uburenganzira</target>
+        <target xml:lang="rw" state="final">Ikoreshwa/Uburenganzira</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.AccountAlreadyExists" approved="yes">
         <source xml:lang="en">Account Already Exists</source>
         <note>ID: PublishTab.Upload.Login.AccountAlreadyExists</note>
-        <target xml:lang="rw" state="translated">Iyi konti isanzweho</target>
+        <target xml:lang="rw" state="final">Iyi konti isanzweho</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount" approved="yes">
         <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</source>
         <note>ID: PublishTab.Upload.Login.AlreadyHaveAccount</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added space): We cannot sign you up with that address, because we already have an account with that address. Would you like to log in instead?</note>
-        <target xml:lang="rw" state="translated">Ntidushoboye kutuma winjira ukoresheje iyo aderese, kuberako dusanzwe dufite konti iyikoresha. Waba se ahubwo wifuza kwinjira?</target>
+        <target xml:lang="rw" state="final">Ntidushoboye kutuma winjira ukoresheje iyo aderese, kuberako dusanzwe dufite konti iyikoresha. Waba se ahubwo wifuza kwinjira?</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.LoginConnectFailed" approved="yes">
         <source xml:lang="en">Bloom could not connect to the server to verify your login. Please check your network connection.</source>
         <note>ID: PublishTab.Upload.Login.LoginConnectFailed</note>
-        <target xml:lang="rw" state="translated">Bloom ntishobora kwihuza na seriveri ngo igenzure ikwinjira kwawe. Twagusabaga ko ugenzura konegisiyo y'urusobe mpuzamasangano rwawe.</target>
+        <target xml:lang="rw" state="final">Bloom ntishobora kwihuza na seriveri ngo igenzure ikwinjira kwawe. Twagusabaga ko ugenzura konegisiyo y'urusobe mpuzamasangano rwawe.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.LoginFailed" approved="yes">
         <source xml:lang="en">Login failed</source>
         <note>ID: PublishTab.Upload.Login.LoginFailed</note>
-        <target xml:lang="rw" state="translated">Kwinjiramo byanze</target>
+        <target xml:lang="rw" state="final">Kwinjiramo byanze</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.LoginOrSignupConnectionFailed" approved="yes">
         <source xml:lang="en">Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</source>
         <note>ID: PublishTab.Upload.Login.LoginOrSignupConnectionFailed</note>
-        <target xml:lang="rw" state="translated">Bloom ntiyashoboye kwihuza burundu na seriveri kugira ngo urangize kwinjira cyangwa gusohoka. Ibi bishobora kuba byatewe na konegisiyo yawe ya interineti, seriveri yacu cyangwa ibikoresho bimwe bihuza izo nzira bitameze neza.</target>
+        <target xml:lang="rw" state="final">Bloom ntiyashoboye kwihuza burundu na seriveri kugira ngo urangize kwinjira cyangwa gusohoka. Ibi bishobora kuba byatewe na konegisiyo yawe ya interineti, seriveri yacu cyangwa ibikoresho bimwe bihuza izo nzira bitameze neza.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.MustAgreeTerms" approved="yes">
         <source xml:lang="en">In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</source>
         <note>ID: PublishTab.Upload.Login.MustAgreeTerms</note>
-        <target xml:lang="rw" state="translated">Kugira ngo wiyandikishe kuri konti ya BloomLibrary.org, usabwa gukanda ku kazu kagaragaza ko wemeye amabwiriza y'imikoreshereze ya BloomLibrary.</target>
+        <target xml:lang="rw" state="final">Kugira ngo wiyandikishe kuri konti ya BloomLibrary.org, usabwa gukanda ku kazu kagaragaza ko wemeye amabwiriza y'imikoreshereze ya BloomLibrary.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.Need Email" approved="yes">
         <source xml:lang="en">Email Needed</source>
         <note>ID: PublishTab.Upload.Login.Need Email</note>
-        <target xml:lang="rw" state="translated">Imeyili irakenewe</target>
+        <target xml:lang="rw" state="final">Imeyili irakenewe</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.NoRecordOfUser" approved="yes">
         <source xml:lang="en">We don't have a user on record with that email. Would you like to sign up?</source>
         <note>ID: PublishTab.Upload.Login.NoRecordOfUser</note>
-        <target xml:lang="rw" state="translated">Ntidufite umuntu ukoresha iyi imeyili. Waba wifuza kwiyandikisha?</target>
+        <target xml:lang="rw" state="final">Ntidufite umuntu ukoresha iyi imeyili. Waba wifuza kwiyandikisha?</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.PasswordMismatch" approved="yes">
         <source xml:lang="en">Password and user ID did not match</source>
         <note>ID: PublishTab.Upload.Login.PasswordMismatch</note>
-        <target xml:lang="rw" state="translated">Ijambobanga n'akazina winjiriraho ntibihuye</target>
+        <target xml:lang="rw" state="final">Ijambobanga n'akazina winjiriraho ntibihuye</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.PleaseAgreeTerms" approved="yes">
         <source xml:lang="en">Please agree to terms of use</source>
         <note>ID: PublishTab.Upload.Login.PleaseAgreeTerms</note>
-        <target xml:lang="rw" state="translated">Turasaba ko wakwemeranya n'amabwiriza y'ikoreshwa</target>
+        <target xml:lang="rw" state="final">Turasaba ko wakwemeranya n'amabwiriza y'ikoreshwa</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.PleaseProvideEmail" approved="yes">
         <source xml:lang="en">Please enter a valid email address. We will send an email to this address so you can reset your password.</source>
         <note>ID: PublishTab.Upload.Login.PleaseProvideEmail</note>
-        <target xml:lang="rw" state="translated">Turagusaba ko wakwinjizamo aderese ya imeyili nyayo. Turi bukoherereze imeyili kuriyi aderese kugira ngo ushobore guhindura ijambobanga ryawe.</target>
+        <target xml:lang="rw" state="final">Turagusaba ko wakwinjizamo aderese ya imeyili nyayo. Turi bukoherereze imeyili kuriyi aderese kugira ngo ushobore guhindura ijambobanga ryawe.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.ResetConnectFailed" approved="yes">
         <source xml:lang="en">Bloom could not connect to the server to reset your password. Please check your network connection.</source>
         <note>ID: PublishTab.Upload.Login.ResetConnectFailed</note>
-        <target xml:lang="rw" state="translated">Bloom ntishobora kwihuza na seriveri ngo uhindure ijambo banga ryawe. Twasabaga ko wagenzura konegisiyo yawe ya interineti.</target>
+        <target xml:lang="rw" state="final">Bloom ntishobora kwihuza na seriveri ngo uhindure ijambo banga ryawe. Twasabaga ko wagenzura konegisiyo yawe ya interineti.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.ResetFailed" approved="yes">
         <source xml:lang="en">Reset Password failed</source>
         <note>ID: PublishTab.Upload.Login.ResetFailed</note>
-        <target xml:lang="rw" state="translated">Guhindura ijambobanga byanze</target>
+        <target xml:lang="rw" state="final">Guhindura ijambobanga byanze</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.ResetPassword" approved="yes">
         <source xml:lang="en">Resetting Password</source>
         <note>ID: PublishTab.Upload.Login.ResetPassword</note>
-        <target xml:lang="rw" state="translated">Guhindura ijambobanga</target>
+        <target xml:lang="rw" state="final">Guhindura ijambobanga</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.SendingResetPassword" approved="yes">
         <source xml:lang="en">We are sending an email to {0} with instructions for how to reset your password.</source>
         <note>ID: PublishTab.Upload.Login.SendingResetPassword</note>
-        <target xml:lang="rw" state="translated">Twohereje imeyili kuri {0} n'amabwiriza y'uburyo bwo guhindura ijambobanga ryawe</target>
+        <target xml:lang="rw" state="final">Twohereje imeyili kuri {0} n'amabwiriza y'uburyo bwo guhindura ijambobanga ryawe</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.Signup" approved="yes">
         <source xml:lang="en">Sign up for Bloom Library.</source>
         <note>ID: PublishTab.Upload.Login.Signup</note>
-        <target xml:lang="rw" state="translated">Kwiyandikisha ku Ikusanyabitabo rya Bloom</target>
+        <target xml:lang="rw" state="final">Kwiyandikisha ku Ikusanyabitabo rya Bloom</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.UnknownUser" approved="yes">
         <source xml:lang="en">Unknown user</source>
         <note>ID: PublishTab.Upload.Login.UnknownUser</note>
-        <target xml:lang="rw" state="translated">Umukoresha utazwi</target>
+        <target xml:lang="rw" state="final">Umukoresha utazwi</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.LoginFailure">
         <source xml:lang="en">Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.</source>
@@ -4474,22 +4624,22 @@
       <trans-unit id="PublishTab.Upload.LoginLink" approved="yes">
         <source xml:lang="en">Log in to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.LoginLink</note>
-        <target xml:lang="rw" state="translated">Injira kuri BloomLibrary.org</target>
+        <target xml:lang="rw" state="final">Injira kuri BloomLibrary.org</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Logout" approved="yes">
         <source xml:lang="en">Log out of BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.Logout</note>
-        <target xml:lang="rw" state="translated">Sohoka muri BloomLibrary.org</target>
+        <target xml:lang="rw" state="final">Sohoka muri BloomLibrary.org</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.MakingPdf" approved="yes">
         <source xml:lang="en">Making PDF Preview...</source>
         <note>ID: PublishTab.Upload.MakingPdf</note>
-        <target xml:lang="rw" state="translated">Ukubyerekanisha PDF</target>
+        <target xml:lang="rw" state="final">Ukubyerekanisha PDF</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.MakingThumbnail" approved="yes">
         <source xml:lang="en">Making thumbnail image...</source>
         <note>ID: PublishTab.Upload.MakingThumbnail</note>
-        <target xml:lang="rw" state="translated">Ugukora ishusho ntubyangano...</target>
+        <target xml:lang="rw" state="final">Ugukora ishusho ntubyangano...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Narration">
         <source xml:lang="en">Narration</source>
@@ -4509,13 +4659,13 @@
       <trans-unit id="PublishTab.Upload.PleaseLogIn" approved="yes">
         <source xml:lang="en">Please log in to BloomLibrary.org (or sign up) before uploading</source>
         <note>ID: PublishTab.Upload.PleaseLogIn</note>
-        <target xml:lang="rw" state="translated">Twagusabaga kubanza kwinjira muri BloomLibrary.org (cyangwa kwiyandikisha) mbereyo kwinjizamo ibitabo</target>
+        <target xml:lang="rw" state="final">Twagusabaga kubanza kwinjira muri BloomLibrary.org (cyangwa kwiyandikisha) mbereyo kwinjizamo ibitabo</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.PleaseSetThis" approved="yes">
         <source xml:lang="en">Please set this from the edit tab</source>
         <note>ID: PublishTab.Upload.PleaseSetThis</note>
         <note>This shows next to the license, if the license has not yet been set.</note>
-        <target xml:lang="rw" state="translated">Twasabaga ko wasibanganya ibi mu mwanya w'inonosora</target>
+        <target xml:lang="rw" state="final">Twasabaga ko wasibanganya ibi mu mwanya w'inonosora</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
         <source xml:lang="en">Set Sign Language...</source>
@@ -4530,17 +4680,17 @@
       <trans-unit id="PublishTab.Upload.SignupLink" approved="yes">
         <source xml:lang="en">Sign up for BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.SignupLink</note>
-        <target xml:lang="rw" state="translated">Kwiyandikisha kuri BloomLibrary.org</target>
+        <target xml:lang="rw" state="final">Kwiyandikisha kuri BloomLibrary.org</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Step1" approved="yes">
         <source xml:lang="en">Step 1: Confirm Metadata</source>
         <note>ID: PublishTab.Upload.Step1</note>
-        <target xml:lang="rw" state="translated">Intambwe 1: Kwemeza ibiranganyandiko</target>
+        <target xml:lang="rw" state="final">Intambwe 1: Kwemeza ibiranganyandiko</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Step2" approved="yes">
         <source xml:lang="en">Step 2: Upload</source>
         <note>ID: PublishTab.Upload.Step2</note>
-        <target xml:lang="rw" state="translated">Intambwe 2: Kukururiramo</target>
+        <target xml:lang="rw" state="final">Intambwe 2: Kukururiramo</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SuggestAssignCC">
         <source xml:lang="en">Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</source>
@@ -4555,7 +4705,7 @@
       <trans-unit id="PublishTab.Upload.Summary" approved="yes">
         <source xml:lang="en">Summary</source>
         <note>ID: PublishTab.Upload.Summary</note>
-        <target xml:lang="rw" state="translated">Incamake</target>
+        <target xml:lang="rw" state="final">Incamake</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Template">
         <source xml:lang="en">This book seems to be a template, that is, it contains blank pages for authoring a new book rather than content to translate into other languages. If that is not what you intended, you should get expert help before uploading this book.\n\nDo you want to go ahead?</source>
@@ -4568,7 +4718,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.TermsLink" approved="yes">
         <source xml:lang="en">Show Terms of Use</source>
         <note>ID: PublishTab.Upload.TermsLink</note>
-        <target xml:lang="rw" state="translated">Kwerekana amabwiriza y'ikoresha</target>
+        <target xml:lang="rw" state="final">Kwerekana amabwiriza y'ikoresha</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.TimeProblem">
         <source xml:lang="en">There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this.</source>
@@ -4578,7 +4728,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.Title" approved="yes">
         <source xml:lang="en">Title</source>
         <note>ID: PublishTab.Upload.Title</note>
-        <target xml:lang="rw" state="translated">Umutwe</target>
+        <target xml:lang="rw" state="final">Umutwe</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadAudio">
         <source xml:lang="en">Upload Audio</source>
@@ -4588,7 +4738,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.UploadButton" approved="yes">
         <source xml:lang="en">Upload Book</source>
         <note>ID: PublishTab.Upload.UploadButton</note>
-        <target xml:lang="rw" state="translated">Kwinjizamo igitabo</target>
+        <target xml:lang="rw" state="final">Kwinjizamo igitabo</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadCompleteNotice">
         <source xml:lang="en">Congratulations, "{0}" is now available on BloomLibrary.org ({1})</source>
@@ -4599,7 +4749,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.UploadNotAllowed" approved="yes">
         <source xml:lang="en">Upload Not Allowed</source>
         <note>ID: PublishTab.Upload.UploadNotAllowed</note>
-        <target xml:lang="rw" state="translated">Indimi eshatu</target>
+        <target xml:lang="rw" state="final">Indimi eshatu</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadProblemNotice">
         <source xml:lang="en">There was a problem uploading your book. You may need to restart Bloom or get technical help.</source>
@@ -4609,12 +4759,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.UploadProgress" approved="yes">
         <source xml:lang="en">Upload Progress</source>
         <note>ID: PublishTab.Upload.UploadProgress</note>
-        <target xml:lang="rw" state="translated">Uho kwinjizamo bigeze</target>
-      </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadSandbox" approved="yes">
-        <source xml:lang="en">Upload Book (to Sandbox)</source>
-        <note>ID: PublishTab.Upload.UploadSandbox</note>
-        <target xml:lang="rw" state="translated">Kwinjiza igitabo (muri Sandbook)</target>
+        <target xml:lang="rw" state="final">Uho kwinjizamo bigeze</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingBookMetadata">
         <source xml:lang="en">Uploading book metadata</source>
@@ -4625,7 +4770,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.UploadingStatus" approved="yes">
         <source xml:lang="en">Uploading {0}</source>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
-        <target xml:lang="rw" state="translated">Ugusunikiramo {0}</target>
+        <target xml:lang="rw" state="final">Ugusunikiramo {0}</target>
       </trans-unit>
       <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true">
         <source xml:lang="en">Check Your Understanding</source>
@@ -4636,12 +4781,12 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Level</source>
         <note>ID: ReaderSetup.AddLevel</note>
-        <target xml:lang="rw" state="translated">Kongeraho intera</target>
+        <target xml:lang="rw" state="final">Kongeraho intera</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.AddStage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Stage</source>
         <note>ID: ReaderSetup.AddStage</note>
-        <target xml:lang="rw" state="translated">Kongeraho intambwe</target>
+        <target xml:lang="rw" state="final">Kongeraho intambwe</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.AllowedWords" sil:dynamic="true">
         <source xml:lang="en">allowed words</source>
@@ -4666,13 +4811,13 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book</source>
         <note>ID: ReaderSetup.BookHeader</note>
-        <target xml:lang="rw" state="translated">Igitabo</target>
+        <target xml:lang="rw" state="final">Igitabo</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.BookMaxWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Words in Book</source>
         <note>ID: ReaderSetup.BookMaxWords</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Maximum Words per Book</note>
-        <target xml:lang="rw" state="translated">Amagambo yose ashoboka ku gitabo</target>
+        <target xml:lang="rw" state="final">Amagambo yose ashoboka ku gitabo</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
@@ -4682,12 +4827,12 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.ClickLetter" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click on letters to add them to this stage.</source>
         <note>ID: ReaderSetup.ClickLetter</note>
-        <target xml:lang="rw" state="translated">Kanda ku nyuguti uzongere kuri iyi ntambwe.</target>
+        <target xml:lang="rw" state="final">Kanda ku nyuguti uzongere kuri iyi ntambwe.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Stages</source>
         <note>ID: ReaderSetup.DecodableStages</note>
-        <target xml:lang="rw" state="translated">Inzego zo gusemura ubutumwa</target>
+        <target xml:lang="rw" state="final">Inzego zo gusemura ubutumwa</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.FileNeedsTxtExtension" sil:dynamic="true">
         <source xml:lang="en">File needs .TXT extension</source>
@@ -4697,27 +4842,27 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.FirstSetupAlphabet" sil:dynamic="true" approved="yes">
         <source xml:lang="en">First,</source>
         <note>ID: ReaderSetup.FirstSetupAlphabet</note>
-        <target xml:lang="rw" state="translated">Ubwa mbere,</target>
+        <target xml:lang="rw" state="final">Ubwa mbere,</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.FormatNotSupported" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cannot read this format</source>
         <note>ID: ReaderSetup.FormatNotSupported</note>
-        <target xml:lang="rw" state="translated">Ntishobora gusoma iyi miterere</target>
+        <target xml:lang="rw" state="final">Ntishobora gusoma iyi miterere</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.HowToExport" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help exporting and converting files to use as sample texts</source>
         <note>ID: ReaderSetup.HowToExport</note>
-        <target xml:lang="rw" state="translated">Gufasha mu kwimuririra ahandi no guhindura amafishiye yo gukoreshwa nk'imyandiko ntangarugero</target>
+        <target xml:lang="rw" state="final">Gufasha mu kwimuririra ahandi no guhindura amafishiye yo gukoreshwa nk'imyandiko ntangarugero</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters</source>
         <note>ID: ReaderSetup.Letters</note>
-        <target xml:lang="rw" state="translated">Inyuguti</target>
+        <target xml:lang="rw" state="final">Inyuguti</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters and Letter Combinations</source>
         <note>ID: ReaderSetup.Letters.Header</note>
-        <target xml:lang="rw" state="translated">Inyuguti n'ibihekane</target>
+        <target xml:lang="rw" state="final">Inyuguti n'ibihekane</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true">
         <source xml:lang="en">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</source>
@@ -4737,7 +4882,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Letters.LetterHelp3" sil:dynamic="true" approved="yes">
         <source xml:lang="en">it's</source>
         <note>ID: ReaderSetup.Letters.LetterHelp3</note>
-        <target xml:lang="rw" state="translated">ni</target>
+        <target xml:lang="rw" state="final">ni</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.LetterHelp4" sil:dynamic="true">
         <source xml:lang="en">.</source>
@@ -4752,23 +4897,23 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level</source>
         <note>ID: ReaderSetup.LevelHeader</note>
-        <target xml:lang="rw" state="translated">Urwego</target>
+        <target xml:lang="rw" state="final">Urwego</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.LevelLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level </source>
         <note>ID: ReaderSetup.LevelLabel</note>
         <note xml:lang="en">OLD TEXT (before 3.9, use literal NBSP character): Level&amp;nbsp;</note>
-        <target xml:lang="rw" state="translated">Urwego</target>
+        <target xml:lang="rw" state="final">Urwego</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Levels" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Reader Levels</source>
         <note>ID: ReaderSetup.Levels</note>
-        <target xml:lang="rw" state="translated">Inzego z'abasomyi</target>
+        <target xml:lang="rw" state="final">Inzego z'abasomyi</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MatchingWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">matching words</source>
         <note>ID: ReaderSetup.MatchingWords</note>
-        <target xml:lang="rw" state="translated">uguhuza amagambo</target>
+        <target xml:lang="rw" state="final">uguhuza amagambo</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true">
         <source xml:lang="en">Maximum Average Length of Sentences in Book</source>
@@ -4779,22 +4924,22 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Maximum Unique Words in Book</source>
         <note>ID: ReaderSetup.MaxUniqueWords</note>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): Maximum Unique Words per Book</note>
-        <target xml:lang="rw" state="translated">Amagambo yose ashoboka kuri buri gitabo mu gihe agaragaye rimwe gusa</target>
+        <target xml:lang="rw" state="final">Amagambo yose ashoboka kuri buri gitabo mu gihe agaragaye rimwe gusa</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page</source>
         <note>ID: ReaderSetup.PageHeader</note>
-        <target xml:lang="rw" state="translated">Ipaji</target>
+        <target xml:lang="rw" state="final">Ipaji</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageMaxWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Words on each Page</source>
         <note>ID: ReaderSetup.PageMaxWords</note>
-        <target xml:lang="rw" state="translated">Amagambo yose ashoboka kuri buri paaji</target>
+        <target xml:lang="rw" state="final">Amagambo yose ashoboka kuri buri paaji</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PoweredBy" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Powered by </source>
         <note>ID: ReaderSetup.PoweredBy</note>
-        <target xml:lang="rw" state="translated">Byakozwe na</target>
+        <target xml:lang="rw" state="final">Byakozwe na</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Punctuation" sil:dynamic="true">
         <source xml:lang="en">Punctuation</source>
@@ -4804,17 +4949,17 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.ReaderLevels" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Reader Levels</source>
         <note>ID: ReaderSetup.ReaderLevels</note>
-        <target xml:lang="rw" state="translated">Inzego z'abasomyi</target>
+        <target xml:lang="rw" state="final">Inzego z'abasomyi</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.RemoveLevel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Remove Level {0}</source>
         <note>ID: ReaderSetup.RemoveLevel</note>
-        <target xml:lang="rw" state="translated">Kuramo urwego {0}</target>
+        <target xml:lang="rw" state="final">Kuramo urwego {0}</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.RemoveStage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Remove Stage {0}</source>
         <note>ID: ReaderSetup.RemoveStage</note>
-        <target xml:lang="rw" state="translated">Kuramo intambwe {0}</target>
+        <target xml:lang="rw" state="final">Kuramo intambwe {0}</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.RemoveWordList" sil:dynamic="true">
         <source xml:lang="en">Remove from this stage</source>
@@ -4824,12 +4969,12 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.ReorderLevels" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Drag rows to reorder levels.</source>
         <note>ID: ReaderSetup.ReorderLevels</note>
-        <target xml:lang="rw" state="translated">Kurubana imbariro upange neza inzego.</target>
+        <target xml:lang="rw" state="final">Kurubana imbariro upange neza inzego.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ReorderStages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Drag rows to reorder stages.</source>
         <note>ID: ReaderSetup.ReorderStages</note>
-        <target xml:lang="rw" state="translated">Kurubana imbariro upange neza intambwe.</target>
+        <target xml:lang="rw" state="final">Kurubana imbariro upange neza intambwe.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SampleWords" sil:dynamic="true">
         <source xml:lang="en">Sample Words</source>
@@ -4839,22 +4984,22 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.SearchEngine" sil:dynamic="true" approved="yes">
         <source xml:lang="en">, the Search Engine for Literacy.</source>
         <note>ID: ReaderSetup.SearchEngine</note>
-        <target xml:lang="rw" state="translated">, Urubuga rw'ishakisha ku bijyanye n'ugusoma no kwandika.</target>
+        <target xml:lang="rw" state="final">, Urubuga rw'ishakisha ku bijyanye n'ugusoma no kwandika.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SelectedLetters" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Previous and New Letters</source>
         <note>ID: ReaderSetup.SelectedLetters</note>
-        <target xml:lang="rw" state="translated">Inyuguti zabanje n'inshya</target>
+        <target xml:lang="rw" state="final">Inyuguti zabanje n'inshya</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentenceHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sentence</source>
         <note>ID: ReaderSetup.SentenceHeader</note>
-        <target xml:lang="rw" state="translated">Interuro</target>
+        <target xml:lang="rw" state="final">Interuro</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentenceMaxWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Words in each Sentence</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
-        <target xml:lang="rw" state="translated">Amagambo yose ashoboka muri buri nteruro</target>
+        <target xml:lang="rw" state="final">Amagambo yose ashoboka muri buri nteruro</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
@@ -4879,32 +5024,32 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true" approved="yes">
         <source xml:lang="en">set up the alphabet for this language.</source>
         <note>ID: ReaderSetup.SetupAlphabet</note>
-        <target xml:lang="rw" state="translated">gushyiraho itonde ry'inyuguti z'uru rurimi</target>
+        <target xml:lang="rw" state="final">gushyiraho itonde ry'inyuguti z'uru rurimi</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SightWordLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">New Sight Words</source>
         <note>ID: ReaderSetup.SightWordLabel</note>
-        <target xml:lang="rw" state="translated">Amagambo mashya y'irebero</target>
+        <target xml:lang="rw" state="final">Amagambo mashya y'irebero</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SightWordsHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sight Words</source>
         <note>ID: ReaderSetup.SightWordsHeader</note>
-        <target xml:lang="rw" state="translated">Amagambo y'irebero</target>
+        <target xml:lang="rw" state="final">Amagambo y'irebero</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.StageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stage</source>
         <note>ID: ReaderSetup.StageHeader</note>
-        <target xml:lang="rw" state="translated">Intambwe</target>
+        <target xml:lang="rw" state="final">Intambwe</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.StageLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stage </source>
         <note>ID: ReaderSetup.StageLabel</note>
-        <target xml:lang="rw" state="translated">Intambwe</target>
+        <target xml:lang="rw" state="final">Intambwe</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Stages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stages</source>
         <note>ID: ReaderSetup.Stages</note>
-        <target xml:lang="rw" state="translated">Intambwe</target>
+        <target xml:lang="rw" state="final">Intambwe</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Synphony" sil:dynamic="true">
         <source xml:lang="en">SynPhony</source>
@@ -4914,12 +5059,12 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Things to remember for this level:</source>
         <note>ID: ReaderSetup.ToRemember</note>
-        <target xml:lang="rw" state="translated">Ibintu ukwiye kuzirikana kuri uru rwego:</target>
+        <target xml:lang="rw" state="final">Ibintu ukwiye kuzirikana kuri uru rwego:</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.UniqueHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Unique</source>
         <note>ID: ReaderSetup.UniqueHeader</note>
-        <target xml:lang="rw" state="translated">Cyihariye</target>
+        <target xml:lang="rw" state="final">Cyihariye</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true">
         <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</source>
@@ -4930,17 +5075,17 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Words.PlaceTextFiles" sil:dynamic="true" approved="yes">
         <source xml:lang="en">2) Place Text Files in Your</source>
         <note>ID: ReaderSetup.Words.PlaceTextFiles</note>
-        <target xml:lang="rw" state="translated">2) Gushyira ifishiye y'inyandiko zawe muri</target>
+        <target xml:lang="rw" state="final">2) Gushyira ifishiye y'inyandiko zawe muri</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.SampleTextFolder" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample Texts Folder</source>
         <note>ID: ReaderSetup.Words.SampleTextFolder</note>
-        <target xml:lang="rw" state="translated">Idosiye ibamo inyandiko z'icyitegererezo</target>
+        <target xml:lang="rw" state="final">Idosiye ibamo inyandiko z'icyitegererezo</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.TypeWordsHere" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1) Type Words Here</source>
         <note>ID: ReaderSetup.Words.TypeWordsHere</note>
-        <target xml:lang="rw" state="translated">1) Andika amagambo hano</target>
+        <target xml:lang="rw" state="final">1) Andika amagambo hano</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.UseAllowedWords" sil:dynamic="true">
         <source xml:lang="en">We are using lists of allowed words to define stages</source>
@@ -4955,7 +5100,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.lettersHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters</source>
         <note>ID: ReaderSetup.lettersHeader</note>
-        <target xml:lang="rw" state="translated">Inyuguti</target>
+        <target xml:lang="rw" state="final">Inyuguti</target>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this Bloom Pack, who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
@@ -4991,50 +5136,50 @@ Do you want to go ahead?</note>
       <trans-unit id="RegisterDialog.Email" approved="yes">
         <source xml:lang="en">Email Address</source>
         <note>ID: RegisterDialog.Email</note>
-        <target xml:lang="rw" state="translated">Imeyili</target>
+        <target xml:lang="rw" state="final">Imeyili</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.FirstName" approved="yes">
         <source xml:lang="en">First Name</source>
         <note>ID: RegisterDialog.FirstName</note>
-        <target xml:lang="rw" state="translated">Izina ry'idini</target>
+        <target xml:lang="rw" state="final">Izina ry'idini</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.Heading" approved="yes">
         <source xml:lang="en">Please take a minute to register {0}</source>
         <note>ID: RegisterDialog.Heading</note>
         <note>Place a {0} where the name of the program goes.</note>
-        <target xml:lang="rw" state="translated">Turasaba ko wafata umunota umwe ukiyandikisha {0}</target>
+        <target xml:lang="rw" state="final">Turasaba ko wafata umunota umwe ukiyandikisha {0}</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.HowAreYouUsing" approved="yes">
         <source xml:lang="en">How are you using {0}?</source>
         <note>ID: RegisterDialog.HowAreYouUsing</note>
         <note>Place a {0} where the name of the program goes.</note>
-        <target xml:lang="rw" state="translated">Ukoresha ute {0}?</target>
+        <target xml:lang="rw" state="final">Ukoresha ute {0}?</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.IAmStuckLabel" approved="yes">
         <source xml:lang="en">I'm stuck, I'll finish this later.</source>
         <note>ID: RegisterDialog.IAmStuckLabel</note>
-        <target xml:lang="rw" state="translated">Byanyobeye, ibi ndabirangiza nyuma.</target>
+        <target xml:lang="rw" state="final">Byanyobeye, ibi ndabirangiza nyuma.</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.Organization" approved="yes">
         <source xml:lang="en">Organization</source>
         <note>ID: RegisterDialog.Organization</note>
-        <target xml:lang="rw" state="translated">Ikigo</target>
+        <target xml:lang="rw" state="final">Ikigo</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.RegisterButton" approved="yes">
         <source xml:lang="en">&amp;Register</source>
         <note>ID: RegisterDialog.RegisterButton</note>
-        <target xml:lang="rw" state="translated">&amp;Kwiyandikisha</target>
+        <target xml:lang="rw" state="final">&amp;Kwiyandikisha</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.Surname" approved="yes">
         <source xml:lang="en">Surname</source>
         <note>ID: RegisterDialog.Surname</note>
-        <target xml:lang="rw" state="translated">Izina ry'umuryango</target>
+        <target xml:lang="rw" state="final">Izina ry'umuryango</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Register {0}</source>
         <note>ID: RegisterDialog.WindowTitle</note>
         <note>Place a {0} where the name of the program goes.</note>
-        <target xml:lang="rw" state="translated">Kwiyandikisha {0}</target>
+        <target xml:lang="rw" state="final">Kwiyandikisha {0}</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.Close">
         <source xml:lang="en">Close</source>
@@ -5199,27 +5344,27 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Book</source>
         <note>ID: TemplateBooks.BookName.Basic Book</note>
-        <target xml:lang="rw" state="translated">Igitabo cy'ibanze</target>
+        <target xml:lang="rw" state="final">Igitabo cy'ibanze</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Book</source>
         <note>ID: TemplateBooks.BookName.Big Book</note>
-        <target xml:lang="rw" state="translated">Igitabo kinini</target>
+        <target xml:lang="rw" state="final">Igitabo kinini</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader</source>
         <note>ID: TemplateBooks.BookName.Decodable Reader</note>
-        <target xml:lang="rw" state="translated">Umusomyi ugishakisha</target>
+        <target xml:lang="rw" state="final">Umusomyi ugishakisha</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader</source>
         <note>ID: TemplateBooks.BookName.Leveled Reader</note>
-        <target xml:lang="rw" state="translated">Umusomyi umenyereye</target>
+        <target xml:lang="rw" state="final">Umusomyi umenyereye</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture Dictionary</source>
         <note>ID: TemplateBooks.BookName.Picture Dictionary</note>
-        <target xml:lang="rw" state="translated">Inkoranya y'Amashusho</target>
+        <target xml:lang="rw" state="final">Inkoranya y'Amashusho</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Sign Language" sil:dynamic="true">
         <source xml:lang="en">Sign Language</source>
@@ -5249,7 +5394,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.Wall Calendar" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Wall Calendar</source>
         <note>ID: TemplateBooks.BookName.Wall Calendar</note>
-        <target xml:lang="rw" state="translated">Kalendari yo ku rukuta</target>
+        <target xml:lang="rw" state="final">Kalendari yo ku rukuta</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Bloom Reader Quiz" sil:dynamic="true">
         <source xml:lang="en">Use for comprehension testing on devices.</source>
@@ -5425,17 +5570,22 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Alphabet" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Alphabet</source>
         <note>ID: TemplateBooks.PageLabel.Alphabet</note>
-        <target xml:lang="rw" state="translated">Itonde ry'inyuguti</target>
+        <target xml:lang="rw" state="final">Itonde ry'inyuguti</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Text &amp; Image</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Image</note>
-        <target xml:lang="rw" state="translated">Inyandiko y'ibanze &amp; Ishusho</target>
+        <target xml:lang="rw" state="final">Inyandiko y'ibanze &amp; Ishusho</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Picture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Text &amp; Picture</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
-        <target xml:lang="rw" state="translated">Inyandiko y'ibanze &amp; Ifoto</target>
+        <target xml:lang="rw" state="final">Inyandiko y'ibanze &amp; Ifoto</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot Text Over Video" sil:dynamic="true">
+        <source xml:lang="en">Big Picture Diglot Text Over Video</source>
+        <note>ID: TemplateBooks.PageLabel.Big Picture Diglot Text Over Video</note>
+        <target xml:lang="rw" state="needs-translation">Big Picture Diglot Text Over Video</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true">
         <source xml:lang="en">Big Picture Diglot</source>
@@ -5460,7 +5610,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Credits Page</source>
         <note>ID: TemplateBooks.PageLabel.Credits Page</note>
-        <target xml:lang="rw" state="translated">Ipaji yo gushima</target>
+        <target xml:lang="rw" state="final">Ipaji yo gushima</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true">
         <source xml:lang="en">Custom</source>
@@ -5470,32 +5620,32 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Day 1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 1</source>
         <note>ID: TemplateBooks.PageLabel.Day 1</note>
-        <target xml:lang="rw" state="translated">Umunsi 1</target>
+        <target xml:lang="rw" state="final">Umunsi 1</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Day 2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 2</source>
         <note>ID: TemplateBooks.PageLabel.Day 2</note>
-        <target xml:lang="rw" state="translated">Umunsi 2</target>
+        <target xml:lang="rw" state="final">Umunsi 2</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Day 3" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 3</source>
         <note>ID: TemplateBooks.PageLabel.Day 3</note>
-        <target xml:lang="rw" state="translated">Umunsi 3</target>
+        <target xml:lang="rw" state="final">Umunsi 3</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Day 4" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 4</source>
         <note>ID: TemplateBooks.PageLabel.Day 4</note>
-        <target xml:lang="rw" state="translated">Umunsi 4</target>
+        <target xml:lang="rw" state="final">Umunsi 4</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Day 5a" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 5a</source>
         <note>ID: TemplateBooks.PageLabel.Day 5a</note>
-        <target xml:lang="rw" state="translated">Umunsi 5a</target>
+        <target xml:lang="rw" state="final">Umunsi 5a</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Day 5b" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 5b</source>
         <note>ID: TemplateBooks.PageLabel.Day 5b</note>
-        <target xml:lang="rw" state="translated">Umunsi 5b</target>
+        <target xml:lang="rw" state="final">Umunsi 5b</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Factory" sil:dynamic="true">
         <source xml:lang="en">Factory</source>
@@ -5510,7 +5660,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Front Cover</source>
         <note>ID: TemplateBooks.PageLabel.Front Cover</note>
-        <target xml:lang="rw" state="translated">Igikobokobo cy'imbere</target>
+        <target xml:lang="rw" state="final">Igikobokobo cy'imbere</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.FrontBackMatter" sil:dynamic="true">
         <source xml:lang="en">Front/Back Matter</source>
@@ -5526,43 +5676,43 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image On Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
-        <target xml:lang="rw" state="translated">Ishusho hasi</target>
+        <target xml:lang="rw" state="final">Ishusho hasi</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image in Middle</source>
         <note>ID: TemplateBooks.PageLabel.Image in Middle</note>
-        <target xml:lang="rw" state="translated">Ishusho hagati</target>
+        <target xml:lang="rw" state="final">Ishusho hagati</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Inside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Back Cover</note>
-        <target xml:lang="rw" state="translated">Igikobokobo cy'inyuma mo imbere</target>
+        <target xml:lang="rw" state="final">Igikobokobo cy'inyuma mo imbere</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Inside Front Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Inside Front Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Front Cover</note>
-        <target xml:lang="rw" state="translated">Igikobokobo cy'imbere mo imbere</target>
+        <target xml:lang="rw" state="final">Igikobokobo cy'imbere mo imbere</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Instructions</source>
         <note>ID: TemplateBooks.PageLabel.Instructions</note>
         <note>Used for Big Book Teacher instructions</note>
-        <target xml:lang="rw" state="translated">Amabwiriza</target>
+        <target xml:lang="rw" state="final">Amabwiriza</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just Text" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just Text</source>
         <note>ID: TemplateBooks.PageLabel.Just Text</note>
-        <target xml:lang="rw" state="translated">Inyandiko gusa</target>
+        <target xml:lang="rw" state="final">Inyandiko gusa</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just a Picture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just a Picture</source>
         <note>ID: TemplateBooks.PageLabel.Just a Picture</note>
-        <target xml:lang="rw" state="translated">Ifoto gusa</target>
+        <target xml:lang="rw" state="final">Ifoto gusa</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just an Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just an Image</source>
         <note>ID: TemplateBooks.PageLabel.Just an Image</note>
-        <target xml:lang="rw" state="translated">Ishusho gusa</target>
+        <target xml:lang="rw" state="final">Ishusho gusa</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just Video" sil:dynamic="true">
         <source xml:lang="en">Just Video</source>
@@ -5572,7 +5722,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Outside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Outside Back Cover</note>
-        <target xml:lang="rw" state="translated">Igikobokobo cy'inyuma hanze</target>
+        <target xml:lang="rw" state="final">Igikobokobo cy'inyuma hanze</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
@@ -5587,17 +5737,17 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture &amp; Word</source>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Word</note>
-        <target xml:lang="rw" state="translated">Ifoto &amp; Ijambo</target>
+        <target xml:lang="rw" state="final">Ifoto &amp; Ijambo</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture in Middle</source>
         <note>ID: TemplateBooks.PageLabel.Picture in Middle</note>
-        <target xml:lang="rw" state="translated">Ifoto hagati</target>
+        <target xml:lang="rw" state="final">Ifoto hagati</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture on Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
-        <target xml:lang="rw" state="translated">Ifoto hasi</target>
+        <target xml:lang="rw" state="final">Ifoto hasi</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Left" sil:dynamic="true">
         <source xml:lang="en">Picture on Left</source>
@@ -5639,12 +5789,12 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.This Page Is Intentionally Blank" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This Page Is Intentionally Blank</source>
         <note>ID: TemplateBooks.PageLabel.This Page Is Intentionally Blank</note>
-        <target xml:lang="rw" state="translated">Iyi paji ntiyanditsweho ku bushake</target>
+        <target xml:lang="rw" state="final">Iyi paji ntiyanditsweho ku bushake</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Title Page</source>
         <note>ID: TemplateBooks.PageLabel.Title Page</note>
-        <target xml:lang="rw" state="translated">Ipaji ijyaho Umutwe</target>
+        <target xml:lang="rw" state="final">Ipaji ijyaho Umutwe</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Traditional" sil:dynamic="true">
         <source xml:lang="en">Traditional</source>
@@ -5666,7 +5816,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Setup</source>
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>
         <note>This is the dialog used to set up the wall calendar</note>
-        <target xml:lang="rw" state="translated">Ikora</target>
+        <target xml:lang="rw" state="final">Ikora</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.Quiz.HintBubble.Answer" sil:dynamic="true">
         <source xml:lang="en">Put a possible answer here. Check it if it is correct.</source>
@@ -5682,67 +5832,67 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Agriculture</source>
         <note>ID: Topics.Agriculture</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Ubuhinzi</target>
+        <target xml:lang="rw" state="final">Ubuhinzi</target>
       </trans-unit>
       <trans-unit id="Topics.Animal Stories" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Animal Stories</source>
         <note>ID: Topics.Animal Stories</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Inkuru z'inyamaswa</target>
+        <target xml:lang="rw" state="final">Inkuru z'inyamaswa</target>
       </trans-unit>
       <trans-unit id="Topics.Business" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Business</source>
         <note>ID: Topics.Business</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Bizinesi</target>
+        <target xml:lang="rw" state="final">Bizinesi</target>
       </trans-unit>
       <trans-unit id="Topics.Community Living" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Community Living</source>
         <note>ID: Topics.Community Living</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Imibereho y'abaturage</target>
+        <target xml:lang="rw" state="final">Imibereho y'abaturage</target>
       </trans-unit>
       <trans-unit id="Topics.Culture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Culture</source>
         <note>ID: Topics.Culture</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Umuco</target>
+        <target xml:lang="rw" state="final">Umuco</target>
       </trans-unit>
       <trans-unit id="Topics.Dictionary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Dictionary</source>
         <note>ID: Topics.Dictionary</note>
         <note>this is a book topic</note>
-        <target xml:lang="rw" state="translated">Inkoranyamagambo</target>
+        <target xml:lang="rw" state="final">Inkoranyamagambo</target>
       </trans-unit>
       <trans-unit id="Topics.Environment" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Environment</source>
         <note>ID: Topics.Environment</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Ibidukikije</target>
+        <target xml:lang="rw" state="final">Ibidukikije</target>
       </trans-unit>
       <trans-unit id="Topics.Fiction" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Fiction</source>
         <note>ID: Topics.Fiction</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Inkuru mpimbano</target>
+        <target xml:lang="rw" state="final">Inkuru mpimbano</target>
       </trans-unit>
       <trans-unit id="Topics.Health" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Health</source>
         <note>ID: Topics.Health</note>
         <note>this is a book topic</note>
-        <target xml:lang="rw" state="translated">Ubuzima</target>
+        <target xml:lang="rw" state="final">Ubuzima</target>
       </trans-unit>
       <trans-unit id="Topics.How To" sil:dynamic="true" approved="yes">
         <source xml:lang="en">How To</source>
         <note>ID: Topics.How To</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Ni gute bikorwa</target>
+        <target xml:lang="rw" state="final">Ni gute bikorwa</target>
       </trans-unit>
       <trans-unit id="Topics.Math" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Math</source>
         <note>ID: Topics.Math</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Imibare</target>
+        <target xml:lang="rw" state="final">Imibare</target>
       </trans-unit>
       <trans-unit id="Topics.NoTopic" sil:dynamic="true">
         <source xml:lang="en">No Topic</source>
@@ -5754,31 +5904,31 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Non Fiction</source>
         <note>ID: Topics.Non Fiction</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Inkuru zitari mpimbano</target>
+        <target xml:lang="rw" state="final">Inkuru zitari mpimbano</target>
       </trans-unit>
       <trans-unit id="Topics.Personal Development" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Personal Development</source>
         <note>ID: Topics.Personal Development</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Iterambere bwite rya muntu</target>
+        <target xml:lang="rw" state="final">Iterambere bwite rya muntu</target>
       </trans-unit>
       <trans-unit id="Topics.Primer" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Primer</source>
         <note>ID: Topics.Primer</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Igitabo cy'inyigisho</target>
+        <target xml:lang="rw" state="final">Igitabo cy'inyigisho</target>
       </trans-unit>
       <trans-unit id="Topics.Science" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Science</source>
         <note>ID: Topics.Science</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Ubumenyi</target>
+        <target xml:lang="rw" state="final">Ubumenyi</target>
       </trans-unit>
       <trans-unit id="Topics.Spiritual" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Spiritual</source>
         <note>ID: Topics.Spiritual</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Cy'iyobokamana</target>
+        <target xml:lang="rw" state="final">Cy'iyobokamana</target>
       </trans-unit>
       <trans-unit id="Topics.Story Book" sil:dynamic="true">
         <source xml:lang="en">Story Book</source>
@@ -5790,7 +5940,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Traditional Story</source>
         <note>ID: Topics.Traditional Story</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="rw" state="translated">Inkuru za kera</target>
+        <target xml:lang="rw" state="final">Inkuru za kera</target>
       </trans-unit>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>

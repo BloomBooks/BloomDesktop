@@ -111,6 +111,9 @@ There are two ways people can use your template. The first way is to start new b
         <source xml:lang="en">Notes</source>
         <target xml:lang="bn" state="translated">টীকাসমুহ</target>
         <note>ID: template.starter.notes</note>
+        <alt-trans>
+          <target xml:lang="bn">নোট্‌স </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.nothingautomatic" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>

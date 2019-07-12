@@ -98,7 +98,7 @@
         </alt-trans>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None" approved="yes">
-        <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
+        <source xml:lang="en">None. Enterprise features will be unavailable.</source>
         <note>ID: Settings.Enterprise.None</note>
         <target xml:lang="mam" state="translated">Mijun. Mlay tzaj tyek'in Bloom aq'unb'il kywitz ja aq'untl.</target>
         <alt-trans>
