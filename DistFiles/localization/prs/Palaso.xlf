@@ -269,7 +269,7 @@
         <source xml:lang="en">Found {0} images</source>
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
-        <target xml:lang="prs" state="translated">تصاویر ‎{0}‏ یافت شد</target>
+        <target xml:lang="prs" state="translated">تصاویر {‎{0‏ یافت شد</target>
         <alt-trans>
           <target xml:lang="prs">تصاویر ‎{0}‏ یافت شد</target>
         </alt-trans>
@@ -677,6 +677,9 @@
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
         <target xml:lang="prs" state="translated">رمز فابریکه برای این تنظیمات عبارت است از "{0}". اگر شما فراموش کردید، شما همیشه برای "{1}" و در گوگل جستجو میتوانید</target>
+        <alt-trans>
+          <target xml:lang="prs">رمز فابریکه برای این تنظیمات عبارت است از "{0}". اگر شما فراموش کردید، شما همیشه برای "{1}" و "{2}" در گوگل جستجو میتوانید</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="prs">مز فابریکه برای این تنظیمات عبارت است از ‎"{0}"‏. اگر شما فراموش کردید، شما همیشه برای ‎"{1}"‏ و ‎"{2}"‏ در گوگل جستجو میتوانید</target>
         </alt-trans>
