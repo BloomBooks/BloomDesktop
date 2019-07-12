@@ -1005,6 +1005,9 @@ Kyusab'il tu'n tel</target>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
         <target xml:lang="mam" state="translated">Aj techil jab'inchalte tu'n tajb'lan kyi'j qe tz'ajsab'il lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na "{1}" ex.</target>
         <alt-trans>
+          <target xml:lang="mam">Aj techil jab'inchalte tu'n tajb'lan kyi'j qe tz'ajsab'il lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na "{1}" ex "{2}".</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="mam">Aj techil ja b'inchalte tu'n tajb'lan kyi'j qe tz'ajsab'il lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na "{1}" ex "{2}"</target>
         </alt-trans>
       </trans-unit>
