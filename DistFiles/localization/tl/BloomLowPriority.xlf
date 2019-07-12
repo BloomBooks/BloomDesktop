@@ -66,9 +66,9 @@
         </target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None">
-        <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
+        <source xml:lang="en">None. Enterprise features will be unavailable.</source>
         <note>ID: Settings.Enterprise.None</note>
-        <target xml:lang="tl" state="needs-translation">None. Bloom will not show Enterprise features.</target>
+        <target xml:lang="tl" state="needs-translation">None. Enterprise features will be unavailable.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NeedsCode">
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
