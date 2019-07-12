@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="fr">
     <body>
@@ -4135,19 +4135,19 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">Sharing .bloomd Files</source>
         <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
-        <note />
+        <note/>
         <target xml:lang="fr" state="needs-translation">Sharing .bloomd Files</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
         <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
         <note>ID: PublishTab.Android.BloomD.Hint</note>
-        <note />
+        <note/>
         <target xml:lang="fr" state="needs-translation">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en"> USB is Difficult</source>
         <note>ID: PublishTab.Android.USB.Hint.Heading</note>
-        <note />
+        <note/>
         <target xml:lang="fr" state="needs-translation"> USB is Difficult</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
@@ -4155,7 +4155,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
                             cable, install phone drivers on your computer, or
                             modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
-        <note />
+        <note/>
         <target xml:lang="fr" state="needs-translation">To Send via USB, you may need to get the right
                             cable, install phone drivers on your computer, or
                             modify settings on your phone.</target>
@@ -4163,7 +4163,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
       <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">No Wi-Fi Network?</source>
         <note>ID: PublishTab.Android.WiFi.Hint.Heading</note>
-        <note />
+        <note/>
         <target xml:lang="fr" state="needs-translation">No Wi-Fi Network?</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
@@ -4583,7 +4583,7 @@ Enfin, relâchez la touche sur laquelle vous avez appuyé pour afficher cette li
         <source xml:lang="en">Sending "{0}" to device {1}</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Sending</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
-        <target xml:lang="fr" state="translated">Envoi de "‎{0}" à l'appareil ‎{1}</target>
+        <target xml:lang="fr" state="translated">Envoi de "‎{0‎}" à l'appareil ‎{1‎}</target>
         <alt-trans>
           <target xml:lang="fr">Envoi de "‎{0}" à l'appareil ‎{1}</target>
         </alt-trans>
