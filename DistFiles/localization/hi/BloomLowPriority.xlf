@@ -65,8 +65,8 @@
             ब्लूम एंटरप्राइज फीचर और सेवाओं को जोड़ता है जो प्रकाशकों, सरकार, और अंतर्राष्ट्रीय संस्थाओं के लिए महत्वपूर्ण हैं। यह खरीदी गई सदस्यता उनकी विशिष्ट जरूरतों को पूरा करती है साथ ही व्यापक रूप से समुदाय के लिए विकास में और ब्लूम के उपभोक्ता सहायता को मदद करती है।
         </target>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.None" approved="yes">
-        <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
+      <trans-unit id="Settings.Enterprise.None">
+        <source xml:lang="en">None. Enterprise features will be unavailable.</source>
         <note>ID: Settings.Enterprise.None</note>
         <target xml:lang="hi" state="translated">कुछ भी नहीं। ब्लूम एंटरप्राइज फीचर नहीं दिखाएगा।</target>
       </trans-unit>
