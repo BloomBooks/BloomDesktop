@@ -1032,8 +1032,6 @@ namespace Bloom.Publish.Epub
 			// expecting them to be divs.
 			ConvertHeadingStylesToHeadingElements(pageDom);
 
-			FixDivOrderingForPage(pageDom);
-
 			// Since we only allow one htm file in a book folder, I don't think there is any
 			// way this name can clash with anything else.
 			++_pageIndex;
@@ -1261,7 +1259,6 @@ namespace Bloom.Publish.Epub
 			if (PublishImageDescriptions == BookInfo.HowToPublishImageDescriptions.OnPage)
 			{
 				var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
-				FixDivOrdering(imageDescriptions.Cast<XmlElement>());
 				foreach (XmlElement description in imageDescriptions)
 				{
 					var activeDescriptions = description.SafeSelectNodes("div[contains(@class, 'bloom-visibility-code-on')]");
@@ -1961,49 +1958,6 @@ namespace Bloom.Publish.Epub
 
 				img.SetAttribute ("style", imgStyle);
 			}
-		}
-
-		/// <summary>
-		/// Reorder any div elements on the given page that need to be reordered for proper display in the ePUB.
-		/// </summary>
-		/// <remarks>
-		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6299.
-		/// </remarks>
-		private void FixDivOrderingForPage(HtmlDom pageDom)
-		{
-			FixDivOrdering(pageDom.RawDom.DocumentElement.SelectNodes("//div[contains(@class, 'translationGroup')]").Cast<XmlElement>());
-		}
-
-		private void FixDivOrdering(IEnumerable<XmlElement> nodeList)
-		{
-			// The different-language children of a translation group are ordered in Bloom proper by flex-box CSS
-			// that puts the div with class bloom-content1 before the one with bloom-content2 etc.  Since we don't
-			// (and can't) rely on flex-box in epubs, we need to actually put the elements in the right order.
-			foreach (var multilingualDiv in nodeList)
-			{
-				var divs = multilingualDiv.SelectNodes("./div[contains(@class, 'bloom-content')]").Cast<XmlElement>().ToList();
-				divs.Sort(CompareMultilingualDivs);
-				for (var i = divs.Count - 1; i >= 1; --i)
-					multilingualDiv.InsertBefore(divs[i - 1], divs[i]);
-			}
-		}
-
-		private static int CompareMultilingualDivs(XmlElement x, XmlElement y)
-		{
-			string xKey = ExtractKeyForMultilingualDivs(x);
-			string yKey = ExtractKeyForMultilingualDivs(y);
-			return string.Compare(xKey, yKey, StringComparison.Ordinal);
-		}
-
-		private static string ExtractKeyForMultilingualDivs(XmlElement x)
-		{
-			// bloom-content[23] do not seem to be reliable.  "1", "National1", and "National2" sort correctly.
-			// But I think we do want the newer markup to be reliable, so I'm leaving this line commented out.
-			//var xClass = x.GetAttribute("class").Replace("bloom-contentNational", "");
-			var xClass = x.GetAttribute("class");
-			var idx = xClass.IndexOf("bloom-content", StringComparison.Ordinal);
-			Debug.Assert(idx >= 0);
-			return xClass.Substring(idx);
 		}
 
 		// Returns true if we don't find the expected style
