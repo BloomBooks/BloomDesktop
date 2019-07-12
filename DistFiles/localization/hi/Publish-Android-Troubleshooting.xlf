@@ -7,8 +7,8 @@
         <target xml:lang="hi" state="translated">Android प्रकाशन के लिए समस्या निवारण युक्तियाँ</target>
         <note>ID: android.publish.trouble.tips</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi" approved="yes">
-        <source xml:lang="en">Serve on WiFi Network</source>
+      <trans-unit id="android.publish.wifi">
+        <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="hi" state="translated">वाईफाई नेटवर्क द्वारा भेजें</target>
         <note>ID: android.publish.wifi</note>
       </trans-unit>
@@ -17,18 +17,18 @@
         <target xml:lang="hi" state="translated">समस्या: एंड्राइड डिवाइस को पुस्तक विज्ञापन नहीं मिल रहा</target>
         <note>ID: android.publish.wifi.unseen</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.run.receive" approved="yes">
-        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</source>
+      <trans-unit id="android.publish.wifi.run.receive">
+        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
         <target xml:lang="hi" state="translated">इस तरीके का उपयोग करते समय, आपको ब्लूम रीडर चलाने, इसके मेनू को खोलने, और "वाईफाई से प्राप्त करें" चुनेने की आवश्यकता है।</target>
         <note>ID: android.publish.wifi.run.receive</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.receive.from" approved="yes">
-        <source xml:lang="en">Make sure the device is in the "Receive from WiFi" screen</source>
+      <trans-unit id="android.publish.wifi.receive.from">
+        <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
         <target xml:lang="hi" state="translated">निश्चित कर लें कि यह डिवाइस "वाईफाई द्वारा प्राप्त करें" स्क्रीन में है</target>
         <note>ID: android.publish.wifi.receive.from</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.same.network" approved="yes">
-        <source xml:lang="en">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
+      <trans-unit id="android.publish.wifi.same.network">
+        <source xml:lang="en">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
         <target xml:lang="hi" state="translated">सुनिश्चित करें कि कंप्यूटर और डिवाइस एक ही वाईफाई नेटवर्क से जुड़े हैं। केबल के माध्यम से वाईफाई राऊटर से जुड़ा हुआ एक कंप्यूटर उसी के नेटवर्क पर हो सकता है। यह तकनीकी रूप से संभव है कि वायर्ड नेटवर्क वाईफाई की तरह एक ही स्थानीय सबनेट पर जुड़ा हो, लेकिन ब्लूम टीम उसे सेट करने में कोई भी सहायता प्रदान करने में सक्षम नहीं होगी, क्षमा करें ।</target>
         <note>ID: android.publish.wifi.same.network</note>
         <alt-trans>
@@ -50,9 +50,9 @@
         <target xml:lang="hi" state="translated">समस्या: ब्लूम डिवाइस से जुड़ नहीं पा रहा है</target>
         <note>ID: android.publish.usb.not.connect</note>
       </trans-unit>
-      <trans-unit id="android.publish.usb.consider.wifi" approved="yes">
+      <trans-unit id="android.publish.usb.consider.wifi">
         <source xml:lang="en">
-          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
+          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the Wi-Fi method even if you are only working with a single device.</g>
         </source>
         <target xml:lang="hi" state="translated"><g id="genid-1" ctype="x-html-p">हम ने पाया है कि यह तरीका बहुत सी डिवाइसों के लिए समस्या पैदा करता है, इसलिए अगर आप केवल एक ही डिवाइस के साथ काम कर रहे हैं तो भी वाईफाई तरीके का उपयोग करने पर विचार करें।</g></target>
         <note>ID: android.publish.usb.consider.wifi</note>
