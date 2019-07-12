@@ -71,8 +71,8 @@
             ব্লুম এন্টারপ্রাইজ প্রকাশক, সরকার, এবং আন্তর্জাতিক সংস্থার জন্য গুরুত্বপূর্ণ বৈশিষ্ট্য এবং পরিষেবা যুক্ত করে। অর্থ প্রদানকারী সদস্যতা তাদের অনন্য প্রয়োজন পুর্ণ করার সঙ্গে সঙ্গে সম্প্রদায়ের বৃহদাকারে বিকাশ ও ব্লুম ব্যবহারকারীদের সমর্থন করে।
         </target>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.None" approved="yes">
-        <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
+      <trans-unit id="Settings.Enterprise.None">
+        <source xml:lang="en">None. Enterprise features will be unavailable.</source>
         <note>ID: Settings.Enterprise.None</note>
         <target xml:lang="bn" state="translated">কোনোটিও নয়। ব্লুম এন্টারপ্রাইজ বৈশিষ্ট্য দেখাবে না।</target>
       </trans-unit>
