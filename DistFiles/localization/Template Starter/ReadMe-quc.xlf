@@ -177,14 +177,18 @@ html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Rech uya�
           <target xml:lang="quc"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: We man kawaj taj che ri uxaq rech ri raqanib’al kuk’ut rib’ pa ri kajxukut rech ri tzijob’em "Agregar Página", lal kakowin la che ub’ixik wa’ che ri Bloom ruk’ ri uwokik jun k’olchak ub’i’am "NotForAddPage.txt." pa ri  k’olyakb’al  chak rech raqanib’al rech no’jwuj.</target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="quc"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: We man kawaj taj che ri uxaq rech ri raqanib’al kuk’ut rib’ pa ri kajxukut rech ri tzijob’em "Agregar Página", lal kakowin la che ub’ixik wa’ che ri Bloom ruk’ ri uwokik jun k’olchak ub’i’am "NotForAddPage.txt." pa ri  k’olyakb’al  chak rech raqanib’al rech no’jwuj.</target>
+          <target xml:lang="quc">g id="genid-12" ctype="x-html-a" html:name="note2"&gt;2</g>: We man kawaj taj che ri uxaq rech ri raqanib’al kuk’ut rib’ pa ri kajxukut rech ri tzijob’em "Agregar Página", lal kakowin la che ub’ixik wa’ che ri Bloom ruk’ ri uwokik jun k’olchak ub’i’am "NotForAddPage.txt." pa ri  k’olyakb’al  chak rech raqanib’al rech no’jwuj.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="quc"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>:We man kawaj taj chi ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uwiqik Uxaq Wuj", kuya'o kaya ub'ixik chech Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’al taq rech No'jwuj.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="quc">
-<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>:We man kawaj taj che ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uya’ik Uwi’ Uxaq Wuj", lal kakowin la che ub’ixik we ri’ che Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’alib’ rech Wuj.</target>
+g id="genid-12" ctype="x-html-a" html:name="note2"&gt;2</g>:We man kawaj taj chi ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uwiqik Uxaq Wuj", kuya'o kaya ub'ixik chech Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’al taq rech No'jwuj.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">
+g id="genid-12" ctype="x-html-a" html:name="note2"&gt;2</g>:We man kawaj taj che ri uxaq taq wuj rech ri raqanib’al kkik’ut kib’ chi upam ri kajxukut rech ri tzijonem "Uya’ik Uwi’ Uxaq Wuj", lal kakowin la che ub’ixik we ri’ che Bloom ruk’ utikik jun k’olchak ub’i’am "NotForAddPage.txt." chi upam ri k’olyakb’al chak rech Raqanib’alib’ rech Wuj.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
