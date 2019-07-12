@@ -71,8 +71,8 @@
             Bloom Enterprise ajoute des fonctionnalités et des services importants pour les éditeurs, les gouvernements et les organisations internationales. Cet abonnement payant répond à leurs besoins uniques tout en soutenant le développement de Bloom et le support offert à toute la communauté d'utilisateurs.
         </target>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.None" approved="yes">
-        <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
+      <trans-unit id="Settings.Enterprise.None">
+        <source xml:lang="en">None. Enterprise features will be unavailable.</source>
         <note>ID: Settings.Enterprise.None</note>
         <target xml:lang="fr" state="translated">Aucun. Bloom ne montrera pas les fonctionnalités de l'abonnement Entreprise.</target>
         <alt-trans>
