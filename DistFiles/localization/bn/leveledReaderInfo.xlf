@@ -627,6 +627,9 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <source xml:lang="en">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
         <target xml:lang="bn" state="translated">বইসমূহ অনেক বিষয়ের হতে পারে।প্রারম্ভিক পাঠকদের জন্য বই তৈরির সময়, তাদের পরিচিত বিষয়সমূহ নির্বাচন করুন।পাঠকরা আগ্রহের সাথে পড়বে এবং আরো পড়তে থাকবে যদি তারা তাদের আগ্রহের এবং পরিচিতি বিষয় সম্পর্কে পড়ে।আরো অভিজ্ঞ পাঠকদের জন্য, বিষয়টিতে তথ্য অন্তর্ভুক্ত থাকতে পারে যার সাথে পাঠক পরিচিত নয়।</target>
         <note>ID: leveled.reader.topic.choice.discussion</note>
+        <alt-trans>
+          <target xml:lang="bn">বই অনেক বিষয়ের উপর হতে পারে। পাঠকদের শুরু করার জন্য বই বিকাশ করার সময়, তাদের কাছে পরিচিত বিষয়গুলি বেছে নিন। পাঠকরা পড়তে আগ্রহী এবং তারা আকর্ষণীয় এবং পরিচিত জিনিসগুলির বিষয়ে পড়তে থাকলে আরও পড়বেন। আরও অভিজ্ঞ পাঠকদের জন্য, বিষয়গুলির মধ্যে এমন তথ্য অন্তর্ভুক্ত থাকতে পারে যা পাঠক ইতিমধ্যে পরিচিত নয়।</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.</source>

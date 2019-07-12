@@ -831,6 +831,9 @@
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
         <target xml:lang="hi" state="translated">इन सेटिंग्स के लिए फैक्ट्री पासवर्ड "{0}" है। अगर आप इसे भूल जाएं, तो आप कभी भी "{1}" और को गूगल कर सकते हैं</target>
         <alt-trans>
+          <target xml:lang="hi">इन सेटिंग्स के लिए फैक्ट्री पासवर्ड "{0}" है। अगर आप इसे भूल जाएं, तो आप कभी भी "{1}" और "{2}" को गूगल कर सकते हैं</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="hi">इन सेटिंग्स के लिए कारखाने पासवर्ड "{0}" है।  अगर तुम इसे भूल जाओ, तुम हमेशा "{1}" और "{2}" के लिए गूगल कर सकते हैं</target>
         </alt-trans>
       </trans-unit>

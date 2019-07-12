@@ -11,9 +11,12 @@
         </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi" approved="yes">
-        <source xml:lang="en">Serve on WiFi Network</source>
-        <target xml:lang="mam" state="translated">Sipb'il tuj paqanil WiFi</target>
+        <source xml:lang="en">Share over Wi-Fi</source>
+        <target xml:lang="mam" state="translated">Samalte tuj paqanil WiFi</target>
         <note>ID: android.publish.wifi</note>
+        <alt-trans>
+          <target xml:lang="mam">Sipb'il tuj paqanil WiFi</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Sipb'il tuj chemaj xin WiFi</target>
         </alt-trans>
@@ -27,7 +30,7 @@
         </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive" approved="yes">
-        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</source>
+        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
         <target xml:lang="mam" state="translated">Aj tajb'en tumel aq'untl lu', ilti'j tu'n taq'unan Bloom Reader. Jaqonkxa menú ex sak'onktza "K'amob'il te WiFi".</target>
         <note>ID: android.publish.wifi.run.receive</note>
         <alt-trans>
@@ -35,17 +38,23 @@
         </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from" approved="yes">
-        <source xml:lang="en">Make sure the device is in the "Receive from WiFi" screen</source>
-        <target xml:lang="mam" state="translated">Tka'yinxa qa b'a'n tok makb'il xk'utz'ib' ti'j twitz "K'amob'il te WiFi"</target>
+        <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
+        <target xml:lang="mam" state="translated">Ka'yinxa qa b'a'n tok makb'il xk'utz'ib' ti'j twitz "K'amob'il te WiFi"</target>
         <note>ID: android.publish.wifi.receive.from</note>
+        <alt-trans>
+          <target xml:lang="mam">Tka'yinxa qa b'a'n tok makb'il xk'utz'ib' ti'j twitz "K'amob'il te WiFi"</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Il ti'j tu'n tok tka'yina qa tok makb'il aq'unb'il xk'utz'ib' ti'j twitz xk'utz'ib' te "K'amob'il te WiFi"</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.same.network" approved="yes">
-        <source xml:lang="en">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
-        <target xml:lang="mam" state="translated">Ka'yinka qa aju xk'utz'ib' ex tmakb'il junx ite' ti'j paqanil WiFi. Jun xk'utz'ib' tok ti'j ajb'eyil WiFi tu'n taq'il b'ala ax ta' tuj ttex paqanil. Ja'ka b'a'n tz'ok qe' paqanil tu'n taq'il tu'ntzan tten tujxix tkab'in paqanil te tzalu' ikytza'n WiFi, alkyeqe' nchi aq'unan ti'j Bloom mlayx chi onin tu'n tok q'ol tilb'ilal aq'unb'il lu'.</target>
+        <source xml:lang="en">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
+        <target xml:lang="mam" state="translated">Ka'yinka qa aju xk'utz'ib' ex tmakb'il junx ate' ti'j paqanil WiFi. Jun xk'utz'ib' tok ti'j ajb'eyil WiFi tu'n taq'il b'ala ax ta' tuj ttex paqanil. Ja'ka b'a'n tz'ok qe' paqanil tu'n taq'il tu'ntzan tten tujxix tkab'in paqanil te tzalu' ikytza'n WiFi, alkyeqe' nchi aq'unan ti'j Bloom mlayx chi onin tu'n tok q'ol tilb'ilal aq'unb'il lu'.</target>
         <note>ID: android.publish.wifi.same.network</note>
+        <alt-trans>
+          <target xml:lang="mam">Ka'yinka qa aju xk'utz'ib' ex tmakb'il junx ite' ti'j paqanil WiFi. Jun xk'utz'ib' tok ti'j ajb'eyil WiFi tu'n taq'il b'ala ax ta' tuj ttex paqanil. Ja'ka b'a'n tz'ok qe' paqanil tu'n taq'il tu'ntzan tten tujxix tkab'in paqanil te tzalu' ikytza'n WiFi, alkyeqe' nchi aq'unan ti'j Bloom mlayx chi onin tu'n tok q'ol tilb'ilal aq'unb'il lu'.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Il ti'j tu'n tok tka'yina qa xk'utz'ib' ex makb'il aq'unb'il xk'utz'ib' junx ite' ti'j chemaj xin WiFi. Jun xk'utz'ib' tok ti'j ajb'eyil WiFi tu'n taq'il b'ala ax ta' tuj ttex chmaj xin. Jaka b'a'n tz'ok qe chemaj xin tu'n taq'il tu'ntzan tten tujxix tkab'in chemaj xin te tzalu' ikytzan WiFi, alkyeqa nchaq'nan ti Bloom nlayx chi onin tu'n tok q'ol tilb'ilal aq'unb'il lu'.</target>
         </alt-trans>
@@ -76,7 +85,7 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.consider.wifi" approved="yes">
         <source xml:lang="en">
-          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
+          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the Wi-Fi method even if you are only working with a single device.</g>
         </source>
         <target xml:lang="mam" state="translated"><g id="genid-1" ctype="x-html-p">Ma tz'el qniky'e qa aju tumel aq'untl lu' in tq'o'n mya' b'a'n kye nimaq makb'il te xk'utz'ib'. Tu'ntzan tlaj ximinxe qa aju tumel aq'untl WiFi b'a'n ex qa in aq'unane o'kx tuk'il jun makb'il te xk'utz'ib'.</g></target>
         <note>ID: android.publish.usb.consider.wifi</note>
@@ -100,15 +109,21 @@
           <target xml:lang="mam">Atqe ju'n makb'il aq'unb'il xk'utz'ib' Android jaka b'ant tu'n kyten tuj nimka tumlal taj tokqa ti'j jun xk'utz'ib'. Atla ju'n tzul kyqanan mataq toklen q'ot taq'al ti'j xk'utz'ib'. Qxel tjyo'n Bloom tu'mel tu'n tyolin tuk' makb'il aq'unb'il xk'utz'ib' tu'n jun txolb'ab'il twitz yol "MTP". Qa nya' axix tzqi'na qa tmakb'ila aq'unb'il txk'utz'ib'a tok ti'j MTP, kxel tjyo'na tuj tu'mel Google tb'i tmakb'ila aq'unb'il txk'utz'ib'a ex "MTP".</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.usb.windows">
+      <trans-unit id="android.publish.usb.windows" approved="yes">
         <source xml:lang="en">The device should be showing up in Windows File Explorer (this feature is Windows-only)</source>
-        <target xml:lang="mam" state="translated">Aju makb'il aq'unb'il xk'utz'ib' il ti'j tu'n tetz tye'k'an tib' tuj jyob'il nak'ub'il aq'unb'il te Windows (Qe ti'chaq tok ti'j nkanet o'kxten tuj Windows)</target>
+        <target xml:lang="mam" state="translated">Aju makb'il toj xk'utz'ib' ilti'j tu'n tetz tyek'an tib' tuj jyob'il nuk'b'il aq'unb'il te Windows (Qe' ti'chaq tok ti'j nkanet o'kx ten tuj Windows)</target>
         <note>ID: android.publish.usb.windows</note>
+        <alt-trans>
+          <target xml:lang="mam">Aju makb'il aq'unb'il xk'utz'ib' il ti'j tu'n tetz tye'k'an tib' tuj jyob'il nak'ub'il aq'unb'il te Windows (Qe ti'chaq tok ti'j nkanet o'kxten tuj Windows)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.usb.cable.or.port">
+      <trans-unit id="android.publish.usb.cable.or.port" approved="yes">
         <source xml:lang="en">Try a different cable, or a different USB port.</source>
-        <target xml:lang="mam" state="translated">Nib'enxa tu'n tok tq'ona junxitl taq'al mo junxitl tenb'il USB.</target>
+        <target xml:lang="mam" state="translated">B'inchama tu'n juntl taq'al mo junxitl tenb'il USB.</target>
         <note>ID: android.publish.usb.cable.or.port</note>
+        <alt-trans>
+          <target xml:lang="mam">Nib'enxa tu'n tok tq'ona junxitl taq'al mo junxitl tenb'il USB.</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>

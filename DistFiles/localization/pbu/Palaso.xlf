@@ -6,39 +6,39 @@
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
-        <target xml:lang="pbu" state="translated">{0} جوړه شوې په</target>
+        <target xml:lang="pbu" state="final">{0} جوړه شوې په</target>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="pbu" state="translated">آپډیټونه نشته</target>
+        <target xml:lang="pbu" state="final">آپډیټونه نشته</target>
       </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle" approved="yes">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="pbu" state="translated">{0} اړوند د</target>
+        <target xml:lang="pbu" state="final">{0} اړوند د</target>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="pbu" state="translated">د آپډیټونو لپاره کتل</target>
+        <target xml:lang="pbu" state="final">د آپډیټونو لپاره کتل</target>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="pbu" state="translated">خپاره شوي نوټونه</target>
+        <target xml:lang="pbu" state="final">خپاره شوي نوټونه</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General" approved="yes">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.General</note>
-        <target xml:lang="pbu" state="translated">د کاریال بله کاپي تیاره شته. که تاسو یې نشئ پیدا کولی، خپل کمپیوټر بیا روښانه کړئ.</target>
+        <target xml:lang="pbu" state="final">د کاریال بله کاپي تیاره شته. که تاسو یې نشئ پیدا کولی، خپل کمپیوټر بیا روښانه کړئ.</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.Specific" approved="yes">
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="pbu" state="translated">بله کاپي د ‎{0}‏ تیاره روانه ده. که تاسې ‎{0}‏ هغه کاپي نشئ پیدا کولی، خپل کمپیوټر بیا روښانه کړئ.</target>
+        <target xml:lang="pbu" state="final">بله کاپي د ‎{0}‏ تیاره روانه ده. که تاسې ‎{0}‏ هغه کاپي نشئ پیدا کولی، خپل کمپیوټر بیا روښانه کړئ.</target>
         <alt-trans>
           <target xml:lang="pbu">بله کاپي د {‎{0 تیاره روانه ده. که تاسې {‎{0 هغه کاپي نشئ پیدا کولی، خپل کمپیوټر بیا روښانه کړئ.</target>
         </alt-trans>
@@ -49,13 +49,13 @@
       <trans-unit id="Application.ProblemStarting.General" approved="yes">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
-        <target xml:lang="pbu" state="translated">د کاریال په پيل کولو کې ستونزه وه چې ښایې ستاسې د کمپیوټر بیا روښانه کولو ته اړتیا ولري.</target>
+        <target xml:lang="pbu" state="final">د کاریال په پيل کولو کې ستونزه وه چې ښایې ستاسې د کمپیوټر بیا روښانه کولو ته اړتیا ولري.</target>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.Specific" approved="yes">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="pbu" state="translated">د {0}‏ په پيل کولو کې ستونزه وه چې ښایې ستاسې د کمپیوټر بیا روښانه کولو ته اړتیا وي.</target>
+        <target xml:lang="pbu" state="final">د {0}‏ په پيل کولو کې ستونزه وه چې ښایې ستاسې د کمپیوټر بیا روښانه کولو ته اړتیا وي.</target>
         <alt-trans>
           <target xml:lang="pbu">د ‎{0}‏ په پيل کولو کې ستونزه وه چې ښایې ستاسې د کمپیوټر بیا روښانه کولو ته اړتیا وي.</target>
         </alt-trans>
@@ -63,103 +63,103 @@
       <trans-unit id="Application.WaitingFinish.General" approved="yes">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
-        <target xml:lang="pbu" state="translated">د بل کاریال ختمیدو لپاره انتظار کوو...</target>
+        <target xml:lang="pbu" state="final">د بل کاریال ختمیدو لپاره انتظار کوو...</target>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.Specific" approved="yes">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="pbu" state="translated">د بل {0} ختمیدو لپاره انتظار کوو...</target>
+        <target xml:lang="pbu" state="final">د بل {0} ختمیدو لپاره انتظار کوو...</target>
       </trans-unit>
       <trans-unit id="Common.AbortButton" approved="yes">
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
-        <target xml:lang="pbu" state="translated">&amp; لغوه</target>
+        <target xml:lang="pbu" state="final">&amp; لغوه</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="pbu" state="translated">&amp;لغوه</target>
+        <target xml:lang="pbu" state="final">&amp;لغوه</target>
       </trans-unit>
       <trans-unit id="Common.IgnoreButton" approved="yes">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="pbu" state="translated">&amp; رد کول</target>
+        <target xml:lang="pbu" state="final">&amp; رد کول</target>
       </trans-unit>
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="pbu" state="translated">نه</target>
+        <target xml:lang="pbu" state="final">نه</target>
       </trans-unit>
       <trans-unit id="Common.NoButton" approved="yes">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
-        <target xml:lang="pbu" state="translated">&amp; نه</target>
+        <target xml:lang="pbu" state="final">&amp; نه</target>
       </trans-unit>
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="pbu" state="translated">&amp;سمه ده</target>
+        <target xml:lang="pbu" state="final">&amp;سمه ده</target>
       </trans-unit>
       <trans-unit id="Common.RetryButton" approved="yes">
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
-        <target xml:lang="pbu" state="translated">&amp; بيا هڅه وکړئ</target>
+        <target xml:lang="pbu" state="final">&amp; بيا هڅه وکړئ</target>
       </trans-unit>
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
-        <target xml:lang="pbu" state="translated">هو</target>
+        <target xml:lang="pbu" state="final">هو</target>
       </trans-unit>
       <trans-unit id="Common.YesButton" approved="yes">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="pbu" state="translated">&amp; هو</target>
+        <target xml:lang="pbu" state="final">&amp; هو</target>
       </trans-unit>
       <trans-unit id="CustomIdentifierView.betterLabel1">
         <source xml:lang="en">RFC5646 code:</source>
         <note>ID: CustomIdentifierView.betterLabel1</note>
         <note>label describes the code for a custom identifier. Translate only 'code'</note>
-        <target xml:lang="pbu" state="needs-translation">RFC5646 code:</target>
+        <target xml:lang="pbu" state="translated">RFC5646 کوډ:</target>
       </trans-unit>
       <trans-unit id="CustomIdentifierView.linkLabel1">
         <source xml:lang="en">Read about language identifiers on the web</source>
         <note>ID: CustomIdentifierView.linkLabel1</note>
         <note>text used in the link to a webpage that describes the language identifiers</note>
-        <target xml:lang="pbu" state="needs-translation">Read about language identifiers on the web</target>
+        <target xml:lang="pbu" state="translated">په ویب پاڼه کې د ژبې پیژندونکو په اړه ولولئ</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
-        <target xml:lang="pbu" state="translated">{0}‏ به خزلنی (Recycle Bin) ته واستول شي.</target>
+        <target xml:lang="pbu" state="final">{0}‏ به خزلنی (Recycle Bin) ته واستول شي.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Param {0} is a file name</note>
-        <target xml:lang="pbu" state="translated">{0}‏ به خزلنی (Recycle Bin) ته واستول شي.</target>
+        <target xml:lang="pbu" state="final">{0}‏ به خزلنی (Recycle Bin) ته واستول شي.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Confirm Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
-        <target xml:lang="pbu" state="translated">ړنګول تائید کړئ</target>
+        <target xml:lang="pbu" state="final">ړنګول تائید کړئ</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="pbu" state="translated">&amp;لغوه</target>
+        <target xml:lang="pbu" state="final">&amp;لغوه</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn" approved="yes">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="pbu" state="translated">&amp;حذف کول</target>
+        <target xml:lang="pbu" state="final">&amp;حذف کول</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages" approved="yes">
         <source xml:lang="en">Found {0} images with names close to “{1}”</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
-        <target xml:lang="pbu" state="translated">دې ‎{1}‏ نوم ته نږدي د دې {0}‏ انځورونه پیدا شو</target>
+        <target xml:lang="pbu" state="final">دې ‎{1}‏ نوم ته نږدي د دې {0}‏ انځورونه پیدا شو</target>
         <alt-trans>
           <target xml:lang="pbu">دې {‎{1‏ نوم ته نږدي د دې {0}‏ انځورونه پیدا شو</target>
         </alt-trans>
@@ -170,18 +170,18 @@
       <trans-unit id="ImageToolbox.ArtOfReading" approved="yes">
         <source xml:lang="en">Art Of Reading</source>
         <note>ID: ImageToolbox.ArtOfReading</note>
-        <target xml:lang="pbu" state="translated">د لوستلو هنر</target>
+        <target xml:lang="pbu" state="final">د لوستلو هنر</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Camera" approved="yes">
         <source xml:lang="en">Camera</source>
         <note>ID: ImageToolbox.Camera</note>
-        <target xml:lang="pbu" state="translated">کمره</target>
+        <target xml:lang="pbu" state="final">کمره</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.CopyExemplarMetadata" approved="yes">
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="pbu" state="translated">د ‎{0}‏ استعمال</target>
+        <target xml:lang="pbu" state="final">د ‎{0}‏ استعمال</target>
         <alt-trans>
           <target xml:lang="pbu">د {‎0} استعمال</target>
         </alt-trans>
@@ -192,23 +192,23 @@
       <trans-unit id="ImageToolbox.Crop" approved="yes">
         <source xml:lang="en">Crop</source>
         <note>ID: ImageToolbox.Crop</note>
-        <target xml:lang="pbu" state="translated">غوڅول</target>
+        <target xml:lang="pbu" state="final">غوڅول</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.DownloadArtOfReading" approved="yes">
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
-        <target xml:lang="pbu" state="translated">د لوستلو مهارت نصب کونکی ښکته کړئ</target>
+        <target xml:lang="pbu" state="final">د لوستلو مهارت نصب کونکی ښکته کړئ</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EditMetadataLink" approved="yes">
         <source xml:lang="en">Edit...</source>
         <note>ID: ImageToolbox.EditMetadataLink</note>
-        <target xml:lang="pbu" state="translated">ایډیټ‏...</target>
+        <target xml:lang="pbu" state="final">ایډیټ‏...</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms" approved="yes">
         <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
-        <target xml:lang="pbu" state="translated">په پورتني بکس کې، هغه څه ولیکئ چې پلټنه یې کوئ، بیا ENTER کیکاږئ.</target>
+        <target xml:lang="pbu" state="final">په پورتني بکس کې، هغه څه ولیکئ چې پلټنه یې کوئ، بیا ENTER کیکاږئ.</target>
         <alt-trans>
           <target xml:lang="pbu">دا د ‎'لوستلو مهارت‎'‏ ګالري ده. په پورتني بکس کې، هغه څه ولیکئ چې پلټنه یې کوئ، بیا ‏ENTER‏ کیکاږئ. تاسو په اندونیزیايي او انګلیسی کلمې ټایپ کولی شئ.</target>
         </alt-trans>
@@ -216,54 +216,54 @@
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
-        <target xml:lang="pbu" state="translated">دوسیه</target>
+        <target xml:lang="pbu" state="final">دوسیه</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileChooserTitle">
         <source xml:lang="en">Choose Picture File</source>
         <note>ID: ImageToolbox.FileChooserTitle</note>
         <note>Title shown for a file chooser dialog brought up by the ImageToolbox</note>
-        <target xml:lang="pbu" state="needs-translation">Choose Picture File</target>
+        <target xml:lang="pbu" state="translated">د انځور دوسیه غوره کړه</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Galleries" approved="yes">
         <source xml:lang="en">Galleries</source>
         <note>ID: ImageToolbox.Galleries</note>
-        <target xml:lang="pbu" state="translated">ګالري ګانې</target>
+        <target xml:lang="pbu" state="final">ګالري ګانې</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericGettingImageProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
         <note>ID: ImageToolbox.GenericGettingImageProblem</note>
-        <target xml:lang="pbu" state="translated">بښنه غواړو، د انځور په اخیستلو کې کوم شی غلط شو.</target>
+        <target xml:lang="pbu" state="final">بښنه غواړو، د انځور په اخیستلو کې کوم شی غلط شو.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
-        <target xml:lang="pbu" state="translated">بښنه غواړو، د انځور وصیله بکس کې کوم شی غلط شو.</target>
+        <target xml:lang="pbu" state="final">بښنه غواړو، د انځور وصیله بکس کې کوم شی غلط شو.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GetPicture" approved="yes">
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
-        <target xml:lang="pbu" state="translated">عکس واخلئ</target>
+        <target xml:lang="pbu" state="final">عکس واخلئ</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageGalleries" approved="yes">
         <source xml:lang="en">Image Galleries</source>
         <note>ID: ImageToolbox.ImageGalleries</note>
-        <target xml:lang="pbu" state="translated">د انځورونو ګالري ګانې</target>
+        <target xml:lang="pbu" state="final">د انځورونو ګالري ګانې</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle" approved="yes">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="pbu" state="translated">د انځور وصیله بکس</target>
+        <target xml:lang="pbu" state="final">د انځور وصیله بکس</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.InstallArtOfReading" approved="yes">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
         <note>ID: ImageToolbox.InstallArtOfReading</note>
-        <target xml:lang="pbu" state="translated">د لوستلو مهارت کڅوړه نصب کړئ (دا ښايې ډیره ورو وي)</target>
+        <target xml:lang="pbu" state="final">د لوستلو مهارت کڅوړه نصب کړئ (دا ښايې ډیره ورو وي)</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.MatchingImages" approved="yes">
         <source xml:lang="en">Found {0} images</source>
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
-        <target xml:lang="pbu" state="translated">د ‎{0}‏ انځورونه پیدا شو</target>
+        <target xml:lang="pbu" state="final">د ‎{0}‏ انځورونه پیدا شو</target>
         <alt-trans>
           <target xml:lang="pbu">د {‎{0 انځورونه پیدا شو</target>
         </alt-trans>
@@ -275,7 +275,7 @@
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space): Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</note>
-        <target xml:lang="pbu" state="translated">آیا تاسې پوهیدی چې دا د ټولګې نوې نسخه ده چې تاسو ته اجازه درکوي په عربي، بنګالي، چينايي، انګلېسي، فرانسوي، اندونیزیایي، هندي، پرتګالي، هسپانوي، ټایلنډي، یا سواحلي کې پلټنه وکوئ؟ دا وړیا ده او د ښکته کولو لپاره شته.</target>
+        <target xml:lang="pbu" state="final">آیا تاسې پوهیدی چې دا د ټولګې نوې نسخه ده چې تاسو ته اجازه درکوي په عربي، بنګالي، چينايي، انګلېسي، فرانسوي، اندونیزیایي، هندي، پرتګالي، هسپانوي، ټایلنډي، یا سواحلي کې پلټنه وکوئ؟ دا وړیا ده او د ښکته کولو لپاره شته.</target>
         <alt-trans>
           <target xml:lang="pbu">آیا تاسې پوهیدی چې دا د ټولګې نوې نسخه ده چې تاسو ته اجازه درکوي په عربي، بنګالي، چنایی، انګلیسي، فرانسوي، اندونیزیایي، هندي، پرتګالي، هسپانوي، تایلندي، یا سواحلي کی پلټنه وکوئ؟ دا وړیا ده او د ښکته کولو لپاره شته.</target>
         </alt-trans>
@@ -283,48 +283,48 @@
       <trans-unit id="ImageToolbox.NoArtOfReading" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
-        <target xml:lang="pbu" state="translated">داسې نه ښکاري چې په دې کمپیوټر کې تر اوسه د ‎'لوستلو مهارت‎'‏ ګالري نصب شوې وي.</target>
+        <target xml:lang="pbu" state="final">داسې نه ښکاري چې په دې کمپیوټر کې تر اوسه د ‎'لوستلو مهارت‎'‏ ګالري نصب شوې وي.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoGalleries" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
         <note>ID: ImageToolbox.NoGalleries</note>
-        <target xml:lang="pbu" state="translated">دا کمپيوټر نه ښيي چې تر دې مهاله دې ګالري پکې انسټال شوې وي.</target>
+        <target xml:lang="pbu" state="final">دا کمپيوټر نه ښيي چې تر دې مهاله دې ګالري پکې انسټال شوې وي.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
         <note>ID: ImageToolbox.NoMatchingImages</note>
-        <target xml:lang="pbu" state="translated">کوم مناسب انځور مو پیدا نکړو</target>
+        <target xml:lang="pbu" state="final">کوم مناسب انځور مو پیدا نکړو</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PictureFiles" approved="yes">
         <source xml:lang="en">picture files</source>
         <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
-        <target xml:lang="pbu" state="translated">تصویری دوسیی</target>
+        <target xml:lang="pbu" state="final">تصویری دوسیی</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice" approved="yes">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="pbu" state="translated">د انځور په اخيستلو کې ستونزه ده</target>
+        <target xml:lang="pbu" state="final">د انځور په اخيستلو کې ستونزه ده</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemLoadingImage" approved="yes">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <note>ID: ImageToolbox.ProblemLoadingImage</note>
-        <target xml:lang="pbu" state="translated">بښنه غواړو، د هغه انځور په راښکاره کولو کی ستونزه وه.</target>
+        <target xml:lang="pbu" state="final">بښنه غواړو، د هغه انځور په راښکاره کولو کی ستونزه وه.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PromptForMissingMetadata" approved="yes">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
-        <target xml:lang="pbu" state="translated">دا انځور نه پوهیږي: \n\nچا جوړ کړی؟\nڅوک یې کارولي شي؟</target>
+        <target xml:lang="pbu" state="final">دا انځور نه پوهیږي: \n\nچا جوړ کړی؟\nڅوک یې کارولي شي؟</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Scanner" approved="yes">
         <source xml:lang="en">Scanner</source>
         <note>ID: ImageToolbox.Scanner</note>
-        <target xml:lang="pbu" state="translated">سکنر</target>
+        <target xml:lang="pbu" state="final">سکنر</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchArtOfReading" approved="yes">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
-        <target xml:lang="pbu" state="translated">د ګالري د لوستلو مهارت پلټنه وکړئ</target>
+        <target xml:lang="pbu" state="final">د ګالري د لوستلو مهارت پلټنه وکړئ</target>
         <alt-trans>
           <target xml:lang="pbu">د ګالري د لوستنو مهارت پلټنه وکړئ</target>
         </alt-trans>
@@ -333,7 +333,7 @@
         <source xml:lang="en">The search box is currently set to {0}</source>
         <note>ID: ImageToolbox.SearchLanguage</note>
         <note>The {0} will be replaced by the name of the language used in the searches.</note>
-        <target xml:lang="pbu" state="translated">د پلټنې بکس اوس ‎{0}‏ ته تنظیمه شوې ده</target>
+        <target xml:lang="pbu" state="final">د پلټنې بکس اوس ‎{0}‏ ته تنظیمه شوې ده</target>
         <alt-trans>
           <target xml:lang="pbu">د پلټنې بکس اوس {‎0} ته تنظیمه شوې ده</target>
         </alt-trans>
@@ -344,106 +344,109 @@
       <trans-unit id="ImageToolbox.SetUpMetadataLink" approved="yes">
         <source xml:lang="en">Set up metadata...</source>
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
-        <target xml:lang="pbu" state="translated">د خامو معلوماتو ترتیب ول...</target>
+        <target xml:lang="pbu" state="final">د خامو معلوماتو ترتیب ول...</target>
       </trans-unit>
       <trans-unit id="IpaIdentifierView.betterLabel1">
         <source xml:lang="en">Purpose:</source>
         <note>ID: IpaIdentifierView.betterLabel1</note>
         <note>In writing system setup when IPA special option is selected: Label for the purpose combo box</note>
-        <target xml:lang="pbu" state="needs-translation">Purpose:</target>
+        <target xml:lang="pbu" state="translated">موخه:</target>
       </trans-unit>
       <trans-unit id="IpaIdentifierView.linkLabel1">
         <source xml:lang="en">Read about IPA transcription on the web</source>
         <note>ID: IpaIdentifierView.linkLabel1</note>
         <note>In writing system setup when IPA special option is selected: text used in link to a webpage describing IPA transcription</note>
-        <target xml:lang="pbu" state="needs-translation">Read about IPA transcription on the web</target>
+        <target xml:lang="pbu" state="translated">په ویب پاڼه کې د IPA ليکني په اړه ولولئ</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
-        <target xml:lang="pbu" state="translated">نور نومونه</target>
+        <target xml:lang="pbu" state="final">نور نومونه</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2" approved="yes">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
-        <target xml:lang="pbu" state="translated">دا لست باید د ‏ISO-639‏ ټولې ژبې ولري، د ټولو هغو دویمو نومونو په شمول چې ‏ethnologue.com‏ ته معلوم دي.‏ \n\nکه اړتیا وي، د "نا لېست شویو ژبو" اختیار وکاره وئ، چې تاسو لپاره به اوس په نښه شي.</target>
+        <target xml:lang="pbu" state="final">دا لست باید د ‏ISO-639‏ ټولې ژبې ولري، د ټولو هغو دویمو نومونو په شمول چې ‏ethnologue.com‏ ته معلوم دي.‏ \n\nکه اړتیا وي، د "نا لېست شویو ژبو" اختیار وکاره وئ، چې تاسو لپاره به اوس په نښه شي.</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue" approved="yes">
         <source xml:lang="en">Ethnologue.com</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
-        <target xml:lang="pbu" state="translated">Ethnologue.com</target>
+        <target xml:lang="pbu" state="final">Ethnologue.com</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="pbu" state="translated">د ژبې ‎639-3‏ کوډونو په اړه او څنګه به نویو ته پکار ویوړل شي</target>
+        <target xml:lang="pbu" state="final">د ژبې ‎639-3‏ کوډونو په اړه او څنګه به نویو ته پکار ویوړل شي</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle" approved="yes">
         <source xml:lang="en">About The ISO Language Registry</source>
         <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
-        <target xml:lang="pbu" state="translated">د‏ ‏ISO‏ ژبې د راجستر په اړه</target>
+        <target xml:lang="pbu" state="final">د‏ ‏ISO‏ ژبې د راجستر په اړه</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CodeHeader" approved="yes">
         <source xml:lang="en">Code</source>
         <note>ID: LanguageLookup.CodeHeader</note>
-        <target xml:lang="pbu" state="translated">کوډ</target>
+        <target xml:lang="pbu" state="final">کوډ</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryCount" approved="yes">
         <source xml:lang="en">{0} Countries</source>
         <note>ID: LanguageLookup.CountryCount</note>
         <note>Shown when there are multiple countries and it is just confusing to list them all. {0} is a count of countries.</note>
-        <target xml:lang="pbu" state="translated">{0}‏ هېوادونه</target>
+        <target xml:lang="pbu" state="final">{0}‏ هېوادونه</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryHeader" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: LanguageLookup.CountryHeader</note>
-        <target xml:lang="pbu" state="translated">هېواد</target>
+        <target xml:lang="pbu" state="final">هېواد</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel" approved="yes">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
         <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
-        <target xml:lang="pbu" state="translated">تاسو کولی شی تغیر یي کړئ چې څنګه به د ژبې نوم دلته ښکاره شي:</target>
+        <target xml:lang="pbu" state="final">تاسو کولی شی تغیر یي کړئ چې څنګه به د ژبې نوم دلته ښکاره شي:</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle" approved="yes">
         <source xml:lang="en">Lookup Language Code...</source>
         <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
-        <target xml:lang="pbu" state="translated">د ژبې د کوډ لپاره کتل...</target>
+        <target xml:lang="pbu" state="final">د ژبې د کوډ لپاره کتل...</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.PrimaryNameHeader" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: LanguageLookup.PrimaryNameHeader</note>
-        <target xml:lang="pbu" state="translated">نوم</target>
+        <target xml:lang="pbu" state="final">نوم</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel" approved="yes">
         <source xml:lang="en">Show regional dialects</source>
         <note>ID: LanguageLookup.ShowRegionalDialectsLabel</note>
-        <target xml:lang="pbu" state="translated">محلي لهجې وښایاست</target>
+        <target xml:lang="pbu" state="final">محلي لهجې وښایاست</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.UnlistedLanguage" approved="yes">
         <source xml:lang="en">Unlisted Language</source>
         <note>ID: LanguageLookup.UnlistedLanguage</note>
-        <target xml:lang="pbu" state="translated">نالېست شوې ژبه</target>
+        <target xml:lang="pbu" state="final">نالېست شوې ژبه</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._cannotFindLanguageLink" approved="yes">
         <source xml:lang="en">Can't find your language?</source>
         <note>ID: LanguageLookup._cannotFindLanguageLink</note>
-        <target xml:lang="pbu" state="translated">خپله ژبه نشی پیدا کولی؟</target>
+        <target xml:lang="pbu" state="final">خپله ژبه نشی پیدا کولی؟</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLabel">
         <source xml:lang="en">my script variant label</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLabel</note>
-        <target xml:lang="pbu" state="needs-translation">my script variant label</target>
+        <target xml:lang="pbu" state="translated">زما د متن مختلف ډولونه</target>
+        <alt-trans>
+          <target xml:lang="pbu">زما د متن مختلف ډول</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLink">
         <source xml:lang="en">Script and Variant</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLink</note>
-        <target xml:lang="pbu" state="needs-translation">Script and Variant</target>
+        <target xml:lang="pbu" state="translated">متن او ډولونه</target>
       </trans-unit>
       <trans-unit id="MemoryWarning" approved="yes">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
         <note>ID: MemoryWarning</note>
-        <target xml:lang="pbu" state="translated">له بده مرغه، ‎{0}‏ د حافظې له کمښت سره مخ کیږي او ښايي ژر ورو شي او یا نورو ستونزو سره مخ شي. مونږ وړاندیز کوو چې تاسو یې په مناسب وخت کې بند کړئ او بیا یې روښانه کړئ.</target>
+        <target xml:lang="pbu" state="final">له بده مرغه، ‎{0}‏ د حافظې له کمښت سره مخ کیږي او ښايي ژر ورو شي او یا نورو ستونزو سره مخ شي. مونږ وړاندیز کوو چې تاسو یې په مناسب وخت کې بند کړئ او بیا یې روښانه کړئ.</target>
         <alt-trans>
           <target xml:lang="pbu">له بده مرغه، {‎{0 د حافظې له کمښت سره مخ کیږي او ښايي ژر ورو شي او یا نورو ستونزو سره مخ شي. مونږ وړاندیز کوو چې تاسو یې په مناسب وخت کې بند کړئ او بیا یې روښانه کړئ.</target>
         </alt-trans>
@@ -454,7 +457,7 @@
       <trans-unit id="MetadataDisplay.Creator" approved="yes">
         <source xml:lang="en">Creator: {0}</source>
         <note>ID: MetadataDisplay.Creator</note>
-        <target xml:lang="pbu" state="translated">جوړونکی: ‎{0}‏</target>
+        <target xml:lang="pbu" state="final">جوړونکی: ‎{0}‏</target>
         <alt-trans>
           <target xml:lang="pbu">جوړونکی: {‎{0</target>
         </alt-trans>
@@ -465,18 +468,18 @@
       <trans-unit id="MetadataDisplay.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataDisplay.CreatorLabel</note>
-        <target xml:lang="pbu" state="translated">جوړونکی</target>
+        <target xml:lang="pbu" state="final">جوړونکی</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.LicenseInfo" approved="yes">
         <source xml:lang="en">License Info</source>
         <note>ID: MetadataDisplay.LicenseInfo</note>
-        <target xml:lang="pbu" state="translated">د جواز معلومات</target>
+        <target xml:lang="pbu" state="final">د جواز معلومات</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="pbu" state="translated">تاسو باید د چاب حق او امتیازات د لیکونکو، انځورکرانو، او نورو ته وساتئ.</target>
+        <target xml:lang="pbu" state="final">تاسو باید د چاب حق او امتیازات د لیکونکو، انځورکرانو، او نورو ته وساتئ.</target>
         <alt-trans>
           <target xml:lang="pbu">تاسو باید د چاب حق او امتیازات د لیکونکو، لارښوونکو، او نورو ته وساتئ.</target>
         </alt-trans>
@@ -485,130 +488,130 @@
         <source xml:lang="en">You are free to make commercial use of this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="pbu" state="translated">تاسو آزاد یاست چې د دې کار څخه سوداګریزه ګټه پورته کړئ.</target>
+        <target xml:lang="pbu" state="final">تاسو آزاد یاست چې د دې کار څخه سوداګریزه ګټه پورته کړئ.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="pbu" state="translated">تاسو ښايې په دې کار کې اضافه والی راولئ او یا يې واړوئ.</target>
+        <target xml:lang="pbu" state="final">تاسو ښايې په دې کار کې اضافه والی راولئ او یا يې واړوئ.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="pbu" state="translated">تاسو يې ښایې دې کارته واړوئ یا پکې اضافه والی راوړئ، خو کیدای شي تاسو ښایې کار د همدې جواز لاندې توضیع کړئ.</target>
+        <target xml:lang="pbu" state="final">تاسو يې ښایې دې کارته واړوئ یا پکې اضافه والی راوړئ، خو کیدای شي تاسو ښایې کار د همدې جواز لاندې توضیع کړئ.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="pbu" state="translated">تاسو برته له اجازې دې کار کې تغیر او اضافه والی نشئ راوستلی.</target>
+        <target xml:lang="pbu" state="final">تاسو برته له اجازې دې کار کې تغیر او اضافه والی نشئ راوستلی.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not use this work for commercial purposes.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="pbu" state="translated">تاسو ښایي دا کار د سوداګرۍ موخو لپاره وکاره وئ.</target>
+        <target xml:lang="pbu" state="final">تاسو ښایي دا کار د سوداګرۍ موخو لپاره وکاره وئ.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.PublicDomain" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="pbu" state="translated">تاسې کولای شی دا کار له اجازې پرته حتا د سوداګريزې موخې لپاره هم کاپي، تغيير او يا هم خپور کړئ.</target>
+        <target xml:lang="pbu" state="final">تاسې کولای شی دا کار له اجازې پرته حتا د سوداګريزې موخې لپاره هم کاپي، تغيير او يا هم خپور کړئ.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
         <note>ID: MetadataDisplay.Licenses.NullLicense</note>
         <note>This is used when all we have is a copyright, no other license.</note>
-        <target xml:lang="pbu" state="translated">د بیا کارولو د اجازې لپاره، د چاپ حق لرونکی سره اړیکه ونیسئ.</target>
+        <target xml:lang="pbu" state="final">د بیا کارولو د اجازې لپاره، د چاپ حق لرونکی سره اړیکه ونیسئ.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.NoLicense" approved="yes">
         <source xml:lang="en">No license specified</source>
         <note>ID: MetadataDisplay.NoLicense</note>
-        <target xml:lang="pbu" state="translated">هیڅ جواز مشخص شوی نه دی</target>
+        <target xml:lang="pbu" state="final">هیڅ جواز مشخص شوی نه دی</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse" approved="yes">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <note>ID: MetadataEditor.AllowCommercialUse</note>
-        <target xml:lang="pbu" state="translated">د ستاسو د کارونو سوداګريز کارولو اجازه شته؟</target>
+        <target xml:lang="pbu" state="final">د ستاسو د کارونو سوداګريز کارولو اجازه شته؟</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowDerivatives" approved="yes">
         <source xml:lang="en">Allow modifications of your work?</source>
         <note>ID: MetadataEditor.AllowDerivatives</note>
-        <target xml:lang="pbu" state="translated">ستاسو په کار کې د تغيیر اجازه شته؟</target>
+        <target xml:lang="pbu" state="final">ستاسو په کار کې د تغيیر اجازه شته؟</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightHolder" approved="yes">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: MetadataEditor.CopyrightHolder</note>
-        <target xml:lang="pbu" state="translated">د چاپ حق لرونکی</target>
+        <target xml:lang="pbu" state="final">د چاپ حق لرونکی</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightYear" approved="yes">
         <source xml:lang="en">Copyright Year</source>
         <note>ID: MetadataEditor.CopyrightYear</note>
-        <target xml:lang="pbu" state="translated">د کاپي د حق کال</target>
+        <target xml:lang="pbu" state="final">د کاپي د حق کال</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons" approved="yes">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
-        <target xml:lang="pbu" state="translated">تخليقي رایج (Creative Commons)</target>
+        <target xml:lang="pbu" state="final">تخليقي رایج (Creative Commons)</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental" approved="yes">
         <source xml:lang="en">Intergovernmental Version</source>
         <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
-        <target xml:lang="pbu" state="translated">بين المللي نسخه</target>
+        <target xml:lang="pbu" state="final">بين المللي نسخه</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataEditor.CreatorLabel</note>
-        <target xml:lang="pbu" state="translated">جوړونکی</target>
+        <target xml:lang="pbu" state="final">جوړونکی</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CustomLicense" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: MetadataEditor.CustomLicense</note>
-        <target xml:lang="pbu" state="translated">ځانکړې</target>
+        <target xml:lang="pbu" state="final">ځانکړې</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.License" approved="yes">
         <source xml:lang="en">License</source>
         <note>ID: MetadataEditor.License</note>
-        <target xml:lang="pbu" state="translated">جواز</target>
+        <target xml:lang="pbu" state="final">جواز</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.PublicDomain">
         <source xml:lang="en">The copyright holder waives all rights</source>
         <note>ID: MetadataEditor.PublicDomain</note>
-        <target xml:lang="pbu" state="needs-translation">The copyright holder waives all rights</target>
+        <target xml:lang="pbu" state="translated">د چاپ حق لرونکی ټول حقونه وځنډول</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
-        <target xml:lang="pbu" state="translated">د چاپ حق او جواز</target>
+        <target xml:lang="pbu" state="final">د چاپ حق او جواز</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleWithCredit" approved="yes">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="pbu" state="translated">امتیاز،‎‏ د چاپ حق او جواز</target>
+        <target xml:lang="pbu" state="final">امتیاز،‎‏ د چاپ حق او جواز</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.UnknownLicense" approved="yes">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense</note>
-        <target xml:lang="pbu" state="translated">د چاپ حق درلودونکي سره د هری اجازې لپاره په اړیکه کې شئ</target>
+        <target xml:lang="pbu" state="final">د چاپ حق درلودونکي سره د هری اجازې لپاره په اړیکه کې شئ</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.YesShareAlike" approved="yes">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
-        <target xml:lang="pbu" state="translated">هو،‎‏ تر څو چې نور هم یو شان شریک کړی</target>
+        <target xml:lang="pbu" state="final">هو،‎‏ تر څو چې نور هم یو شان شریک کړی</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.additionalRequestsLabel" approved="yes">
         <source xml:lang="en">Additional Requests</source>
         <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
-        <target xml:lang="pbu" state="translated">نوری غوښتنې</target>
+        <target xml:lang="pbu" state="final">نوری غوښتنې</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.betterLinkLabel1" approved="yes">
         <source xml:lang="en">more info</source>
         <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
-        <target xml:lang="pbu" state="translated">د نورو معلوماتو لپاره</target>
+        <target xml:lang="pbu" state="final">د نورو معلوماتو لپاره</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToPublicDomainCC0">
         <source xml:lang="en">about {0} Public Domain</source>
@@ -620,7 +623,7 @@
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
-        <target xml:lang="pbu" state="translated">د اجرا وړ نه دی</target>
+        <target xml:lang="pbu" state="final">د اجرا وړ نه دی</target>
       </trans-unit>
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton">
         <source xml:lang="en">Cancel</source>
@@ -640,12 +643,12 @@
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
-        <target xml:lang="pbu" state="translated">دا ښایي نورې تڼۍ هم پټې کړي چې پرمختللی کارن ورته اړتیا نه لري.</target>
+        <target xml:lang="pbu" state="final">دا ښایي نورې تڼۍ هم پټې کړي چې پرمختللی کارن ورته اړتیا نه لري.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.CtrlShiftHint" approved="yes">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
-        <target xml:lang="pbu" state="translated">کله چې تاسې د ‏Ctrl‏ او ‏Shift‏ تڼي یو ځای کیکاږۍ تڼۍ به ښکاره شي.</target>
+        <target xml:lang="pbu" state="final">کله چې تاسې د ‏Ctrl‏ او ‏Shift‏ تڼي یو ځای کیکاږۍ تڼۍ به ښکاره شي.</target>
         <alt-trans>
           <target xml:lang="pbu">تڼۍ به ښکاره شي کله چې تاسې د ‏Ctrl‏ او ‏Shift‏ تڼي یو ځای کیکاږۍ.</target>
         </alt-trans>
@@ -654,7 +657,7 @@
         <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
-        <target xml:lang="pbu" state="translated">د تنظيماتو ساتنه...</target>
+        <target xml:lang="pbu" state="final">د تنظيماتو ساتنه...</target>
         <alt-trans>
           <target xml:lang="pbu">تنظیمونه‏...</target>
         </alt-trans>
@@ -662,33 +665,36 @@
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox" approved="yes">
         <source xml:lang="en">Hide the button that opens settings.</source>
         <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
-        <target xml:lang="pbu" state="translated">هغه تڼۍ پټه کړئ چې تنظیمونه ښکاره کوي.</target>
+        <target xml:lang="pbu" state="final">هغه تڼۍ پټه کړئ چې تنظیمونه ښکاره کوي.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword" approved="yes">
         <source xml:lang="en">Factory Password</source>
         <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
-        <target xml:lang="pbu" state="translated">د فابریکې رمز</target>
+        <target xml:lang="pbu" state="final">د فابریکې رمز</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation" approved="yes">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
-        <target xml:lang="pbu" state="translated">د ناڅاپي بدلونونو د مخنیوي لپاره چې کولی شئ دا وسیله د تاسو لپاره کار کول پریږدي، دا تنظیمونه قفل شوي.</target>
+        <target xml:lang="pbu" state="final">د ناڅاپي بدلونونو د مخنیوي لپاره چې کولی شئ دا وسیله د تاسو لپاره کار کول پریږدي، دا تنظیمونه قفل شوي.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle" approved="yes">
         <source xml:lang="en">Settings Protection Password</source>
         <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
-        <target xml:lang="pbu" state="translated">د تنظیمونو ساتنې رمز</target>
+        <target xml:lang="pbu" state="final">د تنظیمونو ساتنې رمز</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox" approved="yes">
         <source xml:lang="en">Show Characters</source>
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
-        <target xml:lang="pbu" state="translated">کرکټرونه ښکاره کړئ</target>
+        <target xml:lang="pbu" state="final">کرکټرونه ښکاره کړئ</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page.</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
         <target xml:lang="pbu" state="translated">دې تنظیمونو لپاره د فابریکې رمز {0} دی. که تاسو یې له یاده وباسئ تاسې هرکله د "{1}" او لپاره ګوګل کې لټون کولی شئ</target>
+        <alt-trans>
+          <target xml:lang="pbu">دې تنظیمونو لپاره د فابریکې رمز {0} دی. که تاسو یې له یاده وباسئ تاسې هرکله د "{1}" او "{2}" لپاره ګوګل کې لټون کولی شئ</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">دې تنظیمونو لپاره د فابریکې رمز {0}‏ دی. که تاسو یې له یاده وباسئ تاسې هرکله د "‎{1}‏"‏ او "‎{2}‏"‏ لپاره ګوګل کی لټون کولی شئ.</target>
         </alt-trans>
@@ -708,17 +714,17 @@
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
-        <target xml:lang="pbu" state="translated">تنظیمونو ته د ننوتلو لپاره د فابریکي رمز ته اړتیا لري.</target>
+        <target xml:lang="pbu" state="final">تنظیمونو ته د ننوتلو لپاره د فابریکي رمز ته اړتیا لري.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle" approved="yes">
         <source xml:lang="en">Settings Protection</source>
         <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
-        <target xml:lang="pbu" state="translated">د تنظیمونو ساتنه</target>
+        <target xml:lang="pbu" state="final">د تنظیمونو ساتنه</target>
       </trans-unit>
       <trans-unit id="ShowReleaseNotesDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
-        <target xml:lang="pbu" state="translated">خپاره شوي نوټونه</target>
+        <target xml:lang="pbu" state="final">خپاره شوي نوټونه</target>
       </trans-unit>
       <trans-unit id="VoiceIdentifierView.betterLabel1">
         <source xml:lang="en">In applications which support this option, fields with this input system will be able to play and record voice.</source>
@@ -729,27 +735,27 @@
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="pbu" state="translated">&amp;لیکبڼه:</target>
+        <target xml:lang="pbu" state="final">&amp;لیکبڼه:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.FontNotAvailable" approved="yes">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="pbu" state="translated">(انتخاب شوی لیکبڼه په دې کمپیوټر کې نشته. عمومی کاره وئ.)</target>
+        <target xml:lang="pbu" state="final">(انتخاب شوی لیکبڼه په دې کمپیوټر کې نشته. عمومی کاره وئ.)</target>
       </trans-unit>
       <trans-unit id="WSFontControl.RightToLeftWS" approved="yes">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="pbu" state="translated">دا د &amp;ښي څخه کیڼ لوري ته د لیکلو سیسټم دی.</target>
+        <target xml:lang="pbu" state="final">دا د &amp;ښي څخه کیڼ لوري ته د لیکلو سیسټم دی.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
-        <target xml:lang="pbu" state="translated">&amp;اندازه:</target>
+        <target xml:lang="pbu" state="final">&amp;اندازه:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.TestArea" approved="yes">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="pbu" state="translated">&amp;د ازمایښت ساحه:</target>
+        <target xml:lang="pbu" state="final">&amp;د ازمایښت ساحه:</target>
         <alt-trans>
           <target xml:lang="pbu">&amp;د ټسټ ساحه:</target>
         </alt-trans>
@@ -787,37 +793,37 @@
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <note>ID: WSKeyboardControl.KeyboardNotListed</note>
-        <target xml:lang="pbu" state="translated">کوم کیبورډ چې تاسې ورته اړتیا لرئ لېست شوی نه وي، لاندې مناسب لینک کیکاږئ چې تنظیم یې کړئ</target>
+        <target xml:lang="pbu" state="final">کوم کیبورډ چې تاسې ورته اړتیا لرئ لېست شوی نه وي، لاندې مناسب لینک کیکاږئ چې تنظیم یې کړئ</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardSettingsLink" approved="yes">
         <source xml:lang="en">Windows keyboard settings</source>
         <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
-        <target xml:lang="pbu" state="translated">د وینډوز کیبورډ صفي تنظیمونه</target>
+        <target xml:lang="pbu" state="final">د وینډوز کیبورډ صفي تنظیمونه</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsAvailable" approved="yes">
         <source xml:lang="en">Available keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
-        <target xml:lang="pbu" state="translated">شته کیبورډونه</target>
+        <target xml:lang="pbu" state="final">شته کیبورډونه</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed" approved="yes">
         <source xml:lang="en">Previously used keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
-        <target xml:lang="pbu" state="translated">مخکې استعمال شوي کیبورډونه</target>
+        <target xml:lang="pbu" state="final">مخکې استعمال شوي کیبورډونه</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanConfigurationLink" approved="yes">
         <source xml:lang="en">Keyman Configuration</source>
         <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
-        <target xml:lang="pbu" state="translated">د کیمن تڼۍ (Keyman Configuration)</target>
+        <target xml:lang="pbu" state="final">د کیمن تڼۍ (Keyman Configuration)</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanNotInstalled" approved="yes">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="pbu" state="translated">کیمن 5.0 يا وروستۍ یې نه ده نصب شوی.</target>
+        <target xml:lang="pbu" state="final">کیمن 5.0 يا وروستۍ یې نه ده نصب شوی.</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel" approved="yes">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="pbu" state="translated">&amp;کیبورډ او کوم ډول ‎{0}‏ خط یې انتخاب کړئ</target>
+        <target xml:lang="pbu" state="final">&amp;کیبورډ او کوم ډول ‎{0}‏ خط یې انتخاب کړئ</target>
         <alt-trans>
           <target xml:lang="pbu">&amp;کیبورډ او کوم ډول {‎0} خط یې انتخاب کړئ</target>
         </alt-trans>
@@ -828,32 +834,32 @@
       <trans-unit id="WSKeyboardControl.SetupKeyboards" approved="yes">
         <source xml:lang="en">Set up keyboards</source>
         <note>ID: WSKeyboardControl.SetupKeyboards</note>
-        <target xml:lang="pbu" state="translated">د کيبورډ تنظيم</target>
+        <target xml:lang="pbu" state="final">د کيبورډ تنظيم</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="pbu" state="translated">&amp;د ازموینې ساحه (دا ساحه د یو شي ټیپ کولو لپاره کاریږي چې خپل کیبورډ وازمویئ.)</target>
+        <target xml:lang="pbu" state="final">&amp;د ازموینې ساحه (دا ساحه د یو شي ټیپ کولو لپاره کاریږي چې خپل کیبورډ وازمویئ.)</target>
       </trans-unit>
       <trans-unit id="Warning" approved="yes">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
-        <target xml:lang="pbu" state="translated">خبرتیا</target>
+        <target xml:lang="pbu" state="final">خبرتیا</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption" approved="yes">
         <source xml:lang="en">Unable to connect to SLDR</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
-        <target xml:lang="pbu" state="translated">د‏ ‏SLDR‏ سره د نښلیدو توان نه لري</target>
+        <target xml:lang="pbu" state="final">د‏ ‏SLDR‏ سره د نښلیدو توان نه لري</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText" approved="yes">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
-        <target xml:lang="pbu" state="translated">کاریال نشي کولی چې ‏SIL‏ محلی معلوماتي انبار سره یو ځای شي چې د ژبې اړوند وروستي معلومات را وباسي. که تاسو دا لیکونکی سیسټم جوړ کړئ، اصلي تنظیمونه ښايي غلط وي یا یې تاریخ تیر وي. آیا تاسې مطمئن یاست چې غواړئ د لیکلو نوی سیسټم جوړ کړئ؟</target>
+        <target xml:lang="pbu" state="final">کاریال نشي کولی چې ‏SIL‏ محلی معلوماتي انبار سره یو ځای شي چې د ژبې اړوند وروستي معلومات را وباسي. که تاسو دا لیکونکی سیسټم جوړ کړئ، اصلي تنظیمونه ښايي غلط وي یا یې تاریخ تیر وي. آیا تاسې مطمئن یاست چې غواړئ د لیکلو نوی سیسټم جوړ کړئ؟</target>
       </trans-unit>
       <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard" approved="yes">
         <source xml:lang="en">[Missing] {0} ({1})</source>
         <note>ID: XkbKeyboardAdaptor.MissingKeyboard</note>
-        <target xml:lang="pbu" state="translated">{0} ({1})[بې درکه]</target>
+        <target xml:lang="pbu" state="final">{0} ({1})[بې درکه]</target>
       </trans-unit>
     </body>
   </file>

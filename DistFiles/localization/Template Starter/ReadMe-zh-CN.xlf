@@ -62,7 +62,7 @@ There are two ways people can use your template. The first way is to start new b
           <target xml:lang="zh-CN">如果要为模板添加说明文字，可以在模板的文件夹里放一个叫 <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g>的文档。这个文档一定要遵守 <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">“Markdown标准”</g>。如果还要加入各种语言的说明，把文档名称中的“en”改成代表相应语言的双字母简称。如把Bloom设置成显示法语标签，那么该文件应该是 <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g>。您也可以像我们在这里一样使用屏幕截图，请把所用图片保存在名为“ReadMeImage”的文件夹里，这样图片才能被如此引用：</target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="zh-CN">如果要为模板添加说明文字，可以在模板的文件夹里放一个叫 <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">的文档</g>。这个文档一定要遵守 <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">“Markdown标准”</g>。如果还要加入各种语言的说明，把文档名称中的“en”改成代表相应语言的双字母简称。如把Bloom设置成显示法语标签，那么该文件应该是 <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g>。您也可以像我们在这里一样使用屏幕截图，请把所用图片保存在名为“ReadMeImage”的文件夹里，这样图片才能被如此引用：</target>
+          <target xml:lang="zh-CN">如果要为模板添加说明文字，可以在模板的文件夹里放一个叫 <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">的文档。</g>这个文档一定要遵守 <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">“Markdown标准”</g>。如果还要加入各种语言的说明，把文档名称中的“en”改成代表相应语言的双字母简称。如把Bloom设置成显示法语标签，那么该文件应该是 <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g>。您也可以像我们在这里一样使用屏幕截图，请把所用图片保存在名为“ReadMeImage”的文件夹里，这样图片才能被如此引用：</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.thumbnailsshown" approved="yes">

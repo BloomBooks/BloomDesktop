@@ -6,6 +6,9 @@
         <source xml:lang="en">About the Picture Dictionary Template</source>
         <target xml:lang="bn" state="translated">ছবির অভিধান টেমপ্লেট বিষয়ক</target>
         <note>ID: picture.dictionary</note>
+        <alt-trans>
+          <target xml:lang="bn">ছবির অভিধান টেমপ্লেট সম্পর্কে </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="picture.dictionary.use" approved="yes">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>

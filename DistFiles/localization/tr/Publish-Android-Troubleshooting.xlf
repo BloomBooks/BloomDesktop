@@ -8,7 +8,7 @@
         <note>ID: android.publish.trouble.tips</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi">
-        <source xml:lang="en">Serve on WiFi Network</source>
+        <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="tr" state="translated">WiFi Ağı Üzerinden Servis Ver</target>
         <note>ID: android.publish.wifi</note>
       </trans-unit>
@@ -18,17 +18,17 @@
         <note>ID: android.publish.wifi.unseen</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive">
-        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</source>
+        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
         <target xml:lang="tr" state="translated">Bu yöntemi kullanırken, Bloom okuyucuyu çalıştırmanız gereklidir, menüsünü açın ve "WiFi'dan al" seçeneğini seçin.</target>
         <note>ID: android.publish.wifi.run.receive</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from">
-        <source xml:lang="en">Make sure the device is in the "Receive from WiFi" screen</source>
+        <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
         <target xml:lang="tr" state="translated">Cihazın ''Wifi'den al'' ekranında olduğundan emin olun</target>
         <note>ID: android.publish.wifi.receive.from</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.same.network">
-        <source xml:lang="en">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
+        <source xml:lang="en">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
         <target xml:lang="tr" state="translated">Bilgisayarınızla cihazınızın aynı WiFi ağında olduğundan emin olun. Wifi yönlendiricisine kablo ile bağlanmış olan bir bilgisayar hala kendi ağı içerisinde olabilir. Teknik olarak aynı WiFi alt ağında bulunan kablolu ağları bağlamak mümkündür ama Bloom ekibi bu kurulum için size destek sağlayamaz, üzgünüm.</target>
         <note>ID: android.publish.wifi.same.network</note>
       </trans-unit>
@@ -49,7 +49,7 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.consider.wifi">
         <source xml:lang="en">
-          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
+          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the Wi-Fi method even if you are only working with a single device.</g>
         </source>
         <target xml:lang="tr" state="translated"><g id="genid-1" ctype="x-html-p">Bu yöntemin pek çok cihaz da sorun oluşturduğunu bulduk, yani WiFi yöntemini tek bir cihaz bile kullanıyor olsanız bile değerlendirin.</g></target>
         <note>ID: android.publish.usb.consider.wifi</note>
