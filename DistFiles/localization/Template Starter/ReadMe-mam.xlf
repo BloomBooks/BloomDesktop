@@ -89,35 +89,53 @@ At kab'e tu'mel tu'n tajb'en kyu'n xjal qe ttenb'il u'jb'il b'ananmaj. Tnejil tu
           <target xml:lang="mam">Qokel tq'o'ne tu'jb'il txolb'ab'il aq'untl b'incha'nmaj</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.describeyours">
+      <trans-unit id="template.starter.describeyours" approved="yes">
         <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
-        <target xml:lang="mam" state="translated">Ax b'a'n tu'n tok jun poqb'al tib'aj ttxolb'ab'il aq'untl b'incha'nmaj, ikytzah njaw tsch'i'na ja'lo. Tu'n tb'ant jlu', q'o'n oka jun nak'ub'il aq'unb'il te txolyol a tb'i <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> tuj tkub'il jatuma ta' ttxolb'ab'il aq'untl b'incha'nmaj. Atzan te nak'ub'il aq'unb'il lu' ilx ti'j tu'n t-xi' tlajo'n aj q'ama'nmaj <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Tu'n t-xi tq'o'n qe chikb'ab'itz kyuj qe juntl yol, ilx ti'j tu'n tkub' tb'inchan ila' tu'mel ti'j nak'ub'il aq'unb'il lu' nb'aj tch'ixpu'n "en" nchok te kab'e techyol te techil ju'njun qe yol. Ikytzan jlu' <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> tzajal tyek'an qa tok ti'j Bloom ttxolil aq'unb'il xk'utz'ib' tu'n tzaj tyek'an qe techil tuj tyol mos. Ax b'a'n tokx tuj txolil tu'n tel tilb'ilal twitz xk'utz'ib', ikytzan qa ite' tuj u'jb'il lu'. Q'onku'xa kyaqil qe tilb'ilal n-najb'en tu'na tuj jun tkub'il a tb'i "ReadMeImages", oktzan tex poqb'al tib'aj qe tilb'ilal, k'elex ikytzan jlu':</target>
+        <target xml:lang="mam" state="translated">Ex b'a'n tu'n tok jun pakb'al tib'aj ttxolb'ab'il aq'untl b'incha'n, ikytzan njaw tsch'i'na ja'lo. Tu'n tb'ant lu', q'o'nka jun nuk'b'il aq'unb'il te txolyol at tb'i <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> tuj tkub'il jatumal ta'ya ttxolb'ab'il aq'untl b'incha'n. Atzan te nuk'b'il aq'unb'il lu' ilti'j tu'n t-xi' tlajo'n aj tq'ama'n <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Tu'n t-xi' tq'o'n qe' chikb'ab'il kyuj qe juntl yol, ilti'j tu'n tkub' tb'inchan ila' tumel ti'j nuk'b'il aq'unb'il lu' nb'aj tch'ixpu'n "en" nchi ok te kab' techyol te techil junjun yol. Ikytzan lu' <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> ktzajal tyek'an qa tok ti'j Bloom ttxolil aq'unb'il xk'utz'ib' tu'n ttzaj tyek'an qe techil tuj tyol mos. Ex b'a'n tokx tuj txolil tu'n tel tilb'ilal twitz xk'utz'ib', ikytzan qa ite' tuj u'jb'il lu'. Q'onku'xa kyaqil qe tilb'ilal nchi ajb'en tu'na tuj jun tkub'il a tb'i "ReadMeImages", ajtzan tex poqb'al tib'aj qe tilb'ilal, k'elex ikytzan lu':</target>
         <note>ID: template.starter.describeyours</note>
+        <alt-trans>
+          <target xml:lang="mam">Ax b'a'n tu'n tok jun poqb'al tib'aj ttxolb'ab'il aq'untl b'incha'nmaj, ikytzah njaw tsch'i'na ja'lo. Tu'n tb'ant jlu', q'o'n oka jun nak'ub'il aq'unb'il te txolyol a tb'i <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> tuj tkub'il jatuma ta' ttxolb'ab'il aq'untl b'incha'nmaj. Atzan te nak'ub'il aq'unb'il lu' ilx ti'j tu'n t-xi' tlajo'n aj q'ama'nmaj <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Tu'n t-xi tq'o'n qe chikb'ab'itz kyuj qe juntl yol, ilx ti'j tu'n tkub' tb'inchan ila' tu'mel ti'j nak'ub'il aq'unb'il lu' nb'aj tch'ixpu'n "en" nchok te kab'e techyol te techil ju'njun qe yol. Ikytzan jlu' <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> tzajal tyek'an qa tok ti'j Bloom ttxolil aq'unb'il xk'utz'ib' tu'n tzaj tyek'an qe techil tuj tyol mos. Ax b'a'n tokx tuj txolil tu'n tel tilb'ilal twitz xk'utz'ib', ikytzan qa ite' tuj u'jb'il lu'. Q'onku'xa kyaqil qe tilb'ilal n-najb'en tu'na tuj jun tkub'il a tb'i "ReadMeImages", oktzan tex poqb'al tib'aj qe tilb'ilal, k'elex ikytzan jlu':</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.thumbnailsshown">
+      <trans-unit id="template.starter.thumbnailsshown" approved="yes">
         <source xml:lang="en">When the Add Page dialog box shows your template pages, it will show a thumbnail:</source>
-        <target xml:lang="mam" state="translated">Oktzan a te swejin te yolb'il "Tz'aqsil t-xaq" tzajil tyek'in qe t-xaq te txolb'ab'il aq'untl b'incha'nmaj, ax tzajil tyek'in jun ni tal ch'in:</target>
+        <target xml:lang="mam" state="translated">Ajtzan tok "Tz'aqsil t-xaq" aju swejlaj', yek'inxa t-xaq te txolb'ab'il aq'untl b'incha'n, ax ktzajil tyek'ina jun tnechil:</target>
         <note>ID: template.starter.thumbnailsshown</note>
+        <alt-trans>
+          <target xml:lang="mam">Oktzan a te swejin te yolb'il "Tz'aqsil t-xaq" tzajil tyek'in qe t-xaq te txolb'ab'il aq'untl b'incha'nmaj, ax tzajil tyek'in jun ni tal ch'in:</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.share">
+      <trans-unit id="template.starter.share" approved="yes">
         <source xml:lang="en">Share Your Template</source>
-        <target xml:lang="mam" state="translated">Sipanxa txolb'ab'il aq'untl b'incha'nmaj</target>
+        <target xml:lang="mam" state="translated">Sipanxa txolb'ab'il aq'untl</target>
         <note>ID: template.starter.share</note>
+        <alt-trans>
+          <target xml:lang="mam">Sipanxa txolb'ab'il aq'untl b'incha'nmaj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.share.publish">
+      <trans-unit id="template.starter.share.publish" approved="yes">
         <source xml:lang="en">Remember that Bloom is about planting seeds, about sharing. So plan to share your template on the BloomLibrary for people around the world to find. This takes just a few clicks in the Publish Tab.</source>
-        <target xml:lang="mam" state="translated">Min kux naj ti'j tk'u'ja qa tuj Bloom nchi kux awet qe iyaj ex nchex sipit. B'a'n tu'n tkub' txi'mine tu'n tex tsipene txolb'ab'il aq'untl b'incha'nmaj tuj Jau'jb'il te Bloom tu'ntzan kyaqil qe xjal twitz tx'otx' b'a'n tkanet kyu'nqe. O'kx tu'n tkub' b'inchet ju'nqe clics tib'aj xi'witz "k'elex poqb'al".</target>
+        <target xml:lang="mam" state="translated">N'anku tu'na qa aju Bloom nchi ku'x awet qe iyaj ex nchex sipit. B'a'n tu'n tkub' t-ximina tu'n tex tsipina txolb'ab'il aq'untl b'incha'nqe' tuj Ja u'jb'il te Bloom tu'ntzan kykyaqil xjal twitz tx'otx' b'a'n tkanet kyu'nqe'. O'kx tu'n tkub' kyb'inchan jun clics tib'aj xi'witz "k'elex pakb'et".</target>
         <note>ID: template.starter.share.publish</note>
+        <alt-trans>
+          <target xml:lang="mam">Min kux naj ti'j tk'u'ja qa tuj Bloom nchi kux awet qe iyaj ex nchex sipit. B'a'n tu'n tkub' txi'mine tu'n tex tsipene txolb'ab'il aq'untl b'incha'nmaj tuj Jau'jb'il te Bloom tu'ntzan kyaqil qe xjal twitz tx'otx' b'a'n tkanet kyu'nqe. O'kx tu'n tkub' b'inchet ju'nqe clics tib'aj xi'witz "k'elex poqb'al".</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.share.bloompack">
+      <trans-unit id="template.starter.share.bloompack" approved="yes">
         <source xml:lang="en">For local colleagues, an easy way to distribute your template is via a Bloom Pack. In the collections tab, right-click on your template's thumbnail. Choose 'Make Bloom Pack'. Save that somewhere, for example to a USB Key. Then take it to another computer, double click on the file you made, and your template will be added to the "Sources for New Books" on that computer.</source>
-        <target xml:lang="mam" state="translated">Kye qe quk'ila te ax, jun tu'mel q'uyin tu'n tex sipet ttxolb'ab'il aq'untl b'incha'nmaj atzan tuj jun tenej Bloom. Tuj xi'witz te k'loj te ila' wiq, b'inchanxa clic tuj manq'ab'aj tib'aj ni tal ch'in txolb'ab'il aq'untl b'incha'nmaj. Sak'onqtza 'B'inchal jun tenej te Bloom'. K'u'nxa tuj jun tenb'il, ikytzan jun makb'il aq'unb'il xk'utz'ib' USB. Q'o'n oka ti'j juntl xk'utz'ib', b'inchanxa cab'e clic tib'aj nak'ub'il aq'unb'il o' t-xi' tb'incha'ne, atzan ttxolb'ab'ila aq'untb'ila b'incha'nmaj tz'aqsetil ti'j qe "Tloq'b'il kye ak'aj u'jb'il" tuj xk'utz'ib'.</target>
+        <target xml:lang="mam" state="translated">Kyeqe' quk'ilx, jun tumel q'uyin tu'n tex sipet ttxolb'ab'il aq'untl b'incha'n atzan tuj jun tnej Bloom. Tuj xi'witz te k'loj te ila' wiq, b'inchanxa clic tuj manq'ab'aj tib'aj tnechil txolb'ab'il aq'untl b'incha'n. Sak'onktza 'B'inchal jun tnej te Bloom'. K'u'nxa tuj jun tenb'il, ikytzan jun makb'il aq'unb'il xk'utz'ib' USB. Q'o'nka ti'j juntl xk'utz'ib', b'inchanxa kab' clic tib'aj nuk'b'il aq'unb'il o' t-xi' tb'incha'na, atzan ttxolb'ab'ila aq'untb'ila b'incha'n tz'aqsetil kyi'j "Tloq'b'il kye ak'aj u'jb'il" tuj xk'utz'ib'.</target>
         <note>ID: template.starter.share.bloompack</note>
+        <alt-trans>
+          <target xml:lang="mam">Kye qe quk'ila te ax, jun tu'mel q'uyin tu'n tex sipet ttxolb'ab'il aq'untl b'incha'nmaj atzan tuj jun tenej Bloom. Tuj xi'witz te k'loj te ila' wiq, b'inchanxa clic tuj manq'ab'aj tib'aj ni tal ch'in txolb'ab'il aq'untl b'incha'nmaj. Sak'onqtza 'B'inchal jun tenej te Bloom'. K'u'nxa tuj jun tenb'il, ikytzan jun makb'il aq'unb'il xk'utz'ib' USB. Q'o'n oka ti'j juntl xk'utz'ib', b'inchanxa cab'e clic tib'aj nak'ub'il aq'unb'il o' t-xi' tb'incha'ne, atzan ttxolb'ab'ila aq'untb'ila b'incha'nmaj tz'aqsetil ti'j qe "Tloq'b'il kye ak'aj u'jb'il" tuj xk'utz'ib'.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.notes">
+      <trans-unit id="template.starter.notes" approved="yes">
         <source xml:lang="en">Notes</source>
-        <target xml:lang="mam" state="translated">Tz'ib'ajtz</target>
+        <target xml:lang="mam" state="translated">Tz'ib'anjtz</target>
         <note>ID: template.starter.notes</note>
+        <alt-trans>
+          <target xml:lang="mam">Tz'ib'ajtz</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.nothingautomatic">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
