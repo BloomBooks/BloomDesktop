@@ -34,15 +34,21 @@
           <target xml:lang="mam">Tu'n tb'ant tza'n kyajb'ena qe u'jb'il tuj kolin tuj Bloom, b'a'n tu'n tb'ant jlu':</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.learn.videos">
+      <trans-unit id="leveled.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="mam" state="translated">Ka'yinxa <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">qe keyb'il tib'aj aq'unab'itz Bloom lu'</g>.</target>
+        <target xml:lang="mam" state="translated">Ka'yinxa <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">qe' ke'yb'il tib'aj aq'unab'il Bloom lu'</g>.</target>
         <note>ID: leveled.learn.videos</note>
+        <alt-trans>
+          <target xml:lang="mam">Ka'yinxa <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">qe keyb'il tib'aj aq'unab'itz Bloom lu'</g>.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.learn.helpindex">
+      <trans-unit id="leveled.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</source>
-        <target xml:lang="mam" state="translated">Txi'ya tuj menú te onb'il, sak'onqtza 'Onb'il' ex jyonxa "U'jb'il tuj kolin'" tuj txolb'ab'il tb'i nab'il.</target>
+        <target xml:lang="mam" state="translated">Txi'ya tuj k'ol te onb'il, sak'onktza 'Onb'il' ex jyonxa "U'jb'il tuj kolin'" tuj txolb'ab'il tb'i nab'il.</target>
         <note>ID: leveled.learn.helpindex</note>
+        <alt-trans>
+          <target xml:lang="mam">Txi'ya tuj menú te onb'il, sak'onqtza 'Onb'il' ex jyonxa "U'jb'il tuj kolin'" tuj txolb'ab'il tb'i nab'il.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.learn.helpmenu">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
