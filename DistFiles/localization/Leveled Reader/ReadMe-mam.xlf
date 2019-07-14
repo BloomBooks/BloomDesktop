@@ -50,15 +50,21 @@
           <target xml:lang="mam">Txi'ya tuj menú te onb'il, sak'onqtza 'Onb'il' ex jyonxa "U'jb'il tuj kolin'" tuj txolb'ab'il tb'i nab'il.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.learn.helpmenu">
+      <trans-unit id="leveled.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="mam" state="translated">Txi'ya tuj menú te onb'il, sak'onqtza: "N-b'inchet ttenb'il u'jb'il b'ananmaj".</target>
+        <target xml:lang="mam" state="translated">Txi'ya tuj k'ol te onb'il, sak'onktza: "Nb'inchet ttenb'il u'jb'il".</target>
         <note>ID: leveled.learn.helpmenu</note>
+        <alt-trans>
+          <target xml:lang="mam">Txi'ya tuj menú te onb'il, sak'onqtza: "N-b'inchet ttenb'il u'jb'il b'ananmaj".</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.vs.decodable">
+      <trans-unit id="leveled.vs.decodable" approved="yes">
         <source xml:lang="en">Relationship to Decodable Readers</source>
-        <target xml:lang="mam" state="translated">T-xilemb'il kyuk' qe u'jb'il n-nel qniky'</target>
+        <target xml:lang="mam" state="translated">T-xilen kyuk'il u'jb'il in el qniky'</target>
         <note>ID: leveled.vs.decodable</note>
+        <alt-trans>
+          <target xml:lang="mam">T-xilemb'il kyuk' qe u'jb'il n-nel qniky'</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.and.decodable">
         <source xml:lang="en">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</source>
