@@ -2,10 +2,13 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="mam">
     <body>
-      <trans-unit id="leveled.definition">
+      <trans-unit id="leveled.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
-        <target xml:lang="mam" state="translated">Jun <g id="genid-1" ctype="x-html-strong">U'jb'il tuj kolin</g>atazan jun u'jb'il tz'ib'anmaj te jun xnaq'tzanjtz ma nipan nb'ant sch'in. A qe kol nya' ma' tuj ntzaj kyma'n nik'pun tnuqil qe yol, tnuqil txolyol, txqantl. Ax ikyx ntzaj tma'n alkye tu'mel yek'b'il b'a'n tajb'en, saqlajpakab', onb'il te b'inchil qe tilb'ilal ex tb'i nab'il.</target>
+        <target xml:lang="mam" state="translated">Jun <g id="genid-1" ctype="x-html-strong">U'jb'il tuj kolin</g>atzan jun u'jb'il tz'ib'an te jun xnaq'tzanjtz ma nipan nb'ant sch'in. Aqe kol mya' ma' tuj ntzaj kyma'n niky'pun kynuqil yol, tnuqil txolyol, txqantl. Ex ntzaj tma'n alkye tumel yek'b'il b'a'n tajb'en, saqlajpakab', onb'il te b'inchil qe tilb'ilal ex tb'i nab'il.</target>
         <note>ID: leveled.definition</note>
+        <alt-trans>
+          <target xml:lang="mam">Jun <g id="genid-1" ctype="x-html-strong">U'jb'il tuj kolin</g>atazan jun u'jb'il tz'ib'anmaj te jun xnaq'tzanjtz ma nipan nb'ant sch'in. A qe kol nya' ma' tuj ntzaj kyma'n nik'pun tnuqil qe yol, tnuqil txolyol, txqantl. Ax ikyx ntzaj tma'n alkye tu'mel yek'b'il b'a'n tajb'en, saqlajpakab', onb'il te b'inchil qe tilb'ilal ex tb'i nab'il.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.levels">
         <source xml:lang="en">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
