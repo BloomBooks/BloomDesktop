@@ -2,10 +2,13 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="mam">
     <body>
-      <trans-unit id="decodable.definition">
+      <trans-unit id="decodable.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
-        <target xml:lang="mam" state="translated">Jun <g id="genid-1" ctype="x-html-strong">U'jb'il n-nel qniky'</g> jun u'jb'il lu' nim no'k tnab'il tu'n tajb'en qe techl Tz'ib' ex qe yol tu'ntzan jiqnx tz'el tniky' alkye kjawl tsch'i'n jun ak'aj ajsch'il. Noq alkyex jun twitz yol at tuj 5 a 10 <g id="genid-2" ctype="x-html-em">kol ma' tuj n-nel qniky'</g> tu'ntzan tlaj nchel wen qe ajxnaq'tzanjtz.</target>
+        <target xml:lang="mam" state="translated">Jun <g id="genid-1" ctype="x-html-strong">U'jb'il in el qniky'</g> jun u'jb'il lu' nim in ok tnab'il tu'n tajb'en qe techtz'ib' ex qe' yol tu'ntzan jiqnx tz'el tniky' alkye kjawl tsch'in jun ak'aj ajsch'il. Noq alkyex jun twitz yol at tuj 5 a 10 <g id="genid-2" ctype="x-html-em">kol ma' tuj in el qniky'</g> tu'ntzan tlaj nchi el b'a'n qe' ajxnaq'tzanjtz.</target>
         <note>ID: decodable.definition</note>
+        <alt-trans>
+          <target xml:lang="mam">Jun <g id="genid-1" ctype="x-html-strong">U'jb'il n-nel qniky'</g> jun u'jb'il lu' nim no'k tnab'il tu'n tajb'en qe techl Tz'ib' ex qe yol tu'ntzan jiqnx tz'el tniky' alkye kjawl tsch'i'n jun ak'aj ajsch'il. Noq alkyex jun twitz yol at tuj 5 a 10 <g id="genid-2" ctype="x-html-em">kol ma' tuj n-nel qniky'</g> tu'ntzan tlaj nchel wen qe ajxnaq'tzanjtz.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.stages">
         <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
