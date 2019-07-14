@@ -2,10 +2,13 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="mam">
     <body>
-      <trans-unit id="bigbook.title">
+      <trans-unit id="bigbook.title" approved="yes">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="mam" state="translated">Nab'il tib'aj qe matij u'jb'il</target>
+        <target xml:lang="mam" state="translated">Nab'il kyib'aj matij u'jb'il</target>
         <note>ID: bigbook.title</note>
+        <alt-trans>
+          <target xml:lang="mam">Nab'il tib'aj qe matij u'jb'il</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.use">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
