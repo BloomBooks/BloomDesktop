@@ -85,10 +85,13 @@
           <target xml:lang="mam">Kol nya' ma' tuj te u'jb'il tuj kolin</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="decodable.stage">
+      <trans-unit id="decodable.stage" approved="yes">
         <source xml:lang="en">Decodable Stage</source>
-        <target xml:lang="mam" state="translated">Kol ma' tuj n-ne'l qniky'</target>
+        <target xml:lang="mam" state="translated">Kol in el qniky' ti'j</target>
         <note>ID: decodable.stage</note>
+        <alt-trans>
+          <target xml:lang="mam">Kol ma' tuj n-ne'l qniky'</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>
