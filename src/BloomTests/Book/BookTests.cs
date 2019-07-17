@@ -2741,6 +2741,81 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(concat(' ',@class,' '), ' ImageDescriptionEdit-style ')]", 4);
 		}
 
+		[Test]
+		public void IsPageBloomEnterpriseOnly_HasEnterpriseOnlyClass_True()
+		{
+			var xml = "<div class='bloom-page simple-comprehension-quiz enterprise-only bloom-interactive-page side-right A5Portrait bloom-monolingual'></div>";
+
+			XmlDocument doc = new XmlDocument();
+			doc.LoadXml(xml);
+			XmlElement page = doc.DocumentElement;
+			Assert.True(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
+		}
+
+		[Test]
+		public void IsPageBloomEnterpriseOnly_HasVideo_True()
+		{
+			string xml = @"
+	<div class=""bloom-page numberedPage customPage side-left A5Portrait bloom-monolingual"" data-page="""" id=""4854bc4a-0046-426e-9e19-596773582d23"" data-pagelineage=""8bedcdf8-3ad6-4967-b027-6c186436572f"" data-page-number=""2"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Just Video"" lang=""en"">
+            Just Video
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""marginBox"">
+            <div class=""split-pane-component-inner"">
+                <div class=""box-header-off bloom-translationGroup"">
+                    Processing
+
+                    <div data-languagetipcontent=""English"" class=""bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" contenteditable=""true"" lang=""en"">
+                        <p></p>
+                    </div>
+                </div>
+
+                <div class=""bloom-videoContainer bloom-noVideoSelected bloom-leadingElement bloom-selected"">
+                    <video>
+                    <source src=""video/8e7297fd-8ecf-41a9-b82a-e7020a1314ca.mp4#t=0.0,1.6""></source></video>
+                </div>
+            </div>
+        </div>
+    </div>";
+
+			XmlDocument doc = new XmlDocument();
+			doc.LoadXml(xml);
+			XmlElement page = doc.DocumentElement;
+			Assert.True(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
+		}
+
+		[Test]
+		public void IsPageBloomEnterpriseOnly_NoEnterpriseOnlyItems_False()
+		{
+			string xml = @"
+	<div class=""bloom-page numberedPage customPage side-left A5Portrait bloom-monolingual"" data-page="""" id=""4854bc4a-0046-426e-9e19-596773582d23"" data-pagelineage=""8bedcdf8-3ad6-4967-b027-6c186436572f"" data-page-number=""2"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Just Video"" lang=""en"">
+            Just Video
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""marginBox"">
+            <div class=""split-pane-component-inner"">
+                <div class=""box-header-off bloom-translationGroup"">
+                    Processing
+
+                    <div data-languagetipcontent=""English"" class=""bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" aria-label=""false"" role=""textbox"" spellcheck=""true"" tabindex=""0"" contenteditable=""true"" lang=""en"">
+                        <p></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>";
+
+			XmlDocument doc = new XmlDocument();
+			doc.LoadXml(xml);
+			XmlElement page = doc.DocumentElement;
+			Assert.False(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
+		}
 
 #if UserControlledTemplate
 		[Test]

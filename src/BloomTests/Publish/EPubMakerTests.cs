@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Bloom.Book;
+﻿using Bloom.Book;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
 using SIL.Xml;
@@ -19,8 +15,7 @@ namespace BloomTests.Publish
 			string inputImageHtml = "<img class=\"licenseImage\" src=\"a.png\" alt=\"This picture, a.png, is missing or was loading too slowly.\" />";
 			var htmlDom = new HtmlDom($"<html><body><div data-book=\"outside-back-cover-branding-bottom-html\">{inputImageHtml}</div></body></html>");
 
-			var obj = new PrivateObject(new Bloom.Publish.Epub.EpubMaker(null, null));
-			obj.Invoke("HandleImageDescriptions", htmlDom);
+			HandleImageDescriptions(htmlDom);
 
 			string expectedImageHtml = "<img class=\"licenseImage\" src=\"a.png\" alt=\"Image representing the license of this book\" role=\"presentation\" />";
 			Assert.That(htmlDom.InnerXml, Is.EqualTo($"<html><body><div data-book=\"outside-back-cover-branding-bottom-html\">{expectedImageHtml}</div></body></html>"));
@@ -32,8 +27,7 @@ namespace BloomTests.Publish
 			string inputImageHtml = "<img src=\"a.png\" alt=\"Logo of CLB\" />";
 			var htmlDom = new HtmlDom($"<html><body><div data-book=\"outside-back-cover-branding-bottom-html\">{inputImageHtml}</div></body></html>");
 
-			var obj = new PrivateObject(new Bloom.Publish.Epub.EpubMaker(null, null));
-			obj.Invoke("HandleImageDescriptions", htmlDom);
+			HandleImageDescriptions(htmlDom);
 
 			string expectedImageHtml = "<img src=\"a.png\" alt=\"Logo of CLB\" role=\"presentation\" />";
 			Assert.That(htmlDom.InnerXml, Is.EqualTo($"<html><body><div data-book=\"outside-back-cover-branding-bottom-html\">{expectedImageHtml}</div></body></html>"));
@@ -45,8 +39,7 @@ namespace BloomTests.Publish
 			string inputImageHtml = "<img src=\"a.png\" alt=\"This picture, a.png, is missing or was loading too slowly.\" />";
 			var htmlDom = new HtmlDom($"<html><body><div data-book=\"outside-back-cover-branding-bottom-html\">{inputImageHtml}</div></body></html>");
 
-			var obj = new PrivateObject(new Bloom.Publish.Epub.EpubMaker(null, null));
-			obj.Invoke("HandleImageDescriptions", htmlDom);
+			HandleImageDescriptions(htmlDom);
 
 			string expectedImageHtml = "<img src=\"a.png\" alt=\"Logo of the book sponsors\" role=\"presentation\" />";
 			Assert.That(htmlDom.InnerXml, Is.EqualTo($"<html><body><div data-book=\"outside-back-cover-branding-bottom-html\">{expectedImageHtml}</div></body></html>"));
@@ -58,8 +51,7 @@ namespace BloomTests.Publish
 			string inputImageHtml = "<img src=\"a.png\" />";
 			var htmlDom = new HtmlDom($"<html><body><div data-book=\"outside-back-cover-branding-bottom-html\">{inputImageHtml}</div></body></html>");
 
-			var obj = new PrivateObject(new Bloom.Publish.Epub.EpubMaker(null, null));
-			obj.Invoke("HandleImageDescriptions", htmlDom);
+			HandleImageDescriptions(htmlDom);
 
 			string expectedImageHtml = "<img src=\"a.png\" alt=\"Logo of the book sponsors\" role=\"presentation\" />";
 			Assert.That(htmlDom.InnerXml, Is.EqualTo($"<html><body><div data-book=\"outside-back-cover-branding-bottom-html\">{expectedImageHtml}</div></body></html>"));
@@ -82,8 +74,7 @@ namespace BloomTests.Publish
 	</div>
 </body></html>");
 
-			var obj = new PrivateObject(new Bloom.Publish.Epub.EpubMaker(null, null));
-			obj.Invoke("HandleImageDescriptions", htmlDom);
+			HandleImageDescriptions(htmlDom);
 
 			var imgNodes = htmlDom.SafeSelectNodes("//img[@src='a.png']");
 			Assert.That(imgNodes, Is.Not.Null);
@@ -113,8 +104,7 @@ namespace BloomTests.Publish
 	</div>
 </body></html>");
 
-			var obj = new PrivateObject(new Bloom.Publish.Epub.EpubMaker(null, null));
-			obj.Invoke("HandleImageDescriptions", htmlDom);
+			HandleImageDescriptions(htmlDom);
 
 			var imgNodes = htmlDom.SafeSelectNodes("//img[@src='a.png']");
 			Assert.That(imgNodes, Is.Not.Null);
@@ -145,9 +135,7 @@ namespace BloomTests.Publish
 	</div>
 </body></html>");
 
-			var obj = new PrivateObject(new Bloom.Publish.Epub.EpubMaker(null, null));
-			obj.SetFieldOrProperty("PublishImageDescriptions", BookInfo.HowToPublishImageDescriptions.OnPage);
-			obj.Invoke("HandleImageDescriptions", htmlDom);
+			HandleImageDescriptions(htmlDom, BookInfo.HowToPublishImageDescriptions.OnPage);
 
 			var divList = htmlDom.SafeSelectNodes("//div[@class='marginBox']/div");
 			Assert.That(divList, Is.Not.Null);
@@ -197,9 +185,7 @@ namespace BloomTests.Publish
 	</div>
 </body></html>");
 
-			var obj = new PrivateObject(new Bloom.Publish.Epub.EpubMaker(null, null));
-			obj.SetFieldOrProperty("PublishImageDescriptions", BookInfo.HowToPublishImageDescriptions.None);
-			obj.Invoke("HandleImageDescriptions", htmlDom);
+			HandleImageDescriptions(htmlDom);
 
 			var divList = htmlDom.SafeSelectNodes("//div[@class='marginBox']/div");
 			Assert.That(divList, Is.Not.Null);
@@ -230,6 +216,13 @@ namespace BloomTests.Publish
 			Assert.That(para.LocalName, Is.EqualTo("p"));
 			Assert.That(para.InnerText, Is.EqualTo("This is a test."));
 			Assert.That(para.InnerXml, Is.EqualTo("This is a test."));
+		}
+
+		private void HandleImageDescriptions(HtmlDom htmlDom, BookInfo.HowToPublishImageDescriptions howTo = BookInfo.HowToPublishImageDescriptions.None)
+		{
+			var obj = new PrivateObject(new Bloom.Publish.Epub.EpubMaker(null, null));
+			obj.SetFieldOrProperty("PublishImageDescriptions", howTo);
+			obj.Invoke("HandleImageDescriptions", htmlDom);
 		}
 	}
 }

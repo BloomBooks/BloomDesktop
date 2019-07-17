@@ -28,15 +28,16 @@ namespace Bloom.Publish.Android
 
 		public static void CreateBloomReaderBook(string outputPath, Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress)
 		{
-			CreateBloomReaderBook(outputPath, book.FolderPath, bookServer, backColor, progress);
+			CreateBloomReaderBook(outputPath, book.FolderPath, bookServer, backColor, progress, book.CollectionSettings.HaveEnterpriseFeatures);
 		}
 
 		// Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
-		public static void CreateBloomReaderBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor, WebSocketProgress progress, string tempFolderName = "BloomReaderExport")
+		public static void CreateBloomReaderBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
+			WebSocketProgress progress, bool hasEnterpriseFeatures, string tempFolderName = "BloomReaderExport")
 		{
 			using (var temp = new TemporaryFolder(tempFolderName))
 			{
-				CreateBloomReaderBook(outputPath, bookFolderPath, bookServer, backColor, progress, temp);
+				CreateBloomReaderBook(outputPath, bookFolderPath, bookServer, backColor, progress, temp, hasEnterpriseFeatures);
 			}
 		}
 
@@ -46,13 +47,15 @@ namespace Bloom.Publish.Android
 		/// <param name="outputPath">The path to create the zipped .bloomd output file at</param>
 		/// <param name="bookFolderPath">The path to the input book</param>
 		/// <param name="bookServer"></param>
-		/// <param name="backColor"></param> 
+		/// <param name="backColor"></param>
 		/// <param name="progress"></param>
 		/// <param name="tempFolder">A temporary folder. This function will not dispose of it when done</param>
+		/// <param name="hasEnterpriseFeatures"></param>
 		/// <returns>Path to the unzipped .bloomd</returns>
-		public static string CreateBloomReaderBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor, WebSocketProgress progress, TemporaryFolder tempFolder)
+		public static string CreateBloomReaderBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
+			WebSocketProgress progress, TemporaryFolder tempFolder, bool hasEnterpriseFeatures = false)
 		{
-			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, backColor, progress);
+			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, hasEnterpriseFeatures);
 			// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
 			// 64dp in Bloom Reader.
 
@@ -64,8 +67,8 @@ namespace Bloom.Publish.Android
 			return modifiedBook.FolderPath;
 		}
 
-		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer, TemporaryFolder temp, Color backColor,
-			WebSocketProgress progress)
+		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer, TemporaryFolder temp,
+			WebSocketProgress progress, bool hasEnterpriseFeatures)
 		{
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
 			// And bloom-player expects folder name to match html file name.
@@ -74,29 +77,8 @@ namespace Bloom.Publish.Android
 			Directory.CreateDirectory(modifiedBookFolderPath);
 			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer, modifiedBookFolderPath);
 
-			var jsonPath = Path.Combine(modifiedBookFolderPath, kQuestionFileName);
-			var questionPages = modifiedBook.RawDom.SafeSelectNodes(
-				"//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'questions')]");
-			var questions = new List<QuestionGroup>();
-			foreach (var page in questionPages.Cast<XmlElement>().ToArray())
-			{
-				ExtractQuestionGroups(page, questions);
-				page.ParentNode.RemoveChild(page);
-			}
-			var quizPages = modifiedBook.RawDom.SafeSelectNodes(
-				"//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'simple-comprehension-quiz')]");
-			foreach (var page in quizPages.Cast<XmlElement>().ToArray())
-				AddQuizQuestionGroup(page, questions);
-			var builder = new StringBuilder("[");
-			foreach (var question in questions)
-			{
-				if (builder.Length > 1)
-					builder.Append(",\n");
-				builder.Append(question.GetJson());
-
-			}
-			builder.Append("]");
-			File.WriteAllText(jsonPath, builder.ToString());
+			if (hasEnterpriseFeatures)
+				ProcessQuizzes(modifiedBookFolderPath, modifiedBook.RawDom);
 
 			// Right here, let's maintain the history of what the BloomdVersion signifies to a reader.
 			// Version 1 (as opposed to no BloomdVersion field): the bookFeatures property may be
@@ -109,11 +91,13 @@ namespace Bloom.Publish.Android
 			PublishHelper.SetBlindFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
 			PublishHelper.SetMotionFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
 
-			// Do this after making questions, as they satisfy the criteria for being 'blank'
+			// Do this after processing interactive pages, as they can satisfy the criteria for being 'blank'
 			using (var helper = new PublishHelper())
 			{
 				helper.ControlForInvoke = ControlForInvoke;
-				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook);
+				ISet<string> warningMessages = new HashSet<string>();
+				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook, warningMessages);
+				PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 			}
 			modifiedBook.RemoveBlankPages();
 
@@ -143,6 +127,34 @@ namespace Bloom.Publish.Android
 			modifiedBook.Save();
 
 			return modifiedBook;
+		}
+
+		private static void ProcessQuizzes(string bookFolderPath, XmlDocument bookDom)
+		{
+			var jsonPath = Path.Combine(bookFolderPath, kQuestionFileName);
+			var questionPages = bookDom.SafeSelectNodes(
+				"//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'questions')]");
+			var questions = new List<QuestionGroup>();
+			foreach (var page in questionPages.Cast<XmlElement>().ToArray())
+			{
+				ExtractQuestionGroups(page, questions);
+				page.ParentNode.RemoveChild(page);
+			}
+
+			var quizPages = bookDom.SafeSelectNodes(
+				"//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'simple-comprehension-quiz')]");
+			foreach (var page in quizPages.Cast<XmlElement>().ToArray())
+				AddQuizQuestionGroup(page, questions);
+			var builder = new StringBuilder("[");
+			foreach (var question in questions)
+			{
+				if (builder.Length > 1)
+					builder.Append(",\n");
+				builder.Append(question.GetJson());
+			}
+
+			builder.Append("]");
+			File.WriteAllText(jsonPath, builder.ToString());
 		}
 
 		// Given a page built using the new simple-comprehension-quiz template, generate JSON to produce the same

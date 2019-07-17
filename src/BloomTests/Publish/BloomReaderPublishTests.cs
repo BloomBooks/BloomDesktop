@@ -20,6 +20,7 @@ using Color = System.Drawing.Color;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
+using Bloom.Publish;
 
 namespace BloomTests.Publish
 {
@@ -384,19 +385,8 @@ namespace BloomTests.Publish
 					Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(entryContents));
 				});
 		}
-		[Test]
-		public void CompressBookForDevice_QuestionsPages_ConvertsToJson()
-		{
-			// This requires a real book file (which a mocked book usually doesn't have).
-			// Test data reflects a number of important conditions, including presence or absence of
-			// white space before and after asterisk, paragraphs broken up with br.
-			// As yet does not cover questions with no answers (currently will be excluded),
-			// questions with no right answer (currently will be included)
-			// questions with more than one right answer (currently will be included)
-			// questions with only one answer (currently will be included),
-			// since I'm not sure what the desired behavior is.
-			// If we want to test corner cases it might be easier to test BloomReaderFileMaker.ExtractQuestionGroups directly.
-			var bookHtml = @"<html>
+
+		const string kQuestionPagesHtml = @"<html>
 <head>
 	<meta charset='UTF-8'></meta>
 	<link rel='stylesheet' href='defaultLangStyles.css' type='text/css'></link>
@@ -536,15 +526,42 @@ namespace BloomTests.Publish
     </div>
 </body>
 </html>";
+		private void LegacyQuestionsPagesAssertionsOnResultingHtmlString(string html)
+		{
+			// The questions pages should be removed.
+			var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+			AssertThatXmlIn.Dom(htmlDom).HasNoMatchForXpath("//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'questions')]");
+		}
+		[Test]
+		public void CompressBookForDevice_NotBloomEnterprise_LegacyQuestionsPages_PagesAreRemoved()
+		{
+			TestHtmlAfterCompression(kQuestionPagesHtml,
+				assertionsOnResultingHtmlString: LegacyQuestionsPagesAssertionsOnResultingHtmlString,
 
-			TestHtmlAfterCompression(bookHtml,
-				assertionsOnResultingHtmlString:
-				html =>
+				assertionsOnZipArchive: paramObj =>
 				{
-					// The questions pages should be removed.
-					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
-					AssertThatXmlIn.Dom(htmlDom).HasNoMatchForXpath("//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'questions')]");
+					var zip = paramObj.ZipFile;
+					Assert.That(zip.FindEntry(BloomReaderFileMaker.kQuestionFileName, false), Is.EqualTo(-1));
 				},
+
+				branding: "Default"
+			);
+		}
+		[Test]
+		public void CompressBookForDevice_BloomEnterprise_LegacyQuestionsPages_ConvertsToJson()
+		{
+			// This requires a real book file (which a mocked book usually doesn't have).
+			// Test data reflects a number of important conditions, including presence or absence of
+			// white space before and after asterisk, paragraphs broken up with br.
+			// As yet does not cover questions with no answers (currently will be excluded),
+			// questions with no right answer (currently will be included)
+			// questions with more than one right answer (currently will be included)
+			// questions with only one answer (currently will be included),
+			// since I'm not sure what the desired behavior is.
+			// If we want to test corner cases it might be easier to test BloomReaderFileMaker.ExtractQuestionGroups directly.
+
+			TestHtmlAfterCompression(kQuestionPagesHtml,
+				assertionsOnResultingHtmlString: LegacyQuestionsPagesAssertionsOnResultingHtmlString,
 
 				assertionsOnZipArchive: paramObj =>
 				{
@@ -593,14 +610,13 @@ namespace BloomTests.Publish
 
 					// Make sure we don't miss the last answer of the last question.
 					Assert.That(groups[2].questions[3].answers[3].text, Is.EqualTo("Wherever"));
-				}
+				},
+
+				branding: "Test"
 			);
 		}
 
-		[Test]
-		public void CompressbookForDevice_ConvertsNewQuizPagesToJson_AndKeepsThem()
-		{
-			var bookHtml = @"<html>
+		private const string kNewQuizPageTestsHtml = @"<html>
 <head>
 	<meta charset='UTF-8'></meta>
 	<link rel='stylesheet' href='defaultLangStyles.css' type='text/css'></link>
@@ -610,7 +626,7 @@ namespace BloomTests.Publish
 	<div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
 		<div  contenteditable='true'>This page should make it into the book</div>
 	</div>
-    <div class='bloom-page simple-comprehension-quiz bloom-interactive-page Device16x9Portrait side-right bloom-monolingual' id='86574a93-a50f-42da-b88f-574ef790c481' data-page='' data-pagelineage='F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D' data-page-number='1' lang=''>
+    <div class='bloom-page simple-comprehension-quiz bloom-interactive-page enterprise-only Device16x9Portrait side-right bloom-monolingual' id='86574a93-a50f-42da-b88f-574ef790c481' data-page='' data-pagelineage='F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D' data-page-number='1' lang=''>
         <div class='pageLabel' lang='en'>
             Quiz Page
         </div>
@@ -644,12 +660,25 @@ namespace BloomTests.Publish
 						</div>
 					</div>
 				</div>
+				<script src='simpleComprehensionQuiz.js' />
             </div>
         </div>
     </div>
 </body>
 </html>";
-			TestHtmlAfterCompression(bookHtml,
+
+		private void NewQuizTestActionsOnFolderBeforeCompressing(string bookFolderPath)
+		{
+			// This file gets placed in the real book's folder after adding a quiz in edit mode, so we mock that process.
+			RobustFile.WriteAllText(Path.Combine(bookFolderPath, PublishHelper.kSimpleComprehensionQuizJs), "not the real file's contents");
+		} 
+
+		[Test]
+		public void CompressBookForDevice_BloomEnterprise_ConvertsNewQuizPagesToJson_AndKeepsThem()
+		{
+			TestHtmlAfterCompression(kNewQuizPageTestsHtml,
+				actionsOnFolderBeforeCompressing: NewQuizTestActionsOnFolderBeforeCompressing,
+
 				assertionsOnResultingHtmlString:
 				html =>
 				{
@@ -657,11 +686,14 @@ namespace BloomTests.Publish
 					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
 					AssertThatXmlIn.Dom(htmlDom)
 						.HasSpecifiedNumberOfMatchesForXpath("//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'simple-comprehension-quiz')]", 1);
+					AssertThatXmlIn.Dom(htmlDom)
+						.HasSpecifiedNumberOfMatchesForXpath($"//script[@src='{PublishHelper.kSimpleComprehensionQuizJs}']", 1);
 				},
 
 				assertionsOnZipArchive: paramObj =>
 				{
 					var zip = paramObj.ZipFile;
+					Assert.AreNotEqual(-1, zip.FindEntry(PublishHelper.kSimpleComprehensionQuizJs, false));
 					var json = GetEntryContents(zip, BloomReaderFileMaker.kQuestionFileName);
 					var groups = QuestionGroup.FromJson(json);
 					Assert.That(groups, Has.Length.EqualTo(1));
@@ -680,7 +712,37 @@ namespace BloomTests.Publish
 					Assert.That(answers[0].correct, Is.False);
 					Assert.That(answers[1].correct, Is.False);
 					Assert.That(answers[2].correct, Is.True);
-				}
+				},
+
+				branding: "Test"
+			);
+		}
+
+		[Test]
+		public void CompressBookForDevice_NotBloomEnterprise_QuizPagesAreRemovedAndQuestionsFileNotGenerated()
+		{
+			TestHtmlAfterCompression(kNewQuizPageTestsHtml,
+				actionsOnFolderBeforeCompressing: NewQuizTestActionsOnFolderBeforeCompressing,
+
+				assertionsOnResultingHtmlString:
+				html =>
+				{
+					// The quiz pages should be removed.
+					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+					AssertThatXmlIn.Dom(htmlDom)
+						.HasNoMatchForXpath("//html/body/div[contains(@class, 'bloom-page') and contains(@class, 'simple-comprehension-quiz')]");
+					AssertThatXmlIn.Dom(htmlDom)
+						.HasNoMatchForXpath($"//script[@src='{PublishHelper.kSimpleComprehensionQuizJs}']");
+				},
+
+				assertionsOnZipArchive: paramObj =>
+				{
+					var zip = paramObj.ZipFile;
+					Assert.AreEqual(-1, zip.FindEntry(BloomReaderFileMaker.kQuestionFileName, false));
+					Assert.AreEqual(-1, zip.FindEntry(PublishHelper.kSimpleComprehensionQuizJs, false));
+				},
+
+				branding: "Default"
 			);
 		}
 
@@ -736,13 +798,8 @@ namespace BloomTests.Publish
 			);
 		}
 
-		private const string _pathToTestVideos = "src/BloomTests/videos";
-
-		[Test]
-		public void CompressBookForDevice_HandlesVideosAndModifiesSrcAttribute()
-		{
-			// This requires a real book file (which a mocked book usually doesn't have).
-			var bookHtml = @"<html>
+		private const string kPathToTestVideos = "src/BloomTests/videos";
+		private const string kVideoTestHtml = @"<html>
 					<head>
 						<meta charset='UTF-8'></meta>
 						<link rel='stylesheet' href='Basic Book.css' type='text/css'></link>
@@ -773,17 +830,23 @@ namespace BloomTests.Publish
 					</body>
 				</html>";
 
-			TestHtmlAfterCompression(bookHtml,
-				actionsOnFolderBeforeCompressing: folderPath =>
-				{
-					// These video files have to be real.
-					var videoFolderPath = Path.Combine(folderPath, "video");
-					Directory.CreateDirectory(videoFolderPath);
-					RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestVideos, "Crow.mp4"),
-						Path.Combine(videoFolderPath, "Crow.mp4"));
-					RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestVideos, "Five count.mp4"),
-						Path.Combine(videoFolderPath, "Five count.mp4"));
-				},
+		private void VideoTestActionsOnFolderBeforeCompressing(string folderPath)
+		{
+			// These video files have to be real.
+			var videoFolderPath = Path.Combine(folderPath, "video");
+			Directory.CreateDirectory(videoFolderPath);
+			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(kPathToTestVideos, "Crow.mp4"),
+				Path.Combine(videoFolderPath, "Crow.mp4"));
+			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(kPathToTestVideos, "Five count.mp4"),
+				Path.Combine(videoFolderPath, "Five count.mp4"));
+		}
+
+		[Test]
+		public void CompressBookForDevice_BloomEnterprise_HandlesVideosAndModifiesSrcAttribute()
+		{
+			// This requires a real book file (which a mocked book usually doesn't have).
+			TestHtmlAfterCompression(kVideoTestHtml,
+				actionsOnFolderBeforeCompressing: VideoTestActionsOnFolderBeforeCompressing,
 				assertionsOnZipArchive: paramObj =>
 				{
 					const int originalCrowSize = 330000; // roughly equivalent to 324Kb
@@ -811,7 +874,41 @@ namespace BloomTests.Publish
 					AssertThatXmlIn.Dom(htmlDom)
 						.HasSpecifiedNumberOfMatchesForXpath(
 							"//source[@src='video/Five%20count.mp4']", 1);
-				}
+				},
+
+				branding: "Test"
+			);
+		}
+
+		[Test]
+		public void CompressBookForDevice_NotBloomEnterprise_RemovesVideoPages()
+		{
+			// This requires a real book file (which a mocked book usually doesn't have).
+			TestHtmlAfterCompression(kVideoTestHtml,
+				actionsOnFolderBeforeCompressing: VideoTestActionsOnFolderBeforeCompressing,
+				assertionsOnZipArchive: paramObj =>
+				{
+					var zip = paramObj.ZipFile;
+					var zipEnumerator = zip.GetEnumerator();
+					while (zipEnumerator.MoveNext())
+					{
+						var zipEntry = zipEnumerator.Current as ZipEntry;
+						if (zipEntry == null)
+							Assert.Fail();
+						if (zipEntry.Name.Contains("video"))
+							Assert.Fail("Expected NOT to find video folder or files");
+					}
+					var meta = BookMetaData.FromString(GetEntryContents(zip, "meta.json"));
+					Assert.That(meta.Feature_SignLanguage, Is.False);
+
+				},
+				assertionsOnResultingHtmlString: html =>
+				{
+					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+					AssertThatXmlIn.Dom(htmlDom).HasNoMatchForXpath("//video");
+				},
+
+				branding: "Default"
 			);
 		}
 
@@ -1151,12 +1248,18 @@ namespace BloomTests.Publish
 			internal string Html { get; }
 		}
 
-		private void TestHtmlAfterCompression(string originalBookHtml, Action<string> actionsOnFolderBeforeCompressing = null,
+		private void TestHtmlAfterCompression(string originalBookHtml,
+			Action<string> actionsOnFolderBeforeCompressing = null,
 			Action<string> assertionsOnResultingHtmlString = null,
 			Action<ZipHtmlObj> assertionsOnZipArchive = null,
-			Action<ZipFile> assertionsOnRepeat = null)
+			Action<ZipFile> assertionsOnRepeat = null,
+			string branding = "Default")
 		{
 			var testBook = CreateBookWithPhysicalFile(originalBookHtml, bringBookUpToDate: true);
+
+			// Branding must be something other than "Default" or all the Enterprise-only features get stripped
+			testBook.CollectionSettings.BrandingProjectKey = branding;
+
 			var bookFileName = Path.GetFileName(testBook.GetPathHtmlFile());
 
 			actionsOnFolderBeforeCompressing?.Invoke(testBook.FolderPath);
