@@ -3271,6 +3271,12 @@ namespace Bloom.Book
 				doomedPage.ParentNode.RemoveChild(doomedPage);
 			}
 		}
+
+		public static bool IsPageBloomEnterpriseOnly(XmlElement page)
+		{
+			return page.GetAttribute("class").Contains("enterprise-only") ||
+				   page.SafeSelectNodes(".//video").Count > 0;
+		}
 	}
 }
 

@@ -212,7 +212,9 @@ namespace BloomTests.Publish
 ");
 			MakeImageFiles(book, "DevilsSlide");
 			MakeVideoFiles(book, "a0c5c8dd-d84b-4bf6-9f53-c4bb5caf38d0", "importedvideo");
-			MakeEpub("output", "ExportEpubWithVideo", book, BookInfo.HowToPublishImageDescriptions.OnPage);
+			// Without a branding, Bloom Enterprise-only features are removed
+			var branding = "Test";
+			MakeEpub("output", "ExportEpubWithVideo", book, BookInfo.HowToPublishImageDescriptions.OnPage, branding);
 			GetPageOneData();
 			_ns = GetNamespaceManager();
 		}

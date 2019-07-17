@@ -142,8 +142,10 @@ namespace BloomTests.Publish
 			var metadata = book.BookInfo.MetaData;
 			metadata.Hazards = "flashingHazard,noMotionSimulationHazard";
 			metadata.A11yFeatures = "signLanguage";
+			// Without a branding, Bloom Enterprise-only features are removed
+			var branding = "Test";
 			// Currently, only in OnPage mode does the image description turn into an aside that can be linked to the image.
-			MakeEpub("output", "ExportEpubWithSvgTests", book, BookInfo.HowToPublishImageDescriptions.OnPage);
+			MakeEpub("output", "ExportEpubWithSvgTests", book, BookInfo.HowToPublishImageDescriptions.OnPage, branding);
 			GetPageOneData();
 			_ns = GetNamespaceManager();
 		}
