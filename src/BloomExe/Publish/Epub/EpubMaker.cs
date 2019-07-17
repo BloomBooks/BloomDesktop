@@ -1906,6 +1906,8 @@ namespace Bloom.Publish.Epub
 						pageWidthMm = A4Width / 2.0;
 						break;
 					case "A3Portrait":
+						pageWidthMm = A4Width * 2.0;
+						break;
 					case "A4Landscape":
 						pageWidthMm = A4Height;
 						break;
