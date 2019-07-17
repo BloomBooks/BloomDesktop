@@ -2293,5 +2293,53 @@ namespace Bloom.Book
 			styleString += styleToSet;
 			element.SetAttribute("style", styleString);
 		}
+
+
+
+		/// <summary>
+		/// Reorder any div elements that need to be reordered for proper use in publications.
+		/// The different-language children of a translation group are ordered in Bloom's displays by flex-box CSS
+		/// that puts the div with class bloom-content1 before the one with bloom-content2 etc.  Since we don't
+		/// (and can't) rely on flex-box in epubs, we need to actually put the elements in the right order.
+		/// In addition, the published audio playback on all platforms currently relies on the html being in the correct order.
+		/// </summary>
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6299
+		/// and
+		/// https://issues.bloomlibrary.org/youtrack/issue/BL-7300
+		/// </remarks>
+		public void FixDivOrdering()
+		{
+			FixDivOrdering(RawDom.DocumentElement.SelectNodes("//div[contains(@class, 'translationGroup')]").Cast<XmlElement>());
+		}
+
+		private static void FixDivOrdering(IEnumerable<XmlElement> nodeList)
+		{
+			foreach (var multilingualDiv in nodeList)
+			{
+				var divs = multilingualDiv.SelectNodes("./div[contains(@class, 'bloom-content')]").Cast<XmlElement>().ToList();
+				divs.Sort(CompareMultilingualDivs);
+				for (var i = divs.Count - 1; i >= 1; --i)
+					multilingualDiv.InsertBefore(divs[i - 1], divs[i]);
+			}
+		}
+
+		private static int CompareMultilingualDivs(XmlElement x, XmlElement y)
+		{
+			string xKey = ExtractKeyForMultilingualDivs(x);
+			string yKey = ExtractKeyForMultilingualDivs(y);
+			return string.Compare(xKey, yKey, StringComparison.Ordinal);
+		}
+
+		private static string ExtractKeyForMultilingualDivs(XmlElement x)
+		{
+			// bloom-content[23] do not seem to be reliable.  "1", "National1", and "National2" sort correctly.
+			// But I think we do want the newer markup to be reliable, so I'm leaving this line commented out.
+			//var xClass = x.GetAttribute("class").Replace("bloom-contentNational", "");
+			var xClass = x.GetAttribute("class");
+			var idx = xClass.IndexOf("bloom-content", StringComparison.Ordinal);
+			Debug.Assert(idx >= 0);
+			return xClass.Substring(idx);
+		}
 	}
 }

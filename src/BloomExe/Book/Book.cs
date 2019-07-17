@@ -763,6 +763,8 @@ namespace Bloom.Book
 				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, CollectionSettings.Language1Iso639Code);
 			}
 
+			OurHtmlDom.FixDivOrdering();
+
 			Save();
 			_bookRefreshEvent?.Raise(this);
 		}
