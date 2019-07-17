@@ -3274,6 +3274,14 @@ namespace Bloom.Book
 				doomedPage.ParentNode.RemoveChild(doomedPage);
 			}
 		}
+
+		public static bool IsPageBloomEnterpriseOnly(XmlElement page)
+		{
+			return page.GetAttribute("class").Contains("enterprise-only") ||
+				   // legacy quiz pages don't have 'enterprise-only'
+			       page.GetAttribute("class").Contains("questions") ||
+				   page.SafeSelectNodes(".//video").Count > 0;
+		}
 	}
 }
 

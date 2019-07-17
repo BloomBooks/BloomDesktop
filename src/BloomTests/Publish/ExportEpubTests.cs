@@ -79,23 +79,38 @@ namespace BloomTests.Publish
 			return SetupBookLong(text, lang, images: images);
 		}
 
-		[Test]
-		public void ImageDescriptions_HowToPublishImageDescriptionsNone_AreRemoved()
+		[TestCase(BookInfo.HowToPublishImageDescriptions.None)]
+		[TestCase(BookInfo.HowToPublishImageDescriptions.OnPage)]
+		public void ImageDescriptions_NotBloomEnterprise_AreRemoved(BookInfo.HowToPublishImageDescriptions howToPublish)
 		{
-			var book = SetupBookLong("This is a simple page", "xyz", images: new[] {"image1"},
-				imageDescriptions: new[] {"This describes image 1"});
-			MakeEpub("output", "ImageDescriptions_HowToPublishImageDescriptionsNone_AreRemoved", book);
-			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
+			var book = SetupBookLong("This is a simple page", "xyz", images: new[] { "image1" },
+				imageDescriptions: new[] { "This describes image 1" });
+			MakeEpub("output", $"ImageDescriptions_NotBloomEnterprise_AreRemoved_{howToPublish}", book, howToPublish);
+			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
+			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
+			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside[.='This describes image 1']", _ns);
+		}
+
+		// The original test here proved that we removed image descriptions when not displaying them.
+		// But removing them completely broke the audio which needed text to be connected to it.
+		// So now we verify that we _don't_ remove them (for Bloom Enterprise).
+		[Test]
+		public void ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsNone_AreNotRemoved()
+		{
+			var book = SetupBookLong("This is a simple page", "xyz", images: new[] { "image1" },
+				imageDescriptions: new[] { "This describes image 1" });
+			MakeEpub("output", "ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsNone_AreNotRemoved", book, branding: "Test");
+			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns, 1);
 		}
 
 		// Also checks for handling of branding images, to avoid another whole epub creation.
 		[Test]
-		public void ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsides()
+		public void ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsOnPage_ConvertedToAsides()
 		{
 			var book = SetupBookLong("This is a simple page", "xyz", images: new[] { "image1" },
 				imageDescriptions: new[] { "This describes image 1" }, extraContentOutsideTranslationGroup: "<img class='branding' src='back-cover.png'/>");
 			MakeImageFiles(book, "back-cover");
-			MakeEpub("output", "ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsides", book, BookInfo.HowToPublishImageDescriptions.OnPage);
+			MakeEpub("output", "ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsOnPage_ConvertedToAsides", book, BookInfo.HowToPublishImageDescriptions.OnPage, branding: "Test");
 			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
 			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside[.='This describes image 1']", _ns, 1);
@@ -104,7 +119,7 @@ namespace BloomTests.Publish
 
 		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
 		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
-		public void ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered(TalkingBookApi.AudioRecordingMode audioRecordingMode)
+		public void ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered(TalkingBookApi.AudioRecordingMode audioRecordingMode)
 		{
 			string extraContentOutsideTranslationGroup =
 					@"<div title='image1.png' class='bloom-imageContainer'>
@@ -157,7 +172,8 @@ namespace BloomTests.Publish
 				createPhysicalFile:true
 			);
 			MakeImageFiles(book, "image1"); // otherwise the img tag gets stripped out
-			MakeEpub("output", $"ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered_{audioRecordingMode}", book, BookInfo.HowToPublishImageDescriptions.OnPage);
+			MakeEpub("output", $"ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered_{audioRecordingMode}",
+				book, BookInfo.HowToPublishImageDescriptions.OnPage, branding: "Test");
 			// MakeEpub (when using a physical file as we are) creates Device Xmatter, so page one is cover, page 2 is ours.
 			var assertThatPageOneData = AssertThatXmlIn.String(GetPageNData(2));
 			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
@@ -231,15 +247,12 @@ namespace BloomTests.Publish
 		/// <summary>
 		/// Make an ePUB out of the specified book. Sets up several instance variables with commonly useful parts of the results.
 		/// </summary>
-		/// <param name="mainFileName"></param>
-		/// <param name="folderName"></param>
-		/// <param name="book"></param>
 		/// <returns></returns>
 		protected override ZipFile MakeEpub(string mainFileName, string folderName, BloomBook book,
 			BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.None,
-			Action<EpubMaker> extraInit = null)
+			string branding = "Default", Action<EpubMaker> extraInit = null)
 		{
-			var result = base.MakeEpub(mainFileName, folderName, book, howToPublishImageDescriptions, extraInit);
+			var result = base.MakeEpub(mainFileName, folderName, book, howToPublishImageDescriptions, branding, extraInit);
 			GetPageOneData();
 			return result;
 		}
@@ -1418,7 +1431,7 @@ $@"<div class='bloom-translationGroup'>
 
 			for (int divIndex = 0; divIndex < 2; ++divIndex)
 			{
-				string expectedFilename = mergeAudio ? "page1" : $"audio{divIndex+1}";				
+				string expectedFilename = mergeAudio ? "page1" : $"audio{divIndex+1}";
 				double divStartTime = mergeAudio ? (divIndex * expectedDurationPerClip) : 0;
 
 				for (int j = 0; j < 2; ++j)
@@ -1428,7 +1441,7 @@ $@"<div class='bloom-translationGroup'>
 					double expectedClipEnd = expectedClipBegin + expectedDurationPerSegment;
 					string expectedClipBeginFormatted = "0:00:0" + expectedClipBegin.ToString("0.000");
 					string expectedClipEndFormatted = "0:00:0" + expectedClipEnd.ToString("0.000");
-					
+
 					assertSmil.HasAtLeastOneMatchForXpath($"smil:smil/smil:body/smil:seq/smil:par[@id='s{expectedIndex}']/smil:text[@src='1.xhtml#text{expectedIndex}']", _ns);
 					assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s{expectedIndex}']/smil:audio[@src='{kAudioSlash}{expectedFilename}.mp3'][@clipBegin='{expectedClipBeginFormatted}'][@clipEnd='{expectedClipEndFormatted}']", _ns);
 				}
