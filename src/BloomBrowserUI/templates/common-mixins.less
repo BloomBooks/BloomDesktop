@@ -15,12 +15,12 @@
     //     }
     // }
 
-    // See BL-4515. The task is to seperate multilingual fields without putting a margin above the first one.
+    // See BL-4515. The task is to separate multilingual fields without putting a margin above the first one.
     // The previous approach (commented out, above) relied on content2 and content3 never being the first, but
-    // as of 3.8, they can be. Note that this sybling operator relies on the physical order of the multlingual alternatives.
+    // as of 3.8, they can be. Note that this sibling operator relies on the physical order of the multlingual alternatives.
     // I didn't actually expect it to work, since we use flex order to control order. But something in Bloom is reording
     // the underlying html, so it does work.
-    // Note that in the near future we want to more clearly seperate out the three axes: order, visibility, and
+    // Note that in the near future we want to more clearly separate out the three axes: order, visibility, and
     // role (Vern, National, etc). When we do that, we may have a different way to do this that we like more.
     .bloom-editable.bloom-visibility-code-on ~ .bloom-editable,
     .bloom-editable.bloom-visibility-user-on ~ .bloom-editable {

@@ -349,6 +349,9 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
 }
 
 .marginBox {
+    .A3Portrait & {
+        .SetMarginBox(@A3Landscape-Height, @A3Landscape-Width);
+    }
     .A3Landscape & {
         .SetMarginBox(@A3Landscape-Width, @A3Landscape-Height);
     }
