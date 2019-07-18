@@ -273,6 +273,14 @@ namespace Bloom.Publish.Epub
 				// But don't have time for now.
 				_book = PublishHelper.MakeDeviceXmatterTempBook(_book.FolderPath, _bookServer, tempBookPath, _omittedPageLabels);
 			}
+			else if (Program.RunningUnitTests)
+			{
+				// HACK alert!
+				// Previous to BL-7300, EpubMaker called FixDivOrdering directly, so unit tests ordered them correctly.
+				// The code for BL-7300 moved the call into BringBookUpToDate which is called by MakeDeviceXmatterTempBook above.
+				// Since unit tests do not call MakeDeviceXmatterTempBook, we need to fix the ordering directly.
+				_book.OurHtmlDom.FixDivOrdering();
+			}
 
 			// The readium control remembers the current page for each book.
 			// So it is useful to have a unique name for each one.
