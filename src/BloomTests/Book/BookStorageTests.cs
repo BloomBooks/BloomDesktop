@@ -752,7 +752,7 @@ namespace BloomTests.Book
 		public void Save_SetsJsonFormatVersion()
 		{
 			var storage = GetInitialStorage();
-			Assert.That(storage.BookInfo.FormatVersion, Is.EqualTo(BookStorage.kBloomFormatVersion));
+			Assert.That(storage.BookInfo.FormatVersion, Is.EqualTo(BookStorage.kBloomFormatVersionToWrite));
 		}
 
 		[Test]
