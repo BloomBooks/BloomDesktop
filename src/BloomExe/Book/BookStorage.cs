@@ -100,7 +100,7 @@ namespace Bloom.Book
 		///    So 4.4 and 4.5 continued to create 2.0 format while (after 4.4.5) being able to read/open 2.1.
 		///    And 4.6 started creating 2.1.
 		/// </summary>
-		internal const string kBloomFormatVersionToWrite = "2.0";
+		internal const string kBloomFormatVersionToWrite = "2.1";
 		internal const string kMaxBloomFormatVersionToRead = "2.1";
 
 		public const string PrefixForCorruptHtmFiles = "_broken_";
