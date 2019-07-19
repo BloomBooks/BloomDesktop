@@ -80,18 +80,28 @@ namespace Bloom.Book
 		public delegate BookStorage Factory(string folderPath, bool forSelectedBook = false);//autofac uses this
 
 		/// <summary>
-		/// History of this number:
+		/// History of these numbers:
+		///   Initially, the two numbers were only one number (kBloomFormatVersion):
 		///		0.4 had version 0.4
 		///		0.8, 0.9, 1.0 had version 0.8
 		///		1.1 had version 1.1
 		///     Bloom 1.0 went out with format version 0.8, but meanwhile compatible books were made (by hand) with "1.1."
 		///     We didn't notice because Bloom didn't actually check this number, it just produced it.
-		///     At that point, books with a newer format version (2.0) started becoming availalbe, so we patched Bloom 1.0
+		///     At that point, books with a newer format version (2.0) started becoming available, so we patched Bloom 1.0
 		///     to reject those. At that point, we also changed Bloom 1.0's kBloomFormatVersion to 1.1 so that it would
 		///     not reject those format version 1.1 books.
 		///     For the next version of Bloom (expected to be called version 2, but unknown at the moment) we went with
 		///     (coincidentally) kBloomFormatVersion = "2.0"
-		internal const string kBloomFormatVersion = "2.0";
+		///   Starting with a hotfix to 4.4 (4.4.5), the one number became two numbers:
+		///    kBloomFormatVersionToWrite is what this version of Bloom writes when it creates a book.
+		///    kMaxBloomFormatVersionToRead is the highest format version this version of Bloom can read/open.
+		///   The reason for this is that 4.6 started creating books which 4.4 couldn't publish, but an easy change to 4.4.5 (BL-7431)
+		///    meant that it could. 4.5 already could. And we wanted 4.4 and 4.5 to continue to create backward-compatible books.
+		///    So 4.4 and 4.5 continued to create 2.0 format while (after 4.4.5) being able to read/open 2.1.
+		///    And 4.6 started creating 2.1.
+		/// </summary>
+		internal const string kBloomFormatVersionToWrite = "2.0";
+		internal const string kMaxBloomFormatVersionToRead = "2.1";
 
 		public const string PrefixForCorruptHtmFiles = "_broken_";
 		private  string _folderPath;
@@ -234,12 +244,12 @@ namespace Bloom.Book
 			if (!float.TryParse(versionString, NumberStyles.Float, CultureInfo.InvariantCulture, out versionFloat))
 				return "This file claims a version number that isn't really a number: " + versionString;
 
-			if (versionFloat > float.Parse(kBloomFormatVersion, CultureInfo.InvariantCulture))
+			if (versionFloat > float.Parse(kMaxBloomFormatVersionToRead, CultureInfo.InvariantCulture))
 			{
 				var msg = LocalizationManager.GetString("Errors.NeedNewerVersion",
 					"{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}", "{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.");
 				msg = string.Format(msg, path, string.Format("<a href='{0}'>BloomLibrary.org</a>", UrlLookup.LookupUrl(UrlType.LibrarySite)));
-				msg += string.Format(". (Format {0} vs. {1})", versionString, kBloomFormatVersion);
+				msg += string.Format(". (Format {0} vs. {1})", versionString, kMaxBloomFormatVersionToRead);
 				return msg;
 			}
 
@@ -326,12 +336,12 @@ namespace Bloom.Book
 			Logger.WriteEvent("BookStorage.Saving... (eventual destination: {0})", PathToExistingHtml);
 
 			Dom.UpdateMetaElement("Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
+			var formatVersion = GetBloomFormatVersionToWrite(BookInfo.FormatVersion);
 			if (!Program.RunningUnitTests)
 			{
-				var ver = Assembly.GetEntryAssembly().GetName().Version;
-				Dom.UpdateMetaElement("BloomFormatVersion", kBloomFormatVersion);
+				Dom.UpdateMetaElement("BloomFormatVersion", formatVersion);
 			}
-			BookInfo.FormatVersion = kBloomFormatVersion;
+			BookInfo.FormatVersion = formatVersion;
 
 			VersionRequirement[] requiredVersions = GetRequiredVersions(Dom).ToArray();
 			if (requiredVersions != null && requiredVersions.Length >= 1)
@@ -378,6 +388,16 @@ namespace Bloom.Book
 			}
 
 			BookInfo.Save();
+		}
+
+		private static string GetBloomFormatVersionToWrite(string existingVersion)
+		{
+			float existingVersionFloat;
+			if (!float.TryParse(existingVersion, out existingVersionFloat))
+				return kBloomFormatVersionToWrite;
+			if (existingVersionFloat > float.Parse(kBloomFormatVersionToWrite))
+				return existingVersion;
+			return kBloomFormatVersionToWrite;
 		}
 
 		// Determines which features will have serious breaking effects if not opened in the proper version of any relevant Bloom products
@@ -1761,19 +1781,23 @@ namespace Bloom.Book
 		/// </summary>
 		public static void CopyCollectionStyles(string bookDir, string targetDir)
 		{
-			// Overwrite any existing file in the target directory.
-			// If a file is present, that seems to mean the user has extraneous copy of a file which normally belongs in their collection folder in their book folder as well.
-			// Our policy is to ignore the one in the book folder and just use the one in their collection folder (which is where it belongs).
-			// (Note that we're only overwriting it in the target directory which is a temp directory. We're not overwriting anything in their book folder.)
+			// Overwrite an existing file in the target directory.
+			// In 4.5, we discovered a user had gotten one of these into their book folder which caused a failure (see BL-7009).
+			// But the real need for this occurred when we started putting customCollectionStyles.css in the book folder ourselves
+			// so that the book could contain all the information it needs about collection settings (see BL-7343).
+			// This patch was added to 4.4 because books uploaded in 4.6 were failing in 4.4 when creating Bloom Reader books and epubs (see BL-7431).
+			//
+			// (Note that in current usage, we're only overwriting it in the target directory which is a temp directory.
+			// We're not overwriting anything in their book folder.)
 			bool overwriteInTargetDir = true;
 
 			var collectionDir = Path.GetDirectoryName(bookDir);
 			var settings = Path.Combine(collectionDir, "settingsCollectionStyles.css");
 			if (File.Exists(settings))
-				RobustFile.Copy(settings, Path.Combine(targetDir,"settingsCollectionStyles.css"), overwriteInTargetDir);	
+				RobustFile.Copy(settings, Path.Combine(targetDir, "settingsCollectionStyles.css"), overwriteInTargetDir);
 			var custom = Path.Combine(collectionDir, "customCollectionStyles.css");
 			if (File.Exists(custom))
-				RobustFile.Copy(custom, Path.Combine(targetDir,"customCollectionStyles.css"), overwriteInTargetDir);
+				RobustFile.Copy(custom, Path.Combine(targetDir, "customCollectionStyles.css"), overwriteInTargetDir);
 		}
 
 

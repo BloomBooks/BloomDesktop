@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using Bloom;
 using Bloom.Api;
@@ -818,7 +819,41 @@ namespace BloomTests.Book
 		public void Save_SetsJsonFormatVersion()
 		{
 			var storage = GetInitialStorage();
-			Assert.That(storage.BookInfo.FormatVersion, Is.EqualTo(BookStorage.kBloomFormatVersion));
+			Assert.That(storage.BookInfo.FormatVersion, Is.EqualTo(BookStorage.kBloomFormatVersionToWrite));
+		}
+
+		[Test]
+		public void Save_ExistingFormatVersionIsHigher_SavesExistingFormatVersion()
+		{
+			// Setup
+			var storage = GetInitialStorage();
+			var higherFormatVersion = (float.Parse(BookStorage.kBloomFormatVersionToWrite) + 1).ToString(CultureInfo.InvariantCulture);
+			storage.BookInfo.FormatVersion = higherFormatVersion;
+			// Verify setup
+			Assert.That(storage.BookInfo.FormatVersion, Is.EqualTo(higherFormatVersion));
+
+			// SUT
+			storage.Save();
+
+			Assert.That(storage.BookInfo.FormatVersion, Is.EqualTo(higherFormatVersion));
+		}
+
+		[TestCase(null)]
+		[TestCase("")]
+		[TestCase("1.0")]
+		[TestCase(BookStorage.kBloomFormatVersionToWrite)]
+		public void Save_ExistingFormatVersionIsLowerOrEqual_SavesCurrentFormatVersion(string lowerFormatVersion)
+		{
+			// Setup
+			var storage = GetInitialStorage();
+			storage.BookInfo.FormatVersion = lowerFormatVersion;
+			// Verify setup
+			Assert.That(storage.BookInfo.FormatVersion, Is.EqualTo(lowerFormatVersion));
+
+			//SUT
+			storage.Save();
+
+			Assert.That(storage.BookInfo.FormatVersion, Is.EqualTo(BookStorage.kBloomFormatVersionToWrite));
 		}
 
 		[Test]
