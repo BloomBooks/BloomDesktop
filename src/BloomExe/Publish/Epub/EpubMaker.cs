@@ -268,18 +268,8 @@ namespace Bloom.Publish.Epub
 			_originalBook = _book;
 			if (_bookServer != null)
 			{
-				// It should only be null while running unit tests.
-				// Eventually, we want a unit test that checks this device xmatter behavior.
-				// But don't have time for now.
+				// It should only be null while running unit tests which don't create a physical file.
 				_book = PublishHelper.MakeDeviceXmatterTempBook(_book.FolderPath, _bookServer, tempBookPath, _omittedPageLabels);
-			}
-			else if (Program.RunningUnitTests)
-			{
-				// HACK alert!
-				// Previous to BL-7300, EpubMaker called FixDivOrdering directly, so unit tests ordered them correctly.
-				// The code for BL-7300 moved the call into BringBookUpToDate which is called by MakeDeviceXmatterTempBook above.
-				// Since unit tests do not call MakeDeviceXmatterTempBook, we need to fix the ordering directly.
-				_book.OurHtmlDom.FixDivOrdering();
 			}
 
 			// The readium control remembers the current page for each book.
@@ -1272,8 +1262,8 @@ namespace Bloom.Publish.Epub
 					var activeDescriptions = description.SafeSelectNodes("div[contains(@class, 'bloom-visibility-code-on')]");
 					if (activeDescriptions.Count == 0)
 						continue;
-					// Now that we need multiple asides (BL-6314), I'm putting them in a separate div and ordering
-					// them. Insert the div after the image container, thus not interfering with the
+					// Now that we need multiple asides (BL-6314), I'm putting them in a separate div.
+					// Insert the div after the image container, thus not interfering with the
 					// reader's placement of the image itself.
 					var asideContainer = description.OwnerDocument.CreateElement("div");
 					asideContainer.SetAttribute("class", "asideContainer");
