@@ -266,7 +266,7 @@ namespace BloomTests.Book
 				// storage factory
 				(path, forSelectedBook) =>
 				{
-					var storage = new BookStorage(path, fileLocator, null, _collectionSettings);
+					var storage = new BookStorage(path, fileLocator, new BookRenamedEvent(), _collectionSettings);
 					storage.BookInfo = new BookInfo(path, true);
 					return storage;
 				},

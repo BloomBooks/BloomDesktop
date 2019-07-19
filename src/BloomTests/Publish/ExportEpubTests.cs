@@ -153,11 +153,13 @@ namespace BloomTests.Publish
 						<div data-book='contentLanguage2' lang='*'>en</div>
 						<div data-book='contentLanguage3' lang='*'>fr</div>
 					</div>",
-				extraContentOutsideTranslationGroup: extraContentOutsideTranslationGroup
+				extraContentOutsideTranslationGroup: extraContentOutsideTranslationGroup,
+				createPhysicalFile:true
 			);
 			MakeImageFiles(book, "image1"); // otherwise the img tag gets stripped out
 			MakeEpub("output", $"ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered_{audioRecordingMode}", book, BookInfo.HowToPublishImageDescriptions.OnPage);
-			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
+			// MakeEpub (when using a physical file as we are) creates Device Xmatter, so page one is cover, page 2 is ours.
+			var assertThatPageOneData = AssertThatXmlIn.String(GetPageNData(2));
 			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside", _ns, 3);
 			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside[.='Non-selected image description']", _ns);
@@ -1576,16 +1578,14 @@ $@"<div class='bloom-translationGroup'>
 <div id='bloomDataDiv'>
     <div data-book='contentLanguage1' lang='*'>xyz</div>
     <div data-book='contentLanguage2' lang='*'>en</div>
-    <div data-book='contentLanguage3' lang='*'>fr</div>
+    <div data-book='bookTitle' lang='xyz'><p>Livre de Test</p></div>
+    <div data-book='bookTitle' lang='en'><p>Test Book</p></div>
 </div>
 <div class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right A5Portrait' data-page='required singleton' id='7cecf56f-7e97-443e-910f-ddc13a9b0dfa'>
 	<div class='marginBox'>
-		<div class='bloom-translationGroup bookTitle' data-default-languages='V,N1,N2'>
+		<div class='bloom-translationGroup bookTitle' data-default-languages='V,N1'>
 			<label class='bubble'>Book title in {lang}</label>
 			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style' lang='z' contenteditable='true' data-book='bookTitle'></div>
-			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content3 bloom-contentNational2 bloom-visibility-code-on' lang='fr' contenteditable='true' data-book='bookTitle'>
-				<p>Livre de Test</p>
-			</div>
 			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content2 bloom-contentNational1 bloom-visibility-code-on' lang='en' contenteditable='true' data-book='bookTitle'>
 				<p>Test Book</p>
 			</div>
@@ -1595,7 +1595,8 @@ $@"<div class='bloom-translationGroup'>
 			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style' lang='*' contenteditable='true' data-book='bookTitle'></div>
 		</div>
 	</div>
-</div>");
+</div>",
+				createPhysicalFile: true);
 			MakeEpub("output", "MultilingualTitlesOrderedCorrectly", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
@@ -1606,16 +1607,13 @@ $@"<div class='bloom-translationGroup'>
 			var titleDiv = dom.DocumentElement.SelectSingleNode("//xhtml:div[contains(@class, 'bookTitle')]", _ns) as XmlElement;
 			Assert.IsNotNull(titleDiv);
 			var divs = titleDiv.SelectNodes("./xhtml:div", _ns);
-			Assert.AreEqual(3, divs.Count);
+			Assert.AreEqual(2, divs.Count);
 			var class0 = divs[0].Attributes["class"];
 			Assert.IsNotNull(class0);
 			StringAssert.Contains("bloom-content1", class0.Value);
 			var class1 = divs[1].Attributes["class"];
 			Assert.IsNotNull(class1);
 			StringAssert.Contains("bloom-content2", class1.Value);
-			var class2 = divs[2].Attributes["class"];
-			Assert.IsNotNull(class2);
-			StringAssert.Contains("bloom-content3", class2.Value);
 		}
 
 		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
@@ -1789,13 +1787,12 @@ $@"<div class='bloom-translationGroup'>
 
 	class EpubMakerAdjusted : EpubMaker
 	{
-		// Todo: at least some test involving a real BookServer which validates the device xmatter behavior.
 		// The minimal bookServer created by CreateBookServer fails to copy mock books because
-		// GetPathHtmlFile() return an empty string, I think because we don't make a real book file with mocked books.
-		// So I think all the tests are currently passing null for the bookserver, which disables the
-		// device xmatter code.
+		// GetPathHtmlFile() returns an empty string because we don't make a real book file with mocked books.
+		// So all the tests which don't create an actual file (createPhysicalFile = false)
+		// are currently passing null for the bookserver, which disables the device xmatter code.
 		public EpubMakerAdjusted(BloomBook book, BookThumbNailer thumbNailer, BookServer bookServer) :
-			base(thumbNailer, string.IsNullOrEmpty(book.GetPathHtmlFile())? null : bookServer)
+			base(thumbNailer, string.IsNullOrEmpty(book.GetPathHtmlFile()) ? null : bookServer)
 		{
 			Book = book;
 		}
