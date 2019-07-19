@@ -1,14 +1,12 @@
-The **Sign Language** template is a collection of pages that have a video frame as well as (or instead of) the usual pictures and text.
+The **Sign Language** template is a collection of pages that can hold a video in addition to text and pictures.
 
-There are two primary ways to get sign language pages into your book.
+Here are two primary ways to get pages that can hold videos into a book:
 
- 1. Use this template to create a book from scratch and add more pages from this template as needed, or
- 2. Modify an existing shell book so that its pages include a frame for a video.
-
-If you are using method #2 (modifying a shell book), here are the easiest steps:
-
- 1. Open the book and unlock it by clicking on the lock icon in the lower left corner.
- 2. Select a page and right click on it. Click on *Choose Different Layout*.
- 3. Choose an appropriate page listed under **Sign Language**.
- 4. Tick the checkbox that says *Change all similar pages...*
- 5. Click the button USE THIS LAYOUT.
+* Use this template to create an *original* book, and then add pages that can hold videos as needed.
+* Modify an *existing* book or shell book so it has pages that can hold videos. In this case, here are the general steps:
+    1. Open the book in the **Edit** tab.
+    2. Click the lock icon that is near the bottom of the **Pages** pane to unlock the book.
+    3. Click a page and then right click that page, and then click **Choose Different Layout**.
+    4. Click the appropriate layout that appears under **Sign Language**.
+    5. Select the **Change all similar pages...** check box.
+    6. Click the button **USE THIS LAYOUT**.

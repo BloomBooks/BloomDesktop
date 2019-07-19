@@ -794,18 +794,28 @@ namespace Bloom
 
 		public static void ClearCache()
 		{
-			try
-			{
+            try
+            {
+				// Review: is this supposed to say "netwerk" or "network"?
+				// Haven't found a clear answer; https://hg.mozilla.org/releases/mozilla-release/rev/496aaf774697f817a689ee0d59f2f866fdb16801
+				// seems to indicate that both may be supported.
 				var instance = Xpcom.CreateInstance<nsICacheStorageService>("@mozilla.org/netwerk/cache-storage-service;1");
-				instance.Clear();
-			}
-			catch (InvalidCastException e)
-			{
-				// For some reason, Release builds (only) sometimes run into this when uploading.
-				// Don't let it stop us just to clear a cache.
+                instance.Clear();
+            }
+            catch (InvalidCastException e)
+            {
+                // For some reason, Release builds (only) sometimes run into this when uploading.
+                // Don't let it stop us just to clear a cache.
+				// Todo Gecko60: see if we can get rid of these catch clauses.
+                Logger.WriteError(e);
+            }
+            catch (NullReferenceException e)
+            {
+				// Similarly, the Harvester has run into this one, and ignoring it doesn't seem to have been a problem.
 				Logger.WriteError(e);
 			}
-		}
+
+        }
 
 		public void SetEditDom(HtmlDom editDom)
 		{
@@ -872,7 +882,7 @@ namespace Bloom
 			// Should be called on UI thread. Since it is quite typical for this method to create the
 			// window handle and browser, it can't do its own Invoke, which depends on already having a handle.
 			// OTOH, Unit tests are often not run on the UI thread (and would therefore just pop up annoying asserts).
-			Debug.Assert(Program.RunningOnUiThread || Program.RunningUnitTests);
+			Debug.Assert(Program.RunningOnUiThread || Program.RunningUnitTests || Program.RunningNonApplicationMode, "Should be running on UI Thread or Unit Tests or Non-Application mode");
 			var dummy = Handle; // gets WebBrowser created, if not already done.
 			var done = false;
 			var navTimer = new Stopwatch();

@@ -202,11 +202,12 @@ namespace BloomTests.web
 				// Verify get
 				Assert.That(transaction.ReplyContents, Is.EqualTo("None"));
 
+				// HowToPublishImageDescriptions.Links was removed in Bloom 4.6
 				// Try another
 				server.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions =
-					BookInfo.HowToPublishImageDescriptions.Links;
+					BookInfo.HowToPublishImageDescriptions.OnPage;
 				server.MakeReply(transaction);
-				Assert.That(transaction.ReplyContents, Is.EqualTo("Links"));
+				Assert.That(transaction.ReplyContents, Is.EqualTo("OnPage"));
 
 				// Post
 				transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/imageDesc",
@@ -369,17 +370,20 @@ namespace BloomTests.web
 			// create collection directory
 			Directory.CreateDirectory(_collectionPath);
 
-			// settingsCollectionStyles.css
-			var cssFile = Path.Combine(_collectionPath, "settingsCollectionStyles.css");
-			RobustFile.WriteAllText(cssFile, @".settingsCollectionStylesCssTest{}");
-
 			// customCollectionStyles.css
-			cssFile = Path.Combine(_collectionPath, "customCollectionStyles.css");
+			var cssFile = Path.Combine(_collectionPath, "customCollectionStyles.css");
 			RobustFile.WriteAllText(cssFile, @".customCollectionStylesCssTest{}");
 
 			// create book directory
 			var bookPath = Path.Combine(_collectionPath, "TestBook");
 			Directory.CreateDirectory(bookPath);
+
+			// defaultLangStyles.css
+			cssFile = Path.Combine(bookPath, "defaultLangStyles.css");
+			RobustFile.WriteAllText(cssFile, @".defaultLangStylesCssTest{}");
+
+			cssFile = Path.Combine(bookPath, "customCollectionStyles.css");
+			RobustFile.WriteAllText(cssFile, @".customCollectionStylesCssTest{}");
 
 			cssFile = Path.Combine(bookPath, "ForUnitTest-XMatter.css");
 			RobustFile.WriteAllText(cssFile, @"This is the one in the book");
@@ -404,7 +408,7 @@ namespace BloomTests.web
 			{
 				SetupCssTests();
 				// Let's do it the way BookStorage.EnsureHasLinksToStylesheets() does it
-				var filePath = ".." + Path.DirectorySeparatorChar + "settingsCollectionStyles.css";
+				var filePath = "defaultLangStyles.css";
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", filePath);
 
 				var url = cssFile.ToLocalhost();
@@ -412,7 +416,7 @@ namespace BloomTests.web
 
 				server.MakeReply(transaction);
 
-				Assert.That(transaction.ReplyContents, Is.EqualTo(".settingsCollectionStylesCssTest{}"));
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".defaultLangStylesCssTest{}"));
 			}
 		}
 
@@ -423,7 +427,7 @@ namespace BloomTests.web
 			{
 				SetupCssTests();
 				// Let's do it the way BookStorage.EnsureHasLinksToStylesheets() does it
-				var filePath = ".." + Path.DirectorySeparatorChar + "settingsCollectionStyles.css";
+				var filePath = "defaultLangStyles.css";
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", filePath);
 
 				var url = cssFile.ToLocalhost();
@@ -431,7 +435,7 @@ namespace BloomTests.web
 
 				server.MakeReply(transaction);
 
-				Assert.That(transaction.ReplyContents, Is.EqualTo(".settingsCollectionStylesCssTest{}"));
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".defaultLangStylesCssTest{}"));
 			}
 		}
 

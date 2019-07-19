@@ -622,10 +622,10 @@
         <target xml:lang="te" state="translated">కార్యక్రమం పాత్రలు</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice">
-        <source xml:lang="en">Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "{2}"</source>
+        <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page.</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
-        <target xml:lang="te" state="translated">ఈ సెట్టింగులను కోసం కర్మాగారం పాస్వర్డ్ "{0}". మీరు మర్చిపోతే, మీరు ఎల్లప్పుడూ "{1}" మరియు "{2}" కోసం గూగుల్ చేయవచ్చు</target>
+        <target xml:lang="te" state="translated">ఈ సెట్టింగులను కోసం కర్మాగారం పాస్వర్డ్ "{0}". మీరు మర్చిపోతే, మీరు ఎల్లప్పుడూ "{1}" మరియు కోసం గూగుల్ చేయవచ్చు</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>

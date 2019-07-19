@@ -765,7 +765,11 @@ namespace Bloom.WebLibraryIntegration
 
 				// Normally we let the user choose which languages to upload. Here, just the ones that have complete information.
 				var langDict = book.AllLanguages;
-				var languagesToUpload = langDict.Keys.Where(l => langDict[l]).ToArray();
+				var languagesToUpload = langDict.Keys.Where(l => langDict[l]).ToList();
+				if (!string.IsNullOrEmpty(book.CollectionSettings.SignLanguageIso639Code) && GetVideoFilesToInclude(book).Any())
+				{
+					languagesToUpload.Insert(0, book.CollectionSettings.SignLanguageIso639Code);
+				}
 				if (blPublishModel.MetadataIsReadyToPublish && (languagesToUpload.Any() || blPublishModel.OkToUploadWithNoLanguages))
 				{
 					if (blPublishModel.BookIsAlreadyOnServer)
@@ -773,7 +777,7 @@ namespace Bloom.WebLibraryIntegration
 						var msg = "Apparently this book is already on the server. Overwriting...";
 						ReportToLogBoxAndLogger(dlg.Progress, folder, msg);
 					}
-					FullUpload(book, dlg.Progress, view, languagesToUpload, excludeNarrationAudio, excludeMusic, out dummy);
+					FullUpload(book, dlg.Progress, view, languagesToUpload.ToArray(), excludeNarrationAudio, excludeMusic, out dummy);
 					AppendBookToUploadLogFile(folder);
 				}
 				else

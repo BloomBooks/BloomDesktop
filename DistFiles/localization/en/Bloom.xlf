@@ -520,7 +520,7 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
         <source xml:lang="en">Set...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink</note>
-        <note>If there is no third language specified, the link changes to this.</note>
+        <note>If there is no third or sign language specified, the link changes to this.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
         <source xml:lang="en">Local Language</source>
@@ -534,6 +534,10 @@
         <source xml:lang="en">Language 3 (e.g. Regional Language)   (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language3Label</note>
         <note xml:lang="en">OLD TEXT (before 3.9, 1 fewer space): Language 3 (e.g. Regional Language)  (Optional)</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
+        <source xml:lang="en">Sign Language   (Optional)</source>
+        <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
         <source xml:lang="en">Bloom Collection Name</source>
@@ -3491,6 +3495,10 @@
         <source xml:lang="en">CC-BY-NC</source>
         <note>ID: PublishTab.Upload.CcLink</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
+        <source xml:lang="en">Please choose the sign language for this book</source>
+        <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
@@ -3659,6 +3667,10 @@
         <source xml:lang="en">Please set this from the edit tab</source>
         <note>ID: PublishTab.Upload.PleaseSetThis</note>
         <note>This shows next to the license, if the license has not yet been set.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
+        <source xml:lang="en">Set Sign Language...</source>
+        <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage">
         <source xml:lang="en">Sign Language</source>

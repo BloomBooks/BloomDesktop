@@ -1260,12 +1260,9 @@ namespace BloomTests.Book
 				return; // quietly pass the test if the font isn't installed
 
 			var filepath = _collectionSettings.SettingsFilePath;
-			var cssFilePath = Path.GetDirectoryName(filepath).CombineForPath("settingsCollectionStyles.css");
-			File.Delete(cssFilePath);
 			WriteSettingsFile(filepath, _preAndikaMigrationCollection);
 
 			// SUT
-			Assert.That(!File.Exists(cssFilePath));
 			_collectionSettings.Load();
 
 			// Verify
@@ -1277,19 +1274,15 @@ namespace BloomTests.Book
 			Assert.That(font2.Equals("Andika New Basic"));
 			var font3 = _collectionSettings.DefaultLanguage1FontName;
 			Assert.That(font3.Equals("Andika New Basic"));
-			Assert.That(File.Exists(cssFilePath)); // Loading the settings creates this file at the very end.
 		}
 
 		[Test]
 		public void OneTimeCheckVersionNumber_AndikaNewBasicMigration_alreadyDone()
 		{
 			var filepath = _collectionSettings.SettingsFilePath;
-			var cssFilePath = Path.GetDirectoryName(filepath).CombineForPath("settingsCollectionStyles.css");
-			File.Delete(cssFilePath);
 			WriteSettingsFile(filepath, _postAndikaMigrationCollection);
 
 			// SUT
-			Assert.That(!File.Exists(cssFilePath));
 			_collectionSettings.Load();
 
 			// Verify
@@ -1297,19 +1290,15 @@ namespace BloomTests.Book
 			var oneTimeCheckVersion = _collectionSettings.OneTimeCheckVersionNumber;
 			Assert.That(Convert.ToInt32(oneTimeCheckVersion).Equals(1));
 			Assert.That(font1.Equals("Andika New Basic"));
-			Assert.That(File.Exists(cssFilePath)); // Loading the settings creates this file at the very end.
 		}
 
 		[Test]
 		public void OneTimeCheckVersionNumber_AndikaNewBasicMigration_doneUserReverted()
 		{
 			var filepath = _collectionSettings.SettingsFilePath;
-			var cssFilePath = Path.GetDirectoryName(filepath).CombineForPath("settingsCollectionStyles.css");
-			File.Delete(cssFilePath);
 			WriteSettingsFile(filepath, _postAndikaMigrationCollectionNoANB);
 
 			// SUT
-			Assert.That(!File.Exists(cssFilePath));
 			_collectionSettings.Load();
 
 			// Verify
@@ -1317,7 +1306,6 @@ namespace BloomTests.Book
 			var oneTimeCheckVersion = _collectionSettings.OneTimeCheckVersionNumber;
 			Assert.That(Convert.ToInt32(oneTimeCheckVersion).Equals(1));
 			Assert.That(font1.Equals("Andika"));
-			Assert.That(File.Exists(cssFilePath)); // Loading the settings creates this file at the very end.
 		}
 
 		private void WriteSettingsFile(string filepath, string xmlString)
@@ -1593,6 +1581,32 @@ namespace BloomTests.Book
 			data.SynchronizeDataItemsThroughoutDOM();
 			var foo = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@id='foo']");
 			Assert.That(foo.InnerXml, Contains.Substring("<label>some label</label>"));
+		}
+
+		[Test]
+		public void GatherDataItemsFromXElement_OmitsDataPageNumber()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-xmatter-page='insideBackCover' data-page='required singleton' data-export='back-matter-inside-back-cover' data-page-number='3'></div>
+ 					<div data-xmatter-page='outsideBackCover' data-page='required singleton' data-export='back-matter-back-cover' data-page-number=''></div>
+				</div>
+				<div class='bloom-page'>
+					 <div id='foo' class='bloom-content1 bloom-editable' data-book='insideBackCover' lang='en'>
+						<label>some label</label>
+					</div>
+				</div>
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+
+			var pageNumber = data.GetXmatterPageDataAttributeValue("insideBackCover", "data-page-number");
+			var dataPage = data.GetXmatterPageDataAttributeValue("insideBackCover", "data-page");
+			Assert.That(pageNumber, Is.EqualTo(""));
+			Assert.That(dataPage, Is.EqualTo("required singleton"));
+			pageNumber = data.GetXmatterPageDataAttributeValue("outsideBackCover", "data-page-number");
+			dataPage = data.GetXmatterPageDataAttributeValue("outsideBackCover", "data-page");
+			Assert.That(pageNumber, Is.EqualTo(""));
+			Assert.That(dataPage, Is.EqualTo("required singleton"));
 		}
 	}
 }

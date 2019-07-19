@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
   <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
     <body>
@@ -53,7 +53,7 @@
         <note>ID: Settings.Enterprise.Overview</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None">
-        <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
+        <source xml:lang="en">None. Enterprise features will be unavailable.</source>
         <note>ID: Settings.Enterprise.None</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NeedsCode">

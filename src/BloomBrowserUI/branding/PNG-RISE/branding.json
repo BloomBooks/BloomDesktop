@@ -1,12 +1,10 @@
 {
     "presets": [
         {
-            "//note":
-                "Normally we would set this to outside-back-cover-branding-top-html, but when this branding was introduced, we didn't have that option; we could only insert text into the edit box (data-book=outsideBackCover). If we were to change to the new system, all old books, which already had that inserted, would end up with two copies of this text.",
+            "//note": "Normally we would set this to outside-back-cover-branding-top-html, but when this branding was introduced, we didn't have that option; we could only insert text into the edit box (data-book=outsideBackCover). If we were to change to the new system, all old books, which already had that inserted, would end up with two copies of this text.",
             "data-book": "outsideBackCover",
             "lang": "en",
-            "content":
-                "<p>If you have feedback (spelling corrections, sentence order, or other changes) that should be made to this book, please contact SIL PNG.</p><p>Email: books@sil.org.pg</p><p>Phone:  7217-0330 extension 4604 or 4161</p><p>Or stop by an SIL office</p>",
+            "content": "<p></p><p>If you have feedback (spelling corrections, sentence order, or other changes)</p><p>that should be made to this book, please contact SIL PNG.<p></p></p><p>Email: mytalkingbooks@gmail.com</p><p>Or stop by an SIL office</p><p></p><p></p><p><b> Go to <u>www.mytalkingbooks.org</u> for more books. </b></p>",
             "condition": "always"
         },
         {
@@ -19,8 +17,7 @@
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
             // only one of these will be visible
-            "content":
-                "<img class='portraitOnly branding' src='backPortrait.svg'/><img class='landscapeOnly branding' src='backLandscape.svg'/>",
+            "content": "<img class='portraitOnly branding' src='backPortrait.svg'/><img class='landscapeOnly branding' src='backLandscape.svg'/>",
             "condition": "always"
         }
     ]

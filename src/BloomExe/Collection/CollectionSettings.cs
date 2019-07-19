@@ -39,6 +39,7 @@ namespace Bloom.Collection
 		private string _language1Iso639Code;
 		private string _language2Iso639Code;
 		private string _language3Iso639Code;
+		private string _signLanguageIso639Code;
 		private LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
 		private const int kDefaultAudioRecordingTrimEndMilliseconds = 40;
 
@@ -219,10 +220,20 @@ namespace Bloom.Collection
 				Language3Name = GetLanguage3Name_NoCache(Language2Iso639Code);
 			}
 		}
+		public virtual string SignLanguageIso639Code
+		{
+			get { return _signLanguageIso639Code; }
+			set
+			{
+				_signLanguageIso639Code = value;
+				SignLanguageName = GetSignLanguageName_NoCache();
+			}
+		}
 
 		public virtual string Language1Name { get; set; }
 		public virtual string Language2Name { get; set; }
 		public virtual string Language3Name { get; set; }
+		public virtual string SignLanguageName { get; set; }
 
 		public virtual bool IsLanguage1Rtl { get; set; }
 		public virtual bool IsLanguage2Rtl { get; set; }
@@ -441,6 +452,26 @@ namespace Bloom.Collection
 				return "L2N-Unknown-" + Language3Iso639Code;
 			}
 		}
+		public string GetSignLanguageName()
+		{
+			if (!string.IsNullOrEmpty(SignLanguageIso639Code) && !string.IsNullOrEmpty(SignLanguageName))
+				return SignLanguageName;
+			return GetSignLanguageName_NoCache();
+		}
+		private string GetSignLanguageName_NoCache()
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(SignLanguageIso639Code))
+					return string.Empty;
+
+				return GetLanguageName(SignLanguageIso639Code, "");
+			}
+			catch (Exception)
+			{
+				return "SL-Unknown-" + SignLanguageIso639Code;
+			}
+		}
 		#endregion
 
 		/// ------------------------------------------------------------------------------------
@@ -453,9 +484,11 @@ namespace Bloom.Collection
 			library.Add(new XElement("Language1Name", Language1Name));
 			library.Add(new XElement("Language2Name", Language2Name));
 			library.Add(new XElement("Language3Name", Language3Name));
+			library.Add(new XElement("SignLanguageName", SignLanguageName));
 			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));
 			library.Add(new XElement("Language2Iso639Code", Language2Iso639Code));
 			library.Add(new XElement("Language3Iso639Code", Language3Iso639Code));
+			library.Add(new XElement("SignLanguageIso639Code", SignLanguageIso639Code));
 			library.Add(new XElement("DefaultLanguage1FontName", DefaultLanguage1FontName));
 			library.Add(new XElement("DefaultLanguage2FontName", DefaultLanguage2FontName));
 			library.Add(new XElement("DefaultLanguage3FontName", DefaultLanguage3FontName));
@@ -481,41 +514,23 @@ namespace Bloom.Collection
 			library.Add(new XElement("AudioRecordingMode", AudioRecordingMode.ToString()));
 			library.Add(new XElement("AudioRecordingTrimEndMilliseconds", AudioRecordingTrimEndMilliseconds));
 			SIL.IO.RobustIO.SaveXElement(library, SettingsFilePath);
-
-			SaveSettingsCollectionStylesCss();
 		}
 
-		private void SaveSettingsCollectionStylesCss()
+		public string GetCollectionStylesCss(bool omitDirection)
 		{
-			string path = FolderPath.CombineForPath("settingsCollectionStyles.css");
-			SaveCollectionStylesCss(path, false);
-		}
-
-		public void SaveCollectionStylesCss(string path, bool omitDirection)
-		{
-			try
-			{
-				var sb = new StringBuilder();
-				sb.AppendLine("/* These styles are controlled by the Settings dialog box in Bloom. */");
-				sb.AppendLine("/* They many be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
-				// REVIEW: is BODY always ltr, or should it be the same as Language1?  Having BODY be ltr for a book in Arabic or Hebrew
-				// seems counterintuitive even if all the div elements are marked correctly.
-				AddSelectorCssRule(sb, "BODY", GetDefaultFontName(), false, 0, false, omitDirection);
-				// note: css pseudo elements  cannot have a @lang attribute. So this is needed to show page numbers in scripts
-				// not covered by Andika New Basic.
-				AddSelectorCssRule(sb, ".numberedPage::after", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight, Language1BreaksLinesOnlyAtSpaces, omitDirection);
-				AddSelectorCssRule(sb, "[lang='" + Language1Iso639Code + "']", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight, Language1BreaksLinesOnlyAtSpaces, omitDirection);
+			var sb = new StringBuilder();
+			sb.AppendLine("/* *** DO NOT EDIT! ***   These styles are controlled by the Settings dialog box in Bloom. */");
+			sb.AppendLine("/* They may be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
+			AddSelectorCssRule(sb, "[lang='" + Language1Iso639Code + "']", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight, Language1BreaksLinesOnlyAtSpaces, omitDirection);
+			if (Language2Iso639Code != Language1Iso639Code)
 				AddSelectorCssRule(sb, "[lang='" + Language2Iso639Code + "']", DefaultLanguage2FontName, IsLanguage2Rtl, Language2LineHeight, Language2BreaksLinesOnlyAtSpaces, omitDirection);
-				if (!string.IsNullOrEmpty(Language3Iso639Code))
-				{
-					AddSelectorCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, IsLanguage3Rtl, Language3LineHeight, Language3BreaksLinesOnlyAtSpaces, omitDirection);
-				}
-				RobustFile.WriteAllText(path, sb.ToString());
-			}
-			catch (Exception error)
+			if (!string.IsNullOrEmpty(Language3Iso639Code) &&
+				Language3Iso639Code != Language1Iso639Code &&
+				Language3Iso639Code != Language2Iso639Code)
 			{
-				ErrorReport.NotifyUserOfProblem(error, "Bloom was unable to update this file: {0}",path);
+				AddSelectorCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, IsLanguage3Rtl, Language3LineHeight, Language3BreaksLinesOnlyAtSpaces, omitDirection);
 			}
+			return sb.ToString();
 		}
 
 		private void AddSelectorCssRule(StringBuilder sb, string selector, string fontName, bool isRtl, decimal lineHeight, bool breakOnlyAtSpaces, bool omitDirection)
@@ -542,6 +557,8 @@ namespace Bloom.Collection
 			sb.AppendLine("}");
 		}
 
+		public static bool HarvesterMode { get; set; }
+
 		/// ------------------------------------------------------------------------------------
 		public void Load()
 		{
@@ -560,6 +577,7 @@ namespace Bloom.Collection
 				Language1Iso639Code = GetValue(library, "Language1Iso639Code", /* old name */GetValue(library, "Language1Iso639Code", ""));
 				Language2Iso639Code = GetValue(library, "Language2Iso639Code",  /* old name */GetValue(library, "National1Iso639Code", "en"));
 				Language3Iso639Code = GetValue(library, "Language3Iso639Code",  /* old name */GetValue(library, "National2Iso639Code", ""));
+				SignLanguageIso639Code = GetValue(library, "SignLanguageIso639Code",  /* old name */GetValue(library, "SignLanguageIso639Code", ""));
 				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
 
 				var style = GetValue(library, "PageNumberStyle", "Decimal");
@@ -576,7 +594,7 @@ namespace Bloom.Collection
 					BrandingProjectKey = "Local-Community";
 				}
 
-				if (BrandingProjectKey != "Default" && BrandingProjectKey != "Local-Community")
+				if (BrandingProjectKey != "Default" && BrandingProjectKey != "Local-Community" && !HarvesterMode)
 				{
 					// Validate branding, so things can't be circumvented by just typing something into settings
 					var expirationDate = CollectionSettingsApi.GetExpirationDate(SubscriptionCode);
@@ -590,6 +608,7 @@ namespace Bloom.Collection
 				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
 				Language2Name = GetValue(library, "Language2Name", GetLanguage2Name_NoCache(Language2Iso639Code));
 				Language3Name = GetValue(library, "Language3Name", GetLanguage3Name_NoCache(Language2Iso639Code));
+				SignLanguageName = GetValue(library, "SignLanguageName", GetSignLanguageName_NoCache());
 				DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
 				DefaultLanguage2FontName = GetValue(library, "DefaultLanguage2FontName", GetDefaultFontName());
 				DefaultLanguage3FontName = GetValue(library, "DefaultLanguage3FontName", GetDefaultFontName());
@@ -656,12 +675,6 @@ namespace Bloom.Collection
 			{
 				DoOneTimeCheck();
 			}
-
-			// Remove an obsolete page numbering rule if it exists in the collection styles file.
-			// See https://issues.bloomlibrary.org/youtrack/issue/BL-5017.
-			// Saving the styles doesn't write the obsolete rule, effectively removing it.  Doing
-			// this unconditionally ensures any future similar problems are covered automatically.
-			SaveSettingsCollectionStylesCss();
 
 			SetAnalyticsProperties();
 		}

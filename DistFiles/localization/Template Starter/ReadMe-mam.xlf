@@ -92,21 +92,30 @@ At kab'e tu'mel tu'n tajb'en kyu'n xjal qe ttenb'il u'jb'il b'ananmaj. Tnejil tu
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
         <target xml:lang="mam" state="translated"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: Qe u'jb'il lu' jaku b'a'n tu'n kymojb'et tuj tu'mel tuj juntl amb'il tuk' taq'un te techil tajlal. Min kux naj ti tk'u'ja qa namx kanet jun tu'mel tu'n Bloom tu'n tzaj tma'n qa il ti'j tu'n tokx tu'nxtib' jun t-xaq kyuj qe ak'aj u'jb'il; il ti'j tu'n tz'aqset ju'njun t-xaq tu'n ajb'inchalte tujxa swejin te q'amab'il te "Q'on oka juntl t-xaq".</target>
         <note>ID: template.starter.nothingautomatic</note>
+        <alt-trans>
+          <target xml:lang="mam"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: Qe u'jb'il lu' jaku b'a'n tu'n kymojb'et tuj tu'mel tuj juntl amb'il tuk' taq'un te techil tajlal. Min kux naj ti tk'u'ja qa namx kanet jun tu'mel tu'n Bloom tu'n tzaj tma'n qa il ti'j tu'n tokx tu'nxtib' jun t-xaq kyuj qe ak'aj u'jb'il; il ti'j tu'n tz'aqset ju'njun t-xaq tu'n ajb'inchalte tujxa swejin te q'amab'il te "Q'on oka juntl t-xaq".</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
         <target xml:lang="mam" state="translated"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Qa tk'i'ya tu'n min tzaj tyek'in tuj swejin q'amab'ilte "Q'on oka juntl t-xaq" qe t-xaq te txolb'ab'il aq'untl b'incha'nmaj, b'a'n tu'n t-xi' tma'ne jlu' te Bloom tu'n jun b'inchab'il nak'ub'il aq'unb'il a tb'i "NorForAddPage.txt." tuj k'ub'il te txolb'ab'il aq'untl b'incha'nmaj te U'jb'il.</target>
         <note>ID: template.starter.nametonotaddpage</note>
       </trans-unit>
-      <trans-unit id="template.starter.labelsnottranslatable">
+      <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
-        <target xml:lang="mam" state="translated"><g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Nlayx b'ant kyu'n ju'njun xjal tu'n tmeltz'et qe tech b'ib'aj tuk' q'amab'itz kyuj qe juntl yol twitz Paxil. Qa nya b'a'n jlu', txaqonxa kye k'loj xjal b'a'nxix kyu'n te Bloom.</target>
+        <target xml:lang="mam" state="translated"><g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Nlayx b'ant tmiltz'et aqe' tqanil toj junjuntl yol at twitz tnam te Paxil. Qa at il in tzaj tu'n lu' b'a'n tu'n ttxokina kye ajxtokil xk'utz'ib' te Bloom.</target>
         <note>ID: template.starter.labelsnottranslatable</note>
+        <alt-trans>
+          <target xml:lang="mam"><g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Nlayx b'ant kyu'n ju'njun xjal tu'n tmeltz'et qe tech b'ib'aj tuk' q'amab'itz kyuj qe juntl yol twitz Paxil. Qa nya b'a'n jlu', txaqonxa kye k'loj xjal b'a'nxix kyu'n te Bloom.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.editrawhtml">
+      <trans-unit id="template.starter.editrawhtml" approved="yes">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
-        <target xml:lang="mam" state="translated"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Qa taja tu'n tzaj yek'in tu'n tilb'il te "Q'on oka juntl t-xaq" jun ch'in q'amab'itz tib'aj t-xaq, il ti'j tu'n tetzti'n tib'a ti'j Bloom ex qxel b'inchet nak'ub'il aq'unb'il html te txolb'ab'il aq'untl b'incha'nmaj tuj "Notepad", ikytzan jlu': <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        <target xml:lang="mam" state="translated"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Qa tajb'ila tu'n ttzaj yek'in jun tilb'ilal tib'aj tqanil teya tu'n "Agregar Página"  ilti'j tu'n tetza toj Bloom ex tx'ixpunkytza html twitz "Notepad", ikytzan jlu': <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
+        <alt-trans>
+          <target xml:lang="mam"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Qa taja tu'n tzaj yek'in tu'n tilb'il te "Q'on oka juntl t-xaq" jun ch'in q'amab'itz tib'aj t-xaq, il ti'j tu'n tetzti'n tib'a ti'j Bloom ex qxel b'inchet nak'ub'il aq'unb'il html te txolb'ab'il aq'untl b'incha'nmaj tuj "Notepad", ikytzan jlu': <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>

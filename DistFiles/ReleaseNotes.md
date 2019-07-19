@@ -1,6 +1,7 @@
 # 4.6
 
 ## User Interface
+
 We added smarts to Bloom's user interface to use different fonts, as needed, in order to display various non-roman languages. This is not related to what you see in books, just the Bloom interface. Bloom now ships with Google's "noto" fonts for Arabic, Bengali, Devanagari, Thai, and CJK (Chinese, Japanese, Korean).
 
 This version is the beginning of a multi-version effort to move Bloom's UI to a more consistent and contemporary visual design language. We have chosen to move towards Google's Material Design, which is what users will be familiar with from their phones.
@@ -18,9 +19,15 @@ When opening a different collection, Bloom now offers you the last 9 collections
 
 The "Add Page" dialog now clearly indicates which template pages are available only with Bloom Enterprise enabled.
 
+### Books with many pages
+
+We have improved Bloom's ability to work with books that run into the hundreds of pages.
+
 ### Sign Language Books
 
 We have improved computer performance when working with sign language videos. Page thumbnails no longer include the first frame for the video (this was hard on memory and CPU).
+
+In the Publish:Upload screen, we've added a place to identify the language of your sign language videos.
 
 ⭐We added a "Text above Video" template page.
 
@@ -33,9 +40,13 @@ We added a preview that lets you interact with the book before publishing to a r
 We added new hints about publishing with USB and Wi-FI.
 We improved the smoothness of Talking Book playback by now playing only a single audio file per page. This means that highlighting is now based on timestamps, rather than on starting up individual audio files for each sentence.
 
-### ePUB Publish
-⭐ New, cleaner ePUB publish screen
+We've changed the format of Bloom book folders a bit so that they are now fully "self contained" instead of being reliant on being situated inside a Bloom Collection folder. You should not notice any change, except that now when a book is uploaded to Bloom Library, our new "Harvester" system can accurately publish new versions of your book in formats including ePUB and Bloom Reader.
 
+We've added the ability to limit Bloom shellbook downloads to BloomLibrary.org visitors in single country. If you need to publish books with that kind of restriction, please contact us.
+
+### ePUB Publish
+
+⭐ New, cleaner ePUB publish screen
 
 # 4.5
 

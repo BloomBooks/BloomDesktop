@@ -76,7 +76,7 @@ namespace BloomTests.Book
 			_fileLocator = new Moq.Mock<IFileLocator>();
 			string root = FileLocationUtilities.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 			string xMatter = BloomFileLocator.GetInstalledXMatterDirectory();
-			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplay.css")).Returns("../notareallocation/languageDisplay.css");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("langVisibility.css")).Returns("../notareallocation/langVisibility.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("origami.css")).Returns("../notareallocation/origami.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("origamiEditing.css")).Returns("../notareallocation/origamiEditing.css");
@@ -90,7 +90,7 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateFileWithThrow("baseEPUB.css")).Returns("../notareallocation/baseEPUB.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("Device-XMatter.css")).Returns("../notareallocation/Device-XMatter.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("customBookStyles.css")).Returns(Path.Combine(_tempFolder.Path, "customBookStyles.css"));
-			_fileLocator.Setup(x => x.LocateFileWithThrow("settingsCollectionStyles.css")).Returns(Path.Combine(_testFolder.Path, "settingsCollectionStyles.css"));
+			_fileLocator.Setup(x => x.LocateFileWithThrow("defaultLangStyles.css")).Returns(Path.Combine(_testFolder.Path, "defaultLangStyles.css"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("customCollectionStyles.css")).Returns(Path.Combine(_testFolder.Path, "customCollectionStyles.css"));
 			var basicBookPath = BloomFileLocator.GetCodeBaseFolder() + "/../browser/templates/template books/Basic Book/Basic Book.css";
 			_fileLocator.Setup(x => x.LocateFile("Basic Book.css")).Returns(basicBookPath);
@@ -151,6 +151,8 @@ namespace BloomTests.Book
 			var b = new Bloom.Book.Book(_metadata, storage, _templateFinder.Object,
 				_collectionSettings,
 				_pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
+			// Some tests need this file early on so it can be copied to the book folder.
+			File.WriteAllText(Path.Combine(Path.GetDirectoryName(_tempFolder.Path), "customCollectionStyles.css"), @"/*This is wanted*/");
 			return b;
 		}
 

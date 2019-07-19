@@ -19,7 +19,7 @@ namespace Bloom.Publish
 
 		public PublishHelper()
 		{
-			if (!InPublishTab && !Program.RunningUnitTests)
+			if (!InPublishTab && !Program.RunningUnitTests && !Program.RunningNonApplicationMode)
 			{
 				throw new InvalidOperationException("Should not be creating bloom book while not in publish tab");
 			}
@@ -263,20 +263,13 @@ namespace Bloom.Publish
 		/// <param name="bookServer"></param>
 		/// <param name="tempFolderPath"></param>
 		/// <returns></returns>
-		public static Book.Book MakeDeviceXmatterTempBook(Book.Book book, BookServer bookServer, string tempFolderPath, HashSet<string> omittedPageLabels = null)
+		public static Book.Book MakeDeviceXmatterTempBook(string bookFolderPath, BookServer bookServer, string tempFolderPath, HashSet<string> omittedPageLabels = null)
 		{
-			BookStorage.CopyDirectory(book.FolderPath, tempFolderPath);
-			// We will later copy these into the book's own folder and adjust the style sheet refs.
-			// But in some cases (at least, where the book's primary stylesheet does not provide
-			// the information SizeAndOrientation.GetLayoutChoices() is looking for), we need them
-			// to exist in the originally expected lcoation: the book's parent directory for
-			// BringBookUpToDate to succeed.
-			BookStorage.CopyCollectionStyles(book.FolderPath, Path.GetDirectoryName(tempFolderPath));
+			BookStorage.CopyDirectory(bookFolderPath, tempFolderPath);
 			var bookInfo = new BookInfo(tempFolderPath, true);
 			bookInfo.XMatterNameOverride = "Device";
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
 			modifiedBook.BringBookUpToDate(new NullProgress(), true);
-			modifiedBook.AdjustCollectionStylesToBookFolder();
 			modifiedBook.RemoveNonPublishablePages(omittedPageLabels);
 			var domForVideoProcessing = modifiedBook.OurHtmlDom;
 			var videoContainerElements = HtmlDom.SelectChildVideoElements(domForVideoProcessing.RawDom.DocumentElement).Cast<XmlElement>();
@@ -286,9 +279,6 @@ namespace Bloom.Publish
 			}
 			modifiedBook.Save();
 			modifiedBook.Storage.UpdateSupportFiles();
-			// Copy the possibly modified stylesheets after UpdateSupportFiles so that they don't
-			// get replaced by the factory versions.
-			BookStorage.CopyCollectionStyles(book.FolderPath, tempFolderPath);
 			return modifiedBook;
 		}
 

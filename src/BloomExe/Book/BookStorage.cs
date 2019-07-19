@@ -49,6 +49,7 @@ namespace Bloom.Book
 		bool GetLooksOk();
 		HtmlDom Dom { get; }
 		void Save();
+		void SaveForPageChanged(string pageId, XmlElement modifiedPage);
 		HtmlDom GetRelocatableCopyOfDom();
 		HtmlDom MakeDomRelocatable(HtmlDom dom);
 		string SaveHtml(HtmlDom bookDom);
@@ -79,18 +80,28 @@ namespace Bloom.Book
 		public delegate BookStorage Factory(string folderPath, bool forSelectedBook = false);//autofac uses this
 
 		/// <summary>
-		/// History of this number:
+		/// History of these numbers:
+		///   Initially, the two numbers were only one number (kBloomFormatVersion):
 		///		0.4 had version 0.4
 		///		0.8, 0.9, 1.0 had version 0.8
 		///		1.1 had version 1.1
 		///     Bloom 1.0 went out with format version 0.8, but meanwhile compatible books were made (by hand) with "1.1."
 		///     We didn't notice because Bloom didn't actually check this number, it just produced it.
-		///     At that point, books with a newer format version (2.0) started becoming availalbe, so we patched Bloom 1.0
+		///     At that point, books with a newer format version (2.0) started becoming available, so we patched Bloom 1.0
 		///     to reject those. At that point, we also changed Bloom 1.0's kBloomFormatVersion to 1.1 so that it would
 		///     not reject those format version 1.1 books.
 		///     For the next version of Bloom (expected to be called version 2, but unknown at the moment) we went with
 		///     (coincidentally) kBloomFormatVersion = "2.0"
-		internal const string kBloomFormatVersion = "2.0";
+		///   Starting with a hotfix to 4.4 (4.4.5), the one number became two numbers:
+		///    kBloomFormatVersionToWrite is what this version of Bloom writes when it creates a book.
+		///    kMaxBloomFormatVersionToRead is the highest format version this version of Bloom can read/open.
+		///   The reason for this is that 4.6 started creating books which 4.4 couldn't publish, but an easy change to 4.4.5 (BL-7431)
+		///    meant that it could. 4.5 already could. And we wanted 4.4 and 4.5 to continue to create backward-compatible books.
+		///    So 4.4 and 4.5 continued to create 2.0 format while (after 4.4.5) being able to read/open 2.1.
+		///    And 4.6 started creating 2.1.
+		/// </summary>
+		internal const string kBloomFormatVersionToWrite = "2.1";
+		internal const string kMaxBloomFormatVersionToRead = "2.1";
 
 		public const string PrefixForCorruptHtmFiles = "_broken_";
 		private IChangeableFileLocator _fileLocator;
@@ -220,12 +231,12 @@ namespace Bloom.Book
 			if (!float.TryParse(versionString, NumberStyles.Float, CultureInfo.InvariantCulture, out versionFloat))
 				return "This file claims a version number that isn't really a number: " + versionString;
 
-			if (versionFloat > float.Parse(kBloomFormatVersion, CultureInfo.InvariantCulture))
+			if (versionFloat > float.Parse(kMaxBloomFormatVersionToRead, CultureInfo.InvariantCulture))
 			{
 				var msg = LocalizationManager.GetString("Errors.NeedNewerVersion",
 					"{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}", "{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.");
 				msg = string.Format(msg, path, $"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite)}'>BloomLibrary.org</a>");
-				msg += $". (Format {versionString} vs. {kBloomFormatVersion})";
+				msg += $". (Format {versionString} vs. {kMaxBloomFormatVersionToRead})";
 				return msg;
 			}
 
@@ -312,12 +323,12 @@ namespace Bloom.Book
 			Logger.WriteEvent("BookStorage.Saving... (eventual destination: {0})", PathToExistingHtml);
 
 			Dom.UpdateMetaElement("Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
+			var formatVersion = GetBloomFormatVersionToWrite(BookInfo.FormatVersion);
 			if (!Program.RunningUnitTests)
 			{
-				var ver = Assembly.GetEntryAssembly().GetName().Version;
-				Dom.UpdateMetaElement("BloomFormatVersion", kBloomFormatVersion);
+				Dom.UpdateMetaElement("BloomFormatVersion", formatVersion);
 			}
-			BookInfo.FormatVersion = kBloomFormatVersion;
+			BookInfo.FormatVersion = formatVersion;
 
 			VersionRequirement[] requiredVersions = GetRequiredVersions(Dom).ToArray();
 			if (requiredVersions != null && requiredVersions.Length >= 1)
@@ -336,6 +347,16 @@ namespace Bloom.Book
 			watch.Stop();
 			TroubleShooterDialog.Report($"Saving xml to html took {watch.ElapsedMilliseconds} milliseconds");
 
+			ValidateSave(tempPath);
+
+			BookInfo.Save();
+		}
+
+		// Common final stage of Save() and SaveForPageChanged(). Validates the temp file, reports any problems,
+		// and if all is well moves the current file to a backup and the new one to replace the original.
+		private void ValidateSave(string tempPath)
+		{
+			Stopwatch watch;
 			watch = Stopwatch.StartNew();
 			string errors = ValidateBook(Dom, tempPath);
 			watch.Stop();
@@ -353,7 +374,10 @@ namespace Bloom.Book
 					RobustFile.ReadAllText(badFilePath));
 				var ex = new XmlSyntaxException(errors);
 
-				ErrorReport.NotifyUserOfProblem(ex, "Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(ex,
+					"Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " +
+					badFilePath +
+					".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
 				Process.GetCurrentProcess().Kill();
 			}
 			else
@@ -362,8 +386,275 @@ namespace Bloom.Book
 				if (!string.IsNullOrEmpty(tempPath))
 					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, GetBackupFilePath());
 			}
+		}
 
+		/// <summary>
+		/// A highly optimized Save for use when the only thing that needs to be written is the content
+		/// of the one page the user has been editing. This is quite a bit of complexity to add for
+		/// that case, but it's a common and important case: nearly all edits just affect a single page.
+		/// And currently Bloom Saves even when just switching pages without changing anything.
+		/// On a long book (e.g., BL-7253) using this makes page switching two seconds faster,
+		/// as well as preventing heap fragmentation that eventually leads to running out of memory.
+		/// </summary>
+		public void SaveForPageChanged(string pageId, XmlElement modifiedPage)
+		{
+			// Convert the one page to HTML
+			var watch = new Stopwatch();
+			watch.Start();
+			string pageHtml = XmlHtmlConverter.ConvertElementToHtml5(modifiedPage);
+
+			// Read the old file and copy it to the new one, except for replacing the one page.
+			string tempPath = GetNameForATempFileInStorageFolder();
+			using (var reader = new StreamReader(new FileStream(PathToExistingHtml, FileMode.Open), Encoding.UTF8))
+			{
+				using (var writer = new StreamWriter(new FileStream(tempPath, FileMode.Create), Encoding.UTF8))
+				{
+					ReplacePage(pageId, reader, writer, pageHtml);
+				}
+			}
+			watch.Stop();
+			TroubleShooterDialog.Report($"SaveForPageChanged took {watch.ElapsedMilliseconds} milliseconds");
+			ValidateSave(tempPath);
 			BookInfo.Save();
+		}
+
+		private static string GetBloomFormatVersionToWrite(string existingVersion)
+		{
+			float existingVersionFloat;
+			if (!float.TryParse(existingVersion, out existingVersionFloat))
+				return kBloomFormatVersionToWrite;
+			if (existingVersionFloat > float.Parse(kBloomFormatVersionToWrite))
+				return existingVersion;
+			return kBloomFormatVersionToWrite;
+		}
+
+		// The states for the ReplacePage state machine.
+		enum SearchState
+		{
+			LookForOpenDiv, // First part of finding the page to replace is to find "<div"
+			LookForId, // Once we found an open div, we look for an ID attribute with the right value
+			LookForNextPageDiv, // Then looking for the next page...first its "<div"
+			LookForNextPageClass, // Then for its class attribute
+			LookForBloomPageClass, // and within that for "bloom-page"
+			CopyingTailEnd // and once we replaced the page and found the next one we just copy the rest
+		}
+
+
+		// This method implements a state machine (using the SearchState states above) which reads a bloom HTML
+		// file from reader and writes it to writer, replacing the page with the specified ID with the content of
+		// pageHtml.
+		// It implements some pretty complex RegEx-like logic to do this. There may be a simpler way, but note that
+		// the goal is to avoid pulling the whole file into memory like XmlHtmlConverter does.
+		// It assumes the file is written the way Bloom writes it. For example, it does not attempt to handle
+		// attributes delimited with single quotes, attributes without spaces between them, attributes with white space
+		// between name and quotes. It uses a naive strategy to identify pages, looking for a div whose class contains
+		// bloom-page, with no attempt to NOT match longer class names like hidden-bloom-page. (VERY many other places
+		// in our code, for better or worse, assume that a page can be identified by contains(@class,'bloom-page'),
+		// and the code simplification from assuming it here is considerable.)
+		internal static void ReplacePage(string pageId, StreamReader reader, StreamWriter writer, string pageHtml)
+		{
+			// the main state our state machine is in. Initially, we're looking for the page to replace.
+			var state = SearchState.LookForOpenDiv;
+
+			// In most of the main states, we have a nested state machine which is looking for a certain string
+			// (and possibly a terminator). The string we want to match is in matchNext, and matchIndex indicates
+			// which character in the string we need to match currently.
+			string matchNext = "<div";
+			int matchIndex = 0;
+			// In several states, we need to save up input text which we may or may not output, depending on
+			// whether we complete the match we are attempting.
+			var pending = new StringBuilder();
+			// These variables efficiently keep track of the last 100 characters read
+			// to support copying whatever follows the last page if that's the one we replaced.
+			// 100 characters is probably excessive; typically all that is after the last
+			// page in a bloom file is </body></html> (possibly with some white space).
+			// However, it's not much more expensive to have a 100 character buffer, and
+			// it might be helpful one day to be able to handle a trailing <script> tag or
+			// something similar.
+			const int bufLen = 100;
+			var buffer = new char[bufLen];
+			int bufIndex = 0;
+			var bufWrapped = false; // did we fill the buffer and wrap? Will nearly always end up true except in unit tests.
+
+			while (!reader.EndOfStream)
+			{
+				var input = Convert.ToChar(reader.Read());
+				buffer[bufIndex++] = input;
+				if (bufIndex >= bufLen)
+				{
+					bufIndex = 0;
+					bufWrapped = true;
+				}
+
+				var c = Char.ToLowerInvariant(input);
+
+				// Note that after this switch, we copy the input character to the output.
+				// That is therefore the result of any branch that ends with 'break'.
+				// Other branches typically append input to 'pending' (for possible output later, depending
+				// on whether match succeeds) and use 'continue'.
+				switch (state)
+				{
+					case SearchState.LookForOpenDiv:
+						if (c == matchNext[matchIndex])
+						{
+							pending.Append(input);
+							matchIndex++;
+							if (matchIndex >= matchNext.Length)
+							{
+								// found an opening div. Now we need the ID attribute to match,
+								// for it to be the page we want.
+								matchNext = " id=\"" + pageId + "\"";
+								matchIndex = 0;
+								state = SearchState.LookForId;
+							}
+							continue;
+						}
+						// current attempt to match <div has failed;
+						// output any incomplete match and start over.
+						writer.Write(pending);
+						pending.Clear();
+						matchIndex = 0;
+						break;
+					case SearchState.LookForId:
+						pending.Append(input);
+						if (c == matchNext[matchIndex])
+						{
+							matchIndex++;
+							if (matchIndex >= matchNext.Length)
+							{
+								// We found the page to replace. We do NOT output pending,
+								// because that's part of the page we're replacing. Instead,
+								// output the replacement page, and then start looking for the
+								// start of the next page.
+								writer.Write(pageHtml);
+								matchNext = "<div";
+								matchIndex = 0;
+								state = SearchState.LookForNextPageDiv;
+							}
+							continue;
+						}
+
+						if (c == '>')
+						{
+							// Got to the end of the <div tag without finding the ID.
+							// back to looking for an opening <div
+							// first, write out the saved content of the div tag.
+							state = SearchState.LookForOpenDiv;
+							writer.Write(pending);
+							pending.Clear();
+							matchNext = "<div";
+							matchIndex = 0;
+							continue; // the final > was already added to pending and then output
+						}
+						// otherwise, we're still in the div header, looking for ID, continuing to
+						// accumulate pending stuff we will output if we don't match,
+						// but have to start over looking for the id.
+						matchIndex = 0;
+						continue;
+					case SearchState.LookForNextPageDiv:
+						// Looking for "<div" as the first part of finding a following bloom-page.
+						if (c == matchNext[matchIndex])
+						{
+							pending.Append(input);
+							matchIndex++;
+							if (matchIndex >= matchNext.Length)
+							{
+								// Found the <div, now we have to look for the start of the class attribute.
+								state = SearchState.LookForNextPageClass;
+								matchNext = " class=\"";
+								matchIndex = 0;
+							}
+							continue;
+						}
+						// Back to skipping, looking for start of next bloom-page
+						matchIndex = 0;
+						// do NOT output it, it turned out to be part of the page we're replacing,
+						// not part of the following one we need to keep.
+						pending.Clear();
+						continue;
+					case SearchState.LookForNextPageClass:
+						// Looking for / class="/ (before closing >) as second step in finding following bloom-page
+						pending.Append(input);
+						if (c == matchNext[matchIndex])
+						{
+							matchIndex++;
+							if (matchIndex >= matchNext.Length)
+							{
+								// Found start of class attr, but to be the next page it must contain 'bloom-page'
+								state = SearchState.LookForBloomPageClass;
+								matchNext = "bloom-page";
+								matchIndex = 0;
+							}
+							continue;
+						}
+						if (c == '>')
+						{
+							// div has no class, go back to start of looking for following page
+							state = SearchState.LookForNextPageDiv;
+							pending.Clear(); // don't output, part of replaced page
+							matchNext = "<div";
+							matchIndex = 0;
+							continue;
+						}
+						// start again looking for class within <div tag
+						matchIndex = 0;
+						continue;
+					case SearchState.LookForBloomPageClass:
+						// we're inside the class attribute of a div, looking for "bloom-page"
+						// (before the following quote).
+						pending.Append(input);
+						if (c == matchNext[matchIndex])
+						{
+							matchIndex++;
+							if (matchIndex >= matchNext.Length)
+							{
+								// Yes! we've found the next page.
+								// All the stuff we accumulated since the <div is part of the next page
+								// and needs to be output.
+								// And from here on we can just copy the rest of the file.
+								writer.Write(pending);
+								state = SearchState.CopyingTailEnd;
+							}
+							continue;
+						}
+						if (c == '"')
+						{
+							// end of class attr, didn't find 'bloom-page', back to looking for <div
+							state = SearchState.LookForNextPageDiv;
+							pending.Clear(); // don't output, part of replaced page
+							matchNext = "<div";
+							matchIndex = 0;
+							continue;
+						}
+						// start again looking for bloom-page in class attr
+						matchIndex = 0;
+						continue;
+					case SearchState.CopyingTailEnd:
+						// Once we reach this state, just copy everything else.
+						break;
+				}
+				// default behavior if we're not in the middle of a match (or we are just copying tail end)
+				// copies input to output.
+				writer.Write(input);
+			}
+
+			if (state != SearchState.CopyingTailEnd && state != SearchState.LookForOpenDiv)
+			{
+				// We found the page to replace, but never found a following page div.
+				// Presumably, then, we replaced the last page.
+				// Look back a short distance and copy over anything after the last closing div
+				// (typically </body></html>)
+				// (There are pathological cases where we might be in some other state, but not with
+				// valid files. Even LookForOpenDiv implies that the page we wanted to replace was
+				// missing.)
+				Debug.Assert(state == SearchState.LookForNextPageDiv, "Something went wrong in the Save Page process");
+				var bufString = new string(buffer);
+				var tailOfFile = bufString.Substring(0, bufIndex);
+				if (bufWrapped)
+					tailOfFile = bufString.Substring(bufIndex, bufLen - bufIndex) + tailOfFile;
+				int lastDiv = tailOfFile.LastIndexOf("</div>", StringComparison.InvariantCulture);
+				writer.Write(tailOfFile.Substring(lastDiv + "</div>".Length));
+			}
 		}
 
 		// Determines which features will have serious breaking effects if not opened in the proper version of any relevant Bloom products
@@ -1337,7 +1628,7 @@ namespace Bloom.Book
 				Update("basePage.css");
 				Update("previewMode.css");
 				Update("origami.css");
-				Update("languageDisplay.css");
+				Update("langVisibility.css");
 
 				foreach (var path in Directory.GetFiles(FolderPath, "*.css"))
 				{
@@ -1346,10 +1637,13 @@ namespace Bloom.Book
 					// In BL-5824, we got bit by design decisions we made that allow stylesheets installed via bloompack and by new Bloom versions
 					// to replace local ones. This was done so that we could send out new Bloom implementation stylesheets via bloompack and in new Bloom versions
 					// and have those used in all the books. This works well for most stylesheets.
-					// But customBookStyles.css needs to be an exception; it's whole purpose is to let the local book override Bloom's normal
-					// behavior or anything in a bloompack.
-					// So customBookStyles.css is not overridden (BloomServer) or replaced (here)..
-					if (!file.ToLowerInvariant().Contains("custombookstyles"))
+					// But customBookStyles.css  and customCollectionStyles.css are exceptions; their whole purpose is to let the local book or collection
+					// override Bloom's normal behavior or anything in a bloompack.
+					// defaultLangStyles.css is another file that should not be updated because it is always generated from the local collection settings.
+					// So customBookStyles.css, customCollectionStyles.css, and defaultLangStyles.css are not overridden (BloomServer) or replaced (here).
+					if (!file.ToLowerInvariant().Contains("custombookstyles") &&
+						!file.ToLowerInvariant().Contains("customcollectionstyles") &&
+						!file.ToLowerInvariant().Contains("defaultlangstyles"))
 					{
 						Update(file);
 					}
@@ -1566,39 +1860,14 @@ namespace Bloom.Book
 
 			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(PathToXMatterStylesheet));
 
-			EnsureHasLocalOrParentLink(dom, "settingsCollectionStyles.css");
+			EnsureHasLinkToStyleSheet(dom, "defaultLangStyles.css");
 
-			EnsureHasLocalOrParentLink(dom, "customCollectionStyles.css");
+			EnsureHasLinkToStyleSheet(dom, "customCollectionStyles.css");
 
 			if (RobustFile.Exists(Path.Combine(FolderPath, "customBookStyles.css")))
 				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
 			else
 				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
-		}
-
-		/// <summary>
-		/// Files like CustomCollectionStyles or settingsCollectionStyles are usually found
-		/// in the parent directory, and we want a link with href like ../CustomCollectionStyles.css.
-		/// But when publishing (e.g., to Android or Epub), we put those files in the book folder,
-		/// and the link needs to point there. In that case the file is typically found in both
-		/// places, so we preferentially link to the local one if found, though usually it isn't.
-		/// </summary>
-		/// <param name="dom"></param>
-		/// <param name="fileName"></param>
-		private void EnsureHasLocalOrParentLink(HtmlDom dom, string fileName)
-		{
-			var localPath = Path.Combine(FolderPath, fileName);
-			if (RobustFile.Exists(localPath))
-			{
-				EnsureHasLinkToStyleSheet(dom, fileName);
-				return;
-			}
-
-			// Don't use Path.DirectorySeparatorChar here...we're going to use this path in an href
-			// where it should definitely be forward slash. And it works fine in a Windows path too.
-			var parentRelativePath = "../" + fileName;
-			if (RobustFile.Exists(Path.Combine(FolderPath, parentRelativePath)))
-				EnsureHasLinkToStyleSheet(dom, parentRelativePath);
 		}
 
 		public string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack)
@@ -1653,7 +1922,7 @@ namespace Bloom.Book
 			dom.AddStyleSheet("previewMode.css");
 			dom.AddStyleSheet("basePage.css");
 			dom.AddStyleSheet("origami.css");
-			dom.AddStyleSheet("languageDisplay.css");
+			dom.AddStyleSheet("langVisibility.css");
 
 			// only add brandingCSS is there is one for the current branding
 			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", _collectionSettings.BrandingProjectKey, "branding.css");
@@ -1776,27 +2045,6 @@ namespace Bloom.Book
 			foreach (var directory in Directory.GetDirectories(sourceDir))
 				CopyDirectory(directory, Path.Combine(targetDir, Path.GetFileName(directory)));
 		}
-
-		/// <summary>
-		/// Copy the collection level style files to the given folder.
-		/// </summary>
-		public static void CopyCollectionStyles(string bookDir, string targetDir)
-		{
-			// Overwrite any existing file in the target directory.
-			// If a file is present, that seems to mean the user has extraneous copy of a file which normally belongs in their collection folder in their book folder as well.
-			// Our policy is to ignore the one in the book folder and just use the one in their collection folder (which is where it belongs).
-			// (Note that we're only overwriting it in the target directory which is a temp directory. We're not overwriting anything in their book folder.)
-			bool overwriteInTargetDir = true;
-
-			var collectionDir = Path.GetDirectoryName(bookDir);
-			var settings = Path.Combine(collectionDir, "settingsCollectionStyles.css");
-			if (File.Exists(settings))
-				RobustFile.Copy(settings, Path.Combine(targetDir,"settingsCollectionStyles.css"), overwriteInTargetDir);
-			var custom = Path.Combine(collectionDir, "customCollectionStyles.css");
-			if (File.Exists(custom))
-				RobustFile.Copy(custom, Path.Combine(targetDir,"customCollectionStyles.css"), overwriteInTargetDir);
-		}
-
 
 		/// <summary>
 		/// Makes a copy of the book on disk and gives the new copy a unique guid

@@ -8,7 +8,14 @@
 @buttonColumnWidth: 40px;
 @splitAnimationTime: 300ms;
 
-//highlight of the text on the page
+// See BL-7442: When low line height causes lines to overlap, the highlighting overlaps and
+// can over up the bottom of the characters in the line above. For Chrome/Safari we have
+// a fix that can be found in bloom-player. But those don't work in Firefox yet (as of FF 68).
+// So we deal with the most common case of overlap (the book title on the cover) by just
+// treating the text as a rectangle. And it's fine that this will show this way in Chrome too:
+.Title-On-Cover-style span.ui-audioCurrent:not(.disableHighlight) {
+    display: inline-block;
+}
 span.ui-audioCurrent:not(.disableHighlight),
 div.ui-audioCurrent:not(.disableHighlight) p {
     background: @highlightColor;

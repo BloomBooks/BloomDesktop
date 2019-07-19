@@ -96,7 +96,7 @@ LibSynphony.prototype.setExtraSentencePunctuation = function(extra) {
     // sentence-terminating. If they want to use backslash, they will just have to double it; we can't fix it
     // because we want to allow \u0020 etc. I don't know why <> need to be replaced but they don't work otherwise.
     var extraRe = extra
-        .replace("\\U", "\\u")
+        .replace(/\\U/g, "\\u") // replace all
         .replace("^", "\\u005E")
         .replace("$", "\\u0024")
         .replace(".", "")

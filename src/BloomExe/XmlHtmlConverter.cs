@@ -320,6 +320,33 @@ namespace Bloom
 			return targetPath;
 		}
 
+		/// <summary>
+		/// Convert a single element into equivalent HTML.
+		/// </summary>
+		/// <param name="elt"></param>
+		/// <returns></returns>
+		public static string ConvertElementToHtml5(XmlElement elt)
+		{
+			var xmlStringBuilder = new StringBuilder();
+			// There may be some way to make Tidy work on something that isn't a whole HTML document,
+			// but adding and removing this doesn't cost much.
+			xmlStringBuilder.Append("<html><body>");
+			var settings = new XmlWriterSettings { Indent = true, CheckCharacters = true, OmitXmlDeclaration = true, ConformanceLevel = ConformanceLevel.Fragment};
+			using (var writer = XmlWriter.Create(xmlStringBuilder, settings))
+			{
+				elt.WriteTo(writer);
+				writer.Close();
+			}
+
+			xmlStringBuilder.Append("</body></html>");
+
+			var docHtml = ConvertXhtmlToHtml5(xmlStringBuilder.ToString());
+			int bodyIndex = docHtml.IndexOf("<body>", StringComparison.InvariantCulture);
+			int endBodyIndex = docHtml.LastIndexOf("</body>", StringComparison.InvariantCulture);
+			int start = bodyIndex + "<body>".Length;
+			return docHtml.Substring(start, endBodyIndex - start);
+		}
+
 		public static string ConvertDomToHtml5(XmlDocument dom)
 		{
 			// First we write the DOM out to string
@@ -332,8 +359,13 @@ namespace Bloom
 				writer.Close();
 			}
 
-			// HTML Tidy will mess that xml up, so we have this work around to make it "safe from libtidy"
-			var xml = xmlStringBuilder.ToString();
+			return ConvertXhtmlToHtml5(xmlStringBuilder.ToString());
+		}
+
+		static string ConvertXhtmlToHtml5(string input)
+		{
+			var xml = input;
+			// HTML Tidy will mess many things up, so we have these work arounds to make it "safe from libtidy"
 			xml = AddFillerToKeepTidyFromRemovingEmptyElements(xml);
 
 			// Tidy will convert <br /> to <br></br> which is not valid and produces an unexpected double line break.

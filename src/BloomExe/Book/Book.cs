@@ -314,7 +314,7 @@ namespace Bloom.Book
 			AddCreationTypeAttribute(pageDom);
 
 			pageDom.AddStyleSheet("editPaneGlobal.css");
-			pageDom.AddStyleSheet("languageDisplay.css");
+			pageDom.AddStyleSheet("");
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, CollectionSettings);
@@ -444,7 +444,7 @@ namespace Bloom.Book
 			pageDom.RemoveModeStyleSheets();
 			// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
 			// such time as it's clear if it matters.
-			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css", "languageDisplay.css"})
+			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css", "langVisibility.css"})
 			{
 				pageDom.AddStyleSheet(cssFileName);
 			}
@@ -763,6 +763,8 @@ namespace Bloom.Book
 				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, CollectionSettings.Language1Iso639Code);
 			}
 
+			OurHtmlDom.FixDivOrdering();
+
 			Save();
 			_bookRefreshEvent?.Raise(this);
 		}
@@ -803,23 +805,6 @@ namespace Bloom.Book
 				var lang3 = CollectionSettings.Language3Iso639Code;
 				if (!String.IsNullOrEmpty(lang3) && lang3 != lang2 && lang3 != lang1)
 					TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang3);
-			}
-		}
-
-		/// <summary>
-		/// For Bloom Reader books (and ePUBs), we need to copy the collection level settings files
-		/// to go with the book.  Since these end up in the zip file with the book files, the link
-		/// references to them need to be adjusted to use the current directory, not the parent
-		/// directory (which won't really exist).
-		/// </summary>
-		public void AdjustCollectionStylesToBookFolder()
-		{
-			foreach (XmlElement styleLink in OurHtmlDom.SafeSelectNodes("/html/head/link[@rel='stylesheet']"))
-			{
-				if (styleLink.Attributes["href"].Value == "../settingsCollectionStyles.css")
-					styleLink.Attributes["href"].Value = "settingsCollectionStyles.css";
-				else if (styleLink.Attributes["href"].Value == "../customCollectionStyles.css")
-					styleLink.Attributes["href"].Value = "customCollectionStyles.css";
 			}
 		}
 
@@ -978,6 +963,9 @@ namespace Bloom.Book
 			RepairBrokenSmallCoverCredits(bookDOM);
 			RepairCoverImageDescriptions(bookDOM);
 
+			progress.WriteStatus("Updating collection settings...");
+			UpdateCollectionRelatedStylesAndSettings(bookDOM);
+
 			progress.WriteStatus("Repair page label localization");
 			RepairPageLabelLocalization(bookDOM);
 
@@ -1041,6 +1029,108 @@ namespace Bloom.Book
 
 			//we've removed and possible added pages, so our page cache is invalid
 			_pagesCache = null;
+		}
+
+		const string kCustomStyles = "customCollectionStyles.css";
+		const string kOldCollectionStyles = "settingsCollectionStyles.css";
+		/// <summary>
+		/// Adjust several external stylesheet links and associated files.  Also adjust some book level
+		/// settings (in json or html) to match current collection settings.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7343.
+		/// </remarks>
+		private void UpdateCollectionRelatedStylesAndSettings(HtmlDom bookDom)
+		{
+			foreach (XmlElement link in bookDom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var fileName = link.GetStringAttribute("href");
+				if (fileName == "languageDisplay.css")
+					link.SetAttribute("href", "langVisibility.css");
+				else if (fileName == kOldCollectionStyles || fileName == "../"+kOldCollectionStyles || fileName == "..\\"+kOldCollectionStyles)
+					link.SetAttribute("href", "defaultLangStyles.css");
+				else if (fileName == "../"+kCustomStyles || fileName == "..\\"+kCustomStyles)
+					link.SetAttribute("href", kCustomStyles);
+			}
+			// Rename/remove/create files that have changed names or locations to match link href changes above.
+			if (RobustFile.Exists(Path.Combine(FolderPath, "languageDisplay.css")))
+			{
+				if (RobustFile.Exists(Path.Combine(FolderPath, "langVisibility.css")))
+					RobustFile.Delete(Path.Combine(FolderPath, "languageDisplay.css"));
+				else
+					RobustFile.Move(Path.Combine(FolderPath, "languageDisplay.css"), Path.Combine(FolderPath, "langVisibility.css"));
+			}
+			if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles)))
+				RobustFile.Delete(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles));
+			CreateOrUpdateDefaultLangStyles();
+			// Copy files from collection to book folders to match link href changes above.
+			if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles)))
+				RobustFile.Copy(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles), Path.Combine(FolderPath, kCustomStyles), true);
+			// Update book settings from collection settings
+			UpdateCollectionSettingsInBookMetaData();
+			// Set primary book language attributes.
+			foreach (XmlElement body in bookDom.SafeSelectNodes("//body"))
+			{
+				body.SetAttribute("lang", CollectionSettings.Language1Iso639Code);
+			}
+			foreach (XmlElement pageDiv in bookDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			{
+				pageDiv.SetAttribute("lang", CollectionSettings.Language1Iso639Code);
+			}
+		}
+
+		private void CreateOrUpdateDefaultLangStyles()
+		{
+			Debug.WriteLine($"writing {FolderPath}/defaultLangStyles.css");
+			var path = Path.Combine(FolderPath, "defaultLangStyles.css");
+			var collectionStylesCss = CollectionSettings.GetCollectionStylesCss(false);
+			var cssBuilder = new StringBuilder(collectionStylesCss);
+			if (RobustFile.Exists(path))
+			{
+				var cssLangs = new HashSet<string>();
+				cssLangs.Add(CollectionSettings.Language1Iso639Code);
+				cssLangs.Add(CollectionSettings.Language2Iso639Code);
+				if (!String.IsNullOrEmpty(CollectionSettings.Language3Iso639Code))
+					cssLangs.Add(CollectionSettings.Language3Iso639Code);
+
+				var cssLines = RobustFile.ReadAllLines(path);
+				const string kLangTag = "[lang='";
+				var copyCurrentRule = false;
+				for (var index = 0 ; index < cssLines.Length; ++index)
+				{
+					var line = cssLines[index].Trim();
+					if (line.StartsWith(kLangTag))
+					{
+						var idxQuote = line.IndexOf("'", kLangTag.Length);
+						if (idxQuote > 0)
+						{
+							var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
+							copyCurrentRule = !cssLangs.Contains(lang);
+						}
+					}
+					if (copyCurrentRule)
+						cssBuilder.AppendLine(cssLines[index]);
+				}
+			}
+			RobustFile.WriteAllText(path, cssBuilder.ToString());
+		}
+
+		private void UpdateCollectionSettingsInBookMetaData()
+		{
+			Debug.WriteLine($"updating page number style and language display names in {FolderPath}/meta.json");
+			BookInfo.MetaData.PageNumberStyle = CollectionSettings.PageNumberStyle;
+			if (BookInfo.MetaData.DisplayNames == null)
+				BookInfo.MetaData.DisplayNames = new Dictionary<string,string>();
+			BookInfo.MetaData.DisplayNames[CollectionSettings.Language1Iso639Code] = CollectionSettings.Language1Name;
+			if (CollectionSettings.Language2Iso639Code != CollectionSettings.Language1Iso639Code)
+				BookInfo.MetaData.DisplayNames[CollectionSettings.Language2Iso639Code] = CollectionSettings.Language2Name;
+			if (!String.IsNullOrEmpty(CollectionSettings.Language3Iso639Code) &&
+				CollectionSettings.Language3Iso639Code != CollectionSettings.Language1Iso639Code &&
+				CollectionSettings.Language3Iso639Code != CollectionSettings.Language2Iso639Code)
+			{
+				BookInfo.MetaData.DisplayNames[CollectionSettings.Language3Iso639Code] = CollectionSettings.Language3Name;
+			}
+			// These settings will be saved to the meta.json file the next time the book itself is saved.
 		}
 
 		/// <summary>
@@ -2129,6 +2219,9 @@ namespace Bloom.Book
 				// But only this strategy allows the code to be updated (e.g., to make the old and new
 				// versions of the page work properly together).
 				var sourcePath = Path.Combine(templatePage.Book.FolderPath, fileName);
+				// Don't try to copy a file over itself.  (See https://issues.bloomlibrary.org/youtrack/issue/BL-7349.)
+				if (sourcePath == destinationPath)
+					continue;
 				if (RobustFile.Exists(sourcePath))
 					RobustFile.Copy(sourcePath, destinationPath, true);
 			}
@@ -2329,12 +2422,13 @@ namespace Bloom.Book
 			return lastPageNumber;
 		}
 
+		public BookData BookData => _bookData;
 
 		/// <summary>
 		/// Earlier, we handed out a single-page version of the document. Now it has been edited,
 		/// so we now we need to fold changes back in
 		/// </summary>
-		public void SavePage(HtmlDom editedPageDom)
+		public void SavePage(HtmlDom editedPageDom, bool sharedDataWasChanged = true)
 		{
 			Debug.Assert(IsEditable);
 			try
@@ -2351,17 +2445,40 @@ namespace Bloom.Book
 				HtmlDom.ProcessPageAfterEditing(pageFromStorage, pageFromEditedDom);
 				HtmlDom.SetImageAltAttrsFromDescriptions(pageFromStorage, CollectionSettings.Language1Iso639Code);
 
-				_bookData.SuckInDataFromEditedDom(editedPageDom); //this will do an updatetitle
+				// The main condition for being able to just write the page is that no shareable data on the
+				// page changed during editing. If that's so we can skip this step.
+				if (sharedDataWasChanged)
+					_bookData.SuckInDataFromEditedDom(editedPageDom); //this will do an updatetitle
 
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles".
 				// Here we copy that over to the book DOM.
 				var userModifiedStyles = HtmlDom.GetUserModifiedStyleElement(editedPageDom.Head);
+				var stylesChanged = false;
 				if (userModifiedStyles != null)
 				{
-					GetOrCreateUserModifiedStyleElementFromStorage().InnerXml = userModifiedStyles.InnerXml;
+					var userModifiedStyleElementFromStorage = GetOrCreateUserModifiedStyleElementFromStorage();
+					if (userModifiedStyleElementFromStorage.InnerXml != userModifiedStyles.InnerXml)
+					{
+						userModifiedStyleElementFromStorage.InnerXml = userModifiedStyles.InnerXml;
+						stylesChanged = true; // note, this is not shared data in the sense that needs SuckInDataFromEditedDom
+					}
+
 					//Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
 				}
-				Save();
+
+				if (!sharedDataWasChanged && !stylesChanged)
+				{
+					// nothing changed outside this page. We can do a much more efficient write operation.
+					// (On a 200+ page book, like the one in BL-7253, this version of updating the page
+					// runs in about a half second instead of two and a half. Moreover, on such a book,
+					// running the full Save rather quickly fragments the heap...allocating about 16 7-megabyte
+					// memory chunks in each Save...to the point where Bloom runs out of memory.)
+					SaveForPageChanged(pageId, pageFromStorage);
+				}
+				else
+				{
+					Save();
+				}
 
 				Storage.UpdateBookFileAndFolderName(CollectionSettings);
 				//review used to have   UpdateBookFolderAndFileNames(data);
@@ -2766,6 +2883,14 @@ namespace Bloom.Book
 
 		public void Save()
 		{
+			// If you add something here, consider whether it is needed in SaveForPageChanged().
+			// I believe all the things currently here before the actual Save are not needed
+			// in the cases where we use SaveForPageChanged(). We switch to Save if any
+			// book data changed, which will be true if we're changing the title and thus
+			// the book's location. We also do a full Save after bringing the book up to date;
+			// after that, there shouldn't be any obsolete sound attributes.
+			// (In fact, since we bring a book up to date before editing, and that code
+			// does the removal, I don't see why it's needed here either.)
 			Guard.Against(HasFatalError, "Save failed: " + FatalErrorDescription);
 			Guard.Against(!IsEditable, "Tried to save a non-editable book.");
 			RemoveObsoleteSoundAttributes(OurHtmlDom);
@@ -2782,6 +2907,19 @@ namespace Bloom.Book
 			}
 			Storage.Save();
 
+			DoPostSaveTasks();
+		}
+
+		public void SaveForPageChanged(string pageId, XmlElement modifiedPage)
+		{
+			Guard.Against(HasFatalError, "Save failed: " + FatalErrorDescription);
+			Guard.Against(!IsEditable, "Tried to save a non-editable book.");
+			Storage.SaveForPageChanged(pageId, modifiedPage);
+			DoPostSaveTasks();
+		}
+
+		private void DoPostSaveTasks()
+		{
 			// Tell the accessibility checker window (and any future subscriber) to re-compute.
 			// This Task.Delay() helps even with a delay of 0, becuase it means we get to finish with this command.
 			// I'm chooing 1 second at the moment as that feels about the longest I would want to

@@ -298,10 +298,10 @@ namespace BloomTests.Publish
 		{
 			Bloom.Book.Book book;
 			string head = @"<meta charset='UTF-8'/>
-				<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
+				<link rel='stylesheet' href='defaultLangStyles.css'/>
 				<link rel='stylesheet' href='basePage.css' type='text/css'/>
-				<link rel='stylesheet' href='languageDisplay.css' type='text/css'/>
-				<link rel='stylesheet' href='../customCollectionStyles.css'/>
+				<link rel='stylesheet' href='langVisibility.css' type='text/css'/>
+				<link rel='stylesheet' href='customCollectionStyles.css'/>
 				<link rel='stylesheet' href='customBookStyles.css'/>" + extraHeadContent;
 			if (createPhysicalFile)
 			{
@@ -340,10 +340,9 @@ namespace BloomTests.Publish
 		// Set up some typical CSS files we DO want to include, even in 'unpaginated' mode
 		private static void CreateCommonCssFiles(Bloom.Book.Book book)
 		{
-			var collectionFolder = Path.GetDirectoryName(book.FolderPath);
-			var settingsCollectionPath = Path.Combine(collectionFolder, "settingsCollectionStyles.css");
+			var settingsCollectionPath = Path.Combine(book.FolderPath, "defaultLangStyles.css");
 			File.WriteAllText(settingsCollectionPath, "body:{font-family: 'Andika New Basic';}");
-			var customCollectionPath = Path.Combine(collectionFolder, "customCollectionStyles.css");
+			var customCollectionPath = Path.Combine(book.FolderPath, "customCollectionStyles.css");
 			File.WriteAllText(customCollectionPath, "body:{font-family: 'Andika New Basic';}");
 			var customBookPath = Path.Combine(book.FolderPath, "customBookStyles.css");
 			File.WriteAllText(customBookPath, "body:{font-family: 'Andika New Basic';}");
@@ -368,7 +367,7 @@ namespace BloomTests.Publish
 
 			foreach (var image in images)
 				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//img[@src='"+kImagesSlash + image + ".png']");
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"settingsCollectionStyles.css']", _ns);
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"defaultLangStyles.css']", _ns);
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"customCollectionStyles.css']", _ns);
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"customBookStyles.css']", _ns);
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"fonts.css']", _ns);
@@ -401,7 +400,7 @@ namespace BloomTests.Publish
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='nav']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='cover-image']");
 
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='settingsCollectionStyles' and @href='"+kCssSlash+"settingsCollectionStyles.css']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='defaultLangStyles' and @href='"+kCssSlash+"defaultLangStyles.css']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customCollectionStyles' and @href='"+kCssSlash+"customCollectionStyles.css']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customBookStyles' and @href='"+kCssSlash+"customBookStyles.css']");
 

@@ -704,12 +704,12 @@ namespace Bloom.Api
 			// is this request the full path to a real file?
 			if (RobustFile.Exists(localPath) && Path.IsPathRooted(localPath))
 			{
-				// Typically this will be files in the book or collection directory, since the browser
+				// Typically this will be files in the book directory, since the browser
 				// is supplying the path.
 
-				// currently this only applies to settingsCollectionStyles.css, and customCollectionStyles.css
+				// currently this only applies to defaultLangStyles.css, and customCollectionStyles.css
 				var cssFile = Path.GetFileName(localPath);
-				if ((cssFile == "settingsCollectionStyles.css") || (cssFile == "customCollectionStyles.css"))
+				if ((cssFile == "defaultLangStyles.css") || (cssFile == "customCollectionStyles.css"))
 				{
 					info.ContentType = "text/css";
 					info.ReplyWithFileContent(localPath);

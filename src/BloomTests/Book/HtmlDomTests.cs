@@ -182,13 +182,13 @@ namespace BloomTests.Book
 				<link rel='stylesheet' href='my special b.css' type='text/css' />
 				<link rel='stylesheet' href='Factory-Xmatter.css' type='text/css' />
 				<link rel='stylesheet' href='my special a.css' type='text/css' />
-				<link rel='stylesheet' href='../settingsCollectionStyles.css' type='text/css' />
+				<link rel='stylesheet' href='defaultLangStyles.css' type='text/css' />
 				<link rel='stylesheet' href='my special c.css' type='text/css' />
 				<link rel='stylesheet' href='Basic book.css' type='text/css' />
-				<link rel='stylesheet' href='../customCollectionStyles.css' type='text/css' />
+				<link rel='stylesheet' href='customCollectionStyles.css' type='text/css' />
 				<link rel='stylesheet' href='customBookStyles.css' type='text/css' />
 				<link rel='stylesheet' href='basePage.css' type='text/css' />
-				<link rel='stylesheet' href='languageDisplay.css' type='text/css' />
+				<link rel='stylesheet' href='langVisibility.css' type='text/css' />
 				<link rel='stylesheet' href='../../editMode.css' type='text/css' />
 
 				</head></html>";
@@ -207,10 +207,10 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[7][@href='my special c.css']", 1);
 
 			//NB: I (JH) don't for sure know yet what the order of this should be. I think it should be last-ish.
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[8][@href='languageDisplay.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[8][@href='langVisibility.css']", 1);
 
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[9][@href='../settingsCollectionStyles.css']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[10][@href='../customCollectionStyles.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[9][@href='defaultLangStyles.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[10][@href='customCollectionStyles.css']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[11][@href='customBookStyles.css']", 1);
 
 		}
@@ -907,6 +907,28 @@ namespace BloomTests.Book
 			//should be page 2 ('c' in our pretend script)
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath($"//div[@id='12' and @data-page-number='{page12Number}']", 1);
 
+		}
+
+		[Test]
+		public void UpdatePageNumberAndSideClassOfPages_EmptyXmatterPageNumbers()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+					<div id='frontCover' class='bloom-page frontCover'/>
+					<div id='insideFrontCover' class='bloom-page insideFrontCover'/>
+					<div id='page-1' class='bloom-page numberedPage'/>
+					<div id='page-2' class='bloom-page numberedPage'/>
+					<div id='page-3' class='bloom-page numberedPage'/>
+					<div id='insideBackCover' class='bloom-page insideBackCover'/>
+					<div id='backCover' class='bloom-page backCover'/>
+				</body></html>");
+			dom.UpdatePageNumberAndSideClassOfPages("", false /* not rtl */);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='frontCover' and @data-page-number='']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='insideFrontCover' and @data-page-number='']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='page-1' and @data-page-number='1']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='page-2' and @data-page-number='2']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='page-3' and @data-page-number='3']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='insideBackCover' and @data-page-number='']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='backCover' and @data-page-number='']", 1);
 		}
 
 		[Test]

@@ -36,12 +36,17 @@ namespace Bloom.Book
 		internal static void MakeSizedThumbnail(Book book, Color backColor, string destinationFolder, int heightAndWidth)
 		{
 			var coverImagePath = book.GetCoverImagePath();
+			if (coverImagePath == null)
+			{
+				var blankImage = Path.Combine(FileLocationUtilities.DirectoryOfApplicationOrSolution, "DistFiles", "Blank.png");
+				if (RobustFile.Exists(blankImage))
+					coverImagePath = blankImage;
+			}
 			if(coverImagePath != null)
 			{
 				var thumbPath = Path.Combine(destinationFolder, "thumbnail.png");
 				RuntimeImageProcessor.GenerateEBookThumbnail(coverImagePath, thumbPath, heightAndWidth, heightAndWidth, backColor);
 			}
-			// else, BR shows a default thumbnail for the book
 		}
 
 		public static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
@@ -240,7 +245,7 @@ namespace Bloom.Book
 			var transparentImageFiles = new List<string>();
 			foreach (var div in xmlDom.SafeSelectNodes("//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-imageContainer')]").Cast<XmlElement>())
 			{
-				var style = div.GetStringAttribute("style");
+				var style = div.GetAttribute("style");
 				if (!String.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
 				{
 					System.Diagnostics.Debug.Assert(div.GetStringAttribute("class").Contains("bloom-backgroundImage"));

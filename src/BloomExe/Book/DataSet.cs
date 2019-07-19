@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SIL.Extensions;
 using SIL.Text;
 
 namespace Bloom.Book
@@ -88,6 +89,38 @@ namespace Bloom.Book
 				XmatterPageDataAttributeSets[key] = xmatterPageDataAttributeSet;
 			else
 				XmatterPageDataAttributeSets.Add(key, xmatterPageDataAttributeSet);
+		}
+
+
+		// Basically an approximation to Equals, but I don't want to bother with the whole pattern,
+		// and for the purposes of this method we can ignore whether writing system aliases are the same.
+		public bool SameAs(DataSet other)
+		{
+			if (this.TextVariables.Count != other.TextVariables.Count)
+				return false;
+			if (this.XmatterPageDataAttributeSets.Count != other.XmatterPageDataAttributeSets.Count)
+				return false;
+			foreach (var key in TextVariables.Keys)
+			{
+				NamedMutliLingualValue otherVal;
+				if (!other.TextVariables.TryGetValue(key, out otherVal))
+					return false;
+				var ourVal = TextVariables[key];
+				if (ourVal.IsCollectionValue != otherVal.IsCollectionValue)
+					return false;
+				if (!ourVal.TextAlternatives.Equals(otherVal.TextAlternatives))
+					return false;
+			}
+
+			foreach (var key in XmatterPageDataAttributeSets.Keys)
+			{
+				ISet<KeyValuePair<string, string>> otherVal;
+				if (!other.XmatterPageDataAttributeSets.TryGetValue(key, out otherVal))
+					return false;
+				if (!XmatterPageDataAttributeSets[key].KeyedSetsEqual(otherVal))
+					return false;
+			}
+			return true;
 		}
 	}
 

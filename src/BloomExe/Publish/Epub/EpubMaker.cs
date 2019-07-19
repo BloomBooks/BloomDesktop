@@ -271,7 +271,15 @@ namespace Bloom.Publish.Epub
 				// It should only be null while running unit tests.
 				// Eventually, we want a unit test that checks this device xmatter behavior.
 				// But don't have time for now.
-				_book = PublishHelper.MakeDeviceXmatterTempBook(_book, _bookServer, tempBookPath, _omittedPageLabels);
+				_book = PublishHelper.MakeDeviceXmatterTempBook(_book.FolderPath, _bookServer, tempBookPath, _omittedPageLabels);
+			}
+			else if (Program.RunningUnitTests)
+			{
+				// HACK alert!
+				// Previous to BL-7300, EpubMaker called FixDivOrdering directly, so unit tests ordered them correctly.
+				// The code for BL-7300 moved the call into BringBookUpToDate which is called by MakeDeviceXmatterTempBook above.
+				// Since unit tests do not call MakeDeviceXmatterTempBook, we need to fix the ordering directly.
+				_book.OurHtmlDom.FixDivOrdering();
 			}
 
 			// The readium control remembers the current page for each book.
@@ -886,20 +894,18 @@ namespace Bloom.Publish.Epub
 				if(name == "fonts.css")
 					continue; // generated file for this book, already copied to output.
 				string path;
-				if (name == "customCollectionStyles.css" || name == "settingsCollectionStyles.css")
+				if (name == "customCollectionStyles.css" || name == "defaultLangStyles.css")
 				{
-					// These two files should be in the original book's parent folder, not in some arbitrary place
-					// in our search path.
-					path = Path.Combine(Path.GetDirectoryName(_originalBook.FolderPath), name);
+					// These files should be in the book's folder, not in some arbitrary place in our search path.
+					path = Path.Combine(_originalBook.FolderPath, name);
 					// It's OK not to find these.
 					if (!File.Exists(path))
 					{
-						path = null;
+						continue;
 					}
-					else if (name == "settingsCollectionStyles.css")
+					else if (name == "defaultLangStyles.css")
 					{
 						ProcessSettingsForTextDirectionality(path);
-						continue;
 					}
 				}
 				else
@@ -907,8 +913,7 @@ namespace Bloom.Publish.Epub
 					var fl = Storage.GetFileLocator();
 					path = fl.LocateFileWithThrow(name);
 				}
-				if (path != null)
-					CopyFileToEpub(path, subfolder:kCssFolder);
+				CopyFileToEpub(path, subfolder:kCssFolder);
 			}
 		}
 
@@ -925,13 +930,6 @@ namespace Bloom.Publish.Epub
 				_directionSettings.Add(this.Book.CollectionSettings.Language2Iso639Code, this.Book.CollectionSettings.IsLanguage2Rtl ? "rtl" : "ltr");
 			if (!String.IsNullOrEmpty(this.Book.CollectionSettings.Language3Iso639Code) && !_directionSettings.ContainsKey(this.Book.CollectionSettings.Language3Iso639Code))
 				_directionSettings.Add(this.Book.CollectionSettings.Language3Iso639Code, this.Book.CollectionSettings.IsLanguage3Rtl ? "rtl" : "ltr");
-
-			using (var tmpdir = new BloomTemp.TemporaryFolder("settings"))
-			{
-				var newpath = Path.Combine(tmpdir.FolderPath, Path.GetFileName(path));
-				this.Book.CollectionSettings.SaveCollectionStylesCss(newpath, true);
-				CopyFileToEpub(newpath, subfolder:kCssFolder);
-			}
 		}
 
 		private void SetDirAttributes(HtmlDom pageDom)
@@ -1041,8 +1039,6 @@ namespace Bloom.Publish.Epub
 			// Do this as the last cleanup step, since other things may be looking for these elements
 			// expecting them to be divs.
 			ConvertHeadingStylesToHeadingElements(pageDom);
-
-			FixDivOrderingForPage(pageDom);
 
 			// Since we only allow one htm file in a book folder, I don't think there is any
 			// way this name can clash with anything else.
@@ -1271,7 +1267,6 @@ namespace Bloom.Publish.Epub
 			if (PublishImageDescriptions == BookInfo.HowToPublishImageDescriptions.OnPage)
 			{
 				var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
-				FixDivOrdering(imageDescriptions.Cast<XmlElement>());
 				foreach (XmlElement description in imageDescriptions)
 				{
 					var activeDescriptions = description.SafeSelectNodes("div[contains(@class, 'bloom-visibility-code-on')]");
@@ -1306,113 +1301,16 @@ namespace Bloom.Publish.Epub
 						aside.SetAttribute("class", "imageDescription ImageDescriptionEdit-style");
 						asideContainer.AppendChild(aside);
 					}
+					// Delete the original image description since its content has been copied into the aside we
+					// just made, and even if we keep it hidden, the player may play the audio for both. (BL-7308)
+					description.ParentNode.RemoveChild(description);
 				}
 			}
-			else if (PublishImageDescriptions == BookInfo.HowToPublishImageDescriptions.Links)
-			{
-				var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
-				foreach (XmlElement description in imageDescriptions)
-				{
-					var activeDescriptions = description.SafeSelectNodes("div[contains(@class, 'bloom-visibility-code-on')]");
-					foreach (XmlNode activeDescription in activeDescriptions)
-					{
-						++_imgCount;
-						var link = description.OwnerDocument.CreateElement("a");
-						description.ParentNode.ParentNode.InsertAfter(link, description.ParentNode);
-
-						// Look for a localization of "Image Description" to be the text of the link.
-						// Enhance: there should be a way for the author of the book to provide this in
-						// the book's vernacular language. Until then,
-						// note that we are looking for languages useful in the book, not for the UI
-						// language currently used in Bloom.
-						var preferredLanguages = new List<string>();
-						preferredLanguages.Add(Book.CollectionSettings.Language1Iso639Code);
-						if (!string.IsNullOrWhiteSpace(Book.MultilingualContentLanguage2))
-							preferredLanguages.Add(Book.MultilingualContentLanguage2);
-						if (!string.IsNullOrWhiteSpace(Book.MultilingualContentLanguage3))
-							preferredLanguages.Add(Book.MultilingualContentLanguage3);
-						preferredLanguages.Add("en"); // redundant?
-						string actualLanguage;
-						link.InnerText = LocalizationManager.GetString("PublishTab.Epub.ImageDescriptionLinkLabel", "Image Description",
-							"Used in Epubs as the text of a link that leads to the description of an image",
-							preferredLanguages, out actualLanguage);
-
-						// Create an extra 'page' at the end of the book to hold the image description.
-						// These pages are in the spine but marked linear="no" which should prevent the
-						// agent from stepping through them normally; our Readium preview unfortunately
-						// does not obey this, but most agents do.
-						var descriptionPage = description.OwnerDocument.CreateElement("div");
-						bookDom.Body.AppendChild(descriptionPage);
-						descriptionPage.SetAttribute("class", "bloom-page");
-						var marginBox = description.OwnerDocument.CreateElement("div");
-						// not sure whether this is useful. The idea was to make these extra pages more like normal ones.
-						// However, some agents (e.g., Gitden) treat these nonlinear pages as pop-up notes and seem to
-						// ignore formatting (and, unfortunately, media overlays) on them.
-						descriptionPage.AppendChild(marginBox);
-						marginBox.SetAttribute("class", "marginBox");
-						var aside = description.OwnerDocument.CreateElement("aside");
-						// We want to preserve all the inner markup, especially the audio spans.
-						aside.InnerXml = activeDescription.InnerXml;
-						aside.SetAttribute("class", "imageDescription");
-						marginBox.AppendChild(aside);
-
-						// Now set up a file name, id and href so the image description link refers to the aside.
-						var linkId = "imageDesc" + _imgCount;
-						aside.SetAttribute("id", linkId);
-						var extraPageName = "ImageDesc" + _imgCount + ".xhtml";
-						_desiredNameMap[descriptionPage] = extraPageName;
-						_nonLinearSpineItems.Add(extraPageName);
-						link.SetAttribute("href", extraPageName + "#" + linkId);
-
-						var figDescId = "figdesc" + _imgCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
-						link.SetAttribute("id", figDescId);
-
-						// Set up a backlink from the aside to the image. This is helpful if the agent does not
-						// otherwise provide a way back from looking at the description.
-						// (The null check is a belt-and-braces thing; we shouldn't normally have an image description
-						// without an image.)
-						var img = (description.ParentNode as XmlElement).GetElementsByTagName("img").Cast<XmlElement>().FirstOrDefault();
-						if (img != null)
-						{
-							// we'd like to set a longdescription attribute pointing at the aside, but it's obsolete in epubs.
-							// we'd also like to set aria-describedby to point at the aside, but its content is limited to
-							// an ID on the same page. aria-details pointing at the link is some clue how to get to the
-							// description, though Avneesh Singh (COO, DAISY Consortium) says, "aria-detials is mainly replacement for alttext,
-							// we know that aria came up with this attribute, but we are not able to find any suitable use of it for image descriptions...
-							// The support in browsers is also poor. This is why [this is] not [a] recommended technique."
-							// Still it may be some use some day.
-							img.SetAttribute("aria-details", figDescId);
-							var bookFigId = "bookfig" + _imgCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
-							img.SetAttribute("id", bookFigId);
-							var backLink = description.OwnerDocument.CreateElement("a");
-							backLink.InnerText = LocalizationManager.GetString("PublishTab.Epub.BackLinkLabel", "Back",
-							"Used in Epubs as the text of a link that leads from the image description back to the main page",
-							preferredLanguages, out actualLanguage);
-							// See note below regarding roles
-							backLink.SetAttribute("role", "doc-backlink");
-							backLink.SetAttribute("type", kEpubNamespace, "backlink");
-							marginBox.AppendChild(backLink);
-							var sourcePage = description.ParentWithClass("bloom-page");
-							List<Tuple<XmlElement, string>> pendingBackLinks;
-							if (!_pendingBackLinks.TryGetValue(sourcePage, out pendingBackLinks))
-							{
-								pendingBackLinks = new List<Tuple<XmlElement, string>>();
-								_pendingBackLinks[sourcePage] = pendingBackLinks;
-							}
-							pendingBackLinks.Add(Tuple.Create(backLink, bookFigId));
-						}
-						// following guidelines at http://diagramcenter.org/59-image-guidelines-for-epub-3.html,
-						// the aside should have role doc-footnote and epub:type=”footnote”,
-						// the backlink role doc-backlink and epub:type=”backlink”, and the
-						// forward link role doc-noteref and epub:type=”noteref”. (Backlink handled above).
-						link.SetAttribute("role", "doc-noteref");
-						link.SetAttribute("type", kEpubNamespace, "noteref");
-						aside.SetAttribute("role", "doc-footnote");
-						aside.SetAttribute("type", kEpubNamespace, "footnote");
-					}
-				}
-			}
-			// If HowToPublishImageDescriptions.None, leave alone, and they will be deleted as invisible. (Todo: that's apparently wrong)
+			// code to handle HowToPublishImageDescriptions.Links was removed from Bloom 4.6 on June 28, 2019.
+			// If HowToPublishImageDescriptions.None, leave alone, and they will be invisible, but not deleted.
+			// This allows the image description audio to play even when the description isn't displayed in
+			// written form (BL-7237).  (For broken readers, the text might still be visible, but then it's
+			// likely the audio wouldn't play anyway.)
 		}
 
 		/// <summary>
@@ -2013,6 +1911,8 @@ namespace Bloom.Publish.Epub
 						pageWidthMm = A4Width / 2.0;
 						break;
 					case "A3Portrait":
+						pageWidthMm = A4Width * 2.0;
+						break;
 					case "A4Landscape":
 						pageWidthMm = A4Height;
 						break;
@@ -2068,49 +1968,6 @@ namespace Bloom.Publish.Epub
 
 				img.SetAttribute ("style", imgStyle);
 			}
-		}
-
-		/// <summary>
-		/// Reorder any div elements on the given page that need to be reordered for proper display in the ePUB.
-		/// </summary>
-		/// <remarks>
-		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6299.
-		/// </remarks>
-		private void FixDivOrderingForPage(HtmlDom pageDom)
-		{
-			FixDivOrdering(pageDom.RawDom.DocumentElement.SelectNodes("//div[contains(@class, 'translationGroup')]").Cast<XmlElement>());
-		}
-
-		private void FixDivOrdering(IEnumerable<XmlElement> nodeList)
-		{
-			// The different-language children of a translation group are ordered in Bloom proper by flex-box CSS
-			// that puts the div with class bloom-content1 before the one with bloom-content2 etc.  Since we don't
-			// (and can't) rely on flex-box in epubs, we need to actually put the elements in the right order.
-			foreach (var multilingualDiv in nodeList)
-			{
-				var divs = multilingualDiv.SelectNodes("./div[contains(@class, 'bloom-content')]").Cast<XmlElement>().ToList();
-				divs.Sort(CompareMultilingualDivs);
-				for (var i = divs.Count - 1; i >= 1; --i)
-					multilingualDiv.InsertBefore(divs[i - 1], divs[i]);
-			}
-		}
-
-		private static int CompareMultilingualDivs(XmlElement x, XmlElement y)
-		{
-			string xKey = ExtractKeyForMultilingualDivs(x);
-			string yKey = ExtractKeyForMultilingualDivs(y);
-			return string.Compare(xKey, yKey, StringComparison.Ordinal);
-		}
-
-		private static string ExtractKeyForMultilingualDivs(XmlElement x)
-		{
-			// bloom-content[23] do not seem to be reliable.  "1", "National1", and "National2" sort correctly.
-			// But I think we do want the newer markup to be reliable, so I'm leaving this line commented out.
-			//var xClass = x.GetAttribute("class").Replace("bloom-contentNational", "");
-			var xClass = x.GetAttribute("class");
-			var idx = xClass.IndexOf("bloom-content", StringComparison.Ordinal);
-			Debug.Assert(idx >= 0);
-			return xClass.Substring(idx);
 		}
 
 		// Returns true if we don't find the expected style
@@ -2218,7 +2075,7 @@ namespace Bloom.Publish.Epub
 				var href = link.Attributes ["href"];
 				if (href != null && Path.GetFileName (href.Value).StartsWith ("custom"))
 					continue;
-				if (href != null && Path.GetFileName (href.Value) == "settingsCollectionStyles.css")
+				if (href != null && Path.GetFileName (href.Value) == "defaultLangStyles.css")
 					continue;
 				link.ParentNode.RemoveChild (link);
 			}
