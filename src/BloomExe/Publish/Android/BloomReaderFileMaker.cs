@@ -96,7 +96,7 @@ namespace Bloom.Publish.Android
 			{
 				helper.ControlForInvoke = ControlForInvoke;
 				ISet<string> warningMessages = new HashSet<string>();
-				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook, warningMessages);
+				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook, false, warningMessages);
 				PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 			}
 			modifiedBook.RemoveBlankPages();

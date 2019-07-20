@@ -1013,7 +1013,7 @@ namespace Bloom.Publish.Epub
 			}
 
 			// Remove stuff that we don't want displayed. Some e-readers don't obey display:none. Also, not shipping it saves space.
-			_publishHelper.RemoveUnwantedContent(pageDom, this.Book, warningMessages, this);
+			_publishHelper.RemoveUnwantedContent(pageDom, this.Book, true, warningMessages, this);
 
 			pageDom.SortStyleSheetLinks();
 			pageDom.AddPublishClassToBody();
