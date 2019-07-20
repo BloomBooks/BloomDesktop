@@ -10,7 +10,7 @@
           <target xml:lang="quc">K'i taq Pixab rech usolik ri K'exk'olil rech Tzijob'exik rech Android</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.wifi">
+      <trans-unit id="android.publish.wifi" approved="yes">
         <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="quc" state="translated">Ujachik pa uk'atil WiFi</target>
         <note>ID: android.publish.wifi</note>
