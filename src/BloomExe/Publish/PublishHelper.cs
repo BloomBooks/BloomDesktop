@@ -43,7 +43,7 @@ namespace Bloom.Publish
 		// remove any elements that the style rules would hide, because epub readers ignore visibility settings.
 		private const string kSelectThingsThatCanBeHidden = ".//div | .//img";
 
-		public void RemoveUnwantedContent(HtmlDom dom, Book.Book book, EpubMaker epubMaker = null)
+		public void RemoveUnwantedContent(HtmlDom dom, Book.Book book, bool removeInactiveLanguages, EpubMaker epubMaker = null)
 		{
 			// Removing unwanted content involves a real browser really navigating. I'm not sure exactly why,
 			// but things freeze up if we don't do it on the UI thread.
@@ -53,13 +53,13 @@ namespace Bloom.Publish
 				// trying to use it to Invoke.
 				if (ControlForInvoke.IsDisposed)
 					ControlForInvoke = Form.ActiveForm;
-				ControlForInvoke.Invoke((Action)(() => RemoveUnwantedContentInternal(dom, book, epubMaker)));
+				ControlForInvoke.Invoke((Action)(() => RemoveUnwantedContentInternal(dom, book, removeInactiveLanguages, epubMaker)));
 			}
 			else
-				RemoveUnwantedContentInternal(dom, book, epubMaker);
+				RemoveUnwantedContentInternal(dom, book, removeInactiveLanguages, epubMaker);
 		}
 
-		private void RemoveUnwantedContentInternal(HtmlDom dom, Book.Book book, EpubMaker epubMaker)
+		private void RemoveUnwantedContentInternal(HtmlDom dom, Book.Book book, bool removeInactiveLanguages, EpubMaker epubMaker)
 		{
 			// The ControlForInvoke can be null for tests.  If it's not null, we better not need an Invoke!
 			Debug.Assert(ControlForInvoke==null || !ControlForInvoke.InvokeRequired); // should be called on UI thread.
@@ -107,7 +107,13 @@ namespace Bloom.Publish
 			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
 			foreach (XmlElement page in pageElts)
 			{
-				foreach (XmlElement elt in page.SafeSelectNodes(kSelectThingsThatCanBeHidden))
+				// As the constant's name here suggests, in theory, we could include divs
+				// that don't have .bloom-editable, and all their children.
+				// But I'm not smart enough to write that selector and for bloomds, all we're doing here is saving space,
+				// so those other divs we are missing doesn't seem to matter as far as I can think.
+				var kSelectThingsThatCanBeHiddenButAreNotText = ".//img";
+				var selector = removeInactiveLanguages ?  kSelectThingsThatCanBeHidden  : kSelectThingsThatCanBeHiddenButAreNotText ;
+				foreach (XmlElement elt in page.SafeSelectNodes(selector))
 				{
 					if (!IsDisplayed(elt) && !IsDesiredImageDescription(elt, haveEnterpriseFeatures))
 						toBeDeleted.Add(elt);

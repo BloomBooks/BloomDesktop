@@ -113,7 +113,7 @@ namespace Bloom.Publish.Android
 			using (var helper = new PublishHelper())
 			{
 				helper.ControlForInvoke = ControlForInvoke;
-				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook);
+				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook, false);
 			}
 			modifiedBook.RemoveBlankPages();
 
