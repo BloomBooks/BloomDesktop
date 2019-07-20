@@ -26,15 +26,18 @@
           <target xml:lang="quc">K'axk'olil: Ri wiqkem chakub'al Android ma kuk'am ta jub'ixkil recj ri no'jwuj</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.run.receive">
+      <trans-unit id="android.publish.wifi.run.receive" approved="yes">
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
-        <target xml:lang="quc" state="translated">Are taq kokisax we solib'al no'jib'al, rajawaxik uchakuxik Bloom Reader. Chatoro' ri cholb'al chak k'ate' k'u ri' cahcha' "Uk'amik WiFi.</target>
+        <target xml:lang="quc" state="translated">Are taq kokisax we solno'jib'al ri', rajawaxik kab'an ukojik Bloom Reader. Chatoro' ri cholb'al chak k'ate' k'u ri' chacha' "Uk'amik pa WiFi.</target>
         <note>ID: android.publish.wifi.run.receive</note>
+        <alt-trans>
+          <target xml:lang="quc">Are taq kokisax we solib'al no'jib'al, rajawaxik uchakuxik Bloom Reader. Chatoro' ri cholb'al chak k'ate' k'u ri' cahcha' "Uk'amik WiFi.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc">Are chi' koksax we binib'al, rajawaxik uchakuxik Bloom Reader. Chtoro' ri Cholb'al chak xuquje' chcha' "Uk'amik rech jachnak' k'at" (WiFi).</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.receive.from">
+      <trans-unit id="android.publish.wifi.receive.from" approved="yes">
         <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
         <target xml:lang="quc" state="translated">Chawila' chi le wiqchakub'al k'o pa le kutb'al wach "Uk'amik rech WiFi"</target>
         <note>ID: android.publish.wifi.receive.from</note>
