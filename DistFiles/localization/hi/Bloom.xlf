@@ -5670,14 +5670,6 @@ Do you want to go ahead?</note>
           <target xml:lang="hi">अपलोड प्रगति</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadSandbox" approved="yes">
-        <source xml:lang="en">Upload Book (to Sandbox)</source>
-        <note>ID: PublishTab.Upload.UploadSandbox</note>
-        <target xml:lang="hi" state="translated">(सैंडबॉक्स में) पुस्तक अपलोड करें</target>
-        <alt-trans>
-          <target xml:lang="hi">पुस्तक (करने के लिए बालूदानी) अपलोड करें</target>
-        </alt-trans>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingBookMetadata" approved="yes">
         <source xml:lang="en">Uploading book metadata</source>
         <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
