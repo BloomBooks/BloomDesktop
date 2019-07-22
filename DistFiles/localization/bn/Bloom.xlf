@@ -5052,11 +5052,6 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.Upload.UploadProgress</note>
         <target xml:lang="bn" state="translated">আপলোডের অগ্রগতি</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadSandbox" approved="yes">
-        <source xml:lang="en">Upload Book (to Sandbox)</source>
-        <note>ID: PublishTab.Upload.UploadSandbox</note>
-        <target xml:lang="bn" state="translated">বই আপলোড (স্যান্ডবক্সে)</target>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingBookMetadata" approved="yes">
         <source xml:lang="en">Uploading book metadata</source>
         <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
