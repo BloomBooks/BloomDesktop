@@ -955,16 +955,17 @@ namespace Bloom.Book
 
 		private void BringBookUpToDateUnprotected(HtmlDom bookDOM, IProgress progress)
 		{
-			progress.WriteStatus("Updating Front/Back Matter...");
 			// With one exception, handled below, nothing in the update process should change the license info, so save what is current before we mess with
 			// anything (may fix BL-3166).
 			var licenseMetadata = GetLicenseMetadata();
-			BringXmatterHtmlUpToDate(bookDOM);
-			RepairBrokenSmallCoverCredits(bookDOM);
-			RepairCoverImageDescriptions(bookDOM);
 
 			progress.WriteStatus("Updating collection settings...");
 			UpdateCollectionRelatedStylesAndSettings(bookDOM);
+
+			progress.WriteStatus("Updating Front/Back Matter...");
+			BringXmatterHtmlUpToDate(bookDOM);
+			RepairBrokenSmallCoverCredits(bookDOM);
+			RepairCoverImageDescriptions(bookDOM);
 
 			progress.WriteStatus("Repair page label localization");
 			RepairPageLabelLocalization(bookDOM);
