@@ -6888,14 +6888,6 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.UploadProgress</note>
         <target xml:lang="es-ES" state="translated">Progreso de carga</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadSandbox" approved="yes">
-        <source xml:lang="en">Upload Book (to Sandbox)</source>
-        <note>ID: PublishTab.Upload.UploadSandbox</note>
-        <target xml:lang="es-ES" state="translated">Cargar libro (a Sandbox)</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Cargar libro (a sandbox)</target>
-        </alt-trans>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingBookMetadata" approved="yes">
         <source xml:lang="en">Uploading book metadata</source>
         <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
