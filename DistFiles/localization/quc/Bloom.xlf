@@ -6883,14 +6883,6 @@ Do you want to go ahead?</note>
           <target xml:lang="quc">Nimarem rech paqab'axik</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadSandbox" approved="yes">
-        <source xml:lang="en">Upload Book (to Sandbox)</source>
-        <note>ID: PublishTab.Upload.UploadSandbox</note>
-        <target xml:lang="quc" state="translated">Usik'ixik uwach no'jwuj (pa Sandbox)</target>
-        <alt-trans>
-          <target xml:lang="quc">Paqab'axik no'jwuj (a Sandbox)</target>
-        </alt-trans>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingBookMetadata" approved="yes">
         <source xml:lang="en">Uploading book metadata</source>
         <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
