@@ -150,7 +150,8 @@ namespace Bloom.Publish.BloomLibrary
 			if (BookTransfer.UseSandbox)
 			{
 				var oldTextWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
-				_uploadButton.Text = LocalizationManager.GetString("PublishTab.Upload.UploadSandbox","Upload Book (to Sandbox)");
+				// Do not localize the following string (https://issues.bloomlibrary.org/youtrack/issue/BL-7383).
+				_uploadButton.Text = "Upload Book (to Sandbox)";
 				var neededWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
 				_uploadButton.Width += neededWidth - oldTextWidth;
 			}
