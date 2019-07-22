@@ -4925,11 +4925,6 @@ Deseja continuar?</target>
         <note>ID: PublishTab.Upload.UploadProgress</note>
         <target xml:lang="pt-PT" state="translated">Progresso de carregar</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadSandbox">
-        <source xml:lang="en">Upload Book (to Sandbox)</source>
-        <note>ID: PublishTab.Upload.UploadSandbox</note>
-        <target xml:lang="pt-PT" state="translated">Carregar livro (para Sandbox)</target>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingBookMetadata">
         <source xml:lang="en">Uploading book metadata</source>
         <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
