@@ -4608,11 +4608,6 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.Upload.UploadProgress</note>
         <target xml:lang="sw" state="translated">Hali ya kuendelea kuweka</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadSandbox" approved="yes">
-        <source xml:lang="en">Upload Book (to Sandbox)</source>
-        <note>ID: PublishTab.Upload.UploadSandbox</note>
-        <target xml:lang="sw" state="translated">Weka kitabu (kwenye Sandbox)</target>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingBookMetadata" approved="yes">
         <source xml:lang="en">Uploading book metadata</source>
         <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
