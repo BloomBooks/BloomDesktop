@@ -134,13 +134,13 @@ namespace BloomTests.Publish
 		/// <summary>
 		/// Make an ePUB out of the specified book. Sets up several instance variables with commonly useful parts of the results.
 		/// </summary>
-		/// <param name="mainFileName"></param>
-		/// <param name="folderName"></param>
-		/// <param name="book"></param>
 		/// <returns></returns>
 		protected virtual ZipFile MakeEpub(string mainFileName, string folderName, Bloom.Book.Book book,
-			BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.None, Action<EpubMaker> extraInit = null)
+			BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.None,
+			string branding = "Default", Action<EpubMaker> extraInit = null)
 		{
+			book.CollectionSettings.BrandingProjectKey = branding;
+
 			var epubFolder = new TemporaryFolder(folderName);
 			var epubName = mainFileName + ".epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
@@ -156,7 +156,7 @@ namespace BloomTests.Publish
 			_manifestFile = ExportEpubTestsBaseClass.GetManifestFile(_epub);
 			_manifestContent = StripXmlHeader(GetZipContent(_epub, _manifestFile));
 			_manifestDoc = XDocument.Parse(_manifestContent);
-			_defaultSourceValue = String.Format("created from Bloom book on {0} with page size A5 Portrait", DateTime.Now.ToString("yyyy-MM-dd"));
+			_defaultSourceValue = $"created from Bloom book on {DateTime.Now:yyyy-MM-dd} with page size A5 Portrait";
 			return _epub;
 		}
 

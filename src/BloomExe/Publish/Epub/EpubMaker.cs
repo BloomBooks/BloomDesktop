@@ -290,6 +290,11 @@ namespace Bloom.Publish.Epub
 			_scriptedItems = new List<string>();
 			_svgItems = new List<string>();
 			_firstContentPageItem = null;
+			ISet<string> warningMessages = new HashSet<string>();
+			if (!_book.CollectionSettings.HaveEnterpriseFeatures)
+				if (PublishHelper.RemoveAllImageDescriptions(Book.OurHtmlDom))
+					warningMessages.Add(LocalizationManager.GetString("Publish.RemovingEnterpriseImageDescriptions", "Removing image descriptions which require Bloom Enterprise to be enabled"));
+
 			HandleImageDescriptions(Book.OurHtmlDom);
 			if (string.IsNullOrEmpty(SignLanguageApi.FfmpegProgram))
 			{
@@ -302,12 +307,14 @@ namespace Bloom.Publish.Epub
 				// We could check for this in a few more places, but once per page seems enough in practice.
 				if (AbortRequested)
 					break;
-				if (MakePageFile(pageElement, progress))
+				if (MakePageFile(pageElement, warningMessages))
 				{
 					var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
 					pageLabelProgress.Message(pageLabelEnglish, pageLabelEnglish);
 				};
 			}
+			
+			PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 
 			if (_omittedPageLabels.Any())
 			{
@@ -961,7 +968,7 @@ namespace Bloom.Publish.Epub
 		/// <remarks>
 		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4288 for discussion of blank pages.
 		/// </remarks>
-		private bool MakePageFile(XmlElement pageElement, WebSocketProgress progress)
+		private bool MakePageFile(XmlElement pageElement, ISet<string> warningMessages)
 		{
 			// nonprinting pages (e.g., old-style comprehension questions) are omitted for now
 			// interactive pages (e.g., new-style quiz pages) are also omitted. We're drastically
@@ -1006,7 +1013,7 @@ namespace Bloom.Publish.Epub
 			}
 
 			// Remove stuff that we don't want displayed. Some e-readers don't obey display:none. Also, not shipping it saves space.
-			_publishHelper.RemoveUnwantedContent(pageDom, this.Book, this);
+			_publishHelper.RemoveUnwantedContent(pageDom, this.Book, warningMessages, this);
 
 			pageDom.SortStyleSheetLinks();
 			pageDom.AddPublishClassToBody();
@@ -1205,6 +1212,7 @@ namespace Bloom.Publish.Epub
 			return false;
 		}
 
+		// This method is called by reflection in some tests
 		private void HandleImageDescriptions(HtmlDom bookDom)
 		{
 			// Set img alt attributes to the description, or erase them if no description (BL-6035)
@@ -1739,7 +1747,7 @@ namespace Bloom.Publish.Epub
 			}
 		}
 
-		// Combines staging and finishing (currently just used in tests).
+		// Combines staging and finishing
 		public void SaveEpub(string destinationEpubPath, WebSocketProgress progress)
 		{
 			if(string.IsNullOrEmpty (BookInStagingFolder)) {
