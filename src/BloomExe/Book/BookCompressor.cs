@@ -197,6 +197,15 @@ namespace Bloom.Book
 						LastVersionCode = sha;
 					}
 				}
+				else if (bookFile == filePath && excludeAudio && !reduceImages && !omitMetaJson && pathToFileForSha == null)
+				{
+					// Assume we have a bloompack.  Remove all lang attributes from body and div.bloom-page elements
+					// so that books transferred from Bloom 4.6 via bloompacks can work well with Bloom 4.5 and earlier.
+					Bloom.WebLibraryIntegration.BookTransfer.RemoveBookLevelLangAttributes(dom);
+					var newContent = XmlHtmlConverter.ConvertDomToHtml5(dom);
+					modifiedContent = Encoding.UTF8.GetBytes(newContent);
+					newEntry.Size = modifiedContent.Length;
+				}
 				else
 				{
 					newEntry.Size = fi.Length;

@@ -23,6 +23,7 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
+using SIL.Xml;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -371,6 +372,9 @@ namespace Bloom.WebLibraryIntegration
 			if (!string.IsNullOrEmpty(htmlFile))
 			{
 				var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
+				// Remove all lang attributes from body and div.bloom-page elements so that books uploaded from Bloom 4.6
+				// can work well when downloaded with Bloom 4.5 and earlier versions.
+				RemoveBookLevelLangAttributes(xmlDomFromHtmlFile);
 				domForLocking = new HtmlDom(xmlDomFromHtmlFile);
 				wasLocked = domForLocking.RecordedAsLockedDown;
 				allowLocking = !metadata.IsSuitableForMakingShells;
@@ -491,6 +495,25 @@ namespace Bloom.WebLibraryIntegration
 
 			}
 			return s3BookId;
+		}
+
+		/// <summary>
+		/// Remove all lang attributes from body and div.bloom-page elements so that books created by
+		/// Bloom 4.6 can work well with Bloom 4.5 and earlier.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7343.
+		/// </remarks>
+		public static void RemoveBookLevelLangAttributes(System.Xml.XmlDocument dom)
+		{
+			var body = dom.SelectSingleNode("/html/body") as System.Xml.XmlElement;
+			if (body != null && body.HasAttribute("lang"))
+				body.RemoveAttribute("lang");
+			foreach (System.Xml.XmlElement pageDiv in dom.SafeSelectNodes("/html/body//div[contains(@class,'bloom-page')]"))
+			{
+				if (pageDiv.HasAttribute("lang"))
+					pageDiv.RemoveAttribute("lang");
+			}
 		}
 
 		internal string BookOrderUrl {get { return _s3Client.BookOrderUrlOfRecentUpload; }}
