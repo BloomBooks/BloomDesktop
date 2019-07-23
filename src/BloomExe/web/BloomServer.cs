@@ -24,6 +24,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Publish.Epub;
 using Bloom.Properties;
+using Bloom.Publish.Android;
 using Bloom.web;
 using SIL.PlatformUtilities;
 using ThreadState = System.Threading.ThreadState;
@@ -1130,7 +1131,10 @@ namespace Bloom.Api
 				"/branding/image",
 				// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
 				// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
-				EpubMaker.kEPUBExportFolder.ToLowerInvariant()
+				EpubMaker.kEPUBExportFolder.ToLowerInvariant(),
+				// bloom-player always asks for questions.json for every book.
+				// Being only for quiz pages, not every book has it, so we don't want spurious error reports.
+				BloomReaderFileMaker.kQuestionFileName.ToLowerInvariant()
 			};
 			return !stuffToIgnore.Any(s => localPath.ToLowerInvariant().Contains(s));
 		}
