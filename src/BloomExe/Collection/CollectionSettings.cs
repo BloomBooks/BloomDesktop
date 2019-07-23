@@ -521,6 +521,10 @@ namespace Bloom.Collection
 			var sb = new StringBuilder();
 			sb.AppendLine("/* *** DO NOT EDIT! ***   These styles are controlled by the Settings dialog box in Bloom. */");
 			sb.AppendLine("/* They may be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
+			// Provide a reasonable default font for anything not covered specifically.
+			AddSelectorCssRule(sb, "body", GetDefaultFontName(), IsLanguage1Rtl, 0, false, true);
+			// note: css pseudo elements  cannot have a @lang attribute. So this is needed to show page numbers in scripts not covered by Andika New Basic.
+			AddSelectorCssRule(sb, ".numberedPage::after", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight, Language1BreaksLinesOnlyAtSpaces, omitDirection);
 			AddSelectorCssRule(sb, "[lang='" + Language1Iso639Code + "']", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight, Language1BreaksLinesOnlyAtSpaces, omitDirection);
 			if (Language2Iso639Code != Language1Iso639Code)
 				AddSelectorCssRule(sb, "[lang='" + Language2Iso639Code + "']", DefaultLanguage2FontName, IsLanguage2Rtl, Language2LineHeight, Language2BreaksLinesOnlyAtSpaces, omitDirection);

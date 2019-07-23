@@ -1069,15 +1069,6 @@ namespace Bloom.Book
 				RobustFile.Copy(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles), Path.Combine(FolderPath, kCustomStyles), true);
 			// Update book settings from collection settings
 			UpdateCollectionSettingsInBookMetaData();
-			// Set primary book language attributes.
-			foreach (XmlElement body in bookDom.SafeSelectNodes("//body"))
-			{
-				body.SetAttribute("lang", CollectionSettings.Language1Iso639Code);
-			}
-			foreach (XmlElement pageDiv in bookDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
-			{
-				pageDiv.SetAttribute("lang", CollectionSettings.Language1Iso639Code);
-			}
 		}
 
 		private void CreateOrUpdateDefaultLangStyles()
@@ -1111,6 +1102,8 @@ namespace Bloom.Book
 					}
 					if (copyCurrentRule)
 						cssBuilder.AppendLine(cssLines[index]);
+					if (line == "}")
+						copyCurrentRule = false;
 				}
 			}
 			RobustFile.WriteAllText(path, cssBuilder.ToString());
