@@ -1111,7 +1111,19 @@ namespace Bloom.Book
 					}
 					if (copyCurrentRule)
 						cssBuilder.AppendLine(cssLines[index]);
+					if (line == "}")
+						copyCurrentRule = false;
 				}
+				cssBuilder.AppendLine();
+				cssBuilder.AppendLine("/* Show page at left even if body has an RTL lang attribute. */");
+				cssBuilder.AppendLine("@media screen");
+				cssBuilder.AppendLine("{");
+				cssBuilder.AppendLine("  body.publishMode { float: left; } /* Collections tab */");
+				cssBuilder.AppendLine("}");
+				cssBuilder.AppendLine("div#page-scaling-container");
+				cssBuilder.AppendLine("{");
+				cssBuilder.AppendLine("  float: left;  /* Edit tab */");
+				cssBuilder.AppendLine("}");
 			}
 			RobustFile.WriteAllText(path, cssBuilder.ToString());
 		}
@@ -1132,6 +1144,25 @@ namespace Bloom.Book
 				BookInfo.MetaData.DisplayNames[CollectionSettings.Language3Iso639Code] = CollectionSettings.Language3Name;
 			}
 			// These settings will be saved to the meta.json file the next time the book itself is saved.
+		}
+
+		/// <summary>
+		/// Remove all lang attributes from body and div.bloom-page elements so that books created by
+		/// Bloom 4.6 can work well with Bloom 4.5 and earlier.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7343.
+		/// </remarks>
+		public static void RemoveBookLevelLangAttributes(System.Xml.XmlDocument dom)
+		{
+			var body = dom.SelectSingleNode("/html/body") as System.Xml.XmlElement;
+			if (body != null && body.HasAttribute("lang"))
+				body.RemoveAttribute("lang");
+			foreach (System.Xml.XmlElement pageDiv in dom.SafeSelectNodes("/html/body//div[contains(@class,'bloom-page')]"))
+			{
+				if (pageDiv.HasAttribute("lang"))
+					pageDiv.RemoveAttribute("lang");
+			}
 		}
 
 		/// <summary>

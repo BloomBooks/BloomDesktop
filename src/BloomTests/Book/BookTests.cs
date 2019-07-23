@@ -2817,6 +2817,48 @@ namespace BloomTests.Book
 			Assert.False(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
 		}
 
+		[Test]
+		public void RemoveBookLevelLangAttributes_DoesWhatItSays()
+		{
+			var dom = new System.Xml.XmlDocument();
+			dom.LoadXml(@"<html>
+  <head>
+  </head>
+  <body lang='syc'>
+    <div class='bloom-page titlePage' lang='syc'>
+      <div class='pageLabel' lang='en'>Front Cover</div>
+      <div class='bloom-editable Title-On-Cover-style' data-book='bookTitle' lang='syc' contenteditable='true'>
+        <p>4.6 Psalm 1 en-es-de</p>
+      </div>
+    </div>
+    <div class='bloom-page numberedPage' lang='syc'>
+      <div class='pageLabel' lang='en'>Just Text</div>
+      <div class='bloom-editable normal-style' lang='syc' contenteditable='true'>
+        <p>This is a test!</p>
+      </div>
+    </div>
+  </body>
+</html>");
+			// verify initial conditions
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//body[@lang='syc']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='syc']", 4);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='syc' and contains(@class,'bloom-page')]", 2);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='syc' and contains(@class,'bloom-editable')]", 2);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']", 2);
+
+			// SUT
+			Bloom.Book.Book.RemoveBookLevelLangAttributes(dom);
+
+			// verify final conditions
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//body[@lang='syc']");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//body[not(@lang)]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='syc']", 2);
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@lang='syc' and contains(@class,'bloom-page')]");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[not(@lang) and contains(@class,'bloom-page')]", 2);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='syc' and contains(@class,'bloom-editable')]", 2);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']", 2);
+		}
+
 #if UserControlledTemplate
 		[Test]
 		public void SetType_WasPublicationSetToTemplate_HasTemplateFeatures()

@@ -371,6 +371,9 @@ namespace Bloom.WebLibraryIntegration
 			if (!string.IsNullOrEmpty(htmlFile))
 			{
 				var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
+				// Remove all lang attributes from body and div.bloom-page elements so that books uploaded from Bloom 4.6
+				// can work well when downloaded with Bloom 4.5 and earlier versions.
+				Bloom.Book.Book.RemoveBookLevelLangAttributes(xmlDomFromHtmlFile);
 				domForLocking = new HtmlDom(xmlDomFromHtmlFile);
 				wasLocked = domForLocking.RecordedAsLockedDown;
 				allowLocking = !metadata.IsSuitableForMakingShells;

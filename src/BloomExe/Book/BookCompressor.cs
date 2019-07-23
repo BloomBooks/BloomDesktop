@@ -51,7 +51,7 @@ namespace Bloom.Book
 
 		public static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
 			bool forReaderTools = false, bool excludeAudio = false, bool reduceImages = false, bool omitMetaJson = false, bool wrapWithFolder = true,
-			string pathToFileForSha = null)
+			string pathToFileForSha = null, bool forBloomPack = false)
 		{
 			using (var fsOut = RobustFile.Create(outputPath))
 			{
@@ -74,7 +74,7 @@ namespace Bloom.Book
 						// a zip, as with .bloomd files)
 						dirNameOffset = directoryToCompress.Length + 1;
 					}
-					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages, omitMetaJson, pathToFileForSha);
+					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages, omitMetaJson, pathToFileForSha, forBloomPack);
 
 					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
 					zipStream.Close();
@@ -98,7 +98,7 @@ namespace Bloom.Book
 		/// <para> name="reduceImages">If true, image files are reduced in size to no larger than 300x300 before saving</para>
 		/// <remarks>Protected for testing purposes</remarks>
 		private static void CompressDirectory(string directoryToCompress, ZipOutputStream zipStream, int dirNameOffset, string dirNamePrefix,
-			bool forReaderTools, bool excludeAudio, bool reduceImages, bool omitMetaJson = false, string pathToFileForSha = null)
+			bool forReaderTools, bool excludeAudio, bool reduceImages, bool omitMetaJson = false, string pathToFileForSha = null, bool forBloomPack = false)
 		{
 			if (excludeAudio && Path.GetFileName(directoryToCompress).ToLowerInvariant() == "audio")
 				return;
@@ -197,6 +197,15 @@ namespace Bloom.Book
 						LastVersionCode = sha;
 					}
 				}
+				else if (bookFile == filePath && forBloomPack)
+				{
+					// Remove all lang attributes from body and div.bloom-page elements so that books transferred
+					// from Bloom 4.6 via bloompacks can work well with Bloom 4.5 and earlier.
+					Book.RemoveBookLevelLangAttributes(dom);
+					var newContent = XmlHtmlConverter.ConvertDomToHtml5(dom);
+					modifiedContent = Encoding.UTF8.GetBytes(newContent);
+					newEntry.Size = modifiedContent.Length;
+				}
 				else
 				{
 					newEntry.Size = fi.Length;
@@ -234,7 +243,7 @@ namespace Bloom.Book
 				if ((dirName == null) || (dirName.ToLowerInvariant() == "sample texts"))
 					continue; // Don't want to bundle these up
 
-				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages);
+				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages, forBloomPack:forBloomPack);
 			}
 		}
 
