@@ -1327,6 +1327,10 @@ export default class AudioRecording {
                     break;
                 }
             }
+            // Don't mislead user if we couldn't find any devices due to an error or lack of device.
+            // (See https://issues.bloomlibrary.org/youtrack/issue/BL-7272.)
+            if (!data.genericName && !data.productName)
+                imageName = "Attention.svg";
             var devButton = $("#audio-input-dev");
             var src = devButton.attr("src");
             var lastSlash = src.lastIndexOf("/");
