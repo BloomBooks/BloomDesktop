@@ -217,6 +217,19 @@ namespace Bloom.Book
 			return element;
 		}
 
+		public void AddOrReplaceMetaElement(string name, string content)
+		{
+			var meta = _dom.SelectSingleNode($"/html/head/meta[@name='{name}']") as XmlElement;
+			if (meta != null)
+			{
+				meta.SetAttribute("content", content);
+				return;
+			}
+			meta = Head.AppendChild(_dom.CreateElement("meta")) as XmlElement;
+			meta.SetAttribute("name", name);
+			meta.SetAttribute("content", content);
+		}
+
 		public void AddJavascriptFileToBody(string pathToJavascript)
 		{
 			Body.AppendChild(MakeJavascriptElement(pathToJavascript));
