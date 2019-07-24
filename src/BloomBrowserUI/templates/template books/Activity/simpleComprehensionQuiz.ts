@@ -52,6 +52,13 @@ function initChoiceWidgets(): void {
     const list = document.getElementsByClassName("checkbox-and-textbox-choice");
     for (let i = 0; i < list.length; i++) {
         const x = list[i] as HTMLElement;
+        // There are likely to be several copies of this code, one for each quiz page, each doing this.
+        // But we only need to do it once per element. In particular, we don't want multiple handlers
+        // trying to play the same sound on each click. The can get out of sync and make a horrible noise.
+        if (x.hasAttribute("data-simpleQuizInitDone")) {
+            continue;
+        }
+        x.setAttribute("data-simpleQuizInitDone", "true");
         const checkbox = getCheckBox(x);
         const correct = x.classList.contains("correct-answer");
         if (document.body.classList.contains("editMode")) {
