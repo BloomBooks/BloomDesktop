@@ -26,23 +26,23 @@ namespace Bloom.Publish.Android
 
 		public static Control ControlForInvoke { get; set; }
 
-		public static void CreateBloomReaderBook(string outputPath, Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress)
+		public static void CreateBloomDigitalBook(string outputPath, Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress)
 		{
-			CreateBloomReaderBook(outputPath, book.FolderPath, bookServer, backColor, progress, book.CollectionSettings.HaveEnterpriseFeatures);
+			CreateBloomDigitalBook(outputPath, book.FolderPath, bookServer, backColor, progress, book.CollectionSettings.HaveEnterpriseFeatures);
 		}
 
 		// Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
-		public static void CreateBloomReaderBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
+		public static void CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
 			WebSocketProgress progress, bool hasEnterpriseFeatures, string tempFolderName = "BloomReaderExport")
 		{
 			using (var temp = new TemporaryFolder(tempFolderName))
 			{
-				CreateBloomReaderBook(outputPath, bookFolderPath, bookServer, backColor, progress, temp, hasEnterpriseFeatures);
+				CreateBloomDigitalBook(outputPath, bookFolderPath, bookServer, backColor, progress, temp, hasEnterpriseFeatures);
 			}
 		}
 
 		/// <summary>
-		/// Create a BloomReader book (the zipped .bloomd file)
+		/// Create a Bloom Digital book (the zipped .bloomd file) as used by BloomReader (and Bloom Library etc)
 		/// </summary>
 		/// <param name="outputPath">The path to create the zipped .bloomd output file at</param>
 		/// <param name="bookFolderPath">The path to the input book</param>
@@ -51,11 +51,12 @@ namespace Bloom.Publish.Android
 		/// <param name="progress"></param>
 		/// <param name="tempFolder">A temporary folder. This function will not dispose of it when done</param>
 		/// <param name="hasEnterpriseFeatures"></param>
+		/// <param name="creator">value for &lt;meta name="creator" content="..."/&gt; (defaults to "bloom")</param>
 		/// <returns>Path to the unzipped .bloomd</returns>
-		public static string CreateBloomReaderBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
-			WebSocketProgress progress, TemporaryFolder tempFolder, bool hasEnterpriseFeatures = false)
+		public static string CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
+			WebSocketProgress progress, TemporaryFolder tempFolder, bool hasEnterpriseFeatures = false, string creator="bloom")
 		{
-			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, hasEnterpriseFeatures);
+			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, hasEnterpriseFeatures, creator);
 			// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
 			// 64dp in Bloom Reader.
 
@@ -68,7 +69,7 @@ namespace Bloom.Publish.Android
 		}
 
 		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer, TemporaryFolder temp,
-			WebSocketProgress progress, bool hasEnterpriseFeatures)
+			WebSocketProgress progress, bool hasEnterpriseFeatures, string creator="bloom")
 		{
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
 			// And bloom-player expects folder name to match html file name.
@@ -114,6 +115,7 @@ namespace Bloom.Publish.Android
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
 
 			modifiedBook.OurHtmlDom.SetMedia("bloomReader");
+			modifiedBook.OurHtmlDom.AddOrReplaceMetaElement("bloom-digital-creator", creator);
 			EmbedFonts(modifiedBook, progress, new FontFileFinder());
 
 			var bookFile = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);

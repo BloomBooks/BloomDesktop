@@ -66,7 +66,7 @@ namespace BloomTests.Publish
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
 			{
-				BloomReaderFileMaker.CreateBloomReaderBook(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
+				BloomReaderFileMaker.CreateBloomDigitalBook(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
 				Assert.AreEqual(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook,
 					Path.GetFileName(bloomdTempFile.Path));
 			}
@@ -1266,7 +1266,7 @@ namespace BloomTests.Publish
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
 			{
-				BloomReaderFileMaker.CreateBloomReaderBook(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
+				BloomReaderFileMaker.CreateBloomDigitalBook(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
 				var zip = new ZipFile(bloomdTempFile.Path);
 				var newHtml = GetEntryContents(zip, bookFileName);
 				var paramObj = new ZipHtmlObj(zip, newHtml);
@@ -1278,7 +1278,7 @@ namespace BloomTests.Publish
 					using (var extraTempFile =
 						TempFile.WithFilenameInTempFolder(testBook.Title + "2" + BookCompressor.ExtensionForDeviceBloomBook))
 					{
-						BloomReaderFileMaker.CreateBloomReaderBook(extraTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
+						BloomReaderFileMaker.CreateBloomDigitalBook(extraTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
 						zip = new ZipFile(extraTempFile.Path);
 						assertionsOnRepeat(zip);
 					}
