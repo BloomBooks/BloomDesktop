@@ -1811,6 +1811,34 @@ namespace Bloom.Book
 			return false; // not found
 		}
 
+		public void RemoveObsoleteAudioMarkup()
+		{
+			foreach (var span in HtmlDom.SelectAudioSentenceElements(RawDom.DocumentElement).Cast<XmlElement>())
+			{
+				if (!AudioProcessor.DoesAudioExistForSegment(Storage.FolderPath, span.Attributes["id"]?.Value))
+				{
+					// move content of span element outside the span, then remove the span element.
+					// span.ChildNodes is not safe to use directly since we're changing the list of child nodes
+					// as we go along.  Unfortunately, List.AddRange can't handle XmlNodeList.
+					var nodelist = new List<XmlNode>();
+					foreach (XmlNode node in span.ChildNodes)
+						nodelist.Add(node);
+					foreach (XmlNode node in nodelist)
+					{
+						span.RemoveChild(node);
+						span.ParentNode.InsertBefore(node, span);
+					}
+					span.ParentNode.RemoveChild(span);
+				}
+			}
+			foreach (var div in RawDom.DocumentElement.SafeSelectNodes("//div[@data-audiorecordingmode]").Cast<XmlElement>().ToList())
+			{
+				var nodes = div.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence')]");
+				if (nodes == null || nodes.Count == 0)
+					div.RemoveAttribute("data-audiorecordingmode");
+			}
+		}
+
 		/// <summary>
 		/// Determines if the book references an existing audio file.
 		/// </summary>

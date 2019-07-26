@@ -373,6 +373,7 @@ namespace Bloom.Publish
 
 		public static void SetTalkingBookFeature(Book.Book book, BookMetaData metaData)
 		{
+			book.RemoveObsoleteAudioMarkup();
 			metaData.Feature_TalkingBook = book.HasAudio();
 		}
 

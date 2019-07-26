@@ -2816,6 +2816,71 @@ namespace BloomTests.Book
 			XmlElement page = doc.DocumentElement;
 			Assert.False(Bloom.Book.Book.IsPageBloomEnterpriseOnly(page));
 		}
+		[Test]
+		public void RemoveObsoleteAudioMarkup_Works()
+		{
+			_bookDom = new HtmlDom(@"<!DOCTYPE html [ <!ENTITY nbsp '&#160;'> ]>
+<html>
+  <head><meta charset='UTF-8'></meta></head>
+  <body lang='en'>
+    <div class='bloom-page numberedPage' id='e63d0a55-7228-41b9-b0e2-38386613826b' data-page-number='1' lang='en'>
+        <div class='marginBox'>
+            <div style='min-height: 42px;' class='split-pane horizontal-percent'>
+                <div class='split-pane-component position-top' style='bottom: 50%'>
+                    <div class='split-pane-component-inner'>
+                        <div class='bloom-imageContainer bloom-leadingElement'>
+                            <img data-license='cc-by-sa' data-copyright='Copyright SIL International 2009' src='aor_Cat3.png' alt='cat lying down looking at you'></img>
+                            <div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement'>
+                                <div data-audiorecordingmode='Sentence' role='textbox' class='bloom-editable ImageDescriptionEdit-style' lang='en'>
+                                    <p><span id='fe0b3747-50d2-49ed-97b7-87f7a956c694' class='audio-sentence'>cat lying down looking at you</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class='split-pane-component position-bottom' style='height: 50%'>
+                    <div class='split-pane-component-inner'>
+                        <div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto'>
+                            <div data-audiorecordingmode='Sentence' role='textbox' class='bloom-editable normal-style' lang='en'>
+                                <p><span id='a2a1a35b-f673-43da-b208-0a9d0adcc62d' class='audio-sentence' recordingmd5='undefined'>This is a <em>cat</em>.</span>&nbsp;<span id='eb91602e-bba1-4089-a5e4-f29b70e08af6' class='audio-sentence'>Believe it!</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </body>
+</html>");
+			var book = CreateBook();
+			AssertThatXmlIn.Dom(_bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-audiorecordingmode]", 2);
+			AssertThatXmlIn.Dom(_bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[@class='audio-sentence']", 3);
+			AssertThatXmlIn.Dom(_bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[@recordingmd5]", 1);
+			var para = _bookDom.RawDom.SelectSingleNode("//div[contains(@class,'ImageDescriptionEdit-style')]/p") as XmlElement;
+			Assert.That(para, Is.Not.Null);
+			Assert.That(para.InnerXml, Is.EqualTo("<span id=\"fe0b3747-50d2-49ed-97b7-87f7a956c694\" class=\"audio-sentence\">cat lying down looking at you</span>"));
+			Assert.That(para.InnerText, Is.EqualTo("cat lying down looking at you"));
+			para = _bookDom.RawDom.SelectSingleNode("//div[contains(@class,'normal-style')]/p") as XmlElement;
+			Assert.That(para, Is.Not.Null);
+			Assert.That(para.InnerXml, Is.EqualTo("<span id=\"a2a1a35b-f673-43da-b208-0a9d0adcc62d\" class=\"audio-sentence\" recordingmd5=\"undefined\">This is a <em>cat</em>.</span>&nbsp;<span id=\"eb91602e-bba1-4089-a5e4-f29b70e08af6\" class=\"audio-sentence\">Believe it!</span>"));
+			Assert.That(para.InnerText, Is.EqualTo("This is a cat.\u00A0Believe it!"));
+
+			// SUT
+			book.RemoveObsoleteAudioMarkup();
+
+			AssertThatXmlIn.Dom(_bookDom.RawDom).HasNoMatchForXpath("//div[@data-audiorecordingmode]");
+			AssertThatXmlIn.Dom(_bookDom.RawDom).HasNoMatchForXpath("//span[@class='audio-sentence']");
+			AssertThatXmlIn.Dom(_bookDom.RawDom).HasNoMatchForXpath("//span[@recordingmd5]");
+			// verify that text content hasn't changed with removal of the spans
+			para = _bookDom.RawDom.SelectSingleNode("//div[contains(@class,'ImageDescriptionEdit-style')]/p") as XmlElement;
+			Assert.That(para, Is.Not.Null);
+			Assert.That(para.InnerXml, Is.EqualTo("cat lying down looking at you"));
+			Assert.That(para.InnerText, Is.EqualTo("cat lying down looking at you"));
+			para = _bookDom.RawDom.SelectSingleNode("//div[contains(@class,'normal-style')]/p") as XmlElement;
+			Assert.That(para, Is.Not.Null);
+			Assert.That(para.InnerXml, Is.EqualTo("This is a <em>cat</em>.&nbsp;Believe it!"));
+			Assert.That(para.InnerText, Is.EqualTo("This is a cat.\u00A0Believe it!"));
+		}
 
 #if UserControlledTemplate
 		[Test]
