@@ -1811,6 +1811,40 @@ namespace Bloom.Book
 			return false; // not found
 		}
 
+		public void RemoveObsoleteAudioMarkup()
+		{
+			foreach (var spanOrDiv in HtmlDom.SelectAudioSentenceElements(RawDom.DocumentElement).Cast<XmlElement>())
+			{
+				if (!AudioProcessor.DoesAudioExistForSegment(Storage.FolderPath, spanOrDiv.Attributes["id"]?.Value))
+				{
+					if (spanOrDiv.Name == "span")
+					{
+						HtmlDom.RemoveElementLayer(spanOrDiv);
+					}
+					else
+					{
+						// TextBox mode recording: clean up multiple attributes on the div, and remove unneeded spans while
+						// preserving the span content.
+						spanOrDiv.RemoveAttribute("data-audiorecordingmode");
+						spanOrDiv.RemoveAttribute("data-audiorecordingendtimes");
+						spanOrDiv.RemoveAttribute("data-duration");
+						HtmlDom.RemoveClass(spanOrDiv, "audio-sentence");
+						HtmlDom.RemoveClass(spanOrDiv, "bloom-postAudioSplit");
+						foreach (var span in spanOrDiv.SafeSelectNodes(".//span[@class='bloom-highlightSegment']").Cast<XmlElement>().ToList())
+						{
+							HtmlDom.RemoveElementLayer(span);
+						}
+					}
+				}
+			}
+			foreach (var div in RawDom.DocumentElement.SafeSelectNodes("//div[@data-audiorecordingmode]").Cast<XmlElement>().ToList())
+			{
+				var nodes = div.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence')]");
+				if (nodes == null || nodes.Count == 0)
+					div.RemoveAttribute("data-audiorecordingmode");
+			}
+		}
+
 		/// <summary>
 		/// Determines if the book references an existing audio file.
 		/// </summary>
