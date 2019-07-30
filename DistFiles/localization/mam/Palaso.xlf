@@ -126,10 +126,13 @@
 </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.CancelButton">
+      <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="mam" state="translated">&amp;Qweb'il</target>
+        <target xml:lang="mam" state="translated">&amp;Kwe'b'il</target>
+        <alt-trans>
+          <target xml:lang="mam">&amp;Qweb'il</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">&amp;M'in lajet</target>
         </alt-trans>
@@ -138,12 +141,15 @@
 </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.IgnoreButton">
+      <trans-unit id="Common.IgnoreButton" approved="yes">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="mam" state="translated">&amp;Min kb'antel</target>
+        <target xml:lang="mam" state="translated">&amp;Min txi' b'inchet</target>
         <alt-trans>
           <target xml:lang="mam">&amp;Min qb'antel</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="mam">&amp;Min kb'antel</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="mam">&amp;Mi kb'antel</target>
@@ -152,7 +158,7 @@
           <target xml:lang="mam">&amp;Nti' tojtzqi'n</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.No">
+      <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
         <target xml:lang="mam" state="translated">Min</target>
@@ -163,7 +169,7 @@
           <target xml:lang="mam">Mi'</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.NoButton">
+      <trans-unit id="Common.NoButton" approved="yes">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
         <target xml:lang="mam" state="translated">&amp;Min</target>
@@ -174,7 +180,7 @@
           <target xml:lang="mam">&amp;Mi'</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.OKButton">
+      <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
         <target xml:lang="mam" state="translated">B'a'n</target>
@@ -186,7 +192,7 @@
           <target xml:lang="mam">&amp;K'amol</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.RetryButton">
+      <trans-unit id="Common.RetryButton" approved="yes">
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
         <target xml:lang="mam" state="translated">&amp;Kb'inchetil juntl maj</target>
@@ -194,27 +200,36 @@
           <target xml:lang="mam">&amp;Qb'el b'inchet juntl maj</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Yes">
+      <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
-        <target xml:lang="mam" state="translated">Ok</target>
+        <target xml:lang="mam" state="translated">B'a'n</target>
+        <alt-trans>
+          <target xml:lang="mam">Ok</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.YesButton">
+      <trans-unit id="Common.YesButton" approved="yes">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="mam" state="translated">&amp;Ok</target>
+        <target xml:lang="mam" state="translated">&amp;B'a'n</target>
+        <alt-trans>
+          <target xml:lang="mam">&amp;Ok</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CustomIdentifierView.betterLabel1">
+      <trans-unit id="CustomIdentifierView.betterLabel1" approved="yes">
         <source xml:lang="en">RFC5646 code:</source>
         <note>ID: CustomIdentifierView.betterLabel1</note>
         <note>label describes the code for a custom identifier. Translate only 'code'</note>
         <target xml:lang="mam" state="translated">Techil tajlal RFC5646:</target>
       </trans-unit>
-      <trans-unit id="CustomIdentifierView.linkLabel1">
+      <trans-unit id="CustomIdentifierView.linkLabel1" approved="yes">
         <source xml:lang="en">Read about language identifiers on the web</source>
         <note>ID: CustomIdentifierView.linkLabel1</note>
         <note>text used in the link to a webpage that describes the language identifiers</note>
-        <target xml:lang="mam" state="translated">N-sch'in nab'il tib'aj qe nchi ka'yin twitz yol tuj chemaj xin</target>
+        <target xml:lang="mam" state="translated">U'jina nab'il tib'aj qe nchi ka'yin twitz yol tuj chemaj xin</target>
+        <alt-trans>
+          <target xml:lang="mam">N-sch'in nab'il tib'aj qe nchi ka'yin twitz yol tuj chemaj xin</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -222,7 +237,7 @@
         <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
         <target xml:lang="mam" state="translated">{0} Kpol tuj tkub'el tz'is.</target>
       </trans-unit>
-      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Param {0} is a file name</note>
@@ -277,7 +292,7 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">Sch'ib'il tuj tu'melxix</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.Camera">
+      <trans-unit id="ImageToolbox.Camera" approved="yes">
         <source xml:lang="en">Camera</source>
         <note>ID: ImageToolbox.Camera</note>
         <target xml:lang="mam" state="translated">Q'il tilb'ilal</target>
@@ -294,10 +309,13 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">Tu'n tajb'en {0}</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.Crop">
+      <trans-unit id="ImageToolbox.Crop" approved="yes">
         <source xml:lang="en">Crop</source>
         <note>ID: ImageToolbox.Crop</note>
-        <target xml:lang="mam" state="translated">K'elel</target>
+        <target xml:lang="mam" state="translated">K-elel</target>
+        <alt-trans>
+          <target xml:lang="mam">K'elel</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Piẍil</target>
         </alt-trans>
@@ -330,7 +348,7 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">Tuj techil kyaj tb'utx', tz'ib'anxa alkye njyona ti'j. Ex b'etz'anxa TOKA.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.FileButton">
+      <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
         <target xml:lang="mam" state="translated">Nak'ub'il aq'unb'il</target>
@@ -341,11 +359,14 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">K'ub'il tu'mel aq'untl</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.FileChooserTitle">
+      <trans-unit id="ImageToolbox.FileChooserTitle" approved="yes">
         <source xml:lang="en">Choose Picture File</source>
         <note>ID: ImageToolbox.FileChooserTitle</note>
         <note>Title shown for a file chooser dialog brought up by the ImageToolbox</note>
-        <target xml:lang="mam" state="translated">Sak'onqtza nak'ub'il aq'unb'il tilb'ilal</target>
+        <target xml:lang="mam" state="translated">Sak'onktza nak'ub'il aq'unb'il tilb'ilal</target>
+        <alt-trans>
+          <target xml:lang="mam">Sak'onqtza nak'ub'il aq'unb'il tilb'ilal</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Sak'onqtza k'ub'il tib'lal</target>
         </alt-trans>
