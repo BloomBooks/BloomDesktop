@@ -5416,51 +5416,69 @@
           <target xml:lang="mam">Poqb'al tu'n kyb'ant qe nya b'a'n</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.BookSent" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Usb.Progress.BookSent" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
         <note>ID: PublishTab.Android.Usb.Progress.BookSent</note>
         <note>{0} is a book title</note>
-        <target xml:lang="mam" state="translated">¡B'a'n sch'ina ja'l "{0}" tuj Bloom Reader!</target>
+        <target xml:lang="mam" state="translated">¡B'a'n sch'ina ja'la "{0}" tuj Bloom Reader!</target>
+        <alt-trans>
+          <target xml:lang="mam">¡B'a'n sch'ina ja'l "{0}" tuj Bloom Reader!</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.Connected" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Usb.Progress.Connected" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Connected to {0} via USB...</source>
         <note>ID: PublishTab.Android.Usb.Progress.Connected</note>
         <note>{0} is a the name of the device Bloom connected to</note>
-        <target xml:lang="mam" state="translated">Tokiya ti'j {0} tu'n tu'mel USB...</target>
+        <target xml:lang="mam" state="translated">Tokiya ti'j {0} tu'n tumel USB...</target>
+        <alt-trans>
+          <target xml:lang="mam">Tokiya ti'j {0} tu'n tu'mel USB...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceOutOfMemory" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceOutOfMemory" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The device reported that it does not have enough space for this book. The book is {0} MB.</source>
         <note>ID: PublishTab.Android.Usb.Progress.DeviceOutOfMemory</note>
         <note>{0} is the size of the book that Bloom is trying to copy over to the Android device.</note>
-        <target xml:lang="mam" state="translated">Ma tzaj tiyek'an tu'n makb'il aq'unb'il xk'utz'ib' qa nlayx kux b'aj u'jb'il lu'. A te u'jb'il lu' te {0} MB.</target>
+        <target xml:lang="mam" state="translated">Ma tzaj yek'an tu'n makb'il aq'unb'il xk'utz'ib' qa nlayx kux b'aj u'jb'il lu'. A te u'jb'il lu' te {0} MB.</target>
+        <alt-trans>
+          <target xml:lang="mam">Ma tzaj tiyek'an tu'n makb'il aq'unb'il xk'utz'ib' qa nlayx kux b'aj u'jb'il lu'. A te u'jb'il lu' te {0} MB.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>
         <note>ID: PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader</note>
         <target xml:lang="mam" state="translated">Kyoq qe txqantl makb'il aq'unb'il xk'utz'ib' noqx nti' nb'aj kyaq'unan Bloom Reader:</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.FailureToSend" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Usb.Progress.FailureToSend" sil:dynamic="true" approved="yes">
         <source xml:lang="en">An error occurred and the book was not sent to your Android device.</source>
         <note>ID: PublishTab.Android.Usb.Progress.FailureToSend</note>
-        <target xml:lang="mam" state="translated">At min xb'ant tuj tu'mel tu'njo nti' xi samet u'jb'il tuj makb'il aq'unb'il xk'utz'ib' Android.</target>
+        <target xml:lang="mam" state="translated">At min nti' xb'ant tuj tu'mel tu'njo nti' xi samet u'jb'il tuj makb'il aq'unb'il xk'utz'ib' Android.</target>
+        <alt-trans>
+          <target xml:lang="mam">At min xb'ant tuj tu'mel tu'njo nti' xi samet u'jb'il tuj makb'il aq'unb'il xk'utz'ib' Android.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.LookingForDevice" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Usb.Progress.LookingForDevice" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Looking for an Android device connected by USB cable and set up for MTP...</source>
         <note>ID: PublishTab.Android.Usb.Progress.LookingForDevice</note>
         <note>This is a progress message; MTP is an acronym for the system that allows computers to access files on devices.</note>
         <target xml:lang="mam" state="translated">Njyon jun makb'il aq'unb'il xk'utz'ib' Android tok ti'j tak'il USB ex q'o'n tilb'ilal te MTP...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.LookingForExisting" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Usb.Progress.LookingForExisting" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Looking for an existing "{0}"...</source>
         <note>ID: PublishTab.Android.Usb.Progress.LookingForExisting</note>
         <note>{0} is a book title</note>
-        <target xml:lang="mam" state="translated">Njyon u'jb'il "{0}" toksa'n tuj...</target>
+        <target xml:lang="mam" state="translated">Njyon u'jb'il "{0}" at tuj...</target>
+        <alt-trans>
+          <target xml:lang="mam">Njyon u'jb'il "{0}" toksa'n tuj...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.MoreThanOne" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Usb.Progress.MoreThanOne" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The following connected devices all have Bloom Reader installed. Please connect only one of these devices.</source>
         <note>ID: PublishTab.Android.Usb.Progress.MoreThanOne</note>
         <note>{0} is a book title</note>
-        <target xml:lang="mam" state="translated">Toksa'n Bloom Reader kyi'j qe txqantl makb'il aq'unb'il xk'utz'ib' mojb'a'n kyib'. Nasama, q'o'n oka noqx jun.</target>
+        <target xml:lang="mam" state="translated">Toksa'n Bloom Reader kyi'j qe txqantl makb'il aq'unb'il xk'utz'ib' mojb'a'n kyib'. Najsama, q'o'noka noqx jun.</target>
+        <alt-trans>
+          <target xml:lang="mam">Toksa'n Bloom Reader kyi'j qe txqantl makb'il aq'unb'il xk'utz'ib' mojb'a'n kyib'. Nasama, q'o'n oka noqx jun.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.NoDeviceFound" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No device found. Still looking...</source>
@@ -6778,7 +6796,7 @@ Do you want to go ahead?</note>
           <target xml:lang="mam">Nak'ub'il qe yol tziyinmaj</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.AverageHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.AverageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Avg</source>
         <note>ID: ReaderSetup.AverageHeader</note>
         <target xml:lang="mam" state="translated">Prom</target>
@@ -7926,10 +7944,14 @@ Do you want to go ahead?</note>
           <target xml:lang="mam">Matij ke'yb'itz tuj kab'e yol</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Bloom Reader Quiz" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Bloom Reader Quiz" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom Reader Quiz</source>
         <note>ID: TemplateBooks.PageLabel.Bloom Reader Quiz</note>
-        <target xml:lang="mam" state="translated">La traducción actual en español está mal.  No es una "prueba sobre Bloom Reader".  Es una prueba de comprensión que se puede usar solamente con Bloom Reader.</target>
+        <target xml:lang="mam" state="translated">Xjelb'il in ajb'en noqx tuj Bloom Reader
+</target>
+        <alt-trans>
+          <target xml:lang="mam">La traducción actual en español está mal.  No es una "prueba sobre Bloom Reader".  Es una prueba de comprensión que se puede usar solamente con Bloom Reader.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Credits Page</source>
@@ -8144,7 +8166,7 @@ Do you want to go ahead?</note>
           <target xml:lang="mam">T-xaq te jun malob'il</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true" approved="yes">
         <source xml:lang="en">SIL-Cameroon</source>
         <note>ID: TemplateBooks.PageLabel.SIL-Cameroon</note>
         <target xml:lang="mam" state="translated">SIL-Camerún</target>
