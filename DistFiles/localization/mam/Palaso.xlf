@@ -879,10 +879,13 @@ Kyusab'il tu'n tel</target>
         <note>ID: MetadataEditor.License</note>
         <target xml:lang="mam" state="translated">Tu'jil amb'il</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.PublicDomain">
+      <trans-unit id="MetadataEditor.PublicDomain" approved="yes">
         <source xml:lang="en">The copyright holder waives all rights</source>
         <note>ID: MetadataEditor.PublicDomain</note>
-        <target xml:lang="mam" state="translated">Aj tajwil at toklen b'inchalte n-nelti'n tib' kyaqil toklenj</target>
+        <target xml:lang="mam" state="translated">Aj tajwil at toklen b'inchalte n-elti'n tkyaqil toklenj</target>
+        <alt-trans>
+          <target xml:lang="mam">Aj tajwil at toklen b'inchalte n-nelti'n tib' kyaqil toklenj</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Aj tajwil at toklen b'inchalte n-nelti'n kyaqil toklenj</target>
         </alt-trans>
@@ -931,11 +934,14 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">txqantl q'amab'itz</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.linkToPublicDomainCC0">
+      <trans-unit id="MetadataEditor.linkToPublicDomainCC0" approved="yes">
         <source xml:lang="en">about {0} Public Domain</source>
         <note>ID: MetadataEditor.linkToPublicDomainCC0</note>
         <note>{0} is replaced by an untranslatable abbreviation functioning as an adjective ("CC0")</note>
-        <target xml:lang="mam" state="translated">nab'il tib'aj kyaqil tzqi'n kyu'n xjal {0}</target>
+        <target xml:lang="mam" state="translated">nab'il tib'aj tkyaqil ojtzqi'n kyu'n xjal {0}</target>
+        <alt-trans>
+          <target xml:lang="mam">nab'il tib'aj kyaqil tzqi'n kyu'n xjal {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons" approved="yes">
         <source xml:lang="en">Not Enforceable</source>
@@ -1035,11 +1041,14 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">Yek'b'il txilen b'ib'ajtz</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordNotice">
+      <trans-unit id="SettingsProtection.PasswordNotice" approved="yes">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page.</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
-        <target xml:lang="mam" state="translated">Aj techil jab'inchalte tu'n tajb'lan kyi'j qe tz'ajsab'il lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na "{1}" ex.</target>
+        <target xml:lang="mam" state="translated">Aj jaqob'ilte te b'inchalte tu'n tajb'lan kyi'j ttxolil aq'unb'il xk'utz'ib' lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na {1}.</target>
+        <alt-trans>
+          <target xml:lang="mam">Aj techil jab'inchalte tu'n tajb'lan kyi'j qe tz'ajsab'il lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na "{1}" ex.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Aj techil jab'inchalte tu'n tajb'lan kyi'j qe tz'ajsab'il lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na "{1}" ex "{2}".</target>
         </alt-trans>
@@ -1047,11 +1056,14 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">Aj techil ja b'inchalte tu'n tajb'lan kyi'j qe tz'ajsab'il lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na "{1}" ex "{2}"</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl">
+      <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl" approved="yes">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
         <note>ID: SettingsProtection.PasswordNoticeWithSupportUrl</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNotice". Param 0: Factory password; Param 1: product name; Param 2: URL of support page</note>
-        <target xml:lang="mam" state="translated">Aj techil jab'inchalte tu'n tajb'lan kyi'j qe ttxolil aq'unb'il xk'utz'ib' lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan t-xaq te onb'il {1} tuj: {2}</target>
+        <target xml:lang="mam" state="translated">Aj jaqob'ilte te jab'inchalte tu'n tajb'lan kyi'j qe ttxolil aq'unb'il xk'utz'ib' lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan t-xaq u'j teya tu'n tonin ti'ja {1} tuj: {2}</target>
+        <alt-trans>
+          <target xml:lang="mam">Aj techil jab'inchalte tu'n tajb'lan kyi'j qe ttxolil aq'unb'il xk'utz'ib' lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan t-xaq te onb'il {1} tuj: {2}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
@@ -1080,11 +1092,17 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">Kolil meltz'ul aq'untl</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="VoiceIdentifierView.betterLabel1">
+      <trans-unit id="VoiceIdentifierView.betterLabel1" approved="yes">
         <source xml:lang="en">In applications which support this option, fields with this input system will be able to play and record voice.</source>
         <note>ID: VoiceIdentifierView.betterLabel1</note>
         <note>Displayed if a user selects the voice special option in writing system setup</note>
-        <target xml:lang="mam" state="translated">Kyuj qe aq'unb'il xk'utz'ib' nq'on tipumal tu'mel lu', a qe ttenb'il xk'utz'ib' tuk' tu'mel tu'n qoqx b'a'n tu'n tb'ant xk'ub'ib'il ex tu'n t-xi' qb'i'n qwi'.</target>
+        <target xml:lang="mam" state="translated">Kyuj qe' aq'unb'il xk'utz'ib' nq'on tipumal tu'mel lu', a qe' ttenb'il xk'utz'ib' tuk' tu'mel tu'n qokx, b'a'n tu'n kyk'u'nte ex tu'n t-xi' qb'i'n qwi'.</target>
+        <alt-trans>
+          <target xml:lang="mam">Kyuj qe aq'unb'il xk'utz'ib' nq'on tipumal tu'mel lu', a qe' ttenb'il xk'utz'ib' tuk' tu'mel tu'n qokx, b'a'n tu'n kyk'u'nte ex tu'n t-xi' qb'i'n qwi'.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="mam">Kyuj qe aq'unb'il xk'utz'ib' nq'on tipumal tu'mel lu', a qe ttenb'il xk'utz'ib' tuk' tu'mel tu'n qoqx b'a'n tu'n tb'ant xk'ub'ib'il ex tu'n t-xi' qb'i'n qwi'.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
@@ -1129,7 +1147,7 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">&amp;Ttenb'il b'inchb'il:</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="WSIdentifierView.betterLabel4">
+      <trans-unit id="WSIdentifierView.betterLabel4" approved="yes">
         <source xml:lang="en">Abbreviation</source>
         <note>ID: WSIdentifierView.betterLabel4</note>
         <note>In writing system setup general tab: label before abbreviation text box</note>
@@ -1138,29 +1156,35 @@ Kyusab'il tu'n tel</target>
           <target xml:lang="mam">Aqe' tz'epona</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="WSIdentifierView.betterLabel5">
+      <trans-unit id="WSIdentifierView.betterLabel5" approved="yes">
         <source xml:lang="en">Special:</source>
         <note>ID: WSIdentifierView.betterLabel5</note>
         <note>In writing system setup general tab:  Label before combo box with 'Special' choices</note>
         <target xml:lang="mam" state="translated">Tb'anil:</target>
       </trans-unit>
-      <trans-unit id="WSIdentifiers.IpaIdentifierView.Default">
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Default" approved="yes">
         <source xml:lang="en">Default</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Default</note>
         <note>Choice for most users</note>
         <target xml:lang="mam" state="translated">B'incha'nmaj</target>
       </trans-unit>
-      <trans-unit id="WSIdentifiers.IpaIdentifierView.Emic">
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Emic" approved="yes">
         <source xml:lang="en">Emic (uses phonology of the language)</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Emic</note>
         <note>Only translate text inside of the parentheses ()</note>
-        <target xml:lang="mam" state="translated">Emic (n-nab'en q'ajq'ajel yol)</target>
+        <target xml:lang="mam" state="translated">Emic (n-ab'en tq'ajq'ajel yol tu'n)</target>
+        <alt-trans>
+          <target xml:lang="mam">Emic (n-nab'en q'ajq'ajel yol)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSIdentifiers.IpaIdentifierView.Etic">
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Etic" approved="yes">
         <source xml:lang="en">Etic (raw phonetic transcription)</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Etic</note>
         <note>Only translate text inside of the parentheses ()</note>
-        <target xml:lang="mam" state="translated">Etic (tu'mel tz'ib'ajtz q'ajyol tu'nx)</target>
+        <target xml:lang="mam" state="translated">Etic (tu'mel ttz'ib'anjtz q'ajyol tu'nx)</target>
+        <alt-trans>
+          <target xml:lang="mam">Etic (tu'mel tz'ib'ajtz q'ajyol tu'nx)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
