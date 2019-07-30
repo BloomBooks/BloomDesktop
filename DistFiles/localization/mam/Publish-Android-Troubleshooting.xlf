@@ -10,10 +10,13 @@
           <target xml:lang="mam">Qe tu'mel yol tu'ntzan tnajset qe nya' b'a'n ite' ti'j pakb'ab'il te Android</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.wifi">
+      <trans-unit id="android.publish.wifi" approved="yes">
         <source xml:lang="en">Share over Wi-Fi</source>
-        <target xml:lang="mam" state="translated">Sipb'il tuj paqanil WiFi</target>
+        <target xml:lang="mam" state="translated">Samalte tuj paqanil WiFi</target>
         <note>ID: android.publish.wifi</note>
+        <alt-trans>
+          <target xml:lang="mam">Sipb'il tuj paqanil WiFi</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Sipb'il tuj chemaj xin WiFi</target>
         </alt-trans>
@@ -26,7 +29,7 @@
           <target xml:lang="mam">Jun nya' b'a'n: Makb'il aq'unb'il xk'utz'ib' Android nti' nk'amon pakb'ab'il te u'jb'il</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.run.receive">
+      <trans-unit id="android.publish.wifi.run.receive" approved="yes">
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
         <target xml:lang="mam" state="translated">Aj tajb'en tumel aq'untl lu', ilti'j tu'n taq'unan Bloom Reader. Jaqonkxa menú ex sak'onktza "K'amob'il te WiFi".</target>
         <note>ID: android.publish.wifi.run.receive</note>
@@ -34,18 +37,24 @@
           <target xml:lang="mam">Aj najb'en tu'mel aq'untl lu', ilx ti'j tu'n taq'nan Bloom Reader. Jaqonxa menú ex sak'onqtza "K'amob'il te WiFi".</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.receive.from">
+      <trans-unit id="android.publish.wifi.receive.from" approved="yes">
         <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
-        <target xml:lang="mam" state="translated">Tka'yinxa qa b'a'n tok makb'il xk'utz'ib' ti'j twitz "K'amob'il te WiFi"</target>
+        <target xml:lang="mam" state="translated">Ka'yinxa qa b'a'n tok makb'il xk'utz'ib' ti'j twitz "K'amob'il te WiFi"</target>
         <note>ID: android.publish.wifi.receive.from</note>
+        <alt-trans>
+          <target xml:lang="mam">Tka'yinxa qa b'a'n tok makb'il xk'utz'ib' ti'j twitz "K'amob'il te WiFi"</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Il ti'j tu'n tok tka'yina qa tok makb'il aq'unb'il xk'utz'ib' ti'j twitz xk'utz'ib' te "K'amob'il te WiFi"</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.same.network">
+      <trans-unit id="android.publish.wifi.same.network" approved="yes">
         <source xml:lang="en">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
-        <target xml:lang="mam" state="translated">Ka'yinka qa aju xk'utz'ib' ex tmakb'il junx ite' ti'j paqanil WiFi. Jun xk'utz'ib' tok ti'j ajb'eyil WiFi tu'n taq'il b'ala ax ta' tuj ttex paqanil. Ja'ka b'a'n tz'ok qe' paqanil tu'n taq'il tu'ntzan tten tujxix tkab'in paqanil te tzalu' ikytza'n WiFi, alkyeqe' nchi aq'unan ti'j Bloom mlayx chi onin tu'n tok q'ol tilb'ilal aq'unb'il lu'.</target>
+        <target xml:lang="mam" state="translated">Ka'yinka qa aju xk'utz'ib' ex tmakb'il junx ate' ti'j paqanil WiFi. Jun xk'utz'ib' tok ti'j ajb'eyil WiFi tu'n taq'il b'ala ax ta' tuj ttex paqanil. Ja'ka b'a'n tz'ok qe' paqanil tu'n taq'il tu'ntzan tten tujxix tkab'in paqanil te tzalu' ikytza'n WiFi, alkyeqe' nchi aq'unan ti'j Bloom mlayx chi onin tu'n tok q'ol tilb'ilal aq'unb'il lu'.</target>
         <note>ID: android.publish.wifi.same.network</note>
+        <alt-trans>
+          <target xml:lang="mam">Ka'yinka qa aju xk'utz'ib' ex tmakb'il junx ite' ti'j paqanil WiFi. Jun xk'utz'ib' tok ti'j ajb'eyil WiFi tu'n taq'il b'ala ax ta' tuj ttex paqanil. Ja'ka b'a'n tz'ok qe' paqanil tu'n taq'il tu'ntzan tten tujxix tkab'in paqanil te tzalu' ikytza'n WiFi, alkyeqe' nchi aq'unan ti'j Bloom mlayx chi onin tu'n tok q'ol tilb'ilal aq'unb'il lu'.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">Il ti'j tu'n tok tka'yina qa xk'utz'ib' ex makb'il aq'unb'il xk'utz'ib' junx ite' ti'j chemaj xin WiFi. Jun xk'utz'ib' tok ti'j ajb'eyil WiFi tu'n taq'il b'ala ax ta' tuj ttex chmaj xin. Jaka b'a'n tz'ok qe chemaj xin tu'n taq'il tu'ntzan tten tujxix tkab'in chemaj xin te tzalu' ikytzan WiFi, alkyeqa nchaq'nan ti Bloom nlayx chi onin tu'n tok q'ol tilb'ilal aq'unb'il lu'.</target>
         </alt-trans>
