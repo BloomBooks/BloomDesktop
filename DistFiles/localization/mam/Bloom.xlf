@@ -35,20 +35,26 @@
           <target xml:lang="mam">B'ijtz tib'aj kyaqil tz'ib'an maj</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage">
+      <trans-unit id="AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage" approved="yes">
         <source xml:lang="en">Some text is missing a recording for an image description on page {0}</source>
         <note>ID: AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="mam" state="translated">Atx taj txolyol tu'n tkyaj tuj xk'ub'ib'il te jun chikb'ab'itz tib'aj tilb'ilal tuj t-xaq {0}</target>
+        <target xml:lang="mam" state="translated">At-x yol na'm tb'aj k'u'yit te jun chikb'ab'itz tib'aj tilb'ilal tuj t-xaq {0}</target>
+        <alt-trans>
+          <target xml:lang="mam">Atx taj txolyol tu'n tkyaj tuj xk'ub'ib'il te jun chikb'ab'itz tib'aj tilb'ilal tuj t-xaq {0}</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">At txolyol atx taj tu'n tkyaj tuj xk'ub'ib'il te jun chikb'ab'itz tib'aj tilb'ilal tuj t-xaq {0}</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.AudioForAllText.MissingOnPage">
+      <trans-unit id="AccessibilityCheck.AudioForAllText.MissingOnPage" approved="yes">
         <source xml:lang="en">Some text is missing a recording on page {0}</source>
         <note>ID: AccessibilityCheck.AudioForAllText.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="mam" state="translated">Atx taj txolyol tuj xk'ub'ib'il tuj t-xaq {0}</target>
+        <target xml:lang="mam" state="translated">At-x txolyol na'm tb'aj k'u'yit tuj xk'ub'ib'il tuj t-xaq {0}</target>
+        <alt-trans>
+          <target xml:lang="mam">Atx taj txolyol tuj xk'ub'ib'il tuj t-xaq {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom can automatically check these for you:</source>
@@ -75,11 +81,14 @@
           <target xml:lang="mam">Q'amalte kyb'aj kyaqil qe tib'lal</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.DescriptionsForAllImages.MissingOnPage">
+      <trans-unit id="AccessibilityCheck.DescriptionsForAllImages.MissingOnPage" approved="yes">
         <source xml:lang="en">Missing image description on page {0}</source>
         <note>ID: AccessibilityCheck.DescriptionsForAllImages.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="mam" state="translated">Atx taj jun chikb'ab'il tib'aj tilb'ilal tuj t-xaq {0}</target>
+        <target xml:lang="mam" state="translated">At-x taj jun chikb'ab'il tib'aj tilb'ilal tuj t-xaq {0}</target>
+        <alt-trans>
+          <target xml:lang="mam">Atx taj jun chikb'ab'il tib'aj tilb'ilal tuj t-xaq {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.FindingAce" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Finding Ace by DAISY on this computer...</source>
