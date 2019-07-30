@@ -3118,10 +3118,10 @@ blob@0.0.5:
   resolved "https://registry.yarnpkg.com/blob/-/blob-0.0.5.tgz#d680eeef25f8cd91ad533f5b01eed48e64caf683"
   integrity sha512-gaqbzQPqOoamawKg0LGVd7SzLgXS+JH61oWprSLH+P+abTczqJbhTR8CmJ2u9/bUYNmHTGJx/UEmn6doAvvuig==
 
-bloom-player@*:
-  version "0.9.5"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-0.9.5.tgz#71cdd0f54982ae1149dddb4a9a431cf700ded8bc"
-  integrity sha512-VciRJ8vu+21oe22XuXdT1WvWc3g1aE09FB8SHNUPk9uDi7coTIWDuIhcmgss1+8/ZJW+BNC5fiwIDtHkx9h25A==
+bloom-player@0.9.23:
+  version "0.9.23"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-0.9.23.tgz#f05f93d5710160a0417c1cacaa534d5b48ae27e2"
+  integrity sha512-G/NaJtjSa7xP6aOKJCzlyfFw39MOmDzm0Mnemy1IXSBUeCY3aexMDic/7L0NSJuMmVZz7YYsFay2S6u1jMEc6w==
   dependencies:
     "@material-ui/core" "^4.0.1"
     "@material-ui/icons" "^4.0.1"
