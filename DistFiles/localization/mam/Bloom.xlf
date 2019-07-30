@@ -1861,18 +1861,24 @@
           <target xml:lang="mam">Najsama, maqo'n maj u'j lu' tu'n min ch'ixpet qe tib'lal.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.ChooseLayoutButton">
+      <trans-unit id="EditTab.ChooseLayoutButton" approved="yes">
         <source xml:lang="en">Choose Different Layout</source>
         <note>ID: EditTab.ChooseLayoutButton</note>
-        <target xml:lang="mam" state="translated">Qsak'etil jun ak'aj tumlal b'antlen</target>
+        <target xml:lang="mam" state="translated">Qsak'etil juntl ak'aj tumlal </target>
+        <alt-trans>
+          <target xml:lang="mam">Qsak'etil jun ak'aj tumlal b'antlen</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
+      <trans-unit id="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle" approved="yes">
         <source xml:lang="en">Really Remove Page?</source>
         <note>ID: EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): Really Delete Page?</note>
-        <target xml:lang="mam" state="translated">Tajxixya tz'elti'na t-xaq lu'?</target>
+        <target xml:lang="mam" state="translated">Tajxixya tz'el ti'na t-xaq u'j lu'?</target>
+        <alt-trans>
+          <target xml:lang="mam">Tajxixya tz'elti'na t-xaq lu'?</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.ConfirmRemovePageDialog.DeleteButton">
+      <trans-unit id="EditTab.ConfirmRemovePageDialog.DeleteButton" approved="yes">
         <source xml:lang="en">&amp;Remove</source>
         <note>ID: EditTab.ConfirmRemovePageDialog.DeleteButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): &amp;Delete</note>
@@ -1884,15 +1890,21 @@
           <target xml:lang="mam">&amp;Tu'n tel</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel">
+      <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel" approved="yes">
         <source xml:lang="en">This page will be permanently removed.</source>
         <note>ID: EditTab.ConfirmRemovePageDialog._messageLabel</note>
-        <target xml:lang="mam" state="translated">Ok k'elel t-xaq lu' te jumajx.</target>
+        <target xml:lang="mam" state="translated">Ok elel t-xaq lu' te jun majx.</target>
+        <alt-trans>
+          <target xml:lang="mam">Ok k'elel t-xaq lu' te jumajx.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.ContentLanguagesDropdown">
+      <trans-unit id="EditTab.ContentLanguagesDropdown" approved="yes">
         <source xml:lang="en">Multilingual Settings</source>
         <note>ID: EditTab.ContentLanguagesDropdown</note>
-        <target xml:lang="mam" state="translated">Q'ol tilb'ilal kye yolb'il</target>
+        <target xml:lang="mam" state="translated">Q'ol tumel kye yolb'il</target>
+        <alt-trans>
+          <target xml:lang="mam">Q'ol tilb'ilal kye yolb'il</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip" approved="yes">
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
