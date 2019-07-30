@@ -1952,24 +1952,27 @@
           <target xml:lang="mam">K'elel tilb'ilal aq'unb'il lu' kye qe txqanl tilb'ilal te' tuj u'jb'il lu'?</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.CopyPage">
+      <trans-unit id="EditTab.CopyPage" approved="yes">
         <source xml:lang="en">Copy Page</source>
         <note>ID: EditTab.CopyPage</note>
         <target xml:lang="mam" state="translated">Tilb'ilal aq'unb'il t-xaq</target>
       </trans-unit>
-      <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true">
+      <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Layout</source>
         <note>ID: EditTab.CustomPage.ChangeLayout</note>
-        <target xml:lang="mam" state="translated">Ch'ixpu tumlal b'antlen</target>
+        <target xml:lang="mam" state="translated">Ch'ixpul tumlal b'inchab'ente tilb'ilal</target>
+        <alt-trans>
+          <target xml:lang="mam">Ch'ixpu tumlal b'antlen</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true">
+      <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true" approved="yes">
         <source xml:lang="en">or</source>
         <note>ID: EditTab.CustomPage.Or</note>
         <note>Shown between 'Picture' and 'Text' when Custom Page is in Layout mode</note>
         <note xml:lang="en">OLD TEXT (before 3.9, surrounding spaces):  or </note>
         <target xml:lang="mam" state="translated">mo</target>
       </trans-unit>
-      <trans-unit id="EditTab.CustomPage.Picture" sil:dynamic="true">
+      <trans-unit id="EditTab.CustomPage.Picture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture</source>
         <note>ID: EditTab.CustomPage.Picture</note>
         <target xml:lang="mam" state="translated">Ttilb'ilal</target>
@@ -4732,7 +4735,7 @@
           <target xml:lang="mam">T-kyajin piẍ mij ẍkut T-xaq U’jWa'l</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="LicenseDialog.WindowTitle">
+      <trans-unit id="LicenseDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom {0}</source>
         <note>ID: LicenseDialog.WindowTitle</note>
         <target xml:lang="mam" state="translated">Bloom {0}</target>
@@ -5324,70 +5327,94 @@
           <target xml:lang="mam">Nch'ixpun "{0}" tu'n "{1}"</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
         <note>Link to find Bloom Reader on Google Play Store</note>
         <target xml:lang="mam" state="translated">Qaninxa aq'unb'il xk'utz'ib' Bloom Reader</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
         <note>ID: PublishTab.Android.Intro</note>
         <note>This is displayed at the top of the Android screen.</note>
         <target xml:lang="mam" state="translated">Samanxa tu'jb'ila te aq'unb'il xk'utz'ib' Android te Bloom Reader</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose how to send to device</source>
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
-        <target xml:lang="mam" state="translated">Sak'onqtza tumala tz'a'n tu'n t-xi samet te makb'il aq'unb'il xk'utz'ib'</target>
+        <target xml:lang="mam" state="translated">Sak'onktza tumlal tz'a'n tu'n t-xi' samet te makb'il aq'unb'il xk'utz'ib'</target>
+        <alt-trans>
+          <target xml:lang="mam">Sak'onqtza tumala tz'a'n tu'n t-xi samet te makb'il aq'unb'il xk'utz'ib'</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Motion Book</source>
         <note>ID: PublishTab.Android.MotionBookMode</note>
         <note>Motion Book checkbox label</note>
-        <target xml:lang="mam" state="translated">U'jb'il nyukẍ</target>
+        <target xml:lang="mam" state="translated">U'jb'il nyukch</target>
+        <alt-trans>
+          <target xml:lang="mam">U'jb'il nyukẍ</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Preview" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Preview" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Preview</source>
         <note>ID: PublishTab.Android.Preview</note>
-        <target xml:lang="mam" state="translated">Ke'yb'il namxtaq t-xi qe'</target>
+        <target xml:lang="mam" state="translated">Ka'yb'il namxtaq tjaw jaqet</target>
+        <alt-trans>
+          <target xml:lang="mam">Ke'yb'il namxtaq t-xi qe'</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Publish" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Publish" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Android.Publish</note>
-        <target xml:lang="mam" state="translated">Q'amab'il poqb'al</target>
+        <target xml:lang="mam" state="translated">Q'amab'il tpokb'al</target>
+        <alt-trans>
+          <target xml:lang="mam">Q'amab'il poqb'al</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Creating" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Creating" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Creating Digital Book</source>
         <note>ID: PublishTab.Android.Creating</note>
-        <target xml:lang="mam" state="translated">Nb'ant u'jb'il ajtzaj</target>
+        <target xml:lang="mam" state="translated">Nb'ant u'jb'il toj xk'utz'ib'</target>
+        <alt-trans>
+          <target xml:lang="mam">Nb'ant u'jb'il ajtzaj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.AboutBloomReader" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.AboutBloomReader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About Bloom Reader</source>
         <note>ID: PublishTab.Android.AboutBloomReader</note>
-        <target xml:lang="mam" state="translated">Poqb'al tib'aj Bloom Reader</target>
+        <target xml:lang="mam" state="translated">Tpokb'al tib'aj Bloom Reader</target>
+        <alt-trans>
+          <target xml:lang="mam">Poqb'al tib'aj Bloom Reader</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.AboutBookFeatures" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.AboutBookFeatures" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About Book Features</source>
         <note>ID: PublishTab.Android.AboutBookFeatures</note>
         <target xml:lang="mam" state="translated">Nab'il tib'aj aq'unab'il u'jb'il</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: PublishTab.Android.Settings</note>
-        <target xml:lang="mam" state="translated">Q'ol tilb'ilal</target>
+        <target xml:lang="mam" state="translated">B'inchal tumlal aq'unb'il </target>
+        <alt-trans>
+          <target xml:lang="mam">Q'ol tilb'ilal</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Thumbnail" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Thumbnail" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Thumbnail</source>
         <note>ID: PublishTab.Android.Thumbnail</note>
         <note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
         <target xml:lang="mam" state="translated">Tal ch'in</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Troubleshooting" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Troubleshooting" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Troubleshooting Tips</source>
         <note>ID: PublishTab.Android.Troubleshooting</note>
-        <target xml:lang="mam" state="translated">Poqb'al tu'n kyb'ant qe nya b'a'n</target>
+        <target xml:lang="mam" state="translated">Nab'l tu'n kyb'ant qe' nya b'a'n</target>
+        <alt-trans>
+          <target xml:lang="mam">Poqb'al tu'n kyb'ant qe nya b'a'n</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.BookSent" sil:dynamic="true">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
