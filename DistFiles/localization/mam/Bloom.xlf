@@ -200,10 +200,13 @@
         <note>ID: BloomPackInstallDialog.BadCharsInFileName</note>
         <target xml:lang="mam" state="translated">B'ala a tumlal aq'untl te Bloom lu' ojtxa tb'antlen na'ntaq kub' b'inchet qe tumlal aq'untl te Bloom b'a'n tu'n tkub' tb'inchan ju'njun b'inchb'il kyuj qe b'ib'aj ju'njun k'ub'il tu'mel aq'untl. Aj b'inchal tu'mel aq'untl te Bloom jaku tkub' b'inchan juntl maj qa ma tz'ajb'en jun ak'aj aq'unab'itz. Qa nlayx b'ant, kb'antel tumlal aq'untl Bloom tu'n jun aq'unal b'a'nxix tu'n.</target>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.BloomPackInstallation">
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstallation" approved="yes">
         <source xml:lang="en">Bloom Pack Installation</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstallation</note>
-        <target xml:lang="mam" state="translated">Q'ob'il jun tenej te Bloom</target>
+        <target xml:lang="mam" state="translated">Tu'n tokx b'inchet jun tenej aq'unb'il te Bloom</target>
+        <alt-trans>
+          <target xml:lang="mam">Q'ob'il jun tenej te Bloom</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="mam">K'loj aq'unb'il xk'utz'ib' Bloom</target>
         </alt-trans>
@@ -1459,7 +1462,7 @@
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
         <target xml:lang="mam" state="translated">B'a'nxix tu'n</target>
       </trans-unit>
-      <trans-unit id="Common.LearnMore" sil:dynamic="true">
+      <trans-unit id="Common.LearnMore" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Learn More</source>
         <note>ID: Common.LearnMore</note>
         <note>This is the same as Settings.Enterprise.LearnMore</note>
@@ -1842,15 +1845,21 @@
           <target xml:lang="mam">Qjaqetil HTML o' tz'ajb'en tu'n tb'ant PDF lu', tuj Firefox (ati tuj tb'eyil)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.CannotChangeCopyright">
+      <trans-unit id="EditTab.CannotChangeCopyright" approved="yes">
         <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
         <note>ID: EditTab.CannotChangeCopyright</note>
         <target xml:lang="mam" state="translated">Najsama, nlayx ch'ixpet b'inchalte at toklen ex tu'jil amb'il u'j lu'.</target>
       </trans-unit>
-      <trans-unit id="EditTab.CantPasteImageLocked">
+      <trans-unit id="EditTab.CantPasteImageLocked" approved="yes">
         <source xml:lang="en">Sorry, this book is locked down so that images cannot be changed.</source>
         <note>ID: EditTab.CantPasteImageLocked</note>
-        <target xml:lang="mam" state="translated">Najsama, maqo'n maj u'j lu' tu'n min ch'ixpet qe tib'lal.</target>
+        <target xml:lang="mam" state="translated">Najsama, maqo'n maj u'j lu' tu'n min ch'ixpet qe tilb'ilal.</target>
+        <alt-trans>
+          <target xml:lang="mam">Najsama, maqo'n maj u'j lu' tu'n min ch'ixpet qe tilb'lal.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="mam">Najsama, maqo'n maj u'j lu' tu'n min ch'ixpet qe tib'lal.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.ChooseLayoutButton">
         <source xml:lang="en">Choose Different Layout</source>
