@@ -1922,26 +1922,35 @@
           <target xml:lang="mam">Sak'onqtza jun yolb'il tu'n tch'ixpet u'jb'il lu' tuj kab'e mo oxe yolb'il</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.CopyButton">
+      <trans-unit id="EditTab.CopyButton" approved="yes">
         <source xml:lang="en">Copy</source>
         <note>ID: EditTab.CopyButton</note>
         <target xml:lang="mam" state="translated">Tilb'ilal aq'unb'il</target>
       </trans-unit>
-      <trans-unit id="EditTab.CopyButton.ToolTip">
+      <trans-unit id="EditTab.CopyButton.ToolTip" approved="yes">
         <source xml:lang="en">Copy (Ctrl+C)</source>
         <note>ID: EditTab.CopyButton.ToolTip</note>
         <target xml:lang="mam" state="translated">Tilb'ilal aq'unb'il (Ctrl+C)</target>
       </trans-unit>
-      <trans-unit id="EditTab.CopyButton.ToolTipWhenDisabled">
+      <trans-unit id="EditTab.CopyButton.ToolTipWhenDisabled" approved="yes">
         <source xml:lang="en">You need to select some text before you can copy it</source>
         <note>ID: EditTab.CopyButton.ToolTipWhenDisabled</note>
-        <target xml:lang="mam" state="translated">Tu'n tel tilb'ilal aq'unb'il ilx ti'j tu'n tq'ekx kyaqil txol yol tz'ib'an maj</target>
+        <target xml:lang="mam" state="translated">Tu'n tel tilb'ilal aq'unb'il ilxti'j tu'n tjaw sk'et tkyaqil txolyol tz'ib'anmaj</target>
+        <alt-trans>
+          <target xml:lang="mam">Tu'n tel tilb'ilal aq'unb'il ilx ti'j tu'n tq'ekx kyaqil txol yol tz'ib'an maj</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.CopyImageIPMetadataQuestion">
+      <trans-unit id="EditTab.CopyImageIPMetadataQuestion" approved="yes">
         <source xml:lang="en">Copy this information to all other pictures in this book?</source>
         <note>ID: EditTab.CopyImageIPMetadataQuestion</note>
         <note>get this after you edit the metadata of an image</note>
-        <target xml:lang="mam" state="translated">K'elel tilb'ilal aq'unb'il lu' kye qe txqanl tilb'ilal te' tuj u'jb'il lu'?</target>
+        <target xml:lang="mam" state="translated">Ok elel tilb'ilal aq'unb'il lu' kye qe' txqanl tilb'ilal te' tuj u'jb'il lu'?</target>
+        <alt-trans>
+          <target xml:lang="mam">ok elel tilb'ilal aq'unb'il lu' kye qe' txqanl tilb'ilal te' tuj u'jb'il lu'?</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="mam">K'elel tilb'ilal aq'unb'il lu' kye qe txqanl tilb'ilal te' tuj u'jb'il lu'?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.CopyPage">
         <source xml:lang="en">Copy Page</source>
