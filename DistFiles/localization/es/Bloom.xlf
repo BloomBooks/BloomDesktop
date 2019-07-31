@@ -2366,7 +2366,10 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizHeader-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Header</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizHeader-style</note>
-        <target xml:lang="es-ES" state="translated">Encabezado de la prueba</target>
+        <target xml:lang="es-ES" state="translated">Encabezado de una prueba</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Encabezado de la prueba</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizQuestion-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Question</source>
