@@ -6346,7 +6346,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
         <source xml:lang="en">Please choose the sign language for this book</source>
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
-        <target xml:lang="es-ES" state="needs-translation">Please choose the sign language for this book</target>
+        <target xml:lang="es-ES" state="translated">Por favor, elija el lenguaje de señas para este libro</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting" approved="yes">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
@@ -6744,7 +6744,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
         <source xml:lang="en">Set Sign Language...</source>
         <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
-        <target xml:lang="es-ES" state="needs-translation">Set Sign Language...</target>
+        <target xml:lang="es-ES" state="translated">Determinar lenguaje de señas...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Definir lenguaje de señas...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
@@ -7856,7 +7859,7 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
         <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
-        <target xml:lang="es-ES" state="needs-translation">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</target>
+        <target xml:lang="es-ES" state="translated">Una página interactiva con una pregunta y algunas respuestas. Funciona en la web y Bloom Reader. Cuando se utiliza con Bloom Reader, el panel de control de su proyecto puede mostrar las puntuaciones de comprensión agregadas.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
