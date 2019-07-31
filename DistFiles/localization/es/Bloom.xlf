@@ -5209,21 +5209,19 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
                             modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note/>
-        <target xml:lang="es-ES" state="needs-translation">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</target>
+        <target xml:lang="es-ES" state="translated">Para enviar a través de USB, es posible que tenga que obtener el cable                             corecto, instalar controladores de teléfono en su computadora, o                             modificar la configuración de su teléfono.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">No Wi-Fi Network?</source>
         <note>ID: PublishTab.Android.WiFi.Hint.Heading</note>
         <note/>
-        <target xml:lang="es-ES" state="needs-translation">No Wi-Fi Network?</target>
+        <target xml:lang="es-ES" state="translated">No hay red Wi-Fi?</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
         <source xml:lang="en">There are several ways to start a temporary one.</source>
         <note>ID: </note>
         <note>This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network.</note>
-        <target xml:lang="es-ES" state="needs-translation">There are several ways to start a temporary one.</target>
+        <target xml:lang="es-ES" state="translated">Hay varias maneras de iniciar una red temporal.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About Motion Books</source>
@@ -5921,7 +5919,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
         <note>ID: PublishTab.Epub.OmittedPages</note>
         <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
-        <target xml:lang="es-ES" state="needs-translation">The following pages were removed because they are not supported in ePUBs:</target>
+        <target xml:lang="es-ES" state="translated">Las siguientes páginas fueron eliminados porque no son compatibles con los ePUBs:</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content" approved="yes">
         <source xml:lang="en">Content</source>
