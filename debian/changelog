@@ -1,3 +1,10 @@
+bloom-desktop-betainternal (4.6.0) stable; urgency=medium
+
+  * Change 4.6 to betainternal in preparation for beta release
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Wed, 31 Jul 2019 11:34:33 -0600
+
 bloom-desktop-alpha (4.6.0) stable; urgency=medium
 
   * Up the version number on the master (alpha) branch to 4.6.
