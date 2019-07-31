@@ -6747,7 +6747,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
         <source xml:lang="en">Set Sign Language...</source>
         <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
-        <target xml:lang="es-ES" state="translated">Determinar lenguaje de señas...</target>
+        <target xml:lang="es-ES" state="translated">Indicar el lenguaje de señas...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Determinar lenguaje de señas...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Definir lenguaje de señas...</target>
         </alt-trans>
