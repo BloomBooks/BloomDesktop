@@ -8,13 +8,17 @@ using System.Windows.Forms;
 using System.Xml;
 using SIL.Xml;
 using Bloom.Publish.Epub;
+using Bloom.web;
 using Bloom.web.controllers;
+using L10NSharp;
+using SIL.IO;
 using SIL.Progress;
 
 namespace Bloom.Publish
 {
 	public class PublishHelper : IDisposable
 	{
+		public const string kSimpleComprehensionQuizJs = "simpleComprehensionQuiz.js";
 		private static PublishHelper _latestInstance;
 
 		public PublishHelper()
@@ -43,7 +47,8 @@ namespace Bloom.Publish
 		// remove any elements that the style rules would hide, because epub readers ignore visibility settings.
 		private const string kSelectThingsThatCanBeHidden = ".//div | .//img";
 
-		public void RemoveUnwantedContent(HtmlDom dom, Book.Book book, EpubMaker epubMaker = null)
+		
+		public void RemoveUnwantedContent(HtmlDom dom, Book.Book book, bool removeInactiveLanguages, ISet<string> warningMessages, EpubMaker epubMaker = null)
 		{
 			// Removing unwanted content involves a real browser really navigating. I'm not sure exactly why,
 			// but things freeze up if we don't do it on the UI thread.
@@ -53,13 +58,16 @@ namespace Bloom.Publish
 				// trying to use it to Invoke.
 				if (ControlForInvoke.IsDisposed)
 					ControlForInvoke = Form.ActiveForm;
-				ControlForInvoke.Invoke((Action)(() => RemoveUnwantedContentInternal(dom, book, epubMaker)));
+				ControlForInvoke.Invoke((Action)(delegate
+				{
+					RemoveUnwantedContentInternal(dom, book, removeInactiveLanguages, epubMaker, warningMessages);
+				}));
 			}
 			else
-				RemoveUnwantedContentInternal(dom, book, epubMaker);
+				RemoveUnwantedContentInternal(dom, book, removeInactiveLanguages, epubMaker, warningMessages);
 		}
 
-		private void RemoveUnwantedContentInternal(HtmlDom dom, Book.Book book, EpubMaker epubMaker)
+		private void RemoveUnwantedContentInternal(HtmlDom dom, Book.Book book, bool removeInactiveLanguages, EpubMaker epubMaker, ISet<string> warningMessages)
 		{
 			// The ControlForInvoke can be null for tests.  If it's not null, we better not need an Invoke!
 			Debug.Assert(ControlForInvoke==null || !ControlForInvoke.InvokeRequired); // should be called on UI thread.
@@ -75,6 +83,16 @@ namespace Bloom.Publish
 			{
 				foreach (XmlElement page in book.GetPageElements())
 					pageElts.Add(page);
+			}
+
+			var haveEnterpriseFeatures = book.CollectionSettings.HaveEnterpriseFeatures;
+			if (!haveEnterpriseFeatures)
+			{
+				if (RemoveEnterpriseOnlyPages(pageElts))
+					warningMessages.Add(LocalizationManager.GetString("Publish.RemovingEnterprisePages", "Removing one or more pages which require Bloom Enterprise to be enabled"));
+				RemoveEnterpriseOnlyAssets(book);
+				if (RemoveAllImageDescriptions(dom))
+					warningMessages.Add(LocalizationManager.GetString("Publish.RemovingEnterpriseImageDescriptions", "Removing image descriptions which require Bloom Enterprise to be enabled"));
 			}
 
 			HtmlDom displayDom = null;
@@ -101,15 +119,25 @@ namespace Bloom.Publish
 			if (this != _latestInstance)
 				return;
 
-			var haveEnterpriseFeatures = book.CollectionSettings.HaveEnterpriseFeatures;
 			var toBeDeleted = new List<XmlElement>();
 			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
 			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
 			foreach (XmlElement page in pageElts)
 			{
-				foreach (XmlElement elt in page.SafeSelectNodes(kSelectThingsThatCanBeHidden))
+				// As the constant's name here suggests, in theory, we could include divs
+				// that don't have .bloom-editable, and all their children.
+				// But I'm not smart enough to write that selector and for bloomds, all we're doing here is saving space,
+				// so those other divs we are missing doesn't seem to matter as far as I can think.
+				var kSelectThingsThatCanBeHiddenButAreNotText = ".//img";
+				var selector = removeInactiveLanguages ?  kSelectThingsThatCanBeHidden  : kSelectThingsThatCanBeHiddenButAreNotText ;
+				foreach (XmlElement elt in page.SafeSelectNodes(selector))
 				{
-					if (!IsDisplayed(elt) && !IsDesiredImageDescription(elt, haveEnterpriseFeatures))
+					// Even when they are not displayed we want to keep image descriptions.
+					// This is necessary for retaining any associated audio files to play.
+					// See https://issues.bloomlibrary.org/youtrack/issue/BL-7237.
+					// Note that all image descriptions have already been removed for
+					// non-Bloom Enterprise books above.
+					if (!IsDisplayed(elt) && !IsImageDescription(elt))
 						toBeDeleted.Add(elt);
 				}
 				foreach (var elt in toBeDeleted)
@@ -197,6 +225,29 @@ namespace Bloom.Publish
 			}
 		}
 
+		/// <returns>true if one or more pages were removed; false otherwise</returns>
+		private static bool RemoveEnterpriseOnlyPages(List<XmlElement> pages)
+		{
+			var result = false;
+			foreach (var page in pages.ToList())
+			{
+				if (Book.Book.IsPageBloomEnterpriseOnly(page))
+				{
+					page.ParentNode.RemoveChild(page);
+					pages.Remove(page);
+
+					result = true;
+				}
+			}
+
+			return result;
+		}
+
+		private static void RemoveEnterpriseOnlyAssets(Book.Book book)
+		{
+			RobustFile.Delete(Path.Combine(book.FolderPath, kSimpleComprehensionQuizJs));
+		}
+
 		private bool IsDisplayed(XmlElement elt)
 		{
 			var id = elt.Attributes["id"].Value;
@@ -204,23 +255,31 @@ namespace Bloom.Publish
 			return display != "none";
 		}
 
-		/// <summary>
-		/// Even when they are not displayed we want to keep image descriptions for Bloom Enterprise books.
-		/// This is necessary for retaining any associated audio files to play.
-		/// </summary>
-		/// <remarks>
-		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7237.
-		/// </remarks>
-		private bool IsDesiredImageDescription(XmlElement elt, bool haveEnterpriseFeatures)
+		private bool IsImageDescription(XmlElement elt)
 		{
 			var classes = elt.Attributes["class"]?.Value;
 			if (!String.IsNullOrEmpty(classes) &&
 				(classes.Contains("ImageDescriptionEdit-style") ||
 					classes.Contains("bloom-imageDescription")))
 			{
-				return haveEnterpriseFeatures;
+				return true;
 			}
 			return false;
+		}
+
+		/// <returns>true if one or more image descriptions where removed; false otherwise</returns>
+		public static bool RemoveAllImageDescriptions(HtmlDom bookDom)
+		{
+			var result = false;
+			var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]").Cast<XmlElement>().ToList();
+			foreach (var imageDescription in imageDescriptions)
+			{
+				// It seems that the cover always has an image description div even if the user never created one.
+				// So we only want to return true if we removed an image description with text.
+				result |= !string.IsNullOrWhiteSpace(imageDescription.InnerText);
+				imageDescription.ParentNode.RemoveChild(imageDescription);
+			}
+			return result;
 		}
 
 		internal const string kTempIdMarker = "PublishTempIdXXYY";
@@ -373,6 +432,17 @@ namespace Bloom.Publish
 			if (!String.IsNullOrWhiteSpace(label))
 			{
 				omittedPageLabels.Add(label);
+			}
+		}
+
+		public static void SendBatchedWarningMessagesToProgress(ISet<string> warningMessages, WebSocketProgress progress)
+		{
+			if (warningMessages.Any())
+				progress.Message("Common.Warning", "Warning", MessageKind.Warning, false);
+			foreach (var warningMessage in warningMessages)
+			{
+				// Messages are already localized
+				progress.MessageWithoutLocalizing(warningMessage, MessageKind.Warning);
 			}
 		}
 	}

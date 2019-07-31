@@ -27,6 +27,6 @@ mixin quizPage
 				//- but we wish it did in this case. And it does work across the book.
 				+editable("en")(data-generate-translations="true", data-i18n="Quiz.CheckYourUnderstanding", data-collection='simpleComprehensionQuizHeading') Check Your Understanding
 			+field("auto").QuizQuestion-style(data-hint="Put a comprehension question here")
-			each dummy in new Array(7)
+			each count in new Array(6)
 				+choice()
 			script(src="simpleComprehensionQuiz.js")

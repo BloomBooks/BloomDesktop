@@ -79,23 +79,38 @@ namespace BloomTests.Publish
 			return SetupBookLong(text, lang, images: images);
 		}
 
-		[Test]
-		public void ImageDescriptions_HowToPublishImageDescriptionsNone_AreRemoved()
+		[TestCase(BookInfo.HowToPublishImageDescriptions.None)]
+		[TestCase(BookInfo.HowToPublishImageDescriptions.OnPage)]
+		public void ImageDescriptions_NotBloomEnterprise_AreRemoved(BookInfo.HowToPublishImageDescriptions howToPublish)
 		{
-			var book = SetupBookLong("This is a simple page", "xyz", images: new[] {"image1"},
-				imageDescriptions: new[] {"This describes image 1"});
-			MakeEpub("output", "ImageDescriptions_HowToPublishImageDescriptionsNone_AreRemoved", book);
-			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
+			var book = SetupBookLong("This is a simple page", "xyz", images: new[] { "image1" },
+				imageDescriptions: new[] { "This describes image 1" });
+			MakeEpub("output", $"ImageDescriptions_NotBloomEnterprise_AreRemoved_{howToPublish}", book, howToPublish);
+			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
+			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
+			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside[.='This describes image 1']", _ns);
+		}
+
+		// The original test here proved that we removed image descriptions when not displaying them.
+		// But removing them completely broke the audio which needed text to be connected to it.
+		// So now we verify that we _don't_ remove them (for Bloom Enterprise).
+		[Test]
+		public void ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsNone_AreNotRemoved()
+		{
+			var book = SetupBookLong("This is a simple page", "xyz", images: new[] { "image1" },
+				imageDescriptions: new[] { "This describes image 1" });
+			MakeEpub("output", "ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsNone_AreNotRemoved", book, branding: "Test");
+			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns, 1);
 		}
 
 		// Also checks for handling of branding images, to avoid another whole epub creation.
 		[Test]
-		public void ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsides()
+		public void ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsOnPage_ConvertedToAsides()
 		{
 			var book = SetupBookLong("This is a simple page", "xyz", images: new[] { "image1" },
 				imageDescriptions: new[] { "This describes image 1" }, extraContentOutsideTranslationGroup: "<img class='branding' src='back-cover.png'/>");
 			MakeImageFiles(book, "back-cover");
-			MakeEpub("output", "ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsides", book, BookInfo.HowToPublishImageDescriptions.OnPage);
+			MakeEpub("output", "ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsOnPage_ConvertedToAsides", book, BookInfo.HowToPublishImageDescriptions.OnPage, branding: "Test");
 			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
 			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside[.='This describes image 1']", _ns, 1);
@@ -104,7 +119,7 @@ namespace BloomTests.Publish
 
 		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
 		[TestCase(TalkingBookApi.AudioRecordingMode.TextBox)]
-		public void ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered(TalkingBookApi.AudioRecordingMode audioRecordingMode)
+		public void ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered(TalkingBookApi.AudioRecordingMode audioRecordingMode)
 		{
 			string extraContentOutsideTranslationGroup =
 					@"<div title='image1.png' class='bloom-imageContainer'>
@@ -153,11 +168,14 @@ namespace BloomTests.Publish
 						<div data-book='contentLanguage2' lang='*'>en</div>
 						<div data-book='contentLanguage3' lang='*'>fr</div>
 					</div>",
-				extraContentOutsideTranslationGroup: extraContentOutsideTranslationGroup
+				extraContentOutsideTranslationGroup: extraContentOutsideTranslationGroup,
+				createPhysicalFile:true
 			);
 			MakeImageFiles(book, "image1"); // otherwise the img tag gets stripped out
-			MakeEpub("output", $"ImageDescriptions_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered_{audioRecordingMode}", book, BookInfo.HowToPublishImageDescriptions.OnPage);
-			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
+			MakeEpub("output", $"ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsOnPage_ConvertedToAsidesCorrectlyOrdered_{audioRecordingMode}",
+				book, BookInfo.HowToPublishImageDescriptions.OnPage, branding: "Test");
+			// MakeEpub (when using a physical file as we are) creates Device Xmatter, so page one is cover, page 2 is ours.
+			var assertThatPageOneData = AssertThatXmlIn.String(GetPageNData(2));
 			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
 			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside", _ns, 3);
 			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside[.='Non-selected image description']", _ns);
@@ -229,15 +247,12 @@ namespace BloomTests.Publish
 		/// <summary>
 		/// Make an ePUB out of the specified book. Sets up several instance variables with commonly useful parts of the results.
 		/// </summary>
-		/// <param name="mainFileName"></param>
-		/// <param name="folderName"></param>
-		/// <param name="book"></param>
 		/// <returns></returns>
 		protected override ZipFile MakeEpub(string mainFileName, string folderName, BloomBook book,
 			BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.None,
-			Action<EpubMaker> extraInit = null)
+			string branding = "Default", Action<EpubMaker> extraInit = null)
 		{
-			var result = base.MakeEpub(mainFileName, folderName, book, howToPublishImageDescriptions, extraInit);
+			var result = base.MakeEpub(mainFileName, folderName, book, howToPublishImageDescriptions, branding, extraInit);
 			GetPageOneData();
 			return result;
 		}
@@ -1416,7 +1431,7 @@ $@"<div class='bloom-translationGroup'>
 
 			for (int divIndex = 0; divIndex < 2; ++divIndex)
 			{
-				string expectedFilename = mergeAudio ? "page1" : $"audio{divIndex+1}";				
+				string expectedFilename = mergeAudio ? "page1" : $"audio{divIndex+1}";
 				double divStartTime = mergeAudio ? (divIndex * expectedDurationPerClip) : 0;
 
 				for (int j = 0; j < 2; ++j)
@@ -1426,7 +1441,7 @@ $@"<div class='bloom-translationGroup'>
 					double expectedClipEnd = expectedClipBegin + expectedDurationPerSegment;
 					string expectedClipBeginFormatted = "0:00:0" + expectedClipBegin.ToString("0.000");
 					string expectedClipEndFormatted = "0:00:0" + expectedClipEnd.ToString("0.000");
-					
+
 					assertSmil.HasAtLeastOneMatchForXpath($"smil:smil/smil:body/smil:seq/smil:par[@id='s{expectedIndex}']/smil:text[@src='1.xhtml#text{expectedIndex}']", _ns);
 					assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s{expectedIndex}']/smil:audio[@src='{kAudioSlash}{expectedFilename}.mp3'][@clipBegin='{expectedClipBeginFormatted}'][@clipEnd='{expectedClipEndFormatted}']", _ns);
 				}
@@ -1576,16 +1591,14 @@ $@"<div class='bloom-translationGroup'>
 <div id='bloomDataDiv'>
     <div data-book='contentLanguage1' lang='*'>xyz</div>
     <div data-book='contentLanguage2' lang='*'>en</div>
-    <div data-book='contentLanguage3' lang='*'>fr</div>
+    <div data-book='bookTitle' lang='xyz'><p>Livre de Test</p></div>
+    <div data-book='bookTitle' lang='en'><p>Test Book</p></div>
 </div>
 <div class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right A5Portrait' data-page='required singleton' id='7cecf56f-7e97-443e-910f-ddc13a9b0dfa'>
 	<div class='marginBox'>
-		<div class='bloom-translationGroup bookTitle' data-default-languages='V,N1,N2'>
+		<div class='bloom-translationGroup bookTitle' data-default-languages='V,N1'>
 			<label class='bubble'>Book title in {lang}</label>
 			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style' lang='z' contenteditable='true' data-book='bookTitle'></div>
-			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content3 bloom-contentNational2 bloom-visibility-code-on' lang='fr' contenteditable='true' data-book='bookTitle'>
-				<p>Livre de Test</p>
-			</div>
 			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-content2 bloom-contentNational1 bloom-visibility-code-on' lang='en' contenteditable='true' data-book='bookTitle'>
 				<p>Test Book</p>
 			</div>
@@ -1595,7 +1608,8 @@ $@"<div class='bloom-translationGroup'>
 			<div class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style' lang='*' contenteditable='true' data-book='bookTitle'></div>
 		</div>
 	</div>
-</div>");
+</div>",
+				createPhysicalFile: true);
 			MakeEpub("output", "MultilingualTitlesOrderedCorrectly", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
@@ -1606,16 +1620,13 @@ $@"<div class='bloom-translationGroup'>
 			var titleDiv = dom.DocumentElement.SelectSingleNode("//xhtml:div[contains(@class, 'bookTitle')]", _ns) as XmlElement;
 			Assert.IsNotNull(titleDiv);
 			var divs = titleDiv.SelectNodes("./xhtml:div", _ns);
-			Assert.AreEqual(3, divs.Count);
+			Assert.AreEqual(2, divs.Count);
 			var class0 = divs[0].Attributes["class"];
 			Assert.IsNotNull(class0);
 			StringAssert.Contains("bloom-content1", class0.Value);
 			var class1 = divs[1].Attributes["class"];
 			Assert.IsNotNull(class1);
 			StringAssert.Contains("bloom-content2", class1.Value);
-			var class2 = divs[2].Attributes["class"];
-			Assert.IsNotNull(class2);
-			StringAssert.Contains("bloom-content3", class2.Value);
 		}
 
 		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
@@ -1789,13 +1800,12 @@ $@"<div class='bloom-translationGroup'>
 
 	class EpubMakerAdjusted : EpubMaker
 	{
-		// Todo: at least some test involving a real BookServer which validates the device xmatter behavior.
 		// The minimal bookServer created by CreateBookServer fails to copy mock books because
-		// GetPathHtmlFile() return an empty string, I think because we don't make a real book file with mocked books.
-		// So I think all the tests are currently passing null for the bookserver, which disables the
-		// device xmatter code.
+		// GetPathHtmlFile() returns an empty string because we don't make a real book file with mocked books.
+		// So all the tests which don't create an actual file (createPhysicalFile = false)
+		// are currently passing null for the bookserver, which disables the device xmatter code.
 		public EpubMakerAdjusted(BloomBook book, BookThumbNailer thumbNailer, BookServer bookServer) :
-			base(thumbNailer, string.IsNullOrEmpty(book.GetPathHtmlFile())? null : bookServer)
+			base(thumbNailer, string.IsNullOrEmpty(book.GetPathHtmlFile()) ? null : bookServer)
 		{
 			Book = book;
 		}

@@ -1,0 +1,36 @@
+@import "../../../common-mixins.less";
+
+/* This is for common styling on pages. It is not for UI */
+.fullScreen::after {
+    /* Hide page number */
+    display: none;
+}
+.fullScreen .marginBox {
+    left: 0 !important;
+    top: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+    background-color: #03006f;
+    /* Make the position:fixed imageContainer use this marginbox as its bounds
+   I know it seems bizarre, but this is documented under position:fixed.*/
+    filter: opacity(100%);
+}
+/* This is used when the book is in bloomd form, where the img has been converted to a background image. */
+.fullScreen .bloom-imageContainer.bloom-backgroundImage {
+    background-size: cover;
+    position: fixed;
+}
+.Device16x9Landscape .fullScreen .bloom-imageContainer.bloom-backgroundImage {
+    /* Get past ios "background-size:cover" bug. See BL-7458 */
+    width: @Device16x9Landscape-Width;
+}
+.Device16x9Portrait .fullScreen .bloom-imageContainer.bloom-backgroundImage {
+    /* Get past ios "background-size:cover" bug. See BL-7458 */
+    width: @Device16x9Portrait-Width;
+}
+/* This is used when the book is not in bloomd form (e.g. edit view). */
+.fullScreen .bloom-imageContainer img {
+    object-fit: cover;
+    max-width: unset;
+    position: fixed;
+}

@@ -955,16 +955,17 @@ namespace Bloom.Book
 
 		private void BringBookUpToDateUnprotected(HtmlDom bookDOM, IProgress progress)
 		{
-			progress.WriteStatus("Updating Front/Back Matter...");
 			// With one exception, handled below, nothing in the update process should change the license info, so save what is current before we mess with
 			// anything (may fix BL-3166).
 			var licenseMetadata = GetLicenseMetadata();
-			BringXmatterHtmlUpToDate(bookDOM);
-			RepairBrokenSmallCoverCredits(bookDOM);
-			RepairCoverImageDescriptions(bookDOM);
 
 			progress.WriteStatus("Updating collection settings...");
 			UpdateCollectionRelatedStylesAndSettings(bookDOM);
+
+			progress.WriteStatus("Updating Front/Back Matter...");
+			BringXmatterHtmlUpToDate(bookDOM);
+			RepairBrokenSmallCoverCredits(bookDOM);
+			RepairCoverImageDescriptions(bookDOM);
 
 			progress.WriteStatus("Repair page label localization");
 			RepairPageLabelLocalization(bookDOM);
@@ -1068,15 +1069,6 @@ namespace Bloom.Book
 				RobustFile.Copy(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles), Path.Combine(FolderPath, kCustomStyles), true);
 			// Update book settings from collection settings
 			UpdateCollectionSettingsInBookMetaData();
-			// Set primary book language attributes.
-			foreach (XmlElement body in bookDom.SafeSelectNodes("//body"))
-			{
-				body.SetAttribute("lang", CollectionSettings.Language1Iso639Code);
-			}
-			foreach (XmlElement pageDiv in bookDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
-			{
-				pageDiv.SetAttribute("lang", CollectionSettings.Language1Iso639Code);
-			}
 		}
 
 		private void CreateOrUpdateDefaultLangStyles()
@@ -1110,6 +1102,8 @@ namespace Bloom.Book
 					}
 					if (copyCurrentRule)
 						cssBuilder.AppendLine(cssLines[index]);
+					if (line == "}")
+						copyCurrentRule = false;
 				}
 			}
 			RobustFile.WriteAllText(path, cssBuilder.ToString());
@@ -3272,6 +3266,14 @@ namespace Bloom.Book
 				PublishHelper.CollectPageLabel((XmlElement)doomedPage, removedLabels);
 				doomedPage.ParentNode.RemoveChild(doomedPage);
 			}
+		}
+
+		public static bool IsPageBloomEnterpriseOnly(XmlElement page)
+		{
+			return page.GetAttribute("class").Contains("enterprise-only") ||
+				   // legacy quiz pages don't have 'enterprise-only'
+			       page.GetAttribute("class").Contains("questions") ||
+				   page.SafeSelectNodes(".//video").Count > 0;
 		}
 	}
 }

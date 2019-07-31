@@ -315,7 +315,7 @@ namespace Bloom.Publish.Android
 				// wifi or usb...make the .bloomd in a temp folder.
 				using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 				{
-					BloomReaderFileMaker.CreateBloomReaderBook(bloomdTempFile.Path, book, bookServer, backColor, progress);
+					BloomReaderFileMaker.CreateBloomDigitalBook(bloomdTempFile.Path, book, bookServer, backColor, progress);
 					sendAction(publishedFileName, bloomdTempFile.Path);
 					if (confirmFunction != null && !confirmFunction(publishedFileName))
 						throw new ApplicationException("Book does not exist after write operation.");
@@ -326,7 +326,7 @@ namespace Bloom.Publish.Android
 			{
 				// save file...user has supplied name, there is no further action.
 				Debug.Assert(sendAction == null, "further actions are not supported when passing a path name");
-				BloomReaderFileMaker.CreateBloomReaderBook(destFileName, book, bookServer, backColor, progress);
+				BloomReaderFileMaker.CreateBloomDigitalBook(destFileName, book, bookServer, backColor, progress);
 				progress.Message("PublishTab.Epub.Done", "Done", useL10nIdPrefix: false);	// share message string with epub publishing
 			}
 
@@ -347,7 +347,7 @@ namespace Bloom.Publish.Android
 			// We don't use the folder found here, but this method does some checks we want done.
 			BookStorage.FindBookHtmlInFolder(book.FolderPath);
 			_stagingFolder = new TemporaryFolder("PlaceForStagingBook");
-			var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book.FolderPath, bookServer, _stagingFolder, backColor, progress);
+			var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book.FolderPath, bookServer, _stagingFolder, progress, book.CollectionSettings.HaveEnterpriseFeatures);
 			progress.Message("Common.Done", "Shown in a list of messages when Bloom has completed a task.", "Done");
 			return modifiedBook.FolderPath.ToLocalhost();
 		}

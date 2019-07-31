@@ -268,18 +268,8 @@ namespace Bloom.Publish.Epub
 			_originalBook = _book;
 			if (_bookServer != null)
 			{
-				// It should only be null while running unit tests.
-				// Eventually, we want a unit test that checks this device xmatter behavior.
-				// But don't have time for now.
+				// It should only be null while running unit tests which don't create a physical file.
 				_book = PublishHelper.MakeDeviceXmatterTempBook(_book.FolderPath, _bookServer, tempBookPath, _omittedPageLabels);
-			}
-			else if (Program.RunningUnitTests)
-			{
-				// HACK alert!
-				// Previous to BL-7300, EpubMaker called FixDivOrdering directly, so unit tests ordered them correctly.
-				// The code for BL-7300 moved the call into BringBookUpToDate which is called by MakeDeviceXmatterTempBook above.
-				// Since unit tests do not call MakeDeviceXmatterTempBook, we need to fix the ordering directly.
-				_book.OurHtmlDom.FixDivOrdering();
 			}
 
 			// The readium control remembers the current page for each book.
@@ -300,6 +290,11 @@ namespace Bloom.Publish.Epub
 			_scriptedItems = new List<string>();
 			_svgItems = new List<string>();
 			_firstContentPageItem = null;
+			ISet<string> warningMessages = new HashSet<string>();
+			if (!_book.CollectionSettings.HaveEnterpriseFeatures)
+				if (PublishHelper.RemoveAllImageDescriptions(Book.OurHtmlDom))
+					warningMessages.Add(LocalizationManager.GetString("Publish.RemovingEnterpriseImageDescriptions", "Removing image descriptions which require Bloom Enterprise to be enabled"));
+
 			HandleImageDescriptions(Book.OurHtmlDom);
 			if (string.IsNullOrEmpty(SignLanguageApi.FfmpegProgram))
 			{
@@ -312,12 +307,14 @@ namespace Bloom.Publish.Epub
 				// We could check for this in a few more places, but once per page seems enough in practice.
 				if (AbortRequested)
 					break;
-				if (MakePageFile(pageElement, progress))
+				if (MakePageFile(pageElement, warningMessages))
 				{
 					var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
 					pageLabelProgress.Message(pageLabelEnglish, pageLabelEnglish);
 				};
 			}
+			
+			PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 
 			if (_omittedPageLabels.Any())
 			{
@@ -971,7 +968,7 @@ namespace Bloom.Publish.Epub
 		/// <remarks>
 		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4288 for discussion of blank pages.
 		/// </remarks>
-		private bool MakePageFile(XmlElement pageElement, WebSocketProgress progress)
+		private bool MakePageFile(XmlElement pageElement, ISet<string> warningMessages)
 		{
 			// nonprinting pages (e.g., old-style comprehension questions) are omitted for now
 			// interactive pages (e.g., new-style quiz pages) are also omitted. We're drastically
@@ -1016,7 +1013,7 @@ namespace Bloom.Publish.Epub
 			}
 
 			// Remove stuff that we don't want displayed. Some e-readers don't obey display:none. Also, not shipping it saves space.
-			_publishHelper.RemoveUnwantedContent(pageDom, this.Book, this);
+			_publishHelper.RemoveUnwantedContent(pageDom, this.Book, true, warningMessages, this);
 
 			pageDom.SortStyleSheetLinks();
 			pageDom.AddPublishClassToBody();
@@ -1215,6 +1212,7 @@ namespace Bloom.Publish.Epub
 			return false;
 		}
 
+		// This method is called by reflection in some tests
 		private void HandleImageDescriptions(HtmlDom bookDom)
 		{
 			// Set img alt attributes to the description, or erase them if no description (BL-6035)
@@ -1272,8 +1270,8 @@ namespace Bloom.Publish.Epub
 					var activeDescriptions = description.SafeSelectNodes("div[contains(@class, 'bloom-visibility-code-on')]");
 					if (activeDescriptions.Count == 0)
 						continue;
-					// Now that we need multiple asides (BL-6314), I'm putting them in a separate div and ordering
-					// them. Insert the div after the image container, thus not interfering with the
+					// Now that we need multiple asides (BL-6314), I'm putting them in a separate div.
+					// Insert the div after the image container, thus not interfering with the
 					// reader's placement of the image itself.
 					var asideContainer = description.OwnerDocument.CreateElement("div");
 					asideContainer.SetAttribute("class", "asideContainer");
@@ -1749,7 +1747,7 @@ namespace Bloom.Publish.Epub
 			}
 		}
 
-		// Combines staging and finishing (currently just used in tests).
+		// Combines staging and finishing
 		public void SaveEpub(string destinationEpubPath, WebSocketProgress progress)
 		{
 			if(string.IsNullOrEmpty (BookInStagingFolder)) {

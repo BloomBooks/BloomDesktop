@@ -24,6 +24,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Publish.Epub;
 using Bloom.Properties;
+using Bloom.Publish.Android;
 using Bloom.web;
 using SIL.PlatformUtilities;
 using ThreadState = System.Threading.ThreadState;
@@ -250,12 +251,36 @@ namespace Bloom.Api
 			{
 				_keyToCurrentPage = key;
 			}
+
+			// If we are creating a page thumbnail and we have videos,
+			// replace them with our standard video placeholder image.
+			if (source == SimulatedPageFileSource.Thumb ||
+			    source == SimulatedPageFileSource.Pagelist ||
+			    source == SimulatedPageFileSource.Epub)
+			{
+				ReplaceAnyVideoElementsWithPlaceholder(dom);
+			}
 			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
 			lock (_urlToSimulatedPageContent)
 			{
 				_urlToSimulatedPageContent[key] = html5String;
 			}
 			return new SimulatedPageFile {Key = url};
+		}
+
+		private const string vidPlaceHolderDivContents =
+			@"<img src='video-placeholder.svg' />";
+
+		private static void ReplaceAnyVideoElementsWithPlaceholder(HtmlDom dom)
+		{
+			var vidNodes = dom.SafeSelectNodes("//div[contains(concat(' ', @class, ' '), ' bloom-videoContainer ')]");
+			foreach (XmlNode vidNode in vidNodes)
+			{
+				var placeHolderNode = dom.RawDom.CreateElement("div");
+				placeHolderNode.InnerXml = vidPlaceHolderDivContents;
+				placeHolderNode.SetAttribute("class", "bloom-imageContainer");
+				vidNode.ParentNode.ReplaceChild(placeHolderNode, vidNode);
+			}
 		}
 
 		internal static void RemoveSimulatedPageFile(string key)
@@ -1130,7 +1155,10 @@ namespace Bloom.Api
 				"/branding/image",
 				// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
 				// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
-				EpubMaker.kEPUBExportFolder.ToLowerInvariant()
+				EpubMaker.kEPUBExportFolder.ToLowerInvariant(),
+				// bloom-player always asks for questions.json for every book.
+				// Being only for quiz pages, not every book has it, so we don't want spurious error reports.
+				BloomReaderFileMaker.kQuestionFileName.ToLowerInvariant()
 			};
 			return !stuffToIgnore.Any(s => localPath.ToLowerInvariant().Contains(s));
 		}

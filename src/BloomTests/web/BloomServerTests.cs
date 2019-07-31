@@ -311,6 +311,66 @@ namespace BloomTests.web
 		}
 
 		[Test]
+		[TestCase(BloomServer.SimulatedPageFileSource.Epub, false)]
+		[TestCase(BloomServer.SimulatedPageFileSource.Frame, true)]
+		[TestCase(BloomServer.SimulatedPageFileSource.Nav, true)]
+		[TestCase(BloomServer.SimulatedPageFileSource.Normal, true)]
+		[TestCase(BloomServer.SimulatedPageFileSource.Pagelist, false)]
+		[TestCase(BloomServer.SimulatedPageFileSource.Preview, true)]
+		[TestCase(BloomServer.SimulatedPageFileSource.Pub, true)]
+		[TestCase(BloomServer.SimulatedPageFileSource.Thumb, false)]
+		public void ServerKnowsDifferenceBetweenRealAndThumbVideos(BloomServer.SimulatedPageFileSource source, bool expectVideo)
+		{
+			using (var server = CreateBloomServer())
+			{
+				const string html = @"<html ><head></head><body>
+						<div class='bloom-page'>
+							<div id='1' class='bloom-videoContainer bloom-noVideoSelected bloom-leadingElement bloom-selected'>
+								<video>
+									<source src='video/randommp4filename.mp4#t=0.0,4.6'>
+									</source>
+								</video>
+							</div>
+							<div class='otherStuff'>
+							</div>
+							<div id='2' class='bloom-videoContainer'>
+								<video>
+									<source src='video/otherrandomfilename.mp4'>
+									</source>
+								</video>
+							</div>
+							<div id='3' class='bloom-videoContainer bloom-noVideoSelected bloom-leadingElement bloom-selected'>
+							</div>
+						</div>
+						<div class='afterStuff'>
+						</div>
+					</body></html>";
+				var dom = new HtmlDom(html) {BaseForRelativePaths = _folder.Path.ToLocalhost()};
+				using (var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(dom, true, true, source))
+				{
+					var url = fakeTempFile.Key;
+					var transaction = new PretendRequestInfo(url);
+
+					// Execute
+					server.MakeReply(transaction);
+
+					// Verify
+					var contents = transaction.ReplyContents;
+					if (expectVideo)
+					{
+						AssertThatXmlIn.String(contents).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-videoContainer')]", 3);
+						AssertThatXmlIn.String(contents).HasNoMatchForXpath("//div[contains(@class,'bloom-imageContainer')]");
+					}
+					else
+					{
+						AssertThatXmlIn.String(contents).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-imageContainer')]", 3);
+						AssertThatXmlIn.String(contents).HasNoMatchForXpath("//div[contains(@class,'bloom-videoContainer')]");
+					}
+				}
+			}
+		}
+
+		[Test]
 		public void CanRetrieveContentOfFakeTempFile_WhenFolderContainsAmpersand_ViaJavaScript()
 		{
 			var dom = SetupDomWithAmpersandInTitle();
