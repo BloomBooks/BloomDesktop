@@ -1861,6 +1861,19 @@ namespace Bloom.Book
 			element.SetAttribute("class", newClassAttributeValue);
 		}
 
+		/// <summary>
+		/// Move the content of the element to its parent, then remove the now-empty element.
+		/// </summary>
+		public static void RemoveElementLayer(XmlElement element)
+		{
+			foreach (var node in element.ChildNodes.Cast<XmlNode>().ToList())
+			{
+				element.RemoveChild(node);
+				element.ParentNode.InsertBefore(node, element);
+			}
+			element.ParentNode.RemoveChild(element);
+		}
+
 		public static XmlNodeList SelectChildImgAndBackgroundImageElements(XmlElement element)
 		{
 			return element.SelectNodes(".//img | .//*[contains(@style,'background-image')]");
