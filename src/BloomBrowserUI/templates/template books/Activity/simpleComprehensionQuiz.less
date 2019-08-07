@@ -1,5 +1,5 @@
 @import (reference) "../../../bloomUI.less";
-
+@import (reference) "../../common-mixins.less";
 @vertical-space: 10px;
 
 .bloom-page.simple-comprehension-quiz {
@@ -206,4 +206,18 @@ body.editMode
             opacity: 0.5;
         }
     }
+}
+
+// As of now, with bloom-player version 0.9.24, the style rule that defines the width of this button is just in the react-slick stylesheet.
+@pageTurningButtonWidth: 20px;
+
+// make room for the page-turning buttons that show when reading in non-touch devices
+.Device16x9Landscape.simple-comprehension-quiz .marginBox {
+    left: @pageTurningButtonWidth !important;
+    width: calc(@Device16x9Landscape-Width - (2 * @pageTurningButtonWidth));
+}
+// make room for the page-turning buttons that show when reading in non-touch devices
+.Device16x9Portrait.simple-comprehension-quiz .marginBox {
+    left: @pageTurningButtonWidth !important;
+    width: calc(@Device16x9Portrait-Width - (2 * @pageTurningButtonWidth));
 }
