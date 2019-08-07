@@ -2178,7 +2178,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public static string GetNumberOrLabelOfPageWhereElementLives(XmlElement childElement)
+		public static string GetNumberOrLabelOfPageWhereElementLives(XmlElement childElement, IEnumerable<string> langs = null)
 		{
 			var pageElement = childElement.SelectSingleNode("ancestor-or-self::div[contains(@class,'bloom-page')]") as XmlElement;
 			if (pageElement == null)
@@ -2199,9 +2199,18 @@ namespace Bloom.Book
 			    || HtmlDom.IsBackMatterPage(pageElement))
 			{
 				var labelNode = pageElement.SelectSingleNode("./div[@class='pageLabel']");
-				return labelNode?.InnerText.Trim();
+				return LocalizePageLabel(labelNode?.InnerText.Trim(), langs);
 			}
 			return pageNumber;
+		}
+
+		private static string LocalizePageLabel(string label, IEnumerable<string> langs)
+		{
+			if (langs == null || string.IsNullOrEmpty(label))
+				return label;
+			var id = "TemplateBooks.PageLabel." + label;
+			string dummyId;
+			return L10NSharp.LocalizationManager.GetString(id, label, "", langs, out dummyId);
 		}
 
 		public static bool IsBackMatterPage(XmlElement pageElement)
