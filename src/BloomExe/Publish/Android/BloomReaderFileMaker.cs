@@ -28,16 +28,16 @@ namespace Bloom.Publish.Android
 
 		public static void CreateBloomDigitalBook(string outputPath, Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress)
 		{
-			CreateBloomDigitalBook(outputPath, book.FolderPath, bookServer, backColor, progress, book.CollectionSettings.HaveEnterpriseFeatures);
+			CreateBloomDigitalBook(outputPath, book.FolderPath, bookServer, backColor, progress);
 		}
 
 		// Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
 		public static void CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
-			WebSocketProgress progress, bool hasEnterpriseFeatures, string tempFolderName = "BloomReaderExport")
+			WebSocketProgress progress, string tempFolderName = "BloomReaderExport")
 		{
 			using (var temp = new TemporaryFolder(tempFolderName))
 			{
-				CreateBloomDigitalBook(outputPath, bookFolderPath, bookServer, backColor, progress, temp, hasEnterpriseFeatures);
+				CreateBloomDigitalBook(outputPath, bookFolderPath, bookServer, backColor, progress, temp);
 			}
 		}
 
@@ -50,13 +50,12 @@ namespace Bloom.Publish.Android
 		/// <param name="backColor"></param>
 		/// <param name="progress"></param>
 		/// <param name="tempFolder">A temporary folder. This function will not dispose of it when done</param>
-		/// <param name="hasEnterpriseFeatures"></param>
 		/// <param name="creator">value for &lt;meta name="creator" content="..."/&gt; (defaults to "bloom")</param>
 		/// <returns>Path to the unzipped .bloomd</returns>
 		public static string CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
-			WebSocketProgress progress, TemporaryFolder tempFolder, bool hasEnterpriseFeatures = false, string creator="bloom")
+			WebSocketProgress progress, TemporaryFolder tempFolder, string creator="bloom")
 		{
-			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, hasEnterpriseFeatures, creator);
+			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, creator);
 			// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
 			// 64dp in Bloom Reader.
 
@@ -69,7 +68,7 @@ namespace Bloom.Publish.Android
 		}
 
 		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer, TemporaryFolder temp,
-			WebSocketProgress progress, bool hasEnterpriseFeatures, string creator="bloom")
+			WebSocketProgress progress, string creator="bloom")
 		{
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
 			// And bloom-player expects folder name to match html file name.
@@ -78,7 +77,7 @@ namespace Bloom.Publish.Android
 			Directory.CreateDirectory(modifiedBookFolderPath);
 			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer, modifiedBookFolderPath);
 
-			if (hasEnterpriseFeatures)
+			if (modifiedBook.CollectionSettings.HaveEnterpriseFeatures)
 				ProcessQuizzes(modifiedBookFolderPath, modifiedBook.RawDom);
 
 			// Right here, let's maintain the history of what the BloomdVersion signifies to a reader.
