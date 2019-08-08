@@ -120,6 +120,12 @@ namespace Bloom.Publish.Android.wifi
 					_wifiSender.CancelAsync();
 					Debug.WriteLine("attempting async cancel send");
 				}
+				if (_uploadTimer != null)
+				{
+					_uploadTimer.Stop();
+					_uploadTimer.Dispose();
+					_uploadTimer = null;
+				}
 			}
 			// To avoid leaving a thread around when quitting, try to wait for the sender to cancel or complete.
 			// We expect another thread to set _wifiSender to null in the UploadDataCompleted event
@@ -155,6 +161,8 @@ namespace Bloom.Publish.Android.wifi
 			}
 		}
 
+		private System.Timers.Timer _uploadTimer;
+
 		/// <summary>
 		/// Send the book to a client over local network, typically WiFi (at least on Android end).
 		/// This is currently called on the UDPListener thread.
@@ -166,9 +174,6 @@ namespace Bloom.Publish.Android.wifi
 		/// is in progress, the thread will continue and complete the request. Quitting Bloom
 		/// is likely to leave the transfer incomplete.
 		/// </summary>
-		/// <param name="book"></param>
-		/// <param name="androidIpAddress"></param>
-		/// <param name="androidName"></param>
 		private void StartSendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress, string androidName, Color backColor)
 		{
 			// Locked in case more than one thread at a time can handle incoming packets, though I don't think
@@ -182,37 +187,14 @@ namespace Bloom.Publish.Android.wifi
 				// now THIS transfer is 'in progress' as far as any thread checking this is concerned.
 				_wifiSender = new WebClient();
 			}
-			_wifiSender.UploadDataCompleted += (sender, args) =>
-			{
-				// Runs on the async transfer thread AFTER the transfer initiated below.
-				if (args.Error != null)
-				{
-					ReportException(args.Error);
-				}
-				// Should we report if canceled? Thinking not, we typically only cancel while shutting down,
-				// it's probably too late for a useful report.
-
-				// To avoid contention with Stop(), which may try to cancel the send if it finds
-				// an existing wifiSender, and may destroy the advertiser we are trying to restart.
-				lock (this)
-				{
-					Debug.WriteLine($"upload completed, sender is {_wifiSender}, cancelled is {args.Cancelled}");
-					if (_wifiSender != null) // should be null only in a desperate abort-the-thread situation.
-					{
-						_wifiSender.Dispose();
-						_wifiSender = null;
-					}
-
-					if (_wifiAdvertiser != null)
-						_wifiAdvertiser.Paused = false;
-				}
-			};
+			_wifiSender.UploadDataCompleted += WifiSenderUploadCompleted;
 			// Now we actually start the send...but using an async API, so there's no long delay here.
 			PublishToAndroidApi.SendBook(book, _bookServer,
 				null, (publishedFileName, bloomDPath) =>
 				{
 					var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
 					_wifiSender.UploadDataAsync(new Uri(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(publishedFileName)), File.ReadAllBytes(bloomDPath));
+					Debug.WriteLine($"upload started to http://{androidIpAddress}:5914 ({androidName}) for {publishedFileName}");
 				},
 				_progress,
 				(publishedFileName, bookTitle) => _progress.GetMessageWithParams(idSuffix: "Sending",
@@ -226,7 +208,67 @@ namespace Bloom.Publish.Android.wifi
 			// is different from the one we're advertising, update the advertisement, so at least subsequent
 			// advertisements will conform to the version the device just got.
 			_wifiAdvertiser.BookVersion = BookCompressor.LastVersionCode;
+			lock (this)
+			{
+				// The UploadDataCompleted event handler quit working at Bloom 4.6.1238 Alpha (Windows test build).
+				// The data upload still works, but the event handler is *NEVER* called.  Trying to revise the upload
+				// by using UploadDataTaskAsync with async/await  did not work any better: the await never happened.
+				// To get around this bug, we introduce a timer that periodically checks the IsBusy flag of the
+				// _wifiSender object.  It's a hack, but I haven't come up with anything better in two days of
+				// looking at this problem.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-7227 for details.
+				if (_uploadTimer == null)
+				{
+					_uploadTimer = new System.Timers.Timer
+					{
+						Interval = 500.0,
+						Enabled = false
+					};
+					_uploadTimer.Elapsed += (sender, args) =>
+					{
+						if (_wifiSender != null && _wifiSender.IsBusy)
+							return;
+						_uploadTimer.Stop();
+						Debug.WriteLine("upload timed out, appears to be finished");
+						WifiSenderUploadCompleted(_uploadTimer, null);
+					};
+				}
+				_uploadTimer.Start();
+			}
 			PublishToAndroidApi.ReportAnalytics("wifi", book);
+		}
+
+		private void WifiSenderUploadCompleted(object sender, UploadDataCompletedEventArgs args)
+		{
+			// Runs on the async transfer thread after the transfer initiated above.  (Or on the async
+			// timer thread if the completion event handler is not called, as seems to be happening
+			// since Bloom 4.6.1238 Alpha according to BL-7227)
+			if (args?.Error != null)
+			{
+				ReportException(args.Error);
+			}
+			// Should we report if canceled? Thinking not, we typically only cancel while shutting down,
+			// it's probably too late for a useful report.
+
+			// To avoid contention with Stop(), which may try to cancel the send if it finds
+			// an existing wifiSender, and may destroy the advertiser we are trying to restart.
+			lock (this)
+			{
+				Debug.WriteLine($"upload completed, sender is {sender}, cancelled is {args?.Cancelled}");
+				if (_wifiSender != null) // should be null only in a desperate abort-the-thread situation.
+				{
+					_wifiSender.Dispose();
+					_wifiSender = null;
+				}
+				if (_wifiAdvertiser != null)
+					_wifiAdvertiser.Paused = false;
+				if (_uploadTimer != null)
+				{
+					_uploadTimer.Stop();
+					_uploadTimer.Dispose();
+					_uploadTimer = null;
+				}
+			}
 		}
 
 		private void StartSendBookOverWiFi(Book.Book book, string androidIpAddress, string androidName, Color backColor)
