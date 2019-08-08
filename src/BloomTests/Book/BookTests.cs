@@ -1815,6 +1815,249 @@ namespace BloomTests.Book
 			Assert.That(allLanguages["es"], Is.False); // in first group this is empty
 			Assert.That(allLanguages["xkal"], Is.False); // not in first group at all
 			Assert.That(allLanguages.Count(), Is.EqualTo(5)); // no * or z or tr
+
+			// another check while we're at it
+			Assert.That(book.IsPictureBook, Is.False);
+		}
+
+		[Test]
+		public void IsPictureBook_TrueForPictureBook()
+		{
+			_bookDom = new HtmlDom(@"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'></meta>
+</head>
+<body>
+    <div class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover' id='f8da605d' data-page-number='' lang=''>
+        <div class='marginBox'>
+            <div class='bloom-translationGroup bookTitle' data-default-languages='V,N1'>
+                <div role='textbox' class='bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-padForOverflow bloom-content1 bloom-visibility-code-on' lang='en'>
+                    <p>Picture Book</p>
+                </div>
+            </div>
+            <div title='aor_children.png 31.40 KB 750 x 491 162 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer'>
+                <img data-license='cc-by-sa' data-creator='' data-copyright='Copyright SIL International 2009' data-book='coverImage' src='aor_children.png' alt=''></img>
+                <div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement' data-default-languages='auto' data-book='coverImageDescription'>
+                    <div role='textbox' class='bloom-editable ImageDescriptionEdit-style bloom-content1 bloom-visibility-code-on' lang='en' contenteditable='true'><p></p></div>
+                </div>
+            </div>
+            <div class='bottomBlock'>
+                <div class='bottomTextContent'>
+                    <div aria-describedby='qtip-2' data-hasqtip='true' class='creditsRow' data-hint='You may use this space for author/illustrator, or anything else.'>
+                        <div class='bloom-translationGroup' data-default-languages='V'>
+                            <div role='textbox' class='bloom-editable smallCoverCredits Cover-Default-style bloom-content1 bloom-visibility-code-on' lang='en'>
+                                <p>Steve</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='bloom-page cover coverColor bloom-frontMatter insideFrontCover' id='0ba296d4'>
+        <div class='marginBox'>
+            <div class='bloom-translationGroup' data-default-languages='N1'>
+                <div class='bloom-editable Inside-Front-Cover-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='en' contenteditable='true' data-book='insideFontCover'>
+                    <label class='bubble'>If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='bloom-page numberedPage customPage A5Portrait bloom-monolingual side-right' id='4cc0fec2' data-page-number='1' lang=''>
+        <div class='marginBox'>
+            <div class='split-pane-component-inner'>
+                <div title='placeHolder.png 6.58 KB 341 x 335 81 DPI (should be 300-600) Bit Depth: 8' class='bloom-imageContainer'>
+                    <img data-license='cc-by-sa' data-creator='' data-copyright='Copyright SIL International 2009' src='aor_Ind00041.png' alt=''></img>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='bloom-page numberedPage customPage A5Portrait bloom-monolingual side-left' id='afbd13d8' data-page-number='2' lang=''>
+        <div class='marginBox'>
+            <div class='split-pane-component-inner'>
+                <div title='placeHolder.png 6.58 KB 341 x 335 81 DPI (should be 300-600) Bit Depth: 8' class='bloom-imageContainer'>
+                    <img data-license='cc-by-sa' data-creator='' data-copyright='Copyright SIL International 2009' src='aor_ahb027m.png' alt=''></img>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='bloom-page numberedPage customPage A5Portrait bloom-monolingual side-right' id='cf1948b3' data-page-number='3' lang=''>
+        <div class='marginBox'>
+            <div class='split-pane-component-inner'>
+                <div title='placeHolder.png 6.58 KB 341 x 335 81 DPI (should be 300-600) Bit Depth: 8' class='bloom-imageContainer'>
+                    <img data-license='cc-by-sa' data-creator='' data-copyright='Copyright SIL International 2009' src='aor_EAG00876.png' alt=''></img>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='bloom-page numberedPage customPage A5Portrait side-left bloom-monolingual' id='2b71e577' data-page-number='4' lang=''>
+        <div class='marginBox'>
+            <div class='split-pane-component-inner'>
+                <div title='aor_acc005.png 27.75 KB 1003 x 1500 237 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer'>
+                    <img data-license='cc-by-sa' data-creator='' data-copyright='Copyright SIL International 2009' src='aor_acc005.png' alt=''></img>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='bloom-page cover coverColor insideBackCover bloom-backMatter A5Portrait side-right' id='3a3667d4' data-page-number=''>
+        <div class='marginBox'>
+            <div class='bloom-translationGroup' data-default-languages='N1'>
+                <div class='bloom-editable Inside-Back-Cover-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='en'></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>");
+			var book = CreateBook();
+
+			// SUT
+			Assert.That(book.IsPictureBook, Is.True);
+		}
+
+		[Test]
+		public void IsPictureBook_FalseIfVideo()
+		{
+			_bookDom = new HtmlDom(
+				@"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'></meta>
+</head>
+<body>
+    <div class='bloom-page numberedPage customPage A5Portrait side-right bloom-monolingual' id='8db70aff' data-page-number='1' lang=''>
+        <div class='marginBox'>
+            <div class='split-pane-component-inner'>
+                <div title='aor_Ind00041.png 40.22 KB 765 x 1500 181 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer'>
+<img data-license='cc-by-sa' data-creator='' data-copyright='Copyright SIL International 2009' src='aor_Ind00041.png' alt=''></img>
+</div>
+            </div>
+        </div>
+    </div>
+    <div class='bloom-page numberedPage customPage A5Portrait side-left bloom-monolingual' id='a5caf54e' data-page-number='2' lang=''>
+        <div class='marginBox'>
+            <div style='min-height: 42px;' class='split-pane horizontal-percent'>
+                <div class='split-pane-component position-top'>
+                    <div min-height='60px 150px 250px' min-width='60px 150px 250px' class='split-pane-component-inner adding'>
+                        <div title='aor_Cat3.png 83.75 KB 1500 x 1248 355 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer bloom-leadingElement'>
+                            <img data-license='cc-by-sa' data-creator='' data-copyright='Copyright SIL International 2009' src='aor_Cat3.png' alt=''></img>
+                        </div>
+                    </div>
+                </div>
+                <div class='split-pane-divider horizontal-divider'></div>
+                <div class='split-pane-component position-bottom'>
+                    <div min-height='60px 150px 250px' min-width='60px 150px 250px' style='position: relative;' class='split-pane-component-inner'>
+                        <div class='box-header-off bloom-translationGroup'>
+                            <div class='bloom-editable bloom-content1 bloom-visibility-code-on' role='textbox' lang='en'><p></p></div>
+                        </div>
+                        <div class='bloom-videoContainer bloom-noVideoSelected bloom-leadingElement bloom-selected'>
+                            <video>
+                                <source src='video/14c698f0-6d6f-4045-b6a4-3b40a9128feb.mp4#t=0.0,2.8'></source>
+                            </video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>");
+			var book = CreateBook();
+
+			// SUT
+			Assert.That(book.IsPictureBook, Is.False);
+		}
+
+		[Test]
+		public void IsPictureBook_FalseIfText()
+		{
+			_bookDom = new HtmlDom(
+				@"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'></meta>
+</head>
+<body>
+    <div class='bloom-page numberedPage customPage bloom-combinedPage A5Portrait bloom-monolingual side-right' id='14d17b8a' data-page-number='1' lang=''>
+        <div class='marginBox'>
+            <div style='min-height: 42px;' class='split-pane horizontal-percent'>
+                <div class='split-pane-component position-top' style='bottom: 50%;'>
+                    <div class='split-pane-component-inner'>
+                        <div title='AOR_th00285b.png 60.54 KB 1200 x 1200 284 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer bloom-leadingElement'>
+                            <img style='' data-license='cc-by-nd' data-creator='' data-copyright='Copyright, SIL International 2009.' src='AOR_th00285b.png' alt='' height='334' width='334'></img>
+                        </div>
+                    </div>
+                </div>
+                <div class='split-pane-divider horizontal-divider' style='bottom: 50%;'></div>
+                <div class='split-pane-component position-bottom' style='height: 50%;'>
+                    <div class='split-pane-component-inner'>
+                        <div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto'>
+                            <div role='textbox' class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' lang='en'><p></p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual' id='58707128' data-page-number='2' lang=''>
+        <div class='split-pane-component marginBox' style=''>
+            <div class='split-pane-component-inner adding'>
+                <div class='box-header-off bloom-translationGroup'>
+                    <div role='textbox' class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'><p></p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>");
+			var book = CreateBook();
+
+			// SUT
+			Assert.That(book.IsPictureBook, Is.False);
+		}
+
+		[Test]
+		public void IsPictureBook_TrueForCustomPicturePages()
+		{
+			_bookDom = new HtmlDom(@"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'></meta>
+</head>
+<body>
+    <div class='bloom-page numberedPage customPage A5Portrait side-left bloom-monolingual' id='d769afe0' data-page-number='1' lang=''>
+        <div class='marginBox'>
+            <div style='min-height: 42px;' class='split-pane horizontal-percent'>
+                <div class='split-pane-component position-top'>
+                    <div min-height='60px 150px 250px' min-width='60px 150px 250px' class='split-pane-component-inner'>
+                        <div class='box-header-off bloom-translationGroup'>
+                            <div role='textbox' class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'><p></p></div>
+                        </div>
+                        <div title='aor_CMB0370.png 119.24 KB 1500 x 918 355 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer bloom-leadingElement'>
+                            <img data-license='cc-by-sa' data-creator='' data-copyright='Copyright SIL International 2009' src='aor_CMB0370.png' alt=''></img>
+                        </div>
+                    </div>
+                </div>
+                <div class='split-pane-divider horizontal-divider'></div>
+                <div class='split-pane-component position-bottom'>
+                    <div min-height='60px 150px 250px' min-width='60px 150px 250px' class='split-pane-component-inner adding'>
+                        <div class='box-header-off bloom-translationGroup'>
+                            <div role='textbox' class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'><p></p></div>
+                        </div>
+                        <div title='placeHolder.png 6.58 KB 341 x 335 81 DPI (should be 300-600) Bit Depth: 8' class='bloom-imageContainer bloom-leadingElement'>
+                            <img data-license='cc-by-sa' data-creator='' data-copyright='Copyright SIL International 2009' src='aor_9O.png' alt=''></img>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>");
+			var book = CreateBook();
+
+			// SUT
+			Assert.That(book.IsPictureBook, Is.True);
 		}
 
 		[Test]

@@ -1762,6 +1762,30 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// Check whether this is a pure picture-book: only pictures apart from the xmatter, no text-boxes (or videos) at all.
+		/// </summary>
+		public bool IsPictureBook
+		{
+			get
+			{
+				var pageDivs = OurHtmlDom.SafeSelectNodes("//div[contains(@class, 'bloom-page') and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))]").Cast<XmlElement>().ToList();
+				foreach (var page in pageDivs)
+				{
+					var textboxes = page.SafeSelectNodes(".//div[contains(@class, 'bloom-translationGroup') and not(contains(@class, 'box-header-off'))]");
+					var videos = page.SafeSelectNodes(".//div[contains(@class, 'bloom-videoContainer')]");
+					var pictures = page.SafeSelectNodes(".//div[contains(@class, 'bloom-imageContainer')]");
+					if (textboxes != null && textboxes.Count > 0)
+						return false;
+					if (videos != null && videos.Count > 0)
+						return false;
+					if (pictures == null || pictures.Count == 0)
+						return false;
+				}
+				return true;
+			}
+		}
+
 		private static bool HasContentInLang(XmlElement parent, string lang)
 		{
 			foreach (var divN in parent.ChildNodes)

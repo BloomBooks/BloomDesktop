@@ -128,7 +128,7 @@ namespace Bloom.Publish.BloomLibrary
 		///  Best not to store its own value, because the username/password can be changed if the user logs into a different account.
 		private string StoredWebPassword { get { return Settings.Default.WebPassword; } }
 
-		internal bool OkToUploadWithNoLanguages => Book.BookInfo.IsSuitableForMakingShells;
+		internal bool OkToUploadWithNoLanguages => Book.BookInfo.IsSuitableForMakingShells || Book.IsPictureBook;
 
 		internal bool IsThisVersionAllowedToUpload => _transferrer.IsThisVersionAllowedToUpload();
 
