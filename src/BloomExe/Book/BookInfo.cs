@@ -360,31 +360,31 @@ namespace Bloom.Book
 			}
 			set
 			{
-				UpdateOneTypeOfMetaDataTags(TagIsTopic, kTopicPrefix, value);
+				UpdateOneTypeOfMetaDataTags(TagIsTopic, kTopicPrefix, false, value);
 			}
 		}
 
 		/// <summary>
-		/// Allow mass uploader to set a bookshelf tag before uploading.
+		/// Allow mass uploader to set a bookshelf tag before uploading. In order to handle bookshelf names
+		/// with commas, we pass a param that skips splitting the value on commas and assumes we are only setting
+		/// a single bookshelf tag.
 		/// </summary>
-		public string BookshelfList
+		/// <remarks>This is only used by the bulk upload process.</remarks>
+		public string SetBookshelfTag
 		{
 			set
 			{
-				UpdateOneTypeOfMetaDataTags(TagIsBookshelf, kBookshelfPrefix, value);
+				UpdateOneTypeOfMetaDataTags(TagIsBookshelf, kBookshelfPrefix, true, value);
 				Save();
 			}
 		}
 
-		private void UpdateOneTypeOfMetaDataTags(Func<string, bool> tagTest, string prefix, string valueToSet)
+		private void UpdateOneTypeOfMetaDataTags(Func<string, bool> tagTest, string prefix, bool handleValueWithCommas, string valueToSet)
 		{
-			var splitValues = SplitList(valueToSet);
+			var splitValues = handleValueWithCommas ? new [] {valueToSet}: SplitList(valueToSet);
 			EnsureStringsHaveCorrectPrefixes(prefix, splitValues);
-			if (MetaData.Tags == null)
-				MetaData.Tags = splitValues;
-			else
-				// Leave all the other types of tags intact. Replace all existing tags matching the prefix type.
-				MetaData.Tags = MetaData.Tags.Where(t => !tagTest(t)).Union(splitValues).ToArray();
+			// Leave all the other types of tags intact. Replace all existing tags matching the prefix type.
+			MetaData.Tags = MetaData.Tags?.Where(t => !tagTest(t)).Union(splitValues).ToArray() ?? splitValues;
 		}
 
 		public int PageCount
