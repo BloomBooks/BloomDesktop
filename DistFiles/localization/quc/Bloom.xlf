@@ -5329,7 +5329,7 @@ Jub'iq' che ri ub'ixik chech ri sik'inel rech/ilonel rech che we ri' k'isb'al re
         <source xml:lang="en">There are several ways to start a temporary one.</source>
         <note>ID: </note>
         <note>This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network.</note>
-        <target xml:lang="quc" state="needs-translation">There are several ways to start a temporary one.</target>
+        <target xml:lang="quc" state="translated">K'o sib'alaj ub'anik umajik jun k'at xaq rech keb'o xib' q'ij.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About Motion Books</source>
@@ -5965,7 +5965,7 @@ Jub'iq' che ri ub'ixik chech ri sik'inel rech/ilonel rech che we ri' k'isb'al re
         <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
         <note>ID: PublishTab.Epub.OmittedPages</note>
         <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
-        <target xml:lang="quc" state="needs-translation">The following pages were removed because they are not supported in ePUBs:</target>
+        <target xml:lang="quc" state="translated">Ri nik'aj taq uxaq wuj chik xechupik rumal ma kuk'ulaj ta rib' ruk' taq ri ePUBs:</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content" approved="yes">
         <source xml:lang="en">Content</source>
