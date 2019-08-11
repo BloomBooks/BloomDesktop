@@ -7848,7 +7848,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
         <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
-        <target xml:lang="quc" state="needs-translation">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</target>
+        <target xml:lang="quc" state="translated">Jun uxaq utz rilik ruk' jun k'otow chi'aj xuquje' jujun taq utzelexik k'otow chi'aj.Kachakun pa ri web xuquje' Bloom Reader, ri ilol rech ri achak kakowinik kuk'ut ri xrelesaj rech ri ch'ob'tajinem xya' uwi'.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
