@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hostednetwork">
         <source xml:lang="en">Start a network using your laptop</source>
-        <target xml:lang="quc" state="needs-translation">Start a network using your laptop</target>
+        <target xml:lang="quc" state="translated">Chamaja' jun k'at are kakoj ri a kematz'ib'</target>
         <note>ID: publish.help.tips.tempWiFi.hostednetwork</note>
       </trans-unit>
     </body>
