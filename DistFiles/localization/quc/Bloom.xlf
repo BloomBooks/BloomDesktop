@@ -5323,7 +5323,7 @@ Jub'iq' che ri ub'ixik chech ri sik'inel rech/ilonel rech che we ri' k'isb'al re
         <source xml:lang="en">No Wi-Fi Network?</source>
         <note>ID: PublishTab.Android.WiFi.Hint.Heading</note>
         <note/>
-        <target xml:lang="quc" state="needs-translation">No Wi-Fi Network?</target>
+        <target xml:lang="quc" state="translated">Ma k'o ta k'at Wi-Fi</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
         <source xml:lang="en">There are several ways to start a temporary one.</source>
