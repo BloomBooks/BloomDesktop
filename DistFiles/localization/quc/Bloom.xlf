@@ -5297,13 +5297,13 @@ Jub'iq' che ri ub'ixik chech ri sik'inel rech/ilonel rech che we ri' k'isb'al re
         <source xml:lang="en">Sharing .bloomd Files</source>
         <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
         <note/>
-        <target xml:lang="quc" state="needs-translation">Sharing .bloomd Files</target>
+        <target xml:lang="quc" state="translated">Ujachik k'i taq k'olchak.bloomd</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
         <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
         <note>ID: PublishTab.Android.BloomD.Hint</note>
         <note/>
-        <target xml:lang="quc" state="needs-translation">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</target>
+        <target xml:lang="quc" state="translated">Katkowinik kakoj rech ujachik pacha' ri oqxa'n pa kematz'ib', Dropbox xuquje' WhatsApp rech ujachik ri ak'olchak.bloomd ruk' jun chik wiqkem chakub'al.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en"> USB is Difficult</source>
