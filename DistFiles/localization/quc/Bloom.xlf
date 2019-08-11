@@ -1044,7 +1044,7 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
         <source xml:lang="en">Sign Language   (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
-        <target xml:lang="quc" state="needs-translation">Sign Language   (Optional)</target>
+        <target xml:lang="quc" state="translated">Tzijob'al ruk' taq retalb'alil (opcional)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
@@ -1357,7 +1357,7 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
-        <target xml:lang="quc" state="needs-translation">Show translations which have not been approved yet</target>
+        <target xml:lang="quc" state="translated">K'utunik tzij maj na ya'talik</target>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
@@ -1579,7 +1579,7 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
         <source xml:lang="en">Learn More</source>
         <note>ID: Common.LearnMore</note>
         <note>This is the same as Settings.Enterprise.LearnMore</note>
-        <target xml:lang="quc" state="needs-translation">Learn More</target>
+        <target xml:lang="quc" state="translated">K'i na eta'manik</target>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
