@@ -6404,7 +6404,7 @@ Jub'iq' che ri ub'ixik chech ri sik'inel rech/ilonel rech che we ri' k'isb'al re
       <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
         <source xml:lang="en">Please choose the sign language for this book</source>
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
-        <target xml:lang="quc" state="needs-translation">Please choose the sign language for this book</target>
+        <target xml:lang="quc" state="translated">Chab'ana jun toq'ob', chacha' ri tzijob'al ruk' taq reta'lb'alil rech we wuj</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting" approved="yes">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
@@ -6739,7 +6739,7 @@ Jub'iq' che ri ub'ixik chech ri sik'inel rech/ilonel rech che we ri' k'isb'al re
       <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
         <source xml:lang="en">Set Sign Language...</source>
         <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
-        <target xml:lang="quc" state="needs-translation">Set Sign Language...</target>
+        <target xml:lang="quc" state="translated">Chak'utu ri tzijob'al ruk' retalb'alil</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
