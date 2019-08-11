@@ -5317,9 +5317,7 @@ Jub'iq' che ri ub'ixik chech ri sik'inel rech/ilonel rech che we ri' k'isb'al re
                             modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note/>
-        <target xml:lang="quc" state="needs-translation">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</target>
+        <target xml:lang="quc" state="translated">Rech utaqik pa USB, kaj ne rajawaxik uk'amil r k'a'm qas are',  ukujok chajinelab'  chcech ri  oyonib'al pa ri kematz'ib o uk'exik ri ilol rech ri oyonib'al.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">No Wi-Fi Network?</source>
