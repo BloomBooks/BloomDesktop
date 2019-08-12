@@ -136,7 +136,13 @@ namespace Bloom.Publish.BloomLibrary
 		///  Best not to store its own value, because the username/password can be changed if the user logs into a different account.
 		private string StoredWebPassword { get { return Settings.Default.WebPassword; } }
 
-		internal bool OkToUploadWithNoLanguages => Book.BookInfo.IsSuitableForMakingShells;
+		/// <summary>
+		/// We would like users to be able to publish picture books that don't have any text.  Historically, we've required
+		/// non-empty books with text unless the book is marked as being a template.  This restriction is too severe, but
+		/// it's not clear what feasible restriction is actually helpful.  So for now, we have no restriction imposed.
+		/// (See https://issues.bloomlibrary.org/youtrack/issue/BL-7514 for what triggered this decision.)
+		/// </summary>
+		internal bool OkToUploadWithNoLanguages => true;
 
 		internal bool IsThisVersionAllowedToUpload => _transferrer.IsThisVersionAllowedToUpload();
 
