@@ -59,6 +59,7 @@ namespace Bloom.Edit
 		// These variables are not thread-safe. Access only on UI thread.
 		private bool _inProcessOfSaving;
 		private List<Action> _tasksToDoAfterSaving = new List<Action>();
+		private bool _unsavedLicenseMetadata = false;
 
 		readonly List<string> _activeStandardListeners = new List<string>();
 
@@ -1030,7 +1031,8 @@ namespace Bloom.Edit
 					CheckForBL2634("save");
 					//OK, looks safe, time to save.
 					var newPageData = GetPageData(_domForCurrentPage.RawDom);
-					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage, !newPageData.SameAs(_pageDataBeforeEdits));
+					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage, SharedDataWasChanged(newPageData));
+					_unsavedLicenseMetadata = false;
 					CheckForBL2634("finished save");
 				}
 				finally
@@ -1046,6 +1048,15 @@ namespace Bloom.Edit
 				watch.Stop();
 				TroubleShooterDialog.Report($"Saving changes took {watch.ElapsedMilliseconds} milliseconds");
 			}
+		}
+
+		// If we return 'true', we need to do a complete book save, otherwise we'll just save this page.
+		// The 'data-derived' nature of the license metadata means that the DataSet we were comparing was insufficient
+		// to detect changes to it (BL-7518).
+		// This method ensures that the DataDiv gets saved if the user changed the license metadata.
+		private bool SharedDataWasChanged(DataSet newPageData)
+		{
+			return !newPageData.SameAs(_pageDataBeforeEdits) || _unsavedLicenseMetadata;
 		}
 
 		/// <summary>
@@ -1304,6 +1315,7 @@ namespace Bloom.Edit
 		{
 			CurrentBook.SetMetadata(metadata);
 			RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let's redraw everything
+			_unsavedLicenseMetadata = true;
 		}
 
 #if __MonoCS__
