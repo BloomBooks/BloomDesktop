@@ -950,7 +950,7 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
         <source xml:lang="en">Sign Language   (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
-        <target xml:lang="mam" state="needs-translation">Sign Language   (Optional)</target>
+        <target xml:lang="mam" state="translated">Yol tu'n techil (qa tajb'ila)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
@@ -1246,7 +1246,7 @@
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
-        <target xml:lang="mam" state="needs-translation">Show translations which have not been approved yet</target>
+        <target xml:lang="mam" state="translated">Ntzaj tyek'in yol meltz'u'nqe ex namx k'ametqe</target>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
@@ -1774,7 +1774,7 @@
       <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true">
         <source xml:lang="en">This kind of page will be included only in digital book outputs, not in PDF.</source>
         <note>ID: EditTab.AddPageDialog.DigitalPage</note>
-        <target xml:lang="mam" state="needs-translation">This kind of page will be included only in digital book outputs, not in PDF.</target>
+        <target xml:lang="mam" state="translated">Aj tu'mel t-xaq lu, kxe'l yek'it o'kx kyuj qe u'jb'il ajtzaj o chi b'antqe, nya' tuj PDF.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Could not find {0}</source>
@@ -2294,17 +2294,17 @@
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizAnswer-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Answer</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizAnswer-style</note>
-        <target xml:lang="mam" state="needs-translation">Quiz Answer</target>
+        <target xml:lang="mam" state="translated">Tz'aq'web'il jun malob'il</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizHeader-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Header</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizHeader-style</note>
-        <target xml:lang="mam" state="needs-translation">Quiz Header</target>
+        <target xml:lang="mam" state="translated">Tnejil yol nkub' twitz jun malob'il</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizQuestion-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Question</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizQuestion-style</note>
-        <target xml:lang="mam" state="needs-translation">Quiz Question</target>
+        <target xml:lang="mam" state="translated">Xjelb'il jun malob'il</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Title On Cover</source>
@@ -5160,19 +5160,19 @@
         <source xml:lang="en">Sharing .bloomd Files</source>
         <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
         <note/>
-        <target xml:lang="mam" state="needs-translation">Sharing .bloomd Files</target>
+        <target xml:lang="mam" state="translated">Nb'aj sipit qe nak'ub'il .bloomd</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
         <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
         <note>ID: PublishTab.Android.BloomD.Hint</note>
         <note/>
-        <target xml:lang="mam" state="needs-translation">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</target>
+        <target xml:lang="mam" state="translated">B'a'n tz'ajb'en qe aq'unb'il xk'utz'ib' ikytzan chemajxin, Dropbox ex WhatsApp tu'n t-xi' sipit tnak'ub'ila .bloomd tuk' juntl makb'il aq'unb'il xk'utz'ib'.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en"> USB is Difficult</source>
         <note>ID: PublishTab.Android.USB.Hint.Heading</note>
         <note/>
-        <target xml:lang="mam" state="needs-translation"> USB is Difficult</target>
+        <target xml:lang="mam" state="translated"> Kyiw ti'j tu'n USB</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
         <source xml:lang="en">To Send via USB, you may need to get the right
@@ -5180,21 +5180,19 @@
                             modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note/>
-        <target xml:lang="mam" state="needs-translation">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</target>
+        <target xml:lang="mam" state="translated">Tu'n t-xi' samet tuj USB ilx ti'j tu'n tajb'lan taq'ilxix tuj tu'mel, qokel ti'j t-xk'utz'ib'a qe makb'il ka'yil yolb'il mo tu'n tch'ixpet q'ol tilb'ilal tyolb'ila.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">No Wi-Fi Network?</source>
         <note>ID: PublishTab.Android.WiFi.Hint.Heading</note>
         <note/>
-        <target xml:lang="mam" state="needs-translation">No Wi-Fi Network?</target>
+        <target xml:lang="mam" state="translated">Nti' chemajxin Wi-Fi?</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
         <source xml:lang="en">There are several ways to start a temporary one.</source>
         <note>ID: </note>
         <note>This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network.</note>
-        <target xml:lang="mam" state="needs-translation">There are several ways to start a temporary one.</target>
+        <target xml:lang="mam" state="translated">Ala' tu'mel tu'n t-xi' qe' jun chemajxin noqx te kab'e q'ij.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About Motion Books</source>
@@ -5820,7 +5818,7 @@
         <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
         <note>ID: PublishTab.Epub.OmittedPages</note>
         <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
-        <target xml:lang="mam" state="needs-translation">The following pages were removed because they are not supported in ePUBs:</target>
+        <target xml:lang="mam" state="translated">Atzan ju'njun qe t-xaq o chi el, tu'n tlaj nti' nchi k'ametqa kyu'nqe ePUBs:</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content" approved="yes">
         <source xml:lang="en">Content</source>
