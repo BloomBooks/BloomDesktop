@@ -6269,7 +6269,7 @@
       <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
         <source xml:lang="en">Please choose the sign language for this book</source>
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
-        <target xml:lang="mam" state="needs-translation">Please choose the sign language for this book</target>
+        <target xml:lang="mam" state="translated">B'inchama xtalb'il, sak'onqtza tumlal yol tu'n techil te u'jb'il lu'</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting" approved="yes">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
@@ -6601,7 +6601,7 @@
       <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
         <source xml:lang="en">Set Sign Language...</source>
         <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
-        <target xml:lang="mam" state="needs-translation">Set Sign Language...</target>
+        <target xml:lang="mam" state="translated">Yeq'untza tumlal yol tu'n techil...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
@@ -7731,7 +7731,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
         <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
-        <target xml:lang="mam" state="needs-translation">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</target>
+        <target xml:lang="mam" state="translated">Jun t-xaq aq'unb'il chemaj xin jatuma kyaqil b'a'n tu'n kyolin tuk' jun xjelb'il ex ila' tz'aq'web'il. In najb'en tuj chemaj xin ex Bloom Reader. Qa a Bloom Reader k'ajb'el, aju tumlal keyb'il taq'una jaku tzaj tyek'in qe chmob'il tajlal malob'il nab'il otaq tz'aqset.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
