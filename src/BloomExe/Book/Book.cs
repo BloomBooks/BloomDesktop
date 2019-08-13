@@ -2468,7 +2468,7 @@ namespace Bloom.Book
 		/// Earlier, we handed out a single-page version of the document. Now it has been edited,
 		/// so we now we need to fold changes back in
 		/// </summary>
-		public void SavePage(HtmlDom editedPageDom, bool sharedDataWasChanged = true)
+		public void SavePage(HtmlDom editedPageDom, bool needToDoFullSave = true)
 		{
 			Debug.Assert(IsEditable);
 			try
@@ -2487,7 +2487,7 @@ namespace Bloom.Book
 
 				// The main condition for being able to just write the page is that no shareable data on the
 				// page changed during editing. If that's so we can skip this step.
-				if (sharedDataWasChanged)
+				if (needToDoFullSave)
 					_bookData.SuckInDataFromEditedDom(editedPageDom); //this will do an updatetitle
 
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles".
@@ -2506,7 +2506,7 @@ namespace Bloom.Book
 					//Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
 				}
 
-				if (!sharedDataWasChanged && !stylesChanged)
+				if (!needToDoFullSave && !stylesChanged)
 				{
 					// nothing changed outside this page. We can do a much more efficient write operation.
 					// (On a 200+ page book, like the one in BL-7253, this version of updating the page

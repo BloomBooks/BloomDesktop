@@ -59,6 +59,10 @@ namespace Bloom.Edit
 		// These variables are not thread-safe. Access only on UI thread.
 		private bool _inProcessOfSaving;
 		private List<Action> _tasksToDoAfterSaving = new List<Action>();
+		// Perhaps a bit hack-ish, but this causes a full save to be done when our datadiv has been modified
+		// but it's not obvious from the dataset changes. If we make new 'data-derived' divs someday, changing them
+		// must set this flag to ensure the information gets saved properly.
+		private bool _pageHasUnsavedDataDerivedChange;
 
 		readonly List<string> _activeStandardListeners = new List<string>();
 
@@ -918,6 +922,7 @@ namespace Bloom.Edit
 		{
 			//make the change in the data div
 			_currentlyDisplayedBook.SetTopic(englishTopicAsKey);
+			_pageHasUnsavedDataDerivedChange = true;
 			//reflect that change on this page
 			RethinkPageAndReloadIt();
 		}
@@ -1030,7 +1035,8 @@ namespace Bloom.Edit
 					CheckForBL2634("save");
 					//OK, looks safe, time to save.
 					var newPageData = GetPageData(_domForCurrentPage.RawDom);
-					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage, !newPageData.SameAs(_pageDataBeforeEdits));
+					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage, NeedToDoFullSave(newPageData));
+					_pageHasUnsavedDataDerivedChange = false;
 					CheckForBL2634("finished save");
 				}
 				finally
@@ -1046,6 +1052,18 @@ namespace Bloom.Edit
 				watch.Stop();
 				TroubleShooterDialog.Report($"Saving changes took {watch.ElapsedMilliseconds} milliseconds");
 			}
+		}
+
+		// If we return 'true', we need to do a complete book save, otherwise we'll just save this page.
+		// The 'data-derived' nature of the license metadata means that the DataSet we were comparing was insufficient
+		// to detect changes to it (BL-7518).
+		// So far 'data-derived' divs are all in xmatter, so we could just always do a full save if we're on an xmatter
+		// page. Unfortunately, that would take a lot of time on a large book so we need to know that something has
+		// actually changed that needs saving. The hope is that if we ever add new 'data-derived' divs, changing them will
+		// result in this flag being set.
+		private bool NeedToDoFullSave(DataSet newPageData)
+		{
+			return _pageHasUnsavedDataDerivedChange || !newPageData.SameAs(_pageDataBeforeEdits);
 		}
 
 		/// <summary>
@@ -1303,6 +1321,7 @@ namespace Bloom.Edit
 		public void ChangeBookLicenseMetaData(Metadata metadata)
 		{
 			CurrentBook.SetMetadata(metadata);
+			_pageHasUnsavedDataDerivedChange = true;
 			RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let's redraw everything
 		}
 
