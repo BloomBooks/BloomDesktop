@@ -1855,7 +1855,13 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
       <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true">
         <source xml:lang="en">This kind of page will be included only in digital book outputs, not in PDF.</source>
         <note>ID: EditTab.AddPageDialog.DigitalPage</note>
-        <target xml:lang="quc" state="translated">We uxaq wuj ya'tajik xuw pa ri t'in wuj b'anom, maj pa PDF.</target>
+        <target xml:lang="quc" state="translated">We uxaq wuj ri' kya'taj na xuwi pa ri no'jwuj ruk' t'inob'al b'anom chik, man are ta le PDF.</target>
+        <alt-trans>
+          <target xml:lang="quc">We uxaq wuj ri' kya'taj na xuwi pa ri no'jwuj ruk' t'inob'al b'anom chik,  man areta le PDF.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="quc">We uxaq wuj ya'tajik xuw pa ri t'in wuj b'anom, maj pa PDF.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Could not find {0}</source>
