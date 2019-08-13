@@ -744,7 +744,7 @@ namespace Bloom.WebLibraryIntegration
 				}
 				var server = context.BookServer;
 				var bookInfo = new BookInfo(folder, true);
-				bookInfo.BookshelfList = GetBookshelfName(folder);
+				bookInfo.Bookshelf = GetBookshelfName(folder);
 				var book = server.GetBookFromBookInfo(bookInfo);
 				book.BringBookUpToDate(new NullProgress());
 

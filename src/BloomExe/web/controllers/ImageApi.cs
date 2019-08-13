@@ -65,10 +65,10 @@ namespace Bloom.web.controllers
 		/// </summary>
 		/// <param name="domBody"></param>
 		/// <returns></returns>
-		public Dictionary<string, List<string>> GetFilteredImageNameToPagesDictionary(XmlNode domBody)
+		public Dictionary<string, List<string>> GetFilteredImageNameToPagesDictionary(XmlNode domBody, IEnumerable<string> langs = null)
 		{
 			var result = new Dictionary<string, List<string>>();
-			result.AddRange(GetWhichImagesAreUsedOnWhichPages(domBody).Where(kvp => !DoNotPasteCreditsImages(kvp.Key)));
+			result.AddRange(GetWhichImagesAreUsedOnWhichPages(domBody, langs).Where(kvp => !DoNotPasteCreditsImages(kvp.Key)));
 			return result;
 		}
 
@@ -77,13 +77,13 @@ namespace Bloom.web.controllers
 			// This method is called on a fileserver thread. To minimize the chance that the current selection somehow
 			// changes while it is running, we capture the things that depend on it in variables right at the start.
 			var domBody = _bookSelection.CurrentSelection.RawDom.DocumentElement.SelectSingleNode("//body");
-			var imageNameToPages = GetFilteredImageNameToPagesDictionary(domBody);
 			var currentSelectionFolderPath = _bookSelection.CurrentSelection.FolderPath;
 			IEnumerable<string> langs;
 			if (request.CurrentCollectionSettings != null)
 				langs = request.CurrentCollectionSettings.LicenseDescriptionLanguagePriorities;
 			else
 				langs = new List<string> { "en" };		// emergency fall back -- probably never used.
+			var imageNameToPages = GetFilteredImageNameToPagesDictionary(domBody, langs);
 			var credits = new Dictionary<string, List<string>>();
 			var missingCredits = new List<string>();
 			foreach (var kvp in imageNameToPages)
@@ -103,7 +103,7 @@ namespace Bloom.web.controllers
 					BuildCreditsDictionary(credits, credit, pageList);
 				}
 			}
-			var collectedCredits = CollectFormattedCredits(credits);
+			var collectedCredits = CollectFormattedCredits(credits, langs);
 			var total = collectedCredits.Aggregate(new StringBuilder(), (all,credit) => {
 				all.AppendFormat("<p>{0}</p>{1}", credit, Environment.NewLine);
 				return all;
@@ -111,9 +111,10 @@ namespace Bloom.web.controllers
 			// Notify the user of images with missing credits.
 			if (missingCredits.Count > 0)
 			{
-				var missing = LocalizationManager.GetString("EditTab.FrontMatter.PasteMissingCredits", "Missing credits:");
+				string dummyId;
+				var missing = LocalizationManager.GetString("EditTab.FrontMatter.PasteMissingCredits", "Missing credits:", "", langs, out dummyId);
 				var missingImage = LocalizationManager.GetString("EditTab.FrontMatter.ImageCreditMissing", " {0} (page {1})",
-					"The {0} is replaced by the filename of an image.  The {1} is replaced by a reference to the first page in the book where that image occurs.");
+					"The {0} is replaced by the filename of an image.  The {1} is replaced by a reference to the first page in the book where that image occurs.", langs, out dummyId);
 				total.AppendFormat("<p>{0}", missing);
 				for (var i = 0; i < missingCredits.Count; ++i)
 				{
@@ -131,8 +132,11 @@ namespace Bloom.web.controllers
 		/// </summary>
 		/// <param name="credits"></param>
 		/// <returns></returns>
-		internal static IEnumerable<string> CollectFormattedCredits(Dictionary<string, List<string>> credits)
+		internal static IEnumerable<string> CollectFormattedCredits(Dictionary<string, List<string>> credits, IEnumerable<string> langs = null)
 		{
+			if (langs == null)
+				langs = new string[] { "en" };
+			string dummyId;
 			// Dictionary Key is metadata.MinimalCredits, Value is the list of pages that have images this credits string applies to.
 			// Generate a formatted credit string like:
 			//   Image on page 2 by John Doe, Copyright John Doe, 2016, CC-BY-NC. or
@@ -142,13 +146,13 @@ namespace Bloom.web.controllers
 			{
 				// If all the images are credited to the same illustrator, don't bother listing page numbers.
 				// Like: Images by John Doe, Copyright John Doe, 2016, CC-BY-NC.
-				var bookSingleCredit = LocalizationManager.GetString("EditTab.FrontMatter.BookSingleCredit", "Images by {0}.");
+				var bookSingleCredit = LocalizationManager.GetString("EditTab.FrontMatter.BookSingleCredit", "Images by {0}.", "", langs, out dummyId);
 				var key = credits.Keys.First();
 				yield return string.Format(bookSingleCredit, key);
 				yield break;
 			}
-			var singleCredit = LocalizationManager.GetString("EditTab.FrontMatter.SingleImageCredit", "Image on page {0} by {1}.");
-			var multipleCredit = LocalizationManager.GetString("EditTab.FrontMatter.MultipleImageCredit", "Images on pages {0} by {1}.");
+			var singleCredit = LocalizationManager.GetString("EditTab.FrontMatter.SingleImageCredit", "Image on page {0} by {1}.", "", langs, out dummyId);
+			var multipleCredit = LocalizationManager.GetString("EditTab.FrontMatter.MultipleImageCredit", "Images on pages {0} by {1}.", "", langs, out dummyId);
 			foreach (var kvp in credits) // we assume here that credits is built in page order
 			{
 				var pages = kvp.Value.ToList();
@@ -251,7 +255,7 @@ namespace Bloom.web.controllers
 		/// numbers that contain that image (with no duplicates and in order of occurrence).
 		/// </summary>
 		/// <param name="domBody"></param>
-		public static Dictionary<string, List<string>> GetWhichImagesAreUsedOnWhichPages(XmlNode domBody)
+		public static Dictionary<string, List<string>> GetWhichImagesAreUsedOnWhichPages(XmlNode domBody, IEnumerable<string> langs)
 		{
 			var imageNameToPages = new Dictionary<string, List<string>>();
 			foreach (XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(domBody as XmlElement))
@@ -261,7 +265,7 @@ namespace Bloom.web.controllers
 				if (IsImgInsideBrandingElement(img))
 					continue;
 				var name = HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded;
-				var pageNum = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(img);
+				var pageNum = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(img, langs);
 				if (string.IsNullOrWhiteSpace(pageNum))
 					continue; // This image is on a page with no pagenumber or something is drastically wrong.
 				List<string> currentList;
