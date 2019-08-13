@@ -1579,7 +1579,10 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
         <source xml:lang="en">Learn More</source>
         <note>ID: Common.LearnMore</note>
         <note>This is the same as Settings.Enterprise.LearnMore</note>
-        <target xml:lang="quc" state="translated">K'i na eta'manik</target>
+        <target xml:lang="quc" state="translated">K’i na eta’manik</target>
+        <alt-trans>
+          <target xml:lang="quc">K'i na eta'manik</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
