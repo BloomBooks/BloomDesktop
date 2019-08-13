@@ -1044,7 +1044,10 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
         <source xml:lang="en">Sign Language   (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
-        <target xml:lang="quc" state="translated">Tzijob'al ruk' taq retalb'alil (opcional)</target>
+        <target xml:lang="quc" state="translated">Tzijob’al ruk’ taq retalb’alil (opcional)</target>
+        <alt-trans>
+          <target xml:lang="quc">Tzijob'al ruk' taq retalb'alil (opcional)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
@@ -1357,7 +1360,10 @@ Resaxik uwach ri q'alajisanem tzij pa uwi' usolik rij ri k'axk'olil
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
-        <target xml:lang="quc" state="translated">K'utunik tzij maj na ya'talik</target>
+        <target xml:lang="quc" state="translated">Uk'utik q'axem tzij ri man ya'om ta uq'ij</target>
+        <alt-trans>
+          <target xml:lang="quc">K'utunik tzij maj na ya'talik</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
