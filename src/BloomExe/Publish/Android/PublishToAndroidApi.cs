@@ -228,7 +228,7 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "canHaveMotionMode",
 				request =>
 				{
-					return request.CurrentBook.getHasMotionPages();
+					return request.CurrentBook.HasMotionPages;
 				},
 				null, // no write action
 				false,
@@ -237,7 +237,7 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "canRotate",
 				request =>
 				{
-					return request.CurrentBook.UseMotionModeInBloomReader && request.CurrentBook.getHasMotionPages();
+					return request.CurrentBook.UseMotionModeInBloomReader && request.CurrentBook.HasMotionPages;
 				},
 				null, // no write action
 				false,

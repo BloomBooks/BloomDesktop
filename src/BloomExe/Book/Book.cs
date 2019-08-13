@@ -3256,10 +3256,9 @@ namespace Bloom.Book
 			}
 		}
 
-		public bool getHasMotionPages()
-		{
-			return OurHtmlDom.GetContainsMotion();
-		}
+		public bool HasMotionPages => HtmlDom.HasMotionFeature(OurHtmlDom.Body);
+
+		public bool HasQuizPages => HtmlDom.HasQuizFeature(OurHtmlDom.Body);
 
 		// This is a shorthand for a whole set of features.
 		// Note: we are currently planning to eventually store this primarily in the data-div, with the

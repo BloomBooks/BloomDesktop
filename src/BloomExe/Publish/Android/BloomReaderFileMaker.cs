@@ -91,6 +91,7 @@ namespace Bloom.Publish.Android
 			// of xmatter always have image description nodes.
 			PublishHelper.SetBlindFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
 			PublishHelper.SetMotionFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
+			PublishHelper.SetQuizFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
 
 			// Do this after processing interactive pages, as they can satisfy the criteria for being 'blank'
 			using (var helper = new PublishHelper())

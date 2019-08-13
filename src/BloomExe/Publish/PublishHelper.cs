@@ -371,6 +371,11 @@ namespace Bloom.Publish
 			metaData.Feature_Motion = book.UseMotionModeInBloomReader;
 		}
 
+		public static void SetQuizFeature(Book.Book book, BookMetaData metaData)
+		{
+			metaData.Feature_Quiz = book.HasQuizPages;
+		}
+
 		public static void SetTalkingBookFeature(Book.Book book, BookMetaData metaData)
 		{
 			metaData.Feature_TalkingBook = book.HasAudio();
@@ -382,6 +387,7 @@ namespace Bloom.Publish
 			metaData.Feature_SignLanguage =
 				Directory.Exists(videoFolderPath) && Directory.EnumerateFiles(videoFolderPath).Any();
 		}
+
 		#region IDisposable Support
 		// This code added to correctly implement the disposable pattern.
 		private bool _isDisposed = false; // To detect redundant calls
