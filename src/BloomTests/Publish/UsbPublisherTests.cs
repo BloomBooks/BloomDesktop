@@ -29,7 +29,6 @@ namespace BloomTests.Publish
 		public override void Setup()
 		{
 			base.Setup();
-			Program.SetUpLocalization(new ApplicationContainer());
 			_bookServer = CreateBookServer();
 			s_bookSelection.SelectBook(CreateBook());
 		}
