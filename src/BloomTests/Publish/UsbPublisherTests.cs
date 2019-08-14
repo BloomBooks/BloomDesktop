@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using Bloom;
 using Bloom.Book;
 using Bloom.web;
 using BloomTests.Book;
 using BloomTests.web;
+using L10NSharp;
 using NUnit.Framework;
 using SIL.IO;
 
@@ -19,17 +19,28 @@ namespace BloomTests.Publish
 	{
 		private static BookSelection s_bookSelection;
 		private BookServer _bookServer;
+		private LocalizationManager _localizationManager;
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
+			LocalizationManager.UseLanguageCodeFolders = true;
+			var localizationDirectory = FileLocationUtilities.GetDirectoryDistributedWithApplication("localization");
+			_localizationManager = LocalizationManager.Create("fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom",
+				null, "");
 			SetupTestBookSelection();
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			_localizationManager.Dispose();
+			LocalizationManager.ForgetDisposedManagers();
 		}
 
 		public override void Setup()
 		{
 			base.Setup();
-			Program.SetUpLocalization(new ApplicationContainer());
 			_bookServer = CreateBookServer();
 			s_bookSelection.SelectBook(CreateBook());
 		}
