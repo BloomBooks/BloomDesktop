@@ -7761,10 +7761,13 @@ Do you want to go ahead?</note>
           <target xml:lang="mam">Tu'n tajb'en tuj q'e'l tu'mel.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
-        <target xml:lang="mam" state="translated">Jun t-xaq aq'unb'il chemaj xin jatuma kyaqil b'a'n tu'n kyolin tuk' jun xjelb'il ex ila' tz'aq'web'il. In najb'en tuj chemaj xin ex Bloom Reader. Qa a Bloom Reader k'ajb'el, aju tumlal keyb'il taq'una jaku tzaj tyek'in qe chmob'il tajlal malob'il nab'il otaq tz'aqset.</target>
+        <target xml:lang="mam" state="translated">Jun t-xaq aq'unb'il chemajxin ja tumel tkyaqil b'a'n tu'n kyolin tuk' jun xjelb'il ex ila' tz'aq'web'il. In najb'en tuj chemajxin ex Bloom Reader. Qa a Bloom Reader k'ajb'el, aju tumlal keyb'il taq'una jaku tzaj tyek'in qe chmob'il tajlal malob'il nab'il otaq tz'aqset.</target>
+        <alt-trans>
+          <target xml:lang="mam">Jun t-xaq aq'unb'il chemaj xin jatuma kyaqil b'a'n tu'n kyolin tuk' jun xjelb'il ex ila' tz'aq'web'il. In najb'en tuj chemaj xin ex Bloom Reader. Qa a Bloom Reader k'ajb'el, aju tumlal keyb'il taq'una jaku tzaj tyek'in qe chmob'il tajlal malob'il nab'il otaq tz'aqset.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
