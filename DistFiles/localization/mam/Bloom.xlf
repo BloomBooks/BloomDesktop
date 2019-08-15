@@ -947,10 +947,13 @@
           <target xml:lang="mam">Yol 3 (Yek'b'il. Yolb'il te jun k'loj xjal te Twitz Paxil) (Qa tajb'ila)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional" approved="yes">
         <source xml:lang="en">Sign Language   (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
-        <target xml:lang="mam" state="translated">Yol tu'n techil (qa tajb'ila)</target>
+        <target xml:lang="mam" state="translated">Yol tu'n q'ab'aj (qa tajb'ila)</target>
+        <alt-trans>
+          <target xml:lang="mam">Yol tu'n techil (qa tajb'ila)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
@@ -1243,10 +1246,13 @@
           <target xml:lang="mam">Tu'ntlaj nokx jun k'loj tloq'b'il u'j lu', Bloom nti' ntzaj tq'o'n u'jb'il b'ananmaj ex atqe, ikytzan tloq'b'il ak'aj u'jb'il b'ananmaj. Qa tajb'ila tu'n tok jun yolb'il ti'j jun u'jb'il b'ananmaj, ilx ti'j tu'n t-xi' b'inchit k'loj te ila' wiq at u'jb'il b'ananmaj tuj ttxel tilb'ilal. Nlayx tajb'en Txolq'ij tu'n tkub' b'inchet jun ak'aj u'jb'il b'ananmaj.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
+      <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations" approved="yes">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
-        <target xml:lang="mam" state="translated">Ntzaj tyek'in yol meltz'u'nqe ex namx k'ametqe</target>
+        <target xml:lang="mam" state="translated">Yek'il yol miltz'u'nqe' na'mx kytziyit</target>
+        <alt-trans>
+          <target xml:lang="mam">Ntzaj tyek'in yol meltz'u'nqe ex namx k'ametqe</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
