@@ -2305,15 +2305,18 @@
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizAnswer-style</note>
         <target xml:lang="mam" state="translated">Tz'aq'web'il jun malob'il</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizHeader-style" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizHeader-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Quiz Header</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizHeader-style</note>
         <target xml:lang="mam" state="translated">Tnejil yol nkub' twitz jun malob'il</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizQuestion-style" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizQuestion-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Quiz Question</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizQuestion-style</note>
-        <target xml:lang="mam" state="translated">Xjelb'il jun malob'il</target>
+        <target xml:lang="mam" state="translated">Xjelb'il toj jun malob'il</target>
+        <alt-trans>
+          <target xml:lang="mam">Xjelb'il jun malob'il</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Title On Cover</source>
@@ -5165,33 +5168,45 @@
           <target xml:lang="mam">Najsam, nti' ma b'ant jaqon Bloom ti Adobe Reader, tu'ntzan tlaj nlay tzaj tyek'an tu'j Bloom.\nB'inchama xtalb'il, q'i'n ela tu'mel tok ti'j te 'Adobe Reader' ex q'o'n oka juntl maj 'Adobe Reader'.\nOkxe tb'ant ti'j, b'a'n tu'n txi' tk'u'na u'jb'il PDF ex tu'n tjaqet tuj juntl ttxolil aq'unb'il xk'utz'ib'.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sharing .bloomd Files</source>
         <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
         <note/>
-        <target xml:lang="mam" state="translated">Nb'aj sipit qe nak'ub'il .bloomd</target>
+        <target xml:lang="mam" state="translated">Nb'aj sipit qe aq'unb'il .bloomd</target>
+        <alt-trans>
+          <target xml:lang="mam">Nb'aj sipit qe nak'ub'il .bloomd</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
         <note>ID: PublishTab.Android.BloomD.Hint</note>
         <note/>
-        <target xml:lang="mam" state="translated">B'a'n tz'ajb'en qe aq'unb'il xk'utz'ib' ikytzan chemajxin, Dropbox ex WhatsApp tu'n t-xi' sipit tnak'ub'ila .bloomd tuk' juntl makb'il aq'unb'il xk'utz'ib'.</target>
+        <target xml:lang="mam" state="translated">B'a'n kyajb'en qe aq'unb'il xk'utz'ib' ikytzan chemajxin, Dropbox ex WhatsApp tu'n t-xi' sipit tnak'ub'ila .bloomd tuk' juntl makb'il aq'unb'il xk'utz'ib'.</target>
+        <alt-trans>
+          <target xml:lang="mam">B'a'n tz'ajb'en qe aq'unb'il xk'utz'ib' ikytzan chemajxin, Dropbox ex WhatsApp tu'n t-xi' sipit tnak'ub'ila .bloomd tuk' juntl makb'il aq'unb'il xk'utz'ib'.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en"> USB is Difficult</source>
         <note>ID: PublishTab.Android.USB.Hint.Heading</note>
         <note/>
-        <target xml:lang="mam" state="translated"> Kyiw ti'j tu'n USB</target>
+        <target xml:lang="mam" state="translated"> Kyuw ti'j tu'n USB</target>
+        <alt-trans>
+          <target xml:lang="mam"> Kyiw ti'j tu'n USB</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To Send via USB, you may need to get the right
                             cable, install phone drivers on your computer, or
                             modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note/>
-        <target xml:lang="mam" state="translated">Tu'n t-xi' samet tuj USB ilx ti'j tu'n tajb'lan taq'ilxix tuj tu'mel, qokel ti'j t-xk'utz'ib'a qe makb'il ka'yil yolb'il mo tu'n tch'ixpet q'ol tilb'ilal tyolb'ila.</target>
+        <target xml:lang="mam" state="translated">Tu'n t-xi' samet tuj USB ilx ti'j tu'n tajb'lan taq'ilxix tuj tu'mel, k-okel ti'j t-xk'utz'ib'a qe makb'il ka'yil yolb'il mo tu'n tch'ixpet q'ol tilb'ilal tyolb'ila.</target>
+        <alt-trans>
+          <target xml:lang="mam">Tu'n t-xi' samet tuj USB ilx ti'j tu'n tajb'lan taq'ilxix tuj tu'mel, qokel ti'j t-xk'utz'ib'a qe makb'il ka'yil yolb'il mo tu'n tch'ixpet q'ol tilb'ilal tyolb'ila.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No Wi-Fi Network?</source>
         <note>ID: PublishTab.Android.WiFi.Hint.Heading</note>
         <note/>
