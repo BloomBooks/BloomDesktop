@@ -1777,10 +1777,13 @@
           <target xml:lang="mam">Qa ma meltz'aj tuj tumlal b'antlen lu' chi b'el naj ju'nchaq aq'unb'il.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true">
+      <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This kind of page will be included only in digital book outputs, not in PDF.</source>
         <note>ID: EditTab.AddPageDialog.DigitalPage</note>
-        <target xml:lang="mam" state="translated">Aj tu'mel t-xaq lu, kxe'l yek'it o'kx kyuj qe u'jb'il ajtzaj o chi b'antqe, nya' tuj PDF.</target>
+        <target xml:lang="mam" state="translated">Aj tu'mel t-xaq lu, kxe'l yek'it o'kx kyuj qe u'jb'il o chi b'antqe' noqx toj xk'utz'ib', nya' tuj PDF.</target>
+        <alt-trans>
+          <target xml:lang="mam">Aj tu'mel t-xaq lu, kxe'l yek'it o'kx kyuj qe u'jb'il ajtzaj o chi b'antqe, nya' tuj PDF.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Could not find {0}</source>
@@ -2297,7 +2300,7 @@
         <note>Special template</note>
         <target xml:lang="mam" state="translated">Yek'b'il</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizAnswer-style" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizAnswer-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Quiz Answer</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizAnswer-style</note>
         <target xml:lang="mam" state="translated">Tz'aq'web'il jun malob'il</target>
