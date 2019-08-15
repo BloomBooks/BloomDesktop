@@ -9,10 +9,6 @@ import { Label } from "../../../react_components/l10n";
 import { Checkbox } from "../../../react_components/checkbox";
 import Link from "../../../react_components/link";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
-import {
-    RequiresBloomEnterpriseWrapper,
-    checkIfEnterpriseAvailable
-} from "../../../react_components/requiresBloomEnterprise";
 
 interface IImageDescriptionState {
     enabled: boolean;
@@ -42,99 +38,93 @@ export class ImageDescriptionToolControls extends React.Component<
     // to the link destination?)
     public render() {
         return (
-            <RequiresBloomEnterpriseWrapper className="imageDescriptionToolOuterWrapper">
-                <div
-                    className={
-                        "imageDescriptionTool" +
-                        (this.state.enabled ? "" : " disabled")
-                    }
-                >
-                    <div className="topGroup">
-                        <div className="imgDescLabelBlock">
-                            <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.KeepInMind">
-                                Keep these things in mind:
-                            </Label>
-                            <ul>
-                                <li>
-                                    <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe">
-                                        Are there important{" "}
-                                        <strong>actions</strong>,{" "}
-                                        <strong>relationships</strong>,{" "}
-                                        <strong>emotions</strong>, or things in
-                                        the <strong>scene</strong> that add to
-                                        the story but are not in the text?
-                                    </Label>
-                                    <ul>
-                                        <li>
-                                            <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords">
-                                                Use words that are{" "}
-                                                <strong>simple</strong> enough
-                                                for the listener.
-                                            </Label>
-                                        </li>
-                                        <li>
-                                            <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.KeepItShort">
-                                                Keep it <strong>short</strong>.
-                                            </Label>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
-                        <div className="imgDescLabelBlock">
-                            <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox">
-                                Otherwise, check this box:
-                            </Label>
-                            <Checkbox
-                                key={0}
-                                l10nKey={
-                                    "EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe"
-                                }
-                                className="imageDescriptionCheck"
-                                name=""
-                                checked={this.state.descriptionNotNeeded}
-                                onCheckChanged={checked =>
-                                    this.onCheckChanged(checked)
-                                }
+            <div
+                className={
+                    "imageDescriptionTool" +
+                    (this.state.enabled ? "" : " disabled")
+                }
+            >
+                <div className="topGroup">
+                    <div className="imgDescLabelBlock">
+                        <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.KeepInMind">
+                            Keep these things in mind:
+                        </Label>
+                        <ul>
+                            <li>
+                                <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe">
+                                    Are there important <strong>actions</strong>,{" "}
+                                    <strong>relationships</strong>,{" "}
+                                    <strong>emotions</strong>, or things in the{" "}
+                                    <strong>scene</strong> that add to the story
+                                    but are not in the text?
+                                </Label>
+                                <ul>
+                                    <li>
+                                        <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords">
+                                            Use words that are{" "}
+                                            <strong>simple</strong> enough for
+                                            the listener.
+                                        </Label>
+                                    </li>
+                                    <li>
+                                        <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.KeepItShort">
+                                            Keep it <strong>short</strong>.
+                                        </Label>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div className="imgDescLabelBlock">
+                        <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox">
+                            Otherwise, check this box:
+                        </Label>
+                        <Checkbox
+                            key={0}
+                            l10nKey={
+                                "EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe"
+                            }
+                            className="imageDescriptionCheck"
+                            name=""
+                            checked={this.state.descriptionNotNeeded}
+                            onCheckChanged={checked =>
+                                this.onCheckChanged(checked)
+                            }
+                        >
+                            This image should not be described.
+                        </Checkbox>
+                    </div>
+                    <div className="imgDescLabelBlock">
+                        <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.MoreInformation">
+                            For more information:
+                        </Label>
+                        <div className="indentPoet">
+                            <Link
+                                id="poetDiagram"
+                                href="https://poet.diagramcenter.org"
+                                l10nKey="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram"
+                                l10nComment="English text is the actual link. May not need translation?"
                             >
-                                This image should not be described.
-                            </Checkbox>
+                                poet.diagramcenter.org
+                            </Link>
                         </div>
-                        <div className="imgDescLabelBlock">
-                            <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.MoreInformation">
-                                For more information:
-                            </Label>
-                            <div className="indentPoet">
-                                <Link
-                                    id="poetDiagram"
-                                    href="https://poet.diagramcenter.org"
-                                    l10nKey="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram"
-                                    l10nComment="English text is the actual link. May not need translation?"
-                                >
-                                    poet.diagramcenter.org
-                                </Link>
-                            </div>
-                            <div className="wrapPlayVideo disabled invisible">
-                                <img
-                                    id="playBloomTrainingVideo"
-                                    src="play.svg"
-                                />
-                                <Link
-                                    id="bloomImageDescriptionTraining"
-                                    className="disabled"
-                                    href=""
-                                    l10nKey="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo"
-                                    l10nComment="Link that launches the video"
-                                >
-                                    Bloom training video
-                                </Link>
-                            </div>
+                        <div className="wrapPlayVideo disabled invisible">
+                            <img id="playBloomTrainingVideo" src="play.svg" />
+                            <Link
+                                id="bloomImageDescriptionTraining"
+                                className="disabled"
+                                href=""
+                                l10nKey="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo"
+                                l10nComment="Link that launches the video"
+                            >
+                                Bloom training video
+                            </Link>
                         </div>
                     </div>
-                    {/* the flex box will then push this to the bottom */}
-                    <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm" />
                 </div>
-            </RequiresBloomEnterpriseWrapper>
+                {/* the flex box will then push this to the bottom */}
+                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Image_Description_Tool/Image_Description_Tool_overview.htm" />
+            </div>
         );
     }
 
@@ -244,66 +234,58 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     // Make sure the page has the elements used to store image descriptions,
     // not on every edit, but whenever a new page is displayed.
     public newPageReady() {
-        checkIfEnterpriseAvailable().then(enabled => {
-            const imageDescControls = this.reactControls;
-            if (enabled && imageDescControls) {
-                imageDescControls.setStateForNewPage();
-                const page = ToolBox.getPage();
-                if (!page) {
-                    return;
-                }
-                // turn on special layout to make image descriptions visible (might already be on)
-                page.classList.add("bloom-showImageDescriptions");
-                // Make sure every image container has a child bloom-translationGroup to hold the image description.
-                const imageContainers = page.getElementsByClassName(
-                    "bloom-imageContainer"
-                );
+        const imageDescControls = this.reactControls;
+        if (imageDescControls) {
+            imageDescControls.setStateForNewPage();
+            const page = ToolBox.getPage();
+            if (!page) {
+                return;
+            }
+            // turn on special layout to make image descriptions visible (might already be on)
+            page.classList.add("bloom-showImageDescriptions");
+            // Make sure every image container has a child bloom-translationGroup to hold the image description.
+            const imageContainers = page.getElementsByClassName(
+                "bloom-imageContainer"
+            );
 
-                for (let i = 0; i < imageContainers.length; i++) {
-                    const container = imageContainers[i];
-                    let imageDescriptions = container.getElementsByClassName(
-                        "bloom-imageDescription"
-                    );
-                    if (imageDescriptions.length === 0) {
-                        // Adds a new bloom-translationGroup
-                        // Gets the information we need to fill out the interior bloom-editables of the newly added bloom-translation group.
-                        // Preferable to only send a request for the info we need and not save and refresh the whole page.
-                        //   (Allows us to avoid the synchronous reload of the page, makes the UI experience much snappier)
-                        BloomApi.post(
-                            "common/requestTranslationGroups",
-                            result => {
-                                // newPageReady() can be called twice, and both calls might occur before this async
-                                // callback happens for either of them, so both may take this "no translation groups"
-                                // branch and start to create them.  So check again before actually adding the new
-                                // description elements.
-                                // See https://issues.bloomlibrary.org/youtrack/issue/BL-6798 for some
-                                // confusing behavior that can result without this check.
-                                imageDescriptions = container.getElementsByClassName(
-                                    "bloom-imageDescription"
-                                );
-                                if (result && imageDescriptions.length == 0) {
-                                    this.appendTranslationGroup(
-                                        result.data,
-                                        container
-                                    );
-                                    // BL-6775 if we just added image description
-                                    // translationGroups to a page that didn't have them before,
-                                    // we need to reset our state.
-                                    imageDescControls.setStateForNewPage();
-                                    // BL-6798: we need to add focus listeners to these new description elements.
-                                    imageDescriptions = container.getElementsByClassName(
-                                        "bloom-imageDescription"
-                                    );
-                                    this.addFocusListeners(imageDescriptions);
-                                }
-                            }
+            for (let i = 0; i < imageContainers.length; i++) {
+                const container = imageContainers[i];
+                let imageDescriptions = container.getElementsByClassName(
+                    "bloom-imageDescription"
+                );
+                if (imageDescriptions.length === 0) {
+                    // Adds a new bloom-translationGroup
+                    // Gets the information we need to fill out the interior bloom-editables of the newly added bloom-translation group.
+                    // Preferable to only send a request for the info we need and not save and refresh the whole page.
+                    //   (Allows us to avoid the synchronous reload of the page, makes the UI experience much snappier)
+                    BloomApi.post("common/requestTranslationGroups", result => {
+                        // newPageReady() can be called twice, and both calls might occur before this async
+                        // callback happens for either of them, so both may take this "no translation groups"
+                        // branch and start to create them.  So check again before actually adding the new
+                        // description elements.
+                        // See https://issues.bloomlibrary.org/youtrack/issue/BL-6798 for some
+                        // confusing behavior that can result without this check.
+                        imageDescriptions = container.getElementsByClassName(
+                            "bloom-imageDescription"
                         );
-                    } else {
-                        this.addFocusListeners(imageDescriptions);
-                    }
+                        if (result && imageDescriptions.length == 0) {
+                            this.appendTranslationGroup(result.data, container);
+                            // BL-6775 if we just added image description
+                            // translationGroups to a page that didn't have them before,
+                            // we need to reset our state.
+                            imageDescControls.setStateForNewPage();
+                            // BL-6798: we need to add focus listeners to these new description elements.
+                            imageDescriptions = container.getElementsByClassName(
+                                "bloom-imageDescription"
+                            );
+                            this.addFocusListeners(imageDescriptions);
+                        }
+                    });
+                } else {
+                    this.addFocusListeners(imageDescriptions);
                 }
             }
-        });
+        }
     }
 
     private addFocusListeners(imageDescriptions: HTMLCollectionOf<Element>) {

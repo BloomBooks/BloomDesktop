@@ -5,7 +5,6 @@ import { BloomApi } from "../../../utils/bloomApi";
 import { ToolBox, ITool } from "../toolbox";
 import { ApiBackedCheckbox } from "../../../react_components/apiBackedCheckbox";
 import "./impairmentVisualizer.less";
-import { RequiresBloomEnterpriseWrapper } from "../../../react_components/requiresBloomEnterprise";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
@@ -34,64 +33,59 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
 
     public render() {
         return (
-            <RequiresBloomEnterpriseWrapper className="impairmentVisualizerOuterWrapper">
-                <div className="impairmentVisualizerBody">
-                    <div className="impairmentVisualizerInnerWrapper">
-                        <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
-                            You can use these check boxes to have Bloom simulate
-                            how your images would look with various visual
-                            impairments.
-                        </Div>
-                        <ApiBackedCheckbox
-                            className="checkBox"
-                            apiEndpoint="accessibilityCheck/cataracts"
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
-                            onCheckChanged={simulate =>
-                                this.updateCataracts(simulate)
-                            }
+            <div className="impairmentVisualizerBody">
+                <div className="impairmentVisualizerInnerWrapper">
+                    <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
+                        You can use these check boxes to have Bloom simulate how
+                        your images would look with various visual impairments.
+                    </Div>
+                    <ApiBackedCheckbox
+                        className="checkBox"
+                        apiEndpoint="accessibilityCheck/cataracts"
+                        l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
+                        onCheckChanged={simulate =>
+                            this.updateCataracts(simulate)
+                        }
+                    >
+                        Cataracts
+                    </ApiBackedCheckbox>
+                    <ApiBackedCheckbox
+                        className="checkBox colorBlindCheckBox"
+                        apiEndpoint="accessibilityCheck/colorBlindness"
+                        l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
+                        onCheckChanged={simulate =>
+                            this.updateColorBlindnessCheck(simulate)
+                        }
+                    >
+                        Color Blindness
+                    </ApiBackedCheckbox>
+                    <RadioGroup
+                        onChange={val => this.updateColorBlindnessRadio(val)}
+                        value={this.state.kindOfColorBlindness}
+                    >
+                        <Radio
+                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.RedGreen"
+                            value="RedGreen"
                         >
-                            Cataracts
-                        </ApiBackedCheckbox>
-                        <ApiBackedCheckbox
-                            className="checkBox colorBlindCheckBox"
-                            apiEndpoint="accessibilityCheck/colorBlindness"
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
-                            onCheckChanged={simulate =>
-                                this.updateColorBlindnessCheck(simulate)
-                            }
+                            Red-Green
+                        </Radio>
+                        <Radio
+                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.BlueYellow"
+                            value="BlueYellow"
                         >
-                            Color Blindness
-                        </ApiBackedCheckbox>
-                        <RadioGroup
-                            onChange={val =>
-                                this.updateColorBlindnessRadio(val)
-                            }
-                            value={this.state.kindOfColorBlindness}
+                            Blue-Yellow
+                        </Radio>
+                        <Radio
+                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Complete"
+                            value="Complete"
                         >
-                            <Radio
-                                l10nKey="EditTab.Toolbox.ImpairmentVisualizer.RedGreen"
-                                value="RedGreen"
-                            >
-                                Red-Green
-                            </Radio>
-                            <Radio
-                                l10nKey="EditTab.Toolbox.ImpairmentVisualizer.BlueYellow"
-                                value="BlueYellow"
-                            >
-                                Blue-Yellow
-                            </Radio>
-                            <Radio
-                                l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Complete"
-                                value="Complete"
-                            >
-                                Complete
-                            </Radio>
-                        </RadioGroup>
-                    </div>
-
-                    <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm" />
+                            Complete
+                        </Radio>
+                    </RadioGroup>
                 </div>
-            </RequiresBloomEnterpriseWrapper>
+
+                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm" />
+            </div>
         );
     }
 
