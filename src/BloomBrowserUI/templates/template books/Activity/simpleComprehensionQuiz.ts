@@ -52,13 +52,6 @@ function initChoiceWidgets(): void {
     const list = document.getElementsByClassName("checkbox-and-textbox-choice");
     for (let i = 0; i < list.length; i++) {
         const x = list[i] as HTMLElement;
-        // There are likely to be several copies of this code, one for each quiz page, each doing this.
-        // But we only need to do it once per element. In particular, we don't want multiple handlers
-        // trying to play the same sound on each click. The can get out of sync and make a horrible noise.
-        if (x.hasAttribute("data-simpleQuizInitDone")) {
-            continue;
-        }
-        x.setAttribute("data-simpleQuizInitDone", "true");
         const checkbox = getCheckBox(x);
         const correct = x.classList.contains("correct-answer");
         if (document.body.classList.contains("editMode")) {
@@ -68,6 +61,15 @@ function initChoiceWidgets(): void {
             // in reader mode.
             checkbox.checked = correct;
         } else {
+            // There are likely to be several copies of this code, one for each quiz page, each doing this.
+            // But we only need to do it once per element. In particular, we don't want multiple handlers
+            // trying to play the same sound on each click. They can get out of sync and make a horrible noise.
+            // But we only want to do it in read mode or it will get persisted and event handlers won't get set
+            // up next time. See BL-7532.
+            if (x.hasAttribute("data-simpleQuizInitComplete")) {
+                continue;
+            }
+            x.setAttribute("data-simpleQuizInitComplete", "true");
             x.addEventListener("click", handleReadModeClick, { capture: true });
             const key = getStorageKeyForChoice(x! as HTMLElement);
             if (
