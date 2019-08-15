@@ -5212,11 +5212,14 @@
         <note/>
         <target xml:lang="mam" state="translated">Nti' chemajxin Wi-Fi?</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true" approved="yes">
         <source xml:lang="en">There are several ways to start a temporary one.</source>
         <note>ID: </note>
         <note>This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network.</note>
-        <target xml:lang="mam" state="translated">Ala' tu'mel tu'n t-xi' qe' jun chemajxin noqx te kab'e q'ij.</target>
+        <target xml:lang="mam" state="translated">Ala' tu'mel tu'n t-xi' qe' jun chemajxin noqx te jte' q'ij.</target>
+        <alt-trans>
+          <target xml:lang="mam">Ala' tu'mel tu'n t-xi' qe' jun chemajxin noqx te kab'e q'ij.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About Motion Books</source>
@@ -5838,7 +5841,7 @@
           <target xml:lang="mam">Nti' xk'ub'ib'il tib'aj poqb'al kye tilb'ilal</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.OmittedPages">
+      <trans-unit id="PublishTab.Epub.OmittedPages" approved="yes">
         <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
         <note>ID: PublishTab.Epub.OmittedPages</note>
         <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
@@ -6290,10 +6293,13 @@
         <note>ID: PublishTab.Upload.CcLink</note>
         <target xml:lang="mam" state="translated">CC-BY-NC</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
+      <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning" approved="yes">
         <source xml:lang="en">Please choose the sign language for this book</source>
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
-        <target xml:lang="mam" state="translated">B'inchama xtalb'il, sak'onqtza tumlal yol tu'n techil te u'jb'il lu'</target>
+        <target xml:lang="mam" state="translated">B'inchama xtalb'il, sak'onktza tumlal yol tu'n techil te u'jb'il lu'</target>
+        <alt-trans>
+          <target xml:lang="mam">B'inchama xtalb'il, sak'onqtza tumlal yol tu'n techil te u'jb'il lu'</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting" approved="yes">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
@@ -6622,10 +6628,13 @@
           <target xml:lang="mam">B'inchama xtalb'il, q'onxa tumlal aq'unb'il tuj xi'witz "B'inchil"</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
+      <trans-unit id="PublishTab.Upload.SetSignLanguageLink" approved="yes">
         <source xml:lang="en">Set Sign Language...</source>
         <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
-        <target xml:lang="mam" state="translated">Yeq'untza tumlal yol tu'n techil...</target>
+        <target xml:lang="mam" state="translated">Yek'untza tumlal yol tu'n q'ab'aj...</target>
+        <alt-trans>
+          <target xml:lang="mam">Yeq'untza tumlal yol tu'n techil...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
