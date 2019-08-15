@@ -214,7 +214,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     }
 
     public toolRequiresEnterprise(): boolean {
-        return true;
+        return false;
     }
 
     public id(): string {
