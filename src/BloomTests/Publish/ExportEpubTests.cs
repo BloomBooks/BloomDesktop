@@ -79,16 +79,18 @@ namespace BloomTests.Publish
 			return SetupBookLong(text, lang, images: images);
 		}
 
+		// we were testing that not having bloom enterprise would cause images descriptions to be removed.
+		// but now, image descriptions should never be removed: they no longer require bloom enterprise.
 		[TestCase(BookInfo.HowToPublishImageDescriptions.None)]
 		[TestCase(BookInfo.HowToPublishImageDescriptions.OnPage)]
-		public void ImageDescriptions_NotBloomEnterprise_AreRemoved(BookInfo.HowToPublishImageDescriptions howToPublish)
+		public void ImageDescriptions_NotBloomEnterprise_AreNotRemoved(BookInfo.HowToPublishImageDescriptions howToPublish)
 		{
 			var book = SetupBookLong("This is a simple page", "xyz", images: new[] { "image1" },
 				imageDescriptions: new[] { "This describes image 1" });
 			MakeEpub("output", $"ImageDescriptions_NotBloomEnterprise_AreRemoved_{howToPublish}", book, howToPublish);
 			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
-			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
-			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside[.='This describes image 1']", _ns);
+			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("(//xhtml:div[contains(@class,'bloom-imageDescription')]|//xhtml:aside[contains(@class,'imageDescription')])", _ns, 1);
+			assertThatPageOneData.HasAtLeastOneMatchForXpath("(//xhtml:div[.='This describes image 1']|//xhtml:aside[.='This describes image 1'])", _ns);
 		}
 
 		// The original test here proved that we removed image descriptions when not displaying them.
