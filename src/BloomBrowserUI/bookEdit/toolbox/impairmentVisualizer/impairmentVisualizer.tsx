@@ -294,6 +294,6 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
     }
 
     public toolRequiresEnterprise(): boolean {
-        return true;
+        return false;
     }
 }
