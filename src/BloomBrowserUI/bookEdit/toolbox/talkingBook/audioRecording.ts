@@ -988,8 +988,6 @@ export default class AudioRecording {
         if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
             const currentTextBox = this.getCurrentTextBox();
             if (currentTextBox) {
-                currentTextBox.classList.remove("bloom-postAudioSplit");
-
                 const audioSegments = this.getAudioSegmentsWithinElement(
                     currentTextBox
                 );

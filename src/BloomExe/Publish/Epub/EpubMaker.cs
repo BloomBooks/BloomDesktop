@@ -291,9 +291,6 @@ namespace Bloom.Publish.Epub
 			_svgItems = new List<string>();
 			_firstContentPageItem = null;
 			ISet<string> warningMessages = new HashSet<string>();
-			if (!_book.CollectionSettings.HaveEnterpriseFeatures)
-				if (PublishHelper.RemoveAllImageDescriptions(Book.OurHtmlDom))
-					warningMessages.Add(LocalizationManager.GetString("Publish.RemovingEnterpriseImageDescriptions", "Removing image descriptions which require Bloom Enterprise to be enabled"));
 
 			HandleImageDescriptions(Book.OurHtmlDom);
 			if (string.IsNullOrEmpty(SignLanguageApi.FfmpegProgram))
