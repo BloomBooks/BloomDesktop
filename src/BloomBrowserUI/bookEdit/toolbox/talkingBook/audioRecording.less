@@ -34,7 +34,10 @@ div.ui-audioCurrent:not(.disableHighlight) p {
     }
 }
 .ui-audioCurrent.bloom-postAudioSplit[data-audiorecordingmode="TextBox"]:not(.disableHighlight) {
-    // Special higlighting after the Split button completes to show it completed.
+    // Special highlighting after the Split button completes to show it completed.
+    // Note: This highlighting is expected to persist across sessions, but to be hidden (displayed with the yellow color) while each segment is playing.
+    //       This is accomplished because this rule temporarily drops out of effect when .ui-audioCurrent is moved to the span as that segment plays.
+    //       (The rule requires a span BELOW the .ui-audioCurrent, so it drops out of effect the span IS the .ui-audioCurrent).
     span:nth-child(3n + 1) {
         background-color: #bfedf3;
     }
