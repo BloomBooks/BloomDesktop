@@ -675,8 +675,10 @@ export class PageChooser {
             gotSelectedPage ||
             (defaultPageToSelect === "" && previousPagesCount == 0)
         ) {
+            // thumbCovers contains the thumbnails for only for the current template, so the index
+            // must be adjusted.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7472.
             this.thumbnailClickHandler(thumbCovers[
-                this._indexOfPageToSelect
+                this._indexOfPageToSelect - previousPagesCount
             ] as HTMLElement);
         }
     } // loadPageFromGroup
