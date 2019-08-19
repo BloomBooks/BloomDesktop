@@ -1054,19 +1054,23 @@ namespace Bloom.Book
 					link.SetAttribute("href", kCustomStyles);
 			}
 			// Rename/remove/create files that have changed names or locations to match link href changes above.
-			if (RobustFile.Exists(Path.Combine(FolderPath, "languageDisplay.css")))
+			// Don't do this in distributed folders.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7550.
+			if (!FolderPath.StartsWith(BloomFileLocator.FactoryCollectionsDirectory))
 			{
-				if (RobustFile.Exists(Path.Combine(FolderPath, "langVisibility.css")))
-					RobustFile.Delete(Path.Combine(FolderPath, "languageDisplay.css"));
-				else
-					RobustFile.Move(Path.Combine(FolderPath, "languageDisplay.css"), Path.Combine(FolderPath, "langVisibility.css"));
+				if (RobustFile.Exists(Path.Combine(FolderPath, "languageDisplay.css")))
+				{
+					if (RobustFile.Exists(Path.Combine(FolderPath, "langVisibility.css")))
+						RobustFile.Delete(Path.Combine(FolderPath, "languageDisplay.css"));
+					else
+						RobustFile.Move(Path.Combine(FolderPath, "languageDisplay.css"), Path.Combine(FolderPath, "langVisibility.css"));
+				}
+				if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles)))
+					RobustFile.Delete(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles));
+				CreateOrUpdateDefaultLangStyles();
+				// Copy files from collection to book folders to match link href changes above.
+				if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles)))
+					RobustFile.Copy(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles), Path.Combine(FolderPath, kCustomStyles), true);
 			}
-			if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles)))
-				RobustFile.Delete(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles));
-			CreateOrUpdateDefaultLangStyles();
-			// Copy files from collection to book folders to match link href changes above.
-			if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles)))
-				RobustFile.Copy(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles), Path.Combine(FolderPath, kCustomStyles), true);
 			// Update book settings from collection settings
 			UpdateCollectionSettingsInBookMetaData();
 		}
