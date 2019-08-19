@@ -1,16 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.ToPalaso;
 using L10NSharp;
-using SIL.Extensions;
-using SIL.Linq;
 using SIL.Reporting;
-using SIL.Windows.Forms.WritingSystems;
 using SIL.Xml;
 
 namespace Bloom.Book
