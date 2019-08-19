@@ -2456,6 +2456,88 @@ namespace BloomTests.Book
 			Assert.AreEqual(true, result);
 		}
 
+		[Test]
+		public void HasVideos_ContainsValidVideoDiv_ReturnsTrue()
+		{
+			// Test setup
+			var videoPath = Path.Combine(_tempFolder.Path, "video"); //Path to the video files.
+			Directory.CreateDirectory(videoPath);
+			string filename = "guid1.mp4";
+			_bookDom = new HtmlDom($@"
+				<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-videoContainer bloom-leadingElement bloom-selected'>
+							<video>
+								<source src='video/" + filename + @"' type='video/mp4'></source>
+							</video>
+						</div>
+					</div>
+				</body></html>");
+			var book = CreateBook();
+
+			BookStorageTests.MakeSampleVideoFiles(_tempFolder.Path, filename);
+
+			// System under test //
+			bool result = book.HasVideos();
+
+			// Verification //
+			Assert.IsTrue(result);
+		}
+
+		[Test]
+		public void HasVideos_ContainsValidVideoDivWithTimings_ReturnsTrue()
+		{
+			// Test setup
+			var videoPath = Path.Combine(_tempFolder.Path, "video"); //Path to the video files.
+			Directory.CreateDirectory(videoPath);
+			string filename = "guid1.mp4";
+			_bookDom = new HtmlDom($@"
+				<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-videoContainer bloom-leadingElement bloom-selected'>
+							<video>
+								<source src='video/" + filename + @"#t=0.0,4.6' type='video/mp4'></source>
+							</video>
+						</div>
+					</div>
+				</body></html>");
+			var book = CreateBook();
+
+			BookStorageTests.MakeSampleVideoFiles(_tempFolder.Path, filename);
+
+			// System under test //
+			bool result = book.HasVideos();
+
+			// Verification //
+			Assert.IsTrue(result);
+		}
+
+		[Test]
+		public void HasVideos_VideoDivReferencesNonexistentFile()
+		{
+			// Test setup
+			var videoPath = Path.Combine(_tempFolder.Path, "video"); //Path to the video files.
+			Directory.CreateDirectory(videoPath);
+			string filename = "guid1.mp4";
+			_bookDom = new HtmlDom($@"
+				<html><head></head><body>
+					<div class='bloom-page numberedPage bloom-nonprinting' id='page1' data-page-number='1'>
+						<div class='bloom-videoContainer bloom-leadingElement bloom-selected'>
+							<video>
+								<source src='video/" + filename + @"' type='video/mp4'></source>
+							</video>
+						</div>
+					</div>
+				</body></html>");
+			var book = CreateBook();
+
+			// System under test //
+			bool result = book.HasVideos();
+
+			// Verification //
+			Assert.IsFalse(result);
+		}
+
 
 		[TestCase("span")]
 		[TestCase("div")]

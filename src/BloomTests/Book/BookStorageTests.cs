@@ -545,6 +545,13 @@ namespace BloomTests.Book
 			MakeSampleFiles(audioPath, filenameWithoutExtension, extensions);
 		}
 
+		internal static void MakeSampleVideoFiles(string bookfolderPath, string mp4Filename, bool makeOrigAlso = false)
+		{
+			Assert.That(Path.GetExtension(mp4Filename), Is.EqualTo(".mp4"), "Extension of video file should be '.mp4'");
+			var videoPath = Path.Combine(bookfolderPath, "video", mp4Filename);
+			MakeSampleMp4Video(videoPath, makeOrigAlso);
+		}
+
 		private TempFile MakeSampleWavAudio(string name, bool makeMp3Also = false, bool makeOggAlso = false)
 		{
 			var temp = TempFile.WithFilename(name);
@@ -558,7 +565,7 @@ namespace BloomTests.Book
 			return temp;
 		}
 
-		private TempFile MakeSampleMp4Video(string name, bool makeOrigAlso = false)
+		private static TempFile MakeSampleMp4Video(string name, bool makeOrigAlso = false)
 		{
 			var temp = TempFile.WithFilename(name);
 			var ext = Path.GetExtension(name);
