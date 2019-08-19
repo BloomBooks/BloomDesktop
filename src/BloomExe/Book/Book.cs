@@ -1761,7 +1761,8 @@ namespace Bloom.Book
 				var result = new Dictionary<string, bool>();
 				var parents = new HashSet<XmlElement>(); // of interesting non-empty children
 				// editable divs that are in non-x-matter pages and have a potentially interesting language.
-				var langDivs = OurHtmlDom.SafeSelectNodes("//div[contains(@class, 'bloom-page') and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))]//div[@class and @lang]").Cast<XmlElement>()
+				var langDivs = OurHtmlDom.SafeSelectNodes("//div[contains(@class, 'bloom-page') and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))]" +
+														  "//div[@class and @lang and not(@bloom-generated-content)]").Cast<XmlElement>()
 					.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
 					.Where(div =>
 					{
