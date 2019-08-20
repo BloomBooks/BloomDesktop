@@ -317,6 +317,18 @@
 		IsPublicRead="true" />
 
 		<CallTarget Targets ='MakeDownloadPointers'/>
+
+		<CallTarget Targets="CleanUpObsoleteInstallerFiles"/>
+	</Target>
+
+	<!-- Now that we've uploaded for this run, we can delete any obsolete files still in our Squirrel Release Folder. -->
+	<!-- We don't need any installers (BloomInstaller.*.exe) or any full nuget packages (*.-full.nupkg) besides the one for this run. -->
+	<!-- We keep the full nuget package for this run so the next one can create a delta. -->
+	<Target Name="CleanUpObsoleteInstallerFiles" DependsOnTargets="VersionNumbers">
+		<ItemGroup>
+			<FilesToDelete Include="$(SquirrelReleaseFolder)\BloomInstaller.*.exe;$(SquirrelReleaseFolder)\*-full.nupkg" Exclude="$(SquirrelReleaseFolder)/$(SquirrelFullPkg)" />
+		</ItemGroup>
+		<Delete Files="@(FilesToDelete)" />
 	</Target>
 
 	<Target Name="SignIfPossible" DependsOnTargets="VersionNumbers; Installer">
