@@ -5312,7 +5312,10 @@ Jub'iq' che ri ub'ixik chech ri sik'inel rech/ilonel rech che we ri' k'isb'al re
         <source xml:lang="en">Sharing .bloomd Files</source>
         <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
         <note/>
-        <target xml:lang="quc" state="translated">Ujachik k'i taq k'olchak.bloomd</target>
+        <target xml:lang="quc" state="translated">Ula'nik k'i taq k'olchak.bloomd</target>
+        <alt-trans>
+          <target xml:lang="quc">Ujachik k'i taq k'olchak.bloomd</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
         <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
@@ -6419,7 +6422,10 @@ Jub'iq' che ri ub'ixik chech ri sik'inel rech/ilonel rech che we ri' k'isb'al re
       <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
         <source xml:lang="en">Please choose the sign language for this book</source>
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
-        <target xml:lang="quc" state="translated">Chab'ana jun toq'ob', chacha' ri tzijob'al ruk' taq reta'lb'alil rech we wuj</target>
+        <target xml:lang="quc" state="translated">Chab'ana jun toq'ob', chacha' ri tzijob'al ruk' taq retalb'alil rech we wuj</target>
+        <alt-trans>
+          <target xml:lang="quc">Chab'ana jun toq'ob', chacha' ri tzijob'al ruk' taq reta'lb'alil rech we wuj</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting" approved="yes">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
