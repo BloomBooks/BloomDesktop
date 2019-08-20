@@ -1067,7 +1067,7 @@ namespace Bloom.Book
 				if (Feature_SignLanguage) features.Add("signLanguage");
 				if (Feature_TalkingBook) features.Add("talkingBook");
 				if (Feature_Motion) features.Add("motion");
-				if (Feature_Quiz) features.Add("comprehensionQuiz");
+				if (Feature_Quiz) features.Add("quiz");
 				return features.ToArray();
 			}
 			set
@@ -1076,7 +1076,7 @@ namespace Bloom.Book
 				Feature_SignLanguage = value.Contains("signLanguage");
 				Feature_TalkingBook = value.Contains("talkingBook");
 				Feature_Motion = value.Contains("motion");
-				Feature_Quiz = value.Contains("comprehensionQuiz");
+				Feature_Quiz = value.Contains("quiz");
 			}
 		}
 
