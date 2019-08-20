@@ -34,7 +34,7 @@ namespace Bloom.Book
 		/// </summary>
 		public static void PrepareElementsInPageOrDocument(XmlNode pageOrDocumentNode, CollectionSettings collectionSettings)
 		{
-			GenerateEditableDivsWithPreTranslatedContent(pageOrDocumentNode, collectionSettings.Language1Iso639Code);
+			GenerateEditableDivsWithPreTranslatedContent(pageOrDocumentNode);
 
 			PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language1Iso639Code);
 			PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language2Iso639Code);
@@ -112,7 +112,7 @@ namespace Bloom.Book
 			return containerElement.InnerXml;
 		}
 
-		private static void GenerateEditableDivsWithPreTranslatedContent(XmlNode elementOrDom, string language1Code)
+		private static void GenerateEditableDivsWithPreTranslatedContent(XmlNode elementOrDom)
 		{
 			foreach (XmlElement editableDiv in elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-editable') and @data-generate-translations and @data-i18n]"))
 			{
@@ -120,8 +120,6 @@ namespace Bloom.Book
 				var l10nId = editableDiv.Attributes["data-i18n"].Value;
 				if (string.IsNullOrWhiteSpace(l10nId))
 					continue;
-
-				bool addedLanguage1 = false;
 
 				foreach (var uiLanguage in LocalizationManager.GetAvailableLocalizedLanguages())
 				{
@@ -131,42 +129,13 @@ namespace Bloom.Book
 
 					var newEditableDiv = elementOrDom.OwnerDocument.CreateElement("div");
 					newEditableDiv.SetAttribute("class", "bloom-editable");
-					var lang = LanguageLookupModelExtensions.GetGeneralCode(uiLanguage);
-					newEditableDiv.SetAttribute("lang", lang);
-
+					newEditableDiv.SetAttribute("lang", LanguageLookupModelExtensions.GetGeneralCode(uiLanguage));
 					newEditableDiv.InnerText = translation;
-					if (lang != language1Code)
-					{
-						// Ensure we don't use this div to count this language as part of the book. See Book.AllLanguages().
-						newEditableDiv.SetAttribute("bloom-generated-content", "true");
-						editableDiv.ParentNode.AppendChild(newEditableDiv);
-					}
-					else
-					{
-						editableDiv.ParentNode.InsertBefore(newEditableDiv, editableDiv);
-						addedLanguage1 = true;
-					}
+					editableDiv.ParentNode.AppendChild(newEditableDiv);
 				}
 
 				editableDiv.RemoveAttribute("data-generate-translations");
 				editableDiv.RemoveAttribute("data-i18n");
-				if (editableDiv.GetAttribute("lang") != language1Code)
-				{
-					// Ensure we don't use this div to count this language as part of the book. See Book.AllLanguages().
-					editableDiv.SetAttribute("bloom-generated-content", "true");
-				}
-				else
-					addedLanguage1 = true;
-
-				// This and some of the other funky logic above ensures that our language 1 div is first and does not contain
-				// the bloom-generated-content attribute. Being first is important because new divs are cloned from the first.
-				if (!addedLanguage1)
-				{
-					var newEditableDiv = elementOrDom.OwnerDocument.CreateElement("div");
-					newEditableDiv.SetAttribute("class", "bloom-editable");
-					newEditableDiv.SetAttribute("lang", language1Code);
-					editableDiv.ParentNode.InsertBefore(newEditableDiv, editableDiv);
-				}
 			}
 		}
 

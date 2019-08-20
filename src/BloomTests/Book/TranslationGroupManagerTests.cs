@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Xml;
+﻿using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
@@ -503,36 +502,6 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @lang='es' and text()='Spanish Text']", 1);
 			// This one is included because we have a translation available
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @lang='zh-CN' and text()='Chinese Text']", 1);
-		}
-
-		[TestCase("xyz")]
-		[TestCase("en")]
-		[TestCase("fr")]
-		[TestCase("zh-CN")]
-		public void PrepareElementsInPageOrDocument_HasGenerateTranslationsDiv_OnlyLanguage1DoesNotHaveBloomGeneratedContentAttribute(string language1Code)
-		{
-			var contents = @"<div class='bloom-page'>
-						<div class='bloom-translationGroup'>
-							<div class='bloom-editable' lang='en' data-generate-translations='true' data-i18n='Test.L10N.ID'>English Text</div>
-						</div>
-					</div>";
-			var dom = new XmlDocument();
-			dom.LoadXml(contents);
-
-			var originalLanguage1Code = _collectionSettings.Object.Language1Iso639Code;
-			_collectionSettings.SetupGet(x => x.Language1Iso639Code).Returns(language1Code);
-
-			//SUT
-			TranslationGroupManager.PrepareElementsInPageOrDocument((XmlElement) dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _collectionSettings.Object);
-
-			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath($"//div[contains(@class, 'bloom-editable') and @lang='{language1Code}' and @bloom-generated-content]");
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath($"//div[contains(@class, 'bloom-editable') and @lang='{language1Code}' and not(@bloom-generated-content)]", 1);
-			var countUiLanguages = LocalizationManager.GetAvailableLocalizedLanguages().Count;
-			var expected = LocalizationManager.GetAvailableLocalizedLanguages().Contains(language1Code) ? countUiLanguages - 1 : countUiLanguages;
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-editable') and @bloom-generated-content]", expected);
-
-			//Reset collection settings
-			_collectionSettings.SetupGet(x => x.Language1Iso639Code).Returns(originalLanguage1Code);
 		}
 
 		[Test]
