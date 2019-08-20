@@ -1832,7 +1832,50 @@ namespace BloomTests.Book
 			Assert.That(allLanguages["fr"], Is.True);
 			Assert.That(allLanguages["es"], Is.False); // in first group this is empty
 			Assert.That(allLanguages["xkal"], Is.False); // not in first group at all
-			Assert.That(allLanguages.Count(), Is.EqualTo(5)); // no * or z or tr
+			Assert.That(allLanguages.Count, Is.EqualTo(5)); // no * or z or tr
+		}
+
+		[Test]
+		public void AllLanguages_DoesNotFindGeneratedContent()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page' id='guid1'>
+					   <div class='bloom-translationGroup bloom-trailingElement bloom-ignoreChildrenForBookLanguageList'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='de'>
+								Bloom ist ein Programm zum Erstellen von Sammlungen der Bucher. Es ist eine Hilfe zur Alphabetisierung.
+							</div>
+
+							<div class='bloom-editable' contenteditable='true' lang='en'>
+								Bloom is a program for creating collections of books. It is an aid to literacy.
+							</div>
+						</div>
+					</div>
+					<div class='bloom-page' id='guid2'>
+					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='aaa'>
+								AAA text
+							</div>
+
+							<div class='bloom-editable' contenteditable='true' lang='bbb'>
+								BBB text
+							</div>
+						</div>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+			var allLanguages = book.AllLanguages;
+			Assert.That(allLanguages["aaa"], Is.True);
+			Assert.That(allLanguages["bbb"], Is.True);
+			Assert.That(allLanguages.Count, Is.EqualTo(2));
 		}
 
 		[Test]

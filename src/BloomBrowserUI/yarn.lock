@@ -3118,9 +3118,9 @@ blob@0.0.5:
   integrity sha512-gaqbzQPqOoamawKg0LGVd7SzLgXS+JH61oWprSLH+P+abTczqJbhTR8CmJ2u9/bUYNmHTGJx/UEmn6doAvvuig==
 
 bloom-player@*:
-  version "0.9.36"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-0.9.36.tgz#e589ca3d8e5b8b4a19200c194b97cd294dd2086c"
-  integrity sha512-RA0ZUKs5FBuS/gl2Ss8SBiAmfNFYRCeXH++hFUICf5IN3WM7qe0dwV2sF2nzxlGFEnveFT7vaidmuIYFPmWpww==
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-1.0.2.tgz#1e9b75bc07545292eb2c12ec5c1e6a5557967c54"
+  integrity sha512-ZEH3h8/AH0+E/PWrI52pn16szeMVEjVhuPwcA3Wol3kaa3UnxyEfUioJHuaH6j527XghCsO+iJunqFI0Y8OaOA==
 
 bluebird@^3.3.0, bluebird@^3.3.5, bluebird@^3.5.3:
   version "3.5.4"
