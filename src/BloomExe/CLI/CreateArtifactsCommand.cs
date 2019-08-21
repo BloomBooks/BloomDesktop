@@ -1,0 +1,199 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Windows.Forms;
+using Bloom.Book;
+using Bloom.Properties;
+using Bloom.Publish.Epub;
+using Bloom.web;
+using BloomTemp;
+using CommandLine;
+using L10NSharp;
+
+
+namespace Bloom.CLI
+{
+	class CreateArtifactsCommand
+	{
+		private static ProjectContext _projectContext;
+
+		public static int Handle(CreateArtifactsParameters options)
+		{
+			Console.Out.WriteLine();
+
+			Program.SetUpErrorHandling();
+			try
+			{
+				using (var applicationContainer = new ApplicationContainer())
+				{
+					Bloom.Program.RunningNonApplicationMode = true;
+					Program.SetUpLocalization(applicationContainer);
+					Browser.SetUpXulRunner();
+					Browser.XulRunnerShutdown += Program.OnXulRunnerShutdown;
+					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);	// Unclear if this line is needed or not.
+
+					string collectionFilePath = options.CollectionPath;
+					using (_projectContext = applicationContainer.CreateProjectContext(collectionFilePath))
+					{
+						Bloom.Program.SetProjectContext(_projectContext);
+
+						// Make the .bloomd and /bloomdigital outputs
+						CreateBloomDigitalArtifacts(options);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+				Console.WriteLine(ex.StackTrace);
+				return 1;
+			}
+
+			return 0;
+		}
+
+		private static void CreateBloomDigitalArtifacts(CreateArtifactsParameters parameters)
+		{
+			string zippedBloomDOutputPath = parameters.BloomDOutputPath;
+			string unzippedBloomDigitalOutputPath = parameters.BloomDigitalOutputPath;
+
+			if (!String.IsNullOrEmpty(zippedBloomDOutputPath))
+			{
+				Bloom.Book.BookServer bookServer = _projectContext.BookServer;
+
+				using (var folderForUnzipped = new TemporaryFolder("BloomCreateArtifacts_Unzipped"))
+				{
+					// Make the bloomd
+					string unzippedPath = Bloom.Publish.Android.BloomReaderFileMaker.CreateBloomDigitalBook(
+					zippedBloomDOutputPath,
+					parameters.BookPath,
+					bookServer,
+					System.Drawing.Color.Azure, // TODO: What should this be?
+					new Bloom.web.NullWebSocketProgress(),
+					folderForUnzipped,
+					creator: parameters.Creator);
+
+					if (!String.IsNullOrEmpty(unzippedBloomDigitalOutputPath))
+					{
+						CleanDirectory(unzippedBloomDigitalOutputPath);	// In case the folder isn't already empty
+						ZipFile.ExtractToDirectory(zippedBloomDOutputPath, unzippedBloomDigitalOutputPath);
+
+						RenameBloomDigitalFiles(unzippedBloomDigitalOutputPath);
+					}
+				}
+			}
+
+			Control control = new Control();
+			control.CreateControl();
+
+			using (var countdownEvent = new CountdownEvent(1))
+			{
+				// Create the ePub in the background. (Some of the ePub work needs to happen off the main thread)
+				ThreadPool.QueueUserWorkItem(
+					x =>
+					{
+						CreateEpubArtifact(parameters, control);
+						countdownEvent.Signal();    // Decrement by one
+					}
+				);
+
+				// Wait around until the worker thread is done.
+				while (!countdownEvent.IsSet)	// Set = true if the count is down to 0.
+				{
+					Thread.Sleep(100);
+					Application.DoEvents();
+				}
+			}
+		}
+
+		public static void CleanDirectory(string directoryPath)
+		{
+			if (Directory.Exists(directoryPath))
+			{
+				var dir = new DirectoryInfo(directoryPath);
+				foreach (var file in dir.EnumerateFiles())
+				{
+					file.Delete();
+				}
+				foreach (var subDir in dir.EnumerateDirectories())
+				{
+					dir.Delete(true);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Creates an ePub file at the location specified by parametersr
+		/// </summary>
+		/// <param name="parameters">BookPath and epubOutputPath should be set.</param>
+		/// <param name="control">The epub code needs a control that goes back to the main thread, in order to run some tasks that need to be on the main thread</param>
+		public static void CreateEpubArtifact(CreateArtifactsParameters parameters, Control control)
+		{
+			CreateEpubArtifact(parameters.BookPath, parameters.EpubOutputPath, control);
+		}
+
+		public static void CreateEpubArtifact(string downloadBookDir, string epubOutputPath, Control control)
+		{
+			if (String.IsNullOrEmpty(epubOutputPath))
+			{
+				return;
+			}
+
+			BookServer bookServer = _projectContext.BookServer;
+			BookThumbNailer thumbNailer = _projectContext.ThumbNailer;
+			var maker = new EpubMaker(thumbNailer, bookServer);
+			maker.ControlForInvoke = control;
+
+			maker.Book = bookServer.GetBookFromBookInfo(new BookInfo(downloadBookDir, true));
+			maker.Unpaginated = true; // so far they all are
+			maker.OneAudioPerPage = true; // default used in EpubApi
+										  // Enhance: maybe we want book to have image descriptions on page? use reader font sizes?
+			using (var folderForOutput = new TemporaryFolder("BloomHarvesterStagingEpub"))
+			{
+				// Make the epub
+				maker.SaveEpub(epubOutputPath, new NullWebSocketProgress());
+			}
+		}
+
+		// Consumers expect the file to be in index.htm name, not {title}.htm name.
+		private static void RenameBloomDigitalFiles(string bookDirectory)
+		{
+			string originalHtmFilePath = Bloom.Book.BookStorage.FindBookHtmlInFolder(bookDirectory);
+
+			Debug.Assert(File.Exists(originalHtmFilePath), "Book HTM not found: " + originalHtmFilePath);
+			if (File.Exists(originalHtmFilePath))
+			{
+				string newHtmFilePath = Path.Combine(bookDirectory, $"index.htm");
+				File.Copy(originalHtmFilePath, newHtmFilePath);
+				File.Delete(originalHtmFilePath);
+			}
+		}
+	}
+
+	[Verb("createArtifacts", HelpText = "Create artifacts for a book such as .bloomd, unzipped bloom digital, ePub, etc.")]
+	public class CreateArtifactsParameters
+	{
+		[Option("bookPath", HelpText = "Input destination path in which to find book folder (excludes book title)", Required = true)]
+		public string BookPath { get; set; }
+
+		[Option("collectionPath", HelpText = "Input destination path in which to find Bloom collection file for this book", Required = true)]
+		public string CollectionPath { get; set; }
+
+		[Option("bloomdOutputPath", HelpText = "Output destination path in which to place bloomd file", Required = false)]
+		public string BloomDOutputPath { get; set; }
+
+		[Option("bloomDigitalOutputPath", HelpText = "Output destination path in which to place bloomdigital folder", Required = false)]
+		public string BloomDigitalOutputPath { get; set; }
+
+		[Option("epubOutputPath", HelpText = "Outputdestination path in which to place epub file", Required = false)]
+		public string EpubOutputPath { get; set; }
+
+		[Option("creator", Required = false, Default = "harvester", HelpText = "The value of the \"creator\" meta tag passed along when creating the bloomdigital.")]
+		public string Creator{ get; set; }
+	}
+}

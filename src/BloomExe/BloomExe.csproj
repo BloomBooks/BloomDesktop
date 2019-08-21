@@ -255,6 +255,7 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" Condition="'$(OS)'=='Windows_NT'" />
     <Reference Include="System.Printing" Condition="'$(OS)'=='Windows_NT'" />
     <Reference Include="System.Runtime.Serialization" />
@@ -304,6 +305,7 @@
     <Compile Include="BloomWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="CLI\CreateArtifactsCommand.cs" />
     <Compile Include="Publish\Android\BloomReaderFileMaker.cs" />
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
     <Compile Include="Book\QuestionGroup.cs" />
