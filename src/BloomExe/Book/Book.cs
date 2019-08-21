@@ -1966,7 +1966,7 @@ namespace Bloom.Book
 		/// <returns></returns>
 		public bool HasVideos()
 		{
-			return RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-videoContainer')]/source")
+			return RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-videoContainer')]//source")
 				.Cast<XmlElement>().Any(NonTrivialVideoFileExists);
 		}
 
@@ -1976,7 +1976,17 @@ namespace Bloom.Book
 			// In case future books have video branding...
 			if (HtmlDom.HasClass(vidSource, "branding") || HtmlDom.HasClass(vidSource.ParentNode as XmlElement, "branding"))
 				return false;
-			var videoUrl = HtmlDom.GetVideoElementUrl(new ElementProxy(vidSource.ParentNode as XmlElement));
+			// video reference HTML structure is:
+			//   <div class='bloom-videoContainer'>
+			//     <video>
+			//       <source src="video/guid.mp4#t=time1,time2" />   (# and after is optional)
+			//     </video>
+			//   </div>
+			var vidNode = vidSource.ParentNode;
+			if (vidNode == null)
+				return false;
+			// HtmlDom.GetVideoElementUrl() takes the .bloom-videoContainer node as a parameter.
+			var videoUrl = HtmlDom.GetVideoElementUrl(new ElementProxy(vidNode.ParentNode as XmlElement));
 			var file = videoUrl.PathOnly.NotEncoded;
 			return !string.IsNullOrEmpty(file) && RobustFile.Exists(Path.Combine(Storage.FolderPath, file));
 		}

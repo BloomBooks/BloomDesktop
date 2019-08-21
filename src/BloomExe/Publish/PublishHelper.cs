@@ -357,16 +357,14 @@ namespace Bloom.Publish
 			metaData.Feature_Quiz = book.HasQuizPages;
 		}
 
-		public static void SetTalkingBookFeature(Book.Book book, BookMetaData metaData)
+		public static void SetTalkingBookFeature(bool hasAudio, BookMetaData metaData)
 		{
-			metaData.Feature_TalkingBook = book.HasAudio();
+			metaData.Feature_TalkingBook = hasAudio;
 		}
 
-		public static void SetSignLanguageFeature(Book.Book book, BookMetaData metaData)
+		public static void SetSignLanguageFeature(bool hasVideo, BookMetaData metaData)
 		{
-			var videoFolderPath = BookStorage.GetVideoFolderPath(book.FolderPath);
-			metaData.Feature_SignLanguage =
-				Directory.Exists(videoFolderPath) && Directory.EnumerateFiles(videoFolderPath).Any();
+			metaData.Feature_SignLanguage = hasVideo;
 		}
 
 		#region IDisposable Support
