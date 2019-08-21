@@ -2708,6 +2708,8 @@ namespace Bloom.Book
 			BookStorage.SetBaseForRelativePaths(printingDom, FolderPath);
 
 			DeletePages(printingDom.RawDom, p=>p.GetAttribute("class").ToLowerInvariant().Contains("bloom-nonprinting"));
+			if (!CollectionSettings.HaveEnterpriseFeatures)
+				DeletePages(printingDom.RawDom, p => IsPageBloomEnterpriseOnly(p));
 
 			switch (bookletPortion)
 			{
