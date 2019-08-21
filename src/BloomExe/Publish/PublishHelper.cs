@@ -19,6 +19,7 @@ namespace Bloom.Publish
 	public class PublishHelper : IDisposable
 	{
 		public const string kSimpleComprehensionQuizJs = "simpleComprehensionQuiz.js";
+		public const string kVideoPlaceholderImageFile = "video-placeholder.svg";
 		private static PublishHelper _latestInstance;
 
 		public PublishHelper()
@@ -85,13 +86,7 @@ namespace Bloom.Publish
 					pageElts.Add(page);
 			}
 
-			var haveEnterpriseFeatures = book.CollectionSettings.HaveEnterpriseFeatures;
-			if (!haveEnterpriseFeatures)
-			{
-				if (RemoveEnterpriseOnlyPages(pageElts))
-					warningMessages.Add(LocalizationManager.GetString("Publish.RemovingEnterprisePages", "Removing one or more pages which require Bloom Enterprise to be enabled"));
-				RemoveEnterpriseOnlyAssets(book);
-			}
+			RemoveEnterpriseFeaturesIfNeeded(book, pageElts, warningMessages);
 
 			HtmlDom displayDom = null;
 			foreach (XmlElement page in pageElts)
@@ -221,6 +216,17 @@ namespace Bloom.Publish
 			}
 		}
 
+		public static void RemoveEnterpriseFeaturesIfNeeded(Book.Book book, List<XmlElement> pageElts, ISet<string> warningMessages)
+		{
+			var haveEnterpriseFeatures = book.CollectionSettings.HaveEnterpriseFeatures;
+			if (!haveEnterpriseFeatures)
+			{
+				if (RemoveEnterpriseOnlyPages(pageElts))
+					warningMessages.Add(LocalizationManager.GetString("Publish.RemovingEnterprisePages", "Removing one or more pages which require Bloom Enterprise to be enabled"));
+				RemoveEnterpriseOnlyAssets(book);
+			}
+		}
+
 		/// <returns>true if one or more pages were removed; false otherwise</returns>
 		private static bool RemoveEnterpriseOnlyPages(List<XmlElement> pages)
 		{
@@ -242,6 +248,7 @@ namespace Bloom.Publish
 		private static void RemoveEnterpriseOnlyAssets(Book.Book book)
 		{
 			RobustFile.Delete(Path.Combine(book.FolderPath, kSimpleComprehensionQuizJs));
+			RobustFile.Delete(Path.Combine(book.FolderPath, kVideoPlaceholderImageFile));
 		}
 
 		private bool IsDisplayed(XmlElement elt)
@@ -354,7 +361,10 @@ namespace Bloom.Publish
 
 		public static void SetQuizFeature(Book.Book book, BookMetaData metaData)
 		{
-			metaData.Feature_Quiz = book.HasQuizPages;
+			if (book.CollectionSettings.HaveEnterpriseFeatures)
+				metaData.Feature_Quiz = book.HasQuizPages;
+			else
+				metaData.Feature_Quiz = false;
 		}
 
 		public static void SetTalkingBookFeature(bool hasAudio, BookMetaData metaData)
