@@ -5429,6 +5429,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
         <target xml:lang="te" state="translated">ప్రాథమిక పాఠం &amp; చిత్రాన్ని</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot Text Over Video" sil:dynamic="true">
+        <source xml:lang="en">Big Picture Diglot Text Over Video</source>
+        <note>ID: TemplateBooks.PageLabel.Big Picture Diglot Text Over Video</note>
+        <target xml:lang="te" state="needs-translation">Big Picture Diglot Text Over Video</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true">
         <source xml:lang="en">Big Picture Diglot</source>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot</note>
