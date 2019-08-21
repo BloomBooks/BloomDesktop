@@ -5585,6 +5585,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
         <target xml:lang="zh-CN" state="translated">文本和图片</target>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot Text Over Video" sil:dynamic="true">
+        <source xml:lang="en">Big Picture Diglot Text Over Video</source>
+        <note>ID: TemplateBooks.PageLabel.Big Picture Diglot Text Over Video</note>
+        <target xml:lang="zh-CN" state="needs-translation">Big Picture Diglot Text Over Video</target>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true">
         <source xml:lang="en">Big Picture Diglot</source>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot</note>
