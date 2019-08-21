@@ -174,13 +174,14 @@ namespace Bloom.Publish.BloomLibrary
 		private void UpdateFeaturesCheckBoxesDisplay()
 		{
 			var bookInfoMetaData = _model.Book.BookInfo.MetaData;
+			var hasEnterpriseFeatures = _model.Book.CollectionSettings.HaveEnterpriseFeatures;
 			_blindCheckBox.Checked = bookInfoMetaData.Feature_Blind;
-			_signLanguageCheckBox.Enabled = _model.Book.HasVideos();
-			_signLanguageCheckBox.Checked = bookInfoMetaData.Feature_SignLanguage;
+			_signLanguageCheckBox.Enabled = hasEnterpriseFeatures && _model.Book.HasVideos();
+			_signLanguageCheckBox.Checked = hasEnterpriseFeatures && bookInfoMetaData.Feature_SignLanguage;
 
 			// Set Sign Language link
 			_changeSignLanguageLinkLabel.Visible = _signLanguageCheckBox.Checked;
-			if (!string.IsNullOrEmpty(CurrentSignLanguageName))
+			if (hasEnterpriseFeatures && !string.IsNullOrEmpty(CurrentSignLanguageName))
 			{
 				_changeSignLanguageLinkLabel.Text = CurrentSignLanguageName;
 			}
@@ -502,6 +503,10 @@ namespace Bloom.Publish.BloomLibrary
 			{
 				languages.Insert(0, book.CollectionSettings.SignLanguageIso639Code);
 				PublishHelper.SetSignLanguageFeature(true, book.BookInfo.MetaData);
+			}
+			else
+			{
+				PublishHelper.SetSignLanguageFeature(false, book.BookInfo.MetaData);
 			}
 			var includeNarrationAudio = _narrationAudioCheckBox.Checked;
 			PublishHelper.SetTalkingBookFeature(includeNarrationAudio, book.BookInfo.MetaData);
