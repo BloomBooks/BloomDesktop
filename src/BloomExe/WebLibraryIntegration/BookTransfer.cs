@@ -23,6 +23,8 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
+using BloomTemp;
+using System.Xml;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -777,7 +779,11 @@ namespace Bloom.WebLibraryIntegration
 						var msg = "Apparently this book is already on the server. Overwriting...";
 						ReportToLogBoxAndLogger(dlg.Progress, folder, msg);
 					}
-					FullUpload(book, dlg.Progress, view, languagesToUpload.ToArray(), excludeNarrationAudio, excludeMusic, out dummy);
+					using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
+					{
+						PrepareBookForUpload(ref book, server, tempFolder.FolderPath, dlg.Progress);
+						FullUpload(book, dlg.Progress, view, languagesToUpload.ToArray(), excludeNarrationAudio, excludeMusic, out dummy);
+					}
 					AppendBookToUploadLogFile(folder);
 				}
 				else
@@ -799,6 +805,31 @@ namespace Bloom.WebLibraryIntegration
 			const string seeLogFile = "\n  See log file for details.";
 			logBox.WriteMessage($"\n  {msg}{seeLogFile}");
 			Logger.WriteEvent($"***{bookFolder}: {msg}");
+		}
+
+		/// <summary>
+		/// If we do not have enterprise enabled, copy the book and remove all enterprise level features.
+		/// </summary>
+		public static bool PrepareBookForUpload(ref Book.Book book, BookServer bookServer, string tempFolderPath, LogBox progressBox)
+		{
+			if (book.CollectionSettings.HaveEnterpriseFeatures)
+				return false;
+			Directory.CreateDirectory(tempFolderPath);
+			BookStorage.CopyDirectory(book.FolderPath, tempFolderPath);
+			var bookInfo = new BookInfo(tempFolderPath, true);
+			var copiedBook = bookServer.GetBookFromBookInfo(bookInfo);
+			copiedBook.BringBookUpToDate(new NullProgress(), true);
+			var pages = new List<XmlElement>();
+			foreach (XmlElement page in copiedBook.GetPageElements())
+				pages.Add(page);
+			ISet<string> warningMessages = new HashSet<string>();
+			PublishHelper.RemoveEnterpriseFeaturesIfNeeded(copiedBook, pages, warningMessages);
+			PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progressBox);
+			copiedBook.Save();
+			copiedBook.Storage.UpdateSupportFiles();
+			book = copiedBook;
+			return true;
+
 		}
 
 		/// <summary>

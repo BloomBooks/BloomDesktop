@@ -5,6 +5,8 @@ using BookInstance = Bloom.Book.Book;
 using Bloom.WebLibraryIntegration;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.Progress;
+using BloomTemp;
+using System.IO;
 
 namespace Bloom.Publish.BloomLibrary
 {
@@ -148,7 +150,11 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal string UploadOneBook(BookInstance book, LogBox progressBox, PublishView publishView, string[] languages, bool excludeNarrationAudio, bool excludeMusic, out string parseId)
 		{
-			return _transferrer.FullUpload(book, progressBox, publishView, languages, excludeNarrationAudio, excludeMusic, out parseId);
+			using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
+			{
+				BookTransfer.PrepareBookForUpload(ref book, _publishModel.BookServer, tempFolder.FolderPath, progressBox);
+				return _transferrer.FullUpload(book, progressBox, publishView, languages, excludeNarrationAudio, excludeMusic, out parseId);
+			}
 		}
 
 		/// <summary>
