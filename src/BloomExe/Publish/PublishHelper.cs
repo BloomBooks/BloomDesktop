@@ -303,13 +303,13 @@ namespace Bloom.Publish
 		/// <param name="bookServer"></param>
 		/// <param name="tempFolderPath"></param>
 		/// <returns></returns>
-		public static Book.Book MakeDeviceXmatterTempBook(string bookFolderPath, BookServer bookServer, string tempFolderPath, HashSet<string> omittedPageLabels = null)
+		public static Book.Book MakeDeviceXmatterTempBook(string bookFolderPath, BookServer bookServer, string tempFolderPath, HashSet<string> omittedPageLabels = null, bool skipUpdateCollectionStyles = false)
 		{
 			BookStorage.CopyDirectory(bookFolderPath, tempFolderPath);
 			var bookInfo = new BookInfo(tempFolderPath, true);
 			bookInfo.XMatterNameOverride = "Device";
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
-			modifiedBook.BringBookUpToDate(new NullProgress(), true);
+			modifiedBook.BringBookUpToDate(new NullProgress(), true, skipUpdateCollectionStyles);
 			modifiedBook.RemoveNonPublishablePages(omittedPageLabels);
 			var domForVideoProcessing = modifiedBook.OurHtmlDom;
 			var videoContainerElements = HtmlDom.SelectChildVideoElements(domForVideoProcessing.RawDom.DocumentElement).Cast<XmlElement>();

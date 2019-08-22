@@ -112,7 +112,8 @@ namespace Bloom.CLI
 					System.Drawing.Color.Azure, // TODO: What should this be?
 					new Bloom.web.NullWebSocketProgress(),
 					folderForUnzipped,
-					creator);
+					creator,
+					skipUpdateCollectionStyles: true);	// We don't have the real .bloomCollection file or all of its settings. We should just preserve the ones from the downloaded book.
 
 					// Currently the zipping process does some things we actually need, like making the cover picture
 					// transparent (BL-7437). Eventually we plan to separate the preparation and zipping steps (BL-7445).

@@ -736,7 +736,7 @@ namespace Bloom.Book
 			htmlDom.AddCreationType(LockedDown ? "translation" : "original");
 		}
 
-		public void BringBookUpToDate(IProgress progress, bool forCopyOfUpToDateBook = false)
+		public void BringBookUpToDate(IProgress progress, bool forCopyOfUpToDateBook = false, bool skipUpdateCollectionStyles = false)
 		{
 			_pagesCache = null;
 			string oldMetaData = string.Empty;
@@ -744,7 +744,7 @@ namespace Bloom.Book
 			{
 				oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
 			}
-			BringBookUpToDate(OurHtmlDom, progress, oldMetaData);
+			BringBookUpToDate(OurHtmlDom, progress, oldMetaData, skipUpdateCollectionStyles);
 			if (IsEditable)
 			{
 				// If the user might be editing it we want it more thoroughly up-to-date
@@ -911,14 +911,14 @@ namespace Bloom.Book
 		/// <param name="bookDOM"></param>
 		/// <param name="progress"></param>
 		/// <param name="oldMetaData">optional</param>
-		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress, string oldMetaData = "")
+		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress, string oldMetaData = "", bool skipUpdateCollectionStyles = false)
 		{
 			RemoveImgTagInDataDiv(bookDOM);
 			RemoveCkeEditorResidue(bookDOM);
 			if (Title.Contains("allowSharedUpdate"))
 			{
 				// Original version of this code that suffers BL_3166
-				BringBookUpToDateUnprotected(bookDOM, progress);
+				BringBookUpToDateUnprotected(bookDOM, progress, skipUpdateCollectionStyles);
 			}
 			else
 			{
@@ -928,7 +928,7 @@ namespace Bloom.Book
 				lock (_updateLock)
 				{
 					_doingBookUpdate = true;
-					BringBookUpToDateUnprotected(bookDOM, progress);
+					BringBookUpToDateUnprotected(bookDOM, progress, skipUpdateCollectionStyles);
 					_doingBookUpdate = false;
 				}
 			}
@@ -953,14 +953,14 @@ namespace Bloom.Book
 			}
 		}
 
-		private void BringBookUpToDateUnprotected(HtmlDom bookDOM, IProgress progress)
+		private void BringBookUpToDateUnprotected(HtmlDom bookDOM, IProgress progress, bool skipUpdateCollectionStyles)
 		{
 			// With one exception, handled below, nothing in the update process should change the license info, so save what is current before we mess with
 			// anything (may fix BL-3166).
 			var licenseMetadata = GetLicenseMetadata();
 
 			progress.WriteStatus("Updating collection settings...");
-			UpdateCollectionRelatedStylesAndSettings(bookDOM);
+			UpdateCollectionRelatedStylesAndSettings(bookDOM, skipUpdateCollectionStyles);
 
 			progress.WriteStatus("Updating Front/Back Matter...");
 			BringXmatterHtmlUpToDate(bookDOM);
@@ -1041,7 +1041,7 @@ namespace Bloom.Book
 		/// <remarks>
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7343.
 		/// </remarks>
-		private void UpdateCollectionRelatedStylesAndSettings(HtmlDom bookDom)
+		private void UpdateCollectionRelatedStylesAndSettings(HtmlDom bookDom, bool skipUpdateCollectionStyles)
 		{
 			foreach (XmlElement link in bookDom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
@@ -1066,7 +1066,7 @@ namespace Bloom.Book
 				}
 				if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles)))
 					RobustFile.Delete(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles));
-				CreateOrUpdateDefaultLangStyles();
+				CreateOrUpdateDefaultLangStyles(skipUpdateCollectionStyles);
 				// Copy files from collection to book folders to match link href changes above.
 				if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles)))
 					RobustFile.Copy(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles), Path.Combine(FolderPath, kCustomStyles), true);
@@ -1075,13 +1075,24 @@ namespace Bloom.Book
 			UpdateCollectionSettingsInBookMetaData();
 		}
 
-		private void CreateOrUpdateDefaultLangStyles()
+		/// <summary>
+		/// Write the appropriate styles to the defaultLangStyles.css file.
+		/// </summary>
+		/// <param name="skipUpdateCollectionStyles">If true, will only create, but will not overwrite</param>
+		private void CreateOrUpdateDefaultLangStyles(bool skipUpdateCollectionStyles)
 		{
-			Debug.WriteLine($"writing {FolderPath}/defaultLangStyles.css");
 			var path = Path.Combine(FolderPath, "defaultLangStyles.css");
+			bool doesAlreadyExist = RobustFile.Exists(path);
+			if (skipUpdateCollectionStyles && doesAlreadyExist)
+			{
+				// Would overwrite, but overwrite not allowed in this case.
+				return;
+			}
+
+			Debug.WriteLine($"writing {FolderPath}/defaultLangStyles.css");
 			var collectionStylesCss = CollectionSettings.GetCollectionStylesCss(false);
 			var cssBuilder = new StringBuilder(collectionStylesCss);
-			if (RobustFile.Exists(path))
+			if (doesAlreadyExist)
 			{
 				var cssLangs = new HashSet<string>();
 				cssLangs.Add(CollectionSettings.Language1Iso639Code);
