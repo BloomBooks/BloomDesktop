@@ -1,20 +1,19 @@
 # 4.6
 
-## User Interface
-
-We added smarts to Bloom's user interface to use different fonts, as needed, in order to display various non-roman languages. This is not related to what you see in books, just the Bloom interface. Bloom now ships with Google's "noto" fonts for Arabic, Bengali, Devanagari, Thai, and CJK (Chinese, Japanese, Korean).
-
-This version is the beginning of a multi-version effort to move Bloom's UI to a more consistent and contemporary visual design language. We have chosen to move towards Google's Material Design, which is what users will be familiar with from their phones.
-
 ## Collection Tab
 
-In Settings, we've added the option to use Kayah and Shan numeral systems.
-When opening a different collection, Bloom now offers you the last 9 collections you opened.
+In Settings, we've added the option to use Kayah and Shan numeral systems.([Feature Request](https://community.software.sil.org/t/new-page-number-script-in-bloom/2227))
+
+When opening a different collection, Bloom now offers you the last 9 collections you opened. ([Feature Request](https://community.software.sil.org/t/display-more-than-3-collections-in-the-open-create-collections-dialogue-box/1836))
 
 ## Edit Tab
 
-⭐ We added a completely new WYSIWYG Quiz page. You can control formatting, location in the book, and the content of the heading.
-⭐ You can now paste hyperlinks into books which will work when people use the digital verison of the book.
+⭐ We added a completely new **WYSIWYG Quiz** page. You can control formatting ([Feature Request](https://community.software.sil.org/t/control-font-size-on-quiz/969)), location in the book ([Feature Request](https://community.software.sil.org/t/bloom-reader-comprehension-quizzes-in-more-than-one-place/1968)), and the content of the heading. You can also record audio for all parts of it ([Feature Request](https://community.software.sil.org/t/the-ability-to-record-quiz-questions-and-answer-using-the-talking-book-tool/891), [Feature Request](https://community.software.sil.org/t/audio-questions-for-quizzes-for-non-readers/1452)).
+
+⭐ You can now marks books as Public Domain using CC0 ([Feature Request](https://community.software.sil.org/t/public-domain-option/1317), [Feature Request](https://community.software.sil.org/t/cc0-creative-commons/610)).
+
+⭐ You can now paste hyperlinks into books which will work when people use the digital version of the book([Feature Request](https://community.software.sil.org/t/hyperlinks-in-bloom-books/1694)).
+
 ⭐ You can now copy text from language translation speech bubbles.
 
 The "Add Page" dialog now clearly indicates which template pages are available only with Bloom Enterprise enabled.
@@ -29,18 +28,23 @@ We have improved computer performance when working with sign language videos. Pa
 
 In the Publish:Upload screen, we've added a place to identify the language of your sign language videos.
 
-⭐We added a "Text above Video" template page.
+We added a "Text above Video" template page.
+
+### Talking Books
+
+You can now record audio for all the parts of a Quiz Page. ([Feature Request](https://community.software.sil.org/t/the-ability-to-record-quiz-questions-and-answer-using-the-talking-book-tool/891), [Feature Request](https://community.software.sil.org/t/audio-questions-for-quizzes-for-non-readers/1452))
+
+We improved the smoothness of Talking Book playback by now playing only a single audio file per page. This means that highlighting is now based on timestamps, rather than on starting up individual audio files for each sentence. Talking books created with 4.6 require a Bloom Reader version that is up to date (latest v1.3).
 
 ## Publish Tab
 
-### Bloom Reader Publish
+### Bloom Reader Publish Preview
 
 ⭐ New, easier publish screen
-We added a preview that lets you interact with the book before publishing to a real device.
-We added new hints about publishing with USB and Wi-FI.
-We improved the smoothness of Talking Book playback by now playing only a single audio file per page. This means that highlighting is now based on timestamps, rather than on starting up individual audio files for each sentence.
 
-We've changed the format of Bloom book folders a bit so that they are now fully "self contained" instead of being reliant on being situated inside a Bloom Collection folder. You should not notice any change, except that now when a book is uploaded to Bloom Library, our new "Harvester" system can accurately publish new versions of your book in formats including ePUB and Bloom Reader.
+We added a preview that lets you interact with the book before publishing to a real device.
+
+We added new hints about publishing with USB and Wi-FI.
 
 We've added the ability to limit Bloom shellbook downloads to BloomLibrary.org visitors in single country. If you need to publish books with that kind of restriction, please contact us.
 
@@ -48,9 +52,15 @@ We've added the ability to limit Bloom shellbook downloads to BloomLibrary.org v
 
 ⭐ New, cleaner ePUB publish screen
 
+## User Interface
+
+We added smarts to Bloom's user interface to use different fonts, as needed, in order to display various non-roman languages. This is not related to what you see in books, just the Bloom interface. Bloom now ships with Google's "noto" fonts for Arabic, Bengali, Devanagari, Thai, and CJK (Chinese, Japanese, Korean).
+
+This version is the beginning of a multi-version effort to move Bloom's UI to a more consistent and contemporary visual design language. We have chosen to move towards Google's [Material Design](https://material.io/design/), which is what users will be familiar with from their phones.
+
 # 4.5
 
-⭐ We have adjusted the background colors in order to provide a higher contrast for those with poor screens, lighting, or vision.
+⭐ We have adjusted the background colors in order to provide a higher contrast for those with poor screens, lighting, or vision ([Feature Request](https://community.software.sil.org/t/better-color-contrast-in-the-bloom-interface/828/7)).
 
 ## UI Languages
 
