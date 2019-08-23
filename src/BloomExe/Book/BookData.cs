@@ -1251,7 +1251,9 @@ namespace Bloom.Book
 		{
 			// Parsing it as XML and then extracting the value removes any markup.
 			var doc = XElement.Parse("<doc>" + input + "</doc>");
-			return doc.Value;
+			// DataDiv can get newline between <p> and <span>, which leaves \n in place
+			// at beginning and end when an unwanted audio span is removed.  See BL-7558.
+			return doc.Value.Trim();
 		}
 
 		private string[] WritingSystemIdsToTry
