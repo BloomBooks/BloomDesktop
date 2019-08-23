@@ -91,8 +91,6 @@ namespace Bloom.Publish
 				if (RemoveEnterpriseOnlyPages(pageElts))
 					warningMessages.Add(LocalizationManager.GetString("Publish.RemovingEnterprisePages", "Removing one or more pages which require Bloom Enterprise to be enabled"));
 				RemoveEnterpriseOnlyAssets(book);
-				if (RemoveAllImageDescriptions(dom))
-					warningMessages.Add(LocalizationManager.GetString("Publish.RemovingEnterpriseImageDescriptions", "Removing image descriptions which require Bloom Enterprise to be enabled"));
 			}
 
 			HtmlDom displayDom = null;
@@ -135,8 +133,6 @@ namespace Bloom.Publish
 					// Even when they are not displayed we want to keep image descriptions.
 					// This is necessary for retaining any associated audio files to play.
 					// See https://issues.bloomlibrary.org/youtrack/issue/BL-7237.
-					// Note that all image descriptions have already been removed for
-					// non-Bloom Enterprise books above.
 					if (!IsDisplayed(elt) && !IsImageDescription(elt))
 						toBeDeleted.Add(elt);
 				}
@@ -267,21 +263,6 @@ namespace Bloom.Publish
 			return false;
 		}
 
-		/// <returns>true if one or more image descriptions where removed; false otherwise</returns>
-		public static bool RemoveAllImageDescriptions(HtmlDom bookDom)
-		{
-			var result = false;
-			var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]").Cast<XmlElement>().ToList();
-			foreach (var imageDescription in imageDescriptions)
-			{
-				// It seems that the cover always has an image description div even if the user never created one.
-				// So we only want to return true if we removed an image description with text.
-				result |= !string.IsNullOrWhiteSpace(imageDescription.InnerText);
-				imageDescription.ParentNode.RemoveChild(imageDescription);
-			}
-			return result;
-		}
-
 		internal const string kTempIdMarker = "PublishTempIdXXYY";
 		private static int s_count = 1;
 		public static void EnsureAllThingsThatCanBeHiddenHaveIds(XmlElement pageElt)
@@ -371,17 +352,21 @@ namespace Bloom.Publish
 			metaData.Feature_Motion = book.UseMotionModeInBloomReader;
 		}
 
-		public static void SetTalkingBookFeature(Book.Book book, BookMetaData metaData)
+		public static void SetQuizFeature(Book.Book book, BookMetaData metaData)
 		{
-			metaData.Feature_TalkingBook = book.HasAudio();
+			metaData.Feature_Quiz = book.HasQuizPages;
 		}
 
-		public static void SetSignLanguageFeature(Book.Book book, BookMetaData metaData)
+		public static void SetTalkingBookFeature(bool hasAudio, BookMetaData metaData)
 		{
-			var videoFolderPath = BookStorage.GetVideoFolderPath(book.FolderPath);
-			metaData.Feature_SignLanguage =
-				Directory.Exists(videoFolderPath) && Directory.EnumerateFiles(videoFolderPath).Any();
+			metaData.Feature_TalkingBook = hasAudio;
 		}
+
+		public static void SetSignLanguageFeature(bool hasVideo, BookMetaData metaData)
+		{
+			metaData.Feature_SignLanguage = hasVideo;
+		}
+
 		#region IDisposable Support
 		// This code added to correctly implement the disposable pattern.
 		private bool _isDisposed = false; // To detect redundant calls

@@ -1,3 +1,10 @@
+bloom-desktop-alpha (4.7.0) stable; urgency=medium
+
+  * Up the version number on the master (alpha) branch to 4.7.
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Fri, 16 Aug 2019 10:45:18 -0600
+
 bloom-desktop-alpha (4.6.0) stable; urgency=medium
 
   * Up the version number on the master (alpha) branch to 4.6.

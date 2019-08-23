@@ -6,7 +6,7 @@
     "recommendations": [
         "EditorConfig.EditorConfig",
         "esbenp.prettier-vscode",
-        "hbenl.vscode-firefox-debug",
+        "firefox-devtools.vscode-firefox-debug",
         "msjsdiag.debugger-for-chrome",
         "ms-vscode.vscode-typescript-tslint-plugin"
     ],

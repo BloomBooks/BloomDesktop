@@ -1054,19 +1054,23 @@ namespace Bloom.Book
 					link.SetAttribute("href", kCustomStyles);
 			}
 			// Rename/remove/create files that have changed names or locations to match link href changes above.
-			if (RobustFile.Exists(Path.Combine(FolderPath, "languageDisplay.css")))
+			// Don't do this in distributed folders.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7550.
+			if (!FolderPath.StartsWith(BloomFileLocator.FactoryCollectionsDirectory))
 			{
-				if (RobustFile.Exists(Path.Combine(FolderPath, "langVisibility.css")))
-					RobustFile.Delete(Path.Combine(FolderPath, "languageDisplay.css"));
-				else
-					RobustFile.Move(Path.Combine(FolderPath, "languageDisplay.css"), Path.Combine(FolderPath, "langVisibility.css"));
+				if (RobustFile.Exists(Path.Combine(FolderPath, "languageDisplay.css")))
+				{
+					if (RobustFile.Exists(Path.Combine(FolderPath, "langVisibility.css")))
+						RobustFile.Delete(Path.Combine(FolderPath, "languageDisplay.css"));
+					else
+						RobustFile.Move(Path.Combine(FolderPath, "languageDisplay.css"), Path.Combine(FolderPath, "langVisibility.css"));
+				}
+				if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles)))
+					RobustFile.Delete(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles));
+				CreateOrUpdateDefaultLangStyles();
+				// Copy files from collection to book folders to match link href changes above.
+				if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles)))
+					RobustFile.Copy(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles), Path.Combine(FolderPath, kCustomStyles), true);
 			}
-			if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles)))
-				RobustFile.Delete(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles));
-			CreateOrUpdateDefaultLangStyles();
-			// Copy files from collection to book folders to match link href changes above.
-			if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles)))
-				RobustFile.Copy(Path.Combine(Path.GetDirectoryName(FolderPath), kCustomStyles), Path.Combine(FolderPath, kCustomStyles), true);
 			// Update book settings from collection settings
 			UpdateCollectionSettingsInBookMetaData();
 		}
@@ -1758,6 +1762,7 @@ namespace Bloom.Book
 				var parents = new HashSet<XmlElement>(); // of interesting non-empty children
 				// editable divs that are in non-x-matter pages and have a potentially interesting language.
 				var langDivs = OurHtmlDom.SafeSelectNodes("//div[contains(@class, 'bloom-page') and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))]//div[@class and @lang]").Cast<XmlElement>()
+					.Where(div => !div.ParentNode.Attributes["class"].Value.Contains("bloom-ignoreChildrenForBookLanguageList"))
 					.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
 					.Where(div =>
 					{
@@ -1961,7 +1966,7 @@ namespace Bloom.Book
 		/// <returns></returns>
 		public bool HasVideos()
 		{
-			return RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-videoContainer')]/source")
+			return RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-videoContainer')]//source")
 				.Cast<XmlElement>().Any(NonTrivialVideoFileExists);
 		}
 
@@ -1971,7 +1976,17 @@ namespace Bloom.Book
 			// In case future books have video branding...
 			if (HtmlDom.HasClass(vidSource, "branding") || HtmlDom.HasClass(vidSource.ParentNode as XmlElement, "branding"))
 				return false;
-			var videoUrl = HtmlDom.GetVideoElementUrl(new ElementProxy(vidSource.ParentNode as XmlElement));
+			// video reference HTML structure is:
+			//   <div class='bloom-videoContainer'>
+			//     <video>
+			//       <source src="video/guid.mp4#t=time1,time2" />   (# and after is optional)
+			//     </video>
+			//   </div>
+			var vidNode = vidSource.ParentNode;
+			if (vidNode == null)
+				return false;
+			// HtmlDom.GetVideoElementUrl() takes the .bloom-videoContainer node as a parameter.
+			var videoUrl = HtmlDom.GetVideoElementUrl(new ElementProxy(vidNode.ParentNode as XmlElement));
 			var file = videoUrl.PathOnly.NotEncoded;
 			return !string.IsNullOrEmpty(file) && RobustFile.Exists(Path.Combine(Storage.FolderPath, file));
 		}
@@ -3256,10 +3271,9 @@ namespace Bloom.Book
 			}
 		}
 
-		public bool getHasMotionPages()
-		{
-			return OurHtmlDom.GetContainsMotion();
-		}
+		public bool HasMotionPages => HtmlDom.HasMotionFeature(OurHtmlDom.Body);
+
+		public bool HasQuizPages => HtmlDom.HasQuizFeature(OurHtmlDom.Body);
 
 		// This is a shorthand for a whole set of features.
 		// Note: we are currently planning to eventually store this primarily in the data-div, with the

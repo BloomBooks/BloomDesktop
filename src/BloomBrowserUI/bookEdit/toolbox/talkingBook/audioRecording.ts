@@ -988,8 +988,6 @@ export default class AudioRecording {
         if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
             const currentTextBox = this.getCurrentTextBox();
             if (currentTextBox) {
-                currentTextBox.classList.remove("bloom-postAudioSplit");
-
                 const audioSegments = this.getAudioSegmentsWithinElement(
                     currentTextBox
                 );
@@ -1069,7 +1067,9 @@ export default class AudioRecording {
         }
     }
 
-    private highlightNextSubElement() {
+    // Moves the highlight to the next sub-element
+    // startTimeInSecs is an optional fallback that will be used in case the currentTime cannot be determined from the audio player element.
+    private highlightNextSubElement(startTimeInSecs: number = 0) {
         // the item should not be popped off the stack until it's completely done with.
         const subElementCount = this.subElementsWithTimings.length;
 
@@ -1086,11 +1086,13 @@ export default class AudioRecording {
             false // disableHighlightIfNoAudio: Should be false when playing sub-elements, because the highlighted sub-element doesn't have audio. The audio belongs to parent.
         );
 
-        let currentTimeInSecs: number;
         const mediaPlayer: HTMLMediaElement = document.getElementById(
             "player"
         )! as HTMLMediaElement;
-        currentTimeInSecs = mediaPlayer.currentTime;
+        let currentTimeInSecs: number = mediaPlayer.currentTime;
+        if (currentTimeInSecs <= 0) {
+            currentTimeInSecs = startTimeInSecs;
+        }
 
         // Handle cases where the currentTime has already exceeded the nextStartTime
         //   (might happen if you're unlucky in the thread queue... or if in debugger, etc.)
@@ -1145,7 +1147,7 @@ export default class AudioRecording {
 
         this.subElementsWithTimings.pop();
 
-        this.highlightNextSubElement();
+        this.highlightNextSubElement(nextStartTimeInSecs);
     }
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.

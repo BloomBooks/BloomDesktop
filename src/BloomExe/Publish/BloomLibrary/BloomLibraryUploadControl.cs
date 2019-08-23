@@ -175,6 +175,7 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			var bookInfoMetaData = _model.Book.BookInfo.MetaData;
 			_blindCheckBox.Checked = bookInfoMetaData.Feature_Blind;
+			_signLanguageCheckBox.Enabled = _model.Book.HasVideos();
 			_signLanguageCheckBox.Checked = bookInfoMetaData.Feature_SignLanguage;
 
 			// Set Sign Language link
@@ -500,9 +501,12 @@ namespace Bloom.Publish.BloomLibrary
 			if (_signLanguageCheckBox.Checked && !string.IsNullOrEmpty(book.CollectionSettings.SignLanguageIso639Code))
 			{
 				languages.Insert(0, book.CollectionSettings.SignLanguageIso639Code);
+				PublishHelper.SetSignLanguageFeature(true, book.BookInfo.MetaData);
 			}
 			var includeNarrationAudio = _narrationAudioCheckBox.Checked;
-			book.BookInfo.MetaData.Feature_TalkingBook = includeNarrationAudio;
+			PublishHelper.SetTalkingBookFeature(includeNarrationAudio, book.BookInfo.MetaData);
+			PublishHelper.SetQuizFeature(book, book.BookInfo.MetaData);
+			PublishHelper.SetMotionFeature(book, book.BookInfo.MetaData);
 			var includeBackgroundMusic = _backgroundMusicCheckBox.Checked;
 			var result = _model.UploadOneBook(book, _progressBox, _parentView, languages.ToArray(), !includeNarrationAudio, !includeBackgroundMusic, out _parseId);
 			e.Result = result;

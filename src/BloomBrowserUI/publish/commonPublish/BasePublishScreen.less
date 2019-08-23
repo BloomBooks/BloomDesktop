@@ -1,8 +1,15 @@
 html,
-body,
 .App,
 #root {
     height: 100%;
+}
+body {
+    // Without the minus 16px, a scrollbar always appears.  This is due to the standard 8px margin
+    // that body applies (top + bottom), making the body actually 16px taller than the viewport.  An
+    // alternative solution would be to set "margin: 0;" here and set "body { height: 100%; }" above
+    // (along with html and .App), but I think it looks better with the margin.
+    // See https://issues.bloomlibrary.org/youtrack/issue/BL-7506.
+    height: calc(~"100% - 16px");
 }
 .screen {
     display: flex;

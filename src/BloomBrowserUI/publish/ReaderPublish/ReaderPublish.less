@@ -12,7 +12,10 @@
     .methodChooserRoot {
         display: flex;
         flex-direction: row;
-        height: 100%;
+        // Setting the height to 100% here makes the box layout extend below where it should go by the
+        // amount of the padding-top.  (8px of that is swallowed up by the default 8px margin on body.)
+        // We don't really need to set the height here anyway: it displays just fine without being
+        // explicitly set.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7506.
         padding-top: 10px;
         .column1 {
             display: flex;

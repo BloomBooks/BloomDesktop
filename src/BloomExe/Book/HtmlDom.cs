@@ -1936,10 +1936,20 @@ namespace Bloom.Book
 			var nodes = _dom.SafeSelectNodes("//*[@data-audiorecordingmode='TextBox']");
 			return nodes?.Count >= 1;
 		}
-		public bool GetContainsMotion()
+
+		public static bool HasMotionFeature(XmlElement element)
 		{
-			var nodes = _dom.SafeSelectNodes("//*[@data-initialrect]");
+			var nodes = element.SafeSelectNodes("//*[@data-initialrect]");
 			return nodes?.Count >= 1;
+		}
+
+		public static bool HasQuizFeature(XmlElement element)
+		{
+			// Current style comprehension quiz pages
+			var nodes1 = element.SafeSelectNodes("//*[contains(@class, 'simple-comprehension-quiz')]");
+			// Legacy style comprehension quiz pages
+			var nodes2 = element.SafeSelectNodes("//*[contains(@class, 'questions')]");
+			return nodes1?.Count >= 1 || nodes2?.Count >= 1;
 		}
 
 		public static bool IsImgOrSomethingWithBackgroundImage(XmlElement element)
