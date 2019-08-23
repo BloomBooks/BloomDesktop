@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -1324,7 +1324,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <!-- copy the appropriate Geckofx60 files to the output directory, first creating it if necessary -->
     <Exec Command="mkdir -p $(OutDir)" />
     <Exec Command="rm -rf $(OutDir)Firefox" />
-    <Exec Command="if [ &quot;`arch`&quot; = &quot;x86_64&quot; ]; then find $(SolutionDir)packages/Geckofx60.64.Linux.60.0.30 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx60.64.Linux.60.0.30 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; else find $(SolutionDir)packages/Geckofx60.32.Linux.60.0.30 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx60.32.Linux.60.0.30 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; fi" />
+    <Exec Command="if [ &quot;`arch`&quot; = &quot;x86_64&quot; ]; then find $(SolutionDir)packages/Geckofx60.64.Linux.60.0.36 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx60.64.Linux.60.0.36 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; else find $(SolutionDir)packages/Geckofx60.32.Linux.60.0.36 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx60.32.Linux.60.0.36 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; fi" />
   </Target>
   <ItemGroup>
     <BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />
@@ -1433,10 +1433,12 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
   </Target>
   <Import Project="..\..\packages\Geckofx60.32.60.0.37\build\Geckofx60.32.targets" Condition="Exists('..\..\packages\Geckofx60.32.60.0.37\build\Geckofx60.32.targets')" />
+  <Import Project="../../packages/Geckofx60.64.Linux.60.0.36/build/Geckofx60.64.Linux.targets" Condition="Exists('../../packages/Geckofx60.64.Linux.60.0.36/build/Geckofx60.64.Linux.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\Geckofx60.32.60.0.37\build\Geckofx60.32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Geckofx60.32.60.0.37\build\Geckofx60.32.targets'))" />
+    <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\Geckofx60.32.60.0.37\build\Geckofx60.32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Geckofx60.32.60.0.37\build\Geckofx60.32.targets'))" />
+    <Error Condition="'$(OS)'!='Windows_NT' AND !Exists('../../packages/Geckofx60.64.Linux.60.0.36/build/Geckofx60.64.Linux.targets')" Text="$([System.String]::Format('$(ErrorText)', '../../packages/Geckofx60.64.Linux.60.0.36/build/Geckofx60.64.Linux.targets'))" />
   </Target>
 </Project>
