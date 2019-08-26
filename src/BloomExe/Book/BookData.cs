@@ -1249,10 +1249,11 @@ namespace Bloom.Book
 		/// <returns></returns>
 		internal static string TextOfInnerHtml(string input)
 		{
-			// Parsing it as XML and then extracting the value removes any markup.
-			var doc = XElement.Parse("<doc>" + input + "</doc>");
-			// DataDiv can get newline between <p> and <span>, which leaves \n in place
-			// at beginning and end when an unwanted audio span is removed.  See BL-7558.
+			// Parsing it as XML and then extracting the value removes any markup.  Internal
+			// spaces might disappear if we don't preserve whitespace during the parse.
+			var doc = XElement.Parse("<doc>" + input + "</doc>", LoadOptions.PreserveWhitespace);
+			// Leading and trailing whitespace are undesireable for the title even if the user has
+			// put them in for some strange reason.  (BL-7558)
 			return doc.Value.Trim();
 		}
 
