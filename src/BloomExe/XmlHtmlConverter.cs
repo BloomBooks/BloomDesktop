@@ -41,9 +41,9 @@ namespace Bloom
 			//That is fixed now, but this is needed to give to clean up existing books.
 			content = content.Replace(@"REMOVEWHITESPACE", "");
 
-			// It also likes to insert newlines before <b>, <u>, and <i>, and convert any existing whitespace
-			// there to a space.
-			content = new Regex(@"<([ubi]|em|strong|sup|sub)>").Replace(content, "REMOVEWHITESPACE<$1>");
+			// tidy likes to insert newlines before <b>, <u>, <i>, and these other elements and convert any existing whitespace
+			// there to a space.  (span was found by pursuing BL-7558)
+			content = new Regex(@"<([ubi]|em|strong|sup|sub|span[^>]*)>").Replace(content, "REMOVEWHITESPACE<$1>");
 
 			// fix for <br></br> tag doubling
 			content = content.Replace("<br></br>", "<br />");
@@ -106,9 +106,9 @@ namespace Bloom
 						newContents = newContents.Replace("&nbsp;", "&#160;");
 						//REVIEW: 1) are there others? &amp; and such are fine.  2) shoul we to convert back to &nbsp; on save?
 
-						// The regex here is mainly for the \s as a convenient way to remove whatever whitespace TIDY
-						// has inserted. It's a fringe benefit that we can use the[bi] to deal with both elements in one replace.
-						newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE\s*<([biu]|em|strong|sup|sub)>", "<$1>");
+						// The regex here is mainly for the \s* as a convenient way to remove whatever whitespace TIDY
+						// has inserted. It's a fringe benefit that we can use the[biu]|... to deal with all these elements in one replace.
+						newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE\s*<([biu]|em|strong|sup|sub|span[^>]*)>", "<$1>");
 
 						//In BL2250, we still had REMOVEWHITESPACE sticking around sometimes. The way we reproduced it was
 						//with <u> </u>. That is, we started with
