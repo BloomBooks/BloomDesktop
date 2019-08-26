@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Publish.Epub;
 using Bloom.web;
@@ -35,8 +36,9 @@ namespace Bloom.CLI
 					Program.SetUpLocalization(applicationContainer);
 					Browser.SetUpXulRunner();
 					Browser.XulRunnerShutdown += Program.OnXulRunnerShutdown;
-					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);	// Unclear if this line is needed or not.
+					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);   // Unclear if this line is needed or not.
 
+					CollectionSettings.HarvesterMode = true;
 					string collectionFilePath = options.CollectionPath;
 					using (_projectContext = applicationContainer.CreateProjectContext(collectionFilePath))
 					{
@@ -104,6 +106,9 @@ namespace Bloom.CLI
 
 				using (var folderForUnzipped = new TemporaryFolder("BloomCreateArtifacts_Unzipped"))
 				{
+					// Ensure directory exists, just in case.
+					Directory.CreateDirectory(Path.GetDirectoryName(zippedBloomDOutputPath));
+
 					// Make the bloomd
 					string unzippedPath = Publish.Android.BloomReaderFileMaker.CreateBloomDigitalBook(
 					zippedBloomDOutputPath,
@@ -121,7 +126,11 @@ namespace Bloom.CLI
 					// unzip the BloomD.
 					if (!String.IsNullOrEmpty(unzippedBloomDigitalOutputPath))
 					{
-						SIL.IO.RobustIO.DeleteDirectory(unzippedBloomDigitalOutputPath, recursive: true);   // In case the folder isn't already empty																						
+						SIL.IO.RobustIO.DeleteDirectory(unzippedBloomDigitalOutputPath, recursive: true);   // In case the folder isn't already empty
+
+						// Ensure directory exists, just in case.
+						Directory.CreateDirectory(Path.GetDirectoryName(unzippedBloomDigitalOutputPath));
+
 						ZipFile.ExtractToDirectory(zippedBloomDOutputPath, unzippedBloomDigitalOutputPath);
 
 						RenameBloomDigitalFiles(unzippedBloomDigitalOutputPath);
