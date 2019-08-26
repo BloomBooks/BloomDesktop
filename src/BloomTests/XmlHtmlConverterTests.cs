@@ -246,6 +246,14 @@ namespace BloomTests
 		}
 
 		[Test]
+		public void GetXmlDomFromHtml_HasSpans_PreserveSpacesBetween()
+		{
+			const string html = "<!DOCTYPE html><html><head></head><body><div><p>one <span class=\"x\">two</span> <span class=\"y\">three</span> <span class =\"z\">four</span> five</p></div></body></html>";
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
+			Assert.That(dom.InnerXml, Does.Contain("<p>one <span class=\"x\">two</span> <span class=\"y\">three</span> <span class=\"z\">four</span> five</p>"));
+		}
+
+		[Test]
 		public void GetXmlDomFromHtml_HasEmptyParagraphs_RetainsEmptyParagraphs()
 		{
 			var pattern = "<p></p><p></p><p>a</p><p></p><p>b</p>";
