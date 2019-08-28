@@ -247,6 +247,18 @@ namespace Bloom.Publish
 		private bool IsDisplayed(XmlElement elt)
 		{
 			var id = elt.Attributes["id"].Value;
+
+			// This temporary code is to help us figure out why javascript errors are
+			// occurring on TeamCity but not locally.
+			Console.WriteLine("*****IsDisplayed*************");
+			Console.WriteLine(elt.OuterXml);
+			Console.WriteLine("******************");
+			if (elt.OwnerDocument != null)
+				Console.WriteLine(elt.OwnerDocument.OuterXml);
+			Console.WriteLine("******************");
+			Console.WriteLine(id);
+			Console.WriteLine();
+
 			var display = _browser.RunJavaScript ("getComputedStyle(document.getElementById('" + id + "'), null).display");
 			return display != "none";
 		}
