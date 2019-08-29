@@ -61,6 +61,14 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void TextOfInnerHtml_HandlesSpansProperly()
+		{
+			var input = "<p><strong><span class='x'>01.</span></strong> <span class='y'>The Creation</span></p>";
+			var output = BookData.TextOfInnerHtml(input);
+			Assert.That(output, Is.EqualTo("01. The Creation"));
+		}
+
+		[Test]
 		public void TextOfInnerHtml_HandlesXmlEscapesCorrectly()
 		{
 			var input = "Jack &amp; Jill like xml sequences like &amp;amp; &amp; &amp;lt; &amp; &amp;gt; for characters like &lt;&amp;&gt;";
