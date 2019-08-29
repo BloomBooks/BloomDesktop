@@ -251,18 +251,15 @@ namespace Bloom.Publish
 			// This temporary code is to help us figure out why javascript errors are
 			// occurring on TeamCity but not locally.
 			Console.WriteLine("*****IsDisplayed*************");
-			Console.WriteLine("id: " + id);
-			var getElement = _browser.RunJavaScript("document.getElementById('" + id + "').outerHTML");
-			if (String.IsNullOrWhiteSpace(getElement) || getElement == "null" || getElement == "undefined")
-			{
-				Console.WriteLine("document.getElementById('" + id + "'): ");
-				Console.WriteLine(getElement);
-				Console.WriteLine(_browser.RunJavaScript("document.documentElement.outerHTML"));
-			}
+			Console.WriteLine(elt.OuterXml);
+			Console.WriteLine("******************");
+			if (elt.OwnerDocument != null)
+				Console.WriteLine(elt.OwnerDocument.OuterXml);
+			Console.WriteLine("******************");
+			Console.WriteLine(id);
+			Console.WriteLine();
+
 			var display = _browser.RunJavaScript ("getComputedStyle(document.getElementById('" + id + "'), null).display");
-			Console.WriteLine("IsDisplayed result: " + display);
-			Console.WriteLine();
-			Console.WriteLine();
 			return display != "none";
 		}
 
