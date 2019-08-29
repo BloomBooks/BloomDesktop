@@ -51,12 +51,11 @@ namespace Bloom.Publish.Android
 		/// <param name="progress"></param>
 		/// <param name="tempFolder">A temporary folder. This function will not dispose of it when done</param>
 		/// <param name="creator">value for &lt;meta name="creator" content="..."/&gt; (defaults to "bloom")</param>
-		/// <param name="skipUpdateCollectionStyles">Normally this process would bring a book up to date including updating the collection styles, but this option lets you disable it if you specify true</param>
 		/// <returns>Path to the unzipped .bloomd</returns>
 		public static string CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
-			WebSocketProgress progress, TemporaryFolder tempFolder, string creator="bloom", bool skipUpdateCollectionStyles=false)
+			WebSocketProgress progress, TemporaryFolder tempFolder, string creator="bloom")
 		{
-			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, creator, skipUpdateCollectionStyles);
+			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, creator);
 			// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
 			// 64dp in Bloom Reader.
 
@@ -69,14 +68,14 @@ namespace Bloom.Publish.Android
 		}
 
 		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer, TemporaryFolder temp,
-			WebSocketProgress progress, string creator="bloom", bool skipUpdateCollectionStyles = false)
+			WebSocketProgress progress, string creator="bloom")
 		{
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
 			// And bloom-player expects folder name to match html file name.
 			var htmPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
 			var modifiedBookFolderPath = Path.Combine(temp.FolderPath, Path.GetFileNameWithoutExtension(htmPath));
 			Directory.CreateDirectory(modifiedBookFolderPath);
-			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer, modifiedBookFolderPath, null, skipUpdateCollectionStyles);
+			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer, modifiedBookFolderPath);
 
 			if (modifiedBook.CollectionSettings.HaveEnterpriseFeatures)
 				ProcessQuizzes(modifiedBookFolderPath, modifiedBook.RawDom);
