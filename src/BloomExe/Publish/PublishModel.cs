@@ -29,6 +29,8 @@ namespace Bloom.Publish
 	{
 		public BookSelection BookSelection { get; private set; }
 
+		public BookServer BookServer { get { return _bookServer; } }
+
 		public string PdfFilePath { get; private set; }
 
 		public enum DisplayModes

@@ -19,6 +19,7 @@ namespace Bloom.Publish
 	public class PublishHelper : IDisposable
 	{
 		public const string kSimpleComprehensionQuizJs = "simpleComprehensionQuiz.js";
+		public const string kVideoPlaceholderImageFile = "video-placeholder.svg";
 		private static PublishHelper _latestInstance;
 
 		public PublishHelper()
@@ -85,13 +86,7 @@ namespace Bloom.Publish
 					pageElts.Add(page);
 			}
 
-			var haveEnterpriseFeatures = book.CollectionSettings.HaveEnterpriseFeatures;
-			if (!haveEnterpriseFeatures)
-			{
-				if (RemoveEnterpriseOnlyPages(pageElts))
-					warningMessages.Add(LocalizationManager.GetString("Publish.RemovingEnterprisePages", "Removing one or more pages which require Bloom Enterprise to be enabled"));
-				RemoveEnterpriseOnlyAssets(book);
-			}
+			RemoveEnterpriseFeaturesIfNeeded(book, pageElts, warningMessages);
 
 			HtmlDom displayDom = null;
 			foreach (XmlElement page in pageElts)
@@ -221,27 +216,47 @@ namespace Bloom.Publish
 			}
 		}
 
-		/// <returns>true if one or more pages were removed; false otherwise</returns>
-		private static bool RemoveEnterpriseOnlyPages(List<XmlElement> pages)
+		public static void RemoveEnterpriseFeaturesIfNeeded(Book.Book book, List<XmlElement> pageElts, ISet<string> warningMessages)
 		{
-			var result = false;
-			foreach (var page in pages.ToList())
-			{
-				if (Book.Book.IsPageBloomEnterpriseOnly(page))
-				{
-					page.ParentNode.RemoveChild(page);
-					pages.Remove(page);
+			if (RemoveEnterprisePagesIfNeeded(book.CollectionSettings, book.Storage.Dom, pageElts))
+				warningMessages.Add(LocalizationManager.GetString("Publish.RemovingEnterprisePages", "Removing one or more pages which require Bloom Enterprise to be enabled"));
+			if (!book.CollectionSettings.HaveEnterpriseFeatures)
+				RemoveEnterpriseOnlyAssets(book);
+		}
 
-					result = true;
+		/// <summary>
+		/// Remove any Bloom Enterprise-only pages if Bloom Enterprise is not enabled.
+		/// Also renumber the pages if any are removed.
+		/// </summary>
+		/// <returns><c>true</c>, if any pages were removed, <c>false</c> otherwise.</returns>
+		public static bool RemoveEnterprisePagesIfNeeded(Bloom.Collection.CollectionSettings settings, HtmlDom dom, List<XmlElement> pageElts)
+		{
+			if (!settings.HaveEnterpriseFeatures)
+			{
+				var pageRemoved = false;
+				foreach (var page in pageElts.ToList())
+				{
+					if (Book.Book.IsPageBloomEnterpriseOnly(page))
+					{
+						page.ParentNode.RemoveChild(page);
+						pageElts.Remove(page);
+						pageRemoved = true;
+					}
+				}
+				if (pageRemoved)
+				{
+					dom.UpdatePageNumberAndSideClassOfPages(settings.CharactersForDigitsForPageNumbers, settings.IsLanguage1Rtl);
+					return true;
 				}
 			}
-
-			return result;
+			return false;
 		}
+
 
 		private static void RemoveEnterpriseOnlyAssets(Book.Book book)
 		{
 			RobustFile.Delete(Path.Combine(book.FolderPath, kSimpleComprehensionQuizJs));
+			RobustFile.Delete(Path.Combine(book.FolderPath, kVideoPlaceholderImageFile));
 		}
 
 		private bool IsDisplayed(XmlElement elt)
@@ -354,7 +369,10 @@ namespace Bloom.Publish
 
 		public static void SetQuizFeature(Book.Book book, BookMetaData metaData)
 		{
-			metaData.Feature_Quiz = book.HasQuizPages;
+			if (book.CollectionSettings.HaveEnterpriseFeatures)
+				metaData.Feature_Quiz = book.HasQuizPages;
+			else
+				metaData.Feature_Quiz = false;
 		}
 
 		public static void SetTalkingBookFeature(bool hasAudio, BookMetaData metaData)
@@ -428,6 +446,23 @@ namespace Bloom.Publish
 			{
 				// Messages are already localized
 				progress.MessageWithoutLocalizing(warningMessage, MessageKind.Warning);
+			}
+		}
+
+		// from bloomUI.less, @bloom-warning: #f3aa18;
+		// WriteMessageWithColor doesn't work on Linux (the message is displayed in the normal black).
+		static System.Drawing.Color _bloomWarning = System.Drawing.Color.FromArgb(0xFF, 0xF3, 0xAA, 0x18);
+		public static void SendBatchedWarningMessagesToProgress(ISet<string> warningMessages, SIL.Windows.Forms.Progress.LogBox progress)
+		{
+			if (warningMessages.Any())
+			{
+				var warning = L10NSharp.LocalizationManager.GetString("Common.Warning", "Warning");
+				progress.WriteMessageWithColor(_bloomWarning, "{0}", warning);
+			}
+			foreach (var warningMessage in warningMessages)
+			{
+				// Messages are already localized
+				progress.WriteMessageWithColor(_bloomWarning, "{0}", warningMessage);
 			}
 		}
 	}
