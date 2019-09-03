@@ -37,11 +37,6 @@ namespace Bloom.Api
 								if (d.ContainsKey(key))
 									continue;
 
-								// Now that end users can create templates, it's annoying to report that their names,
-								// page labels, and page descriptions don't have localizations.
-								if (IsTemplateBookKey(key))
-									continue;
-
 								var translation = GetTranslationDefaultMayNotBeEnglish(key, post[key]);
 								d.Add(key, translation);
 							}
@@ -215,7 +210,10 @@ namespace Bloom.Api
 					if (string.IsNullOrWhiteSpace(translation))
 					{
 						translation = defaultCurrent;
-						ReportL10NMissingString(key, translation, comment);
+						// Now that end users can create templates, it's annoying to report that their names,
+						// page labels, and page descriptions don't have localizations.
+						if (!IsTemplateBookKey(key))
+							ReportL10NMissingString(key, translation, comment);
 					}
 				}
 			}
