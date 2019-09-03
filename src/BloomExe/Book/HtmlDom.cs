@@ -2009,7 +2009,7 @@ namespace Bloom.Book
 				.OfType<XmlElement>();
 		}
 
-		private IEnumerable<XmlElement> GetPageElements()
+		public IEnumerable<XmlElement> GetPageElements()
 		{
 			return _dom.SafeSelectNodes(
 					"/html/body/div[contains(@class,'bloom-page')]")
