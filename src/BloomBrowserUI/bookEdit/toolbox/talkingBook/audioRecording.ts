@@ -135,9 +135,7 @@ export default class AudioRecording {
 
     // Class method called by exported function of the same name.
     // Only called the first time the Toolbox is opened for this book during this Editing session.
-    public initializeTalkingBookTool() {
-        this.pullDefaultRecordingModeAsync();
-
+    public initializeTalkingBookTool(callback: () => void) {
         // I've sometimes observed events like click being handled repeatedly for a single click.
         // Adding these .off calls seems to help...it's as if something causes this show event to happen
         // more than once so the event handlers were being added repeatedly, but I haven't caught
@@ -202,6 +200,8 @@ export default class AudioRecording {
         toastr.options.positionClass = "toast-toolbox-bottom";
         toastr.options.timeOut = 10000;
         toastr.options.preventDuplicates = true;
+
+        this.pullDefaultRecordingModeAsync(callback);
     }
 
     // Updates our cached version of the default recording mode with the version from the Bloom API Server.
@@ -3408,8 +3408,14 @@ export class AudioTextFragment {
 
 export let theOneAudioRecorder: AudioRecording;
 
-export function initializeTalkingBookTool() {
-    if (theOneAudioRecorder) return;
-    theOneAudioRecorder = new AudioRecording();
-    theOneAudioRecorder.initializeTalkingBookTool();
+// Used by talkingBook when initially showing the tool.
+export function initializeTalkingBookTool(): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+        if (!theOneAudioRecorder) {
+            theOneAudioRecorder = new AudioRecording();
+            theOneAudioRecorder.initializeTalkingBookTool(() => resolve());
+        } else {
+            resolve();
+        }
+    });
 }
