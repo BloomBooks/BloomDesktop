@@ -8034,7 +8034,7 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot Text Over Video" sil:dynamic="true">
         <source xml:lang="en">Big Picture Diglot Text Over Video</source>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot Text Over Video</note>
-        <target xml:lang="es-ES" state="needs-translation">Big Picture Diglot Text Over Video</target>
+        <target xml:lang="es-ES" state="translated">Imagen grande bilingüe texto encima del video</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Picture Diglot</source>
