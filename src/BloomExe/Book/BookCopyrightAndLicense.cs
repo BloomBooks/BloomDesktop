@@ -120,7 +120,8 @@ namespace Bloom.Book
 		/// 2) causes any template fields in the book to get the new values
 		/// 3) updates the license image on disk
 		/// </summary>
-		public static void SetMetadata(Metadata metadata, HtmlDom dom, string bookFolderPath, CollectionSettings collectionSettings)
+		public static void SetMetadata(Metadata metadata, HtmlDom dom, string bookFolderPath, CollectionSettings collectionSettings,
+			bool useOriginalCopyright)
 		{
 			dom.SetBookSetting("copyright","*", ConvertNewLinesToHtmlBreaks(metadata.CopyrightNotice));
 			dom.SetBookSetting("licenseUrl","*",metadata.License.Url);
@@ -155,7 +156,7 @@ namespace Bloom.Book
 				dom.RemoveBookSetting("licenseImage");
 			}
 
-			UpdateDomFromDataDiv(dom, bookFolderPath, collectionSettings);
+			UpdateDomFromDataDiv(dom, bookFolderPath, collectionSettings, useOriginalCopyright);
 		}
 
 		private static string ConvertNewLinesToHtmlBreaks(string s)
@@ -168,14 +169,19 @@ namespace Bloom.Book
 		/// found in the pages of the book (normally just the credits page).
 		/// </summary>
 		/// <remarks>This is "internal" just as a convention, that it is accessible for testing purposes only</remarks>
-		internal static void UpdateDomFromDataDiv(HtmlDom dom, string bookFolderPath, CollectionSettings collectionSettings)
+		internal static void UpdateDomFromDataDiv(HtmlDom dom, string bookFolderPath, CollectionSettings collectionSettings, bool useOriginalCopyright)
 		{
 			CopyItemToFieldsInPages(dom, "copyright");
 			CopyItemToFieldsInPages(dom, "licenseUrl");
 			CopyItemToFieldsInPages(dom, "licenseDescription", languagePreferences:collectionSettings.LicenseDescriptionLanguagePriorities.ToArray());
 			CopyItemToFieldsInPages(dom, "licenseNotes");
 			CopyItemToFieldsInPages(dom, "licenseImage", valueAttribute:"src");
-			CopyStringToFieldsInPages(dom, "originalCopyrightAndLicense", GetOriginalCopyrightAndLicenseNotice(collectionSettings, dom), "*");
+			// If we're using the original copyright, we don't need to show it separately.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-7381.
+			if (useOriginalCopyright)
+				CopyStringToFieldsInPages(dom, "originalCopyrightAndLicense", null, "*");
+			else
+				CopyStringToFieldsInPages(dom, "originalCopyrightAndLicense", GetOriginalCopyrightAndLicenseNotice(collectionSettings, dom), "*");
 
 			if (!String.IsNullOrEmpty(bookFolderPath)) //unit tests may not be interested in checking this part
 				UpdateBookLicenseIcon(GetMetadata(dom), bookFolderPath);
