@@ -1136,7 +1136,7 @@ namespace BloomTests.Book
 			var originalCopyright = GetEnglishOriginalCopyrightAndLicense(dom);
 			Assert.AreEqual("Adapted from original, Copyright © 2011, LASI & SILA. Licensed under CC BY-NC-SA 4.0.", originalCopyright);
 
-			BookCopyrightAndLicense.UpdateDomFromDataDiv(dom, null, _collectionSettings);
+			BookCopyrightAndLicense.UpdateDomFromDataDiv(dom, null, _collectionSettings, false);
 			var nodes1 = dom.RawDom.SelectNodes("/html/body//div[@data-derived='originalCopyrightAndLicense']");
 			Assert.AreEqual(1, nodes1.Count);
 			Assert.AreEqual("Adapted from original, Copyright © 2011, LASI & SILA. Licensed under CC BY-NC-SA 4.0.", nodes1.Item(0).InnerText);

@@ -137,7 +137,7 @@ namespace BloomTests.Book
 			var newMetaData = new Metadata();
 			newMetaData.License = newLicense;
 			var settings = new CollectionSettings();
-			BookCopyrightAndLicense.SetMetadata(newMetaData, dom,  null, settings);
+			BookCopyrightAndLicense.SetMetadata(newMetaData, dom,  null, settings, false);
 			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@data-book='licenseUrl']");
 		}
 
@@ -224,7 +224,7 @@ namespace BloomTests.Book
 		private  HtmlDom TestSetLicenseMetdataEffectOnDataDiv(Metadata metadata = null, string startingDataDivContent = "", string startingPageContent = "", string xpath = "", int expectedCount = 1)
 		{
 			var dom = new HtmlDom(@"<html><head><div id='bloomDataDiv'>" + startingDataDivContent + "</div><div id='credits'>" + startingPageContent + "</div></head><body></body></html>");
-			Bloom.Book.BookCopyrightAndLicense.SetMetadata(metadata, dom, null, _collectionSettings);
+			Bloom.Book.BookCopyrightAndLicense.SetMetadata(metadata, dom, null, _collectionSettings, false);
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, expectedCount);
 			return dom;
 		}
@@ -304,7 +304,7 @@ namespace BloomTests.Book
 						</body></html>";
 			var bookDom = new HtmlDom(html);
 
-			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", _collectionSettings);
+			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", _collectionSettings, false);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='test']/*[@data-derived='licenseDescription' and @lang='fr' and contains(text(),'French')]", 1);
 		}
 
@@ -330,11 +330,63 @@ namespace BloomTests.Book
 						</body></html>";
 			var bookDom = new HtmlDom(html);
 
-			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", _collectionSettings);
+			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", _collectionSettings, false);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'Adapted from original, Copyright © 2007, Foo Publishers. Licensed under CC BY-NC 4.0. You can do anything you want if your name is Fred.')]", 2);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='copyright' and @lang='*' and contains(text(),'Copyright © 2008, Bar Publishers')]", 2);
+
+			// Changing the useOriginalCopyright flag should empty out the data-derived='originalCopyrightAndLicense' divs.
+			// The #bloomDataDiv would have to change to change the data-derived='copyright' divs.
+			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", _collectionSettings, true);
+			Console.WriteLine("DEBUG bookDom =\n{0}", bookDom.RawDom.OuterXml);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*']");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and .='']", 2);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='copyright' and @lang='*' and contains(text(),'Copyright © 2008, Bar Publishers')]", 2);
 		}
 
+		[Test]
+		public void SetMetadata_CopiesCopyrightAndOriginalCopyrightToMultipleDestinations()
+		{
+			// We could test other fields too, but these are enough to cover the two main methods that do the copying.
+			var html = @"<html><head><meta name='lockedDownAsShell' content='true'></meta></head><body>
+							<div id='bloomDataDiv'>
+								<div data-book='copyright' lang='*'>Copyright © 2008, Bar Publishers</div>
+								<div data-book='originalLicenseUrl' lang='*'>http://creativecommons.org/licenses/by-nc/4.0/</div>
+								<div data-book='originalLicenseNotes' lang='*'>You can do anything you want if your name is Fred.</div>
+								<div data-book='originalCopyright' lang='*'>Copyright © 2007, Foo Publishers</div>
+							</div>
+							<div id='test' class='test'>
+								<div data-derived='copyright' lang='*'>something obsolete</div>
+								<div data-derived='originalCopyrightAndLicense' lang='en'>BoilerPlateDescription</div>
+							</div>
+							<div id='test2' class='test'>
+								<div data-derived='copyright' lang='*'>something else obsolete to be overwritten</div>
+								<div data-derived='originalCopyrightAndLicense' lang='en'>Some other place we show original copyright</div>
+							</div>
+						</body></html>";
+			var bookDom = new HtmlDom(html);
+			var metadata = BookCopyrightAndLicense.GetMetadata(bookDom);
+			metadata.CopyrightNotice = "Copyright © 2019, Foo-Bar Publishers";
+			BookCopyrightAndLicense.SetMetadata(metadata, bookDom, "", _collectionSettings, false);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'Adapted from original, Copyright © 2007, Foo Publishers. Licensed under CC BY-NC 4.0. You can do anything you want if your name is Fred.')]", 2);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='copyright' and @lang='*' and contains(text(),'Copyright © 2019, Foo-Bar Publishers')]", 2);
+
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='copyright' and contains(text(), 'Copyright © 2019, Foo-Bar Publishers')]", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalCopyright' and contains(text(), 'Copyright © 2007, Foo Publishers')]", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='licenseUrl']");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalLicenseUrl' and contains(text(), 'http://creativecommons.org/licenses/by-nc/4.0/')]", 1);
+
+			// Change to use the original copyright and license.
+			var originalMetadata = BookCopyrightAndLicense.GetOriginalMetadata(bookDom);
+			BookCopyrightAndLicense.SetMetadata(originalMetadata, bookDom, "", _collectionSettings, true);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*']");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and .='']", 2);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='copyright' and @lang='*' and contains(text(),'Copyright © 2007, Foo Publishers')]", 2);
+
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='copyright' and contains(text(), 'Copyright © 2007, Foo Publishers')]", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalCopyright' and contains(text(), 'Copyright © 2007, Foo Publishers')]", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='licenseUrl' and contains(text(), 'http://creativecommons.org/licenses/by-nc/4.0/')]", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalLicenseUrl' and contains(text(), 'http://creativecommons.org/licenses/by-nc/4.0/')]", 1);
+		}
 
 		/// <summary>
 		/// Start out with an html with a bloomDataDiv describe by the parameters, then run it through the derivation of
@@ -375,7 +427,7 @@ namespace BloomTests.Book
 			html += "</body></html>";
 			var bookDom = new HtmlDom(html);
 
-			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom,"", _collectionSettings);
+			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom,"", _collectionSettings, false);
 			string valuePredicate;
 			if (key == "licenseImage")
 			{
