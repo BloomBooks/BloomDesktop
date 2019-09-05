@@ -24,6 +24,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Publish.Epub;
 using Bloom.Properties;
+using Bloom.Publish;
 using Bloom.Publish.Android;
 using Bloom.web;
 using SIL.PlatformUtilities;
@@ -279,6 +280,18 @@ namespace Bloom.Api
 				var placeHolderNode = dom.RawDom.CreateElement("div");
 				placeHolderNode.InnerXml = vidPlaceHolderDivContents;
 				placeHolderNode.SetAttribute("class", "bloom-imageContainer");
+
+				// When we get to this point and we are creating an epub, we have already generated the
+				// temporary IDs needed to determine element visibility. We need to maintain the ID
+				// so we don't try to look up IDs in the dom which don't exist and throw a js error.
+				var vidNodeIdAttribute = vidNode.Attributes["id"];
+				if (vidNodeIdAttribute != null)
+				{
+					var vidNodeId = vidNodeIdAttribute.Value;
+					if (!string.IsNullOrEmpty(vidNodeId) && vidNodeId.StartsWith(PublishHelper.kTempIdMarker))
+						placeHolderNode.SetAttribute("id", vidNodeId);
+				}
+
 				vidNode.ParentNode.ReplaceChild(placeHolderNode, vidNode);
 			}
 		}

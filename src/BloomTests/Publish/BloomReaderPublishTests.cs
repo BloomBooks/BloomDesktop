@@ -670,7 +670,9 @@ namespace BloomTests.Publish
 		private void NewQuizTestActionsOnFolderBeforeCompressing(string bookFolderPath)
 		{
 			// This file gets placed in the real book's folder after adding a quiz in edit mode, so we mock that process.
-			RobustFile.WriteAllText(Path.Combine(bookFolderPath, PublishHelper.kSimpleComprehensionQuizJs), "not the real file's contents");
+			// But the code which puts an epub into a real browser to determine visibility of elements will actually
+			// try to run this, so it needs to be something which won't throw a javascript error.
+			RobustFile.WriteAllText(Path.Combine(bookFolderPath, PublishHelper.kSimpleComprehensionQuizJs), "//not the real file's contents");
 		} 
 
 		[Test]
