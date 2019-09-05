@@ -1104,6 +1104,12 @@ namespace Bloom.Book
 		// Currently, there is no UI for this. So, whatever the user enters in manually in meta.json gets passed to parse.
 		[JsonProperty("internetLimits")]
 		public dynamic InternetLimits { get; set; }
+
+		/// <summary>
+		/// Flag whether the user has used the original copyright and license for a derived/translated book.
+		/// </summary>
+		[JsonProperty("use-original-copyright")]
+		public bool UseOriginalCopyright { get; set; }
 	}
 
 	/// <summary>
