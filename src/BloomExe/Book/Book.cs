@@ -985,7 +985,7 @@ namespace Bloom.Book
 			{
 				// The one step that can legitimately change the metadata...though current branding packs
 				// will only do so if it is originally empty. So set the saved one before it and then get a new one.
-				BookCopyrightAndLicense.SetMetadata(licenseMetadata, bookDOM, FolderPath, CollectionSettings);
+				BookCopyrightAndLicense.SetMetadata(licenseMetadata, bookDOM, FolderPath, CollectionSettings, BookInfo.MetaData.UseOriginalCopyright);
 				_bookData.MergeBrandingSettings(CollectionSettings.BrandingProjectKey);
 				_bookData.SynchronizeDataItemsThroughoutDOM();
 				licenseMetadata = GetLicenseMetadata();
@@ -1004,7 +1004,7 @@ namespace Bloom.Book
 				bd.SynchronizeDataItemsThroughoutDOM();
 			}
 			// get any license info into the json and restored in the replaced front matter.
-			BookCopyrightAndLicense.SetMetadata(licenseMetadata, bookDOM, FolderPath, CollectionSettings);
+			BookCopyrightAndLicense.SetMetadata(licenseMetadata, bookDOM, FolderPath, CollectionSettings, BookInfo.MetaData.UseOriginalCopyright);
 
 			bookDOM.RemoveMetaElement("bloomBookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
 			bookDOM.RemoveMetaElement("bookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
@@ -2932,7 +2932,7 @@ namespace Bloom.Book
 
 		public void SetMetadata(Metadata metadata)
 		{
-			BookCopyrightAndLicense.SetMetadata(metadata, OurHtmlDom, FolderPath, CollectionSettings);
+			BookCopyrightAndLicense.SetMetadata(metadata, OurHtmlDom, FolderPath, CollectionSettings, BookInfo.MetaData.UseOriginalCopyright);
 			BookInfo.SetLicenseAndCopyrightMetadata(metadata);
 		}
 
