@@ -19,6 +19,8 @@
 span.ui-audioCurrent:not(.disableHighlight),
 div.ui-audioCurrent:not(.disableHighlight) p {
     background: @highlightColor;
+    /* make highlighted text easier to read if it is normally a light color (like white)*/
+    color: black;
 
     &:before {
         background-image: url(currentTextIndicator.svg);

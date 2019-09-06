@@ -1075,13 +1075,22 @@ namespace Bloom.Book
 			UpdateCollectionSettingsInBookMetaData();
 		}
 
+		/// <summary>
+		/// Write the appropriate styles to the defaultLangStyles.css file.
+		/// </summary>
 		private void CreateOrUpdateDefaultLangStyles()
 		{
-			Debug.WriteLine($"writing {FolderPath}/defaultLangStyles.css");
 			var path = Path.Combine(FolderPath, "defaultLangStyles.css");
+			bool doesAlreadyExist = RobustFile.Exists(path);
+			if (CollectionSettings.HarvesterMode && doesAlreadyExist)
+			{
+				// Would overwrite, but overwrite not allowed in Harvester mode.
+				return;
+			}
+			
 			var collectionStylesCss = CollectionSettings.GetCollectionStylesCss(false);
 			var cssBuilder = new StringBuilder(collectionStylesCss);
-			if (RobustFile.Exists(path))
+			if (doesAlreadyExist)
 			{
 				var cssLangs = new HashSet<string>();
 				cssLangs.Add(CollectionSettings.Language1Iso639Code);
@@ -2708,6 +2717,7 @@ namespace Bloom.Book
 			BookStorage.SetBaseForRelativePaths(printingDom, FolderPath);
 
 			DeletePages(printingDom.RawDom, p=>p.GetAttribute("class").ToLowerInvariant().Contains("bloom-nonprinting"));
+			PublishHelper.RemoveEnterprisePagesIfNeeded(CollectionSettings, printingDom, printingDom.GetPageElements().ToList());
 
 			switch (bookletPortion)
 			{
