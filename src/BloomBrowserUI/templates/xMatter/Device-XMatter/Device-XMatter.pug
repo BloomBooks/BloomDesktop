@@ -25,21 +25,21 @@ html
 
 	//- In paper book, this is the inside front cover
 	//- When making a .bloomd, Bloom will remove this if it is empty.
-	+page-xmatter('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-backMatter#898b6622-837b-49cd-9938-2de76f6d4b19
+	+page-xmatter('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-backMatter(data-xmatter-page="insideFrontCover")#898b6622-837b-49cd-9938-2de76f6d4b19
 		+field-mono-meta("N1","insideFontCover").Inside-Front-Cover-style
 
 	//- In paper books, this is the inside back cover
 	//- When making a .bloomd, Bloom will remove this if it is empty.
-	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter#898b6622-837b-49cd-9938-2de76f6d4b20
+	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-xmatter-page="insideBackCover")#898b6622-837b-49cd-9938-2de76f6d4b20
 		+field-mono-meta("N1","insideBackCover").Inside-Back-Cover-style
 
 	//- In paper books, this is the outside back cover
 	//- When making a .bloomd, Bloom will remove this if it is empty.
-	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter#898b6622-837b-49cd-9938-2de76f6d4b21
+	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(data-xmatter-page="outsideBackCover")#898b6622-837b-49cd-9938-2de76f6d4b21
 		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
 		+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style
 
-	+page-xmatter("The End").bloom-backMatter.theEndPage#898b6622-837b-49cd-9938-2de76f6d4b22
+	+page-xmatter("The End").bloom-backMatter.theEndPage(data-xmatter-page="endPage")#898b6622-837b-49cd-9938-2de76f6d4b22
 		+outside-back-cover-branding-top
 		//- would be nice to use data-collection instead of data-book, but that isn't working in Bloom these
 		//- days (was a version 1-ish feature that never got used, and atrophied).
