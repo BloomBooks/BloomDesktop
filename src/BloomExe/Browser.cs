@@ -1235,15 +1235,14 @@ namespace Bloom
 				{
 					using (var context = new AutoJSContext(geckoWebBrowser.Window))
 					{
-						var result = context.EvaluateScript(script, (nsISupports)geckoWebBrowser.Window.DomWindow,
+						var jsValue = context.EvaluateScript(script, (nsISupports)geckoWebBrowser.Window.DomWindow,
 							(nsISupports)geckoWebBrowser.Document.DomObject);
-						if (!result.IsString)
+						if (!jsValue.IsString)
 							return null;
-						// This bit of magic was borrowed from GeckoFx's AutoJsContext.ConvertValueToString.
-						// Unfortuately the more convenient version of EvaluateScript which returns a string also eats exceptions
+						// This bit of magic was borrowed from GeckoFx's AutoJsContext.ConvertValueToString (which changed in Geckofx60).
+						// Unfortunately the more convenient version of EvaluateScript which returns a string also eats exceptions
 						// (though it does return a boolean...we want the stack trace, though.)
-						var v = Xpcom.XPConnect.Instance.JSValToVariant(context.ContextPointer, ref result);
-						return nsString.Get(v.GetAsAString);
+						return SpiderMonkey.JsValToString(context.ContextPointer, jsValue);
 					}
 				}
 				catch (GeckoJavaScriptException ex)
