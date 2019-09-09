@@ -110,6 +110,7 @@ namespace Bloom.Edit
 				b.SaveDocument(temp.Path);
 				RobustFile.Delete(bookPath);
 				RobustFile.Move(temp.Path, bookPath);
+				b.DocumentCompleted -= browser_DocumentNavigated;
 			}
 			var sanityCheckDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
 

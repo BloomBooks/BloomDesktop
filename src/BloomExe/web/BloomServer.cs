@@ -324,7 +324,6 @@ namespace Bloom.Api
 			//enhance: something feeds back these branding logos with a weird URL, that shouldn't be.
 			if (ApiHandler.IsInvalidApiCall(localPath))
 				return false;
-
 #if MEMORYCHECK
 			// Check memory for the benefit of developers.  (Also see all requests as a side benefit.)
 			var debugMsg = String.Format("BloomServer.ProcessRequest(\"{0}\"", info.RawUrl);
@@ -1221,7 +1220,10 @@ namespace Bloom.Api
 			case ".svg": return "image/svg+xml";
 			case ".mp3": return "audio/mpeg";
 			case ".ogg": return "audio/ogg";
+			case ".woff": return "font/woff";
 			case ".woff2": return "font/woff2";
+			case ".xml": return "application/xml";
+			case ".xhtml": return "application/xhtml+xml";
 			default: return "application/octet-stream";
 			}
 		}

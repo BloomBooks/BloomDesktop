@@ -51,8 +51,7 @@
             "name": "Launch in Chrome",
             "type": "chrome",
             "request": "launch",
-            "runtimeExecutable":
-                "c:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+            "runtimeExecutable": "c:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
             // these args don't appear to work... trying to get it to not offer to restore previous pages
             //"runtimeArgs": [ "--no-first-run --kiosk --disable-session-crashed-bubble --disable-infobars --incognito --disable-extensions"],
             "url": "http://localhost:8089/bloom/CURRENTPAGE.htm",
@@ -71,6 +70,20 @@
             "name": "Launch Linux Firefox",
             "type": "firefox",
             "request": "launch",
+            "url": "http://localhost:8089/bloom/CURRENTPAGE.htm",
+            "webRoot": "${workspaceRoot}",
+            "log": {
+                "consoleLevel": {
+                    "PathConversion": "Debug",
+                    "default": "Error"
+                }
+            }
+        },
+        {
+            "name": "Launch Linux FF 60",
+            "type": "firefox",
+            "request": "launch",
+            "firefoxExecutable": "/d/steve/bin/firefox-60.7.1esr/firefox",
             "url": "http://localhost:8089/bloom/CURRENTPAGE.htm",
             "webRoot": "${workspaceRoot}",
             "log": {

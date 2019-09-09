@@ -1242,8 +1242,8 @@ namespace Bloom
 						// This bit of magic was borrowed from GeckoFx's AutoJsContext.ConvertValueToString.
 						// Unfortuately the more convenient version of EvaluateScript which returns a string also eats exceptions
 						// (though it does return a boolean...we want the stack trace, though.)
-						var v = Xpcom.XPConnect.Instance.JSValToVariant(context.ContextPointer, ref result);
-						return nsString.Get(v.GetAsAString);
+						var str = SpiderMonkey.JsValToString(context.ContextPointer, result);
+						return str;
 					}
 				}
 				catch (GeckoJavaScriptException ex)
