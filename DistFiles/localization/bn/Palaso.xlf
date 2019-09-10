@@ -729,7 +729,7 @@
       <trans-unit id="MetadataEditor.PublicDomain">
         <source xml:lang="en">The copyright holder waives all rights</source>
         <note>ID: MetadataEditor.PublicDomain</note>
-        <target xml:lang="bn" state="needs-translation">The copyright holder waives all rights</target>
+        <target xml:lang="bn" state="translated">কপিরাইট ধারক সমস্ত অধিকার পরিত্যাগ করে</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
@@ -767,7 +767,7 @@
         <source xml:lang="en">about {0} Public Domain</source>
         <note>ID: MetadataEditor.linkToPublicDomainCC0</note>
         <note>{0} is replaced by an untranslatable abbreviation functioning as an adjective ("CC0")</note>
-        <target xml:lang="bn" state="needs-translation">about {0} Public Domain</target>
+        <target xml:lang="bn" state="translated">সম্পর্কে {0} পাবলিক ডোমেন</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons" approved="yes">
         <source xml:lang="en">Not Enforceable</source>
@@ -778,17 +778,17 @@
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton">
         <source xml:lang="en">Cancel</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton</note>
-        <target xml:lang="bn" state="needs-translation">Cancel</target>
+        <target xml:lang="bn" state="translated">বাতিল</target>
       </trans-unit>
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._okButton">
         <source xml:lang="en">OK</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._okButton</note>
-        <target xml:lang="bn" state="needs-translation">OK</target>
+        <target xml:lang="bn" state="translated">ঠিক আছে</target>
       </trans-unit>
       <trans-unit id="ScriptsAndVariantsDialog.ScriptsAndVariants">
         <source xml:lang="en">Script and Variant</source>
         <note>ID: ScriptsAndVariantsDialog.ScriptsAndVariants</note>
-        <target xml:lang="bn" state="needs-translation">Script and Variant</target>
+        <target xml:lang="bn" state="translated">লিপি এবং বিভিন্ন</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
