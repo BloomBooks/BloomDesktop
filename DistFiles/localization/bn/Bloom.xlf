@@ -3843,13 +3843,13 @@
         <source xml:lang="en">Publishing</source>
         <note>This is shown while Bloom is sharing a book over wifi, over a usb cable, or uploading. </note>
         <note>ID: PublishTab.Common.Publishing</note>
-        <target xml:lang="bn" state="needs-translation">Publishing</target>
+        <target xml:lang="bn" state="translated">প্রকাশক</target>
       </trans-unit>
       <trans-unit id="PublishTab.Common.StopPublishing">
         <source xml:lang="en">Stop Publishing</source>
         <note>This is shown while Bloom is sharing a book over wifi or over a usb cable. </note>
         <note>ID: PublishTab.Common.StopPublishing</note>
-        <target xml:lang="bn" state="needs-translation">Stop Publishing</target>
+        <target xml:lang="bn" state="translated">প্রকাশ বন্ধ করুন</target>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled" approved="yes">
         <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
@@ -3870,19 +3870,20 @@
         <source xml:lang="en">Sharing .bloomd Files</source>
         <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
         <note/>
-        <target xml:lang="bn" state="needs-translation">Sharing .bloomd Files</target>
+        <target xml:lang="bn" state="translated">
+ব্লুম ফাইলগুলি ভাগ করে নেওয়া</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
         <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
         <note>ID: PublishTab.Android.BloomD.Hint</note>
         <note/>
-        <target xml:lang="bn" state="needs-translation">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</target>
+        <target xml:lang="bn" state="translated">আপনি ব্যবহার করতে পারেন শেয়ার করার জন্য যে অ্যাপস গুলি ইমেইল ড্রপবক্স এবং হোয়াটসঅ্যাপের মাধ্যমে আপনার ফাইলগুলি একটি ডিভাইসে নেওয়ার জন্য</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en"> USB is Difficult</source>
         <note>ID: PublishTab.Android.USB.Hint.Heading</note>
         <note/>
-        <target xml:lang="bn" state="needs-translation"> USB is Difficult</target>
+        <target xml:lang="bn" state="translated"> ইউএসবি হয় কঠিন</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
         <source xml:lang="en">To Send via USB, you may need to get the right
