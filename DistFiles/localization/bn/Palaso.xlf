@@ -856,7 +856,7 @@
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
         <note>ID: SettingsProtection.PasswordNoticeWithSupportUrl</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNotice". Param 0: Factory password; Param 1: product name; Param 2: URL of support page</note>
-        <target xml:lang="bn" state="needs-translation">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</target>
+        <target xml:lang="bn" state="translated">এই সেটিংসের জন্য কারখানার পাসওয়ার্ড "{0}"। যদি আপনি এটি ভুলে যান তবে আপনি সর্বদা {1} সমর্থন পৃষ্ঠাটি দেখতে পারেন: {2}</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
@@ -883,7 +883,7 @@
         <source xml:lang="en">In applications which support this option, fields with this input system will be able to play and record voice.</source>
         <note>ID: VoiceIdentifierView.betterLabel1</note>
         <note>Displayed if a user selects the voice special option in writing system setup</note>
-        <target xml:lang="bn" state="needs-translation">In applications which support this option, fields with this input system will be able to play and record voice.</target>
+        <target xml:lang="bn" state="translated">অ্যাপ্লিকেশনগুলিতে যা এই বিকল্পটিকে সমর্থন করে, এই ইনপুট সিস্টেম সহ ক্ষেত্রগুলি ভয়েস প্রসার করতে এবং রেকর্ড করতে সক্ষম হবে।</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
@@ -917,25 +917,25 @@
         <source xml:lang="en">Abbreviation</source>
         <note>ID: WSIdentifierView.betterLabel4</note>
         <note>In writing system setup general tab: label before abbreviation text box</note>
-        <target xml:lang="bn" state="needs-translation">Abbreviation</target>
+        <target xml:lang="bn" state="translated">সংক্ষেপ</target>
       </trans-unit>
       <trans-unit id="WSIdentifierView.betterLabel5">
         <source xml:lang="en">Special:</source>
         <note>ID: WSIdentifierView.betterLabel5</note>
         <note>In writing system setup general tab:  Label before combo box with 'Special' choices</note>
-        <target xml:lang="bn" state="needs-translation">Special:</target>
+        <target xml:lang="bn" state="translated">বিশেষ:</target>
       </trans-unit>
       <trans-unit id="WSIdentifiers.IpaIdentifierView.Default">
         <source xml:lang="en">Default</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Default</note>
         <note>Choice for most users</note>
-        <target xml:lang="bn" state="needs-translation">Default</target>
+        <target xml:lang="bn" state="translated">ডিফল্ট</target>
       </trans-unit>
       <trans-unit id="WSIdentifiers.IpaIdentifierView.Emic">
         <source xml:lang="en">Emic (uses phonology of the language)</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Emic</note>
         <note>Only translate text inside of the parentheses ()</note>
-        <target xml:lang="bn" state="needs-translation">Emic (uses phonology of the language)</target>
+        <target xml:lang="bn" state="translated">ইমিক (ভাষার শব্দবিজ্ঞান ব্যবহার করে)</target>
       </trans-unit>
       <trans-unit id="WSIdentifiers.IpaIdentifierView.Etic">
         <source xml:lang="en">Etic (raw phonetic transcription)</source>
