@@ -61,12 +61,12 @@
         <source xml:lang="en">Missing image description on page {0}</source>
         <note>ID: AccessibilityCheck.DescriptionsForAllImages.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="bn" state="needs-translation">Missing image description on page {0}</target>
+        <target xml:lang="bn" state="translated">পৃষ্ঠাটিতে চিত্রের বিবরণ অনুপস্থিত {0}</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.FindingAce" sil:dynamic="true">
         <source xml:lang="en">Finding Ace by DAISY on this computer...</source>
         <note>ID: AccessibilityCheck.FindingAce</note>
-        <target xml:lang="bn" state="needs-translation">Finding Ace by DAISY on this computer...</target>
+        <target xml:lang="bn" state="translated">এই কম্পিউটারে DAISY দ্বারা Ace সন্ধান করা হচ্ছে ...</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.FoundAce" sil:dynamic="true">
         <source xml:lang="en">Found.</source>
