@@ -3244,7 +3244,7 @@
         <source xml:lang="en">Bloom book folders must have only one file ending in .htm.  In the book "{0}", these are the files ending in .htm:</source>
         <note>ID: Errors.MultipleHtmlFiles</note>
         <note>{0} will get the name of the book</note>
-        <target xml:lang="bn" state="needs-translation">Bloom book folders must have only one file ending in .htm.  In the book "{0}", these are the files ending in .htm:</target>
+        <target xml:lang="bn" state="translated">ব্লুম বুক ফোল্ডারগুলিতে  এ শেষ হওয়া কেবল একটি ফাইল থাকতে হবে .htm। "{0}" এই বইটিতে, এইগুলি হয় শেষ হওয়া ফাইলগুলি .htm:</target>
       </trans-unit>
       <trans-unit id="Errors.NeedNewerVersion" approved="yes">
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}</source>
@@ -3277,7 +3277,7 @@
         <source xml:lang="en">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</source>
         <note>ID: Errors.RemoveExcessHtml</note>
         <note>This follows the Errors.MultipleHtmlFiles message and a list of HTML files.</note>
-        <target xml:lang="bn" state="needs-translation">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</target>
+        <target xml:lang="bn" state="translated">শেষ হওয়া ফাইলগুলির একটি ব্যতীত সমস্ত অপসারণ করুন।.htm. ব্লুম এখন আপনার জন্য এই ফোল্ডারটি খুলবে।</target>
       </trans-unit>
       <trans-unit id="Errors.ReportThisProblemButton" approved="yes">
         <source xml:lang="en">Report this problem to Bloom Support</source>
@@ -3535,7 +3535,7 @@
       <trans-unit id="LayoutChoices.HalfLetterLandscape" sil:dynamic="true">
         <source xml:lang="en">HalfLetterLandscape</source>
         <note>ID: LayoutChoices.HalfLetterLandscape</note>
-        <target xml:lang="bn" state="needs-translation">HalfLetterLandscape</target>
+        <target xml:lang="bn" state="translated">অর্ধেকচিঠি প্রাকৃতিক ভূদৃশ্য</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterPortrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HalfLetterPortrait</source>
@@ -3560,7 +3560,7 @@
       <trans-unit id="LayoutChoices.QuarterLetterPortrait" sil:dynamic="true">
         <source xml:lang="en">QuarterLetterPortrait</source>
         <note>ID: LayoutChoices.QuarterLetterPortrait</note>
-        <target xml:lang="bn" state="needs-translation">QuarterLetterPortrait</target>
+        <target xml:lang="bn" state="translated">একচতুর্থাংশচিঠিপ্রতিকৃতি</target>
       </trans-unit>
       <trans-unit id="LicenseDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom {0}</source>
