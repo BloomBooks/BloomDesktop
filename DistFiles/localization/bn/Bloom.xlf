@@ -1166,7 +1166,8 @@
         <source xml:lang="en">Done</source>
         <note>ID: Common.Done</note>
         <note>Shown in a list of messages when Bloom has completed a task.</note>
-        <target xml:lang="bn" state="needs-translation">Done</target>
+        <target xml:lang="bn" state="translated">
+সম্পন্ন</target>
       </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
@@ -1329,7 +1330,7 @@
       <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true">
         <source xml:lang="en">This kind of page will be included only in digital book outputs, not in PDF.</source>
         <note>ID: EditTab.AddPageDialog.DigitalPage</note>
-        <target xml:lang="bn" state="needs-translation">This kind of page will be included only in digital book outputs, not in PDF.</target>
+        <target xml:lang="bn" state="translated">এই ধরণের পৃষ্ঠাটি পিডিএফে নয়, কেবল ডিজিটাল বইয়ের আউটপুটগুলিতে অন্তর্ভুক্ত করা হবে।</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Could not find {0}</source>
@@ -1594,7 +1595,7 @@
         <source xml:lang="en">Bloom Enterprise Settings</source>
         <note>ID: EditTab.EnterpriseSettingsButton</note>
         <note>Text of button that appears when Bloom Enterprise is needed for access to a feature.</note>
-        <target xml:lang="bn" state="needs-translation">Bloom Enterprise Settings</target>
+        <target xml:lang="bn" state="translated">ব্লুম এন্টারপ্রাইজ সেটিংস</target>
       </trans-unit>
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
@@ -1711,17 +1712,17 @@
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizAnswer-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Answer</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizAnswer-style</note>
-        <target xml:lang="bn" state="needs-translation">Quiz Answer</target>
+        <target xml:lang="bn" state="translated">কুইজ এর উত্তর </target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizHeader-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Header</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizHeader-style</note>
-        <target xml:lang="bn" state="needs-translation">Quiz Header</target>
+        <target xml:lang="bn" state="translated">কুইজ এর শিরোনাম</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizQuestion-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Question</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizQuestion-style</note>
-        <target xml:lang="bn" state="needs-translation">Quiz Question</target>
+        <target xml:lang="bn" state="translated">ক্যুইজ এর প্রশ্ন</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Title On Cover</source>
@@ -2238,7 +2239,7 @@
         <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
         <note>ID: EditTab.RequiresEnterprise</note>
         <note>Appears in notice (possibly obscuring other controls when they may not be used) because no Bloom Enterprise project has been selected.</note>
-        <target xml:lang="bn" state="needs-translation">To use this feature, you'll need to enable Bloom Enterprise.</target>
+        <target xml:lang="bn" state="translated">এই বৈশিষ্ট্যটি ব্যবহার করতে, আপনাকে ব্লুম এন্টারপ্রাইজ সক্ষম করতে হবে</target>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Saving...</source>
