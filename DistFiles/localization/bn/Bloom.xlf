@@ -2910,7 +2910,7 @@
       <trans-unit id="EditTab.Toolbox.SignLanguage.Timeout">
         <source xml:lang="en">The initial processing of the video file timed out after one minute.  The raw video output will be stored.</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Timeout</note>
-        <target xml:lang="bn" state="needs-translation">The initial processing of the video file timed out after one minute.  The raw video output will be stored.</target>
+        <target xml:lang="bn" state="translated">ভিডিও ফাইলটির প্রাথমিক প্রক্রিয়া এক মিনিটের পরে শেষ হয়ে যায়। কাঁচা ভিডিও আউটপুট সংরক্ষণ করা হবে.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.Trim" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Trim</source>
@@ -2922,7 +2922,7 @@
         <source xml:lang="en">Error output from ffmpeg trying to produce {0}: {1}{2}The raw video output will be stored.</source>
         <note>ID: EditTab.Toolbox.SignLanguage.VideoProcessingError</note>
         <note>{0} is the path to the video file, {1} is the error message from the ffmpeg program, and {2} is a newline character</note>
-        <target xml:lang="bn" state="needs-translation">Error output from ffmpeg trying to produce {0}: {1}{2}The raw video output will be stored.</target>
+        <target xml:lang="bn" state="translated">ffmpeg থেকে ত্রুটি আউটপুট {0} উত্পাদন করার চেষ্টা করছে: {1} {2} কাঁচা ভিডিও আউটপুট সংরক্ষণ করা হবে।</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.WhatCameraSees" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Here is what your camera sees:</source>
@@ -3018,7 +3018,7 @@
         <source xml:lang="en">eSpeak failed.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
         <note>This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
-        <target xml:lang="bn" state="needs-translation">eSpeak failed.</target>
+        <target xml:lang="bn" state="translated">ইকথা বলা ব্যর্থ হয়েছে।</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Listen to the whole page</source>
@@ -3111,7 +3111,7 @@
         <source xml:lang="en">Something went wrong while splitting the recording.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SplitError</note>
         <note>This text appears if an error occurs while perfoming automatic splitting of audio (an audio file corresponding to an entire text box will be split into multiple sections, one section per sentence).</note>
-        <target xml:lang="bn" state="needs-translation">Something went wrong while splitting the recording.</target>
+        <target xml:lang="bn" state="translated">রেকর্ডিং বিভক্ত করার সময় কিছু ভুল হয়েছে।</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel" approved="yes">
         <source xml:lang="en">Split</source>
