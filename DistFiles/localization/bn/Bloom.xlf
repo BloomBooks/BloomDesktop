@@ -71,7 +71,7 @@
       <trans-unit id="AccessibilityCheck.FoundAce" sil:dynamic="true">
         <source xml:lang="en">Found.</source>
         <note>ID: AccessibilityCheck.FoundAce</note>
-        <target xml:lang="bn" state="needs-translation">Found.</target>
+        <target xml:lang="bn" state="translated">পাওয়া গেছে।</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Learn About Accessibility</source>
@@ -135,7 +135,7 @@
       <trans-unit id="AccessibilityCheck.WindowTitle">
         <source xml:lang="en">Bloom Accessibility Checker</source>
         <note>ID: AccessibilityCheck.WindowTitle</note>
-        <target xml:lang="bn" state="needs-translation">Bloom Accessibility Checker</target>
+        <target xml:lang="bn" state="translated">ব্লুম প্রবেশযোগ্যতা পরীক্ষক</target>
       </trans-unit>
       <trans-unit id="BloomIntegrity.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom Problem</source>
@@ -757,7 +757,7 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
         <source xml:lang="en">Sign Language   (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
-        <target xml:lang="bn" state="needs-translation">Sign Language   (Optional)</target>
+        <target xml:lang="bn" state="translated">সাইন ভাষা (ঐচ্ছিক)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
@@ -963,7 +963,7 @@
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
-        <target xml:lang="bn" state="needs-translation">Show translations which have not been approved yet</target>
+        <target xml:lang="bn" state="translated">অনুবাদগুলি দেখান যা এখনও অনুমোদিত হয়নি</target>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
@@ -1055,7 +1055,7 @@
         <source xml:lang="en">Help us translate Bloom (web)</source>
         <note>ID: CollectionTab.UILanguageMenu.HelpTranslate</note>
         <note>The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.</note>
-        <target xml:lang="bn" state="needs-translation">Help us translate Bloom (web)</target>
+        <target xml:lang="bn" state="translated">ব্লুম (ওয়েব) অনুবাদ করতে আমাদের সহায়তা করুন</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip" approved="yes">
         <source xml:lang="en">{0}% translated</source>
@@ -1120,7 +1120,7 @@
         <source xml:lang="en">Learn More</source>
         <note>ID: Common.LearnMore</note>
         <note>This is the same as Settings.Enterprise.LearnMore</note>
-        <target xml:lang="bn" state="needs-translation">Learn More</target>
+        <target xml:lang="bn" state="translated">আরও শিখুন</target>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
@@ -1154,13 +1154,13 @@
         <source xml:lang="en">Info</source>
         <note>ID: Common.Warning</note>
         <note>A heading shown above some messages.</note>
-        <target xml:lang="bn" state="needs-translation">Info</target>
+        <target xml:lang="bn" state="translated">তথ্য</target>
       </trans-unit>
       <trans-unit id="Common.Note">
         <source xml:lang="en">Note</source>
         <note>ID: Common.Note</note>
         <note>A heading shown above some messages.</note>
-        <target xml:lang="bn" state="needs-translation">Note</target>
+        <target xml:lang="bn" state="translated">নোট</target>
       </trans-unit>
       <trans-unit id="Common.Done">
         <source xml:lang="en">Done</source>
