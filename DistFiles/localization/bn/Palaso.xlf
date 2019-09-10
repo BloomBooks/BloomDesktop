@@ -941,7 +941,7 @@
         <source xml:lang="en">Etic (raw phonetic transcription)</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Etic</note>
         <note>Only translate text inside of the parentheses ()</note>
-        <target xml:lang="bn" state="needs-translation">Etic (raw phonetic transcription)</target>
+        <target xml:lang="bn" state="translated">এটিক (কাঁচা শব্দতত্ত্ব-সংক্রান্ত প্রতিলিপি)</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
