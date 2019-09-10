@@ -430,7 +430,7 @@
         <source xml:lang="en">Read about IPA transcription on the web</source>
         <note>ID: IpaIdentifierView.linkLabel1</note>
         <note>In writing system setup when IPA special option is selected: text used in link to a webpage describing IPA transcription</note>
-        <target xml:lang="bn" state="needs-translation">Read about IPA transcription on the web</target>
+        <target xml:lang="bn" state="translated">ওয়েবে আইপিএ ট্রান্সক্রিপশন সম্পর্কে পড়ুন</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
@@ -543,12 +543,24 @@
       <trans-unit id="LanguageLookup._scriptsAndVariantsLabel">
         <source xml:lang="en">my script variant label</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLabel</note>
-        <target xml:lang="bn" state="needs-translation">my script variant label</target>
+        <target xml:lang="bn" state="translated">আমার লিপি বিভিন্ন লেবেল</target>
+        <alt-trans>
+          <target xml:lang="bn">আমার লিপি বৈকল্পিক লেবেল</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLink">
         <source xml:lang="en">Script and Variant</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLink</note>
-        <target xml:lang="bn" state="needs-translation">Script and Variant</target>
+        <target xml:lang="bn" state="translated">লিপি এবং বিভিন্ন</target>
+        <alt-trans>
+          <target xml:lang="bn">
+লিপি এবং বিভিন্ন</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="bn">
+লিপি এবং বিভিন্ন
+</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MemoryWarning" approved="yes">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
