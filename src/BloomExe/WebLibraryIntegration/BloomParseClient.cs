@@ -161,8 +161,11 @@ namespace Bloom.WebLibraryIntegration
 			var request = MakeGetRequest("login");
 			request.AddParameter("username", account.ToLowerInvariant());
 			request.AddParameter("password", password);
+			// a problem here is that behind the sil.org.pg captive portal, this hangs for a long while
 			var response = Client.Execute(request);
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
+			// behind sil.org.png, if the user isn't logged in to the captive portal,
+			// at this point dy is null. Response.Content is "". repsonse.ErrorMessage is "Unable to connect to the remote server".
 			try
 			{
 				_sessionToken = dy.sessionToken;//there's also an "error" in there if it fails, but a null sessionToken tells us all we need to know

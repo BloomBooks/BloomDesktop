@@ -200,5 +200,96 @@ namespace BloomTests
 			mockClient.Setup(x => x.DownloadString(It.IsAny<string>())).Returns(portalHtml);
 			return mockClient.Object;
 		}
+
+		/* We recorded the following actualy response from the ukarumpa captive portal
+		 * in Sept 2019
+		 *
+		 * <html>
+		<body>
+		<link rel="icon" type="image/png" href="captiveportal-SILlogo.png">
+
+		<form method="post" action="https://homeportal.sil.org.pg:8003/index.php?zone=homeportal">
+			<input name="redirurl" type="hidden" value="">
+			<input name="zone" type="hidden" value="homeportal">
+			<center>
+			<table cellpadding="6" cellspacing="0" width="550" height="380" style="border:1px solid #000000">
+			<tr>
+				<td>
+					<div id="mainlevel">
+					<center>
+					<table width="100%" border="0" cellpadding="5" cellspacing="0">
+					<img width=48 height=48 src="captiveportal-SILlogo.png">
+					<tr>
+						<td>
+							<center>
+							<div id="mainarea">
+							<center>
+							<table width="100%" border="0" cellpadding="5" cellspacing="5">
+							<tr>
+								<td>
+									<div id="maindivarea">
+									<center>
+										<div id='statusbox'>
+											<font color='red' face='arial' size='+1'>
+											<b>
+
+											</b>
+											</font>
+										</div>
+										<br />
+										<div id='loginbox'>
+										<table>
+											<tr><td colspan="2"><center>Welcome to the SILPNG Home Captive Portal!</td></tr>
+											<tr><td>&nbsp;</td></tr>
+											<tr><td class="text-right">Username:</td><td><input name="auth_user" type="text" autofocus style="border: 1px dashed;"></td></tr>
+											<tr><td class="text-right">Password:</td><td><input name="auth_pass" type="password" style="border: 1px dashed;"></td></tr>
+											<tr><td>&nbsp;</td></tr>
+											<tr>
+												<td colspan="2"><center><input name="accept" type="submit" value="Continue"></center></td>
+											</tr>
+										</table>
+										</div>
+									</center>
+									</div>
+								</td>
+							</tr>
+							</table>
+							</center>
+							</div>
+							</center>
+						</td>
+					</tr>
+					</table>
+					</center>
+					</div>
+				</td>
+			</tr>
+			</table>
+						</br></br>
+							<!-- JavaScript to Show/Hide Info -->
+							<script type="text/javascript" language="JavaScript">
+							function ReverseDisplay(d) {
+							if(document.getElementById(d).style.display == "none") { document.getElementById(d).style.display = "block"; }
+							else { document.getElementById(d).style.display = "none"; }
+							}
+							</script>
+
+
+							<a href="javascript:ReverseDisplay('popupinfo')">
+							Click here for more information on the logout pop-up window
+							</a>
+								<div id="popupinfo" style="display:none;">
+									<p>Please update your browser to have this new pop-up exception and create a new bookmark for this login page.</br></br>
+									<strong>Create an Allow Pop-up Exception For:</strong></br>
+									https://homeportal.sil.org.pg:8003</br></br>
+									<strong>Create a Bookmark for this Login Page:</strong></br>
+									<a href="https://homeportal.sil.org.pg:8003/index.php?zone=homeportal">https://homeportal.sil.org.pg:8003/index.php?zone=homeportal</a>
+									</p>
+									</div>
+			</center>
+		</form>
+		</body>
+		</html>
+		*/
 	}
 }

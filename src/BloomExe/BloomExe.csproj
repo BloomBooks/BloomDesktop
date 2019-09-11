@@ -416,6 +416,7 @@
       <DependentUpon>ScriptSettingsDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Edit\AudioRecording.cs" />
+    <Compile Include="Edit\BloomMetadataEditorDialog.cs" />
     <Compile Include="Edit\ConfirmRemovePageDialog.cs">
       <SubType>Form</SubType>
     </Compile>

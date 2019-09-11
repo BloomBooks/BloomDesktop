@@ -354,32 +354,34 @@ namespace Bloom.Edit
 				//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
 
 				var metadata = _model.CurrentBook.GetLicenseMetadata();
+				var originalMetadata = BookCopyrightAndLicense.GetOriginalMetadata(_model.CurrentBook.Storage.Dom);
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
-				using(var dlg = new SIL.Windows.Forms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
+				var isDerivedBook = !String.IsNullOrEmpty(originalMetadata.CopyrightNotice) || !(originalMetadata.License is NullLicense);
+				using (var dlg = new BloomMetadataEditorDialog(metadata, isDerivedBook))
 				{
 					dlg.ShowCreator = false;
-					if(DialogResult.OK == dlg.ShowDialog())
+					dlg.ReplaceOriginalCopyright = !_model.CurrentBook.BookInfo.MetaData.UseOriginalCopyright;
+					if (DialogResult.OK == dlg.ShowDialog())
 					{
-						Logger.WriteEvent("For BL-3166 Investigation");
-						if(metadata.License == null)
+						_model.CurrentBook.BookInfo.MetaData.UseOriginalCopyright = isDerivedBook && !dlg.ReplaceOriginalCopyright;
+						if (!isDerivedBook || dlg.ReplaceOriginalCopyright)
 						{
-							Logger.WriteEvent("old LicenseUrl was null ");
+							Logger.WriteEvent("For BL-3166 Investigation");
+							if (metadata.License == null)
+								Logger.WriteEvent("old LicenseUrl was null ");
+							else
+								Logger.WriteEvent("old LicenseUrl was " + metadata.License.Url);
+							if (dlg.Metadata.License == null)
+								Logger.WriteEvent("new LicenseUrl was null ");
+							else
+								Logger.WriteEvent("new LicenseUrl: " + dlg.Metadata.License.Url);
+							_model.ChangeBookLicenseMetaData(dlg.Metadata);
 						}
 						else
 						{
-							Logger.WriteEvent("old LicenseUrl was " + metadata.License.Url);
+							_model.ChangeBookLicenseMetaData(originalMetadata);
 						}
-						if(dlg.Metadata.License == null)
-						{
-							Logger.WriteEvent("new LicenseUrl was null ");
-						}
-						else
-						{
-							Logger.WriteEvent("new LicenseUrl: " + dlg.Metadata.License.Url);
-						}
-
-						_model.ChangeBookLicenseMetaData(dlg.Metadata);
 					}
 				}
 				Logger.WriteMinorEvent("Emerged from Metadata Editor Dialog");

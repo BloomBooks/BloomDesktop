@@ -37,6 +37,10 @@ namespace Bloom.CLI
 					Browser.SetUpXulRunner();
 					Browser.XulRunnerShutdown += Program.OnXulRunnerShutdown;
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);   // Unclear if this line is needed or not.
+					if (DesktopAnalytics.Analytics.AllowTracking)
+					{
+						throw new ApplicationException("Allow tracking is enabled but we don't want the Harvester to actually send analytics.");
+					}
 
 					CollectionSettings.HarvesterMode = true;
 					string collectionFilePath = options.CollectionPath;
