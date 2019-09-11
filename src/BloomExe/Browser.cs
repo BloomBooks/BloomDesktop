@@ -334,12 +334,19 @@ namespace Bloom
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing)
 		{
+			if (_disposed)
+				return;
 			if (disposing)
 			{
 				if (_dependentContent != null)
 				{
 					_dependentContent.Dispose();
 					_dependentContent = null;
+				}
+				if (_browser != null)
+				{
+					_browser.Dispose();
+					_browser = null;
 				}
 				if (components != null)
 				{

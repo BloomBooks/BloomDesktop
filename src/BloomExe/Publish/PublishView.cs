@@ -551,6 +551,11 @@ namespace Bloom.Publish
 			_printButton.Enabled = false;
 			_pdfViewer.Visible = false;
 			Cursor = Cursors.WaitCursor;
+			if (_htmlControl != null)
+			{
+				Controls.Remove(_htmlControl);
+				_htmlControl.Dispose();
+			}
 			_htmlControl = new HtmlPublishPanel(pathToHtml);
 			_htmlControl.Dock = DockStyle.Fill;
 			var saveBackGround = _htmlControl.BackColor; // changed to match parent during next statement

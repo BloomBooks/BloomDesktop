@@ -94,22 +94,23 @@ namespace Bloom.Edit
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 			XmlHtmlConverter.SaveDOMAsHtml5(dom, bookPath);
 
-			var b = new GeckoWebBrowser();
-			var neededToMakeThingsWork = b.Handle;
-			NavigateAndWait(b, bookPath);
+			using (var b = new GeckoWebBrowser())
+			{
+				var neededToMakeThingsWork = b.Handle;
+				NavigateAndWait(b, bookPath);
 
-			//Now we call the method which takes that confuration data and adds/removes/updates pages.
-			//We have the data as json string, so first we turn it into object for the updateDom's convenience.
-			RunJavaScript(b, "runUpdate(" + GetAllData() + ")");
+				//Now we call the method which takes that confuration data and adds/removes/updates pages.
+				//We have the data as json string, so first we turn it into object for the updateDom's convenience.
+				RunJavaScript(b, "runUpdate(" + GetAllData() + ")");
 
-			//Ok, so we should have a modified DOM now, which we can save back over the top.
+				//Ok, so we should have a modified DOM now, which we can save back over the top.
 
-			//nice non-ascii paths kill this, so let's go to a temp file first
-			var temp = TempFile.CreateAndGetPathButDontMakeTheFile(); //we don't want to wrap this in using
-			b.SaveDocument(temp.Path);
-			RobustFile.Delete(bookPath);
-			RobustFile.Move(temp.Path, bookPath);
-
+				//nice non-ascii paths kill this, so let's go to a temp file first
+				var temp = TempFile.CreateAndGetPathButDontMakeTheFile(); //we don't want to wrap this in using
+				b.SaveDocument(temp.Path);
+				RobustFile.Delete(bookPath);
+				RobustFile.Move(temp.Path, bookPath);
+			}
 			var sanityCheckDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
 
 			// Because the Mozilla code loaded the document from a filename initially, and we later save to a
