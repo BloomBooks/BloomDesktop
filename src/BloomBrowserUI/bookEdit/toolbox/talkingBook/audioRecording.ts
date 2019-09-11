@@ -1,4 +1,4 @@
-﻿// This class supports creating audio recordings for talking books.
+// This class supports creating audio recordings for talking books.
 // It is also used by the motion tool when previewing.
 // Things currently get started when the user selects the "Talking Book Tool" item in
 // the toolbox while editing. This invokes the function audioRecorder.setupForRecording()
@@ -1734,7 +1734,17 @@ export default class AudioRecording {
         // FYI, it is possible for newPageReady to be called without updateMarkup() being called
         // (e.g. when opening the toolbox with an empty text box).
         this.initializeAudioRecordingMode();
-        this.changeStateAndSetExpectedAsync("");
+
+        // BL-7588 We were getting a timing problem where this method was overwriting the proper state to empty
+        // string, when we had already arrived at the proper "record" state in setupForRecording().
+        // We just need to make sure that there is editable text and set the state accordingly.
+        const editable = this.getRecordableDivs();
+        if (editable.length === 0) {
+            // no editable text on this page.
+            this.changeStateAndSetExpectedAsync("");
+            return;
+        }
+        this.changeStateAndSetExpectedAsync("record");
     }
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
