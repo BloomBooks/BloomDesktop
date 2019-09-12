@@ -49,7 +49,7 @@ namespace Bloom.Book
 		/// <param name="sourceBookFolder"></param>
 		/// <param name="parentCollectionPath"></param>
 		/// <returns>path to the new book folder</returns>
-		public  string CreateBookOnDiskFromTemplate(string sourceBookFolder, string parentCollectionPath)
+		public string CreateBookOnDiskFromTemplate(string sourceBookFolder, string parentCollectionPath)
 		{
 			Logger.WriteEvent("BookStarter.CreateBookOnDiskFromTemplate({0}, {1})", sourceBookFolder, parentCollectionPath);
 
@@ -132,6 +132,8 @@ namespace Bloom.Book
 
 			var bookData = new BookData(storage.Dom, _collectionSettings, null);
 			UpdateEditabilityMetadata(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
+			// BL-7614 We don't want a derivative of a book downloaded from a "bookshelf" to have the same bookshelf
+			storage.BookInfo.ClearBookshelf();
 
 			// NB: For a new book based on a page template, I think this should remove *everything*,
 			// because the rest is in the xmatter.

@@ -369,6 +369,11 @@ namespace Bloom.Book
 			}
 		}
 
+		internal void ClearBookshelf()
+		{
+			UpdateOneTypeOfMetaDataTags(TagIsBookshelf, kBookshelfPrefix, "");
+		}
+
 		private void UpdateOneTypeOfMetaDataTags(Func<string, bool> tagTest, string prefix, string valueToSet)
 		{
 			var splitValues = SplitList(valueToSet);
@@ -770,7 +775,7 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// This is intended to be a list of strings, possibly from a restricted domain, indicating kinds of content
-		/// the book contains. Currently it only ever contains one member of the Topics list.
+		/// the book contains. Currently it contains one member of the Topics list and possibly a bookshelf for the website.
 		/// </summary>
 		[JsonProperty("tags")]
 		public string[] Tags { get; set; }
