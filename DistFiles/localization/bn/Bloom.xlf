@@ -147,6 +147,9 @@
         <note>ID: BloomIntegrityDialog.ReportProblem</note>
         <target xml:lang="bn" state="translated">সমস্যার বিবরণী পাঠান</target>
         <alt-trans>
+          <target xml:lang="bn">সমস্যা রিপোর্ট করুন </target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="bn">সমস্যার বিবরণী দিন</target>
         </alt-trans>
       </trans-unit>
