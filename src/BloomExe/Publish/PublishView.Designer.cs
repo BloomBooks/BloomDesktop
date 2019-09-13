@@ -9,19 +9,29 @@ namespace Bloom.Publish
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
+		private bool disposed = false;
         /// <summary>
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+			if (disposed)
+				return;
+			disposed = true;
+            if (disposing)
             {
-                components.Dispose();
+				if (components != null)
+	                components.Dispose();
 	            if (_publishApi != null)
 	            {
 		            _publishApi.Stop();
 	            }
+				if (_htmlControl != null)
+				{
+					_htmlControl.Dispose();
+					_htmlControl = null;
+				}
             }
             base.Dispose(disposing);
         }
