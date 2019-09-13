@@ -68,6 +68,11 @@ namespace BloomTests.Book
 		{
 			return Path.Combine(bookFolderPath, Path.GetFileName(bookFolderPath))+".htm";
 		}
+
+		private string GetPathToMetaJson(string bookFolderPath)
+		{
+			return Path.Combine(bookFolderPath, "meta.json");
+		}
 //
 //        [Test]
 //        public void CreateBookOnDiskFromTemplate_HasConfigurationPage_xxxxxxxxxxxx()
@@ -701,6 +706,19 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void CreateBookOnDiskFromTemplate_ShellHasBookshelf_DerivativeDoesNot()
+		{
+			var shellFolderPath = GetShellBookFolder(
+				@" ", includeJson: true, bookshelf: "mybookshelf/subdirectory");
+			string folderPath = _starter.CreateBookOnDiskFromTemplate(shellFolderPath, _projectFolder.Path);
+			var oldJsonString = RobustFile.ReadAllText(GetPathToMetaJson(shellFolderPath));
+			var newJsonString = RobustFile.ReadAllText(GetPathToMetaJson(folderPath));
+			Assert.That(oldJsonString.Contains("bookshelf"));
+			Assert.That(!newJsonString.Contains("bookshelf"));
+			Assert.That(newJsonString.Contains("topic:Fiction"));
+		}
+
+		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryTemplate_SameNameAlreadyUsed_FindsUsableNumberSuffix()
 		{
 			Directory.CreateDirectory(_projectFolder.Combine("Book"));
@@ -796,7 +814,7 @@ namespace BloomTests.Book
 		}
 
 		private string GetShellBookFolder(string bodyContents, string defaultNameForDerivedBooks=null, string lineageName = null, bool includeJson = true, string extraHeadMaterial = "",
-			bool makeTemplate = false)
+			bool makeTemplate = false, string bookshelf = "")
 		{
 			var lineageMeta = "";
 			if (lineageName != null)
@@ -834,6 +852,7 @@ namespace BloomTests.Book
 			{
 				var json = "{'bookLineage':'first,second','bookInstanceId':'thisNewGuy','title':'Test Shell', 'suitableForMakingShells':" +
 						   (makeTemplate ? "true" : "false" ) +
+						   (string.IsNullOrEmpty(bookshelf) ? "" : ",'tags':['topic:Fiction','bookshelf:" + bookshelf + "']") +
 				           "}";
 				File.WriteAllText(Path.Combine(folder, BookInfo.MetaDataFileName), json);
 			}
