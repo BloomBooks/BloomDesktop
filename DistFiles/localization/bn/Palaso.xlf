@@ -934,6 +934,9 @@
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
         <target xml:lang="bn" state="translated">রিলিজ নোট/ মুক্ত স্মারকলিপি</target>
         <alt-trans>
+          <target xml:lang="bn">রিলিজ নোট</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="bn">রিলিস নোটস </target>
         </alt-trans>
         <alt-trans>
@@ -955,6 +958,9 @@
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
         <target xml:lang="bn" state="translated">(নির্বাচিত ফন্টটি এই যন্ত্রে বিদ্যমান নেই। ডিফল্ট ব্যবহার করুন।)</target>
+        <alt-trans>
+          <target xml:lang="bn">(নির্বাচিত ফন্টটি এই যন্ত্রে নেই। ডিফল্ট ব্যবহার করুন।)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSFontControl.RightToLeftWS" approved="yes">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
@@ -965,6 +971,9 @@
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
         <target xml:lang="bn" state="translated">এবং আকার:</target>
+        <alt-trans>
+          <target xml:lang="bn">&amp; আকার:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSFontControl.TestArea" approved="yes">
         <source xml:lang="en">&amp;Test Area:</source>
