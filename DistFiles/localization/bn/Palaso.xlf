@@ -159,6 +159,9 @@
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
         <target xml:lang="bn" state="translated">&amp;পুনরায় করুন</target>
+        <alt-trans>
+          <target xml:lang="bn">&amp; আরেকবার চেষ্টা করুন</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
@@ -225,6 +228,9 @@
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
         <target xml:lang="bn" state="translated">{1} এর কাছাকাছি নামের {0} ছবি পাওয়া গিয়েছে</target>
         <alt-trans>
+          <target xml:lang="bn">{1} এর কাছাকাছি নামের {0} ছবি পাওয়া গেছে</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="bn">{1} এর কাছাকাছি মানের {0} ছবি পাওয়া গিয়েছে</target>
         </alt-trans>
       </trans-unit>
@@ -246,11 +252,17 @@
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
         <target xml:lang="bn" state="translated">{0} ব্যবহার করুন</target>
+        <alt-trans>
+          <target xml:lang="bn">{0} ব্যবহার</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop" approved="yes">
         <source xml:lang="en">Crop</source>
         <note>ID: ImageToolbox.Crop</note>
         <target xml:lang="bn" state="translated">ক্রপ/ কেটে সংকোচন করুন</target>
+        <alt-trans>
+          <target xml:lang="bn">ক্রপ করা</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="bn">ক্রপ</target>
         </alt-trans>
@@ -265,6 +277,9 @@
         <note>ID: ImageToolbox.EditMetadataLink</note>
         <target xml:lang="bn" state="translated">এডিট/ সম্পাদনা...</target>
         <alt-trans>
+          <target xml:lang="bn">এডিট</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="bn">সম্পাদনা...</target>
         </alt-trans>
         <alt-trans>
@@ -276,6 +291,12 @@
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
         <target xml:lang="bn" state="translated">আপনি যা অনুসন্ধান করছেন তা উপরের বাক্সে লিখুন এবং এন্টার/ENTER টিপুন।</target>
+        <alt-trans>
+          <target xml:lang="bn">আপনি যা অনুসন্ধান করছেন তা উপরের বাক্সে লিখুন এবং এন্টার করুন।</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="bn">আপনি যা অনুসন্ধান করছেন তা উপরের বাক্সে লিখুন এবং এন্টার টিপুন।</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="bn">এটি হচ্ছে 'আর্ট অফ রিডিং' গ্যালারিআপনি যা খুঁজছেন তা উপরের বাক্সে টাইপ করুন, তারপর ইন্টার চাপুনআপনি ইংরেজি এবং ইন্দোনেশীয় শব্দ টাইপ করতে পারেন।</target>
         </alt-trans>
