@@ -1068,6 +1068,9 @@
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
         <target xml:lang="bn" state="translated">সতর্কতা</target>
+        <alt-trans>
+          <target xml:lang="bn">সাবধানবাণী</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption" approved="yes">
         <source xml:lang="en">Unable to connect to SLDR</source>
