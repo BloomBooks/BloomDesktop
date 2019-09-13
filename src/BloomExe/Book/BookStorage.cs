@@ -826,7 +826,7 @@ namespace Bloom.Book
 			var backgroundMusicFileNames = GetBackgroundMusicFileNamesReferencedInBook();
 			usedAudioFileNames.AddRange(backgroundMusicFileNames);
 
-			var narrationAudioFileNames = GetNarrationAudioFileNamesReferencedInBook(true, includeSplitTextBoxAudio: !isForPublish);
+			var narrationAudioFileNames = GetNarrationAudioFileNamesReferencedInBook(false, includeSplitTextBoxAudio: !isForPublish);
 			usedAudioFileNames.AddRange(narrationAudioFileNames);
 
 			audioFilesToDeleteIfNotUsed.ExceptWith(usedAudioFileNames);
