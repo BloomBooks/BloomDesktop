@@ -325,6 +325,9 @@
         <note>ID: ImageToolbox.GenericGettingImageProblem</note>
         <target xml:lang="bn" state="translated">দুঃখিত, ইমেজটি নেওয়ার সময় কোনকিছুর ত্রুটি হয়েছিল।</target>
         <alt-trans>
+          <target xml:lang="bn">ক্ষমা করুন, ইমেজটি নেওয়ার সময় কোনকিছুর ত্রুটি হয়েছিল।</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="bn">দুঃখিত, ইমেজটি পাওয়ার সময় কোনকিছুর ত্রুটি হয়েছিল।</target>
         </alt-trans>
       </trans-unit>
@@ -332,6 +335,9 @@
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
         <target xml:lang="bn" state="translated">দুঃখিত, ইমেজ টুলবক্সের সাথে কোনকিছুর ত্রুটি হয়েছিল।</target>
+        <alt-trans>
+          <target xml:lang="bn">ক্ষমা করুন, ইমেজ টুলবক্সের সাথে কোনকিছুর ত্রুটি হয়েছিল।</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="bn">দুঃখিত, ইমেজটুলবক্সের সাথে কোনকিছুর ত্রুটি হয়েছিল।</target>
         </alt-trans>
@@ -365,6 +371,9 @@
         <note>The {0} will be replaced by the number of matching images</note>
         <target xml:lang="bn" state="translated">{0} ইমেজ/ ছবি পাওয়া গিয়েছে</target>
         <alt-trans>
+          <target xml:lang="bn">{0} ইমেজ পাওয়া গেছে</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="bn">{0} ইমেজ পাওয়া গিয়েছে</target>
         </alt-trans>
       </trans-unit>
@@ -373,11 +382,18 @@
         <note>ID: ImageToolbox.NewMultilingual</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space): Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</note>
         <target xml:lang="bn" state="translated">আপনি জানেন কি এই সংগ্রহের একটি নতুন সংস্করন এসেছে যা আপনাকে আরবী, বাংলা, চীনা, ইংরেজি, ফ্রেঞ্চ, ইন্দোনেশীয়, হিন্দি, পর্তুগীজ, স্প্যানিশ, থাই, অথবা সোয়াহিলি ভাষায় খুঁজতে সাহায্য করবে? এটি ফ্রী এবং ডাউনলোডের জন্য পাওয়া যাচ্ছে।</target>
+        <alt-trans>
+          <target xml:lang="bn">আপনি জানেন কি এই সংগ্রহের একটি নতুন সংস্করন এসেছে যা আপনাকে আরবী, বাংলা, চীনা, ইংরেজি, ফ্রেঞ্চ, ইন্দোনেশীয়, হিন্দি, পর্তুগীজ, স্প্যানিশ, থাই, অথবা সোয়াহিলি ভাষায় খুঁজতে সাহায্য করবে? এটি ফ্রী এবং ডাউনলোডের জন্য পাওয়া যাইতেছে
+</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoArtOfReading" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
         <target xml:lang="bn" state="translated">এখন পর্যন্ত এই কম্পিউটারে 'আর্ট অফ রিডিং' গ্যালারি ইনস্টল করা হয়নি বলে মনে হচ্ছে।</target>
+        <alt-trans>
+          <target xml:lang="bn">এখন পর্যন্ত এই কম্পিউটারে 'আর্ট অফ রিডিং' গ্যালারি ইনস্টল করা হয়নি বলে মনে হইতেছে।</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="bn">এখন পর্যন্ত এই কম্পিউটারে 'আর্ট অফ রিডিং' গ্যালারি ইনস্টল দেওয়া হয়নি বলে মনে হচ্ছে।</target>
         </alt-trans>
@@ -412,6 +428,9 @@
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
         <target xml:lang="bn" state="translated">ইমেজ/ছবি পেতে সমস্যা</target>
         <alt-trans>
+          <target xml:lang="bn">ইমেজ পেতে সমস্যা হইতেছে</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="bn">ইমেজ পেতে সমস্যা</target>
         </alt-trans>
       </trans-unit>
@@ -440,6 +459,9 @@
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
         <target xml:lang="bn" state="translated">আর্ট অফ রিডিং গ্যালারিটি অনুসন্ধান করুন</target>
+        <alt-trans>
+          <target xml:lang="bn">আর্ট অফ রিডিং গ্যালারিটি খোঁজ করুন।</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchLanguage" approved="yes">
         <source xml:lang="en">The search box is currently set to {0}</source>
@@ -469,6 +491,9 @@
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
         <target xml:lang="bn" state="translated">অন্যান্য নামসমূহ</target>
+        <alt-trans>
+          <target xml:lang="bn">অন্যান্য নামগুলো</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2" approved="yes">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
