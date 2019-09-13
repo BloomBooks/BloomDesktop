@@ -553,6 +553,9 @@
         <note>ID: LanguageLookup.CountryCount</note>
         <note>Shown when there are multiple countries and it is just confusing to list them all. {0} is a count of countries.</note>
         <target xml:lang="bn" state="translated">{0} দেশসমূহ</target>
+        <alt-trans>
+          <target xml:lang="bn">{0} দেশগুলি</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryHeader" approved="yes">
         <source xml:lang="en">Country</source>
