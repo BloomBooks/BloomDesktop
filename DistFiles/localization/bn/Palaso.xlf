@@ -87,6 +87,9 @@
         <note>{0} is the application name</note>
         <target xml:lang="bn" state="translated">{0} চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হতে পারে।</target>
         <alt-trans>
+          <target xml:lang="bn">{0} চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হইতে পারে।</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="bn">{0} চালু হতে সমস্যা হয়েছিল সে জন্য আপনার কম্পিউটারটি রিস্টার্ট দেওয়ার প্রয়োজন হতে পারে।</target>
         </alt-trans>
       </trans-unit>
@@ -127,6 +130,9 @@
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
         <target xml:lang="bn" state="translated">&amp;উপেক্ষা করুন</target>
+        <alt-trans>
+          <target xml:lang="bn">&amp;অগ্রাহ্য করা</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="bn">&amp;উপেক্ষা করা</target>
         </alt-trans>
