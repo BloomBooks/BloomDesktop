@@ -38,6 +38,9 @@
         <note>ID: AboutDialog._releaseNotesLabel</note>
         <target xml:lang="bn" state="translated">রিলিজ নোট/ মুক্ত স্মারকলিপি</target>
         <alt-trans>
+          <target xml:lang="bn">রিলিজ  লিপি</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="bn">মুক্তি স্মরকলিপি </target>
         </alt-trans>
         <alt-trans>
@@ -71,6 +74,9 @@
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
         <target xml:lang="bn" state="translated">অ্যাপ্লিকেশনটি চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হতে পারে।</target>
+        <alt-trans>
+          <target xml:lang="bn">অ্যাপ্লিকেশনটি চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হইতে পারে।</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="bn">অ্যাপ্লিকেশনটি চালু হতে সমস্যা হয়েছিল সে জন্য আপনার কম্পিউটারটি রিস্টার্ট দেওয়ার প্রয়োজন হতে পারে।</target>
         </alt-trans>
