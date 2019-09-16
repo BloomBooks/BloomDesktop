@@ -8,6 +8,8 @@
 import { EditableDivUtils } from "./editableDivUtils";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager from "../../utils/WebSocketManager";
+import BubbleEdit from "bubble-edit/bubbleEdit";
+import { Bubble, Tip } from "bubble-edit/bubble";
 
 const kWebsocketContext = "textOverPicture";
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
@@ -32,6 +34,16 @@ class TextOverPictureManager {
     }
 
     public cleanUp(): void {
+        // Todo: do this for each unique parent;
+        // move that code to a new method of BubbleEdit.
+        const canvas = document.getElementsByClassName(
+            "bubble-edit-generated"
+        )[0];
+        if (canvas && canvas.parentElement) {
+            BubbleEdit.convertCanvasToSvgImg(
+                canvas.parentElement as HTMLElement
+            );
+        }
         WebSocketManager.closeSocket(kWebsocketContext);
     }
 
@@ -71,6 +83,19 @@ class TextOverPictureManager {
             mouseX,
             mouseY
         );
+        const tip1: Tip = {
+            targetX: mouseX - 200,
+            targetY: mouseY + 80,
+            midpointX: mouseX - 100,
+            midpointY: mouseY + 60
+        };
+        const bubble: Bubble = {
+            version: "1.0",
+            style: "speech",
+            tips: [tip1],
+            level: 1
+        };
+        BubbleEdit.setBubble(bubble, wrapperBox.get(0));
         // I tried to do without this... it didn't work. This causes page changes to get saved and fills
         // things in for editing.
         // It causes EditingModel.RethinkPageAndReloadIt() to get run... which eventually causes
@@ -188,6 +213,14 @@ class TextOverPictureManager {
                 .find(".bloom-editable.bloom-visibility-code-on")
                 .first()
                 .focus();
+            // Enhance: we need to do this for each unique parent of all the textOverPictureElems
+            // (and improve the name of this method). Also, move that do-for-all logic to BubbleEdit.
+            BubbleEdit.convertBubbleJsonToCanvas(
+                textOverPictureElems
+                    .first()
+                    .parent()
+                    .get(0)
+            );
         }
     }
 
