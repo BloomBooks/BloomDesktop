@@ -110,6 +110,7 @@ namespace Bloom.Edit
 				b.SaveDocument(temp.Path);
 				RobustFile.Delete(bookPath);
 				RobustFile.Move(temp.Path, bookPath);
+				b.DocumentCompleted -= browser_DocumentCompleted;
 			}
 			var sanityCheckDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
 
@@ -148,8 +149,8 @@ namespace Bloom.Edit
 			Cursor.Current = Cursors.WaitCursor;
 			try
 			{
-				browser.DocumentCompleted -= browser_DocumentNavigated;
-				browser.DocumentCompleted += browser_DocumentNavigated;
+				browser.DocumentCompleted -= browser_DocumentCompleted;
+				browser.DocumentCompleted += browser_DocumentCompleted;
 
 				_isolator.Navigate(browser, url);
 
@@ -178,7 +179,7 @@ namespace Bloom.Edit
 			}
 		}
 
-		void browser_DocumentNavigated(object sender, EventArgs e)
+		void browser_DocumentCompleted(object sender, EventArgs e)
 		{
 			((GeckoWebBrowser)sender).Tag = sender;
 		}
