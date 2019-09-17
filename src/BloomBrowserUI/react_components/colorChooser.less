@@ -4,7 +4,7 @@
 @cc-arrow-top-margin: @cc-image-height - @cc-arrow-height;
 @cc-color-radius: 5px;
 @cc-color-margin: 4px;
-@cc-hex-padding: 3px;
+@cc-hex-padding: 4px;
 @cc-image-margin: 2px;
 
 .cc-outer-wrapper {
@@ -34,7 +34,7 @@
 .cc-pulldown-wrapper {
     display: flex;
     flex-direction: row;
-    width: 320px;
+    width: 330px;
     flex-wrap: wrap;
     position: absolute; // relative to background-color-arrow
     top: @cc-arrow-height + @cc-arrow-height;
@@ -73,21 +73,21 @@
     display: flex;
     flex-direction: row;
     margin: @cc-color-margin;
-}
 
-.cc-hex-leadin {
-    background-color: lightgray;
-    border-radius: @cc-color-radius 0 0 @cc-color-radius;
-    padding-left: 8px;
-    padding-right: 8px;
-    padding-top: @cc-hex-padding;
-}
+    .cc-hex-leadin {
+        background-color: lightgray;
+        border-radius: @cc-color-radius 0 0 @cc-color-radius;
+        padding-left: 8px;
+        padding-right: 8px;
+        padding-top: @cc-hex-padding + 1; // Otherwise the hashmark hangs a bit above the hex value
+    }
 
-.cc-hex-value {
-    width: 50px;
-    border: solid lightgray thin;
-    padding-left: 5px;
-    border-radius: 0 @cc-color-radius @cc-color-radius 0;
-    padding-top: @cc-hex-padding;
-    box-sizing: content-box; // otherwise the box around the hex value is too small
+    .cc-hex-value {
+        width: 60px;
+        border: solid lightgray thin;
+        padding-left: 5px;
+        border-radius: 0 @cc-color-radius @cc-color-radius 0;
+        padding-top: @cc-hex-padding;
+        box-sizing: content-box; // otherwise the box around the hex value is too small
+    }
 }
