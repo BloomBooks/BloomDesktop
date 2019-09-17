@@ -146,6 +146,12 @@ namespace Bloom.Publish
 			// if it is active, is removed (hence deactivated) and disposed.
 			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);
 			// This is only supposed to be active in one mode of PublishView.
+			if (_htmlControl != null)
+			{
+				Controls.Remove(_htmlControl);
+				_htmlControl.Dispose();
+				_htmlControl = null;
+			}
 			Browser.SuppressJavaScriptErrors = false;
 			Browser.ClearCache(); // of anything used in publish mode; may help free memory.
 			PublishHelper.Cancel();

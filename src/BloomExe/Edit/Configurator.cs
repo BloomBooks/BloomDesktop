@@ -148,8 +148,7 @@ namespace Bloom.Edit
 			Cursor.Current = Cursors.WaitCursor;
 			try
 			{
-				browser.DocumentCompleted -= browser_DocumentNavigated;
-				browser.DocumentCompleted += browser_DocumentNavigated;
+				browser.DocumentCompleted += browser_DocumentCompleted;
 
 				_isolator.Navigate(browser, url);
 
@@ -174,11 +173,13 @@ namespace Bloom.Edit
 			}
 			finally
 			{
+				// Ensure this doesn't get added multiple times, or fire on a disposed browser.
+				browser.DocumentCompleted -= browser_DocumentCompleted;
 				Cursor.Current = Cursors.Default;
 			}
 		}
 
-		void browser_DocumentNavigated(object sender, EventArgs e)
+		void browser_DocumentCompleted(object sender, EventArgs e)
 		{
 			((GeckoWebBrowser)sender).Tag = sender;
 		}
