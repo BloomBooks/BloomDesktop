@@ -1159,7 +1159,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			// with squirrel, the file's dates only reflect when they were installed, so we override this version thing which
 			// normally would include a bogus "Apparently Built On" date:
 			ErrorReport.Properties["Version"] = ErrorReport.VersionNumberString + " " + ApplicationUpdateSupport.ChannelName;
-			SIL.Reporting.ExceptionHandler.Init();
+			SIL.Reporting.ExceptionHandler.Init(new FatalExceptionHandler());
 
 			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception));
 			_errorHandlingHasBeenSetUp = true;
