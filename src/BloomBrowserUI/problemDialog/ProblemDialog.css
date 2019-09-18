@@ -82,6 +82,7 @@
     height: 140px;
     background-color: #404040;
     margin-bottom: 32px;
+    object-fit: contain;
 }
 .progress-dialog .content #row2 .column2 #privacy {
     width: 250px;
@@ -104,4 +105,14 @@
     100% {
         margin-left: 0;
     }
+}
+.progress-dialog #privacyDetails .privacy_info {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+.progress-dialog #privacyDetails .intro_to_report {
+    margin-bottom: 1em;
+}
+.progress-dialog #privacyDetails #report {
+    white-space: pre;
 }
