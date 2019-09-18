@@ -1221,7 +1221,10 @@ namespace Bloom.Api
 			case ".svg": return "image/svg+xml";
 			case ".mp3": return "audio/mpeg";
 			case ".ogg": return "audio/ogg";
+			case ".woff": return "font/woff";
 			case ".woff2": return "font/woff2";
+			case ".xml": return "application/xml";
+			case ".xhtml": return "application/xhtml+xml";
 			default: return "application/octet-stream";
 			}
 		}
