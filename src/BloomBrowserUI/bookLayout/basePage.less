@@ -664,9 +664,10 @@ div[data-book*="branding"] {
 }
 
 // Both canvas used in editing and svg used in permanent doc need to be
-// above image and below TOP box.
+// above image and below TOP box and overlayed.
 .bubble-edit-generated {
     z-index: 1;
+    position: absolute;
 }
 
 //... to be continued. We sandwich most other sheets between this one and the langVisibility.css, which comes last-ish

@@ -1133,6 +1133,7 @@ namespace Bloom.Edit
 		public void CleanHtmlAndCopyToPageDom()
 		{
 			RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getToolboxFrameExports().removeToolboxMarkup();}");
+			RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().prepareToSavePage();}");
 			_browser1.ReadEditableAreasNow();
 		}
 

@@ -14,6 +14,7 @@ import "errorHandler";
 // For example, FrameExports.getPageFrameExports().pageSelectionChanging() can be called.
 import {
     pageSelectionChanging,
+    prepareToSavePage,
     pageUnloading,
     disconnectForGarbageCollection,
     makeElement,
@@ -22,6 +23,7 @@ import {
 } from "./js/bloomEditing";
 export {
     pageSelectionChanging,
+    prepareToSavePage,
     pageUnloading,
     disconnectForGarbageCollection,
     makeElement,

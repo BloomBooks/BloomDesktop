@@ -33,7 +33,7 @@ class TextOverPictureManager {
         });
     }
 
-    public cleanUp(): void {
+    public prepareToSavePage(): void {
         // Todo: do this for each unique parent;
         // move that code to a new method of BubbleEdit.
         const canvas = document.getElementsByClassName(
@@ -44,6 +44,9 @@ class TextOverPictureManager {
                 canvas.parentElement as HTMLElement
             );
         }
+    }
+
+    public cleanUp(): void {
         WebSocketManager.closeSocket(kWebsocketContext);
     }
 
@@ -83,19 +86,17 @@ class TextOverPictureManager {
             mouseX,
             mouseY
         );
-        const tip1: Tip = {
-            targetX: mouseX - 200,
-            targetY: mouseY + 80,
-            midpointX: mouseX - 100,
-            midpointY: mouseY + 60
-        };
+
         const bubble: Bubble = {
             version: "1.0",
             style: "speech",
-            tips: [tip1],
+            tips: [BubbleEdit.makeDefaultTip(wrapperBox.get(0))],
             level: 1
         };
         BubbleEdit.setBubble(bubble, wrapperBox.get(0));
+        // Plausibly at this point we might call BubbleEdit.update() to get the new
+        // bubble drawn. But reloading the page achieves the same thing.
+
         // I tried to do without this... it didn't work. This causes page changes to get saved and fills
         // things in for editing.
         // It causes EditingModel.RethinkPageAndReloadIt() to get run... which eventually causes
@@ -140,7 +141,9 @@ class TextOverPictureManager {
                 ".bloom-textOverPicture"
             );
             if (textElement && textElement.parentElement) {
-                textElement.parentElement.removeChild(textElement);
+                const parent = textElement.parentElement;
+                parent.removeChild(textElement);
+                BubbleEdit.update(parent);
             }
         }
     }
