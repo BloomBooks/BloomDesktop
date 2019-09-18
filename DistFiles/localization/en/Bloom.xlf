@@ -821,6 +821,11 @@
         <note>ID: CollectionTab.Updating</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Downloading update to {0} ({1}kb).</note>
       </trans-unit>
+      <trans-unit id="Common.LearnMore" sil:dynamic="true">
+        <source xml:lang="en">Learn More</source>
+        <note>A link or button that leads to something that tells the user more about what they just read.</note>
+        <note>ID: Common.LearnMore</note>
+      </trans-unit>
       <trans-unit id="Common.Advanced">
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
@@ -4225,6 +4230,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Close</source>
         <note>ID: ReportProblemDialog.Close</note>
         <note>Shown in the button that closes the dialog after a successful report submission.</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Quit">
+        <source xml:lang="en">Quit</source>
+        <note>ID: ReportProblemDialog.Quit</note>
+        <note>Shown in the button that closes the dialog after a successful report submission, if there was a fatal error and we need to exit the program.</note>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.CouldNotSendToServer">
         <source xml:lang="en">Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.</source>

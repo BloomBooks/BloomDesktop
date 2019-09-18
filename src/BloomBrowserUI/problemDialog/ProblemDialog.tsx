@@ -12,11 +12,12 @@ import { TextField, Theme } from "@material-ui/core";
 import { MuiCheckbox } from "../react_components/muiCheckBox";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { HowMuchGroup } from "./HowMuchGroup";
-import { PrivacyGroup } from "./PrivacyGroup";
+import { PrivacyNotice } from "./PrivacyNotice";
 import { makeTheme, kindParams } from "./theme";
 import { EmailField, isValidEmail } from "./EmailField";
 import { useDrawAttention } from "./UseDrawAttention";
 import ReactDOM = require("react-dom");
+import { PrivacyScreen } from "./PrivacyScreen";
 
 export enum ProblemKind {
     User = "User",
@@ -26,7 +27,8 @@ export enum ProblemKind {
 enum Mode {
     gather,
     submitting,
-    submitted
+    submitted,
+    showPrivacyDetails
 }
 export const ProblemDialog: React.FunctionComponent<{
     kind: ProblemKind;
@@ -40,7 +42,7 @@ export const ProblemDialog: React.FunctionComponent<{
     );
     const [submitAttempts, setSubmitAttempts] = useState(0);
     const [theme, setTheme] = useState<Theme | undefined>(undefined);
-    const [whatDoing, setWhatDoing] = useState("");
+    const [userInput, setWhatDoing] = useState("");
     const [bookName] = BloomApi.useApiString("problemReport/bookName", "??");
 
     //REVIEW: the theme gets used before useEffect returns, and we see an error in the console. How to
@@ -56,7 +58,7 @@ export const ProblemDialog: React.FunctionComponent<{
 
     const whatWereYouDoingAttentionClass = useDrawAttention(
         submitAttempts,
-        () => whatDoing.trim().length > 0
+        () => userInput.trim().length > 0
     );
     const submitButton = useRef(null);
     // Haven't got to work yet, see comment on the declaration of this function, below
@@ -66,15 +68,16 @@ export const ProblemDialog: React.FunctionComponent<{
         }
     });
     const AttemptSubmit = () => {
-        if (!isValidEmail(email) || whatDoing.trim().length == 0) {
+        if (!isValidEmail(email) || userInput.trim().length == 0) {
             setSubmitAttempts(submitAttempts + 1);
         } else {
             setMode(Mode.submitting);
             BloomApi.postJson(
                 "problemReport/submit",
                 {
+                    kind: props.kind,
                     email,
-                    whatDoing,
+                    userInput: `How much: TODO<br/>${userInput}`,
                     includeBook,
                     includeScreenshot
                 },
@@ -111,6 +114,13 @@ export const ProblemDialog: React.FunctionComponent<{
                                         <Typography>Done</Typography>
                                     </>
                                 );
+                            case Mode.showPrivacyDetails:
+                                return (
+                                    <PrivacyScreen
+                                        includeBook={includeBook}
+                                        onBack={() => setMode(Mode.gather)}
+                                    />
+                                );
                             case Mode.gather:
                                 return (
                                     <>
@@ -142,7 +152,7 @@ export const ProblemDialog: React.FunctionComponent<{
                                                     }}
                                                     error={
                                                         submitAttempts > 0 &&
-                                                        whatDoing.trim()
+                                                        userInput.trim()
                                                             .length == 0
                                                     }
                                                 />
@@ -184,7 +194,13 @@ export const ProblemDialog: React.FunctionComponent<{
                                                     }
                                                 />
 
-                                                <PrivacyGroup />
+                                                <PrivacyNotice
+                                                    onLearnMore={() =>
+                                                        setMode(
+                                                            Mode.showPrivacyDetails
+                                                        )
+                                                    }
+                                                />
                                             </div>
                                         </div>
                                     </>
@@ -193,40 +209,63 @@ export const ProblemDialog: React.FunctionComponent<{
                     })()}
                 </DialogContent>
                 <DialogActions>
-                    <BloomButton
-                        enabled={true}
-                        l10nKey="ReportProblemDialog.SubmitButton"
-                        hasText={true}
-                        onClick={() => {
-                            AttemptSubmit();
-                        }}
-                    >
-                        Submit
-                    </BloomButton>
-                    <BloomButton
-                        enabled={true}
-                        l10nKey="Common.Cancel"
-                        hasText={true}
-                        variant="outlined"
-                        onClick={() => {
-                            BloomApi.post("dialog/close");
-                        }}
-                        ref={submitButton}
-                    >
-                        Cancel
-                    </BloomButton>
+                    {mode === Mode.submitted &&
+                        props.kind !== ProblemKind.Fatal && (
+                            <BloomButton
+                                enabled={true}
+                                l10nKey="ReportProblemDialog.Close"
+                                hasText={true}
+                                onClick={() => {
+                                    BloomApi.post("dialog/close");
+                                }}
+                            >
+                                Close
+                            </BloomButton>
+                        )}
+                    {mode === Mode.submitted &&
+                        props.kind === ProblemKind.Fatal && (
+                            <BloomButton
+                                enabled={true}
+                                l10nKey="ReportProblemDialog.Quit"
+                                hasText={true}
+                                onClick={() => {
+                                    BloomApi.post("dialog/close");
+                                }}
+                            >
+                                Quit
+                            </BloomButton>
+                        )}
+                    {mode === Mode.gather && (
+                        <BloomButton
+                            enabled={true}
+                            l10nKey="ReportProblemDialog.SubmitButton"
+                            hasText={true}
+                            onClick={() => {
+                                AttemptSubmit();
+                            }}
+                        >
+                            Submit
+                        </BloomButton>
+                    )}
+                    {mode === Mode.gather && props.kind === ProblemKind.User && (
+                        <BloomButton
+                            enabled={true}
+                            l10nKey="Common.Cancel"
+                            hasText={true}
+                            variant="outlined"
+                            onClick={() => {
+                                BloomApi.post("dialog/close");
+                            }}
+                            ref={submitButton}
+                        >
+                            Cancel
+                        </BloomButton>
+                    )}
                 </DialogActions>
             </Dialog>
         </ThemeProvider>
     );
 };
-
-if (document.getElementById("problemDialogRoot")) {
-    ReactDOM.render(
-        <ProblemDialog kind={ProblemKind.User} />,
-        document.getElementById("problemDialogRoot")
-    );
-}
 
 /* haven't got this to work yet; when the callback is called, `email` and other values are empty*/
 function useCtrlEnterToSubmit(callback) {
@@ -242,4 +281,10 @@ function useCtrlEnterToSubmit(callback) {
             window.removeEventListener("keydown", handler);
         };
     }, []);
+}
+if (document.getElementById("problemDialogRoot")) {
+    ReactDOM.render(
+        <ProblemDialog kind={ProblemKind.Fatal} />,
+        document.getElementById("problemDialogRoot")
+    );
 }

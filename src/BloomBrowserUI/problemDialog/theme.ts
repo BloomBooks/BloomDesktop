@@ -11,7 +11,7 @@ export const kindParams = {
     },
     Fatal: {
         dialogHeaderColor: "#f44336",
-        primaryColor: "#F3AA18",
+        primaryColor: "#2F58EA",
         title: "Bloom encountered an error and needs to quit"
     },
     NonFatal: {
@@ -23,15 +23,11 @@ export const kindParams = {
 
 export function makeTheme(kind: ProblemKind): Theme {
     return createMuiTheme({
-        //this spacing doesn't seem to do anything. The example at https://material-ui.com/customization/default-theme/
-        // would be spacing{unit:23} but that gives an error saying to use a number
-        //spacing: 23,
         palette: {
             primary: { main: kindParams[kind.toString()].primaryColor }
         },
         typography: {
             fontSize: 12
-            //,fontFamily: ["NotoSans", "Roboto", "sans-serif"]
         },
         props: {
             MuiLink: {

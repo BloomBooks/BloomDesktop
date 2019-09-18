@@ -306,6 +306,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Book\LicenseChecker.cs" />
+    <Compile Include="FatalExceptionHandler.cs" />
     <Compile Include="MiscUI\BrowserDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -670,6 +671,7 @@
     <Compile Include="web\controllers\FeatureControlApi.cs" />
     <Compile Include="web\UrlLookup.cs" />
     <Compile Include="web\WebSocketProgress.cs" />
+    <Compile Include="web\YouTrackIssueSubmission.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
       <SubType>Component</SubType>
     </Compile>
