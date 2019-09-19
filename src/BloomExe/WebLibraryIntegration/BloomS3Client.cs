@@ -524,7 +524,7 @@ namespace Bloom.WebLibraryIntegration
 			if (endsToAvoid.Any(end => objectKey.ToLowerInvariant().EndsWith(end)))
 				return true;
 
-			if (!CollectionSettings.HarvesterMode)
+			if (!Program.RunningHarvesterMode)
 			{
 				// Except when harvesting, we only want to download audio for "music", not narration.
 				// The way we determine the difference is that narration audio files are guids. (but also see comment on the regex)
