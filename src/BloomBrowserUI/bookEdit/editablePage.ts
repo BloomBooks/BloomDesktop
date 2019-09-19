@@ -9,6 +9,10 @@ import { EditableDivUtils } from "./js/editableDivUtils";
 import "../lib/jquery.i18n.custom.ts"; //localize()
 import "../lib/jquery.myimgscale.js"; //scaleImage()
 import "errorHandler";
+import {
+    theOneTextOverPictureManager,
+    TextOverPictureManager
+} from "./js/textOverPicture";
 
 // This exports the functions that should be accessible from other IFrames or from C#.
 // For example, FrameExports.getPageFrameExports().pageSelectionChanging() can be called.
@@ -49,6 +53,10 @@ var styleSheets = [
     "bookEdit/toolbox/talkingBook/audioRecording.css",
     "bookEdit/css/legacyQuizEditing.css"
 ];
+
+export function getTheOneBubbleManager(): TextOverPictureManager {
+    return theOneTextOverPictureManager;
+}
 
 // This is using an implementation secret of a particular version of ckeditor; but it seems to
 // be the only way to get at whether ckeditor thinks there is something it can undo.

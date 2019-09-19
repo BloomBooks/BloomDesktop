@@ -2,6 +2,8 @@ import * as React from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import * as ReactDOM from "react-dom";
 import "./Bubbles.less";
+import { getPageFrameExports } from "../../js/bloomFrames";
+import { TextOverPictureManager } from "../../js/textOverPicture";
 
 interface IComponentState {}
 
@@ -41,6 +43,10 @@ export class BubblesTool extends ToolboxToolReactAdaptor {
         return true;
     }
 
+    private bubbleManager(): TextOverPictureManager {
+        return getPageFrameExports().getTheOneBubbleManager();
+    }
+
     public toolRequiresEnterprise(): boolean {
         return false; // review
     }
@@ -53,8 +59,16 @@ export class BubblesTool extends ToolboxToolReactAdaptor {
     }
 
     public newPageReady() {
-        // Todo: set up editing, with BubbleEdit.convertBubbleJsonToCanvas, if we
-        // stop doing that automatically.
-        // Todo: if there are existing TOP boxes, select the first.
+        this.bubbleManager().turnOnBubbleEditing();
+        //firstImage.classList.add("bloom-hideImageButtons");
+    }
+
+    public detachFromPage() {
+        this.bubbleManager().turnOffBubbleEditing();
+        // const firstImage = this.getFirstImage();
+        // if (!firstImage) {
+        //     return;
+        // }
+        // firstImage.classList.remove("bloom-hideImageButtons");
     }
 }

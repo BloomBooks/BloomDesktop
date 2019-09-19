@@ -13,7 +13,7 @@ import { Bubble, Tip } from "bubble-edit/bubble";
 
 const kWebsocketContext = "textOverPicture";
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
-class TextOverPictureManager {
+export class TextOverPictureManager {
     public initializeTextOverPictureManager(): void {
         WebSocketManager.addListener(kWebsocketContext, messageEvent => {
             const msg = messageEvent.message;
@@ -33,9 +33,29 @@ class TextOverPictureManager {
         });
     }
 
-    public prepareToSavePage(): void {
-        // Todo: do this for each unique parent;
-        // move that code to a new method of BubbleEdit.
+    public turnOnBubbleEditing(): void {
+        // todo: select one of them...make sure this doesn't conflict with any other strategy
+        // for selecting one we just added.
+        // todo: do this for the selected element, not just the first.
+        const textOverPictureElems = $("body").find(".bloom-textOverPicture");
+        if (textOverPictureElems.length > 0) {
+            textOverPictureElems
+                .first()
+                .find(".bloom-editable.bloom-visibility-code-on")
+                .first()
+                .focus();
+            // Enhance: we need to do this for each unique parent of all the textOverPictureElems
+            // (and improve the name of this method). Also, move that do-for-all logic to BubbleEdit.
+            BubbleEdit.convertBubbleJsonToCanvas(
+                textOverPictureElems
+                    .first()
+                    .parent()
+                    .get(0)
+            );
+        }
+    }
+
+    public turnOffBubbleEditing(): void {
         const canvas = document.getElementsByClassName(
             "bubble-edit-generated"
         )[0];
@@ -44,6 +64,10 @@ class TextOverPictureManager {
                 canvas.parentElement as HTMLElement
             );
         }
+    }
+
+    public prepareToSavePage(): void {
+        // Review: do we need to call turnOffBubbleEditing, or is that done in time anyway?
     }
 
     public cleanUp(): void {
@@ -209,22 +233,6 @@ class TextOverPictureManager {
         });
 
         this.makeTOPBoxDraggableAndClickable(textOverPictureElems, scale);
-
-        if (textOverPictureElems.length > 0) {
-            textOverPictureElems
-                .first()
-                .find(".bloom-editable.bloom-visibility-code-on")
-                .first()
-                .focus();
-            // Enhance: we need to do this for each unique parent of all the textOverPictureElems
-            // (and improve the name of this method). Also, move that do-for-all logic to BubbleEdit.
-            BubbleEdit.convertBubbleJsonToCanvas(
-                textOverPictureElems
-                    .first()
-                    .parent()
-                    .get(0)
-            );
-        }
     }
 
     private calculatePercentagesAndFixTextboxPosition(wrapperBox: JQuery) {
