@@ -9,11 +9,14 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager from "../../utils/WebSocketManager";
 import BubbleEdit from "bubble-edit/bubbleEdit";
-import { Bubble, Tip } from "bubble-edit/bubble";
+import { Bubble, BubblePattern, Tip } from "bubble-edit/bubble";
 
 const kWebsocketContext = "textOverPicture";
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
 export class TextOverPictureManager {
+    private activeElement: HTMLElement | undefined;
+    private notifyBubbleChange: (x: Bubble | undefined) => void;
+
     public initializeTextOverPictureManager(): void {
         WebSocketManager.addListener(kWebsocketContext, messageEvent => {
             const msg = messageEvent.message;
@@ -37,21 +40,46 @@ export class TextOverPictureManager {
         // todo: select one of them...make sure this doesn't conflict with any other strategy
         // for selecting one we just added.
         // todo: do this for the selected element, not just the first.
-        const textOverPictureElems = $("body").find(".bloom-textOverPicture");
+        const textOverPictureElems = document.getElementsByClassName(
+            "bloom-textOverPicture"
+        );
         if (textOverPictureElems.length > 0) {
-            textOverPictureElems
-                .first()
-                .find(".bloom-editable.bloom-visibility-code-on")
-                .first()
-                .focus();
-            // Enhance: we need to do this for each unique parent of all the textOverPictureElems
-            // (and improve the name of this method). Also, move that do-for-all logic to BubbleEdit.
+            this.activeElement = textOverPictureElems[0] as HTMLElement;
+            const editable = textOverPictureElems[0].getElementsByClassName(
+                "bloom-editable bloom-visibility-code-on"
+            )[0] as HTMLElement;
+            editable.focus();
             BubbleEdit.convertBubbleJsonToCanvas(
-                textOverPictureElems
-                    .first()
-                    .parent()
-                    .get(0)
+                this.activeElement!.parentElement!
             );
+            Array.from(
+                document.getElementsByClassName("bloom-editable")
+            ).forEach(element => {
+                // tempting to use focusin on the bubble elements here,
+                // but that's not in FF45 (starts in 52)
+                element.addEventListener("focus", () => {
+                    // If we focus something on the page that isn't in a bubble, we need to switch
+                    // to having no active bubble element. Note: we don't want to use focusout
+                    // on the bubble elements, because then we lose the active element while clicking
+                    // on controls in the toolbox (and while debugging).
+                    // Todo: check what happens when a bubble is removed.
+                    const bubbleElement = element.closest(
+                        ".bloom-textOverPicture"
+                    );
+                    if (bubbleElement) {
+                        this.setActiveElement(bubbleElement as HTMLElement);
+                    } else {
+                        this.setActiveElement(undefined);
+                    }
+                });
+            });
+        }
+    }
+
+    private setActiveElement(element: HTMLElement | undefined) {
+        this.activeElement = element;
+        if (this.notifyBubbleChange) {
+            this.notifyBubbleChange(this.getSelectedItemBubble());
         }
     }
 
@@ -72,6 +100,45 @@ export class TextOverPictureManager {
 
     public cleanUp(): void {
         WebSocketManager.closeSocket(kWebsocketContext);
+    }
+
+    public getSelectedItemBubble(): Bubble | undefined {
+        if (!this.activeElement) {
+            return undefined;
+        }
+        return BubbleEdit.getBubble(this.activeElement);
+    }
+
+    public requestBubbleChangeNotification(
+        notifier: (bubble: Bubble | undefined) => void
+    ): void {
+        this.notifyBubbleChange = notifier;
+    }
+
+    public updateSelectedItemBubble(newBubbleProps: BubblePattern): void {
+        if (!this.activeElement) {
+            return;
+        }
+        // Figure out a default that will supply any necessary properties not
+        // specified in data, including a tail in a default position
+        const defaultData = BubbleEdit.getDefaultBubble(
+            this.activeElement,
+            newBubbleProps.style!
+        );
+        const oldData: Bubble = BubbleEdit.getBubble(this.activeElement);
+        // We get the default bubble for this style and parent to provide
+        // any properties that have never before occurred for this bubble,
+        // particularly a default tail placement if it was previously 'none'.
+        // Any values already in oldData override these; for example, if
+        // this bubble has ever had a tail, we'll keep its last known position.
+        // Finally, any values present in data override anything else.
+        const mergedBubble = {
+            ...defaultData,
+            ...oldData,
+            ...(newBubbleProps as Bubble)
+        };
+        BubbleEdit.setBubble(mergedBubble, this.activeElement!);
+        BubbleEdit.update(this.activeElement!.parentElement!);
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
