@@ -37,6 +37,9 @@ export class TextOverPictureManager {
     }
 
     public turnOnBubbleEditing(): void {
+        Array.from(
+            document.getElementsByClassName("bloom-imageContainer")
+        ).forEach(e => e.classList.add("bloom-hideImageButtons"));
         // todo: select one of them...make sure this doesn't conflict with any other strategy
         // for selecting one we just added.
         // todo: do this for the selected element, not just the first.
@@ -92,6 +95,9 @@ export class TextOverPictureManager {
                 canvas.parentElement as HTMLElement
             );
         }
+        Array.from(
+            document.getElementsByClassName("bloom-hideImageButtons")
+        ).forEach(e => e.classList.remove("bloom-hideImageButtons"));
     }
 
     public prepareToSavePage(): void {

@@ -113,15 +113,9 @@ export class BubblesTool extends ToolboxToolReactAdaptor {
                 this.reactControls.updateBubbleState(bubble);
             }
         });
-        //firstImage.classList.add("bloom-hideImageButtons");
     }
 
     public detachFromPage() {
         BubblesToolControls.bubbleManager().turnOffBubbleEditing();
-        // const firstImage = this.getFirstImage();
-        // if (!firstImage) {
-        //     return;
-        // }
-        // firstImage.classList.remove("bloom-hideImageButtons");
     }
 }
