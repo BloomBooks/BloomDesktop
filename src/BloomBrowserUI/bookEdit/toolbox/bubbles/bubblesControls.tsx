@@ -5,7 +5,7 @@ import "./Bubbles.less";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import { TextOverPictureManager } from "../../js/textOverPicture";
 import { RadioGroup } from "../../../react_components/RadioGroup";
-import { Bubble } from "bubble-edit//bubble";
+import { BubbleSpec } from "bubble-edit//bubbleSpec";
 
 interface IComponentState {
     style: string;
@@ -23,7 +23,7 @@ export class BubblesToolControls extends React.Component<{}, IComponentState> {
         bubbleActive: true
     };
 
-    public updateBubbleState(bubble: Bubble | undefined) {
+    public updateBubbleState(bubble: BubbleSpec | undefined) {
         this.setState({
             style: bubble ? bubble.style : "none",
             bubbleActive: !!bubble

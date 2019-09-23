@@ -8,14 +8,14 @@
 import { EditableDivUtils } from "./editableDivUtils";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager from "../../utils/WebSocketManager";
-import BubbleEdit from "bubble-edit/bubbleEdit";
-import { Bubble, BubblePattern, Tip } from "bubble-edit/bubble";
+import Comical from "bubble-edit/comical";
+import { BubbleSpec, BubbleSpecPattern, Tip } from "bubble-edit/bubbleSpec";
 
 const kWebsocketContext = "textOverPicture";
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
 export class TextOverPictureManager {
     private activeElement: HTMLElement | undefined;
-    private notifyBubbleChange: (x: Bubble | undefined) => void;
+    private notifyBubbleChange: (x: BubbleSpec | undefined) => void;
 
     public initializeTextOverPictureManager(): void {
         WebSocketManager.addListener(kWebsocketContext, messageEvent => {
@@ -52,7 +52,7 @@ export class TextOverPictureManager {
                 "bloom-editable bloom-visibility-code-on"
             )[0] as HTMLElement;
             editable.focus();
-            BubbleEdit.convertBubbleJsonToCanvas(
+            Comical.convertBubbleJsonToCanvas(
                 this.activeElement!.parentElement!
             );
             Array.from(
@@ -91,9 +91,7 @@ export class TextOverPictureManager {
             "bubble-edit-generated"
         )[0];
         if (canvas && canvas.parentElement) {
-            BubbleEdit.convertCanvasToSvgImg(
-                canvas.parentElement as HTMLElement
-            );
+            Comical.convertCanvasToSvgImg(canvas.parentElement as HTMLElement);
         }
         Array.from(
             document.getElementsByClassName("bloom-hideImageButtons")
@@ -101,37 +99,37 @@ export class TextOverPictureManager {
     }
 
     public prepareToSavePage(): void {
-        // Review: do we need to call turnOffBubbleEditing, or is that done in time anyway?
+        // Review: do we need to call turnOffComicaling, or is that done in time anyway?
     }
 
     public cleanUp(): void {
         WebSocketManager.closeSocket(kWebsocketContext);
     }
 
-    public getSelectedItemBubble(): Bubble | undefined {
+    public getSelectedItemBubble(): BubbleSpec | undefined {
         if (!this.activeElement) {
             return undefined;
         }
-        return BubbleEdit.getBubble(this.activeElement);
+        return Comical.getBubble(this.activeElement);
     }
 
     public requestBubbleChangeNotification(
-        notifier: (bubble: Bubble | undefined) => void
+        notifier: (bubble: BubbleSpec | undefined) => void
     ): void {
         this.notifyBubbleChange = notifier;
     }
 
-    public updateSelectedItemBubble(newBubbleProps: BubblePattern): void {
+    public updateSelectedItemBubble(newBubbleProps: BubbleSpecPattern): void {
         if (!this.activeElement) {
             return;
         }
         // Figure out a default that will supply any necessary properties not
         // specified in data, including a tail in a default position
-        const defaultData = BubbleEdit.getDefaultBubble(
+        const defaultData = Comical.getDefaultBubble(
             this.activeElement,
             newBubbleProps.style!
         );
-        const oldData: Bubble = BubbleEdit.getBubble(this.activeElement);
+        const oldData: BubbleSpec = Comical.getBubble(this.activeElement);
         // We get the default bubble for this style and parent to provide
         // any properties that have never before occurred for this bubble,
         // particularly a default tail placement if it was previously 'none'.
@@ -141,10 +139,10 @@ export class TextOverPictureManager {
         const mergedBubble = {
             ...defaultData,
             ...oldData,
-            ...(newBubbleProps as Bubble)
+            ...(newBubbleProps as BubbleSpec)
         };
-        BubbleEdit.setBubble(mergedBubble, this.activeElement!);
-        BubbleEdit.update(this.activeElement!.parentElement!);
+        Comical.setBubble(mergedBubble, this.activeElement!);
+        Comical.update(this.activeElement!.parentElement!);
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
@@ -184,14 +182,14 @@ export class TextOverPictureManager {
             mouseY
         );
 
-        const bubble: Bubble = {
+        const bubble: BubbleSpec = {
             version: "1.0",
             style: "speech",
-            tips: [BubbleEdit.makeDefaultTip(wrapperBox.get(0))],
+            tips: [Comical.makeDefaultTip(wrapperBox.get(0))],
             level: 1
         };
-        BubbleEdit.setBubble(bubble, wrapperBox.get(0));
-        // Plausibly at this point we might call BubbleEdit.update() to get the new
+        Comical.setBubble(bubble, wrapperBox.get(0));
+        // Plausibly at this point we might call Comical.update() to get the new
         // bubble drawn. But reloading the page achieves the same thing.
 
         // I tried to do without this... it didn't work. This causes page changes to get saved and fills
@@ -240,7 +238,7 @@ export class TextOverPictureManager {
             if (textElement && textElement.parentElement) {
                 const parent = textElement.parentElement;
                 parent.removeChild(textElement);
-                BubbleEdit.update(parent);
+                Comical.update(parent);
             }
         }
     }
