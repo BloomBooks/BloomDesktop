@@ -52,7 +52,7 @@ export class BubblesToolControls extends React.Component<{}, IComponentState> {
 
     private setBubbleStyle(s: string): void {
         this.setState({ style: s });
-        BubblesToolControls.bubbleManager().updateSelectedItemBubble({
+        BubblesToolControls.bubbleManager().updateSelectedItemBubbleSpec({
             style: s
         });
     }
@@ -105,7 +105,7 @@ export class BubblesTool extends ToolboxToolReactAdaptor {
         bubbleManager.turnOnBubbleEditing();
         if (this.reactControls) {
             this.reactControls.updateBubbleState(
-                bubbleManager.getSelectedItemBubble()
+                bubbleManager.getSelectedItemBubbleSpec()
             );
         }
         bubbleManager.requestBubbleChangeNotification(bubble => {

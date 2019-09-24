@@ -9,12 +9,14 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager from "../../utils/WebSocketManager";
 import Comical from "bubble-edit/comical";
+import Bubble from "bubble-edit/bubble";
 import { BubbleSpec, BubbleSpecPattern, Tip } from "bubble-edit/bubbleSpec";
+import { BubblesTool } from "../toolbox/bubbles/comicBubblesControls";
 
 const kWebsocketContext = "textOverPicture";
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
 export class TextOverPictureManager {
-    private activeElement: HTMLElement | undefined;
+    private activeBubble: Bubble | undefined;
     private notifyBubbleChange: (x: BubbleSpec | undefined) => void;
 
     public initializeTextOverPictureManager(): void {
@@ -47,14 +49,13 @@ export class TextOverPictureManager {
             "bloom-textOverPicture"
         );
         if (textOverPictureElems.length > 0) {
-            this.activeElement = textOverPictureElems[0] as HTMLElement;
+            const activeElement = textOverPictureElems[0] as HTMLElement;
+            this.activeBubble = new Bubble(activeElement);
             const editable = textOverPictureElems[0].getElementsByClassName(
                 "bloom-editable bloom-visibility-code-on"
             )[0] as HTMLElement;
             editable.focus();
-            Comical.convertBubbleJsonToCanvas(
-                this.activeElement!.parentElement!
-            );
+            Comical.convertBubbleJsonToCanvas(activeElement!.parentElement!);
             Array.from(
                 document.getElementsByClassName("bloom-editable")
             ).forEach(element => {
@@ -80,9 +81,14 @@ export class TextOverPictureManager {
     }
 
     private setActiveElement(element: HTMLElement | undefined) {
-        this.activeElement = element;
+        if (element == undefined) {
+            this.activeBubble = undefined;
+            return;
+        }
+
+        this.activeBubble = new Bubble(element);
         if (this.notifyBubbleChange) {
-            this.notifyBubbleChange(this.getSelectedItemBubble());
+            this.notifyBubbleChange(this.getSelectedItemBubbleSpec());
         }
     }
 
@@ -106,11 +112,11 @@ export class TextOverPictureManager {
         WebSocketManager.closeSocket(kWebsocketContext);
     }
 
-    public getSelectedItemBubble(): BubbleSpec | undefined {
-        if (!this.activeElement) {
+    public getSelectedItemBubbleSpec(): BubbleSpec | undefined {
+        if (!this.activeBubble) {
             return undefined;
         }
-        return Comical.getBubble(this.activeElement);
+        return this.activeBubble.spec;
     }
 
     public requestBubbleChangeNotification(
@@ -119,17 +125,19 @@ export class TextOverPictureManager {
         this.notifyBubbleChange = notifier;
     }
 
-    public updateSelectedItemBubble(newBubbleProps: BubbleSpecPattern): void {
-        if (!this.activeElement) {
+    public updateSelectedItemBubbleSpec(
+        newBubbleProps: BubbleSpecPattern
+    ): void {
+        if (!this.activeBubble) {
             return;
         }
         // Figure out a default that will supply any necessary properties not
         // specified in data, including a tail in a default position
-        const defaultData = Comical.getDefaultBubble(
-            this.activeElement,
+        const defaultData = Bubble.getDefaultBubble(
+            this.activeBubble.content,
             newBubbleProps.style!
         );
-        const oldData: BubbleSpec = Comical.getBubble(this.activeElement);
+        const oldData: BubbleSpec = this.activeBubble.spec;
         // We get the default bubble for this style and parent to provide
         // any properties that have never before occurred for this bubble,
         // particularly a default tail placement if it was previously 'none'.
@@ -141,8 +149,8 @@ export class TextOverPictureManager {
             ...oldData,
             ...(newBubbleProps as BubbleSpec)
         };
-        Comical.setBubble(mergedBubble, this.activeElement!);
-        Comical.update(this.activeElement!.parentElement!);
+        this.activeBubble.setBubbleSpec(mergedBubble);
+        Comical.update(this.activeBubble!.content.parentElement!);
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
@@ -182,13 +190,15 @@ export class TextOverPictureManager {
             mouseY
         );
 
-        const bubble: BubbleSpec = {
+        const contentElement = wrapperBox.get(0);
+        const bubbleSpec: BubbleSpec = {
             version: "1.0",
             style: "speech",
-            tips: [Comical.makeDefaultTip(wrapperBox.get(0))],
+            tips: [Bubble.makeDefaultTip(contentElement)],
             level: 1
         };
-        Comical.setBubble(bubble, wrapperBox.get(0));
+        const bubble = new Bubble(contentElement);
+        bubble.setBubbleSpec(bubbleSpec);
         // Plausibly at this point we might call Comical.update() to get the new
         // bubble drawn. But reloading the page achieves the same thing.
 
