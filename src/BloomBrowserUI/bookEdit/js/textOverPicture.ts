@@ -50,7 +50,7 @@ export class TextOverPictureManager {
         );
         if (textOverPictureElems.length > 0) {
             const activeElement = textOverPictureElems[0] as HTMLElement;
-            this.activeBubble = new Bubble(activeElement);
+            this.activeBubble = Bubble.getInstance(activeElement);
             const editable = textOverPictureElems[0].getElementsByClassName(
                 "bloom-editable bloom-visibility-code-on"
             )[0] as HTMLElement;
@@ -86,7 +86,7 @@ export class TextOverPictureManager {
             return;
         }
 
-        this.activeBubble = new Bubble(element);
+        this.activeBubble = Bubble.getInstance(element);
         if (this.notifyBubbleChange) {
             this.notifyBubbleChange(this.getSelectedItemBubbleSpec());
         }
@@ -133,7 +133,7 @@ export class TextOverPictureManager {
         }
         // Figure out a default that will supply any necessary properties not
         // specified in data, including a tail in a default position
-        const defaultData = Bubble.getDefaultBubble(
+        const defaultData = Bubble.getDefaultBubbleSpec(
             this.activeBubble.content,
             newBubbleProps.style!
         );
@@ -197,7 +197,7 @@ export class TextOverPictureManager {
             tips: [Bubble.makeDefaultTip(contentElement)],
             level: 1
         };
-        const bubble = new Bubble(contentElement);
+        const bubble = Bubble.getInstance(contentElement);
         bubble.setBubbleSpec(bubbleSpec);
         // Plausibly at this point we might call Comical.update() to get the new
         // bubble drawn. But reloading the page achieves the same thing.
