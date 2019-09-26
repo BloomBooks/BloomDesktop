@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define MEMORYCHECK
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -980,6 +981,10 @@ namespace Bloom.Edit
 		{
 			if (_domForCurrentPage != null && !_inProcessOfSaving && !NavigatingSoSuspendSaving)
 			{
+#if MEMORYCHECK
+				// Check memory for the benefit of developers.
+				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "before EditingModel.SaveNow()", false);
+#endif
 				var watch = Stopwatch.StartNew();
 				try
 				{
@@ -1051,6 +1056,10 @@ namespace Bloom.Edit
 				}
 				watch.Stop();
 				TroubleShooterDialog.Report($"Saving changes took {watch.ElapsedMilliseconds} milliseconds");
+#if MEMORYCHECK
+				// Check memory for the benefit of developers.
+				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "after EditingModel.SaveNow()", false);
+#endif
 			}
 		}
 
