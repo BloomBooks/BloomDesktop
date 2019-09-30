@@ -56,6 +56,14 @@ namespace BloomTests
 			_otherFilesForTestingFolder.Dispose();
 		}
 
+		[Test]
+		public void THISTESTSHOULDALWAYSFAIL()
+		{
+			var Truth = true;
+			var Lie = false;
+			Assert.That(Truth, Is.EqualTo(Lie), "This test is supposed to fail...");
+		}
+
 		/// <summary>
 		/// This factory CSS is also found in various factory templates.
 		/// </summary>
