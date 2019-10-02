@@ -826,6 +826,10 @@ namespace Bloom.Book
 			var backgroundMusicFileNames = GetBackgroundMusicFileNamesReferencedInBook();
 			usedAudioFileNames.AddRange(backgroundMusicFileNames);
 
+			// re BL-7617: If we decide we want to clean up .wav files from earlier versions of Bloom, we just need to flip
+			// the first boolean parameter here and fix up one test in BookStorageTests.cs:
+			//   CleanupUnusedAudioFiles_BookHadUnusedAudio_AudiosRemoved()
+			// var narrationAudioFileNames = GetNarrationAudioFileNamesReferencedInBook(false, includeSplitTextBoxAudio: !isForPublish);
 			var narrationAudioFileNames = GetNarrationAudioFileNamesReferencedInBook(true, includeSplitTextBoxAudio: !isForPublish);
 			usedAudioFileNames.AddRange(narrationAudioFileNames);
 

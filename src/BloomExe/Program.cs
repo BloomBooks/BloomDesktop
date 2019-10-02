@@ -1428,6 +1428,9 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 
 		public static bool RunningNonApplicationMode { get; set; }
 
+		// Should be set to true if this is being called by Harvester, false otherwise.
+		public static bool RunningHarvesterMode { get; set; }
+
 		/// <summary>
 		/// If launched by a fast splash screen program, signal it to close.
 		/// </summary>

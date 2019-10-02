@@ -42,7 +42,7 @@ namespace Bloom.CLI
 						throw new ApplicationException("Allow tracking is enabled but we don't want the Harvester to actually send analytics.");
 					}
 
-					CollectionSettings.HarvesterMode = true;
+					Program.RunningHarvesterMode = true;
 					string collectionFilePath = options.CollectionPath;
 					using (_projectContext = applicationContainer.CreateProjectContext(collectionFilePath))
 					{
