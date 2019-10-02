@@ -5,7 +5,7 @@ import "./Bubbles.less";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import { TextOverPictureManager } from "../../js/textOverPicture";
 import { RadioGroup } from "../../../react_components/RadioGroup";
-import { BubbleSpec } from "bubble-edit//bubbleSpec";
+import { BubbleSpec } from "comical-js//bubbleSpec";
 
 interface IComponentState {
     style: string;
