@@ -1736,6 +1736,11 @@
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool" sil:dynamic="true">
+        <source xml:lang="en">Callout Tool</source>
+        <note>ID: EditTab.Toolbox.CalloutTool</note>
+        <note>This tool allows users to insert a callout, which is a piece of text connected by a line, arrow, or other graphic to a part of a picture. It may be used to give more information about a specific part or as speech bubbles to give dialogue.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer</note>

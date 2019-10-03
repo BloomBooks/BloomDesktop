@@ -1,7 +1,7 @@
 import * as React from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import * as ReactDOM from "react-dom";
-import "./Bubbles.less";
+import "./Callout.less";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import { TextOverPictureManager } from "../../js/textOverPicture";
 import { RadioGroup } from "../../../react_components/RadioGroup";
@@ -12,8 +12,8 @@ interface IComponentState {
     bubbleActive: boolean;
 }
 
-// These classes support the Bubbles toolbox, which allows control of cartoon bubbles added to images.
-export class BubblesToolControls extends React.Component<{}, IComponentState> {
+// These classes support the Callouts toolbox, which allows control of callouts (e.g. cartoon bubbles) added to images.
+export class CalloutToolControls extends React.Component<{}, IComponentState> {
     constructor(props: Readonly<{}>) {
         super(props);
     }
@@ -52,31 +52,31 @@ export class BubblesToolControls extends React.Component<{}, IComponentState> {
 
     private setBubbleStyle(s: string): void {
         this.setState({ style: s });
-        BubblesToolControls.bubbleManager().updateSelectedItemBubbleSpec({
+        CalloutToolControls.bubbleManager().updateSelectedItemBubbleSpec({
             style: s
         });
     }
 
-    public static setup(root): BubblesToolControls {
+    public static setup(root): CalloutToolControls {
         return (ReactDOM.render(
-            <BubblesToolControls />,
+            <CalloutToolControls />,
             root
-        ) as unknown) as BubblesToolControls;
+        ) as unknown) as CalloutToolControls;
     }
 }
 
-export class BubblesTool extends ToolboxToolReactAdaptor {
-    private reactControls: BubblesToolControls;
+export class CalloutTool extends ToolboxToolReactAdaptor {
+    private reactControls: CalloutToolControls;
 
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
-        root.setAttribute("class", "BubblesBody");
-        this.reactControls = BubblesToolControls.setup(root);
+        root.setAttribute("class", "CalloutBody");
+        this.reactControls = CalloutToolControls.setup(root);
         return root as HTMLDivElement;
     }
 
     public id(): string {
-        return "bubbles";
+        return "callout";
     }
 
     public isExperimental(): boolean {
@@ -95,7 +95,7 @@ export class BubblesTool extends ToolboxToolReactAdaptor {
     }
 
     public newPageReady() {
-        const bubbleManager = BubblesToolControls.bubbleManager();
+        const bubbleManager = CalloutToolControls.bubbleManager();
         if (!bubbleManager) {
             // probably the toolbox just finished loading before the page.
             // No clean way to fix this
@@ -116,6 +116,6 @@ export class BubblesTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        BubblesToolControls.bubbleManager().turnOffBubbleEditing();
+        CalloutToolControls.bubbleManager().turnOffBubbleEditing();
     }
 }

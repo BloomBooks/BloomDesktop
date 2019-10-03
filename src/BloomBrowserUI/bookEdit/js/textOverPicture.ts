@@ -10,8 +10,7 @@ import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager from "../../utils/WebSocketManager";
 import Comical from "comical-js/comical";
 import Bubble from "comical-js/bubble";
-import { BubbleSpec, BubbleSpecPattern, TailSpec } from "comical-js/bubbleSpec";
-import { BubblesTool } from "../toolbox/bubbles/comicBubblesControls";
+import { BubbleSpec, BubbleSpecPattern } from "comical-js/bubbleSpec";
 
 const kWebsocketContext = "textOverPicture";
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
