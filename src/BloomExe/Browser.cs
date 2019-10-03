@@ -556,8 +556,13 @@ namespace Bloom
 			if(FFMenuItem == null)
 				AddOpenPageInFFItem(e);
 #if DEBUG
-			AddOtherMenuItemsForDebugging(e);
+			var _addDebuggingMenuItems = true;
+#else
+			var debugBloom = Environment.GetEnvironmentVariable("DEBUGBLOOM");
+			var _addDebuggingMenuItems = !String.IsNullOrEmpty(debugBloom) && debugBloom.ToLowerInvariant() != "false" && debugBloom.ToLowerInvariant() != "no";
 #endif
+			if (_addDebuggingMenuItems)
+				AddOtherMenuItemsForDebugging(e);
 
 			e.ContextMenu.MenuItems.Add(LocalizationManager.GetString("Browser.CopyTroubleshootingInfo", "Copy Troubleshooting Information"), OnGetTroubleShootingInformation);
 		}
@@ -569,7 +574,6 @@ namespace Bloom
 				OnOpenPageInSystemBrowser);
 		}
 
-#if DEBUG
 		private void AddOtherMenuItemsForDebugging(GeckoContextMenuEventArgs e)
 		{
 			e.ContextMenu.MenuItems.Add("Open about:memory window", OnOpenAboutMemory);
@@ -618,7 +622,6 @@ namespace Bloom
 			form.Navigate("about:cache?storage=&context=");
 			form.Show();    // NOT Modal!
 		}
-#endif
 
 		public void OnGetTroubleShootingInformation(object sender, EventArgs e)
 		{
