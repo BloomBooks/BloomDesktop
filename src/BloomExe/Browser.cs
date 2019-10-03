@@ -47,6 +47,7 @@ namespace Bloom
 		// for Add/Delete TextOverPicture textboxes. These will store the cursor location when the context menu is
 		// generated.
 		internal Point ContextMenuLocation;
+		private bool _addAboutMemoryMenuItem;
 
 		// TODO: refactor to use same initialization code as Palaso
 		public static void SetUpXulRunner()
@@ -556,8 +557,12 @@ namespace Bloom
 			if(FFMenuItem == null)
 				AddOpenPageInFFItem(e);
 #if DEBUG
-			AddOtherMenuItemsForDebugging(e);
+			_addAboutMemoryMenuItem = true;
+#else
+			var debugBloom = Environment.GetEnvironmentVariable("DEBUGBLOOM");
+			_addAboutMemoryMenuItem = !String.IsNullOrEmpty(debugBloom) && debugBloom.ToLowerInvariant() != "false" && debugBloom.ToLowerInvariant() != "no";
 #endif
+			AddOtherMenuItemsForDebugging(e);
 
 			e.ContextMenu.MenuItems.Add(LocalizationManager.GetString("Browser.CopyTroubleshootingInfo", "Copy Troubleshooting Information"), OnGetTroubleShootingInformation);
 		}
@@ -569,19 +574,23 @@ namespace Bloom
 				OnOpenPageInSystemBrowser);
 		}
 
-#if DEBUG
 		private void AddOtherMenuItemsForDebugging(GeckoContextMenuEventArgs e)
 		{
-			e.ContextMenu.MenuItems.Add("Open about:memory window", OnOpenAboutMemory);
+			if (_addAboutMemoryMenuItem)
+				e.ContextMenu.MenuItems.Add("Open about:memory window", OnOpenAboutMemory);
+#if DEBUG
 			e.ContextMenu.MenuItems.Add("Open about:config window", OnOpenAboutConfig);
 			e.ContextMenu.MenuItems.Add("Open about:cache window", OnOpenAboutCache);
 			e.ContextMenu.MenuItems.Add("Refresh", OnRefresh);
+#endif
 		}
 
+#if DEBUG
 		private void OnRefresh(object sender, EventArgs e)
 		{
 			_browser.Reload();
 		}
+#endif
 
 		private void OnOpenAboutMemory(object sender, EventArgs e)
 		{
@@ -595,6 +604,7 @@ namespace Bloom
 			form.Show();	// NOT Modal!
 		}
 
+#if DEBUG
 		private void OnOpenAboutConfig(object sender, EventArgs e)
 		{
 			var form = new AboutMemory();
