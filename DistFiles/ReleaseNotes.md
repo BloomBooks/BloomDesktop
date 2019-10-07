@@ -10,6 +10,8 @@ When opening a different collection, Bloom now offers you the last 9 collections
 
 ⭐ We added a completely new **WYSIWYG Quiz** page. You can control formatting ([Feature Request](https://community.software.sil.org/t/control-font-size-on-quiz/969)), location in the book ([Feature Request](https://community.software.sil.org/t/bloom-reader-comprehension-quizzes-in-more-than-one-place/1968)), and the content of the heading. You can also record audio for all parts of it ([Feature Request](https://community.software.sil.org/t/the-ability-to-record-quiz-questions-and-answer-using-the-talking-book-tool/891), [Feature Request](https://community.software.sil.org/t/audio-questions-for-quizzes-for-non-readers/1452)).
 
+⭐ Bloom can normally tell if you are working on a derived book or an original. But if it gets it wrong, you can now remove the derivation copyright and license using a new checkbox in the Copyright & License dialog ([Feature Request](https://community.software.sil.org/t/way-to-tell-bloom-that-my-book-isnt-really-a-derivative/2298)).
+
 ⭐ You can now marks books as Public Domain using CC0 ([Feature Request](https://community.software.sil.org/t/public-domain-option/1317), [Feature Request](https://community.software.sil.org/t/cc0-creative-commons/610)).
 
 ⭐ You can now paste hyperlinks into books which will work when people use the digital version of the book([Feature Request](https://community.software.sil.org/t/hyperlinks-in-bloom-books/1694)).
