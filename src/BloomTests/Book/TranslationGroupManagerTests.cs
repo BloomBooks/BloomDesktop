@@ -255,12 +255,83 @@ namespace BloomTests.Book
 		}
 
 		/// <summary>
+		/// Checks that elements in bloomDataDiv are updated too
+		/// </summary>
+
+		[Test]
+		public void UpdateContentLanguageClasses_BloomDataDiv_ElementsAreUpdatedToo()
+		{
+			// Setup
+			var contents =
+@"<body>
+	<div id='bloomDataDiv'>
+		<div data-book='styleNumberSequence' lang='*'>
+			0
+		</div>
+		<div data-book='coverImageDescription' lang='*'>
+			<div data-languagetipcontent='Portuguese' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable ImageDescriptionEdit-style bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='pt'>
+				<p>An Image Description in a language that is not one of the languages of the book</p>
+			</div>
+
+			<div data-languagetipcontent='XYZ' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable ImageDescriptionEdit-style bloom-visibility-code-on' contenteditable='true' lang='xyz'>
+				<p>An Image Description in Language 1</p>
+			</div>
+
+			<div style='' class='bloom-editable ImageDescriptionEdit-style' contenteditable='true' lang='z'>
+				<p></p>
+			</div>
+
+			<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='' class='bloom-editable ImageDescriptionEdit-style bloom-contentNational1' contenteditable='true' lang='en'>
+				<p></p>
+			</div>
+		</div>
+		<!-- End of bloomDataDiv -->
+
+		<div class='bloom-page  bloom-trilingual'>
+			<div class='bloom-translationGroup'>
+				<div data-languagetipcontent='Portuguese' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable ImageDescriptionEdit-style bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='pt'>
+					<p>An Image Description in a language that is not one of the languages of the book</p>
+				</div>
+			</div>
+			<div class='bloom-translationGroup'>
+				<div data-languagetipcontent='XYZ' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable ImageDescriptionEdit-style bloom-visibility-code-on' contenteditable='true' lang='xyz'>
+					<p>An Image Description in Language 1</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>";
+
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+			var bodyDiv = (XmlElement)dom.SafeSelectNodes("//body")[0];
+
+			// System under test
+			TranslationGroupManager.UpdateContentLanguageClasses(bodyDiv, _collectionSettings.Object, "xyz", "222", null);
+
+			// Verification
+			var bloomDataDivImageDescription = (XmlElement)dom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[@lang='pt']")[0];
+			var classString = bloomDataDivImageDescription.GetAttribute("class");
+			Assert.IsFalse(classString.Contains("bloom-content"), "Div should have out-of-date bloom-content1 class removed");
+
+			var pageNonL1ImageDescription = (XmlElement)dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]/div/div[@lang='pt']")[0];
+			classString = pageNonL1ImageDescription.GetAttribute("class");
+			Assert.IsFalse(classString.Contains("bloom-content"), "Div should have out-of-date bloom-content1 class removed");
+
+			var pageL1ImageDescription = (XmlElement)dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]/div/div[@lang='xyz']")[0];
+			classString = pageL1ImageDescription.GetAttribute("class");
+			Assert.IsTrue(classString.Contains("bloom-content1"), "L1 Div should have bloom-content1 class added");
+
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-content1')]", 2);	// Should remove content1 off the "pt" versions in the dataDiv and the page, but keep the "xyz" (Lang1) ones in both the dataDiv and page
+		}
+
+		/// <summary>
 		/// the editmode.css rule that lets us simulate the HTML5 "placeholder" attribute with a "data-placeholder"
 		/// cannot reach up to the partent of the div, so it needs to be on the prototype child. But since the prototype these days is usually lang 'x' it is getting
 		/// deleted before we can make use of it. So more now, we are putting the data-placeholder on the partent and make sure we copy it to children.
 		/// </summary>
 		[Test]
-		public void UpdateContentLanguageClasses_TranslationGroupHasPlaceHolder_PlaceholderCopiedToNewChildren()
+		public void PrepareElementsInPageOrDocument_TranslationGroupHasPlaceHolder_PlaceholderCopiedToNewChildren()
 		{
 			var contents = @"<div class='bloom-page  bloom-trilingual'>
 								<div class='bloom-translationGroup normal-style' data-placeholder='copy me' >
