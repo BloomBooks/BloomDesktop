@@ -214,37 +214,53 @@ namespace Bloom.Book
 				//nb: we don't necessarily care that a div is editable or not
 				foreach (XmlElement e in @group.SafeSelectNodes(".//textarea | .//div"))
 				{
-					HtmlDom.RemoveClassesBeginingWith(e, "bloom-content");
-					var lang = e.GetAttribute("lang");
-
-					//These bloom-content* classes are used by some stylesheet rules, primarily to boost the font-size of some languages.
-					//Enhance: this is too complex; the semantics of these overlap with each other and with bloom-visibility-code-on, and with data-language-order.
-					//It would be better to have non-overlapping things; 1 for order, 1 for visibility, one for the lang's role in this collection.
-					string orderClass;
-					if (contentLanguages.TryGetValue(lang, out orderClass))
-					{
-						HtmlDom.AddClass(e, orderClass); //bloom-content1, bloom-content2, bloom-content3
-					}
-
-					//Enhance: it's even more likely that we can get rid of these by replacing them with bloom-content2, bloom-content3
-					if (lang == settings.Language2Iso639Code)
-					{
-						HtmlDom.AddClass(e, "bloom-contentNational1");
-					}
-					if (lang == settings.Language3Iso639Code)
-					{
-						HtmlDom.AddClass(e, "bloom-contentNational2");
-					}
-
-					HtmlDom.RemoveClassesBeginingWith(e, "bloom-visibility-code");
-					if (ShouldNormallyShowEditable(lang, dataDefaultLanguages, contentLanguageIso2, contentLanguageIso3, settings))
-					{
-						HtmlDom.AddClass(e, "bloom-visibility-code-on");
-					}
-
-					UpdateRightToLeftSetting(settings, e, lang);
+					UpdateContentLanguageClassesOnElement(e, contentLanguages, settings, contentLanguageIso2, contentLanguageIso3, dataDefaultLanguages);
 				}
 			}
+
+			// Also correct bloom-contentX fields in the bloomDataDiv, which are not listed under translation groups
+			foreach (XmlElement coverImageDescription in elementOrDom.SafeSelectNodes(".//*[@id='bloomDataDiv']/*[@data-book='coverImageDescription']"))
+			{
+				string[] dataDefaultLanguages = new string[] { " auto" };	// bloomDataDiv contents don't have dataDefaultLanguages on them, so just go with "auto"
+				//nb: we don't necessarily care that a div is editable or not
+				foreach (XmlElement e in coverImageDescription.SafeSelectNodes(".//textarea | .//div"))
+				{
+					UpdateContentLanguageClassesOnElement(e, contentLanguages, settings, contentLanguageIso2, contentLanguageIso3, dataDefaultLanguages);
+				}
+			}
+		}
+
+		private static void UpdateContentLanguageClassesOnElement(XmlElement e, Dictionary<string, string> contentLanguages, CollectionSettings settings, string contentLanguageIso2, string contentLanguageIso3, string[] dataDefaultLanguages)
+		{
+			HtmlDom.RemoveClassesBeginingWith(e, "bloom-content");
+			var lang = e.GetAttribute("lang");
+
+			//These bloom-content* classes are used by some stylesheet rules, primarily to boost the font-size of some languages.
+			//Enhance: this is too complex; the semantics of these overlap with each other and with bloom-visibility-code-on, and with data-language-order.
+			//It would be better to have non-overlapping things; 1 for order, 1 for visibility, one for the lang's role in this collection.
+			string orderClass;
+			if (contentLanguages.TryGetValue(lang, out orderClass))
+			{
+				HtmlDom.AddClass(e, orderClass); //bloom-content1, bloom-content2, bloom-content3
+			}
+
+			//Enhance: it's even more likely that we can get rid of these by replacing them with bloom-content2, bloom-content3
+			if (lang == settings.Language2Iso639Code)
+			{
+				HtmlDom.AddClass(e, "bloom-contentNational1");
+			}
+			if (lang == settings.Language3Iso639Code)
+			{
+				HtmlDom.AddClass(e, "bloom-contentNational2");
+			}
+
+			HtmlDom.RemoveClassesBeginingWith(e, "bloom-visibility-code");
+			if (ShouldNormallyShowEditable(lang, dataDefaultLanguages, contentLanguageIso2, contentLanguageIso3, settings))
+			{
+				HtmlDom.AddClass(e, "bloom-visibility-code-on");
+			}
+
+			UpdateRightToLeftSetting(settings, e, lang);
 		}
 
 		private static void UpdateRightToLeftSetting(CollectionSettings settings, XmlElement e, string lang)
