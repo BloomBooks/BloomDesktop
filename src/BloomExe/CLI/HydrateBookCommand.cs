@@ -47,7 +47,7 @@ namespace Bloom.CLI
 			{
 				XMatterPackName = options.XMatter,
 				Language1Iso639Code = options.VernacularIsoCode,
-				Language2Iso639Code = options.NationalLanguage1IsoCode,
+				Language2Iso639Code = string.IsNullOrWhiteSpace(options.NationalLanguage1IsoCode) ? options.VernacularIsoCode : options.NationalLanguage1IsoCode,
 				Language3Iso639Code = options.NationalLanguage2IsoCode
 			};
 
