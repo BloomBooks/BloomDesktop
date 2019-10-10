@@ -1,3 +1,47 @@
+@import "../../../bloomUI.less";
+
 .ui-accordion h3[data-toolId="calloutTool"] span.ui-accordion-header-icon {
     background-image: url("callout-icon.svg") !important;
+}
+
+#ui-accordion-toolbox-panel-0.CalloutBody {
+    padding-top: 1px; // The design for this has a very small boundary between the header and the start of the tool
+    padding-left: 1px !important; // Don't want a big border of highly contrasting colors
+}
+
+#calloutControlShapeChooserRegion {
+    background-color: @bloom-blue;
+    color: black;
+    height: 183px;
+}
+
+#calloutControlOptionsRegion {
+    padding-top: 20px;
+    padding-left: 3px;
+    //display: flex;
+
+    .calloutOptionDropdown {
+        color: @bloom-toolboxWhite;
+
+        // These are the arrow dropdown icons for the dropdown box
+        .MuiSelect-icon {
+            color: @bloom-toolboxWhite;
+        }
+    }
+}
+
+#calloutControlFooterRegion {
+    // Make it stick to the bottom of the parent
+    position: absolute;
+    bottom: 3px;
+
+    padding-left: 3px;
+}
+
+// TODO: Get rid of the ID-based ones
+#menu-style,
+#menu-textcolor,
+.callout-options-dropdown-menu {
+    // Getting overwritten by the inline styles... :(
+    z-index: 999999 !important; // Note: 18,000 was experimentally determined to be the minimum required z-index, but seems safer to go up a bit from the minimum
 }
