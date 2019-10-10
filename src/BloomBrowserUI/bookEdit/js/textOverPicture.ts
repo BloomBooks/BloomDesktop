@@ -16,7 +16,10 @@ const kWebsocketContext = "textOverPicture";
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
 export class TextOverPictureManager {
     private activeElement: HTMLElement | undefined;
-    private notifyBubbleChange: (x: BubbleSpec | undefined) => void;
+    private isCalloutEditingOn: boolean = false;
+    private notifyBubbleChange:
+        | ((x: BubbleSpec | undefined) => void)
+        | undefined;
 
     public initializeTextOverPictureManager(): void {
         WebSocketManager.addListener(kWebsocketContext, messageEvent => {
@@ -37,7 +40,16 @@ export class TextOverPictureManager {
         });
     }
 
+    public getIsCalloutEditingOn(): boolean {
+        return this.isCalloutEditingOn;
+    }
+
     public turnOnBubbleEditing(): void {
+        if (this.isCalloutEditingOn === true) {
+            return; // Already on. No work needs to be done
+        }
+        this.isCalloutEditingOn = true;
+
         Array.from(
             document.getElementsByClassName("bloom-imageContainer")
         ).forEach(e => e.classList.add("bloom-hideImageButtons"));
@@ -61,22 +73,37 @@ export class TextOverPictureManager {
             ).forEach(element => {
                 // tempting to use focusin on the bubble elements here,
                 // but that's not in FF45 (starts in 52)
-                element.addEventListener("focus", () => {
-                    // If we focus something on the page that isn't in a bubble, we need to switch
-                    // to having no active bubble element. Note: we don't want to use focusout
-                    // on the bubble elements, because then we lose the active element while clicking
-                    // on controls in the toolbox (and while debugging).
-                    // Todo: check what happens when a bubble is removed.
-                    const bubbleElement = element.closest(
-                        ".bloom-textOverPicture"
-                    );
-                    if (bubbleElement) {
-                        this.setActiveElement(bubbleElement as HTMLElement);
-                    } else {
-                        this.setActiveElement(undefined);
-                    }
-                });
+
+                // Don't use an arrow function as an event handler here. These can never be identified as duplicate event listeners, so we'll end up with tons of duplicates
+                element.addEventListener(
+                    "focus",
+                    TextOverPictureManager.onFocusSetActiveElement
+                );
             });
+        }
+    }
+
+    // Event Handler to be called when something relevant on the page frame gets focus.  Will set the active textOverPicture element.
+    public static onFocusSetActiveElement(event: Event) {
+        const focusedElement = event.currentTarget as Element; // The current target is the element we attached the event listener to
+        if (focusedElement.classList.contains("bloom-editable")) {
+            // If we focus something on the page that isn't in a bubble, we need to switch
+            // to having no active bubble element. Note: we don't want to use focusout
+            // on the bubble elements, because then we lose the active element while clicking
+            // on controls in the toolbox (and while debugging).
+            // Todo: check what happens when a bubble is removed.
+            initializeTextOverPictureManager();
+
+            const bubbleElement = focusedElement.closest(
+                ".bloom-textOverPicture"
+            );
+            if (bubbleElement) {
+                theOneTextOverPictureManager.setActiveElement(
+                    bubbleElement as HTMLElement
+                );
+            } else {
+                theOneTextOverPictureManager.setActiveElement(undefined);
+            }
         }
     }
 
@@ -93,6 +120,16 @@ export class TextOverPictureManager {
     }
 
     public turnOffBubbleEditing(): void {
+        if (this.isCalloutEditingOn === false) {
+            return; // Already off. No work needs to be done.
+        }
+        this.isCalloutEditingOn = false;
+
+        // TODO: Not sure if we want to add this or if it has an effect etc.
+        // Maybe we want to clear it?
+        // Maybe we'd be able to remember what was the previously selected active element if we don't get rid of it? That might be kinda nice too
+        //this.setActiveElement(undefined);
+
         const canvas = document.getElementsByClassName(
             "bubble-edit-generated"
         )[0];
@@ -102,6 +139,16 @@ export class TextOverPictureManager {
         Array.from(
             document.getElementsByClassName("bloom-hideImageButtons")
         ).forEach(e => e.classList.remove("bloom-hideImageButtons"));
+
+        // Clean up event listeners that we no longer need
+        Array.from(document.getElementsByClassName("bloom-editable")).forEach(
+            element => {
+                element.removeEventListener(
+                    "focus",
+                    TextOverPictureManager.onFocusSetActiveElement
+                );
+            }
+        );
     }
 
     public prepareToSavePage(): void {
@@ -123,6 +170,10 @@ export class TextOverPictureManager {
         notifier: (bubble: BubbleSpec | undefined) => void
     ): void {
         this.notifyBubbleChange = notifier;
+    }
+
+    public detachBubbleChangeNotification(): void {
+        this.notifyBubbleChange = undefined;
     }
 
     public updateSelectedItemBubbleSpec(

@@ -29,23 +29,20 @@ const CalloutToolControls: React.FunctionComponent<ICalloutToolProps> = (
     const [bubbleActive, setBubbleActive] = useState(props.bubbleActive);
 
     // TODO: Where should i move?
-    const oneTimeBubbleSpecInitialization = () => {
+    const bubbleSpecInitialization = () => {
         const bubbleManager = CalloutTool.bubbleManager();
         if (!bubbleManager) {
             // probably the toolbox just finished loading before the page.
             // No clean way to fix this
-            window.setTimeout(() => this.newPageReady(), 100);
             return;
         }
+
         bubbleManager.turnOnBubbleEditing();
 
         const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
 
         bubbleManager.requestBubbleChangeNotification(
             (bubble: BubbleSpec | undefined) => {
-                // TODO: is this getting called an excessive amount of times?
-                console.log("RequestBubbleChangeNotification callback called.");
-
                 // TODO: Ugh, this is a circular dependency-like scenario :(
                 //setActiveBubbleSpec(bubble);
 
@@ -59,24 +56,33 @@ const CalloutToolControls: React.FunctionComponent<ICalloutToolProps> = (
     };
 
     const [activeBubbleSpec, setActiveBubbleSpec] = useState(
-        oneTimeBubbleSpecInitialization()
+        () => {
+            return bubbleSpecInitialization();
+        } // The function will only be evaluated the first time.
     );
     useEffect(() => {
         if (activeBubbleSpec) {
-            // TODO: Do nice things with me.
             setStyle(activeBubbleSpec.style);
             setBubbleActive(true);
         }
 
         // Return value is the Cleanup function
         return () => {
-            CalloutTool.bubbleManager().turnOffBubbleEditing();
+            const bubbleManager = CalloutTool.bubbleManager();
+            if (bubbleManager) {
+                bubbleManager.turnOffBubbleEditing();
+                bubbleManager.detachBubbleChangeNotification();
+            }
         };
     }, [activeBubbleSpec]);
 
     const handleStyleChanged = event => {
         const newStyle = event.target.value;
+
+        // Update the toolbox controls
         setStyle(newStyle);
+
+        // Update the Comical canvas on the page frame
         CalloutTool.bubbleManager().updateSelectedItemBubbleSpec({
             style: newStyle
         });
