@@ -18,15 +18,17 @@
 #calloutControlOptionsRegion {
     padding-top: 20px;
     padding-left: 3px;
-    //display: flex;
 
+    color: @bloom-toolboxWhite;
+
+    .MuiFormLabel-root,
+    .MuiSelect-icon,
     .calloutOptionDropdown {
         color: @bloom-toolboxWhite;
+    }
 
-        // These are the arrow dropdown icons for the dropdown box
-        .MuiSelect-icon {
-            color: @bloom-toolboxWhite;
-        }
+    .MuiFormLabel-root {
+        width: 180px; // It could have more like 196px, but leave some room for a potential scrollbar
     }
 }
 
@@ -38,10 +40,8 @@
     padding-left: 3px;
 }
 
-// TODO: Get rid of the ID-based ones
-#menu-style,
-#menu-textcolor,
 .callout-options-dropdown-menu {
     // Getting overwritten by the inline styles... :(
+    // TODO: Experiment with whether you can pass in a style through Material UI instead of using !important to bypass the inline style.
     z-index: 999999 !important; // Note: 18,000 was experimentally determined to be the minimum required z-index, but seems safer to go up a bit from the minimum
 }

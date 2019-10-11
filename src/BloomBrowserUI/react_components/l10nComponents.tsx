@@ -406,3 +406,23 @@ export class Label extends LocalizableElement<ILabelProps, ILocalizationState> {
         );
     }
 }
+
+export class Span extends LocalizableElement<
+    ILocalizationProps,
+    ILocalizationState
+> {
+    public render() {
+        return (
+            <span
+                className={this.getClassName()}
+                onClick={() => {
+                    if (this.props.onClick) {
+                        this.props.onClick();
+                    }
+                }}
+            >
+                {this.getLocalizedContent()}
+            </span>
+        );
+    }
+}
