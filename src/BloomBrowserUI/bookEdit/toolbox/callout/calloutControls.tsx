@@ -201,7 +201,7 @@ const CalloutToolControls: React.FunctionComponent<ICalloutToolProps> = (
                         </Select>
                     </FormControl>
                     <br />
-
+                    {/*
                     <FormControl>
                         <InputLabel htmlFor="callout-textColor-dropdown">
                             <Span l10nKey="EditTab.Toolbox.CalloutTool.Options.TextColor">
@@ -315,6 +315,7 @@ const CalloutToolControls: React.FunctionComponent<ICalloutToolProps> = (
                             </MenuItem>
                         </Select>
                     </FormControl>
+                    */}
                 </form>
             </div>
             <div id={"calloutControlFooterRegion"}>
