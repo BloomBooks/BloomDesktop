@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -185,11 +185,42 @@ namespace Bloom.Edit
 			// "return false" means we don't want to override other menu items that might be added
 			_browser1.ContextMenuProvider = args =>
 			{
-				// don't allow changes if locked down; I doubt args.TargetNode CAN be anything else, but just being safe.
-				if (_model.CurrentBook.LockedDown || !(args.TargetNode is GeckoHtmlElement))
+				var targetNode = args.TargetNode;
+				if (targetNode.NodeName.ToLowerInvariant() == "svg")
+				{
+					// This case can be genrated by the callout tool. It inserts an SVG of all the callouts/tails/etc,
+					// But that is not convertable to a GeckoHtmlElement.
+					// So, try to move the click onto a sibling or parent instead.
+					//
+					// This is an example of the anticipated layout of this scenario.
+					//
+					// <DIV class="bloom-imageContainer">
+					//     <svg>...</svg>
+					//     <DIV class="bloom-textOverPicture">...</DIV>
+					//     ...
+					//     <IMG ... />
+					// </DIV>
+					targetNode = targetNode.ParentNode;
+
+					if (targetNode != null && targetNode.ChildNodes != null)
+					{
+						foreach (var childNode in targetNode.ChildNodes)
+						{
+							if (childNode.NodeName.ToUpperInvariant() == "IMG")
+							{
+								targetNode = childNode;
+								break;
+							}
+						}
+					}
+				}
+
+				// don't allow changes if locked down; Also check for GeckoHtmlElement to be safe.
+				if (_model.CurrentBook.LockedDown || !(targetNode is GeckoHtmlElement))
 					return false;
 
-				var targetProxy = new ElementProxy((GeckoHtmlElement) args.TargetNode);
+				var targetProxy = new ElementProxy((GeckoHtmlElement) targetNode);
+
 				// Since at this point we don't have a way to keep TextOverPicture textboxes that the user adds to xMatter pages
 				// we won't give them the opportunity. If we later add that capability, besides removing this 'if', make sure that
 				// textboxes appear above cover images.
