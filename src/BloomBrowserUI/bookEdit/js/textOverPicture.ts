@@ -27,7 +27,7 @@ export class TextOverPictureManager {
             if (msg) {
                 const locationArray = msg.split(","); // mouse right-click coordinates
                 if (messageEvent.id === "addTextBox")
-                    this.addFloatingTOPBox(
+                    this.addFloatingTOPBoxAndReloadPage(
                         +locationArray[0],
                         +locationArray[1]
                     );
@@ -68,6 +68,7 @@ export class TextOverPictureManager {
             Comical.convertBubbleJsonToCanvas(
                 this.activeElement!.parentElement!
             );
+            Comical.activateElement(this.activeElement);
             Array.from(
                 document.getElementsByClassName("bloom-editable")
             ).forEach(element => {
@@ -105,6 +106,10 @@ export class TextOverPictureManager {
                 theOneTextOverPictureManager.setActiveElement(undefined);
             }
         }
+    }
+
+    public getActiveElement() {
+        return this.activeElement;
     }
 
     private setActiveElement(element: HTMLElement | undefined) {
@@ -188,12 +193,84 @@ export class TextOverPictureManager {
         Comical.update(this.activeElement.parentElement!);
     }
 
+    // Note: After reloading the page, you can't have any of your other code execute safely
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
     // to create the context menu
-    private addFloatingTOPBox(mouseX: number, mouseY: number) {
+    public addFloatingTOPBoxAndReloadPage(mouseX: number, mouseY: number) {
+        this.addFloatingTOPBox(mouseX, mouseY);
+
+        // I tried to do without this... it didn't work. This causes page changes to get saved and fills
+        // things in for editing.
+        // It causes EditingModel.RethinkPageAndReloadIt() to get run... which eventually causes
+        // makeTextOverPictureBoxDraggableClickableAndResizable to get called by bloomEditing.ts.
+        BloomApi.postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+    }
+
+    // Adds a new text-over-picture element as a child of the specified {parentElement}
+    //    (It is a child in the sense that the Comical library will recognize it as a child)
+    // {offsetX}/{offsetY} is the offset in position from the parent to the child elements
+    //    (i.e., offsetX = child.left - parent.left)
+    //    (remember that positive values of Y are further to the bottom)
+    // Note: After reloading the page, you can't have any of your other code execute safely
+    public addChildTOPBoxAndReloadPage(
+        parentElement: HTMLElement,
+        offsetX: number,
+        offsetY: number
+    ): void {
+        const parentBoundingRect = parentElement.getBoundingClientRect();
+        let newX = parentBoundingRect.left + offsetX;
+        let newY = parentBoundingRect.top + offsetY;
+
+        // // Ensure newX and newY is within the bounds of the container.
+        const container = parentElement.closest(".bloom-imageContainer");
+        if (!container) {
+            toastr.warning("Failed to create child element.");
+            return;
+        }
+        const containerBoundingRect = container.getBoundingClientRect();
+
+        const bufferPixels = 15;
+        if (newX < containerBoundingRect.left) {
+            newX = containerBoundingRect.left + bufferPixels;
+        } else if (
+            newX + parentElement.clientWidth >
+            containerBoundingRect.right
+        ) {
+            // ENHANCE: parentElement.clientWidth is just an estimate of the size of the child's width.
+            //          It would be better if we could actually plug in the real value of the child's width
+            newX = containerBoundingRect.right - parentElement.clientWidth;
+        }
+
+        if (newY < containerBoundingRect.top) {
+            newY = containerBoundingRect.top + bufferPixels;
+        } else if (
+            newY + parentElement.clientHeight >
+            containerBoundingRect.bottom
+        ) {
+            // ENHANCE: parentElement.clientHeight is just an estimate of the size of the child's height.
+            //          It would be better if we could actually plug in the real value of the child's height
+            newY = containerBoundingRect.bottom - parentElement.clientHeight;
+        }
+
+        const childElement = this.addFloatingTOPBox(newX, newY);
+        if (!childElement) {
+            toastr.info("Failed to place a new child callout.");
+            return;
+        }
+
+        Comical.initializeChild(childElement, parentElement);
+
+        // Need to reload the page to get it editable/draggable/etc.
+        BloomApi.postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+    }
+
+    public addFloatingTOPBox(
+        mouseX: number,
+        mouseY: number
+    ): HTMLElement | undefined {
         const container = this.getImageContainerFromMouse(mouseX, mouseY);
         if (!container || container.length === 0) {
-            return; // don't add a TOP box if we can't find the containing imageContainer
+            return undefined; // don't add a TOP box if we can't find the containing imageContainer
         }
         // add a draggable text bubble to the html dom of the current page
         const editableDivClasses =
@@ -235,13 +312,9 @@ export class TextOverPictureManager {
         const bubble = new Bubble(contentElement);
         bubble.setBubbleSpec(bubbleSpec);
         // Plausibly at this point we might call Comical.update() to get the new
-        // bubble drawn. But reloading the page achieves the same thing.
+        // bubble drawn. But if we reload the page, that achieves the same thing.
 
-        // I tried to do without this... it didn't work. This causes page changes to get saved and fills
-        // things in for editing.
-        // It causes EditingModel.RethinkPageAndReloadIt() to get run... which eventually causes
-        // makeTextOverPictureBoxDraggableClickableAndResizable to get called by bloomEditing.ts.
-        BloomApi.postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+        return contentElement;
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
@@ -284,6 +357,11 @@ export class TextOverPictureManager {
                 const parent = textElement.parentElement;
                 parent.removeChild(textElement);
                 Comical.update(parent);
+
+                // Check if we're deleting the active bubble. If so, gotta clean up the state.
+                if (textElement == this.getActiveElement()) {
+                    this.setActiveElement(undefined);
+                }
             }
         }
     }

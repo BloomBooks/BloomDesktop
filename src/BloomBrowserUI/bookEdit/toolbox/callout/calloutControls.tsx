@@ -6,6 +6,7 @@ import "./Callout.less";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import { TextOverPictureManager } from "../../js/textOverPicture";
 import { BubbleSpec } from "comical-js//bubbleSpec";
+import { Link } from "../../../react_components/link";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
@@ -14,7 +15,7 @@ import { values } from "mobx";
 import { Div, Span } from "../../../react_components/l10nComponents";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles"; // TODO: Am I really needed?
 import InputLabel from "@material-ui/core/InputLabel";
-import FormHelperText from "@material-ui/core/FormHelperText";
+import * as toastr from "toastr";
 
 interface ICalloutToolProps {
     style: string;
@@ -139,6 +140,32 @@ const CalloutToolControls: React.FunctionComponent<ICalloutToolProps> = (
         });
     };
 
+    const handleChildBubbleLinkClick = event => {
+        const bubbleManager = CalloutTool.bubbleManager();
+
+        const parentElement = bubbleManager.getActiveElement();
+
+        if (!parentElement) {
+            // No parent to attach to
+            toastr.info("No element is currently active.");
+            return;
+        }
+
+        // Enhance: Is there a cleaner way to keep activeBubbleSpec up to date?
+
+        // Retrieve the latest bubbleSpec
+        const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
+        const [offsetX, offsetY] = CalloutTool.GetChildPositionFromParentBubble(
+            parentElement,
+            bubbleSpec
+        );
+        bubbleManager.addChildTOPBoxAndReloadPage(
+            parentElement,
+            offsetX,
+            offsetY
+        );
+    };
+
     return (
         <div>
             <div id={"calloutControlShapeChooserRegion"}>
@@ -201,6 +228,14 @@ const CalloutToolControls: React.FunctionComponent<ICalloutToolProps> = (
                         </Select>
                     </FormControl>
                     <br />
+                    <Link
+                        l10nKey="EditTab.Toolbox.CalloutTool.Options.AddChildBubble"
+                        onClick={event => {
+                            handleChildBubbleLinkClick(event);
+                        }}
+                    >
+                        Add Child Bubble
+                    </Link>
                     {/*
                     <FormControl>
                         <InputLabel htmlFor="callout-textColor-dropdown">
@@ -435,5 +470,48 @@ export class CalloutTool extends ToolboxToolReactAdaptor {
 
     public static bubbleManager(): TextOverPictureManager {
         return getPageFrameExports().getTheOneBubbleManager();
+    }
+
+    // Returns a 2-tuple containing the desired x and y offsets of the child bubble from the parent bubble
+    //   (i.e., offsetX = child.left - parent.left)
+    public static GetChildPositionFromParentBubble(
+        parentElement: HTMLElement,
+        parentBubbleSpec: BubbleSpec | undefined
+    ): number[] {
+        let offsetX = parentElement.clientWidth;
+        let offsetY = parentElement.clientHeight;
+
+        if (
+            parentBubbleSpec &&
+            parentBubbleSpec.tails &&
+            parentBubbleSpec.tails.length > 0
+        ) {
+            const tail = parentBubbleSpec.tails[0];
+
+            const bubbleCenterX =
+                parentElement.offsetLeft + parentElement.clientWidth / 2.0;
+            const bubbleCenterY =
+                parentElement.offsetTop + parentElement.clientHeight / 2.0;
+
+            const deltaX = tail.tipX - bubbleCenterX;
+            const deltaY = tail.tipY - bubbleCenterY;
+
+            // Place the new child in the opposite quandrant of the tail
+            if (deltaX > 0) {
+                // ENHANCE: SHould be the child's width
+                offsetX = -parentElement.clientWidth;
+            } else {
+                offsetX = parentElement.clientWidth;
+            }
+
+            if (deltaY > 0) {
+                // ENHANCE: SHould be the child's height
+                offsetY = -parentElement.clientHeight;
+            } else {
+                offsetY = parentElement.clientHeight;
+            }
+        }
+
+        return [offsetX, offsetY];
     }
 }
