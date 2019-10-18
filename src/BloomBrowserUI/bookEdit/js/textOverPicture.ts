@@ -115,6 +115,8 @@ export class TextOverPictureManager {
     private setActiveElement(element: HTMLElement | undefined) {
         if (element == undefined) {
             this.activeElement = undefined;
+            // TODO: I think this probably needs to call notifyBubbleChange even if it's undefined?
+            //    e.g. when the active bubble gets deleted, how does the React tool know it needs to disable the controls?
             return;
         }
 
