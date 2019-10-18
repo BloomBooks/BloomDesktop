@@ -1082,7 +1082,7 @@ namespace Bloom.Book
 		{
 			var path = Path.Combine(FolderPath, "defaultLangStyles.css");
 			bool doesAlreadyExist = RobustFile.Exists(path);
-			if (CollectionSettings.HarvesterMode && doesAlreadyExist)
+			if (Program.RunningHarvesterMode && doesAlreadyExist)
 			{
 				// Would overwrite, but overwrite not allowed in Harvester mode.
 				return;

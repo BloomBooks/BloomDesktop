@@ -150,7 +150,7 @@ namespace BloomTests.Book
 
 		[TestCase(true)]
 		[TestCase(false)]
-		public  void CleanupUnusedAudioFiles_BookHadUnusedAudio_AudiosRemoved(bool isForPublish)
+		public void CleanupUnusedAudioFiles_BookHadUnusedAudio_AudiosRemoved(bool isForPublish)
 		{
 			const string usedAudioGuid = "i3afb14d9-6362-40bf-9dca-de1b24d793f3";   //The files to keep.
 			const string unusedAudioGuid = "d3afb14d9-6362-40bf-9dca-de1b24d793f3"; //The files to drop.
@@ -282,8 +282,8 @@ namespace BloomTests.Book
 			Assert.AreEqual(isPotentiallyUsefulFileExpectedToExist, File.Exists(potentiallyUsefulWavPath), "Potentially Useful Audio (Text Box) WAV");
 			Assert.AreEqual(isPotentiallyUsefulFileExpectedToExist, File.Exists(potentiallyUsefulMp3Path), "Potentially Useful Audio (Text Box) MP3");			
 			Assert.IsTrue(File.Exists(usedSpan1WavPath), "Used Audio Sentence Span 1 WAV");
-			Assert.IsTrue(File.Exists(usedSpan2Mp3Path), "Used Audio Sentence Span 1 MP3");
-			Assert.IsTrue(File.Exists(usedSpan2WavPath), "Used Audio Sentence Span 1 WAV");
+			Assert.IsTrue(File.Exists(usedSpan2Mp3Path), "Used Audio Sentence Span 2 MP3");
+			Assert.IsTrue(File.Exists(usedSpan2WavPath), "Used Audio Sentence Span 2 WAV");
 			Assert.IsTrue(File.Exists(usedSpan1Mp3Path), "Used Audio Sentence Span 1 MP3");
 
 			Assert.IsTrue(File.Exists(usedBGWavPath), "Background Music WAV");

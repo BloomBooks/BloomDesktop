@@ -308,7 +308,7 @@ namespace Bloom.Edit
 			//We could put this off entirely until we make the ePUB.
 			//I'm just gating this for now because maybe the thought was that it's better to do it a little at a time?
 			//That's fine so long as it doesn't make the UI unresponsive on slow machines.
-			_mp3Encoder.Encode(PathToRecordableAudioForCurrentSegment);
+			var mp3Path = _mp3Encoder.Encode(PathToRecordableAudioForCurrentSegment);
 			// Got a good new recording, can safely clean up all backups related to old one.
 			foreach (var path in Directory.EnumerateFiles(
 				Path.GetDirectoryName(PathToRecordableAudioForCurrentSegment),
@@ -317,8 +317,11 @@ namespace Bloom.Edit
 				RobustFile.Delete(path);
 			}
 			
-			// Note: we need to keep the .wav file as well as the mp3 one. The mp3 format
-			// is required for ePUB. The wav file is a better permanent record of the recording.
+			// BL-7617 Don't keep .wav file after .mp3 is created successfully.
+			if (!string.IsNullOrEmpty(mp3Path) && File.Exists(mp3Path))
+			{
+				RobustFile.Delete(PathToRecordableAudioForCurrentSegment);
+			}
 			_completingRecording.Set(); // will release HandleAudioFileRequest if it is waiting.
 		}
 

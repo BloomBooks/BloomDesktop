@@ -27,7 +27,7 @@ namespace Bloom.Edit
 				var topPanel = new Panel();
 				topPanel.SuspendLayout();
 				topPanel.Dock = System.Windows.Forms.DockStyle.Top;
-				topPanel.ClientSize = new System.Drawing.Size(347, 40);
+				topPanel.AutoSize = true;
 				topPanel.Controls.Add(_replaceCopyrightCheckbox);
 
 				this.Controls.Add(topPanel);

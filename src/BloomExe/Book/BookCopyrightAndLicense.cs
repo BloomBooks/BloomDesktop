@@ -327,16 +327,14 @@ namespace Bloom.Book
 			if (!dom.RecordedAsLockedDown)
 				return null;
 			var metadata = GetOriginalMetadata(dom);
-			// In a source collection, unless we really already have some original licence information,
+			// In a source collection, unless we really already have some original license information,
 			// we don't want to generate any...probably we are authoring an original book. (Note that
 			// new books created from templates have RecordedAsLockedDown true, which is overridden
 			// in Book.LockedDown for source collections.)
-			if (collectionSettings.IsSourceCollection && string.IsNullOrEmpty(metadata.CopyrightNotice))
+			if ((collectionSettings.IsSourceCollection || Program.RunningHarvesterMode) && string.IsNullOrEmpty(metadata.CopyrightNotice))
 				return null;
 			string idOfLanguageUsed;
 			var languagePriorityIds = collectionSettings.LicenseDescriptionLanguagePriorities;
-
-			//TODO HOW DO I GET THESE IN THE NATIONAL LANGUAGE INSTEAD OF THE UI LANGUAGE?
 
 			var license = metadata.License.GetMinimalFormForCredits(languagePriorityIds, out idOfLanguageUsed);
 			string originalLicenseSentence;
@@ -358,7 +356,7 @@ namespace Bloom.Book
 				originalLicenseSentence = originalLicenseSentence.Replace("..", "."); // in case had notes which also had a period.
 			}
 
-			var copyrightNotice = "";
+			string copyrightNotice;
 			if (string.IsNullOrWhiteSpace(metadata.CopyrightNotice))
 			{
 				var noCopyrightSentence = LocalizationManager.GetString("EditTab.FrontMatter.OriginalHadNoCopyrightSentence",

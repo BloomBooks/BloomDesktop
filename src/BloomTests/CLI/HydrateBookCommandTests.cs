@@ -199,5 +199,23 @@ namespace BloomTests.CLI
 			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)
 				.HasAtLeastOneMatchForXpath("//div[@data-book='bookTitle' and @contenteditable='true' and @lang='sp' and contains(@class,'bloom-contentNational2')]");
 		}
+
+		[Test]
+		public void RequiredParametersOnly_DefaultsOkay()
+		{
+			var code = HydrateBookCommand.Handle(new HydrateParameters
+			{
+				Path = _bookFolder.FolderPath,
+				VernacularIsoCode = "en"
+			});
+			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
+			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)
+				.HasAtLeastOneMatchForXpath("//div[@data-book='bookTitle' and @contenteditable='true' and @lang='en' and contains(@class,'bloom-content1')]");
+			// National language should be set to vernacular if not set
+			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)
+				.HasAtLeastOneMatchForXpath("//div[@data-book='bookTitle' and @contenteditable='true' and @lang='en' and contains(@class,'bloom-contentNational1')]");
+			AssertThatXmlIn.HtmlFile(_eventualHtmlPath).HasNoMatchForXpath("//div[@lang='']");
+			AssertThatXmlIn.HtmlFile(_eventualHtmlPath).HasNoMatchForXpath("//div[contains(@class,'bloom-contentNational2')]");
+		}
 	}
 }
