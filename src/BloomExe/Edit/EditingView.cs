@@ -569,6 +569,9 @@ namespace Bloom.Edit
 			ChangingPages = false;
 			_model.DocumentCompleted();
 			_browser1.Focus(); //fix BL-3078 No Initial Insertion Point when any page shown
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			MemoryService.MinimizeHeap(true);
 #if MEMORYCHECK
 			// Check memory for the benefit of developers.
 			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - display page updated", false);
