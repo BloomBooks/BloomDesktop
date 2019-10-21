@@ -131,9 +131,7 @@ export class TextOverPictureManager {
         }
         this.isCalloutEditingOn = false;
 
-        const canvas = document.getElementsByClassName(
-            "bubble-edit-generated"
-        )[0];
+        const canvas = document.getElementsByClassName("comical-editing")[0];
         if (canvas && canvas.parentElement) {
             Comical.convertCanvasToSvgImg(canvas.parentElement as HTMLElement);
         }
