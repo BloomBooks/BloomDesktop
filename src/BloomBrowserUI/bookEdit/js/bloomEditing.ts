@@ -1033,9 +1033,7 @@ export const pageSelectionChanging = () => {
 };
 
 // For usage, see editViewFrame.switchContentPage()
-export const prepareToSavePage = () => {
-    theOneTextOverPictureManager.prepareToSavePage();
-};
+export const prepareToSavePage = () => {};
 
 export const pageUnloading = () => {
     theOneTextOverPictureManager.cleanUp();

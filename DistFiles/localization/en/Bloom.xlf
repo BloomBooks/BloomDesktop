@@ -1757,6 +1757,10 @@
         <note>ID: EditTab.Toolbox.CalloutTool</note>
         <note>This tool allows users to insert a callout, which is a piece of text connected by a line, arrow, or other graphic to a part of a picture. It may be used to give more information about a specific part or as speech bubbles to give dialogue.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.AddChildBubble" sil:dynamic="true">
+        <source xml:lang="en">Add Child Bubble</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.AddChildBubble</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor" sil:dynamic="true">
         <source xml:lang="en">Background Color</source>
         <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor</note>

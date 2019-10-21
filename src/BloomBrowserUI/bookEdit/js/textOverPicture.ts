@@ -53,9 +53,13 @@ export class TextOverPictureManager {
         Array.from(
             document.getElementsByClassName("bloom-imageContainer")
         ).forEach(e => e.classList.add("bloom-hideImageButtons"));
-        // todo: select one of them...make sure this doesn't conflict with any other strategy
-        // for selecting one we just added.
-        // todo: do this for the selected element, not just the first.
+        // todo: select the right one...in particular, currently we just select the first one.
+        // This is reasonable when just coming to the page, and when we add a new TOP,
+        // we make the new one the first in its parent, so with only one image container
+        // the new one gets selected after we refresh. However, once we have more than one
+        // image container, I don't think the new TOP box will get selected if it's not on
+        // the first image.
+        // todo: make sure comical is turned on for the right parent, in case there's more than one image on the page?
         const textOverPictureElems = document.getElementsByClassName(
             "bloom-textOverPicture"
         );
@@ -92,7 +96,9 @@ export class TextOverPictureManager {
             // to having no active bubble element. Note: we don't want to use focusout
             // on the bubble elements, because then we lose the active element while clicking
             // on controls in the toolbox (and while debugging).
-            // Todo: check what happens when a bubble is removed.
+
+            // We don't think this function ever gets called when it's not initialized, but it doesn't
+            // hurt to make sure.
             initializeTextOverPictureManager();
 
             const bubbleElement = focusedElement.closest(
@@ -125,11 +131,6 @@ export class TextOverPictureManager {
         }
         this.isCalloutEditingOn = false;
 
-        // TODO: Not sure if we want to add this or if it has an effect etc.
-        // Maybe we want to clear it?
-        // Maybe we'd be able to remember what was the previously selected active element if we don't get rid of it? That might be kinda nice too
-        //this.setActiveElement(undefined);
-
         const canvas = document.getElementsByClassName(
             "bubble-edit-generated"
         )[0];
@@ -149,10 +150,6 @@ export class TextOverPictureManager {
                 );
             }
         );
-    }
-
-    public prepareToSavePage(): void {
-        // Review: do we need to call turnOffComicaling, or is that done in time anyway?
     }
 
     public cleanUp(): void {
@@ -255,7 +252,8 @@ export class TextOverPictureManager {
 
         Comical.initializeChild(childElement, parentElement);
 
-        // Need to reload the page to get it editable/draggable/etc.
+        // Need to reload the page to get it editable/draggable/etc,
+        // and to get the Comical bubbles consistent with the new bubble specs
         BloomApi.postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
     }
 
@@ -298,12 +296,10 @@ export class TextOverPictureManager {
         );
 
         const contentElement = wrapperBox.get(0);
-        const bubbleSpec: BubbleSpec = {
-            version: "1.0",
-            style: "speech",
-            tails: [Bubble.makeDefaultTail(contentElement)],
-            level: 1
-        };
+        const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
+            contentElement,
+            "speech"
+        );
         const bubble = new Bubble(contentElement);
         bubble.setBubbleSpec(bubbleSpec);
         // Plausibly at this point we might call Comical.update() to get the new
