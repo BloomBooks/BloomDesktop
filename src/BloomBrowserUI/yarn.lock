@@ -3117,10 +3117,10 @@ blob@0.0.5:
   resolved "https://registry.yarnpkg.com/blob/-/blob-0.0.5.tgz#d680eeef25f8cd91ad533f5b01eed48e64caf683"
   integrity sha512-gaqbzQPqOoamawKg0LGVd7SzLgXS+JH61oWprSLH+P+abTczqJbhTR8CmJ2u9/bUYNmHTGJx/UEmn6doAvvuig==
 
-bloom-player@1.0.14:
-  version "1.0.14"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-1.0.14.tgz#5e7bdb0e47d320bb2adaf3040527d98a8d3b9501"
-  integrity sha512-GJ6CAyELejpYBKA/4ewcy0vnQ5sO9Za+4OXKy5ovmnFvk/81K61YGtoibJzj+1Jx9YoTCvFenZXW/zo5PCNdEA==
+bloom-player@^1.0.15:
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-1.0.15.tgz#5be1a596c8f14b8b6926e355aaf95f444cc7a369"
+  integrity sha512-J64bC8GoditMTey2zlJ6TSGdHJ4xsU9acwefylZnlEZmq/LbPb/g8fe7tzdF7FRhPNAR+FuC84+MGk10LBNgfA==
 
 bluebird@^3.3.0, bluebird@^3.3.5, bluebird@^3.5.3:
   version "3.5.4"
@@ -8895,6 +8895,11 @@ pako@~1.0.5:
   version "1.0.10"
   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.10.tgz#4328badb5086a426aa90f541977d4955da5c9732"
   integrity sha512-0DTvPVU3ed8+HNXOu5Bs+o//Mbdj9VNQMUOe9oKCwh8l0GNwpTDMKCWbRjgtD291AWnkAgkqA/LOnQS8AmS1tw==
+
+paper@^0.12.3:
+  version "0.12.3"
+  resolved "https://registry.yarnpkg.com/paper/-/paper-0.12.3.tgz#7274a31c17b8998ab0d98207fcf25a8f25f4c18d"
+  integrity sha512-MBlJ0xKFkU/K0eTk2VoAlNbqbfp7MJMVw7gF6v0pveXrBXrJ+1842YLTm07jjjbVJaQZnLvtecDf6Mbazc3jig==
 
 parallel-transform@^1.1.0:
   version "1.1.0"

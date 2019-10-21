@@ -8,17 +8,26 @@
 import { EditableDivUtils } from "./editableDivUtils";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager from "../../utils/WebSocketManager";
+import Comical from "comical-js/comical";
+import Bubble from "comical-js/bubble";
+import { BubbleSpec, BubbleSpecPattern } from "comical-js/bubbleSpec";
 
 const kWebsocketContext = "textOverPicture";
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
-class TextOverPictureManager {
+export class TextOverPictureManager {
+    private activeElement: HTMLElement | undefined;
+    private isCalloutEditingOn: boolean = false;
+    private notifyBubbleChange:
+        | ((x: BubbleSpec | undefined) => void)
+        | undefined;
+
     public initializeTextOverPictureManager(): void {
         WebSocketManager.addListener(kWebsocketContext, messageEvent => {
             const msg = messageEvent.message;
             if (msg) {
                 const locationArray = msg.split(","); // mouse right-click coordinates
                 if (messageEvent.id === "addTextBox")
-                    this.addFloatingTOPBox(
+                    this.addFloatingTOPBoxAndReloadPage(
                         +locationArray[0],
                         +locationArray[1]
                     );
@@ -31,16 +40,228 @@ class TextOverPictureManager {
         });
     }
 
+    public getIsCalloutEditingOn(): boolean {
+        return this.isCalloutEditingOn;
+    }
+
+    public turnOnBubbleEditing(): void {
+        if (this.isCalloutEditingOn === true) {
+            return; // Already on. No work needs to be done
+        }
+        this.isCalloutEditingOn = true;
+
+        Array.from(
+            document.getElementsByClassName("bloom-imageContainer")
+        ).forEach(e => e.classList.add("bloom-hideImageButtons"));
+        // todo: select the right one...in particular, currently we just select the first one.
+        // This is reasonable when just coming to the page, and when we add a new TOP,
+        // we make the new one the first in its parent, so with only one image container
+        // the new one gets selected after we refresh. However, once we have more than one
+        // image container, I don't think the new TOP box will get selected if it's not on
+        // the first image.
+        // todo: make sure comical is turned on for the right parent, in case there's more than one image on the page?
+        const textOverPictureElems = document.getElementsByClassName(
+            "bloom-textOverPicture"
+        );
+        if (textOverPictureElems.length > 0) {
+            this.activeElement = textOverPictureElems[0] as HTMLElement;
+            const editable = textOverPictureElems[0].getElementsByClassName(
+                "bloom-editable bloom-visibility-code-on"
+            )[0] as HTMLElement;
+            editable.focus();
+            Comical.convertBubbleJsonToCanvas(
+                this.activeElement!.parentElement!
+            );
+            Comical.activateElement(this.activeElement);
+            Array.from(
+                document.getElementsByClassName("bloom-editable")
+            ).forEach(element => {
+                // tempting to use focusin on the bubble elements here,
+                // but that's not in FF45 (starts in 52)
+
+                // Don't use an arrow function as an event handler here. These can never be identified as duplicate event listeners, so we'll end up with tons of duplicates
+                element.addEventListener(
+                    "focus",
+                    TextOverPictureManager.onFocusSetActiveElement
+                );
+            });
+        }
+    }
+
+    // Event Handler to be called when something relevant on the page frame gets focus.  Will set the active textOverPicture element.
+    public static onFocusSetActiveElement(event: Event) {
+        const focusedElement = event.currentTarget as Element; // The current target is the element we attached the event listener to
+        if (focusedElement.classList.contains("bloom-editable")) {
+            // If we focus something on the page that isn't in a bubble, we need to switch
+            // to having no active bubble element. Note: we don't want to use focusout
+            // on the bubble elements, because then we lose the active element while clicking
+            // on controls in the toolbox (and while debugging).
+
+            // We don't think this function ever gets called when it's not initialized, but it doesn't
+            // hurt to make sure.
+            initializeTextOverPictureManager();
+
+            const bubbleElement = focusedElement.closest(
+                ".bloom-textOverPicture"
+            );
+            if (bubbleElement) {
+                theOneTextOverPictureManager.setActiveElement(
+                    bubbleElement as HTMLElement
+                );
+            } else {
+                theOneTextOverPictureManager.setActiveElement(undefined);
+            }
+        }
+    }
+
+    public getActiveElement() {
+        return this.activeElement;
+    }
+
+    private setActiveElement(element: HTMLElement | undefined) {
+        this.activeElement = element;
+        if (this.notifyBubbleChange) {
+            this.notifyBubbleChange(this.getSelectedItemBubbleSpec());
+        }
+    }
+
+    public turnOffBubbleEditing(): void {
+        if (this.isCalloutEditingOn === false) {
+            return; // Already off. No work needs to be done.
+        }
+        this.isCalloutEditingOn = false;
+
+        const canvas = document.getElementsByClassName("comical-editing")[0];
+        if (canvas && canvas.parentElement) {
+            Comical.convertCanvasToSvgImg(canvas.parentElement as HTMLElement);
+        }
+        Array.from(
+            document.getElementsByClassName("bloom-hideImageButtons")
+        ).forEach(e => e.classList.remove("bloom-hideImageButtons"));
+
+        // Clean up event listeners that we no longer need
+        Array.from(document.getElementsByClassName("bloom-editable")).forEach(
+            element => {
+                element.removeEventListener(
+                    "focus",
+                    TextOverPictureManager.onFocusSetActiveElement
+                );
+            }
+        );
+    }
+
     public cleanUp(): void {
         WebSocketManager.closeSocket(kWebsocketContext);
     }
 
+    public getSelectedItemBubbleSpec(): BubbleSpec | undefined {
+        if (!this.activeElement) {
+            return undefined;
+        }
+        return Bubble.getBubbleSpec(this.activeElement);
+    }
+
+    public requestBubbleChangeNotification(
+        notifier: (bubble: BubbleSpec | undefined) => void
+    ): void {
+        this.notifyBubbleChange = notifier;
+    }
+
+    public detachBubbleChangeNotification(): void {
+        this.notifyBubbleChange = undefined;
+    }
+
+    public updateSelectedItemBubbleSpec(
+        newBubbleProps: BubbleSpecPattern
+    ): void {
+        if (!this.activeElement) {
+            return;
+        }
+
+        const activeBubble = new Bubble(this.activeElement);
+        activeBubble.mergeWithNewBubbleProps(newBubbleProps);
+        Comical.update(this.activeElement.parentElement!);
+    }
+
+    // Note: After reloading the page, you can't have any of your other code execute safely
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
     // to create the context menu
-    private addFloatingTOPBox(mouseX: number, mouseY: number) {
+    public addFloatingTOPBoxAndReloadPage(mouseX: number, mouseY: number) {
+        this.addFloatingTOPBox(mouseX, mouseY);
+
+        // I tried to do without this... it didn't work. This causes page changes to get saved and fills
+        // things in for editing.
+        // It causes EditingModel.RethinkPageAndReloadIt() to get run... which eventually causes
+        // makeTextOverPictureBoxDraggableClickableAndResizable to get called by bloomEditing.ts.
+        BloomApi.postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+    }
+
+    // Adds a new text-over-picture element as a child of the specified {parentElement}
+    //    (It is a child in the sense that the Comical library will recognize it as a child)
+    // {offsetX}/{offsetY} is the offset in position from the parent to the child elements
+    //    (i.e., offsetX = child.left - parent.left)
+    //    (remember that positive values of Y are further to the bottom)
+    // Note: After reloading the page, you can't have any of your other code execute safely
+    public addChildTOPBoxAndReloadPage(
+        parentElement: HTMLElement,
+        offsetX: number,
+        offsetY: number
+    ): void {
+        const parentBoundingRect = parentElement.getBoundingClientRect();
+        let newX = parentBoundingRect.left + offsetX;
+        let newY = parentBoundingRect.top + offsetY;
+
+        // // Ensure newX and newY is within the bounds of the container.
+        const container = parentElement.closest(".bloom-imageContainer");
+        if (!container) {
+            toastr.warning("Failed to create child element.");
+            return;
+        }
+        const containerBoundingRect = container.getBoundingClientRect();
+
+        const bufferPixels = 15;
+        if (newX < containerBoundingRect.left) {
+            newX = containerBoundingRect.left + bufferPixels;
+        } else if (
+            newX + parentElement.clientWidth >
+            containerBoundingRect.right
+        ) {
+            // ENHANCE: parentElement.clientWidth is just an estimate of the size of the child's width.
+            //          It would be better if we could actually plug in the real value of the child's width
+            newX = containerBoundingRect.right - parentElement.clientWidth;
+        }
+
+        if (newY < containerBoundingRect.top) {
+            newY = containerBoundingRect.top + bufferPixels;
+        } else if (
+            newY + parentElement.clientHeight >
+            containerBoundingRect.bottom
+        ) {
+            // ENHANCE: parentElement.clientHeight is just an estimate of the size of the child's height.
+            //          It would be better if we could actually plug in the real value of the child's height
+            newY = containerBoundingRect.bottom - parentElement.clientHeight;
+        }
+
+        const childElement = this.addFloatingTOPBox(newX, newY);
+        if (!childElement) {
+            toastr.info("Failed to place a new child callout.");
+            return;
+        }
+
+        Comical.initializeChild(childElement, parentElement);
+
+        // Need to reload the page to get it editable/draggable/etc,
+        // and to get the Comical bubbles consistent with the new bubble specs
+        BloomApi.postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+    }
+
+    public addFloatingTOPBox(
+        mouseX: number,
+        mouseY: number
+    ): HTMLElement | undefined {
         const container = this.getImageContainerFromMouse(mouseX, mouseY);
         if (!container || container.length === 0) {
-            return; // don't add a TOP box if we can't find the containing imageContainer
+            return undefined; // don't add a TOP box if we can't find the containing imageContainer
         }
         // add a draggable text bubble to the html dom of the current page
         const editableDivClasses =
@@ -71,11 +292,18 @@ class TextOverPictureManager {
             mouseX,
             mouseY
         );
-        // I tried to do without this... it didn't work. This causes page changes to get saved and fills
-        // things in for editing.
-        // It causes EditingModel.RethinkPageAndReloadIt() to get run... which eventually causes
-        // makeTextOverPictureBoxDraggableClickableAndResizable to get called by bloomEditing.ts.
-        BloomApi.postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+
+        const contentElement = wrapperBox.get(0);
+        const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
+            contentElement,
+            "speech"
+        );
+        const bubble = new Bubble(contentElement);
+        bubble.setBubbleSpec(bubbleSpec);
+        // Plausibly at this point we might call Comical.update() to get the new
+        // bubble drawn. But if we reload the page, that achieves the same thing.
+
+        return contentElement;
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
@@ -115,7 +343,14 @@ class TextOverPictureManager {
                 ".bloom-textOverPicture"
             );
             if (textElement && textElement.parentElement) {
-                textElement.parentElement.removeChild(textElement);
+                const parent = textElement.parentElement;
+                parent.removeChild(textElement);
+                Comical.update(parent);
+
+                // Check if we're deleting the active bubble. If so, gotta clean up the state.
+                if (textElement == this.getActiveElement()) {
+                    this.setActiveElement(undefined);
+                }
             }
         }
     }
@@ -181,14 +416,6 @@ class TextOverPictureManager {
         });
 
         this.makeTOPBoxDraggableAndClickable(textOverPictureElems, scale);
-
-        if (textOverPictureElems.length > 0) {
-            textOverPictureElems
-                .first()
-                .find(".bloom-editable.bloom-visibility-code-on")
-                .first()
-                .focus();
-        }
     }
 
     private calculatePercentagesAndFixTextboxPosition(wrapperBox: JQuery) {
