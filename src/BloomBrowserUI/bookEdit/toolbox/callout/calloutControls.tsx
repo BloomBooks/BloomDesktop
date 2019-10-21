@@ -17,32 +17,26 @@ import { createStyles, makeStyles, Theme } from "@material-ui/core/styles"; // T
 import InputLabel from "@material-ui/core/InputLabel";
 import * as toastr from "toastr";
 
-interface ICalloutToolProps {
-    style: string;
-    textColor: string;
-    backgroundColor: string;
-    outlineColor: string;
-    bubbleActive: boolean;
-}
-
-const CalloutToolControls: React.FunctionComponent<ICalloutToolProps> = (
-    props: ICalloutToolProps
-) => {
+const CalloutToolControls: React.FunctionComponent = () => {
     // Declare all the hooks
-    const [style, setStyle] = useState(props.style);
-    const [textColor, setTextColor] = useState(props.textColor);
-    const [backgroundColor, setBackgroundColor] = useState(
-        props.backgroundColor
-    );
-    const [outlineColor, setOutlineColor] = useState(props.outlineColor);
-    const [bubbleActive, setBubbleActive] = useState(props.bubbleActive);
+    const [style, setStyle] = useState("none");
+    const [textColor, setTextColor] = useState("black");
+    const [backgroundColor, setBackgroundColor] = useState("white");
+    const [outlineColor, setOutlineColor] = useState("black");
+    const [bubbleActive, setBubbleActive] = useState(false);
+
+    // if bubbleActive is true, corresponds to the active bubble. Otherwise, corresponds to the most recently active bubble.
+    const [currentBubbleSpec, setCurrentBubbleSpec] = useState(undefined as (
+        | BubbleSpec
+        | undefined));
 
     // Callback to initialize bubbleEditing and get the initial bubbleSpec
     const bubbleSpecInitialization = () => {
         const bubbleManager = CalloutTool.bubbleManager();
         if (!bubbleManager) {
-            // probably the toolbox just finished loading before the page.
-            // No clean way to fix this
+            console.assert(
+                "ERROR: Bubble manager is not initialized yet. Please investigate!"
+            );
             return;
         }
 
@@ -50,40 +44,31 @@ const CalloutToolControls: React.FunctionComponent<ICalloutToolProps> = (
 
         const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
 
+        // The callback function is (currently) called when switching between bubbles, but is not called if the tail spec changes,
+        // or for style and similar changes to the bubble that are initiated by React.
         bubbleManager.requestBubbleChangeNotification(
             (bubble: BubbleSpec | undefined) => {
-                // TODO: Ugh, this is a circular dependency-like scenario :(
-                //setActiveBubbleSpec(bubble);
-
-                if (bubble) {
-                    setStyle(bubble.style);
-                    setBubbleActive(true);
-                }
+                setCurrentBubbleSpec(bubble);
             }
         );
-        return bubbleSpec;
+
+        setCurrentBubbleSpec(bubbleSpec);
     };
 
-    const [activeBubbleSpec, setActiveBubbleSpec] = useState(
-        () => {
-            return bubbleSpecInitialization();
-        } // The function will only be evaluated the first time.
-    );
+    // Enhance: if we don't want to have a static, or don't want
+    // this function to know about CalloutTool, we could just pass
+    // a setter for this as a property.
+    CalloutTool.theOneCalloutTool!.callOnNewPageReady = () => {
+        bubbleSpecInitialization();
+    };
     useEffect(() => {
-        if (activeBubbleSpec) {
-            setStyle(activeBubbleSpec.style);
+        if (currentBubbleSpec) {
+            setStyle(currentBubbleSpec.style);
             setBubbleActive(true);
+        } else {
+            setBubbleActive(false);
         }
-
-        // Return value is the Cleanup function
-        return () => {
-            const bubbleManager = CalloutTool.bubbleManager();
-            if (bubbleManager) {
-                bubbleManager.turnOffBubbleEditing();
-                bubbleManager.detachBubbleChangeNotification();
-            }
-        };
-    }, [activeBubbleSpec]);
+    }, [currentBubbleSpec]);
 
     // Callback for style changed
     const handleStyleChanged = event => {
@@ -133,7 +118,7 @@ const CalloutToolControls: React.FunctionComponent<ICalloutToolProps> = (
         // Update the toolbox controls
         setOutlineColor(newValue);
 
-        // TODO: Handle the gradients
+        // TODO: May need to massage the values before passing them to Comical
         // Update the Comical canvas on the page frame
         CalloutTool.bubbleManager().updateSelectedItemBubbleSpec({
             outerBorderColor: newValue
@@ -151,7 +136,7 @@ const CalloutToolControls: React.FunctionComponent<ICalloutToolProps> = (
             return;
         }
 
-        // Enhance: Is there a cleaner way to keep activeBubbleSpec up to date?
+        // Enhance: Is there a cleaner way to keep activeBubbleSpec up to date? Comical would need to call the notifier a lot more often like when the tail moves.
 
         // Retrieve the latest bubbleSpec
         const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
@@ -202,7 +187,7 @@ const CalloutToolControls: React.FunctionComponent<ICalloutToolProps> = (
                         >
                             <MenuItem value="caption">
                                 <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.Caption">
-                                    Caption (TODO)
+                                    Caption
                                 </Div>
                             </MenuItem>
                             <MenuItem value="shout">
@@ -363,37 +348,21 @@ const CalloutToolControls: React.FunctionComponent<ICalloutToolProps> = (
 export default CalloutToolControls;
 
 export class CalloutTool extends ToolboxToolReactAdaptor {
-    //private reactControls: CalloutToolControls;
-    private componentProps: ICalloutToolProps;
+    public static theOneCalloutTool: CalloutTool | undefined;
+
+    public callOnNewPageReady: () => void | undefined;
 
     public constructor() {
         super();
 
-        // Just a default value
-        this.componentProps = {
-            style: "none",
-            textColor: "black",
-            backgroundColor: "white",
-            outlineColor: "none",
-            bubbleActive: false
-        };
+        CalloutTool.theOneCalloutTool = this;
     }
 
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
         root.setAttribute("class", "CalloutBody");
 
-        //ReactDOM.render(<CalloutToolControls {...this.componentProps} />, root);
-        ReactDOM.render(
-            <CalloutToolControls
-                style={this.componentProps.style}
-                textColor={this.componentProps.textColor}
-                backgroundColor={this.componentProps.backgroundColor}
-                outlineColor={this.componentProps.outlineColor}
-                bubbleActive={this.componentProps.bubbleActive}
-            />,
-            root
-        );
+        ReactDOM.render(<CalloutToolControls />, root);
         return root as HTMLDivElement;
     }
 
@@ -417,55 +386,30 @@ export class CalloutTool extends ToolboxToolReactAdaptor {
     }
 
     public newPageReady() {
-        console.log("New page ready");
-        CalloutTool.newPageReadyStaticHelper();
-
-        // Or should it attempt to force re-render?
-        // What if the bubbleSpec changes?
-
-        // const bubbleManager = CalloutTool.bubbleManager();
-        // if (!bubbleManager) {
-        //     // probably the toolbox just finished loading before the page.
-        //     // No clean way to fix this
-        //     window.setTimeout(() => this.newPageReady(), 100);
-        //     return;
-        // }
-        // bubbleManager.turnOnBubbleEditing();
-        // const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
-        // if (bubbleSpec) {
-        //     this.componentProps.bubbleActive = true;
-        //     this.componentProps.style = bubbleSpec.style;
-        // }
-        //     <CalloutToolControls {...props} />;
-        // }
-        // if (this.reactControls) {
-        //     this.reactControls.updateBubbleState(
-        //         bubbleManager.getSelectedItemBubbleSpec()
-        //     );
-        // }
-        // bubbleManager.requestBubbleChangeNotification(bubble => {
-        //     if (this.reactControls) {
-        //         this.reactControls.updateBubbleState(bubble);
-        //     }
-        // });
-    }
-
-    public static newPageReadyStaticHelper() {
         const bubbleManager = CalloutTool.bubbleManager();
         if (!bubbleManager) {
             // probably the toolbox just finished loading before the page.
             // No clean way to fix this
-            window.setTimeout(
-                () => CalloutTool.newPageReadyStaticHelper(),
-                100
-            );
+            window.setTimeout(() => this.newPageReady(), 100);
             return;
         }
-        bubbleManager.turnOnBubbleEditing();
+
+        if (this.callOnNewPageReady) {
+            this.callOnNewPageReady();
+        } else {
+            console.assert(
+                false,
+                "CallOnNewPageReady is always expected to be defined but it is not."
+            );
+        }
     }
 
     public detachFromPage() {
-        CalloutTool.bubbleManager().turnOffBubbleEditing();
+        const bubbleManager = CalloutTool.bubbleManager();
+        if (bubbleManager) {
+            bubbleManager.turnOffBubbleEditing();
+            bubbleManager.detachBubbleChangeNotification();
+        }
     }
 
     public static bubbleManager(): TextOverPictureManager {
