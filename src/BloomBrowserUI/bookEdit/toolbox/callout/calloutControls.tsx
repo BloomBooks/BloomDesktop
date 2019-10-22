@@ -5,7 +5,7 @@ import * as ReactDOM from "react-dom";
 import "./Callout.less";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import { TextOverPictureManager } from "../../js/textOverPicture";
-import { BubbleSpec } from "comical-js//bubbleSpec";
+import { BubbleSpec } from "./comical/bubbleSpec";
 import { Link } from "../../../react_components/link";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import FormControl from "@material-ui/core/FormControl";
