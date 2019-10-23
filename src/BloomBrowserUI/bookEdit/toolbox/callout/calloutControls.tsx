@@ -35,6 +35,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
         const bubbleManager = CalloutTool.bubbleManager();
         if (!bubbleManager) {
             console.assert(
+                false,
                 "ERROR: Bubble manager is not initialized yet. Please investigate!"
             );
             return;
