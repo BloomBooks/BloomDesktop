@@ -48,6 +48,17 @@ export class TextOverPictureManager {
         }
         this.isCalloutEditingOn = true;
 
+        Comical.setActiveBubbleListener(activeElement => {
+            if (activeElement) {
+                var focusElements = activeElement.getElementsByClassName(
+                    "bloom-visibility-code-on"
+                );
+                if (focusElements.length > 0) {
+                    (focusElements[0] as HTMLElement).focus();
+                }
+            }
+        });
+
         Array.from(
             document.getElementsByClassName("bloom-imageContainer")
         ).forEach(e => e.classList.add("bloom-hideImageButtons"));
@@ -143,10 +154,14 @@ export class TextOverPictureManager {
     }
 
     private setActiveElement(element: HTMLElement | undefined) {
+        if (this.activeElement === element) {
+            return;
+        }
         this.activeElement = element;
         if (this.notifyBubbleChange) {
             this.notifyBubbleChange(this.getSelectedItemBubbleSpec());
         }
+        Comical.activateElement(this.activeElement);
     }
 
     public turnOffBubbleEditing(): void {
@@ -154,6 +169,8 @@ export class TextOverPictureManager {
             return; // Already off. No work needs to be done.
         }
         this.isCalloutEditingOn = false;
+
+        Comical.setActiveBubbleListener(undefined);
 
         const canvas = document.getElementsByClassName("comical-editing")[0];
         if (canvas && canvas.parentElement) {
