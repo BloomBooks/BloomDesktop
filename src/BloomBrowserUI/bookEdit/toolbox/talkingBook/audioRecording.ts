@@ -348,6 +348,7 @@ export default class AudioRecording {
                 this.displaySplitButton();
             } else {
                 console.assert(
+                    false,
                     "Unimplemented format: " + this.audioRecordingMode
                 );
             }
@@ -632,8 +633,10 @@ export default class AudioRecording {
 
         // Now find the text box of the next segment to be played.
         const nextTextBox = this.getTextBoxOfElement(nextElement);
-        console.assert(nextTextBox);
-        if (!nextTextBox) return null;
+        if (!nextTextBox) {
+            console.assert(false, "nextTextBox not found.");
+            return null;
+        }
 
         if (currentTextBox == nextTextBox) {
             // Same Text Box: This case is easy because the next mode is guaranteed to be the same as the current mode.
