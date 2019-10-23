@@ -52,7 +52,8 @@ namespace Bloom.Edit
 
 		public EditingView(EditingModel model, PageListView pageListView, CutCommand cutCommand, CopyCommand copyCommand,
 			PasteCommand pasteCommand, UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
-			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent, SignLanguageApi signLanguageApi, CommonApi commonApi)
+			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent,
+			SignLanguageApi signLanguageApi, CommonApi commonApi, EditingViewApi editingViewApi)
 		{
 			_model = model;
 			_pageListView = pageListView;
@@ -77,6 +78,7 @@ namespace Bloom.Edit
 			_signLanguageApi = signLanguageApi;
 			signLanguageApi.Model = _model;
 			signLanguageApi.View = this;
+			editingViewApi.View = this;
 			commonApi.Model = _model;
 			_browser1.SetEditingCommands(cutCommand, copyCommand, pasteCommand, undoCommand);
 
@@ -460,7 +462,6 @@ namespace Bloom.Edit
 			Cursor = Cursors.WaitCursor;
 			_model.ViewVisibleNowDoSlowStuff();
 
-			AddMessageEventListener("setModalStateEvent", SetModalState);
 			Cursor = Cursors.Default;
 		}
 
@@ -1496,18 +1497,14 @@ namespace Bloom.Edit
 			RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getToolboxFrameExports().applyToolboxStateToPage();}");
 		}
 
-		public string HelpTopicUrl
-		{
-			get { return "/Tasks/Edit_tasks/Edit_tasks_overview.htm"; }
-		}
+		public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";
 
 		/// <summary>
-		/// Prevent navigation while a dialog box is showing in the browser control
+		/// Prevent navigation, e.g. while a dialog box is showing in the browser control
 		/// </summary>
-		/// <param name="isModal"></param>
-		internal void SetModalState(string isModal)
+		internal void SetModalState(bool isModal)
 		{
-			_pageListView.Enabled = isModal != "true";
+			_pageListView.Enabled = !isModal;
 		}
 
 		/// <summary>
