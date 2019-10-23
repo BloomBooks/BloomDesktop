@@ -114,7 +114,10 @@ export function showSetupDialog(showWhat) {
                         // $(this).remove(); uses the wrong document (see https://silbloom.myjetbrains.com/youtrack/issue/BL-3962)
                         // the following derives from http://stackoverflow.com/questions/2864740/jquery-how-to-completely-remove-a-dialog-on-close
                         setupDialogElement.dialog("destroy").remove();
-                        fireCSharpEvent("setModalStateEvent", "false");
+                        getEditViewFrameExports().fireCSharpEvent(
+                            "setModalStateEvent",
+                            "false"
+                        );
                     },
                     open: () => {
                         $("#synphonyConfig").css("overflow", "hidden");
@@ -127,7 +130,10 @@ export function showSetupDialog(showWhat) {
                 }
             );
 
-            fireCSharpEvent("setModalStateEvent", "true");
+            getEditViewFrameExports().fireCSharpEvent(
+                "setModalStateEvent",
+                "true"
+            );
         }
     );
 }
@@ -187,22 +193,4 @@ export function initializeReaderSetupDialog() {
 
 export function closeSetupDialog() {
     setupDialogElement.dialog("close");
-}
-
-/**
- * Fires an event for C# to handle
- * @param {String} eventName
- * @param {String} eventData
- */
-// Enhance: JT notes that this method pops up from time to time; can we consolidate?
-function fireCSharpEvent(eventName, eventData) {
-    var event = new MessageEvent(eventName, {
-        bubbles: true,
-        cancelable: true,
-        data: eventData
-    });
-    top.document.dispatchEvent(event);
-    // For when we someday change this file to TypeScript... since the above ctor is not declared anywhere.
-    // Solution III (works)
-    //var event = new (<any>MessageEvent)(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
 }

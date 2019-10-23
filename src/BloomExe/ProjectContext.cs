@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Web.UI.WebControls;
 using System.Windows.Forms;
 using Autofac;
 using Bloom.Book;
@@ -133,7 +132,8 @@ namespace Bloom
 							typeof(FeatureControlApi),
 							typeof(I18NApi),
 							typeof(SignLanguageApi),
-							typeof(AudioSegmentationApi)
+							typeof(AudioSegmentationApi),
+							typeof(FileIOApi)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -320,6 +320,7 @@ namespace Bloom
 			_scope.Resolve<SignLanguageApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<AudioSegmentationApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<I18NApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<FileIOApi>().RegisterWithApiHandler(server.ApiHandler);
 		}
 
 

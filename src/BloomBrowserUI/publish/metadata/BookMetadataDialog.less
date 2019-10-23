@@ -1,25 +1,5 @@
-@import "../../bloomUI.less";
-//@import "../../bloomModalDialog.less";
+@import "../../bloomModalDialog.less";
 @import "../../node_modules/react-table/react-table.css";
 
-@fontSize: 10pt;
-
 .bookMetadataDialog {
-    font-family: @UIFontStack;
-    font-size: @fontSize;
-    max-height: 100vh;
-    overflow-y: scroll;
-
-    // for some reason that one gets overruled by the browser, so:
-    textarea {
-        font-family: @UIFontStack;
-        font-size: @fontSize;
-        padding: 5px 5px;
-    }
-
-    #helpButton {
-        //push the other buttons to the right margin
-        margin-right: auto;
-        margin-left: 0; // hard up against the left edge
-    }
 }

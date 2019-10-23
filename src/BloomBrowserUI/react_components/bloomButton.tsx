@@ -22,6 +22,8 @@ export interface IButtonProps extends ILocalizationProps {
     disabledImageFile?: string;
     l10nTipEnglishEnabled?: string; // existence of these two strings (or one of them) enables tooltips on the button.
     l10nTipEnglishDisabled?: string;
+    startIcon?: React.ReactNode;
+    size?: "small" | "medium" | "large" | undefined;
 }
 
 // A button that takes a Bloom API endpoint to post() when clicked
@@ -59,8 +61,11 @@ export default class BloomButton extends LocalizableElement<
             title: tip,
             onClick: () => this.onClick(),
             disabled: !this.props.enabled,
-            className:
-                this.props.className + (this.props.hidden ? " hidden" : "")
+            className: this.props.className
+                ? this.props.className + (this.props.hidden ? " hidden" : "")
+                : this.props.hidden
+                ? "hidden"
+                : ""
         };
         const commonChildren = [
             image,
@@ -76,6 +81,8 @@ export default class BloomButton extends LocalizableElement<
                 {...commonProps}
                 variant={this.props.variant || "contained"}
                 color="primary"
+                startIcon={this.props.startIcon}
+                size={this.props.size}
             >
                 {commonChildren}
             </Button>

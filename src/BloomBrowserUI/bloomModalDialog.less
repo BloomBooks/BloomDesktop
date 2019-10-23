@@ -1,74 +1,23 @@
-.ReactModalPortal {
-    z-index: 1000;
-}
+@import "./bloomUI.less";
 
-.ReactModal__Content {
-    z-index: 1000;
-    position: absolute;
-    border: 1px solid black;
-    padding-bottom: 1px; // Needed to see bottom border. Before changing, please check BL-6514
+@fontSize: 10pt;
 
-    // I copied windows 10 (circa 2018) here
-    box-shadow: 0 0 17px rgba(0, 0, 0, 0.3);
-    background: white;
-    overflow: auto;
-    // windows 10 doesn't have a rounded dialogs border-radius: 4px;
-    outline: none;
-    flex-direction: row;
+.bloomModalDialog {
+    font-family: @UIFontStack;
+    font-size: @fontSize;
+    max-height: 100vh;
+    overflow-y: scroll;
 
-    left: 50%;
-    right: auto;
-    transform: translate(-50%, -50%);
-    bottom: auto;
-    top: 50%;
-
-    .dialogTitle {
-        padding: 10px;
-        font-weight: bold;
-        font-size: 10pt;
-    }
-    .dialogContent {
-        background-color: #f0f0f0;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        h1 {
-            font-size: 12px;
-            height: 1em;
-            font-weight: bold;
-            margin: 0;
-        }
+    // for some reason that one gets overruled by the browser, so:
+    textarea {
+        font-family: @UIFontStack;
+        font-size: @fontSize;
+        padding: 5px 5px;
     }
 
-    .bottomButtonRow {
-        display: flex; // this makes the help button's margin-right:auto work
-        margin-top: 20px;
-
-        //flex-direction: row; // would normally use for mac & Ubuntu.. but is the rest of Bloom like windows?
-
-        // button {
-        //     width: auto;
-        //     // I copied windows 10 (circa 2018) here
-        //     min-width: 90px;
-        //     margin-left: 10px;
-        //     border: 1px solid gray;
-        //     min-height: 25px;
-        //     padding: 2px;
-        //     font-weight: normal;
-        //     font-size: 10pt;
-        //     color: black;
-        //     background-color: white;
-        // }
-        // button:disabled {
-        //     color: gray;
-        //     border-color: lightgray;
-        //     border-style: solid;
-        //     border-width: 1px;
-        // }
-        #helpButton {
-            //push the other buttons to the right margin
-            margin-right: auto;
-            margin-left: 0; // hard up against the left edge
-        }
+    #helpButton {
+        //push the other buttons to the right margin
+        margin-right: auto;
+        margin-left: 0; // hard up against the left edge
     }
 }

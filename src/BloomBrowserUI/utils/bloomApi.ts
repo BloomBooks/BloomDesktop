@@ -217,14 +217,30 @@ export class BloomApi {
         );
     }
 
-    public static postString(urlSuffix: string, value: string) {
-        BloomApi.wrapAxios(
-            axios.post(this.kBloomApiPrefix + urlSuffix, value, {
-                headers: {
-                    "Content-Type": "text/plain"
-                }
-            })
-        );
+    public static postString(
+        urlSuffix: string,
+        value: string,
+        successCallback?: (r: AxiosResponse) => void
+    ) {
+        if (successCallback) {
+            BloomApi.wrapAxios(
+                axios
+                    .post(this.kBloomApiPrefix + urlSuffix, value, {
+                        headers: {
+                            "Content-Type": "text/plain"
+                        }
+                    })
+                    .then(successCallback)
+            );
+        } else {
+            BloomApi.wrapAxios(
+                axios.post(this.kBloomApiPrefix + urlSuffix, value, {
+                    headers: {
+                        "Content-Type": "text/plain"
+                    }
+                })
+            );
+        }
     }
     public static postBoolean(urlSuffix: string, value: boolean) {
         BloomApi.wrapAxios(
