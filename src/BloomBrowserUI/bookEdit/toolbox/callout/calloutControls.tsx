@@ -151,10 +151,45 @@ const CalloutToolControls: React.FunctionComponent = () => {
         );
     };
 
+    const ondragstart = (ev, style) => {
+        // Here "bloomBubble" is a unique, private data type recognised
+        // by ondragover and ondragdrop methods that TextOverPicture
+        // attaches to bloom image containers. It doesn't make sense to
+        // drag these objects anywhere else, so they don't need any of
+        // the common data types.
+        ev.dataTransfer.setData("bloomBubble", style);
+    };
+
     return (
         <div>
             <div id={"calloutControlShapeChooserRegion"}>
-                Drag one of these on top of an image: TODO: Implement dragger
+                <div className="calloutControlDragInstructions">
+                    Drag one of these on top of an image
+                </div>
+                <img
+                    id="calloutControlSpeechButton"
+                    className="calloutControlDraggableBubble"
+                    src="callout-icon.svg"
+                    draggable={true}
+                    onDragStart={ev => ondragstart(ev, "speech")}
+                />
+                <span
+                    id="calloutControlTextBlockButton"
+                    className="calloutControlDraggableBubble"
+                    draggable={true}
+                    onDragStart={ev => ondragstart(ev, "none")}
+                >
+                    Text Block
+                </span>
+                <br />
+                <span
+                    id="calloutControlCaptionButton"
+                    className="calloutControlDraggableBubble"
+                    draggable={true}
+                    onDragStart={ev => ondragstart(ev, "caption")}
+                >
+                    Caption
+                </span>
             </div>
             <div
                 id={"calloutControlOptionsRegion"}

@@ -84,6 +84,32 @@ export class TextOverPictureManager {
                 );
             });
         }
+
+        // turn on drag-and-drop support for bubbles from comical toolbox
+        Array.from(
+            document.getElementsByClassName("bloom-imageContainer")
+        ).forEach((container: HTMLElement) => {
+            // This suppresses the default behavior, which is to forbid dragging things to
+            // an element, but only if the source of the drag is a bloom bubble.
+            container.ondragover = ev => {
+                if (ev.dataTransfer && ev.dataTransfer.getData("bloomBubble")) {
+                    ev.preventDefault();
+                }
+            };
+            // Controls what happens when a bloom bubble is dropped. We get the style
+            // set in CalloutControls.ondragstart() and make a bubble with that style
+            // at the drop position.
+            container.ondrop = ev => {
+                ev.preventDefault();
+                const style = ev.dataTransfer
+                    ? ev.dataTransfer.getData("bloomBubble")
+                    : "speech";
+                this.addFloatingTOPBox(ev.clientX, ev.clientY, style);
+                BloomApi.postThatMightNavigate(
+                    "common/saveChangesAndRethinkPageEvent"
+                );
+            };
+        });
     }
 
     // Event Handler to be called when something relevant on the page frame gets focus.  Will set the active textOverPicture element.
@@ -255,7 +281,8 @@ export class TextOverPictureManager {
 
     public addFloatingTOPBox(
         mouseX: number,
-        mouseY: number
+        mouseY: number,
+        style?: string
     ): HTMLElement | undefined {
         const container = this.getImageContainerFromMouse(mouseX, mouseY);
         if (!container || container.length === 0) {
@@ -294,7 +321,7 @@ export class TextOverPictureManager {
         const contentElement = wrapperBox.get(0);
         const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
             contentElement,
-            "speech"
+            style || "speech"
         );
         const bubble = new Bubble(contentElement);
         bubble.setBubbleSpec(bubbleSpec);
