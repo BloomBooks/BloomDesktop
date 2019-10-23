@@ -6,6 +6,9 @@ import { MuiCheckbox } from "./muiCheckBox";
 import { useState } from "react";
 import { ApiCheckbox } from "./ApiCheckbox";
 import BloomButton from "./bloomButton";
+import { showConfirmDialog, IConfirmDialogProps } from "./confirmDialog";
+import ImportIcon from "./icons/ImportIcon";
+import DeleteIcon from "@material-ui/icons/Delete";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -18,14 +21,69 @@ storiesOf("Localizable Widgets", module)
         </Expandable>
     ))
     .add("BloomButton", () => (
-        <BloomButton
-            l10nKey="bogus"
-            l10nComment="hello"
-            enabled={true}
-            hasText={true}
-        >
-            Look at this!
-        </BloomButton>
+        <div>
+            <BloomButton
+                l10nKey="bogus"
+                l10nComment="hello"
+                enabled={true}
+                hasText={true}
+            >
+                Look at this!
+            </BloomButton>
+            <br /> <br />
+            <BloomButton
+                l10nKey="bogus"
+                l10nComment="hello"
+                enabled={true}
+                hasText={true}
+                variant="text"
+            >
+                Variant = text
+            </BloomButton>
+            <br /> <br />
+            <BloomButton
+                l10nKey="bogus"
+                l10nComment="hello"
+                enabled={true}
+                hasText={true}
+                variant="outlined"
+            >
+                Variant = outlined
+            </BloomButton>
+            <br /> <br />
+            <BloomButton
+                iconBeforeText={<DeleteIcon />}
+                l10nKey="bogus"
+                l10nComment="hello"
+                enabled={true}
+                hasText={true}
+            >
+                Material icon
+            </BloomButton>
+            <br /> <br />
+            <BloomButton
+                iconBeforeText={<ImportIcon />}
+                l10nKey="bogus"
+                l10nComment="hello"
+                enabled={true}
+                hasText={true}
+                variant="outlined"
+            >
+                Custom icon
+            </BloomButton>
+            <br /> <br />
+            <BloomButton
+                iconBeforeText={<ImportIcon />}
+                l10nKey="bogus"
+                l10nComment="hello"
+                enabled={true}
+                hasText={true}
+                size="small"
+                variant="outlined"
+            >
+                Small
+            </BloomButton>
+        </div>
     ));
 
 storiesOf("Localizable Widgets/Checkbox", module)
@@ -92,5 +150,37 @@ storiesOf("Localizable Widgets/ApiCheckbox", module).add("ApiCheckbox", () =>
             l10nKey="PublishTab.Android.MotionBookMode"
             apiEndpoint="publish/android/motionBookMode"
         />
+    ))
+);
+
+const confirmDialogProps: IConfirmDialogProps = {
+    title: "Title",
+    titleL10nKey: "",
+    message: "Message",
+    messageL10nKey: "",
+    confirmButtonLabel: "OK",
+    confirmButtonLabelL10nKey: "",
+    onDialogClose: dialogResult => {
+        alert(dialogResult);
+    }
+};
+storiesOf("Misc", module).add("ConfirmDialog", () =>
+    React.createElement(() => (
+        <div>
+            <div id="modal-container" />
+            <BloomButton
+                onClick={() =>
+                    showConfirmDialog(
+                        confirmDialogProps,
+                        document.getElementById("modal-container")
+                    )
+                }
+                enabled={true}
+                hasText={true}
+                l10nKey={"dummyKey"}
+            >
+                Open Confirm Dialog
+            </BloomButton>
+        </div>
     ))
 );

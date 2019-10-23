@@ -307,10 +307,7 @@ export class PageChooser {
     }
 
     private static closeup(): void {
-        // End the disabling of other panes for the modal dialog. The final argument is because in this
-        // method the current window is the dialog, and it's the parent window's document that is being
-        // monitored for this event.
-        fireCSharpEvent("setModalStateEvent", "false", parent.window);
+        BloomApi.postBoolean("editView/setModalState", false);
         // this fails with a message saying the dialog isn't initialized. Apparently a dialog must be closed
         // by code loaded into the window that opened it.
         //$(parent.document.getElementById('addPageConfig')).dialog('close');
@@ -736,23 +733,4 @@ export function handleAddPageOrChooseLayoutButtonClick(
         willLoseData,
         convertWholeBookChecked
     );
-}
-
-// Fires an event for C# to handle
-// Enhance: JT notes that this method pops up from time to time; can we consolidate?
-function fireCSharpEvent(
-    eventName: string,
-    eventData: string,
-    dispatchWindow?: Window
-) {
-    const event = new MessageEvent(eventName, {
-        /*'view' : window,*/ bubbles: true,
-        cancelable: true,
-        data: eventData
-    });
-    if (dispatchWindow) {
-        dispatchWindow.document.dispatchEvent(event);
-    } else {
-        document.dispatchEvent(event);
-    }
 }

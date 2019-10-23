@@ -42,7 +42,7 @@ export class BloomApi {
         // to report it, we have to save it even if we don't need it.
         // But fortunately, axios calls tend not to be used for very
         // performance-critical calls.
-        var axiosCallState = new Error("dummy");
+        const axiosCallState = new Error("dummy");
         call.catch(error => {
             if (!report) {
                 return;
@@ -61,7 +61,7 @@ export class BloomApi {
             // altogether, for some unknown reason; calling window.onerror with a composed stack
             // defeats its stack mapping.)
 
-            var msg: string;
+            let msg: string;
             if (error && error.message && error.stack) {
                 msg = "Unexpected promise failure: " + error.message;
                 if (error.response && error.response.statusText) {
@@ -85,7 +85,7 @@ export class BloomApi {
 
             // If all goes well this better report will replace it:
             StackTrace.fromError(axiosCallState).then(stackframes => {
-                var stringifiedStackAxiosCall = stackframes
+                const stringifiedStackAxiosCall = stackframes
                     .map(sf => {
                         return sf.toString();
                     })
@@ -96,7 +96,7 @@ export class BloomApi {
                 // that it does not.
                 if (error && error.message && error.stack) {
                     StackTrace.fromError(error).then(stackframes => {
-                        var stringifiedStackError = stackframes
+                        const stringifiedStackError = stackframes
                             .map(sf => {
                                 return sf.toString();
                             })
@@ -217,15 +217,22 @@ export class BloomApi {
         );
     }
 
-    public static postString(urlSuffix: string, value: string) {
+    public static postString(
+        urlSuffix: string,
+        value: string,
+        successCallback?: (r: AxiosResponse) => void
+    ) {
         BloomApi.wrapAxios(
-            axios.post(this.kBloomApiPrefix + urlSuffix, value, {
-                headers: {
-                    "Content-Type": "text/plain"
-                }
-            })
+            axios
+                .post(this.kBloomApiPrefix + urlSuffix, value, {
+                    headers: {
+                        "Content-Type": "text/plain"
+                    }
+                })
+                .then(successCallback ? successCallback : () => {})
         );
     }
+
     public static postBoolean(urlSuffix: string, value: boolean) {
         BloomApi.wrapAxios(
             axios.post(this.kBloomApiPrefix + urlSuffix, value, {
@@ -246,15 +253,11 @@ export class BloomApi {
             return;
         }
 
-        if (successCallback) {
-            BloomApi.wrapAxios(
-                axios
-                    .post(this.kBloomApiPrefix + urlSuffix)
-                    .then(successCallback)
-            );
-        } else {
-            BloomApi.wrapAxios(axios.post(this.kBloomApiPrefix + urlSuffix));
-        }
+        BloomApi.wrapAxios(
+            axios
+                .post(this.kBloomApiPrefix + urlSuffix)
+                .then(successCallback ? successCallback : () => {})
+        );
     }
 
     // Do a post (like duplicate page) that might result in navigating the browser
@@ -280,17 +283,11 @@ export class BloomApi {
         data: any,
         successCallback?: (r: AxiosResponse) => void
     ) {
-        if (successCallback) {
-            BloomApi.wrapAxios(
-                axios
-                    .post(this.kBloomApiPrefix + urlSuffix, data)
-                    .then(successCallback)
-            );
-        } else {
-            BloomApi.wrapAxios(
-                axios.post(this.kBloomApiPrefix + urlSuffix, data)
-            );
-        }
+        BloomApi.wrapAxios(
+            axios
+                .post(this.kBloomApiPrefix + urlSuffix, data)
+                .then(successCallback ? successCallback : () => {})
+        );
     }
 
     // This method is used to post something from Bloom with data and params.

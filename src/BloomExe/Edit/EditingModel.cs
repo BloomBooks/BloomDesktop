@@ -472,7 +472,7 @@ namespace Bloom.Edit
 				_view.OnVisibleChanged(true);
 				// If the Add Page dialog is open, we can still change layout.  The OnVisibleChanged calls close the dialog,
 				// but can leave the PageListView disabled.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6554.
-				_view.SetModalState("false");
+				_view.SetModalState(false);
 				return;
 			}
 			CurrentBook.PrepareForEditing();
