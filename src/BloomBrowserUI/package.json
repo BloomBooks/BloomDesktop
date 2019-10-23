@@ -74,6 +74,7 @@
         "markdown-it": "^8.4.2",
         "mobx": "^5.9.4",
         "mobx-react": "^5.4.3",
+        "paper": "^0.12.3",
         "prop-types": "^15.7.2",
         "rc-slider": "^8.6.9",
         "react": "16.8.6",

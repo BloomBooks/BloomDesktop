@@ -72,7 +72,8 @@
 
 	<Target Name="_DownloadNuGet" Condition=" '$(DownloadNuGetExe)' == 'true' AND !Exists('$(NuGetExePath)')">
 		<DownloadNuGet OutputFilename="$(NuGetExePath)" Condition="'$(OS)' == 'Windows_NT'" />
-		<Exec Command="wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" WorkingDirectory="$(NuGetToolsPath)"
+		<!-- change back to /latest/ instead of /v5.2.0/ when we move to mono 5 -->
+		<Exec Command="wget https://dist.nuget.org/win-x86-commandline/v5.2.0/nuget.exe" WorkingDirectory="$(NuGetToolsPath)"
 			Condition="'$(OS)' != 'Windows_NT'" />
 	</Target>
 

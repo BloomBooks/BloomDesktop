@@ -1,0 +1,58 @@
+@import "../../../bloomUI.less";
+
+.ui-accordion h3[data-toolId="calloutTool"] span.ui-accordion-header-icon {
+    background-image: url("callout-icon.svg") !important;
+}
+
+#ui-accordion-toolbox-panel-0.CalloutBody {
+    padding-top: 1px; // The design for this has a very small boundary between the header and the start of the tool
+    padding-left: 1px !important; // Don't want a big border of highly contrasting colors
+}
+
+#calloutControlShapeChooserRegion {
+    background-color: @bloom-blue;
+    color: black;
+    height: 183px;
+}
+
+#calloutControlOptionsRegion {
+    padding-top: 20px;
+    padding-left: 10px;
+
+    color: @bloom-toolboxWhite;
+
+    .MuiFormLabel-root,
+    .MuiSelect-icon,
+    .calloutOptionDropdown {
+        color: @bloom-toolboxWhite;
+    }
+
+    .MuiFormLabel-root {
+        width: 180px; // It could have more like 196px, but leave some room for a potential scrollbar
+    }
+
+    .MuiSelect-selectMenu {
+        width: 140px;
+        border: 1px solid;
+        border-radius: 5px; // The rounded corners
+        padding-left: 10px;
+    }
+
+    .MuiSelect-icon {
+        padding-right: 10px;
+    }
+}
+
+#calloutControlFooterRegion {
+    // Make it stick to the bottom of the parent
+    position: absolute;
+    bottom: 3px;
+
+    padding-left: 3px;
+}
+
+.callout-options-dropdown-menu {
+    // Getting overwritten by the inline styles... :(
+    // TODO: Experiment with whether you can pass in a style through Material UI instead of using !important to bypass the inline style.
+    z-index: 999999 !important; // Note: 18,000 was experimentally determined to be the minimum required z-index, but seems safer to go up a bit from the minimum
+}
