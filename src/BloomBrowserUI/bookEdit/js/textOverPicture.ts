@@ -11,6 +11,8 @@ import WebSocketManager from "../../utils/WebSocketManager";
 import { Comical, Bubble, BubbleSpec, BubbleSpecPattern } from "comicaljs";
 
 const kWebsocketContext = "textOverPicture";
+const kComicalGeneratedClass: string = "comical-generated";
+
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
 export class TextOverPictureManager {
     private activeElement: HTMLElement | undefined;
@@ -378,16 +380,37 @@ export class TextOverPictureManager {
 
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
     // to create the context menu
-    private deleteFloatingTOPBox(mouseX: number, mouseY: number) {
+    public deleteFloatingTOPBox(mouseX: number, mouseY: number) {
         const clickedElement = document.elementFromPoint(mouseX, mouseY);
         if (clickedElement) {
             const textElement = clickedElement.closest(
                 ".bloom-textOverPicture"
             );
             if (textElement && textElement.parentElement) {
+                const wasComicalModified = textElement.parentElement.getElementsByClassName(kComicalGeneratedClass).length > 0;
+
+                // ENHANCE: Check if it works after multiple image containers is implemented.
+                //     I think you may want to check this: textElement.parentElement.getElementsByClassName("comical-editing").length > 0
+                //     (But that code is not tested)
+                const wasCalloutEditingPreviouslyOn = this.isCalloutEditingOn;
+
+                if (wasComicalModified && !wasCalloutEditingPreviouslyOn) {
+                    // Should be turned on before the last textOverPicture element is deleted.
+                    // (Because turnOnBubbleEditing() skips a bunch of Comical logic if there are no textOverPicture elements)
+                    this.turnOnBubbleEditing();
+                }
+
                 const parent = textElement.parentElement;
                 parent.removeChild(textElement);
-                Comical.update(parent);
+
+                if (wasComicalModified) {
+                    Comical.update(parent);
+
+                    // Restore back to previous state
+                    if (!wasCalloutEditingPreviouslyOn) {
+                        this.turnOffBubbleEditing();    // Updates the SVG with the new appearance (with the relevant bubble fill/outline delete)
+                    }
+                }
 
                 // Check if we're deleting the active bubble. If so, gotta clean up the state.
                 if (textElement == this.getActiveElement()) {
