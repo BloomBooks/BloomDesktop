@@ -12,5 +12,11 @@
     "editor.detectIndentation": true,
     "editor.formatOnSave": true,
     "typescript.tsdk": "./node_modules/typescript/lib",
-    "prettier.disableLanguages": ["markdown"]
+    "prettier.disableLanguages": ["markdown"],
+    "workbench.colorCustomizations": {
+        "statusBar.background": "#75416E",
+        "statusBar.debuggingBackground": "#75416E",
+        "statusBar.noFolderBackground": "#75416E",
+        "statussBar.prominentBackground": "#75416E"
+    }
 }
