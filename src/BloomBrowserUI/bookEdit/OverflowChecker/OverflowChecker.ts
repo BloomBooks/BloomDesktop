@@ -5,6 +5,7 @@
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
+import { TextOverPictureManager } from "../js/textOverPicture";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -98,19 +99,27 @@ export default class OverflowChecker {
     // Actual testable determination of Type I overflow or not
     // 'public' for testing (2 types of overflow are defined in MarkOverflowInternal below)
     public static IsOverflowingSelf(element: HTMLElement): boolean {
+        const [overflowX, overflowY] = OverflowChecker.getSelfOverflowAmounts(
+            element
+        );
+        return overflowX > 0 || overflowY > 0;
+    }
+    public static getSelfOverflowAmounts(
+        element: HTMLElement
+    ): [number, number] {
         // Ignore Topic divs as they are chosen from a list
         if (
             element.hasAttribute("data-book") &&
             element.getAttribute("data-book") == "topic"
         ) {
-            return false;
+            return [0, 0];
         }
 
         if (
             $(element).css("display") === "none" ||
             $(element).css("display") === "inline"
         )
-            return false; //display:inline always returns zero width, so there's no way to know if it's overflowing
+            return [0, 0]; //display:inline always returns zero width, so there's no way to know if it's overflowing
 
         // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
         // This is because of the thin grey border on a focused input box.
@@ -140,13 +149,16 @@ export default class OverflowChecker {
             0
         );
 
-        return (
-            element.scrollHeight - fontFudgeFactor >
-                element.clientHeight +
-                    focusedBorderFudgeFactor +
-                    shortBoxFudgeFactor ||
-            element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor
-        );
+        const overflowY =
+            element.scrollHeight -
+            fontFudgeFactor -
+            (element.clientHeight +
+                focusedBorderFudgeFactor +
+                shortBoxFudgeFactor);
+        const overflowX =
+            element.scrollWidth -
+            (element.clientWidth + focusedBorderFudgeFactor);
+        return [overflowX, overflowY];
     }
 
     // Actual testable determination of Type II overflow or not
@@ -230,6 +242,7 @@ export default class OverflowChecker {
         $box.parents(".childOverflowingThis").each((dummy, parent) => {
             OverflowChecker.RemoveOverflowQtip($(parent));
         });
+        OverflowChecker.RemoveOverflowQtip($box);
         $box.parents().removeClass("childOverflowingThis");
 
         if (box.classList.contains("bloom-padForOverflow")) {
@@ -242,7 +255,21 @@ export default class OverflowChecker {
             }
         }
 
-        if (OverflowChecker.IsOverflowingSelf(box)) {
+        let [overflowX, overflowY] = OverflowChecker.getSelfOverflowAmounts(
+            box
+        );
+        if (
+            overflowY > 0 &&
+            // The +4 is based on experiment. It may relate to a couple of 'fudge factors'
+            // in OverflowChecker.getSelfOverflowAmounts, which I don't want to mess with
+            // as a lot of work went into getting overflow reporting right. We seem to
+            // need a bit of extra space to make sure the last line of text fits.
+            TextOverPictureManager.growOverflowingBox(box, overflowY + 4)
+        ) {
+            overflowY = 0;
+            box.scrollTop = 0; // now it should all fit, so no need to be scrolled down
+        }
+        if (overflowY > 0 || overflowX > 0) {
             $box.addClass("overflow");
             theOneLocalizationManager
                 .asyncGetText(
@@ -358,7 +385,26 @@ export default class OverflowChecker {
 
     // Test whether this qtip (if it exists) marks an overflow condition.
     private static DoesQtipMarkOverflow(qtipContent: any): boolean {
-        return qtipContent && $(qtipContent).attr("data-overflow") == "true";
+        if (!qtipContent) {
+            return false;
+        }
+        // This is the most reliable way I can find to detect data-overflow tooltips,
+        // at least on TOP boxes. By experiment in the debugger, qtipContent does
+        // not seem to be an element at all, but some sort of configuration object
+        // for the qtip, so trying to retrieve it as an attribute (as the code below does)
+        // does not work.
+        if (
+            qtipContent.text &&
+            qtipContent.text.startsWith('<img data-overflow="true"')
+        ) {
+            return true;
+        }
+        // keeping this out of paranoia...old code that no longer seems to work,
+        // but I'm not sure it's never needed.
+        if ($(qtipContent).attr("data-overflow") == "true") {
+            return true;
+        }
+        return false;
     }
 
     // Return any qtip content attached to this element, or null if none is attached.
