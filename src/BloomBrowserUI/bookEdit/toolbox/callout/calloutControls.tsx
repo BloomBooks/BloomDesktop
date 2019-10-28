@@ -226,7 +226,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                                     Caption
                                 </Div>
                             </MenuItem>
-                            <MenuItem value="shout">
+                            <MenuItem value="pointedArcs">
                                 <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.Exclamation">
                                     Exclamation
                                 </Div>
@@ -241,11 +241,18 @@ const CalloutToolControls: React.FunctionComponent = () => {
                                     Speech
                                 </Div>
                             </MenuItem>
+                            <MenuItem value="ellipse">
+                                <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.Ellipse">
+                                    Ellipse
+                                </Div>
+                            </MenuItem>
+                            {/*
                             <MenuItem value="thought">
                                 <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.Thought">
                                     Thought
                                 </Div>
                             </MenuItem>
+                            */}
                         </Select>
                     </FormControl>
                     <br />
