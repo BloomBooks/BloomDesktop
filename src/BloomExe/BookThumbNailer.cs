@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
+using Bloom.ImageProcessing;
 using Bloom.Properties;
+using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 
 namespace Bloom
@@ -48,6 +51,8 @@ namespace Bloom
 					callback(Resources.Error70x70);
 					return;
 				}
+				GenerateImageForWeb(book);
+
 				Image thumb;
 				if (book.Storage.TryGetPremadeThumbnail(thumbnailOptions.FileName, out thumb))
 				{
@@ -63,7 +68,7 @@ namespace Bloom
 				}
 				string folderForCachingThumbnail;
 
-				folderForCachingThumbnail = book.Storage.FolderPath;
+				folderForCachingThumbnail = book.StoragePageFolder;
 				_thumbnailProvider.GetThumbnail(folderForCachingThumbnail, book.Storage.Key, dom, thumbnailOptions, callback, errorCallback, async);
 			}
 			catch (Exception err)
@@ -72,6 +77,30 @@ namespace Bloom
 				errorCallback(err);
 				Debug.Fail(err.Message);
 			}
+		}
+
+		/// <summary>
+		/// Generates a web thumbnail image from the book's front cover image.
+		/// The resulting image will fit into a 200px x 200px box with no loss of aspect ratio.
+		/// This means that either the height or the width will be 200px.
+		/// </summary>
+		/// <param name="book"></param>
+		private void GenerateImageForWeb(Book.Book book)
+		{
+			const string coverImageName = "coverImage200.jpg";
+
+			var imageSrc = book.GetFirstPageImagePath();
+			if (string.IsNullOrEmpty(imageSrc))
+			{
+				Debug.Fail("Book cannot find a cover image");
+				return;
+			}
+
+			var srcFilePath = Path.Combine(book.StoragePageFolder, imageSrc);
+			var coverImage = PalasoImage.FromFile(srcFilePath);
+			coverImage.Image = ImageUtils.ResizeImageIfNecessary(new Size(200, 200), coverImage.Image);
+			var destFilePath = Path.Combine(book.StoragePageFolder, coverImageName);
+			ImageUtils.SaveAsTopQualityJpeg(coverImage.Image, destFilePath);
 		}
 
 		/// <summary>
