@@ -403,7 +403,7 @@ export class CalloutTool extends ToolboxToolReactAdaptor {
     }
 
     public id(): string {
-        return "callout";
+        return "comic";
     }
 
     public isExperimental(): boolean {
