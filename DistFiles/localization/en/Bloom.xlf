@@ -1806,6 +1806,12 @@
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a description which is not directly stated by any characters.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Ellipse" sil:dynamic="true">
+        <source xml:lang="en">Ellipse</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Ellipse</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents a round bubble shaped like an ellipse.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Exclamation" sil:dynamic="true">
         <source xml:lang="en">Exclamation</source>
         <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Exclamation</note>
