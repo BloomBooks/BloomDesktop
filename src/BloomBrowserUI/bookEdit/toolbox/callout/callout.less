@@ -51,6 +51,12 @@
     .calloutOptionDropdown {
         color: @bloom-toolboxWhite;
     }
+    .MuiInput-underline::after {
+        // Normally there is a 2px border when the dropdown menu is open. I like it better without it, because
+        // the removal of the effect seems a little off because the border persists until after you select AND THEN after you click somewhere else.
+        border-bottom-width: 0px;
+        border-bottom-color: @bloom-toolboxWhite; // FYI, the Material UI default is dark blue.
+    }
 
     .MuiFormLabel-root {
         width: 180px; // It could have more like 196px, but leave some room for a potential scrollbar
