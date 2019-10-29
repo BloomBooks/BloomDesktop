@@ -216,7 +216,7 @@ namespace BloomTests.Publish
 			var fontCssData = ExportEpubTestsBaseClass.GetZipContent(_epub, "content/"+EpubMaker.kCssFolder+"/fonts.css");
 			Assert.That(fontCssData,
 				Does.Contain(
-					"@font-face {font-family:'Andika New Basic'; font-weight:normal; font-style:normal; src:url(../"+EpubMaker.kFontsFolder+"/AndikaNewBasic-R.ttf) format('opentype');}"));
+					"@font-face {font-family:'Andika New Basic'; font-weight:normal; font-style:normal; src:url('../"+EpubMaker.kFontsFolder+"/AndikaNewBasic-R.ttf') format('opentype');}"));
 			// Currently we're not embedding bold and italic fonts (BL-4202)
 			//Assert.That(fontCssData,
 			//	Does.Contain(
