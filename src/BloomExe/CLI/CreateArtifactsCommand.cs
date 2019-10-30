@@ -99,6 +99,10 @@ namespace Bloom.CLI
 
 		public static void CreateBloomDigitalArtifacts(string bookPath, string creator, string zippedBloomDOutputPath, string unzippedBloomDigitalOutputPath)
 		{
+#if DEBUG
+			MessageBox.Show("Attach debugger now");
+#endif
+
 			using (var tempBloomD = TempFile.CreateAndGetPathButDontMakeTheFile())
 			{
 				if (String.IsNullOrEmpty(zippedBloomDOutputPath))
