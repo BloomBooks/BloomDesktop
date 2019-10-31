@@ -811,7 +811,7 @@ export function SetupElements(container) {
 
     // make any added text-over-picture bubbles draggable and clickable
     if (theOneTextOverPictureManager) {
-        theOneTextOverPictureManager.makeTextOverPictureBoxDraggableClickableAndResizable();
+        theOneTextOverPictureManager.initializeTextOverPictureEditing();
     }
 
     // focus on the first editable field
@@ -1033,7 +1033,9 @@ export const pageSelectionChanging = () => {
 };
 
 // For usage, see editViewFrame.switchContentPage()
-export const prepareToSavePage = () => {};
+export const prepareToSavePage = () => {
+    theOneTextOverPictureManager.turnOffBubbleEditing();
+};
 
 export const pageUnloading = () => {
     theOneTextOverPictureManager.cleanUp();

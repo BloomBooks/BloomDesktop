@@ -42,6 +42,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
         }
 
         bubbleManager.turnOnBubbleEditing();
+        bubbleManager.turnOnHidingImageButtons();
 
         const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
 
@@ -450,7 +451,10 @@ export class CalloutTool extends ToolboxToolReactAdaptor {
     public detachFromPage() {
         const bubbleManager = CalloutTool.bubbleManager();
         if (bubbleManager) {
-            bubbleManager.turnOffBubbleEditing();
+            // For now we are leaving it on, because even with the toolbox hidden,
+            // the user might edit text, delete bubbles, move handles, etc.
+            //bubbleManager.turnOffBubbleEditing();
+            bubbleManager.turnOffHidingImageButtons();
             bubbleManager.detachBubbleChangeNotification();
         }
     }
