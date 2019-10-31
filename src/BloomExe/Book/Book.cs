@@ -1763,6 +1763,9 @@ namespace Bloom.Book
 		/// The dictionary contains an entry for every language where the book contains non-x-matter text.
 		/// The value is true if every non-x-matter field which contains text in any language contains text in this.
 		/// </summary>
+		/// <remarks>The logic here is used to determine which language checkboxes to show in the web upload.
+		/// Nearly identical logic is used in bloom-player to determine which languages to show on the Language Menu,
+		/// so changes here may need to be reflected there and vice versa.</remarks>
 		public Dictionary<string, bool> AllLanguages
 		{
 			get

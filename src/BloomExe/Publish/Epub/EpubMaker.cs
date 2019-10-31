@@ -1790,7 +1790,7 @@ namespace Bloom.Publish.Epub
 					// The fonts.css file is stored in a subfolder as are the font files.  They are in different
 					// subfolders, and the reference to the font file has to take the relative path to fonts.css
 					// into account.
-					AddFontFace (sb, font, "normal", "normal", group.Normal, "../"+kFontsFolder+"/");
+					AddFontFace (sb, font, "normal", "normal", group.Normal, "../"+kFontsFolder+"/", true);
 					// We are currently not including the other faces (nor their files...see FontFileFinder.GetFilesForFont().
 					// BL-4202 contains a discussion of this. Basically,
 					// - embedding them takes a good deal of extra space
@@ -1807,13 +1807,19 @@ namespace Bloom.Publish.Epub
 			_manifestItems.Add(kCssFolder+"/" + "fonts.css");
 		}
 
-		internal static void AddFontFace (StringBuilder sb, string name, string weight, string style, string path, string relativePathFromCss="")
+		internal static void AddFontFace (StringBuilder sb, string name, string weight, string style, string path, string relativePathFromCss="", bool sanitizeFileName = false)
 		{
 			if (path == null)
 				return;
-			sb.AppendLineFormat ("@font-face {{font-family:'{0}'; font-weight:{1}; font-style:{2}; src:url({3}{4}) format('{5}');}}",
-				name, weight, style, relativePathFromCss, Path.GetFileName(path),
-				Path.GetExtension (path) == ".woff" ? "woff" : "opentype");
+
+			var fontFileName = Path.GetFileName(path);
+			if (sanitizeFileName)
+				fontFileName = GetAdjustedFilename(fontFileName, "");
+			var fullRelativePath = relativePathFromCss + fontFileName;
+			var format = Path.GetExtension(path) == ".woff" ? "woff" : "opentype";
+
+			sb.AppendLine(
+				$"@font-face {{font-family:'{name}'; font-weight:{weight}; font-style:{style}; src:url('{fullRelativePath}') format('{format}');}}");
 		}
 
 		/// <summary>
@@ -2117,7 +2123,7 @@ namespace Bloom.Publish.Epub
 			if (!string.IsNullOrEmpty(folderPath) && srcPath.StartsWith(folderPath))
 				originalFileName = srcPath.Substring(folderPath.Length + 1).Replace('\\', '/');
 			else
-				originalFileName = Path.GetFileName(srcPath); // probably can't happen, but in case, put at root.
+				originalFileName = Path.GetFileName(srcPath);
 			// Validator warns against spaces in filenames. + and % and &<> are problematic because to get the real
 			// file name it is necessary to use just the right decoding process. Some clients may do this
 			// right but if we substitute them we can be sure things are fine.

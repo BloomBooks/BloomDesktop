@@ -99,6 +99,11 @@ namespace Bloom.CLI
 
 		public static void CreateBloomDigitalArtifacts(string bookPath, string creator, string zippedBloomDOutputPath, string unzippedBloomDigitalOutputPath)
 		{
+#if DEBUG
+			// Useful for allowing debugging of Bloom while running the harvester
+			//MessageBox.Show("Attach debugger now");
+#endif
+
 			using (var tempBloomD = TempFile.CreateAndGetPathButDontMakeTheFile())
 			{
 				if (String.IsNullOrEmpty(zippedBloomDOutputPath))

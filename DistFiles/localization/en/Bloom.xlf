@@ -1753,9 +1753,9 @@
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CalloutTool" sil:dynamic="true">
-        <source xml:lang="en">Callout Tool</source>
+        <source xml:lang="en">Comic Tool</source>
         <note>ID: EditTab.Toolbox.CalloutTool</note>
-        <note>This tool allows users to insert a callout, which is a piece of text connected by a line, arrow, or other graphic to a part of a picture. It may be used to give more information about a specific part or as speech bubbles to give dialogue.</note>
+        <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CalloutTool.Options.AddChildBubble" sil:dynamic="true">
         <source xml:lang="en">Add Child Bubble</source>
@@ -1805,6 +1805,12 @@
         <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Caption</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a description which is not directly stated by any characters.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Ellipse" sil:dynamic="true">
+        <source xml:lang="en">Ellipse</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Ellipse</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents a round bubble shaped like an ellipse.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Exclamation" sil:dynamic="true">
         <source xml:lang="en">Exclamation</source>
