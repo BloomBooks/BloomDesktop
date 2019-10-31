@@ -11,6 +11,8 @@ import WebSocketManager from "../../utils/WebSocketManager";
 import { Comical, Bubble, BubbleSpec, BubbleSpecPattern } from "comicaljs";
 
 const kWebsocketContext = "textOverPicture";
+const kComicalGeneratedClass: string = "comical-generated";
+
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
 export class TextOverPictureManager {
     private activeElement: HTMLElement | undefined;
@@ -42,11 +44,54 @@ export class TextOverPictureManager {
         return this.isCalloutEditingOn;
     }
 
+    // Given the box has been determined to be overflowing vertically by
+    // needToGrow pixels, if it's inside a TOP box enlarge the TOP box
+    // by that much so it won't overflow.
+    // (Caller may wish to do box.scrollTop = 0 to make sure the whole
+    // content shows now there is room for it all.)
+    // Returns true if successful; it will currently fail if box is not
+    // inside a valid TOP box or if the TOP box can't grow this much while remaining
+    // inside the image container. If it returns false it makes no changes
+    // at all.
+    public static growOverflowingBox(
+        box: HTMLElement,
+        needToGrow: number
+    ): boolean {
+        const wrapperBox = box.closest(".bloom-textOverPicture") as HTMLElement;
+        if (!wrapperBox) {
+            return false; // we can't fix it
+        }
+        const container = wrapperBox.closest(".bloom-imageContainer");
+        if (!container) {
+            return false; // paranoia; TOP box should always be in image container
+        }
+        const newHeight = wrapperBox.clientHeight + needToGrow;
+        if (newHeight + wrapperBox.offsetTop > container.clientHeight) {
+            return false;
+        }
+        wrapperBox.style.height = newHeight + "px"; // next line will change to percent
+        TextOverPictureManager.calculatePercentagesAndFixTextboxPosition(
+            $(wrapperBox)
+        );
+        return true;
+    }
+
     public turnOnBubbleEditing(): void {
         if (this.isCalloutEditingOn === true) {
             return; // Already on. No work needs to be done
         }
         this.isCalloutEditingOn = true;
+
+        Comical.setActiveBubbleListener(activeElement => {
+            if (activeElement) {
+                var focusElements = activeElement.getElementsByClassName(
+                    "bloom-visibility-code-on"
+                );
+                if (focusElements.length > 0) {
+                    (focusElements[0] as HTMLElement).focus();
+                }
+            }
+        });
 
         Array.from(
             document.getElementsByClassName("bloom-imageContainer")
@@ -84,6 +129,32 @@ export class TextOverPictureManager {
                 );
             });
         }
+
+        // turn on drag-and-drop support for bubbles from comical toolbox
+        Array.from(
+            document.getElementsByClassName("bloom-imageContainer")
+        ).forEach((container: HTMLElement) => {
+            // This suppresses the default behavior, which is to forbid dragging things to
+            // an element, but only if the source of the drag is a bloom bubble.
+            container.ondragover = ev => {
+                if (ev.dataTransfer && ev.dataTransfer.getData("bloomBubble")) {
+                    ev.preventDefault();
+                }
+            };
+            // Controls what happens when a bloom bubble is dropped. We get the style
+            // set in CalloutControls.ondragstart() and make a bubble with that style
+            // at the drop position.
+            container.ondrop = ev => {
+                ev.preventDefault();
+                const style = ev.dataTransfer
+                    ? ev.dataTransfer.getData("bloomBubble")
+                    : "speech";
+                this.addFloatingTOPBox(ev.clientX, ev.clientY, style);
+                BloomApi.postThatMightNavigate(
+                    "common/saveChangesAndRethinkPageEvent"
+                );
+            };
+        });
     }
 
     // Event Handler to be called when something relevant on the page frame gets focus.  Will set the active textOverPicture element.
@@ -117,10 +188,14 @@ export class TextOverPictureManager {
     }
 
     private setActiveElement(element: HTMLElement | undefined) {
+        if (this.activeElement === element) {
+            return;
+        }
         this.activeElement = element;
         if (this.notifyBubbleChange) {
             this.notifyBubbleChange(this.getSelectedItemBubbleSpec());
         }
+        Comical.activateElement(this.activeElement);
     }
 
     public turnOffBubbleEditing(): void {
@@ -128,6 +203,8 @@ export class TextOverPictureManager {
             return; // Already off. No work needs to be done.
         }
         this.isCalloutEditingOn = false;
+
+        Comical.setActiveBubbleListener(undefined);
 
         const canvas = document.getElementsByClassName("comical-editing")[0];
         if (canvas && canvas.parentElement) {
@@ -255,7 +332,8 @@ export class TextOverPictureManager {
 
     public addFloatingTOPBox(
         mouseX: number,
-        mouseY: number
+        mouseY: number,
+        style?: string
     ): HTMLElement | undefined {
         const container = this.getImageContainerFromMouse(mouseX, mouseY);
         if (!container || container.length === 0) {
@@ -294,7 +372,7 @@ export class TextOverPictureManager {
         const contentElement = wrapperBox.get(0);
         const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
             contentElement,
-            "speech"
+            style || "speech"
         );
         const bubble = new Bubble(contentElement);
         bubble.setBubbleSpec(bubbleSpec);
@@ -329,21 +407,47 @@ export class TextOverPictureManager {
         const yOffset = (mouseY - containerPosition.top) / scale;
         const location = "left: " + xOffset + "px; top: " + yOffset + "px;";
         wrapperBox.attr("style", location);
-        this.calculatePercentagesAndFixTextboxPosition(wrapperBox); // translate px to %
+        TextOverPictureManager.calculatePercentagesAndFixTextboxPosition(
+            wrapperBox
+        ); // translate px to %
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
     // to create the context menu
-    private deleteFloatingTOPBox(mouseX: number, mouseY: number) {
+    public deleteFloatingTOPBox(mouseX: number, mouseY: number) {
         const clickedElement = document.elementFromPoint(mouseX, mouseY);
         if (clickedElement) {
             const textElement = clickedElement.closest(
                 ".bloom-textOverPicture"
             );
             if (textElement && textElement.parentElement) {
+                const wasComicalModified =
+                    textElement.parentElement.getElementsByClassName(
+                        kComicalGeneratedClass
+                    ).length > 0;
+
+                // ENHANCE: Check if it works after multiple image containers is implemented.
+                //     I think you may want to check this: textElement.parentElement.getElementsByClassName("comical-editing").length > 0
+                //     (But that code is not tested)
+                const wasCalloutEditingPreviouslyOn = this.isCalloutEditingOn;
+
+                if (wasComicalModified && !wasCalloutEditingPreviouslyOn) {
+                    // Should be turned on before the last textOverPicture element is deleted.
+                    // (Because turnOnBubbleEditing() skips a bunch of Comical logic if there are no textOverPicture elements)
+                    this.turnOnBubbleEditing();
+                }
+
                 const parent = textElement.parentElement;
                 parent.removeChild(textElement);
-                Comical.update(parent);
+
+                if (wasComicalModified) {
+                    Comical.update(parent);
+
+                    // Restore back to previous state
+                    if (!wasCalloutEditingPreviouslyOn) {
+                        this.turnOffBubbleEditing(); // Updates the SVG with the new appearance (with the relevant bubble fill/outline delete)
+                    }
+                }
 
                 // Check if we're deleting the active bubble. If so, gotta clean up the state.
                 if (textElement == this.getActiveElement()) {
@@ -380,7 +484,9 @@ export class TextOverPictureManager {
             stop: (event, ui) => {
                 const target = event.target;
                 if (target) {
-                    this.calculatePercentagesAndFixTextboxPosition($(target));
+                    TextOverPictureManager.calculatePercentagesAndFixTextboxPosition(
+                        $(target)
+                    );
                 }
             }
         });
@@ -405,7 +511,9 @@ export class TextOverPictureManager {
                 const target = event.target;
                 if (target) {
                     // Resizing also changes size and position to pixels. Fix it.
-                    this.calculatePercentagesAndFixTextboxPosition($(target));
+                    TextOverPictureManager.calculatePercentagesAndFixTextboxPosition(
+                        $(target)
+                    );
                     // There was a problem where resizing a box messed up its draggable containment,
                     // so now after we resize we go back through making it draggable and clickable again.
                     this.makeTOPBoxDraggableAndClickable($(target), scale);
@@ -416,7 +524,9 @@ export class TextOverPictureManager {
         this.makeTOPBoxDraggableAndClickable(textOverPictureElems, scale);
     }
 
-    private calculatePercentagesAndFixTextboxPosition(wrapperBox: JQuery) {
+    private static calculatePercentagesAndFixTextboxPosition(
+        wrapperBox: JQuery
+    ) {
         const scale = EditableDivUtils.getPageScale();
         const container = wrapperBox.closest(".bloom-imageContainer");
         const pos = wrapperBox.position();

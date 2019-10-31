@@ -13,6 +13,31 @@
     background-color: @bloom-blue;
     color: black;
     height: 183px;
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    .calloutControlDraggableBubble {
+        cursor: grab;
+    }
+    #calloutControlSpeechButton {
+        height: 40px;
+        width: 40px;
+    }
+    #calloutControlTextBlockButton {
+        border: 1px dotted white;
+        padding: 10px 20px;
+        margin-left: 40px;
+        color: white;
+        height: 18px;
+    }
+    #calloutControlCaptionButton {
+        border: 1px solid black;
+        padding: 5px 40px;
+        color: black;
+        background-color: white;
+        margin-left: 30px;
+        height: 18px;
+    }
 }
 
 #calloutControlOptionsRegion {
@@ -25,6 +50,12 @@
     .MuiSelect-icon,
     .calloutOptionDropdown {
         color: @bloom-toolboxWhite;
+    }
+    .MuiInput-underline::after {
+        // Normally there is a 2px border when the dropdown menu is open. I like it better without it, because
+        // the removal of the effect seems a little off because the border persists until after you select AND THEN after you click somewhere else.
+        border-bottom-width: 0px;
+        border-bottom-color: @bloom-toolboxWhite; // FYI, the Material UI default is dark blue.
     }
 
     .MuiFormLabel-root {
@@ -40,6 +71,10 @@
 
     .MuiSelect-icon {
         padding-right: 10px;
+    }
+
+    .MuiInput-root {
+        margin-bottom: 10px;
     }
 }
 

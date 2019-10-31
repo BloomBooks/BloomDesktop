@@ -35,6 +35,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
         const bubbleManager = CalloutTool.bubbleManager();
         if (!bubbleManager) {
             console.assert(
+                false,
                 "ERROR: Bubble manager is not initialized yet. Please investigate!"
             );
             return;
@@ -151,10 +152,45 @@ const CalloutToolControls: React.FunctionComponent = () => {
         );
     };
 
+    const ondragstart = (ev, style) => {
+        // Here "bloomBubble" is a unique, private data type recognised
+        // by ondragover and ondragdrop methods that TextOverPicture
+        // attaches to bloom image containers. It doesn't make sense to
+        // drag these objects anywhere else, so they don't need any of
+        // the common data types.
+        ev.dataTransfer.setData("bloomBubble", style);
+    };
+
     return (
         <div>
             <div id={"calloutControlShapeChooserRegion"}>
-                Drag one of these on top of an image: TODO: Implement dragger
+                <div className="calloutControlDragInstructions">
+                    Drag one of these on top of an image
+                </div>
+                <img
+                    id="calloutControlSpeechButton"
+                    className="calloutControlDraggableBubble"
+                    src="callout-icon.svg"
+                    draggable={true}
+                    onDragStart={ev => ondragstart(ev, "speech")}
+                />
+                <span
+                    id="calloutControlTextBlockButton"
+                    className="calloutControlDraggableBubble"
+                    draggable={true}
+                    onDragStart={ev => ondragstart(ev, "none")}
+                >
+                    Text Block
+                </span>
+                <br />
+                <span
+                    id="calloutControlCaptionButton"
+                    className="calloutControlDraggableBubble"
+                    draggable={true}
+                    onDragStart={ev => ondragstart(ev, "caption")}
+                >
+                    Caption
+                </span>
             </div>
             <div
                 id={"calloutControlOptionsRegion"}
@@ -190,7 +226,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                                     Caption
                                 </Div>
                             </MenuItem>
-                            <MenuItem value="shout">
+                            <MenuItem value="pointedArcs">
                                 <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.Exclamation">
                                     Exclamation
                                 </Div>
@@ -205,11 +241,18 @@ const CalloutToolControls: React.FunctionComponent = () => {
                                     Speech
                                 </Div>
                             </MenuItem>
+                            <MenuItem value="ellipse">
+                                <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.Ellipse">
+                                    Ellipse
+                                </Div>
+                            </MenuItem>
+                            {/*
                             <MenuItem value="thought">
                                 <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.Thought">
                                     Thought
                                 </Div>
                             </MenuItem>
+                            */}
                         </Select>
                     </FormControl>
                     <br />
