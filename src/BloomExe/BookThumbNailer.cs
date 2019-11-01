@@ -85,18 +85,17 @@ namespace Bloom
 		/// This means that either the height or the width will be 200px.
 		/// </summary>
 		/// <param name="book"></param>
-		private void GenerateImageForWeb(Book.Book book)
+		public static void GenerateImageForWeb(Book.Book book)
 		{
 			const string coverImageName = "coverImage200.jpg";
 
-			var imageSrc = book.GetFirstPageImagePath();
-			if (string.IsNullOrEmpty(imageSrc))
+			var srcFilePath = book.GetCoverImagePath(); // returns null if there is no image
+			if (string.IsNullOrEmpty(srcFilePath) || srcFilePath.EndsWith("placeHolder.png"))
 			{
-				Debug.Fail("Book cannot find a cover image");
+				Debug.WriteLine("Book cannot find a cover image");
 				return;
 			}
 
-			var srcFilePath = Path.Combine(book.StoragePageFolder, imageSrc);
 			var coverImage = PalasoImage.FromFile(srcFilePath);
 			coverImage.Image = ImageUtils.ResizeImageIfNecessary(new Size(200, 200), coverImage.Image);
 			var destFilePath = Path.Combine(book.StoragePageFolder, coverImageName);
