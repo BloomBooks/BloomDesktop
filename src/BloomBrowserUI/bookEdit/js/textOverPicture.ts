@@ -135,10 +135,103 @@ export class TextOverPictureManager {
             });
         }
 
-        // turn on drag-and-drop support for bubbles from comical toolbox
+        // turn on various behaviors for each image
         Array.from(
             document.getElementsByClassName("bloom-imageContainer")
         ).forEach((container: HTMLElement) => {
+            container.addEventListener("click", event => {
+                // The goal here is that if the user clicks outside any comical bubble,
+                // we want none of the comical bubbles selected, so that
+                // (after moving the mouse away to get rid of hover effects)
+                // the user can see exactly what the final comic will look like.
+                // This is a difficult and horrible kludge.
+                // First problem is that this click handler is fired for a click
+                // ANYWHERE in the image...none of the bubble- or TOP- related
+                // click handlers preventDefault(). So we have to figure out
+                // whether the click was simply on the picture, or on something
+                // inside it. A first step is to ignore any clicks where the target
+                // is one of the picture's children. Even that's complicated...
+                // the Comical canvas covers the whole picture, so the target
+                // is NEVER the picture itself. But we can at least check that
+                // the target is the comical canvas itself, not something overlayed
+                // on it.
+                if (
+                    (event.target as HTMLElement).classList.contains(
+                        "comical-editing"
+                    )
+                ) {
+                    // OK, we clicked on the canvas, but we may still have clicked on
+                    // some part of a bubble rather than away from it.
+                    // We now use a Comical function to determine whether we clicked
+                    // on a Comical object.
+                    const bounds = container.getBoundingClientRect();
+                    const x = event.clientX - bounds.left;
+                    const y = event.clientY - bounds.top;
+                    if (!Comical.somethingHit(container, x, y)) {
+                        // So far so good. We have now determined that we want to remove
+                        // focus from anything in this image.
+                        // (Enhance: should we check that something within this image
+                        // is currently focused, so clicking on a picture won't
+                        // arbitrarily move the focus if it's not in this image?)
+                        // Leaving nothing at all selected is something of a last resort,
+                        // so we first look for something we can focus that is outside the
+                        // image.
+                        let somethingElseToFocus = Array.from(
+                            document.getElementsByClassName("bloom-editable")
+                        ).filter(e => !container.contains(e))[0] as HTMLElement;
+                        if (!somethingElseToFocus) {
+                            // If the page contains only images (or videos, etc...no text except bubbles
+                            // then we will make something temporary and hidden to focus.
+                            // There may be some alternative to this but it is the most reliable
+                            // thing I can think of to remove all the focus effects from the bubbles.
+                            // Even so it's not as reliable as I would like because some of those
+                            // effects are produced by focus handlers that won't automatically get
+                            // attached to this temporary element.
+                            somethingElseToFocus = document.createElement(
+                                "div"
+                            );
+                            container.parentElement!.insertBefore(
+                                somethingElseToFocus,
+                                container
+                            );
+                            // We give it this class so it won't persist...Bloom cleans out such
+                            // elements when saving the page.
+                            somethingElseToFocus.classList.add("bloom-ui");
+                            // it needs to be bloom-editable to trigger the code in
+                            // onFocusSetActiveElement that hides the handles on the active bubble.
+                            somethingElseToFocus.classList.add(
+                                "bloom-editable"
+                            );
+                            // These properties are necessary (or at least sufficient) to make it possible to focus it
+                            somethingElseToFocus.setAttribute(
+                                "contenteditable",
+                                "true"
+                            );
+                            somethingElseToFocus.setAttribute("tabindex", "0");
+                            somethingElseToFocus.style.display = "block"; // defeat rules making it display:none and hence not focusable
+
+                            // However, we don't actually want to see it; these rules
+                            // (somewhat redundantly) make it have no size and be positioned
+                            // off-sreen.
+                            somethingElseToFocus.style.width = "0";
+                            somethingElseToFocus.style.height = "0";
+                            somethingElseToFocus.style.overflow = "hidden";
+                            somethingElseToFocus.style.position = "absolute";
+                            somethingElseToFocus.style.left = "-1000px";
+
+                            // And we want the usual behavior when it gets focus!
+                            somethingElseToFocus.addEventListener(
+                                "focus",
+                                TextOverPictureManager.onFocusSetActiveElement
+                            );
+                        }
+                        somethingElseToFocus.focus();
+                    }
+                }
+            });
+
+            // drag-and-drop support for bubbles from comical toolbox
+
             // This suppresses the default behavior, which is to forbid dragging things to
             // an element, but only if the source of the drag is a bloom bubble.
             container.ondragover = ev => {
