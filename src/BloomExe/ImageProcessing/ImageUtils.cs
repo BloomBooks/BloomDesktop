@@ -410,7 +410,7 @@ namespace Bloom.ImageProcessing
 				graphic.SmoothingMode = SmoothingMode.HighQuality;
 				graphic.PixelOffsetMode = PixelOffsetMode.HighQuality;
 				graphic.CompositingQuality = CompositingQuality.HighQuality;
-				graphic.DrawImage(image, 0, 0, desiredWidth, newHeight);
+				graphic.DrawImage(image, 0, 0, newWidth, newHeight);
 			}
 			return newImage;
 		}
