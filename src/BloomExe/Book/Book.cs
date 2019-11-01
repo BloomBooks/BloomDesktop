@@ -492,24 +492,6 @@ namespace Bloom.Book
 			return bookDom;
 		}
 
-		/// <summary>
-		/// Get existing image filePath from front cover
-		/// </summary>
-		/// <param name="bookDom"></param>
-		/// <returns>If placeholder only or file does not exist, returns empty string</returns>
-		public string GetFirstPageImagePath()
-		{
-			var bookDom = GetBookDomWithStyleSheets("previewMode.css", "thumbnail.css");
-			// Get coverImage from bloomDataDiv
-			var coverImageList = bookDom.SafeSelectNodes("//div[contains(@data-book, 'coverImage')]");
-			var coverNode = coverImageList?[0];
-			if (coverNode == null)
-				return string.Empty;
-			var imgSrc = coverNode.InnerText;
-			var fileName = Path.Combine(StoragePageFolder, imgSrc);
-			return imgSrc != "placeHolder.png" && File.Exists(fileName) ? imgSrc : string.Empty;
-		}
-
 		private static void HideEverythingButFirstPageAndRemoveScripts(XmlDocument bookDom)
 		{
 			bool onFirst = true;
@@ -3155,6 +3137,10 @@ namespace Bloom.Book
 			return Convert.ToBase64String(sha.Hash);
 		}
 
+		/// <summary>
+		/// Gets the complete path to the book's cover image, or null if there isn't one.
+		/// </summary>
+		/// <returns></returns>
 		public string GetCoverImagePath()
 		{
 			if (Storage == null)

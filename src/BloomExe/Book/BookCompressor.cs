@@ -11,13 +11,9 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Xml;
 using Bloom.ImageProcessing;
-using Bloom.web;
-using BloomTemp;
-using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 using System.Collections.Generic;
-using Bloom.Publish.Android;
 using Bloom.web.controllers;
 
 namespace Bloom.Book
@@ -35,6 +31,11 @@ namespace Bloom.Book
 
 		internal static void MakeSizedThumbnail(Book book, Color backColor, string destinationFolder, int heightAndWidth)
 		{
+			// If this fails to create a 'coverImage200.jpg', either the cover image is missing or it's only a placeholder.
+			// If this is a new book, the file may exist already, but we want to make sure it's up-to-date.
+			// If this is an older book, we need the .bloomd to have it so that Harvester will be able to access it.
+			BookThumbNailer.GenerateImageForWeb(book);
+
 			var coverImagePath = book.GetCoverImagePath();
 			if (coverImagePath == null)
 			{
