@@ -816,6 +816,15 @@ export default class StyleEditor {
     }
 
     public AdjustFormatButton(element: Element): void {
+        if (element.closest(".bloom-textOverPicture")) {
+            // This element is inside a text-over-picture element.
+            // Because the format button is positioned differently in those cases, we don't need the following logic.
+            //
+            // (Note: Or maybe we do, but because of the auto-grow feature, it's never "needed"?
+            // Maybe we'd need to take the scrollTop and subtract the original bottom position?).
+            return;
+        }
+
         // Bizarrely, bottom:0 means to place it where the bottom of the content would be
         // if not scrolled. That's where we want it, but we want it to stay at the bottom
         // even if the block is overflowing and scrolled, and bottom:0 doesn't keep it
@@ -876,13 +885,19 @@ export default class StyleEditor {
 
         $("#format-toolbar").remove(); // in case there's still one somewhere else
 
+        let formatButtonFilename = "cogGrey.svg";
+        const isTextOverPicture = targetBox.closest(".bloom-textOverPicture");
+        if (isTextOverPicture) {
+            formatButtonFilename = "cogWhiteTOP.svg";
+        }
+
         // put the format button in the editable text box itself, so that it's always in the right place.
         // unfortunately it will be subject to deletion because this is an editable box. But we can mark it as uneditable, so that
         // the user won't see resize and drag controls when they click on it
         $(targetBox).append(
-            '<div id="formatButton" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' +
+            '<div id="formatButton" contenteditable="false" class="bloom-ui"><img contenteditable="false" src="' +
                 this._supportFilesRoot +
-                '/img/cogGrey.svg"></div>'
+                `/img/${formatButtonFilename}"></div>`
         );
 
         //make the button stay at the bottom if we overflow and thus scroll

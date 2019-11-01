@@ -149,6 +149,11 @@ export default class OverflowChecker {
             0
         );
 
+        // Adds a class so that the scroll height can be calculated without text-over-picture element controls affecting the height/width
+        // (Currently, only done so for text-over-picture elements because the format gear and language tip are OUTSIDE the box,
+        // but in a normal text box they are inside the box)
+        element.classList.add("disableTOPControls");
+
         const overflowY =
             element.scrollHeight -
             fontFudgeFactor -
@@ -158,6 +163,9 @@ export default class OverflowChecker {
         const overflowX =
             element.scrollWidth -
             (element.clientWidth + focusedBorderFudgeFactor);
+
+        element.classList.remove("disableTOPControls");
+
         return [overflowX, overflowY];
     }
 
@@ -255,6 +263,10 @@ export default class OverflowChecker {
             }
         }
 
+        // ENHANCE: The overflow detection doesn't work right immediately if you add one line too much (such that it overflows),
+        //          then backspace to remove the newly added line. It still indicates overflow (because it was was scrolled down, I guess).
+        //          However, if you press the up arrow long enough until you get it to scroll back up, it will reset to Not Overflowing.
+        //          Reloading the page will also clear it.
         let [overflowX, overflowY] = OverflowChecker.getSelfOverflowAmounts(
             box
         );
