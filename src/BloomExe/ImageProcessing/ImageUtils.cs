@@ -275,10 +275,16 @@ namespace Bloom.ImageProcessing
 
 		private static void DrawImageWithWhiteBackground(Image source, Bitmap target)
 		{
+			// Color.White is not a constant value, so it can't be used as a default method parameter value.
+			DrawImageWithOpaqueBackground(source, target, Color.White);
+		}
+
+		public static void DrawImageWithOpaqueBackground(Image source, Bitmap target, Color color)
+		{
 			Rectangle rect = new Rectangle(Point.Empty, source.Size);
 			using (Graphics g = Graphics.FromImage(target))
 			{
-				g.Clear(Color.White);
+				g.Clear(color);
 				g.DrawImageUnscaledAndClipped(source, rect);
 			}
 		}

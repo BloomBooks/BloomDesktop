@@ -60,6 +60,7 @@ namespace Bloom
 					return;
 				}
 
+#if USE_HTMLTHUMBNAILER_FOR_COVER
 				var dom = book.GetPreviewXmlDocumentForFirstPage();
 				if (dom == null)
 				{
@@ -70,6 +71,12 @@ namespace Bloom
 
 				folderForCachingThumbnail = book.StoragePageFolder;
 				_thumbnailProvider.GetThumbnail(folderForCachingThumbnail, book.Storage.Key, dom, thumbnailOptions, callback, errorCallback, async);
+#else
+				if (!CreateThumbnailOfCoverImage(book, thumbnailOptions, callback))
+				{
+					callback(Resources.Error70x70);
+				}
+#endif
 			}
 			catch (Exception err)
 			{
@@ -87,19 +94,54 @@ namespace Bloom
 		/// <param name="book"></param>
 		public static void GenerateImageForWeb(Book.Book book)
 		{
-			const string coverImageName = "coverImage200.jpg";
-
-			var srcFilePath = book.GetCoverImagePath(); // returns null if there is no image
-			if (string.IsNullOrEmpty(srcFilePath) || srcFilePath.EndsWith("placeHolder.png"))
+			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions
 			{
-				Debug.WriteLine("Book cannot find a cover image");
-				return;
-			}
+				Height = 200,
+				Width = 200,
+				FileName = "coverImage200.jpg"
+			};
+			CreateThumbnailOfCoverImage(book, options);
+		}
 
-			var coverImage = PalasoImage.FromFile(srcFilePath);
-			coverImage.Image = ImageUtils.ResizeImageIfNecessary(new Size(200, 200), coverImage.Image);
-			var destFilePath = Path.Combine(book.StoragePageFolder, coverImageName);
-			ImageUtils.SaveAsTopQualityJpeg(coverImage.Image, destFilePath);
+		private static bool CreateThumbnailOfCoverImage(Book.Book book, HtmlThumbNailer.ThumbnailOptions options, Action<Image> callback = null)
+		{
+			var imageSrc = book.GetCoverImagePath();
+			if (string.IsNullOrEmpty(imageSrc) || (Path.GetFileName(imageSrc) == "placeHolder.png" && options.FileName != "thumbnail.png"))
+			{
+				Debug.WriteLine(book.StoragePageFolder + " does not have a cover image.");
+				return false;
+			}
+			var srcFilePath = Path.Combine(book.StoragePageFolder, imageSrc);
+			var size = Math.Max(options.Width, options.Height);
+			var destFilePath = Path.Combine(book.StoragePageFolder, options.FileName);
+			using (var coverImage = PalasoImage.FromFile(srcFilePath))
+			{
+				coverImage.Image = ImageUtils.ResizeImageIfNecessary(new Size(size, size), coverImage.Image);
+				switch(Path.GetExtension(destFilePath).ToLowerInvariant())
+				{
+				case ".jpg":
+				case ".jpeg":
+					ImageUtils.SaveAsTopQualityJpeg(coverImage.Image, destFilePath);
+					break;
+				default:
+					if (!ImageUtils.IsIndexedAndOpaque(coverImage.Image))
+						coverImage.Image = MakeImageOpaque(coverImage.Image, book.GetCoverColor());
+					PalasoImage.SaveImageRobustly(coverImage, destFilePath);
+					break;
+				}
+				if (callback != null)
+					callback(coverImage.Image.Clone() as Image);	// don't leave GC to chance
+			}
+			return true;
+		}
+
+		private static Image MakeImageOpaque(Image source, string coverColorString)
+		{
+			var target = new Bitmap(source.Width, source.Height);
+			Color coverColor;
+			ImageUtils.TryCssColorFromString(coverColorString, out coverColor);
+			ImageUtils.DrawImageWithOpaqueBackground(source, target, coverColor);
+			return target;
 		}
 
 		/// <summary>
