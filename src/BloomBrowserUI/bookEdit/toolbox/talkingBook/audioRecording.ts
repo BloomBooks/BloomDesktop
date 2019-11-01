@@ -3445,6 +3445,13 @@ export default class AudioRecording {
     }
 
     private renderImportRecordingButton(): void {
+        const container = document.querySelector(
+            "#import-recording-button-container"
+        );
+        if (!container) {
+            // Won't exist for unit tests
+            return;
+        }
         ReactDOM.render(
             React.createElement(
                 BloomButton,
@@ -3460,7 +3467,7 @@ export default class AudioRecording {
                 },
                 "Import Recording"
             ),
-            document.querySelector("#import-recording-button-container")
+            container
         );
     }
 
