@@ -854,6 +854,9 @@ export default class StyleEditor {
                 return;
             }
         }
+        if (this._previousBox != null) {
+            StyleEditor.CleanupElement(this._previousBox);
+        }
 
         let styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName) {
@@ -869,9 +872,6 @@ export default class StyleEditor {
         });
         this.xmatterMode = IsPageXMatter($(targetBox));
 
-        if (this._previousBox != null) {
-            StyleEditor.CleanupElement(this._previousBox);
-        }
         this._previousBox = targetBox;
 
         $("#format-toolbar").remove(); // in case there's still one somewhere else

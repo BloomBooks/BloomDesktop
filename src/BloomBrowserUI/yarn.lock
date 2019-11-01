@@ -3860,7 +3860,7 @@ combined-stream@^1.0.6:
   dependencies:
     delayed-stream "~1.0.0"
 
-comicaljs@^0.1.7:
+comicaljs@^0.1.6:
   version "0.1.13"
   resolved "https://registry.yarnpkg.com/comicaljs/-/comicaljs-0.1.13.tgz#a1452d0132ed6df089de94b411e6b9658cb56082"
   integrity sha512-jhhPVGUczcUmyU+nZRjUUK/YrB9urd5RxwQVfBXZdjqfmJ5qzAjFzmztIiADHpf8aocWM0TEXRNUtHXBedQ90w==
