@@ -76,6 +76,13 @@ export class TextOverPictureManager {
         return true;
     }
 
+    public turnOnHidingImageButtons() {
+        const imageContainers: HTMLElement[] = Array.from(
+            document.getElementsByClassName("bloom-imageContainer") as any
+        );
+        imageContainers.forEach(e => e.classList.add("bloom-hideImageButtons"));
+    }
+
     public turnOnBubbleEditing(): void {
         if (this.isCalloutEditingOn === true) {
             return; // Already on. No work needs to be done
@@ -93,9 +100,9 @@ export class TextOverPictureManager {
             }
         });
 
-        Array.from(
-            document.getElementsByClassName("bloom-imageContainer")
-        ).forEach(e => e.classList.add("bloom-hideImageButtons"));
+        const imageContainers: HTMLElement[] = Array.from(
+            document.getElementsByClassName("bloom-imageContainer") as any
+        );
         // todo: select the right one...in particular, currently we just select the first one.
         // This is reasonable when just coming to the page, and when we add a new TOP,
         // we make the new one the first in its parent, so with only one image container
@@ -103,8 +110,8 @@ export class TextOverPictureManager {
         // image container, I don't think the new TOP box will get selected if it's not on
         // the first image.
         // todo: make sure comical is turned on for the right parent, in case there's more than one image on the page?
-        const textOverPictureElems = document.getElementsByClassName(
-            "bloom-textOverPicture"
+        const textOverPictureElems: HTMLElement[] = Array.from(
+            document.getElementsByClassName("bloom-textOverPicture") as any
         );
         if (textOverPictureElems.length > 0) {
             this.activeElement = textOverPictureElems[0] as HTMLElement;
@@ -112,9 +119,7 @@ export class TextOverPictureManager {
                 "bloom-editable bloom-visibility-code-on"
             )[0] as HTMLElement;
             editable.focus();
-            Comical.convertBubbleJsonToCanvas(
-                this.activeElement!.parentElement!
-            );
+            Comical.startEditing(imageContainers);
             Comical.activateElement(this.activeElement);
             Array.from(
                 document.getElementsByClassName("bloom-editable")
@@ -198,6 +203,12 @@ export class TextOverPictureManager {
         Comical.activateElement(this.activeElement);
     }
 
+    public turnOffHidingImageButtons() {
+        Array.from(
+            document.getElementsByClassName("bloom-hideImageButtons")
+        ).forEach(e => e.classList.remove("bloom-hideImageButtons"));
+    }
+
     public turnOffBubbleEditing(): void {
         if (this.isCalloutEditingOn === false) {
             return; // Already off. No work needs to be done.
@@ -205,14 +216,9 @@ export class TextOverPictureManager {
         this.isCalloutEditingOn = false;
 
         Comical.setActiveBubbleListener(undefined);
+        Comical.stopEditing();
 
-        const canvas = document.getElementsByClassName("comical-editing")[0];
-        if (canvas && canvas.parentElement) {
-            Comical.convertCanvasToSvgImg(canvas.parentElement as HTMLElement);
-        }
-        Array.from(
-            document.getElementsByClassName("bloom-hideImageButtons")
-        ).forEach(e => e.classList.remove("bloom-hideImageButtons"));
+        this.turnOffHidingImageButtons();
 
         // Clean up event listeners that we no longer need
         Array.from(document.getElementsByClassName("bloom-editable")).forEach(
@@ -426,27 +432,11 @@ export class TextOverPictureManager {
                         kComicalGeneratedClass
                     ).length > 0;
 
-                // ENHANCE: Check if it works after multiple image containers is implemented.
-                //     I think you may want to check this: textElement.parentElement.getElementsByClassName("comical-editing").length > 0
-                //     (But that code is not tested)
-                const wasCalloutEditingPreviouslyOn = this.isCalloutEditingOn;
-
-                if (wasComicalModified && !wasCalloutEditingPreviouslyOn) {
-                    // Should be turned on before the last textOverPicture element is deleted.
-                    // (Because turnOnBubbleEditing() skips a bunch of Comical logic if there are no textOverPicture elements)
-                    this.turnOnBubbleEditing();
-                }
-
                 const parent = textElement.parentElement;
                 parent.removeChild(textElement);
 
                 if (wasComicalModified) {
                     Comical.update(parent);
-
-                    // Restore back to previous state
-                    if (!wasCalloutEditingPreviouslyOn) {
-                        this.turnOffBubbleEditing(); // Updates the SVG with the new appearance (with the relevant bubble fill/outline delete)
-                    }
                 }
 
                 // Check if we're deleting the active bubble. If so, gotta clean up the state.
@@ -457,43 +447,51 @@ export class TextOverPictureManager {
         }
     }
 
-    private makeTOPBoxDraggableAndClickable(
-        thisTOPBox: JQuery,
+    private makeTOPBoxesDraggableAndClickable(
+        thisTOPBoxes: JQuery,
         scale: number
     ): void {
-        const image = this.getImageContainer(thisTOPBox);
-        const imagePos = image[0].getBoundingClientRect();
-        const wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
-        // Containment, drag and stop work when scaled (zoomed) as long as the page has been saved since the zoom
-        // factor was last changed. Therefore we force reconstructing the page
-        // in the EditingView.Zoom setter (in C#).
-        thisTOPBox.draggable({
-            // adjust containment by scaling
-            containment: [
-                imagePos.left,
-                imagePos.top,
-                imagePos.left + imagePos.width - wrapperBoxRectangle.width,
-                imagePos.top + imagePos.height - wrapperBoxRectangle.height
-            ],
-            drag: (event, ui) => {
-                ui.helper.children(".bloom-editable").blur();
-                ui.position.top = ui.position.top / scale;
-                ui.position.left = ui.position.left / scale;
-            },
-            handle: ".bloom-dragHandleTOP",
-            stop: (event, ui) => {
-                const target = event.target;
-                if (target) {
-                    TextOverPictureManager.calculatePercentagesAndFixTextboxPosition(
-                        $(target)
-                    );
+        thisTOPBoxes.each((index, element) => {
+            const thisTOPBox = $(element);
+            const image = this.getImageContainer(thisTOPBox);
+            const imagePos = image[0].getBoundingClientRect();
+            const wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
+            // Containment, drag and stop work when scaled (zoomed) as long as the page has been saved since the zoom
+            // factor was last changed. Therefore we force reconstructing the page
+            // in the EditingView.Zoom setter (in C#).
+            thisTOPBox.draggable({
+                // adjust containment by scaling
+                containment: [
+                    imagePos.left,
+                    imagePos.top,
+                    imagePos.left + imagePos.width - wrapperBoxRectangle.width,
+                    imagePos.top + imagePos.height - wrapperBoxRectangle.height
+                ],
+                drag: (event, ui) => {
+                    ui.helper.children(".bloom-editable").blur();
+                    ui.position.top = ui.position.top / scale;
+                    ui.position.left = ui.position.left / scale;
+                },
+                handle: ".bloom-dragHandleTOP",
+                stop: (event, ui) => {
+                    const target = event.target;
+                    if (target) {
+                        TextOverPictureManager.calculatePercentagesAndFixTextboxPosition(
+                            $(target)
+                        );
+                    }
                 }
-            }
-        });
+            });
 
-        thisTOPBox.find(".bloom-editable").click(function(e) {
-            this.focus();
+            thisTOPBox.find(".bloom-editable").click(function(e) {
+                this.focus();
+            });
         });
+    }
+
+    public initializeTextOverPictureEditing(): void {
+        this.makeTextOverPictureBoxDraggableClickableAndResizable();
+        this.turnOnBubbleEditing();
     }
 
     // Make any added TextOverPictureManager textboxes draggable, clickable, and resizable.
@@ -516,12 +514,12 @@ export class TextOverPictureManager {
                     );
                     // There was a problem where resizing a box messed up its draggable containment,
                     // so now after we resize we go back through making it draggable and clickable again.
-                    this.makeTOPBoxDraggableAndClickable($(target), scale);
+                    this.makeTOPBoxesDraggableAndClickable($(target), scale);
                 }
             }
         });
 
-        this.makeTOPBoxDraggableAndClickable(textOverPictureElems, scale);
+        this.makeTOPBoxesDraggableAndClickable(textOverPictureElems, scale);
     }
 
     private static calculatePercentagesAndFixTextboxPosition(
