@@ -67,7 +67,10 @@ export default class BookMetadataDialog extends React.Component<
                     this.handleCloseModal(false);
                 }}
             >
-                <Dialog className="bookMetadataDialog" open={this.state.isOpen}>
+                <Dialog
+                    className="bloomModalDialog bookMetadataDialog"
+                    open={this.state.isOpen}
+                >
                     <DialogTitle>
                         <LocalizedString
                             l10nKey="PublishTab.BookMetadata"

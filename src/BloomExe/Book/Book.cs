@@ -3137,6 +3137,10 @@ namespace Bloom.Book
 			return Convert.ToBase64String(sha.Hash);
 		}
 
+		/// <summary>
+		/// Gets the complete path to the book's cover image, or null if there isn't one.
+		/// </summary>
+		/// <returns></returns>
 		public string GetCoverImagePath()
 		{
 			if (Storage == null)
