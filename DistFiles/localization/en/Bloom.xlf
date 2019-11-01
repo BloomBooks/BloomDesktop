@@ -933,6 +933,10 @@
         <note>ID: Common.Refresh</note>
         <note>Sense of refreshing a web page.</note>
       </trans-unit>
+      <trans-unit id="Common.Replace">
+        <source xml:lang="en">Replace</source>
+        <note>ID: Common.Replace</note>
+      </trans-unit>
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
@@ -2347,6 +2351,18 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true">
         <source xml:lang="en">Listen to the whole page</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Listen</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
+        <source xml:lang="en">Import Recording</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true">
+        <source xml:lang="en">Replace with new audio?</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true">
+        <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
         <source xml:lang="en">2) Look at the highlighted text</source>

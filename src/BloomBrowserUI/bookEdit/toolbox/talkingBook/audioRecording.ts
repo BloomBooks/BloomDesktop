@@ -34,6 +34,15 @@ import { BloomApi } from "../../../utils/bloomApi";
 import * as toastr from "toastr";
 import WebSocketManager from "../../../utils/WebSocketManager";
 import { ToolBox } from "../toolbox";
+import React = require("react");
+import ReactDOM = require("react-dom");
+import BloomButton from "../../../react_components/bloomButton";
+import {
+    IConfirmDialogProps,
+    DialogResult
+} from "../../../react_components/confirmDialog";
+import ImportIcon from "../../../react_components/icons/ImportIcon";
+import { getEditViewFrameExports } from "../../js/bloomFrames";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -339,13 +348,14 @@ export default class AudioRecording {
             // in whatever mode the user had it in. Since the mode input is disabled, it
             // won't get set to anything else until we select a non-xMatter page.
             this.audioRecordingMode = AudioRecordingMode.Sentence;
+
+            // In the else, this gets called by setRecordingModeCheckbox
+            this.renderImportRecordingButton();
         } else {
             if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
-                this.recordingModeInput.checked = false;
-                this.hideSplitButton();
+                this.setRecordingModeCheckbox(false);
             } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
-                this.recordingModeInput.checked = true;
-                this.displaySplitButton();
+                this.setRecordingModeCheckbox(true);
             } else {
                 console.assert(
                     false,
@@ -832,23 +842,7 @@ export default class AudioRecording {
 
         this.recording = true;
 
-        const pageDocBody = this.getPageDocBody();
-        const audioCurrentElements = pageDocBody!.getElementsByClassName(
-            "ui-audioCurrent"
-        );
-        let currentElement: Element | null = null;
-        if (audioCurrentElements.length > 0) {
-            currentElement = audioCurrentElements.item(0);
-        }
-        let id: string | undefined = undefined;
-        if (currentElement) {
-            if (currentElement.hasAttribute("id")) {
-                id = currentElement.getAttribute("id")!;
-            } else {
-                id = this.createValidXhtmlUniqueId();
-                currentElement.setAttribute("id", id);
-            }
-        }
+        const id = this.getCurrentAudioId();
 
         this.clearAudioSplit();
 
@@ -866,6 +860,27 @@ export default class AudioRecording {
             });
     }
 
+    private getCurrentAudioId(): string | undefined {
+        let id: string | undefined = undefined;
+        const pageDocBody = this.getPageDocBody();
+        const audioCurrentElements = pageDocBody!.getElementsByClassName(
+            "ui-audioCurrent"
+        );
+        let currentElement: Element | null = null;
+        if (audioCurrentElements.length > 0) {
+            currentElement = audioCurrentElements.item(0);
+        }
+        if (currentElement) {
+            if (currentElement.hasAttribute("id")) {
+                id = currentElement.getAttribute("id")!;
+            } else {
+                id = this.createValidXhtmlUniqueId();
+                currentElement.setAttribute("id", id);
+            }
+        }
+        return id;
+    }
+
     private endRecordCurrent(): void {
         if (!this.recording) {
             // will trigger if the button wasn't enabled, so the recording never started
@@ -877,30 +892,37 @@ export default class AudioRecording {
 
         axios
             .post("/bloom/api/audio/endRecord")
-            .then(response => {
-                if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
-                    // When ending a recording for a whole text box, we enter the state for Recording=TextBox,Playback=TextBox.
-                    const allowUpdateOfCurrent = false; // Doesn't make sense to allow switching the current while ending a recording.
-                    this.updateMarkupForCurrentText(
-                        AudioRecordingMode.TextBox,
-                        false
-                    );
-
-                    // Reset the audioRecordingTimings too.
-                    const currentTextBox = this.getCurrentTextBox();
-                    if (currentTextBox) {
-                        currentTextBox.removeAttribute(kEndTimeAttributeName);
-                    }
-                }
-                this.updatePlayerStatus();
-                this.changeStateAndSetExpectedAsync("play");
-            })
+            .then(this.finishNewRecordingOrImport.bind(this))
             .catch(error => {
                 this.changeStateAndSetExpectedAsync("record"); //record failed, so we expect them to try again
-                toastr.error(error.response.statusText);
-                console.log(error.response.statusText);
+                if (error.response) {
+                    toastr.error(error.response.statusText);
+                    console.log(error.response.statusText);
+                } else {
+                    toastr.error(error);
+                    console.log(error);
+                }
                 this.updatePlayerStatus();
             });
+    }
+
+    private finishNewRecordingOrImport() {
+        if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
+            // When ending a recording for a whole text box, we enter the state for Recording=TextBox,Playback=TextBox.
+            const allowUpdateOfCurrent = false; // Doesn't make sense to allow switching the current while ending a recording.
+            this.updateMarkupForCurrentText(
+                AudioRecordingMode.TextBox,
+                allowUpdateOfCurrent
+            );
+
+            // Reset the audioRecordingTimings too.
+            const currentTextBox = this.getCurrentTextBox();
+            if (currentTextBox) {
+                currentTextBox.removeAttribute(kEndTimeAttributeName);
+            }
+        }
+        this.updatePlayerStatus();
+        this.changeStateAndSetExpectedAsync("play");
     }
 
     // Called when we get a duration for a current audio element. Mainly we want it after recording a new one.
@@ -1397,6 +1419,12 @@ export default class AudioRecording {
         this.changeStateAndSetExpectedAsync("record");
     }
 
+    private doesRecordingExistForCurrentSelection(): boolean {
+        return document
+            .getElementById("audio-play")!
+            .classList.contains("enabled");
+    }
+
     // Update the input element (e.g. checkbox) which visually represents the recording mode and updates the textbox markup to reflect the new mode.
     public updateRecordingMode(forceOverwrite: boolean = false) {
         // These two checks are here for paranoia. Normally if the function is disabled
@@ -1410,10 +1438,7 @@ export default class AudioRecording {
         //   If so, these would become invalidated (and deleted down the road when the book's unnecessary files gets cleaned up)
         //   Warn the user if this deletion could happen
         //   We detect this state by relying on the same logic that turns on the Listen button when an audio recording is present
-        if (
-            !forceOverwrite &&
-            document.getElementById("audio-play")!.classList.contains("enabled")
-        ) {
+        if (!forceOverwrite && this.doesRecordingExistForCurrentSelection()) {
             if (
                 this.audioRecordingMode == AudioRecordingMode.TextBox &&
                 this.getCurrentPlaybackMode() == AudioRecordingMode.TextBox
@@ -1425,18 +1450,15 @@ export default class AudioRecording {
 
         const originalRecordingMode = this.audioRecordingMode;
 
-        const checkbox: HTMLInputElement = this.recordingModeInput;
         if (
             this.audioRecordingMode == AudioRecordingMode.Sentence ||
             this.audioRecordingMode == undefined
         ) {
             this.audioRecordingMode = AudioRecordingMode.TextBox;
-            checkbox.checked = true;
-            this.displaySplitButton();
+            this.setRecordingModeCheckbox(true);
         } else {
             this.audioRecordingMode = AudioRecordingMode.Sentence;
-            checkbox.checked = false;
-            this.hideSplitButton();
+            this.setRecordingModeCheckbox(false);
         }
 
         // Update the collection's default recording span mode to the new value
@@ -1501,6 +1523,16 @@ export default class AudioRecording {
         );
 
         // This only set the RECORDING mode. Don't touch the audio-sentence markup, which represents the PLAYBACK mode.
+    }
+
+    private setRecordingModeCheckbox(checked: boolean) {
+        this.recordingModeInput.checked = checked;
+        if (checked) {
+            this.displaySplitButton();
+        } else {
+            this.hideSplitButton();
+        }
+        this.renderImportRecordingButton();
     }
 
     private enableRecordingModeControl() {
@@ -3410,6 +3442,79 @@ export default class AudioRecording {
                 }
             );
         }
+    }
+
+    private renderImportRecordingButton(): void {
+        ReactDOM.render(
+            React.createElement(
+                BloomButton,
+                {
+                    id: "import-recording-button",
+                    iconBeforeText: React.createElement(ImportIcon),
+                    hasText: true,
+                    variant: "text",
+                    size: "small",
+                    enabled: this.recordingModeInput.checked,
+                    l10nKey: "EditTab.Toolbox.TalkingBookTool.ImportRecording",
+                    onClick: this.handleImportRecordingClick.bind(this)
+                },
+                "Import Recording"
+            ),
+            document.querySelector("#import-recording-button-container")
+        );
+    }
+
+    private confirmReplaceProps: IConfirmDialogProps = {
+        title: "Replace with new audio?",
+        titleL10nKey:
+            "EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace",
+        message:
+            "If you import this recording, it will replace all the audio for this text box.",
+        messageL10nKey:
+            "EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage",
+        confirmButtonLabel: "Replace",
+        confirmButtonLabelL10nKey: "Common.Replace",
+        onDialogClose: dialogResult => {
+            if (dialogResult === DialogResult.Confirm) {
+                this.importRecording();
+            }
+        }
+    };
+    private handleImportRecordingClick(): void {
+        if (this.doesRecordingExistForCurrentSelection()) {
+            getEditViewFrameExports().showConfirmDialog(
+                this.confirmReplaceProps
+            );
+        } else {
+            this.importRecording();
+        }
+    }
+
+    private importRecording(): void {
+        BloomApi.get("fileIO/chooseFile", result => {
+            const importPath: string = result.data;
+            if (!importPath) return;
+
+            BloomApi.postJson(
+                "fileIO/getSpecialLocation",
+                "CurrentBookAudioDirectory",
+                resultAudioDir => {
+                    const targetPath =
+                        resultAudioDir.data +
+                        "/" +
+                        this.getCurrentAudioId() +
+                        ".mp3";
+                    BloomApi.postData(
+                        "fileIO/copyFile",
+                        {
+                            from: importPath,
+                            to: targetPath
+                        },
+                        this.finishNewRecordingOrImport.bind(this)
+                    );
+                }
+            );
+        });
     }
 }
 

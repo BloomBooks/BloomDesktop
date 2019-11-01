@@ -1,4 +1,7 @@
-import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
+import {
+    IConfirmDialogProps,
+    showConfirmDialog as doShowConfirmDialog
+} from "../react_components/confirmDialog";
 import "jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 
 export function SayHello() {
@@ -143,3 +146,11 @@ export function canUndo(): string {
 //noinspection JSUnusedGlobalSymbols
 // method called from EditingModel.cs
 // for "templatesJSON", see property EditingModel.GetJsonTemplatePageObject
+
+export function getConfirmDialogContainer(): HTMLElement | null {
+    return document.getElementById("confirm-dialog-container");
+}
+
+export function showConfirmDialog(props: IConfirmDialogProps): void {
+    doShowConfirmDialog(props);
+}
