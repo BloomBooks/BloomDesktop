@@ -6,7 +6,7 @@
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
-        <target xml:lang="mam" state="translated">B'inchanmaja tuj {0}</target>
+        <target xml:lang="mam" state="final">B'inchanmaja tuj {0}</target>
         <alt-trans>
           <target xml:lang="mam">B'inchanmaj tuj {0}</target>
         </alt-trans>
@@ -20,23 +20,23 @@
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="mam" state="translated">Nti' ak'aj ttxolil</target>
+        <target xml:lang="mam" state="final">Nti' ak'aj ttxolil</target>
       </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle" approved="yes">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="mam" state="translated">Ti'j {0}</target>
+        <target xml:lang="mam" state="final">Ti'j {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="mam" state="translated">Jyol ak'aj ttxolil</target>
+        <target xml:lang="mam" state="final">Jyol ak'aj ttxolil</target>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="mam" state="translated">Tqanil ti'j ttxolil aq'untl</target>
+        <target xml:lang="mam" state="final">Tqanil ti'j ttxolil aq'untl</target>
         <alt-trans>
           <target xml:lang="mam">Tz'ib'ajtz tib'aj tu'mel</target>
         </alt-trans>
@@ -44,7 +44,7 @@
       <trans-unit id="Application.AlreadyRunning.General" approved="yes">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.General</note>
-        <target xml:lang="mam" state="translated">In aq'unan juntl ttxolil aq'unb'il xk'utz'ib'. Qa min xkanet tu'na, txaqonktza t-xk'utz'ib'a juntl maj.</target>
+        <target xml:lang="mam" state="final">In aq'unan juntl ttxolil aq'unb'il xk'utz'ib'. Qa min xkanet tu'na, txaqonktza t-xk'utz'ib'a juntl maj.</target>
         <alt-trans>
           <target xml:lang="mam">Nkub' b'inchet juntl maj tu'mel aq'untl. Qa nti' ma kanet yupanxa ex k'antel juntl t-xk'utz'ib'a</target>
         </alt-trans>
@@ -53,7 +53,7 @@
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="mam" state="translated">In aq'unan juntl ttxolil {0}. Qa min xkanet {0} tu'na, txaqonktza t-xk'utz'ib'a juntl maj.</target>
+        <target xml:lang="mam" state="final">In aq'unan juntl ttxolil {0}. Qa min xkanet {0} tu'na, txaqonktza t-xk'utz'ib'a juntl maj.</target>
         <alt-trans>
           <target xml:lang="mam">In aq'unan juntl ttxolil {0}. Qa min xkanet tu'na {0}, txaqonktza t-xk'utz'ib'a juntl maj.</target>
         </alt-trans>
@@ -68,7 +68,7 @@
       <trans-unit id="Application.ProblemStarting.General" approved="yes">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
-        <target xml:lang="mam" state="translated">Mya' b'a'n xb'ant ttzaj qe aq'unb'il xk'utz'ib'. B'ala ilx ti'j tu'n tjaw txaqet t-xk'utz'ib'a juntl maj.</target>
+        <target xml:lang="mam" state="final">Mya' b'a'n xb'ant ttzaj qe aq'unb'il xk'utz'ib'. B'ala ilx ti'j tu'n tjaw txaqet t-xk'utz'ib'a juntl maj.</target>
         <alt-trans>
           <target xml:lang="mam">Nya' b'a'n xb'ant ttzaj qe aq'unb'il xk'utz'ib'. B'ala ilx ti'j tu'n tjaw txaqet t-xk'utz'ib'a juntl maj.</target>
         </alt-trans>
@@ -84,7 +84,7 @@
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="mam" state="translated">Mya' b'a'n  xb'ant ttzaj qe' {0}. B'ala ilx ti'j tu'n tjaw txaqet t-xk'utz'ib'a juntl maj.</target>
+        <target xml:lang="mam" state="final">Mya' b'a'n  xb'ant ttzaj qe' {0}. B'ala ilx ti'j tu'n tjaw txaqet t-xk'utz'ib'a juntl maj.</target>
         <alt-trans>
           <target xml:lang="mam">Nya' b'a'n  xb'ant tzaj qe' {0}. B'a'l ilx ti'j tu'n tk'ant juntl maj t-xk'utz'ib'a</target>
         </alt-trans>
@@ -96,7 +96,7 @@
       <trans-unit id="Application.WaitingFinish.General" approved="yes">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
-        <target xml:lang="mam" state="translated">N-ayet tu'n tb'aj aq'unan juntl aq'unb'il xk'utz'ib'...</target>
+        <target xml:lang="mam" state="final">N-ayet tu'n tb'aj aq'unan juntl aq'unb'il xk'utz'ib'...</target>
         <alt-trans>
           <target xml:lang="mam">N-ayon tu'n tkub'aj juntl b'inchal</target>
         </alt-trans>
@@ -109,7 +109,7 @@
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="mam" state="translated">N-ayet tu'n tb'aj aq'unan juntl {0}...</target>
+        <target xml:lang="mam" state="final">N-ayet tu'n tb'aj aq'unan juntl {0}...</target>
         <alt-trans>
           <target xml:lang="mam">N-ayon tu'n {0} tkub'aj</target>
         </alt-trans>
@@ -117,7 +117,7 @@
       <trans-unit id="Common.AbortButton" approved="yes">
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
-        <target xml:lang="mam" state="translated">&amp;M'in txi' lajet</target>
+        <target xml:lang="mam" state="final">&amp;M'in txi' lajet</target>
         <alt-trans>
           <target xml:lang="mam">&amp;M'in lajet</target>
         </alt-trans>
@@ -129,7 +129,7 @@
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="mam" state="translated">&amp;Kwe'b'il</target>
+        <target xml:lang="mam" state="final">&amp;Kwe'b'il</target>
         <alt-trans>
           <target xml:lang="mam">&amp;Qweb'il</target>
         </alt-trans>
@@ -144,7 +144,7 @@
       <trans-unit id="Common.IgnoreButton" approved="yes">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="mam" state="translated">&amp;Min txi' b'inchet</target>
+        <target xml:lang="mam" state="final">&amp;Min txi' b'inchet</target>
         <alt-trans>
           <target xml:lang="mam">&amp;Min qb'antel</target>
         </alt-trans>
@@ -161,7 +161,7 @@
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="mam" state="translated">Min</target>
+        <target xml:lang="mam" state="final">Min</target>
         <alt-trans>
           <target xml:lang="mam">Mi'n</target>
         </alt-trans>
@@ -172,7 +172,7 @@
       <trans-unit id="Common.NoButton" approved="yes">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
-        <target xml:lang="mam" state="translated">&amp;Min</target>
+        <target xml:lang="mam" state="final">&amp;Min</target>
         <alt-trans>
           <target xml:lang="mam">&amp;Mi'n</target>
         </alt-trans>
@@ -183,7 +183,7 @@
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="mam" state="translated">B'a'n</target>
+        <target xml:lang="mam" state="final">B'a'n</target>
         <alt-trans>
           <target xml:lang="mam">&amp;K'amol
 &amp;Ku'yil</target>
@@ -195,7 +195,7 @@
       <trans-unit id="Common.RetryButton" approved="yes">
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
-        <target xml:lang="mam" state="translated">&amp;Kb'inchetil juntl maj</target>
+        <target xml:lang="mam" state="final">&amp;Kb'inchetil juntl maj</target>
         <alt-trans>
           <target xml:lang="mam">&amp;Qb'el b'inchet juntl maj</target>
         </alt-trans>
@@ -203,7 +203,7 @@
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
-        <target xml:lang="mam" state="translated">B'a'n</target>
+        <target xml:lang="mam" state="final">B'a'n</target>
         <alt-trans>
           <target xml:lang="mam">Ok</target>
         </alt-trans>
@@ -211,7 +211,7 @@
       <trans-unit id="Common.YesButton" approved="yes">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="mam" state="translated">&amp;B'a'n</target>
+        <target xml:lang="mam" state="final">&amp;B'a'n</target>
         <alt-trans>
           <target xml:lang="mam">&amp;Ok</target>
         </alt-trans>
@@ -220,13 +220,13 @@
         <source xml:lang="en">RFC5646 code:</source>
         <note>ID: CustomIdentifierView.betterLabel1</note>
         <note>label describes the code for a custom identifier. Translate only 'code'</note>
-        <target xml:lang="mam" state="translated">Techil tajlal RFC5646:</target>
+        <target xml:lang="mam" state="final">Techil tajlal RFC5646:</target>
       </trans-unit>
       <trans-unit id="CustomIdentifierView.linkLabel1" approved="yes">
         <source xml:lang="en">Read about language identifiers on the web</source>
         <note>ID: CustomIdentifierView.linkLabel1</note>
         <note>text used in the link to a webpage that describes the language identifiers</note>
-        <target xml:lang="mam" state="translated">U'jina nab'il tib'aj qe nchi ka'yin twitz yol tuj chemaj xin</target>
+        <target xml:lang="mam" state="final">U'jina nab'il tib'aj qe nchi ka'yin twitz yol tuj chemaj xin</target>
         <alt-trans>
           <target xml:lang="mam">N-sch'in nab'il tib'aj qe nchi ka'yin twitz yol tuj chemaj xin</target>
         </alt-trans>
@@ -235,18 +235,18 @@
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
-        <target xml:lang="mam" state="translated">{0} Kpol tuj tkub'el tz'is.</target>
+        <target xml:lang="mam" state="final">{0} Kpol tuj tkub'el tz'is.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Param {0} is a file name</note>
-        <target xml:lang="mam" state="translated">{0} Kpol tuj tkub'el tz'is.</target>
+        <target xml:lang="mam" state="final">{0} Kpol tuj tkub'el tz'is.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Confirm Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
-        <target xml:lang="mam" state="translated">Tzi'yb'il tu'n tel
+        <target xml:lang="mam" state="final">Tzi'yb'il tu'n tel
 </target>
         <alt-trans>
           <target xml:lang="mam">Tzi'yb'il tu'n tel
@@ -259,7 +259,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="mam" state="translated">&amp;Mi'n txi' lajet</target>
+        <target xml:lang="mam" state="final">&amp;Mi'n txi' lajet</target>
         <alt-trans>
           <target xml:lang="mam">&amp;Mi'n lajet</target>
         </alt-trans>
@@ -267,7 +267,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn" approved="yes">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="mam" state="translated">&amp;Iq'in el te</target>
+        <target xml:lang="mam" state="final">&amp;Iq'in el te</target>
         <alt-trans>
           <target xml:lang="mam">&amp;Tu'n tel</target>
         </alt-trans>
@@ -276,7 +276,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Found {0} images with names close to “{1}”</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
-        <target xml:lang="mam" state="translated">Ma chi kanet {0} tilb'lal kyuk'il b'ib'aj ch'ima junx chi ka'yin tuk'{1}</target>
+        <target xml:lang="mam" state="final">Ma chi kanet {0} tilb'lal kyuk'il b'ib'aj ch'ima junx chi ka'yin tuk'{1}</target>
         <alt-trans>
           <target xml:lang="mam">Ma chi kanet {0} tilb'lal kyuk'il b'ib'aj ch'ima junx chi kye'yin tuk'{1}</target>
         </alt-trans>
@@ -287,7 +287,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.ArtOfReading" approved="yes">
         <source xml:lang="en">Art Of Reading</source>
         <note>ID: ImageToolbox.ArtOfReading</note>
-        <target xml:lang="mam" state="translated">Tb'anil u'jenj</target>
+        <target xml:lang="mam" state="final">Tb'anil u'jenj</target>
         <alt-trans>
           <target xml:lang="mam">Sch'ib'il tuj tu'melxix</target>
         </alt-trans>
@@ -295,7 +295,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.Camera" approved="yes">
         <source xml:lang="en">Camera</source>
         <note>ID: ImageToolbox.Camera</note>
-        <target xml:lang="mam" state="translated">Q'il tilb'ilal</target>
+        <target xml:lang="mam" state="final">Q'il tilb'ilal</target>
         <alt-trans>
           <target xml:lang="mam">Q'il tib'lal</target>
         </alt-trans>
@@ -304,7 +304,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="mam" state="translated">Tz'ajb'en {0}</target>
+        <target xml:lang="mam" state="final">Tz'ajb'en {0}</target>
         <alt-trans>
           <target xml:lang="mam">Tu'n tajb'en {0}</target>
         </alt-trans>
@@ -312,7 +312,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.Crop" approved="yes">
         <source xml:lang="en">Crop</source>
         <note>ID: ImageToolbox.Crop</note>
-        <target xml:lang="mam" state="translated">K-elel</target>
+        <target xml:lang="mam" state="final">K-elel</target>
         <alt-trans>
           <target xml:lang="mam">K'elel</target>
         </alt-trans>
@@ -329,7 +329,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.DownloadArtOfReading" approved="yes">
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
-        <target xml:lang="mam" state="translated">Tu'n tku'tz aj q'olte Tb'anil U'jenj (Art of Reading)</target>
+        <target xml:lang="mam" state="final">Tu'n tku'tz aj q'olte Tb'anil U'jenj (Art of Reading)</target>
         <alt-trans>
           <target xml:lang="mam">Tu'n tku'tz aj q'olte sch'ib'il tuj tu'melxix (Art of Reading)</target>
         </alt-trans>
@@ -337,13 +337,13 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.EditMetadataLink" approved="yes">
         <source xml:lang="en">Edit...</source>
         <note>ID: ImageToolbox.EditMetadataLink</note>
-        <target xml:lang="mam" state="translated">B'inchb'il te...</target>
+        <target xml:lang="mam" state="final">B'inchb'il te...</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms" approved="yes">
         <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
-        <target xml:lang="mam" state="translated">Tuj swej jawl, tz'ib'an okxa ti' ntjyo'na. Ex b'etz'anxa TOKA.</target>
+        <target xml:lang="mam" state="final">Tuj swej jawl, tz'ib'an okxa ti' ntjyo'na. Ex b'etz'anxa TOKA.</target>
         <alt-trans>
           <target xml:lang="mam">Tuj techil kyaj tb'utx', tz'ib'anxa alkye njyona ti'j. Ex b'etz'anxa TOKA.</target>
         </alt-trans>
@@ -351,7 +351,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
-        <target xml:lang="mam" state="translated">Nak'ub'il aq'unb'il</target>
+        <target xml:lang="mam" state="final">Nak'ub'il aq'unb'il</target>
         <alt-trans>
           <target xml:lang="mam">K'ub'il aq'untl</target>
         </alt-trans>
@@ -363,7 +363,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Choose Picture File</source>
         <note>ID: ImageToolbox.FileChooserTitle</note>
         <note>Title shown for a file chooser dialog brought up by the ImageToolbox</note>
-        <target xml:lang="mam" state="translated">Sak'onktza nak'ub'il aq'unb'il tilb'ilal</target>
+        <target xml:lang="mam" state="final">Sak'onktza nak'ub'il aq'unb'il tilb'ilal</target>
         <alt-trans>
           <target xml:lang="mam">Sak'onqtza nak'ub'il aq'unb'il tilb'ilal</target>
         </alt-trans>
@@ -380,7 +380,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.Galleries" approved="yes">
         <source xml:lang="en">Galleries</source>
         <note>ID: ImageToolbox.Galleries</note>
-        <target xml:lang="mam" state="translated">Yek'b'il ti'chaq</target>
+        <target xml:lang="mam" state="final">Yek'b'il ti'chaq</target>
         <alt-trans>
           <target xml:lang="mam">Tenb'il ti'chaq</target>
         </alt-trans>
@@ -388,7 +388,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.GenericGettingImageProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
         <note>ID: ImageToolbox.GenericGettingImageProblem</note>
-        <target xml:lang="mam" state="translated">Najsama nti' ma b'ant tuj tu'mel aj qa'nb'itz tilb'ilal.</target>
+        <target xml:lang="mam" state="final">Najsama nti' ma b'ant tuj tu'mel aj qa'nb'itz tilb'ilal.</target>
         <alt-trans>
           <target xml:lang="mam">Najsama nti' ma b'ant tuj tu'mel aj qa'nb'itz tib'lal.</target>
         </alt-trans>
@@ -396,7 +396,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.GenericProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
-        <target xml:lang="mam" state="translated">Najsama at nti' ma b'ant tuj tu'melxix tuj K'ub'il B'inchb'il Tilb'ilal (ImageToolbox)</target>
+        <target xml:lang="mam" state="final">Najsama at nti' ma b'ant tuj tu'melxix tuj K'ub'il B'inchb'il Tilb'ilal (ImageToolbox)</target>
         <alt-trans>
           <target xml:lang="mam">Najsama at nti' ma b'ant tuj tu'melxix tuj tkub'il makb'il kye tib'lal (ImageToolbox)</target>
         </alt-trans>
@@ -404,7 +404,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.GetPicture" approved="yes">
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
-        <target xml:lang="mam" state="translated">K'amol tib'lal</target>
+        <target xml:lang="mam" state="final">K'amol tib'lal</target>
         <alt-trans>
           <target xml:lang="mam">Q'ol tib'lal</target>
         </alt-trans>
@@ -412,7 +412,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.ImageGalleries" approved="yes">
         <source xml:lang="en">Image Galleries</source>
         <note>ID: ImageToolbox.ImageGalleries</note>
-        <target xml:lang="mam" state="translated">Qe' yek'b'il tilb'ilal</target>
+        <target xml:lang="mam" state="final">Qe' yek'b'il tilb'ilal</target>
         <alt-trans>
           <target xml:lang="mam">Qe' yek'b'il tib'lal</target>
         </alt-trans>
@@ -423,7 +423,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle" approved="yes">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="mam" state="translated">K'ub'il B'inchb'il Tilb'ilal (ImageToolbox)</target>
+        <target xml:lang="mam" state="final">K'ub'il B'inchb'il Tilb'ilal (ImageToolbox)</target>
         <alt-trans>
           <target xml:lang="mam">Tkub'il qe makb'il kye tib'lal (ImageToolbox)</target>
         </alt-trans>
@@ -431,7 +431,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.InstallArtOfReading" approved="yes">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
         <note>ID: ImageToolbox.InstallArtOfReading</note>
-        <target xml:lang="mam" state="translated">B'inchan okxa aq'unb'il xk'utz'ib' Tb’anil U’jenj (Art of Reading), (b'ala nim amb'il taj)</target>
+        <target xml:lang="mam" state="final">B'inchan okxa aq'unb'il xk'utz'ib' Tb’anil U’jenj (Art of Reading), (b'ala nim amb'il taj)</target>
         <alt-trans>
           <target xml:lang="mam">Tu'n tok kyaqil kajb'lal ti'j sch'ib'il tuj tu'melxix (Art of Reading), (kxel ti'n amb'il)</target>
         </alt-trans>
@@ -440,7 +440,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Found {0} images</source>
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
-        <target xml:lang="mam" state="translated">Ma chi kanet {0} tilb'ilal</target>
+        <target xml:lang="mam" state="final">Ma chi kanet {0} tilb'ilal</target>
         <alt-trans>
           <target xml:lang="mam">Ma chi kanet {0} tib'lal</target>
         </alt-trans>
@@ -449,7 +449,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space): Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</note>
-        <target xml:lang="mam" state="translated">¿Tojtzqi'npeya qa at juntl ak'aj tu'mel chmob'il lu, n-onin tu'n tkanet tuj yol árabe, bengalí, chino, inglés, francés, indonesio, hindi, portugés, tyol mos, tailandés moqa suajili? Nti' twi' ex b'a'n tu'n tku'tz tiq'ina.</target>
+        <target xml:lang="mam" state="final">¿Tojtzqi'npeya qa at juntl ak'aj tu'mel chmob'il lu, n-onin tu'n tkanet tuj yol árabe, bengalí, chino, inglés, francés, indonesio, hindi, portugés, tyol mos, tailandés moqa suajili? Nti' twi' ex b'a'n tu'n tku'tz tiq'ina.</target>
         <alt-trans>
           <target xml:lang="mam">¿Tzqi'npeya qa at juntl ak'aj tu'mel chmob'il, n-onin tu'n tkanet tuj yol árabe, bengalí, chino, inglés, francés, indonesio, hindi, portugés, tyol mos, tailandés, o suajili? Nti' twi' ex b'a'n tu'n tku'tztina.</target>
         </alt-trans>
@@ -457,7 +457,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.NoArtOfReading" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
-        <target xml:lang="mam" state="translated">Tuj xk'utz'ib' lu, niku'j minti' atokx  yek'b'il ti'xti te Tb’anil U’jenj (Art of Reading).</target>
+        <target xml:lang="mam" state="final">Tuj xk'utz'ib' lu, niku'j minti' atokx  yek'b'il ti'xti te Tb’anil U’jenj (Art of Reading).</target>
         <alt-trans>
           <target xml:lang="mam">Nti' tuj xk'utz'ib' aj q'ob'il te ttenb'il tib'lal te 'sch'ib'il tuj tu'melxix' (Art of Reading).</target>
         </alt-trans>
@@ -465,7 +465,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.NoGalleries" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
         <note>ID: ImageToolbox.NoGalleries</note>
-        <target xml:lang="mam" state="translated">Naku'j na'x tok ti'j xk'utz'ib' lu' aqe' q'ol ttenb'il ti'chaq.</target>
+        <target xml:lang="mam" state="final">Naku'j na'x tok ti'j xk'utz'ib' lu' aqe' q'ol ttenb'il ti'chaq.</target>
         <alt-trans>
           <target xml:lang="mam">Na'x tok ti'j xk'utz'ib' lu' qe q'ol ttenb'il ti'chaq.</target>
         </alt-trans>
@@ -476,7 +476,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
         <note>ID: ImageToolbox.NoMatchingImages</note>
-        <target xml:lang="mam" state="translated">Nti' ma chi kanet tilb'ilal junx chi ka'yin</target>
+        <target xml:lang="mam" state="final">Nti' ma chi kanet tilb'ilal junx chi ka'yin</target>
         <alt-trans>
           <target xml:lang="mam">Nti' ma chi let qe tib'lal junx ke'yin</target>
         </alt-trans>
@@ -485,7 +485,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">picture files</source>
         <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
-        <target xml:lang="mam" state="translated">k'ub'il tilb'ilal</target>
+        <target xml:lang="mam" state="final">k'ub'il tilb'ilal</target>
         <alt-trans>
           <target xml:lang="mam">k'ub'il tib'lal</target>
         </alt-trans>
@@ -493,7 +493,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice" approved="yes">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="mam" state="translated">Nti' ma jyet tilb'ilal</target>
+        <target xml:lang="mam" state="final">Nti' ma jyet tilb'ilal</target>
         <alt-trans>
           <target xml:lang="mam">Nti' ma tzaj q'o'n tib'lal</target>
         </alt-trans>
@@ -501,7 +501,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.ProblemLoadingImage" approved="yes">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <note>ID: ImageToolbox.ProblemLoadingImage</note>
-        <target xml:lang="mam" state="translated">Najsama, nti' ma yek'in tilb'ilal.</target>
+        <target xml:lang="mam" state="final">Najsama, nti' ma yek'in tilb'ilal.</target>
         <alt-trans>
           <target xml:lang="mam">Najsama nti' ma yek'at tib'lal.</target>
         </alt-trans>
@@ -509,7 +509,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.PromptForMissingMetadata" approved="yes">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
-        <target xml:lang="mam" state="translated">Nti' b'a'n tu'n tilb'ilal:\n\nAlqu'n xb'anta?/\nAlkye b'a'n tz'aq'unan ti'j?</target>
+        <target xml:lang="mam" state="final">Nti' b'a'n tu'n tilb'ilal:\n\nAlqu'n xb'anta?/\nAlkye b'a'n tz'aq'unan ti'j?</target>
         <alt-trans>
           <target xml:lang="mam">Nti' b'a'n tu'n tilb'ilal:\n\n¿Alqu'n xb'anta?/\nAlkye b'a'n tz'aq'unan ti'j?</target>
         </alt-trans>
@@ -520,7 +520,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.Scanner" approved="yes">
         <source xml:lang="en">Scanner</source>
         <note>ID: ImageToolbox.Scanner</note>
-        <target xml:lang="mam" state="translated">Skaner</target>
+        <target xml:lang="mam" state="final">Skaner</target>
         <alt-trans>
           <target xml:lang="mam">Q'il tib'lal tujxix</target>
         </alt-trans>
@@ -528,7 +528,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.SearchArtOfReading" approved="yes">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
-        <target xml:lang="mam" state="translated">Joyb'il yek'b'il ti'chaq tuj Tb’anil u’jenj (Art of Reading)</target>
+        <target xml:lang="mam" state="final">Joyb'il yek'b'il ti'chaq tuj Tb’anil u’jenj (Art of Reading)</target>
         <alt-trans>
           <target xml:lang="mam">Joyb'il ttenb'il sch'ib'il tuj tu'melxix (Art of Reading)</target>
         </alt-trans>
@@ -537,7 +537,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">The search box is currently set to {0}</source>
         <note>ID: ImageToolbox.SearchLanguage</note>
         <note>The {0} will be replaced by the name of the language used in the searches.</note>
-        <target xml:lang="mam" state="translated">Ja'la, aju swej te joyb'il, at tuj {0}</target>
+        <target xml:lang="mam" state="final">Ja'la, aju swej te joyb'il, at tuj {0}</target>
         <alt-trans>
           <target xml:lang="mam">Aj techil kyaj tb'utx' ja'l ate tuj {0}</target>
         </alt-trans>
@@ -545,7 +545,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ImageToolbox.SetUpMetadataLink" approved="yes">
         <source xml:lang="en">Set up metadata...</source>
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
-        <target xml:lang="mam" state="translated">Nuk'b'il tqanil aq'untl...</target>
+        <target xml:lang="mam" state="final">Nuk'b'il tqanil aq'untl...</target>
         <alt-trans>
           <target xml:lang="mam">Q'ol tumlal aq'unb'il metadatos...</target>
         </alt-trans>
@@ -557,13 +557,13 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Purpose:</source>
         <note>ID: IpaIdentifierView.betterLabel1</note>
         <note>In writing system setup when IPA special option is selected: Label for the purpose combo box</note>
-        <target xml:lang="mam" state="translated">Tajb'il:</target>
+        <target xml:lang="mam" state="final">Tajb'il:</target>
       </trans-unit>
       <trans-unit id="IpaIdentifierView.linkLabel1" approved="yes">
         <source xml:lang="en">Read about IPA transcription on the web</source>
         <note>ID: IpaIdentifierView.linkLabel1</note>
         <note>In writing system setup when IPA special option is selected: text used in link to a webpage describing IPA transcription</note>
-        <target xml:lang="mam" state="translated">Sch'ina tib'aj tu'mel ttz'ib'anjtz tu'jil AFI (Alfabeto Fonético Internacional) tuj chemaj xin</target>
+        <target xml:lang="mam" state="final">Sch'ina tib'aj tu'mel ttz'ib'anjtz tu'jil AFI (Alfabeto Fonético Internacional) tuj chemaj xin</target>
         <alt-trans>
           <target xml:lang="mam">Sch'ina tib'aj tu'mel tz'ib'ajtz tuj AFI (Alfabeto Fonético Internacional) tuj chemaj xin</target>
         </alt-trans>
@@ -574,7 +574,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
-        <target xml:lang="mam" state="translated">Ju'ntlqe' b'ib'aj</target>
+        <target xml:lang="mam" state="final">Ju'ntlqe' b'ib'aj</target>
         <alt-trans>
           <target xml:lang="mam">Ju'ntlqe b'ib'aj</target>
         </alt-trans>
@@ -582,7 +582,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2" approved="yes">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
-        <target xml:lang="mam" state="translated">Toj txolb'il lu' ilxix ti'ij tu'n kyokx kykyaqil qe yol te ISO-639, kyuk'ix kykyaqil qe b'ib'aj b'a'n tu'n kyokx ex ojtzqi'nqe tu'n ethnologue.com.\n\nQa ilxixi ti'j, b'a'n tu'n tajb'lan tu'mel "Yolb'il nti' tuj txolb'il", a tu'mel lu' tu'n tjaw sak'et ja'la.</target>
+        <target xml:lang="mam" state="final">Toj txolb'il lu' ilxix ti'ij tu'n kyokx kykyaqil qe yol te ISO-639, kyuk'ix kykyaqil qe b'ib'aj b'a'n tu'n kyokx ex ojtzqi'nqe tu'n ethnologue.com.\n\nQa ilxixi ti'j, b'a'n tu'n tajb'lan tu'mel "Yolb'il nti' tuj txolb'il", a tu'mel lu' tu'n tjaw sak'et ja'la.</target>
         <alt-trans>
           <target xml:lang="mam">Aj txolb'il lu' ilxix ti'ij tu'n kyokx kyaqil qe yolb'il te ISO-639, kyuk'ix kyaqil qe b'ib'aj b'a'n tu'n kyokx ex tzqi'nqe tu'n ethnologue.com.\n\nQa ilxixi ti'j, b'a'n tu'n tajb'lan tu'mel "Yolb'il nti' tuj txolb'il", a tu'mel lu' tu'n tjaw saq'et ja'lo.</target>
         </alt-trans>
@@ -591,12 +591,12 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Ethnologue.com</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
-        <target xml:lang="mam" state="translated">Ethnologue.com</target>
+        <target xml:lang="mam" state="final">Ethnologue.com</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="mam" state="translated">Techil tajlal yol 639-3 ex tza'n tu'n t-xi' qanet ak'aj</target>
+        <target xml:lang="mam" state="final">Techil tajlal yol 639-3 ex tza'n tu'n t-xi' qanet ak'aj</target>
         <alt-trans>
           <target xml:lang="mam">Techil tajlal yol 639-3 ex tza'n tu'n t-xi' qa'net ak'aj</target>
         </alt-trans>
@@ -607,7 +607,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle" approved="yes">
         <source xml:lang="en">About The ISO Language Registry</source>
         <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
-        <target xml:lang="mam" state="translated">Ti'j Nuk'b'il Yol ISO</target>
+        <target xml:lang="mam" state="final">Ti'j Nuk'b'il Yol ISO</target>
         <alt-trans>
           <target xml:lang="mam">Q'il tu'mel qe yol ISO</target>
         </alt-trans>
@@ -615,13 +615,13 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="LanguageLookup.CodeHeader" approved="yes">
         <source xml:lang="en">Code</source>
         <note>ID: LanguageLookup.CodeHeader</note>
-        <target xml:lang="mam" state="translated">Techil tajlal</target>
+        <target xml:lang="mam" state="final">Techil tajlal</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryCount" approved="yes">
         <source xml:lang="en">{0} Countries</source>
         <note>ID: LanguageLookup.CountryCount</note>
         <note>Shown when there are multiple countries and it is just confusing to list them all. {0} is a count of countries.</note>
-        <target xml:lang="mam" state="translated">{0} Nimaq Tnam</target>
+        <target xml:lang="mam" state="final">{0} Nimaq Tnam</target>
         <alt-trans>
           <target xml:lang="mam">{0} Twi' qe nintz tnom</target>
         </alt-trans>
@@ -629,7 +629,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="LanguageLookup.CountryHeader" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: LanguageLookup.CountryHeader</note>
-        <target xml:lang="mam" state="translated">Nin Tnam</target>
+        <target xml:lang="mam" state="final">Nin Tnam</target>
         <alt-trans>
           <target xml:lang="mam">Twi' nintz tnom</target>
         </alt-trans>
@@ -637,7 +637,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel" approved="yes">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
         <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
-        <target xml:lang="mam" state="translated">Tza'lu b'a'n tu'n ttx'ixpet tza'n kq'ancha'lil tb'i yol:</target>
+        <target xml:lang="mam" state="final">Tza'lu b'a'n tu'n ttx'ixpet tza'n kq'ancha'lil tb'i yol:</target>
         <alt-trans>
           <target xml:lang="mam">B'a'n tu'n ch'ixpet tzalu', tza'n kxel yek'it tb'i yol:</target>
         </alt-trans>
@@ -648,7 +648,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle" approved="yes">
         <source xml:lang="en">Lookup Language Code...</source>
         <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
-        <target xml:lang="mam" state="translated">Jyol techil tajlal yol...</target>
+        <target xml:lang="mam" state="final">Jyol techil tajlal yol...</target>
         <alt-trans>
           <target xml:lang="mam">Jyob'itz techil tajlal yol...</target>
         </alt-trans>
@@ -656,22 +656,22 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="LanguageLookup.PrimaryNameHeader" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: LanguageLookup.PrimaryNameHeader</note>
-        <target xml:lang="mam" state="translated">B'ib'aj</target>
+        <target xml:lang="mam" state="final">B'ib'aj</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel" approved="yes">
         <source xml:lang="en">Show regional dialects</source>
         <note>ID: LanguageLookup.ShowRegionalDialectsLabel</note>
-        <target xml:lang="mam" state="translated">Yek'b'il tq'ab' yol</target>
+        <target xml:lang="mam" state="final">Yek'b'il tq'ab' yol</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.UnlistedLanguage" approved="yes">
         <source xml:lang="en">Unlisted Language</source>
         <note>ID: LanguageLookup.UnlistedLanguage</note>
-        <target xml:lang="mam" state="translated">Yolb'il nti' tuj txolb'il</target>
+        <target xml:lang="mam" state="final">Yolb'il nti' tuj txolb'il</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._cannotFindLanguageLink" approved="yes">
         <source xml:lang="en">Can't find your language?</source>
         <note>ID: LanguageLookup._cannotFindLanguageLink</note>
-        <target xml:lang="mam" state="translated">Nti' nkanet tyola?</target>
+        <target xml:lang="mam" state="final">Nti' nkanet tyola?</target>
         <alt-trans>
           <target xml:lang="mam">Nti' nkanet tyolb'ila?</target>
         </alt-trans>
@@ -682,7 +682,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLabel" approved="yes">
         <source xml:lang="en">my script variant label</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLabel</note>
-        <target xml:lang="mam" state="translated">juntl tu'mel ttz'ib'anjtz ntech tz'ib'a</target>
+        <target xml:lang="mam" state="final">juntl tu'mel ttz'ib'anjtz ntech tz'ib'a</target>
         <alt-trans>
           <target xml:lang="mam">juntl tu'mel tz'ib'ajtz n-techila</target>
         </alt-trans>
@@ -693,7 +693,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLink" approved="yes">
         <source xml:lang="en">Script and Variant</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLink</note>
-        <target xml:lang="mam" state="translated">Ttz'ib'anjtz ex juntl tu'mel</target>
+        <target xml:lang="mam" state="final">Ttz'ib'anjtz ex juntl tu'mel</target>
         <alt-trans>
           <target xml:lang="mam">Tz'ib'ajtz ex juntl tu'mel</target>
         </alt-trans>
@@ -701,7 +701,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MemoryWarning" approved="yes">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
         <note>ID: MemoryWarning</note>
-        <target xml:lang="mam" state="translated">Nya' nim amb'il tuj {0} tu'n t-xi' k'u'yit ex ja'ku tz'el tipumal ex ja'ku tzaj txqantl il. B'a'n tu'n tkub' yupit ex tu'n tjaq txaqet juntl maj, qa ilxix ti'j.</target>
+        <target xml:lang="mam" state="final">Nya' nim amb'il tuj {0} tu'n t-xi' k'u'yit ex ja'ku tz'el tipumal ex ja'ku tzaj txqantl il. B'a'n tu'n tkub' yupit ex tu'n tjaq txaqet juntl maj, qa ilxix ti'j.</target>
         <alt-trans>
           <target xml:lang="mam">{0} Nya' nim amb'il tuj tnab'il xk'utz'ib' tu'n t-xi' k'u't ex ja'k tz'ajtz tipun ex ja'k tzaj txqantl il. B'a'n tu'n tlamet ex tu'n tk'ant juntl maj xk'utz'ib', qa ilxix ti'j.</target>
         </alt-trans>
@@ -709,7 +709,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataDisplay.Creator" approved="yes">
         <source xml:lang="en">Creator: {0}</source>
         <note>ID: MetadataDisplay.Creator</note>
-        <target xml:lang="mam" state="translated">Ajb'inchal: {0}</target>
+        <target xml:lang="mam" state="final">Ajb'inchal: {0}</target>
         <alt-trans>
           <target xml:lang="mam">Ajb'inchal:{0}</target>
         </alt-trans>
@@ -720,7 +720,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataDisplay.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataDisplay.CreatorLabel</note>
-        <target xml:lang="mam" state="translated">Ajb'inchal</target>
+        <target xml:lang="mam" state="final">Ajb'inchal</target>
         <alt-trans>
           <target xml:lang="mam">Aj b'inchal</target>
         </alt-trans>
@@ -728,7 +728,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataDisplay.LicenseInfo" approved="yes">
         <source xml:lang="en">License Info</source>
         <note>ID: MetadataDisplay.LicenseInfo</note>
-        <target xml:lang="mam" state="translated">Tqanil ti'j tu'jil</target>
+        <target xml:lang="mam" state="final">Tqanil ti'j tu'jil</target>
         <alt-trans>
           <target xml:lang="mam">B'ib'itz amb'il tu'jil</target>
         </alt-trans>
@@ -737,7 +737,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="mam" state="translated">Ilxix ti'j tu'n mi'n tz'el naj tb'i ajb'inchal ex aju u'j kyuwsal kye b'inchal, qe' ajb'inchal tilb'ilal ex txqantl.</target>
+        <target xml:lang="mam" state="final">Ilxix ti'j tu'n mi'n tz'el naj tb'i ajb'inchal ex aju u'j kyuwsal kye b'inchal, qe' ajb'inchal tilb'ilal ex txqantl.</target>
         <alt-trans>
           <target xml:lang="mam">Ilxix ti'j tu'n mi'n tz'el tb'i ajb'inchal ex u'j kyuwsal kye b'inchal, qe ajb'inchal tib'lal, txqantl.</target>
         </alt-trans>
@@ -752,7 +752,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">You are free to make commercial use of this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="mam" state="translated">B'a'n tu'n t-xi' k'ayit b'inchaj lu.</target>
+        <target xml:lang="mam" state="final">B'a'n tu'n t-xi' k'ayit b'inchaj lu.</target>
         <alt-trans>
           <target xml:lang="mam">B'a'n tu'n t-xi' k'ayit b'inchb'il lu'.</target>
         </alt-trans>
@@ -761,7 +761,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">You may adapt and add to this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="mam" state="translated">B'a'n tu'n tok b'inchet ex tz'aqset b'inchaj lu.</target>
+        <target xml:lang="mam" state="final">B'a'n tu'n tok b'inchet ex tz'aqset b'inchaj lu.</target>
         <alt-trans>
           <target xml:lang="mam">B'a'n tu'n tmeltz'aj exs tu'n tz'aqjset b'inchb'il lu'.</target>
         </alt-trans>
@@ -770,7 +770,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="mam" state="translated">B'a'n tu'n tok b'inchet ex tz'aqset b'inchaj lu, noqxtzan ok tjapun b'aj aq'untl jaku txi' tsipina b'inchaj lu, noq aju ilti'j tu'n tajb'lan jun u'j te tziyb'il iky tza'n lu, moqa ch'ima tza'n lu.</target>
+        <target xml:lang="mam" state="final">B'a'n tu'n tok b'inchet ex tz'aqset b'inchaj lu, noqxtzan ok tjapun b'aj aq'untl jaku txi' tsipina b'inchaj lu, noq aju ilti'j tu'n tajb'lan jun u'j te tziyb'il iky tza'n lu, moqa ch'ima tza'n lu.</target>
         <alt-trans>
           <target xml:lang="mam">B'a'n tu'n tmeltz'aj ex tu'n tz'aqjset b'inchb'il lu', noqxtzan ok japun b'aj aq'untl ilx ti'j tu'n tkyaj nokx jun amb'il aq'nab'itz ikytzan jlu' mo ch'ix ax ke'yin.</target>
         </alt-trans>
@@ -779,7 +779,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="mam" state="translated">Nlayx b'ant ttx'ixpet mo tu'n tok txqantl ti'j b'inchaj qa nti' amb'il ma tzaj q'o'n.</target>
+        <target xml:lang="mam" state="final">Nlayx b'ant ttx'ixpet mo tu'n tok txqantl ti'j b'inchaj qa nti' amb'il ma tzaj q'o'n.</target>
         <alt-trans>
           <target xml:lang="mam">Nlayx tu'n ch'ixpet mo tu'n tok txqantl ti'j b'inchb'il qa nti' amb'il ma tzaj q'o'n.</target>
         </alt-trans>
@@ -788,7 +788,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">You may not use this work for commercial purposes.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="mam" state="translated">Nlay tu'n t-xi' k'ayit b'inchaj lu'.</target>
+        <target xml:lang="mam" state="final">Nlay tu'n t-xi' k'ayit b'inchaj lu'.</target>
         <alt-trans>
           <target xml:lang="mam">Nlay tu'n t-xi' k'ayit b'inchb'il lu'.</target>
         </alt-trans>
@@ -797,7 +797,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="mam" state="translated">B'a'n tu'n tel tilb'ilal, tu'n ttx'ixpet ex tu'n t-xi' sipet b'inchaj lu, ex b'a'n qa taja tu'n t-xi' tk'a'yina, mya' ilx ti'j tu'n t-xi qa'net amb'il.</target>
+        <target xml:lang="mam" state="final">B'a'n tu'n tel tilb'ilal, tu'n ttx'ixpet ex tu'n t-xi' sipet b'inchaj lu, ex b'a'n qa taja tu'n t-xi' tk'a'yina, mya' ilx ti'j tu'n t-xi qa'net amb'il.</target>
         <alt-trans>
           <target xml:lang="mam">B'a'n tu'n tel tib'lal, tu'n tch'ixpet ex tu'n t-xi' sipet b'inchb'il lu', b'a'n tu'n t-xi' k'ayit, nya' ilx ti'j tu'n txi qa'net amb'il.</target>
         </alt-trans>
@@ -806,7 +806,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
         <note>ID: MetadataDisplay.Licenses.NullLicense</note>
         <note>This is used when all we have is a copyright, no other license.</note>
-        <target xml:lang="mam" state="translated">T'un ttzaj q'o'n amb'il tu'n tajb'lan juntl maj, ilx ti'j tu'n tyolina tuk'il tajawil b'inchalte, at toklen.</target>
+        <target xml:lang="mam" state="final">T'un ttzaj q'o'n amb'il tu'n tajb'lan juntl maj, ilx ti'j tu'n tyolina tuk'il tajawil b'inchalte, at toklen.</target>
         <alt-trans>
           <target xml:lang="mam">T'un tzaj q'o'n amb'il tu'n tajb'lan juntl maj, ilx ti'j tu'n tyolina tuk' tajwil b'inchalte at toklen.</target>
         </alt-trans>
@@ -814,12 +814,12 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataDisplay.NoLicense" approved="yes">
         <source xml:lang="en">No license specified</source>
         <note>ID: MetadataDisplay.NoLicense</note>
-        <target xml:lang="mam" state="translated">Nti' amb'il q'ama'nmaj</target>
+        <target xml:lang="mam" state="final">Nti' amb'il q'ama'nmaj</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse" approved="yes">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <note>ID: MetadataEditor.AllowCommercialUse</note>
-        <target xml:lang="mam" state="translated">¿At amb'il tu'n t-xi' k'ayit taq'una?</target>
+        <target xml:lang="mam" state="final">¿At amb'il tu'n t-xi' k'ayit taq'una?</target>
         <alt-trans>
           <target xml:lang="mam">¿At amb'il tu'n t-xi' k'ayijtz taq'una?</target>
         </alt-trans>
@@ -827,12 +827,12 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataEditor.AllowDerivatives" approved="yes">
         <source xml:lang="en">Allow modifications of your work?</source>
         <note>ID: MetadataEditor.AllowDerivatives</note>
-        <target xml:lang="mam" state="translated">¿At amb'il tu'n tch'ixpet taq'una?</target>
+        <target xml:lang="mam" state="final">¿At amb'il tu'n tch'ixpet taq'una?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightHolder" approved="yes">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: MetadataEditor.CopyrightHolder</note>
-        <target xml:lang="mam" state="translated">Tajawil toklen b'inchalte </target>
+        <target xml:lang="mam" state="final">Tajawil toklen b'inchalte </target>
         <alt-trans>
           <target xml:lang="mam">Tajwil b'inchalte at toklen</target>
         </alt-trans>
@@ -840,7 +840,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataEditor.CopyrightYear" approved="yes">
         <source xml:lang="en">Copyright Year</source>
         <note>ID: MetadataEditor.CopyrightYear</note>
-        <target xml:lang="mam" state="translated">Ab'q'i te tok toklen b'inchalte</target>
+        <target xml:lang="mam" state="final">Ab'q'i te tok toklen b'inchalte</target>
         <alt-trans>
           <target xml:lang="mam">Ab'q'i te b'inchalte at tolken</target>
         </alt-trans>
@@ -848,12 +848,12 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataEditor.CreativeCommons" approved="yes">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
-        <target xml:lang="mam" state="translated">Creative Commons</target>
+        <target xml:lang="mam" state="final">Creative Commons</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental" approved="yes">
         <source xml:lang="en">Intergovernmental Version</source>
         <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
-        <target xml:lang="mam" state="translated">Ttxolil aq'untl kyxol ajkawil tnam</target>
+        <target xml:lang="mam" state="final">Ttxolil aq'untl kyxol ajkawil tnam</target>
         <alt-trans>
           <target xml:lang="mam">Tu'mel intergubernamental</target>
         </alt-trans>
@@ -861,7 +861,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataEditor.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataEditor.CreatorLabel</note>
-        <target xml:lang="mam" state="translated">Ajb'inchal</target>
+        <target xml:lang="mam" state="final">Ajb'inchal</target>
         <alt-trans>
           <target xml:lang="mam">Aj b'inchal</target>
         </alt-trans>
@@ -869,7 +869,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataEditor.CustomLicense" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: MetadataEditor.CustomLicense</note>
-        <target xml:lang="mam" state="translated">B'incha'n noqx te jun xjal</target>
+        <target xml:lang="mam" state="final">B'incha'n noqx te jun xjal</target>
         <alt-trans>
           <target xml:lang="mam">Noqx te jun xjal</target>
         </alt-trans>
@@ -877,12 +877,12 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataEditor.License" approved="yes">
         <source xml:lang="en">License</source>
         <note>ID: MetadataEditor.License</note>
-        <target xml:lang="mam" state="translated">Tu'jil amb'il</target>
+        <target xml:lang="mam" state="final">Tu'jil amb'il</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.PublicDomain" approved="yes">
         <source xml:lang="en">The copyright holder waives all rights</source>
         <note>ID: MetadataEditor.PublicDomain</note>
-        <target xml:lang="mam" state="translated">Aj tajwil at toklen b'inchalte n-elti'n tkyaqil toklenj</target>
+        <target xml:lang="mam" state="final">Aj tajwil at toklen b'inchalte n-elti'n tkyaqil toklenj</target>
         <alt-trans>
           <target xml:lang="mam">Aj tajwil at toklen b'inchalte n-nelti'n tib' kyaqil toklenj</target>
         </alt-trans>
@@ -893,12 +893,12 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
-        <target xml:lang="mam" state="translated">B'inchalte at toklen ex tu'jil amb'il</target>
+        <target xml:lang="mam" state="final">B'inchalte at toklen ex tu'jil amb'il</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleWithCredit" approved="yes">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="mam" state="translated">Aq'b'il oklenj, oklenj te b'inchalte ex tu'jil amb'il</target>
+        <target xml:lang="mam" state="final">Aq'b'il oklenj, oklenj te b'inchalte ex tu'jil amb'il</target>
         <alt-trans>
           <target xml:lang="mam">U'jil toklen, b'inchalte at toklen ex tu'jil amb'il</target>
         </alt-trans>
@@ -906,7 +906,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataEditor.UnknownLicense" approved="yes">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense</note>
-        <target xml:lang="mam" state="translated">Yolina tuk'il tajawil b'inchalte at toklen tu'n t-xi' tqanina amb'il</target>
+        <target xml:lang="mam" state="final">Yolina tuk'il tajawil b'inchalte at toklen tu'n t-xi' tqanina amb'il</target>
         <alt-trans>
           <target xml:lang="mam">Yolina tuk' tajwil b'inchalte at toklen tu'n t-xi' tqa'ne amb'il</target>
         </alt-trans>
@@ -914,7 +914,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="MetadataEditor.YesShareAlike" approved="yes">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
-        <target xml:lang="mam" state="translated">B'a'n, qa ikyxqe' txqantil in kub' kyaq'pu'n tqanil</target>
+        <target xml:lang="mam" state="final">B'a'n, qa ikyxqe' txqantil in kub' kyaq'pu'n tqanil</target>
         <alt-trans>
           <target xml:lang="mam">Ok, qa at ju'nqe nxi' kyq'o'n amb'il te kyaqil</target>
         </alt-trans>
@@ -923,13 +923,13 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Additional Requests</source>
         <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
-        <target xml:lang="mam" state="translated">Txqantl qanb'itz</target>
+        <target xml:lang="mam" state="final">Txqantl qanb'itz</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.betterLinkLabel1" approved="yes">
         <source xml:lang="en">more info</source>
         <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
-        <target xml:lang="mam" state="translated">txqantl tqanil</target>
+        <target xml:lang="mam" state="final">txqantl tqanil</target>
         <alt-trans>
           <target xml:lang="mam">txqantl q'amab'itz</target>
         </alt-trans>
@@ -938,7 +938,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">about {0} Public Domain</source>
         <note>ID: MetadataEditor.linkToPublicDomainCC0</note>
         <note>{0} is replaced by an untranslatable abbreviation functioning as an adjective ("CC0")</note>
-        <target xml:lang="mam" state="translated">nab'il tib'aj tkyaqil ojtzqi'n kyu'n xjal {0}</target>
+        <target xml:lang="mam" state="final">nab'il tib'aj tkyaqil ojtzqi'n kyu'n xjal {0}</target>
         <alt-trans>
           <target xml:lang="mam">nab'il tib'aj kyaqil tzqi'n kyu'n xjal {0}</target>
         </alt-trans>
@@ -947,7 +947,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
-        <target xml:lang="mam" state="translated">Mlayx tz'ajb'elan tzalu</target>
+        <target xml:lang="mam" state="final">Mlayx tz'ajb'elan tzalu</target>
         <alt-trans>
           <target xml:lang="mam">Nlayx b'ant ti'j</target>
         </alt-trans>
@@ -955,12 +955,12 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton" approved="yes">
         <source xml:lang="en">Cancel</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton</note>
-        <target xml:lang="mam" state="translated">Min lajet</target>
+        <target xml:lang="mam" state="final">Min lajet</target>
       </trans-unit>
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._okButton" approved="yes">
         <source xml:lang="en">OK</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._okButton</note>
-        <target xml:lang="mam" state="translated">b'a'n</target>
+        <target xml:lang="mam" state="final">b'a'n</target>
         <alt-trans>
           <target xml:lang="mam">K'amol</target>
         </alt-trans>
@@ -968,12 +968,12 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ScriptsAndVariantsDialog.ScriptsAndVariants" approved="yes">
         <source xml:lang="en">Script and Variant</source>
         <note>ID: ScriptsAndVariantsDialog.ScriptsAndVariants</note>
-        <target xml:lang="mam" state="translated">Tz'ib'ajtz ex juntl tu'mel</target>
+        <target xml:lang="mam" state="final">Tz'ib'ajtz ex juntl tu'mel</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
-        <target xml:lang="mam" state="translated">Aju lu, jaku txi' tewin jte'tl tu'mel tz'ib'b'il, aqeju nya' ilx ti'j tu'n tajb'lan tu'n xjal nya' b'a'nxix tu'n.</target>
+        <target xml:lang="mam" state="final">Aju lu, jaku txi' tewin jte'tl tu'mel tz'ib'b'il, aqeju nya' ilx ti'j tu'n tajb'lan tu'n xjal nya' b'a'nxix tu'n.</target>
         <alt-trans>
           <target xml:lang="mam">B'a'n tu'n t-xi' te'win qe tu'mel tz'ib'il nya' ilx ti'j tu'n tajb'lan tu'n xjal nya' b'a'nxix tu'n.</target>
         </alt-trans>
@@ -981,7 +981,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="SettingsProtection.CtrlShiftHint" approved="yes">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
-        <target xml:lang="mam" state="translated">Ok tzajal tyek'in tib' tu'mel tz'ib ok tb'aj tb'etz'ina junx qe tu'mel tz'ib Ctrl ex Mayús.</target>
+        <target xml:lang="mam" state="final">Ok tzajal tyek'in tib' tu'mel tz'ib ok tb'aj tb'etz'ina junx qe tu'mel tz'ib Ctrl ex Mayús.</target>
         <alt-trans>
           <target xml:lang="mam">Tzajal tyek'in tib' tu'mel tz'ib ok tb'aj tb'etz'na junx qe tu'mel tz'ib Ctrl ex Mayús.</target>
         </alt-trans>
@@ -990,7 +990,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
-        <target xml:lang="mam" state="translated">Kolb'il ttxolil aq'unb'il xk'utz'ib'...</target>
+        <target xml:lang="mam" state="final">Kolb'il ttxolil aq'unb'il xk'utz'ib'...</target>
         <alt-trans>
           <target xml:lang="mam">Kolib'il ttxolil aq'unb'il xk'utz'ib'...</target>
         </alt-trans>
@@ -1001,7 +1001,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox" approved="yes">
         <source xml:lang="en">Hide the button that opens settings.</source>
         <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
-        <target xml:lang="mam" state="translated">Ewil yoq'b'il aju njaqon ti'j ttxolil aq'unb'il xk'utz'ib'.</target>
+        <target xml:lang="mam" state="final">Ewil yoq'b'il aju njaqon ti'j ttxolil aq'unb'il xk'utz'ib'.</target>
         <alt-trans>
           <target xml:lang="mam">E'wil aj tu'mel tz'ib' njaqon ti'j meltz'ul aq'untl.</target>
         </alt-trans>
@@ -1009,7 +1009,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword" approved="yes">
         <source xml:lang="en">Factory Password</source>
         <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
-        <target xml:lang="mam" state="translated">Techil te b'inchalte</target>
+        <target xml:lang="mam" state="final">Techil te b'inchalte</target>
         <alt-trans>
           <target xml:lang="mam">Techil ja  te b'inchalte</target>
         </alt-trans>
@@ -1020,7 +1020,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation" approved="yes">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
-        <target xml:lang="mam" state="translated">Ma kub' maqet kywitz ttxolil aq'unb'il xk'utz'ib' lu tu'n tkolet qa at jun mya' b'a'n tuj,  qa at jun mya' b'a'n, b'ala jaku' mi' nlayx tz'aq'unan tuj tu'melxix .</target>
+        <target xml:lang="mam" state="final">Ma kub' maqet kywitz ttxolil aq'unb'il xk'utz'ib' lu tu'n tkolet qa at jun mya' b'a'n tuj,  qa at jun mya' b'a'n, b'ala jaku' mi' nlayx tz'aq'unan tuj tu'melxix .</target>
         <alt-trans>
           <target xml:lang="mam">Ma kub' maqet kywitz ttxolil aq'unb'il xk'utz'ib' lu tu'n tkolet qa at jun mya' b'a'n tuj,  qa at jun mya' b'a'n b'ala jaku' mi' nlayx tz'aq'unan tuj tu'melxix .</target>
         </alt-trans>
@@ -1031,12 +1031,12 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle" approved="yes">
         <source xml:lang="en">Settings Protection Password</source>
         <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
-        <target xml:lang="mam" state="translated">Techil tu'n tkolet meltz'ul aq'untl</target>
+        <target xml:lang="mam" state="final">Techil tu'n tkolet meltz'ul aq'untl</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox" approved="yes">
         <source xml:lang="en">Show Characters</source>
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
-        <target xml:lang="mam" state="translated">Yek'il techlal techtz'ib'</target>
+        <target xml:lang="mam" state="final">Yek'il techlal techtz'ib'</target>
         <alt-trans>
           <target xml:lang="mam">Yek'b'il txilen b'ib'ajtz</target>
         </alt-trans>
@@ -1045,7 +1045,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page.</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
-        <target xml:lang="mam" state="translated">Aj jaqob'ilte te b'inchalte tu'n tajb'lan kyi'j ttxolil aq'unb'il xk'utz'ib' lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na {1}.</target>
+        <target xml:lang="mam" state="final">Aj jaqob'ilte te b'inchalte tu'n tajb'lan kyi'j ttxolil aq'unb'il xk'utz'ib' lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na {1}.</target>
         <alt-trans>
           <target xml:lang="mam">Aj techil jab'inchalte tu'n tajb'lan kyi'j qe tz'ajsab'il lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan Google tu'na tu'n t-xi' tjyo'na "{1}" ex.</target>
         </alt-trans>
@@ -1060,7 +1060,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
         <note>ID: SettingsProtection.PasswordNoticeWithSupportUrl</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNotice". Param 0: Factory password; Param 1: product name; Param 2: URL of support page</note>
-        <target xml:lang="mam" state="translated">Aj jaqob'ilte te jab'inchalte tu'n tajb'lan kyi'j qe ttxolil aq'unb'il xk'utz'ib' lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan t-xaq u'j teya tu'n tonin ti'ja {1} tuj: {2}</target>
+        <target xml:lang="mam" state="final">Aj jaqob'ilte te jab'inchalte tu'n tajb'lan kyi'j qe ttxolil aq'unb'il xk'utz'ib' lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan t-xaq u'j teya tu'n tonin ti'ja {1} tuj: {2}</target>
         <alt-trans>
           <target xml:lang="mam">Aj techil jab'inchalte tu'n tajb'lan kyi'j qe ttxolil aq'unb'il xk'utz'ib' lu' a "{0}". Qa ma kux naj ti'j tk'u'ja b'a'n tu'n tajb'lan t-xaq te onb'il {1} tuj: {2}</target>
         </alt-trans>
@@ -1068,7 +1068,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
-        <target xml:lang="mam" state="translated">Ilx ti'j k-ajb'el techil b'inchalte tu'n tokxa tuj ttxolil aq'unb'il xk'utz'ib' lu.</target>
+        <target xml:lang="mam" state="final">Ilx ti'j k-ajb'el techil b'inchalte tu'n tokxa tuj ttxolil aq'unb'il xk'utz'ib' lu.</target>
         <alt-trans>
           <target xml:lang="mam">Ilx ti'j qajb'el techil ja b'inchalte tu'n tokxa tuj meltz'ul aq'untl.</target>
         </alt-trans>
@@ -1076,7 +1076,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle" approved="yes">
         <source xml:lang="en">Settings Protection</source>
         <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
-        <target xml:lang="mam" state="translated">Kolb'il ttxolil aq'unb'il xk'utz'ib'</target>
+        <target xml:lang="mam" state="final">Kolb'il ttxolil aq'unb'il xk'utz'ib'</target>
         <alt-trans>
           <target xml:lang="mam">Kolil meltz'ul aq'untl</target>
         </alt-trans>
@@ -1084,7 +1084,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="ShowReleaseNotesDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
-        <target xml:lang="mam" state="translated">Tqanil tib'aj tu'mel aq'untl</target>
+        <target xml:lang="mam" state="final">Tqanil tib'aj tu'mel aq'untl</target>
         <alt-trans>
           <target xml:lang="mam">Tz'ib'ajtz tib'aj tu'mel aq'untl</target>
         </alt-trans>
@@ -1096,7 +1096,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">In applications which support this option, fields with this input system will be able to play and record voice.</source>
         <note>ID: VoiceIdentifierView.betterLabel1</note>
         <note>Displayed if a user selects the voice special option in writing system setup</note>
-        <target xml:lang="mam" state="translated">Kyuj qe' aq'unb'il xk'utz'ib' nq'on tipumal tu'mel lu', a qe' ttenb'il xk'utz'ib' tuk' tu'mel tu'n qokx, b'a'n tu'n kyk'u'nte ex tu'n t-xi' qb'i'n qwi'.</target>
+        <target xml:lang="mam" state="final">Kyuj qe' aq'unb'il xk'utz'ib' nq'on tipumal tu'mel lu', a qe' ttenb'il xk'utz'ib' tuk' tu'mel tu'n qokx, b'a'n tu'n kyk'u'nte ex tu'n t-xi' qb'i'n qwi'.</target>
         <alt-trans>
           <target xml:lang="mam">Kyuj qe aq'unb'il xk'utz'ib' nq'on tipumal tu'mel lu', a qe' ttenb'il xk'utz'ib' tuk' tu'mel tu'n qokx, b'a'n tu'n kyk'u'nte ex tu'n t-xi' qb'i'n qwi'.</target>
         </alt-trans>
@@ -1107,7 +1107,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="mam" state="translated">&amp;tqek' techtz'ib':</target>
+        <target xml:lang="mam" state="final">&amp;tqek' techtz'ib':</target>
         <alt-trans>
           <target xml:lang="mam">&amp;Tloq'b'il:</target>
         </alt-trans>
@@ -1115,7 +1115,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="WSFontControl.FontNotAvailable" approved="yes">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="mam" state="translated">(Aju tqek' techtz'ib' ma jaw sak'et nti' tuj xk'utz'ib'. K-ajb'lal tqek' techtz'ib' q'i'n tu'n xk'utz'ib'.)</target>
+        <target xml:lang="mam" state="final">(Aju tqek' techtz'ib' ma jaw sak'et nti' tuj xk'utz'ib'. K-ajb'lal tqek' techtz'ib' q'i'n tu'n xk'utz'ib'.)</target>
         <alt-trans>
           <target xml:lang="mam">(Aju tloq'b'il ma jaw saq'et nti' toksa'n tuj xk'utz'ib'. Qajb'lal tloq'b'il q'i'n tu'n xk'utz'ib'.)</target>
         </alt-trans>
@@ -1123,7 +1123,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="WSFontControl.RightToLeftWS" approved="yes">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="mam" state="translated">A te lu' jun &amp; tu'mel tz'ib'b'il tu'n ttzyet tuj manq'ab'aj tu'n tpon b'aj tuj na'yaj.</target>
+        <target xml:lang="mam" state="final">A te lu' jun &amp; tu'mel tz'ib'b'il tu'n ttzyet tuj manq'ab'aj tu'n tpon b'aj tuj na'yaj.</target>
         <alt-trans>
           <target xml:lang="mam">A te jlu' jun &amp; tu'mel tz'ib'il tzyetil tuj manq'ab'aj tu'n tponb'aj tuj na'yaj.</target>
         </alt-trans>
@@ -1131,12 +1131,12 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
-        <target xml:lang="mam" state="translated">&amp;Nik'pun:</target>
+        <target xml:lang="mam" state="final">&amp;Nik'pun:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.TestArea" approved="yes">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="mam" state="translated">&amp;Ttenb'il xniky'chab'il:</target>
+        <target xml:lang="mam" state="final">&amp;Ttenb'il xniky'chab'il:</target>
         <alt-trans>
           <target xml:lang="mam">&amp;Ttenb'il xnik'chab'il:</target>
         </alt-trans>
@@ -1151,7 +1151,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Abbreviation</source>
         <note>ID: WSIdentifierView.betterLabel4</note>
         <note>In writing system setup general tab: label before abbreviation text box</note>
-        <target xml:lang="mam" state="translated">Ch'inyol</target>
+        <target xml:lang="mam" state="final">Ch'inyol</target>
         <alt-trans>
           <target xml:lang="mam">Aqe' tz'epona</target>
         </alt-trans>
@@ -1160,19 +1160,19 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Special:</source>
         <note>ID: WSIdentifierView.betterLabel5</note>
         <note>In writing system setup general tab:  Label before combo box with 'Special' choices</note>
-        <target xml:lang="mam" state="translated">Tb'anil:</target>
+        <target xml:lang="mam" state="final">Tb'anil:</target>
       </trans-unit>
       <trans-unit id="WSIdentifiers.IpaIdentifierView.Default" approved="yes">
         <source xml:lang="en">Default</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Default</note>
         <note>Choice for most users</note>
-        <target xml:lang="mam" state="translated">B'incha'nmaj</target>
+        <target xml:lang="mam" state="final">B'incha'nmaj</target>
       </trans-unit>
       <trans-unit id="WSIdentifiers.IpaIdentifierView.Emic" approved="yes">
         <source xml:lang="en">Emic (uses phonology of the language)</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Emic</note>
         <note>Only translate text inside of the parentheses ()</note>
-        <target xml:lang="mam" state="translated">Emic (n-ab'en tq'ajq'ajel yol tu'n)</target>
+        <target xml:lang="mam" state="final">Emic (n-ab'en tq'ajq'ajel yol tu'n)</target>
         <alt-trans>
           <target xml:lang="mam">Emic (n-nab'en q'ajq'ajel yol)</target>
         </alt-trans>
@@ -1181,7 +1181,7 @@ Kyusab'il tu'n tel</target>
         <source xml:lang="en">Etic (raw phonetic transcription)</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Etic</note>
         <note>Only translate text inside of the parentheses ()</note>
-        <target xml:lang="mam" state="translated">Etic (tu'mel ttz'ib'anjtz q'ajyol tu'nx)</target>
+        <target xml:lang="mam" state="final">Etic (tu'mel ttz'ib'anjtz q'ajyol tu'nx)</target>
         <alt-trans>
           <target xml:lang="mam">Etic (tu'mel tz'ib'ajtz q'ajyol tu'nx)</target>
         </alt-trans>
@@ -1189,7 +1189,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <note>ID: WSKeyboardControl.KeyboardNotListed</note>
-        <target xml:lang="mam" state="translated">Qa nti' tokx tu'mel tz'ib'b'il tuj k'loj lu, b'inchanxa klik tib'aj tb'anil techil at kub'ni tu'n ttxolb'et aq'unb'il</target>
+        <target xml:lang="mam" state="final">Qa nti' tokx tu'mel tz'ib'b'il tuj k'loj lu, b'inchanxa klik tib'aj tb'anil techil at kub'ni tu'n ttxolb'et aq'unb'il</target>
         <alt-trans>
           <target xml:lang="mam">Qa nti' tokx qe tu'mel tz'ib'il tuj ttxolil, b'inchanxa clic tib'aj techil b'a'nxix at kub'ni tu'n meltz'ut aq'untl</target>
         </alt-trans>
@@ -1197,7 +1197,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="WSKeyboardControl.KeyboardSettingsLink" approved="yes">
         <source xml:lang="en">Windows keyboard settings</source>
         <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
-        <target xml:lang="mam" state="translated">Txolb'al aq'unb'il ti'j tz'ib'b'il te Windows</target>
+        <target xml:lang="mam" state="final">Txolb'al aq'unb'il ti'j tz'ib'b'il te Windows</target>
         <alt-trans>
           <target xml:lang="mam">Meltz'ul aq'untl te tu'mel tz'ib'il te Windows</target>
         </alt-trans>
@@ -1205,7 +1205,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="WSKeyboardControl.KeyboardsAvailable" approved="yes">
         <source xml:lang="en">Available keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
-        <target xml:lang="mam" state="translated">Alkyechaq tu'mel tz'ib'b'il at</target>
+        <target xml:lang="mam" state="final">Alkyechaq tu'mel tz'ib'b'il at</target>
         <alt-trans>
           <target xml:lang="mam">Atqe tu'mel tz'ib'il</target>
         </alt-trans>
@@ -1213,7 +1213,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed" approved="yes">
         <source xml:lang="en">Previously used keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
-        <target xml:lang="mam" state="translated">Tu'mel tz'ib'b'il o chi ajb'en</target>
+        <target xml:lang="mam" state="final">Tu'mel tz'ib'b'il o chi ajb'en</target>
         <alt-trans>
           <target xml:lang="mam">Tu'mel tz'ib'il o' chajb'enxa</target>
         </alt-trans>
@@ -1221,7 +1221,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="WSKeyboardControl.KeymanConfigurationLink" approved="yes">
         <source xml:lang="en">Keyman Configuration</source>
         <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
-        <target xml:lang="mam" state="translated">Txolb'al aq'unb'il te Keyman</target>
+        <target xml:lang="mam" state="final">Txolb'al aq'unb'il te Keyman</target>
         <alt-trans>
           <target xml:lang="mam">Meltz'ul aq'untl te Keyman</target>
         </alt-trans>
@@ -1229,7 +1229,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="WSKeyboardControl.KeymanNotInstalled" approved="yes">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="mam" state="translated">Aju keyman 5.0 mo juntl ak'aj twitz lu, nti' tokx.</target>
+        <target xml:lang="mam" state="final">Aju keyman 5.0 mo juntl ak'aj twitz lu, nti' tokx.</target>
         <alt-trans>
           <target xml:lang="mam">Keyman 5.0 mo ak'ax nti' tok.</target>
         </alt-trans>
@@ -1237,7 +1237,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel" approved="yes">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="mam" state="translated">Sak'onxa &amp;alkye tu'mel tz'ib'b'il taja tu'n tajb'en tu'na {0}</target>
+        <target xml:lang="mam" state="final">Sak'onxa &amp;alkye tu'mel tz'ib'b'il taja tu'n tajb'en tu'na {0}</target>
         <alt-trans>
           <target xml:lang="mam">Saq'onxa &amp;alkye tu'mel tz'ib'il taja tu'n tz'ib'ana {0}</target>
         </alt-trans>
@@ -1245,7 +1245,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="WSKeyboardControl.SetupKeyboards" approved="yes">
         <source xml:lang="en">Set up keyboards</source>
         <note>ID: WSKeyboardControl.SetupKeyboards</note>
-        <target xml:lang="mam" state="translated">Txolb'al tu'mel tz'ib'b'il</target>
+        <target xml:lang="mam" state="final">Txolb'al tu'mel tz'ib'b'il</target>
         <alt-trans>
           <target xml:lang="mam">Meltz'ul tu'mel tz'ib'el</target>
         </alt-trans>
@@ -1253,7 +1253,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="mam" state="translated">&amp;Ttenb'il xniky'chab'il (Tz'ib'an okxa ti'chaq tuj tenb'il lu' tu'n tok nik'b'et tu'mel tz'ib'b'il.)</target>
+        <target xml:lang="mam" state="final">&amp;Ttenb'il xniky'chab'il (Tz'ib'an okxa ti'chaq tuj tenb'il lu' tu'n tok nik'b'et tu'mel tz'ib'b'il.)</target>
         <alt-trans>
           <target xml:lang="mam">&amp;Ttenb'il b'inchb'il (Tz'ib'anxa nokx alkye tuj amb'il lu' tu'n tok nik'b'et tu'mel tz'ib'el.)</target>
         </alt-trans>
@@ -1261,12 +1261,12 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="Warning" approved="yes">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
-        <target xml:lang="mam" state="translated">Yol tu'n t-xi' qb'i'n</target>
+        <target xml:lang="mam" state="final">Yol tu'n t-xi' qb'i'n</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption" approved="yes">
         <source xml:lang="en">Unable to connect to SLDR</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
-        <target xml:lang="mam" state="translated">Nti' nok tmujb'a'n tib' ti'j SLDR</target>
+        <target xml:lang="mam" state="final">Nti' nok tmujb'a'n tib' ti'j SLDR</target>
         <alt-trans>
           <target xml:lang="mam">Nti' nok tq'on tib' ti'j SLDR</target>
         </alt-trans>
@@ -1274,7 +1274,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText" approved="yes">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
-        <target xml:lang="mam" state="translated">Nti' nok tmujb'a'n tib' aq'unb'il xk'utz'ib' ti'j t-xmilal tk'ub'il yol te SIL tu'n ttzaj tq'o'n ak'aj tpokb'al ti'j yolb'il lu'. Qa ma kub' tb'inchana tu'mel tz'ib'b'il lu', jaku mlayx kb'antel tu'n tlaj a txolb'al aq'untl nya b'a'n mo ojtxi o kub' b'inchet. ¿Tajxixya tu'n tkub' tb'inchana jun ak'aj tu'mel tz'ib'b'il?</target>
+        <target xml:lang="mam" state="final">Nti' nok tmujb'a'n tib' aq'unb'il xk'utz'ib' ti'j t-xmilal tk'ub'il yol te SIL tu'n ttzaj tq'o'n ak'aj tpokb'al ti'j yolb'il lu'. Qa ma kub' tb'inchana tu'mel tz'ib'b'il lu', jaku mlayx kb'antel tu'n tlaj a txolb'al aq'untl nya b'a'n mo ojtxi o kub' b'inchet. ¿Tajxixya tu'n tkub' tb'inchana jun ak'aj tu'mel tz'ib'b'il?</target>
         <alt-trans>
           <target xml:lang="mam">Nti' nok tq'on tib' b'inchab'il ti'j txwilal tkub'il yol te SILtu'n tzaj tq'o'n pokb'al ma yin n-netz tib'aj yolb'il lu'. Qa ma kub' tb'inchana tu'mel tz'ib'il lu', nalyx kb'antel tu'n tlaj a meltz'ul aq'untl nya b'a'n mo ojtxa o kub' b'inchet. ¿Tajxixya tu'n tkub' tb'inchana jun ak'aj tumel tz'ib'il?</target>
         </alt-trans>
@@ -1282,7 +1282,7 @@ Kyusab'il tu'n tel</target>
       <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard" approved="yes">
         <source xml:lang="en">[Missing] {0} ({1})</source>
         <note>ID: XkbKeyboardAdaptor.MissingKeyboard</note>
-        <target xml:lang="mam" state="translated">[At-x taj] {0} ({1})</target>
+        <target xml:lang="mam" state="final">[At-x taj] {0} ({1})</target>
         <alt-trans>
           <target xml:lang="mam">[Atx taj] {0} ({1})</target>
         </alt-trans>
