@@ -626,6 +626,9 @@
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
         <target xml:lang="ru" state="translated">Заводской пароль для этих настроек "{0}". Если вы забыли его, вы можете всегда найти его в интернете по запросу для "{1}"</target>
+        <alt-trans>
+          <target xml:lang="ru">Заводской пароль для этих настроек "{0}". Если вы забыли его, вы можете всегда найти его в интернете по запросу "{2}" для "{1}"</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>

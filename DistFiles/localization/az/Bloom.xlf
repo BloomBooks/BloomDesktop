@@ -138,7 +138,7 @@
       <trans-unit id="BloomPackInstallDialog.BadCharsInFileName" approved="yes">
         <source xml:lang="en">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>
         <note>ID: BloomPackInstallDialog.BadCharsInFileName</note>
-        <target xml:lang="az" state="translated">Yəqin ki, bu, Bloom Pack-ın fayl adlarının xüsusi simvollarını oxumaq xüsusiyyətinə malik olmasından öncə yaradılmış Bloom Pack-ın köhnə versiyasıdır.  Siz cari versiyanı istifadə edərək, yeni fayl yaratmaq üçün müəllifdən kömək əldə edə bilərsiniz. Bu mümkün deyilsə, texniki ekspert vəziyyəti bərpa edə bilər.</target>
+        <target xml:lang="az" state="final">Yəqin ki, bu, Bloom Pack-ın fayl adlarının xüsusi simvollarını oxumaq xüsusiyyətinə malik olmasından öncə yaradılmış Bloom Pack-ın köhnə versiyasıdır.  Siz cari versiyanı istifadə edərək, yeni fayl yaratmaq üçün müəllifdən kömək əldə edə bilərsiniz. Bu mümkün deyilsə, texniki ekspert vəziyyəti bərpa edə bilər.</target>
         <alt-trans>
           <target xml:lang="az">-- Yəqin ki, bu, Bloom Pack-ın fayl adlarının xüsusi simvollarını oxumaq xüsusiyyətinə malik olmasından öncə yaradılmış Bloom Pack-ın köhnə versiyasıdır. Siz cari versiyanı istifadə edərək, yeni fayl yaratmaq üçün müəllifdən kömək əldə edə bilərsiniz. Bu mümkün deyilsə, texniki ekspert vəziyyəti bərpa edə bilər.</target>
         </alt-trans>
@@ -172,7 +172,7 @@
       <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack" approved="yes">
         <source xml:lang="en">Bloom was not able to install that Bloom Pack</source>
         <note>ID: BloomPackInstallDialog.ErrorInstallingBloomPack</note>
-        <target xml:lang="az" state="translated">Bloom proqramı Bloom Paketini quraşdıra bilmədi</target>
+        <target xml:lang="az" state="final">Bloom proqramı Bloom Paketini quraşdıra bilmədi</target>
         <alt-trans>
           <target xml:lang="az">Bloom proqramı o Bloom Paketini quraşdıra bilmədi</target>
         </alt-trans>
@@ -181,7 +181,7 @@
         <source xml:lang="en">Extracting...</source>
         <note>ID: BloomPackInstallDialog.Extracting</note>
         <note>Shown while Bloom Packs are being installed</note>
-        <target xml:lang="az" state="translated">Çıxarılır…</target>
+        <target xml:lang="az" state="final">Çıxarılır…</target>
         <alt-trans>
           <target xml:lang="az">Çıxarılır...</target>
         </alt-trans>
@@ -189,7 +189,7 @@
       <trans-unit id="BloomPackInstallDialog.MustRestartToSee" approved="yes">
         <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
         <note>ID: BloomPackInstallDialog.MustRestartToSee</note>
-        <target xml:lang="az" state="translated">"Bloom" proqramı artıq işləyir, lakin proqramı növbəti dəfə işə salanadək məzmunu göstərilməyəcək.</target>
+        <target xml:lang="az" state="final">"Bloom" proqramı artıq işləyir, lakin proqramı növbəti dəfə işə salanadək məzmunu göstərilməyəcək.</target>
         <alt-trans>
           <target xml:lang="az">"Bloom" proqramı artıq işləyir, lakin "Bloom" proqramı növbəti dəfə işə salanadək məzmunu göstərilməyəcək</target>
         </alt-trans>
@@ -202,7 +202,7 @@
       <trans-unit id="BloomPackInstallDialog.Opening" approved="yes">
         <source xml:lang="en">Opening {0}...</source>
         <note>ID: BloomPackInstallDialog.Opening</note>
-        <target xml:lang="az" state="translated">...{0} Açılır…</target>
+        <target xml:lang="az" state="final">...{0} Açılır…</target>
         <alt-trans>
           <target xml:lang="az">{0} Açılır...</target>
         </alt-trans>
@@ -220,7 +220,7 @@
       <trans-unit id="BloomPackInstallDialog.UnableToReplace" approved="yes">
         <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
         <note>ID: BloomPackInstallDialog.UnableToReplace</note>
-        <target xml:lang="az" state="translated">Bloom '{0}' artıq mövcud olan nüsxəsini silə bilmədi. Əgər Bloom açıqdırsa, Bloomdan çıxın və yenidən cəhd edin. Əks halda, kompüterinizi söndürüb-yandırdıqdan sonra, yenidən cəhd edin.</target>
+        <target xml:lang="az" state="final">Bloom '{0}' artıq mövcud olan nüsxəsini silə bilmədi. Əgər Bloom açıqdırsa, Bloomdan çıxın və yenidən cəhd edin. Əks halda, kompüterinizi söndürüb-yandırdıqdan sonra, yenidən cəhd edin.</target>
         <alt-trans>
           <target xml:lang="az">Bloom '{0}' artıq mövcud olan nüsxəsini silə bilmədi. Əgər Bloom açıqdırsa, Bloomdan çıxın və &amp; yenidən cəhd edin. Əks halda, kompüterinizi söndürüb-yandırdıqdan sonra, yenidən cəhd edin.</target>
         </alt-trans>
@@ -235,7 +235,7 @@
       <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is the default for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.DefaultForText</note>
-        <target xml:lang="az" state="translated">Bu formatlaşdırma '{0}' üslubu olan bütün mətn qutuları üçün standartdur</target>
+        <target xml:lang="az" state="final">Bu formatlaşdırma '{0}' üslubu olan bütün mətn qutuları üçün standartdur</target>
         <alt-trans>
           <target xml:lang="az">Bu formatlaşdırma '{0}' üslubu olan bütün mətn qutuları üçün standartdur.</target>
         </alt-trans>
@@ -243,7 +243,7 @@
       <trans-unit id="BookEditor.ForText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.ForText</note>
-        <target xml:lang="az" state="translated">Bu formatlaşdırma bütün {0} üslubu daşayan mətn qutuları üçündür</target>
+        <target xml:lang="az" state="final">Bu formatlaşdırma bütün {0} üslubu daşayan mətn qutuları üçündür</target>
         <alt-trans>
           <target xml:lang="az">Bu formatlaşdırma {0} üslubu daşayan bütün mətn qutuları üçündür.</target>
         </alt-trans>
@@ -251,7 +251,7 @@
       <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is for all {0} text boxes with '{1}' style.</source>
         <note>ID: BookEditor.ForTextInLang</note>
-        <target xml:lang="az" state="translated">Bu formatlaşdırma '{1}' üslubu daşayan bütün {0} mətn qutuları üçündür</target>
+        <target xml:lang="az" state="final">Bu formatlaşdırma '{1}' üslubu daşayan bütün {0} mətn qutuları üçündür</target>
         <alt-trans>
           <target xml:lang="az">Bu formatlaşdırma {1} üslubu daşayan bütün {0} mətn qutuları üçündür.</target>
         </alt-trans>
@@ -407,12 +407,12 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
         <source xml:lang="en">Advanced Program Settings</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel</note>
-        <target xml:lang="az" state="translated">Genişləndirilmiş Program Xüsusiyyətləri</target>
+        <target xml:lang="az" state="final">Genişləndirilmiş Program Xüsusiyyətləri</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate" approved="yes">
         <source xml:lang="en">Automatically update Bloom</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate</note>
-        <target xml:lang="az" state="translated">"Bloom"u avtomatik yeniləndir</target>
+        <target xml:lang="az" state="final">"Bloom"u avtomatik yeniləndir</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
         <source xml:lang="en">Show Experimental Features</source>
@@ -424,22 +424,22 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates" approved="yes">
         <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates</note>
-        <target xml:lang="az" state="translated">Təcrübə Şablonlar Göstər (məsələn, Şekilli Lüğət)</target>
+        <target xml:lang="az" state="final">Təcrübə Şablonlar Göstər (məsələn, Şekilli Lüğət)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate1</note>
-        <target xml:lang="az" state="translated">Bloom standart şrifti "{0}" yeni "Andika New Basic" şriftiyə deyişir.</target>
+        <target xml:lang="az" state="final">Bloom standart şrifti "{0}" yeni "Andika New Basic" şriftiyə deyişir.</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate2</note>
-        <target xml:lang="az" state="translated">Bu tədbir əksəriyyət dillərində çap çıxışı yaxşılaşdıracaq. Əgər sizin diliniz "Andika" şrift tələb olan azlardan biridirsə, onu Qurulması: Kitab Yaratmaq bölgəsində gəri deyisməyə bilərsiniz.</target>
+        <target xml:lang="az" state="final">Bu tədbir əksəriyyət dillərində çap çıxışı yaxşılaşdıracaq. Əgər sizin diliniz "Andika" şrift tələb olan azlardan biridirsə, onu Qurulması: Kitab Yaratmaq bölgəsində gəri deyisməyə bilərsiniz.</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel" approved="yes">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
-        <target xml:lang="az" state="translated">Kitab Yaratmaq</target>
+        <target xml:lang="az" state="final">Kitab Yaratmaq</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding">
         <source xml:lang="en">Branding</source>
@@ -456,7 +456,7 @@
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
         <note>{0} is a language name.</note>
-        <target xml:lang="az" state="translated">{0} üçün Susmaya Görə Şrift</target>
+        <target xml:lang="az" state="final">{0} üçün Susmaya Görə Şrift</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
         <source xml:lang="en">Front/Back Matter Pack</source>
@@ -638,51 +638,51 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink" approved="yes">
         <source xml:lang="en">Special Script Settings</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink</note>
-        <target xml:lang="az" state="translated">Xüsusi Şrift Qurulması</target>
+        <target xml:lang="az" state="final">Xüsusi Şrift Qurulması</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
-        <target xml:lang="az" state="translated">Parametrlər</target>
+        <target xml:lang="az" state="final">Parametrlər</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink" approved="yes">
         <source xml:lang="en">Change...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
-        <target xml:lang="az" state="translated">Deyişdir</target>
+        <target xml:lang="az" state="final">Deyişdir</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection" approved="yes">
         <source xml:lang="en">Language 1</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language1InSourceCollection</note>
         <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
-        <target xml:lang="az" state="translated">1-ci Dil</target>
+        <target xml:lang="az" state="final">1-ci Dil</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection" approved="yes">
         <source xml:lang="en">Language 2</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language2InSourceCollection</note>
         <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
-        <target xml:lang="az" state="translated">2-ci Dil</target>
+        <target xml:lang="az" state="final">2-ci Dil</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection" approved="yes">
         <source xml:lang="en">Language 3</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language3InSourceCollection</note>
         <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
-        <target xml:lang="az" state="translated">3-ci Dil</target>
+        <target xml:lang="az" state="final">3-ci Dil</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel" approved="yes">
         <source xml:lang="en">Languages</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.LanguageTabLabel</note>
-        <target xml:lang="az" state="translated">Dillər</target>
+        <target xml:lang="az" state="final">Dillər</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink" approved="yes">
         <source xml:lang="en">Remove</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.RemoveLanguageLink</note>
-        <target xml:lang="az" state="translated">Sil</target>
+        <target xml:lang="az" state="final">Sil</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink" approved="yes">
         <source xml:lang="en">Set...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink</note>
         <note>If there is no third or sign language specified, the link changes to this.</note>
-        <target xml:lang="az" state="translated">Parametrleri Qur</target>
+        <target xml:lang="az" state="final">Parametrleri Qur</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
         <source xml:lang="en">Local Language</source>
@@ -692,13 +692,13 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label" approved="yes">
         <source xml:lang="en">Language 2 (e.g. National Language)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language2Label</note>
-        <target xml:lang="az" state="translated">2-ci Dil (məsələn Məmləkətlik Dili)</target>
+        <target xml:lang="az" state="final">2-ci Dil (məsələn Məmləkətlik Dili)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label" approved="yes">
         <source xml:lang="en">Language 3 (e.g. Regional Language)   (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language3Label</note>
         <note xml:lang="en">OLD TEXT (before 3.9, 1 fewer space): Language 3 (e.g. Regional Language)  (Optional)</note>
-        <target xml:lang="az" state="translated">3-ci Dil (məsələn, daha çox yayılan Dil) (İxtiyari)</target>
+        <target xml:lang="az" state="final">3-ci Dil (məsələn, daha çox yayılan Dil) (İxtiyari)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
         <source xml:lang="en">Sign Language   (Optional)</source>
@@ -708,7 +708,7 @@
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName</note>
-        <target xml:lang="az" state="translated">Bloom Yığmanın Adı</target>
+        <target xml:lang="az" state="final">Bloom Yığmanın Adı</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject">
         <source xml:lang="en">Bloom Enterprise Project</source>
@@ -719,33 +719,33 @@
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Country</note>
-        <target xml:lang="az" state="translated">Ölkə</target>
+        <target xml:lang="az" state="final">Ölkə</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District" approved="yes">
         <source xml:lang="en">District</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.District</note>
-        <target xml:lang="az" state="translated">Rayon</target>
+        <target xml:lang="az" state="final">Rayon</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel" approved="yes">
         <source xml:lang="en">Project Information</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel</note>
-        <target xml:lang="az" state="translated">Layihənin Məlumatı</target>
+        <target xml:lang="az" state="final">Layihənin Məlumatı</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province" approved="yes">
         <source xml:lang="en">Province</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
-        <target xml:lang="az" state="translated">Vilayət</target>
+        <target xml:lang="az" state="final">Vilayət</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart" approved="yes">
         <source xml:lang="en">Restart</source>
         <note>ID: CollectionSettingsDialog.Restart</note>
         <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
-        <target xml:lang="az" state="translated">Yenidən başlat</target>
+        <target xml:lang="az" state="final">Yenidən başlat</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.RestartMessage" approved="yes">
         <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
         <note>ID: CollectionSettingsDialog.RestartMessage</note>
-        <target xml:lang="az" state="translated">Bloom bu layihəni yeni parametrlər ilə bağlayacaq və açılacaq.</target>
+        <target xml:lang="az" state="final">Bloom bu layihəni yeni parametrlər ilə bağlayacaq və açılacaq.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
@@ -765,7 +765,7 @@
       <trans-unit id="CollectionTab.Applying" approved="yes">
         <source xml:lang="en">Applying updates</source>
         <note>ID: CollectionTab.Applying</note>
-        <target xml:lang="az" state="translated">Yeniləmələri tətbiq etməkdə</target>
+        <target xml:lang="az" state="final">Yeniləmələri tətbiq etməkdə</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkLabel">
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
@@ -789,7 +789,7 @@
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="az" state="translated">Mənbə Yığması</target>
+        <target xml:lang="az" state="final">Mənbə Yığması</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.DeleteBook">
         <source xml:lang="en">Delete Book</source>
@@ -804,7 +804,7 @@
       <trans-unit id="CollectionTab.BookMenu.ExportDocMessage" approved="yes">
         <source xml:lang="en">Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book. These programs normally don't do well with preserving the layout, so don't expect much.</source>
         <note>ID: CollectionTab.BookMenu.ExportDocMessage</note>
-        <target xml:lang="az" state="translated">"Bloom" artıq sizin mətn tərtib edici proqram bu HTML sənəd açılacaq (adətən Word və ya LibreOffice). Siz bu kitabın mətni və təsvirləri ilə işləməyə biləcəksiniz, amma belə proqramlar adətən maketi qorunub saxlanması da yaxşı işləmirlər. Ona görə də lap yaxşı nəticəni gözləməyin.</target>
+        <target xml:lang="az" state="final">"Bloom" artıq sizin mətn tərtib edici proqram bu HTML sənəd açılacaq (adətən Word və ya LibreOffice). Siz bu kitabın mətni və təsvirləri ilə işləməyə biləcəksiniz, amma belə proqramlar adətən maketi qorunub saxlanması da yaxşı işləmirlər. Ona görə də lap yaxşı nəticəni gözləməyin.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
         <source xml:lang="en">Export to Word or LibreOffice...</source>
@@ -834,7 +834,7 @@
       <trans-unit id="CollectionTab.BookSourceHeading" approved="yes">
         <source xml:lang="en">Sources For New Books</source>
         <note>ID: CollectionTab.BookSourceHeading</note>
-        <target xml:lang="az" state="translated">Yeni Kitablar Üçün Mənbələr</target>
+        <target xml:lang="az" state="final">Yeni Kitablar Üçün Mənbələr</target>
         <alt-trans>
           <target xml:lang="az">Yeni kitablar üçün mənbələr</target>
         </alt-trans>
@@ -847,62 +847,62 @@
       <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Books From BloomLibrary.org</source>
         <note>ID: CollectionTab.Books From BloomLibrary.org</note>
-        <target xml:lang="az" state="translated">BloomLibrary.org-dan Kitablar</target>
+        <target xml:lang="az" state="final">BloomLibrary.org-dan Kitablar</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks" approved="yes">
         <source xml:lang="en">Do Updates of All Books</source>
         <note>ID: CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks</note>
-        <target xml:lang="az" state="translated">Hamı Kitablar Yeniləşdir</target>
+        <target xml:lang="az" state="final">Hamı Kitablar Yeniləşdir</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks" approved="yes">
         <source xml:lang="en">Do Checks of All Books</source>
         <note>ID: CollectionTab.CollectionMenu.doChecksOfAllBooks</note>
-        <target xml:lang="az" state="translated">Hamı Kitablar Yoxla</target>
+        <target xml:lang="az" state="final">Hamı Kitablar Yoxla</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages" approved="yes">
         <source xml:lang="en">Rescue Missing Images...</source>
         <note>ID: CollectionTab.CollectionMenu.rescueMissingImages</note>
-        <target xml:lang="az" state="translated">İtmiş Təsvirləri əldə et</target>
+        <target xml:lang="az" state="final">İtmiş Təsvirləri əldə et</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.showHistory" approved="yes">
         <source xml:lang="en">Collection History...</source>
         <note>ID: CollectionTab.CollectionMenu.showHistory</note>
-        <target xml:lang="az" state="translated">Yığmanın Tarixi</target>
+        <target xml:lang="az" state="final">Yığmanın Tarixi</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.showNotes" approved="yes">
         <source xml:lang="en">Collection Notes...</source>
         <note>ID: CollectionTab.CollectionMenu.showNotes</note>
-        <target xml:lang="az" state="translated">Yığmanın Qeydlər</target>
+        <target xml:lang="az" state="final">Yığmanın Qeydlər</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionTabLabel" approved="yes">
         <source xml:lang="en">Collections</source>
         <note>ID: CollectionTab.CollectionTabLabel</note>
-        <target xml:lang="az" state="translated">Yığmalar</target>
+        <target xml:lang="az" state="final">Yığmalar</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Collections" approved="yes">
         <source xml:lang="en">Collections</source>
         <note>ID: CollectionTab.Collections</note>
-        <target xml:lang="az" state="translated">Yığmalar</target>
+        <target xml:lang="az" state="final">Yığmalar</target>
       </trans-unit>
       <trans-unit id="CollectionTab.ConfiguringBookMessage" approved="yes">
         <source xml:lang="en">Building...</source>
         <note>ID: CollectionTab.ConfiguringBookMessage</note>
-        <target xml:lang="az" state="translated">Yaratmaqdadır...</target>
+        <target xml:lang="az" state="final">Yaratmaqdadır...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.ConfirmRecycleDescription" approved="yes">
         <source xml:lang="en">The book '{0}'</source>
         <note>ID: CollectionTab.ConfirmRecycleDescription</note>
-        <target xml:lang="az" state="translated">Kitabı '{0}'</target>
+        <target xml:lang="az" state="final">Kitabı '{0}'</target>
       </trans-unit>
       <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk" approved="yes">
         <source xml:lang="en">Open Folder on Disk</source>
         <note>ID: CollectionTab.ContextMenu.OpenFolderOnDisk</note>
-        <target xml:lang="az" state="translated">Diskdeki Qovluq Aç</target>
+        <target xml:lang="az" state="final">Diskdeki Qovluq Aç</target>
       </trans-unit>
       <trans-unit id="CollectionTab.EditBookButton" approved="yes">
         <source xml:lang="en">Edit this book</source>
         <note>ID: CollectionTab.EditBookButton</note>
-        <target xml:lang="az" state="translated">Bu kitabı redaktə et</target>
+        <target xml:lang="az" state="final">Bu kitabı redaktə et</target>
       </trans-unit>
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
@@ -922,36 +922,36 @@
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate" approved="yes">
         <source xml:lang="en">Make a book using this source</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate</note>
-        <target xml:lang="az" state="translated">Bu mənbədən kitab yarat</target>
+        <target xml:lang="az" state="final">Bu mənbədən kitab yarat</target>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_" approved="yes">
         <source xml:lang="en">Create a book in my language using this source book</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate_ToolTip_</note>
-        <target xml:lang="az" state="translated">Mənim dilimdə bu mənbə kitabı esasınan kitab yarat</target>
+        <target xml:lang="az" state="final">Mənim dilimdə bu mənbə kitabı esasınan kitab yarat</target>
       </trans-unit>
       <trans-unit id="CollectionTab.MoreLanguagesMenuItem" approved="yes">
         <source xml:lang="en">More...</source>
         <note>ID: CollectionTab.MoreLanguagesMenuItem</note>
         <note>Brings up the localization dialog</note>
         <note xml:lang="en">used in 3.9 and earlier; feature removed in 4.0</note>
-        <target xml:lang="az" state="translated">Daha çox...</target>
+        <target xml:lang="az" state="final">Daha çox...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Open/CreateCollectionButton" approved="yes">
         <source xml:lang="en">Other Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton</note>
         <note>This is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
-        <target xml:lang="az" state="translated">Etraflı Yığmalar</target>
+        <target xml:lang="az" state="final">Etraflı Yığmalar</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Open/CreateCollectionButton_ToolTip_" approved="yes">
         <source xml:lang="en">Open/Create/Get Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton_ToolTip_</note>
         <note>This is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
-        <target xml:lang="az" state="translated">Yığma Aç/Yarat/Götür</target>
+        <target xml:lang="az" state="final">Yığma Aç/Yarat/Götür</target>
       </trans-unit>
       <trans-unit id="CollectionTab.OpenCreateCollectionMenuItem" approved="yes">
         <source xml:lang="en">Open or Create Another Collection</source>
         <note>ID: CollectionTab.OpenCreateCollectionMenuItem</note>
-        <target xml:lang="az" state="translated">O Bir Yiğmanı Aç və ya Yarat</target>
+        <target xml:lang="az" state="final">O Bir Yiğmanı Aç və ya Yarat</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Progress">
         <source xml:lang="en">({0}% complete)</source>
@@ -967,38 +967,38 @@
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample Shells</source>
         <note>ID: CollectionTab.Sample Shells</note>
-        <target xml:lang="az" state="translated">Nümunə Şablonlar</target>
+        <target xml:lang="az" state="final">Nümunə Şablonlar</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SendReceive" approved="yes">
         <source xml:lang="en">Send/Receive</source>
         <note>ID: CollectionTab.SendReceive</note>
-        <target xml:lang="az" state="translated">Məlumat mübadilə et</target>
+        <target xml:lang="az" state="final">Məlumat mübadilə et</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SettingsButton" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionTab.SettingsButton</note>
-        <target xml:lang="az" state="translated">Parametrlər</target>
+        <target xml:lang="az" state="final">Parametrlər</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections" approved="yes">
         <source xml:lang="en">Open Additional Collections Folder</source>
         <note>ID: CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections</note>
-        <target xml:lang="az" state="translated">Etraflı Yığmalarının Qovluğu Aç</target>
+        <target xml:lang="az" state="final">Etraflı Yığmalarının Qovluğu Aç</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading" approved="yes">
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
-        <target xml:lang="az" state="translated">Yəni Şablonlar Üçün Mənbelər</target>
+        <target xml:lang="az" state="final">Yəni Şablonlar Üçün Mənbelər</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Templates" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Templates</source>
         <note>ID: CollectionTab.Templates</note>
-        <target xml:lang="az" state="translated">Şablonlar</target>
+        <target xml:lang="az" state="final">Şablonlar</target>
       </trans-unit>
       <trans-unit id="CollectionTab.TitleMissing" approved="yes">
         <source xml:lang="en">Title Missing</source>
         <note>ID: CollectionTab.TitleMissing</note>
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
-        <target xml:lang="az" state="translated">Kitabın Adı Yoxdur</target>
+        <target xml:lang="az" state="final">Kitabın Adı Yoxdur</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.HelpTranslate">
         <source xml:lang="en">Help us translate Bloom (web)</source>
@@ -1016,51 +1016,71 @@
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
         <note>ID: CollectionTab.UnableToCheckForUpdate</note>
         <note>Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc.</note>
-        <target xml:lang="az" state="translated">Proqramı yeniləşdirmək üçün idarəedici kompüterə elaqə edə bilmir. Siz haqiqətdən İnternetə qoşuldunuzmu?</target>
+        <target xml:lang="az" state="final">Proqramı yeniləşdirmək üçün idarəedici kompüterə elaqə edə bilmir. Siz haqiqətdən İnternetə qoşuldunuzmu?</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpToDate" approved="yes">
         <source xml:lang="en">Your Bloom is up to date.</source>
         <note>ID: CollectionTab.UpToDate</note>
-        <target xml:lang="az" state="translated">Sizin "Bloom" proqramınız xal hazırda təzələşdirilmişdir.</target>
+        <target xml:lang="az" state="final">Sizin "Bloom" proqramınız xal hazırda təzələşdirilmişdir.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateCheckInProgress" approved="yes">
         <source xml:lang="en">Bloom is already working on checking for updates.</source>
         <note>ID: CollectionTab.UpdateCheckInProgress</note>
-        <target xml:lang="az" state="translated">Bloom artıq yeniləmələri axtarır.</target>
+        <target xml:lang="az" state="final">Bloom artıq yeniləmələri axtarır.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateFailed" approved="yes">
         <source xml:lang="en">A new version appears to be available, but Bloom could not install it.</source>
         <note>ID: CollectionTab.UpdateFailed</note>
-        <target xml:lang="az" state="translated">Proqramın yeni versiyası artıq var, amma Bloom onu quruya bilmirdi.</target>
+        <target xml:lang="az" state="final">Proqramın yeni versiyası artıq var, amma Bloom onu quruya bilmirdi.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateInstalled" approved="yes">
         <source xml:lang="en">Update for {0} is ready</source>
         <note>ID: CollectionTab.UpdateInstalled</note>
         <note>Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom.</note>
         <note xml:lang="en">OLD TEXT (before 3.9, period at end): Update for {0} is ready.</note>
-        <target xml:lang="az" state="translated">Yenilənmə  {0} üçün artıq hazırdır.</target>
+        <target xml:lang="az" state="final">Yenilənmə  {0} üçün artıq hazırdır.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateNow" approved="yes">
         <source xml:lang="en">Update Now</source>
         <note>ID: CollectionTab.UpdateNow</note>
-        <target xml:lang="az" state="translated">İndi Təzələndir</target>
+        <target xml:lang="az" state="final">İndi Təzələndir</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdatesAvailable" approved="yes">
         <source xml:lang="en">A new version of Bloom is available.</source>
         <note>ID: CollectionTab.UpdatesAvailable</note>
-        <target xml:lang="az" state="translated">Bloom Proqramın yeni versiyası mövcudur.</target>
+        <target xml:lang="az" state="final">Bloom Proqramın yeni versiyası mövcudur.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Updating" approved="yes">
         <source xml:lang="en">Downloading update to {0} ({1}K)</source>
         <note>ID: CollectionTab.Updating</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Downloading update to {0} ({1}kb).</note>
-        <target xml:lang="az" state="translated">Yeniləmə yüklənir {0} qəder ({1}K)</target>
+        <target xml:lang="az" state="final">Yeniləmə yüklənir {0} qəder ({1}K)</target>
       </trans-unit>
       <trans-unit id="Common.Advanced">
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
         <target xml:lang="az" state="translated">Gənişləndirilmiş</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Black">
+        <source xml:lang="en">Black</source>
+        <note>ID: Common.Colors.Black</note>
+        <target xml:lang="az" state="needs-translation">Black</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Crimson">
+        <source xml:lang="en">Crimson</source>
+        <note>ID: Common.Colors.Crimson</note>
+        <target xml:lang="az" state="needs-translation">Crimson</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Yellow">
+        <source xml:lang="en">Yellow</source>
+        <note>ID: Common.Colors.Yellow</note>
+        <target xml:lang="az" state="needs-translation">Yellow</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.White">
+        <source xml:lang="en">White</source>
+        <note>ID: Common.Colors.White</note>
+        <target xml:lang="az" state="needs-translation">White</target>
       </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true">
         <source xml:lang="en">Learn More</source>
@@ -1072,23 +1092,23 @@
         <source xml:lang="en">Back</source>
         <note>ID: Common.BackButton</note>
         <note>In a wizard, this button takes you to the previous step.</note>
-        <target xml:lang="az" state="translated">Gəri</target>
+        <target xml:lang="az" state="final">Gəri</target>
       </trans-unit>
       <trans-unit id="Common.Cancel" approved="yes">
         <source xml:lang="en">Cancel</source>
         <note>ID: Common.Cancel</note>
-        <target xml:lang="az" state="translated">Ləğv et</target>
+        <target xml:lang="az" state="final">Ləğv et</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="az" state="translated">&amp;Ləğv et</target>
+        <target xml:lang="az" state="final">&amp;Ləğv et</target>
       </trans-unit>
       <trans-unit id="Common.Finish" approved="yes">
         <source xml:lang="en">&amp;Finish</source>
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="az" state="translated">&amp;Sonlandır</target>
+        <target xml:lang="az" state="final">&amp;Sonlandır</target>
       </trans-unit>
       <trans-unit id="Common.Info">
         <source xml:lang="en">Info</source>
@@ -1117,18 +1137,18 @@
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
-        <target xml:lang="az" state="translated">Kömək</target>
+        <target xml:lang="az" state="final">Kömək</target>
       </trans-unit>
       <trans-unit id="Common.HelpButton" approved="yes">
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
-        <target xml:lang="az" state="translated">&amp;Kömək</target>
+        <target xml:lang="az" state="final">&amp;Kömək</target>
       </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Loading...</source>
         <note>ID: Common.Loading</note>
         <note>This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.</note>
-        <target xml:lang="az" state="translated">Yükləməkdədir...</target>
+        <target xml:lang="az" state="final">Yükləməkdədir...</target>
         <alt-trans>
           <target xml:lang="az">Yüklənir...</target>
         </alt-trans>
@@ -1158,7 +1178,7 @@
       <trans-unit id="Common.Optional" approved="yes">
         <source xml:lang="en">optional</source>
         <note>ID: Common.Optional</note>
-        <target xml:lang="az" state="translated">İxtiyari</target>
+        <target xml:lang="az" state="final">İxtiyari</target>
         <alt-trans>
           <target xml:lang="az">əlavə</target>
         </alt-trans>
@@ -1179,6 +1199,11 @@
         <note>Sense of refreshing a web page.</note>
         <target xml:lang="az" state="translated">Yenilə</target>
       </trans-unit>
+      <trans-unit id="Common.Replace">
+        <source xml:lang="en">Replace</source>
+        <note>ID: Common.Replace</note>
+        <target xml:lang="az" state="needs-translation">Replace</target>
+      </trans-unit>
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
@@ -1193,23 +1218,23 @@
       <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
-        <target xml:lang="az" state="translated">Sizin yüklənmə ({0}) tamamlandı. Siz kolleksiyaların bölməsində "BloomLibrary.org kitab" onu görə bilərsiniz. Əgər siz bir şey etdiyinilə məşğul görünür deyilsə, Bloom sizin üçün onu seçəcək.</target>
+        <target xml:lang="az" state="final">Sizin yüklənmə ({0}) tamamlandı. Siz kolleksiyaların bölməsində "BloomLibrary.org kitab" onu görə bilərsiniz. Əgər siz bir şey etdiyinilə məşğul görünür deyilsə, Bloom sizin üçün onu seçəcək.</target>
       </trans-unit>
       <trans-unit id="Download.CompletedCaption" approved="yes">
         <source xml:lang="en">Download complete</source>
         <note>ID: Download.CompletedCaption</note>
-        <target xml:lang="az" state="translated">Siz yüklənən fayllar artıq başa çatdı.</target>
+        <target xml:lang="az" state="final">Siz yüklənən fayllar artıq başa çatdı.</target>
       </trans-unit>
       <trans-unit id="Download.CopyFailed" approved="yes">
         <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers</source>
         <note>ID: Download.CopyFailed</note>
         <note xml:lang="en">OLD TEXT (before 3.9, period at end): Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</note>
-        <target xml:lang="az" state="translated">Proqram "Bloom" kitabı yükləyib amma onu istifadəsi mümkün etməyə problemləri var idi. Xahiş edirik, kompüterinizi yenidən başlatın və yenidən cəhd edin. Bir daha bu mesajı alirsınızsa, təfərrüatlar düyməsini basın və Bloom tərtibatçılarına problem hesabat edin.</target>
+        <target xml:lang="az" state="final">Proqram "Bloom" kitabı yükləyib amma onu istifadəsi mümkün etməyə problemləri var idi. Xahiş edirik, kompüterinizi yenidən başlatın və yenidən cəhd edin. Bir daha bu mesajı alirsınızsa, təfərrüatlar düyməsini basın və Bloom tərtibatçılarına problem hesabat edin.</target>
       </trans-unit>
       <trans-unit id="Download.DownloadingDialogTitle" approved="yes">
         <source xml:lang="en">Downloading book</source>
         <note>ID: Download.DownloadingDialogTitle</note>
-        <target xml:lang="az" state="translated">Kitab yüklənir</target>
+        <target xml:lang="az" state="final">Kitab yüklənir</target>
       </trans-unit>
       <trans-unit id="Download.GenericNetworkProblemNotice">
         <source xml:lang="en">There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
@@ -1220,35 +1245,35 @@
       <trans-unit id="Download.ProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
         <note>ID: Download.ProblemNotice</note>
-        <target xml:lang="az" state="translated">Kitab yüklənərkən bir problem var idi. Siz Bloom yeniden başlatmaq və ya texniki yardım almaq lazım ola bilər.</target>
+        <target xml:lang="az" state="final">Kitab yüklənərkən bir problem var idi. Siz Bloom yeniden başlatmaq və ya texniki yardım almaq lazım ola bilər.</target>
       </trans-unit>
       <trans-unit id="Download.TimeoutProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
         <note>ID: Download.TimeoutProblemNotice</note>
         <note xml:lang="en">OLD TEXT (before 3.9, capitalization of website): There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@BloomLibrary.org if you cannot get the download to work from your location.</note>
-        <target xml:lang="az" state="translated">Kitab yüklənərkən bir problem var idi: bir şey çox uzun çəkdi. Əgər sizin ünvanından yükləməyə ala bilmirsənsə, siz başqa zamanda yenidən cəhd edə bilərsiniz və ya bizə issues@bloomlibrary.org-da yaza bilərsiniz.</target>
+        <target xml:lang="az" state="final">Kitab yüklənərkən bir problem var idi: bir şey çox uzun çəkdi. Əgər sizin ünvanından yükləməyə ala bilmirsənsə, siz başqa zamanda yenidən cəhd edə bilərsiniz və ya bizə issues@bloomlibrary.org-da yaza bilərsiniz.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.AddPageButton" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Page</source>
         <note>ID: EditTab.AddPageDialog.AddPageButton</note>
         <note>This is for the button that LAUNCHES the dialog, not the 'Add this page' button that is IN the dialog.</note>
-        <target xml:lang="az" state="translated">Səhifəni əlavə etmək</target>
+        <target xml:lang="az" state="final">Səhifəni əlavə etmək</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.AddThisPageButton" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add This Page</source>
         <note>ID: EditTab.AddPageDialog.AddThisPageButton</note>
         <note>This is for the button inside the dialog</note>
-        <target xml:lang="az" state="translated">Bu səhifəni əlavə et</target>
+        <target xml:lang="az" state="final">Bu səhifəni əlavə et</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutButton" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use This Layout</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutButton</note>
-        <target xml:lang="az" state="translated">Bu maket istifadə et</target>
+        <target xml:lang="az" state="final">Bu maket istifadə et</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutContinueCheckbox" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Continue anyway</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutContinueCheckbox</note>
-        <target xml:lang="az" state="translated">Həç baxmayaraq, davam edim?</target>
+        <target xml:lang="az" state="final">Həç baxmayaraq, davam edim?</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutConvertBookCheckbox" sil:dynamic="true">
         <source xml:lang="en">Change all similar pages in this book to this layout.</source>
@@ -1259,12 +1284,12 @@
         <source xml:lang="en">Choose Different Layout...</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutTitle</note>
         <note>found in 3.9 and earlier</note>
-        <target xml:lang="az" state="translated">Başqa bir maket seçin...</target>
+        <target xml:lang="az" state="final">Başqa bir maket seçin...</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutWillLoseData" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
-        <target xml:lang="az" state="translated">Bu maketə çevirmək bir qədər məzmunu itməyənin səbəbi olacaq.</target>
+        <target xml:lang="az" state="final">Bu maketə çevirmək bir qədər məzmunu itməyənin səbəbi olacaq.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true">
         <source xml:lang="en">This kind of page will be included only in digital book outputs, not in PDF.</source>
@@ -1282,7 +1307,7 @@
         <source xml:lang="en">Add Page...</source>
         <note>ID: EditTab.AddPageDialog.Title</note>
         <note>found in 3.9 and earlier</note>
-        <target xml:lang="az" state="translated">Səhifəni əlavə edin...</target>
+        <target xml:lang="az" state="final">Səhifəni əlavə edin...</target>
       </trans-unit>
       <trans-unit id="EditTab.AddTextBoxToImage">
         <source xml:lang="en">Add Text Box To Image</source>
@@ -1292,18 +1317,18 @@
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
         <note>ID: EditTab.BackMatter.InsideBackCoverTextPrompt</note>
-        <target xml:lang="az" state="translated">Əgər siz kitab haqqında daha çox məlumat vermək hardasa lazımdır, siz cildin önlüyü kənarda olan bu səhifə, istifadə edə bilərsiniz.</target>
+        <target xml:lang="az" state="final">Əgər siz kitab haqqında daha çox məlumat vermək hardasa lazımdır, siz cildin önlüyü kənarda olan bu səhifə, istifadə edə bilərsiniz.</target>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.OutsideBackCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</source>
         <note>ID: EditTab.BackMatter.OutsideBackCoverTextPrompt</note>
-        <target xml:lang="az" state="translated">Əgər siz kitab haqqında daha çox məlumat vermək haradasa lazımdır, siz arxa örtüyünün kənarda olan bu səhifə, istifadə edə bilərsiniz.</target>
+        <target xml:lang="az" state="final">Əgər siz kitab haqqında daha çox məlumat vermək haradasa lazımdır, siz arxa örtüyünün kənarda olan bu səhifə, istifadə edə bilərsiniz.</target>
       </trans-unit>
       <trans-unit id="EditTab.Bilingual" approved="yes">
         <source xml:lang="en">Two Languages</source>
         <note>ID: EditTab.Bilingual</note>
         <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
-        <target xml:lang="az" state="translated">İki dil</target>
+        <target xml:lang="az" state="final">İki dil</target>
       </trans-unit>
       <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
         <source xml:lang="en">Open the HTML used to make this PDF, in Firefox (must be on path)</source>
@@ -1313,17 +1338,17 @@
       <trans-unit id="EditTab.CannotChangeCopyright" approved="yes">
         <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
         <note>ID: EditTab.CannotChangeCopyright</note>
-        <target xml:lang="az" state="translated">Təəssüflər olsun ki, bu kitabın müəlliflik hüquqları və lisenziya dəyişdirilə bilməz.</target>
+        <target xml:lang="az" state="final">Təəssüflər olsun ki, bu kitabın müəlliflik hüquqları və lisenziya dəyişdirilə bilməz.</target>
       </trans-unit>
       <trans-unit id="EditTab.CantPasteImageLocked" approved="yes">
         <source xml:lang="en">Sorry, this book is locked down so that images cannot be changed.</source>
         <note>ID: EditTab.CantPasteImageLocked</note>
-        <target xml:lang="az" state="translated">Bağışlayın, bu kitabın təsvirləri dəyişdirilə bilməzsin deyə bağlanır.</target>
+        <target xml:lang="az" state="final">Bağışlayın, bu kitabın təsvirləri dəyişdirilə bilməzsin deyə bağlanır.</target>
       </trans-unit>
       <trans-unit id="EditTab.ChooseLayoutButton" approved="yes">
         <source xml:lang="en">Choose Different Layout</source>
         <note>ID: EditTab.ChooseLayoutButton</note>
-        <target xml:lang="az" state="translated">O biri bir maket seçin</target>
+        <target xml:lang="az" state="final">O biri bir maket seçin</target>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
         <source xml:lang="en">Really Remove Page?</source>
@@ -1340,17 +1365,17 @@
       <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel" approved="yes">
         <source xml:lang="en">This page will be permanently removed.</source>
         <note>ID: EditTab.ConfirmRemovePageDialog._messageLabel</note>
-        <target xml:lang="az" state="translated">Bu səhifəni mütəmadi olaraq silinəcək.</target>
+        <target xml:lang="az" state="final">Bu səhifəni mütəmadi olaraq silinəcək.</target>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown" approved="yes">
         <source xml:lang="en">Multilingual Settings</source>
         <note>ID: EditTab.ContentLanguagesDropdown</note>
-        <target xml:lang="az" state="translated">Çox Dil İstifadə Etmək Parametrlər</target>
+        <target xml:lang="az" state="final">Çox Dil İstifadə Etmək Parametrlər</target>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip" approved="yes">
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
         <note>ID: EditTab.ContentLanguagesDropdown.ToolTip</note>
-        <target xml:lang="az" state="translated">Bu kitabı iki dilli və ya üç dilli kitab etməyə dil seçməlidir.</target>
+        <target xml:lang="az" state="final">Bu kitabı iki dilli və ya üç dilli kitab etməyə dil seçməlidir.</target>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown_ToolTip_">
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
@@ -1360,23 +1385,23 @@
       <trans-unit id="EditTab.CopyButton" approved="yes">
         <source xml:lang="en">Copy</source>
         <note>ID: EditTab.CopyButton</note>
-        <target xml:lang="az" state="translated">Köçür</target>
+        <target xml:lang="az" state="final">Köçür</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyButton.ToolTip" approved="yes">
         <source xml:lang="en">Copy (Ctrl+C)</source>
         <note>ID: EditTab.CopyButton.ToolTip</note>
-        <target xml:lang="az" state="translated">Köçür (Ctrl-c)</target>
+        <target xml:lang="az" state="final">Köçür (Ctrl-c)</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyButton.ToolTipWhenDisabled" approved="yes">
         <source xml:lang="en">You need to select some text before you can copy it</source>
         <note>ID: EditTab.CopyButton.ToolTipWhenDisabled</note>
-        <target xml:lang="az" state="translated">Köçürməkdən əvvəl mətni seçməlidir</target>
+        <target xml:lang="az" state="final">Köçürməkdən əvvəl mətni seçməlidir</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyImageIPMetadataQuestion" approved="yes">
         <source xml:lang="en">Copy this information to all other pictures in this book?</source>
         <note>ID: EditTab.CopyImageIPMetadataQuestion</note>
         <note>get this after you edit the metadata of an image</note>
-        <target xml:lang="az" state="translated">Həmin məlumat bu kitabdakə hamı digər şəkillərə köçürmək?</target>
+        <target xml:lang="az" state="final">Həmin məlumat bu kitabdakə hamı digər şəkillərə köçürmək?</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyPage">
         <source xml:lang="en">Copy Page</source>
@@ -1386,24 +1411,24 @@
       <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Layout</source>
         <note>ID: EditTab.CustomPage.ChangeLayout</note>
-        <target xml:lang="az" state="translated">Maket dəyişdir</target>
+        <target xml:lang="az" state="final">Maket dəyişdir</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true" approved="yes">
         <source xml:lang="en">or</source>
         <note>ID: EditTab.CustomPage.Or</note>
         <note>Shown between 'Picture' and 'Text' when Custom Page is in Layout mode</note>
         <note xml:lang="en">OLD TEXT (before 3.9, surrounding spaces):  or </note>
-        <target xml:lang="az" state="translated">və ya</target>
+        <target xml:lang="az" state="final">və ya</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Picture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture</source>
         <note>ID: EditTab.CustomPage.Picture</note>
-        <target xml:lang="az" state="translated">Şekil</target>
+        <target xml:lang="az" state="final">Şekil</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Text" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text</source>
         <note>ID: EditTab.CustomPage.Text</note>
-        <target xml:lang="az" state="translated">Mətn</target>
+        <target xml:lang="az" state="final">Mətn</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Video" sil:dynamic="true">
         <source xml:lang="en">Video</source>
@@ -1413,35 +1438,35 @@
       <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Box</source>
         <note>ID: EditTab.CustomPage.TextBox</note>
-        <target xml:lang="az" state="translated">Mətn Qutusu</target>
+        <target xml:lang="az" state="final">Mətn Qutusu</target>
       </trans-unit>
       <trans-unit id="EditTab.CutButton" approved="yes">
         <source xml:lang="en">Cut</source>
         <note>ID: EditTab.CutButton</note>
-        <target xml:lang="az" state="translated">Kəs</target>
+        <target xml:lang="az" state="final">Kəs</target>
       </trans-unit>
       <trans-unit id="EditTab.CutButton.ToolTip" approved="yes">
         <source xml:lang="en">Cut (Ctrl+X)</source>
         <note>ID: EditTab.CutButton.ToolTip</note>
-        <target xml:lang="az" state="translated">Kəs (Ctrl-x)</target>
+        <target xml:lang="az" state="final">Kəs (Ctrl-x)</target>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton" approved="yes">
         <source xml:lang="en">Remove Page</source>
         <note>ID: EditTab.DeletePageButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Remove\n  Page</note>
-        <target xml:lang="az" state="translated">Çıxart Səhifə</target>
+        <target xml:lang="az" state="final">Çıxart Səhifə</target>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton.ToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Remove this page from the book</source>
         <note>ID: EditTab.DeletePageButton.ToolTip</note>
         <note>Button that tells Bloom to delete the currently selected page.</note>
-        <target xml:lang="az" state="translated">Bu səhifəni cıxart</target>
+        <target xml:lang="az" state="final">Bu səhifəni cıxart</target>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton.ToolTipWhenDisabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This page cannot be removed</source>
         <note>ID: EditTab.DeletePageButton.ToolTipWhenDisabled</note>
         <note>Button that tells Bloom to delete the currently selected page.</note>
-        <target xml:lang="az" state="translated">Bu səhifəni cıxartmağa bilməzdi</target>
+        <target xml:lang="az" state="final">Bu səhifəni cıxartmağa bilməzdi</target>
       </trans-unit>
       <trans-unit id="EditTab.DeleteTextBoxFromImage">
         <source xml:lang="en">Delete Text Box From Image</source>
@@ -1476,44 +1501,44 @@
         <source xml:lang="en">Duplicate Page</source>
         <note>ID: EditTab.DuplicatePageButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Duplicate\n  Page</note>
-        <target xml:lang="az" state="translated">Duplikat et</target>
+        <target xml:lang="az" state="final">Duplikat et</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton.ToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Insert a new page which is a duplicate of this one</source>
         <note>ID: EditTab.DuplicatePageButton.ToolTip</note>
         <note>Button that tells Bloom to duplicate the currently selected page.</note>
-        <target xml:lang="az" state="translated">Bu səhifənin surətini olan yeni bir səhifə əlavə edilsin</target>
+        <target xml:lang="az" state="final">Bu səhifənin surətini olan yeni bir səhifə əlavə edilsin</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton.ToolTipWhenDisabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This page cannot be duplicated</source>
         <note>ID: EditTab.DuplicatePageButton.ToolTipWhenDisabled</note>
         <note>Button that tells Bloom to duplicate the currently selected page.</note>
-        <target xml:lang="az" state="translated">Bu səhifənin surətini olan yeni bir səhifə əlavə edilə bilməzdi</target>
+        <target xml:lang="az" state="final">Bu səhifənin surətini olan yeni bir səhifə əlavə edilə bilməzdi</target>
       </trans-unit>
       <trans-unit id="EditTab.Edit" approved="yes">
         <source xml:lang="en">Edit</source>
         <note>ID: EditTab.Edit</note>
-        <target xml:lang="az" state="translated">Redaktə et</target>
+        <target xml:lang="az" state="final">Redaktə et</target>
       </trans-unit>
       <trans-unit id="EditTab.EditNotAllowed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You cannot change these because this is not the original copy.</source>
         <note>ID: EditTab.EditNotAllowed</note>
-        <target xml:lang="az" state="translated">Onları deyişə bilmirsiniz, çünki bu orijinal nüsxəsi deyil.</target>
+        <target xml:lang="az" state="final">Onları deyişə bilmirsiniz, çünki bu orijinal nüsxəsi deyil.</target>
       </trans-unit>
       <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sight Word</source>
         <note>ID: EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord</note>
-        <target xml:lang="az" state="translated">Dərhal tanımalı söz</target>
+        <target xml:lang="az" state="final">Dərhal tanımalı söz</target>
       </trans-unit>
       <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This word is not decodable in this stage.</source>
         <note>ID: EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable</note>
-        <target xml:lang="az" state="translated">Bu mərhelədə o söz izahı edə bilməz.</target>
+        <target xml:lang="az" state="final">Bu mərhelədə o söz izahı edə bilməz.</target>
       </trans-unit>
       <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This sentence is too long for this level.</source>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
-        <target xml:lang="az" state="translated">Bu cümlə o mərhələ üçün hədddən artıq uzundur.</target>
+        <target xml:lang="az" state="final">Bu cümlə o mərhələ üçün hədddən artıq uzundur.</target>
       </trans-unit>
       <trans-unit id="EditTab.EnterpriseSettingsButton" sil:dynamic="true">
         <source xml:lang="en">Bloom Enterprise Settings</source>
@@ -1524,7 +1549,7 @@
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
         <note>ID: EditTab.ExperimentalNotice</note>
-        <target xml:lang="az" state="translated">Bu səhifə təcrübə daşıdığı görə bir çox problemlər ola bildiyinin üçün üzr istəyirik.</target>
+        <target xml:lang="az" state="final">Bu səhifə təcrübə daşıdığı görə bir çox problemlər ola bildiyinin üçün üzr istəyirik.</target>
       </trans-unit>
       <trans-unit id="EditTab.FileDialogVideoFiles">
         <source xml:lang="en">Video files</source>
@@ -1535,7 +1560,7 @@
       <trans-unit id="EditTab.FontMissing" approved="yes">
         <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
         <note>ID: EditTab.FontMissing</note>
-        <target xml:lang="az" state="translated">Indiki seçilmiş font '{0}', ancaq bu kompüterdə yüklü deyildir. Bəzi digər şrift istifadə olunacaq.</target>
+        <target xml:lang="az" state="final">Indiki seçilmiş font '{0}', ancaq bu kompüterdə yüklü deyildir. Bəzi digər şrift istifadə olunacaq.</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Alignment" sil:dynamic="true">
         <source xml:lang="en">Alignment</source>
@@ -1545,27 +1570,27 @@
       <trans-unit id="EditTab.FormatDialog.AlreadyExists" sil:dynamic="true" approved="yes">
         <source xml:lang="en">That style already exists. Please choose another name.</source>
         <note>ID: EditTab.FormatDialog.AlreadyExists</note>
-        <target xml:lang="az" state="translated">Həmin üslub artıq mövcüddür. Digər adı seçin.</target>
+        <target xml:lang="az" state="final">Həmin üslub artıq mövcüddür. Digər adı seçin.</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.BorderToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the border and background</source>
         <note>ID: EditTab.FormatDialog.BorderToolTip</note>
-        <target xml:lang="az" state="translated">Sərhəd və fon deyişmək</target>
+        <target xml:lang="az" state="final">Sərhəd və fon deyişmək</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.CharactersTab" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Characters</source>
         <note>ID: EditTab.FormatDialog.CharactersTab</note>
-        <target xml:lang="az" state="translated">Simvollar</target>
+        <target xml:lang="az" state="final">Simvollar</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Create" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Create</source>
         <note>ID: EditTab.FormatDialog.Create</note>
-        <target xml:lang="az" state="translated">Yarat</target>
+        <target xml:lang="az" state="final">Yarat</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.CreateStyle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Create a new style</source>
         <note>ID: EditTab.FormatDialog.CreateStyle</note>
-        <target xml:lang="az" state="translated">Yeni bir üslübü yarat</target>
+        <target xml:lang="az" state="final">Yeni bir üslübü yarat</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.BigWords-style" sil:dynamic="true">
         <source xml:lang="en">Big Words</source>
@@ -1654,32 +1679,32 @@
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Don't see what you need?</source>
         <note>ID: EditTab.FormatDialog.DontSeeNeed</note>
-        <target xml:lang="az" state="translated">Sizə lazım şey görmürsiz?</target>
+        <target xml:lang="az" state="final">Sizə lazım şey görmürsiz?</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Emphasis" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Emphasis</source>
         <note>ID: EditTab.FormatDialog.Emphasis</note>
-        <target xml:lang="az" state="translated">Vurgu</target>
+        <target xml:lang="az" state="final">Vurgu</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Font</source>
         <note>ID: EditTab.FormatDialog.Font</note>
-        <target xml:lang="az" state="translated">Şrift</target>
+        <target xml:lang="az" state="final">Şrift</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontFaceToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the font face</source>
         <note>ID: EditTab.FormatDialog.FontFaceToolTip</note>
-        <target xml:lang="az" state="translated">Şriftin üslübü deyişdirmək</target>
+        <target xml:lang="az" state="final">Şriftin üslübü deyişdirmək</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
         <note>ID: EditTab.FormatDialog.FontSizeTip</note>
-        <target xml:lang="az" state="translated">Bütün '{0}' üslub və dil '{1}' daşıyan qutuları üçün mətn ölçünü dəyişdirir.\nİndiki ölçüsü {2}pt -dir.</target>
+        <target xml:lang="az" state="final">Bütün '{0}' üslub və dil '{1}' daşıyan qutuları üçün mətn ölçünü dəyişdirir.\nİndiki ölçüsü {2}pt -dir.</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the font size</source>
         <note>ID: EditTab.FormatDialog.FontSizeToolTip</note>
-        <target xml:lang="az" state="translated">Şriftin ölcüsünü deyişdirmək</target>
+        <target xml:lang="az" state="final">Şriftin ölcüsünü deyişdirmək</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Format" sil:dynamic="true">
         <source xml:lang="en">Format</source>
@@ -1694,12 +1719,12 @@
       <trans-unit id="EditTab.FormatDialog.LineSpacingToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the spacing between lines of text</source>
         <note>ID: EditTab.FormatDialog.LineSpacingToolTip</note>
-        <target xml:lang="az" state="translated">Mətn sətirarası dəyişdirmək</target>
+        <target xml:lang="az" state="final">Mətn sətirarası dəyişdirmək</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.NewStyle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">New style</source>
         <note>ID: EditTab.FormatDialog.NewStyle</note>
-        <target xml:lang="az" state="translated">Yeni üslübü</target>
+        <target xml:lang="az" state="final">Yeni üslübü</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.ParagraphSpacing" sil:dynamic="true">
         <source xml:lang="en">Space Between Paragraphs</source>
@@ -1714,57 +1739,57 @@
       <trans-unit id="EditTab.FormatDialog.PleaseUseAlpha" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Please use only alphabetical characters. Numbers at the end are ok, as in "part2".</source>
         <note>ID: EditTab.FormatDialog.PleaseUseAlpha</note>
-        <target xml:lang="az" state="translated">Zəhmət olmasa, ancaq əlifba üzrə simvollar istifadə edin. Sonunda saylar mümkündur, misal üçün "part2".</target>
+        <target xml:lang="az" state="final">Zəhmət olmasa, ancaq əlifba üzrə simvollar istifadə edin. Sonunda saylar mümkündur, misal üçün "part2".</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Spacing" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Spacing</source>
         <note>ID: EditTab.FormatDialog.Spacing</note>
-        <target xml:lang="az" state="translated">Simvol Aralığı</target>
+        <target xml:lang="az" state="final">Simvol Aralığı</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Style</source>
         <note>ID: EditTab.FormatDialog.Style</note>
-        <target xml:lang="az" state="translated">Üslub</target>
+        <target xml:lang="az" state="final">Üslub</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.StyleNameTab" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Style Name</source>
         <note>ID: EditTab.FormatDialog.StyleNameTab</note>
-        <target xml:lang="az" state="translated">Üslub adı</target>
+        <target xml:lang="az" state="final">Üslub adı</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Extra Wide</source>
         <note>ID: EditTab.FormatDialog.WordSpacingExtraWide</note>
-        <target xml:lang="az" state="translated">Əlavə Olaraq Enli</target>
+        <target xml:lang="az" state="final">Əlavə Olaraq Enli</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingNormal" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.FormatDialog.WordSpacingNormal</note>
-        <target xml:lang="az" state="translated">Adi</target>
+        <target xml:lang="az" state="final">Adi</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the spacing between words</source>
         <note>ID: EditTab.FormatDialog.WordSpacingToolTip</note>
-        <target xml:lang="az" state="translated">Söz sətirarası dəyişdirmək</target>
+        <target xml:lang="az" state="final">Söz sətirarası dəyişdirmək</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingWide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Wide</source>
         <note>ID: EditTab.FormatDialog.WordSpacingWide</note>
-        <target xml:lang="az" state="translated">Enli</target>
+        <target xml:lang="az" state="final">Enli</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.AuthorIllustratorPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may use this space for author/illustrator, or anything else.</source>
         <note>ID: EditTab.FrontMatter.AuthorIllustratorPrompt</note>
-        <target xml:lang="az" state="translated">Bu məkan müəllif/rəssam və ya hansa da bir şey üçün istifadə olar.</target>
+        <target xml:lang="az" state="final">Bu məkan müəllif/rəssam və ya hansa da bir şey üçün istifadə olar.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BigBook.Contributions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</source>
         <note>ID: EditTab.FrontMatter.BigBook.Contributions</note>
-        <target xml:lang="az" state="translated">Orijinal kitab edən zaman, yazıçılar, rəssamları, redaktorlar və s tərəfindən edilən töhfələr yazmaq üçün bu qutunu istifadə edin</target>
+        <target xml:lang="az" state="final">Orijinal kitab edən zaman, yazıçılar, rəssamları, redaktorlar və s tərəfindən edilən töhfələr yazmaq üçün bu qutunu istifadə edin</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BigBook.Translator" sil:dynamic="true" approved="yes">
         <source xml:lang="en">When you make a book from a shell, use this box to tell who did the translation.</source>
         <note>ID: EditTab.FrontMatter.BigBook.Translator</note>
-        <target xml:lang="az" state="translated">Şablondan kitab yaradərkən, bu qutunu tərcümə eliyən şəxs göstərmək üçün istifadə edin.</target>
+        <target xml:lang="az" state="final">Şablondan kitab yaradərkən, bu qutunu tərcümə eliyən şəxs göstərmək üçün istifadə edin.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BookSingleCredit">
         <source xml:lang="en">Images by {0}.</source>
@@ -1777,12 +1802,12 @@
         <source xml:lang="en">Book title in {lang}</source>
         <note>ID: EditTab.FrontMatter.BookTitlePrompt</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
-        <target xml:lang="az" state="translated">Kitabın Adı {lang} dilində</target>
+        <target xml:lang="az" state="final">Kitabın Adı {lang} dilində</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to Edit Copyright &amp; License</source>
         <note>ID: EditTab.FrontMatter.CopyrightPrompt</note>
-        <target xml:lang="az" state="translated">Müəlliflik hüququ &amp; lisenziyanı redaktə etmək üçün tıklayın</target>
+        <target xml:lang="az" state="final">Müəlliflik hüququ &amp; lisenziyanı redaktə etmək üçün tıklayın</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true">
         <source xml:lang="en">Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.</source>
@@ -1793,12 +1818,12 @@
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
         <note>ID: EditTab.FrontMatter.FundingAgenciesPrompt</note>
-        <target xml:lang="az" state="translated">Hər hansı bir maliyyə agentlikləri etiraf üçün bu yeri istifadə edin.</target>
+        <target xml:lang="az" state="final">Hər hansı bir maliyyə agentlikləri etiraf üçün bu yeri istifadə edin.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.ISBNPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">International Standard Book Number. Leave blank if you don't have one of these.</source>
         <note>ID: EditTab.FrontMatter.ISBNPrompt</note>
-        <target xml:lang="az" state="translated">Beynəlxalq Standart Kitab nömrəsi. Əgər o yoxdursa, bu yer boş qalsın.</target>
+        <target xml:lang="az" state="final">Beynəlxalq Standart Kitab nömrəsi. Əgər o yoxdursa, bu yer boş qalsın.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.ImageCreditMissing">
         <source xml:lang="en"> {0} (page {1})</source>
@@ -1809,7 +1834,7 @@
       <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</source>
         <note>ID: EditTab.FrontMatter.InsideFrontCoverTextPrompt</note>
-        <target xml:lang="az" state="translated">Əgər siz kitab haqqında daha çox məlumat vermək hardasa lazımdır, siz cildin önlüyü kənarda olan bu səhifə, istifadə edə bilərsiniz.</target>
+        <target xml:lang="az" state="final">Əgər siz kitab haqqında daha çox məlumat vermək hardasa lazımdır, siz cildin önlüyü kənarda olan bu səhifə, istifadə edə bilərsiniz.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.ListSeparator">
         <source xml:lang="en">, </source>
@@ -1838,17 +1863,17 @@
       <trans-unit id="EditTab.FrontMatter.NameofTranslatorPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Name of Translator, in {lang}</source>
         <note>ID: EditTab.FrontMatter.NameofTranslatorPrompt</note>
-        <target xml:lang="az" state="translated">Tərcüməçinin Adı, {lang} -da</target>
+        <target xml:lang="az" state="final">Tərcüməçinin Adı, {lang} -da</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalAcknowledgmentsPrompt</note>
-        <target xml:lang="az" state="translated">Orijinal (və ya Şablon) {lang} -da Etiraflar</target>
+        <target xml:lang="az" state="final">Orijinal (və ya Şablon) {lang} -da Etiraflar</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalContributorsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The contributions made by writers, illustrators, editors, etc., in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalContributorsPrompt</note>
-        <target xml:lang="az" state="translated">{lang}-da yazıçılar, rəssamları, redaktorlar, və s. tərefindən edilən töhfələri</target>
+        <target xml:lang="az" state="final">{lang}-da yazıçılar, rəssamları, redaktorlar, və s. tərefindən edilən töhfələri</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence">
         <source xml:lang="en">Adapted from original, {0}.</source>
@@ -1894,12 +1919,12 @@
       <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to choose topic</source>
         <note>ID: EditTab.FrontMatter.TopicPrompt</note>
-        <target xml:lang="az" state="translated">Mövzunu seçmək üçün tıklayın</target>
+        <target xml:lang="az" state="final">Mövzunu seçmək üçün tıklayın</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
-        <target xml:lang="az" state="translated">{lang}-da tercümə edilən versiyası üçün etiraflar</target>
+        <target xml:lang="az" state="final">{lang}-da tercümə edilən versiyası üçün etiraflar</target>
       </trans-unit>
       <trans-unit id="EditTab.HowToUnlockBook">
         <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
@@ -1915,12 +1940,12 @@
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Image</source>
         <note>ID: EditTab.Image.ChangeImage</note>
-        <target xml:lang="az" state="translated">Təsvir deyişdirmək</target>
+        <target xml:lang="az" state="final">Təsvir deyişdirmək</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.CopyImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Copy Image</source>
         <note>ID: EditTab.Image.CopyImage</note>
-        <target xml:lang="az" state="translated">Təsvir köçürmək</target>
+        <target xml:lang="az" state="final">Təsvir köçürmək</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.CopyImageFailed" sil:dynamic="true">
         <source xml:lang="en">Bloom had problems using your computer's clipboard. Some other program may be interfering.</source>
@@ -1930,13 +1955,13 @@
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cut Image</source>
         <note>ID: EditTab.Image.CutImage</note>
-        <target xml:lang="az" state="translated">Təsvir kəsmək</target>
+        <target xml:lang="az" state="final">Təsvir kəsmək</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit Image Credits, Copyright, &amp; License</source>
         <note>ID: EditTab.Image.EditMetadata</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Edit Image Credits, Copyright, and License</note>
-        <target xml:lang="az" state="translated">Təsvir Kreditlər, Müəllif Hüqquqları, &amp; Lisensiyanı Redakte Et</target>
+        <target xml:lang="az" state="final">Təsvir Kreditlər, Müəllif Hüqquqları, &amp; Lisensiyanı Redakte Et</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
         <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
@@ -1946,7 +1971,7 @@
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paste Image</source>
         <note>ID: EditTab.Image.PasteImage</note>
-        <target xml:lang="az" state="translated">Təsvir Elavə Et</target>
+        <target xml:lang="az" state="final">Təsvir Elavə Et</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true">
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
@@ -1961,17 +1986,17 @@
       <trans-unit id="EditTab.JpegWarningDialog.DoNotUse" approved="yes">
         <source xml:lang="en">Cancel this import</source>
         <note>ID: EditTab.JpegWarningDialog.DoNotUse</note>
-        <target xml:lang="az" state="translated">Bu idxal ləğv et.</target>
+        <target xml:lang="az" state="final">Bu idxal ləğv et.</target>
       </trans-unit>
       <trans-unit id="EditTab.JpegWarningDialog.Photograph" approved="yes">
         <source xml:lang="en">Use the JPEG file</source>
         <note>ID: EditTab.JpegWarningDialog.Photograph</note>
-        <target xml:lang="az" state="translated">JPEG faylnı istifadə et.</target>
+        <target xml:lang="az" state="final">JPEG faylnı istifadə et.</target>
       </trans-unit>
       <trans-unit id="EditTab.JpegWarningDialog.WarningText" approved="yes">
         <source xml:lang="en">The file you’ve chosen is a “JPEG” file. JPEG files are perfect for photographs and color artwork. However, JPEG files are a big problem for black and white line art. Problems include:\n• Fuzziness and grey dots.\n• Large file sizes, making the book hard to share.\n• If there are many large JPEGs, Bloom may not have enough memory to make PDF files.\n\nNote: Because JPEG is “lossy”, converting a JPEG to PNG, TIFF, or BMP actually makes things even worse. If this is black and white line art, you want to get an original scan in one of those formats.\n\nPlease select from one of the following, then click “OK”:</source>
         <note>ID: EditTab.JpegWarningDialog.WarningText</note>
-        <target xml:lang="az" state="translated">Seçdiyiniz fayl "jpeg" fayl. JPEG foto və rəngli incəsənət üçün çox gözəldir. Lakin, JPEGs ağ-qara xətt sənətinin üçün böyük bir problem yaradır. \nProblemləri daxildir:\n• Qeyri-müəyyənlik və boz nöqtələr.\n• Böyük fayl ölçüsü, kitab paylaşmağa çətinlik yaradır.\n• Çoxlu böyük JPEG fayllar varsa, Bloom PDF etmək üçün kifayət qədər yaddaş ola bilməz.</target>
+        <target xml:lang="az" state="final">Seçdiyiniz fayl "jpeg" fayl. JPEG foto və rəngli incəsənət üçün çox gözəldir. Lakin, JPEGs ağ-qara xətt sənətinin üçün böyük bir problem yaradır. \nProblemləri daxildir:\n• Qeyri-müəyyənlik və boz nöqtələr.\n• Böyük fayl ölçüsü, kitab paylaşmağa çətinlik yaradır.\n• Çoxlu böyük JPEG fayllar varsa, Bloom PDF etmək üçün kifayət qədər yaddaş ola bilməz.</target>
       </trans-unit>
       <trans-unit id="EditTab.JpegWarningDialog.WindowTitle">
         <source xml:lang="en">JPEG Warning</source>
@@ -1993,7 +2018,7 @@
         <source xml:lang="en">One Language</source>
         <note>ID: EditTab.Monolingual</note>
         <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
-        <target xml:lang="az" state="translated">Bir dil</target>
+        <target xml:lang="az" state="final">Bir dil</target>
       </trans-unit>
       <trans-unit id="EditTab.NeverLocked.ToolTip" sil:dynamic="true">
         <source xml:lang="en">Books are never locked in a Source Collection.</source>
@@ -2005,7 +2030,7 @@
         <source xml:lang="en">Book</source>
         <note>ID: EditTab.NewBookName</note>
         <note>Default file and folder name when you make a new book, but haven't give it a title yet.</note>
-        <target xml:lang="az" state="translated">Kitab</target>
+        <target xml:lang="az" state="final">Kitab</target>
       </trans-unit>
       <trans-unit id="EditTab.NoImageFoundOnClipboard">
         <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
@@ -2037,27 +2062,27 @@
       <trans-unit id="EditTab.PageList.Heading" approved="yes">
         <source xml:lang="en">Pages</source>
         <note>ID: EditTab.PageList.Heading</note>
-        <target xml:lang="az" state="translated">Şablon səhifələri</target>
+        <target xml:lang="az" state="final">Şablon səhifələri</target>
       </trans-unit>
       <trans-unit id="EditTab.PageSizeAndOrientation.Tooltip" approved="yes">
         <source xml:lang="en">Choose a page size and orientation</source>
         <note>ID: EditTab.PageSizeAndOrientation.Tooltip</note>
-        <target xml:lang="az" state="translated">Səhifə ölçüləri və istiqaməti seçin</target>
+        <target xml:lang="az" state="final">Səhifə ölçüləri və istiqaməti seçin</target>
       </trans-unit>
       <trans-unit id="EditTab.PasteButton" approved="yes">
         <source xml:lang="en">Paste</source>
         <note>ID: EditTab.PasteButton</note>
-        <target xml:lang="az" state="translated">Əlavə et</target>
+        <target xml:lang="az" state="final">Əlavə et</target>
       </trans-unit>
       <trans-unit id="EditTab.PasteButton.ToolTip" approved="yes">
         <source xml:lang="en">Paste (Ctrl+V)</source>
         <note>ID: EditTab.PasteButton.ToolTip</note>
-        <target xml:lang="az" state="translated">Əlavə et (Ctrl+v)</target>
+        <target xml:lang="az" state="final">Əlavə et (Ctrl+v)</target>
       </trans-unit>
       <trans-unit id="EditTab.PasteButton.ToolTipWhenDisabled" approved="yes">
         <source xml:lang="en">There is nothing on the Clipboard that you can paste here.</source>
         <note>ID: EditTab.PasteButton.ToolTipWhenDisabled</note>
-        <target xml:lang="az" state="translated">Burda əlavə etməyə mübadilə buferində həç nə yoxdur.</target>
+        <target xml:lang="az" state="final">Burda əlavə etməyə mübadilə buferində həç nə yoxdur.</target>
       </trans-unit>
       <trans-unit id="EditTab.PastePage">
         <source xml:lang="en">Paste Page</source>
@@ -2088,7 +2113,7 @@
       <trans-unit id="EditTab.TextBoxProperties.Background" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Background</source>
         <note>ID: EditTab.TextBoxProperties.Background</note>
-        <target xml:lang="az" state="translated">Fon</target>
+        <target xml:lang="az" state="final">Fon</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.BorderSides" sil:dynamic="true">
         <source xml:lang="en">Border Sides</source>
@@ -2187,7 +2212,117 @@
       <trans-unit id="EditTab.TitleOfCopyIPToWholeBooksDialog" approved="yes">
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
-        <target xml:lang="az" state="translated">Təsvir Əqli Mülkiyyət Məlumat</target>
+        <target xml:lang="az" state="final">Təsvir Əqli Mülkiyyət Məlumat</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool" sil:dynamic="true">
+        <source xml:lang="en">Comic Tool</source>
+        <note>ID: EditTab.Toolbox.CalloutTool</note>
+        <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
+        <target xml:lang="az" state="needs-translation">Comic Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.AddChildBubble" sil:dynamic="true">
+        <source xml:lang="en">Add Child Bubble</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.AddChildBubble</note>
+        <target xml:lang="az" state="needs-translation">Add Child Bubble</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor" sil:dynamic="true">
+        <source xml:lang="en">Background Color</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor</note>
+        <note>Refers to the Background Color of the bubble used by the callout</note>
+        <target xml:lang="az" state="needs-translation">Background Color</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.OldLace" sil:dynamic="true">
+        <source xml:lang="en">Old Lace</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.OldLace</note>
+        <note>A background color that looks like old lace</note>
+        <target xml:lang="az" state="needs-translation">Old Lace</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToCalico" sil:dynamic="true">
+        <source xml:lang="en">White to Calico</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToCalico</note>
+        <note>A background color that is a gradient starting with white blending into calico color</note>
+        <target xml:lang="az" state="needs-translation">White to Calico</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
+        <source xml:lang="en">White to French Pass</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToFrenchPass</note>
+        <note>A background color that is a gradient starting with white blending into the "French pass" color</note>
+        <target xml:lang="az" state="needs-translation">White to French Pass</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true">
+        <source xml:lang="en">White to Portafino</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToPortafino</note>
+        <note>A background color that is a gradient starting with white blending into the "Portafino" color</note>
+        <target xml:lang="az" state="needs-translation">White to Portafino</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor" sil:dynamic="true">
+        <source xml:lang="en">Outer Outline Color</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor</note>
+        <note>Refers to the Outer Outline Color of the bubble used by the callout</note>
+        <target xml:lang="az" state="needs-translation">Outer Outline Color</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor.None" sil:dynamic="true">
+        <source xml:lang="en">None</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor.None</note>
+        <target xml:lang="az" state="needs-translation">None</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style" sil:dynamic="true">
+        <source xml:lang="en">Style</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style</note>
+        <note>Refers to the STYLE of bubble used by the callout</note>
+        <target xml:lang="az" state="needs-translation">Style</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Caption" sil:dynamic="true">
+        <source xml:lang="en">Caption</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Caption</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents a description which is not directly stated by any characters.</note>
+        <target xml:lang="az" state="needs-translation">Caption</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Ellipse" sil:dynamic="true">
+        <source xml:lang="en">Ellipse</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Ellipse</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents a round bubble shaped like an ellipse.</note>
+        <target xml:lang="az" state="needs-translation">Ellipse</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Exclamation" sil:dynamic="true">
+        <source xml:lang="en">Exclamation</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Exclamation</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents a shout or exclamatory statement. Like this: "Watch out!"</note>
+        <target xml:lang="az" state="needs-translation">Exclamation</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.JustText" sil:dynamic="true">
+        <source xml:lang="en">Just Text</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.JustText</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style does not have any bubble at all.</note>
+        <target xml:lang="az" state="needs-translation">Just Text</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Speech" sil:dynamic="true">
+        <source xml:lang="en">Speech</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Speech</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents standard speech/dialogue.</note>
+        <target xml:lang="az" state="needs-translation">Speech</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Thought" sil:dynamic="true">
+        <source xml:lang="en">Thought</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Thought</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents the thoughts of a person who is thinking.</note>
+        <target xml:lang="az" state="needs-translation">Thought</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.TextColor" sil:dynamic="true">
+        <source xml:lang="en">Text Color</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.TextColor</note>
+        <target xml:lang="az" state="needs-translation">Text Color</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.ControlsAvailable" sil:dynamic="true">
+        <source xml:lang="en">The selected item has these controls:</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.ControlsAvailable</note>
+        <target xml:lang="az" state="needs-translation">The selected item has these controls:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
@@ -2313,7 +2448,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool</note>
-        <target xml:lang="az" state="translated">Düşəncəli oxuyan yaratmaq aləti</target>
+        <target xml:lang="az" state="final">Düşəncəli oxuyan yaratmaq aləti</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated" sil:dynamic="true">
         <source xml:lang="en">Bloom can handle only the first {0} words.</source>
@@ -2349,22 +2484,22 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportSightWords" approved="yes">
         <source xml:lang="en">New Sight Words: {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportSightWords</note>
-        <target xml:lang="az" state="translated">Yeni Dərhal Tanımalı Sözlər {0}</target>
+        <target xml:lang="az" state="final">Yeni Dərhal Tanımalı Sözlər {0}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportStage" approved="yes">
         <source xml:lang="en">Stage {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportStage</note>
-        <target xml:lang="az" state="translated">Mərhələ {0}</target>
+        <target xml:lang="az" state="final">Mərhələ {0}</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList" approved="yes">
         <source xml:lang="en">Complete Word List</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList</note>
-        <target xml:lang="az" state="translated">Bütöv Söz Siyahısı</target>
+        <target xml:lang="az" state="final">Bütöv Söz Siyahısı</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters in this stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LettersInThisStage</note>
-        <target xml:lang="az" state="translated">Bu mərhələdeki hərflər</target>
+        <target xml:lang="az" state="final">Bu mərhələdeki hərflər</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport" sil:dynamic="true">
         <source xml:lang="en">Generate a letter and word list report</source>
@@ -2379,7 +2514,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SetUpStages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Stages</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SetUpStages</note>
-        <target xml:lang="az" state="translated">Mərhələlər Qur</target>
+        <target xml:lang="az" state="final">Mərhələlər Qur</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortAlphabetically" sil:dynamic="true">
         <source xml:lang="en">Sort alphabetically</source>
@@ -2399,12 +2534,12 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.Stage</note>
-        <target xml:lang="az" state="translated">Mərhələ</target>
+        <target xml:lang="az" state="final">Mərhələ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
-        <target xml:lang="az" state="translated">dan</target>
+        <target xml:lang="az" state="final">dan</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
         <source xml:lang="en">Image Description Tool</source>
@@ -2506,7 +2641,7 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader Tool</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool</note>
-        <target xml:lang="az" state="translated">Səviyyə üzrə dərslik aləti</target>
+        <target xml:lang="az" state="final">Səviyyə üzrə dərslik aləti</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Actual" sil:dynamic="true">
         <source xml:lang="en">Actual</source>
@@ -2613,7 +2748,7 @@
       <trans-unit id="EditTab.Toolbox.More" sil:dynamic="true" approved="yes">
         <source xml:lang="en">More...</source>
         <note>ID: EditTab.Toolbox.More</note>
-        <target xml:lang="az" state="translated">Əlavə məlumat</target>
+        <target xml:lang="az" state="final">Əlavə məlumat</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
         <source xml:lang="en">Allow changes to this shellbook</source>
@@ -2736,7 +2871,7 @@
         <source xml:lang="en">Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.BadState</note>
         <note>This is very low priority for translation.</note>
-        <target xml:lang="az" state="translated">Bloom səs yazma qeyri-adi vəziyyətdədir - bəlkə bir mikrofon ayırması səbəb ola bilər. Yenidən başlatmaq lazımdır.</target>
+        <target xml:lang="az" state="final">Bloom səs yazma qeyri-adi vəziyyətdədir - bəlkə bir mikrofon ayırması səbəb ola bilər. Yenidən başlatmaq lazımdır.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.MissingDependency">
         <source xml:lang="en">To split recordings into sentences, first install this {0} system.</source>
@@ -2747,61 +2882,61 @@
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoInput" approved="yes">
         <source xml:lang="en">No input device</source>
         <note>ID: EditTab.Toolbox.TalkingBook.NoInput</note>
-        <target xml:lang="az" state="translated">Daxiletmə qurğusu yoxdur</target>
+        <target xml:lang="az" state="final">Daxiletmə qurğusu yoxdur</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoMic" approved="yes">
         <source xml:lang="en">This computer appears to have no sound recording device available. You will need one to record audio for a talking book.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.NoMic</note>
-        <target xml:lang="az" state="translated">Görünür ki, bu kompüterdə həç səsyazan qurğu yerində yoxdur. Danışan kitab üçün audio (səs) yazmağa lazım olacaq.</target>
+        <target xml:lang="az" state="final">Görünür ki, bu kompüterdə həç səsyazan qurğu yerində yoxdur. Danışan kitab üçün audio (səs) yazmağa lazım olacaq.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.PleaseHoldMessage" approved="yes">
         <source xml:lang="en">Please hold the button down until you have finished recording</source>
         <note>ID: EditTab.Toolbox.TalkingBook.PleaseHoldMessage</note>
         <note>Appears when the speak/record button is pressed very briefly</note>
-        <target xml:lang="az" state="translated">Yazı bitirəncə düyməni basıb saxlayın</target>
+        <target xml:lang="az" state="final">Yazı bitirəncə düyməni basıb saxlayın</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool</note>
-        <target xml:lang="az" state="translated">Danışan Kitab Aləti</target>
+        <target xml:lang="az" state="final">Danışan Kitab Aləti</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Back</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Back</note>
         <note>As in, move the selection "BACK"wards to the previous sentence.</note>
-        <target xml:lang="az" state="translated">Geri</target>
+        <target xml:lang="az" state="final">Geri</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Check" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4) Check</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
         <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
         <note>Last used in version 4.4, deprecated in 4.5</note>
-        <target xml:lang="az" state="translated">4) Yoxlayın</target>
+        <target xml:lang="az" state="final">4) Yoxlayın</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Check</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckLabel</note>
         <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.Check if possible, but without the number</note>
-        <target xml:lang="az" state="translated">Yoxlayın</target>
+        <target xml:lang="az" state="final">Yoxlayın</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
         <note>Last used in version 4.4, deprecated in 4.5</note>
-        <target xml:lang="az" state="translated">1) Düz qurğuya yazdığını yoxlayın və bu səviyyələr göy göstərirlər.</target>
+        <target xml:lang="az" state="final">1) Düz qurğuya yazdığını yoxlayın və bu səviyyələr göy göstərirlər.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel</note>
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.CheckSettings if possible, but without the number</note>
-        <target xml:lang="az" state="translated">Düz qurğuya yazdığını yoxlayın və bu səviyyələr göy göstərirlər.</target>
+        <target xml:lang="az" state="final">Düz qurğuya yazdığını yoxlayın və bu səviyyələr göy göstərirlər.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Clear</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
         <note>As in, "CLEAR" (or delete) the existing recording file.</note>
-        <target xml:lang="az" state="translated">Təmizləmək</target>
+        <target xml:lang="az" state="final">Təmizləmək</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
         <source xml:lang="en">eSpeak failed.</source>
@@ -2812,7 +2947,22 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Listen to the whole page</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Listen</note>
-        <target xml:lang="az" state="translated">Bütöv səhifənə dinləmək</target>
+        <target xml:lang="az" state="final">Bütöv səhifənə dinləmək</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
+        <source xml:lang="en">Import Recording</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
+        <target xml:lang="az" state="needs-translation">Import Recording</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true">
+        <source xml:lang="en">Replace with new audio?</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace</note>
+        <target xml:lang="az" state="needs-translation">Replace with new audio?</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true">
+        <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
+        <target xml:lang="az" state="needs-translation">If you import this recording, it will replace all the audio for this text box.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
         <source xml:lang="en">2) Look at the highlighted text</source>
@@ -2830,13 +2980,13 @@
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
         <note>Last used in version 4.4, deprecated in 4.5</note>
-        <target xml:lang="az" state="translated">Növbəti</target>
+        <target xml:lang="az" state="final">Növbəti</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.NextLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.NextLabel</note>
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.Next if possible, but without the number</note>
-        <target xml:lang="az" state="translated">Növbəti</target>
+        <target xml:lang="az" state="final">Növbəti</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true">
         <source xml:lang="en">Record by sentences</source>
@@ -2873,13 +3023,13 @@
         <source xml:lang="en">3) Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Speak</note>
         <note>Last used in version 4.4, deprecated in 4.5</note>
-        <target xml:lang="az" state="translated">Danışın</target>
+        <target xml:lang="az" state="final">Danışın</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakLabel</note>
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible, but without the number</note>
-        <target xml:lang="az" state="translated">Danışın</target>
+        <target xml:lang="az" state="final">Danışın</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitError">
         <source xml:lang="en">Something went wrong while splitting the recording.</source>
@@ -2902,22 +3052,22 @@
         <source xml:lang="en">Three Languages</source>
         <note>ID: EditTab.Trilingual</note>
         <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
-        <target xml:lang="az" state="translated">Üç dil</target>
+        <target xml:lang="az" state="final">Üç dil</target>
       </trans-unit>
       <trans-unit id="EditTab.UndoButton" approved="yes">
         <source xml:lang="en">Undo</source>
         <note>ID: EditTab.UndoButton</note>
-        <target xml:lang="az" state="translated">Qaytar</target>
+        <target xml:lang="az" state="final">Qaytar</target>
       </trans-unit>
       <trans-unit id="EditTab.UndoButton.ToolTip" approved="yes">
         <source xml:lang="en">Undo (Ctrl+Z)</source>
         <note>ID: EditTab.UndoButton.ToolTip</note>
-        <target xml:lang="az" state="translated">Qaytar (Ctrl-z)</target>
+        <target xml:lang="az" state="final">Qaytar (Ctrl-z)</target>
       </trans-unit>
       <trans-unit id="EditTab.UndoButton.ToolTipWhenDisabled" approved="yes">
         <source xml:lang="en">There is nothing to undo</source>
         <note>ID: EditTab.UndoButton.ToolTipWhenDisabled</note>
-        <target xml:lang="az" state="translated">Ləğv etmeyə həç nə yoxdur</target>
+        <target xml:lang="az" state="final">Ləğv etmeyə həç nə yoxdur</target>
       </trans-unit>
       <trans-unit id="EditTab.UnlockBook.ToolTip" sil:dynamic="true">
         <source xml:lang="en">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</source>
@@ -3109,7 +3259,7 @@
       <trans-unit id="HelpMenu.Help Menu" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: HelpMenu.Help Menu</note>
-        <target xml:lang="az" state="translated">Kömək</target>
+        <target xml:lang="az" state="final">Kömək</target>
       </trans-unit>
       <trans-unit id="HelpMenu.Help Menu_ToolTip_">
         <source xml:lang="en">Get Help</source>
@@ -3206,12 +3356,12 @@
       <trans-unit id="LayoutChoices.A4Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Landscape</source>
         <note>ID: LayoutChoices.A4Landscape</note>
-        <target xml:lang="az" state="translated">A4Albom</target>
+        <target xml:lang="az" state="final">A4Albom</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Landscape SideBySide</source>
         <note>ID: LayoutChoices.A4Landscape SideBySide</note>
-        <target xml:lang="az" state="translated">A4Albom Yanbayan</target>
+        <target xml:lang="az" state="final">A4Albom Yanbayan</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true">
         <source xml:lang="en">A4Landscape SplitAcrossPages</source>
@@ -3236,7 +3386,7 @@
       <trans-unit id="LayoutChoices.A6Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A6Landscape</source>
         <note>ID: LayoutChoices.A6Landscape</note>
-        <target xml:lang="az" state="translated">A6albom</target>
+        <target xml:lang="az" state="final">A6albom</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A6Portrait" sil:dynamic="true">
         <source xml:lang="en">A6Portrait</source>
@@ -3291,7 +3441,7 @@
       <trans-unit id="LicenseDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom {0}</source>
         <note>ID: LicenseDialog.WindowTitle</note>
-        <target xml:lang="az" state="translated">"Bloom" Çiçəklənmək {0}</target>
+        <target xml:lang="az" state="final">"Bloom" Çiçəklənmək {0}</target>
       </trans-unit>
       <trans-unit id="LicenseDialog._acceptButton">
         <source xml:lang="en">I accept the terms of the license agreement</source>
@@ -3306,22 +3456,22 @@
       <trans-unit id="LoginDialog.Email" approved="yes">
         <source xml:lang="en">Email Address</source>
         <note>ID: LoginDialog.Email</note>
-        <target xml:lang="az" state="translated">Epoçt ünvanı</target>
+        <target xml:lang="az" state="final">Epoçt ünvanı</target>
       </trans-unit>
       <trans-unit id="LoginDialog.ForgotPassword" approved="yes">
         <source xml:lang="en">Forgot Password</source>
         <note>ID: LoginDialog.ForgotPassword</note>
-        <target xml:lang="az" state="translated">Parol Undulmuşdur</target>
+        <target xml:lang="az" state="final">Parol Undulmuşdur</target>
       </trans-unit>
       <trans-unit id="LoginDialog.LoginButton" approved="yes">
         <source xml:lang="en">&amp;Login</source>
         <note>ID: LoginDialog.LoginButton</note>
-        <target xml:lang="az" state="translated">&amp;Giriş Adı</target>
+        <target xml:lang="az" state="final">&amp;Giriş Adı</target>
       </trans-unit>
       <trans-unit id="LoginDialog.Password" approved="yes">
         <source xml:lang="en">Password</source>
         <note>ID: LoginDialog.Password</note>
-        <target xml:lang="az" state="translated">Parol</target>
+        <target xml:lang="az" state="final">Parol</target>
       </trans-unit>
       <trans-unit id="LoginDialog.ShowPassword">
         <source xml:lang="en">&amp;Show Password</source>
@@ -3397,7 +3547,7 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
         <source xml:lang="en">Source Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-        <target xml:lang="az" state="translated">Mənbə Yığması</target>
+        <target xml:lang="az" state="final">Mənbə Yığması</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
         <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
@@ -3946,7 +4096,7 @@
       <trans-unit id="PublishTab.BodyOnlyRadio" approved="yes">
         <source xml:lang="en">Booklet Insides</source>
         <note>ID: PublishTab.BodyOnlyRadio</note>
-        <target xml:lang="az" state="translated">Kitabça İçəri</target>
+        <target xml:lang="az" state="final">Kitabça İçəri</target>
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
@@ -4294,7 +4444,7 @@
       <trans-unit id="PublishTab.Publish" approved="yes">
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
-        <target xml:lang="az" state="translated">Nəşr etmək</target>
+        <target xml:lang="az" state="final">Nəşr etmək</target>
       </trans-unit>
       <trans-unit id="PublishTab.Save" sil:dynamic="true">
         <source xml:lang="en">Save...</source>
@@ -4305,7 +4455,7 @@
       <trans-unit id="PublishTab.SaveButton" approved="yes">
         <source xml:lang="en">&amp;Save PDF...</source>
         <note>ID: PublishTab.SaveButton</note>
-        <target xml:lang="az" state="translated">&amp;PDF kimi saxlamaq...</target>
+        <target xml:lang="az" state="final">&amp;PDF kimi saxlamaq...</target>
       </trans-unit>
       <trans-unit id="PublishTab.SaveEpub">
         <source xml:lang="en">&amp;Save ePUB...</source>
@@ -4424,7 +4574,7 @@
         <source xml:lang="en">Upload Text</source>
         <note>ID: PublishTab.Upload.Languages</note>
         <note>Prior to 4.4, this was "Languages"</note>
-        <target xml:lang="az" state="translated">Dillər</target>
+        <target xml:lang="az" state="final">Dillər</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.License">
         <source xml:lang="en">Usage/License</source>
@@ -4662,11 +4812,6 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.Upload.UploadProgress</note>
         <target xml:lang="az" state="needs-translation">Upload Progress</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadSandbox">
-        <source xml:lang="en">Upload Book (to Sandbox)</source>
-        <note>ID: PublishTab.Upload.UploadSandbox</note>
-        <target xml:lang="az" state="needs-translation">Upload Book (to Sandbox)</target>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingBookMetadata">
         <source xml:lang="en">Uploading book metadata</source>
         <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
@@ -4687,7 +4832,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Level</source>
         <note>ID: ReaderSetup.AddLevel</note>
-        <target xml:lang="az" state="translated">Məhələni Elavə Et</target>
+        <target xml:lang="az" state="final">Məhələni Elavə Et</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.AddStage" sil:dynamic="true">
         <source xml:lang="en">Add Stage</source>
@@ -4717,7 +4862,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book</source>
         <note>ID: ReaderSetup.BookHeader</note>
-        <target xml:lang="az" state="translated">Kitab</target>
+        <target xml:lang="az" state="final">Kitab</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.BookMaxWords" sil:dynamic="true">
         <source xml:lang="en">Maximum Words in Book</source>
@@ -5091,7 +5236,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Close</source>
         <note>ID: ReportProblemDialog.Close</note>
         <note>Shown in the button that closes the dialog after a successful report submission.</note>
-        <target xml:lang="az" state="translated">Bağlamaq</target>
+        <target xml:lang="az" state="final">Bağlamaq</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.CouldNotSendToServer">
         <source xml:lang="en">Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.</source>
@@ -5170,12 +5315,12 @@ Do you want to go ahead?</note>
       <trans-unit id="SamplePrintNotification.IGetIt" approved="yes">
         <source xml:lang="en">I get it. Do not show this again.</source>
         <note>ID: SamplePrintNotification.IGetIt</note>
-        <target xml:lang="az" state="translated">Başa düşdüm. Bir daha göstermə.</target>
+        <target xml:lang="az" state="final">Başa düşdüm. Bir daha göstermə.</target>
       </trans-unit>
       <trans-unit id="SamplePrintNotification.PleaseNotice" approved="yes">
         <source xml:lang="en">Please notice the sample printer settings below. Use them as a guide while you set up the printer.</source>
         <note>ID: SamplePrintNotification.PleaseNotice</note>
-        <target xml:lang="az" state="translated">Xahiş edirik aşağıda nümunə printer parametrlər qeyd ediniz. Printer düzəltərkən siz onları bələdçi kimi istifadə edə bilərsiniz.</target>
+        <target xml:lang="az" state="final">Xahiş edirik aşağıda nümunə printer parametrlər qeyd ediniz. Printer düzəltərkən siz onları bələdçi kimi istifadə edə bilərsiniz.</target>
       </trans-unit>
       <trans-unit id="SamplePrintNotification.WindowTitle">
         <source xml:lang="en">Sample Print Settings</source>
@@ -5250,27 +5395,27 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Book</source>
         <note>ID: TemplateBooks.BookName.Basic Book</note>
-        <target xml:lang="az" state="translated">Sadə Kitab Şablonu</target>
+        <target xml:lang="az" state="final">Sadə Kitab Şablonu</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Book</source>
         <note>ID: TemplateBooks.BookName.Big Book</note>
-        <target xml:lang="az" state="translated">Böyük Öçülü Əyani Vəsaitı Şablonu</target>
+        <target xml:lang="az" state="final">Böyük Öçülü Əyani Vəsaitı Şablonu</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader</source>
         <note>ID: TemplateBooks.BookName.Decodable Reader</note>
-        <target xml:lang="az" state="translated">İzahlı Kitab Şablonu</target>
+        <target xml:lang="az" state="final">İzahlı Kitab Şablonu</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader</source>
         <note>ID: TemplateBooks.BookName.Leveled Reader</note>
-        <target xml:lang="az" state="translated">Mərhələli Kitab Şablonu</target>
+        <target xml:lang="az" state="final">Mərhələli Kitab Şablonu</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture Dictionary</source>
         <note>ID: TemplateBooks.BookName.Picture Dictionary</note>
-        <target xml:lang="az" state="translated">Şəkilli Lüğət</target>
+        <target xml:lang="az" state="final">Şəkilli Lüğət</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Sign Language" sil:dynamic="true">
         <source xml:lang="en">Sign Language</source>
@@ -5295,12 +5440,12 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.Vaccinations" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Vaccinations</source>
         <note>ID: TemplateBooks.BookName.Vaccinations</note>
-        <target xml:lang="az" state="translated">Peyvənlər</target>
+        <target xml:lang="az" state="final">Peyvənlər</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Wall Calendar" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Wall Calendar</source>
         <note>ID: TemplateBooks.BookName.Wall Calendar</note>
-        <target xml:lang="az" state="translated">Divar Təqvimi</target>
+        <target xml:lang="az" state="final">Divar Təqvimi</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Bloom Reader Quiz" sil:dynamic="true">
         <source xml:lang="en">Use for comprehension testing on devices.</source>
@@ -5310,7 +5455,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A blank page that allows you to add items.</source>
         <note>ID: TemplateBooks.PageDescription.Custom</note>
-        <target xml:lang="az" state="translated">Elementlər əlavə etməyə imkan verən boş səhifədir.</target>
+        <target xml:lang="az" state="final">Elementlər əlavə etməyə imkan verən boş səhifədir.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Flyleaf" sil:dynamic="true">
         <source xml:lang="en">This page was automatically inserted because the following page is marked as part of a two page spread.</source>
@@ -5320,7 +5465,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageDescription.Picture &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page with a picture on top and a large, centered word below.</source>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
-        <target xml:lang="az" state="translated">Yuxarıda təsvir və böyük hərflər mərkəzləşdirilmiş söz olan səhifədir.</target>
+        <target xml:lang="az" state="final">Yuxarıda təsvir və böyük hərflər mərkəzləşdirilmiş söz olan səhifədir.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
@@ -5476,17 +5621,22 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Alphabet" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Alphabet</source>
         <note>ID: TemplateBooks.PageLabel.Alphabet</note>
-        <target xml:lang="az" state="translated">Əlifba</target>
+        <target xml:lang="az" state="final">Əlifba</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Text &amp; Image</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Image</note>
-        <target xml:lang="az" state="translated">Sadə Mətn və Təsvir</target>
+        <target xml:lang="az" state="final">Sadə Mətn və Təsvir</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Picture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Text &amp; Picture</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
-        <target xml:lang="az" state="translated">Sadə Mətn və Şəkil</target>
+        <target xml:lang="az" state="final">Sadə Mətn və Şəkil</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot Text Over Video" sil:dynamic="true">
+        <source xml:lang="en">Big Picture Diglot Text Over Video</source>
+        <note>ID: TemplateBooks.PageLabel.Big Picture Diglot Text Over Video</note>
+        <target xml:lang="az" state="needs-translation">Big Picture Diglot Text Over Video</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true">
         <source xml:lang="en">Big Picture Diglot</source>
@@ -5511,27 +5661,27 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Credits Page</source>
         <note>ID: TemplateBooks.PageLabel.Credits Page</note>
-        <target xml:lang="az" state="translated">Kreditlər</target>
+        <target xml:lang="az" state="final">Kreditlər</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: TemplateBooks.PageLabel.Custom</note>
-        <target xml:lang="az" state="translated">Seçkin Maket</target>
+        <target xml:lang="az" state="final">Seçkin Maket</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Day 1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 1</source>
         <note>ID: TemplateBooks.PageLabel.Day 1</note>
-        <target xml:lang="az" state="translated">1-ci günü</target>
+        <target xml:lang="az" state="final">1-ci günü</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Day 2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 2</source>
         <note>ID: TemplateBooks.PageLabel.Day 2</note>
-        <target xml:lang="az" state="translated">2-ci günü</target>
+        <target xml:lang="az" state="final">2-ci günü</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Day 3" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 3</source>
         <note>ID: TemplateBooks.PageLabel.Day 3</note>
-        <target xml:lang="az" state="translated">3-cü günü</target>
+        <target xml:lang="az" state="final">3-cü günü</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Day 4" sil:dynamic="true">
         <source xml:lang="en">Day 4</source>
@@ -5561,7 +5711,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Front Cover</source>
         <note>ID: TemplateBooks.PageLabel.Front Cover</note>
-        <target xml:lang="az" state="translated">Cildin Önlüyü</target>
+        <target xml:lang="az" state="final">Cildin Önlüyü</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.FrontBackMatter" sil:dynamic="true">
         <source xml:lang="en">Front/Back Matter</source>
@@ -5577,43 +5727,43 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image On Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
-        <target xml:lang="az" state="translated">Təsvir Aşağıda Olsun</target>
+        <target xml:lang="az" state="final">Təsvir Aşağıda Olsun</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image in Middle</source>
         <note>ID: TemplateBooks.PageLabel.Image in Middle</note>
-        <target xml:lang="az" state="translated">Təsvir Mərkəzləndirilmiş Olsun</target>
+        <target xml:lang="az" state="final">Təsvir Mərkəzləndirilmiş Olsun</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Inside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Back Cover</note>
-        <target xml:lang="az" state="translated">Cildin Arxa Örtüyün İçəri</target>
+        <target xml:lang="az" state="final">Cildin Arxa Örtüyün İçəri</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Inside Front Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Inside Front Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Front Cover</note>
-        <target xml:lang="az" state="translated">Cildin Önlüyünün İçəri</target>
+        <target xml:lang="az" state="final">Cildin Önlüyünün İçəri</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Instructions</source>
         <note>ID: TemplateBooks.PageLabel.Instructions</note>
         <note>Used for Big Book Teacher instructions</note>
-        <target xml:lang="az" state="translated">Təlimatlar</target>
+        <target xml:lang="az" state="final">Təlimatlar</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just Text" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just Text</source>
         <note>ID: TemplateBooks.PageLabel.Just Text</note>
-        <target xml:lang="az" state="translated">Ancaq Mətn</target>
+        <target xml:lang="az" state="final">Ancaq Mətn</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just a Picture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just a Picture</source>
         <note>ID: TemplateBooks.PageLabel.Just a Picture</note>
-        <target xml:lang="az" state="translated">Ancaq Şəkil</target>
+        <target xml:lang="az" state="final">Ancaq Şəkil</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just an Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just an Image</source>
         <note>ID: TemplateBooks.PageLabel.Just an Image</note>
-        <target xml:lang="az" state="translated">Ancaq Təsvir</target>
+        <target xml:lang="az" state="final">Ancaq Təsvir</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just Video" sil:dynamic="true">
         <source xml:lang="en">Just Video</source>
@@ -5623,7 +5773,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Outside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Outside Back Cover</note>
-        <target xml:lang="az" state="translated">Cildin Arxasının Örtüyü</target>
+        <target xml:lang="az" state="final">Cildin Arxasının Örtüyü</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
@@ -5638,17 +5788,17 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture &amp; Word</source>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Word</note>
-        <target xml:lang="az" state="translated">Şəkil və Söz</target>
+        <target xml:lang="az" state="final">Şəkil və Söz</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture in Middle</source>
         <note>ID: TemplateBooks.PageLabel.Picture in Middle</note>
-        <target xml:lang="az" state="translated">Ortasinda Səkil</target>
+        <target xml:lang="az" state="final">Ortasinda Səkil</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture on Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
-        <target xml:lang="az" state="translated">Aşağısında Şəkil</target>
+        <target xml:lang="az" state="final">Aşağısında Şəkil</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Left" sil:dynamic="true">
         <source xml:lang="en">Picture on Left</source>
@@ -5690,17 +5840,17 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.This Page Is Intentionally Blank" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This Page Is Intentionally Blank</source>
         <note>ID: TemplateBooks.PageLabel.This Page Is Intentionally Blank</note>
-        <target xml:lang="az" state="translated">Bu Səhifə Niyətlə Boş Qalıb</target>
+        <target xml:lang="az" state="final">Bu Səhifə Niyətlə Boş Qalıb</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Title Page</source>
         <note>ID: TemplateBooks.PageLabel.Title Page</note>
-        <target xml:lang="az" state="translated">Başlıq Səhifəsi</target>
+        <target xml:lang="az" state="final">Başlıq Səhifəsi</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Traditional" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Traditional</source>
         <note>ID: TemplateBooks.PageLabel.Traditional</note>
-        <target xml:lang="az" state="translated">Ənənəvi</target>
+        <target xml:lang="az" state="final">Ənənəvi</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Translation Instructions" sil:dynamic="true">
         <source xml:lang="en">Translation Instructions</source>
@@ -5717,7 +5867,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Setup</source>
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>
         <note>This is the dialog used to set up the wall calendar</note>
-        <target xml:lang="az" state="translated">Proqramın Qurulması</target>
+        <target xml:lang="az" state="final">Proqramın Qurulması</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.Quiz.HintBubble.Answer" sil:dynamic="true">
         <source xml:lang="en">Put a possible answer here. Check it if it is correct.</source>
@@ -5733,115 +5883,115 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Agriculture</source>
         <note>ID: Topics.Agriculture</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Kənd Təsərrüfatı</target>
+        <target xml:lang="az" state="final">Kənd Təsərrüfatı</target>
       </trans-unit>
       <trans-unit id="Topics.Animal Stories" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Animal Stories</source>
         <note>ID: Topics.Animal Stories</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Heyvanlar Haqqında Hekayələri</target>
+        <target xml:lang="az" state="final">Heyvanlar Haqqında Hekayələri</target>
       </trans-unit>
       <trans-unit id="Topics.Business" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Business</source>
         <note>ID: Topics.Business</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Ticarət</target>
+        <target xml:lang="az" state="final">Ticarət</target>
       </trans-unit>
       <trans-unit id="Topics.Community Living" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Community Living</source>
         <note>ID: Topics.Community Living</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Cəmiyyətdeki Yaşayış</target>
+        <target xml:lang="az" state="final">Cəmiyyətdeki Yaşayış</target>
       </trans-unit>
       <trans-unit id="Topics.Culture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Culture</source>
         <note>ID: Topics.Culture</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Mədəniyyət</target>
+        <target xml:lang="az" state="final">Mədəniyyət</target>
       </trans-unit>
       <trans-unit id="Topics.Dictionary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Dictionary</source>
         <note>ID: Topics.Dictionary</note>
         <note>this is a book topic</note>
-        <target xml:lang="az" state="translated">Lüğət</target>
+        <target xml:lang="az" state="final">Lüğət</target>
       </trans-unit>
       <trans-unit id="Topics.Environment" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Environment</source>
         <note>ID: Topics.Environment</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Ətraf Mühit</target>
+        <target xml:lang="az" state="final">Ətraf Mühit</target>
       </trans-unit>
       <trans-unit id="Topics.Fiction" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Fiction</source>
         <note>ID: Topics.Fiction</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Görkəm Ədəbiyyat</target>
+        <target xml:lang="az" state="final">Görkəm Ədəbiyyat</target>
       </trans-unit>
       <trans-unit id="Topics.Health" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Health</source>
         <note>ID: Topics.Health</note>
         <note>this is a book topic</note>
-        <target xml:lang="az" state="translated">Səhiyyə</target>
+        <target xml:lang="az" state="final">Səhiyyə</target>
       </trans-unit>
       <trans-unit id="Topics.How To" sil:dynamic="true" approved="yes">
         <source xml:lang="en">How To</source>
         <note>ID: Topics.How To</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Nəcə Eləmək</target>
+        <target xml:lang="az" state="final">Nəcə Eləmək</target>
       </trans-unit>
       <trans-unit id="Topics.Math" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Math</source>
         <note>ID: Topics.Math</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Riyaziyyat</target>
+        <target xml:lang="az" state="final">Riyaziyyat</target>
       </trans-unit>
       <trans-unit id="Topics.NoTopic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No Topic</source>
         <note>ID: Topics.NoTopic</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Heç Bir Mövzu Yox</target>
+        <target xml:lang="az" state="final">Heç Bir Mövzu Yox</target>
       </trans-unit>
       <trans-unit id="Topics.Non Fiction" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Non Fiction</source>
         <note>ID: Topics.Non Fiction</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Faktiki Ədəbiyyat</target>
+        <target xml:lang="az" state="final">Faktiki Ədəbiyyat</target>
       </trans-unit>
       <trans-unit id="Topics.Personal Development" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Personal Development</source>
         <note>ID: Topics.Personal Development</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Şəxsi İnkişaf</target>
+        <target xml:lang="az" state="final">Şəxsi İnkişaf</target>
       </trans-unit>
       <trans-unit id="Topics.Primer" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Primer</source>
         <note>ID: Topics.Primer</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Əlifba Kitabi</target>
+        <target xml:lang="az" state="final">Əlifba Kitabi</target>
       </trans-unit>
       <trans-unit id="Topics.Science" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Science</source>
         <note>ID: Topics.Science</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Elm</target>
+        <target xml:lang="az" state="final">Elm</target>
       </trans-unit>
       <trans-unit id="Topics.Spiritual" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Spiritual</source>
         <note>ID: Topics.Spiritual</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Ruhaniyat</target>
+        <target xml:lang="az" state="final">Ruhaniyat</target>
       </trans-unit>
       <trans-unit id="Topics.Story Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Story Book</source>
         <note>ID: Topics.Story Book</note>
         <note>this is a book topic</note>
-        <target xml:lang="az" state="translated">Hekayət Kitabı</target>
+        <target xml:lang="az" state="final">Hekayət Kitabı</target>
       </trans-unit>
       <trans-unit id="Topics.Traditional Story" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Traditional Story</source>
         <note>ID: Topics.Traditional Story</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="az" state="translated">Ənənəvi Hekayət</target>
+        <target xml:lang="az" state="final">Ənənəvi Hekayət</target>
       </trans-unit>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>

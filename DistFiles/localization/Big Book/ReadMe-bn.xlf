@@ -6,6 +6,9 @@
         <source xml:lang="en">About Big Books</source>
         <target xml:lang="bn" state="translated">বড় বইগুলি সম্পর্কে/ বিষয়ক</target>
         <note>ID: bigbook.title</note>
+        <alt-trans>
+          <target xml:lang="bn">বড় বইগুলি সম্পর্কে</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
@@ -35,6 +38,9 @@ Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
         <target xml:lang="bn" state="translated">আপনি যদি ছোট পর্দা ব্যবহার করেন, তাহলে মুদ্রণ সংক্রান্ত পৃষ্ঠাটি পড়া কঠিন হতে পারে। আপনি সম্পাদনা করার জন্য CTRL + মাউস হুইল ব্যবহার করে পৃষ্ঠাটি ছোট-বড় করতে পারেন।</target>
         <note>ID: bigbook.limits.smallscreen</note>
+        <alt-trans>
+          <target xml:lang="bn">আপনি যদি ছোট পর্দা ব্যবহার করেন, তাহলে মুদ্রণ সংক্রান্ত পৃষ্ঠাটি পড়া কঠিন হতে পারে। আপনি সম্পাদনা করার জন্য CTRL + মাউস হুইল ব্যবহার করে পৃষ্ঠাটি ছোট-বড় করতে পারেন।.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
@@ -44,6 +50,11 @@ If you send us that text, we can include it in a future version of the template.
 যদি আপনি ভিন্ন ভাষায় নির্দেশাবলী পেতে চান, তাহলে আপনি যে লেখাটি আছে তা মুছে দিয়ে নিজেই লিখতে পারেন।
 আপনি যদি আমাদের লেখাটি পাঠান তাহলে আমরা সেটিকে টেমপ্লেটের ভবিষ্যৎ সংস্করণের অন্তর্ভুক্ত করতে পারি।</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
+        <alt-trans>
+          <target xml:lang="bn">এই সংস্করণে ইতিমধ্যে "শিক্ষকদের জন্য নির্দেশাবলী" পৃষ্ঠাটির ইংরেজি অনুবাদ অন্তর্ভুক্ত করা হয়েছে।
+যদি আপনি ভিন্ন ভাষায় নির্দেশাবলী পেতে চান, তাহলে আপনি যে লেখাটি আছে তা মুছে দিয়ে নিজেই লিখতে পারেন।
+আপনি যদি আমাদের লেখাটি পাঠান তাহলে আমরা সেটিকে টেমপ্লেটের ভবিষ্যৎ সংস্করণের অন্তর্ভুক্ত করতে পারি।.</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>
