@@ -79,8 +79,8 @@
         </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.None" approved="yes">
-        <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
+      <trans-unit id="Settings.Enterprise.None">
+        <source xml:lang="en">None. Enterprise features will be unavailable.</source>
         <note>ID: Settings.Enterprise.None</note>
         <target xml:lang="es-ES" state="translated">Ninguno. Bloom no mostrará las funciones empresariales.</target>
       </trans-unit>

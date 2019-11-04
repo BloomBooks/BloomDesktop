@@ -7,8 +7,8 @@
         <target xml:lang="zh-CN" state="translated">针对安卓系统的故障排除技巧</target>
         <note>ID: android.publish.trouble.tips</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi" approved="yes">
-        <source xml:lang="en">Serve on WiFi Network</source>
+      <trans-unit id="android.publish.wifi">
+        <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="zh-CN" state="translated">通过WiFi推送</target>
         <note>ID: android.publish.wifi</note>
       </trans-unit>
@@ -17,21 +17,21 @@
         <target xml:lang="zh-CN" state="translated">故障：安卓设备看不到同书推送</target>
         <note>ID: android.publish.wifi.unseen</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.run.receive" approved="yes">
-        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</source>
+      <trans-unit id="android.publish.wifi.run.receive">
+        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
         <target xml:lang="zh-CN" state="translated">使用这个功能时，需要先运行Bloom阅读器，然后打开菜单选择“通过WiFi接受”</target>
         <note>ID: android.publish.wifi.run.receive</note>
         <alt-trans>
           <target xml:lang="zh-CN">使用这个功能时，需要先运行Bloom阅读器，然后打开菜单选择“通过WIFI接受”</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.receive.from" approved="yes">
-        <source xml:lang="en">Make sure the device is in the "Receive from WiFi" screen</source>
+      <trans-unit id="android.publish.wifi.receive.from">
+        <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
         <target xml:lang="zh-CN" state="translated">确保设备在“通过WiFi接受”页面上</target>
         <note>ID: android.publish.wifi.receive.from</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.same.network" approved="yes">
-        <source xml:lang="en">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
+      <trans-unit id="android.publish.wifi.same.network">
+        <source xml:lang="en">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
         <target xml:lang="zh-CN" state="translated">确保电脑和设备处在同一个WiFi网络中。通过网线和WiFi路由器连接的电脑也有可能处于自己的网络。虽然从技术上说，连接网线的网络和当地的WiFi网可以是同一个网络，但非常抱歉，Bloom团队无法帮助您进行设定。</target>
         <note>ID: android.publish.wifi.same.network</note>
       </trans-unit>
@@ -50,9 +50,9 @@
         <target xml:lang="zh-CN" state="translated">故障：Bloom没有连接到我的设备</target>
         <note>ID: android.publish.usb.not.connect</note>
       </trans-unit>
-      <trans-unit id="android.publish.usb.consider.wifi" approved="yes">
+      <trans-unit id="android.publish.usb.consider.wifi">
         <source xml:lang="en">
-          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
+          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the Wi-Fi method even if you are only working with a single device.</g>
         </source>
         <target xml:lang="zh-CN" state="translated"><g id="genid-1" ctype="x-html-p">我们发现这种方法在许多设备上都会出问题, 所以即使您只用一个设备, 也最好选用通过WiFi 发送的方法。</g></target>
         <note>ID: android.publish.usb.consider.wifi</note>

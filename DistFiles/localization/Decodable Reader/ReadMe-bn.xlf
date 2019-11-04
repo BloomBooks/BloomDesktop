@@ -38,6 +38,9 @@
         <target xml:lang="bn" state="translated">সহায়তা তালিকায় যান, "দলিল রচনা/ডকুমেন্টেশন" নির্বাচন করুন এবং "ডিকোডেবল রিডার" এর নীচে সূচিপত্র দেখুন।</target>
         <note>ID: decodable.learn.helpindex</note>
         <alt-trans>
+          <target xml:lang="bn">সহায়তা/সাহায্যের  তালিকায় যান, "দলিল রচনা/ডকুমেন্টেশন" নির্বাচন করুন এবং "ডিকোডেবল রিডার" এর নীচে সূচিপত্র দেখুন।</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="bn">সহায়তা তালিকাতে যান, নির্বাচন করুন 'সহায়তা' এবং "লেভেলড রিডার" এর নীচে সূচিপত্র দেখুন।</target>
         </alt-trans>
       </trans-unit>
