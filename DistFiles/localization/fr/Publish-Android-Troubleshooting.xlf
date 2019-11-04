@@ -7,8 +7,8 @@
         <target xml:lang="fr" state="translated">Astuces pour résoudre certains problèmes lors de la publication sous Android</target>
         <note>ID: android.publish.trouble.tips</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi" approved="yes">
-        <source xml:lang="en">Serve on WiFi Network</source>
+      <trans-unit id="android.publish.wifi">
+        <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="fr" state="translated">Partager sur le réseau WiFi</target>
         <note>ID: android.publish.wifi</note>
         <alt-trans>
@@ -29,19 +29,19 @@
           <target xml:lang="fr">Problème ‎: l'appareil sous Android ne voit aucune publicités pour les livres</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.run.receive" approved="yes">
-        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</source>
-        <target xml:lang="fr" state="translated">Avec cette méthode, vous devez lancer Bloom Reader, ouvrir son menu et choisir « Recevoir par le WiFi ».</target>
+      <trans-unit id="android.publish.wifi.run.receive">
+        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
+        <target xml:lang="fr" state="translated">Avec cette méthode, vous devez lancer Bloom Reader, ouvrir son menu et choisir " Receive from WiFi" "(« Recevoir par le WiFi »).</target>
         <note>ID: android.publish.wifi.run.receive</note>
         <alt-trans>
-          <target xml:lang="fr">Avec cette méthode, vous devez lancer Bloom Reader, ouvrir son menu et choisir " Receive from WiFi" "(« Recevoir par le WiFi »).</target>
+          <target xml:lang="fr">Avec cette méthode, vous devez lancer Bloom Reader, ouvrir son menu et choisir « Recevoir par le WiFi ».</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="fr">Lorsque vous utilisez cette méthode, vous devez exécuter le LecteurBloom. Ouvrez le menu et choisissez "Recevoir du WiFi".</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.receive.from" approved="yes">
-        <source xml:lang="en">Make sure the device is in the "Receive from WiFi" screen</source>
+      <trans-unit id="android.publish.wifi.receive.from">
+        <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
         <target xml:lang="fr" state="translated">Assurez-vous que l'appareil figure sur l'écran "Recevoir par le WiFi"</target>
         <note>ID: android.publish.wifi.receive.from</note>
         <alt-trans>
@@ -51,8 +51,8 @@
           <target xml:lang="fr">Assurez-vous que l'appareil est dans l'écran "Recevoir WiFi"</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.same.network" approved="yes">
-        <source xml:lang="en">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
+      <trans-unit id="android.publish.wifi.same.network">
+        <source xml:lang="en">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
         <target xml:lang="fr" state="translated">Assurez-vous que l'ordinateur et l'appareil sont sur le même réseau WiFi. Un ordinateur connecté par câble au routeur WiFi peut continuer à fonctionner sur son propre réseau. Il est techniquement possible de connecter des réseaux filaires pour être sur un même sous-réseau local tel que le WiFi mais, malheureusement, l'équipe Bloom ne pourra pas vous aider à le configurer.</target>
         <note>ID: android.publish.wifi.same.network</note>
         <alt-trans>
@@ -86,9 +86,9 @@
         <target xml:lang="fr" state="translated">Problème‎: Bloom ne se connecte pas à mon appareil</target>
         <note>ID: android.publish.usb.not.connect</note>
       </trans-unit>
-      <trans-unit id="android.publish.usb.consider.wifi" approved="yes">
+      <trans-unit id="android.publish.usb.consider.wifi">
         <source xml:lang="en">
-          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
+          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the Wi-Fi method even if you are only working with a single device.</g>
         </source>
         <target xml:lang="fr" state="translated"><g id="genid-1" ctype="x-html-p">Nous avons constaté que cette méthode pose problème pour de nombreux appareils. Par conséquent, pensez à utiliser la méthode WiFi, même si vous ne travaillez que sur un seul appareil.</g></target>
         <note>ID: android.publish.usb.consider.wifi</note>

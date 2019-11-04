@@ -8,8 +8,8 @@
         <note>ID: android.publish.trouble.tips</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi">
-        <source xml:lang="en">Serve on WiFi Network</source>
-        <target xml:lang="ru" state="needs-translation">Serve on WiFi Network</target>
+        <source xml:lang="en">Share over Wi-Fi</source>
+        <target xml:lang="ru" state="needs-translation">Share over Wi-Fi</target>
         <note>ID: android.publish.wifi</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.unseen">
@@ -18,18 +18,18 @@
         <note>ID: android.publish.wifi.unseen</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive">
-        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</source>
-        <target xml:lang="ru" state="needs-translation">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</target>
+        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
+        <target xml:lang="ru" state="needs-translation">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</target>
         <note>ID: android.publish.wifi.run.receive</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from">
-        <source xml:lang="en">Make sure the device is in the "Receive from WiFi" screen</source>
-        <target xml:lang="ru" state="needs-translation">Make sure the device is in the "Receive from WiFi" screen</target>
+        <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
+        <target xml:lang="ru" state="needs-translation">Make sure the device is in the "Receive from Wi-Fi" screen</target>
         <note>ID: android.publish.wifi.receive.from</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.same.network">
-        <source xml:lang="en">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
-        <target xml:lang="ru" state="needs-translation">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</target>
+        <source xml:lang="en">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
+        <target xml:lang="ru" state="needs-translation">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</target>
         <note>ID: android.publish.wifi.same.network</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.firewalls">
@@ -49,9 +49,9 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.consider.wifi">
         <source xml:lang="en">
-          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
+          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the Wi-Fi method even if you are only working with a single device.</g>
         </source>
-        <target xml:lang="ru" state="needs-translation"><g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g></target>
+        <target xml:lang="ru" state="needs-translation"><g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the Wi-Fi method even if you are only working with a single device.</g></target>
         <note>ID: android.publish.usb.consider.wifi</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.automatic">

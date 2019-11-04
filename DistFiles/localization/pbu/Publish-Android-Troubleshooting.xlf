@@ -7,8 +7,8 @@
         <target xml:lang="pbu" state="translated">د Android خپرونې لپاره د ستونزو حل لاری</target>
         <note>ID: android.publish.trouble.tips</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi" approved="yes">
-        <source xml:lang="en">Serve on WiFi Network</source>
+      <trans-unit id="android.publish.wifi">
+        <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="pbu" state="translated">د WiFi شبکه کې لټون وکړئ</target>
         <note>ID: android.publish.wifi</note>
       </trans-unit>
@@ -17,18 +17,18 @@
         <target xml:lang="pbu" state="translated">ستونزه: د Android وسیله ته د کتاب اعلانونه نه لیدل کیږي</target>
         <note>ID: android.publish.wifi.unseen</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.run.receive" approved="yes">
-        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</source>
+      <trans-unit id="android.publish.wifi.run.receive">
+        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
         <target xml:lang="pbu" state="translated">کله چې دا طریقه کاروئ، تاسو باید د بلوم کتاب فعاله کړئ، خپل مینو کې یې پرانیزئ، او "د WiFi څخه ترلاسه کړئ" انتخاب کړئ.</target>
         <note>ID: android.publish.wifi.run.receive</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.receive.from" approved="yes">
-        <source xml:lang="en">Make sure the device is in the "Receive from WiFi" screen</source>
+      <trans-unit id="android.publish.wifi.receive.from">
+        <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
         <target xml:lang="pbu" state="translated">ډاډ ترلاسه کړئ چې دا وسیله "د WiFi څخه ترلاسه کړئ" پرده کې ده</target>
         <note>ID: android.publish.wifi.receive.from</note>
       </trans-unit>
-      <trans-unit id="android.publish.wifi.same.network" approved="yes">
-        <source xml:lang="en">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
+      <trans-unit id="android.publish.wifi.same.network">
+        <source xml:lang="en">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
         <target xml:lang="pbu" state="translated">ډاډه کړئ چې کمپیوټر او وسیله ورته WiFi شبکه کې دي. یو کمپیوټر چی د کیبل له لارې د WiFi روټرسره وصل شوی اوس هم کیدای شي په خپل شبکه کې وي. دا د تخنیکي پلوه ممکنه ده چې یو سیم لرونکي شبکه د WiFi سره په فرعي شبکه کې وصل شي او یو شان subnet ولری، مګر د بلوم ټیم به دا توان ونه لري چې د دی په تیاره ولو کی مرسته وکړي، بخښنه غواړو.</target>
         <note>ID: android.publish.wifi.same.network</note>
       </trans-unit>
@@ -50,9 +50,9 @@
         <target xml:lang="pbu" state="translated">ستونزه: بلوم زما د آلې سره نه نښلول کیږي</target>
         <note>ID: android.publish.usb.not.connect</note>
       </trans-unit>
-      <trans-unit id="android.publish.usb.consider.wifi" approved="yes">
+      <trans-unit id="android.publish.usb.consider.wifi">
         <source xml:lang="en">
-          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
+          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the Wi-Fi method even if you are only working with a single device.</g>
         </source>
         <target xml:lang="pbu" state="translated"><g id="genid-1" ctype="x-html-p">موږ دا طریقه موندلې چې د ډیرو وسیلو سره ستونزمن وي، نو د WiFi طریقه کارول هم په نظر کی ونیسئ حتی که تاسو یوازې د یوی واحدی آلې سره کار کوئ.</g></target>
         <note>ID: android.publish.usb.consider.wifi</note>

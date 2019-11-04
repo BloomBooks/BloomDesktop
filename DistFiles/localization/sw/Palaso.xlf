@@ -626,6 +626,9 @@
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
         <target xml:lang="sw" state="translated">Neno la siri la awali la mipangilio hii ni "{0}". Iwapo utalisahau, unaweza kulitafuta kwenye google kwa "{1}" na</target>
+        <alt-trans>
+          <target xml:lang="sw">Neno la siri la awali la mipangilio hii ni "{0}". Iwapo utalisahau, unaweza kulitafuta kwenye google kwa "{1}" na "{2}"</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
