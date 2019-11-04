@@ -11,7 +11,7 @@
         </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi" approved="yes">
-        <source xml:lang="en">Serve on WiFi Network</source>
+        <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="quc" state="translated">Ujachik pa uk'atil WiFi</target>
         <note>ID: android.publish.wifi</note>
         <alt-trans>
@@ -27,15 +27,18 @@
         </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive" approved="yes">
-        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</source>
-        <target xml:lang="quc" state="translated">Are taq kokisax we solib'al no'jib'al, rajawaxik uchakuxik Bloom Reader. Chatoro' ri cholb'al chak k'ate' k'u ri' cahcha' "Uk'amik WiFi.</target>
+        <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
+        <target xml:lang="quc" state="translated">Are taq kokisax we solno'jib'al ri', rajawaxik kab'an ukojik Bloom Reader. Chatoro' ri cholb'al chak k'ate' k'u ri' chacha' "Uk'amik pa WiFi.</target>
         <note>ID: android.publish.wifi.run.receive</note>
+        <alt-trans>
+          <target xml:lang="quc">Are taq kokisax we solib'al no'jib'al, rajawaxik uchakuxik Bloom Reader. Chatoro' ri cholb'al chak k'ate' k'u ri' cahcha' "Uk'amik WiFi.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc">Are chi' koksax we binib'al, rajawaxik uchakuxik Bloom Reader. Chtoro' ri Cholb'al chak xuquje' chcha' "Uk'amik rech jachnak' k'at" (WiFi).</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from" approved="yes">
-        <source xml:lang="en">Make sure the device is in the "Receive from WiFi" screen</source>
+        <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
         <target xml:lang="quc" state="translated">Chawila' chi le wiqchakub'al k'o pa le kutb'al wach "Uk'amik rech WiFi"</target>
         <note>ID: android.publish.wifi.receive.from</note>
         <alt-trans>
@@ -47,9 +50,12 @@
         </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.same.network" approved="yes">
-        <source xml:lang="en">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
-        <target xml:lang="quc" state="translated">Chawila chi le kematz'ib' xuquje' ri wiqkemchakub'al e k'o chi upam ri k'at WiFi. Jun kematz'ib' tiqital rumal ri t'iqk'a'm q'axeb'al WiFi k'o kraj na tiqital pa le uk'atil. Loq' na ut'iqoxik k'i taq uk'atil pa taq le uk'a'mal rech kakowinik kk'oji' chi upam ri uq'ab' uk'atil pacha' WiFi, xa k'ut ri e wokonolab' rech Bloom man kekowin taj kkiya to'b'anik chech usuk'umaxik we ri'.</target>
+        <source xml:lang="en">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
+        <target xml:lang="quc" state="translated">Chawila' chi le kematz'ib' xuquje' ri wiqkemchakub'al e k'o chi upam ri uk'atil WiFi. Jun kematz'ib' tiqital rumal ri t'iqk'a'm q'axeb'al WiFi k'o kraj na tiqital pa le uk'atil. Loq' na utiqoxik k'i taq uk'atil pa taq le uk'a'mal rech kakowinik kk'oji' chi upam ri uq'ab' uk'atil pacha' WiFi, xa k'ut ri e wokonolab' rech Bloom man kekowin taj kkiya to'b'anik chech usuk'umaxik we ri'.</target>
         <note>ID: android.publish.wifi.same.network</note>
+        <alt-trans>
+          <target xml:lang="quc">Chawila chi le kematz'ib' xuquje' ri wiqkemchakub'al e k'o chi upam ri k'at WiFi. Jun kematz'ib' tiqital rumal ri t'iqk'a'm q'axeb'al WiFi k'o kraj na tiqital pa le uk'atil. Loq' na ut'iqoxik k'i taq uk'atil pa taq le uk'a'mal rech kakowinik kk'oji' chi upam ri uq'ab' uk'atil pacha' WiFi, xa k'ut ri e wokonolab' rech Bloom man kekowin taj kkiya to'b'anik chech usuk'umaxik we ri'.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc">Chawila che ri kematz'ib' xuquje' ri wiqkem chakub'al e k'o chi upam ri k'at WiFi. Jun kematz'ib' t'iqitalik rumal ri k'a'm che ri enrutador WiFi k'o na ri' pa ri uk'at. Are saq il che ut'iqoxik k'i taq k'at rumal ri k'a'm rech kakowinik kak'oji' chi upam ri k'at k'o chi uxe' waral pacha' WiFi, xa k'ut ri k'iyirisanem rech Bloom ma kekowin taj che uto'ik che usuk'umaxik we ri'.</target>
         </alt-trans>
@@ -80,10 +86,13 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.consider.wifi" approved="yes">
         <source xml:lang="en">
-          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the WiFi method even if you are only working with a single device.</g>
+          <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the Wi-Fi method even if you are only working with a single device.</g>
         </source>
-        <target xml:lang="quc" state="translated"><g id="genid-1" ctype="x-html-p">Xqilo chi le solb'al no'jib'al are kaya'ow k'axk'olil chi kech taq wiqkemchakub'al. Rumal wa', chwila chi le solb'al no'jib'al WiFi xuquje' we katajin kchakun xuwi wi ruk' jun wiqkemchakub'al.</g></target>
+        <target xml:lang="quc" state="translated"><g id="genid-1" ctype="x-html-p">Xqilo chi le solno'jib'al are kaya'ow k'axk'olil chi kech taq wiqkemchakub'al. Rumal wa', chawila' chi le solb'al no'jib'al WiFi xuquje' we katajin kchakun xuwi wi ruk' jun wiqkemchakub'al.</g></target>
         <note>ID: android.publish.usb.consider.wifi</note>
+        <alt-trans>
+          <target xml:lang="quc"><g id="genid-1" ctype="x-html-p">Xqilo chi le solb'al no'jib'al are kaya'ow k'axk'olil chi kech taq wiqkemchakub'al. Rumal wa', chwila chi le solb'al no'jib'al WiFi xuquje' we katajin kchakun xuwi wi ruk' jun wiqkemchakub'al.</g></target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="quc"><g id="genid-1" ctype="x-html-p">Qaraqom che we ub'eyal are k'axk'olil kuya' chi kech k'i taq wiqkem chakub'al. Rumal wa', chwila pe' ri ub'eyal WiFi xuquje' we tajan kachakun xuw wi ruk' jun wiqkem chakub'al.</g></target>
         </alt-trans>

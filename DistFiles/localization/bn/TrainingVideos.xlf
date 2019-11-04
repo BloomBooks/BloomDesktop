@@ -56,6 +56,9 @@
         <source xml:lang="en">Advanced Topics</source>
         <target xml:lang="bn" state="translated">উচ্চতর বিষয়সমূহ</target>
         <note>ID: training.videos.advanced</note>
+        <alt-trans>
+          <target xml:lang="bn">উচ্চতর বিষয়গুলি </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.formatting" approved="yes">
         <source xml:lang="en">
@@ -109,7 +112,7 @@
 <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">উচ্চ রেজল্যুশন</g> (বড় ফাইলসমূহ)</target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="bn">      <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">উচ্চ রেজল্যুশন</g> (বড় ফাইলসমূহ)</target>
+          <target xml:lang="bn">      <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">উচ্চ রেজল্যুশন</g> (বড় ফাইলসমূহ)<g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos"></g></target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="bn">

@@ -374,7 +374,7 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
         <source xml:lang="en">Advanced Program Settings</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel</note>
-        <target xml:lang="km" state="translated">ការកំណត់កម្មវិធីកម្រិតខ្ពស់</target>
+        <target xml:lang="km" state="final">ការកំណត់កម្មវិធីកម្រិតខ្ពស់</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
         <source xml:lang="en">Automatically update Bloom</source>
@@ -406,7 +406,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel" approved="yes">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
-        <target xml:lang="km" state="translated">ការបង្កើតសៀវភៅ</target>
+        <target xml:lang="km" state="final">ការបង្កើតសៀវភៅ</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding">
         <source xml:lang="en">Branding</source>
@@ -423,7 +423,7 @@
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
         <note>{0} is a language name.</note>
-        <target xml:lang="km" state="translated">ហ្វុនដើមសម្រាប់ {0}</target>
+        <target xml:lang="km" state="final">ហ្វុនដើមសម្រាប់ {0}</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
         <source xml:lang="en">Front/Back Matter Pack</source>
@@ -604,7 +604,7 @@
       <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
-        <target xml:lang="km" state="translated">ការកំណត់</target>
+        <target xml:lang="km" state="final">ការកំណត់</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
         <source xml:lang="en">Change...</source>
@@ -615,29 +615,29 @@
         <source xml:lang="en">Language 1</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language1InSourceCollection</note>
         <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
-        <target xml:lang="km" state="translated">ភាសាទី 1</target>
+        <target xml:lang="km" state="final">ភាសាទី 1</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection" approved="yes">
         <source xml:lang="en">Language 2</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language2InSourceCollection</note>
         <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
-        <target xml:lang="km" state="translated">ភាសាទី 2</target>
+        <target xml:lang="km" state="final">ភាសាទី 2</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection" approved="yes">
         <source xml:lang="en">Language 3</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language3InSourceCollection</note>
         <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
-        <target xml:lang="km" state="translated">ភាសាទី 3</target>
+        <target xml:lang="km" state="final">ភាសាទី 3</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel" approved="yes">
         <source xml:lang="en">Languages</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.LanguageTabLabel</note>
-        <target xml:lang="km" state="translated">ភាសា</target>
+        <target xml:lang="km" state="final">ភាសា</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink" approved="yes">
         <source xml:lang="en">Remove</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.RemoveLanguageLink</note>
-        <target xml:lang="km" state="translated">ដកចេញ</target>
+        <target xml:lang="km" state="final">ដកចេញ</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
         <source xml:lang="en">Set...</source>
@@ -648,7 +648,7 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel" approved="yes">
         <source xml:lang="en">Local Language</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
-        <target xml:lang="km" state="translated">ភាសាត្រាប់</target>
+        <target xml:lang="km" state="final">ភាសាត្រាប់</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label">
         <source xml:lang="en">Language 2 (e.g. National Language)</source>
@@ -669,7 +669,7 @@
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName</note>
-        <target xml:lang="km" state="translated">ឈ្មោះកូឡិកសិន Bloom</target>
+        <target xml:lang="km" state="final">ឈ្មោះកូឡិកសិន Bloom</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject">
         <source xml:lang="en">Bloom Enterprise Project</source>
@@ -680,28 +680,28 @@
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Country</note>
-        <target xml:lang="km" state="translated">ប្រទេស</target>
+        <target xml:lang="km" state="final">ប្រទេស</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District" approved="yes">
         <source xml:lang="en">District</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.District</note>
-        <target xml:lang="km" state="translated">ឌីស្ទ្រីក</target>
+        <target xml:lang="km" state="final">ឌីស្ទ្រីក</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel" approved="yes">
         <source xml:lang="en">Project Information</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel</note>
-        <target xml:lang="km" state="translated">ព័ត៌មានគម្រោង</target>
+        <target xml:lang="km" state="final">ព័ត៌មានគម្រោង</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province" approved="yes">
         <source xml:lang="en">Province</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
-        <target xml:lang="km" state="translated">ខេត្ត</target>
+        <target xml:lang="km" state="final">ខេត្ត</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart" approved="yes">
         <source xml:lang="en">Restart</source>
         <note>ID: CollectionSettingsDialog.Restart</note>
         <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
-        <target xml:lang="km" state="translated">ចាប់ផ្តើមឡើងវិញ</target>
+        <target xml:lang="km" state="final">ចាប់ផ្តើមឡើងវិញ</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.RestartMessage">
         <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
@@ -711,7 +711,7 @@
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem" approved="yes">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
-        <target xml:lang="km" state="translated">ធ្វើកញ្ចប់ Bloom ឯកសារគំរូសម្រាប់អ្នកអាន…</target>
+        <target xml:lang="km" state="final">ធ្វើកញ្ចប់ Bloom ឯកសារគំរូសម្រាប់អ្នកអាន…</target>
       </trans-unit>
       <trans-unit id="CollectionTab.AdminManagesUpdates">
         <source xml:lang="en">Your system administrator manages Bloom updates for this computer.</source>
@@ -750,7 +750,7 @@
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="km" state="translated">បណ្តុំប្រភព</target>
+        <target xml:lang="km" state="final">បណ្តុំប្រភព</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.DeleteBook">
         <source xml:lang="en">Delete Book</source>
@@ -795,7 +795,7 @@
       <trans-unit id="CollectionTab.BookSourceHeading" approved="yes">
         <source xml:lang="en">Sources For New Books</source>
         <note>ID: CollectionTab.BookSourceHeading</note>
-        <target xml:lang="km" state="translated">ប្រភពនានាសម្រាប់សៀវភៅថ្មី</target>
+        <target xml:lang="km" state="final">ប្រភពនានាសម្រាប់សៀវភៅថ្មី</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookSourcesLockNotice">
         <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
@@ -835,12 +835,12 @@
       <trans-unit id="CollectionTab.CollectionTabLabel" approved="yes">
         <source xml:lang="en">Collections</source>
         <note>ID: CollectionTab.CollectionTabLabel</note>
-        <target xml:lang="km" state="translated">កូឡិកសិន</target>
+        <target xml:lang="km" state="final">កូឡិកសិន</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Collections" approved="yes">
         <source xml:lang="en">Collections</source>
         <note>ID: CollectionTab.Collections</note>
-        <target xml:lang="km" state="translated">កូឡិកសិន</target>
+        <target xml:lang="km" state="final">កូឡិកសិន</target>
       </trans-unit>
       <trans-unit id="CollectionTab.ConfiguringBookMessage">
         <source xml:lang="en">Building...</source>
@@ -860,7 +860,7 @@
       <trans-unit id="CollectionTab.EditBookButton" approved="yes">
         <source xml:lang="en">Edit this book</source>
         <note>ID: CollectionTab.EditBookButton</note>
-        <target xml:lang="km" state="translated">កែសៀវភៅនេះ</target>
+        <target xml:lang="km" state="final">កែសៀវភៅនេះ</target>
       </trans-unit>
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
@@ -880,7 +880,7 @@
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate" approved="yes">
         <source xml:lang="en">Make a book using this source</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate</note>
-        <target xml:lang="km" state="translated">ធ្វើសៀវភៅដោយប្រើប្រភពនេះ</target>
+        <target xml:lang="km" state="final">ធ្វើសៀវភៅដោយប្រើប្រភពនេះ</target>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_">
         <source xml:lang="en">Create a book in my language using this source book</source>
@@ -892,13 +892,13 @@
         <note>ID: CollectionTab.MoreLanguagesMenuItem</note>
         <note>Brings up the localization dialog</note>
         <note xml:lang="en">used in 3.9 and earlier; feature removed in 4.0</note>
-        <target xml:lang="km" state="translated">ថែមទៀត…</target>
+        <target xml:lang="km" state="final">ថែមទៀត…</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Open/CreateCollectionButton" approved="yes">
         <source xml:lang="en">Other Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton</note>
         <note>This is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
-        <target xml:lang="km" state="translated">កូឡិកសិនដទៃទៀត</target>
+        <target xml:lang="km" state="final">កូឡិកសិនដទៃទៀត</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Open/CreateCollectionButton_ToolTip_">
         <source xml:lang="en">Open/Create/Get Collection</source>
@@ -925,7 +925,7 @@
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample Shells</source>
         <note>ID: CollectionTab.Sample Shells</note>
-        <target xml:lang="km" state="translated">Shells គំរូ</target>
+        <target xml:lang="km" state="final">Shells គំរូ</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SendReceive">
         <source xml:lang="en">Send/Receive</source>
@@ -935,12 +935,12 @@
       <trans-unit id="CollectionTab.SettingsButton" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionTab.SettingsButton</note>
-        <target xml:lang="km" state="translated">ការកំណត់</target>
+        <target xml:lang="km" state="final">ការកំណត់</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections" approved="yes">
         <source xml:lang="en">Open Additional Collections Folder</source>
         <note>ID: CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections</note>
-        <target xml:lang="km" state="translated">បើកហ្វូលឌ័រកូឡិកសិនបន្ថែម</target>
+        <target xml:lang="km" state="final">បើកហ្វូលឌ័រកូឡិកសិនបន្ថែម</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading">
         <source xml:lang="en">Sources For New Shells</source>
@@ -950,7 +950,7 @@
       <trans-unit id="CollectionTab.Templates" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Templates</source>
         <note>ID: CollectionTab.Templates</note>
-        <target xml:lang="km" state="translated">ឯកសារគំរូ</target>
+        <target xml:lang="km" state="final">ឯកសារគំរូ</target>
       </trans-unit>
       <trans-unit id="CollectionTab.TitleMissing">
         <source xml:lang="en">Title Missing</source>
@@ -1020,6 +1020,26 @@
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
         <target xml:lang="km" state="needs-translation">Advanced</target>
       </trans-unit>
+      <trans-unit id="Common.Colors.Black">
+        <source xml:lang="en">Black</source>
+        <note>ID: Common.Colors.Black</note>
+        <target xml:lang="km" state="needs-translation">Black</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Crimson">
+        <source xml:lang="en">Crimson</source>
+        <note>ID: Common.Colors.Crimson</note>
+        <target xml:lang="km" state="needs-translation">Crimson</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.Yellow">
+        <source xml:lang="en">Yellow</source>
+        <note>ID: Common.Colors.Yellow</note>
+        <target xml:lang="km" state="needs-translation">Yellow</target>
+      </trans-unit>
+      <trans-unit id="Common.Colors.White">
+        <source xml:lang="en">White</source>
+        <note>ID: Common.Colors.White</note>
+        <target xml:lang="km" state="needs-translation">White</target>
+      </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true">
         <source xml:lang="en">Learn More</source>
         <note>ID: Common.LearnMore</note>
@@ -1035,12 +1055,12 @@
       <trans-unit id="Common.Cancel" approved="yes">
         <source xml:lang="en">Cancel</source>
         <note>ID: Common.Cancel</note>
-        <target xml:lang="km" state="translated">លុបចោល</target>
+        <target xml:lang="km" state="final">លុបចោល</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="km" state="translated">&amp;លុបចោល</target>
+        <target xml:lang="km" state="final">&amp;លុបចោល</target>
       </trans-unit>
       <trans-unit id="Common.Finish">
         <source xml:lang="en">&amp;Finish</source>
@@ -1075,7 +1095,7 @@
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
-        <target xml:lang="km" state="translated">ជំនួយ</target>
+        <target xml:lang="km" state="final">ជំនួយ</target>
       </trans-unit>
       <trans-unit id="Common.HelpButton">
         <source xml:lang="en">&amp;Help</source>
@@ -1092,23 +1112,23 @@
         <source xml:lang="en">&amp;Next</source>
         <note>ID: Common.Next</note>
         <note>Used for the Next button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="km" state="translated">&amp;បន្ទាប់</target>
+        <target xml:lang="km" state="final">&amp;បន្ទាប់</target>
       </trans-unit>
       <trans-unit id="Common.NextButton" approved="yes">
         <source xml:lang="en">Next</source>
         <note>ID: Common.NextButton</note>
         <note>In a wizard, this button takes you to the next step.</note>
-        <target xml:lang="km" state="translated">បន្ទាប់</target>
+        <target xml:lang="km" state="final">បន្ទាប់</target>
       </trans-unit>
       <trans-unit id="Common.OK" approved="yes">
         <source xml:lang="en">OK</source>
         <note>ID: Common.OK</note>
-        <target xml:lang="km" state="translated">អូខេ</target>
+        <target xml:lang="km" state="final">អូខេ</target>
       </trans-unit>
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="km" state="translated">&amp;អូខេ</target>
+        <target xml:lang="km" state="final">&amp;អូខេ</target>
       </trans-unit>
       <trans-unit id="Common.Optional">
         <source xml:lang="en">optional</source>
@@ -1130,6 +1150,11 @@
         <note>ID: Common.Refresh</note>
         <note>Sense of refreshing a web page.</note>
         <target xml:lang="km" state="needs-translation">Refresh</target>
+      </trans-unit>
+      <trans-unit id="Common.Replace">
+        <source xml:lang="en">Replace</source>
+        <note>ID: Common.Replace</note>
+        <target xml:lang="km" state="needs-translation">Replace</target>
       </trans-unit>
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
@@ -1255,7 +1280,7 @@
         <source xml:lang="en">Two Languages</source>
         <note>ID: EditTab.Bilingual</note>
         <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
-        <target xml:lang="km" state="translated">ពីរភាសា</target>
+        <target xml:lang="km" state="final">ពីរភាសា</target>
       </trans-unit>
       <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
         <source xml:lang="en">Open the HTML used to make this PDF, in Firefox (must be on path)</source>
@@ -1292,7 +1317,7 @@
       <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel" approved="yes">
         <source xml:lang="en">This page will be permanently removed.</source>
         <note>ID: EditTab.ConfirmRemovePageDialog._messageLabel</note>
-        <target xml:lang="km" state="translated">ទំព័រនេះ នឹងត្រូវលុបចោលជាអចិន្ត្រៃយ៍</target>
+        <target xml:lang="km" state="final">ទំព័រនេះ នឹងត្រូវលុបចោលជាអចិន្ត្រៃយ៍</target>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown">
         <source xml:lang="en">Multilingual Settings</source>
@@ -1312,7 +1337,7 @@
       <trans-unit id="EditTab.CopyButton" approved="yes">
         <source xml:lang="en">Copy</source>
         <note>ID: EditTab.CopyButton</note>
-        <target xml:lang="km" state="translated">ចម្លង</target>
+        <target xml:lang="km" state="final">ចម្លង</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyButton.ToolTip">
         <source xml:lang="en">Copy (Ctrl+C)</source>
@@ -1355,7 +1380,7 @@
       <trans-unit id="EditTab.CustomPage.Text" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text</source>
         <note>ID: EditTab.CustomPage.Text</note>
-        <target xml:lang="km" state="translated">អត្ថបទ</target>
+        <target xml:lang="km" state="final">អត្ថបទ</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Video" sil:dynamic="true">
         <source xml:lang="en">Video</source>
@@ -1365,12 +1390,12 @@
       <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Box</source>
         <note>ID: EditTab.CustomPage.TextBox</note>
-        <target xml:lang="km" state="translated">ប្រអប់អត្ថបទ</target>
+        <target xml:lang="km" state="final">ប្រអប់អត្ថបទ</target>
       </trans-unit>
       <trans-unit id="EditTab.CutButton" approved="yes">
         <source xml:lang="en">Cut</source>
         <note>ID: EditTab.CutButton</note>
-        <target xml:lang="km" state="translated">កាត់</target>
+        <target xml:lang="km" state="final">កាត់</target>
       </trans-unit>
       <trans-unit id="EditTab.CutButton.ToolTip">
         <source xml:lang="en">Cut (Ctrl+X)</source>
@@ -1381,7 +1406,7 @@
         <source xml:lang="en">Remove Page</source>
         <note>ID: EditTab.DeletePageButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Remove\n  Page</note>
-        <target xml:lang="km" state="translated">ដកចេញទំព័រ</target>
+        <target xml:lang="km" state="final">ដកចេញទំព័រ</target>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton.ToolTip" sil:dynamic="true">
         <source xml:lang="en">Remove this page from the book</source>
@@ -1428,7 +1453,7 @@
         <source xml:lang="en">Duplicate Page</source>
         <note>ID: EditTab.DuplicatePageButton</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Duplicate\n  Page</note>
-        <target xml:lang="km" state="translated">ទំព័រជាន់គ្នា</target>
+        <target xml:lang="km" state="final">ទំព័រជាន់គ្នា</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton.ToolTip" sil:dynamic="true">
         <source xml:lang="en">Insert a new page which is a duplicate of this one</source>
@@ -1445,7 +1470,7 @@
       <trans-unit id="EditTab.Edit" approved="yes">
         <source xml:lang="en">Edit</source>
         <note>ID: EditTab.Edit</note>
-        <target xml:lang="km" state="translated">កែ</target>
+        <target xml:lang="km" state="final">កែ</target>
       </trans-unit>
       <trans-unit id="EditTab.EditNotAllowed" sil:dynamic="true">
         <source xml:lang="en">You cannot change these because this is not the original copy.</source>
@@ -1507,12 +1532,12 @@
       <trans-unit id="EditTab.FormatDialog.CharactersTab" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Characters</source>
         <note>ID: EditTab.FormatDialog.CharactersTab</note>
-        <target xml:lang="km" state="translated">អក្សរ</target>
+        <target xml:lang="km" state="final">អក្សរ</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Create" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Create</source>
         <note>ID: EditTab.FormatDialog.Create</note>
-        <target xml:lang="km" state="translated">បង្កើត</target>
+        <target xml:lang="km" state="final">បង្កើត</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.CreateStyle" sil:dynamic="true">
         <source xml:lang="en">Create a new style</source>
@@ -1613,7 +1638,7 @@
       <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Font</source>
         <note>ID: EditTab.FormatDialog.Font</note>
-        <target xml:lang="km" state="translated">ហ្វុន</target>
+        <target xml:lang="km" state="final">ហ្វុន</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontFaceToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the font face</source>
@@ -1668,27 +1693,27 @@
       <trans-unit id="EditTab.FormatDialog.Spacing" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Spacing</source>
         <note>ID: EditTab.FormatDialog.Spacing</note>
-        <target xml:lang="km" state="translated">គម្លាត</target>
+        <target xml:lang="km" state="final">គម្លាត</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Style</source>
         <note>ID: EditTab.FormatDialog.Style</note>
-        <target xml:lang="km" state="translated">ស្តាល</target>
+        <target xml:lang="km" state="final">ស្តាល</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.StyleNameTab" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Style Name</source>
         <note>ID: EditTab.FormatDialog.StyleNameTab</note>
-        <target xml:lang="km" state="translated">ឈ្មោះស្តាល</target>
+        <target xml:lang="km" state="final">ឈ្មោះស្តាល</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Extra Wide</source>
         <note>ID: EditTab.FormatDialog.WordSpacingExtraWide</note>
-        <target xml:lang="km" state="translated">ទូលាយខ្លាំង</target>
+        <target xml:lang="km" state="final">ទូលាយខ្លាំង</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingNormal" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.FormatDialog.WordSpacingNormal</note>
-        <target xml:lang="km" state="translated">ធម្មតា</target>
+        <target xml:lang="km" state="final">ធម្មតា</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the spacing between words</source>
@@ -1698,7 +1723,7 @@
       <trans-unit id="EditTab.FormatDialog.WordSpacingWide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Wide</source>
         <note>ID: EditTab.FormatDialog.WordSpacingWide</note>
-        <target xml:lang="km" state="translated">ទូលាយ</target>
+        <target xml:lang="km" state="final">ទូលាយ</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.AuthorIllustratorPrompt" sil:dynamic="true">
         <source xml:lang="en">You may use this space for author/illustrator, or anything else.</source>
@@ -1726,7 +1751,7 @@
         <source xml:lang="en">Book title in {lang}</source>
         <note>ID: EditTab.FrontMatter.BookTitlePrompt</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
-        <target xml:lang="km" state="translated">ចំណងជើងសៀវភៅជាភាសា {lang}</target>
+        <target xml:lang="km" state="final">ចំណងជើងសៀវភៅជាភាសា {lang}</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true">
         <source xml:lang="en">Click to Edit Copyright &amp; License</source>
@@ -1864,7 +1889,7 @@
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Image</source>
         <note>ID: EditTab.Image.ChangeImage</note>
-        <target xml:lang="km" state="translated">ប្តូររូបភាព</target>
+        <target xml:lang="km" state="final">ប្តូររូបភាព</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.CopyImage" sil:dynamic="true">
         <source xml:lang="en">Copy Image</source>
@@ -1895,7 +1920,7 @@
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paste Image</source>
         <note>ID: EditTab.Image.PasteImage</note>
-        <target xml:lang="km" state="translated">រូបភាពបិត</target>
+        <target xml:lang="km" state="final">រូបភាពបិត</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true">
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
@@ -1942,7 +1967,7 @@
         <source xml:lang="en">One Language</source>
         <note>ID: EditTab.Monolingual</note>
         <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
-        <target xml:lang="km" state="translated">ភាសាមួយ</target>
+        <target xml:lang="km" state="final">ភាសាមួយ</target>
       </trans-unit>
       <trans-unit id="EditTab.NeverLocked.ToolTip" sil:dynamic="true">
         <source xml:lang="en">Books are never locked in a Source Collection.</source>
@@ -1986,7 +2011,7 @@
       <trans-unit id="EditTab.PageList.Heading" approved="yes">
         <source xml:lang="en">Pages</source>
         <note>ID: EditTab.PageList.Heading</note>
-        <target xml:lang="km" state="translated">ទំព័រ</target>
+        <target xml:lang="km" state="final">ទំព័រ</target>
       </trans-unit>
       <trans-unit id="EditTab.PageSizeAndOrientation.Tooltip">
         <source xml:lang="en">Choose a page size and orientation</source>
@@ -1996,7 +2021,7 @@
       <trans-unit id="EditTab.PasteButton" approved="yes">
         <source xml:lang="en">Paste</source>
         <note>ID: EditTab.PasteButton</note>
-        <target xml:lang="km" state="translated">បិត</target>
+        <target xml:lang="km" state="final">បិត</target>
       </trans-unit>
       <trans-unit id="EditTab.PasteButton.ToolTip">
         <source xml:lang="en">Paste (Ctrl+V)</source>
@@ -2138,6 +2163,116 @@
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
         <target xml:lang="km" state="needs-translation">Picture Intellectual Property Information</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool" sil:dynamic="true">
+        <source xml:lang="en">Comic Tool</source>
+        <note>ID: EditTab.Toolbox.CalloutTool</note>
+        <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
+        <target xml:lang="km" state="needs-translation">Comic Tool</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.AddChildBubble" sil:dynamic="true">
+        <source xml:lang="en">Add Child Bubble</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.AddChildBubble</note>
+        <target xml:lang="km" state="needs-translation">Add Child Bubble</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor" sil:dynamic="true">
+        <source xml:lang="en">Background Color</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor</note>
+        <note>Refers to the Background Color of the bubble used by the callout</note>
+        <target xml:lang="km" state="needs-translation">Background Color</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.OldLace" sil:dynamic="true">
+        <source xml:lang="en">Old Lace</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.OldLace</note>
+        <note>A background color that looks like old lace</note>
+        <target xml:lang="km" state="needs-translation">Old Lace</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToCalico" sil:dynamic="true">
+        <source xml:lang="en">White to Calico</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToCalico</note>
+        <note>A background color that is a gradient starting with white blending into calico color</note>
+        <target xml:lang="km" state="needs-translation">White to Calico</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
+        <source xml:lang="en">White to French Pass</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToFrenchPass</note>
+        <note>A background color that is a gradient starting with white blending into the "French pass" color</note>
+        <target xml:lang="km" state="needs-translation">White to French Pass</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true">
+        <source xml:lang="en">White to Portafino</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToPortafino</note>
+        <note>A background color that is a gradient starting with white blending into the "Portafino" color</note>
+        <target xml:lang="km" state="needs-translation">White to Portafino</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor" sil:dynamic="true">
+        <source xml:lang="en">Outer Outline Color</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor</note>
+        <note>Refers to the Outer Outline Color of the bubble used by the callout</note>
+        <target xml:lang="km" state="needs-translation">Outer Outline Color</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor.None" sil:dynamic="true">
+        <source xml:lang="en">None</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor.None</note>
+        <target xml:lang="km" state="needs-translation">None</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style" sil:dynamic="true">
+        <source xml:lang="en">Style</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style</note>
+        <note>Refers to the STYLE of bubble used by the callout</note>
+        <target xml:lang="km" state="needs-translation">Style</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Caption" sil:dynamic="true">
+        <source xml:lang="en">Caption</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Caption</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents a description which is not directly stated by any characters.</note>
+        <target xml:lang="km" state="needs-translation">Caption</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Ellipse" sil:dynamic="true">
+        <source xml:lang="en">Ellipse</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Ellipse</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents a round bubble shaped like an ellipse.</note>
+        <target xml:lang="km" state="needs-translation">Ellipse</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Exclamation" sil:dynamic="true">
+        <source xml:lang="en">Exclamation</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Exclamation</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents a shout or exclamatory statement. Like this: "Watch out!"</note>
+        <target xml:lang="km" state="needs-translation">Exclamation</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.JustText" sil:dynamic="true">
+        <source xml:lang="en">Just Text</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.JustText</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style does not have any bubble at all.</note>
+        <target xml:lang="km" state="needs-translation">Just Text</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Speech" sil:dynamic="true">
+        <source xml:lang="en">Speech</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Speech</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents standard speech/dialogue.</note>
+        <target xml:lang="km" state="needs-translation">Speech</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Thought" sil:dynamic="true">
+        <source xml:lang="en">Thought</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Thought</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This style represents the thoughts of a person who is thinking.</note>
+        <target xml:lang="km" state="needs-translation">Thought</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.TextColor" sil:dynamic="true">
+        <source xml:lang="en">Text Color</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.TextColor</note>
+        <target xml:lang="km" state="needs-translation">Text Color</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.ControlsAvailable" sil:dynamic="true">
+        <source xml:lang="en">The selected item has these controls:</source>
+        <note>ID: EditTab.Toolbox.CalloutTool.Options.ControlsAvailable</note>
+        <target xml:lang="km" state="needs-translation">The selected item has these controls:</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer</note>
@@ -2262,7 +2397,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool</note>
-        <target xml:lang="km" state="translated">ឧបករណ៍អ្នកអានដែលអាចចាត់តាមអក្សរ</target>
+        <target xml:lang="km" state="final">ឧបករណ៍អ្នកអានដែលអាចចាត់តាមអក្សរ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated" sil:dynamic="true">
         <source xml:lang="en">Bloom can handle only the first {0} words.</source>
@@ -2313,7 +2448,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters in this stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LettersInThisStage</note>
-        <target xml:lang="km" state="translated">អក្សរក្នុងដំណាក់កាលនេះ</target>
+        <target xml:lang="km" state="final">អក្សរក្នុងដំណាក់កាលនេះ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport" sil:dynamic="true">
         <source xml:lang="en">Generate a letter and word list report</source>
@@ -2328,7 +2463,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SetUpStages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Stages</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SetUpStages</note>
-        <target xml:lang="km" state="translated">បង្កើត ដំណាក់កាលផ្សេងៗ</target>
+        <target xml:lang="km" state="final">បង្កើត ដំណាក់កាលផ្សេងៗ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortAlphabetically" sil:dynamic="true">
         <source xml:lang="en">Sort alphabetically</source>
@@ -2348,7 +2483,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.Stage</note>
-        <target xml:lang="km" state="translated">ដំណាក់កាល</target>
+        <target xml:lang="km" state="final">ដំណាក់កាល</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true">
         <source xml:lang="en">of</source>
@@ -2455,12 +2590,12 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader Tool</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool</note>
-        <target xml:lang="km" state="translated">ឧបករណ៍អ្នកអានតាមកម្រិត</target>
+        <target xml:lang="km" state="final">ឧបករណ៍អ្នកអានតាមកម្រិត</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Actual" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Actual</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Actual</note>
-        <target xml:lang="km" state="translated">ពិតប្រាកដ</target>
+        <target xml:lang="km" state="final">ពិតប្រាកដ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Average" sil:dynamic="true">
         <source xml:lang="en">avg per sentence</source>
@@ -2475,7 +2610,7 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.FoThisLevel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For this Level</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.FoThisLevel</note>
-        <target xml:lang="km" state="translated">សម្រាប់កម្រិតនេះ</target>
+        <target xml:lang="km" state="final">សម្រាប់កម្រិតនេះ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Formatting" sil:dynamic="true">
         <source xml:lang="en">Formatting</source>
@@ -2490,13 +2625,13 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.KeepInMind" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Keep in mind</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.KeepInMind</note>
-        <target xml:lang="km" state="translated">ទុកក្នុងចិត្ត</target>
+        <target xml:lang="km" state="final">ទុកក្នុងចិត្ត</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Level" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Level</note>
         <note>Used to create string "Level # of #". The space after this word is added programmatically.</note>
-        <target xml:lang="km" state="translated">កម្រិត</target>
+        <target xml:lang="km" state="final">កម្រិត</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelOf" sil:dynamic="true">
         <source xml:lang="en">of</source>
@@ -2507,12 +2642,12 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Max</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Max</note>
-        <target xml:lang="km" state="translated">អតិ</target>
+        <target xml:lang="km" state="final">អតិ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">per page</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.PerPage</note>
-        <target xml:lang="km" state="translated">ក្នុងមួយទំព័រ</target>
+        <target xml:lang="km" state="final">ក្នុងមួយទំព័រ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerSentence" sil:dynamic="true">
         <source xml:lang="en">longest sentence</source>
@@ -2522,47 +2657,47 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Predictability" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Predictability</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Predictability</note>
-        <target xml:lang="km" state="translated">ភាពព្យាករណ៍បាន</target>
+        <target xml:lang="km" state="final">ភាពព្យាករណ៍បាន</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SetUpLevels" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Levels</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.SetUpLevels</note>
-        <target xml:lang="km" state="translated">បង្កើត កម្រិតផ្សេងៗ</target>
+        <target xml:lang="km" state="final">បង្កើត កម្រិតផ្សេងៗ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisBook" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This Book</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.ThisBook</note>
-        <target xml:lang="km" state="translated">សៀវភៅនេះ</target>
+        <target xml:lang="km" state="final">សៀវភៅនេះ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This Page</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.ThisPage</note>
-        <target xml:lang="km" state="translated">ទំព័រនេះ</target>
+        <target xml:lang="km" state="final">ទំព័រនេះ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true" approved="yes">
         <source xml:lang="en">total</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Total</note>
-        <target xml:lang="km" state="translated">សរុប</target>
+        <target xml:lang="km" state="final">សរុប</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true" approved="yes">
         <source xml:lang="en">unique</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Unique</note>
-        <target xml:lang="km" state="translated">មានតែមួយ</target>
+        <target xml:lang="km" state="final">មានតែមួយ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Vocabulary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Vocabulary</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Vocabulary</note>
-        <target xml:lang="km" state="translated">វាក្យស័ព្ទ</target>
+        <target xml:lang="km" state="final">វាក្យស័ព្ទ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WordCounts" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Word Counts</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.WordCounts</note>
-        <target xml:lang="km" state="translated">ចំនួនពាក្យ</target>
+        <target xml:lang="km" state="final">ចំនួនពាក្យ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.More" sil:dynamic="true" approved="yes">
         <source xml:lang="en">More...</source>
         <note>ID: EditTab.Toolbox.More</note>
-        <target xml:lang="km" state="translated">ថែមទៀត…</target>
+        <target xml:lang="km" state="final">ថែមទៀត…</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
         <source xml:lang="en">Allow changes to this shellbook</source>
@@ -2760,6 +2895,21 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.Listen</note>
         <target xml:lang="km" state="needs-translation">Listen to the whole page</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
+        <source xml:lang="en">Import Recording</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
+        <target xml:lang="km" state="needs-translation">Import Recording</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true">
+        <source xml:lang="en">Replace with new audio?</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace</note>
+        <target xml:lang="km" state="needs-translation">Replace with new audio?</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true">
+        <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
+        <target xml:lang="km" state="needs-translation">If you import this recording, it will replace all the audio for this text box.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
         <source xml:lang="en">2) Look at the highlighted text</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
@@ -2848,12 +2998,12 @@
         <source xml:lang="en">Three Languages</source>
         <note>ID: EditTab.Trilingual</note>
         <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
-        <target xml:lang="km" state="translated">បីភាសា</target>
+        <target xml:lang="km" state="final">បីភាសា</target>
       </trans-unit>
       <trans-unit id="EditTab.UndoButton" approved="yes">
         <source xml:lang="en">Undo</source>
         <note>ID: EditTab.UndoButton</note>
-        <target xml:lang="km" state="translated">បកក្រោយ</target>
+        <target xml:lang="km" state="final">បកក្រោយ</target>
       </trans-unit>
       <trans-unit id="EditTab.UndoButton.ToolTip">
         <source xml:lang="en">Undo (Ctrl+Z)</source>
@@ -3034,18 +3184,18 @@
       <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem" approved="yes">
         <source xml:lang="en">Building Reader Templates</source>
         <note>ID: HelpMenu.BuildingReaderTemplatesMenuItem</note>
-        <target xml:lang="km" state="translated">ការបង្កើតឯកសារគំរូសម្រាប់អ្នកអាន</target>
+        <target xml:lang="km" state="final">ការបង្កើតឯកសារគំរូសម្រាប់អ្នកអាន</target>
       </trans-unit>
       <trans-unit id="HelpMenu.CheckForNewVersionMenuItem" approved="yes">
         <source xml:lang="en">Check For New Version</source>
         <note>ID: HelpMenu.CheckForNewVersionMenuItem</note>
-        <target xml:lang="km" state="translated">ពិនិត្យរកមើលកំណែថ្មី</target>
+        <target xml:lang="km" state="final">ពិនិត្យរកមើលកំណែថ្មី</target>
       </trans-unit>
       <trans-unit id="HelpMenu.CreditsMenuItem" approved="yes">
         <source xml:lang="en">About Bloom...</source>
         <note>ID: HelpMenu.CreditsMenuItem</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added dots): About Bloom</note>
-        <target xml:lang="km" state="translated">អំពី Bloom</target>
+        <target xml:lang="km" state="final">អំពី Bloom</target>
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem">
         <source xml:lang="en">Documentation</source>
@@ -3055,7 +3205,7 @@
       <trans-unit id="HelpMenu.Help Menu" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: HelpMenu.Help Menu</note>
-        <target xml:lang="km" state="translated">ជំនួយ</target>
+        <target xml:lang="km" state="final">ជំនួយ</target>
       </trans-unit>
       <trans-unit id="HelpMenu.Help Menu_ToolTip_">
         <source xml:lang="en">Get Help</source>
@@ -3097,7 +3247,7 @@
       <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem" approved="yes">
         <source xml:lang="en">Using Reader Templates </source>
         <note>ID: HelpMenu.UsingReaderTemplatesMenuItem</note>
-        <target xml:lang="km" state="translated">ការប្រើឯកសារគំរូសម្រាប់អ្នកអាន </target>
+        <target xml:lang="km" state="final">ការប្រើឯកសារគំរូសម្រាប់អ្នកអាន </target>
       </trans-unit>
       <trans-unit id="HelpMenu.WebSiteMenuItem">
         <source xml:lang="en">BloomLibrary.org</source>
@@ -3343,7 +3493,7 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
         <source xml:lang="en">Source Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-        <target xml:lang="km" state="translated">បណ្តុំប្រភព</target>
+        <target xml:lang="km" state="final">បណ្តុំប្រភព</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
         <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
@@ -3353,7 +3503,7 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
         <source xml:lang="en">Local Language Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-        <target xml:lang="km" state="translated">កូឡិកសិនត្រាប់ភាសា</target>
+        <target xml:lang="km" state="final">កូឡិកសិនត្រាប់ភាសា</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
         <source xml:lang="en">A collection of books in a local language.</source>
@@ -3368,12 +3518,12 @@
       <trans-unit id="NewCollectionWizard.LocationPage.Country" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: NewCollectionWizard.LocationPage.Country</note>
-        <target xml:lang="km" state="translated">ប្រទេស</target>
+        <target xml:lang="km" state="final">ប្រទេស</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage.District" approved="yes">
         <source xml:lang="en">District</source>
         <note>ID: NewCollectionWizard.LocationPage.District</note>
-        <target xml:lang="km" state="translated">ឌីស្ទ្រីក</target>
+        <target xml:lang="km" state="final">ឌីស្ទ្រីក</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
         <source xml:lang="en">These are optional. Bloom will place them in the right places on title page of books you create.</source>
@@ -3383,7 +3533,7 @@
       <trans-unit id="NewCollectionWizard.LocationPage.Province" approved="yes">
         <source xml:lang="en">Province</source>
         <note>ID: NewCollectionWizard.LocationPage.Province</note>
-        <target xml:lang="km" state="translated">ខេត្ត</target>
+        <target xml:lang="km" state="final">ខេត្ត</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.NewBookPattern">
         <source xml:lang="en">{0} Books</source>
@@ -3399,7 +3549,7 @@
       <trans-unit id="NewCollectionWizard.ProjectName" approved="yes">
         <source xml:lang="en">Project Name</source>
         <note>ID: NewCollectionWizard.ProjectName</note>
-        <target xml:lang="km" state="translated">ឈ្មោះគម្រោង</target>
+        <target xml:lang="km" state="final">ឈ្មោះគម្រោង</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
         <source xml:lang="en">Unable to create a new collection using that name.</source>
@@ -3409,7 +3559,7 @@
       <trans-unit id="NewCollectionWizard.WelcomePage" approved="yes">
         <source xml:lang="en">Welcome To Bloom!</source>
         <note>ID: NewCollectionWizard.WelcomePage</note>
-        <target xml:lang="km" state="translated">Bloom សូមស្វាគមន៍</target>
+        <target xml:lang="km" state="final">Bloom សូមស្វាគមន៍</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine1">
         <source xml:lang="en">You are almost ready to start making books.</source>
@@ -3465,7 +3615,7 @@
       <trans-unit id="OpenCreateNewCollectionsDialog.CreateNewCollection" approved="yes">
         <source xml:lang="en">Create New Collection</source>
         <note>ID: OpenCreateNewCollectionsDialog.CreateNewCollection</note>
-        <target xml:lang="km" state="translated">បង្កើត កូឡិកសិនថ្មី</target>
+        <target xml:lang="km" state="final">បង្កើត កូឡិកសិនថ្មី</target>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
         <source xml:lang="en">Open/Create Collections</source>
@@ -4047,7 +4197,7 @@
       <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton" approved="yes">
         <source xml:lang="en">Don't Show This Again</source>
         <note>ID: PublishTab.InDesignDialog.DontShowThisAgainButton</note>
-        <target xml:lang="km" state="translated">កុំបង្ហាញសារនេះម្តងទៀត</target>
+        <target xml:lang="km" state="final">កុំបង្ហាញសារនេះម្តងទៀត</target>
       </trans-unit>
       <trans-unit id="PublishTab.InDesignDialog.WindowTitle">
         <source xml:lang="en">InDesign XML Information</source>
@@ -4240,7 +4390,7 @@
       <trans-unit id="PublishTab.Publish" approved="yes">
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
-        <target xml:lang="km" state="translated">បោះពុម្ព</target>
+        <target xml:lang="km" state="final">បោះពុម្ព</target>
       </trans-unit>
       <trans-unit id="PublishTab.Save" sil:dynamic="true">
         <source xml:lang="en">Save...</source>
@@ -4370,7 +4520,7 @@
         <source xml:lang="en">Upload Text</source>
         <note>ID: PublishTab.Upload.Languages</note>
         <note>Prior to 4.4, this was "Languages"</note>
-        <target xml:lang="km" state="translated">ភាសា</target>
+        <target xml:lang="km" state="final">ភាសា</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.License">
         <source xml:lang="en">Usage/License</source>
@@ -4426,7 +4576,7 @@
       <trans-unit id="PublishTab.Upload.Login.PleaseAgreeTerms" approved="yes">
         <source xml:lang="en">Please agree to terms of use</source>
         <note>ID: PublishTab.Upload.Login.PleaseAgreeTerms</note>
-        <target xml:lang="km" state="translated">សូមយល់ស្របលក្ខខណ្ឌប្រើប្រាស់</target>
+        <target xml:lang="km" state="final">សូមយល់ស្របលក្ខខណ្ឌប្រើប្រាស់</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.PleaseProvideEmail">
         <source xml:lang="en">Please enter a valid email address. We will send an email to this address so you can reset your password.</source>
@@ -4575,7 +4725,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.Title" approved="yes">
         <source xml:lang="en">Title</source>
         <note>ID: PublishTab.Upload.Title</note>
-        <target xml:lang="km" state="translated">ចំណងជើង</target>
+        <target xml:lang="km" state="final">ចំណងជើង</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadAudio">
         <source xml:lang="en">Upload Audio</source>
@@ -4608,11 +4758,6 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.Upload.UploadProgress</note>
         <target xml:lang="km" state="needs-translation">Upload Progress</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadSandbox">
-        <source xml:lang="en">Upload Book (to Sandbox)</source>
-        <note>ID: PublishTab.Upload.UploadSandbox</note>
-        <target xml:lang="km" state="needs-translation">Upload Book (to Sandbox)</target>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingBookMetadata">
         <source xml:lang="en">Uploading book metadata</source>
         <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
@@ -4633,12 +4778,12 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Level</source>
         <note>ID: ReaderSetup.AddLevel</note>
-        <target xml:lang="km" state="translated">បន្ថែម កម្រិត</target>
+        <target xml:lang="km" state="final">បន្ថែម កម្រិត</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.AddStage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Stage</source>
         <note>ID: ReaderSetup.AddStage</note>
-        <target xml:lang="km" state="translated">បន្ថែម ដំណាក់កាល</target>
+        <target xml:lang="km" state="final">បន្ថែម ដំណាក់កាល</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.AllowedWords" sil:dynamic="true">
         <source xml:lang="en">allowed words</source>
@@ -4663,7 +4808,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book</source>
         <note>ID: ReaderSetup.BookHeader</note>
-        <target xml:lang="km" state="translated">សៀវភៅ</target>
+        <target xml:lang="km" state="final">សៀវភៅ</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.BookMaxWords" sil:dynamic="true">
         <source xml:lang="en">Maximum Words in Book</source>
@@ -4684,7 +4829,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Stages</source>
         <note>ID: ReaderSetup.DecodableStages</note>
-        <target xml:lang="km" state="translated">ដំណាក់កាលដែលអាចចាត់តាមអក្សរ</target>
+        <target xml:lang="km" state="final">ដំណាក់កាលដែលអាចចាត់តាមអក្សរ</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.FileNeedsTxtExtension" sil:dynamic="true">
         <source xml:lang="en">File needs .TXT extension</source>
@@ -4709,12 +4854,12 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Letters" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters</source>
         <note>ID: ReaderSetup.Letters</note>
-        <target xml:lang="km" state="translated">អក្សរ</target>
+        <target xml:lang="km" state="final">អក្សរ</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters and Letter Combinations</source>
         <note>ID: ReaderSetup.Letters.Header</note>
-        <target xml:lang="km" state="translated">អក្សរ និងអក្សរផ្សំ</target>
+        <target xml:lang="km" state="final">អក្សរ និងអក្សរផ្សំ</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true">
         <source xml:lang="en">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</source>
@@ -4749,18 +4894,18 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level</source>
         <note>ID: ReaderSetup.LevelHeader</note>
-        <target xml:lang="km" state="translated">កម្រិត</target>
+        <target xml:lang="km" state="final">កម្រិត</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.LevelLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level </source>
         <note>ID: ReaderSetup.LevelLabel</note>
         <note xml:lang="en">OLD TEXT (before 3.9, use literal NBSP character): Level&amp;nbsp;</note>
-        <target xml:lang="km" state="translated">កម្រិត</target>
+        <target xml:lang="km" state="final">កម្រិត</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Levels" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Reader Levels</source>
         <note>ID: ReaderSetup.Levels</note>
-        <target xml:lang="km" state="translated">កម្រិតអ្នកអាន</target>
+        <target xml:lang="km" state="final">កម្រិតអ្នកអាន</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MatchingWords" sil:dynamic="true">
         <source xml:lang="en">matching words</source>
@@ -4781,7 +4926,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page</source>
         <note>ID: ReaderSetup.PageHeader</note>
-        <target xml:lang="km" state="translated">ទំព័រ</target>
+        <target xml:lang="km" state="final">ទំព័រ</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageMaxWords" sil:dynamic="true">
         <source xml:lang="en">Maximum Words on each Page</source>
@@ -4801,17 +4946,17 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.ReaderLevels" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Reader Levels</source>
         <note>ID: ReaderSetup.ReaderLevels</note>
-        <target xml:lang="km" state="translated">កម្រិតអ្នកអាន</target>
+        <target xml:lang="km" state="final">កម្រិតអ្នកអាន</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.RemoveLevel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Remove Level {0}</source>
         <note>ID: ReaderSetup.RemoveLevel</note>
-        <target xml:lang="km" state="translated">ដកចេញកម្រិត {0}</target>
+        <target xml:lang="km" state="final">ដកចេញកម្រិត {0}</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.RemoveStage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Remove Stage {0}</source>
         <note>ID: ReaderSetup.RemoveStage</note>
-        <target xml:lang="km" state="translated">ដកចេញ ដំណាក់កាល {0}</target>
+        <target xml:lang="km" state="final">ដកចេញ ដំណាក់កាល {0}</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.RemoveWordList" sil:dynamic="true">
         <source xml:lang="en">Remove from this stage</source>
@@ -4841,12 +4986,12 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.SelectedLetters" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Previous and New Letters</source>
         <note>ID: ReaderSetup.SelectedLetters</note>
-        <target xml:lang="km" state="translated">អក្សរមុន និងថ្មី</target>
+        <target xml:lang="km" state="final">អក្សរមុន និងថ្មី</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentenceHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sentence</source>
         <note>ID: ReaderSetup.SentenceHeader</note>
-        <target xml:lang="km" state="translated">ប្រយោគ</target>
+        <target xml:lang="km" state="final">ប្រយោគ</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentenceMaxWords" sil:dynamic="true">
         <source xml:lang="en">Maximum Words in each Sentence</source>
@@ -4876,32 +5021,32 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true" approved="yes">
         <source xml:lang="en">set up the alphabet for this language.</source>
         <note>ID: ReaderSetup.SetupAlphabet</note>
-        <target xml:lang="km" state="translated">បង្កើតអក្ខក្រមសម្រាប់ភាសានេះ</target>
+        <target xml:lang="km" state="final">បង្កើតអក្ខក្រមសម្រាប់ភាសានេះ</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SightWordLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">New Sight Words</source>
         <note>ID: ReaderSetup.SightWordLabel</note>
-        <target xml:lang="km" state="translated">ពាក្យជារូបថ្មី</target>
+        <target xml:lang="km" state="final">ពាក្យជារូបថ្មី</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SightWordsHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sight Words</source>
         <note>ID: ReaderSetup.SightWordsHeader</note>
-        <target xml:lang="km" state="translated">ពាក្យរូបភាព</target>
+        <target xml:lang="km" state="final">ពាក្យរូបភាព</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.StageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stage</source>
         <note>ID: ReaderSetup.StageHeader</note>
-        <target xml:lang="km" state="translated">ដំណាក់កាល</target>
+        <target xml:lang="km" state="final">ដំណាក់កាល</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.StageLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stage </source>
         <note>ID: ReaderSetup.StageLabel</note>
-        <target xml:lang="km" state="translated">ដំណាក់កាល</target>
+        <target xml:lang="km" state="final">ដំណាក់កាល</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Stages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stages</source>
         <note>ID: ReaderSetup.Stages</note>
-        <target xml:lang="km" state="translated">ដំណាក់កាលនានា</target>
+        <target xml:lang="km" state="final">ដំណាក់កាលនានា</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Synphony" sil:dynamic="true">
         <source xml:lang="en">SynPhony</source>
@@ -4911,12 +5056,12 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Things to remember for this level:</source>
         <note>ID: ReaderSetup.ToRemember</note>
-        <target xml:lang="km" state="translated">រឿងត្រូវចងចាំសម្រាប់កម្រិតនេះ</target>
+        <target xml:lang="km" state="final">រឿងត្រូវចងចាំសម្រាប់កម្រិតនេះ</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.UniqueHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Unique</source>
         <note>ID: ReaderSetup.UniqueHeader</note>
-        <target xml:lang="km" state="translated">មានតែមួយ</target>
+        <target xml:lang="km" state="final">មានតែមួយ</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true">
         <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</source>
@@ -4932,7 +5077,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Words.SampleTextFolder" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample Texts Folder</source>
         <note>ID: ReaderSetup.Words.SampleTextFolder</note>
-        <target xml:lang="km" state="translated">ហ្វូលឌ័រអត្ថបទគំរូ</target>
+        <target xml:lang="km" state="final">ហ្វូលឌ័រអត្ថបទគំរូ</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.TypeWordsHere" sil:dynamic="true">
         <source xml:lang="en">1) Type Words Here</source>
@@ -4952,7 +5097,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.lettersHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters</source>
         <note>ID: ReaderSetup.lettersHeader</note>
-        <target xml:lang="km" state="translated">អក្សរ</target>
+        <target xml:lang="km" state="final">អក្សរ</target>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this Bloom Pack, who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
@@ -4978,12 +5123,12 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton" approved="yes">
         <source xml:lang="en">Save Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.SaveBloomPackButton</note>
-        <target xml:lang="km" state="translated">រក្សាទុកកញ្ចប់ Bloom</target>
+        <target xml:lang="km" state="final">រក្សាទុកកញ្ចប់ Bloom</target>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Make Reader Template Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.WindowTitle</note>
-        <target xml:lang="km" state="translated">ធ្វើកញ្ចប់ Bloom ឯកសារគំរូសម្រាប់អ្នកអាន</target>
+        <target xml:lang="km" state="final">ធ្វើកញ្ចប់ Bloom ឯកសារគំរូសម្រាប់អ្នកអាន</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.Email">
         <source xml:lang="en">Email Address</source>
@@ -5037,7 +5182,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Close</source>
         <note>ID: ReportProblemDialog.Close</note>
         <note>Shown in the button that closes the dialog after a successful report submission.</note>
-        <target xml:lang="km" state="translated">បិទ</target>
+        <target xml:lang="km" state="final">បិទ</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.CouldNotSendToServer">
         <source xml:lang="en">Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.</source>
@@ -5196,22 +5341,22 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Book</source>
         <note>ID: TemplateBooks.BookName.Basic Book</note>
-        <target xml:lang="km" state="translated">សៀវភៅមូលដ្ឋាន</target>
+        <target xml:lang="km" state="final">សៀវភៅមូលដ្ឋាន</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Book</source>
         <note>ID: TemplateBooks.BookName.Big Book</note>
-        <target xml:lang="km" state="translated">សៀវភៅធំ</target>
+        <target xml:lang="km" state="final">សៀវភៅធំ</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader</source>
         <note>ID: TemplateBooks.BookName.Decodable Reader</note>
-        <target xml:lang="km" state="translated">អ្នកអានដែលអាចចាត់តាមអក្សរ</target>
+        <target xml:lang="km" state="final">អ្នកអានដែលអាចចាត់តាមអក្សរ</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader</source>
         <note>ID: TemplateBooks.BookName.Leveled Reader</note>
-        <target xml:lang="km" state="translated">អ្នកអានតាមកម្រិត</target>
+        <target xml:lang="km" state="final">អ្នកអានតាមកម្រិត</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true">
         <source xml:lang="en">Picture Dictionary</source>
@@ -5422,17 +5567,22 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Alphabet" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Alphabet</source>
         <note>ID: TemplateBooks.PageLabel.Alphabet</note>
-        <target xml:lang="km" state="translated">អក្ខក្រម</target>
+        <target xml:lang="km" state="final">អក្ខក្រម</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Text &amp; Image</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Image</note>
-        <target xml:lang="km" state="translated">អត្ថបទ និងរូបភាពមូលដ្ឋាន</target>
+        <target xml:lang="km" state="final">អត្ថបទ និងរូបភាពមូលដ្ឋាន</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Picture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Text &amp; Picture</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
-        <target xml:lang="km" state="translated">អត្ថបទ និងរូបភាពមូលដ្ឋាន</target>
+        <target xml:lang="km" state="final">អត្ថបទ និងរូបភាពមូលដ្ឋាន</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot Text Over Video" sil:dynamic="true">
+        <source xml:lang="en">Big Picture Diglot Text Over Video</source>
+        <note>ID: TemplateBooks.PageLabel.Big Picture Diglot Text Over Video</note>
+        <target xml:lang="km" state="needs-translation">Big Picture Diglot Text Over Video</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true">
         <source xml:lang="en">Big Picture Diglot</source>
@@ -5457,12 +5607,12 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Credits Page</source>
         <note>ID: TemplateBooks.PageLabel.Credits Page</note>
-        <target xml:lang="km" state="translated">ទំព័រ ក្រេឌីត</target>
+        <target xml:lang="km" state="final">ទំព័រ ក្រេឌីត</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: TemplateBooks.PageLabel.Custom</note>
-        <target xml:lang="km" state="translated">បង្កើត</target>
+        <target xml:lang="km" state="final">បង្កើត</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Day 1" sil:dynamic="true">
         <source xml:lang="en">Day 1</source>
@@ -5507,7 +5657,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Front Cover</source>
         <note>ID: TemplateBooks.PageLabel.Front Cover</note>
-        <target xml:lang="km" state="translated">គម្របមុខ</target>
+        <target xml:lang="km" state="final">គម្របមុខ</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.FrontBackMatter" sil:dynamic="true">
         <source xml:lang="en">Front/Back Matter</source>
@@ -5523,17 +5673,17 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image On Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
-        <target xml:lang="km" state="translated">រូបភាពខាងក្រោម</target>
+        <target xml:lang="km" state="final">រូបភាពខាងក្រោម</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image in Middle</source>
         <note>ID: TemplateBooks.PageLabel.Image in Middle</note>
-        <target xml:lang="km" state="translated">រូបភាពចំកណ្តាល</target>
+        <target xml:lang="km" state="final">រូបភាពចំកណ្តាល</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Inside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Back Cover</note>
-        <target xml:lang="km" state="translated">គម្របក្រោយខាងក្នុង</target>
+        <target xml:lang="km" state="final">គម្របក្រោយខាងក្នុង</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Inside Front Cover" sil:dynamic="true">
         <source xml:lang="en">Inside Front Cover</source>
@@ -5549,17 +5699,17 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Just Text" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just Text</source>
         <note>ID: TemplateBooks.PageLabel.Just Text</note>
-        <target xml:lang="km" state="translated">គ្រាន់តែអត្ថបទ</target>
+        <target xml:lang="km" state="final">គ្រាន់តែអត្ថបទ</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just a Picture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just a Picture</source>
         <note>ID: TemplateBooks.PageLabel.Just a Picture</note>
-        <target xml:lang="km" state="translated">គ្រាន់តែជារូបភាព</target>
+        <target xml:lang="km" state="final">គ្រាន់តែជារូបភាព</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just an Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just an Image</source>
         <note>ID: TemplateBooks.PageLabel.Just an Image</note>
-        <target xml:lang="km" state="translated">គ្រាន់តែជារូបភាព</target>
+        <target xml:lang="km" state="final">គ្រាន់តែជារូបភាព</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just Video" sil:dynamic="true">
         <source xml:lang="en">Just Video</source>
@@ -5569,7 +5719,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Outside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Outside Back Cover</note>
-        <target xml:lang="km" state="translated">គម្របក្រោយខាងក្រៅ</target>
+        <target xml:lang="km" state="final">គម្របក្រោយខាងក្រៅ</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
@@ -5589,12 +5739,12 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture in Middle</source>
         <note>ID: TemplateBooks.PageLabel.Picture in Middle</note>
-        <target xml:lang="km" state="translated">រូបភាពចំកណ្តាល</target>
+        <target xml:lang="km" state="final">រូបភាពចំកណ្តាល</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture on Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
-        <target xml:lang="km" state="translated">រូបភាពខាងក្រោម</target>
+        <target xml:lang="km" state="final">រូបភាពខាងក្រោម</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Left" sil:dynamic="true">
         <source xml:lang="en">Picture on Left</source>
@@ -5641,7 +5791,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Title Page</source>
         <note>ID: TemplateBooks.PageLabel.Title Page</note>
-        <target xml:lang="km" state="translated">ទំព័រចំណងជើង</target>
+        <target xml:lang="km" state="final">ទំព័រចំណងជើង</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Traditional" sil:dynamic="true">
         <source xml:lang="en">Traditional</source>

@@ -56,6 +56,9 @@
         <source xml:lang="en">Leveled Reader Level</source>
         <target xml:lang="bn" state="translated">লেভেলড রিডারদের পর্যায়</target>
         <note>ID: leveled.reader.level</note>
+        <alt-trans>
+          <target xml:lang="bn">লেভেলড রিডারদের পর্যায়/ধাপ</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.stage" approved="yes">
         <source xml:lang="en">Decodable Stage</source>
