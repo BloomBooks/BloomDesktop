@@ -2,128 +2,137 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="pbu">
     <body>
-      <trans-unit id="AccessibilityCheck.AccessibilityChecker" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.AccessibilityChecker" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Accessibility Checker</source>
         <note>ID: AccessibilityCheck.AccessibilityChecker</note>
-        <target xml:lang="pbu" state="translated">د لاسرسي چیک کوونکې</target>
+        <target xml:lang="pbu" state="final">د لاسرسي چیک کوونکې</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.ACEByDaisy" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.ACEByDaisy" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Ace by DAISY Automated Checks</source>
         <note>ID: AccessibilityCheck.ACEByDaisy</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="pbu" state="translated">د DAISY اتوماتیک چیکونو لخوا Ace</target>
+        <target xml:lang="pbu" state="final">د DAISY اتوماتیک چیکونو لخوا Ace</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.audioForAllText" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.audioForAllText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Audio for all text</source>
         <note>ID: AccessibilityCheck.audioForAllText</note>
-        <target xml:lang="pbu" state="translated">د ټول متن لپاره آډیو</target>
+        <target xml:lang="pbu" state="final">د ټول متن لپاره غږیزه بڼه</target>
+        <alt-trans>
+          <target xml:lang="pbu">د ټول متن لپاره آډیو</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pbu">د ټول متن لپاره غږ</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Audio for all image descriptions</source>
         <note>ID: AccessibilityCheck.audioForAllImageDescriptions</note>
-        <target xml:lang="pbu" state="translated">د ټول عکسونو توضیحاتو لپاره آډیو</target>
+        <target xml:lang="pbu" state="final">د ټول عکسونو توضیحاتو لپاره غږیزه بڼه</target>
+        <alt-trans>
+          <target xml:lang="pbu">د ټول عکسونو توضیحاتو لپاره آډیو</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage">
+      <trans-unit id="AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage" approved="yes">
         <source xml:lang="en">Some text is missing a recording for an image description on page {0}</source>
         <note>ID: AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="pbu" state="translated">دعکس د تشریح د متن د یو څه برخی ثبت په {0} پاڼه کې ورک ده</target>
+        <target xml:lang="pbu" state="final">دعکس د تشریح د متن د یو څه برخی ثبت په {0} پاڼه کې ورک ده</target>
         <alt-trans>
           <target xml:lang="pbu">دعکس د تشریح د یو څه متن په {0} پاڼه کې ثبت ورک ده</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.AudioForAllText.MissingOnPage">
+      <trans-unit id="AccessibilityCheck.AudioForAllText.MissingOnPage" approved="yes">
         <source xml:lang="en">Some text is missing a recording on page {0}</source>
         <note>ID: AccessibilityCheck.AudioForAllText.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="pbu" state="translated">د متن د یو څه برخی ثبت په {0} پاڼه کې ورک ده</target>
+        <target xml:lang="pbu" state="final">د متن د یو څه برخی ثبت په {0} پاڼه کې ورک ده</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom can automatically check these for you:</source>
         <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
-        <target xml:lang="pbu" state="translated">بلوم کولی شي دا پخپله ستاسو لپاره وګوري:</target>
+        <target xml:lang="pbu" state="final">بلوم کولی شي دا پخپله ستاسو لپاره وګوري:</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.Checklist" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.Checklist" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Accessibility Checklist</source>
         <note>ID: AccessibilityCheck.Checklist</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="pbu" state="translated">د لاسرسي چک لیست</target>
+        <target xml:lang="pbu" state="final">د لاسرسي چک لیست</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.descriptionsForAllImages" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.descriptionsForAllImages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Descriptions for all images</source>
         <note>ID: AccessibilityCheck.descriptionsForAllImages</note>
-        <target xml:lang="pbu" state="translated">د ټولو عکسونو لپاره توضیحات</target>
+        <target xml:lang="pbu" state="final">د ټولو عکسونو لپاره توضیحات</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.DescriptionsForAllImages.MissingOnPage">
+      <trans-unit id="AccessibilityCheck.DescriptionsForAllImages.MissingOnPage" approved="yes">
         <source xml:lang="en">Missing image description on page {0}</source>
         <note>ID: AccessibilityCheck.DescriptionsForAllImages.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="pbu" state="translated">په پاڼه {0} کې د عکس تشریح شتون نلري</target>
+        <target xml:lang="pbu" state="final">په پاڼه {0} کې د عکس تشریح شتون نلري</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.FindingAce" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.FindingAce" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Finding Ace by DAISY on this computer...</source>
         <note>ID: AccessibilityCheck.FindingAce</note>
-        <target xml:lang="pbu" state="translated">پدې کمپیوټر کې د DAISY لخوا Ace پیدا کړۍ...</target>
+        <target xml:lang="pbu" state="final">په دې کمپیوټر کې د DAISY لخوا Ace پیدا کړۍ...</target>
+        <alt-trans>
+          <target xml:lang="pbu">پدې کمپیوټر کې د DAISY لخوا Ace پیدا کړۍ...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.FoundAce" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.FoundAce" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Found.</source>
         <note>ID: AccessibilityCheck.FoundAce</note>
-        <target xml:lang="pbu" state="translated">وموندل شو.</target>
+        <target xml:lang="pbu" state="final">وموندل شو.</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Learn About Accessibility</source>
         <note>ID: AccessibilityCheck.LearnAbout</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="pbu" state="translated">د لاسرسي د قابلیت په اړه زده کړه وکړۍ</target>
+        <target xml:lang="pbu" state="final">د لاسرسي د قابلیت په اړه زده کړه وکړۍ</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibleBookDefinition" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibleBookDefinition" sil:dynamic="true" approved="yes">
         <source xml:lang="en">"Accessible Books" are books that work well for people with impaired vision. With the ePUB format*, it is possible to make "Born Accessible" books that work well for everyone**, regardless of vision. Bloom has the following tools to help you create these books:</source>
         <note>ID: AccessibilityCheck.LearnAbout.AccessibleBookDefinition</note>
         <note>The * and ** are footnote markers that should remain the same.</note>
-        <target xml:lang="pbu" state="translated">"د لاسرسي وړ کتابونه" هغه کتابونه دي چې د کمزوري لید لرونکو خلکو لپاره ښه کار کوي. د *ePUB format سره، دا ممکنه ده چې د "د لاسرسي وړ" کتابونه رامینځته کړئ چې د هرچا لپاره ښه کار کوي **، د لید په پام کې نیولو پرته. بلوم لاندې توکي لري چې تاسو سره د دې کتابونو په جوړولو کې مرسته کوي:</target>
+        <target xml:lang="pbu" state="final">"د لاسرسي وړ کتابونه" هغه کتابونه دي چې د کمزوري لید لرونکو خلکو لپاره ښه کار کوي. د *ePUB format سره، دا ممکنه ده چې د "د لاسرسي وړ" کتابونه رامینځته کړئ چې د هرچا لپاره ښه کار کوي **، د لید په پام کې نیولو پرته. بلوم لاندې توکي لري چې تاسو سره د دې کتابونو په جوړولو کې مرسته کوي:</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.CheckerHas" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.CheckerHas" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This tool, the Accessibility Checker, has:</source>
         <note>ID: AccessibilityCheck.LearnAbout.CheckerHas</note>
-        <target xml:lang="pbu" state="translated">دا د لاسرسي کتونکي وسیله، لري:</target>
+        <target xml:lang="pbu" state="final">دا د لاسرسي کتونکي وسیله، لري:</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibilityCheckList" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.AccessibilityCheckList" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The "Accessibility Checklist" which is where Bloom checks over your book and points you to anything that needs attention, especially for speakers of minority languages.</source>
         <note>ID: AccessibilityCheck.LearnAbout.AccessibilityCheckList</note>
-        <target xml:lang="pbu" state="translated">د "لاسرسي چک لیست" کوم چیرې چې بلوم ستاسو کتاب ګوري او تاسو ته هر هغه څه په نښه کوي چې پاملرنې ته اړتیا لري ، په ځانګړي توګه د لږکیو ژبو ویونکو لپاره.</target>
+        <target xml:lang="pbu" state="final">د "لاسرسي چک لیست" کوم چیرې چې بلوم ستاسو کتاب ګوري او تاسو ته هر هغه څه په نښه کوي چې پاملرنې ته اړتیا لري ، په ځانګړي توګه د لږکیو ژبو ویونکو لپاره.</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.AceByDaisyChecker" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.AceByDaisyChecker" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The "Ace by DAISY Checker" searches the actual ePUB generated by Bloom looking for any problems.</source>
         <note>ID: AccessibilityCheck.LearnAbout.AceByDaisyChecker</note>
-        <target xml:lang="pbu" state="translated">"Ace د DAISY چیکر" د بلوم لخوا رامینځته شوی اصلي ePUB د کومې ستونزې په لټه کې لټوي.</target>
+        <target xml:lang="pbu" state="final">"Ace د DAISY چیکر" د بلوم لخوا رامینځته شوی اصلي ePUB د کومې ستونزې په لټه کې لټوي.</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.EpubDefinition" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.EpubDefinition" sil:dynamic="true" approved="yes">
         <source xml:lang="en">definition of the ePUB format</source>
         <note>ID: AccessibilityCheck.LearnAbout.EpubDefinition</note>
-        <target xml:lang="pbu" state="translated">د ePUB بڼي تعریف</target>
+        <target xml:lang="pbu" state="final">د ePUB بڼي تعریف</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.LearnAbout.Footnote" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.LearnAbout.Footnote" sil:dynamic="true" approved="yes">
         <source xml:lang="en">While the ideal is that a single book can serve everyone, the ePUB standard and ePUB readers do not actually support that. They currently only work for blind people who speak a language that is supported by "Text to Speech" (TTS) systems. At this time, TTS is only available for large or commercially interesting languages. Until the standard and accessible readers improve, it is necessary to make special versions of accessible books for minority language speakers. For blind readers to hear the image descriptions, we need to put something special on the page. In this version of Bloom, you do this by clicking the "Include image descriptions on page" checkbox in the Publish:ePUB screen. Future versions may have other options in this area.</source>
         <note>ID: AccessibilityCheck.LearnAbout.Footnote</note>
-        <target xml:lang="pbu" state="translated">پداسې حال کې چې دا مثال دی چې یو کتاب کولی شي هرچا ته بسنه کوي ، معیاري ePUB او ePUB کتاب په حقیقت کې د دې ملاتړ نه کوي. دوی اوس مهال یوازې د ړندو خلکو لپاره کار کوي څوک چې داسې ژبه خبرې کوي چې د "متن څخه غږ" (TTS) سیسټمونو لخوا ملاتړ کیږي. پدې وخت کې ، TTS یوازې د لوی یا سوداګریزې پلوه په زړه پورې ژبو لپاره شتون لري. د معیاري او د لاسرسي وړ کتابونو ته وده ورکولو لپاره ، اړینه ده چې د لږکیو ژبو ویونکو لپاره د کتابونو ځانګړي نسخې چمتو شي. د ړندو لوستونکو لپاره چې د عکس تشریحات واورئ ، موږ اړتیا لرو چې په پاڼه کې یو څه ځانګړی کړئ. د بلوم په دې نسخه کې ، تاسو دا په: ePUB خپرولو سکرین کې "په پاڼه کې د عکس تشریح شامل کړئ" چیک باکس باندی کلیک کولو سره ترسره کوئ. راتلونکي نسخې ممکن پدې برخه کې نور انتخابونه ولري.</target>
+        <target xml:lang="pbu" state="final">پداسې حال کې چې دا مثال دی چې یو کتاب کولی شي هرچا ته بسنه کوي ، معیاري ePUB او ePUB کتاب په حقیقت کې د دې ملاتړ نه کوي. دوی اوس مهال یوازې د ړندو خلکو لپاره کار کوي څوک چې داسې ژبه خبرې کوي چې د "متن څخه غږ" (TTS) سیسټمونو لخوا ملاتړ کیږي. پدې وخت کې ، TTS یوازې د لوی یا سوداګریزې پلوه په زړه پورې ژبو لپاره شتون لري. د معیاري او د لاسرسي وړ کتابونو ته وده ورکولو لپاره ، اړینه ده چې د لږکیو ژبو ویونکو لپاره د کتابونو ځانګړي نسخې چمتو شي. د ړندو لوستونکو لپاره چې د عکس تشریحات واورئ ، موږ اړتیا لرو چې په پاڼه کې یو څه ځانګړی کړئ. د بلوم په دې نسخه کې ، تاسو دا په: ePUB خپرولو سکرین کې "په پاڼه کې د عکس تشریح شامل کړئ" چیک باکس باندی کلیک کولو سره ترسره کوئ. راتلونکي نسخې ممکن پدې برخه کې نور انتخابونه ولري.</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.ManualChecksHeading" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.ManualChecksHeading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You need to check these yourself:</source>
         <note>ID: AccessibilityCheck.ManualChecksHeading</note>
-        <target xml:lang="pbu" state="translated">تاسو اړتیا لرئ دا پخپله وګورئ:</target>
+        <target xml:lang="pbu" state="final">تاسو اړتیا لرئ دا پخپله وګورئ:</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No essential information by color</source>
         <note>ID: AccessibilityCheck.noEssentialInfoByColor</note>
-        <target xml:lang="pbu" state="translated">د رنګ په واسطه لازم معلومات نشته</target>
+        <target xml:lang="pbu" state="final">د رنګ په واسطه لازم معلومات نشته</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.WindowTitle">
+      <trans-unit id="AccessibilityCheck.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom Accessibility Checker</source>
         <note>ID: AccessibilityCheck.WindowTitle</note>
-        <target xml:lang="pbu" state="translated">د بلوم لاسرسي پلټوونکې</target>
+        <target xml:lang="pbu" state="final">د بلوم لاسرسي پلټوونکې</target>
       </trans-unit>
       <trans-unit id="BloomIntegrity.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom Problem</source>
@@ -246,117 +255,117 @@
         <note>ID: BookEditor.FormattingDisabled</note>
         <target xml:lang="pbu" state="final">په بښنې سره د لوستونکې کينډۍ (ټیمپلیټ) د فارمټ تغيیر نه مني.</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yCertifier">
+      <trans-unit id="BookMetadata.a11yCertifier" approved="yes">
         <source xml:lang="en">Level certified by</source>
         <note>ID: BookMetadata.a11yCertifier</note>
-        <target xml:lang="pbu" state="translated">کچه تصدیق شوې ده په واسطه د</target>
+        <target xml:lang="pbu" state="final">کچه تصدیق شوې ده په واسطه د</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yFeatures">
+      <trans-unit id="BookMetadata.a11yFeatures" approved="yes">
         <source xml:lang="en">Accessibility features</source>
         <note>ID: BookMetadata.a11yFeatures</note>
-        <target xml:lang="pbu" state="translated">د لاسرسي ځانکړتیاوي</target>
+        <target xml:lang="pbu" state="final">د لاسرسي ځانکړتیاوي</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yLevel">
+      <trans-unit id="BookMetadata.a11yLevel" approved="yes">
         <source xml:lang="en">Accessibility level</source>
         <note>ID: BookMetadata.a11yLevel</note>
-        <target xml:lang="pbu" state="translated">د لاسرسي کچه</target>
+        <target xml:lang="pbu" state="final">د لاسرسي کچه</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yLevelNone" sil:dynamic="true">
+      <trans-unit id="BookMetadata.a11yLevelNone" sil:dynamic="true" approved="yes">
         <source xml:lang="en">None</source>
         <note>ID: BookMetadata.a11yLevelNone</note>
         <note>indicates that no level of accessibility conformance is claimed</note>
-        <target xml:lang="pbu" state="translated">هیڅ نه</target>
+        <target xml:lang="pbu" state="final">هیڅ نه</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yLevelA" sil:dynamic="true">
+      <trans-unit id="BookMetadata.a11yLevelA" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level A conformance</source>
         <note>ID: BookMetadata.a11yLevelA</note>
-        <target xml:lang="pbu" state="translated">د A کچه سره مطابقت</target>
+        <target xml:lang="pbu" state="final">د A کچه سره مطابقت</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yLevelAA" sil:dynamic="true">
+      <trans-unit id="BookMetadata.a11yLevelAA" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level AA conformance</source>
         <note>ID: BookMetadata.a11yLevelAA</note>
-        <target xml:lang="pbu" state="translated">د AA کچه سره مطابقت</target>
+        <target xml:lang="pbu" state="final">د AA کچه سره مطابقت</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.a11yLevelAAA" sil:dynamic="true">
+      <trans-unit id="BookMetadata.a11yLevelAAA" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level AAA conformance</source>
         <note>ID: BookMetadata.a11yLevelAAA</note>
-        <target xml:lang="pbu" state="translated">د AAA کچه سره مطابقت</target>
+        <target xml:lang="pbu" state="final">د AAA کچه سره مطابقت</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.alternativeText">
+      <trans-unit id="BookMetadata.alternativeText" approved="yes">
         <source xml:lang="en">Has Image Descriptions</source>
         <note>ID: BookMetadata.alternativeText</note>
-        <target xml:lang="pbu" state="translated">عکس توضیحات لري</target>
+        <target xml:lang="pbu" state="final">عکس توضیحات لري</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.author">
+      <trans-unit id="BookMetadata.author" approved="yes">
         <source xml:lang="en">Author</source>
         <note>ID: BookMetadata.author</note>
-        <target xml:lang="pbu" state="translated">لیکوال</target>
+        <target xml:lang="pbu" state="final">لیکوال</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.flashingHazard">
+      <trans-unit id="BookMetadata.flashingHazard" approved="yes">
         <source xml:lang="en">Flashing Hazard</source>
         <note>ID: BookMetadata.flashingHazard</note>
-        <target xml:lang="pbu" state="translated">لید یا اوریدلو خطر</target>
+        <target xml:lang="pbu" state="final">لید یا اوریدلو خطر</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.hazards">
+      <trans-unit id="BookMetadata.hazards" approved="yes">
         <source xml:lang="en">Hazards</source>
         <note>ID: BookMetadata.hazards</note>
-        <target xml:lang="pbu" state="translated">خطرات</target>
+        <target xml:lang="pbu" state="final">خطرات</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.inLanguage">
+      <trans-unit id="BookMetadata.inLanguage" approved="yes">
         <source xml:lang="en">Language</source>
         <note>ID: BookMetadata.inLanguage</note>
-        <target xml:lang="pbu" state="translated">ژبه</target>
+        <target xml:lang="pbu" state="final">ژبه</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.level">
+      <trans-unit id="BookMetadata.level" approved="yes">
         <source xml:lang="en">Reading level</source>
         <note>ID: BookMetadata.level</note>
-        <target xml:lang="pbu" state="translated">د لوستلو کچه</target>
+        <target xml:lang="pbu" state="final">د لوستلو کچه</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.License">
+      <trans-unit id="BookMetadata.License" approved="yes">
         <source xml:lang="en">License</source>
         <note>ID: BookMetadata.License</note>
-        <target xml:lang="pbu" state="translated">جواز</target>
+        <target xml:lang="pbu" state="final">جواز</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.metapicture">
+      <trans-unit id="BookMetadata.metapicture" approved="yes">
         <source xml:lang="en">Picture</source>
         <note>ID: BookMetadata.metapicture</note>
-        <target xml:lang="pbu" state="translated">انځور</target>
+        <target xml:lang="pbu" state="final">انځور</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.motionSimulationHazard">
+      <trans-unit id="BookMetadata.motionSimulationHazard" approved="yes">
         <source xml:lang="en">Motion Simulation Hazard</source>
         <note>ID: BookMetadata.motionSimulationHazard</note>
-        <target xml:lang="pbu" state="translated">د حرکت سمولو خطر</target>
+        <target xml:lang="pbu" state="final">د حرکت سمولو خطر</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.name">
+      <trans-unit id="BookMetadata.name" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: BookMetadata.name</note>
-        <target xml:lang="pbu" state="translated">نوم</target>
+        <target xml:lang="pbu" state="final">نوم</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.numberOfPages">
+      <trans-unit id="BookMetadata.numberOfPages" approved="yes">
         <source xml:lang="en">Number of pages</source>
         <note>ID: BookMetadata.numberOfPages</note>
-        <target xml:lang="pbu" state="translated">د پاڼو شمېر</target>
+        <target xml:lang="pbu" state="final">د پاڼو شمېر</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.signLanguage">
+      <trans-unit id="BookMetadata.signLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
         <note>ID: BookMetadata.signLanguage</note>
-        <target xml:lang="pbu" state="translated">د اشارو یا ګونګیانو ژبه</target>
+        <target xml:lang="pbu" state="final">د اشارو یا ګونګیانو ژبه</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.subjects">
+      <trans-unit id="BookMetadata.subjects" approved="yes">
         <source xml:lang="en">Subjects</source>
         <note>ID: BookMetadata.subjects</note>
-        <target xml:lang="pbu" state="translated">مضمونونه</target>
+        <target xml:lang="pbu" state="final">مضمونونه</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.typicalAgeRange">
+      <trans-unit id="BookMetadata.typicalAgeRange" approved="yes">
         <source xml:lang="en">Typical age range</source>
         <note>ID: BookMetadata.typicalAgeRange</note>
-        <target xml:lang="pbu" state="translated">د عمرعام حد</target>
+        <target xml:lang="pbu" state="final">د عمرعام حد</target>
       </trans-unit>
-      <trans-unit id="BookMetadata.WhatsThis" sil:dynamic="true">
+      <trans-unit id="BookMetadata.WhatsThis" sil:dynamic="true" approved="yes">
         <source xml:lang="en">What's this?</source>
         <note>ID: BookMetadata.WhatsThis</note>
         <note>minimal question indicating a link to information</note>
-        <target xml:lang="pbu" state="translated">دا څه دي؟</target>
+        <target xml:lang="pbu" state="final">دا څه دي؟</target>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook" approved="yes">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
@@ -378,10 +387,10 @@
         <note>ID: Browser.OpenPageInFirefox</note>
         <target xml:lang="pbu" state="final">په فایرفاکس کې پاڼه خلاصه کړئ (چې د ‏PATH‏ محیطي ماحول کې وي)</target>
       </trans-unit>
-      <trans-unit id="Browser.ProblemSaving">
+      <trans-unit id="Browser.ProblemSaving" approved="yes">
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
         <note>ID: Browser.ProblemSaving</note>
-        <target xml:lang="pbu" state="translated">د خوندي کولو پر مهال ستونزه وه. مهرباني وکړئ پخوانۍ پاڼې ته ورشئ او ډاډ ترلاسه کړئ چې دا سم ښکاري.</target>
+        <target xml:lang="pbu" state="final">د خوندي کولو پر مهال ستونزه وه. مهرباني وکړئ پخوانۍ پاڼې ته ورشئ او ډاډ ترلاسه کړئ چې دا سم ښکاري.</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomEnterprise" approved="yes">
         <source xml:lang="en">About the Bloom Enterprise Service</source>
@@ -399,12 +408,12 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate</note>
         <target xml:lang="pbu" state="final">بلوم په اتومات ډول آپډیټ کړئ</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands" approved="yes">
         <source xml:lang="en">Show Experimental Features</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
         <note xml:lang="en">OLD TEXT (before 4.3): Show Experimental Commands</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Show Experimental Commands (e.g. Export XML for InDesign)</note>
-        <target xml:lang="pbu" state="translated">تجربي دستورات وښاياست</target>
+        <target xml:lang="pbu" state="final">تجربي دستورات وښاياست</target>
         <alt-trans>
           <target xml:lang="pbu">تجربوي کمانډونه (‏Experimental Commands‏) وښایاست (لکه، ‏Export XML for InDesign‏)</target>
         </alt-trans>
@@ -682,10 +691,10 @@
         <note xml:lang="en">OLD TEXT (before 3.9, 1 fewer space): Language 3 (e.g. Regional Language)  (Optional)</note>
         <target xml:lang="pbu" state="final">3 ژبه (لکه، محلي ژبه) (اختیاري)</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional" approved="yes">
         <source xml:lang="en">Sign Language   (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
-        <target xml:lang="pbu" state="translated">د اشارو ژبه (اختیاري)</target>
+        <target xml:lang="pbu" state="final">د اشارو ژبه (اختیاري)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
@@ -755,17 +764,17 @@
         <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
         <target xml:lang="pbu" state="final">په‏ ‏BloomLibrary.org‏ کې ډیر کتابونه د سرچينې په توګه پیدا کړئ</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part1">
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part1" approved="yes">
         <source xml:lang="en">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerification.Part1</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="pbu" state="translated">یادونه: د بلوم کتابتون د مخکي نه جوړشویو کتابونه لري ، پداسې حال کې چې ستاسو اوسنی ټولګه د "سرچینې ټولګه" ده ، پدې معنی چې دا د مخکي نه جوړشویو کتابونو جوړولو لپاره دی ، نه دا چې په ځایی ژبه ته یې وژباړي.</target>
+        <target xml:lang="pbu" state="final">یادونه: د بلوم کتابتون د مخکي نه جوړشویو کتابونه لري ، پداسې حال کې چې ستاسو اوسنی ټولګه د "سرچینې ټولګه" ده ، پدې معنی چې دا د مخکي نه جوړشویو کتابونو جوړولو لپاره دی ، نه دا چې په ځایی ژبه ته یې وژباړي.</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part2">
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part2" approved="yes">
         <source xml:lang="en">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerification.Part2</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="pbu" state="translated">کله چې تاسو نمونه یې کتاب جوړ کړی ، نو تاسو کولی شئ دا د خپرونې ټب څخه د بلوم کتابتون ته پورته کړئ.</target>
+        <target xml:lang="pbu" state="final">کله چې تاسو نمونه یې کتاب جوړ کړی ، نو تاسو کولی شئ دا د خپرونې ټب څخه د بلوم کتابتون ته پورته کړئ.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption" approved="yes">
         <source xml:lang="en">Source Collection</source>
@@ -888,10 +897,10 @@
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
         <target xml:lang="pbu" state="final">د دې لپاره چې دا د سرچینو ټولګه ده، بلوم د نويو شیلونو (shells -هغه کتابونه چې مخکې په نورو ژبو کې چمتو شوي دي) لپاره کوم ‏کتاب نشي ورکولی. که تاسې غواړئ یو کتاب‏ ته ژبه اضافه کړئ، د کاپي کولو پرځای تاسې باید هغه ټولګه ایډیټ کړئ چې کتاب پکې موجود دی او همداسې د نوې ‏‏کتاب جوړولو لپاره د دیوال تقویم نشي استعمالیدلی.</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
+      <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations" approved="yes">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
-        <target xml:lang="pbu" state="translated">هغه ژباړې وښایاست چې تراوسه ندي منل شوي</target>
+        <target xml:lang="pbu" state="final">هغه ژباړې وښایاست چې تراوسه ندي منل شوي</target>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
@@ -979,17 +988,17 @@
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
         <target xml:lang="pbu" state="final">عنوان نشته</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.UILanguageMenu.HelpTranslate">
+      <trans-unit id="CollectionTab.UILanguageMenu.HelpTranslate" approved="yes">
         <source xml:lang="en">Help us translate Bloom (web)</source>
         <note>ID: CollectionTab.UILanguageMenu.HelpTranslate</note>
         <note>The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.</note>
-        <target xml:lang="pbu" state="translated">د بلوم (ویب) په ژباړلو کې زموږ سره مرسته وکړئ</target>
+        <target xml:lang="pbu" state="final">د بلوم (ویب) په ژباړلو کې زموږ سره مرسته وکړئ</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip">
+      <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip" approved="yes">
         <source xml:lang="en">{0}% translated</source>
         <note>ID: CollectionTab.UILanguageMenu.ItemTooltip</note>
         <note>Shown when hovering over an item in the UI Language menu. The {0} marker is filled in by a number between 1 and 100.</note>
-        <target xml:lang="pbu" state="translated">{0}% ژباړه شوي دي</target>
+        <target xml:lang="pbu" state="final">{0}% ژباړه شوي دي</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UnableToCheckForUpdate" approved="yes">
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
@@ -1047,37 +1056,31 @@
           <target xml:lang="pbu">د (‎{0} ({1}kb لپاره د آپډیټ ښکته کول.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Advanced">
+      <trans-unit id="Common.Advanced" approved="yes">
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
-        <target xml:lang="pbu" state="translated">پرمختللی</target>
+        <target xml:lang="pbu" state="final">پرمختللی</target>
       </trans-unit>
-      <trans-unit id="Common.Colors.Black">
+      <trans-unit id="Common.Colors.Black" approved="yes">
         <source xml:lang="en">Black</source>
         <note>ID: Common.Colors.Black</note>
-        <target xml:lang="pbu" state="translated">تور</target>
+        <target xml:lang="pbu" state="final">تور</target>
       </trans-unit>
-      <trans-unit id="Common.Colors.Crimson">
+      <trans-unit id="Common.Colors.Crimson" approved="yes">
         <source xml:lang="en">Crimson</source>
         <note>ID: Common.Colors.Crimson</note>
-        <target xml:lang="pbu" state="translated">روښانه سور</target>
+        <target xml:lang="pbu" state="final">روښانه سور</target>
       </trans-unit>
-      <trans-unit id="Common.Colors.Yellow">
+      <trans-unit id="Common.Colors.Yellow" approved="yes">
         <source xml:lang="en">Yellow</source>
         <note>ID: Common.Colors.Yellow</note>
-        <target xml:lang="pbu" state="translated">ژیړ</target>
+        <target xml:lang="pbu" state="final">ژیړ</target>
       </trans-unit>
-      <trans-unit id="Common.Colors.White">
+      <trans-unit id="Common.Colors.White" approved="yes">
         <source xml:lang="en">White</source>
         <note>ID: Common.Colors.White</note>
-        <target xml:lang="pbu" state="translated">سپین</target>
-      </trans-unit>
-      <trans-unit id="Common.LearnMore" sil:dynamic="true">
-        <source xml:lang="en">Learn More</source>
-        <note>ID: Common.LearnMore</note>
-        <note>This is the same as Settings.Enterprise.LearnMore</note>
-        <target xml:lang="pbu" state="translated">نور زده کړئ</target>
+        <target xml:lang="pbu" state="final">سپین</target>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
@@ -1095,23 +1098,29 @@
         <note>ID: Common.CancelButton</note>
         <target xml:lang="pbu" state="final">&amp;لغوه</target>
       </trans-unit>
+      <trans-unit id="Common.Error">
+        <source xml:lang="en">Error</source>
+        <note>ID: Common.Error</note>
+        <note>A heading shown above some messages.</note>
+        <target xml:lang="pbu" state="needs-translation">Error</target>
+      </trans-unit>
       <trans-unit id="Common.Finish" approved="yes">
         <source xml:lang="en">&amp;Finish</source>
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
         <target xml:lang="pbu" state="final">&amp;خلاصول</target>
       </trans-unit>
-      <trans-unit id="Common.Info">
+      <trans-unit id="Common.Info" approved="yes">
         <source xml:lang="en">Info</source>
         <note>ID: Common.Info</note>
         <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
-        <target xml:lang="pbu" state="translated">معلومات</target>
+        <target xml:lang="pbu" state="final">معلومات</target>
       </trans-unit>
-      <trans-unit id="Common.Warning">
+      <trans-unit id="Common.Warning" approved="yes">
         <source xml:lang="en">Info</source>
         <note>ID: Common.Warning</note>
         <note>A heading shown above some messages.</note>
-        <target xml:lang="pbu" state="translated">معلومات</target>
+        <target xml:lang="pbu" state="final">معلومات</target>
       </trans-unit>
       <trans-unit id="Common.Note" approved="yes">
         <source xml:lang="en">Note</source>
@@ -1134,6 +1143,13 @@
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
         <target xml:lang="pbu" state="final">&amp;مرسته</target>
+      </trans-unit>
+      <trans-unit id="Common.LearnMore" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Learn More</source>
+        <note>ID: Common.LearnMore</note>
+        <note>A link or button that leads to something that tells the user more about what they just read.</note>
+        <note>This is the same as Settings.Enterprise.LearnMore</note>
+        <target xml:lang="pbu" state="final">نوره زده کړئ</target>
       </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Loading...</source>
@@ -1184,10 +1200,10 @@
         <note>Sense of refreshing a web page.</note>
         <target xml:lang="pbu" state="final">تازه کړئ</target>
       </trans-unit>
-      <trans-unit id="Common.Replace">
+      <trans-unit id="Common.Replace" approved="yes">
         <source xml:lang="en">Replace</source>
         <note>ID: Common.Replace</note>
-        <target xml:lang="pbu" state="needs-translation">Replace</target>
+        <target xml:lang="pbu" state="final">بدلول</target>
       </trans-unit>
       <trans-unit id="Common.SeeWebPage" approved="yes">
         <source xml:lang="en">See {0}.</source>
@@ -1309,6 +1325,7 @@
       <trans-unit id="EditTab.AddTextBoxToImage" approved="yes">
         <source xml:lang="en">Add Text Box To Image</source>
         <note>ID: EditTab.AddTextBoxToImage</note>
+        <note>Obsolete for Bloom 4.7 and later</note>
         <target xml:lang="pbu" state="final">انځور ته د متن لپاره بکس ورزيات کړئ</target>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true" approved="yes">
@@ -1471,6 +1488,7 @@
       <trans-unit id="EditTab.DeleteTextBoxFromImage" approved="yes">
         <source xml:lang="en">Delete Text Box From Image</source>
         <note>ID: EditTab.DeleteTextBoxFromImage</note>
+        <note>Obsolete for Bloom 4.7 and later</note>
         <target xml:lang="pbu" state="final">له انځور څخه د متن بکس ډيلېټ کړئ</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true" approved="yes">
@@ -1600,6 +1618,12 @@
         <note>ID: EditTab.FormatDialog.DefaultStyles.BigWords-style</note>
         <note>Appears in most templates</note>
         <target xml:lang="pbu" state="final">غټي کلمي</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Bubble-style" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Bubble</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Bubble-style</note>
+        <note>Default style for comic bubbles</note>
+        <target xml:lang="pbu" state="final">ببل</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Cover-Default-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cover Default</source>
@@ -1815,11 +1839,11 @@
         <note>ID: EditTab.FrontMatter.CopyrightPrompt</note>
         <target xml:lang="pbu" state="final">د چاپ حق او جواز د ایډیټ لپاره زور وکړئ</target>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.</source>
         <note>ID: EditTab.FrontMatter.CreditTranslator</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
-        <target xml:lang="pbu" state="translated">د ژباړن نوم، په {lang} کې</target>
+        <target xml:lang="pbu" state="final">د ژباړن نوم، په {lang} کې</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
@@ -2058,11 +2082,14 @@
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
         <target xml:lang="pbu" state="final">مخکې له دې چې تاسې یو انځور ونښلوئ (Paste), کړای شئ، یو دانه د بل پروګرام څخه خپل ‎'کلیپ بورډ‎'‏ ته کاپي کړئ،</target>
       </trans-unit>
-      <trans-unit id="EditTab.NoOtherLayouts">
+      <trans-unit id="EditTab.NoOtherLayouts" approved="yes">
         <source xml:lang="en">There are no other options for this template.</source>
         <note>ID: EditTab.NoOtherLayouts</note>
         <note>Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice</note>
-        <target xml:lang="pbu" state="translated">د دې نمونِِې لپاره د طرحی نور اختیارونه نشته.</target>
+        <target xml:lang="pbu" state="final">د دې نمونِِې لپاره د طرحی نور انتخابونه نشته.</target>
+        <alt-trans>
+          <target xml:lang="pbu">د دې نمونِِې لپاره د طرحی نور اختیارونه نشته.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Overflow" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This box has more text than will fit</source>
@@ -2250,195 +2277,189 @@
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
         <target xml:lang="pbu" state="final">د انځور د معنوي ملکیت معلومات</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Comic Tool</source>
-        <note>ID: EditTab.Toolbox.CalloutTool</note>
+        <note>ID: EditTab.Toolbox.ComicTool</note>
         <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
-        <target xml:lang="pbu" state="final">د اړیکې ابزار</target>
+        <target xml:lang="pbu" state="final">د طنز توکي</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.AddChildBubble" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Drag to add to an image</source>
+        <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
+        <target xml:lang="pbu" state="final">يو انځور ته اضافه کولو لپاره راکښ کړئ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Child Bubble</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.AddChildBubble</note>
-        <target xml:lang="pbu" state="final">د ماشوم ډډبیکي اضافه کړئ</target>
-        <alt-trans>
-          <target xml:lang="pbu">د ماشوم ببل اضافه کړئ</target>
-        </alt-trans>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.AddChildBubble</note>
+        <target xml:lang="pbu" state="final">د ماشوم ببل اضافه کړئ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Background Color</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor</note>
         <note>Refers to the Background Color of the bubble used by the callout</note>
         <target xml:lang="pbu" state="final">شاليد رنګ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.OldLace" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Old Lace</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.OldLace</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
         <note>A background color that looks like old lace</note>
-        <target xml:lang="pbu" state="final">زوړه تیکه</target>
+        <target xml:lang="pbu" state="final">زوړ Lace</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToCalico" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico" sil:dynamic="true" approved="yes">
         <source xml:lang="en">White to Calico</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToCalico</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico</note>
         <note>A background color that is a gradient starting with white blending into calico color</note>
         <target xml:lang="pbu" state="final">له سپین څخه پخته يي ته</target>
-        <alt-trans>
-          <target xml:lang="pbu">سپین نه پخته يي ته</target>
-        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true" approved="yes">
         <source xml:lang="en">White to French Pass</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToFrenchPass</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass</note>
         <note>A background color that is a gradient starting with white blending into the "French pass" color</note>
         <target xml:lang="pbu" state="final">له سپین څخه روښانه زنګالي</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true" approved="yes">
         <source xml:lang="en">White to Portafino</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToPortafino</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino</note>
         <note>A background color that is a gradient starting with white blending into the "Portafino" color</note>
         <target xml:lang="pbu" state="final">له سپین څخه روښانه نخودی</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Outer Outline Color</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor</note>
         <note>Refers to the Outer Outline Color of the bubble used by the callout</note>
         <target xml:lang="pbu" state="final">د بیرونی خطیر رنګ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor.None" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true" approved="yes">
         <source xml:lang="en">None</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor.None</note>
-        <target xml:lang="pbu" state="final">هیڅ نه</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
+        <target xml:lang="pbu" state="final">يو هم نه</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Style</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
         <note>Refers to the STYLE of bubble used by the callout</note>
-        <target xml:lang="pbu" state="needs-translation">Style</target>
+        <target xml:lang="pbu" state="final">بڼه/طرحه</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Caption" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Caption" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Caption</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Caption</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Caption</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a description which is not directly stated by any characters.</note>
-        <target xml:lang="pbu" state="needs-translation">Caption</target>
+        <target xml:lang="pbu" state="final">سرلیک</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Ellipse" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Ellipse" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Ellipse</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Ellipse</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Ellipse</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a round bubble shaped like an ellipse.</note>
-        <target xml:lang="pbu" state="needs-translation">Ellipse</target>
+        <target xml:lang="pbu" state="final">بیضوی</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Exclamation" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Exclamation" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Exclamation</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Exclamation</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Exclamation</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a shout or exclamatory statement. Like this: "Watch out!"</note>
-        <target xml:lang="pbu" state="needs-translation">Exclamation</target>
+        <target xml:lang="pbu" state="final">ندایه</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.JustText" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.JustText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just Text</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.JustText</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.JustText</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style does not have any bubble at all.</note>
-        <target xml:lang="pbu" state="needs-translation">Just Text</target>
+        <target xml:lang="pbu" state="final">یواځې متن</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Speech" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Speech" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Speech</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Speech</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Speech</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents standard speech/dialogue.</note>
-        <target xml:lang="pbu" state="needs-translation">Speech</target>
+        <target xml:lang="pbu" state="final">ویناوې</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Thought" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Thought" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Thought</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Thought</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Thought</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents the thoughts of a person who is thinking.</note>
-        <target xml:lang="pbu" state="needs-translation">Thought</target>
+        <target xml:lang="pbu" state="final">فکر</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.TextColor" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Color</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.TextColor</note>
-        <target xml:lang="pbu" state="needs-translation">Text Color</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
+        <target xml:lang="pbu" state="final">د خط رنګ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.ControlsAvailable" sil:dynamic="true">
-        <source xml:lang="en">The selected item has these controls:</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.ControlsAvailable</note>
-        <target xml:lang="pbu" state="needs-translation">The selected item has these controls:</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Impairment Visualizer</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer</note>
-        <target xml:lang="pbu" state="needs-translation">Impairment Visualizer</target>
+        <target xml:lang="pbu" state="final">د تخیل اختلال</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.BlueYellow" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.BlueYellow" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Blue-Yellow</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.BlueYellow</note>
-        <target xml:lang="pbu" state="needs-translation">Blue-Yellow</target>
+        <target xml:lang="pbu" state="final">نیلي ژیړ</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Cataracts" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cataracts</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.Cataracts</note>
         <target xml:lang="pbu" state="final">دروند لید</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Color Blindness</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness</note>
-        <target xml:lang="pbu" state="translated">رنګ ړوند</target>
+        <target xml:lang="pbu" state="final">رنګ ړوند</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Complete" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Complete" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Complete</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.Complete</note>
-        <target xml:lang="pbu" state="translated">بشپړ</target>
+        <target xml:lang="pbu" state="final">بشپړ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Overview" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Overview" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You can use these check boxes to have Bloom simulate how your images would look with various visual impairments.</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.Overview</note>
-        <target xml:lang="pbu" state="translated">تاسو کولی شئ دا چک بکسونه وکاروئ ترڅو بلوم ستاسوعکسونه د مختلف لید اختلالاتو لپاره څنګه ښکاري، سم کړې.</target>
+        <target xml:lang="pbu" state="final">تاسو کولی شئ دا چک بکسونه وکاروئ ترڅو بلوم ستاسوعکسونه د مختلف لید اختلالاتو لپاره څنګه ښکاري، سم کړې.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.RedGreen" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.RedGreen" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Red-Green</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.RedGreen</note>
-        <target xml:lang="pbu" state="needs-translation">Red-Green</target>
+        <target xml:lang="pbu" state="final">سورچیکې شین</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Motion.Intro" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.Motion.Intro" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
         <note>ID: EditTab.Toolbox.Motion.Intro</note>
-        <target xml:lang="pbu" state="needs-translation">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</target>
+        <target xml:lang="pbu" state="final">حرکي کتابونه د دوه حالتونو سره د بلوم ریډر کتابونه دي. عموما ، دوی غږیز کتابونه دي. کله چې تاسو تلیفون خوا ته واړوئ ، انځور ښیښه ډکوي. د مستطیل "1" څخه مستطیل "2" ته پراخه او زوم کوي.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Motion.Preview" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.Motion.Preview" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Preview</source>
         <note>ID: EditTab.Toolbox.Motion.Preview</note>
-        <target xml:lang="pbu" state="needs-translation">Preview</target>
+        <target xml:lang="pbu" state="final">مخلید</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Motion.Preview.Motion" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.Motion.Preview.Motion" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Motion</source>
         <note>ID: EditTab.Toolbox.Motion.Preview.Motion</note>
         <note>The label of a checkbox indicating whether motion is included in Preview (currently it always is, so the box is always checked)</note>
-        <target xml:lang="pbu" state="needs-translation">Motion</target>
+        <target xml:lang="pbu" state="final">حرکت</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Motion.Preview.Music" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.Motion.Preview.Music" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Music</source>
         <note>ID: EditTab.Toolbox.Motion.Preview.Music</note>
         <note>The label of a checkbox indicating whether background music is played during Preview.</note>
-        <target xml:lang="pbu" state="needs-translation">Music</target>
+        <target xml:lang="pbu" state="final">موسیقی</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Motion.Preview.Voice" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.Motion.Preview.Voice" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Voice</source>
         <note>ID: EditTab.Toolbox.Motion.Preview.Voice</note>
         <note>The label of a checkbox controlling whether voice narration plays during Preview.</note>
-        <target xml:lang="pbu" state="needs-translation">Voice</target>
+        <target xml:lang="pbu" state="final">غږ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Motion.ThisPage" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.Motion.ThisPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Enable motion on this page</source>
         <note>ID: EditTab.Toolbox.Motion.ThisPage</note>
-        <target xml:lang="pbu" state="needs-translation">Enable motion on this page</target>
+        <target xml:lang="pbu" state="final">پدې پاڼه کې خوځښت فعال کړئ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.MotionTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.MotionTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Motion Tool</source>
         <note>ID: EditTab.Toolbox.MotionTool</note>
         <note>Used as the overall title of the toolbox panel</note>
-        <target xml:lang="pbu" state="needs-translation">Motion Tool</target>
+        <target xml:lang="pbu" state="final">حرکې ابزار</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose...</source>
@@ -2450,22 +2471,22 @@
         <note>ID: EditTab.Toolbox.Music.ContinueMusic</note>
         <target xml:lang="pbu" state="final">له مخکينۍ پاڼې څخه موسيقۍ ته ادامه ورکړئ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Music.FileDialogSoundFiles">
+      <trans-unit id="EditTab.Toolbox.Music.FileDialogSoundFiles" approved="yes">
         <source xml:lang="en">Sound files</source>
         <note>ID: EditTab.Toolbox.Music.FileDialogSoundFiles</note>
-        <target xml:lang="pbu" state="needs-translation">Sound files</target>
+        <target xml:lang="pbu" state="final">غږیز فایلونه</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Music.InvalidMp3File">
+      <trans-unit id="EditTab.Toolbox.Music.InvalidMp3File" approved="yes">
         <source xml:lang="en">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</source>
         <note>ID: EditTab.Toolbox.Music.InvalidMp3File</note>
         <note>The {0} is replaced by the filename.</note>
-        <target xml:lang="pbu" state="needs-translation">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</target>
+        <target xml:lang="pbu" state="final">غوره شوی غږیز فایل "{0}" د بلوم لخوا نشي لږیدلي. مهرباني وکړئ بل د غږ فایل غوره کړئ.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Music.InvalidMp3FileTitle">
+      <trans-unit id="EditTab.Toolbox.Music.InvalidMp3FileTitle" approved="yes">
         <source xml:lang="en">Choose Another Sound File</source>
         <note>ID: EditTab.Toolbox.Music.InvalidMp3FileTitle</note>
         <note>Title for a message box</note>
-        <target xml:lang="pbu" state="needs-translation">Choose Another Sound File</target>
+        <target xml:lang="pbu" state="final">بله صوتي دوسیه غوره کړه</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Overview" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</source>
@@ -2482,10 +2503,10 @@
         <note>ID: EditTab.Toolbox.Music.NoMusic</note>
         <target xml:lang="pbu" state="final">موسيقي دې نه وي</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.MusicTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.MusicTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Music Tool</source>
         <note>ID: EditTab.Toolbox.MusicTool</note>
-        <target xml:lang="pbu" state="needs-translation">Music Tool</target>
+        <target xml:lang="pbu" state="final">د موسیقی وسیله</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -2601,102 +2622,105 @@
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
         <target xml:lang="pbu" state="final">د</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image Description Tool</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool</note>
-        <target xml:lang="pbu" state="needs-translation">Image Description Tool</target>
+        <target xml:lang="pbu" state="final">د انځور تشریحې وسیله</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.MoreInformation" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.MoreInformation" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For more information:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.MoreInformation</note>
-        <target xml:lang="pbu" state="needs-translation">For more information:</target>
+        <target xml:lang="pbu" state="final">د نورو معلوماتو لپاره:</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.KeepInMind" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.KeepInMind" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Keep these things in mind:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.KeepInMind</note>
-        <target xml:lang="pbu" state="needs-translation">Keep these things in mind:</target>
+        <target xml:lang="pbu" state="final">دا شیان په ذهن کې وساتئ:</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Are there important **actions**, **relationships**, **emotions**, or things in the **scene** that add to the story but are not in the text?</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.ImportantToDescribe</note>
         <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
-        <target xml:lang="pbu" state="needs-translation">Are there important **actions**, **relationships**, **emotions**, or things in the **scene** that add to the story but are not in the text?</target>
+        <target xml:lang="pbu" state="final">ایا مهمی ** کړنې **، ** اړیکې **، ** احساسات **، یا په ** صحنه ** کې داسی شیان دي چې کیسه کې اضافه کیږي مګر په متن کې نشته?</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use words that are **simple** enough for the listener.</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.UseSimpleWords</note>
         <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
-        <target xml:lang="pbu" state="needs-translation">Use words that are **simple** enough for the listener.</target>
+        <target xml:lang="pbu" state="final">هغه کلمي وکاره وئ چې د اوریدونکو لپاره کافی ** ساده ** وي.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.KeepItShort" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.KeepItShort" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Keep it **short**.</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.KeepItShort</note>
         <note>Keep the surrounding **...** but translate the words inside the ** markers.  The ** are markup for emphasis that will be converted into HTML.</note>
-        <target xml:lang="pbu" state="needs-translation">Keep it **short**.</target>
+        <target xml:lang="pbu" state="final">دا ** لنډ ** وساتئ.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Otherwise, check this box:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckThisBox</note>
-        <target xml:lang="pbu" state="needs-translation">Otherwise, check this box:</target>
+        <target xml:lang="pbu" state="final">کنه نو ، دا بکس چیک کړئ:</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This image should not be described.</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe</note>
-        <target xml:lang="pbu" state="needs-translation">This image should not be described.</target>
+        <target xml:lang="pbu" state="final">دا عکس باید تشریح نشي.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeConcise" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Be Concise</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeConcise</note>
         <note>Obsolete for Bloom 4.5 and later</note>
-        <target xml:lang="pbu" state="needs-translation">Be Concise</target>
+        <target xml:lang="pbu" state="final">مختصر اوسئ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeObjective" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BeObjective" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Be Objective</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BeObjective</note>
         <note>Obsolete for Bloom 4.5 and later</note>
-        <target xml:lang="pbu" state="needs-translation">Be Objective</target>
+        <target xml:lang="pbu" state="final">معقول اوسئ</target>
+        <alt-trans>
+          <target xml:lang="pbu">موخې ولرئ</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom training video</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo</note>
         <note>Obsolete for Bloom 4.5 and later</note>
-        <target xml:lang="pbu" state="needs-translation">Bloom training video</target>
+        <target xml:lang="pbu" state="final">د بلوم روزنې ویډیو</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Check your image description against each of these reminders:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.CheckDescription</note>
         <note>Obsolete for Bloom 4.5 and later</note>
-        <target xml:lang="pbu" state="needs-translation">Check your image description against each of these reminders:</target>
+        <target xml:lang="pbu" state="final">د دې هر یادونې پروړاندې د خپل عکس تشریح وګورئ:</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Consider your Audience</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.ConsiderAudience</note>
-        <target xml:lang="pbu" state="needs-translation">Consider your Audience</target>
+        <target xml:lang="pbu" state="final">خپل اوریدونکي/ لیدونکي په پام کې ونیسئ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ContextKey" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.ContextKey" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Context is Key</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.ContextKey</note>
-        <target xml:lang="pbu" state="needs-translation">Context is Key</target>
+        <target xml:lang="pbu" state="final">متن کلیدي دی</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.GeneralSpecific" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.GeneralSpecific" sil:dynamic="true" approved="yes">
         <source xml:lang="en">General to Specific</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.GeneralSpecific</note>
-        <target xml:lang="pbu" state="needs-translation">General to Specific</target>
+        <target xml:lang="pbu" state="final">عمومي نه ځانګړي ته</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.LearnToMake" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.LearnToMake" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Learn to make effective image descriptions</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.LearnToMake</note>
-        <target xml:lang="pbu" state="needs-translation">Learn to make effective image descriptions</target>
+        <target xml:lang="pbu" state="final">زده کړه وکړئ چی دعکس اغیزمني تشریح جوړه کوئ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.PoetDiagram" sil:dynamic="true" approved="yes">
         <source xml:lang="en">poet.diagramcenter.org</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.PoetDiagram</note>
-        <target xml:lang="pbu" state="needs-translation">poet.diagramcenter.org</target>
+        <target xml:lang="pbu" state="final">poet.diagramcenter.org</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.WriteYours" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.WriteYours" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Write your image description on the left, in the box next to the picture.</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.WriteYours</note>
-        <target xml:lang="pbu" state="needs-translation">Write your image description on the left, in the box next to the picture.</target>
+        <target xml:lang="pbu" state="final">د خپل عکس تشریح په چپ اړخ کې، د عکس سره په بکس کې ولیکئ.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader Tool</source>
@@ -2826,109 +2850,116 @@
           <target xml:lang="pbu">په نورماله توګه بلوم د ډیرو مخکی نه په نورو ژبو جوړ شوی کتاب (‏shellbook‏) لپاره له تغیرونو مخنیوی کوي. که تاسو د پاڼو اضافه کولو، انځورونو تغیرولو او داسې نورو شیانو ته اړتیا لرئ، لاندنۍ خانه د صحیح په نښه، نښه کړئ.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.CameraUnavailable" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.CameraUnavailable" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Camera not available (perhaps in use by another program)</source>
         <note>ID: EditTab.Toolbox.SignLanguage.CameraUnavailable</note>
-        <target xml:lang="pbu" state="needs-translation">Camera not available (perhaps in use by another program)</target>
+        <target xml:lang="pbu" state="final">کیمره شتون نلري (شاید د بلې برنامې لخوا کارول کیږي)</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.DeleteVideo" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.DeleteVideo" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Delete</source>
         <note>ID: EditTab.Toolbox.SignLanguage.DeleteVideo</note>
-        <target xml:lang="pbu" state="needs-translation">Delete</target>
+        <target xml:lang="pbu" state="final">ړنګول</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.EditOutside" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.EditOutside" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit outside of Bloom</source>
         <note>ID: EditTab.Toolbox.SignLanguage.EditOutside</note>
-        <target xml:lang="pbu" state="needs-translation">Edit outside of Bloom</target>
+        <target xml:lang="pbu" state="final">د بلوم نه بهر تصحیح وکړۍ</target>
+        <alt-trans>
+          <target xml:lang="pbu">د بلوم نه بهر تصحیح وکوړۍ</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.FileDialogVideoFiles">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.FileDialogVideoFiles" approved="yes">
         <source xml:lang="en">Video files</source>
         <note>ID: EditTab.Toolbox.SignLanguage.FileDialogVideoFiles</note>
-        <target xml:lang="pbu" state="needs-translation">Video files</target>
+        <target xml:lang="pbu" state="final">ویډیو فایلونه</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.ImportVideo" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.ImportVideo" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Import</source>
         <note>ID: EditTab.Toolbox.SignLanguage.ImportVideo</note>
-        <target xml:lang="pbu" state="needs-translation">Import</target>
+        <target xml:lang="pbu" state="final">
+وارد کړۍ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.ShowInFolder" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.ShowInFolder" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Show in Folder</source>
         <note>ID: EditTab.Toolbox.SignLanguage.ShowInFolder</note>
-        <target xml:lang="pbu" state="needs-translation">Show in Folder</target>
+        <target xml:lang="pbu" state="final">په دوسیه کې ښودل</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.NoCameraFound" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.NoCameraFound" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No camera found</source>
         <note>ID: EditTab.Toolbox.SignLanguage.NoCameraFound</note>
-        <target xml:lang="pbu" state="needs-translation">No camera found</target>
+        <target xml:lang="pbu" state="final">هیڅ کیمره ونه موندل شوه</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.PressCancel" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.PressCancel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Press any key to cancel</source>
         <note>ID: EditTab.Toolbox.SignLanguage.PressCancel</note>
-        <target xml:lang="pbu" state="needs-translation">Press any key to cancel</target>
+        <target xml:lang="pbu" state="final">د لغوه کولو لپاره یوي توکمې ته فشار ورکړئ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.PressStop" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.PressStop" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Press any key to stop</source>
         <note>ID: EditTab.Toolbox.SignLanguage.PressStop</note>
-        <target xml:lang="pbu" state="needs-translation">Press any key to stop</target>
+        <target xml:lang="pbu" state="final">د ودرولو لپاره یوي توکمې ته فشار ورکړئ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.Processing" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.Processing" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Processing</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Processing</note>
         <note>Displayed while video just recorded is processed into a more compressed form</note>
-        <target xml:lang="pbu" state="needs-translation">Processing</target>
+        <target xml:lang="pbu" state="final">پروسس کیږۍ</target>
+        <alt-trans>
+          <target xml:lang="pbu">پروسه</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.Recording" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.Recording" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Recording</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Recording</note>
-        <target xml:lang="pbu" state="needs-translation">Recording</target>
+        <target xml:lang="pbu" state="final">ثبتول</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.RestoreOriginal" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.RestoreOriginal" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Restore Original</source>
         <note>ID: EditTab.Toolbox.SignLanguage.RestoreOriginal</note>
-        <target xml:lang="pbu" state="needs-translation">Restore Original</target>
+        <target xml:lang="pbu" state="final">اصلي بیرته راګرځول</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.SelectedVideo">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.SelectedVideo" approved="yes">
         <source xml:lang="en">The selected video</source>
         <note>ID: EditTab.Toolbox.SignLanguage.SelectedVideo</note>
         <note>Appears in the context "X will be moved to the recycle bin"</note>
-        <target xml:lang="pbu" state="needs-translation">The selected video</target>
+        <target xml:lang="pbu" state="final">ټاکل شوې ویډیو</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.SelectSignLanguageBox" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.SelectSignLanguageBox" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To use this tool, select a sign language box on the page.</source>
         <note>ID: EditTab.Toolbox.SignLanguage.SelectSignLanguageBox</note>
-        <target xml:lang="pbu" state="needs-translation">To use this tool, select a sign language box on the page.</target>
+        <target xml:lang="pbu" state="final">د دې وسیلې کارولو لپاره، په پاڼه کې د اشاروی ژبي بکس غوره کړئ.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.StartRecording" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.StartRecording" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Start Recording</source>
         <note>ID: EditTab.Toolbox.SignLanguage.StartRecording</note>
-        <target xml:lang="pbu" state="needs-translation">Start Recording</target>
+        <target xml:lang="pbu" state="final">ثبتول پیل کړئ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.Timeout">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.Timeout" approved="yes">
         <source xml:lang="en">The initial processing of the video file timed out after one minute.  The raw video output will be stored.</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Timeout</note>
-        <target xml:lang="pbu" state="needs-translation">The initial processing of the video file timed out after one minute.  The raw video output will be stored.</target>
+        <target xml:lang="pbu" state="final">د ویډیو فایل لومړني پروسس وخت د یو دقیقې وروسته پای ته ورسید. د خامی ویډیو محصول به وساتل شي.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.Trim" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.Trim" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Trim</source>
         <note>ID: EditTab.Toolbox.SignLanguage.Trim</note>
         <note>Appears above sign language video trimming sliders</note>
-        <target xml:lang="pbu" state="needs-translation">Trim</target>
+        <target xml:lang="pbu" state="final">اصلاح</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.VideoProcessingError">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.VideoProcessingError" approved="yes">
         <source xml:lang="en">Error output from ffmpeg trying to produce {0}: {1}{2}The raw video output will be stored.</source>
         <note>ID: EditTab.Toolbox.SignLanguage.VideoProcessingError</note>
         <note>{0} is the path to the video file, {1} is the error message from the ffmpeg program, and {2} is a newline character</note>
-        <target xml:lang="pbu" state="needs-translation">Error output from ffmpeg trying to produce {0}: {1}{2}The raw video output will be stored.</target>
+        <target xml:lang="pbu" state="final">د ffmpeg څخه د تېروتنې محصول د {0} تولید هڅه کوي: {1} {2} د خامی ویډیو محصول به وساتل شي.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguage.WhatCameraSees" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguage.WhatCameraSees" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Here is what your camera sees:</source>
         <note>ID: EditTab.Toolbox.SignLanguage.WhatCameraSees</note>
-        <target xml:lang="pbu" state="needs-translation">Here is what your camera sees:</target>
+        <target xml:lang="pbu" state="final">دلته هغه څه دي چې ستاسو کمره یې ګوري:</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.SignLanguageTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.SignLanguageTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sign Language Tool</source>
         <note>ID: EditTab.Toolbox.SignLanguageTool</note>
-        <target xml:lang="pbu" state="needs-translation">Sign Language Tool</target>
+        <target xml:lang="pbu" state="final">د اشاروی ژبې ابزار</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.BadState" approved="yes">
         <source xml:lang="en">Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart.</source>
@@ -2936,11 +2967,11 @@
         <note>This is very low priority for translation.</note>
         <target xml:lang="pbu" state="final">د بلوم ریکارډول یو غیر معمولي حالت دی، امکلن یې شته چې د مایکروفون په لرې کولو سره منځ ته راغلی وي. تاسو بیا روښانه کولو ته اړتیا لرئ.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBook.MissingDependency">
+      <trans-unit id="EditTab.Toolbox.TalkingBook.MissingDependency" approved="yes">
         <source xml:lang="en">To split recordings into sentences, first install this {0} system.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.MissingDependency</note>
         <note>The placeholder {0} will be replaced with the dependency that needs to be installed.</note>
-        <target xml:lang="pbu" state="needs-translation">To split recordings into sentences, first install this {0} system.</target>
+        <target xml:lang="pbu" state="final">ثبت په جملو ویشلو لپاره، لومړی دا {0} سیسټم نصب کړئ.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoInput" approved="yes">
         <source xml:lang="en">No input device</source>
@@ -3001,43 +3032,52 @@
         <note>As in, "CLEAR" (or delete) the existing recording file.</note>
         <target xml:lang="pbu" state="final">ښکاره</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error" approved="yes">
         <source xml:lang="en">eSpeak failed.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
         <note>This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
-        <target xml:lang="pbu" state="needs-translation">eSpeak failed.</target>
+        <target xml:lang="pbu" state="final">eSpeak ناکام شو.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Listen to the whole page</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Listen</note>
         <target xml:lang="pbu" state="final">ټولې پاڼې ته غوږ ونیسئ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Import Recording</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
-        <target xml:lang="pbu" state="needs-translation">Import Recording</target>
+        <target xml:lang="pbu" state="final">د ثبت را واردول</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Replace with new audio?</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace</note>
-        <target xml:lang="pbu" state="needs-translation">Replace with new audio?</target>
+        <target xml:lang="pbu" state="final">د نوي آډیو سره یې بدل کړئ?</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
-        <target xml:lang="pbu" state="needs-translation">If you import this recording, it will replace all the audio for this text box.</target>
+        <target xml:lang="pbu" state="final">که تاسو دا ثبت وارد کړئ، نو دا به د دې متنې بکس لپاره ټوله آډیو بدله کړي.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true" approved="yes">
         <source xml:lang="en">2) Look at the highlighted text</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
         <note>Last used in version 4.4, deprecated in 4.5</note>
-        <target xml:lang="pbu" state="translated">2)په نښه شوي جملې ته وګورئ</target>
+        <target xml:lang="pbu" state="final">2) په نښه شوي متن ته وګورئ</target>
+        <alt-trans>
+          <target xml:lang="pbu">2) په نښه شوي جملې ته وګورئ</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">2)په نښه شوي جملې ته وګورئ</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Look at the highlighted text</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel</note>
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.LookAtSentence if possible, but without the number</note>
-        <target xml:lang="pbu" state="translated">په نښه شوي جملې ته وګورئ</target>
+        <target xml:lang="pbu" state="final">په نښه شوي متن ته وګورئ</target>
+        <alt-trans>
+          <target xml:lang="pbu">په نښه شوي جملې ته وګورئ</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true" approved="yes">
         <source xml:lang="en">5) Next</source>
@@ -3051,36 +3091,36 @@
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.Next if possible, but without the number</note>
         <target xml:lang="pbu" state="final">راتلونکی</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordBySentences" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Record by sentences</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordBySentences</note>
         <note>Deprecated in Bloom Version 4.5</note>
-        <target xml:lang="pbu" state="needs-translation">Record by sentences</target>
+        <target xml:lang="pbu" state="final">په جملو سره یې ثبت کړئ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordByTextBox" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordByTextBox" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Record by whole text box, then let Bloom split it into sentences later.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordByTextBox</note>
-        <target xml:lang="pbu" state="needs-translation">Record by whole text box, then let Bloom split it into sentences later.</target>
+        <target xml:lang="pbu" state="final">د ټول متنې بکس لپاره یې ثبت کړئ، بیا بلوم پرېږدئ چې وروسته یې په جملو ووېشي.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Please clear all existing recordings on this page before changing modes.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
         <note>Shown if you open TalkingBookTool, make a recording, and then attempt to toggle the "Record by Sentences" input (without first clearing the audio recordings you are about to lose)</note>
-        <target xml:lang="pbu" state="needs-translation">Please clear all existing recordings on this page before changing modes.</target>
+        <target xml:lang="pbu" state="final">مهرباني وکړئ د حالت بدلولو دمخه په دې پاڼه ټول موجود ثبتونه پاک کړئ.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
         <note>Shown if you open TalkingBookTool, enable "Record the whole text box...", make a recording, and then attempt to uncheck the "Record the whole text box..." input (without first clearing the audio recordings you are about to lose)</note>
         <note>For "split", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
         <note>For "clear", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
-        <target xml:lang="pbu" state="needs-translation">Please split or clear the existing recording in this text box before changing modes.</target>
+        <target xml:lang="pbu" state="final">مهرباني وکړئ د حالت بدلولو دمخه پدې متنې بکس کې موجود ثبت وویشئ یا یې پاک کړئ.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter</note>
         <note>Shown if you open TalkingBookTool and then attempt to toggle the "Record by Sentences" input on an XMatter page</note>
-        <target xml:lang="pbu" state="needs-translation">Sorry, front and back-matter pages must be recorded by sentences.</target>
+        <target xml:lang="pbu" state="final">بښنه غواړو، مخکني او شاتنې پاڼې باید د جملو په واسطه ثبت شي.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true" approved="yes">
         <source xml:lang="en">3) Speak</source>
@@ -3094,22 +3134,25 @@
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.Speak if possible, but without the number</note>
         <target xml:lang="pbu" state="final">خبرې وکړئ</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitError">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitError" approved="yes">
         <source xml:lang="en">Something went wrong while splitting the recording.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SplitError</note>
         <note>This text appears if an error occurs while perfoming automatic splitting of audio (an audio file corresponding to an entire text box will be split into multiple sections, one section per sentence).</note>
-        <target xml:lang="pbu" state="needs-translation">Something went wrong while splitting the recording.</target>
+        <target xml:lang="pbu" state="final">د ثبت ویشلو پر مهال یو څه غلط شؤ.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel" approved="yes">
         <source xml:lang="en">Split</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
         <note>This text appears on the button the user can press to trigger automatic splitting of audio. An audio file corresponding to an entire text box will be split into multiple audio files (one per sentence) instead. (Also known as "Forced Alignment" in technical terms)</note>
-        <target xml:lang="pbu" state="needs-translation">Split</target>
+        <target xml:lang="pbu" state="final">ووېشۍ</target>
+        <alt-trans>
+          <target xml:lang="pbu">ووېشې</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make an e-book that can play audio recordings while highlighting text.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
-        <target xml:lang="pbu" state="translated">داسې یو بریښانیي کتاب جوړ کړئ چې د جملو په نښه کولو وخت کې ریکارډونه وغږوي.</target>
+        <target xml:lang="pbu" state="final">داسې یو بریښانیي کتاب جوړ کړئ چې د جملو په نښه کولو وخت کې ریکارډونه وغږوي.</target>
       </trans-unit>
       <trans-unit id="EditTab.Trilingual" approved="yes">
         <source xml:lang="en">Three Languages</source>
@@ -3163,11 +3206,11 @@
         <note>ID: Errors.CouldNotSavePage</note>
         <target xml:lang="pbu" state="final">بلوم د يوې پاڼې په ساتلو کې ستونزه لري. د مهربانۍ له مخې په لاندې جزياتو کلېک وکړئ او موږ ته يې راپور راکړئ. ورپسې له بلوم څخه ووځئ او بيا ځلي يې ترسره کړئ. وګورئ چې اډېټ کړې پاڼه هرڅه له لاسه ورکوي که نه. په بښنې سره!</target>
       </trans-unit>
-      <trans-unit id="Errors.CurrentRunningVersion">
+      <trans-unit id="Errors.CurrentRunningVersion" approved="yes">
         <source xml:lang="en">You are running Bloom {0}</source>
         <note>ID: Errors.CurrentRunningVersion</note>
         <note>The placeholder {0} represents the current version of Bloom. For example, {0} might be replaced with "4.3"</note>
-        <target xml:lang="pbu" state="needs-translation">You are running Bloom {0}</target>
+        <target xml:lang="pbu" state="final">تاسو بلوم {0} روان کړي ده</target>
       </trans-unit>
       <trans-unit id="Errors.DefenderFolderProtection" approved="yes">
         <source xml:lang="en">This might be caused by Windows Defender "Controlled Folder Access" or some other virus protection.</source>
@@ -3189,11 +3232,11 @@
         <note>ID: Errors.DeniedAccess</note>
         <target xml:lang="pbu" state="final">ستاسو کمپیوټر د بلوم لاسرسی کتاب څخه رد کړ. تاسو په تنظیمونو کې تخنیکي مرستې ته اړتیا لرئ چې عملیاتي سیستم دې دوسیه ته اجازه ورکړي.</target>
       </trans-unit>
-      <trans-unit id="Errors.DownloadLatestVersion">
+      <trans-unit id="Errors.DownloadLatestVersion" approved="yes">
         <source xml:lang="en">Upgrade to the latest Bloom (requires Internet connection)</source>
         <note>ID: Errors.DownloadLatestVersion</note>
         <note>This is a link that will take them to the Downloads (Installers) web page</note>
-        <target xml:lang="pbu" state="needs-translation">Upgrade to the latest Bloom (requires Internet connection)</target>
+        <target xml:lang="pbu" state="final">وروستي بلوم ته لوړ(Upgrade) کړئ (د انټرنیټ پیوستون ته اړتیا ده)</target>
       </trans-unit>
       <trans-unit id="Errors.ErrorSelecting" approved="yes">
         <source xml:lang="en">There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
@@ -3213,25 +3256,25 @@
           <target xml:lang="pbu">د کتاب آپډیټولو کې ستونزه وه. د بلوم بیا روښانول ښایي ستونزه حل کړي. که ونشو، هیله ده چې د ‎'جزئیاتو‎'‏ تڼۍ کیکاږۍ او ستونزه د بلوم جوړونکو ته راپور کړئ.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Errors.FeatureRequiresNewerVersionPlural">
+      <trans-unit id="Errors.FeatureRequiresNewerVersionPlural" approved="yes">
         <source xml:lang="en">This book requires Bloom {0} or greater because it uses the following features:</source>
         <note>ID: Errors.FeatureRequiresNewerVersionPlural</note>
         <note>The placeholder {0} represents the required version of Bloom. For example, {0} might be replaced with "4.4"</note>
         <note>A bulleted list of features (in English) will follow underneath this text</note>
-        <target xml:lang="pbu" state="needs-translation">This book requires Bloom {0} or greater because it uses the following features:</target>
+        <target xml:lang="pbu" state="final">دا کتاب بلوم {0} یا له دی لوړ ته اړتیا لري ځکه چې دا لاندې برخې کاروي:</target>
       </trans-unit>
-      <trans-unit id="Errors.FeatureRequiresNewerVersionSingular">
+      <trans-unit id="Errors.FeatureRequiresNewerVersionSingular" approved="yes">
         <source xml:lang="en">This book requires Bloom {0} or greater because it uses the feature "{1}".</source>
         <note>ID: Errors.FeatureRequiresNewerVersionSingular</note>
         <note>The placeholder {0} represents the required version of Bloom. For example, {0} might be replaced with "4.4"</note>
         <note>The placeholder {1} represents a short description of the feature For example, {1} might be replaced with "Whole Text Audio"</note>
-        <target xml:lang="pbu" state="needs-translation">This book requires Bloom {0} or greater because it uses the feature "{1}".</target>
+        <target xml:lang="pbu" state="final">دا کتاب بلوم {0} یا له دی لوړ ته اړتیا لري ځکه چې دا د "{1}" برخه کاروي.</target>
       </trans-unit>
-      <trans-unit id="Errors.MultipleHtmlFiles">
+      <trans-unit id="Errors.MultipleHtmlFiles" approved="yes">
         <source xml:lang="en">Bloom book folders must have only one file ending in .htm.  In the book "{0}", these are the files ending in .htm:</source>
         <note>ID: Errors.MultipleHtmlFiles</note>
         <note>{0} will get the name of the book</note>
-        <target xml:lang="pbu" state="needs-translation">Bloom book folders must have only one file ending in .htm.  In the book "{0}", these are the files ending in .htm:</target>
+        <target xml:lang="pbu" state="final">د بلوم کتاب فولډرې باید یوازې یو فایل ولري چی په .htm. باندې پای ته رسي. په "{0}" کتاب کې، دا هغه فایلونه دي چې په .htm. کې پای ته رسیږي:</target>
       </trans-unit>
       <trans-unit id="Errors.NeedNewerVersion" approved="yes">
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}</source>
@@ -3246,10 +3289,10 @@
           <target xml:lang="pbu">{0}‏ د بلوم نوې نسخې ته اړتیا لري. د بلوم وروستۍ نسخه له ‎{1}‏ څخه ښکته کړئ.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Errors.NewVersionNeededHeader">
+      <trans-unit id="Errors.NewVersionNeededHeader" approved="yes">
         <source xml:lang="en">This book needs a new version of Bloom.</source>
         <note>ID: Errors.NewVersionNeededHeader</note>
-        <target xml:lang="pbu" state="needs-translation">This book needs a new version of Bloom.</target>
+        <target xml:lang="pbu" state="final">دا کتاب د بلوم نوې نسخې ته اړتیا لري.</target>
       </trans-unit>
       <trans-unit id="Errors.ProblemDeletingFile" approved="yes">
         <source xml:lang="en">Bloom had a problem deleting this file: {0}</source>
@@ -3267,16 +3310,16 @@
         <note>ID: Errors.ProblemImportingPicture</note>
         <target xml:lang="pbu" state="final">بلوم د دې انځور په واردولو کې ستونزه درلودله.</target>
       </trans-unit>
-      <trans-unit id="Errors.ProblemImportingVideo">
+      <trans-unit id="Errors.ProblemImportingVideo" approved="yes">
         <source xml:lang="en">Bloom had a problem importing this video.</source>
         <note>ID: Errors.ProblemImportingVideo</note>
-        <target xml:lang="pbu" state="needs-translation">Bloom had a problem importing this video.</target>
+        <target xml:lang="pbu" state="final">بلوم د دې ویډیو په واردولو کې ستونزه درلوده.</target>
       </trans-unit>
-      <trans-unit id="Errors.RemoveExcessHtml">
+      <trans-unit id="Errors.RemoveExcessHtml" approved="yes">
         <source xml:lang="en">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</source>
         <note>ID: Errors.RemoveExcessHtml</note>
         <note>This follows the Errors.MultipleHtmlFiles message and a list of HTML files.</note>
-        <target xml:lang="pbu" state="needs-translation">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</target>
+        <target xml:lang="pbu" state="final">مهرباني وکړئ ټولې یا هغه یو فایلونو لرې کړئ چې په .htm. باندي پای ته رسي. بلوم به اوس دا فولډر ستاسو لپاره خلاص کړي.</target>
       </trans-unit>
       <trans-unit id="Errors.ReportThisProblemButton" approved="yes">
         <source xml:lang="en">Report this problem to Bloom Support</source>
@@ -3430,17 +3473,20 @@
         <note>ID: InstallProblem.BloomPdfMaker</note>
         <target xml:lang="pbu" state="final">د بلوم یوه برخه، ‏BloomPdfMaker.exe‏، ورک معلومیږي. دا د ارزونې او چاپ کولو مخه نیسي. کله د انټيوایرس سافټ ویر داسې کوي. تاسې ښایې تخنیکي مرستې ته اړتیا ولرئ چې د بلوم نصب ول جوړ کړئ او دا فایل د بیا حذف کبدو څځه وساتئ.</target>
       </trans-unit>
-      <trans-unit id="LameEncoder.DeleteFailedShort">
+      <trans-unit id="LameEncoder.DeleteFailedShort" approved="yes">
         <source xml:lang="en">Cannot replace mp3 file. Check antivirus</source>
         <note>ID: LameEncoder.DeleteFailedShort</note>
         <note>short message for a popup toast notification</note>
-        <target xml:lang="pbu" state="needs-translation">Cannot replace mp3 file. Check antivirus</target>
+        <target xml:lang="pbu" state="final">د mp3 فایل نشي بدلولی. انټي ویروس وګورۍ</target>
       </trans-unit>
-      <trans-unit id="LameEncoder.DeleteFailedLong">
+      <trans-unit id="LameEncoder.DeleteFailedLong" approved="yes">
         <source xml:lang="en">Bloom could not replace an mp3 file. If this continues, check your antivirus.</source>
         <note>ID: LameEncoder.DeleteFailedLong</note>
         <note>longer message for a detailed description of the problem</note>
-        <target xml:lang="pbu" state="needs-translation">Bloom could not replace an mp3 file. If this continues, check your antivirus.</target>
+        <target xml:lang="pbu" state="final">بلوم دا mp3 فایل نشي بدلولی. که دا دوام ومومي، خپل انټي ویروس چیک کړئ.</target>
+        <alt-trans>
+          <target xml:lang="pbu">بلوم دا mp3 فایل نشي بدلولی. که دا دوام ومومي ، خپل انټي ویروس چیک کړئ.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LameEncoder.Progress" approved="yes">
         <source xml:lang="en"> Converting to mp3</source>
@@ -3549,10 +3595,13 @@
         <note>ID: LayoutChoices.Device16x9Portrait</note>
         <target xml:lang="pbu" state="final">د 16x9عمودی وسیله</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.HalfLetterLandscape" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.HalfLetterLandscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HalfLetterLandscape</source>
         <note>ID: LayoutChoices.HalfLetterLandscape</note>
-        <target xml:lang="pbu" state="needs-translation">HalfLetterLandscape</target>
+        <target xml:lang="pbu" state="final">افقی نیمه خط</target>
+        <alt-trans>
+          <target xml:lang="pbu">HalfLetterLandscape</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterPortrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HalfLetterPortrait</source>
@@ -3586,10 +3635,10 @@
           <target xml:lang="pbu">د څلورمې برخې (لنډ سکیپ)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="LayoutChoices.QuarterLetterPortrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.QuarterLetterPortrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">QuarterLetterPortrait</source>
         <note>ID: LayoutChoices.QuarterLetterPortrait</note>
-        <target xml:lang="pbu" state="needs-translation">QuarterLetterPortrait</target>
+        <target xml:lang="pbu" state="final">عمودی څلورمه برخه خط</target>
       </trans-unit>
       <trans-unit id="LicenseDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom {0}</source>
@@ -3865,17 +3914,17 @@
         <note>dialog title for license agreement</note>
         <target xml:lang="pbu" state="final">د Adobe رنګ پېژندڅېره د جواز تړون</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Common.Publishing">
+      <trans-unit id="PublishTab.Common.Publishing" approved="yes">
         <source xml:lang="en">Publishing</source>
         <note>This is shown while Bloom is sharing a book over wifi, over a usb cable, or uploading. </note>
         <note>ID: PublishTab.Common.Publishing</note>
-        <target xml:lang="pbu" state="needs-translation">Publishing</target>
+        <target xml:lang="pbu" state="final">خپرول</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Common.StopPublishing">
+      <trans-unit id="PublishTab.Common.StopPublishing" approved="yes">
         <source xml:lang="en">Stop Publishing</source>
         <note>This is shown while Bloom is sharing a book over wifi or over a usb cable. </note>
         <note>ID: PublishTab.Common.StopPublishing</note>
-        <target xml:lang="pbu" state="needs-translation">Stop Publishing</target>
+        <target xml:lang="pbu" state="final">خپرول بند کړئ</target>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled" approved="yes">
         <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
@@ -3892,57 +3941,65 @@
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
         <target xml:lang="pbu" state="final">بد خبر. بلوم ونتوانید چې ‏Adobe Reader واخلي او دلته یې ښکاره کړي، نو بلوم ستاسو مکمل شوی کتاب نشي ښکاره کولی.‏ \nهیله ده د ‏'Adobe Reader'‏ اوسني نسخه له نصبه وباسئ او بیرته ‏'Adobe Reader'‏ نصب کړئ.‏ \nتر څو چې هغه جوړ شي، تر هغه وخته تاسو ‏PDF‏ ثبت کولی شئ او په کوم بل پروګرام کې یې خلاصولی شئ.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sharing .bloomd Files</source>
         <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
         <note />
-        <target xml:lang="pbu" state="needs-translation">Sharing .bloomd Files</target>
+        <target xml:lang="pbu" state="final">د .bloomd فایلونو شریکول</target>
+        <alt-trans>
+          <target xml:lang="pbu">د .blomd فایلونو شریکول</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
         <note>ID: PublishTab.Android.BloomD.Hint</note>
         <note />
-        <target xml:lang="pbu" state="needs-translation">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</target>
+        <target xml:lang="pbu" state="final">تاسو کولی شئ د شریکولو اطلاقات لکه بریښنالیک ، ډراپ باکس ، او واټس ایپ وکاروئ ترڅو خپل .bloomd فایل یوه وسیله کی ترلاسه کړئ.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en"> USB is Difficult</source>
         <note>ID: PublishTab.Android.USB.Hint.Heading</note>
         <note />
-        <target xml:lang="pbu" state="needs-translation"> USB is Difficult</target>
+        <target xml:lang="pbu" state="final"> USB ستونزمن دی</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To Send via USB, you may need to get the right
                             cable, install phone drivers on your computer, or
                             modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note />
-        <target xml:lang="pbu" state="needs-translation">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</target>
+        <target xml:lang="pbu" state="final">د USB له لارې لیږلو لپاره، تاسو شاید اړتیا ولرئ چی سم
+                             کیبل ترلاسه کړئ، په خپل کمپیوټر کې د تلیفون ډرایور نصب کړئ ، یا
+                             په خپل تلیفون کې تنظیمات بدل کړئ.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No Wi-Fi Network?</source>
         <note>ID: PublishTab.Android.WiFi.Hint.Heading</note>
         <note />
-        <target xml:lang="pbu" state="needs-translation">No Wi-Fi Network?</target>
+        <target xml:lang="pbu" state="final">بی سیمه شبکه نشته?</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true" approved="yes">
         <source xml:lang="en">There are several ways to start a temporary one.</source>
         <note>ID: </note>
         <note>This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network.</note>
-        <target xml:lang="pbu" state="needs-translation">There are several ways to start a temporary one.</target>
+        <target xml:lang="pbu" state="final">د لنډمهاله پیل لپاره ډیری لارې شتون لري.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About Motion Books</source>
         <note>ID: PublishTab.Android.AboutMotionBooks</note>
         <note>Help link under Motion Book checkbox</note>
-        <target xml:lang="pbu" state="needs-translation">About Motion Books</target>
+        <target xml:lang="pbu" state="final">د حرکی کتابونو په اړه</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom Reader Bookshelf</source>
         <note>ID: PublishTab.Android.BookShelf</note>
         <note>A heading in the Publish to Android screen.</note>
-        <target xml:lang="pbu" state="needs-translation">Bloom Reader Bookshelf</target>
+        <target xml:lang="pbu" state="final">د بلوم ریډر له مخکی جوړ شوې کتاب</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.CantGetLicenseInfo" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">To publish this book, Bloom must check which languages the copyright owner has permitted, but Bloom is having trouble reaching the server that has this information.</source>
+        <note>ID: PublishTab.Android.CantGetLicenseInfo</note>
+        <target xml:lang="pbu" state="final">د دې کتاب خپرولو لپاره، بلوم باید دا وګوري چې کومې ژبې د کاپي حق له مالک نه اجازه لري، مګر بلوم سرور ته په رسیدو کې ستونزه لري چې دا معلومات پکی دي.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Save Bloom Reader File</source>
@@ -3952,62 +4009,77 @@
           <target xml:lang="pbu">د بلوم کتاب دسیه خوندي کول</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
         <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
         <note>Appears in portrait mode when Motion checkbox is checked</note>
-        <target xml:lang="pbu" state="needs-translation">Choose landscape to activate Motion Book mode</target>
+        <target xml:lang="pbu" state="final">د حرکی کتاب حالت فعالولو لپاره افقی بڼه غوره کړئ</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Send over USB Cable</source>
         <note>ID: PublishTab.Android.ChooseUSB</note>
         <target xml:lang="pbu" state="final">د USB کیبل له لاری یی ولېږئ</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseWifi" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.ChooseWifi" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Share over Wi-Fi</source>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-        <target xml:lang="pbu" state="translated">د Wifi شبکه کې لټون وکړئ</target>
+        <target xml:lang="pbu" state="final">د Wifi شبکې له لاری شریک کړئ</target>
+        <alt-trans>
+          <target xml:lang="pbu">د Wifi شبکه کې لټون وکړئ</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Control" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Control" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Send or Save</source>
         <note>ID: PublishTab.Android.Control</note>
         <note>This is the heading above various buttons that control the publishing of the book to Android.</note>
-        <target xml:lang="pbu" state="translated">کنترول</target>
+        <target xml:lang="pbu" state="final">ویلیږی یا ذخیره کرۍ</target>
+        <alt-trans>
+          <target xml:lang="pbu">کنترول</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Copy to Clipboard</source>
         <note>ID: PublishTab.Android.CopyToClipboard</note>
         <target xml:lang="pbu" state="final">کلپ بورډ ته کاپي</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Features" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Features" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Features</source>
         <note>ID: PublishTab.Android.Features</note>
         <note>The second heading in the Settings section, which shows a checklist of various features.</note>
-        <target xml:lang="pbu" state="needs-translation">Features</target>
+        <target xml:lang="pbu" state="final">امکانات (برخی)</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.UnlicensedLanguages" sil:dynamic="true">
+        <source xml:lang="en">The copyright holder of this book has not licensed it for publishing in {0}. Please contact the copyright holder to learn more about licensing.</source>
+        <note>ID: PublishTab.Android.UnlicensedLanguages</note>
+        <note>{0} will be a language name or a list of them</note>
+        <target xml:lang="pbu" state="translated">د دې کتاب کاپي حق لرونکی دا په {0} کې د خپرولو لپاره نه دی منلی. تاسو کولی شئ د دې سکرین په ښي خوا کې د چک بکسونو په کارولو سره ژبې غیر منتخب کړئ. د جواز ورکولو په اړه نور زده کړې لپاره مهرباني وکړئ د چاپ حق لرونکي سره اړیکه ونیسئ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
         <note>ID: PublishTab.Android.File.Progress.CheckFontOK</note>
         <note>{0} is a font name</note>
-        <target xml:lang="pbu" state="needs-translation">Checking {0} font: License OK for embedding.</target>
+        <target xml:lang="pbu" state="final">د {0} لیک بڼي کتل: دننه کیدو لپاره جواز سم دی.</target>
+        <alt-trans>
+          <target xml:lang="pbu">د {0} لیک بڼي کتل: د ننه کیدو لپاره جواز سم دی.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.Embedding" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.File.Progress.Embedding" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Embedding font {0} at a cost of {1} megs</source>
         <note>ID: PublishTab.Android.File.Progress.Embedding</note>
         <note>{1} is a number with one decimal place, the number of megabytes the font file takes up</note>
-        <target xml:lang="pbu" state="needs-translation">Embedding font {0} at a cost of {1} megs</target>
+        <target xml:lang="pbu" state="final">د {1} megs په ارزښت {0} لیکبڼه دننه کول</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
         <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
         <note>{0} is a font name</note>
-        <target xml:lang="pbu" state="needs-translation">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</target>
+        <target xml:lang="pbu" state="final">دا کتاب د \ "{0} \" په نوم په لیکبڼه کې متن لري. د \ "{0} \" لپاره جواز بلوم ته اجازه نه ورکوي چې په کتاب کې لیکبڼه دننه کړي.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
         <note>{0} is a font name</note>
-        <target xml:lang="pbu" state="needs-translation">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</target>
+        <target xml:lang="pbu" state="final">دا کتاب د \ "{0} \" په نوم په لیکبڼه کې متن لري، مګر بلوم ونه توانید چې په دې کمپیوټر کې دا لیکبڼه ومومي.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
@@ -4021,11 +4093,11 @@
         <note>{0} is a file path</note>
         <target xml:lang="pbu" state="final">د {0} په توګه خوندي کول</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
         <note>{0} is a font name</note>
-        <target xml:lang="pbu" state="needs-translation">Bloom will substitute \"{0}\" instead."</target>
+        <target xml:lang="pbu" state="final">بلوم به د دې پر ځای \ "{0} \" ځای په ځای کړي."</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Get Bloom Reader App</source>
@@ -4033,59 +4105,67 @@
         <note>Link to find Bloom Reader on Google Play Store</note>
         <target xml:lang="pbu" state="final">د بلوم کتاب کاریال ترلاسه کړئ</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
         <note>ID: PublishTab.Android.Intro</note>
         <note>This is displayed at the top of the Android screen.</note>
-        <target xml:lang="pbu" state="needs-translation">Send Your Book to the Bloom Reader Android App</target>
+        <target xml:lang="pbu" state="final">خپل کتاب د بلوم ریډر اندرواید کارندی ته واستوئ</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose how to send to device</source>
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
-        <target xml:lang="pbu" state="translated">د میتود انتخابونه</target>
+        <target xml:lang="pbu" state="final">د میتود انتخابونه</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Motion Book</source>
         <note>ID: PublishTab.Android.MotionBookMode</note>
         <note>Motion Book checkbox label</note>
-        <target xml:lang="pbu" state="needs-translation">Motion Book</target>
+        <target xml:lang="pbu" state="final">حرکی کتاب</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Preview" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Preview" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Preview</source>
         <note>ID: PublishTab.Android.Preview</note>
-        <target xml:lang="pbu" state="needs-translation">Preview</target>
+        <target xml:lang="pbu" state="final">مخلید</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Publish" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Publish" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Android.Publish</note>
-        <target xml:lang="pbu" state="needs-translation">Publish</target>
+        <target xml:lang="pbu" state="final">خپرول</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Creating" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Creating" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Creating Digital Book</source>
         <note>ID: PublishTab.Android.Creating</note>
-        <target xml:lang="pbu" state="needs-translation">Creating Digital Book</target>
+        <target xml:lang="pbu" state="final">د ډیجیټل کتاب جوړول</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.AboutBloomReader" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.AboutBloomReader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About Bloom Reader</source>
         <note>ID: PublishTab.Android.AboutBloomReader</note>
-        <target xml:lang="pbu" state="needs-translation">About Bloom Reader</target>
+        <target xml:lang="pbu" state="final">د بلوم ریدر په اړه</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.AboutBookFeatures" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.AboutBookFeatures" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About Book Features</source>
         <note>ID: PublishTab.Android.AboutBookFeatures</note>
-        <target xml:lang="pbu" state="needs-translation">About Book Features</target>
+        <target xml:lang="pbu" state="final">د کتاب د برخو په اړه</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: PublishTab.Android.Settings</note>
-        <target xml:lang="pbu" state="needs-translation">Settings</target>
+        <target xml:lang="pbu" state="final">امستنې (تنظیمات)</target>
+        <alt-trans>
+          <target xml:lang="pbu">تنظیمات</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Thumbnail" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.TextLanguages" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Text Languages</source>
+        <note>ID: PublishTab.Android.TextLanguages</note>
+        <target xml:lang="pbu" state="final">د متن ژبې</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.Thumbnail" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Thumbnail</source>
         <note>ID: PublishTab.Android.Thumbnail</note>
         <note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
-        <target xml:lang="pbu" state="needs-translation">Thumbnail</target>
+        <target xml:lang="pbu" state="final">وړوکی انځور</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Troubleshooting" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Troubleshooting Tips</source>
@@ -4104,11 +4184,11 @@
         <note>{0} is a the name of the device Bloom connected to</note>
         <target xml:lang="pbu" state="final">د USB له لارې {0} سره نښلول...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceOutOfMemory" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceOutOfMemory" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The device reported that it does not have enough space for this book. The book is {0} MB.</source>
         <note>ID: PublishTab.Android.Usb.Progress.DeviceOutOfMemory</note>
         <note>{0} is the size of the book that Bloom is trying to copy over to the Android device.</note>
-        <target xml:lang="pbu" state="needs-translation">The device reported that it does not have enough space for this book. The book is {0} MB.</target>
+        <target xml:lang="pbu" state="final">وسیله راپور ورکړ چې دا د دې کتاب لپاره کافي ځای نلري. کتاب {0} MB دی.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>
@@ -4209,10 +4289,16 @@
         <note>ID: PublishTab.Android.Wifi.Progress.Stopped</note>
         <target xml:lang="pbu" state="final">اعلانول بند شول.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions1" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions1</note>
-        <target xml:lang="pbu" state="translated">په Android کې، بلوم کتاب وچلوي، مینو پرانیزئ او د 'Wifi له لاری کتابونه ترلاسه کړئ' خوښ کړئ.</target>
+        <target xml:lang="pbu" state="final">په Android کې، بلوم ریډر وچلوي، مینو پرانیزئ او د 'کامپیوټر له لاری کتابونه ترلاسه کړئ' خوښ کړئ.</target>
+        <alt-trans>
+          <target xml:lang="pbu">په Android کې، بلوم کتاب وچلوي، مینو پرانیزئ او د 'کامپیوټر له لاری کتابونه ترلاسه کړئ' خوښ کړئ.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pbu">په Android کې، بلوم کتاب وچلوي، مینو پرانیزئ او د 'Wifi له لاری کتابونه ترلاسه کړئ' خوښ کړئ.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</source>
@@ -4224,11 +4310,14 @@
         <note>ID: PublishTab.Android.Wifi.Progress.beginAdvertising</note>
         <target xml:lang="pbu" state="final">په محلي شبکه کې بلوم کتاب لپاره د اعلاناتو کتاب...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Start" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.Wifi.Start" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Share</source>
         <note>ID: PublishTab.Android.Wifi.Start</note>
         <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
-        <target xml:lang="pbu" state="translated">لټون پیلول</target>
+        <target xml:lang="pbu" state="final">شریکول</target>
+        <alt-trans>
+          <target xml:lang="pbu">لټون پیلول</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WrongLayout.Message" approved="yes">
         <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
@@ -4242,21 +4331,24 @@
         <note>This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App</note>
         <target xml:lang="pbu" state="final">د وسیلو لپاره بلوم کتاب</target>
       </trans-unit>
-      <trans-unit id="PublishTab.AndroidButton">
+      <trans-unit id="PublishTab.AndroidButton" approved="yes">
         <source xml:lang="en">Bloom Reader</source>
         <note>ID: PublishTab.AndroidButton</note>
-        <target xml:lang="pbu" state="translated">انډرویډ</target>
+        <target xml:lang="pbu" state="final">د بلوم لوستونکی</target>
+        <alt-trans>
+          <target xml:lang="pbu">انډرویډ</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Publish to an Android device.</source>
         <note>ID: PublishTab.AndroidButton-tooltip</note>
         <target xml:lang="pbu" state="final">د Android وسیلو ته یی خپور کړئ.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Audio.ElementsMissingId">
+      <trans-unit id="PublishTab.Audio.ElementsMissingId" approved="yes">
         <source xml:lang="en">Some audio elements are missing ids</source>
         <note>ID: PublishTab.Audio.ElementsMissingId</note>
         <note>Message briefly displayed to the user in a toast</note>
-        <target xml:lang="pbu" state="needs-translation">Some audio elements are missing ids</target>
+        <target xml:lang="pbu" state="final">د ځینو آډیو عناصرو پيژندنه ورکه ده</target>
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio" approved="yes">
         <source xml:lang="en">Booklet Insides</source>
@@ -4275,11 +4367,11 @@
           <target xml:lang="pbu">د کتاب دننۍ پاڼو څخه وړوکی کتاب جوړ کړئ. پاڼې به بهر وي او د تاوولو په وخت کې له سره تنظیم کیدای شي، تاسو به وړوکی کتاب لرئ.‏ \n</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.BookMetadata">
+      <trans-unit id="PublishTab.BookMetadata" approved="yes">
         <source xml:lang="en">Book Metadata</source>
         <note>ID: PublishTab.BookMetadata</note>
         <note>This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics.</note>
-        <target xml:lang="pbu" state="needs-translation">Book Metadata</target>
+        <target xml:lang="pbu" state="final">د کتاب خام معلومات</target>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm" approved="yes">
         <source xml:lang="en">Share on the Web</source>
@@ -4302,112 +4394,127 @@
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
         <target xml:lang="pbu" state="final">یواځې د مخ او شا (دواړو خواوو) ‏PDF‏ جوړ کړئ، تر څو یې تاسو په رنګه پاڼه چاپ کړی شئ.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.BackLinkLabel">
+      <trans-unit id="PublishTab.Epub.BackLinkLabel" approved="yes">
         <source xml:lang="en">Back</source>
         <note>ID: PublishTab.Epub.BackLinkLabel</note>
         <note>Used in Epubs as the text of a link that leads from the image description back to the main page</note>
-        <target xml:lang="pbu" state="needs-translation">Back</target>
+        <target xml:lang="pbu" state="final">شاته</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.Accessible.MainContent">
+      <trans-unit id="PublishTab.Epub.Accessible.MainContent" approved="yes">
         <source xml:lang="en">Main Content</source>
         <note>ID: PublishTab.Epub.Accessible.MainContent</note>
-        <target xml:lang="pbu" state="needs-translation">Main Content</target>
+        <target xml:lang="pbu" state="final">اصلي منځپانګه</target>
+        <alt-trans>
+          <target xml:lang="pbu">اصلي مینځپانګه</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.Accessibility">
+      <trans-unit id="PublishTab.Epub.Accessibility" approved="yes">
         <source xml:lang="en">Accessibility</source>
         <note>ID: PublishTab.Epub.Accessibility</note>
         <note>Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc.</note>
-        <target xml:lang="pbu" state="needs-translation">Accessibility</target>
+        <target xml:lang="pbu" state="final">لاسرسی</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.BuildingEPub">
+      <trans-unit id="PublishTab.Epub.BuildingEPub" approved="yes">
         <source xml:lang="en">Building ePUB</source>
         <note>ID: PublishTab.Epub.BuildingEPub</note>
         <note>Shown in a progress box when Bloom is starting to create an ePUB</note>
-        <target xml:lang="pbu" state="needs-translation">Building ePUB</target>
+        <target xml:lang="pbu" state="final">د ePUB جوړول</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.Creating">
+      <trans-unit id="PublishTab.Epub.Creating" approved="yes">
         <source xml:lang="en">Creating ePUB...</source>
         <note>ID: PublishTab.Epub.Creating</note>
-        <target xml:lang="pbu" state="needs-translation">Creating ePUB...</target>
+        <target xml:lang="pbu" state="final">د ePUB جوړول...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.Done">
+      <trans-unit id="PublishTab.Epub.Done" approved="yes">
         <source xml:lang="en">Done</source>
         <note>ID: PublishTab.Epub.Done</note>
-        <target xml:lang="pbu" state="needs-translation">Done</target>
+        <target xml:lang="pbu" state="final">وشو</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.Help.AboutEpubs">
+      <trans-unit id="PublishTab.Epub.Help.AboutEpubs" approved="yes">
         <source xml:lang="en">About ePUBs</source>
         <note>ID: PublishTab.Epub.Help.AboutEpubs</note>
-        <target xml:lang="pbu" state="needs-translation">About ePUBs</target>
+        <target xml:lang="pbu" state="final">د ePUBs په اړه</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.Help.EReaders">
+      <trans-unit id="PublishTab.Epub.Help.EReaders" approved="yes">
         <source xml:lang="en">Compatible ePUB Readers</source>
         <note>ID: PublishTab.Epub.Help.EReaders</note>
-        <target xml:lang="pbu" state="needs-translation">Compatible ePUB Readers</target>
+        <target xml:lang="pbu" state="final">متوافق ePUB Readers</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.Help.Publishing">
+      <trans-unit id="PublishTab.Epub.Help.Publishing" approved="yes">
         <source xml:lang="en">Getting ePUBs onto a device</source>
         <note>ID: PublishTab.Epub.Help.Publishing</note>
-        <target xml:lang="pbu" state="needs-translation">Getting ePUBs onto a device</target>
+        <target xml:lang="pbu" state="final">په یوه وسیله د ePUBs ترلاسه کول</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.ImageDescriptionLinkLabel">
+      <trans-unit id="PublishTab.Epub.ImageDescriptionLinkLabel" approved="yes">
         <source xml:lang="en">Image Description</source>
         <note>ID: PublishTab.Epub.ImageDescriptionLinkLabel</note>
         <note>Used in Epubs as the text of a link that leads to the description of an image</note>
-        <target xml:lang="pbu" state="needs-translation">Image Description</target>
+        <target xml:lang="pbu" state="final">د انځور تشریح</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.IncludeOnPage">
+      <trans-unit id="PublishTab.Epub.IncludeOnPage" approved="yes">
         <source xml:lang="en">Include image descriptions on page</source>
         <note>ID: PublishTab.Epub.IncludeOnPage</note>
-        <target xml:lang="pbu" state="needs-translation">Include image descriptions on page</target>
+        <target xml:lang="pbu" state="final">په پاڼه کې د انځور تشریح شامل کړئ</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.NoAudioDescriptions">
+      <trans-unit id="PublishTab.Epub.NoAudioDescriptions" approved="yes">
         <source xml:lang="en">No recorded audio image descriptions</source>
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
-        <target xml:lang="pbu" state="needs-translation">No recorded audio image descriptions</target>
+        <target xml:lang="pbu" state="final">د ثبت شوي آډیو عکس توضیحات نلري</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.OmittedPages">
+      <trans-unit id="PublishTab.Epub.NoComicSupport">
+        <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.</source>
+        <note>ID: PublishTab.Epub.NoComicSupport</note>
+        <note>The {0} will be replaced with the page number (or name of page). For example, it might be replaced by "1" or "Front Cover"</note>
+        <target xml:lang="pbu" state="needs-translation">Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.OmittedPages" approved="yes">
         <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
         <note>ID: PublishTab.Epub.OmittedPages</note>
         <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
-        <target xml:lang="pbu" state="needs-translation">The following pages were removed because they are not supported in ePUBs:</target>
+        <target xml:lang="pbu" state="final">لاندې پاڼې لرې شوې ځکه چې دا په ePUBs کې ملاتړ نلري:</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.PageLabel.Content">
+      <trans-unit id="PublishTab.Epub.PageLabel.Content" approved="yes">
         <source xml:lang="en">Content</source>
         <note>ID: PublishTab.Epub.PageLabel.Content</note>
         <note>label for the book content in the ePUB's Table of Contents</note>
-        <target xml:lang="pbu" state="needs-translation">Content</target>
+        <target xml:lang="pbu" state="final">منځپانګه</target>
+        <alt-trans>
+          <target xml:lang="pbu">مینځپانګه</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.PreparingDoc">
+      <trans-unit id="PublishTab.Epub.PreparingDoc" approved="yes">
         <source xml:lang="en">Preparing document</source>
         <note>ID: PublishTab.Epub.PreparingDoc</note>
-        <target xml:lang="pbu" state="needs-translation">Preparing document</target>
+        <target xml:lang="pbu" state="final">د سند چمتو کول</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.PreparingPreview">
+      <trans-unit id="PublishTab.Epub.PreparingPreview" approved="yes">
         <source xml:lang="en">Preparing Preview</source>
         <note>ID: PublishTab.Epub.PreparingPreview</note>
-        <target xml:lang="pbu" state="needs-translation">Preparing Preview</target>
+        <target xml:lang="pbu" state="final">د مخکتنې چمتو کول</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.ReadiumCredit">
+      <trans-unit id="PublishTab.Epub.ReadiumCredit" approved="yes">
         <source xml:lang="en">This ePUB preview is provided by [Readium]. This book may render differently in various ePUB readers.</source>
         <note>ID: PublishTab.Epub.ReadiumCredit</note>
         <note>[Readium] should be left untranslated as a noun.  It will be changed into an HTML link to the Readium web page (https://readium.org/).  If the term "Readium" has been translated on a translated version of that web page, then the translated term may be substituted within the square brackets.  (Be sure to keep the square brackets [] around Readium or its translation!)</note>
-        <target xml:lang="pbu" state="needs-translation">This ePUB preview is provided by [Readium]. This book may render differently in various ePUB readers.</target>
+        <target xml:lang="pbu" state="final">دا ePUB مخلید د [Readium] لخوا چمتو شوی. دا کتاب ممکن په مختلف ePUB ریډرو کې په مختلف ډول وړاندې کړي.</target>
+        <alt-trans>
+          <target xml:lang="pbu">دا ePUB مخلید د [Readium] لخوا چمتو شوی. دا کتاب ممکن په مختلف ePUB ریدرو کې په مختلف ډول وړاندې کړي.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.RemoveFontSizes">
+      <trans-unit id="PublishTab.Epub.RemoveFontSizes" approved="yes">
         <source xml:lang="en">Use ePUB reader's text size</source>
         <note>ID: PublishTab.Epub.RemoveFontSizes</note>
-        <target xml:lang="pbu" state="needs-translation">Use ePUB reader's text size</target>
+        <target xml:lang="pbu" state="final">د ePUB لوستونکي خط اندازه وکاروئ</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.Saving">
+      <trans-unit id="PublishTab.Epub.Saving" approved="yes">
         <source xml:lang="en">Saving</source>
         <note>ID: PublishTab.Epub.Saving</note>
-        <target xml:lang="pbu" state="needs-translation">Saving</target>
+        <target xml:lang="pbu" state="final">خوندي کول</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.Title">
+      <trans-unit id="PublishTab.Epub.Title" approved="yes">
         <source xml:lang="en">Create an ePUB book</source>
         <note>ID: PublishTab.Epub.Title</note>
-        <target xml:lang="pbu" state="needs-translation">Create an ePUB book</target>
+        <target xml:lang="pbu" state="final">د ePUB کتاب جوړ کړئ</target>
       </trans-unit>
       <trans-unit id="PublishTab.EpubButton" approved="yes">
         <source xml:lang="en">ePUB</source>
@@ -4436,11 +4543,14 @@
         <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
         <target xml:lang="pbu" state="final">لږ حافظه وکاروئ (ورو)</target>
       </trans-unit>
-      <trans-unit id="PublishTab.NoBookletsMessage">
+      <trans-unit id="PublishTab.NoBookletsMessage" approved="yes">
         <source xml:lang="en">Bloom cannot make booklets using the current page size.</source>
         <note>ID: PublishTab.NoBookletsMessage</note>
         <note>If a book has a paper size that is too big (like A4), Bloom does not know how to make booklets with it. So the controls for booklets get disabled and this message is shown.</note>
-        <target xml:lang="pbu" state="needs-translation">Bloom cannot make booklets using the current page size.</target>
+        <target xml:lang="pbu" state="final">بلوم د اوسني پاڼې کچې په کارولو سره وړوکي کتاب نشي جوړولی.</target>
+        <alt-trans>
+          <target xml:lang="pbu">بلوم د اوسني پاڼې کچې په کارولو سره وړکي کتاب نشي جوړولی.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation" approved="yes">
         <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
@@ -4469,11 +4579,11 @@
         <note>menu header in the Publish tab</note>
         <target xml:lang="pbu" state="final">انتخابونه</target>
       </trans-unit>
-      <trans-unit id="PublishTab.OptionsMenu.SizeLayout">
+      <trans-unit id="PublishTab.OptionsMenu.SizeLayout" approved="yes">
         <source xml:lang="en">Size/Orientation</source>
         <note>ID: PublishTab.OptionsMenu.SizeLayout</note>
         <note>Header for a region of the menu which lists various standard page sizes and orientations</note>
-        <target xml:lang="pbu" state="translated">اندازه / بڼه</target>
+        <target xml:lang="pbu" state="final">اندازه / بڼه</target>
       </trans-unit>
       <trans-unit id="PublishTab.Options_ToolTip_" approved="yes">
         <source xml:lang="en">Choose a page size and orientation</source>
@@ -4496,10 +4606,10 @@
         <note>ID: PublishTab.PdfMaker.BadPdf</note>
         <target xml:lang="pbu" state="final">بلوم د دې کتاب ‏PDF‏ جوړولو کې ستونزه درلوده. تاسو ښایي تخنیکي مرستې ته اړتیا ولرئ او یا د بلوم جوړونکو سره په اړیکه کې شئ. خو دلته ځینې شیان دئ چې تاسو کولی شئ هڅه وکړئ:</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.BadPdfShort">
+      <trans-unit id="PublishTab.PdfMaker.BadPdfShort" approved="yes">
         <source xml:lang="en">Bloom had a problem making a PDF of this book.</source>
         <note>ID: PublishTab.PdfMaker.BadPdfShort</note>
-        <target xml:lang="pbu" state="needs-translation">Bloom had a problem making a PDF of this book.</target>
+        <target xml:lang="pbu" state="final">بلوم د دې کتاب د پی ډي ایف په جوړولو کې ستونزه درلوده.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Compress" approved="yes">
         <source xml:lang="en">Compressing PDF</source>
@@ -4562,11 +4672,11 @@
         <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
         <target xml:lang="pbu" state="final">د PDF د صفحې {0} جوړول</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.OutOfMemory">
+      <trans-unit id="PublishTab.PdfMaker.OutOfMemory" approved="yes">
         <source xml:lang="en">Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.</source>
         <note>ID: PublishTab.PdfMaker.OutOfMemory</note>
         <note>{0} and {1} are HTML link markup.  You can think of them as fancy quotation marks.</note>
-        <target xml:lang="pbu" state="needs-translation">Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.</target>
+        <target xml:lang="pbu" state="final">د PDF جوړولو پر مهال بلوم د حافظې له کموالی سره مخ شو. د ځینې وړاندیزونو لپاره دا {0} مقاله {1} وګورئ.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2" approved="yes">
         <source xml:lang="en">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</source>
@@ -4645,16 +4755,16 @@
         <note>ID: PublishTab.SaveEpub</note>
         <target xml:lang="pbu" state="final">&amp;‏ePUB‏ ثبت کړئ...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.AccesibleToVisuallyImpaired">
+      <trans-unit id="PublishTab.Upload.AccesibleToVisuallyImpaired" approved="yes">
         <source xml:lang="en">Accessible to the Visually Impaired</source>
         <note>ID: PublishTab.Upload.AccesibleToVisuallyImpaired</note>
         <note>last used in Bloom 4.4</note>
-        <target xml:lang="pbu" state="needs-translation">Accessible to the Visually Impaired</target>
+        <target xml:lang="pbu" state="final">د لید معلولیت لرونکی ته د لاسرسي وړ</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.AccessibleToBlind">
+      <trans-unit id="PublishTab.Upload.AccessibleToBlind" approved="yes">
         <source xml:lang="en">Accessible to the Blind</source>
         <note>ID: PublishTab.Upload.AccessibleToBlind</note>
-        <target xml:lang="pbu" state="needs-translation">Accessible to the Blind</target>
+        <target xml:lang="pbu" state="final">ړوندو ته د لاسرسی وړ</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Acknowledgments" approved="yes">
         <source xml:lang="en">Acknowledgments</source>
@@ -4671,10 +4781,10 @@
         <note>ID: PublishTab.Upload.AllReserved</note>
         <target xml:lang="pbu" state="final">ټول حقوق خوندي دي (د هرې اجازې لپاره د کاپي حق لرونکی سره اړیکه ونیسئ)</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.BackgroundMusic">
+      <trans-unit id="PublishTab.Upload.BackgroundMusic" approved="yes">
         <source xml:lang="en">Background Music</source>
         <note>ID: PublishTab.Upload.BackgroundMusic</note>
-        <target xml:lang="pbu" state="needs-translation">Background Music</target>
+        <target xml:lang="pbu" state="final">شاته میوزیک</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Cancelled" approved="yes">
         <source xml:lang="en">Upload was cancelled</source>
@@ -4686,10 +4796,10 @@
         <note>ID: PublishTab.Upload.CcLink</note>
         <target xml:lang="pbu" state="final">CC-BY-NC</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
+      <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning" approved="yes">
         <source xml:lang="en">Please choose the sign language for this book</source>
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
-        <target xml:lang="pbu" state="needs-translation">Please choose the sign language for this book</target>
+        <target xml:lang="pbu" state="final">مهرباني وکړئ د دې کتاب لپاره د اشارو ژبه غوره کړئ</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting" approved="yes">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
@@ -4718,10 +4828,10 @@
           <target xml:lang="pbu">بښنه غواړو،د ‎{0}‏ پورته کولو کې ستونزه وه. ځینې جزئیات لاندې دي. تاسو ښایي تخنیکي مرستې ته اړتیا ولرئ.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Features">
+      <trans-unit id="PublishTab.Upload.Features" approved="yes">
         <source xml:lang="en">Features</source>
         <note>ID: PublishTab.Upload.Features</note>
-        <target xml:lang="pbu" state="needs-translation">Features</target>
+        <target xml:lang="pbu" state="final">برخی</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.FieldsNeedAttention" approved="yes">
         <source xml:lang="en">One or more fields above need your attention before uploading.</source>
@@ -4881,10 +4991,10 @@
         <note>ID: PublishTab.Upload.MakingThumbnail</note>
         <target xml:lang="pbu" state="final">د‏ ‏کوچني انځور جوړول...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Narration">
+      <trans-unit id="PublishTab.Upload.Narration" approved="yes">
         <source xml:lang="en">Narration</source>
         <note>ID: PublishTab.Upload.Narration</note>
-        <target xml:lang="pbu" state="needs-translation">Narration</target>
+        <target xml:lang="pbu" state="final">بیان</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.NoLangsFound" approved="yes">
         <source xml:lang="en">(None found)</source>
@@ -4907,15 +5017,15 @@
         <note>This shows next to the license, if the license has not yet been set.</note>
         <target xml:lang="pbu" state="final">هیله ده دا د ایډیټ له ټب څخه چمتو کړئ</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
+      <trans-unit id="PublishTab.Upload.SetSignLanguageLink" approved="yes">
         <source xml:lang="en">Set Sign Language...</source>
         <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
-        <target xml:lang="pbu" state="needs-translation">Set Sign Language...</target>
+        <target xml:lang="pbu" state="final">د اشارو ژبه ټاکل...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SignLanguage">
+      <trans-unit id="PublishTab.Upload.SignLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
         <note>ID: PublishTab.Upload.SignLanguage</note>
-        <target xml:lang="pbu" state="needs-translation">Sign Language</target>
+        <target xml:lang="pbu" state="final">د اشارو ژبه</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignupLink" approved="yes">
         <source xml:lang="en">Sign up for BloomLibrary.org</source>
@@ -4975,10 +5085,10 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.Upload.Title</note>
         <target xml:lang="pbu" state="final">عنوان</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadAudio">
+      <trans-unit id="PublishTab.Upload.UploadAudio" approved="yes">
         <source xml:lang="en">Upload Audio</source>
         <note>ID: PublishTab.Upload.UploadAudio</note>
-        <target xml:lang="pbu" state="needs-translation">Upload Audio</target>
+        <target xml:lang="pbu" state="final">آډیو پورته کړئ</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadButton" approved="yes">
         <source xml:lang="en">Upload Book</source>
@@ -5020,11 +5130,11 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
         <target xml:lang="pbu" state="final">د پورته کولو په حال کی {0}</target>
       </trans-unit>
-      <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true">
+      <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Check Your Understanding</source>
         <note>ID: Quiz.CheckYourUnderstanding</note>
         <note>This string is intentionally duplicated in Bloom Reader's translation file</note>
-        <target xml:lang="pbu" state="needs-translation">Check Your Understanding</target>
+        <target xml:lang="pbu" state="final">خپله پوهه وګوره</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Level</source>
@@ -5137,10 +5247,10 @@ Do you want to go ahead?</note>
         <note>ID: ReaderSetup.Letters.LetterHelp4</note>
         <target xml:lang="pbu" state="final">.</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Letters.LetterHelp5" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Letters.LetterHelp5" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Do not include punctuation in this list. Bloom does not support the inclusion of punctuation in decodable stages.</source>
         <note>ID: ReaderSetup.Letters.LetterHelp5</note>
-        <target xml:lang="pbu" state="needs-translation">Do not include punctuation in this list. Bloom does not support the inclusion of punctuation in decodable stages.</target>
+        <target xml:lang="pbu" state="final">په دغه لیست کې لیک نښي ایښودل شامل نه کړئ. بلوم د اختلال وړ مرحلو کې د لیک نښو ایښودو ملاتړ نه کوي.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level</source>
@@ -5267,10 +5377,10 @@ Do you want to go ahead?</note>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
         <target xml:lang="pbu" state="final">اعظمي کلیمې په هره جمله کې</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="pbu" state="needs-translation">Special Sentence-Ending Punctuation</target>
+        <target xml:lang="pbu" state="final">د ځانګړې جمله بندې - پای لیک نیښې</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
@@ -5377,20 +5487,20 @@ Do you want to go ahead?</note>
           <target xml:lang="pbu">اضاف پر دې، دا د بلوم کڅوړه به ستاسو وروستي د تجزیه (هجي) کېدو وړ او د زده کوونکو له سویې سره برابر کتاب تنظیمونه د \"{0}"\‏ ژبې لپاره په یاد ولري. هر څوک چې دا د بلوم کڅوړه خلاصوي، او بیا د \"{0}"\‏ ټولګه خلاصوي، اوسني د تجزیه (هجي) کېدو وړ او د زده کوونکو له سویې سره برابر کتاب تنظیمونه به یې د بلوم کڅوړې په تنظیمونوبدل شي. هغوی به د اوسني کلیمو سیټ هم د زده کوونکو له سویې سره برابر کتاب لپاره واخلي.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderTemplateBloomPackDialog.HelpButtonLabel">
+      <trans-unit id="ReaderTemplateBloomPackDialog.HelpButtonLabel" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: ReaderTemplateBloomPackDialog.HelpButtonLabel</note>
-        <target xml:lang="pbu" state="needs-translation">Help</target>
+        <target xml:lang="pbu" state="final">مرسته</target>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.IntroLabel" approved="yes">
         <source xml:lang="en">The following books will be made into templates:</source>
         <note>ID: ReaderTemplateBloomPackDialog.IntroLabel</note>
         <target xml:lang="pbu" state="final">لاندني کتابونه به په نمونو کې جوړ شي:</target>
       </trans-unit>
-      <trans-unit id="ReaderTemplateBloomPackDialog.IUnderstandCheckboxLabel">
+      <trans-unit id="ReaderTemplateBloomPackDialog.IUnderstandCheckboxLabel" approved="yes">
         <source xml:lang="en">I understand what a template is and this is really what I want to do</source>
         <note>ID: ReaderTemplateBloomPackDialog.IUnderstandCheckboxLabel</note>
-        <target xml:lang="pbu" state="needs-translation">I understand what a template is and this is really what I want to do</target>
+        <target xml:lang="pbu" state="final">زه پوهیږم چې نمونه څه شی دی او دا واقعیا هغه څه دي چې زه یې غواړم وکړم</target>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton" approved="yes">
         <source xml:lang="en">Save Bloom Pack</source>
@@ -5470,10 +5580,33 @@ Do you want to go ahead?</note>
         <note>ID: ReportProblemDialog.CouldNotSendToServer</note>
         <target xml:lang="pbu" state="final">بلوم ونتوانید چې ستاسې راپور مستقیم زموږ سایټ ته وسپاري. هیله ده بیا کوښښ وکړئ یا بریښنالیک واستوئ {0} دی ته {1}.</target>
       </trans-unit>
+      <trans-unit id="ReportProblemDialog.DiagnosticReportIntro" approved="yes">
+        <source xml:lang="en">Bloom will include the following diagnostic information with your report:</source>
+        <note>ID: ReportProblemDialog.DiagnosticReportIntro</note>
+        <target xml:lang="pbu" state="final">بلوم به ستاسو د راپور سره لاندې تشخیصي معلومات ولري:</target>
+      </trans-unit>
       <trans-unit id="ReportProblemDialog.Email" approved="yes">
         <source xml:lang="en">Email</source>
         <note>ID: ReportProblemDialog.Email</note>
         <target xml:lang="pbu" state="final">بریښنالیک</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.FatalTitle" approved="yes">
+        <source xml:lang="en">Bloom encountered an error and needs to quit</source>
+        <note>ID: ReportProblemDialog.FatalTitle</note>
+        <note>The title of the dialog after a Fatal error will cause Bloom to close.</note>
+        <target xml:lang="pbu" state="final">بلوم د تیروتنې سره مخ شو او پریښودو ته اړتیا لري</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.FirstTime" approved="yes">
+        <source xml:lang="en">First Time</source>
+        <note>ID: ReportProblemDialog.FirstTime</note>
+        <note>The begin point label for the frequency slider.</note>
+        <target xml:lang="pbu" state="final">لومړی ځل</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.HowMuch" approved="yes">
+        <source xml:lang="en">How much has this happened?</source>
+        <note>ID: ReportProblemDialog.HowMuch</note>
+        <note>The label above the frequency slider.</note>
+        <target xml:lang="pbu" state="final">دا څومره پیښ شوي دي?</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.IncludeBookButton" approved="yes">
         <source xml:lang="en">Include Book '{0}'</source>
@@ -5485,10 +5618,50 @@ Do you want to go ahead?</note>
         <note>ID: ReportProblemDialog.IncludeScreenshotButton</note>
         <target xml:lang="pbu" state="final">د پردي دا انځور شامل کړئ</target>
       </trans-unit>
+      <trans-unit id="ReportProblemDialog.IssueLink" approved="yes">
+        <source xml:lang="en">This issue can be viewed here:</source>
+        <note>ID: ReportProblemDialog.IssueLink</note>
+        <note>This label is displayed before a link to the issue after it is created.</note>
+        <target xml:lang="pbu" state="final">دا مسله دلته لیدلی شئ:</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.ItKeepsHappening" approved="yes">
+        <source xml:lang="en">It keeps happening</source>
+        <note>ID: ReportProblemDialog.ItKeepsHappening</note>
+        <note>The end point label for the frequency slider.</note>
+        <target xml:lang="pbu" state="final">دا پیښیږي</target>
+      </trans-unit>
       <trans-unit id="ReportProblemDialog.Name" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: ReportProblemDialog.Name</note>
         <target xml:lang="pbu" state="final">نوم</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.NonFatalTitle" approved="yes">
+        <source xml:lang="en">Bloom had a problem</source>
+        <note>ID: ReportProblemDialog.NonFatalTitle</note>
+        <note>The title of the dialog caused by a NonFatal error.</note>
+        <target xml:lang="pbu" state="final">بلوم ستونزه درلوده</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.PleaseHelpUs" approved="yes">
+        <source xml:lang="en">Please help us reproduce this problem on our computers.</source>
+        <note>ID: ReportProblemDialog.PleaseHelpUs</note>
+        <target xml:lang="pbu" state="final">مهرباني وکړئ موږ سره مرسته وکړئ چې دا ستونزه زموږ په کمپیوټر کې بیا تولید کړي.</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.PrivacyInfo" approved="yes">
+        <source xml:lang="en">Your report will go into our issue tracking system and will be visible via the web. If you have something private to say, please email to '{0}'.</source>
+        <note>ID: ReportProblemDialog.PrivacyInfo</note>
+        <note>The {0} is where the Bloom team's private email address will be inserted.</note>
+        <target xml:lang="pbu" state="final">ستاسو راپور به زموږ د مسلې تعقیب سیسټم ته لاړ شي او د ویب له لارې به څرګند شي. که تاسو د ویلو لپاره یو څه خصوصي لرئ، نو مهرباني وکړئ '{0}' ته بریښنالیک ورکړئ.</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.PrivacyNotice" approved="yes">
+        <source xml:lang="en">Bloom will include diagnostic information with your report. Your report will not be private.</source>
+        <note>ID: ReportProblemDialog.PrivacyNotice</note>
+        <target xml:lang="pbu" state="final">بلوم به ستاسو د راپور سره د تشخیصي معلومات شامل کړي. ستاسو راپور به خصوصي نه وي.</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Quit" approved="yes">
+        <source xml:lang="en">Quit</source>
+        <note>ID: ReportProblemDialog.Quit</note>
+        <note>Shown in the button that closes the dialog after a successful report submission, if there was a fatal error and we need to exit the program.</note>
+        <target xml:lang="pbu" state="final">پرېږدئ</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.Retry" approved="yes">
         <source xml:lang="en">Retry</source>
@@ -5517,10 +5690,22 @@ Do you want to go ahead?</note>
         <note>ID: ReportProblemDialog.Success</note>
         <target xml:lang="pbu" state="final">مونږ ستاسو راپور لاسته راوړو، مننه د وخت ورکولو څخه چې بلوم لا ښه کړئ!</target>
       </trans-unit>
+      <trans-unit id="ReportProblemDialog.UserTitle" approved="yes">
+        <source xml:lang="en">Report a Problem</source>
+        <note>ID: ReportProblemDialog.UserTitle</note>
+        <note>The title of the dialog when a user chooses to Report a Problem.</note>
+        <target xml:lang="pbu" state="final">ستونزه راپور کړئ</target>
+      </trans-unit>
       <trans-unit id="ReportProblemDialog.WhatsTheProblem" approved="yes">
         <source xml:lang="en">What seems to be the problem?</source>
         <note>ID: ReportProblemDialog.WhatsTheProblem</note>
         <target xml:lang="pbu" state="final">تاسو ته ستونزه په څه ښکاري؟</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.WhatDoing" approved="yes">
+        <source xml:lang="en">What were you doing?</source>
+        <note>ID: ReportProblemDialog.WhatDoing</note>
+        <note>This is the label for the text field where the user enters what they were doing at the time of the problem.</note>
+        <target xml:lang="pbu" state="final">تا څه کول?</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Report A Problem</source>
@@ -5562,10 +5747,10 @@ Do you want to go ahead?</note>
         <note>ID: ScriptSettingsDialog.DefaultLineSpacing</note>
         <target xml:lang="pbu" state="final">د خطونو اصلي فاصله</target>
       </trans-unit>
-      <trans-unit id="ScriptSettingsDialog.LineBreakCheckBox">
+      <trans-unit id="ScriptSettingsDialog.LineBreakCheckBox" approved="yes">
         <source xml:lang="en">Do not use special Asian script word breaking</source>
         <note>ID: ScriptSettingsDialog.LineBreakCheckBox</note>
-        <target xml:lang="pbu" state="needs-translation">Do not use special Asian script word breaking</target>
+        <target xml:lang="pbu" state="final">د ځانګړي آسیایې سکرپت کلمه ماتول مه کاروئ</target>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.RightToLeftScriptCheckBox" approved="yes">
         <source xml:lang="en">This script is right to left</source>
@@ -5582,45 +5767,51 @@ Do you want to go ahead?</note>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
         <target xml:lang="pbu" state="final">دا متن اوږدو کرښو ته اړتيا لري</target>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Community" sil:dynamic="true">
+      <trans-unit id="Settings.Enterprise.Community" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Funded by the local community only</source>
         <note>ID: Settings.Enterprise.Community</note>
-        <target xml:lang="pbu" state="needs-translation">Funded by the local community only</target>
+        <target xml:lang="pbu" state="final">یوازې د ځایی ټولنې لخوا تمویل شوی</target>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.LearnMore" sil:dynamic="true">
+      <trans-unit id="Settings.Enterprise.LearnMore" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Learn More</source>
         <note>ID: Settings.Enterprise.LearnMore</note>
-        <target xml:lang="pbu" state="needs-translation">Learn More</target>
+        <target xml:lang="pbu" state="final">نور زده کړئ</target>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.None" sil:dynamic="true">
+      <trans-unit id="Settings.Enterprise.None" sil:dynamic="true" approved="yes">
         <source xml:lang="en">None. Bloom will not show Enterprise features.</source>
         <note>ID: Settings.Enterprise.None</note>
-        <target xml:lang="pbu" state="needs-translation">None. Bloom will not show Enterprise features.</target>
+        <target xml:lang="pbu" state="final">هیڅ نه. بلوم به د تشبثې برخې ونه ښیې.</target>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Overview" sil:dynamic="true">
+      <trans-unit id="Settings.Enterprise.Overview" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.</source>
         <note>ID: Settings.Enterprise.Overview</note>
-        <target xml:lang="pbu" state="needs-translation">Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.</target>
+        <target xml:lang="pbu" state="final">تشبثې بلوم هغه برخې او خدمات اضافه کوي چې د خپرونکو، حکومتونو، او نړیوالو سازمانونو لپاره مهم دي. دا تادیه شوی ګډون د دوی ځانګړې اړتیاوې پوره کوي پداسې حال کې چې په لویه کچه د ټولنې لپاره د بلوم پراختیا او کارن ملاتړ کوي.</target>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Status" sil:dynamic="true">
+      <trans-unit id="Settings.Enterprise.Status" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom Enterprise Status</source>
         <note>ID: Settings.Enterprise.Status</note>
-        <target xml:lang="pbu" state="needs-translation">Bloom Enterprise Status</target>
+        <target xml:lang="pbu" state="final">د تشبثې بلوم حالت</target>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.Subscription" sil:dynamic="true">
+      <trans-unit id="Settings.Enterprise.Subscription" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Enterprise Subscription</source>
         <note>ID: Settings.Enterprise.Subscription</note>
-        <target xml:lang="pbu" state="needs-translation">Enterprise Subscription</target>
+        <target xml:lang="pbu" state="final">تشبثی ګډون</target>
+        <alt-trans>
+          <target xml:lang="pbu">د تشبثی ګډون</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Settings.Enterprise.SubscriptionCode" sil:dynamic="true">
+      <trans-unit id="Settings.Enterprise.SubscriptionCode" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Subscription Code:</source>
         <note>ID: Settings.Enterprise.SubscriptionCode</note>
-        <target xml:lang="pbu" state="needs-translation">Subscription Code:</target>
+        <target xml:lang="pbu" state="final">د ګډون کوډ:</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Arithmetic Template" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Arithmetic Template</source>
         <note>ID: TemplateBooks.BookName.Arithmetic Template</note>
-        <target xml:lang="pbu" state="needs-translation">Arithmetic Template</target>
+        <target xml:lang="pbu" state="final">محاسباتي چوکاټ</target>
+        <alt-trans>
+          <target xml:lang="pbu">ارثیماتیکه نمونه</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Book</source>
@@ -5647,15 +5838,15 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.BookName.Picture Dictionary</note>
         <target xml:lang="pbu" state="final">د انځوریزو لغاتو ټولګه</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Sign Language" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Sign Language" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sign Language</source>
         <note>ID: TemplateBooks.BookName.Sign Language</note>
-        <target xml:lang="pbu" state="needs-translation">Sign Language</target>
+        <target xml:lang="pbu" state="final">د اشارو یا ګونګیانو ژبه</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Special" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Special" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Special</source>
         <note>ID: TemplateBooks.BookName.Special</note>
-        <target xml:lang="pbu" state="needs-translation">Special</target>
+        <target xml:lang="pbu" state="final">ځانګړې</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Template Starter</source>
@@ -5677,10 +5868,10 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.BookName.Wall Calendar</note>
         <target xml:lang="pbu" state="final">دوالي جنتري</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Bloom Reader Quiz" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Bloom Reader Quiz" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use for comprehension testing on devices.</source>
         <note>ID: TemplateBooks.PageDescription.Bloom Reader Quiz</note>
-        <target xml:lang="pbu" state="needs-translation">Use for comprehension testing on devices.</target>
+        <target xml:lang="pbu" state="final">په وسیلو کې د پوهیدو ازموینې لپاره وکاروئ.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A blank page that allows you to add items.</source>
@@ -5697,21 +5888,21 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
         <target xml:lang="pbu" state="final">پاڼه په سرکی له انځور او لاندي ورسره په منځ کی برابره شوي کلمه.</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For use with Landscape orientation.</source>
         <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
         <note>New string in Bloom 4.2</note>
-        <target xml:lang="pbu" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="pbu" state="final">د افقی لوري سره کارولو لپاره.</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
-        <target xml:lang="pbu" state="needs-translation">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</target>
+        <target xml:lang="pbu" state="final">د پوښتنې او ځینې ځوابونو سره یو تعاملی پاڼه. په ویب او بلوم ریډر کار کوي. کله چې د بلوم ریډر سره وکارول شي، ستاسو د پروژې ډشبورډ کولی شي د تفاهم مجموعې نمرې وښیې.</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
         <note>ID: TemplateBooks.PageDescription.Translation Instructions</note>
-        <target xml:lang="pbu" state="needs-translation">A page of instructions to translators which appears only in the Edit tab.</target>
+        <target xml:lang="pbu" state="final">ژباړونکو ته د لارښوونو پاڼه چې یوازې د تصحیح ټب کې ښکاري.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1</source>
@@ -5875,30 +6066,30 @@ Do you want to go ahead?</note>
           <target xml:lang="pbu">اساسي متن او عکس</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot Text Over Video" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot Text Over Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Picture Diglot Text Over Video</source>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot Text Over Video</note>
-        <target xml:lang="pbu" state="needs-translation">Big Picture Diglot Text Over Video</target>
+        <target xml:lang="pbu" state="final">په ویډیو باندی د لوی عکس Diglot متن</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Picture Diglot</source>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot</note>
-        <target xml:lang="pbu" state="needs-translation">Big Picture Diglot</target>
+        <target xml:lang="pbu" state="final">لوی عکس Diglot</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Big Text Diglot" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Big Text Diglot" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Text Diglot</source>
         <note>ID: TemplateBooks.PageLabel.Big Text Diglot</note>
-        <target xml:lang="pbu" state="needs-translation">Big Text Diglot</target>
+        <target xml:lang="pbu" state="final">لوی متن Diglot</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Big Video Diglot" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Big Video Diglot" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Video Diglot</source>
         <note>ID: TemplateBooks.PageLabel.Big Video Diglot</note>
-        <target xml:lang="pbu" state="needs-translation">Big Video Diglot</target>
+        <target xml:lang="pbu" state="final">لوی ویډیو Diglot</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Bloom Reader Quiz" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Bloom Reader Quiz" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom Reader Quiz</source>
         <note>ID: TemplateBooks.PageLabel.Bloom Reader Quiz</note>
-        <target xml:lang="pbu" state="needs-translation">Bloom Reader Quiz</target>
+        <target xml:lang="pbu" state="final">Bloom Reader‌ پوښتنې</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Credits Page</source>
@@ -6013,10 +6204,10 @@ Do you want to go ahead?</note>
           <target xml:lang="pbu">یواځې انځور</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Just Video" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Just Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just Video</source>
         <note>ID: TemplateBooks.PageLabel.Just Video</note>
-        <target xml:lang="pbu" state="needs-translation">Just Video</target>
+        <target xml:lang="pbu" state="final">یوازې ویډیو</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Outside Back Cover</source>
@@ -6028,10 +6219,10 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Paper Saver</note>
         <target xml:lang="pbu" state="final">د پاڼې سپما کوونکی</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Video" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture &amp; Video</source>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Video</note>
-        <target xml:lang="pbu" state="needs-translation">Picture &amp; Video</target>
+        <target xml:lang="pbu" state="final">انځور &amp;amp؛ ویدیو</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture &amp; Word</source>
@@ -6048,11 +6239,11 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
         <target xml:lang="pbu" state="final">په لاندېني برخه کي انځور</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Picture on Left" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Picture on Left" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture on Left</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Left</note>
         <note>New string in Bloom 4.2</note>
-        <target xml:lang="pbu" state="needs-translation">Picture on Left</target>
+        <target xml:lang="pbu" state="final">په کین اړخ کې انځور</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Quiz" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Quiz</source>
@@ -6060,10 +6251,10 @@ Do you want to go ahead?</note>
         <note>Used in page preview for Comprehension Question pages. Should be short.</note>
         <target xml:lang="pbu" state="final">ازموینه</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Quiz Page" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Quiz Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Quiz Page</source>
         <note>ID: TemplateBooks.PageLabel.Quiz Page</note>
-        <target xml:lang="pbu" state="needs-translation">Quiz Page</target>
+        <target xml:lang="pbu" state="final">پوښتن پاڼه</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true" approved="yes">
         <source xml:lang="en">SIL-Cameroon</source>
@@ -6075,10 +6266,10 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Super Paper Saver</note>
         <target xml:lang="pbu" state="final">د پاڼې عالي ساتونکی</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Text Over Video" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Text Over Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Over Video</source>
         <note>ID: TemplateBooks.PageLabel.Text Over Video</note>
-        <target xml:lang="pbu" state="needs-translation">Text Over Video</target>
+        <target xml:lang="pbu" state="final">په ویډیو باندی متن</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.The End" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The End</source>
@@ -6100,16 +6291,16 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.Traditional</note>
         <target xml:lang="pbu" state="final">عنعنوي</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Translation Instructions" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Translation Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Translation Instructions</source>
         <note>ID: TemplateBooks.PageLabel.Translation Instructions</note>
         <note>This page type only shows in Edit Mode to give instructions to translators. It does not print.</note>
-        <target xml:lang="pbu" state="needs-translation">Translation Instructions</target>
+        <target xml:lang="pbu" state="final">د ژباړې لارښوونې</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Video Over Text" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Video Over Text" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Video Over Text</source>
         <note>ID: TemplateBooks.PageLabel.Video Over Text</note>
-        <target xml:lang="pbu" state="needs-translation">Video Over Text</target>
+        <target xml:lang="pbu" state="final">په متن باندی ویډیو</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog" approved="yes">
         <source xml:lang="en">Setup</source>
@@ -6117,15 +6308,18 @@ Do you want to go ahead?</note>
         <note>This is the dialog used to set up the wall calendar</note>
         <target xml:lang="pbu" state="final">جمتوکول</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.Quiz.HintBubble.Answer" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.Quiz.HintBubble.Answer" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Put a possible answer here. Check it if it is correct.</source>
         <note>ID: TemplateBooks.Quiz.HintBubble.Answer</note>
-        <target xml:lang="pbu" state="needs-translation">Put a possible answer here. Check it if it is correct.</target>
+        <target xml:lang="pbu" state="final">یو احتمالي ځواب یې دلته ولیکئ. دا وګوره که دا سم وی.</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.Quiz.HintBubble.Question" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.Quiz.HintBubble.Question" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Put a comprehension question here</source>
         <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
-        <target xml:lang="pbu" state="needs-translation">Put a comprehension question here</target>
+        <target xml:lang="pbu" state="final">دلته د مفهوم د درک پوښتنه واچوۍ</target>
+        <alt-trans>
+          <target xml:lang="pbu">دلته د پوهیدو پوښتنه وکړئ</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Topics.Agriculture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Agriculture</source>
