@@ -275,10 +275,16 @@ namespace Bloom.ImageProcessing
 
 		private static void DrawImageWithWhiteBackground(Image source, Bitmap target)
 		{
+			// Color.White is not a constant value, so it can't be used as a default method parameter value.
+			DrawImageWithOpaqueBackground(source, target, Color.White);
+		}
+
+		public static void DrawImageWithOpaqueBackground(Image source, Bitmap target, Color color)
+		{
 			Rectangle rect = new Rectangle(Point.Empty, source.Size);
 			using (Graphics g = Graphics.FromImage(target))
 			{
-				g.Clear(Color.White);
+				g.Clear(color);
 				g.DrawImageUnscaledAndClipped(source, rect);
 			}
 		}
@@ -386,23 +392,47 @@ namespace Bloom.ImageProcessing
 
 		public static Image ResizeImageIfNecessary(Size maxSize, Image image)
 		{
-			// from https://www.c-sharpcorner.com/article/resize-image-in-c-sharp/
+			return DrawResizedImage(maxSize, image, false);
+		}
+
+		public static Image CenterImageIfNecessary(Size size, Image image)
+		{
+			return DrawResizedImage(size, image, true);
+		}
+
+		private static Image DrawResizedImage(Size maxSize, Image image, bool centerImage)
+		{
+			// adapted from https://www.c-sharpcorner.com/article/resize-image-in-c-sharp/
 			var desiredHeight = maxSize.Height;
 			var desiredWidth = maxSize.Width;
+			if (image.Width == desiredWidth && image.Height == desiredHeight)
+				return image;	// exact match already
+			int newHeight;
+			int newWidth;
 			if (image.Height <= desiredHeight && image.Width <= desiredWidth)
-				return image; // We are already within parameters
-
-			// Try resizing to width of button first
-			var newHeight = image.Height * desiredWidth / image.Width;
-			var newWidth = desiredWidth;
-			if (newHeight > desiredHeight)
 			{
-				// Resize to height of button instead
-				newWidth = image.Width * desiredHeight / image.Height;
-				newHeight = desiredHeight;
+				if (!centerImage)
+					return image;
+				newHeight = image.Height;	// not really new...
+				newWidth = image.Width;
 			}
-
-			var newImage = new Bitmap(newWidth, newHeight);
+			else
+			{
+				// Try resizing to width of button first
+				newHeight = image.Height * desiredWidth / image.Width;
+				newWidth = desiredWidth;
+				if (newHeight > desiredHeight)
+				{
+					// Resize to height of button instead
+					newWidth = image.Width * desiredHeight / image.Height;
+					newHeight = desiredHeight;
+				}
+			}
+			Image newImage;
+			if (centerImage)
+				newImage = new Bitmap(desiredWidth, desiredHeight);
+			else
+				newImage = new Bitmap(newWidth, newHeight);
 			using (var graphic = Graphics.FromImage(newImage))
 			{
 				// I tried using HighSpeed settings in here with no appreciable difference in loading speed.
@@ -410,7 +440,7 @@ namespace Bloom.ImageProcessing
 				graphic.SmoothingMode = SmoothingMode.HighQuality;
 				graphic.PixelOffsetMode = PixelOffsetMode.HighQuality;
 				graphic.CompositingQuality = CompositingQuality.HighQuality;
-				graphic.DrawImage(image, 0, 0, newWidth, newHeight);
+				graphic.DrawImage(image, (newImage.Width - newWidth)/2, (newImage.Height - newHeight)/2, newWidth, newHeight);
 			}
 			return newImage;
 		}

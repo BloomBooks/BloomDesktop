@@ -289,7 +289,7 @@ namespace Bloom.ImageProcessing
 
 			return true;
 		}
-		private static Image MakePngBackgroundTransparent(PalasoImage originalImage)
+		public static Image MakePngBackgroundTransparent(PalasoImage originalImage)
 		{
 			// If the image is indexed and opaque, convert the palette to have a transparent background.  This produces
 			// a much smaller image file than the process of redrawing the image with a transparent conversion.  That
@@ -336,7 +336,7 @@ namespace Bloom.ImageProcessing
 			return palette;		// assigning this back to the bitmap will actually update it.
 		}
 
-		private bool MakePngBackgroundTransparent(string originalPath, string pathToProcessedImage)
+		public static bool MakePngBackgroundTransparent(string originalPath, string pathToProcessedImage)
 		{
 			try
 			{
