@@ -3865,9 +3865,9 @@ combined-stream@^1.0.6:
     delayed-stream "~1.0.0"
 
 comicaljs@^0.1.6:
-  version "0.1.13"
-  resolved "https://registry.yarnpkg.com/comicaljs/-/comicaljs-0.1.13.tgz#a1452d0132ed6df089de94b411e6b9658cb56082"
-  integrity sha512-jhhPVGUczcUmyU+nZRjUUK/YrB9urd5RxwQVfBXZdjqfmJ5qzAjFzmztIiADHpf8aocWM0TEXRNUtHXBedQ90w==
+  version "0.1.21"
+  resolved "https://registry.yarnpkg.com/comicaljs/-/comicaljs-0.1.21.tgz#d2d9cc1cea2dda0cb8b2d63dd1dfdeaaca18ca48"
+  integrity sha512-62+tOjLADH3+qQmpa7F/4zionFEfhUewklT+WVKINyBi7tbsUF4Qm5bPk23H4gAVqF4uxbcibW5ALdoq/03NrQ==
 
 comma-separated-tokens@^1.0.0:
   version "1.0.6"
