@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Book;
 using Bloom.ImageProcessing;
@@ -60,6 +61,7 @@ namespace Bloom
 					return;
 				}
 
+#if USE_HTMLTHUMBNAILER_FOR_COVER
 				var dom = book.GetPreviewXmlDocumentForFirstPage();
 				if (dom == null)
 				{
@@ -70,6 +72,12 @@ namespace Bloom
 
 				folderForCachingThumbnail = book.StoragePageFolder;
 				_thumbnailProvider.GetThumbnail(folderForCachingThumbnail, book.Storage.Key, dom, thumbnailOptions, callback, errorCallback, async);
+#else
+				if (!CreateThumbnailOfCoverImage(book, thumbnailOptions, callback))
+				{
+					callback(Resources.Error70x70);
+				}
+#endif
 			}
 			catch (Exception err)
 			{
@@ -87,19 +95,70 @@ namespace Bloom
 		/// <param name="book"></param>
 		public static void GenerateImageForWeb(Book.Book book)
 		{
-			const string coverImageName = "coverImage200.jpg";
-
-			var srcFilePath = book.GetCoverImagePath(); // returns null if there is no image
-			if (string.IsNullOrEmpty(srcFilePath) || srcFilePath.EndsWith("placeHolder.png"))
+			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions
 			{
-				Debug.WriteLine("Book cannot find a cover image");
-				return;
-			}
+				Height = 200,
+				Width = 200,
+				CenterImageUsingTransparentPadding = false,
+				FileName = "coverImage200.jpg"
+			};
+			CreateThumbnailOfCoverImage(book, options);
+		}
 
-			var coverImage = PalasoImage.FromFile(srcFilePath);
-			coverImage.Image = ImageUtils.ResizeImageIfNecessary(new Size(200, 200), coverImage.Image);
-			var destFilePath = Path.Combine(book.StoragePageFolder, coverImageName);
-			ImageUtils.SaveAsTopQualityJpeg(coverImage.Image, destFilePath);
+		private static bool CreateThumbnailOfCoverImage(Book.Book book, HtmlThumbNailer.ThumbnailOptions options, Action<Image> callback = null)
+		{
+			var imageSrc = book.GetCoverImagePath();
+			if (string.IsNullOrEmpty(imageSrc) || (Path.GetFileName(imageSrc) == "placeHolder.png" && !Regex.IsMatch(options.FileName, "thumbnail(-[0-9]+)?\\.png")))
+			{
+				Debug.WriteLine(book.StoragePageFolder + " does not have a cover image.");
+				return false;
+			}
+			var size = Math.Max(options.Width, options.Height);
+			var destFilePath = Path.Combine(book.StoragePageFolder, options.FileName);
+			// Writing a transparent image to a file, then reading it in again appears to be the only
+			// way to get the thumbnail image to draw with the book's cover color background reliably.
+			var transparentImageFile = Path.Combine(Path.GetTempPath(), "Bloom", "Transparent", Path.GetFileName(imageSrc));
+			Directory.CreateDirectory(Path.GetDirectoryName(transparentImageFile));
+			try
+			{
+				if (RuntimeImageProcessor.MakePngBackgroundTransparent(imageSrc, transparentImageFile))
+					imageSrc = transparentImageFile;
+				using (var coverImage = PalasoImage.FromFile(imageSrc))
+				{
+					coverImage.Image = MakeImageOpaque(coverImage.Image, book.GetCoverColor());
+					if (options.CenterImageUsingTransparentPadding)
+						coverImage.Image = ImageUtils.CenterImageIfNecessary(new Size(size, size), coverImage.Image);
+					else
+						coverImage.Image = ImageUtils.ResizeImageIfNecessary(new Size(size, size), coverImage.Image);
+					switch(Path.GetExtension(destFilePath).ToLowerInvariant())
+					{
+					case ".jpg":
+					case ".jpeg":
+						ImageUtils.SaveAsTopQualityJpeg(coverImage.Image, destFilePath);
+						break;
+					default:
+						PalasoImage.SaveImageRobustly(coverImage, destFilePath);
+						break;
+					}
+					if (callback != null)
+						callback(coverImage.Image.Clone() as Image);	// don't leave GC to chance
+				}
+			}
+			finally
+			{
+				if (File.Exists(transparentImageFile))
+					SIL.IO.RobustFile.Delete(transparentImageFile);
+			}
+			return true;
+		}
+
+		private static Image MakeImageOpaque(Image source, string coverColorString)
+		{
+			var target = new Bitmap(source.Width, source.Height);
+			Color coverColor;
+			ImageUtils.TryCssColorFromString(coverColorString, out coverColor);
+			ImageUtils.DrawImageWithOpaqueBackground(source, target, coverColor);
+			return target;
 		}
 
 		/// <summary>

@@ -11,6 +11,7 @@
         border: none;
         // keeps text from jumping when switching between hover/nothover states
         padding-left: 1px;
+        padding-right: 1px;
         padding-top: 2px;
         &:after {
             content: "" !important;
@@ -36,14 +37,14 @@
         z-index: @textOverPictureZIndex;
         .bloom-dragHandleTOP {
             position: absolute;
-            background: url("/bloom/bookEdit/img/dragHandleGrey.svg") no-repeat
-                center;
-            background-size: contain;
+            background: url("/bloom/bookEdit/img/dragHandleWhiteWithGreyOutline.svg")
+                no-repeat center;
+            background-size: auto;
             background-color: @DragHandleBackgroundColor;
-            width: 16px;
-            height: 16px;
-            left: -12px;
-            top: -12px;
+            width: 22px;
+            height: 22px;
+            left: -15px;
+            top: -15px;
             cursor: move;
             z-index: @dragHandleZIndex; // keep above textbox
         }
@@ -54,6 +55,58 @@
                 min-width: @MinTextBoxWidth - 3;
                 min-height: @MinTextBoxHeight - 3 !important;
                 text-align: center;
+
+                // Move the format button and language tip out of the box, since we have a smaller-than-normal editable box here
+                overflow: visible;
+                #formatButton {
+                    left: 100%;
+                    right: unset;
+                    bottom: 1.3em;
+                    font-size: xx-small; // Even though font size isn't directly relevant to an image, it allows us to have the correct units on our "bottom: 1em" rule.
+                    background-color: @bloom-gray; // Specifically set the background color to gray to make it easier to see since it now goes outside the bubbles.
+                    margin-left: 0px; // Override the inherited 3px so that this one will appear flush with the border
+
+                    // The dragHandleWhiteWithGreyOutline.svg image is certainly off-center by a fraction of a pixel, so padding-right needs a fraction more padding than left.
+                    padding-left: 1.75px;
+                    padding-right: 2px;
+
+                    // Ensure it's aligned left.
+                    img {
+                        position: relative;
+                        float: left;
+                    }
+                }
+            }
+
+            .bloom-editable:focus {
+                // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
+                border: 1px solid @bloom-blue;
+                box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
+                    0 0 8px @bloom-blue;
+            }
+
+            .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
+                left: 100%; // Align the left edge of the language tip content to the right edge
+                right: unset; // Need to clear an inherited property
+                bottom: 0;
+                color: white;
+                background-color: @bloom-gray; // Specifically set the background color to gray to make it easier to see since it now goes outside the bubbles.
+                font-size: xx-small;
+                padding-right: 5px;
+                padding-left: 2px;
+
+                // Adds a little more height to the top (and bottom). Note that padding-top doesn't work well,
+                // because that caused the padding to be rendered even when the language tip content wasn't be shown
+                line-height: 1.3em;
+            }
+
+            // Allows the language tip to be suppressed by adding a class
+            .bloom-editable.disableTOPControls:after {
+                display: none;
+            }
+            // Allows the format gear to be suppressed by adding a class
+            .bloom-editable.disableTOPControls #formatButton {
+                display: none;
             }
         }
     }
