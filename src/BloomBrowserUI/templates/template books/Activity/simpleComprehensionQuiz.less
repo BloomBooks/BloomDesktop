@@ -208,16 +208,16 @@ body.editMode
     }
 }
 
-// As of now, with bloom-player version 0.9.24, the style rule that defines the width of this button is just in the react-slick stylesheet.
-@pageTurningButtonWidth: 20px;
+// As of now, with bloom-player version 1.0.14, the style rule that defines the width of this button is in the Swiper stylesheet.
+@pageTurningButtonWidth: 25px;
 
-// make room for the page-turning buttons that show when reading in non-touch devices
-.Device16x9Landscape.simple-comprehension-quiz .marginBox {
-    left: @pageTurningButtonWidth !important;
-    width: calc(@Device16x9Landscape-Width - (2 * @pageTurningButtonWidth));
-}
-// make room for the page-turning buttons that show when reading in non-touch devices
-.Device16x9Portrait.simple-comprehension-quiz .marginBox {
-    left: @pageTurningButtonWidth !important;
-    width: calc(@Device16x9Portrait-Width - (2 * @pageTurningButtonWidth));
+// Make room for the page-turning buttons that show when reading in non-touch devices
+.simple-comprehension-quiz {
+    .QuizQuestion-style,
+    .checkbox-and-textbox-choice {
+        // We could use a combined "margin" version, but we don't want to modify any vertical settings.
+        margin-left: @pageTurningButtonWidth !important;
+        margin-right: @pageTurningButtonWidth !important;
+        width: auto;
+    }
 }
