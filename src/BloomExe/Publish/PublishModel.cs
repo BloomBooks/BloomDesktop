@@ -8,12 +8,14 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Api;
 using Bloom.Publish.PDF;
+using BloomTemp;
 using DesktopAnalytics;
 using SIL.IO;
 using SIL.Progress;
@@ -617,6 +619,68 @@ namespace Bloom.Publish
 						div.ParentNode.RemoveChild(div);
 				}
 			}
+		}
+
+		// This is a highly experimental export which may evolve as we work on this with Age of Learning.
+		public void ExportAudioFiles1PerPage()
+		{
+			var container = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "bloom audio export");
+			Directory.CreateDirectory(container);
+			var parentFolderForAllOfTheseExports  = TemporaryFolder.TrackExisting(container);
+			var  folderForThisBook = new TemporaryFolder(parentFolderForAllOfTheseExports, Path.GetFileName(this.BookSelection.CurrentSelection.FolderPath));
+			var pageIndex = 0;
+
+			foreach (XmlElement pageElement in this.BookSelection.CurrentSelection.GetPageElements())
+			{
+				++pageIndex;
+				//var durations = new StringBuilder();
+				//var accumulatedDuration = 0;
+				try
+				{
+					// These elements are marked as audio-sentence but we're not sure yet if the user actually recorded them yet
+					var audioSentenceElements = HtmlDom.SelectAudioSentenceElements(pageElement)
+						.Cast<XmlElement>();
+
+					var mergeFiles =
+						audioSentenceElements
+							.Select(s =>
+								AudioProcessor.GetOrCreateCompressedAudio(
+									this.BookSelection.CurrentSelection.FolderPath, s.Attributes["id"]?.Value))
+							.Where(s => !string.IsNullOrEmpty(s));
+					if (mergeFiles.Any())
+					{
+						// enhance: it would be nice if we could somehow provide info on what should be highlighted and when,
+						// though I don't know how that would work with Age of Learning's PDF viewer.
+						// The following was a start on that before I realized that I don't know how that would be accomplished,
+						// but I'm leaving it here in case I pick it up again.
+						// foreach (var audioSentenceElement in audioSentenceElements)
+						//{
+						//	var id = HtmlDom.GetAttributeValue(audioSentenceElement, "id");
+						//	var element = this.BookSelection.CurrentSelection.OurHtmlDom.SelectSingleNode($"//div[@id='{id}']");
+						//	var duration = HtmlDom.GetAttributeValue(audioSentenceElement, "data-duration");
+						//   Here we would need to determine the duration if data-duration is empty.
+						//	accumulatedDuration += int.Parse(duration);
+						//	durations.AppendLine(accumulatedDuration.ToString() + "\t" + duration);
+						//}
+						var combinedAudioPath = Path.Combine(folderForThisBook.FolderPath, "page" + pageIndex + ".mp3");
+						var errorMessage = AudioProcessor.MergeAudioFiles(mergeFiles, combinedAudioPath);
+						if (errorMessage != null)
+						{
+							File.WriteAllText(Path.Combine(folderForThisBook.FolderPath, $"error page{pageIndex}.txt"),
+								errorMessage);
+						}
+						//File.WriteAllText(Path.Combine(folderForThisBook.FolderPath, $"page{pageIndex} timings.txt"),
+						//	durations.ToString());
+					}
+				}
+				catch (Exception e)
+				{
+					File.WriteAllText(Path.Combine(folderForThisBook.FolderPath, $"error page{pageIndex}.txt"),
+						e.Message);
+				}
+			}
+
+			Process.Start(folderForThisBook.FolderPath);
 		}
 	}
 }

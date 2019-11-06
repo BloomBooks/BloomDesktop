@@ -920,5 +920,10 @@ namespace Bloom.Publish
 				Application.DoEvents(); // Wish we didn't need this, but without it bulk upload freezes making 'preview' which is really the PDF to upload.
 			}
 		}
+
+		private void ExportAudioFiles1PerPageToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			_model.ExportAudioFiles1PerPage();
+		}
 	}
 }
