@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Book;
 using Bloom.ImageProcessing;
@@ -107,7 +108,7 @@ namespace Bloom
 		private static bool CreateThumbnailOfCoverImage(Book.Book book, HtmlThumbNailer.ThumbnailOptions options, Action<Image> callback = null)
 		{
 			var imageSrc = book.GetCoverImagePath();
-			if (string.IsNullOrEmpty(imageSrc) || (Path.GetFileName(imageSrc) == "placeHolder.png" && options.FileName != "thumbnail.png"))
+			if (string.IsNullOrEmpty(imageSrc) || (Path.GetFileName(imageSrc) == "placeHolder.png" && !Regex.IsMatch(options.FileName, "thumbnail(-[0-9]+)?\\.png")))
 			{
 				Debug.WriteLine(book.StoragePageFolder + " does not have a cover image.");
 				return false;
