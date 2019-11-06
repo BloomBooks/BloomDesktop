@@ -70,7 +70,7 @@
         "comicaljs": "^0.1.6",
         "css-element-queries": "^0.3.2",
         "global": "^4.3.2",
-        "jquery": "^1.12.4",
+        "jquery": "^3.4.0",
         "jquery.hotkeys": "^0.1.0",
         "markdown-it": "^8.4.2",
         "mobx": "^5.9.4",
