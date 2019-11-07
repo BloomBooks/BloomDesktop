@@ -252,6 +252,48 @@ export class TextOverPictureManager {
                     "common/saveChangesAndRethinkPageEvent"
                 );
             };
+
+            // This section contains code for allowing the bubble to be moved around.
+            // We use mousemove effects instead of drag due to concerns that drag effects would make the entire image container appear to drag.
+            // Instead, with mousemove, we can make only the specific bubble move around
+            let draggedBubble: Bubble | undefined = undefined; // If undefined, indicates that drag is not active
+            let bubbleGrabOffset: { x: number; y: number } = { x: 0, y: 0 };
+
+            container.onmousedown = (ev: MouseEvent) => {
+                // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
+                // So use offsetX, which is relative to the target element
+                const bubble = Comical.getBubbleHit(
+                    container,
+                    ev.offsetX,
+                    ev.offsetY
+                );
+                if (bubble) {
+                    draggedBubble = bubble;
+
+                    // Remember the offset between the top-left of the content box and the initial location of the mouse pointer
+                    const positionInfo = bubble.content.getBoundingClientRect();
+                    const deltaX = ev.pageX - positionInfo.left;
+                    const deltaY = ev.pageY - positionInfo.top;
+                    bubbleGrabOffset = { x: deltaX, y: deltaY };
+                }
+            };
+            container.onmousemove = (ev: MouseEvent) => {
+                if (draggedBubble) {
+                    this.calculateAndFixInitialLocation(
+                        $(draggedBubble.content),
+                        $(container),
+                        ev.pageX - bubbleGrabOffset.x, // These coordinates need to be relative to the document
+                        ev.pageY - bubbleGrabOffset.y
+                    );
+                }
+            };
+            container.onmouseup = (ev: MouseEvent) => {
+                // ENHANCE: If you release the mouse outside of the container, it is not registered as a mouseup here.
+                //          The bubble will continue to be dragged inside the container until you click and release.
+                draggedBubble = undefined;
+            };
+            // ENHANCE: Maybe it'd be nice to have a mouseover effect that makes the mouse pointer look draggable if you move over a draggable element
+            // ENHANCE: Have ctrl+click go through the text box (currently text box intercepts the click, which is desirable in many cases)
         });
     }
 
