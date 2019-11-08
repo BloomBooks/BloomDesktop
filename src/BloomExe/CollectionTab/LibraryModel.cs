@@ -80,7 +80,7 @@ namespace Bloom.CollectionTab
 
 		public string LanguageName
 		{
-			get { return _collectionSettings.Language1Name; }
+			get { return _collectionSettings.Language1.Name; }
 		}
 
 		public List<BookCollection> GetBookCollections()

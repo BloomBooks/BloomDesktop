@@ -27,8 +27,8 @@ namespace Bloom.CollectionCreating
 
 			if (_lookupISOControl.SelectedLanguage != null)
 			{
-				_collectionInfo.Language1Iso639Code = _lookupISOControl.SelectedLanguage.LanguageTag;
-				_collectionInfo.Language1Name = _lookupISOControl.SelectedLanguage.DesiredName;
+				_collectionInfo.Language1.Iso639Code = _lookupISOControl.SelectedLanguage.LanguageTag;
+				_collectionInfo.Language1.Name = _lookupISOControl.SelectedLanguage.DesiredName;
 				_collectionInfo.Country = _lookupISOControl.SelectedLanguage.PrimaryCountry ?? string.Empty;
 
 				//If there are multiple countries, just leave it blank so they can type something in

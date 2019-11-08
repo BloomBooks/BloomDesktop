@@ -134,7 +134,7 @@ namespace Bloom.CollectionCreating
 				var pattern = LocalizationManager.GetString("NewCollectionWizard.NewBookPattern", "{0} Books", "The {0} is replaced by the name of the language.");
 				// GetPathForNewSettings uses Path.Combine which can fail with certain characters that are illegal in paths, but not in language names.
 				// The characters we ran into were two pipe characters ("|") at the front of the language name.
-				var tentativeCollectionName = string.Format(pattern, _collectionInfo.Language1Name);
+				var tentativeCollectionName = string.Format(pattern, _collectionInfo.Language1.Name);
 				var sanitizedCollectionName = tentativeCollectionName.SanitizePath('.');
 				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(DefaultParentDirectoryForCollections, sanitizedCollectionName);
 
@@ -178,24 +178,24 @@ namespace Bloom.CollectionCreating
 			DialogResult = DialogResult.OK;
 
 			// Collect the data from the Font and Script page.
-			_collectionInfo.DefaultLanguage1FontName = _fontDetails.SelectedFont;
-			_collectionInfo.Language1LineHeight = new decimal(0);
+			_collectionInfo.Language1.FontName = _fontDetails.SelectedFont;
+			// refactoring note: this is not needed, this will be set to zero by default:_collectionInfo.Language1LineHeight = new decimal(0);
 			if (_fontDetails.ExtraLineHeight)
 			{
 				// The LineHeight settings from the LanguageFontDetails control are in the current culture,
 				// so we don't need to specify a culture in the TryParse.
 				double height;
 				if (double.TryParse(_fontDetails.LineHeight, out height))
-					_collectionInfo.Language1LineHeight = new decimal(height);
+					_collectionInfo.Language1.LineHeight = new decimal(height);
 			}
-			_collectionInfo.IsLanguage1Rtl = _fontDetails.RightToLeft;
-			_collectionInfo.Language1BreaksLinesOnlyAtSpaces = false;
+			_collectionInfo.Language1.IsRightToLeft = _fontDetails.RightToLeft;
+			_collectionInfo.Language1.BreaksLinesOnlyAtSpaces = false;
 
 			//this both saves a step for the country with the most languages, but also helps get the order between en and tpi to what will be most useful
 			if (_collectionInfo.Country == "Papua New Guinea")
 			{
-				_collectionInfo.Language2Iso639Code = "en";
-				_collectionInfo.Language3Iso639Code = "tpi";
+				_collectionInfo.Language2.Iso639Code = "en";
+				_collectionInfo.Language3.Iso639Code = "tpi";
 			}
 			_collectionInfo.SetAnalyticsProperties();
 

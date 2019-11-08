@@ -117,8 +117,8 @@ namespace Bloom.Collection
 		{
 			string defaultFontText =
 				LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.DefaultFontFor", "Default Font for {0}", "{0} is a language name.");
-			var lang1UiName = _collectionSettings.GetLanguage1Name(LocalizationManager.UILanguageId);
-			var lang2UiName = _collectionSettings.GetLanguage2Name(LocalizationManager.UILanguageId);
+			var lang1UiName = _collectionSettings.Language1.GetNameInLanguage(LocalizationManager.UILanguageId);
+			var lang2UiName = _collectionSettings.Language2.GetNameInLanguage(LocalizationManager.UILanguageId);
 			_language1Name.Text = string.Format("{0} ({1})", lang1UiName, _collectionSettings.Language1Iso639Code);
 			_language2Name.Text = string.Format("{0} ({1})", lang2UiName, _collectionSettings.Language2Iso639Code);
 			_language1FontLabel.Text = string.Format(defaultFontText, lang1UiName);
@@ -137,7 +137,7 @@ namespace Bloom.Collection
 			}
 			else
 			{
-				lang3UiName = _collectionSettings.GetLanguage3Name(LocalizationManager.UILanguageId);
+				lang3UiName = _collectionSettings.Language3.GetNameInLanguage(LocalizationManager.UILanguageId);
 				_language3Name.Text = string.Format("{0} ({1})", lang3UiName, _collectionSettings.Language3Iso639Code);
 				_language3FontLabel.Text = string.Format(defaultFontText, lang3UiName);
 				_removeLanguage3Link.Visible = true;
@@ -171,37 +171,37 @@ namespace Bloom.Collection
 
 		private void _language1ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			var potentiallyCustomName = _collectionSettings.Language1Name;
+			var potentiallyCustomName = _collectionSettings.Language1.Name;
 
 			var l = ChangeLanguage(_collectionSettings.Language1Iso639Code, potentiallyCustomName);
 
 			if (l != null)
 			{
-				_collectionSettings.Language1Iso639Code = l.LanguageTag;
-				_collectionSettings.Language1Name = l.DesiredName;
+				_collectionSettings.Language1.Iso639Code = l.LanguageTag;
+				_collectionSettings.Language1.Name = l.DesiredName;
 				ChangeThatRequiresRestart();
 			}
 		}
 		private void _language2ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			var potentiallyCustomName = _collectionSettings.Language2Name;
+			var potentiallyCustomName = _collectionSettings.Language2.Name;
 			var l = ChangeLanguage(_collectionSettings.Language2Iso639Code, potentiallyCustomName);
 			if (l != null)
 			{
 				_collectionSettings.Language2Iso639Code = l.LanguageTag;
-				_collectionSettings.Language2Name = l.DesiredName;
+				_collectionSettings.Language2.Name = l.DesiredName;
 				ChangeThatRequiresRestart();
 			}
 		}
 
 		private void _language3ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			var potentiallyCustomName = _collectionSettings.Language3Name;
+			var potentiallyCustomName = _collectionSettings.Language3.Name;
 			var l = ChangeLanguage(_collectionSettings.Language3Iso639Code, potentiallyCustomName);
 			if (l != null)
 			{
 				_collectionSettings.Language3Iso639Code = l.LanguageTag;
-				_collectionSettings.Language3Name = l.DesiredName;
+				_collectionSettings.Language3.Name = l.DesiredName;
 				ChangeThatRequiresRestart();
 			}
 		}
@@ -268,15 +268,15 @@ namespace Bloom.Collection
 			_collectionSettings.District = _districtText.Text.Trim();
 			if (_fontComboLanguage1.SelectedItem != null)
 			{
-				_collectionSettings.DefaultLanguage1FontName = _fontComboLanguage1.SelectedItem.ToString();
+				_collectionSettings.Language1.FontName = _fontComboLanguage1.SelectedItem.ToString();
 			}
 			if (_fontComboLanguage2.SelectedItem != null)
 			{
-				_collectionSettings.DefaultLanguage2FontName = _fontComboLanguage2.SelectedItem.ToString();
+				_collectionSettings.Language2.FontName = _fontComboLanguage2.SelectedItem.ToString();
 			}
 			if (_fontComboLanguage3.SelectedItem != null)
 			{
-				_collectionSettings.DefaultLanguage3FontName = _fontComboLanguage3.SelectedItem.ToString();
+				_collectionSettings.Language3.FontName = _fontComboLanguage3.SelectedItem.ToString();
 			}
 			if (_numberStyleCombo.SelectedItem != null)
 			{
@@ -407,11 +407,11 @@ namespace Bloom.Collection
 				_fontComboLanguage1.Items.Add(font);
 				_fontComboLanguage2.Items.Add(font);
 				_fontComboLanguage3.Items.Add(font);
-				if (font == _collectionSettings.DefaultLanguage1FontName)
+				if (font == _collectionSettings.Language1.FontName)
 					_fontComboLanguage1.SelectedIndex = _fontComboLanguage1.Items.Count-1;
-				if (font == _collectionSettings.DefaultLanguage2FontName)
+				if (font == _collectionSettings.Language2.FontName)
 					_fontComboLanguage2.SelectedIndex = _fontComboLanguage2.Items.Count - 1;
-				if (font == _collectionSettings.DefaultLanguage3FontName)
+				if (font == _collectionSettings.Language3.FontName)
 					_fontComboLanguage3.SelectedIndex = _fontComboLanguage3.Items.Count - 1;
 			}
 		}
@@ -484,19 +484,19 @@ namespace Bloom.Collection
 
 		private void _fontComboLanguage1_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (_fontComboLanguage1.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.DefaultLanguage1FontName.ToLower())
+			if (_fontComboLanguage1.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.Language1.FontName.ToLower())
 				ChangeThatRequiresRestart();
 		}
 
 		private void _fontComboLanguage2_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (_fontComboLanguage2.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.DefaultLanguage2FontName.ToLower())
+			if (_fontComboLanguage2.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.Language2.FontName.ToLower())
 				ChangeThatRequiresRestart();
 		}
 
 		private void _fontComboLanguage3_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (_fontComboLanguage3.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.DefaultLanguage3FontName.ToLower())
+			if (_fontComboLanguage3.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.Language3.FontName.ToLower())
 				ChangeThatRequiresRestart();
 		}
 
@@ -529,54 +529,55 @@ namespace Bloom.Collection
 
 		private void _fontSettings1Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			FontSettingsLinkClicked(_collectionSettings.GetLanguage1Name(LocalizationManager.UILanguageId), 1);
+			FontSettingsLinkClicked(_collectionSettings.Language1.GetNameInLanguage(LocalizationManager.UILanguageId), 1);
 		}
 
 		private void _fontSettings2Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			FontSettingsLinkClicked(_collectionSettings.GetLanguage2Name(LocalizationManager.UILanguageId), 2);
+			FontSettingsLinkClicked(_collectionSettings.Language2.GetNameInLanguage(LocalizationManager.UILanguageId), 2);
 		}
 
 		private void _fontSettings3Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			FontSettingsLinkClicked(_collectionSettings.GetLanguage3Name(LocalizationManager.UILanguageId), 3);
+			FontSettingsLinkClicked(_collectionSettings.Language3.GetNameInLanguage(LocalizationManager.UILanguageId), 3);
 		}
 
-		private void FontSettingsLinkClicked(string langName, int langNum)
-		{
+		private void FontSettingsLinkClicked(string langName, int langNum1Based)
+		{ 
+			var langSpec = _collectionSettings.LanguagesZeroBased[langNum1Based - 1];
 			using (var frm = new ScriptSettingsDialog())
 			{
 				frm.LanguageName = langName;
-				frm.LanguageRightToLeft = _collectionSettings.GetLanguageRtl(langNum);
-				frm.LanguageLineSpacing = _collectionSettings.GetLanguageLineHeight(langNum);
-				frm.BreakLinesOnlyAtSpaces = _collectionSettings.GetBreakLinesOnlyAtSpaces(langNum);
+				frm.LanguageRightToLeft = langSpec.IsRightToLeft;
+				frm.LanguageLineSpacing = langSpec.LineHeight;
+				frm.BreakLinesOnlyAtSpaces = langSpec.BreaksLinesOnlyAtSpaces;
 				frm.ShowDialog(this);
 
 				// get the changes
 				var newRtl = frm.LanguageRightToLeft;
-				var newLs = frm.LanguageLineSpacing;
+				var newLineSpacing = frm.LanguageLineSpacing;
 				var newBreak = frm.BreakLinesOnlyAtSpaces;
-
-				if (newRtl != _collectionSettings.GetLanguageRtl(langNum))
+				
+				if (newRtl != langSpec.IsRightToLeft) 
 				{
-					_collectionSettings.SetLanguageRtl(langNum, newRtl);
+					langSpec.IsRightToLeft =  newRtl;
 					ChangeThatRequiresRestart();
 				}
 
-				if (newLs != _collectionSettings.GetLanguageLineHeight(langNum))
+				if (newLineSpacing != langSpec.LineHeight)
 				{
 					// Clicking "OK" will save the values into the .bloomCollection file.  (Later when a book
 					// is edited, defaultLangStyles.css will be written out in the book's folder, which is all
 					// that is needed for this setting to take effect.)
-					_collectionSettings.SetLanguageLineHeight(langNum, newLs);
+					langSpec.LineHeight = newLineSpacing;
 				}
 
-				if (newBreak != _collectionSettings.GetBreakLinesOnlyAtSpaces(langNum))
+				if (newBreak != langSpec.BreaksLinesOnlyAtSpaces)
 				{
 					// Clicking "OK" will save the values into the .bloomCollection file.  (Later when a book
 					// is edited, defaultLangStyles.css will be written out in the book's folder, which is all
 					// that is needed for this setting to take effect.)
-					_collectionSettings.SetBreakLinesOnlyAtSpaces(langNum, newBreak);
+					langSpec.BreaksLinesOnlyAtSpaces = newBreak;
 				}
 			}
 		}

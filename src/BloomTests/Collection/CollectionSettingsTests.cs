@@ -45,9 +45,9 @@ namespace BloomTests.Collection
 			const string collectionName = "test";
 			var settings = CreateCollectionSettings(_folder.Path, collectionName);
 			settings.Language1Iso639Code = "fr";
-			Assert.AreEqual("French", settings.GetLanguage1Name("en"));
+			Assert.AreEqual("French", settings.Language1.GetNameInLanguage("en"));
 			settings.Language1Iso639Code = "en";
-			Assert.AreEqual("English", settings.GetLanguage1Name("en"));
+			Assert.AreEqual("English", settings.Language1.GetNameInLanguage("en"));
 		}
 
 		[Test]
