@@ -125,7 +125,8 @@ namespace Bloom
 					imageSrc = transparentImageFile;
 				using (var coverImage = PalasoImage.FromFile(imageSrc))
 				{
-					coverImage.Image = MakeImageOpaque(coverImage.Image, book.GetCoverColor());
+					if (imageSrc == transparentImageFile)
+						coverImage.Image = MakeImageOpaque(coverImage.Image, book.GetCoverColor());
 					if (options.CenterImageUsingTransparentPadding)
 						coverImage.Image = ImageUtils.CenterImageIfNecessary(new Size(size, size), coverImage.Image);
 					else

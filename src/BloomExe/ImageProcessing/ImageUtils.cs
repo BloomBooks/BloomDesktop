@@ -45,7 +45,12 @@ namespace Bloom.ImageProcessing
 			if(String.IsNullOrEmpty(imageInfo.FileName))
 				return false;
 
-			return new[] { ".jpg", ".jpeg" }.Contains(Path.GetExtension(imageInfo.FileName).ToLowerInvariant());
+			return HasJpegExtension(imageInfo.FileName);
+		}
+
+		public static bool HasJpegExtension(string filename)
+		{
+			return new[] { ".jpg", ".jpeg" }.Contains(Path.GetExtension(filename).ToLowerInvariant());
 		}
 
 		/// <summary>
@@ -400,30 +405,40 @@ namespace Bloom.ImageProcessing
 			return DrawResizedImage(size, image, true);
 		}
 
+		/// <summary>
+		/// Return a possibly resized and possibly centered image.  If no change is needed,
+		/// a new copy of the image is returned.
+		/// </summary>
+		/// <remarks>
+		/// Always returning a new image simplifies keeping track of when to dispose the original
+		/// image.
+		/// Note that this method never returns a larger image than the original: only one the
+		/// same size or smaller.
+		/// </remarks>
 		private static Image DrawResizedImage(Size maxSize, Image image, bool centerImage)
 		{
 			// adapted from https://www.c-sharpcorner.com/article/resize-image-in-c-sharp/
 			var desiredHeight = maxSize.Height;
 			var desiredWidth = maxSize.Width;
 			if (image.Width == desiredWidth && image.Height == desiredHeight)
-				return image;	// exact match already
+				return new Bitmap(image);	// exact match already
 			int newHeight;
 			int newWidth;
 			if (image.Height <= desiredHeight && image.Width <= desiredWidth)
 			{
 				if (!centerImage)
-					return image;
+					return new Bitmap(image);
 				newHeight = image.Height;	// not really new...
 				newWidth = image.Width;
 			}
 			else
 			{
-				// Try resizing to width of button first
+				// Try resizing to desired width first
 				newHeight = image.Height * desiredWidth / image.Width;
 				newWidth = desiredWidth;
 				if (newHeight > desiredHeight)
 				{
-					// Resize to height of button instead
+					// Resize to desired height instead
 					newWidth = image.Width * desiredHeight / image.Height;
 					newHeight = desiredHeight;
 				}
@@ -436,10 +451,12 @@ namespace Bloom.ImageProcessing
 			using (var graphic = Graphics.FromImage(newImage))
 			{
 				// I tried using HighSpeed settings in here with no appreciable difference in loading speed.
-				graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
-				graphic.SmoothingMode = SmoothingMode.HighQuality;
-				graphic.PixelOffsetMode = PixelOffsetMode.HighQuality;
-				graphic.CompositingQuality = CompositingQuality.HighQuality;
+				// However, the "High Quality" settings can greatly increase memory use, possibly causing "Out of Memory"
+				// errors when creating thumbnail images.  So we use the default settings for drawing the image here.
+				// Some thumbnails may be a bit uglier, but they're supposed to just give an idea of what the front cover
+				// looks like: they're not works of art themselves.
+				// See https://stackoverflow.com/questions/15438509/graphics-drawimage-throws-out-of-memory-exception?lq=1
+				// (the second answer).
 				graphic.DrawImage(image, (newImage.Width - newWidth)/2, (newImage.Height - newHeight)/2, newWidth, newHeight);
 			}
 			return newImage;
