@@ -340,14 +340,17 @@ namespace Bloom.ImageProcessing
 		{
 			try
 			{
+				//if it's a jpeg, we don't resize, we don't mess with transparency, nothing. These things
+				//are scary in .net. Just send the original back and wash our hands of it.
+				//If the filename extension claims to be jpeg, assume it's not lying to us and quit.
+				if (ImageUtils.HasJpegExtension(originalPath))
+					return false;
+
 				using (var originalImage = PalasoImage.FromFileRobustly(originalPath))
 				{
-					//if it's a jpeg, we don't resize, we don't mess with transparency, nothing. These things
-					//are scary in .net. Just send the original back and wash our hands of it.
+					// double check whether the file extension was misleading us...
 					if (ImageUtils.AppearsToBeJpeg(originalImage))
-					{
 						return false;
-					}
 
 					using (var processedBitmap = MakePngBackgroundTransparent(originalImage))
 					{
