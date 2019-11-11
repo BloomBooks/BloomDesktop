@@ -26,6 +26,14 @@
 }
 
 .bloom-imageContainer {
+    &.grabbable {
+        cursor: grab;
+    }
+
+    &.grabbing {
+        cursor: grabbing;
+    }
+
     .bloom-textOverPicture {
         position: absolute;
         width: @DefaultTextBoxWidth;
@@ -45,8 +53,12 @@
             height: 22px;
             left: -15px;
             top: -15px;
-            cursor: move;
             z-index: @dragHandleZIndex; // keep above textbox
+            cursor: grab;
+
+            &.grabbing {
+                cursor: grabbing;
+            }
         }
         .bloom-translationGroup {
             background: transparent; // don't want to worry about what background the image has

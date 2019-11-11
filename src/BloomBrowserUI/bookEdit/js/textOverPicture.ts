@@ -139,6 +139,7 @@ export class TextOverPictureManager {
         Array.from(
             document.getElementsByClassName("bloom-imageContainer")
         ).forEach((container: HTMLElement) => {
+            const containerBounds = container.getBoundingClientRect(); // Assumption: the container never moves after setup
             container.addEventListener("click", event => {
                 // The goal here is that if the user clicks outside any comical bubble,
                 // we want none of the comical bubbles selected, so that
@@ -164,9 +165,8 @@ export class TextOverPictureManager {
                     // some part of a bubble rather than away from it.
                     // We now use a Comical function to determine whether we clicked
                     // on a Comical object.
-                    const bounds = container.getBoundingClientRect();
-                    const x = event.clientX - bounds.left;
-                    const y = event.clientY - bounds.top;
+                    const x = event.clientX - containerBounds.left;
+                    const y = event.clientY - containerBounds.top;
                     if (!Comical.somethingHit(container, x, y)) {
                         // So far so good. We have now determined that we want to remove
                         // focus from anything in this image.
@@ -252,6 +252,88 @@ export class TextOverPictureManager {
                     "common/saveChangesAndRethinkPageEvent"
                 );
             };
+
+            // This section contains code for allowing the bubble to be moved around.
+            // We use mousemove effects instead of drag due to concerns that drag effects would make the entire image container appear to drag.
+            // Instead, with mousemove, we can make only the specific bubble move around
+            let draggedBubble: Bubble | undefined = undefined; // If undefined, indicates that drag is not active
+            let bubbleGrabOffset: { x: number; y: number } = { x: 0, y: 0 };
+
+            container.onmousedown = (ev: MouseEvent) => {
+                // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
+                // So use offsetX, which is relative to the target element
+                const bubble = Comical.getBubbleHit(
+                    container,
+                    ev.offsetX,
+                    ev.offsetY
+                );
+                if (bubble) {
+                    draggedBubble = bubble;
+
+                    // Remember the offset between the top-left of the content box and the initial location of the mouse pointer
+                    const positionInfo = bubble.content.getBoundingClientRect();
+                    const deltaX = ev.pageX - positionInfo.left;
+                    const deltaY = ev.pageY - positionInfo.top;
+                    bubbleGrabOffset = { x: deltaX, y: deltaY };
+
+                    container.classList.add("grabbing");
+                }
+            };
+            container.onmousemove = (ev: MouseEvent) => {
+                if (draggedBubble) {
+                    this.calculateAndFixInitialLocation(
+                        $(draggedBubble.content),
+                        $(container),
+                        ev.pageX - bubbleGrabOffset.x, // These coordinates need to be relative to the document
+                        ev.pageY - bubbleGrabOffset.y
+                    );
+                } else {
+                    // Not currently dragging
+                    if (
+                        Comical.getBubbleHit(container, ev.offsetX, ev.offsetY)
+                    ) {
+                        // But could be dragging a bubble, so make the mouse indicate that
+                        container.classList.add("grabbable");
+                    } else {
+                        container.classList.remove("grabbable");
+                    }
+                }
+            };
+            container.onmouseup = (ev: MouseEvent) => {
+                // ENHANCE: If you release the mouse outside of the container, it is not registered as a mouseup here.
+                //          The bubble will continue to be dragged inside the container until you click and release.
+                draggedBubble = undefined;
+                container.classList.remove("grabbing");
+            };
+
+            // The container's onmousemove handler isn't capable of reliably detecting in all cases when it goes out of bounds, because
+            // the mouse is no longer over the container.
+            // So need a handler on the .bloom-page instead, which surrounds the image container.
+            const currentPageElement = container.closest(".bloom-page");
+            if (currentPageElement) {
+                (currentPageElement as HTMLElement).onmousemove = (
+                    ev: MouseEvent
+                ) => {
+                    if (!draggedBubble) {
+                        return;
+                    }
+
+                    // Oops, the mouse cursor has left the image container
+                    // Current requirements are to end the drag in this case
+                    if (
+                        ev.pageX < containerBounds.left ||
+                        ev.pageX > containerBounds.right ||
+                        ev.pageY < containerBounds.top ||
+                        ev.pageY > containerBounds.bottom
+                    ) {
+                        // FYI: If you use the drag handle (which uses the JQuery drag handle), it enforces the content box to stay entirely within the imageContainer.
+                        // This code currently doesn't do that.
+                        draggedBubble = undefined;
+                        container.classList.remove("grabbing");
+                    }
+                };
+            }
+            // ENHANCE: Have ctrl+click go through the text box (currently text box intercepts the click, which is desirable in many cases)
         });
     }
 
@@ -564,6 +646,9 @@ export class TextOverPictureManager {
                     ui.helper.children(".bloom-editable").blur();
                     ui.position.top = ui.position.top / scale;
                     ui.position.left = ui.position.left / scale;
+                    thisTOPBox
+                        .find(".bloom-dragHandleTOP")
+                        .addClass("grabbing");
                 },
                 handle: ".bloom-dragHandleTOP",
                 stop: (event, ui) => {
@@ -573,6 +658,10 @@ export class TextOverPictureManager {
                             $(target)
                         );
                     }
+
+                    thisTOPBox
+                        .find(".bloom-dragHandleTOP")
+                        .removeClass("grabbing");
                 }
             });
 
