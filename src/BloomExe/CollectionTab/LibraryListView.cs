@@ -27,6 +27,7 @@ namespace Bloom.CollectionTab
 	{
 		private const int ButtonHeight = 112;
 		private const int ButtonWidth = 92;
+		private readonly Size MaxThumbnailSize = new Size(HtmlThumbNailer.ThumbnailOptions.DefaultHeight, HtmlThumbNailer.ThumbnailOptions.DefaultHeight);
 
 		public delegate LibraryListView Factory();//autofac uses this
 
@@ -1007,7 +1008,7 @@ namespace Bloom.CollectionTab
 					var button = FindBookButton(bookInfo);
 					if (button == null || button.IsDisposed)
 						return; // I (gjm) found that this condition occurred sometimes when testing BL-6100
-					image = ImageUtils.ResizeImageIfNecessary(button.Size, image);
+					image = ImageUtils.CenterImageIfNecessary(MaxThumbnailSize, image);
 					_bookThumbnails.Images[imageIndex] = image;
 					button.Image = IsUsableBook(button) ? image : MakeDim(image);
 				}

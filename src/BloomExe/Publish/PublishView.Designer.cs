@@ -1,4 +1,4 @@
-﻿using Bloom.Publish.PDF;
+using Bloom.Publish.PDF;
 
 namespace Bloom.Publish
 {
@@ -80,6 +80,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._superToolTip = new SIL.Windows.Forms.SuperToolTip.SuperToolTip(this.components);
 			this._pdfViewer = new Bloom.Publish.PDF.PdfViewer();
+			this.exportAudioFiles1PerPageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
@@ -198,13 +199,14 @@ namespace Bloom.Publish
 			// 
 			this._contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._openinBrowserMenuItem,
-            this._openPDF});
+            this._openPDF,
+            this.exportAudioFiles1PerPageToolStripMenuItem});
 			this._L10NSharpExtender.SetLocalizableToolTip(this._contextMenuStrip, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._contextMenuStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._contextMenuStrip, L10NSharp.LocalizationPriority.InternalUseOnly);
 			this._L10NSharpExtender.SetLocalizingId(this._contextMenuStrip, "_contextMenuStrip._contextMenuStrip");
 			this._contextMenuStrip.Name = "_contextMenuStrip";
-			this._contextMenuStrip.Size = new System.Drawing.Size(432, 48);
+			this._contextMenuStrip.Size = new System.Drawing.Size(432, 92);
 			// 
 			// _openinBrowserMenuItem
 			// 
@@ -474,6 +476,16 @@ namespace Bloom.Publish
 			this._pdfViewer.Size = new System.Drawing.Size(719, 677);
 			this._pdfViewer.TabIndex = 16;
 			// 
+			// exportAudioFiles1PerPageToolStripMenuItem
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this.exportAudioFiles1PerPageToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.exportAudioFiles1PerPageToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizingId(this.exportAudioFiles1PerPageToolStripMenuItem, ".exportAudioFiles1PerPageToolStripMenuItem");
+			this.exportAudioFiles1PerPageToolStripMenuItem.Name = "exportAudioFiles1PerPageToolStripMenuItem";
+			this.exportAudioFiles1PerPageToolStripMenuItem.Size = new System.Drawing.Size(431, 22);
+			this.exportAudioFiles1PerPageToolStripMenuItem.Text = "Export audio files, 1 per page";
+			this.exportAudioFiles1PerPageToolStripMenuItem.Click += new System.EventHandler(this.ExportAudioFiles1PerPageToolStripMenuItem_Click);
+			// 
 			// PublishView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -527,5 +539,6 @@ namespace Bloom.Publish
 		private System.Windows.Forms.RadioButton _uploadRadio;
 		private System.Windows.Forms.RadioButton _epubRadio;
 		private System.Windows.Forms.Label _noBookletsMessage;
+		private System.Windows.Forms.ToolStripMenuItem exportAudioFiles1PerPageToolStripMenuItem;
 	}
 }
