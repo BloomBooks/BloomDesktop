@@ -23,6 +23,9 @@
     .bloom-dragHandleTOP {
         display: none;
     }
+    #formatButton {
+        display: none;
+    }
 }
 
 .bloom-imageContainer {
@@ -95,6 +98,12 @@
                 border: 1px solid @bloom-blue;
                 box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
                     0 0 8px @bloom-blue;
+            }
+
+            .bloom-editable:not(:focus) {
+                &:after {
+                    content: "" !important;
+                }
             }
 
             .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
