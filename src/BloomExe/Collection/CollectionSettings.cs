@@ -37,10 +37,10 @@ namespace Bloom.Collection
 	{
 		private const int kCurrentOneTimeCheckVersionNumber = 1; // bumping this will trigger a new one time check
 		public const string kDefaultXmatterName = "Traditional";
-		public LanguageSpec Language1;
-		public LanguageSpec Language2;
-		public LanguageSpec Language3;
-		public LanguageSpec[] LanguagesZeroBased;
+		public WritingSystem Language1;
+		public WritingSystem Language2;
+		public WritingSystem Language3;
+		public WritingSystem[] LanguagesZeroBased;
 
 		private string _signLanguageIso639Code;
 
@@ -101,10 +101,10 @@ namespace Bloom.Collection
 
 		public CollectionSettings()
 		{
-			Language1 = new LanguageSpec(1, ()=>Language2.Iso639Code);
-			Language2 = new LanguageSpec(2, () => Language2.Iso639Code);
-			Language3 = new LanguageSpec(3, () => Language2.Iso639Code);
-			LanguagesZeroBased = new LanguageSpec[3];
+			Language1 = new WritingSystem(1, ()=>Language2.Iso639Code);
+			Language2 = new WritingSystem(2, () => Language2.Iso639Code);
+			Language3 = new WritingSystem(3, () => Language2.Iso639Code);
+			LanguagesZeroBased = new WritingSystem[3];
 			this.LanguagesZeroBased[0] = Language1;
 			this.LanguagesZeroBased[1] = Language2;
 			this.LanguagesZeroBased[2] = Language3;
@@ -134,7 +134,7 @@ namespace Bloom.Collection
 			Language2 = collectionInfo.Language2;
 			Language3 = collectionInfo.Language3;
 
-			Language2.FontName = Language3.FontName = LanguageSpec.GetDefaultFontName();
+			Language2.FontName = Language3.FontName = WritingSystem.GetDefaultFontName();
 
 			
 			Country = collectionInfo.Country;
@@ -265,7 +265,7 @@ namespace Bloom.Collection
 		/// </summary>
 		public string GetLanguageName(string code, string inLanguage)
 		{
-			return LanguageSpec.LookupIsoCode.GetLocalizedLanguageName(code, inLanguage);
+			return WritingSystem.LookupIsoCode.GetLocalizedLanguageName(code, inLanguage);
 		}
 
 		public string GetSignLanguageName()
@@ -323,7 +323,7 @@ namespace Bloom.Collection
 			sb.AppendLine("/* *** DO NOT EDIT! ***   These styles are controlled by the Settings dialog box in Bloom. */");
 			sb.AppendLine("/* They may be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
 			// note: css pseudo elements  cannot have a @lang attribute. So this is needed to show page numbers in scripts not covered by Andika New Basic.
-			LanguageSpec.AddSelectorCssRule(sb, ".numberedPage::after", Language1.FontName, Language1.IsRightToLeft, Language1.LineHeight, Language1.BreaksLinesOnlyAtSpaces, omitDirection);
+			WritingSystem.AddSelectorCssRule(sb, ".numberedPage::after", Language1.FontName, Language1.IsRightToLeft, Language1.LineHeight, Language1.BreaksLinesOnlyAtSpaces, omitDirection);
 			Language1.AddSelectorCssRule(sb, omitDirection);
 			if (Language2Iso639Code != Language1Iso639Code)
 				Language2.AddSelectorCssRule(sb, omitDirection);
@@ -469,7 +469,7 @@ namespace Bloom.Collection
 		private bool MigrateSettingsToAndikaNewBasicFont()
 		{
 			const string newFont = "Andika New Basic";
-			if (LanguageSpec.GetDefaultFontName() != newFont) // sanity check to make sure Andika New Basic is installed
+			if (WritingSystem.GetDefaultFontName() != newFont) // sanity check to make sure Andika New Basic is installed
 				return false;
 
 			const string id = "CollectionSettingsDialog.AndikaNewBasicUpdate";
@@ -673,7 +673,7 @@ namespace Bloom.Collection
 				var code = isoCodes[i];
 				string name = Language1.Name;
 				if (code != Language1Iso639Code)
-					LanguageSpec.LookupIsoCode.GetBestLanguageName(code, out name);
+					WritingSystem.LookupIsoCode.GetBestLanguageName(code, out name);
 				string ethCode;
 				LanguageSubtag data;
 				if (!StandardSubtags.RegisteredLanguages.TryGet(code.ToLowerInvariant(), out data))

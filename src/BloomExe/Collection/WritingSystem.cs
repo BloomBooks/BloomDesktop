@@ -10,7 +10,7 @@ using SIL.Windows.Forms.WritingSystems;
 
 namespace Bloom.Collection
 {
-	public class LanguageSpec
+	public class WritingSystem
 	{
 		private readonly int _languageNumberInCollection;
 		private readonly Func<string> _codeOfDefaultLanguageForNaming;
@@ -34,7 +34,7 @@ namespace Bloom.Collection
 		public decimal LineHeight;
 		public string FontName;
 
-		public LanguageSpec(int languageNumberInCollection, Func<string> codeOfDefaultLanguageForNaming)
+		public WritingSystem(int languageNumberInCollection, Func<string> codeOfDefaultLanguageForNaming)
 		{
 			_languageNumberInCollection = languageNumberInCollection;
 			_codeOfDefaultLanguageForNaming = codeOfDefaultLanguageForNaming;
@@ -85,15 +85,15 @@ namespace Bloom.Collection
 			Name = GetLanguageName_NoCache(_codeOfDefaultLanguageForNaming());
 		}
 
-		public void SaveToXElement(XElement library)
+		public void SaveToXElement(XElement xml)
 		{
 			var pfx = "Language" + _languageNumberInCollection;
-			library.Add(new XElement(pfx+"Name", Name));
-			library.Add(new XElement(pfx + "Iso639Code", Iso639Code));
-			library.Add(new XElement($"DefaultLanguage{_languageNumberInCollection}FontName", FontName));
-			library.Add(new XElement($"IsLanguage{_languageNumberInCollection}Rtl", IsRightToLeft));
-			library.Add(new XElement(pfx + "LineHeight", LineHeight));
-			library.Add(new XElement(pfx+"BreaksLinesOnlyAtSpaces", BreaksLinesOnlyAtSpaces));
+			xml.Add(new XElement(pfx+"Name", Name));
+			xml.Add(new XElement(pfx + "Iso639Code", Iso639Code));
+			xml.Add(new XElement($"DefaultLanguage{_languageNumberInCollection}FontName", FontName));
+			xml.Add(new XElement($"IsLanguage{_languageNumberInCollection}Rtl", IsRightToLeft));
+			xml.Add(new XElement(pfx + "LineHeight", LineHeight));
+			xml.Add(new XElement(pfx+"BreaksLinesOnlyAtSpaces", BreaksLinesOnlyAtSpaces));
 
 		}
 
@@ -150,17 +150,17 @@ namespace Bloom.Collection
 			
 			BreaksLinesOnlyAtSpaces = ReadBoolean(xml, pfx+"BreaksLinesOnlyAtSpaces", false);
 		}
-		private bool ReadBoolean(XElement library, string id, bool defaultValue)
+		private bool ReadBoolean(XElement xml, string id, bool defaultValue)
 		{
-			string s = ReadString(library, id, defaultValue.ToString());
+			string s = ReadString(xml, id, defaultValue.ToString());
 			bool b;
 			bool.TryParse(s, out b);
 			return b;
 		}
 
-		private decimal ReadDecimal(XElement library, string id, decimal defaultValue)
+		private decimal ReadDecimal(XElement xml, string id, decimal defaultValue)
 		{
-			var s = ReadString(library, id, defaultValue.ToString(CultureInfo.InvariantCulture));
+			var s = ReadString(xml, id, defaultValue.ToString(CultureInfo.InvariantCulture));
 			decimal d;
 			// REVIEW: if we localize the display of decimal values in the line-height combo box, then this
 			// needs to handle the localized version of the number.  (This happens automatically by removing

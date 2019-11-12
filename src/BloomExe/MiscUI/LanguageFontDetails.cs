@@ -22,7 +22,7 @@ namespace Bloom.MiscUI
 			var fontNames = new List<string>();
 			fontNames.AddRange(Browser.NamesOfFontsThatBrowserCanRender());
 			fontNames.Sort();
-			var defaultFont = LanguageSpec.GetDefaultFontName();
+			var defaultFont = WritingSystem.GetDefaultFontName();
 			foreach (var font in fontNames)
 			{
 				_fontCombo.Items.Add(font);
