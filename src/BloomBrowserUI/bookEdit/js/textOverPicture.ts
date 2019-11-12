@@ -21,6 +21,10 @@ export class TextOverPictureManager {
         | ((x: BubbleSpec | undefined) => void)
         | undefined;
 
+    // These variables are used by the bubble's onmouse* event handlers
+    private draggedBubble: Bubble | undefined; // Use Undefined to indicate that there is no active drag in progress
+    private bubbleGrabOffset: { x: number; y: number } = { x: 0, y: 0 };
+
     public initializeTextOverPictureManager(): void {
         WebSocketManager.addListener(kWebsocketContext, messageEvent => {
             const msg = messageEvent.message;
@@ -256,9 +260,6 @@ export class TextOverPictureManager {
             // This section contains code for allowing the bubble to be moved around.
             // We use mousemove effects instead of drag due to concerns that drag effects would make the entire image container appear to drag.
             // Instead, with mousemove, we can make only the specific bubble move around
-            let draggedBubble: Bubble | undefined = undefined; // If undefined, indicates that drag is not active
-            let bubbleGrabOffset: { x: number; y: number } = { x: 0, y: 0 };
-
             container.onmousedown = (ev: MouseEvent) => {
                 // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
                 // So use offsetX, which is relative to the target element
@@ -268,24 +269,24 @@ export class TextOverPictureManager {
                     ev.offsetY
                 );
                 if (bubble) {
-                    draggedBubble = bubble;
+                    this.draggedBubble = bubble;
 
                     // Remember the offset between the top-left of the content box and the initial location of the mouse pointer
                     const positionInfo = bubble.content.getBoundingClientRect();
                     const deltaX = ev.pageX - positionInfo.left;
                     const deltaY = ev.pageY - positionInfo.top;
-                    bubbleGrabOffset = { x: deltaX, y: deltaY };
+                    this.bubbleGrabOffset = { x: deltaX, y: deltaY };
 
                     container.classList.add("grabbing");
                 }
             };
             container.onmousemove = (ev: MouseEvent) => {
-                if (draggedBubble) {
+                if (this.draggedBubble) {
                     this.calculateAndFixInitialLocation(
-                        $(draggedBubble.content),
+                        $(this.draggedBubble.content),
                         $(container),
-                        ev.pageX - bubbleGrabOffset.x, // These coordinates need to be relative to the document
-                        ev.pageY - bubbleGrabOffset.y
+                        ev.pageX - this.bubbleGrabOffset.x, // These coordinates need to be relative to the document
+                        ev.pageY - this.bubbleGrabOffset.y
                     );
                 } else {
                     // Not currently dragging
@@ -302,7 +303,7 @@ export class TextOverPictureManager {
             container.onmouseup = (ev: MouseEvent) => {
                 // ENHANCE: If you release the mouse outside of the container, it is not registered as a mouseup here.
                 //          The bubble will continue to be dragged inside the container until you click and release.
-                draggedBubble = undefined;
+                this.draggedBubble = undefined;
                 container.classList.remove("grabbing");
             };
 
@@ -314,7 +315,7 @@ export class TextOverPictureManager {
                 (currentPageElement as HTMLElement).onmousemove = (
                     ev: MouseEvent
                 ) => {
-                    if (!draggedBubble) {
+                    if (!this.draggedBubble) {
                         return;
                     }
 
@@ -328,7 +329,7 @@ export class TextOverPictureManager {
                     ) {
                         // FYI: If you use the drag handle (which uses the JQuery drag handle), it enforces the content box to stay entirely within the imageContainer.
                         // This code currently doesn't do that.
-                        draggedBubble = undefined;
+                        this.draggedBubble = undefined;
                         container.classList.remove("grabbing");
                     }
                 };
@@ -586,8 +587,14 @@ export class TextOverPictureManager {
         const containerPosition = container[0].getBoundingClientRect();
         const xOffset = (mouseX - containerPosition.left) / scale;
         const yOffset = (mouseY - containerPosition.top) / scale;
-        const location = "left: " + xOffset + "px; top: " + yOffset + "px;";
-        wrapperBox.attr("style", location);
+
+        // Note: This code will not clear out the rest of the style properties... they are preserved.
+        //       If some or all style properties need to be removed before doing this processing, it is the caller's responsibility to do so beforehand
+        //       The reason why we do this is because a bubble's onmousemove handler calls this function,
+        //       and in that case we want to preserve the bubble's width/height which are set in the style
+        wrapperBox.css("left", xOffset); // assumes numbers are in pixels
+        wrapperBox.css("top", yOffset); // assumes numbers are in pixels
+
         TextOverPictureManager.calculatePercentagesAndFixTextboxPosition(
             wrapperBox
         ); // translate px to %
