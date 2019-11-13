@@ -1,26 +1,25 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Net.Mail;
 using System.Text;
-using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
-using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
 
 namespace Bloom.web.controllers
 {
-	class ProblemReportApi : IDisposable
+	internal class ProblemReportApi : IDisposable
 	{
 		//private readonly UserControl _controlForScreenshotting;
 		private readonly BookSelection _bookSelection;
-		private static TempFile _screenshotPath;
+		private static TempFile _screenshotTempFile;
+		private string _userDescription;
 
 		public ProblemReportApi(BookSelection bookSelection)
 		{
@@ -29,31 +28,37 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
+			// ProblemDialog.tsx uses this endpoint to get the screenshot image.
 			apiHandler.RegisterEndpointHandler("problemReport/screenshot",
 				(ApiRequest request) =>
 				{
-					request.ReplyWithImage(_screenshotPath.Path); 
+					request.ReplyWithImage(_screenshotTempFile.Path); 
 				}, true);
 
+			// ProblemDialog.tsx uses this endpoint to get the name of the book.
 			apiHandler.RegisterEndpointHandler("problemReport/bookName",
 				(ApiRequest request) =>
 				{
 					request.ReplyWithText(_bookSelection.CurrentSelection?.TitleBestForUserDisplay);
 				}, true);
 
+			// ProblemDialog.tsx uses this endpoint to get the registered user's email address.
 			apiHandler.RegisterEndpointHandler("problemReport/emailAddress",
 				(ApiRequest request) =>
 				{
 					request.ReplyWithText(SIL.Windows.Forms.Registration.Registration.Default.Email);
 				}, true);
 
+			// PrivacyScreen.tsx uses this endpoint to show the user what info will be included in the report.
 			apiHandler.RegisterEndpointHandler("problemReport/diagnosticInfo",
 				(ApiRequest request) =>
 				{
-					var includeBook = request.RequiredParam("includeBook") == "true";
-					request.ReplyWithText(GetDiagnosticInfo());// todo includeBook));
+					var userWantsToIncludeBook = request.RequiredParam("includeBook") == "true";
+					request.ReplyWithText(GetDiagnosticInfo(userWantsToIncludeBook));
 				}, true);
 
+			// ProblemDialog.tsx uses this endpoint in its AttemptSubmit method; it expects an AxiosResponse, so it
+			// knows it succeeded.
 			apiHandler.RegisterEndpointHandler("problemReport/submit",
 				(ApiRequest request) =>
 				{
@@ -61,21 +66,23 @@ namespace Bloom.web.controllers
 					var subject = report.kind == "User" ? "User Problem" : report.kind == "Fatal" ? "Crash Report" : "Error Report";
 
 					var issueSubmission = new YouTrackIssueSubmitter("BL");
-					if (report.includeScreenshot && _screenshotPath !=null && RobustFile.Exists(_screenshotPath.Path))
+					var userDesc = report.description as string;
+					if (report.includeScreenshot && _screenshotTempFile != null && RobustFile.Exists(_screenshotTempFile.Path))
 					{
 						// Enhance: this won't have a nice name like "screenshot.png"
-						issueSubmission.AddAttachment(_screenshotPath.Path);
+						issueSubmission.AddAttachment(_screenshotTempFile.Path);
 					}
 					if(report.includeBook)
 					{
-					//	submitter.AddAttachment(book);
+						//issueSubmission.AddAttachment(book);
 					}
+					var diagnosticInfo = GetDiagnosticInfo(report.includeBook);
 					if (report.email?.length > 0)
 					{
 						// remember their email
 						SIL.Windows.Forms.Registration.Registration.Default.Email = report.email;
 					}
-					issueSubmission.SubmitToYouTrack(subject,  report.userInput);
+					issueSubmission.SubmitToYouTrack(subject, userDesc + " " + diagnosticInfo);
 					request.ReplyWithJson(new{issueLink="https://google.com"});
 				}, true);
 		}
@@ -94,17 +101,17 @@ namespace Bloom.web.controllers
 								bounds.Size);
 						}
 
-						_screenshotPath = TempFile.WithExtension(".png");
-						RobustImageIO.SaveImage(screenshot, _screenshotPath.Path, ImageFormat.Png);
+						_screenshotTempFile = TempFile.WithExtension(".png");
+						RobustImageIO.SaveImage(screenshot, _screenshotTempFile.Path, ImageFormat.Png);
 					}
 					catch (Exception e)
 					{
-						_screenshotPath = null;
+						_screenshotTempFile = null;
 						Logger.WriteError("Bloom was unable to create a screenshot.", e);
 					}
 
-					var rootFile = BloomFileLocator.GetBrowserFile(false,  "problemDialog", "loader.html");
-					using (var dlg = new BrowserDialog(rootFile.ToLocalhost()))
+					var rootFileUrl = BloomFileLocator.GetBrowserFile(false,  "problemDialog", "loader.html");
+					using (var dlg = new BrowserDialog(rootFileUrl.ToLocalhost()))
 					{
 						dlg.ShowDialog();
 					}
@@ -114,7 +121,6 @@ namespace Bloom.web.controllers
 		private string GetObfuscatedEmail()
 		{
 			var email = SIL.Windows.Forms.Registration.Registration.Default.Email;
-			var description = GetDiagnosticInfo();
 			string obfuscatedEmail;
 			try
 			{
@@ -128,25 +134,24 @@ namespace Bloom.web.controllers
 			}
 			return obfuscatedEmail;
 		}
+
 		private string GetInformationAboutUser()
 		{
-
 			var bldr = new StringBuilder();
-			bldr.AppendLine("Error Report from " + _name.Text + " (" + GetObfuscatedEmail() + ") on " + DateTime.UtcNow.ToUniversalTime());
+			//bldr.AppendLine("Error Report from " + _name.Text + " (" + GetObfuscatedEmail() + ") on " + DateTime.UtcNow.ToUniversalTime());
+			return bldr.ToString();
 		}
-		private string GetDiagnosticInfo()
-		{
-			
 
+		private string GetDiagnosticInfo(bool includeBook)
+		{
 			var bldr = new StringBuilder();
 
-			
 			bldr.AppendLine("=Problem Description=");
-			bldr.AppendLine(_description.Text);
+			bldr.AppendLine(_userDescription);
 			bldr.AppendLine();
 
 			GetStandardErrorReportingProperties(bldr, true);
-			GetAdditionalEnvironmentInfo(bldr);
+			GetAdditionalBloomEnvironmentInfo(bldr);
 			GetAdditionalFileInfo(bldr, includeBook);
 			return bldr.ToString();
 		}
@@ -172,26 +177,25 @@ namespace Bloom.web.controllers
 				}
 				catch (Exception err)
 				{
-					//We have more than one report of dieing while logging an exception.
+					//We have more than one report of dying while logging an exception.
 					bldr.AppendLine("****Could not read from log: " + err.Message);
 				}
 			}
 		}
 
-		private void GetAdditionalEnvironmentInfo(StringBuilder bldr)
+		private void GetAdditionalBloomEnvironmentInfo(StringBuilder bldr)
 		{
 			var book = _bookSelection.CurrentSelection;
 			var projectName = book?.CollectionSettings.CollectionName;
 			bldr.AppendLine("=Additional User Environment Information=");
 			if (book == null)
 			{
-				if (!string.IsNullOrEmpty(projectName))
-					bldr.AppendLine("Collection name: " + projectName);
 				bldr.AppendLine("No Book was selected.");
 				return;
 			}
 			try
 			{
+				bldr.AppendLine("Collection name: " + projectName);
 				var sizeOrient = book.GetLayout().SizeAndOrientation;
 				bldr.AppendLine("Page Size/Orientation: " + sizeOrient);
 			}
@@ -219,12 +223,12 @@ namespace Bloom.web.controllers
 		private void GetAdditionalFileInfo(StringBuilder bldr, bool includeBook)
 		{
 			var book = _bookSelection.CurrentSelection;
-			if (book == null || String.IsNullOrEmpty(book.FolderPath))
+			if (string.IsNullOrEmpty(book?.FolderPath))
 				return;
 			bldr.AppendLine();
 			bldr.AppendLine("=Additional Files Bundled With Book=");
 			var collectionFolder = Path.GetDirectoryName(book.FolderPath);
-			if (WantReaderInfo( includeBook))
+			if (WantReaderInfo(includeBook))
 			{
 				foreach (var file in Directory.GetFiles(collectionFolder, "ReaderTools*-*.json"))
 					bldr.AppendLine(file);
@@ -241,7 +245,7 @@ namespace Bloom.web.controllers
 		{
 			var book = _bookSelection.CurrentSelection;
 
-			if (book==null || !includeBook)
+			if (book == null || !includeBook)
 				return false;
 			foreach (var tool in book.BookInfo.Tools)
 			{
@@ -265,7 +269,7 @@ namespace Bloom.web.controllers
 	
 		public void Dispose()
 		{
-			_screenshotPath?.Dispose();
+			_screenshotTempFile?.Dispose();
 		}
 	}
 }

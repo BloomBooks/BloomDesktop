@@ -1,4 +1,4 @@
-import { createMuiTheme, TextField, Button, Theme } from "@material-ui/core";
+import { createMuiTheme, Theme } from "@material-ui/core/styles";
 import { ProblemKind } from "./ProblemDialog";
 
 const kBloomBlue = "#1d94a4";
