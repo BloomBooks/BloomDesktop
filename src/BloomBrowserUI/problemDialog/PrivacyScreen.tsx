@@ -3,7 +3,7 @@ import Typography from "@material-ui/core/Typography";
 import "./ProblemDialog.less";
 import ArrowBack from "@material-ui/icons/ArrowBack";
 import { BloomApi } from "../utils/bloomApi";
-import { Button } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
 export const PrivacyScreen: React.FunctionComponent<{
     includeBook: boolean;
     onBack: () => void;
