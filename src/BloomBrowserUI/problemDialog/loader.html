@@ -1,14 +1,17 @@
-<!-- We need this loader because this screen is currently loaded into its own geckfox browser-->
 <!DOCTYPE html>
-<html class="publishTabScreen" lang="en">
+<!-- We need this loader because this screen is currently loaded into its own geckfox browser -->
+<html class="problemDialogScreen" lang="en">
     <head>
         <meta charset="UTF-8" />
+        <title>Bloom Problem Dialog</title>
         <link rel="stylesheet" type="text/css" href="BloomWebFonts.css" />
-    </head>
-
-    <body>
-        <div id="ProblemDialog" class="problemDialogRoot"></div>
         <script src="../commonBundle.js"></script>
         <script src="../problemReportBundle.js"></script>
+    </head>
+
+    <body
+        onload="window.connectProblemDialog(document.getElementById('problemDialog'));"
+    >
+        <div id="problemDialog" class="problemDialogRoot"></div>
     </body>
 </html>

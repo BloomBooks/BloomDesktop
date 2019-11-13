@@ -5,12 +5,12 @@ import { BloomApi } from "../utils/bloomApi";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogContent from "@material-ui/core/DialogContent";
-import { withStyles, ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@material-ui/styles";
 import "./ProblemDialog.less";
 import BloomButton from "../react_components/bloomButton";
-import { TextField, Theme } from "@material-ui/core";
+import TextField from "@material-ui/core/TextField";
 import { MuiCheckbox } from "../react_components/muiCheckBox";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { HowMuchGroup } from "./HowMuchGroup";
 import { PrivacyNotice } from "./PrivacyNotice";
 import { makeTheme, kindParams } from "./theme";
@@ -24,37 +24,31 @@ export enum ProblemKind {
     NonFatal = "NonFatal",
     Fatal = "Fatal"
 }
+
 enum Mode {
     gather,
     submitting,
     submitted,
     showPrivacyDetails
 }
+
 export const ProblemDialog: React.FunctionComponent<{
     kind: ProblemKind;
 }> = props => {
     const [mode, setMode] = useState(Mode.gather);
-    const [includeBook, setIncludeBloom] = useState(true);
+    const [includeBook, setIncludeBook] = useState(true);
     const [includeScreenshot, setIncludeScreenshot] = useState(true);
     const [email, setEmail] = BloomApi.useApiString(
         "problemReport/emailAddress",
         ""
     );
     const [submitAttempts, setSubmitAttempts] = useState(0);
-    const [theme, setTheme] = useState<Theme | undefined>(undefined);
+    const theme = makeTheme(props.kind);
     const [userInput, setWhatDoing] = useState("");
-    const [bookName] = BloomApi.useApiString("problemReport/bookName", "??");
-
-    //REVIEW: the theme gets used before useEffect returns, and we see an error in the console. How to
-    // do something before the rending that also needs to only be re-done when prop.kind changes?
-    // In our *current* implementation, this prop won't ever change (the whole react env gets reloaded for each problem dialog)
-    // React.useEffect(() => {
-    //     setTheme(makeTheme(props.kind));
-    // }, [props.kind]);
-    // So at the moment, I'm doing this, but it feels inelegant
-    if (theme === undefined) {
-        setTheme(makeTheme(props.kind));
-    }
+    const [bookName, setUnused] = BloomApi.useApiString(
+        "problemReport/bookName",
+        "??"
+    );
 
     const whatWereYouDoingAttentionClass = useDrawAttention(
         submitAttempts,
@@ -173,7 +167,7 @@ export const ProblemDialog: React.FunctionComponent<{
                                                     l10nParam0={bookName}
                                                     checked={includeBook}
                                                     onCheckChanged={v =>
-                                                        setIncludeBloom(
+                                                        setIncludeBook(
                                                             v as boolean
                                                         )
                                                     }
@@ -193,7 +187,6 @@ export const ProblemDialog: React.FunctionComponent<{
                                                         "/bloom/api/problemReport/screenshot"
                                                     }
                                                 />
-
                                                 <PrivacyNotice
                                                     onLearnMore={() =>
                                                         setMode(
@@ -282,9 +275,8 @@ function useCtrlEnterToSubmit(callback) {
         };
     }, []);
 }
-if (document.getElementById("problemDialogRoot")) {
-    ReactDOM.render(
-        <ProblemDialog kind={ProblemKind.Fatal} />,
-        document.getElementById("problemDialogRoot")
-    );
-}
+
+// allow plain 'ol javascript in the html to connect up react
+(window as any).connectProblemDialog = (element: Element | null) => {
+    ReactDOM.render(<ProblemDialog kind={ProblemKind.Fatal} />, element);
+};

@@ -2,7 +2,6 @@ import * as React from "react";
 import "./ProblemDialog.less";
 import { TextField } from "@material-ui/core";
 import { useState } from "react";
-import { BloomApi } from "../utils/bloomApi";
 import { useDebouncedCallback } from "use-debounce";
 import { useDrawAttention } from "./UseDrawAttention";
 
