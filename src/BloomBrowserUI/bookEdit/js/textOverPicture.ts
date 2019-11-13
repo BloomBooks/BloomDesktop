@@ -124,6 +124,7 @@ export class TextOverPictureManager {
             )[0] as HTMLElement;
             editable.focus();
             Comical.startEditing(imageContainers);
+            this.migrateOldTopElems(textOverPictureElems);
             Comical.activateElement(this.activeElement);
             Array.from(
                 document.getElementsByClassName("bloom-editable")
@@ -335,6 +336,20 @@ export class TextOverPictureManager {
                 };
             }
             // ENHANCE: Have ctrl+click go through the text box (currently text box intercepts the click, which is desirable in many cases)
+        });
+    }
+    migrateOldTopElems(textOverPictureElems: HTMLElement[]): void {
+        textOverPictureElems.forEach(top => {
+            if (!top.getAttribute("data-bubble")) {
+                const bubbleSpec = Bubble.getDefaultBubbleSpec(top, "none");
+                new Bubble(top).setBubbleSpec(bubbleSpec);
+                // it would be nice to do this only once, but there MIGHT
+                // be TOP elements in more than one image container...too complicated,
+                // and this only happens once per TOP.
+                Comical.update(top.closest(
+                    ".bloom-imageContainer"
+                ) as HTMLElement);
+            }
         });
     }
 
