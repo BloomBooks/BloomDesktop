@@ -5,7 +5,7 @@
 @DefaultTextBoxHeight: @MinTextBoxHeight;
 @DragHandleBackgroundColor: transparent;
 
-// Don't show text over picture borders or resizing handles unless hovering over the image
+// Don't show text over picture borders, resizing handles, or format buttons unless hovering over the image
 .bloom-imageContainer:not(.hoverUp) .bloom-textOverPicture {
     .bloom-editable {
         border: none;
@@ -14,7 +14,7 @@
         padding-right: 1px;
         padding-top: 2px;
         &:after {
-            content: "" !important;
+            display: none !important;
         }
     }
     .ui-resizable-handle {
@@ -100,34 +100,36 @@
                     0 0 8px @bloom-blue;
             }
 
-            .bloom-editable:not(:focus) {
+            // Language tip CSS
+            .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]) {
                 &:after {
-                    content: "" !important;
+                    // In editMode.less, it sets the "content" property for all text boxes (which normally always have the language tip visible).
+                    // But here in text over picture, we want to default to not having the language tip visible.
+                    display: none; // Prevents padding-top from being rendered (content: "" still renders it)
+                }
+
+                &:focus:after {
+                    display: block;
+                    left: 100%; // Align the left edge of the language tip content to the right edge
+                    right: unset; // Need to clear an inherited property
+                    bottom: 0;
+                    color: white;
+                    background-color: @bloom-gray; // Specifically set the background color to gray to make it easier to see since it now goes outside the bubbles.
+                    font-size: xx-small;
+                    padding-left: 2px;
+                    padding-right: 5px;
+
+                    // ENHANCE: See if you can use padding-top instead. But need to ensure there's enough on the bottom to handle letters that extend below line like 'g'
+                    line-height: 1.3em;
                 }
             }
 
-            .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
-                left: 100%; // Align the left edge of the language tip content to the right edge
-                right: unset; // Need to clear an inherited property
-                bottom: 0;
-                color: white;
-                background-color: @bloom-gray; // Specifically set the background color to gray to make it easier to see since it now goes outside the bubbles.
-                font-size: xx-small;
-                padding-right: 5px;
-                padding-left: 2px;
-
-                // Adds a little more height to the top (and bottom). Note that padding-top doesn't work well,
-                // because that caused the padding to be rendered even when the language tip content wasn't be shown
-                line-height: 1.3em;
-            }
-
-            // Allows the language tip to be suppressed by adding a class
-            .bloom-editable.disableTOPControls:after {
-                display: none;
-            }
-            // Allows the format gear to be suppressed by adding a class
-            .bloom-editable.disableTOPControls #formatButton {
-                display: none;
+            // Allows the format gear and language tip to be suppressed by adding a class
+            .bloom-editable.disableTOPControls {
+                #formatButton,
+                &:after {
+                    display: none;
+                }
             }
         }
     }
