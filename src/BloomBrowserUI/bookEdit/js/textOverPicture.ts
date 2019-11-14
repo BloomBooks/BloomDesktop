@@ -138,6 +138,10 @@ export class TextOverPictureManager {
                     TextOverPictureManager.onFocusSetActiveElement
                 );
             });
+            document.addEventListener(
+                "click",
+                TextOverPictureManager.onDocClickClearActiveElement
+            );
         }
 
         // turn on various behaviors for each image
@@ -183,7 +187,11 @@ export class TextOverPictureManager {
                         // image.
                         let somethingElseToFocus = Array.from(
                             document.getElementsByClassName("bloom-editable")
-                        ).filter(e => !container.contains(e))[0] as HTMLElement;
+                        ).filter(
+                            e =>
+                                !container.contains(e) &&
+                                (e as HTMLElement).offsetHeight > 0 // a crude but here adequate way to pick a visible one
+                        )[0] as HTMLElement;
                         if (!somethingElseToFocus) {
                             // If the page contains only images (or videos, etc...no text except bubbles
                             // then we will make something temporary and hidden to focus.
@@ -379,6 +387,22 @@ export class TextOverPictureManager {
         }
     }
 
+    private static onDocClickClearActiveElement(event: Event) {
+        const clickedElement = event.target as Element; // most local thing clicked on
+        if (clickedElement.closest(".bloom-imageContainer")) {
+            // We have other code to handle setting and clearing Comical handles
+            // if the click is inside a Comical area.
+            return;
+        }
+        // If we clicked in the document outside a Comical picture
+        // we don't want anything Comical to be active.
+        // (We don't use a blur event for this because we don't want to unset
+        // the active element for clicks outside the content window, e.g., on the
+        // toolbox controls, or even in a debug window. This event handler is
+        // attached to the page frame document.)
+        theOneTextOverPictureManager.setActiveElement(undefined);
+    }
+
     public getActiveElement() {
         return this.activeElement;
     }
@@ -419,6 +443,10 @@ export class TextOverPictureManager {
                     TextOverPictureManager.onFocusSetActiveElement
                 );
             }
+        );
+        document.removeEventListener(
+            "click",
+            TextOverPictureManager.onDocClickClearActiveElement
         );
     }
 
