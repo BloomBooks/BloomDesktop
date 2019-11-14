@@ -122,12 +122,18 @@
                     // ENHANCE: See if you can use padding-top instead. But need to ensure there's enough on the bottom to handle letters that extend below line like 'g'
                     line-height: 1.3em;
                 }
+                // Allows the language tip to be suppressed by adding a class.
+                // Note that unless we use !important, it has to be MORE specific than the rule above
+                // that makes it display:block. Hence inside the same parent class rules.
+                &.disableTOPControls {
+                    &:focus:after {
+                        display: none;
+                    }
+                }
             }
-
-            // Allows the format gear and language tip to be suppressed by adding a class
+            // Allows the format gear to be suppressed by adding a class
             .bloom-editable.disableTOPControls {
-                #formatButton,
-                &:after {
+                #formatButton {
                     display: none;
                 }
             }
