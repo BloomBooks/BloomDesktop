@@ -230,107 +230,8 @@ export class TextOverPictureManager {
                 }
             });
 
-            // drag-and-drop support for bubbles from comical toolbox
-
-            // This suppresses the default behavior, which is to forbid dragging things to
-            // an element, but only if the source of the drag is a bloom bubble.
-            container.ondragover = ev => {
-                if (ev.dataTransfer && ev.dataTransfer.getData("bloomBubble")) {
-                    ev.preventDefault();
-                }
-            };
-            // Controls what happens when a bloom bubble is dropped. We get the style
-            // set in CalloutControls.ondragstart() and make a bubble with that style
-            // at the drop position.
-            container.ondrop = ev => {
-                ev.preventDefault();
-                const style = ev.dataTransfer
-                    ? ev.dataTransfer.getData("bloomBubble")
-                    : "speech";
-                this.addFloatingTOPBox(ev.clientX, ev.clientY, style);
-                BloomApi.postThatMightNavigate(
-                    "common/saveChangesAndRethinkPageEvent"
-                );
-            };
-
-            // This section contains code for allowing the bubble to be moved around.
-            // We use mousemove effects instead of drag due to concerns that drag effects would make the entire image container appear to drag.
-            // Instead, with mousemove, we can make only the specific bubble move around
-            container.onmousedown = (ev: MouseEvent) => {
-                // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
-                // So use offsetX, which is relative to the target element
-                const bubble = Comical.getBubbleHit(
-                    container,
-                    ev.offsetX,
-                    ev.offsetY
-                );
-                if (bubble) {
-                    this.draggedBubble = bubble;
-
-                    // Remember the offset between the top-left of the content box and the initial location of the mouse pointer
-                    const positionInfo = bubble.content.getBoundingClientRect();
-                    const deltaX = ev.pageX - positionInfo.left;
-                    const deltaY = ev.pageY - positionInfo.top;
-                    this.bubbleGrabOffset = { x: deltaX, y: deltaY };
-
-                    container.classList.add("grabbing");
-                }
-            };
-            container.onmousemove = (ev: MouseEvent) => {
-                if (this.draggedBubble) {
-                    this.calculateAndFixInitialLocation(
-                        $(this.draggedBubble.content),
-                        $(container),
-                        ev.pageX - this.bubbleGrabOffset.x, // These coordinates need to be relative to the document
-                        ev.pageY - this.bubbleGrabOffset.y
-                    );
-                } else {
-                    // Not currently dragging
-                    if (
-                        Comical.getBubbleHit(container, ev.offsetX, ev.offsetY)
-                    ) {
-                        // But could be dragging a bubble, so make the mouse indicate that
-                        container.classList.add("grabbable");
-                    } else {
-                        container.classList.remove("grabbable");
-                    }
-                }
-            };
-            container.onmouseup = (ev: MouseEvent) => {
-                // ENHANCE: If you release the mouse outside of the container, it is not registered as a mouseup here.
-                //          The bubble will continue to be dragged inside the container until you click and release.
-                this.draggedBubble = undefined;
-                container.classList.remove("grabbing");
-            };
-
-            // The container's onmousemove handler isn't capable of reliably detecting in all cases when it goes out of bounds, because
-            // the mouse is no longer over the container.
-            // So need a handler on the .bloom-page instead, which surrounds the image container.
-            const currentPageElement = container.closest(".bloom-page");
-            if (currentPageElement) {
-                (currentPageElement as HTMLElement).onmousemove = (
-                    ev: MouseEvent
-                ) => {
-                    if (!this.draggedBubble) {
-                        return;
-                    }
-
-                    // Oops, the mouse cursor has left the image container
-                    // Current requirements are to end the drag in this case
-                    if (
-                        ev.pageX < containerBounds.left ||
-                        ev.pageX > containerBounds.right ||
-                        ev.pageY < containerBounds.top ||
-                        ev.pageY > containerBounds.bottom
-                    ) {
-                        // FYI: If you use the drag handle (which uses the JQuery drag handle), it enforces the content box to stay entirely within the imageContainer.
-                        // This code currently doesn't do that.
-                        this.draggedBubble = undefined;
-                        container.classList.remove("grabbing");
-                    }
-                };
-            }
-            // ENHANCE: Have ctrl+click go through the text box (currently text box intercepts the click, which is desirable in many cases)
+            this.setDragAndDropHandlers(container);
+            this.setMouseDragHandlers(container, containerBounds);
         });
     }
     migrateOldTopElems(textOverPictureElems: HTMLElement[]): void {
@@ -403,6 +304,114 @@ export class TextOverPictureManager {
             this.notifyBubbleChange(this.getSelectedItemBubbleSpec());
         }
         Comical.activateElement(this.activeElement);
+    }
+
+    // drag-and-drop support for bubbles from comical toolbox
+    private setDragAndDropHandlers(container: HTMLElement): void {
+        // This suppresses the default behavior, which is to forbid dragging things to
+        // an element, but only if the source of the drag is a bloom bubble.
+        container.ondragover = ev => {
+            if (ev.dataTransfer && ev.dataTransfer.getData("bloomBubble")) {
+                ev.preventDefault();
+            }
+        };
+        // Controls what happens when a bloom bubble is dropped. We get the style
+        // set in CalloutControls.ondragstart() and make a bubble with that style
+        // at the drop position.
+        container.ondrop = ev => {
+            ev.preventDefault();
+            const style = ev.dataTransfer
+                ? ev.dataTransfer.getData("bloomBubble")
+                : "speech";
+            this.addFloatingTOPBox(ev.clientX, ev.clientY, style);
+            BloomApi.postThatMightNavigate(
+                "common/saveChangesAndRethinkPageEvent"
+            );
+        };
+    }
+
+    // Setup event handlers that allow the bubble to be moved around.
+    private setMouseDragHandlers(
+        container: HTMLElement,
+        containerBounds: ClientRect | DOMRect
+    ): void {
+        // We use mousemove effects instead of drag due to concerns that drag effects would make the entire image container appear to drag.
+        // Instead, with mousemove, we can make only the specific bubble move around
+        container.onmousedown = (ev: MouseEvent) => {
+            // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
+            // So use offsetX, which is relative to the target element
+            const bubble = Comical.getBubbleHit(
+                container,
+                ev.offsetX,
+                ev.offsetY
+            );
+            if (bubble) {
+                this.draggedBubble = bubble;
+
+                // Remember the offset between the top-left of the content box and the initial location of the mouse pointer
+                const positionInfo = bubble.content.getBoundingClientRect();
+                const deltaX = ev.pageX - positionInfo.left;
+                const deltaY = ev.pageY - positionInfo.top;
+                this.bubbleGrabOffset = { x: deltaX, y: deltaY };
+
+                container.classList.add("grabbing");
+            }
+        };
+
+        container.onmousemove = (ev: MouseEvent) => {
+            if (this.draggedBubble) {
+                this.calculateAndFixInitialLocation(
+                    $(this.draggedBubble.content),
+                    $(container),
+                    ev.pageX - this.bubbleGrabOffset.x, // These coordinates need to be relative to the document
+                    ev.pageY - this.bubbleGrabOffset.y
+                );
+            } else {
+                // Not currently dragging
+                if (Comical.getBubbleHit(container, ev.offsetX, ev.offsetY)) {
+                    // But could be dragging a bubble, so make the mouse indicate that
+                    container.classList.add("grabbable");
+                } else {
+                    container.classList.remove("grabbable");
+                }
+            }
+        };
+
+        container.onmouseup = (ev: MouseEvent) => {
+            // ENHANCE: If you release the mouse outside of the container, it is not registered as a mouseup here.
+            //          The bubble will continue to be dragged inside the container until you click and release.
+            this.draggedBubble = undefined;
+            container.classList.remove("grabbing");
+        };
+
+        // The container's onmousemove handler isn't capable of reliably detecting in all cases when it goes out of bounds, because
+        // the mouse is no longer over the container.
+        // So need a handler on the .bloom-page instead, which surrounds the image container.
+        const currentPageElement = container.closest(".bloom-page");
+        if (currentPageElement) {
+            (currentPageElement as HTMLElement).onmousemove = (
+                ev: MouseEvent
+            ) => {
+                if (!this.draggedBubble) {
+                    return;
+                }
+
+                // Oops, the mouse cursor has left the image container
+                // Current requirements are to end the drag in this case
+                if (
+                    ev.pageX < containerBounds.left ||
+                    ev.pageX > containerBounds.right ||
+                    ev.pageY < containerBounds.top ||
+                    ev.pageY > containerBounds.bottom
+                ) {
+                    // FYI: If you use the drag handle (which uses the JQuery drag handle), it enforces the content box to stay entirely within the imageContainer.
+                    // This code currently doesn't do that.
+                    this.draggedBubble = undefined;
+                    container.classList.remove("grabbing");
+                }
+            };
+        }
+        // ENHANCE: Have ctrl+click go through the text box (currently text box intercepts the click, which is desirable in many cases)
     }
 
     public turnOffHidingImageButtons() {
