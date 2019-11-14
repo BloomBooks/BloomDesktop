@@ -230,32 +230,6 @@ namespace Bloom.Edit
 				{
 					return false;
 				}
-				if (targetProxy.SelfOrAncestorHasClass("bloom-textOverPicture"))
-				{
-					var deleteMessage = LocalizationManager.GetString("EditTab.DeleteTextBoxFromImage", "Delete Text Box From Image");
-					var menuItem = args.ContextMenu.MenuItems.Add(deleteMessage, (sender, e) => deleteTextbox_Click());
-
-					// Mostly unnecessary because targetProxy shouldn't be able to be a bloom-textOverPicture if bloom-showImageDescriptions is on,
-					// but better safe than sorry I guess.
-					if (targetProxy.SelfOrAncestorHasClass("bloom-showImageDescriptions"))
-					{
-						menuItem.Enabled = false;
-					}
-
-					return false; // we don't expect to need both Add and Delete in the same place
-				}
-				if (targetProxy.SelfOrAncestorHasClass("bloom-imageContainer"))
-				{
-					var addMessage = LocalizationManager.GetString("EditTab.AddTextBoxToImage", "Add Text Box To Image");
-					var menuItem = args.ContextMenu.MenuItems.Add(addMessage, (sender, e) => addTextbox_Click());
-
-					// Check if the body element indicates that image descriptions are active.
-					// This will shrink the image.  Repositioning, shrinking, adding and deleting text-over-picture elements while in shrunk state is possible but massively complicates the code.
-					// So, for now just disable the text-over-picture elements and adding them.
-					if (targetProxy.SelfOrAncestorHasClass("bloom-showImageDescriptions")) {
-						menuItem.Enabled = false;
-					}
-				}
 				return false;
 			};
 		}
@@ -1415,21 +1389,9 @@ namespace Bloom.Edit
 			UpdateEditButtons();
 		}
 
-		private void addTextbox_Click()
-		{
-			var mousePoint = _browser1.ContextMenuLocation; // avoids compiler warning (CS1690) about marshal-by-reference class
-			_webSocketServer.SendString("textOverPicture", "addTextBox", $"{mousePoint.X},{mousePoint.Y}");
-		}
-
 		private void _cutButton_Click(object sender, EventArgs e)
 		{
 			ExecuteCommandSafely(_cutCommand);
-		}
-
-		private void deleteTextbox_Click()
-		{
-			var mousePoint = _browser1.ContextMenuLocation; // avoids compiler warning (CS1690) about marshal-by-reference class
-			_webSocketServer.SendString("textOverPicture", "deleteTextBox", $"{mousePoint.X},{mousePoint.Y}");
 		}
 
 		private void _undoButton_Click(object sender, EventArgs e)

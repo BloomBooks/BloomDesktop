@@ -16,6 +16,7 @@ import { Div, Span } from "../../../react_components/l10nComponents";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles"; // TODO: Am I really needed?
 import InputLabel from "@material-ui/core/InputLabel";
 import * as toastr from "toastr";
+import { default as TrashIcon } from "@material-ui/icons/Delete";
 
 const CalloutToolControls: React.FunctionComponent = () => {
     // Declare all the hooks
@@ -160,6 +161,14 @@ const CalloutToolControls: React.FunctionComponent = () => {
         // drag these objects anywhere else, so they don't need any of
         // the common data types.
         ev.dataTransfer.setData("bloomBubble", style);
+    };
+
+    const deleteBubble = () => {
+        const bubbleManager = CalloutTool.bubbleManager();
+        const active = bubbleManager.getActiveElement();
+        if (active) {
+            bubbleManager.deleteTOPBox(active);
+        }
     };
 
     return (
@@ -378,6 +387,11 @@ const CalloutToolControls: React.FunctionComponent = () => {
                         </Select>
                     </FormControl>
                     */}
+                    <TrashIcon
+                        id="trashIcon"
+                        color="primary"
+                        onClick={() => deleteBubble()}
+                    />
                 </form>
             </div>
             <div id={"calloutControlFooterRegion"}>

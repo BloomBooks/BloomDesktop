@@ -26,22 +26,9 @@ export class TextOverPictureManager {
     private bubbleGrabOffset: { x: number; y: number } = { x: 0, y: 0 };
 
     public initializeTextOverPictureManager(): void {
-        WebSocketManager.addListener(kWebsocketContext, messageEvent => {
-            const msg = messageEvent.message;
-            if (msg) {
-                const locationArray = msg.split(","); // mouse right-click coordinates
-                if (messageEvent.id === "addTextBox")
-                    this.addFloatingTOPBoxAndReloadPage(
-                        +locationArray[0],
-                        +locationArray[1]
-                    );
-                if (messageEvent.id === "deleteTextBox")
-                    this.deleteFloatingTOPBox(
-                        +locationArray[0],
-                        +locationArray[1]
-                    );
-            }
-        });
+        // currently nothing to do; used to set up web socket listener
+        // for right-click messages to add and delete TOP boxes.
+        // Keeping hook in case we want it one day...
     }
 
     public getIsCalloutEditingOn(): boolean {
@@ -651,23 +638,27 @@ export class TextOverPictureManager {
             const textElement = clickedElement.closest(
                 ".bloom-textOverPicture"
             );
-            if (textElement && textElement.parentElement) {
-                const wasComicalModified =
-                    textElement.parentElement.getElementsByClassName(
-                        kComicalGeneratedClass
-                    ).length > 0;
+            this.deleteTOPBox(textElement);
+        }
+    }
 
-                const parent = textElement.parentElement;
-                parent.removeChild(textElement);
+    public deleteTOPBox(textElement: Element | null) {
+        if (textElement && textElement.parentElement) {
+            const wasComicalModified =
+                textElement.parentElement.getElementsByClassName(
+                    kComicalGeneratedClass
+                ).length > 0;
 
-                if (wasComicalModified) {
-                    Comical.update(parent);
-                }
+            const parent = textElement.parentElement;
+            parent.removeChild(textElement);
 
-                // Check if we're deleting the active bubble. If so, gotta clean up the state.
-                if (textElement == this.getActiveElement()) {
-                    this.setActiveElement(undefined);
-                }
+            if (wasComicalModified) {
+                Comical.update(parent);
+            }
+
+            // Check if we're deleting the active bubble. If so, gotta clean up the state.
+            if (textElement == this.getActiveElement()) {
+                this.setActiveElement(undefined);
             }
         }
     }
