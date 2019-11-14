@@ -1,6 +1,5 @@
 import * as React from "react";
-import { FormGroup } from "@material-ui/core";
-import { ApiCheckbox } from "../../react_components/ApiCheckbox";
+import FormGroup from "@material-ui/core/FormGroup";
 import { SettingsGroup } from "./BasePublishScreen";
 
 export const LanguageGroup: React.FunctionComponent = () => (

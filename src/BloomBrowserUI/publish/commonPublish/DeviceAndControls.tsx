@@ -1,6 +1,5 @@
 import * as React from "react";
 import "./DeviceFrame.less";
-import { Button } from "@material-ui/core";
 import { useState, useEffect } from "react";
 
 /*

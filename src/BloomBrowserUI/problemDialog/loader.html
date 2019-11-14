@@ -7,11 +7,15 @@
         <link rel="stylesheet" type="text/css" href="BloomWebFonts.css" />
         <script src="../commonBundle.js"></script>
         <script src="../problemReportBundle.js"></script>
+        <script>
+            const reactLoader = () => {
+                const rootDiv = document.getElementById("problemDialog");
+                window.connectProblemDialog(rootDiv);
+            };
+            window.onload = reactLoader;
+        </script>
     </head>
-
-    <body
-        onload="window.connectProblemDialog(document.getElementById('problemDialog'));"
-    >
-        <div id="problemDialog" class="problemDialogRoot"></div>
+    <body>
+        <div id="problemDialog"></div>
     </body>
 </html>

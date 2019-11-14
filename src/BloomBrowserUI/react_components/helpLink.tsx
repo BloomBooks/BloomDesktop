@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
-import { Link } from "@material-ui/core";
+import Link from "@material-ui/core/Link";
 
 interface IHelpLinkProps extends ILocalizationProps {
     helpId: string;
