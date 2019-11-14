@@ -351,17 +351,12 @@ export class TextOverPictureManager {
                 return;
             }
 
-            const targetBounds = targetElement.getBoundingClientRect();
-
             // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
-            const [targetX, targetY] = this.getCoordinatesRelativeTo(
-                ev.offsetX,
-                ev.offsetY,
-                targetBounds,
+            const [targetX, targetY] = this.getContainerCoordinates(
+                ev,
                 containerBounds,
                 styleInfo
             );
-
             const bubble = Comical.getBubbleHit(container, targetX, targetY);
             if (bubble) {
                 this.draggedBubble = bubble;
@@ -386,20 +381,13 @@ export class TextOverPictureManager {
                 );
             } else {
                 // Not currently dragging
-                const targetElement = ev.target as HTMLElement;
-                const targetBounds = targetElement.getBoundingClientRect();
-
-                // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
-                const [targetX, targetY] = this.getCoordinatesRelativeTo(
-                    ev.offsetX,
-                    ev.offsetY,
-                    targetBounds,
+                const [targetX, targetY] = this.getContainerCoordinates(
+                    ev,
                     containerBounds,
                     styleInfo
                 );
-
                 if (Comical.getBubbleHit(container, targetX, targetY)) {
-                    // But could be dragging a bubble, so make the mouse indicate that
+                    // But over a bubble that could be dragged, so make the mouse indicate that
                     container.classList.add("grabbable");
                 } else {
                     container.classList.remove("grabbable");
@@ -444,15 +432,36 @@ export class TextOverPictureManager {
         // ENHANCE: Have ctrl+click go through the text box
     }
 
-    // Recomputes the coordinates of element relative to the specified origin element's info
+    // Gets the coordinates of the specified event relative to the container.
+    private getContainerCoordinates(
+        event: MouseEvent,
+        containerBounds: ClientRect | DOMRect,
+        styleInfo: CSSStyleDeclaration
+    ): number[] {
+        const targetElement = event.target as HTMLElement;
+        const targetBounds = targetElement.getBoundingClientRect();
+
+        const [x, y] = this.getCoordinatesRelativeTo(
+            event.offsetX,
+            event.offsetY,
+            targetBounds,
+            containerBounds,
+            styleInfo
+        );
+
+        return [x, y];
+    }
+
+    // Recomputes the coordinates of element relative to the specified origin's info
     private getCoordinatesRelativeTo(
-        elementX: number,
-        elementY: number,
-        elementBounds: ClientRect | DOMRect,
-        originBounds: ClientRect | DOMRect,
-        originStyleInfo: CSSStyleDeclaration
+        elementX: number, // elementX: The offsetX relative to the element's top left.
+        elementY: number, // elementY: The offsetY relative to the element's top left.
+        elementBounds: ClientRect | DOMRect, // The Bounding Client Rectangle of the element
+        originBounds: ClientRect | DOMRect, // The BoundingClientRectangle of the HTMLElement whose top-left and right will be treated as the new origin
+        originStyleInfo: CSSStyleDeclaration // The computed style of the origin
     ): number[] {
         // ENHANCE: Might need to account for padding later too? Not sure.
+        // ENHANCE: Do we need to adjust elementX/elementY if the element has a non-zero border width?
         const borderLeft: number = TextOverPictureManager.extractNumber(
             originStyleInfo.getPropertyValue("border-left-width")
         );
