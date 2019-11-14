@@ -17,7 +17,7 @@ export const kindParams = {
     NonFatal: {
         dialogHeaderColor: kNonFatalColor,
         primaryColor: kNonFatalColor,
-        title: "Bloom had problem"
+        title: "Bloom had a problem"
     }
 };
 
