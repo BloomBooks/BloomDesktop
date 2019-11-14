@@ -858,7 +858,7 @@ namespace Bloom.Publish.Epub
 			// These IDs must match the corresponding ones in the manifest, since the spine
 			// doesn't indicate where to actually find the content.
 			var spineElt = new XElement(opf + "spine");
-			if(this.Book.CollectionSettings.IsLanguage1Rtl)
+			if(this.Book.CollectionSettings.Language1.IsRightToLeft)
 			{
 				spineElt.SetAttributeValue("page-progression-direction","rtl");
 			}
@@ -919,11 +919,11 @@ namespace Bloom.Publish.Epub
 			// REVIEW: is BODY always ltr, or should it be the same as Language1?  Having BODY be ltr for a book in Arabic or Hebrew
 			// seems counterintuitive even if all the div elements are marked correctly.
 			_directionSettings.Add("body", "ltr");
-			_directionSettings.Add(this.Book.CollectionSettings.Language1Iso639Code, this.Book.CollectionSettings.IsLanguage1Rtl ? "rtl" : "ltr");
+			_directionSettings.Add(this.Book.CollectionSettings.Language1Iso639Code, this.Book.CollectionSettings.Language1.IsRightToLeft ? "rtl" : "ltr");
 			if (!_directionSettings.ContainsKey(this.Book.CollectionSettings.Language2Iso639Code))
-				_directionSettings.Add(this.Book.CollectionSettings.Language2Iso639Code, this.Book.CollectionSettings.IsLanguage2Rtl ? "rtl" : "ltr");
+				_directionSettings.Add(this.Book.CollectionSettings.Language2Iso639Code, this.Book.CollectionSettings.Language2.IsRightToLeft ? "rtl" : "ltr");
 			if (!String.IsNullOrEmpty(this.Book.CollectionSettings.Language3Iso639Code) && !_directionSettings.ContainsKey(this.Book.CollectionSettings.Language3Iso639Code))
-				_directionSettings.Add(this.Book.CollectionSettings.Language3Iso639Code, this.Book.CollectionSettings.IsLanguage3Rtl ? "rtl" : "ltr");
+				_directionSettings.Add(this.Book.CollectionSettings.Language3Iso639Code, this.Book.CollectionSettings.Language3.IsRightToLeft ? "rtl" : "ltr");
 		}
 
 		private void SetDirAttributes(HtmlDom pageDom)

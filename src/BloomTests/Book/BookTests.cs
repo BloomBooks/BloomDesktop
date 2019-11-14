@@ -1393,7 +1393,7 @@ namespace BloomTests.Book
 					</body>
 				</html>");
 			var book = CreateBook();
-			book.CollectionSettings.Language1Name = "My Language Name";
+			book.CollectionSettings.Language1.Name = "My Language Name";
 			book.BringBookUpToDate(new NullProgress());
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='languagesOfBook' and text()='My Language Name' and not(@lang='en')]", 3);
 		}
@@ -1464,15 +1464,15 @@ namespace BloomTests.Book
 									</head><body></body></html>");
 			var book = CreateBook();
 			Assert.That(book.BookInfo.IsRtl, Is.False);
-			var old = _collectionSettings.IsLanguage1Rtl;
+			var old = _collectionSettings.Language1.IsRightToLeft;
 			try
 			{
-				_collectionSettings.IsLanguage1Rtl = true;
+				_collectionSettings.Language1.IsRightToLeft = true;
 				book.BringBookUpToDate(new NullProgress());
 			}
 			finally
 			{
-				_collectionSettings.IsLanguage1Rtl = old;
+				_collectionSettings.Language1.IsRightToLeft = old;
 			}
 			Assert.That(book.BookInfo.IsRtl, Is.True);
 		}

@@ -306,6 +306,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="CLI\CreateArtifactsCommand.cs" />
+    <Compile Include="Collection\WritingSystem.cs" />
     <Compile Include="Publish\Android\BloomReaderFileMaker.cs" />
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
     <Compile Include="Book\QuestionGroup.cs" />

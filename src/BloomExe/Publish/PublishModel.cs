@@ -157,7 +157,7 @@ namespace Bloom.Publish
 
 		private bool LayoutPagesForRightToLeft
 		{
-			get { return _collectionSettings.IsLanguage1Rtl;  }
+			get { return _collectionSettings.Language1.IsRightToLeft;  }
 
 		}
 

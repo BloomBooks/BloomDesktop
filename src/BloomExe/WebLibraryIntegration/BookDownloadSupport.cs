@@ -35,12 +35,13 @@ namespace Bloom.WebLibraryIntegration
 					Path.GetFileName(downloadFolder));
 				var settings = new NewCollectionSettings()
 				{
-					Language1Iso639Code = "en",
-					Language1Name = "English",
+			
 					IsSourceCollection = true,
 					PathToSettingsFile = pathToSettingsFile
 					// All other defaults are fine
 				};
+				settings.Language1.Iso639Code = "en";
+				settings.Language1.Name = "English";
 				CollectionSettings.CreateNewCollection(settings);
 			}
 		}

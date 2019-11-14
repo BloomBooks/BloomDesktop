@@ -566,7 +566,7 @@ namespace BloomTests.Publish
 		public void LeftToRight_SpineDoesNotDeclareDirection()
 		{
 			var book = SetupBook("This is some text", "xyz");
-			book.CollectionSettings.IsLanguage1Rtl = false;
+			book.CollectionSettings.Language1.IsRightToLeft = false;
 			MakeEpub("output", "SpineDoesNotDeclareDirection", book);
 			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("//spine[not(@page-progression-direction)]", 1);
 			;
@@ -576,7 +576,7 @@ namespace BloomTests.Publish
 		public void RightToLeft_SpineDeclaresRtlDirection()
 		{
 			var book = SetupBook("This is some text", "xyz");
-			book.CollectionSettings.IsLanguage1Rtl = true;
+			book.CollectionSettings.Language1.IsRightToLeft = true;
 			MakeEpub("output", "SpineDeclaresRtlDirection", book);
 			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("//spine[@page-progression-direction='rtl']", 1);;
 		}
