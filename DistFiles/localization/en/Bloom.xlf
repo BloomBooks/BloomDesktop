@@ -1026,6 +1026,7 @@
       <trans-unit id="EditTab.AddTextBoxToImage">
         <source xml:lang="en">Add Text Box To Image</source>
         <note>ID: EditTab.AddTextBoxToImage</note>
+        <note>Obsolete for Bloom 4.7 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
@@ -1155,6 +1156,7 @@
       <trans-unit id="EditTab.DeleteTextBoxFromImage">
         <source xml:lang="en">Delete Text Box From Image</source>
         <note>ID: EditTab.DeleteTextBoxFromImage</note>
+        <note>Obsolete for Bloom 4.7 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true">
         <source xml:lang="en">Bold</source>
