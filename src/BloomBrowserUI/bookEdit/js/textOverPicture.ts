@@ -234,6 +234,7 @@ export class TextOverPictureManager {
             this.setMouseDragHandlers(container, containerBounds);
         });
     }
+
     migrateOldTopElems(textOverPictureElems: HTMLElement[]): void {
         textOverPictureElems.forEach(top => {
             if (!top.getAttribute("data-bubble")) {
@@ -335,16 +336,33 @@ export class TextOverPictureManager {
         container: HTMLElement,
         containerBounds: ClientRect | DOMRect
     ): void {
+        // Precondition: Assumes the border width / etc. never changes
+        const styleInfo = window.getComputedStyle(container);
+
         // We use mousemove effects instead of drag due to concerns that drag effects would make the entire image container appear to drag.
         // Instead, with mousemove, we can make only the specific bubble move around
         container.onmousedown = (ev: MouseEvent) => {
+            // This is the element that was clicked (which may or may not be the same as the element with the event handler)
+            const targetElement = ev.target as HTMLElement;
+
+            // Let standard clicks on the bloom editable only be processed on the editable
+            const isInsideEditable = !!targetElement.closest(".bloom-editable");
+            if (isInsideEditable) {
+                return;
+            }
+
+            const targetBounds = targetElement.getBoundingClientRect();
+
             // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
-            // So use offsetX, which is relative to the target element
-            const bubble = Comical.getBubbleHit(
-                container,
+            const [targetX, targetY] = this.getCoordinatesRelativeTo(
                 ev.offsetX,
-                ev.offsetY
+                ev.offsetY,
+                targetBounds,
+                containerBounds,
+                styleInfo
             );
+
+            const bubble = Comical.getBubbleHit(container, targetX, targetY);
             if (bubble) {
                 this.draggedBubble = bubble;
 
@@ -368,7 +386,19 @@ export class TextOverPictureManager {
                 );
             } else {
                 // Not currently dragging
-                if (Comical.getBubbleHit(container, ev.offsetX, ev.offsetY)) {
+                const targetElement = ev.target as HTMLElement;
+                const targetBounds = targetElement.getBoundingClientRect();
+
+                // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
+                const [targetX, targetY] = this.getCoordinatesRelativeTo(
+                    ev.offsetX,
+                    ev.offsetY,
+                    targetBounds,
+                    containerBounds,
+                    styleInfo
+                );
+
+                if (Comical.getBubbleHit(container, targetX, targetY)) {
                     // But could be dragging a bubble, so make the mouse indicate that
                     container.classList.add("grabbable");
                 } else {
@@ -411,7 +441,52 @@ export class TextOverPictureManager {
                 }
             };
         }
-        // ENHANCE: Have ctrl+click go through the text box (currently text box intercepts the click, which is desirable in many cases)
+        // ENHANCE: Have ctrl+click go through the text box
+    }
+
+    // Recomputes the coordinates of element relative to the specified origin element's info
+    private getCoordinatesRelativeTo(
+        elementX: number,
+        elementY: number,
+        elementBounds: ClientRect | DOMRect,
+        originBounds: ClientRect | DOMRect,
+        originStyleInfo: CSSStyleDeclaration
+    ): number[] {
+        // ENHANCE: Might need to account for padding later too? Not sure.
+        const borderLeft: number = TextOverPictureManager.extractNumber(
+            originStyleInfo.getPropertyValue("border-left-width")
+        );
+        const borderTop: number = TextOverPictureManager.extractNumber(
+            originStyleInfo.getPropertyValue("border-top-width")
+        );
+
+        const relativeX = elementBounds.left - originBounds.left - borderLeft;
+        const relativeY = elementBounds.top - originBounds.top - borderTop;
+
+        return [relativeX + elementX, relativeY + elementY];
+    }
+
+    // Removes the units from a string like "10px"
+    public static extractNumber(text: string | undefined | null): number {
+        if (!text) {
+            return 0;
+        }
+
+        let i = 0;
+        for (i = 0; i < text.length; ++i) {
+            const c = text.charAt(i);
+            if ((c < "0" || c > "9") && c != "-" && c != "+" && c != ".") {
+                break;
+            }
+        }
+
+        let numberStr = "";
+        if (i > 0) {
+            // At this point, i points to the first non-numeric character in the string
+            numberStr = text.substring(0, i);
+        }
+
+        return Number(numberStr);
     }
 
     public turnOffHidingImageButtons() {
