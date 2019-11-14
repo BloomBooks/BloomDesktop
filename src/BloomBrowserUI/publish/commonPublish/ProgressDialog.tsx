@@ -1,15 +1,17 @@
 import * as React from "react";
 import { useLayoutEffect } from "react";
-import Button from "@material-ui/core/Button";
-import Dialog from "@material-ui/core/Dialog";
-import Typography from "@material-ui/core/Typography";
+import {
+    Button,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Typography
+} from "@material-ui/core";
 import { BloomApi } from "../../utils/bloomApi";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import DialogContent from "@material-ui/core/DialogContent";
 import { useTheme } from "@material-ui/styles";
 import "./ProgressDialog.less";
-import { CircularProgress } from "@material-ui/core";
 import BloomButton from "../../react_components/bloomButton";
 
 export enum ProgressState {

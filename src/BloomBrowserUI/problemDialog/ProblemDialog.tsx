@@ -50,6 +50,10 @@ export const ProblemDialog: React.FunctionComponent<{
         "??"
     );
 
+    const readyToSubmit = (email: string, userInput: string) => {
+        return isValidEmail(email) && userInput.trim().length !== 0;
+    };
+
     const whatWereYouDoingAttentionClass = useDrawAttention(
         submitAttempts,
         () => userInput.trim().length > 0
@@ -62,7 +66,7 @@ export const ProblemDialog: React.FunctionComponent<{
         }
     });
     const AttemptSubmit = () => {
-        if (!isValidEmail(email) || userInput.trim().length == 0) {
+        if (!readyToSubmit(email, userInput)) {
             setSubmitAttempts(submitAttempts + 1);
         } else {
             setMode(Mode.submitting);
@@ -230,7 +234,7 @@ export const ProblemDialog: React.FunctionComponent<{
                         )}
                     {mode === Mode.gather && (
                         <BloomButton
-                            enabled={true}
+                            enabled={readyToSubmit(email, userInput)}
                             l10nKey="ReportProblemDialog.SubmitButton"
                             hasText={true}
                             onClick={() => {
@@ -278,5 +282,17 @@ function useCtrlEnterToSubmit(callback) {
 
 // allow plain 'ol javascript in the html to connect up react
 (window as any).connectProblemDialog = (element: Element | null) => {
-    ReactDOM.render(<ProblemDialog kind={ProblemKind.Fatal} />, element);
+    let kind = "fatal";
+    const levelQuery = window.location.search;
+    if (levelQuery.length > 1) {
+        kind = levelQuery.substring(1); // strip off "?"
+    }
+    let kindProp = ProblemKind.User;
+    if (kind === "fatal") {
+        kindProp = ProblemKind.Fatal;
+    }
+    if (kind === "nonfatal") {
+        kindProp = ProblemKind.NonFatal;
+    }
+    ReactDOM.render(<ProblemDialog kind={kindProp} />, element);
 };

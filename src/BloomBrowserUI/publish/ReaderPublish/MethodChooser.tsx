@@ -5,7 +5,7 @@ import BloomButton from "../../react_components/bloomButton";
 import { BloomApi } from "../../utils/bloomApi";
 import { isLinux } from "../../utils/isLinux";
 import { useL10n } from "../../react_components/l10nHooks";
-import { Typography } from "@material-ui/core";
+import Typography from "@material-ui/core/Typography";
 import { LocalizedString } from "../../react_components/l10nComponents";
 import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";

@@ -9,7 +9,7 @@ import {
 import "./ePUBPublish.less";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import ReactDOM = require("react-dom");
-import { ThemeProvider } from "@material-ui/styles";
+import ThemeProvider from "@material-ui/styles/ThemeProvider";
 import theme from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
@@ -20,7 +20,7 @@ import BloomButton from "../../react_components/bloomButton";
 import { EPUBHelpGroup } from "./ePUBHelpGroup";
 import PWithLink from "../../react_components/pWithLink";
 import { EPUBSettingsGroup } from "./ePUBSettingsGroup";
-import { Typography } from "@material-ui/core";
+import Typography from "@material-ui/core/Typography";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import { useL10n } from "../../react_components/l10nHooks";
