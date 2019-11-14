@@ -1,6 +1,6 @@
 import * as React from "react";
 import "./ProblemDialog.less";
-import { TextField } from "@material-ui/core";
+import TextField from "@material-ui/core/TextField";
 import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { useDrawAttention } from "./UseDrawAttention";
@@ -13,13 +13,12 @@ const emailPattern = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".
 export function isValidEmail(email: string): boolean {
     return emailPattern.test(email);
 }
+
 export const EmailField: React.FunctionComponent<{
     submitAttempts: number;
     email: string;
     onChange: (email: string) => void;
 }> = props => {
-    //const [attentionClass, setAttentionClass] = useState("");
-
     const [emailValid, setEmailValid] = useState(false);
 
     const [debouncedEmailCheck] = useDebouncedCallback(value => {

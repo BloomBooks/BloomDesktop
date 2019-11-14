@@ -16,7 +16,6 @@ namespace Bloom.web.controllers
 {
 	internal class ProblemReportApi : IDisposable
 	{
-		//private readonly UserControl _controlForScreenshotting;
 		private readonly BookSelection _bookSelection;
 		private static TempFile _screenshotTempFile;
 		private string _userDescription;
@@ -86,10 +85,11 @@ namespace Bloom.web.controllers
 					request.ReplyWithJson(new{issueLink="https://google.com"});
 				}, true);
 		}
-		public static void ShowProblemDialog(Control controlForScreenshotting)
+
+		public static void ShowProblemDialog(Control controlForScreenshotting, string levelOfProblem="user")
 		{
 			SafeInvoke.InvokeIfPossible("Screen Shot", controlForScreenshotting, false,
-				(Action) (() =>
+				() =>
 				{
 					try
 					{
@@ -110,15 +110,32 @@ namespace Bloom.web.controllers
 						Logger.WriteError("Bloom was unable to create a screenshot.", e);
 					}
 
-					var rootFileUrl = BloomFileLocator.GetBrowserFile(false,  "problemDialog", "loader.html");
-					using (var dlg = new BrowserDialog(rootFileUrl.ToLocalhost()))
+					var query = "?" + levelOfProblem;
+					var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false,  "problemDialog", "loader.html");
+					var url = problemDialogRootPath.ToLocalhost() + query;
+					using (var dlg = new BrowserDialog(url))
 					{
 						dlg.ShowDialog();
 					}
-				}));
+				});
 		}
 
-		private string GetObfuscatedEmail()
+		private string GetDiagnosticInfo(bool includeBook)
+		{
+			var bldr = new StringBuilder();
+
+			bldr.AppendLine("=Problem Description=");
+			bldr.AppendLine(_userDescription);
+			bldr.AppendLine();
+
+			GetInformationAboutUser(bldr);
+			GetStandardErrorReportingProperties(bldr, true);
+			GetAdditionalBloomEnvironmentInfo(bldr);
+			GetAdditionalFileInfo(bldr, includeBook);
+			return bldr.ToString();
+		}
+
+		private static string GetObfuscatedEmail()
 		{
 			var email = SIL.Windows.Forms.Registration.Registration.Default.Email;
 			string obfuscatedEmail;
@@ -135,28 +152,14 @@ namespace Bloom.web.controllers
 			return obfuscatedEmail;
 		}
 
-		private string GetInformationAboutUser()
+		private static void GetInformationAboutUser(StringBuilder bldr)
 		{
-			var bldr = new StringBuilder();
-			//bldr.AppendLine("Error Report from " + _name.Text + " (" + GetObfuscatedEmail() + ") on " + DateTime.UtcNow.ToUniversalTime());
-			return bldr.ToString();
+			var firstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName;
+			var lastName = SIL.Windows.Forms.Registration.Registration.Default.Surname;
+			bldr.AppendLine("Error Report from " + lastName + ", " + firstName + " (" + GetObfuscatedEmail() + ") on " + DateTime.UtcNow.ToUniversalTime());
 		}
 
-		private string GetDiagnosticInfo(bool includeBook)
-		{
-			var bldr = new StringBuilder();
-
-			bldr.AppendLine("=Problem Description=");
-			bldr.AppendLine(_userDescription);
-			bldr.AppendLine();
-
-			GetStandardErrorReportingProperties(bldr, true);
-			GetAdditionalBloomEnvironmentInfo(bldr);
-			GetAdditionalFileInfo(bldr, includeBook);
-			return bldr.ToString();
-		}
-
-			private static void GetStandardErrorReportingProperties(StringBuilder bldr, bool appendLog)
+		private static void GetStandardErrorReportingProperties(StringBuilder bldr, bool appendLog)
 		{
 			bldr.AppendLine();
 			bldr.AppendLine("=Error Reporting Properties=");
@@ -177,7 +180,7 @@ namespace Bloom.web.controllers
 				}
 				catch (Exception err)
 				{
-					//We have more than one report of dying while logging an exception.
+					// We have more than one report of dying while logging an exception.
 					bldr.AppendLine("****Could not read from log: " + err.Message);
 				}
 			}
@@ -255,7 +258,7 @@ namespace Bloom.web.controllers
 			return false;
 		}
 
-		private void ListFolderContents(string folder, StringBuilder bldr)
+		private static void ListFolderContents(string folder, StringBuilder bldr)
 		{
 			if (!Directory.Exists(folder))
 				return;

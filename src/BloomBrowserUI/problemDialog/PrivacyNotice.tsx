@@ -1,7 +1,6 @@
 import * as React from "react";
-import Typography from "@material-ui/core/Typography";
+import { Button, Typography } from "@material-ui/core";
 import "./ProblemDialog.less";
-import { Button } from "@material-ui/core";
 import WarningIcon from "@material-ui/icons/Warning";
 import { LocalizedString } from "../react_components/l10nComponents";
 

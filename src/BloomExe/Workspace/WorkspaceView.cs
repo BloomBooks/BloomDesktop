@@ -918,11 +918,8 @@ namespace Bloom.Workspace
 		private void StartProblemReport(object sender, EventArgs e)
 		{
 			Application.Idle -= StartProblemReport;
-//			var rootFile = BloomFileLocator.GetBrowserFile(false,  "problemDialog", "loader.html");
-//			using (var dlg = new BrowserDialog(rootFile.ToLocalhost()))
-//			{
-//				dlg.ShowDialog();
-//			}
+			// To test the Problem Dialog with a real "green screen" type error, uncomment this next line.
+			//throw new ApplicationException("I just felt like an error!");
 			ProblemReportApi.ShowProblemDialog(this);
 		}
 
