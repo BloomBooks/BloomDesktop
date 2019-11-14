@@ -247,13 +247,11 @@ const CalloutToolControls: React.FunctionComponent = () => {
                                     Ellipse
                                 </Div>
                             </MenuItem>
-                            {/*
                             <MenuItem value="thought">
                                 <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.Thought">
                                     Thought
                                 </Div>
                             </MenuItem>
-                            */}
                         </Select>
                     </FormControl>
                     <br />
