@@ -90,13 +90,6 @@
                 }
             }
 
-            .bloom-editable:focus {
-                // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
-                border: 1px solid @bloom-blue;
-                box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
-                    0 0 8px @bloom-blue;
-            }
-
             .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
                 left: 100%; // Align the left edge of the language tip content to the right edge
                 right: unset; // Need to clear an inherited property
@@ -119,6 +112,39 @@
             // Allows the format gear to be suppressed by adding a class
             .bloom-editable.disableTOPControls #formatButton {
                 display: none;
+            }
+        }
+    }
+}
+
+// Code to handle borders
+.bloom-imageContainer {
+    // Text-over-picture elements with speech bubbles
+    //
+    // a TOP element that contains a data-bubble attribute and does NOT contain the substring "`style`:`none`" in the value of the data-bubble attribute
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) {
+        .bloom-translationGroup {
+            .bloom-editable {
+                border: none;
+                box-shadow: none;
+            }
+        }
+    }
+
+    // The inverse of the above... text boxes which do not have bubbles
+    //
+    // The case where it doesn't contain a data-bubble attribute at all
+    .bloom-textOverPicture:not([data-bubble]),
+    // The case where it does contain a data-bubble attribute, but the style is none.
+    .bloom-textOverPicture[data-bubble*="`style`:`none`"] {
+        .bloom-translationGroup {
+            .bloom-editable {
+                &:focus {
+                    // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
+                    border: 1px solid @bloom-blue;
+                    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
+                        0 0 8px @bloom-blue;
+                }
             }
         }
     }
