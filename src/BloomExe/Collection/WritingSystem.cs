@@ -37,6 +37,9 @@ namespace Bloom.Collection
 		public WritingSystem(int languageNumberInCollection, Func<string> codeOfDefaultLanguageForNaming)
 		{
 			_languageNumberInCollection = languageNumberInCollection;
+
+			//Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
+			//See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
 			_codeOfDefaultLanguageForNaming = codeOfDefaultLanguageForNaming;
 		}
 
@@ -51,7 +54,7 @@ namespace Bloom.Collection
 
 		public string GetNameInLanguage(string inLanguage)
 		{
-			if (!string.IsNullOrEmpty(Iso639Code) && !String.IsNullOrEmpty(Name))
+			if (!string.IsNullOrEmpty(Iso639Code) && !String.IsNullOrEmpty(Name) && inLanguage == _codeOfDefaultLanguageForNaming())
 				return Name;
 
 			return GetLanguageName_NoCache(inLanguage);
@@ -67,8 +70,7 @@ namespace Bloom.Collection
 				{
 					string match;
 					if (!LookupIsoCode.GetBestLanguageName(Iso639Code, out match))
-						if (!LookupIsoCode.GetBestLanguageName("en", out match))
-							return $"L{_languageNumberInCollection}-Unknown-" + Iso639Code;
+						return $"L{_languageNumberInCollection}-Unknown-" + Iso639Code;
 					return match;
 				}
 				return name;
@@ -81,8 +83,7 @@ namespace Bloom.Collection
 
 		public void ChangeIsoCode(string value)
 		{
-			Iso639Code = value;
-			Name = GetLanguageName_NoCache(_codeOfDefaultLanguageForNaming());
+			Iso639Code = value; // also sets the name
 		}
 
 		public void SaveToXElement(XElement xml)
@@ -135,6 +136,15 @@ namespace Bloom.Collection
 		public void ReadSpecFromXml(XElement xml, bool defaultToEnglishIfMissing,  string languageForDefaultNameLookup)
 		{
 			var pfx = "Language" + _languageNumberInCollection;
+
+			/* Enhance (from JT):
+			 When you do this for Language1, the Iso639 setter will initialize Name using _codeOfDefaultLanguageForNaming(). But that will retrieve the Language2 Iso639 code, which hasn't been set yet. I suppose it doesn't matter, since two lines down you overwrite that Name, typically with one saved in the file. If for some reason there isn't one saved in the file, you will look up an English name for it (since you pass that as languageForDefaultNameLookup for Language1).
+			Seems like it would simplify things if Name had a getter which would initialize it's variable to GetLanguageName_NoCache(_codeOfDefaultLanguageForNaming()) if not already set.
+			Then the Iso639Code setter could just clear _name.
+			The code just below here would initialize _name by reading the string, but could leave it null if it doesn't find it
+			By the time anything needs Name, Language2's ISO code should be set, so if you need to look up a default name you'll do it in the right language.
+			You could then get rid of the languageForDefaultNameLookup argument.*/
+
 			Iso639Code = ReadString(xml, $"Language{this._languageNumberInCollection}Iso639Code", defaultToEnglishIfMissing?"en":"");
 			IsRightToLeft = ReadBoolean(xml, $"IsLanguage{_languageNumberInCollection}Rtl", false);
 			

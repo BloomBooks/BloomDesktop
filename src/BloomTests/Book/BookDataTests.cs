@@ -1411,8 +1411,8 @@ namespace BloomTests.Book
 				<DefaultLanguage1FontName>Andika</DefaultLanguage1FontName>
 				<DefaultLanguage2FontName>Andika</DefaultLanguage2FontName>
 				<DefaultLanguage3FontName>Andika</DefaultLanguage3FontName>
-				<Language1.IsRightToLeft>false</Language1.IsRightToLeft>
-				<Language2.IsRightToLeft>false</Language2.IsRightToLeft>
+				<IsLanguage1Rtl>false</IsLanguage1Rtl>
+				<IsLanguage2Rtl>false</IsLanguage2Rtl>
 				<IsLanguage3Rtl>true</IsLanguage3Rtl>
 				<IsSourceCollection>False</IsSourceCollection>
 				<XMatterPack>Factory</XMatterPack>
@@ -1432,8 +1432,8 @@ namespace BloomTests.Book
 				<DefaultLanguage2FontName>Andika New Basic</DefaultLanguage2FontName>
 				<DefaultLanguage3FontName>Andika New Basic</DefaultLanguage3FontName>
 				<OneTimeCheckVersionNumber>1</OneTimeCheckVersionNumber>
-				<Language1.IsRightToLeft>false</Language1.IsRightToLeft>
-				<Language2.IsRightToLeft>false</Language2.IsRightToLeft>
+				<IsLanguage1Rtl>false</IsLanguage1Rtl>
+				<IsLanguage2Rtl>false</IsLanguage2Rtl>
 				<IsLanguage3Rtl>true</IsLanguage3Rtl>
 				<IsSourceCollection>False</IsSourceCollection>
 				<XMatterPack>Factory</XMatterPack>
@@ -1453,8 +1453,8 @@ namespace BloomTests.Book
 				<DefaultLanguage2FontName>Andika</DefaultLanguage2FontName>
 				<DefaultLanguage3FontName>Andika</DefaultLanguage3FontName>
 				<OneTimeCheckVersionNumber>1</OneTimeCheckVersionNumber>
-				<Language1.IsRightToLeft>false</Language1.IsRightToLeft>
-				<Language2.IsRightToLeft>false</Language2.IsRightToLeft>
+				<IsLanguage1Rtl>false</IsLanguage1Rtl>
+				<IsLanguage2Rtl>false</IsLanguage2Rtl>
 				<IsLanguage3Rtl>true</IsLanguage3Rtl>
 				<IsSourceCollection>False</IsSourceCollection>
 				<XMatterPack>Factory</XMatterPack>

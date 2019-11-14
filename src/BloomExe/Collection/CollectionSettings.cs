@@ -101,9 +101,12 @@ namespace Bloom.Collection
 
 		public CollectionSettings()
 		{
-			Language1 = new WritingSystem(1, ()=>Language2.Iso639Code);
-			Language2 = new WritingSystem(2, () => Language2.Iso639Code);
-			Language3 = new WritingSystem(3, () => Language2.Iso639Code);
+			//Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
+			//See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
+			Func<string> getCodeOfDefaultLanguageForNaming = ()=> Language2.Iso639Code;
+			Language1 = new WritingSystem(1, getCodeOfDefaultLanguageForNaming);
+			Language2 = new WritingSystem(2,getCodeOfDefaultLanguageForNaming);
+			Language3 = new WritingSystem(3, getCodeOfDefaultLanguageForNaming);
 			LanguagesZeroBased = new WritingSystem[3];
 			this.LanguagesZeroBased[0] = Language1;
 			this.LanguagesZeroBased[1] = Language2;
