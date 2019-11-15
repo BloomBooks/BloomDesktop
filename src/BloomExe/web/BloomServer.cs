@@ -354,6 +354,13 @@ namespace Bloom.Api
 				localPath = _keyToCurrentPage;
 			}
 
+			if (localPath.Contains("writingSystemDisplayForUI.css"))
+			{
+				info.ContentType = "text/css";
+				info.WriteCompleteOutput(CurrentCollectionSettings.GetWritingSystemDisplayForUICss());
+				return true;
+			}
+
 			string content;
 			bool gotSimulatedPage;
 			lock (_urlToSimulatedPageContent)

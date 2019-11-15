@@ -30,7 +30,15 @@ namespace Bloom.Collection
 		// scripts are handled with regard to line breaking.
 		// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5761.
 		public bool BreaksLinesOnlyAtSpaces;
-		public int BaseUiFontSizeInPoints;
+
+		/// <summary>
+		/// When we show this writing system in a tool (e.g. Decodable Reader Tool), how
+		/// big does it need to be to be visible? Here 0 means "use the default".
+		/// </summary>
+		public int BaseUIFontSizeInPoints;
+
+		public int GetBaseUIFontSizeInPointsForCss() => BaseUIFontSizeInPoints == 0 ? 12 : BaseUIFontSizeInPoints;
+
 		public decimal LineHeight;
 		public string FontName;
 
@@ -95,7 +103,7 @@ namespace Bloom.Collection
 			xml.Add(new XElement($"IsLanguage{_languageNumberInCollection}Rtl", IsRightToLeft));
 			xml.Add(new XElement(pfx + "LineHeight", LineHeight));
 			xml.Add(new XElement(pfx+"BreaksLinesOnlyAtSpaces", BreaksLinesOnlyAtSpaces));
-
+			xml.Add(new XElement(pfx+ "BaseUIFontSizeInPoints", BaseUIFontSizeInPoints));
 		}
 
 		public void AddSelectorCssRule(StringBuilder sb, bool omitDirection)
@@ -110,7 +118,7 @@ namespace Bloom.Collection
 			sb.AppendLine("{");
 			sb.AppendLine(" font-family: '" + fontName + "';");
 
-			// EPUBs don't handle direction: in CSS files.
+			// EPUBs don't handle direction: in CSS files.  <-- I think that is wrong. See BL-7835 
 			if (!omitDirection)
 			{
 				if (isRtl)
@@ -131,9 +139,9 @@ namespace Bloom.Collection
 		/// Read in all the persisted values of this class from an XElement
 		/// </summary>
 		/// <param name="xml"></param>
-		/// <param name="defaultLanguageCode"></param>
+		/// <param name="defaultToEnglishIfMissing"></param>
 		/// <param name="languageForDefaultNameLookup">a code or "self" if we should use the iso code for this spec to look it up</param>
-		public void ReadSpecFromXml(XElement xml, bool defaultToEnglishIfMissing,  string languageForDefaultNameLookup)
+		public void ReadFromXml(XElement xml, bool defaultToEnglishIfMissing,  string languageForDefaultNameLookup)
 		{
 			var pfx = "Language" + _languageNumberInCollection;
 
@@ -153,13 +161,12 @@ namespace Bloom.Collection
 			{
 				Name = GetLanguageName_NoCache(languageForDefaultNameLookup=="self"?Iso639Code:languageForDefaultNameLookup);
 			}
-
 			LineHeight = ReadDecimal(xml, pfx+"LineHeight", 0);
-
 			FontName = ReadString(xml, $"DefaultLanguage{_languageNumberInCollection}FontName", GetDefaultFontName());
-			
 			BreaksLinesOnlyAtSpaces = ReadBoolean(xml, pfx+"BreaksLinesOnlyAtSpaces", false);
+			BaseUIFontSizeInPoints = ReadInt(xml, pfx + "BaseUIFontSizeInPoints", 0 /* 0 means "default" */);
 		}
+
 		private bool ReadBoolean(XElement xml, string id, bool defaultValue)
 		{
 			string s = ReadString(xml, id, defaultValue.ToString());
@@ -177,6 +184,16 @@ namespace Bloom.Collection
 			// the middle two arguments.)
 			Decimal.TryParse(s, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out d);
 			return d;
+		}
+		private int ReadInt(XElement xml, string id, int defaultValue)
+		{
+			var s = ReadString(xml, id, defaultValue.ToString(CultureInfo.InvariantCulture));
+			int i;
+			// REVIEW: if we localize the display of decimal values in the line-height combo box, then this
+			// needs to handle the localized version of the number.  (This happens automatically by removing
+			// the middle two arguments.)
+			int.TryParse(s, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out i);
+			return i;
 		}
 
 		private string ReadString(XElement document, string id, string defaultValue)
@@ -198,5 +215,13 @@ namespace Bloom.Collection
 			// they'll get a message that this font is not actually installed when they try to edit a book.
 			return "Andika New Basic";
 		}
+
+		/*public string GetWritingSystemDisplayForUICss()
+		{
+			// I wanted to limit this with the language tag, but after 2 hours I gave up simply getting the current language tag
+			// to the decodable reader code. What a mess that code is. So now I'm taking advantage of the fact that there is only
+			// one language used in our current tools
+			 return $".lang1InATool[lang='{Iso639Code}']{{font-size: {(BaseUIFontSizeInPoints == 0 ? 10 : BaseUIFontSizeInPoints)}pt;}}";
+		}*/
 	}
 }

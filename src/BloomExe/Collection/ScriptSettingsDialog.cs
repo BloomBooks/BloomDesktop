@@ -10,6 +10,7 @@ namespace Bloom.Collection
 		{
 			InitializeComponent();
 			SetLineHeightList();
+			LoadFontSizeCombo();
 		}
 
 		private void SetLineHeightList()
@@ -91,6 +92,57 @@ namespace Bloom.Collection
 		private void _tallerLinesCheckBox_CheckedChanged(object sender, EventArgs e)
 		{
 			_lineSpacingCombo.Enabled = _tallerLinesCheckBox.Checked;
+		}
+
+
+		/// <summary>
+		/// Here 0 means "use the default".
+		/// </summary>
+		public int UIFontSize
+		{
+			get
+			{
+				return _uiFontSizeCombo.SelectedIndex < 1 ? 0 : Convert.ToInt16(_uiFontSizeCombo.Text);
+			}
+			set
+			{
+				_uiFontSizeCombo.SelectedItem = null;
+				var sizeAsString = value.ToString();
+				foreach (var item in _uiFontSizeCombo.Items)
+				{
+					if (item.ToString() == sizeAsString)
+					{
+						_uiFontSizeCombo.SelectedItem = item;
+					}
+				}
+
+				if (_uiFontSizeCombo.SelectedItem == null)
+				{
+					// if we couldn't find a match, use the default, which is some text at the beginning
+					_uiFontSizeCombo.SelectedIndex = 0; 
+				}
+			}
+		}
+		private void LoadFontSizeCombo()
+		{
+			var defaultText = LocalizationManager.GetDynamicString("Bloom", "ScriptSettingsDialog.DefaultSize",
+				"Default size");
+
+			_uiFontSizeCombo.Items.Clear();
+			_uiFontSizeCombo.Items.Add(defaultText);
+			_uiFontSizeCombo.SelectedIndex = 0;
+			var fontSizes = new[] { 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26 };
+			foreach (var i in fontSizes)
+			{
+				_uiFontSizeCombo.Items.Add(i.ToString());
+			}
+			// Copied this from the other combobox... maybe be something needed for Mono?
+			// Make the combo box just wide enough to show its content.
+			using (var g = _uiFontSizeCombo.CreateGraphics())
+			{
+				var w = TextRenderer.MeasureText(g, defaultText, Font);
+				_uiFontSizeCombo.Width = w.Width + 40; // allow room for dropdown icon and text margins
+			}
 		}
 	}
 }

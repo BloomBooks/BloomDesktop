@@ -371,9 +371,9 @@ namespace Bloom.Collection
 
 				var xml = XElement.Parse(settingsContent);
 				
-				Language1.ReadSpecFromXml(xml, true, "en");
-				Language2.ReadSpecFromXml(xml, true,"self");
-				Language3.ReadSpecFromXml(xml, true,  Language2.Iso639Code);
+				Language1.ReadFromXml(xml, true, "en");
+				Language2.ReadFromXml(xml, true,"self");
+				Language3.ReadFromXml(xml, true,  Language2.Iso639Code);
 
 				SignLanguageIso639Code = ReadString(xml, "SignLanguageIso639Code",  /* old name */
 				ReadString(xml, "SignLanguageIso639Code", ""));
@@ -806,6 +806,24 @@ namespace Bloom.Collection
 			Analytics.SetApplicationProperty("Language3Iso639Code", Language3Iso639Code ?? "---");
 			Analytics.SetApplicationProperty("Language1Iso639Name", Language1.Name);
 			Analytics.SetApplicationProperty("BrandingProjectName", BrandingProjectKey);
+		}
+
+		public string GetWritingSystemDisplayForUICss()
+		{
+			/*
+			 // I wanted to limit this with the language tag, but after 2 hours I gave up simply getting the current language tag
+			// to the decodable reader code. What a mess that code is. So now I'm taking advantage of the fact that there is only
+			// one language used in our current tools
+			// return $"[lang='{Iso639Code}']{{font-size: {(BaseUIFontSizeInPoints == 0 ? 10 : BaseUIFontSizeInPoints)}pt;}}";
+			var css = "";
+			foreach (var writingSystem in LanguagesZeroBased)
+			{
+				css += writingSystem.GetWritingSystemDisplayForUICss();
+			}
+
+			return css;
+			*/
+			return $".lang1InATool{{font-size: {(Language1.BaseUIFontSizeInPoints == 0 ? 10 : Language1.BaseUIFontSizeInPoints)}pt;}}";
 		}
 	}
 }
