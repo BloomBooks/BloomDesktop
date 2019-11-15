@@ -346,7 +346,7 @@ describe("Bloom Edit Controls tests", () => {
             getTheOneReaderToolsModel().updateElementContent
         ).toHaveBeenCalledWith(
             "wordList",
-            '<div class="word">catty</div><div class="word sight-word">feline</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word">sat</div>'
+            '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>'
         );
     });
 
