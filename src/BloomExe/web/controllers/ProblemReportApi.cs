@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Net.Mail;
 using System.Text;
 using System.Windows.Forms;
@@ -19,12 +21,14 @@ namespace Bloom.web.controllers
 		private readonly BookSelection _bookSelection;
 		private static TempFile _screenshotTempFile;
 		private BloomZipFile _bookZipFile;
-		private TempFile _bookZipFileTemp;
+		private readonly TempFile _bookZipFileTemp;
+
+		private string CollectionFolder => Path.GetDirectoryName(_bookSelection.CurrentSelection.StoragePageFolder);
 
 		public ProblemReportApi(BookSelection bookSelection)
 		{
 			_bookSelection = bookSelection;
-			_bookZipFileTemp = TempFile.WithFilenameInTempFolder("book.zip");
+			_bookZipFileTemp = TempFile.WithFilenameInTempFolder("bookData.zip");
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -60,21 +64,11 @@ namespace Bloom.web.controllers
 					request.ReplyWithText(GetDiagnosticInfo(userWantsToIncludeBook, userInput, userEmail));
 				}, true);
 
-			// ProblemDialog.tsx uses this endpoint in its AttemptSubmit method; it expects an AxiosResponse, so it
-			// knows it succeeded.
+			// ProblemDialog.tsx uses this endpoint in its AttemptSubmit method;
+			// it expects a response that it will use to show the issue link to the user.
 			apiHandler.RegisterEndpointHandler("problemReport/submit",
 				(ApiRequest request) =>
 				{
-
-					// Object sent:
-					// {
-					//	 kind: props.kind,
-					//	 email,
-					//	 userInput: `How much: TODO < br />${ userInput}`,
-					//	 includeBook,
-					//	 includeScreenshot
-					// }
-
 					var report = DynamicJson.Parse(request.RequiredPostJson());
 					var subject = report.kind == "User" ? "User Problem" : report.kind == "Fatal" ? "Crash Report" : "Error Report";
 
@@ -92,9 +86,11 @@ namespace Bloom.web.controllers
 							{
 								_bookZipFile = new BloomZipFile(_bookZipFileTemp.Path);
 								_bookZipFile.AddDirectory(_bookSelection.CurrentSelection.StoragePageFolder);
-							//if (WantReaderInfo())
-							//	AddReaderInfo(zip);
-							//AddCollectionSettings(zip);
+								if (WantReaderInfo(true))
+								{
+									AddReaderInfo();
+								}
+								AddCollectionSettings();
 								_bookZipFile.Save();
 							}
 							catch (Exception error)
@@ -116,6 +112,24 @@ namespace Bloom.web.controllers
 					var issueId = issueSubmission.SubmitToYouTrack(subject, diagnosticInfo);
 					request.ReplyWithJson(new{issueLink= "https://issues.bloomlibrary.org/youtrack/issue/" + issueId });
 				}, true);
+		}
+
+		private void AddReaderInfo()
+		{
+			var filePaths = GetReaderFilePaths(CollectionFolder);
+			foreach (var filePath in filePaths)
+			{
+				_bookZipFile.AddTopLevelFile(filePath);
+			}
+		}
+
+		private void AddCollectionSettings()
+		{
+			var filePaths = GetCollectionFilePaths(CollectionFolder);
+			foreach (var filePath in filePaths)
+			{
+				_bookZipFile.AddTopLevelFile(filePath);
+			}
 		}
 
 		public static void ShowProblemDialog(Control controlForScreenshotting, string levelOfProblem="user")
@@ -156,7 +170,7 @@ namespace Bloom.web.controllers
 		{
 			var bldr = new StringBuilder();
 
-			bldr.AppendLine("=Problem Description=");
+			bldr.AppendLine("### Problem Description");
 			bldr.AppendLine(userDescription);
 			bldr.AppendLine();
 
@@ -196,7 +210,7 @@ namespace Bloom.web.controllers
 		private static void GetStandardErrorReportingProperties(StringBuilder bldr, bool appendLog)
 		{
 			bldr.AppendLine();
-			bldr.AppendLine("=Error Reporting Properties=");
+			bldr.AppendLine("#### Error Reporting Properties");
 			foreach (string label in ErrorReport.Properties.Keys)
 			{
 				bldr.Append(label);
@@ -207,8 +221,9 @@ namespace Bloom.web.controllers
 			if (appendLog || Logger.Singleton == null)
 			{
 				bldr.AppendLine();
-				bldr.AppendLine("=Log=");
+				bldr.AppendLine("#### Log");
 				bldr.AppendLine("```stacktrace");
+				bldr.AppendLine();
 				try
 				{
 					bldr.Append(Logger.LogText);
@@ -226,7 +241,7 @@ namespace Bloom.web.controllers
 		{
 			var book = _bookSelection.CurrentSelection;
 			var projectName = book?.CollectionSettings.CollectionName;
-			bldr.AppendLine("=Additional User Environment Information=");
+			bldr.AppendLine("#### Additional User Environment Information");
 			if (book == null)
 			{
 				bldr.AppendLine("No Book was selected.");
@@ -251,12 +266,19 @@ namespace Bloom.web.controllers
 			}
 			bldr.AppendLine("Collection name: " + settings.CollectionName);
 			bldr.AppendLine("xMatter pack name: " + settings.XMatterPackName);
-			bldr.AppendLine("Language1 iso: " + settings.Language1Iso639Code + " font: " +
+			bldr.AppendLine("Language1 -> iso: '" + settings.Language1Iso639Code + "',  font: " +
 							settings.Language1.FontName + (settings.Language1.IsRightToLeft ? " RTL" : string.Empty));
-			bldr.AppendLine("Language2 iso: " + settings.Language2Iso639Code + " font: " +
+			bldr.AppendLine("Language2 -> iso: '" + settings.Language2Iso639Code + "',  font: " +
 							settings.Language2.FontName + (settings.Language2.IsRightToLeft ? " RTL" : string.Empty));
-			bldr.AppendLine("Language3 iso: " + settings.Language3Iso639Code + " font: " +
-							settings.Language3.FontName + (settings.Language3.IsRightToLeft ? " RTL" : string.Empty));
+			if (string.IsNullOrEmpty(settings.Language3Iso639Code))
+			{
+				bldr.AppendLine("No Language3 defined");
+			}
+			else
+			{
+				bldr.AppendLine("Language3 -> iso: '" + settings.Language3Iso639Code + "',  font: " +
+					settings.Language3.FontName + (settings.Language3.IsRightToLeft ? " RTL" : string.Empty));
+			}
 		}
 
 		private void GetAdditionalFileInfo(StringBuilder bldr, bool includeBook)
@@ -265,19 +287,38 @@ namespace Bloom.web.controllers
 			if (string.IsNullOrEmpty(book?.FolderPath))
 				return;
 			bldr.AppendLine();
-			bldr.AppendLine("=Additional Files Bundled With Book=");
+			bldr.AppendLine("#### Additional Files Bundled With Book");
 			var collectionFolder = Path.GetDirectoryName(book.FolderPath);
+			if (collectionFolder == null)
+				return; // mostly to avoid blue squiggles in VS
 			if (WantReaderInfo(includeBook))
 			{
-				foreach (var file in Directory.GetFiles(collectionFolder, "ReaderTools*-*.json"))
-					bldr.AppendLine(file);
-				ListFolderContents(Path.Combine(collectionFolder, "Allowed Words"), bldr);
-				ListFolderContents(Path.Combine(collectionFolder, "Sample Texts"), bldr);
+				var listOfReaderFiles = GetReaderFilePaths(collectionFolder);
+				ListFiles(listOfReaderFiles, bldr);
 			}
-			foreach (var file in Directory.GetFiles(collectionFolder, "*CollectionStyles.css"))
-				bldr.AppendLine(file);
-			foreach (var file in Directory.GetFiles(collectionFolder, "*.bloomCollection"))
-				bldr.AppendLine(file);
+			var listOfCollectionFiles = GetCollectionFilePaths(collectionFolder);
+			ListFiles(listOfCollectionFiles, bldr);
+		}
+
+		private static IEnumerable<string> GetReaderFilePaths(string collectionFolder)
+		{
+			var result = Directory.GetFiles(collectionFolder, "ReaderTools*-*.json").ToList();
+			ListFolderContents(Path.Combine(collectionFolder, "Allowed Words"), result);
+			ListFolderContents(Path.Combine(collectionFolder, "Sample Texts"), result);
+			return result;
+		}
+
+		private static IEnumerable<string> GetCollectionFilePaths(string collectionFolder)
+		{
+			var result = Directory.GetFiles(collectionFolder, "*CollectionStyles.css").ToList();
+			result.AddRange(Directory.GetFiles(collectionFolder, "*.bloomCollection"));
+			return result;
+		}
+
+		private static void ListFiles(IEnumerable<string> filePaths, StringBuilder bldr)
+		{
+			foreach (var filePath in filePaths)
+				bldr.AppendLine(filePath);
 		}
 
 		private bool WantReaderInfo(bool includeBook)
@@ -294,15 +335,14 @@ namespace Bloom.web.controllers
 			return false;
 		}
 
-		private static void ListFolderContents(string folder, StringBuilder bldr)
+		private static void ListFolderContents(string folder, List<string> listOfFilePaths)
 		{
 			if (!Directory.Exists(folder))
 				return;
-			foreach (var file in Directory.GetFiles(folder))
-				bldr.AppendLine(file);
+			listOfFilePaths.AddRange(Directory.GetFiles(folder));
 			// Probably overkill, but if there are subfolders, they will be zipped up with the book.
 			foreach (var sub in Directory.GetDirectories(folder))
-				ListFolderContents(sub, bldr);
+				ListFolderContents(sub, listOfFilePaths);
 		}
 
 	
