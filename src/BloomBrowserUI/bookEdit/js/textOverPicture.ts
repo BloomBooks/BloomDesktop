@@ -821,6 +821,7 @@ export class TextOverPictureManager {
         const scale = EditableDivUtils.getPageScale();
 
         textOverPictureElems.resizable({
+            handles: "all",
             stop: (event, ui) => {
                 const target = event.target;
                 if (target) {
