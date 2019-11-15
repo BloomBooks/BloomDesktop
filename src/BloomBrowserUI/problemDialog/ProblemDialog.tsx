@@ -1,14 +1,17 @@
 import * as React from "react";
-import Dialog from "@material-ui/core/Dialog";
-import Typography from "@material-ui/core/Typography";
+import {
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Link,
+    TextField,
+    Typography
+} from "@material-ui/core";
 import { BloomApi } from "../utils/bloomApi";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import DialogContent from "@material-ui/core/DialogContent";
 import { ThemeProvider } from "@material-ui/styles";
 import "./ProblemDialog.less";
 import BloomButton from "../react_components/bloomButton";
-import TextField from "@material-ui/core/TextField";
 import { MuiCheckbox } from "../react_components/muiCheckBox";
 import { useState, useEffect, useRef } from "react";
 import { HowMuchGroup } from "./HowMuchGroup";
@@ -45,12 +48,13 @@ export const ProblemDialog: React.FunctionComponent<{
     const [submitAttempts, setSubmitAttempts] = useState(0);
     const theme = makeTheme(props.kind);
     const [whatDoing, setWhatDoing] = useState("");
-    const [bookName, setUnused] = BloomApi.useApiString(
-        "problemReport/bookName",
-        "??"
-    );
+    const [bookName] = BloomApi.useApiString("problemReport/bookName", "??");
 
-    const readyToSubmit = (email: string, userInput: string) => {
+    // When submitted, this will contain the url of the YouTrack issue.
+    const [issueLink, setIssueLink] = useState("");
+    const [howMuch, setHowMuch] = useState(1); // 0, 1 or 2
+
+    const readyToSubmit = (email: string, userInput: string): boolean => {
         return isValidEmail(email) && userInput.trim().length !== 0;
     };
 
@@ -58,6 +62,7 @@ export const ProblemDialog: React.FunctionComponent<{
         submitAttempts,
         () => whatDoing.trim().length > 0
     );
+
     const submitButton = useRef(null);
     // Haven't got to work yet, see comment on the declaration of this function, below
     useCtrlEnterToSubmit(() => {
@@ -65,6 +70,15 @@ export const ProblemDialog: React.FunctionComponent<{
             (submitButton.current as any).click();
         }
     });
+
+    const translateHowMuch = (): string => {
+        return howMuch === 0
+            ? "0 (First time)"
+            : howMuch === 2
+            ? "2 (It keeps happening)"
+            : "1 (It happens sometimes)";
+    };
+
     const AttemptSubmit = () => {
         if (!readyToSubmit(email, whatDoing)) {
             setSubmitAttempts(submitAttempts + 1);
@@ -75,12 +89,13 @@ export const ProblemDialog: React.FunctionComponent<{
                 {
                     kind: props.kind,
                     email,
-                    userInput: `How much: TODO<br/>${whatDoing}`,
+                    userInput: `How much: ${translateHowMuch()}\n\n${whatDoing}`,
                     includeBook,
                     includeScreenshot
                 },
                 result => {
                     console.log(JSON.stringify(result.data));
+                    setIssueLink(result.data.issueLink);
                     setMode(Mode.submitted);
                 }
             );
@@ -110,6 +125,18 @@ export const ProblemDialog: React.FunctionComponent<{
                                 return (
                                     <>
                                         <Typography>Done</Typography>
+                                        {issueLink !== "" && (
+                                            <Typography>
+                                                <br />
+                                                This issue can be viewed here:{" "}
+                                                <Link
+                                                    underline="hover"
+                                                    href={issueLink}
+                                                >
+                                                    {issueLink}
+                                                </Link>
+                                            </Typography>
+                                        )}
                                     </>
                                 );
                             case Mode.showPrivacyDetails:
@@ -157,7 +184,11 @@ export const ProblemDialog: React.FunctionComponent<{
                                                     }
                                                     value={whatDoing}
                                                 />
-                                                <HowMuchGroup />
+                                                <HowMuchGroup
+                                                    onHowMuchChange={value =>
+                                                        setHowMuch(value)
+                                                    }
+                                                />
 
                                                 <EmailField
                                                     email={email}
