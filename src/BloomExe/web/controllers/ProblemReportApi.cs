@@ -18,11 +18,13 @@ namespace Bloom.web.controllers
 	{
 		private readonly BookSelection _bookSelection;
 		private static TempFile _screenshotTempFile;
-		private string _userDescription;
+		private BloomZipFile _bookZipFile;
+		private TempFile _bookZipFileTemp;
 
 		public ProblemReportApi(BookSelection bookSelection)
 		{
 			_bookSelection = bookSelection;
+			_bookZipFileTemp = TempFile.WithFilenameInTempFolder("book.zip");
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -53,7 +55,9 @@ namespace Bloom.web.controllers
 				(ApiRequest request) =>
 				{
 					var userWantsToIncludeBook = request.RequiredParam("includeBook") == "true";
-					request.ReplyWithText(GetDiagnosticInfo(userWantsToIncludeBook));
+					var userInput = request.RequiredParam("userInput");
+					var userEmail = request.RequiredParam("email");
+					request.ReplyWithText(GetDiagnosticInfo(userWantsToIncludeBook, userInput, userEmail));
 				}, true);
 
 			// ProblemDialog.tsx uses this endpoint in its AttemptSubmit method; it expects an AxiosResponse, so it
@@ -61,28 +65,56 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("problemReport/submit",
 				(ApiRequest request) =>
 				{
+
+					// Object sent:
+					// {
+					//	 kind: props.kind,
+					//	 email,
+					//	 userInput: `How much: TODO < br />${ userInput}`,
+					//	 includeBook,
+					//	 includeScreenshot
+					// }
+
 					var report = DynamicJson.Parse(request.RequiredPostJson());
 					var subject = report.kind == "User" ? "User Problem" : report.kind == "Fatal" ? "Crash Report" : "Error Report";
 
 					var issueSubmission = new YouTrackIssueSubmitter("BL");
-					var userDesc = report.description as string;
+					//var issueSubmission = new YouTrackIssueSubmitter("BL");
+					var userDesc = report.userInput as string;
+					var userEmail = report.email as string;
 					if (report.includeScreenshot && _screenshotTempFile != null && RobustFile.Exists(_screenshotTempFile.Path))
 					{
-						// Enhance: this won't have a nice name like "screenshot.png"
-						issueSubmission.AddAttachment(_screenshotTempFile.Path);
+						issueSubmission.AddAttachment(_screenshotTempFile?.Path);
 					}
 					if(report.includeBook)
 					{
-						//issueSubmission.AddAttachment(book);
+							try
+							{
+								_bookZipFile = new BloomZipFile(_bookZipFileTemp.Path);
+								_bookZipFile.AddDirectory(_bookSelection.CurrentSelection.StoragePageFolder);
+							//if (WantReaderInfo())
+							//	AddReaderInfo(zip);
+							//AddCollectionSettings(zip);
+								_bookZipFile.Save();
+							}
+							catch (Exception error)
+							{
+								var msg = "***Error as ProblemReportApi attempted to zip up the book: " + error.Message;
+								userDesc += Environment.NewLine + msg;
+								Logger.WriteEvent(msg);
+								// if an error happens in the zipper, the zip file stays locked, so we just leak it
+								_bookZipFileTemp.Detach();
+							}
+							issueSubmission.AddAttachment(_bookZipFileTemp.Path);
 					}
-					var diagnosticInfo = GetDiagnosticInfo(report.includeBook);
-					if (report.email?.length > 0)
+					var diagnosticInfo = GetDiagnosticInfo(report.includeBook, userDesc, userEmail);
+					if (!string.IsNullOrWhiteSpace(userEmail))
 					{
 						// remember their email
-						SIL.Windows.Forms.Registration.Registration.Default.Email = report.email;
+						SIL.Windows.Forms.Registration.Registration.Default.Email = userEmail;
 					}
-					issueSubmission.SubmitToYouTrack(subject, userDesc + " " + diagnosticInfo);
-					request.ReplyWithJson(new{issueLink="https://google.com"});
+					var issueId = issueSubmission.SubmitToYouTrack(subject, diagnosticInfo);
+					request.ReplyWithJson(new{issueLink= "https://issues.bloomlibrary.org/youtrack/issue/" + issueId });
 				}, true);
 		}
 
@@ -101,7 +133,7 @@ namespace Bloom.web.controllers
 								bounds.Size);
 						}
 
-						_screenshotTempFile = TempFile.WithExtension(".png");
+						_screenshotTempFile = TempFile.WithFilename("screenshot.png");
 						RobustImageIO.SaveImage(screenshot, _screenshotTempFile.Path, ImageFormat.Png);
 					}
 					catch (Exception e)
@@ -120,29 +152,31 @@ namespace Bloom.web.controllers
 				});
 		}
 
-		private string GetDiagnosticInfo(bool includeBook)
+		private string GetDiagnosticInfo(bool includeBook, string userDescription, string userEmail)
 		{
 			var bldr = new StringBuilder();
 
 			bldr.AppendLine("=Problem Description=");
-			bldr.AppendLine(_userDescription);
+			bldr.AppendLine(userDescription);
 			bldr.AppendLine();
 
-			GetInformationAboutUser(bldr);
+			GetInformationAboutUser(bldr, userEmail);
 			GetStandardErrorReportingProperties(bldr, true);
 			GetAdditionalBloomEnvironmentInfo(bldr);
 			GetAdditionalFileInfo(bldr, includeBook);
 			return bldr.ToString();
 		}
 
-		private static string GetObfuscatedEmail()
+		private static string GetObfuscatedEmail(string userEmail = "")
 		{
-			var email = SIL.Windows.Forms.Registration.Registration.Default.Email;
+			var email = string.IsNullOrWhiteSpace(userEmail) ?
+				SIL.Windows.Forms.Registration.Registration.Default.Email :
+				userEmail;
 			string obfuscatedEmail;
 			try
 			{
 				var m = new MailAddress(email);
-				// note: we have code in YouTrack we de-obfuscates this particular format, so don't mess with it
+				// note: we have code in YouTrack that de-obfuscates this particular format, so don't mess with it
 				obfuscatedEmail = string.Format("{1} {0}", m.User, m.Host).Replace(".", "/");
 			}
 			catch (Exception)
@@ -152,11 +186,11 @@ namespace Bloom.web.controllers
 			return obfuscatedEmail;
 		}
 
-		private static void GetInformationAboutUser(StringBuilder bldr)
+		private static void GetInformationAboutUser(StringBuilder bldr, string userEmail)
 		{
 			var firstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName;
 			var lastName = SIL.Windows.Forms.Registration.Registration.Default.Surname;
-			bldr.AppendLine("Error Report from " + lastName + ", " + firstName + " (" + GetObfuscatedEmail() + ") on " + DateTime.UtcNow.ToUniversalTime());
+			bldr.AppendLine("Error Report from " + lastName + ", " + firstName + " (" + GetObfuscatedEmail(userEmail) + ") on " + DateTime.UtcNow.ToUniversalTime());
 		}
 
 		private static void GetStandardErrorReportingProperties(StringBuilder bldr, bool appendLog)
@@ -174,6 +208,7 @@ namespace Bloom.web.controllers
 			{
 				bldr.AppendLine();
 				bldr.AppendLine("=Log=");
+				bldr.AppendLine("```stacktrace");
 				try
 				{
 					bldr.Append(Logger.LogText);
@@ -183,6 +218,7 @@ namespace Bloom.web.controllers
 					// We have more than one report of dying while logging an exception.
 					bldr.AppendLine("****Could not read from log: " + err.Message);
 				}
+				bldr.AppendLine("```");
 			}
 		}
 
@@ -216,11 +252,11 @@ namespace Bloom.web.controllers
 			bldr.AppendLine("Collection name: " + settings.CollectionName);
 			bldr.AppendLine("xMatter pack name: " + settings.XMatterPackName);
 			bldr.AppendLine("Language1 iso: " + settings.Language1Iso639Code + " font: " +
-							settings.DefaultLanguage1FontName + (settings.IsLanguage1Rtl ? " RTL" : string.Empty));
+							settings.Language1.FontName + (settings.Language1.IsRightToLeft ? " RTL" : string.Empty));
 			bldr.AppendLine("Language2 iso: " + settings.Language2Iso639Code + " font: " +
-							settings.DefaultLanguage2FontName + (settings.IsLanguage2Rtl ? " RTL" : string.Empty));
+							settings.Language2.FontName + (settings.Language2.IsRightToLeft ? " RTL" : string.Empty));
 			bldr.AppendLine("Language3 iso: " + settings.Language3Iso639Code + " font: " +
-							settings.DefaultLanguage3FontName + (settings.IsLanguage3Rtl ? " RTL" : string.Empty));
+							settings.Language3.FontName + (settings.Language3.IsRightToLeft ? " RTL" : string.Empty));
 		}
 
 		private void GetAdditionalFileInfo(StringBuilder bldr, bool includeBook)
@@ -273,6 +309,8 @@ namespace Bloom.web.controllers
 		public void Dispose()
 		{
 			_screenshotTempFile?.Dispose();
+			_bookZipFile = null;
+			_bookZipFileTemp?.Dispose();
 		}
 	}
 }
