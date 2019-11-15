@@ -189,11 +189,7 @@ namespace Bloom.Collection
 		{
 			var s = ReadString(xml, id, defaultValue.ToString(CultureInfo.InvariantCulture));
 			int i;
-			// REVIEW: if we localize the display of decimal values in the line-height combo box, then this
-			// needs to handle the localized version of the number.  (This happens automatically by removing
-			// the middle two arguments.)
-			int.TryParse(s, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out i);
-			return i;
+			return int.TryParse(s, out i) ? i : defaultValue;
 		}
 
 		private string ReadString(XElement document, string id, string defaultValue)
