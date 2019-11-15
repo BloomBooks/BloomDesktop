@@ -1,5 +1,8 @@
 ﻿
+using System.Collections.Generic;
 using Bloom.web;
+using SIL.IO;
+using SIL.Reporting;
 using YouTrackSharp.Infrastructure;
 using YouTrackSharp.Issues;
 
@@ -7,29 +10,37 @@ using YouTrackSharp.Issues;
 namespace Bloom
 {
 	// TODO: Are all these member variables needed? How about making a static method instead?
-	// Well, I could see YouTrackConnection and maybe issueManagement as being pretty legit non-method variables
+	// Well, I could see YouTrackConnection and the list of files to attach as being pretty legit non-method variables
 	public class YouTrackIssueSubmitter
 	{
-		private static YouTrackIssueSubmitter _instance;
-
 		protected string _youTrackProjectKey;
 
 		private readonly Connection _youTrackConnection = new Connection(UrlLookup.LookupUrl(UrlType.IssueTrackingSystemBackend, false, true), 0 /* BL-5500 don't specify port */, true, "youtrack");
-		private IssueManagement _issueManagement;
-		private dynamic _youTrackIssue;
-		private string _youTrackIssueId = "unknown";
+		private readonly List<string> _filesToAttach;
 
 		/// <summary>
-		/// A new instance should be constructed for eery issue.
+		/// A new instance should be constructed for every issue.
 		/// </summary>
 		public YouTrackIssueSubmitter(string projectKey)
 		{
 			_youTrackProjectKey = projectKey;
+			_filesToAttach = new List<string>();
 		}
 
+		/// <summary>
+		/// Verify a file's existence and store the filename to attach later.
+		/// We may not be able to attach now, because we don't have an actual issue Id until we submit the issue
+		/// and we can't guarantee that the caller will not try to AddAttachment() before calling SubmitToYouTrack().
+		/// </summary>
+		/// <param name="file"></param>
 		public void AddAttachment(string file)
 		{
-			_issueManagement.AttachFileToIssue(_youTrackIssueId, file);
+			if (!RobustFile.Exists(file))
+			{
+				Logger.WriteEvent("YouTrack issue submitter failed to attach non-existent file: " + file);
+				return;
+			}
+			_filesToAttach.Add(file);
 		}
 
 		/// <summary>
@@ -41,15 +52,26 @@ namespace Bloom
 		public string SubmitToYouTrack(string summary, string description)
 		{
 			_youTrackConnection.Authenticate("auto_report_creator", "thisIsInOpenSourceCode");
-			_issueManagement = new IssueManagement(_youTrackConnection);
-			_youTrackIssue = new Issue();
-			_youTrackIssue.ProjectShortName = _youTrackProjectKey;
-			_youTrackIssue.Type = "Awaiting Classification";
-			_youTrackIssue.Summary = summary;
-			_youTrackIssue.Description = description;
-			_youTrackIssueId = _issueManagement.CreateIssue(_youTrackIssue);
+			var issueManagement = new IssueManagement(_youTrackConnection);
+			dynamic youTrackIssue = new Issue();
+			youTrackIssue.ProjectShortName = _youTrackProjectKey;
+			youTrackIssue.Type = "Awaiting Classification";
+			youTrackIssue.Summary = summary;
+			youTrackIssue.Description = description;
+			var youTrackIssueId = issueManagement.CreateIssue(youTrackIssue);
 
-			return _youTrackIssueId;
+			// Now that we have an issue Id, attach any files.
+			AttachFiles(issueManagement, youTrackIssueId);
+
+			return youTrackIssueId;
+		}
+
+		private void AttachFiles(IssueManagement management, string youTrackIssueId)
+		{
+			foreach (var filename in _filesToAttach)
+			{
+				management.AttachFileToIssue(youTrackIssueId, filename);
+			}
 		}
 	}
 }
