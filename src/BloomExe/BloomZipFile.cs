@@ -58,8 +58,8 @@ namespace Bloom
 			if (rootName == null)
 				return;
 
-			var dirNameOffest = directoryPath.Length - rootName.Length;
-			AddDirectory(directoryPath, dirNameOffest);
+			var dirNameOffset = directoryPath.Length - rootName.Length;
+			AddDirectory(directoryPath, dirNameOffset);
 		}
 
 		private void AddDirectory(string directoryPath, int dirNameOffest)
@@ -77,7 +77,7 @@ namespace Bloom
 			foreach (var folder in folders)
 			{
 				var dirName = Path.GetFileName(folder);
-				if ((dirName == null))
+				if (dirName == null)
 					continue; // Don't want to bundle these up
 
 				AddDirectory(folder, dirNameOffest);

@@ -44,7 +44,7 @@ export const ProblemDialog: React.FunctionComponent<{
     );
     const [submitAttempts, setSubmitAttempts] = useState(0);
     const theme = makeTheme(props.kind);
-    const [userInput, setWhatDoing] = useState("");
+    const [whatDoing, setWhatDoing] = useState("");
     const [bookName, setUnused] = BloomApi.useApiString(
         "problemReport/bookName",
         "??"
@@ -56,7 +56,7 @@ export const ProblemDialog: React.FunctionComponent<{
 
     const whatWereYouDoingAttentionClass = useDrawAttention(
         submitAttempts,
-        () => userInput.trim().length > 0
+        () => whatDoing.trim().length > 0
     );
     const submitButton = useRef(null);
     // Haven't got to work yet, see comment on the declaration of this function, below
@@ -66,7 +66,7 @@ export const ProblemDialog: React.FunctionComponent<{
         }
     });
     const AttemptSubmit = () => {
-        if (!readyToSubmit(email, userInput)) {
+        if (!readyToSubmit(email, whatDoing)) {
             setSubmitAttempts(submitAttempts + 1);
         } else {
             setMode(Mode.submitting);
@@ -75,7 +75,7 @@ export const ProblemDialog: React.FunctionComponent<{
                 {
                     kind: props.kind,
                     email,
-                    userInput: `How much: TODO<br/>${userInput}`,
+                    userInput: `How much: TODO<br/>${whatDoing}`,
                     includeBook,
                     includeScreenshot
                 },
@@ -116,6 +116,8 @@ export const ProblemDialog: React.FunctionComponent<{
                                 return (
                                     <PrivacyScreen
                                         includeBook={includeBook}
+                                        email={email}
+                                        userInput={whatDoing}
                                         onBack={() => setMode(Mode.gather)}
                                     />
                                 );
@@ -150,9 +152,10 @@ export const ProblemDialog: React.FunctionComponent<{
                                                     }}
                                                     error={
                                                         submitAttempts > 0 &&
-                                                        userInput.trim()
+                                                        whatDoing.trim()
                                                             .length == 0
                                                     }
+                                                    value={whatDoing}
                                                 />
                                                 <HowMuchGroup />
 
@@ -234,7 +237,7 @@ export const ProblemDialog: React.FunctionComponent<{
                         )}
                     {mode === Mode.gather && (
                         <BloomButton
-                            enabled={readyToSubmit(email, userInput)}
+                            enabled={readyToSubmit(email, whatDoing)}
                             l10nKey="ReportProblemDialog.SubmitButton"
                             hasText={true}
                             onClick={() => {
@@ -282,17 +285,13 @@ function useCtrlEnterToSubmit(callback) {
 
 // allow plain 'ol javascript in the html to connect up react
 (window as any).connectProblemDialog = (element: Element | null) => {
-    let kind = "fatal";
     const levelQuery = window.location.search;
-    if (levelQuery.length > 1) {
-        kind = levelQuery.substring(1); // strip off "?"
-    }
-    let kindProp = ProblemKind.User;
-    if (kind === "fatal") {
-        kindProp = ProblemKind.Fatal;
-    }
-    if (kind === "nonfatal") {
-        kindProp = ProblemKind.NonFatal;
-    }
+    const kind = levelQuery.length > 1 ? levelQuery.substring(1) : "fatal"; // strip off initial "?"
+    const kindProp =
+        kind === "fatal"
+            ? ProblemKind.Fatal
+            : kind === "nonfatal"
+            ? ProblemKind.NonFatal
+            : ProblemKind.User;
     ReactDOM.render(<ProblemDialog kind={kindProp} />, element);
 };
