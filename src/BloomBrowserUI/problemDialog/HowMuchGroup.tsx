@@ -4,7 +4,9 @@ import { withStyles } from "@material-ui/styles";
 import "./ProblemDialog.less";
 import Slider from "@material-ui/core/Slider";
 
-export const HowMuchGroup: React.FunctionComponent<{}> = () => {
+export const HowMuchGroup: React.FunctionComponent<{
+    onHowMuchChange: (value: number) => void;
+}> = props => {
     return (
         <div id="how_much_group">
             <Typography>How much has this happened?</Typography>
@@ -14,7 +16,9 @@ export const HowMuchGroup: React.FunctionComponent<{}> = () => {
                 min={0}
                 max={2}
                 step={1}
-                //onChange={this.handleChange}
+                onChange={(event, value: number) =>
+                    props.onHowMuchChange(value)
+                }
                 marks={[
                     {
                         value: 0,
