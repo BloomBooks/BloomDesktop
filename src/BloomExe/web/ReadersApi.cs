@@ -347,22 +347,25 @@ namespace Bloom.Api
 		private static string GetReaderSettings(CollectionSettings currentCollectionSettings)
 		{
 			var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(currentCollectionSettings);
-			var settings = "";
+			var jsonSettings = "";
 			// if file exists, return current settings
 			if (RobustFile.Exists(settingsPath))
 			{
 				var result = RobustFile.ReadAllText(settingsPath, Encoding.UTF8);
 				if (!string.IsNullOrWhiteSpace(result))
-					settings = result;
+					jsonSettings = result;
 			}
 
-			if (settings.Length > 0)
+			if (jsonSettings.Length > 0)
 			{
-				return settings;
+				dynamic fixedSettings = JsonConvert.DeserializeObject(jsonSettings);
+				fixedSettings.writingSystemTag = currentCollectionSettings.Language1.Iso639Code;
+				return JsonConvert.SerializeObject(fixedSettings);
 			}
 			// file does not exist, so make a new one
 			// The literal string here defines our default reader settings for a collection.
-			var settingsString = "{\"letters\":\"a b c d e f g h i j k l m n o p q r s t u v w x y z\","
+			var settingsString = "{'writingSystemTag': '" + currentCollectionSettings.Language1.Iso639Code+"', "
+			                     +"\"letters\":\"a b c d e f g h i j k l m n o p q r s t u v w x y z\","
 				+ $"'lang:\"{currentCollectionSettings.Language1Iso639Code}\"'"
 			                     + "\"moreWords\":\"\","
 				+ "\"stages\":[{\"letters\":\"\",\"sightWords\":\"\"}],"

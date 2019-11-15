@@ -36,9 +36,11 @@
 			this._tallerLinesCheckBox = new System.Windows.Forms.CheckBox();
 			this._lineSpacingCombo = new System.Windows.Forms.ComboBox();
 			this._okButton = new System.Windows.Forms.Button();
+			this._lineBreakCheckBox = new System.Windows.Forms.CheckBox();
+			this._UIFontSizeLabel = new System.Windows.Forms.Label();
+			this._uiFontSizeCombo = new System.Windows.Forms.ComboBox();
 			this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-			this._lineBreakCheckBox = new System.Windows.Forms.CheckBox();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.flowLayoutPanel1.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
@@ -116,7 +118,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._okButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._okButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._okButton, "Common.OKButton");
-			this._okButton.Location = new System.Drawing.Point(225, 168);
+			this._okButton.Location = new System.Drawing.Point(225, 235);
 			this._okButton.MinimumSize = new System.Drawing.Size(90, 29);
 			this._okButton.Name = "_okButton";
 			this._okButton.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
@@ -124,39 +126,6 @@
 			this._okButton.TabIndex = 3;
 			this._okButton.Text = "&OK";
 			this._okButton.UseVisualStyleBackColor = true;
-			// 
-			// flowLayoutPanel1
-			// 
-			this.flowLayoutPanel1.AutoSize = true;
-			this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.flowLayoutPanel1.Controls.Add(this._languageNameLabel);
-			this.flowLayoutPanel1.Controls.Add(this.tableLayoutPanel1);
-			this.flowLayoutPanel1.Controls.Add(this._okButton);
-			this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-			this.flowLayoutPanel1.Location = new System.Drawing.Point(21, 23);
-			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-			this.flowLayoutPanel1.Size = new System.Drawing.Size(318, 200);
-			this.flowLayoutPanel1.TabIndex = 0;
-			// 
-			// tableLayoutPanel1
-			// 
-			this.tableLayoutPanel1.AutoSize = true;
-			this.tableLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.tableLayoutPanel1.ColumnCount = 1;
-			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-			this.tableLayoutPanel1.Controls.Add(this._lineSpacingCombo, 0, 3);
-			this.tableLayoutPanel1.Controls.Add(this._tallerLinesCheckBox, 0, 2);
-			this.tableLayoutPanel1.Controls.Add(this._lineBreakCheckBox, 0, 1);
-			this.tableLayoutPanel1.Controls.Add(this._rtlLanguageCheckBox, 0, 0);
-			this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 32);
-			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-			this.tableLayoutPanel1.RowCount = 4;
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-			this.tableLayoutPanel1.Size = new System.Drawing.Size(312, 130);
-			this.tableLayoutPanel1.TabIndex = 2;
 			// 
 			// _lineBreakCheckBox
 			// 
@@ -171,13 +140,77 @@
 			this._lineBreakCheckBox.Text = "Do not use special Asian script word breaking";
 			this._lineBreakCheckBox.UseVisualStyleBackColor = true;
 			// 
+			// _UIFontSizeLabel
+			// 
+			this._UIFontSizeLabel.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._UIFontSizeLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._UIFontSizeLabel, resources.GetString("_UIFontSizeLabel.LocalizationComment"));
+			this._L10NSharpExtender.SetLocalizingId(this._UIFontSizeLabel, "ScriptSettingsDialog.UIFontSizeLabel");
+			this._UIFontSizeLabel.Location = new System.Drawing.Point(3, 130);
+			this._UIFontSizeLabel.Name = "_UIFontSizeLabel";
+			this._UIFontSizeLabel.Size = new System.Drawing.Size(210, 19);
+			this._UIFontSizeLabel.TabIndex = 29;
+			this._UIFontSizeLabel.Text = "Font size when displayed in tools";
+			// 
+			// _uiFontSizeCombo
+			// 
+			this._uiFontSizeCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this._uiFontSizeCombo.FormattingEnabled = true;
+			this._uiFontSizeCombo.ItemHeight = 17;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._uiFontSizeCombo, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._uiFontSizeCombo, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._uiFontSizeCombo, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._uiFontSizeCombo, "ScriptSettingsDialog.LineSpacingCombo");
+			this._uiFontSizeCombo.Location = new System.Drawing.Point(26, 152);
+			this._uiFontSizeCombo.Margin = new System.Windows.Forms.Padding(26, 3, 20, 20);
+			this._uiFontSizeCombo.Name = "_uiFontSizeCombo";
+			this._uiFontSizeCombo.Size = new System.Drawing.Size(121, 25);
+			this._uiFontSizeCombo.TabIndex = 30;
+			// 
+			// flowLayoutPanel1
+			// 
+			this.flowLayoutPanel1.AutoSize = true;
+			this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this.flowLayoutPanel1.Controls.Add(this._languageNameLabel);
+			this.flowLayoutPanel1.Controls.Add(this.tableLayoutPanel1);
+			this.flowLayoutPanel1.Controls.Add(this._okButton);
+			this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+			this.flowLayoutPanel1.Location = new System.Drawing.Point(21, 23);
+			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
+			this.flowLayoutPanel1.Size = new System.Drawing.Size(318, 267);
+			this.flowLayoutPanel1.TabIndex = 0;
+			// 
+			// tableLayoutPanel1
+			// 
+			this.tableLayoutPanel1.AutoSize = true;
+			this.tableLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this.tableLayoutPanel1.ColumnCount = 1;
+			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this.tableLayoutPanel1.Controls.Add(this._uiFontSizeCombo, 0, 5);
+			this.tableLayoutPanel1.Controls.Add(this._lineSpacingCombo, 0, 3);
+			this.tableLayoutPanel1.Controls.Add(this._tallerLinesCheckBox, 0, 2);
+			this.tableLayoutPanel1.Controls.Add(this._lineBreakCheckBox, 0, 1);
+			this.tableLayoutPanel1.Controls.Add(this._rtlLanguageCheckBox, 0, 0);
+			this.tableLayoutPanel1.Controls.Add(this._UIFontSizeLabel, 0, 4);
+			this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 32);
+			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+			this.tableLayoutPanel1.RowCount = 6;
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.Size = new System.Drawing.Size(312, 197);
+			this.tableLayoutPanel1.TabIndex = 2;
+			// 
 			// ScriptSettingsDialog
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.AutoSize = true;
 			this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.ClientSize = new System.Drawing.Size(345, 218);
+			this.ClientSize = new System.Drawing.Size(362, 321);
 			this.ControlBox = false;
 			this.Controls.Add(this.flowLayoutPanel1);
 			this.Font = new System.Drawing.Font("Segoe UI", 10F);
@@ -212,5 +245,7 @@
 		private System.Windows.Forms.ComboBox _lineSpacingCombo;
 		private System.Windows.Forms.Button _okButton;
 		private System.Windows.Forms.CheckBox _lineBreakCheckBox;
+		private System.Windows.Forms.ComboBox _uiFontSizeCombo;
+		private System.Windows.Forms.Label _UIFontSizeLabel;
 	}
 }

@@ -550,35 +550,24 @@ namespace Bloom.Collection
 				frm.LanguageName = langName;
 				frm.LanguageRightToLeft = langSpec.IsRightToLeft;
 				frm.LanguageLineSpacing = langSpec.LineHeight;
+				frm.UIFontSize = langSpec.BaseUIFontSizeInPoints;
 				frm.BreakLinesOnlyAtSpaces = langSpec.BreaksLinesOnlyAtSpaces;
 				frm.ShowDialog(this);
 
 				// get the changes
-				var newRtl = frm.LanguageRightToLeft;
-				var newLineSpacing = frm.LanguageLineSpacing;
-				var newBreak = frm.BreakLinesOnlyAtSpaces;
-				
-				if (newRtl != langSpec.IsRightToLeft) 
+				if (frm.LanguageRightToLeft != langSpec.IsRightToLeft) 
 				{
-					langSpec.IsRightToLeft =  newRtl;
+					langSpec.IsRightToLeft = frm.LanguageRightToLeft;
 					ChangeThatRequiresRestart();
 				}
 
-				if (newLineSpacing != langSpec.LineHeight)
-				{
-					// Clicking "OK" will save the values into the .bloomCollection file.  (Later when a book
-					// is edited, defaultLangStyles.css will be written out in the book's folder, which is all
-					// that is needed for this setting to take effect.)
-					langSpec.LineHeight = newLineSpacing;
-				}
-
-				if (newBreak != langSpec.BreaksLinesOnlyAtSpaces)
-				{
-					// Clicking "OK" will save the values into the .bloomCollection file.  (Later when a book
-					// is edited, defaultLangStyles.css will be written out in the book's folder, which is all
-					// that is needed for this setting to take effect.)
-					langSpec.BreaksLinesOnlyAtSpaces = newBreak;
-				}
+				// We don't need to restart, just gather the changes up. The caller
+				// will save the .bloomCollection file. Later when a book
+				// is edited, defaultLangStyles.css will be written out in the book's folder, which is all
+				// that is needed for this setting to take effect.
+				langSpec.LineHeight = frm.LanguageLineSpacing;
+				langSpec.BreaksLinesOnlyAtSpaces = frm.BreakLinesOnlyAtSpaces;
+				langSpec.BaseUIFontSizeInPoints = frm.UIFontSize;
 			}
 		}
 
