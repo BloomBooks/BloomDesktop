@@ -4,6 +4,7 @@ html
 		meta(charset='UTF-8')
 		link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css', type='text/css')
 		link(rel='stylesheet', href='readerSetup.css', type='text/css')
+		link(rel='stylesheet', href='writingSystemDisplayForUI.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/lib/long-press/longpress.css', type='text/css')
 		// script(src='/bloom/jquery-min.js')
 		// script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
@@ -42,7 +43,7 @@ html
 					br
 					label(data-i18n='ReaderSetup.Letters.Header') Letters and Letter Combinations
 					br
-					textarea#dls_letters.book-font(style='height: 55px; width: 325px')
+					textarea#dls_letters.lang1InATool.book-font(style='height: 55px; width: 325px')
 					p(data-i18n='ReaderSetup.Letters.LetterHelp1') Separate each letter or letter combination with a space. For example, here is what we might use for the English language:
 					p a b c ch d e f g h i j k l m n ng o p q r s sh t th u v w x y z ' -
 					p
@@ -64,7 +65,7 @@ html
 					.flex-column-expanding-row
 						#more-words-div.floating.flex-column(style='width: 30%')
 							label.disableable.flex-column-fixed-row(for='dls_more_words', data-i18n='ReaderSetup.Words.TypeWordsHere') 1) Type Words Here
-							textarea#dls_more_words.book-font.disableable.flex-column-expanding-row(style='width:100%')
+							textarea#dls_more_words.lang1InATool.book-font.disableable.flex-column-expanding-row(style='width:100%')
 						#word-lists-div.floating.flex-column
 							label.disableable.flex-column-fixed-row(for='dls_word_lists')
 								span(data-i18n='ReaderSetup.Words.PlaceTextFiles') 2) Place Text Files in Your
@@ -105,7 +106,7 @@ html
 					#setup-stage-letters-and-words.sub-float
 						div(style='width: 100%')
 							label(for='setup-stage-sight-words', data-i18n='ReaderSetup.SightWordLabel') New Sight Words
-							textarea#setup-stage-sight-words.book-font(style='height: 35px; width: 100%; box-sizing:border-box;')
+							textarea#setup-stage-sight-words.lang1InATool.book-font(style='height: 35px; width: 100%; box-sizing:border-box;')
 						br
 						div(style='display: block; margin-top: 12px;'): label(data-i18n='ReaderSetup.SelectedLetters') Previous and New Letters
 						#setup-selected-letters.rs-letter-container
@@ -134,12 +135,12 @@ html
 								span#matching-words-span(data-i18n='ReaderSetup.MatchingWords') matching words
 								span#allowed-words-span(data-i18n='ReaderSetup.AllowedWords') allowed words
 							.rs-word-container
-								#rs-matching-words.book-font(style='margin-left: 8px')
+								#rs-matching-words.lang1InATool.book-font(style='margin-left: 8px')
 			#dlstabs-3.reader-setup-tab
 				.floating
 					label(data-i18n='ReaderSetup.SentencePunctuation.Header') Special Sentence-Ending Punctuation
 					br
-					textarea#dls_sentence_punct.book-font(style='height: 55px; width: 325px')
+					textarea#dls_sentence_punct.lang1InATool.book-font(style='height: 55px; width: 325px')
 					p(data-i18n='ReaderSetup.SentencePunctuation.Help') Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.
 			#dlstabs-4.reader-setup-tab
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')

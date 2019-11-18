@@ -16,6 +16,7 @@ import { Div, Span } from "../../../react_components/l10nComponents";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles"; // TODO: Am I really needed?
 import InputLabel from "@material-ui/core/InputLabel";
 import * as toastr from "toastr";
+import { default as TrashIcon } from "@material-ui/icons/Delete";
 
 const CalloutToolControls: React.FunctionComponent = () => {
     // Declare all the hooks
@@ -162,6 +163,14 @@ const CalloutToolControls: React.FunctionComponent = () => {
         ev.dataTransfer.setData("bloomBubble", style);
     };
 
+    const deleteBubble = () => {
+        const bubbleManager = CalloutTool.bubbleManager();
+        const active = bubbleManager.getActiveElement();
+        if (active) {
+            bubbleManager.deleteTOPBox(active);
+        }
+    };
+
     return (
         <div>
             <div id={"calloutControlShapeChooserRegion"}>
@@ -247,13 +256,11 @@ const CalloutToolControls: React.FunctionComponent = () => {
                                     Ellipse
                                 </Div>
                             </MenuItem>
-                            {/*
                             <MenuItem value="thought">
                                 <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.Thought">
                                     Thought
                                 </Div>
                             </MenuItem>
-                            */}
                         </Select>
                     </FormControl>
                     <br />
@@ -380,6 +387,11 @@ const CalloutToolControls: React.FunctionComponent = () => {
                         </Select>
                     </FormControl>
                     */}
+                    <TrashIcon
+                        id="trashIcon"
+                        color="primary"
+                        onClick={() => deleteBubble()}
+                    />
                 </form>
             </div>
             <div id={"calloutControlFooterRegion"}>

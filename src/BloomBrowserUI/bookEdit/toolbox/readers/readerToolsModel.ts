@@ -544,15 +544,20 @@ export class ReaderToolsModel {
         let longestWord = "";
         for (let i = 0; i < words.length; i++) {
             const w: DataWord = words[i];
-            result +=
-                '<div class="word' +
-                (w.isSightWord ? " sight-word" : "") +
-                '">' +
-                w.Name +
-                "</div>";
+            // Sigh. LangID is always null
+            // result += `<div lang='${
+            //     theOneLanguageDataInstance.LangID
+            // }' class="word ${w.isSightWord ? " sight-word" : ""}"> ${w.Name}-${
+            //     theOneLanguageDataInstance.LangID
+            // }</div>`;
+
+            result += `<div class="word lang1InATool ${
+                w.isSightWord ? " sight-word" : ""
+            }"> ${w.Name}</div>`;
+
             if (w.Name.length > longestWord.length) longestWord = w.Name;
         }
-
+        console.log("foo: " + JSON.stringify(theOneLanguageDataInstance));
         const div = $("div.wordList");
         div.css("font-family", this.fontName);
 
@@ -610,7 +615,14 @@ export class ReaderToolsModel {
         let result = "";
         for (let i = 0; i < letters.length; i++) {
             const letter = letters[i];
-            result += '<div class="letter">' + letter + "</div>";
+            result +=
+                // Alas, LangID is always null in this monstrosity of a code base
+                // `<div lang='${
+                //     theOneLanguageDataInstance.LangID
+                // }' class="letter">` +
+                `<div lang='en' class="lang1InATool letter">` +
+                letter +
+                "</div>";
         }
         const div = $("div.letterList");
         div.css("font-family", this.fontName);

@@ -5,7 +5,7 @@
 @DefaultTextBoxHeight: @MinTextBoxHeight;
 @DragHandleBackgroundColor: transparent;
 
-// Don't show text over picture borders or resizing handles unless hovering over the image
+// Don't show text over picture borders, resizing handles, or format buttons unless hovering over the image
 .bloom-imageContainer:not(.hoverUp) .bloom-textOverPicture {
     .bloom-editable {
         border: none;
@@ -14,13 +14,16 @@
         padding-right: 1px;
         padding-top: 2px;
         &:after {
-            content: "" !important;
+            display: none !important;
         }
     }
     .ui-resizable-handle {
         display: none !important;
     }
     .bloom-dragHandleTOP {
+        display: none;
+    }
+    #formatButton {
         display: none;
     }
 }
@@ -97,28 +100,73 @@
                     0 0 8px @bloom-blue;
             }
 
-            .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
-                left: 100%; // Align the left edge of the language tip content to the right edge
-                right: unset; // Need to clear an inherited property
-                bottom: 0;
-                color: white;
-                background-color: @bloom-gray; // Specifically set the background color to gray to make it easier to see since it now goes outside the bubbles.
-                font-size: xx-small;
-                padding-right: 5px;
-                padding-left: 2px;
+            // Language tip CSS
+            .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]) {
+                &:after {
+                    // In editMode.less, it sets the "content" property for all text boxes (which normally always have the language tip visible).
+                    // But here in text over picture, we want to default to not having the language tip visible.
+                    display: none; // Prevents padding-top from being rendered (content: "" still renders it)
+                }
 
-                // Adds a little more height to the top (and bottom). Note that padding-top doesn't work well,
-                // because that caused the padding to be rendered even when the language tip content wasn't be shown
-                line-height: 1.3em;
-            }
+                &:focus:after {
+                    display: block;
+                    left: 100%; // Align the left edge of the language tip content to the right edge
+                    right: unset; // Need to clear an inherited property
+                    bottom: 0;
+                    color: white;
+                    background-color: @bloom-gray; // Specifically set the background color to gray to make it easier to see since it now goes outside the bubbles.
+                    font-size: xx-small;
+                    padding-left: 2px;
+                    padding-right: 5px;
 
-            // Allows the language tip to be suppressed by adding a class
-            .bloom-editable.disableTOPControls:after {
-                display: none;
+                    // ENHANCE: See if you can use padding-top instead. But need to ensure there's enough on the bottom to handle letters that extend below line like 'g'
+                    line-height: 1.3em;
+                }
             }
-            // Allows the format gear to be suppressed by adding a class
-            .bloom-editable.disableTOPControls #formatButton {
-                display: none;
+            // Allows the format gear and language tip to be suppressed by adding a class
+            // (currently, during overflow testing). Don't normally like !important,
+            // but the rules this has to override are complex and trying to make this
+            // rule always more specific means breaking it up and putting it in multiple
+            // places (and is bug prone, if we change the other visibility rules).
+            // We absolutely want these hidden during overflow calculations!
+            .bloom-editable.disableTOPControls {
+                #formatButton,
+                &:after {
+                    display: none !important;
+                }
+            }
+        }
+    }
+}
+
+// Code to handle borders
+.bloom-imageContainer {
+    // Text-over-picture elements with speech bubbles
+    //
+    // a TOP element that contains a data-bubble attribute and does NOT contain the substring "`style`:`none`" in the value of the data-bubble attribute
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) {
+        .bloom-translationGroup {
+            .bloom-editable {
+                border: none;
+                box-shadow: none;
+            }
+        }
+    }
+
+    // The inverse of the above... text boxes which do not have bubbles
+    //
+    // The case where it doesn't contain a data-bubble attribute at all
+    .bloom-textOverPicture:not([data-bubble]),
+    // The case where it does contain a data-bubble attribute, but the style is none.
+    .bloom-textOverPicture[data-bubble*="`style`:`none`"] {
+        .bloom-translationGroup {
+            .bloom-editable {
+                &:focus {
+                    // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
+                    border: 1px solid @bloom-blue;
+                    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
+                        0 0 8px @bloom-blue;
+                }
             }
         }
     }

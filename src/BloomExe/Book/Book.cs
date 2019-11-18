@@ -374,7 +374,7 @@ namespace Bloom.Book
 		{
 			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, CollectionSettings, CollectionSettings.Language1Iso639Code, _bookData.MultilingualContentLanguage2,
 													 _bookData.MultilingualContentLanguage3);
-			BookInfo.IsRtl = CollectionSettings.IsLanguage1Rtl;
+			BookInfo.IsRtl = CollectionSettings.Language1.IsRightToLeft;
 
 			BookStarter.SetLanguageForElementsWithMetaLanguage(dom.RawDom, CollectionSettings);
 		}
@@ -1022,7 +1022,7 @@ namespace Bloom.Book
 			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null,
 				val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
 
-			bookDOM.UpdatePageNumberAndSideClassOfPages(CollectionSettings.CharactersForDigitsForPageNumbers, CollectionSettings.IsLanguage1Rtl);
+			bookDOM.UpdatePageNumberAndSideClassOfPages(CollectionSettings.CharactersForDigitsForPageNumbers, CollectionSettings.Language1.IsRightToLeft);
 
 			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
 
@@ -1077,6 +1077,10 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// Write the appropriate styles to the defaultLangStyles.css file.
+		/// You would normally expect that we just write this afresh, but actually
+		/// we want to preserve font information from languages that are no longer
+		/// part of L1,L2,or L3 but are still in the book and thus may still be
+		/// rendered by Bloom Player.
 		/// </summary>
 		private void CreateOrUpdateDefaultLangStyles()
 		{
@@ -1087,7 +1091,7 @@ namespace Bloom.Book
 				// Would overwrite, but overwrite not allowed in Harvester mode.
 				return;
 			}
-			
+
 			var collectionStylesCss = CollectionSettings.GetCollectionStylesCss(false);
 			var cssBuilder = new StringBuilder(collectionStylesCss);
 			if (doesAlreadyExist)
@@ -1128,14 +1132,14 @@ namespace Bloom.Book
 			BookInfo.MetaData.PageNumberStyle = CollectionSettings.PageNumberStyle;
 			if (BookInfo.MetaData.DisplayNames == null)
 				BookInfo.MetaData.DisplayNames = new Dictionary<string,string>();
-			BookInfo.MetaData.DisplayNames[CollectionSettings.Language1Iso639Code] = CollectionSettings.Language1Name;
+			BookInfo.MetaData.DisplayNames[CollectionSettings.Language1Iso639Code] = CollectionSettings.Language1.Name;
 			if (CollectionSettings.Language2Iso639Code != CollectionSettings.Language1Iso639Code)
-				BookInfo.MetaData.DisplayNames[CollectionSettings.Language2Iso639Code] = CollectionSettings.Language2Name;
+				BookInfo.MetaData.DisplayNames[CollectionSettings.Language2Iso639Code] = CollectionSettings.Language2.Name;
 			if (!String.IsNullOrEmpty(CollectionSettings.Language3Iso639Code) &&
 				CollectionSettings.Language3Iso639Code != CollectionSettings.Language1Iso639Code &&
 				CollectionSettings.Language3Iso639Code != CollectionSettings.Language2Iso639Code)
 			{
-				BookInfo.MetaData.DisplayNames[CollectionSettings.Language3Iso639Code] = CollectionSettings.Language3Name;
+				BookInfo.MetaData.DisplayNames[CollectionSettings.Language3Iso639Code] = CollectionSettings.Language3.Name;
 			}
 			// These settings will be saved to the meta.json file the next time the book itself is saved.
 		}
@@ -1321,7 +1325,7 @@ namespace Bloom.Book
 			// worth using the fullest possible version of updating the book to bring it in line
 			// with the current orientation.
 			//BringXmatterHtmlUpToDate(bookDOM); // wipes out xmatter content!
-			//bookDOM.UpdatePageNumberAndSideClassOfPages(_collectionSettings.CharactersForDigitsForPageNumbers, _collectionSettings.IsLanguage1Rtl);
+			//bookDOM.UpdatePageNumberAndSideClassOfPages(_collectionSettings.CharactersForDigitsForPageNumbers, _collectionSettings.Language1.IsRightToLeft);
 			// // restore xmatter page content from datadiv
 			//var bd = new BookData(bookDOM, _collectionSettings, UpdateImageMetadataAttributes);
 			//bd.SynchronizeDataItemsThroughoutDOM();
@@ -1740,17 +1744,17 @@ namespace Bloom.Book
 		private void InjectStringListingActiveLanguagesOfBook()
 		{
 			string codeOfNationalLanguage = CollectionSettings.Language2Iso639Code;
-			var languagesOfBook = CollectionSettings.GetLanguage1Name(codeOfNationalLanguage);
+			var languagesOfBook = CollectionSettings.Language1.GetNameInLanguage(codeOfNationalLanguage);
 
 			if (MultilingualContentLanguage2 != null)
 			{
 				languagesOfBook += ", " + ((MultilingualContentLanguage2 == CollectionSettings.Language2Iso639Code) ?
-					CollectionSettings.GetLanguage2Name(codeOfNationalLanguage) :
-					CollectionSettings.GetLanguage3Name(codeOfNationalLanguage));
+					CollectionSettings.Language2.GetNameInLanguage(codeOfNationalLanguage) :
+					CollectionSettings.Language3.GetNameInLanguage(codeOfNationalLanguage));
 			}
 			if (MultilingualContentLanguage3 != null)
 			{
-				languagesOfBook += ", " + CollectionSettings.GetLanguage3Name(codeOfNationalLanguage);
+				languagesOfBook += ", " + CollectionSettings.Language3.GetNameInLanguage(codeOfNationalLanguage);
 			}
 
 			_bookData.Set("languagesOfBook", languagesOfBook, false);
@@ -2451,7 +2455,7 @@ namespace Bloom.Book
 
 			var pageNode = FindPageDiv(page);
 			pageNode.ParentNode.RemoveChild(pageNode);
-			Storage.Dom.UpdatePageNumberAndSideClassOfPages(CollectionSettings.CharactersForDigitsForPageNumbers, CollectionSettings.IsLanguage1Rtl);
+			Storage.Dom.UpdatePageNumberAndSideClassOfPages(CollectionSettings.CharactersForDigitsForPageNumbers, CollectionSettings.Language1.IsRightToLeft);
 
 			_pageSelection.SelectPage(pageToShowNext);
 			Save();
@@ -2463,7 +2467,7 @@ namespace Bloom.Book
 		private void OrderOrNumberOfPagesChanged()
 		{
 			OurHtmlDom.UpdatePageNumberAndSideClassOfPages(CollectionSettings.CharactersForDigitsForPageNumbers,
-				CollectionSettings.IsLanguage1Rtl);
+				CollectionSettings.Language1.IsRightToLeft);
 		}
 
 		private void ClearPagesCache()

@@ -154,16 +154,16 @@ namespace Bloom.Book
 				bookData.RemoveAllForms("contentLanguage2");
 
 			bookData.Set("contentLanguage1", collectionSettings.Language1Iso639Code, false);
-			bookData.Set("contentLanguage1Rtl", collectionSettings.IsLanguage1Rtl.ToString(), false);
+			bookData.Set("contentLanguage1Rtl", collectionSettings.Language1.IsRightToLeft.ToString(), false);
 			if (oneTwoOrThreeContentLanguages > 1)
 			{
 				bookData.Set("contentLanguage2", collectionSettings.Language2Iso639Code, false);
-				bookData.Set("contentLanguage2Rtl", collectionSettings.IsLanguage2Rtl.ToString(), false);
+				bookData.Set("contentLanguage2Rtl", collectionSettings.Language2.IsRightToLeft.ToString(), false);
 			}
 			if (oneTwoOrThreeContentLanguages > 2 && !string.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
 			{
 				bookData.Set("contentLanguage3", collectionSettings.Language3Iso639Code, false);
-				bookData.Set("contentLanguage3Rtl", collectionSettings.IsLanguage3Rtl.ToString(), false);
+				bookData.Set("contentLanguage3Rtl", collectionSettings.Language3.IsRightToLeft.ToString(), false);
 			}
 		}
 
@@ -266,9 +266,9 @@ namespace Bloom.Book
 		private static void UpdateRightToLeftSetting(CollectionSettings settings, XmlElement e, string lang)
 		{
 			HtmlDom.RemoveRtlDir(e);
-			if((lang == settings.Language1Iso639Code && settings.IsLanguage1Rtl) ||
-			   (lang == settings.Language2Iso639Code && settings.IsLanguage2Rtl) ||
-			   (lang == settings.Language3Iso639Code && settings.IsLanguage3Rtl))
+			if((lang == settings.Language1Iso639Code && settings.Language1.IsRightToLeft) ||
+			   (lang == settings.Language2Iso639Code && settings.Language2.IsRightToLeft) ||
+			   (lang == settings.Language3Iso639Code && settings.Language3.IsRightToLeft))
 			{
 				HtmlDom.AddRtlDir(e);
 			}

@@ -190,11 +190,9 @@ export function displayLetters(): void {
     for (let i = 0; i < letters.length; i++) {
         div.append(
             $(
-                '<div class="book-font unselected-letter rs-letters rs-letters-' +
-                    suffix +
-                    '">' +
-                    letters[i] +
-                    "</div>"
+                `<div class="lang1InATool book-font unselected-letter rs-letters rs-letters-${suffix}">${
+                    letters[i]
+                }</div>`
             )
         );
     }
@@ -458,7 +456,7 @@ function displayAllowedWordsForSelectedStage(wordsStr: string): void {
     let longestWordLength: number = 0;
 
     _.each(words, (w: string) => {
-        result += '<div class="book-font word">' + w + "</div>";
+        result += '<div class="book-font lang1InATool word">' + w + "</div>";
 
         if (w.length > longestWordLength) {
             longestWord = w;
@@ -496,11 +494,12 @@ function displayWordsForSelectedStage(wordsStr: string): void {
 
             if (_.contains(currentSightWords, sw)) {
                 word.html =
-                    '<span class="sight-word current-sight-word">' +
+                    '<span class="lang1InATool sight-word current-sight-word">' +
                     sw +
                     "</span>";
             } else {
-                word.html = '<span class="sight-word">' + sw + "</span>";
+                word.html =
+                    '<span class="lang1InATool sight-word">' + sw + "</span>";
             }
             words.push(word);
         }
@@ -517,7 +516,8 @@ function displayWordsForSelectedStage(wordsStr: string): void {
 
     _.each(words, (w: DataWord) => {
         if (!w.html) w.html = $.markupGraphemes(w.Name, w.GPCForm, desiredGPCs);
-        result += '<div class="book-font word">' + w.html + "</div>";
+        result +=
+            '<div class="book-font lang1InATool word">' + w.html + "</div>";
 
         if (w.Name.length > longestWordLength) {
             longestWord = w.Name;
@@ -728,8 +728,7 @@ function resetStageDetail(): void {
     (<HTMLElement>document.getElementById("rs-matching-words")).innerHTML = "";
     (<HTMLInputElement>(
         document.getElementById("setup-stage-sight-words")
-    )).value =
-        "";
+    )).value = "";
     $(".rs-letters")
         .removeClass("current-letter")
         .removeClass("previous-letter")

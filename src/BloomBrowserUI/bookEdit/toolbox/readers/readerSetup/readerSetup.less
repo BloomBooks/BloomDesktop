@@ -175,7 +175,6 @@ div.scrolling-table-container-inner table th div {
 div.rs-letters {
     position: relative;
     float: left;
-    font-size: 1.1em;
     margin: -1px 0 0 -1px;
     padding: 4px 0;
     text-align: center;
@@ -183,6 +182,8 @@ div.rs-letters {
     -moz-user-select: none;
     z-index: 4;
     height: 34px;
+
+    // font-size: 1.1em;  <-- this is user data, and its size needs to be variable (larger for complex scripts)
 }
 
 div.unselected-letter {

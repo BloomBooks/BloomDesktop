@@ -37,18 +37,18 @@ namespace Bloom.Book
 			dictionaryScriptElement.SetAttribute("id", "ui-dictionary");
 			var d = new Dictionary<string, string>();
 
-			d.Add(collectionSettings.Language1Iso639Code, collectionSettings.Language1Name);
+			d.Add(collectionSettings.Language1Iso639Code, collectionSettings.Language1.Name);
 			if (!String.IsNullOrEmpty(collectionSettings.Language2Iso639Code))
 				SafelyAddLanguage(d, collectionSettings.Language2Iso639Code,
-					collectionSettings.GetLanguage2Name(collectionSettings.Language2Iso639Code));
+					collectionSettings.Language2.GetNameInLanguage(collectionSettings.Language2Iso639Code));
 			if (!String.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
 				SafelyAddLanguage(d, collectionSettings.Language3Iso639Code,
-					collectionSettings.GetLanguage3Name(collectionSettings.Language3Iso639Code));
+					collectionSettings.Language3.GetNameInLanguage(collectionSettings.Language3Iso639Code));
 
 			SafelyAddLanguage(d, "vernacularLang", collectionSettings.Language1Iso639Code);//use for making the vernacular the first tab
-			SafelyAddLanguage(d, "{V}", collectionSettings.Language1Name);
-			SafelyAddLanguage(d, "{N1}", collectionSettings.GetLanguage2Name(collectionSettings.Language2Iso639Code));
-			SafelyAddLanguage(d, "{N2}", collectionSettings.GetLanguage3Name(collectionSettings.Language3Iso639Code));
+			SafelyAddLanguage(d, "{V}", collectionSettings.Language1.Name);
+			SafelyAddLanguage(d, "{N1}", collectionSettings.Language2.GetNameInLanguage(collectionSettings.Language2Iso639Code));
+			SafelyAddLanguage(d, "{N2}", collectionSettings.Language3.GetNameInLanguage(collectionSettings.Language3Iso639Code));
 
 			// TODO: Eventually we need to look through all .bloom-translationGroup elements on the current page to determine
 			// whether there is text in a language not yet added to the dictionary.

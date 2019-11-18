@@ -389,14 +389,14 @@ namespace Bloom.Edit
 				if (_contentLanguages.Count() == 0)
 				{
 					_contentLanguages.Add(new ContentLanguage(_collectionSettings.Language1Iso639Code,
-															  _collectionSettings.GetLanguage1Name("en"))
-											{Locked = true, Selected = true, IsRtl = _collectionSettings.IsLanguage1Rtl});
+															  _collectionSettings.Language1.GetNameInLanguage("en"))
+											{Locked = true, Selected = true, IsRtl = _collectionSettings.Language1.IsRightToLeft});
 
 					//NB: these won't *always* be tied to the national and regional languages, but they are for now. We would need more UI, without making for extra complexity
 					var item2 = new ContentLanguage(_collectionSettings.Language2Iso639Code,
-													_collectionSettings.GetLanguage2Name("en"))
+													_collectionSettings.Language2.GetNameInLanguage("en"))
 									{
-										IsRtl = _collectionSettings.IsLanguage1Rtl
+										IsRtl = _collectionSettings.Language1.IsRightToLeft
 //					            		Selected =
 //					            			CurrentBook.MultilingualContentLanguage2 ==
 //					            			_librarySettings.Language2Iso639Code
@@ -410,9 +410,9 @@ namespace Bloom.Edit
 //						                CurrentBook.MultilingualContentLanguage3 ==
 //						                _librarySettings.Language3Iso639Code;
 						var item3 = new ContentLanguage(_collectionSettings.Language3Iso639Code,
-														_collectionSettings.GetLanguage3Name("en"))
+														_collectionSettings.Language3.GetNameInLanguage("en"))
 						{
-							IsRtl = _collectionSettings.IsLanguage3Rtl
+							IsRtl = _collectionSettings.Language3.IsRightToLeft
 						};// {Selected = selected};
 						_contentLanguages.Add(item3);
 					}
@@ -1259,14 +1259,14 @@ namespace Bloom.Edit
 		public string GetFontAvailabilityMessage()
 		{
 			// REVIEW: does this ToLower() do the right thing on Linux, where filenames are case sensitive?
-			var name = _collectionSettings.DefaultLanguage1FontName.ToLowerInvariant();
+			var name = _collectionSettings.Language1.FontName.ToLowerInvariant();
 
 			if (null == FontFamily.Families.FirstOrDefault(f => f.Name.ToLowerInvariant() == name))
 			{
 				var s = LocalizationManager.GetString("EditTab.FontMissing",
 														   "The current selected " +
 														   "font is '{0}', but it is not installed on this computer. Some other font will be used.");
-				return string.Format(s, _collectionSettings.DefaultLanguage1FontName);
+				return string.Format(s, _collectionSettings.Language1.FontName);
 			}
 			return null;
 		}

@@ -107,11 +107,11 @@ function loadReaderSetupData(jsonData: string): void {
         tbody.append(
             '<tr class="linked"><td>' +
                 (i + 1) +
-                '</td><td class="book-font">' +
+                '</td><td class="book-font lang1InATool">' +
                 stages[i].letters +
-                '</td><td class="book-font">' +
+                '</td><td class="book-font lang1InATool">' +
                 stages[i].sightWords +
-                '</td><td class="book-font">' +
+                '</td><td class="book-font lang1InATool">' +
                 stages[i].allowedWordsFile +
                 "</td></tr>"
         );

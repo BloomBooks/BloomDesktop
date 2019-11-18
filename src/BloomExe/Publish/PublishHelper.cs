@@ -245,7 +245,7 @@ namespace Bloom.Publish
 				}
 				if (pageRemoved)
 				{
-					dom.UpdatePageNumberAndSideClassOfPages(settings.CharactersForDigitsForPageNumbers, settings.IsLanguage1Rtl);
+					dom.UpdatePageNumberAndSideClassOfPages(settings.CharactersForDigitsForPageNumbers, settings.Language1.IsRightToLeft);
 					return true;
 				}
 			}
