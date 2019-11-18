@@ -89,7 +89,7 @@ export const ProblemDialog: React.FunctionComponent<{
                 {
                     kind: props.kind,
                     email,
-                    userInput: `How much: ${translateHowMuch()}\n\n${whatDoing}`,
+                    userInput: `${whatDoing}\n\nHow much: ${translateHowMuch()}`,
                     includeBook,
                     includeScreenshot
                 },
