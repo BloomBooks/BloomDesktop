@@ -22,6 +22,7 @@ namespace Bloom.web.controllers
 		private static TempFile _screenshotTempFile;
 		private BloomZipFile _bookZipFile;
 		private readonly TempFile _bookZipFileTemp;
+		protected string YouTrackProjectKey = "BL";
 
 		private string CollectionFolder => Path.GetDirectoryName(_bookSelection.CurrentSelection.StoragePageFolder);
 
@@ -72,8 +73,7 @@ namespace Bloom.web.controllers
 					var report = DynamicJson.Parse(request.RequiredPostJson());
 					var subject = report.kind == "User" ? "User Problem" : report.kind == "Fatal" ? "Crash Report" : "Error Report";
 
-					var issueSubmission = new YouTrackIssueSubmitter("BL");
-					//var issueSubmission = new YouTrackIssueSubmitter("BL");
+					var issueSubmission = new YouTrackIssueSubmitter(YouTrackProjectKey);
 					var userDesc = report.userInput as string;
 					var userEmail = report.email as string;
 					if (report.includeScreenshot && _screenshotTempFile != null && RobustFile.Exists(_screenshotTempFile.Path))
@@ -209,13 +209,17 @@ namespace Bloom.web.controllers
 
 		private static void GetStandardErrorReportingProperties(StringBuilder bldr, bool appendLog)
 		{
+			const string Version = "Version";
 			bldr.AppendLine();
 			bldr.AppendLine("#### Error Reporting Properties");
 			foreach (string label in ErrorReport.Properties.Keys)
 			{
+				if (label == Version)
+					bldr.Append("**"); // Version is the most important of these; bring it out a bit
 				bldr.Append(label);
 				bldr.Append(": ");
-				bldr.AppendLine(ErrorReport.Properties[label]);
+				bldr.Append(ErrorReport.Properties[label] + (label == Version));
+				bldr.AppendLine(label == Version ? "**" : "");
 			}
 
 			if (appendLog || Logger.Singleton == null)
