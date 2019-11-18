@@ -29,7 +29,7 @@
 }
 
 .bloom-imageContainer {
-    &.grabbable {
+    &.grabbable:not(.bloom-resizing) {
         &,
         .bloom-textOverPicture
             .bloom-translationGroup
@@ -38,12 +38,22 @@
         }
     }
 
-    &.grabbing {
+    &.grabbing:not(.bloom-resizing) {
         &,
         .bloom-textOverPicture
             .bloom-translationGroup
             .bloom-editable.cke_editable {
             cursor: grabbing;
+        }
+    }
+
+    .bloom-textOverPicture:not(.ui-resizable-resizing) {
+        .bloom-dragHandleTOP {
+            cursor: grab;
+
+            &.grabbing {
+                cursor: grabbing;
+            }
         }
     }
 
@@ -67,11 +77,6 @@
             left: -15px;
             top: -15px;
             z-index: @dragHandleZIndex; // keep above textbox
-            cursor: grab;
-
-            &.grabbing {
-                cursor: grabbing;
-            }
         }
         .bloom-translationGroup {
             background: transparent; // don't want to worry about what background the image has
