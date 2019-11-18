@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.MiscUI;
+using Bloom.web.controllers;
 using DesktopAnalytics;
 using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
@@ -37,7 +38,7 @@ namespace Bloom
 			var channel = ApplicationUpdateSupport.ChannelName.ToLowerInvariant();
 			try
 			{
-				shortUserLevelMessage = shortUserLevelMessage == null ? "" : shortUserLevelMessage;
+				shortUserLevelMessage = shortUserLevelMessage ?? "";
 				var fullDetailedMessage = shortUserLevelMessage;
 				if(!string.IsNullOrEmpty(moreDetails))
 					fullDetailedMessage = fullDetailedMessage + System.Environment.NewLine + moreDetails;
@@ -87,7 +88,9 @@ namespace Bloom
 					{
 						if (showSendReport)
 						{
-							SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage);
+							// N.B.: We should be more careful than ever about when we want 'showSendReport' to be 'true',
+							// since this new "nonfatal" UI doesn't have a "Cancel" button.
+							ProblemReportApi.ShowProblemDialog(Form.ActiveForm, "nonfatal");
 						}
 						else
 						{

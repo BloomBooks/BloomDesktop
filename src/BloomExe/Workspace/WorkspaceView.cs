@@ -8,7 +8,6 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
-using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.Registration;
@@ -20,7 +19,6 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ReleaseNotes;
 using SIL.Windows.Forms.SettingProtection;
 using System.Collections.Generic;
-using Bloom.Publish.Epub;
 using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using Gecko.Cache;
@@ -69,13 +67,13 @@ namespace Bloom.Workspace
 //autofac uses this
 
 		public WorkspaceView(WorkspaceModel model,
-							 Control libraryView,
-							 EditingView.Factory editingViewFactory,
-							 PublishView.Factory pdfViewFactory,
-							 CollectionSettingsDialog.Factory settingsDialogFactory,
-							 EditBookCommand editBookCommand,
+							Control libraryView,
+							EditingView.Factory editingViewFactory,
+							PublishView.Factory pdfViewFactory,
+							CollectionSettingsDialog.Factory settingsDialogFactory,
+							EditBookCommand editBookCommand,
 							SendReceiveCommand sendReceiveCommand,
-							 SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
+							SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
 							LocalizationChangedEvent localizationChangedEvent,
 							//ChorusSystem chorusSystem,
@@ -120,11 +118,8 @@ namespace Bloom.Workspace
 			editBookCommand.Subscribe(OnEditBook);
 			sendReceiveCommand.Subscribe(OnSendReceive);
 
-			//Cursor = Cursors.AppStarting;
 			Application.Idle += new EventHandler(Application_Idle);
 			Text = _model.ProjectName;
-
-			//SetupTabIcons();
 
 			//
 			// _collectionView
@@ -154,16 +149,8 @@ namespace Bloom.Workspace
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
 
-//			if (Program.StartUpWithFirstOrNewVersionBehavior)
-//			{
-//				_tabStrip.SelectedTab = _infoTab;
-//				SelectPage(_infoView);
-//			}
-//			else
-//			{
-				_tabStrip.SelectedTab = _collectionTab;
-				SelectPage(_collectionView);
-//			}
+			_tabStrip.SelectedTab = _collectionTab;
+			SelectPage(_collectionView);
 
 			if (SIL.PlatformUtilities.Platform.IsMono)
 			{
@@ -326,20 +313,6 @@ namespace Bloom.Workspace
 			// (and vice versa)
 			_helpMenu.Click += (sender, args) => _uiLanguageMenu.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
 			_uiLanguageMenu.Click += (sender, e) => _helpMenu.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
-
-			// Removing this for now (BL-5111)
-			//_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
-			//var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.MoreLanguagesMenuItem", "More..."));
-			//menu.Click += new EventHandler((a, b) =>
-			//{
-			//	_localizationManager.ShowLocalizationDialogBox(false);
-			//	SetupUiLanguageMenu();
-			//	LocalizationManager.ReapplyLocalizationsToAllObjectsInAllManagers(); //review: added this based on its name... does it help?
-			//	_localizationChangedEvent.Raise(null);
-			//	// The following is needed for proper display on Linux, and doesn't hurt anything on Windows.
-			//	// See http://issues.bloomlibrary.org/youtrack/issue/BL-3444.
-			//	AdjustButtonTextsForLocale();
-			//});
 		}
 
 		private void ToggleShowingOnlyApprovedTranslations()
@@ -465,8 +438,7 @@ namespace Bloom.Workspace
 			item.Select();
 			UpdateMenuTextToShorterNameOfSelection(toolStripButton, item.Text);
 
-			if (finishClickAction != null)
-				finishClickAction();
+			finishClickAction?.Invoke();
 		}
 
 		private void FinishUiLanguageMenuItemClick()
@@ -919,7 +891,7 @@ namespace Bloom.Workspace
 		{
 			Application.Idle -= StartProblemReport;
 			// To test the Problem Dialog with a real "green screen" type error, uncomment this next line.
-			//throw new ApplicationException("I just felt like an error!");
+			// throw new ApplicationException("I just felt like an error!");
 			ProblemReportApi.ShowProblemDialog(this);
 		}
 
