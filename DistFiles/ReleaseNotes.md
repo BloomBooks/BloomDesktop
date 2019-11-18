@@ -1,3 +1,23 @@
+# 4.7 (Currently Alpha-quality)
+
+## Collection Tab
+
+We simplified book thumbnails to just show the image on the cover.
+
+POSSIBLY: New Problem Report Dialog
+
+## Edit Tab
+
+⭐Import Audio ([Feature Request](https://community.software.sil.org/t/ability-to-add-pre-recorded-audio-files/958))
+
+⭐Comic Tool ([Feature Request](https://community.software.sil.org/t/comic-book-feature/942))
+
+For some complex scripts, the size of language text in the Decodable Reader was too small. We added a font-size chooser under `Settings:Book Making:Special Script Settings:Font size when displayed in tools`.
+
+## Publish Tab
+
+TODO: Add summary/description to epub metadata
+
 # 4.6
 
 ## Collection Tab
