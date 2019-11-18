@@ -1168,52 +1168,6 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 		public static void OldVersionCheck()
 		{
 			return;
-
-
-
-
-			var asm = Assembly.GetExecutingAssembly();
-			var file = asm.CodeBase.Replace("file:", string.Empty);
-			file = file.TrimStart('/');
-			var fi = new FileInfo(file);
-			if(DateTime.UtcNow.Subtract(fi.LastWriteTimeUtc).Days > 90)// nb: "create time" is stuck at may 2011, for some reason. Arrrggghhhh
-				{
-					try
-					{
-						if (Dns.GetHostAddresses("ftp.sil.org.pg").Length > 0)
-						{
-							if(DialogResult.Yes == MessageBox.Show("This beta version of Bloom is now over 90 days old. Click 'Yes' to have Bloom open the folder on the Ukarumpa FTP site where you can get a new one.","OLD BETA",MessageBoxButtons.YesNo))
-							{
-								Process.Start("ftp://ftp.sil.org.pg/Software/LCORE/LangTran/Groups/LangTran_win_Literacy/");
-								Process.GetCurrentProcess().Kill();
-							}
-							return;
-						}
-					}
-					catch (Exception)
-					{
-					}
-
-					try
-					{
-						if (Dns.GetHostAddresses("bloomlibrary.org").Length > 0)
-						{
-							if (DialogResult.Yes == MessageBox.Show("This beta version of Bloom is now over 90 days old. Click 'Yes' to have Bloom open the web page where you can get a new one.", "OLD BETA", MessageBoxButtons.YesNo))
-							{
-								Process.Start("http://bloomlibrary.org/download");
-								Process.GetCurrentProcess().Kill();
-							}
-							return;
-						}
-					}
-					catch (Exception)
-					{
-					}
-
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-						"This beta version of Bloom is now over 90 days old. If possible, please get a new version at bloomlibrary.org.");
-			}
-
 		}
 
 		/// <summary>

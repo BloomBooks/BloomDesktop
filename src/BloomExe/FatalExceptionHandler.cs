@@ -45,7 +45,7 @@ namespace Bloom
 
 			//TODO need to look at WinFormsExceptionHandler and copy a bunch of that
 
-			//review: what if there is none, will that still work? Could that happen?
+			// If there is no ActiveForm, SafeInvoke will hit a "Guard against null".
 			ProblemReportApi.ShowProblemDialog(System.Windows.Forms.Form.ActiveForm, "fatal");
 
 			return true;
