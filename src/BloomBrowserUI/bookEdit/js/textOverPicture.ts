@@ -161,8 +161,8 @@ export class TextOverPictureManager {
                     // some part of a bubble rather than away from it.
                     // We now use a Comical function to determine whether we clicked
                     // on a Comical object.
-                    const x = event.clientX - containerBounds.left;
-                    const y = event.clientY - containerBounds.top;
+                    const x = event.offsetX;
+                    const y = event.offsetY;
                     if (!Comical.somethingHit(container, x, y)) {
                         // So far so good. We have now determined that we want to remove
                         // focus from anything in this image.
