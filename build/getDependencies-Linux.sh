@@ -57,7 +57,9 @@ echo "wget: $2 <= $1"
 f1=$(basename $1)
 f2=$(basename $2)
 cd $(dirname $2)
-wget -q -L -N "$1"
+echo "DEBUG wget: current directory = `pwd`; f1=$f1; f2=$f2"
+echo "DEBUG wget -nv -L -N \"$1\""
+wget -nv -L -N "$1"
 # wget has no true equivalent of curl's -o option.
 # Different versions of wget handle (or not) % escaping differently.
 # A URL query is the only reason why $f1 and $f2 should differ.
@@ -207,6 +209,10 @@ echo ls -l ../Downloads
 ls -l ../Downloads
 echo ls -l ../DistFiles
 ls -l ../DistFiles
+echo ls -l ../build
+ls -l ../build
+echo ls -l ../lib/dotnet
+ls -l ../lib/dotnet
 echo find .. -name "pdf*.zip" -print
 find .. -name "pdf*.zip" -print
 # end test code
