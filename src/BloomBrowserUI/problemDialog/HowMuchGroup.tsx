@@ -3,13 +3,26 @@ import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/styles";
 import "./ProblemDialog.less";
 import Slider from "@material-ui/core/Slider";
+import { useL10n } from "../react_components/l10nHooks";
 
 export const HowMuchGroup: React.FunctionComponent<{
     onHowMuchChange: (value: number) => void;
 }> = props => {
+    const localizedHowMuch = useL10n(
+        "How much has this happened?",
+        "ReportProblemDialog.HowMuch"
+    );
+    const localizedStartLabel = useL10n(
+        "First Time",
+        "ReportProblemDialog.FirstTime"
+    );
+    const localizedEndLabel = useL10n(
+        "It keeps happening",
+        "ReportProblemDialog.ItKeepsHappening"
+    );
     return (
         <div id="how_much_group">
-            <Typography>How much has this happened?</Typography>
+            <Typography>{localizedHowMuch}</Typography>
             <HowMuchSlider
                 id="slider"
                 defaultValue={1}
@@ -35,8 +48,8 @@ export const HowMuchGroup: React.FunctionComponent<{
                 ]}
             />
             <div id="scale_labels">
-                <Typography variant="body2">First Time</Typography>
-                <Typography variant="body2">It keeps happening</Typography>
+                <Typography variant="body2">{localizedStartLabel}</Typography>
+                <Typography variant="body2">{localizedEndLabel}</Typography>
             </div>
         </div>
     );

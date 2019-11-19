@@ -2,7 +2,7 @@ import * as React from "react";
 import { Button, Typography } from "@material-ui/core";
 import "./ProblemDialog.less";
 import WarningIcon from "@material-ui/icons/Warning";
-import { LocalizedString } from "../react_components/l10nComponents";
+import { useL10n } from "../react_components/l10nHooks";
 
 export const PrivacyNotice: React.FunctionComponent<{
     onLearnMore: () => void;
@@ -11,15 +11,13 @@ export const PrivacyNotice: React.FunctionComponent<{
         <div id="privacy">
             <WarningIcon color="primary" />
             <Typography>
-                <LocalizedString l10nKey="bogus">
-                    Bloom will include diagnostic information with your report.
-                    Your report will not be private.
-                </LocalizedString>
+                {useL10n(
+                    "Bloom will include diagnostic information with your report. Your report will not be private.",
+                    "ReportProblemDialog.PrivacyNotice"
+                )}
             </Typography>
             <Button color="primary" onClick={() => props.onLearnMore()}>
-                <LocalizedString l10nKey="Common.LearnMore">
-                    Learn More...
-                </LocalizedString>
+                {useL10n("Learn More...", "Common.LearnMore")}
             </Button>
         </div>
     );

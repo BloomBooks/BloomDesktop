@@ -7,17 +7,20 @@ export const kindParams = {
     User: {
         dialogHeaderColor: kBloomBlue,
         primaryColor: kBloomBlue,
-        title: "Report a Problem"
+        title: "Report a Problem",
+        l10nKey: "ReportProblemDialog.UserTitle"
     },
     Fatal: {
         dialogHeaderColor: "#f44336",
         primaryColor: "#2F58EA",
-        title: "Bloom encountered an error and needs to quit"
+        title: "Bloom encountered an error and needs to quit",
+        l10nKey: "ReportProblemDialog.FatalTitle"
     },
     NonFatal: {
         dialogHeaderColor: kNonFatalColor,
         primaryColor: kNonFatalColor,
-        title: "Bloom had a problem"
+        title: "Bloom had a problem",
+        l10nKey: "ReportProblemDialog.NonFatalTitle"
     }
 };
 

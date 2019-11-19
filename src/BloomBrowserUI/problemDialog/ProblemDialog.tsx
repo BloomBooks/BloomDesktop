@@ -21,6 +21,8 @@ import { EmailField, isValidEmail } from "./EmailField";
 import { useDrawAttention } from "./UseDrawAttention";
 import ReactDOM = require("react-dom");
 import { PrivacyScreen } from "./PrivacyScreen";
+import { LocalizedString } from "../react_components/l10nComponents";
+import { useL10n } from "../react_components/l10nHooks";
 
 export enum ProblemKind {
     User = "User",
@@ -102,6 +104,32 @@ export const ProblemDialog: React.FunctionComponent<{
         }
     };
 
+    // I (gjm) started off putting the calls to useL10n() right in the JSX,
+    // but I found that I was getting a strange error from React about calling various
+    // hooks in a different order. I figured it might have had something to do with
+    // switching mode quickly between submitting and submitted. Pulling the calls to
+    // useL10n() out here seems to solve the problem.
+    const englishTitle = kindParams[props.kind.toString()].title;
+    const titleKey = kindParams[props.kind.toString()].l10nKey;
+    const localizedDlgTitle = useL10n(englishTitle, titleKey);
+    const localizedWhatDoingLabel = useL10n(
+        "What were you doing?",
+        "ReportProblemDialog.WhatDoing"
+    );
+    const localizedPleaseHelpUs = useL10n(
+        "Please help us reproduce this problem on our computers.",
+        "ReportProblemDialog.PleaseHelpUs"
+    );
+    const localizedIssueLinkLabel = useL10n(
+        "This issue can be viewed here:",
+        "ReportProblemDialog.IssueLink"
+    );
+    const localizedSubmittingMsg = useL10n(
+        "Submitting to server...",
+        "ReportProblemDialog.Submitting"
+    );
+    const localizedDone = useL10n("Done", "Common.Done");
+
     return (
         <ThemeProvider theme={theme}>
             <Dialog
@@ -113,22 +141,24 @@ export const ProblemDialog: React.FunctionComponent<{
                 fullScreen={true}
                 onClose={() => BloomApi.post("dialog/close")}
             >
-                <DialogTitle>
-                    {kindParams[props.kind.toString()].title}
-                </DialogTitle>
+                <DialogTitle>{localizedDlgTitle}</DialogTitle>
                 <DialogContent className="content">
                     {(() => {
                         switch (mode) {
                             case Mode.submitting:
-                                return <Typography>Submitting...</Typography>;
+                                return (
+                                    <Typography>
+                                        {localizedSubmittingMsg}
+                                    </Typography>
+                                );
                             case Mode.submitted:
                                 return (
                                     <>
-                                        <Typography>Done</Typography>
+                                        <Typography>{localizedDone}</Typography>
                                         {issueLink !== "" && (
                                             <Typography>
                                                 <br />
-                                                This issue can be viewed here:{" "}
+                                                {localizedIssueLinkLabel}{" "}
                                                 <Link
                                                     underline="hover"
                                                     href={issueLink}
@@ -152,8 +182,7 @@ export const ProblemDialog: React.FunctionComponent<{
                                 return (
                                     <>
                                         <Typography id="please_help_us">
-                                            Please help us reproduce this
-                                            problem on our computers.
+                                            {localizedPleaseHelpUs}
                                         </Typography>
                                         <div id="row2">
                                             <div className="column1">
@@ -165,7 +194,9 @@ export const ProblemDialog: React.FunctionComponent<{
                                                     }
                                                     autoFocus={true}
                                                     variant="outlined"
-                                                    label="What were you doing?"
+                                                    label={
+                                                        localizedWhatDoingLabel
+                                                    }
                                                     rows="3"
                                                     InputLabelProps={{
                                                         shrink: true
@@ -200,7 +231,7 @@ export const ProblemDialog: React.FunctionComponent<{
                                             </div>
                                             <div className="column2">
                                                 <MuiCheckbox
-                                                    label="Include book '{0}'"
+                                                    label="Include Book '{0}'"
                                                     l10nKey="ReportProblemDialog.IncludeBookButton"
                                                     l10nParam0={bookName}
                                                     checked={includeBook}
@@ -211,7 +242,7 @@ export const ProblemDialog: React.FunctionComponent<{
                                                     }
                                                 />
                                                 <MuiCheckbox
-                                                    label="Include this screenshot:"
+                                                    label="Include this screenshot"
                                                     l10nKey="ReportProblemDialog.IncludeScreenshotButton"
                                                     checked={includeScreenshot}
                                                     onCheckChanged={v =>

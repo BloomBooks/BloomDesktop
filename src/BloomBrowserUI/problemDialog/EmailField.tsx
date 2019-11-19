@@ -4,6 +4,7 @@ import TextField from "@material-ui/core/TextField";
 import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { useDrawAttention } from "./UseDrawAttention";
+import { useL10n } from "../react_components/l10nHooks";
 
 //Note: the "isemail" package was not compatible with geckofx 45, so I'm just going with regex
 // from https://stackoverflow.com/a/46181/723299
@@ -25,6 +26,8 @@ export const EmailField: React.FunctionComponent<{
         setEmailValid(isValidEmail(value));
     }, 100);
 
+    const localizedEmail = useL10n("Email", "ReportProblemDialog.Email");
+
     // This is needed in order to get the initial check, when we are loading the stored email address from the api
     React.useEffect(() => {
         debouncedEmailCheck(props.email);
@@ -39,7 +42,7 @@ export const EmailField: React.FunctionComponent<{
         <TextField
             className={"email " + attentionClass}
             variant="outlined"
-            label="Email"
+            label={localizedEmail}
             rows="1"
             InputLabelProps={{
                 shrink: true
