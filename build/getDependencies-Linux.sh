@@ -57,8 +57,6 @@ echo "wget: $2 <= $1"
 f1=$(basename $1)
 f2=$(basename $2)
 cd $(dirname $2)
-echo "DEBUG wget: current directory = `pwd`; f1=$f1; f2=$f2"
-echo "DEBUG wget -nv -L -N \"$1\""
 wget -nv -L -N "$1"
 # wget has no true equivalent of curl's -o option.
 # Different versions of wget handle (or not) % escaping differently.
