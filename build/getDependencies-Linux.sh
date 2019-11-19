@@ -199,6 +199,17 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_Palaso
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/Enchant.Net.dll.config ../lib/dotnet/Enchant.Net.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/NDesk.DBus.dll ../lib/dotnet/NDesk.DBus.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/NDesk.DBus.dll.config ../lib/dotnet/NDesk.DBus.dll.config
+# begin test code added to check what jenkins is doing...
+echo Current directory = `pwd`
+echo ls -l ..
+ls -l ..
+echo ls -l ../Downloads
+ls -l ../Downloads
+echo ls -l ../DistFiles
+ls -l ../DistFiles
+echo find .. -name "pdf*.zip" -print
+find .. -name "pdf*.zip" -print
+# end test code
 # extract downloaded zip files
 unzip -uqo ../Downloads/pdfjs-viewer.zip -d "../DistFiles/pdf"
 # End of script
