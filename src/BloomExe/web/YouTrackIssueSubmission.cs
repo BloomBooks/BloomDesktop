@@ -1,5 +1,7 @@
 ﻿
+using System;
 using System.Collections.Generic;
+using System.Net;
 using Bloom.web;
 using SIL.IO;
 using SIL.Reporting;
@@ -51,18 +53,26 @@ namespace Bloom
 		/// </summary>
 		public string SubmitToYouTrack(string summary, string description)
 		{
-			_youTrackConnection.Authenticate("auto_report_creator", "thisIsInOpenSourceCode");
-			var issueManagement = new IssueManagement(_youTrackConnection);
-			dynamic youTrackIssue = new Issue();
-			youTrackIssue.ProjectShortName = _youTrackProjectKey;
-			youTrackIssue.Type = "Awaiting Classification";
-			youTrackIssue.Summary = summary;
-			youTrackIssue.Description = description;
-			var youTrackIssueId = issueManagement.CreateIssue(youTrackIssue);
+			string youTrackIssueId = "failed";
+			try
+			{
+				_youTrackConnection.Authenticate("auto_report_creator", "thisIsInOpenSourceCode");
+				var issueManagement = new IssueManagement(_youTrackConnection);
+				dynamic youTrackIssue = new Issue();
+				youTrackIssue.ProjectShortName = _youTrackProjectKey;
+				youTrackIssue.Type = "Awaiting Classification";
+				youTrackIssue.Summary = summary;
+				youTrackIssue.Description = description;
+				youTrackIssueId = issueManagement.CreateIssue(youTrackIssue);
 
-			// Now that we have an issue Id, attach any files.
-			AttachFiles(issueManagement, youTrackIssueId);
-
+				// Now that we have an issue Id, attach any files.
+				AttachFiles(issueManagement, youTrackIssueId);
+			}
+			catch (WebException e)
+			{
+				// Some sort of internet failure
+				Console.WriteLine(e);
+			}
 			return youTrackIssueId;
 		}
 
