@@ -822,7 +822,7 @@
         <note xml:lang="en">OLD TEXT (before 3.9): Downloading update to {0} ({1}kb).</note>
       </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true">
-        <source xml:lang="en">Learn More</source>
+        <source xml:lang="en">Learn More...</source>
         <note>A link or button that leads to something that tells the user more about what they just read.</note>
         <note>ID: Common.LearnMore</note>
       </trans-unit>

@@ -890,8 +890,13 @@ namespace Bloom.Workspace
 		private void StartProblemReport(object sender, EventArgs e)
 		{
 			Application.Idle -= StartProblemReport;
+
 			// To test the Problem Dialog with a real "green screen" type error, uncomment this next line.
 			// throw new ApplicationException("I just felt like an error!");
+
+			// To test the Problem Dialog with a real "yellow screen" type error, uncomment this next line.
+			//NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "My test 'yellow screen' error", "Any more details here?");
+
 			ProblemReportApi.ShowProblemDialog(this);
 		}
 
