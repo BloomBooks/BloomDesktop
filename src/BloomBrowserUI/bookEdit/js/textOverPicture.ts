@@ -369,7 +369,9 @@ export class TextOverPictureManager {
                 const deltaY = ev.pageY - positionInfo.top;
                 this.bubbleGrabOffset = { x: deltaX, y: deltaY };
 
-                container.classList.add("grabbing");
+                if (!this.isResizing(container)) {
+                    container.classList.add("grabbing");
+                }
             }
         };
 
@@ -391,6 +393,8 @@ export class TextOverPictureManager {
                 );
             } else {
                 // Not currently dragging
+                // Determine whether there is something under the mouse that could be dragged/resized,
+                // and add or remove the class we use to indicate this
                 const coordinates = this.getContainerCoordinates(
                     ev,
                     containerBounds,
@@ -875,6 +879,8 @@ export class TextOverPictureManager {
 
         textOverPictureElems.resizable({
             handles: "all",
+            // ENHANCE: Maybe we should add a containtment option here?
+            //   If we don't let you drag one of these outside the image container, maybe we shouldn't let you resize one outside either
             // resize: (event, ui) => {
             //     ENHANCE: Workaround for the following bug
             //       If the text over picture element is at minimum height, and then you use the top (North) edge to resize DOWN (that is, making it smaller)
@@ -883,7 +889,7 @@ export class TextOverPictureManager {
             //       Oddly enough, this does not occur on the bottom edge. (FYI, the bottom edge defaults to on if you don't explicitly set "handles", but the top edge doesn't).
             // },
             stop: (event, ui) => {
-                const target = event.target;
+                const target = event.target as Element;
                 if (target) {
                     // Resizing also changes size and position to pixels. Fix it.
                     TextOverPictureManager.calculatePercentagesAndFixTextboxPosition(
@@ -893,13 +899,8 @@ export class TextOverPictureManager {
                     // so now after we resize we go back through making it draggable and clickable again.
                     this.makeTOPBoxesDraggableAndClickable($(target), scale);
 
-                    // Clean up custom class
-                    const container = (target as Element).closest(
-                        ".bloom-imageContainer"
-                    );
-                    if (container) {
-                        container.classList.remove("bloom-resizing");
-                    }
+                    // Clear the custom class used to indicate that a resize action may have been started
+                    TextOverPictureManager.clearResizingClass(target);
                 }
             }
         });
@@ -908,8 +909,7 @@ export class TextOverPictureManager {
         // but this does not occur until the BUBBLE (normal) phase when the mouse is first MOVED (not when it is first clicked).
         // This means that any children's onmousemove functions will fire first, before the handle.
         // That means that children may incorrectly perceive no resize as happening, when there is in fact a resize going on.
-        // So, we beat the children to it by setting it in the CAPTURE (early phase) of this event.
-        // (Alternatively, it also works to set it in the Bubble (normal) phase of mousedown.)
+        // So, we set a custom indicator on it during the mousedown event, before the mousemove starts happening.
         for (let i = 0; i < textOverPictureElems.length; ++i) {
             const textOverPicElement = textOverPictureElems[i];
             const handles = textOverPicElement.getElementsByClassName(
@@ -921,6 +921,14 @@ export class TextOverPictureManager {
                 handle.addEventListener(
                     "mousedown",
                     TextOverPictureManager.addResizingClassHandler
+                );
+
+                // Even though we clear it in the JQuery Resize Stop handler, we also need one here
+                // because if the mouse is depressed and then released (without moving), we do want this class applied temporarily
+                // but we also need to make sure it gets cleaned up, even though no formal Resize Start/Stop events occurred.
+                handle.addEventListener(
+                    "mouseup",
+                    TextOverPictureManager.clearResizingClassHandler
                 );
             }
         }
@@ -935,6 +943,20 @@ export class TextOverPictureManager {
         const container = handle.closest(".bloom-imageContainer");
         if (container) {
             container.classList.add("bloom-resizing");
+        }
+    }
+
+    // An event handler that adds the "bloom-resizing" class to the image container.
+    private static clearResizingClassHandler(event: MouseEvent) {
+        TextOverPictureManager.clearResizingClass(
+            event.currentTarget as Element
+        );
+    }
+
+    private static clearResizingClass(element: Element) {
+        const container = element.closest(".bloom-imageContainer");
+        if (container) {
+            container.classList.remove("bloom-resizing");
         }
     }
 
