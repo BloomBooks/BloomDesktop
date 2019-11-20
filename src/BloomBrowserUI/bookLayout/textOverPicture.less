@@ -30,11 +30,21 @@
 
 .bloom-imageContainer {
     &.grabbable {
-        cursor: grab;
+        &,
+        .bloom-textOverPicture
+            .bloom-translationGroup
+            .bloom-editable.cke_editable {
+            cursor: grab;
+        }
     }
 
     &.grabbing {
-        cursor: grabbing;
+        &,
+        .bloom-textOverPicture
+            .bloom-translationGroup
+            .bloom-editable.cke_editable {
+            cursor: grabbing;
+        }
     }
 
     .bloom-textOverPicture {

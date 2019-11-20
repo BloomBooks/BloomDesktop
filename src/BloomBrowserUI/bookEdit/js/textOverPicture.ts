@@ -212,7 +212,7 @@ export class TextOverPictureManager {
 
                             // However, we don't actually want to see it; these rules
                             // (somewhat redundantly) make it have no size and be positioned
-                            // off-sreen.
+                            // off-screen.
                             somethingElseToFocus.style.width = "0";
                             somethingElseToFocus.style.height = "0";
                             somethingElseToFocus.style.overflow = "hidden";
@@ -342,12 +342,8 @@ export class TextOverPictureManager {
         // We use mousemove effects instead of drag due to concerns that drag effects would make the entire image container appear to drag.
         // Instead, with mousemove, we can make only the specific bubble move around
         container.onmousedown = (ev: MouseEvent) => {
-            // This is the element that was clicked (which may or may not be the same as the element with the event handler)
-            const targetElement = ev.target as HTMLElement;
-
             // Let standard clicks on the bloom editable only be processed on the editable
-            const isInsideEditable = !!targetElement.closest(".bloom-editable");
-            if (isInsideEditable) {
+            if (this.isEventForEditableOnly(ev)) {
                 return;
             }
 
@@ -386,13 +382,26 @@ export class TextOverPictureManager {
                     containerBounds,
                     styleInfo
                 );
-                if (Comical.getBubbleHit(container, targetX, targetY)) {
-                    // But over a bubble that could be dragged, so make the mouse indicate that
+
+                if (
+                    !this.isEventForEditableOnly(ev) &&
+                    Comical.getBubbleHit(container, targetX, targetY)
+                ) {
+                    // Over a bubble that could be dragged (ignoring the bloom-editable portion).
+                    // Make the mouse indicate that dragging is possible
                     container.classList.add("grabbable");
                 } else {
+                    // Cleanup the previous iteration's state
                     container.classList.remove("grabbable");
                 }
             }
+
+            // ENHANCE: If you first select the text in a text-over-picture, then Ctrl+drag it, you will both drag the bubble and drag the text.
+            //   Ideally I'd like to only handle the drag the bubble event
+            //   I tried to move the event handler to the preliminary Capture phase, then use stopPropagation, cancelBubble, and/or PreventDefault
+            //   to stop the event from reaching the target element (the paragraph or the .bloom-editable div or whatever).
+            //   Unfortunately, while it prevented the event handlers in the subsequent Bubble phase from being fired,
+            //   this funny dual-drag behavior would still happen.  I don't have a solution for that yet.
         };
 
         container.onmouseup = (ev: MouseEvent) => {
@@ -429,7 +438,16 @@ export class TextOverPictureManager {
                 }
             };
         }
-        // ENHANCE: Have ctrl+click go through the text box
+    }
+
+    private isEventForEditableOnly(ev): boolean {
+        if (ev.ctrlKey) {
+            return false;
+        }
+
+        const targetElement = ev.target as HTMLElement;
+        const isInsideEditable = !!targetElement.closest(".bloom-editable");
+        return isInsideEditable;
     }
 
     // Gets the coordinates of the specified event relative to the container.
