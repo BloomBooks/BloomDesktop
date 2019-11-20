@@ -110,7 +110,11 @@ namespace Bloom.web.controllers
 						SIL.Windows.Forms.Registration.Registration.Default.Email = userEmail;
 					}
 					var issueId = issueSubmission.SubmitToYouTrack(subject, diagnosticInfo);
-					request.ReplyWithJson(new{issueLink= "https://issues.bloomlibrary.org/youtrack/issue/" + issueId });
+					object linkToNewIssue = issueId == "failed" ?
+						// Internet failure while trying to submit issue to YouTrack
+						new { issueLink = issueId + ":" + _bookZipFileTemp.Path } :
+						new {issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId};
+					request.ReplyWithJson(linkToNewIssue);
 				}, true);
 		}
 

@@ -21,7 +21,6 @@ import { EmailField, isValidEmail } from "./EmailField";
 import { useDrawAttention } from "./UseDrawAttention";
 import ReactDOM = require("react-dom");
 import { PrivacyScreen } from "./PrivacyScreen";
-import { LocalizedString } from "../react_components/l10nComponents";
 import { useL10n } from "../react_components/l10nHooks";
 
 export enum ProblemKind {
@@ -69,7 +68,7 @@ export const ProblemDialog: React.FunctionComponent<{
     // Haven't got to work yet, see comment on the declaration of this function, below
     useCtrlEnterToSubmit(() => {
         if (submitButton && submitButton.current) {
-            (submitButton.current as any).click();
+            (submitButton.current as any).onClick();
         }
     });
 
@@ -114,7 +113,8 @@ export const ProblemDialog: React.FunctionComponent<{
     const localizedDlgTitle = useL10n(englishTitle, titleKey);
     const localizedWhatDoingLabel = useL10n(
         "What were you doing?",
-        "ReportProblemDialog.WhatDoing"
+        "ReportProblemDialog.WhatDoing",
+        "This is the label for the text field where the user enters what they were doing at the time of the problem."
     );
     const localizedPleaseHelpUs = useL10n(
         "Please help us reproduce this problem on our computers.",
@@ -122,18 +122,30 @@ export const ProblemDialog: React.FunctionComponent<{
     );
     const localizedIssueLinkLabel = useL10n(
         "This issue can be viewed here:",
-        "ReportProblemDialog.IssueLink"
+        "ReportProblemDialog.IssueLink",
+        "This label is displayed before a link to the issue after it is created."
     );
     const localizedSubmittingMsg = useL10n(
         "Submitting to server...",
-        "ReportProblemDialog.Submitting"
+        "ReportProblemDialog.Submitting",
+        "This is shown while Bloom is sending the problem report to our server."
+    );
+    const failureResponseString = "failed:";
+    const localizedFailureMsg = useL10n(
+        "Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.",
+        "ReportProblemDialog.CouldNotSendToServer",
+        undefined,
+        issueLink.startsWith(failureResponseString)
+            ? issueLink.substring(failureResponseString.length) // path to bookData.zip
+            : bookName, // fallback, shouldn't ever be visible
+        "issues@bloomlibrary.org"
     );
     const localizedDone = useL10n("Done", "Common.Done");
 
     return (
         <ThemeProvider theme={theme}>
             <Dialog
-                className="progress-dialog"
+                className="problem-dialog"
                 open={true}
                 // the behavior of fullWidth/maxWidth is very strange
                 //fullWidth={true}
@@ -154,19 +166,31 @@ export const ProblemDialog: React.FunctionComponent<{
                             case Mode.submitted:
                                 return (
                                     <>
-                                        <Typography>{localizedDone}</Typography>
-                                        {issueLink !== "" && (
+                                        {issueLink.startsWith(
+                                            failureResponseString
+                                        ) && (
                                             <Typography>
-                                                <br />
-                                                {localizedIssueLinkLabel}{" "}
-                                                <Link
-                                                    underline="hover"
-                                                    href={issueLink}
-                                                >
-                                                    {issueLink}
-                                                </Link>
+                                                {localizedFailureMsg}
                                             </Typography>
                                         )}
+                                        {issueLink !== "" &&
+                                            !issueLink.startsWith(
+                                                failureResponseString
+                                            ) && (
+                                                <Typography>
+                                                    {localizedDone}
+                                                    <br />
+                                                    {
+                                                        localizedIssueLinkLabel
+                                                    }{" "}
+                                                    <Link
+                                                        underline="hover"
+                                                        href={issueLink}
+                                                    >
+                                                        {issueLink}
+                                                    </Link>
+                                                </Typography>
+                                            )}
                                     </>
                                 );
                             case Mode.showPrivacyDetails:
@@ -299,12 +323,13 @@ export const ProblemDialog: React.FunctionComponent<{
                         )}
                     {mode === Mode.gather && (
                         <BloomButton
-                            enabled={readyToSubmit(email, whatDoing)}
+                            enabled={true}
                             l10nKey="ReportProblemDialog.SubmitButton"
                             hasText={true}
                             onClick={() => {
                                 AttemptSubmit();
                             }}
+                            ref={submitButton}
                         >
                             Submit
                         </BloomButton>
@@ -318,7 +343,6 @@ export const ProblemDialog: React.FunctionComponent<{
                             onClick={() => {
                                 BloomApi.post("dialog/close");
                             }}
-                            ref={submitButton}
                         >
                             Cancel
                         </BloomButton>
