@@ -1,6 +1,5 @@
 import React = require("react");
 import { getLocalization } from "./l10n";
-import { callbackify } from "util";
 
 // React hook to lookup localization
 export function useL10n(

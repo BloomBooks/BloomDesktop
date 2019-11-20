@@ -10,15 +10,18 @@ export const HowMuchGroup: React.FunctionComponent<{
 }> = props => {
     const localizedHowMuch = useL10n(
         "How much has this happened?",
-        "ReportProblemDialog.HowMuch"
+        "ReportProblemDialog.HowMuch",
+        "The label above the frequency slider."
     );
     const localizedStartLabel = useL10n(
         "First Time",
-        "ReportProblemDialog.FirstTime"
+        "ReportProblemDialog.FirstTime",
+        "The begin point label for the frequency slider."
     );
     const localizedEndLabel = useL10n(
         "It keeps happening",
-        "ReportProblemDialog.ItKeepsHappening"
+        "ReportProblemDialog.ItKeepsHappening",
+        "The end point label for the frequency slider."
     );
     return (
         <div id="how_much_group">

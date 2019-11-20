@@ -40,9 +40,9 @@ export default class BloomButton extends LocalizableElement<
 
     private getButtonImage(): JSX.Element | null {
         if (this.props.enabled && this.props.enabledImageFile) {
-            return <img src={this.props.enabledImageFile} />;
+            return <img src={this.props.enabledImageFile} key={0} />;
         } else if (!this.props.enabled && this.props.disabledImageFile) {
-            return <img src={this.props.disabledImageFile} />;
+            return <img src={this.props.disabledImageFile} key={0} />;
         }
         return null;
     }
@@ -66,10 +66,10 @@ export default class BloomButton extends LocalizableElement<
                 ? this.props.className + (hidden ? " " + hidden : "")
                 : hidden
         };
-        const commonChildren = [
-            image,
-            this.props.hasText && this.getLocalizedContent()
-        ];
+        const localizedContent = this.props.hasText && (
+            <span key={1}>{this.getLocalizedContent()}</span>
+        );
+        const commonChildren = [image, localizedContent];
         return this.props.transparent ? (
             // I don't know how to make a material-ui button transparent at the moment,
             /// so use a plain html one

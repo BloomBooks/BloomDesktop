@@ -1,8 +1,9 @@
 import * as React from "react";
-import { Button, Typography } from "@material-ui/core";
+import { Typography } from "@material-ui/core";
 import "./ProblemDialog.less";
 import WarningIcon from "@material-ui/icons/Warning";
 import { useL10n } from "../react_components/l10nHooks";
+import BloomButton from "../react_components/bloomButton";
 
 export const PrivacyNotice: React.FunctionComponent<{
     onLearnMore: () => void;
@@ -16,9 +17,14 @@ export const PrivacyNotice: React.FunctionComponent<{
                     "ReportProblemDialog.PrivacyNotice"
                 )}
             </Typography>
-            <Button color="primary" onClick={() => props.onLearnMore()}>
-                {useL10n("Learn More...", "Common.LearnMore")}
-            </Button>
+            <BloomButton
+                l10nKey="Common.LearnMore"
+                enabled={true}
+                hasText={true}
+                onClick={() => props.onLearnMore()}
+            >
+                Learn More...
+            </BloomButton>
         </div>
     );
 };
