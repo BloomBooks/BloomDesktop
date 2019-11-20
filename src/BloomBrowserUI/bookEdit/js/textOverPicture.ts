@@ -892,14 +892,6 @@ export class TextOverPictureManager {
                     // There was a problem where resizing a box messed up its draggable containment,
                     // so now after we resize we go back through making it draggable and clickable again.
                     this.makeTOPBoxesDraggableAndClickable($(target), scale);
-
-                    // Clean up custom class
-                    const container = (target as Element).closest(
-                        ".bloom-imageContainer"
-                    );
-                    if (container) {
-                        container.classList.remove("bloom-resizing");
-                    }
                 }
             }
         });
@@ -908,8 +900,7 @@ export class TextOverPictureManager {
         // but this does not occur until the BUBBLE (normal) phase when the mouse is first MOVED (not when it is first clicked).
         // This means that any children's onmousemove functions will fire first, before the handle.
         // That means that children may incorrectly perceive no resize as happening, when there is in fact a resize going on.
-        // So, we beat the children to it by setting it in the CAPTURE (early phase) of this event.
-        // (Alternatively, it also works to set it in the Bubble (normal) phase of mousedown.)
+        // So, we set a custom indicator on it during the mousedown event, before the mousemove starts happening.
         for (let i = 0; i < textOverPictureElems.length; ++i) {
             const textOverPicElement = textOverPictureElems[i];
             const handles = textOverPicElement.getElementsByClassName(
@@ -921,6 +912,11 @@ export class TextOverPictureManager {
                 handle.addEventListener(
                     "mousedown",
                     TextOverPictureManager.addResizingClassHandler
+                );
+
+                handle.addEventListener(
+                    "mouseup",
+                    TextOverPictureManager.clearResizingClassHandler
                 );
             }
         }
@@ -935,6 +931,16 @@ export class TextOverPictureManager {
         const container = handle.closest(".bloom-imageContainer");
         if (container) {
             container.classList.add("bloom-resizing");
+        }
+    }
+
+    // An event handler that adds the "bloom-resizing" class to the image container.
+    private static clearResizingClassHandler(event: MouseEvent) {
+        const handle = event.currentTarget as Element;
+
+        const container = handle.closest(".bloom-imageContainer");
+        if (container) {
+            container.classList.remove("bloom-resizing");
         }
     }
 
