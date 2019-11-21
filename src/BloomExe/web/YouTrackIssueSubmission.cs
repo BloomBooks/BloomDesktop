@@ -11,10 +11,13 @@ using YouTrackSharp.Issues;
 
 namespace Bloom
 {
-	// TODO: Are all these member variables needed? How about making a static method instead?
-	// Well, I could see YouTrackConnection and the list of files to attach as being pretty legit non-method variables
+	/// <summary>
+	/// Simplifies the process of submitting issues to our issue tracking system.
+	/// Usage: 1) initialize the process via the ctor, 2) add attachments, 3) submit.
+	/// </summary>
 	public class YouTrackIssueSubmitter
 	{
+		// protected in case someone figures out how to test this class (use 'AUT' for tests and 'BL' for production)
 		protected string _youTrackProjectKey;
 
 		private readonly Connection _youTrackConnection = new Connection(UrlLookup.LookupUrl(UrlType.IssueTrackingSystemBackend, false, true), 0 /* BL-5500 don't specify port */, true, "youtrack");

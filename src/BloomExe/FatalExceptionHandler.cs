@@ -43,7 +43,7 @@ namespace Bloom
 		protected override bool DisplayError(Exception exception)
 		{
 
-			//TODO need to look at WinFormsExceptionHandler and copy a bunch of that
+			// Review: Do we need to add any other code from WinFormsExceptionHandler?
 
 			// If there is no ActiveForm, SafeInvoke will hit a "Guard against null".
 			ProblemReportApi.ShowProblemDialog(System.Windows.Forms.Form.ActiveForm, "fatal");
