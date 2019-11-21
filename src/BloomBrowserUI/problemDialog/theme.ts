@@ -25,12 +25,16 @@ export const kindParams = {
 };
 
 export function makeTheme(kind: ProblemKind): Theme {
-    return createMuiTheme({
+    // (21 Nov. '19) "<any>"" is required because we define fontFamily as type string[], but as of now
+    // the Material UI typescript defn. doesn't allow that. It works, though.
+    return createMuiTheme(<any>{
         palette: {
-            primary: { main: kindParams[kind.toString()].primaryColor }
+            primary: { main: kindParams[kind.toString()].primaryColor },
+            error: { main: kindParams["NonFatal"].primaryColor }
         },
         typography: {
-            fontSize: 12
+            fontSize: 12,
+            fontFamily: ["NotoSans", "Roboto", "sans-serif"]
         },
         props: {
             MuiLink: {

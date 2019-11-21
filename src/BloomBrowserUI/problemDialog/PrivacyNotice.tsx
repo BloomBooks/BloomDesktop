@@ -10,7 +10,7 @@ export const PrivacyNotice: React.FunctionComponent<{
 }> = props => {
     return (
         <div id="privacy">
-            <WarningIcon color="primary" />
+            <WarningIcon color="error" />
             <Typography>
                 {useL10n(
                     "Bloom will include diagnostic information with your report. Your report will not be private.",
@@ -20,6 +20,7 @@ export const PrivacyNotice: React.FunctionComponent<{
             <BloomButton
                 l10nKey="Common.LearnMore"
                 enabled={true}
+                variant="text"
                 hasText={true}
                 onClick={() => props.onLearnMore()}
             >

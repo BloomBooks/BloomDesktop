@@ -36,6 +36,7 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(731, 555);
 			this.Name = "BrowserDialog";
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "BrowserDialog";
 			this.ResumeLayout(false);
 
