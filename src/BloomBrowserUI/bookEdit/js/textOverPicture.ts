@@ -348,11 +348,17 @@ export class TextOverPictureManager {
             }
 
             // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
-            const [targetX, targetY] = this.getContainerCoordinates(
+            const coordinates = this.getContainerCoordinates(
                 ev,
                 containerBounds,
                 styleInfo
             );
+            if (!coordinates) {
+                return;
+            }
+
+            const [targetX, targetY] = coordinates;
+
             const bubble = Comical.getBubbleHit(container, targetX, targetY);
             if (bubble) {
                 this.draggedBubble = bubble;
@@ -363,12 +369,22 @@ export class TextOverPictureManager {
                 const deltaY = ev.pageY - positionInfo.top;
                 this.bubbleGrabOffset = { x: deltaX, y: deltaY };
 
-                container.classList.add("grabbing");
+                if (!this.isResizing(container)) {
+                    container.classList.add("grabbing");
+                }
             }
         };
 
         container.onmousemove = (ev: MouseEvent) => {
+            // Prevent two event handlers from triggering if the text box is currently being resized
+            if (this.isResizing(container)) {
+                this.draggedBubble = undefined;
+                return;
+            }
+
             if (this.draggedBubble) {
+                // A bubble is currently in drag mode, and the mouse is being moved.
+                // Move the bubble accordingly.
                 this.calculateAndFixInitialLocation(
                     $(this.draggedBubble.content),
                     $(container),
@@ -377,11 +393,18 @@ export class TextOverPictureManager {
                 );
             } else {
                 // Not currently dragging
-                const [targetX, targetY] = this.getContainerCoordinates(
+                // Determine whether there is something under the mouse that could be dragged/resized,
+                // and add or remove the class we use to indicate this
+                const coordinates = this.getContainerCoordinates(
                     ev,
                     containerBounds,
                     styleInfo
                 );
+                if (!coordinates) {
+                    container.classList.remove("grabbable");
+                    return;
+                }
+                const [targetX, targetY] = coordinates;
 
                 if (
                     !this.isEventForEditableOnly(ev) &&
@@ -440,6 +463,19 @@ export class TextOverPictureManager {
         }
     }
 
+    // Returns true if any of the container's children are currently being resized
+    private isResizing(container: HTMLElement) {
+        // First check if we have our custom class indicator applied
+        if (container.classList.contains("bloom-resizing")) {
+            return true;
+        }
+
+        // Double-check using the JQuery class
+        return (
+            container.getElementsByClassName("ui-resizable-resizing").length > 0
+        );
+    }
+
     private isEventForEditableOnly(ev): boolean {
         if (ev.ctrlKey) {
             return false;
@@ -455,8 +491,11 @@ export class TextOverPictureManager {
         event: MouseEvent,
         containerBounds: ClientRect | DOMRect,
         styleInfo: CSSStyleDeclaration
-    ): number[] {
+    ): number[] | undefined {
         const targetElement = event.target as HTMLElement;
+        if (!(typeof targetElement.getBoundingClientRect === "function")) {
+            return undefined;
+        }
         const targetBounds = targetElement.getBoundingClientRect();
 
         const [x, y] = this.getCoordinatesRelativeTo(
@@ -840,8 +879,17 @@ export class TextOverPictureManager {
 
         textOverPictureElems.resizable({
             handles: "all",
+            // ENHANCE: Maybe we should add a containtment option here?
+            //   If we don't let you drag one of these outside the image container, maybe we shouldn't let you resize one outside either
+            // resize: (event, ui) => {
+            //     ENHANCE: Workaround for the following bug
+            //       If the text over picture element is at minimum height, and then you use the top (North) edge to resize DOWN (that is, making it smaller)
+            //       the element will be DRAGGED down a little ways. (It seems to be dragged down until the top edge reaches the original bottom edge position).
+            //       I managed to confirm that this is registering as a RESIZE event, not the Bloom mousemove ("drag") event or the JQuery DRAG event
+            //       Oddly enough, this does not occur on the bottom edge. (FYI, the bottom edge defaults to on if you don't explicitly set "handles", but the top edge doesn't).
+            // },
             stop: (event, ui) => {
-                const target = event.target;
+                const target = event.target as Element;
                 if (target) {
                     // Resizing also changes size and position to pixels. Fix it.
                     TextOverPictureManager.calculatePercentagesAndFixTextboxPosition(
@@ -850,11 +898,66 @@ export class TextOverPictureManager {
                     // There was a problem where resizing a box messed up its draggable containment,
                     // so now after we resize we go back through making it draggable and clickable again.
                     this.makeTOPBoxesDraggableAndClickable($(target), scale);
+
+                    // Clear the custom class used to indicate that a resize action may have been started
+                    TextOverPictureManager.clearResizingClass(target);
                 }
             }
         });
 
+        // Normally JQuery adds the class "ui-resizable-resizing" to a Resizable when it is resizing,
+        // but this does not occur until the BUBBLE (normal) phase when the mouse is first MOVED (not when it is first clicked).
+        // This means that any children's onmousemove functions will fire first, before the handle.
+        // That means that children may incorrectly perceive no resize as happening, when there is in fact a resize going on.
+        // So, we set a custom indicator on it during the mousedown event, before the mousemove starts happening.
+        for (let i = 0; i < textOverPictureElems.length; ++i) {
+            const textOverPicElement = textOverPictureElems[i];
+            const handles = textOverPicElement.getElementsByClassName(
+                "ui-resizable-handle"
+            );
+            for (let i = 0; i < handles.length; ++i) {
+                const handle = handles[i];
+
+                handle.addEventListener(
+                    "mousedown",
+                    TextOverPictureManager.addResizingClassHandler
+                );
+
+                // Even though we clear it in the JQuery Resize Stop handler, we also need one here
+                // because if the mouse is depressed and then released (without moving), we do want this class applied temporarily
+                // but we also need to make sure it gets cleaned up, even though no formal Resize Start/Stop events occurred.
+                handle.addEventListener(
+                    "mouseup",
+                    TextOverPictureManager.clearResizingClassHandler
+                );
+            }
+        }
+
         this.makeTOPBoxesDraggableAndClickable(textOverPictureElems, scale);
+    }
+
+    // An event handler that adds the "bloom-resizing" class to the image container.
+    private static addResizingClassHandler(event: MouseEvent) {
+        const handle = event.currentTarget as Element;
+
+        const container = handle.closest(".bloom-imageContainer");
+        if (container) {
+            container.classList.add("bloom-resizing");
+        }
+    }
+
+    // An event handler that adds the "bloom-resizing" class to the image container.
+    private static clearResizingClassHandler(event: MouseEvent) {
+        TextOverPictureManager.clearResizingClass(
+            event.currentTarget as Element
+        );
+    }
+
+    private static clearResizingClass(element: Element) {
+        const container = element.closest(".bloom-imageContainer");
+        if (container) {
+            container.classList.remove("bloom-resizing");
+        }
     }
 
     private static calculatePercentagesAndFixTextboxPosition(
