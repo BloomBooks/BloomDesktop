@@ -662,7 +662,9 @@ namespace Bloom.Publish
 						//	accumulatedDuration += int.Parse(duration);
 						//	durations.AppendLine(accumulatedDuration.ToString() + "\t" + duration);
 						//}
-						var combinedAudioPath = Path.Combine(folderForThisBook.FolderPath, "page" + pageIndex + ".mp3");
+						var filename =
+							$"{this.BookSelection.CurrentSelection.Title}_{this._collectionSettings.Language1.Name}_{pageIndex:0000}.mp3".Replace(' ','_');
+						var combinedAudioPath = Path.Combine(folderForThisBook.FolderPath, filename);
 						var errorMessage = AudioProcessor.MergeAudioFiles(mergeFiles, combinedAudioPath);
 						if (errorMessage != null)
 						{
