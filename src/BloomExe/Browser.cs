@@ -750,7 +750,7 @@ namespace Bloom
 			//				_tempHtmlFile.Dispose();
 			//    			_tempHtmlFile = null;
 			//    		}
-			_browser.WebBrowserFocus.Activate();
+			//didn't seem to do anything:  _browser.WebBrowserFocus.SetFocusAtFirstElement();
 		}
 
 		void Application_Idle(object sender, EventArgs e)
