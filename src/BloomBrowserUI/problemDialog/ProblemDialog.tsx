@@ -72,12 +72,17 @@ export const ProblemDialog: React.FunctionComponent<{
         }
     });
 
-    const translateHowMuch = (): string => {
-        return howMuch === 0
-            ? "0 (First time)"
-            : howMuch === 2
-            ? "2 (It keeps happening)"
-            : "1 (It happens sometimes)";
+    const stringifyHowMuch = (): string => {
+        switch (howMuch) {
+            case 0:
+                return "0 (First time)";
+            case 1:
+                return "1 (It happens sometimes)";
+            case 2:
+                return "2 (It keeps happening)";
+            default:
+                return `unknown value ${howMuch} for 'how much'`;
+        }
     };
 
     const AttemptSubmit = () => {
@@ -90,7 +95,7 @@ export const ProblemDialog: React.FunctionComponent<{
                 {
                     kind: props.kind,
                     email,
-                    userInput: `${whatDoing}\n\nHow much: ${translateHowMuch()}`,
+                    userInput: `${whatDoing}\n\nHow much: ${stringifyHowMuch()}`,
                     includeBook,
                     includeScreenshot
                 },
@@ -353,7 +358,6 @@ export const ProblemDialog: React.FunctionComponent<{
     );
 };
 
-/* haven't got this to work yet; when the callback is called, `email` and other values are empty*/
 function useCtrlEnterToSubmit(callback) {
     useEffect(() => {
         const handler = event => {
