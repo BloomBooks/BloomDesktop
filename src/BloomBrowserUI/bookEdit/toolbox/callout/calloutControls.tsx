@@ -23,7 +23,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
     const [style, setStyle] = useState("none");
     const [textColor, setTextColor] = useState("black");
     const [backgroundColor, setBackgroundColor] = useState("white");
-    const [outlineColor, setOutlineColor] = useState("black");
+    const [outlineColor, setOutlineColor] = useState("none");
     const [bubbleActive, setBubbleActive] = useState(false);
 
     // if bubbleActive is true, corresponds to the active bubble. Otherwise, corresponds to the most recently active bubble.
@@ -67,6 +67,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
     useEffect(() => {
         if (currentBubbleSpec) {
             setStyle(currentBubbleSpec.style);
+            setOutlineColor(currentBubbleSpec.outerBorderColor || "none");
             setBubbleActive(true);
         } else {
             setBubbleActive(false);
@@ -264,14 +265,6 @@ const CalloutToolControls: React.FunctionComponent = () => {
                         </Select>
                     </FormControl>
                     <br />
-                    <Link
-                        l10nKey="EditTab.Toolbox.CalloutTool.Options.AddChildBubble"
-                        onClick={event => {
-                            handleChildBubbleLinkClick(event);
-                        }}
-                    >
-                        Add Child Bubble
-                    </Link>
                     {/*
                     <FormControl>
                         <InputLabel htmlFor="callout-textColor-dropdown">
@@ -351,10 +344,11 @@ const CalloutToolControls: React.FunctionComponent = () => {
                         </Select>
                     </FormControl>
                     <br />
+                        */}
                     <FormControl>
                         <InputLabel htmlFor="callout-outlineColor-dropdown">
                             <Span l10nKey="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor">
-                                Outer Outline Color (Untranslated)
+                                Outer Outline Color
                             </Span>
                         </InputLabel>
                         <Select
@@ -373,7 +367,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                         >
                             <MenuItem value="none">
                                 <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor.None">
-                                    None (Untranslated)
+                                    None
                                 </Div>
                             </MenuItem>
                             <MenuItem value="yellow">
@@ -386,7 +380,15 @@ const CalloutToolControls: React.FunctionComponent = () => {
                             </MenuItem>
                         </Select>
                     </FormControl>
-                    */}
+                    <br />
+                    <Link
+                        l10nKey="EditTab.Toolbox.CalloutTool.Options.AddChildBubble"
+                        onClick={event => {
+                            handleChildBubbleLinkClick(event);
+                        }}
+                    >
+                        Add Child Bubble
+                    </Link>
                     <TrashIcon
                         id="trashIcon"
                         color="primary"
