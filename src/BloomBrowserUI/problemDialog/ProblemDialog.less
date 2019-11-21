@@ -106,4 +106,9 @@
             white-space: pre;
         }
     }
+
+    .MuiDialogActions-spacing button + button {
+        // material-ui has a similar rule, but it doesn't allow for an intervening div like we have now
+        margin-left: 8px;
+    }
 }

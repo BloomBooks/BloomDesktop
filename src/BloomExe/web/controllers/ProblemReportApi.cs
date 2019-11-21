@@ -109,11 +109,19 @@ namespace Bloom.web.controllers
 						// remember their email
 						SIL.Windows.Forms.Registration.Registration.Default.Email = userEmail;
 					}
+
+					const string failureResult = "failed";
 					var issueId = issueSubmission.SubmitToYouTrack(subject, diagnosticInfo);
-					object linkToNewIssue = issueId == "failed" ?
-						// Internet failure while trying to submit issue to YouTrack
-						new { issueLink = issueId + ":" + _bookZipFileTemp.Path } :
-						new {issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId};
+					object linkToNewIssue;
+					if (issueId == failureResult)
+					{
+						linkToNewIssue = new {issueLink = failureResult + ":" + _bookZipFileTemp.Path};
+						_bookZipFileTemp.Detach(); // so it doesn't go away before the user can email it to us.
+					}
+					else
+					{
+						linkToNewIssue = new { issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId};
+					}
 					request.ReplyWithJson(linkToNewIssue);
 				}, true);
 		}

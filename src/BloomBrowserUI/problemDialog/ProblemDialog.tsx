@@ -33,7 +33,8 @@ enum Mode {
     gather,
     submitting,
     submitted,
-    showPrivacyDetails
+    showPrivacyDetails,
+    submissionFailed
 }
 
 export const ProblemDialog: React.FunctionComponent<{
@@ -101,8 +102,17 @@ export const ProblemDialog: React.FunctionComponent<{
                 },
                 result => {
                     console.log(JSON.stringify(result.data));
-                    setIssueLink(result.data.issueLink);
-                    setMode(Mode.submitted);
+                    const failureResponseString = "failed:";
+                    const link = result.data.issueLink;
+                    if (link.startsWith(failureResponseString)) {
+                        setIssueLink(
+                            link.substring(failureResponseString.length)
+                        );
+                        setMode(Mode.submissionFailed);
+                    } else {
+                        setIssueLink(result.data.issueLink);
+                        setMode(Mode.submitted);
+                    }
                 }
             );
         }
@@ -135,17 +145,78 @@ export const ProblemDialog: React.FunctionComponent<{
         "ReportProblemDialog.Submitting",
         "This is shown while Bloom is sending the problem report to our server."
     );
-    const failureResponseString = "failed:";
     const localizedFailureMsg = useL10n(
         "Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.",
         "ReportProblemDialog.CouldNotSendToServer",
         undefined,
-        issueLink.startsWith(failureResponseString)
-            ? issueLink.substring(failureResponseString.length) // path to bookData.zip
-            : bookName, // fallback, shouldn't ever be visible
+        issueLink,
         "issues@bloomlibrary.org"
     );
     const localizedDone = useL10n("Done", "Common.Done");
+
+    const needCancelButton = (): boolean => {
+        return mode === Mode.gather && props.kind === ProblemKind.User;
+    };
+
+    // Assuming we've tried to submit a report (no matter the result),
+    // this will give us either a Close or Quit button.
+    const getEndingButtonIfAppropriate = (): JSX.Element | null => {
+        if (mode !== Mode.submitted && mode !== Mode.submissionFailed) {
+            return null;
+        }
+        const keyword = props.kind === ProblemKind.Fatal ? "Quit" : "Close";
+        const l10nKey = `ReportProblemDialog.${keyword}`;
+        return (
+            <BloomButton
+                enabled={true}
+                l10nKey={l10nKey}
+                hasText={true}
+                onClick={() => {
+                    BloomApi.post("dialog/close");
+                }}
+            >
+                {keyword}
+            </BloomButton>
+        );
+    };
+
+    // This will show the appropriate dialog action buttons for each case.
+    // Cancel is only shown for a user-initiated dialog, but users will probably discover
+    // eventually that they can just hit 'Esc' to get out of sending an error message
+    // for the 'Fatal' and 'NonFatal' versions.
+    const getDialogActionButtons = (): JSX.Element => {
+        return (
+            <div>
+                {getEndingButtonIfAppropriate()}
+                {mode === Mode.gather && (
+                    <BloomButton
+                        enabled={true}
+                        l10nKey="ReportProblemDialog.SubmitButton"
+                        hasText={true}
+                        onClick={() => {
+                            AttemptSubmit();
+                        }}
+                        ref={submitButton}
+                    >
+                        Submit
+                    </BloomButton>
+                )}
+                {needCancelButton() && (
+                    <BloomButton
+                        enabled={true}
+                        l10nKey="Common.Cancel"
+                        hasText={true}
+                        variant="outlined"
+                        onClick={() => {
+                            BloomApi.post("dialog/close");
+                        }}
+                    >
+                        Cancel
+                    </BloomButton>
+                )}
+            </div>
+        );
+    };
 
     return (
         <ThemeProvider theme={theme}>
@@ -171,31 +242,29 @@ export const ProblemDialog: React.FunctionComponent<{
                             case Mode.submitted:
                                 return (
                                     <>
-                                        {issueLink.startsWith(
-                                            failureResponseString
-                                        ) && (
+                                        {issueLink !== "" && (
+                                            <Typography>
+                                                {localizedDone}
+                                                <br />
+                                                {localizedIssueLinkLabel}{" "}
+                                                <Link
+                                                    underline="hover"
+                                                    href={issueLink}
+                                                >
+                                                    {issueLink}
+                                                </Link>
+                                            </Typography>
+                                        )}
+                                    </>
+                                );
+                            case Mode.submissionFailed:
+                                return (
+                                    <>
+                                        {issueLink !== "" && (
                                             <Typography>
                                                 {localizedFailureMsg}
                                             </Typography>
                                         )}
-                                        {issueLink !== "" &&
-                                            !issueLink.startsWith(
-                                                failureResponseString
-                                            ) && (
-                                                <Typography>
-                                                    {localizedDone}
-                                                    <br />
-                                                    {
-                                                        localizedIssueLinkLabel
-                                                    }{" "}
-                                                    <Link
-                                                        underline="hover"
-                                                        href={issueLink}
-                                                    >
-                                                        {issueLink}
-                                                    </Link>
-                                                </Typography>
-                                            )}
                                     </>
                                 );
                             case Mode.showPrivacyDetails:
@@ -299,60 +368,7 @@ export const ProblemDialog: React.FunctionComponent<{
                         }
                     })()}
                 </DialogContent>
-                <DialogActions>
-                    {mode === Mode.submitted &&
-                        props.kind !== ProblemKind.Fatal && (
-                            <BloomButton
-                                enabled={true}
-                                l10nKey="ReportProblemDialog.Close"
-                                hasText={true}
-                                onClick={() => {
-                                    BloomApi.post("dialog/close");
-                                }}
-                            >
-                                Close
-                            </BloomButton>
-                        )}
-                    {mode === Mode.submitted &&
-                        props.kind === ProblemKind.Fatal && (
-                            <BloomButton
-                                enabled={true}
-                                l10nKey="ReportProblemDialog.Quit"
-                                hasText={true}
-                                onClick={() => {
-                                    BloomApi.post("dialog/close");
-                                }}
-                            >
-                                Quit
-                            </BloomButton>
-                        )}
-                    {mode === Mode.gather && (
-                        <BloomButton
-                            enabled={true}
-                            l10nKey="ReportProblemDialog.SubmitButton"
-                            hasText={true}
-                            onClick={() => {
-                                AttemptSubmit();
-                            }}
-                            ref={submitButton}
-                        >
-                            Submit
-                        </BloomButton>
-                    )}
-                    {mode === Mode.gather && props.kind === ProblemKind.User && (
-                        <BloomButton
-                            enabled={true}
-                            l10nKey="Common.Cancel"
-                            hasText={true}
-                            variant="outlined"
-                            onClick={() => {
-                                BloomApi.post("dialog/close");
-                            }}
-                        >
-                            Cancel
-                        </BloomButton>
-                    )}
-                </DialogActions>
+                <DialogActions>{getDialogActionButtons()}</DialogActions>
             </Dialog>
         </ThemeProvider>
     );
