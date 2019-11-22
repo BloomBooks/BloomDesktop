@@ -123,6 +123,10 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "motionBookMode",
 				readRequest =>
 				{
+					// If the user has taken off all possible motion, force not having motion in the
+					// Bloom Reader book.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7680.
+					if (!readRequest.CurrentBook.HasMotionPages)
+						readRequest.CurrentBook.UseMotionModeInBloomReader = false;
 					return readRequest.CurrentBook.UseMotionModeInBloomReader;
 				},
 				(writeRequest, value) =>
