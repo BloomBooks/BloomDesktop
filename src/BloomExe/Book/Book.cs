@@ -3215,12 +3215,16 @@ namespace Bloom.Book
 		/// Thus, this mechanism is not as reliable as the process used in epub publishing to delete
 		/// invisible text, which involves actually building a display of the page in the browser,
 		/// but it is much faster and simpler and seems adequate to the current purpose.
+		/// Also, (BL-7586) we don't want to delete activity pages, that may not have text, but still
+		/// could be fully functioning activities.
 		/// Currently the intention is to apply this to a copy of the book, not the original.
 		/// </summary>
 		public void RemoveBlankPages()
 		{
 			foreach (var page in RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToArray())
 			{
+				if (PublishHelper.IsActivityPage(page))
+					continue;
 				if (PageHasImages(page))
 					continue;
 				if (PageHasVisibleText(page))

@@ -2209,6 +2209,26 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void RemoveBlankPages_ActivityPagesKept()
+		{
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div class='bloom-page bloom-interactive-page' id='guid1'>
+						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+					</div>
+					<div class='bloom-page' id='guid2'>
+						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+					</div>
+					<div class='bloom-page' id='guid3' data-activity='true'>
+						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+					</div>
+				</body></html>");
+			var book = CreateBook();
+			book.RemoveBlankPages();
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page')]", 2);
+		}
+
+		[Test]
 		public void RemoveBlankPages_ImagePagesKept()
 		{
 			_bookDom = new HtmlDom(@"
