@@ -1,20 +1,36 @@
 # 4.7 (Currently Alpha-quality)
 
+⭐ _Really_ complex scripts. Bloom 4.7 is available in two versions. The new version, "Bloom CS 4.7", supports those scripts that require the latest _graphite_ font rendering. We are still working out some performance kinks in Bloom CS, so only use it if you need it are are willing to help us find bugs.
+
 ## Collection Tab
 
 We simplified book thumbnails to just show the image on the cover.
 
-POSSIBLY: New Problem Report Dialog
+_Coming in 4.7 but not in this release: New Problem Report Dialog_
 
 ## Edit Tab
 
 ⭐Import Audio ([Feature Request](https://community.software.sil.org/t/ability-to-add-pre-recorded-audio-files/958))
 
-⭐Comic Tool ([Feature Request](https://community.software.sil.org/t/comic-book-feature/942))
+_Known limitation in this release: You cannot currently import audio into front and back matter pages._
 
-For some complex scripts, the size of language text in the Decodable Reader was too small. We added a font-size chooser under `Settings:Book Making:Special Script Settings:Font size when displayed in tools`.
+⭐Comic Tool ([Feature Request](https://community.software.sil.org/t/comic-book-feature/942)). Look out world, here come beautiful comics in minority languages!
+
+_Known limitation in this release: If you turn a comic book into a Talking Book, it will playback in the order that the bubbles were created. We will be following up with way to change the order of bubbles._
+
+_Known limitation in this release: There is not yet a way to have an exclamation bubble without a tails._
+
+_Known limitation in this release: When you change the width of a bubble, it should automatically update the height required to fit the text._
+
+_Known limitation in this release: When the Comic Book tool is visible, you can't change the image. Just close the tool, set the image, then re-open the tool._
+
+⭐For some complex scripts, the size of language text in the Decodable Reader was too small. We added a font-size chooser under `Settings:Book Making:Special Script Settings:Font size when displayed in tools`.
 
 ## Publish Tab
+
+⭐We added a way to export a single mp3 file for each page of the book. Right click on the left bar, then choose "Export audio files, 1 per page".
+
+_Coming in 4.7 but not in this release: In epub and Bloom Reader publishing, you will be able to decide which of the languages in a book you want to publish._
 
 TODO: Add summary/description to epub metadata
 
