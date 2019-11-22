@@ -1789,16 +1789,20 @@ namespace Bloom.Book
 				foreach (var div in langDivs)
 				{
 					var lang = div.Attributes["lang"].Value;
-					// The test for ContainsKey is redundant but may save a useful amount of time.
-					if (!result.ContainsKey(lang) && !string.IsNullOrWhiteSpace(div.InnerText))
+					if (!string.IsNullOrWhiteSpace(div.InnerText))
 					{
-						result[lang] = true;
-						parents.Add((XmlElement)div.ParentNode);
+						result[lang] = true;	// may be set repeatedly, but no harm.
+						// Add each parent only once, but add every parent for divs with any text.
+						var parent = (XmlElement)div.ParentNode;
+						if (!parents.Contains(parent))
+							parents.Add(parent);
 					}
 				}
 				// Second pass: for each parent, if it lacks a non-empty child for one of the languages, set value for that lang to false.
 				foreach (var lang in result.Keys.ToList()) // ToList so we can modify original collection as we go
 				{
+					// This check ignores special pages that may have fixed language settings like div[@data-default-languages="N1"]
+					// So it may be overly pessimistic about completeness.
 					foreach (var parent in parents)
 					{
 						if (!HasContentInLang(parent, lang))
@@ -1808,7 +1812,6 @@ namespace Bloom.Book
 						}
 					}
 				}
-
 				return result;
 			}
 		}
