@@ -9,6 +9,7 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { Comical, Bubble, BubbleSpec, BubbleSpecPattern } from "comicaljs";
+import { Point, PointScaling } from "./point";
 
 const kWebsocketContext = "textOverPicture";
 const kComicalGeneratedClass: string = "comical-generated";
@@ -428,7 +429,7 @@ export class TextOverPictureManager {
         }
 
         // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
-        const coordinates = this.getContainerCoordinates(
+        const coordinates = this.getPointRelativeToContainer(
             event,
             containerBounds,
             styleInfo
@@ -437,9 +438,12 @@ export class TextOverPictureManager {
             return;
         }
 
-        const [targetX, targetY] = coordinates;
+        const bubble = Comical.getBubbleHit(
+            container,
+            coordinates.getUnscaledX(),
+            coordinates.getUnscaledY()
+        );
 
-        const bubble = Comical.getBubbleHit(container, targetX, targetY);
         if (bubble) {
             const positionInfo = bubble.content.getBoundingClientRect();
 
@@ -525,7 +529,7 @@ export class TextOverPictureManager {
         containerBounds: ClientRect | DOMRect,
         styleInfo: CSSStyleDeclaration
     ) {
-        const coordinates = this.getContainerCoordinates(
+        const coordinates = this.getPointRelativeToContainer(
             event,
             containerBounds,
             styleInfo
@@ -534,14 +538,18 @@ export class TextOverPictureManager {
             this.cleanupMouseMoveHover(container);
             return;
         }
-        const [targetX, targetY] = coordinates;
 
         if (this.isEventForEditableOnly(event)) {
             this.cleanupMouseMoveHover(container);
             return;
         }
 
-        const hoveredBubble = Comical.getBubbleHit(container, targetX, targetY);
+        const hoveredBubble = Comical.getBubbleHit(
+            container,
+            coordinates.getUnscaledX(),
+            coordinates.getUnscaledY()
+        );
+
         if (!hoveredBubble) {
             // Cleanup the previous iteration's state
             this.cleanupMouseMoveHover(container);
@@ -735,49 +743,97 @@ export class TextOverPictureManager {
     }
 
     // Gets the coordinates of the specified event relative to the container.
-    private getContainerCoordinates(
+    private getPointRelativeToContainer(
         event: MouseEvent,
         containerBounds: ClientRect | DOMRect,
-        styleInfo: CSSStyleDeclaration
-    ): number[] | undefined {
+        containerStyleInfo: CSSStyleDeclaration
+    ): Point | undefined {
         const targetElement = event.target as HTMLElement;
         if (!(typeof targetElement.getBoundingClientRect === "function")) {
             return undefined;
         }
-        const targetBounds = targetElement.getBoundingClientRect();
 
-        const [x, y] = this.getCoordinatesRelativeTo(
+        let eventScaling: PointScaling;
+
+        // I am not sure why, but for some reason, if the targetElement is a canvas, offsetX was unscaled.
+        // If the targetElement was a .bloom-editable, offsetX was scaled.
+        // Hypothesis: Maybe it depends on whether targetElement's direct is the container or not???
+        if (targetElement.classList.contains("bloom-editable")) {
+            eventScaling = PointScaling.Scaled;
+        } else if (targetElement.nodeName == "canvas") {
+            eventScaling = PointScaling.Unscaled;
+        } else {
+            // Assert is here because currently not sure what the right value should be if it's not a canvas or bloom-editable.
+            console.assert(
+                false,
+                "TextOverPictureManager:getContainerCoordinates() - Unimplemented condition reached"
+            );
+
+            eventScaling = PointScaling.Unscaled; // Not at all sure if this is right
+        }
+
+        const currentPoint: Point = new Point(
             event.offsetX,
             event.offsetY,
-            targetBounds,
-            containerBounds,
-            styleInfo
+            eventScaling,
+            "MouseEvent Offset (Relative to clicked element's padding edge)"
         );
 
-        return [x, y];
+        const targetBounds = targetElement.getBoundingClientRect();
+
+        const currentOrigin = new Point(
+            targetBounds.left,
+            targetBounds.top,
+            PointScaling.Scaled,
+            "BoundingClientRect (Relative to viewport)"
+        );
+        const newOrigin = new Point(
+            containerBounds.left,
+            containerBounds.top,
+            PointScaling.Scaled,
+            "BoundingClientRect (Relative to viewport)"
+        );
+
+        const newPoint = this.getCoordinatesRelativeTo(
+            currentPoint,
+            currentOrigin,
+            newOrigin,
+            containerStyleInfo
+        );
+
+        return newPoint;
     }
 
-    // Recomputes the coordinates of element relative to the specified origin's info
+    // Recomputes the coordinates of currentPoint from currentOrigin's frame into newOrigin's frame
     private getCoordinatesRelativeTo(
-        elementX: number, // elementX: The offsetX relative to the element's top left.
-        elementY: number, // elementY: The offsetY relative to the element's top left.
-        elementBounds: ClientRect | DOMRect, // The Bounding Client Rectangle of the element
-        originBounds: ClientRect | DOMRect, // The BoundingClientRectangle of the HTMLElement whose top-left and right will be treated as the new origin
-        originStyleInfo: CSSStyleDeclaration // The computed style of the origin
-    ): number[] {
-        // ENHANCE: Might need to account for padding later too? Not sure.
-        // ENHANCE: Do we need to adjust elementX/elementY if the element has a non-zero border width?
+        currentPoint: Point,
+        currentOrigin: Point,
+        newOrigin: Point,
+        newOriginElementStyleInfo: CSSStyleDeclaration // The computed style of the new origin element
+    ): Point {
+        // These return the original, unscaled values of the border width
         const borderLeft: number = TextOverPictureManager.extractNumber(
-            originStyleInfo.getPropertyValue("border-left-width")
+            newOriginElementStyleInfo.getPropertyValue("border-left-width")
         );
         const borderTop: number = TextOverPictureManager.extractNumber(
-            originStyleInfo.getPropertyValue("border-top-width")
+            newOriginElementStyleInfo.getPropertyValue("border-top-width")
         );
 
-        const relativeX = elementBounds.left - originBounds.left - borderLeft;
-        const relativeY = elementBounds.top - originBounds.top - borderTop;
+        const newOriginElementBorder = new Point(
+            borderLeft,
+            borderTop,
+            PointScaling.Unscaled,
+            "getComputedStyle() result"
+        );
 
-        return [relativeX + elementX, relativeY + elementY];
+        const deltaBetweenOrigins = currentOrigin
+            .subtract(newOrigin)
+            .subtract(newOriginElementBorder);
+
+        // ENHANCE: Pretty sure need to determine and subtract out newOriginElementPadding too. Padding is in between the border and the curentOriginElement, so...
+
+        const newPoint = currentPoint.add(deltaBetweenOrigins);
+        return newPoint;
     }
 
     // Removes the units from a string like "10px"
