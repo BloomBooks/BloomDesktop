@@ -46,7 +46,7 @@ namespace Bloom.web.controllers
 				(ApiRequest request) =>
 				{
 					var bestBookName = _bookSelection.CurrentSelection?.TitleBestForUserDisplay;
-					request.ReplyWithText(bestBookName ?? "");
+					request.ReplyWithText(bestBookName ?? "??");
 				}, true);
 
 			// ProblemDialog.tsx uses this endpoint to get the registered user's email address.
@@ -231,7 +231,7 @@ namespace Bloom.web.controllers
 					bldr.Append("**"); // Version is the most important of these; bring it out a bit
 				bldr.Append(label);
 				bldr.Append(": ");
-				bldr.Append(ErrorReport.Properties[label] + (label == Version));
+				bldr.Append(ErrorReport.Properties[label]);
 				bldr.AppendLine(label == Version ? "**" : "");
 			}
 

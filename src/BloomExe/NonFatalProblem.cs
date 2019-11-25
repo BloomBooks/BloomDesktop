@@ -116,7 +116,7 @@ namespace Bloom
 
 				if(!string.IsNullOrEmpty(shortUserLevelMessage) && Matches(passive).Any(s => channel.Contains(s)))
 				{
-					ShowToast(shortUserLevelMessage, exception, fullDetailedMessage, showSendReport);
+					ShowToast(shortUserLevelMessage, showSendReport);
 				}
 			}
 			catch(Exception errorWhileReporting)
@@ -131,14 +131,14 @@ namespace Bloom
 			}
 		}
 
-		private static void ShowToast(string shortUserLevelMessage, Exception exception, string fullDetailedMessage, bool showSendReport = true)
+		private static void ShowToast(string shortUserLevelMessage, bool showSendReport = true)
 		{
 			var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
 			if (formForSynchronizing.InvokeRequired)
 			{
 				formForSynchronizing.BeginInvoke(new Action(() =>
 				{
-					ShowToast(shortUserLevelMessage, exception, fullDetailedMessage, showSendReport);
+					ShowToast(shortUserLevelMessage, showSendReport);
 				}));
 				return;
 			}
@@ -147,7 +147,7 @@ namespace Bloom
 			if (showSendReport)
 			{
 				toast.ToastClicked +=
-					(s, e) => { ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage); };
+					(s, e) => { ProblemReportApi.ShowProblemDialog(formForSynchronizing, "nonfatal"); };
 				callToAction = "Report";
 			}
 			toast.Image.Image = ToastNotifier.WarningBitmap;
