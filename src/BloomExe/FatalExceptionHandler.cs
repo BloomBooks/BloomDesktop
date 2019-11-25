@@ -1,5 +1,6 @@
 ﻿using Bloom.web.controllers;
 using System;
+using SIL.Reporting;
 
 namespace Bloom
 {
@@ -42,12 +43,17 @@ namespace Bloom
 
 		protected override bool DisplayError(Exception exception)
 		{
+			// We're already handling an unhandled exception, let's not handle another while we are handling this one.
+			AppDomain.CurrentDomain.UnhandledException -= HandleUnhandledException;
+			Logger.WriteError(exception.Message, exception); // Otherwise the exception won't show up in the log.
 
 			// Review: Do we need to add any other code from WinFormsExceptionHandler?
 
 			// If there is no ActiveForm, SafeInvoke will hit a "Guard against null".
 			ProblemReportApi.ShowProblemDialog(System.Windows.Forms.Form.ActiveForm, "fatal");
 
+			// Reinstate, just in case. (Bloom should be closing now.)
+			AppDomain.CurrentDomain.UnhandledException += HandleUnhandledException;
 			return true;
 		}
 	}

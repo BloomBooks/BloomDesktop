@@ -38,6 +38,7 @@ export const PrivacyScreen: React.FunctionComponent<{
     return (
         <div id="privacyDetails">
             <BloomButton
+                className="backButton"
                 enabled={true}
                 hasText={true}
                 l10nKey="Common.BackButton"

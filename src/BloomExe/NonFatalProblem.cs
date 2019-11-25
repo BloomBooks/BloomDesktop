@@ -147,7 +147,11 @@ namespace Bloom
 			if (showSendReport)
 			{
 				toast.ToastClicked +=
-					(s, e) => { ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage); };
+					(s, e) =>
+					{
+						Logger.WriteError(fullDetailedMessage, exception); // so it will get sent with our problem report
+						ProblemReportApi.ShowProblemDialog(formForSynchronizing, "nonfatal");
+					};
 				callToAction = "Report";
 			}
 			toast.Image.Image = ToastNotifier.WarningBitmap;

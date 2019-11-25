@@ -56,6 +56,10 @@ export const ProblemDialog: React.FunctionComponent<{
     const [issueLink, setIssueLink] = useState("");
     const [howMuch, setHowMuch] = useState(1); // 0, 1 or 2
 
+    useEffect(() => {
+        setIncludeBook(bookName !== "??");
+    }, [bookName]);
+
     const readyToSubmit = (email: string, userInput: string): boolean => {
         return isValidEmail(email) && userInput.trim().length !== 0;
     };
@@ -331,11 +335,8 @@ export const ProblemDialog: React.FunctionComponent<{
                                                     label="Include Book '{0}'"
                                                     l10nKey="ReportProblemDialog.IncludeBookButton"
                                                     l10nParam0={bookName}
-                                                    checked={
-                                                        includeBook &&
-                                                        bookName !== ""
-                                                    }
-                                                    disabled={bookName === ""}
+                                                    checked={includeBook}
+                                                    disabled={bookName === "??"}
                                                     onCheckChanged={v =>
                                                         setIncludeBook(
                                                             v as boolean
