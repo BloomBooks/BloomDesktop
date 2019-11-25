@@ -95,8 +95,13 @@
     }
 
     #privacyDetails {
+        .backButton {
+            position: absolute; // floats the button above the scrolling text
+            top: 67px;
+            left: 24px;
+        }
         .privacy_info {
-            margin-top: 1em;
+            margin-top: 50px; // so Back button doesn't cover anything up when scroll bar is at the top
             margin-bottom: 1em;
         }
         .intro_to_report {

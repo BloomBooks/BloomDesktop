@@ -46,7 +46,7 @@ namespace Bloom.web.controllers
 				(ApiRequest request) =>
 				{
 					var bestBookName = _bookSelection.CurrentSelection?.TitleBestForUserDisplay;
-					request.ReplyWithText(bestBookName ?? "");
+					request.ReplyWithText(bestBookName ?? "??");
 				}, true);
 
 			// ProblemDialog.tsx uses this endpoint to get the registered user's email address.
@@ -83,26 +83,27 @@ namespace Bloom.web.controllers
 					}
 					if(report.includeBook)
 					{
-							try
+						try
+						{
+							_bookZipFile = new BloomZipFile(_bookZipFileTemp.Path);
+							_bookZipFile.AddDirectory(_bookSelection.CurrentSelection.StoragePageFolder);
+							if (WantReaderInfo(true))
 							{
-								_bookZipFile = new BloomZipFile(_bookZipFileTemp.Path);
-								_bookZipFile.AddDirectory(_bookSelection.CurrentSelection.StoragePageFolder);
-								if (WantReaderInfo(true))
-								{
-									AddReaderInfo();
-								}
-								AddCollectionSettings();
-								_bookZipFile.Save();
+								AddReaderInfo();
 							}
-							catch (Exception error)
-							{
-								var msg = "***Error as ProblemReportApi attempted to zip up the book: " + error.Message;
-								userDesc += Environment.NewLine + msg;
-								Logger.WriteEvent(msg);
-								// if an error happens in the zipper, the zip file stays locked, so we just leak it
-								_bookZipFileTemp.Detach();
-							}
+							AddCollectionSettings();
+							_bookZipFile.Save();
 							issueSubmission.AddAttachment(_bookZipFileTemp.Path);
+						}
+						catch (Exception error)
+						{
+							var msg = "***Error as ProblemReportApi attempted to zip up the book: " + error.Message;
+							userDesc += Environment.NewLine + msg;
+							Logger.WriteEvent(msg);
+							// if an error happens in the zipper, the zip file stays locked, so we just leak it
+							_bookZipFileTemp.Detach();
+							_bookZipFile = null;
+						}
 					}
 					var diagnosticInfo = GetDiagnosticInfo(report.includeBook, userDesc, userEmail);
 					if (!string.IsNullOrWhiteSpace(userEmail))
@@ -147,6 +148,8 @@ namespace Bloom.web.controllers
 
 		public static void ShowProblemDialog(Control controlForScreenshotting, string levelOfProblem="user")
 		{
+			if (controlForScreenshotting == null)
+				controlForScreenshotting = Form.ActiveForm;
 			SafeInvoke.InvokeIfPossible("Screen Shot", controlForScreenshotting, false,
 				() =>
 				{
@@ -231,7 +234,7 @@ namespace Bloom.web.controllers
 					bldr.Append("**"); // Version is the most important of these; bring it out a bit
 				bldr.Append(label);
 				bldr.Append(": ");
-				bldr.Append(ErrorReport.Properties[label] + (label == Version));
+				bldr.Append(ErrorReport.Properties[label]);
 				bldr.AppendLine(label == Version ? "**" : "");
 			}
 

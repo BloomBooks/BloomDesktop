@@ -229,7 +229,7 @@ namespace Bloom.web.controllers
 			catch (Exception e)
 			{
 				Logger.WriteError("AudioSegmentationApi.AutoSegment(): Exception thrown during split/extract stage", e);
-				ErrorReport.ReportNonFatalExceptionWithMessage(e, $"AutoSegment failed: {e.Message}");
+				ProblemReportApi.ShowProblemDialog(null, "nonfatal");
 				request.ReplyWithBoolean(false);
 				return;
 			}
@@ -320,7 +320,7 @@ namespace Bloom.web.controllers
 			catch (Exception e)
 			{
 				Logger.WriteError("AudioSegmentationApi.GetAeneasTimings(): Exception thrown during split stage", e);
-				ErrorReport.ReportNonFatalExceptionWithMessage(e, $"AutoSegment failed: {e.Message}");
+				ProblemReportApi.ShowProblemDialog(null, "nonfatal");
 				return null;
 			}
 
