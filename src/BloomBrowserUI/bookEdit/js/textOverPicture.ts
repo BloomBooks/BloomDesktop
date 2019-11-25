@@ -28,6 +28,7 @@ export class TextOverPictureManager {
     // These variables are used by the bubble's onmouse* event handlers
     private bubbleToDrag: Bubble | undefined; // Use Undefined to indicate that there is no active drag in progress
     private bubbleDragGrabOffset: { x: number; y: number } = { x: 0, y: 0 };
+    private activeContainer: HTMLElement | undefined;
 
     private bubbleToResize: Bubble | undefined; // Use Undefined to indicate that there is no active resize in progress
     private bubbleResizeMode: string;
@@ -248,6 +249,18 @@ export class TextOverPictureManager {
             this.setDragAndDropHandlers(container);
             this.setMouseDragHandlers(container, containerBounds);
         });
+
+        // The container's onmousemove handler isn't capable of reliably detecting in all cases when it goes out of bounds, because
+        // the mouse is no longer over the container.
+        // So need a handler on the .bloom-page instead, which surrounds the image container.
+        Array.from(document.getElementsByClassName("bloom-page")).forEach(
+            (pageElement: HTMLElement) => {
+                pageElement.addEventListener(
+                    "mousemove",
+                    TextOverPictureManager.onPageMouseMove
+                );
+            }
+        );
     }
 
     migrateOldTopElems(textOverPictureElems: HTMLElement[]): void {
@@ -367,37 +380,40 @@ export class TextOverPictureManager {
         container.onmouseup = (event: MouseEvent) => {
             this.onMouseUp(event, container);
         };
+    }
 
-        // The container's onmousemove handler isn't capable of reliably detecting in all cases when it goes out of bounds, because
-        // the mouse is no longer over the container.
-        // So need a handler on the .bloom-page instead, which surrounds the image container.
-        const currentPageElement = container.closest(".bloom-page");
-        if (currentPageElement) {
-            (currentPageElement as HTMLElement).onmousemove = (
-                ev: MouseEvent
-            ) => {
-                if (!this.bubbleToDrag) {
-                    return;
-                }
+    // Checks to see if the mouse has gone outside of the active container
+    private static onPageMouseMove(event: MouseEvent) {
+        // Ensures the singleton is ready. (Normally basically a NO-OP because it should already be initialized)
+        initializeTextOverPictureManager();
 
-                // Oops, the mouse cursor has left the image container
-                // Current requirements are to end the drag in this case
-                if (
-                    ev.pageX < containerBounds.left ||
-                    ev.pageX > containerBounds.right ||
-                    ev.pageY < containerBounds.top ||
-                    ev.pageY > containerBounds.bottom
-                ) {
-                    // FYI: If you use the drag handle (which uses JQuery), it enforces the content box to stay entirely within the imageContainer.
-                    // This code currently doesn't do that.
-                    this.bubbleToDrag = undefined;
-                    container.classList.remove("grabbing");
-                }
-
-                // Note: Resize is not stopped here. IMO I think this is more natural, and it also lines up with our current JQuery Resize code
-                // (Which does not constrain the resize at all. It also lets you to come back into the container and have the resize continue.)
-            };
+        if (
+            !theOneTextOverPictureManager.bubbleToDrag ||
+            !theOneTextOverPictureManager.activeContainer
+        ) {
+            return;
         }
+
+        const container = theOneTextOverPictureManager.activeContainer;
+        const containerBounds = container.getBoundingClientRect();
+
+        // Oops, the mouse cursor has left the image container
+        // Current requirements are to end the drag in this case
+        if (
+            event.pageX < containerBounds.left ||
+            event.pageX > containerBounds.right ||
+            event.pageY < containerBounds.top ||
+            event.pageY > containerBounds.bottom
+        ) {
+            // FYI: If you use the drag handle (which uses JQuery), it enforces the content box to stay entirely within the imageContainer.
+            // This code currently doesn't do that.
+            theOneTextOverPictureManager.bubbleToDrag = undefined;
+            theOneTextOverPictureManager.activeContainer = undefined;
+            container.classList.remove("grabbing");
+        }
+
+        // Note: Resize is not stopped here. IMO I think this is more natural, and it also lines up with our current JQuery Resize code
+        // (Which does not constrain the resize at all. It also lets you to come back into the container and have the resize continue.)
     }
 
     private onMouseDown(
@@ -430,13 +446,14 @@ export class TextOverPictureManager {
             if (!event.altKey) {
                 // Move action started
                 this.bubbleToDrag = bubble;
+                this.activeContainer = container;
 
                 // Remember the offset between the top-left of the content box and the initial location of the mouse pointer
                 const deltaX = event.pageX - positionInfo.left;
                 const deltaY = event.pageY - positionInfo.top;
                 this.bubbleDragGrabOffset = { x: deltaX, y: deltaY };
 
-                // Even though Alt+Drag resize is not in effect, we still ensure JQuery Resizing is not in effect
+                // Even though Alt+Drag resize is not in effect, we still check using isResizing() to make sure JQuery Resizing is not in effect before proceeding
                 if (!this.isResizing(container)) {
                     container.classList.add("grabbing");
                 }
@@ -444,6 +461,8 @@ export class TextOverPictureManager {
                 // Resize action started. Save some information from the initial click for later.
                 this.bubbleToResize = bubble;
 
+                // Save the resize mode. Later on, based on what the initial resize mode was, we'll parse the string
+                // and determine how to calculate the new boundaries of the content box.
                 this.bubbleResizeMode = this.getResizeMode(
                     bubble.content,
                     event
@@ -480,6 +499,7 @@ export class TextOverPictureManager {
         // Prevent two event handlers from triggering if the text box is currently being resized
         if (this.isResizing(container)) {
             this.bubbleToDrag = undefined;
+            this.activeContainer = undefined;
             return;
         }
 
@@ -559,7 +579,7 @@ export class TextOverPictureManager {
         );
 
         // ENHANCE: If you first select the text in a text-over-picture, then Ctrl+drag it, you will both drag the bubble and drag the text.
-        //   Ideally I'd like to only handle the drag the bubble event
+        //   Ideally I'd like to only handle the drag-the-bubble event, not the drag-the-text event.
         //   I tried to move the event handler to the preliminary Capture phase, then use stopPropagation, cancelBubble, and/or PreventDefault
         //   to stop the event from reaching the target element (the paragraph or the .bloom-editable div or whatever).
         //   Unfortunately, while it prevented the event handlers in the subsequent Bubble phase from being fired,
@@ -602,7 +622,7 @@ export class TextOverPictureManager {
 
         // Determine the vertical component
         if (this.bubbleResizeMode.charAt(0) == "n") {
-            // The top edge is movable, but the bottom edge is anchored.
+            // The top edge is moving, but the bottom edge is anchored.
             newTop =
                 event.pageY -
                 this.bubbleResizeInitialPos.clickY +
@@ -617,13 +637,14 @@ export class TextOverPictureManager {
                 newTop = oldTop + (oldHeight - newHeight);
             }
         } else {
-            // The bottom edge is moveable, while the top edge is anchored.
+            // The bottom edge is moving, while the top edge is anchored.
             newHeight = this.bubbleResizeInitialPos.height + totalMovementY;
+            newHeight = Math.max(newHeight, this.minTextBoxHeightPx);
         }
 
         // Determine the horizontal component
         if (this.bubbleResizeMode.charAt(1) == "w") {
-            // The left edge is movable, but the right edge is anchored.
+            // The left edge is moving, but the right edge is anchored.
             newLeft =
                 event.pageX -
                 this.bubbleResizeInitialPos.clickX +
@@ -638,6 +659,7 @@ export class TextOverPictureManager {
                 newLeft = oldLeft + (oldWidth - newWidth);
             }
         } else {
+            // The right edge is moving, but the left edge is anchored.
             newWidth = this.bubbleResizeInitialPos.width + totalMovementX;
             newWidth = Math.max(newWidth, this.minTextBoxWidthPx);
         }
@@ -682,9 +704,8 @@ export class TextOverPictureManager {
     }
 
     private onMouseUp(event: MouseEvent, container: HTMLElement) {
-        // ENHANCE: If you release the mouse outside of the container, it is not registered as a mouseup here.
-        //          The bubble will continue to be dragged inside the container until you click and release.
         this.bubbleToDrag = undefined;
+        this.activeContainer = undefined;
         this.bubbleToResize = undefined;
         this.bubbleResizeMode = "";
         container.classList.remove("grabbing");
@@ -782,7 +803,13 @@ export class TextOverPictureManager {
         return Number(numberStr);
     }
 
-    public getResizeMode(element: HTMLElement, event: MouseEvent): string {
+    // Returns a string representing which style of resize to use
+    // This is based on where the mouse event is relative to the center of the element
+    //
+    // The returned string is the directional prefix to the *-resize cursor values
+    // e.g., if "ne-resize" would be appropriate, this function will return the "ne" prefix
+    // e.g. "ne" = Northeast, "nw" = Northwest", "sw" = Southwest, "se" = Southeast"
+    private getResizeMode(element: HTMLElement, event: MouseEvent): string {
         // Convert into a coordinate system where the origin is the center of the element (rather than the top-left of the page)
         const center = this.getCenterPosition(element);
         const clickCoordinates = { x: event.pageX, y: event.pageY };
@@ -794,15 +821,15 @@ export class TextOverPictureManager {
         let resizeMode: string;
         if (relativeCoordinates.y! < 0) {
             if (relativeCoordinates.x! >= 0) {
-                resizeMode = "ne"; // top-right
+                resizeMode = "ne"; // NorthEast = top-right
             } else {
-                resizeMode = "nw"; // top-left
+                resizeMode = "nw"; // NorthWest = top-left
             }
         } else {
             if (relativeCoordinates.x! < 0) {
-                resizeMode = "sw"; // bottom-left
+                resizeMode = "sw"; // SouthWest = bottom-left
             } else {
-                resizeMode = "se"; // bottom-right
+                resizeMode = "se"; // SouthEast = bottom-right
             }
         }
 
@@ -956,7 +983,6 @@ export class TextOverPictureManager {
 
         const childElement = this.addFloatingTOPBox(newX, newY);
         if (!childElement) {
-            // TODO: Need an official string
             toastr.info("Failed to place a new child callout.");
             return;
         }
@@ -1020,8 +1046,7 @@ export class TextOverPictureManager {
         return contentElement;
     }
 
-    // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
-    // to create the context menu
+    // mouseX and mouseY are the location in the viewport of the mouse
     private getImageContainerFromMouse(mouseX: number, mouseY: number): JQuery {
         const clickElement = document.elementFromPoint(mouseX, mouseY);
         if (!clickElement) {
@@ -1031,8 +1056,8 @@ export class TextOverPictureManager {
         return $(clickElement).closest(".bloom-imageContainer");
     }
 
-    // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
-    // to create the context menu
+    // mouseX and mouseY are the location in the viewport of the position at which to place the text box
+    // These define the top-left corner of wrapperBox
     private calculateAndFixInitialLocation(
         wrapperBox: JQuery,
         container: JQuery,
