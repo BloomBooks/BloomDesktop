@@ -248,7 +248,7 @@ export class TextOverPictureManager {
             });
 
             this.setDragAndDropHandlers(container);
-            this.setMouseDragHandlers(container, containerBounds);
+            this.setMouseDragHandlers(container);
         });
 
         // The container's onmousemove handler isn't capable of reliably detecting in all cases when it goes out of bounds, because
@@ -361,21 +361,15 @@ export class TextOverPictureManager {
     }
 
     // Setup event handlers that allow the bubble to be moved around or resized.
-    private setMouseDragHandlers(
-        container: HTMLElement,
-        containerBounds: ClientRect | DOMRect
-    ): void {
-        // Precondition: Assumes the border width / etc. never changes
-        const styleInfo = window.getComputedStyle(container);
-
+    private setMouseDragHandlers(container: HTMLElement): void {
         // We use mousemove effects instead of drag due to concerns that drag effects would make the entire image container appear to drag.
         // Instead, with mousemove, we can make only the specific bubble move around
         container.onmousedown = (event: MouseEvent) => {
-            this.onMouseDown(event, container, containerBounds, styleInfo);
+            this.onMouseDown(event, container);
         };
 
         container.onmousemove = (event: MouseEvent) => {
-            this.onMouseMove(event, container, containerBounds, styleInfo);
+            this.onMouseMove(event, container);
         };
 
         container.onmouseup = (event: MouseEvent) => {
@@ -417,23 +411,15 @@ export class TextOverPictureManager {
         // (Which does not constrain the resize at all. It also lets you to come back into the container and have the resize continue.)
     }
 
-    private onMouseDown(
-        event: MouseEvent,
-        container: HTMLElement,
-        containerBounds: ClientRect | DOMRect,
-        styleInfo: CSSStyleDeclaration
-    ) {
+    private onMouseDown(event: MouseEvent, container: HTMLElement) {
         // Let standard clicks on the bloom editable only be processed on the editable
         if (this.isEventForEditableOnly(event)) {
             return;
         }
 
         // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
-        const coordinates = this.getPointRelativeToContainer(
-            event,
-            containerBounds,
-            styleInfo
-        );
+        const coordinates = this.getPointRelativeToCanvas(event, container);
+
         if (!coordinates) {
             return;
         }
@@ -494,12 +480,7 @@ export class TextOverPictureManager {
         }
     }
 
-    private onMouseMove(
-        event: MouseEvent,
-        container: HTMLElement,
-        containerBounds: ClientRect | DOMRect,
-        styleInfo: CSSStyleDeclaration
-    ) {
+    private onMouseMove(event: MouseEvent, container: HTMLElement) {
         // Prevent two event handlers from triggering if the text box is currently being resized
         if (this.isResizing(container)) {
             this.bubbleToDrag = undefined;
@@ -508,12 +489,7 @@ export class TextOverPictureManager {
         }
 
         if (!this.bubbleToDrag && !this.bubbleToResize) {
-            this.handleMouseMoveHover(
-                event,
-                container,
-                containerBounds,
-                styleInfo
-            );
+            this.handleMouseMoveHover(event, container);
         } else if (this.bubbleToDrag) {
             this.handleMouseMoveDragBubble(event, container);
         } else {
@@ -523,17 +499,8 @@ export class TextOverPictureManager {
 
     // Mouse hover - No move or resize is currently active, but check if there is a bubble under the mouse that COULD be
     // and add or remove the classes we use to indicate this
-    private handleMouseMoveHover(
-        event: MouseEvent,
-        container: HTMLElement,
-        containerBounds: ClientRect | DOMRect,
-        styleInfo: CSSStyleDeclaration
-    ) {
-        const coordinates = this.getPointRelativeToContainer(
-            event,
-            containerBounds,
-            styleInfo
-        );
+    private handleMouseMoveHover(event: MouseEvent, container: HTMLElement) {
+        const coordinates = this.getPointRelativeToCanvas(event, container);
         if (!coordinates) {
             this.cleanupMouseMoveHover(container);
             return;
@@ -742,98 +709,89 @@ export class TextOverPictureManager {
         return isInsideEditable;
     }
 
-    // Gets the coordinates of the specified event relative to the container.
-    private getPointRelativeToContainer(
+    // Gets the coordinates of the specified event relative to the canvas element.
+    private getPointRelativeToCanvas(
         event: MouseEvent,
-        containerBounds: ClientRect | DOMRect,
-        containerStyleInfo: CSSStyleDeclaration
+        container: Element
     ): Point | undefined {
-        const targetElement = event.target as HTMLElement;
-        if (!(typeof targetElement.getBoundingClientRect === "function")) {
+        const canvas = this.getFirstCanvasForContainer(container);
+        if (!canvas) {
             return undefined;
         }
 
-        let eventScaling: PointScaling;
-
-        // I am not sure why, but for some reason, if the targetElement is a canvas, offsetX was unscaled.
-        // If the targetElement was a .bloom-editable, offsetX was scaled.
-        // Hypothesis: Maybe it depends on whether targetElement's direct is the container or not???
-        if (targetElement.classList.contains("bloom-editable")) {
-            eventScaling = PointScaling.Scaled;
-        } else if (targetElement.nodeName == "canvas") {
-            eventScaling = PointScaling.Unscaled;
-        } else {
-            // Assert is here because currently not sure what the right value should be if it's not a canvas or bloom-editable.
-            console.assert(
-                false,
-                "TextOverPictureManager:getContainerCoordinates() - Unimplemented condition reached"
-            );
-
-            eventScaling = PointScaling.Unscaled; // Not at all sure if this is right
-        }
-
-        const currentPoint: Point = new Point(
-            event.offsetX,
-            event.offsetY,
-            eventScaling,
-            "MouseEvent Offset (Relative to clicked element's padding edge)"
-        );
-
-        const targetBounds = targetElement.getBoundingClientRect();
-
-        const currentOrigin = new Point(
-            targetBounds.left,
-            targetBounds.top,
-            PointScaling.Scaled,
-            "BoundingClientRect (Relative to viewport)"
-        );
-        const newOrigin = new Point(
-            containerBounds.left,
-            containerBounds.top,
-            PointScaling.Scaled,
-            "BoundingClientRect (Relative to viewport)"
-        );
-
-        const newPoint = this.getCoordinatesRelativeTo(
-            currentPoint,
-            currentOrigin,
-            newOrigin,
-            containerStyleInfo
-        );
-
-        return newPoint;
+        return this.getPointRelativeToElement(event, canvas);
     }
 
-    // Recomputes the coordinates of currentPoint from currentOrigin's frame into newOrigin's frame
-    private getCoordinatesRelativeTo(
-        currentPoint: Point,
-        currentOrigin: Point,
-        newOrigin: Point,
-        newOriginElementStyleInfo: CSSStyleDeclaration // The computed style of the new origin element
-    ): Point {
-        // These return the original, unscaled values of the border width
-        const borderLeft: number = TextOverPictureManager.extractNumber(
-            newOriginElementStyleInfo.getPropertyValue("border-left-width")
-        );
-        const borderTop: number = TextOverPictureManager.extractNumber(
-            newOriginElementStyleInfo.getPropertyValue("border-top-width")
+    // Returns the first canvas in the container, or returns undefined if it does not exist.
+    private getFirstCanvasForContainer(
+        container: Element
+    ): HTMLCanvasElement | undefined {
+        const collection = container.getElementsByTagName("canvas");
+        if (!collection || collection.length <= 0) {
+            return undefined;
+        }
+
+        return collection.item(0) as HTMLCanvasElement;
+    }
+
+    // Gets the coordinates of the specified event relative to the specified element.
+    private getPointRelativeToElement(
+        event: MouseEvent,
+        element: Element
+    ): Point | undefined {
+        // ClientX is scaled and relative to the viewport
+        const currentPoint = new Point(
+            event.clientX,
+            event.clientY,
+            PointScaling.Scaled,
+            "MouseEvent Client (Relative to viewport)"
         );
 
-        const newOriginElementBorder = new Point(
+        const referenceBounds = element.getBoundingClientRect();
+        const origin = new Point(
+            referenceBounds.left,
+            referenceBounds.top,
+            PointScaling.Scaled,
+            "BoundingClientRect (Relative to viewport)"
+        );
+
+        // Origin gives the location of the outside edge of the border. But we want values relative to the inside edge of the padding.
+        // So we need to subtract out the border and padding
+        const styleInfo = window.getComputedStyle(element);
+        // These return the original, unscaled values of the border width
+        const borderLeft: number = TextOverPictureManager.extractNumber(
+            styleInfo.getPropertyValue("border-left-width")
+        );
+        const borderTop: number = TextOverPictureManager.extractNumber(
+            styleInfo.getPropertyValue("border-top-width")
+        );
+
+        const border = new Point(
             borderLeft,
             borderTop,
             PointScaling.Unscaled,
             "getComputedStyle() result"
         );
 
-        const deltaBetweenOrigins = currentOrigin
-            .subtract(newOrigin)
-            .subtract(newOriginElementBorder);
+        const paddingLeft: number = TextOverPictureManager.extractNumber(
+            styleInfo.getPropertyValue("padding-left")
+        );
+        const paddingTop: number = TextOverPictureManager.extractNumber(
+            styleInfo.getPropertyValue("padding-top")
+        );
 
-        // ENHANCE: Pretty sure need to determine and subtract out newOriginElementPadding too. Padding is in between the border and the curentOriginElement, so...
+        const padding = new Point(
+            paddingLeft,
+            paddingTop,
+            PointScaling.Unscaled,
+            "getComputedStyle() result"
+        );
 
-        const newPoint = currentPoint.add(deltaBetweenOrigins);
-        return newPoint;
+        const relativePoint = currentPoint
+            .subtract(origin)
+            .subtract(border)
+            .subtract(padding);
+        return relativePoint;
     }
 
     // Removes the units from a string like "10px"
