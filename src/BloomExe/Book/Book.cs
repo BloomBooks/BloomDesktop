@@ -3218,8 +3218,10 @@ namespace Bloom.Book
 		/// Also, (BL-7586) we don't want to delete activity pages, that may not have text, but still
 		/// could be fully functioning activities.
 		/// Currently the intention is to apply this to a copy of the book, not the original.
+		/// If the optional argument is provided, having 'visible' text is defined as text
+		/// in one of the specified languages.
 		/// </summary>
-		public void RemoveBlankPages()
+		public void RemoveBlankPages(HashSet<string> languagesToInclude = null)
 		{
 			foreach (var page in RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToArray())
 			{
@@ -3227,7 +3229,9 @@ namespace Bloom.Book
 					continue;
 				if (PageHasImages(page))
 					continue;
-				if (PageHasVisibleText(page))
+				if (languagesToInclude == null && PageHasVisibleText(page))
+					continue;
+				if (languagesToInclude != null && PageHasTextInLanguage(page, languagesToInclude))
 					continue;
 				if (PageHasVideo(page))
 					continue;
@@ -3241,6 +3245,20 @@ namespace Bloom.Book
 			foreach (XmlElement div in page.SafeSelectNodes(".//div[contains(@class, 'bloom-visibility-code-on')]"))
 			{
 				if (!string.IsNullOrWhiteSpace(div.InnerText))
+					return true;
+			}
+			return false;
+		}
+
+		// Return true if the element contains text in (a div) whose lang is one of the specified set.
+		// Note that we're NOT checking visibility here...this is used in publishing modes where we may
+		// want to publish a page if it has content in languages the user has said to publish, even if it has
+		// none in the visible languages of this collection.
+		private static bool PageHasTextInLanguage(XmlElement page, HashSet<string> languagesToLookFor)
+		{
+			foreach (XmlElement div in page.SafeSelectNodes(".//div[@lang]"))
+			{
+				if (languagesToLookFor.Contains(div.GetStringAttribute("lang")) && !string.IsNullOrWhiteSpace(div.InnerText))
 					return true;
 			}
 			return false;

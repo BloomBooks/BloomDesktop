@@ -33,7 +33,7 @@ namespace Bloom.Publish.Android.usb
 		/// Attempt to connect to a device
 		/// </summary>
 		/// <param name="book"></param>
-		public void Connect(Book.Book book, Color backColor)
+		public void Connect(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
 		{
 			try
 			{
@@ -65,7 +65,7 @@ namespace Bloom.Publish.Android.usb
 				_previousDeviceNotFoundReportType = DeviceNotFoundReportType.Unknown;
 
 
-				_connectionHandler.DoWork += (sender, args) => _androidDeviceUsbConnection.ConnectAndSendToOneDevice(book, backColor);
+				_connectionHandler.DoWork += (sender, args) => _androidDeviceUsbConnection.ConnectAndSendToOneDevice(book, backColor, settings);
 				_connectionHandler.RunWorkerCompleted += (sender, args) =>
 				{
 					if (args.Error != null)
@@ -99,7 +99,7 @@ namespace Bloom.Publish.Android.usb
 			Stopped();
 		}
 
-		private void HandleFoundAReadyDevice(Book.Book book, Color backColor)
+		private void HandleFoundAReadyDevice(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
 		{
 			_progress.MessageWithParams(idSuffix: "Connected",
 				message: "Connected to {0} via USB...",
@@ -107,7 +107,7 @@ namespace Bloom.Publish.Android.usb
 				kind: MessageKind.Progress,
 				parameters: _androidDeviceUsbConnection.GetDeviceName());
 
-			SendBookAsync(book, backColor);
+			SendBookAsync(book, backColor, settings);
 		}
 
 		private void HandleFoundOneNonReadyDevice(DeviceNotFoundReportType reportType, List<string> deviceNames)
@@ -145,12 +145,12 @@ namespace Bloom.Publish.Android.usb
 		/// Attempt to send the book to the device
 		/// </summary>
 		/// <param name="book"></param>
-		public void SendBookAsync(Book.Book book, Color backColor)
+		public void SendBookAsync(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
 		{
 			try
 			{
 				var backgroundWorker = new BackgroundWorker();
-				backgroundWorker.DoWork += (sender, args) => { SendBookDoWork(book, backColor); };
+				backgroundWorker.DoWork += (sender, args) => { SendBookDoWork(book, backColor, settings); };
 
 				backgroundWorker.RunWorkerCompleted += (sender, args) =>
 				{
@@ -179,7 +179,7 @@ namespace Bloom.Publish.Android.usb
 		}
 
 		// internal virtual for testing only
-		protected virtual void SendBookDoWork(Book.Book book, Color backColor)
+		protected virtual void SendBookDoWork(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
 		{
 			PublishToAndroidApi.SendBook(book, _bookServer,
 				null, (publishedFileName, path) =>
@@ -193,7 +193,8 @@ namespace Bloom.Publish.Android.usb
 						_progress.GetTitleMessage("ReplacingBook", "Replacing existing \"{0}\"...", bookTitle) :
 						_progress.GetTitleMessage("SendingBook", "Sending \"{0}\" to your Android device...", bookTitle),
 				publishedFileName => _androidDeviceUsbConnection.BookExists(publishedFileName),
-				backColor);
+				backColor,
+				settings:settings);
 			PublishToAndroidApi.ReportAnalytics("usb", book);
 		}
 

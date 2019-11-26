@@ -28,6 +28,7 @@ import Link from "../../react_components/link";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/ProgressDialog";
+import { PublishLanguagesGroup } from "./PublishLanguagesGroup";
 
 export const ReaderPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -133,6 +134,11 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                         }}
                     />
                     <ThumbnailGroup onChange={() => props.onReset()} />
+                    <PublishLanguagesGroup
+                        onChange={() => {
+                            props.onReset();
+                        }}
+                    />
                     <HelpGroup>
                         <HelpLink
                             l10nKey="PublishTab.Android.AboutBookFeatures"

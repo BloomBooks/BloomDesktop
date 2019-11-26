@@ -37,7 +37,7 @@ namespace Bloom.Publish.Android.usb
 	/// </summary>
 	class AndroidDeviceUsbConnection
 	{
-		public Action<Book.Book, Color> OneReadyDeviceFound;
+		public Action<Book.Book, Color, AndroidPublishSettings> OneReadyDeviceFound;
 		public Action<DeviceNotFoundReportType, List<string>> OneReadyDeviceNotFound;
 
 		private const string kBloomFolderOnDevice = "Bloom";
@@ -49,7 +49,7 @@ namespace Bloom.Publish.Android.usb
 		/// Attempt to establish a connection with a device which has the Bloom Reader app,
 		/// then send it the book.
 		/// </summary>
-		public void ConnectAndSendToOneDevice(Book.Book book, Color backColor)
+		public void ConnectAndSendToOneDevice(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
 		{
 			_stopLookingForDevice = false;
 			_device = null;
@@ -58,7 +58,7 @@ namespace Bloom.Publish.Android.usb
 			while (!_stopLookingForDevice && _device == null)
 			{
 				var devices = EnumerateAllDevices();
-				if(!ConnectAndSendToOneDeviceInternal(devices, book, backColor))
+				if(!ConnectAndSendToOneDeviceInternal(devices, book, backColor, settings))
 				{
 					Thread.Sleep(1000);
 				}
@@ -152,7 +152,7 @@ namespace Bloom.Publish.Android.usb
 		/// </summary>
 		/// <param name="devices"></param>
 		/// <returns>true if it found a ready device</returns>
-		private bool ConnectAndSendToOneDeviceInternal(IEnumerable<IDevice> devices, Book.Book book, Color backColor)
+		private bool ConnectAndSendToOneDeviceInternal(IEnumerable<IDevice> devices, Book.Book book, Color backColor, AndroidPublishSettings settings = null)
 		{
 			List<IDevice> applicableDevices = new List<IDevice>();
 			int totalDevicesFound = 0;
@@ -169,7 +169,7 @@ namespace Bloom.Publish.Android.usb
 				_device = applicableDevices[0];
 				// Without this, we're depending on the LAST device we tried being the applicable one.
 				_bloomFolderPath = GetBloomFolderPath(_device);
-				OneReadyDeviceFound(book, backColor);
+				OneReadyDeviceFound(book, backColor, settings);
 				return true;
 			}
 
