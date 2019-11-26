@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using Bloom.Book;
+using Bloom.Publish.Android;
 using Bloom.Publish.Android.usb;
 using Bloom.web;
 
@@ -19,7 +20,7 @@ namespace BloomTests.Publish
 			_exceptionToThrow = HR_ERROR_DISK_FULL;
 		}
 
-		protected override void SendBookDoWork(Bloom.Book.Book book, Color backColor)
+		protected override void SendBookDoWork(Bloom.Book.Book book, Color backColor, AndroidPublishSettings settings)
 		{
 			throw new COMException("MockUsbPublisher threw a fake COMException in SendBookDoWork.", _exceptionToThrow);
 		}

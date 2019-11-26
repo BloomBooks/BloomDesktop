@@ -3141,6 +3141,10 @@
         <source xml:lang="en">Settings</source>
         <note>ID: PublishTab.Android.Settings</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.TextLanguages" sil:dynamic="true">
+        <source xml:lang="en">Text Languages</source>
+        <note>ID: PublishTab.Android.TextLanguages</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.Thumbnail" sil:dynamic="true">
         <source xml:lang="en">Thumbnail</source>
         <note>ID: PublishTab.Android.Thumbnail</note>
