@@ -203,6 +203,39 @@ namespace BloomTests.Publish
 				});
 		}
 
+		[Test]
+		public void CompressBookForDevice_RemovesUnwantedLanguages()
+		{
+			var htmlTemplate = @"<html>
+									<body>
+										<div class='bloom-page A5Portrait' ' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08
+											<div class='marginBox'>
+											<div class='bloom-translationGroup' data-default-languages='N1' id='test1'>
+
+												<div class='bloom-editable bloom-contentNational2' lang='de'contenteditable='true'>German content</div>
+
+												<div class='bloom-editable bloom-content1' lang='ksf' contenteditable='true' >ksf Content</div>
+
+												<div class='bloom-editable' lang='fr' contenteditable='true' >French content</div>
+											</div>
+											</div>
+										</div>
+									</body>
+									</html>";
+
+			TestHtmlAfterCompression(htmlTemplate,
+
+				assertionsOnResultingHtmlString:
+				html =>
+				{
+					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+					AssertThatXmlIn.Dom(htmlDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='test1']/div[@lang='de']", 1);
+					AssertThatXmlIn.Dom(htmlDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='test1']/div[@lang='fr']", 0);
+					AssertThatXmlIn.Dom(htmlDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='test1']/div[@lang='ksf']", 1);
+				},
+				languagesToInclude: new HashSet<string>(new [] {"de", "ksf"}));
+		}
+
 		/// <summary>
 		/// We test in IncludesWantedFiles that by default all metadata features are off.
 		/// We test in HandlsVideosAndModifiesSrcAttribute that Feature_SignLanguage is set when appropriate.
@@ -1255,7 +1288,8 @@ namespace BloomTests.Publish
 			Action<string> assertionsOnResultingHtmlString = null,
 			Action<ZipHtmlObj> assertionsOnZipArchive = null,
 			Action<ZipFile> assertionsOnRepeat = null,
-			string branding = "Default")
+			string branding = "Default",
+			HashSet<string> languagesToInclude = null)
 		{
 			var testBook = CreateBookWithPhysicalFile(originalBookHtml, bringBookUpToDate: true);
 
@@ -1268,7 +1302,8 @@ namespace BloomTests.Publish
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
 			{
-				BloomReaderFileMaker.CreateBloomDigitalBook(bloomdTempFile.Path, testBook, _bookServer, Color.Azure, new NullWebSocketProgress());
+				BloomReaderFileMaker.CreateBloomDigitalBook(bloomdTempFile.Path, testBook.FolderPath, _bookServer, Color.Azure, new NullWebSocketProgress(),
+					settings:new AndroidPublishSettings() {LanguagesToInclude = languagesToInclude});
 				var zip = new ZipFile(bloomdTempFile.Path);
 				var newHtml = GetEntryContents(zip, bookFileName);
 				var paramObj = new ZipHtmlObj(zip, newHtml);

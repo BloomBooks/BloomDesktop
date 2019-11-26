@@ -26,18 +26,19 @@ namespace Bloom.Publish.Android
 
 		public static Control ControlForInvoke { get; set; }
 
-		public static void CreateBloomDigitalBook(string outputPath, Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress)
+		public static void CreateBloomDigitalBook(string outputPath, Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress, AndroidPublishSettings settings = null)
 		{
-			CreateBloomDigitalBook(outputPath, book.FolderPath, bookServer, backColor, progress);
+			CreateBloomDigitalBook(outputPath, book.FolderPath, bookServer, backColor, progress, settings:settings);
 		}
 
 		// Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
 		public static void CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
-			WebSocketProgress progress, string tempFolderName = "BloomReaderExport")
+			WebSocketProgress progress, string tempFolderName = "BloomReaderExport", AndroidPublishSettings settings = null)
 		{
 			using (var temp = new TemporaryFolder(tempFolderName))
 			{
-				CreateBloomDigitalBook(outputPath, bookFolderPath, bookServer, backColor, progress, temp);
+				CreateBloomDigitalBook(outputPath, bookFolderPath, bookServer, backColor, progress, temp,
+					settings: settings);
 			}
 		}
 
@@ -53,9 +54,9 @@ namespace Bloom.Publish.Android
 		/// <param name="creator">value for &lt;meta name="creator" content="..."/&gt; (defaults to "bloom")</param>
 		/// <returns>Path to the unzipped .bloomd</returns>
 		public static string CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
-			WebSocketProgress progress, TemporaryFolder tempFolder, string creator="bloom")
+			WebSocketProgress progress, TemporaryFolder tempFolder, string creator="bloom", AndroidPublishSettings settings = null)
 		{
-			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, creator);
+			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, creator, settings);
 			// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
 			// 64dp in Bloom Reader.
 
@@ -68,7 +69,7 @@ namespace Bloom.Publish.Android
 		}
 
 		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer, TemporaryFolder temp,
-			WebSocketProgress progress, string creator="bloom")
+			WebSocketProgress progress, string creator="bloom", AndroidPublishSettings settings = null)
 		{
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
 			// And bloom-player expects folder name to match html file name.
@@ -100,7 +101,9 @@ namespace Bloom.Publish.Android
 				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook, false, warningMessages);
 				PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 			}
-			modifiedBook.RemoveBlankPages();
+			modifiedBook.RemoveBlankPages(settings?.LanguagesToInclude);
+			if (settings?.LanguagesToInclude != null)
+				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings?.LanguagesToInclude);
 
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6835.
 			RemoveInvisibleImageElements(modifiedBook);

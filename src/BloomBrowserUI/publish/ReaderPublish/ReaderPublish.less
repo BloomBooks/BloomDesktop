@@ -70,6 +70,18 @@
             left: 0;
         }
     }
+    .languageLabel {
+        display: block;
+        &.incompleteTranslation {
+            color: grey;
+        }
+    }
+    .scrollingFeature {
+        overflow-y: scroll;
+        max-height: 100px;
+        flex-wrap: nowrap; // mockup has a single column, but it works quite well with default wrap
+        margin-right: 20px;
+    }
 
     .playIcon {
         height: 1.5em;

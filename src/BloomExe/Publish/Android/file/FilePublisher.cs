@@ -1,6 +1,7 @@
 // // Copyright (c) 2017 SIL International
 // // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -16,7 +17,7 @@ namespace Bloom.Publish.Android.file
 	/// </summary>
 	public class FilePublisher
 	{
-		public static void Save(Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress)
+		public static void Save(Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress, AndroidPublishSettings settings = null)
 		{
 			var progressWithL10N = progress.WithL10NPrefix("PublishTab.Android.File.Progress.");
 			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
@@ -40,7 +41,8 @@ namespace Bloom.Publish.Android.file
 						progressWithL10N,
 						(publishedFileName, bookTitle) => progressWithL10N.GetMessageWithParams("Saving", "{0} is a file path", "Saving as {0}", dlg.FileName),
 						null,
-						backColor);
+						backColor,
+						settings: settings);
 					PublishToAndroidApi.ReportAnalytics("file", book);
 				}
 			}

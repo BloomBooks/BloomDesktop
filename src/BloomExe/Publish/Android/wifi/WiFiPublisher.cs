@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -37,7 +38,7 @@ namespace Bloom.Publish.Android.wifi
 			_progress = progress.WithL10NPrefix("PublishTab.Android.Wifi.Progress.");
 		}
 
-		public void Start(Book.Book book, CollectionSettings collectionSettings, Color backColor)
+		public void Start(Book.Book book, CollectionSettings collectionSettings, Color backColor, AndroidPublishSettings publishSettings = null)
 		{
 			if (_wifiAdvertiser != null)
 			{
@@ -66,7 +67,7 @@ namespace Bloom.Publish.Android.wifi
 					// Of course, there are async effects from network latency. But if we do get another request while
 					// handling this one, we will ignore it, since StartSendBook checks for a transfer in progress.
 					_wifiAdvertiser.Paused = true;
-					StartSendBookOverWiFi(book, androidIpAddress, androidName, backColor);
+					StartSendBookOverWiFi(book, androidIpAddress, androidName, backColor, publishSettings);
 					// Returns immediately. But we don't resume advertisements until the async send completes.
 				}
 				// If there's something wrong with the JSON (maybe an obsolete or newer version of reader?)
@@ -174,7 +175,7 @@ namespace Bloom.Publish.Android.wifi
 		/// is in progress, the thread will continue and complete the request. Quitting Bloom
 		/// is likely to leave the transfer incomplete.
 		/// </summary>
-		private void StartSendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress, string androidName, Color backColor)
+		private void StartSendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress, string androidName, Color backColor, AndroidPublishSettings settings = null)
 		{
 			// Locked in case more than one thread at a time can handle incoming packets, though I don't think
 			// this is true. Also, Stop() on the main thread cares whether _wifiSender is null.
@@ -202,7 +203,8 @@ namespace Bloom.Publish.Android.wifi
 					message: "Sending \"{0}\" to device {1}",
 					parameters: new object[] { bookTitle, androidName }),
 				null,
-				backColor);
+				backColor,
+				settings:settings);
 			// Occasionally preparing a book for sending will, despite our best efforts, result in a different sha.
 			// For example, it might change missing or out-of-date mp3 files. In case the sha we just computed
 			// is different from the one we're advertising, update the advertisement, so at least subsequent
@@ -271,11 +273,11 @@ namespace Bloom.Publish.Android.wifi
 			}
 		}
 
-		private void StartSendBookOverWiFi(Book.Book book, string androidIpAddress, string androidName, Color backColor)
+		private void StartSendBookOverWiFi(Book.Book book, string androidIpAddress, string androidName, Color backColor, AndroidPublishSettings settings = null)
 		{
 			try
 			{
-				StartSendBookToClientOnLocalSubNet(book, androidIpAddress, androidName, backColor);
+				StartSendBookToClientOnLocalSubNet(book, androidIpAddress, androidName, backColor, settings);
 			}
 			catch (Exception e)
 			{
