@@ -86,6 +86,16 @@ export class Point {
         );
     }
 
+    // Returns the result of "this" multiplied by a scalar factor
+    public multiply(multiplier: number): Point {
+        return new Point(
+            this.x * multiplier,
+            this.y * multiplier,
+            PointScaling.Unscaled,
+            "Multiplication result"
+        );
+    }
+
     // Returns the result of "this" divided by a scalar denominator
     public divide(denominator: number): Point {
         return new Point(
