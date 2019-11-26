@@ -231,6 +231,13 @@ namespace Bloom.Publish.Epub
 			if (!string.IsNullOrEmpty(BookInStagingFolder))
 				return; //already staged
 
+			var message = new LicenseChecker().CheckBook(Book, Book.ActiveLanguages.ToArray());
+			if (message != null)
+			{
+				progress.MessageWithoutLocalizing(message, MessageKind.Error);
+				return;
+			}
+
 			progress.Message("BuildingEPub", comment: "Shown in a progress box when Bloom is starting to create an ePUB",
 				message: "Building ePUB");
 			if (String.IsNullOrEmpty(Book.CollectionSettings.Language3Iso639Code))

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Bloom.Book;
 using Bloom.Collection;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
@@ -443,7 +444,11 @@ namespace Bloom.Publish.BloomLibrary
 						_progressBox.WriteError(errorMessage, _model.Title);
 						_progressBox.WriteException(completedEvent.Error);
 					}
-					else if (string.IsNullOrEmpty((string) completedEvent.Result))
+					else if ((string) completedEvent.Result == "quiet")
+					{
+						// no more reporting, sufficient message already given.
+					}
+						else if (string.IsNullOrEmpty((string) completedEvent.Result))
 					{
 						// Something went wrong, possibly already reported.
 						if (!_model.PdfGenerationSucceeded)
@@ -499,6 +504,14 @@ namespace Bloom.Publish.BloomLibrary
 			var book = (Book.Book) e.Argument;
 			var languages = _languagesFlow.Controls.Cast<CheckBox>().
 				Where(b => b.Checked).Select(b => b.Tag).Cast<string>().ToList();
+			var checker = new LicenseChecker();
+			var message = checker.CheckBook(book, languages.ToArray());
+			if (message!= null)
+			{
+				_progressBox.WriteError(message);
+				e.Result = "quiet"; // suppress other completion/fail messages
+				return;
+			}
 			if (_signLanguageCheckBox.Checked && !string.IsNullOrEmpty(book.CollectionSettings.SignLanguageIso639Code))
 			{
 				languages.Insert(0, book.CollectionSettings.SignLanguageIso639Code);

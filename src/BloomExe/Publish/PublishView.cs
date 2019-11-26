@@ -700,6 +700,13 @@ namespace Bloom.Publish
 				// Can't start again until this one finishes
 				return;
 			}
+			var message = new LicenseChecker().CheckBook(_model.BookSelection.CurrentSelection,
+				_model.BookSelection.CurrentSelection.ActiveLanguages.ToArray());
+			if (message != null)
+			{
+				MessageBox.Show(message, LocalizationManager.GetString("Common.Warning", "Warning"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
 			_model.PdfGenerationSucceeded = false; // and so it stays unless we generate it successfully.
 			if (_uploadRadio.Checked)
 			{
@@ -908,6 +915,14 @@ namespace Bloom.Publish
 				_makePdfBackgroundWorker.CancelAsync();
 				while (IsMakingPdf)
 					Thread.Sleep(100);
+			}
+
+			var message = new LicenseChecker().CheckBook(_model.BookSelection.CurrentSelection,
+				_model.BookSelection.CurrentSelection.ActiveLanguages.ToArray());
+			if (message != null)
+			{
+				MessageBox.Show(message, LocalizationManager.GetString("Common.Warning", "Warning"));
+				return;
 			}
 			// Usually these will have been set by SetModelFromButtons, but the publish button might already be showing when we go to this page.
 			_model.ShowCropMarks = false; // don't want in online preview
