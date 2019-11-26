@@ -58,6 +58,14 @@ export class Point {
         return this.y;
     }
 
+    public toString(): string {
+        return `Point(${this.x}, ${this.y}) (${this.comment})`;
+    }
+
+    public length(): number {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+
     // Returns the result of "this" + "other" in vector arithmetic
     public add(other: Point): Point {
         return new Point(
