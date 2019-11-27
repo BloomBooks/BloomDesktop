@@ -29,6 +29,28 @@ class TextOverPictureManager {
                     );
             }
         });
+        // Do NOT merge this into 4.7!
+        var topElements = document.getElementsByClassName(
+            "bloom-textOverPicture"
+        );
+        for (let i = 0; i < topElements.length; i++) {
+            const dataBubble = topElements[i].getAttribute("data-bubble");
+            if (!dataBubble) {
+                continue;
+            }
+            const styleIndex = dataBubble.indexOf("`style`:");
+            if (styleIndex < 0) {
+                continue;
+            }
+            // style none are basically plain TOP boxes, still OK in 4.5
+            if (dataBubble.substring(styleIndex).startsWith("`style`:`none`")) {
+                continue;
+            }
+            alert(
+                "Sorry, you will need a more recent version of Bloom (at least 4.7) to work with books that have comics"
+            );
+            break;
+        }
     }
 
     public cleanUp(): void {
