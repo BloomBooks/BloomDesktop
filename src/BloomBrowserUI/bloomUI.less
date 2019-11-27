@@ -118,7 +118,22 @@ input[type="checkbox"]:indeterminate::after {
 
 // Don't let uneditable text be selected (BL-6788/6897).
 // See https://stackoverflow.com/questions/826782/how-to-disable-text-selection-highlighting.
-* {
+// Note that this rule applies to basically everything EXCEPT the root
+// HTML element and contenteditable elements (overridden below).
+// We don't particularly want to excude the root HTML element, except that
+// when the root html element is user-select: none in FF (45-70, at least) clicking
+// directly on it selects all the contenteditable text on the page.
+// https://issues.bloomlibrary.org/youtrack/issue/BL-7850.
+// This is a bug in FF (https://bugzilla.mozilla.org/show_bug.cgi?id=1599871)
+// and not making user-select:none is a workaround.
+// This technically means that text directly in the root html element
+// could be selected, because (if I read the rules right) the default equates
+// to text for the <html> element. But we never put text directly in that
+// element so any actual text will be in something else governed by one
+// of the other rules.
+// (I tried leaving this rule * and overriding with a rule for html,
+// but it didn't prevent the bug in FF45, though it did in FF70.)
+:not(html) {
     -moz-user-select: none; // Firefox
     -ms-user-select: none; // Edge/Internet Explorer
     user-select: none; // Chrome
