@@ -17,7 +17,7 @@ export function cleanupImages() {
 
 export function SetupImagesInContainer(container) {
     $(container)
-        .find(".bloom-imageContainer img")
+        .find(".bloom-imageContainer > img") // the ">" here prevents finding img's of ui affordances deep in comics
         .each(function() {
             SetupImage(this);
         });

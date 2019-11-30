@@ -110,6 +110,7 @@ export class TextOverPictureManager {
                 "bloom-editable bloom-visibility-code-on"
             )[0] as HTMLElement;
             editable.focus();
+            Comical.setUserInterfaceProperties({ tailHandleColor: "#96668F" }); // light bloom purple
             Comical.startEditing(imageContainers);
             this.migrateOldTopElems(textOverPictureElems);
             Comical.activateElement(this.activeElement);
@@ -714,12 +715,9 @@ export class TextOverPictureManager {
             "' data-default-languages='V'>" +
             editableDivHtml +
             "</div>";
-        const handleHtml = "<div class='bloom-dragHandleTOP'></div>";
+
         const wrapperHtml =
-            "<div class='bloom-textOverPicture'>" +
-            handleHtml +
-            transGroupHtml +
-            "</div>";
+            "<div class='bloom-textOverPicture'>" + transGroupHtml + "</div>";
         // add textbox as first child of .bloom-imageContainer
         const firstContainerChild = container.children().first();
         const wrapperBox = $(wrapperHtml).insertBefore(firstContainerChild);
@@ -822,6 +820,12 @@ export class TextOverPictureManager {
             const image = this.getImageContainer(thisTOPBox);
             const imagePos = image[0].getBoundingClientRect();
             const wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
+            thisTOPBox.find(".bloom-ui").remove(); // Just in case somehow one is stuck in there
+            thisTOPBox.find(".bloom-dragHandleTOP").remove(); // BL-7903 remove any left over drag handles (this was the class used in 4.7 alpha)
+            thisTOPBox.append(
+                "<img class='bloom-ui bloom-dragHandle' src='/bloom/bookEdit/img/dragHandle.svg'/>"
+            );
+
             // Containment, drag and stop work when scaled (zoomed) as long as the page has been saved since the zoom
             // factor was last changed. Therefore we force reconstructing the page
             // in the EditingView.Zoom setter (in C#).
@@ -837,11 +841,9 @@ export class TextOverPictureManager {
                     ui.helper.children(".bloom-editable").blur();
                     ui.position.top = ui.position.top / scale;
                     ui.position.left = ui.position.left / scale;
-                    thisTOPBox
-                        .find(".bloom-dragHandleTOP")
-                        .addClass("grabbing");
+                    thisTOPBox.find(".bloom-dragHandle").addClass("grabbing");
                 },
-                handle: ".bloom-dragHandleTOP",
+                handle: ".bloom-dragHandle",
                 stop: (event, ui) => {
                     const target = event.target;
                     if (target) {
@@ -851,7 +853,7 @@ export class TextOverPictureManager {
                     }
 
                     thisTOPBox
-                        .find(".bloom-dragHandleTOP")
+                        .find(".bloom-dragHandle")
                         .removeClass("grabbing");
                 }
             });
