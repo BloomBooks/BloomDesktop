@@ -125,7 +125,7 @@ mixin standard-cover-contents
 mixin standard-cover-image
 	.bloom-imageContainer
 		img(data-book="coverImage", src="placeHolder.png")
-		+field-cover-image("auto").bloom-imageDescription.bloom-trailingElement(data-book="coverImageDescription")
+		+field-cover-image("auto").bloom-imageDescription.bloom-trailingElement
 
 mixin field-cover-image(languages)
 	-requireOneArgument('field', arguments);
@@ -134,7 +134,7 @@ mixin field-cover-image(languages)
 
 mixin editable-cover-image(language)
 	- requireOneArgument('editable', arguments)
-	.bloom-editable.ImageDescriptionEdit-style(lang=language, contenteditable="true")&attributes(attributes)
+	.bloom-editable.ImageDescriptionEdit-style(lang=language, contenteditable="true", data-book="coverImageDescription")&attributes(attributes)
 
 
 mixin factoryStandard-outsideFrontCover
