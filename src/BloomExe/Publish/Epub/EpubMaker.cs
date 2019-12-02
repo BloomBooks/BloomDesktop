@@ -1264,6 +1264,16 @@ namespace Bloom.Publish.Epub
 				var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
 				foreach (XmlElement description in imageDescriptions)
 				{
+					// Restore the cover page visibility setting removed by saving the temporary epub source book.  (After
+					// carefully setting the visibility throughout the book in MakeDeviceXmatterTempBook / BringBookUpToDate,
+					// the code then wipes out visibility settings when copying data-book values to the main html in
+					// MakeDeviceXmatterTempBook / Save.)  See https://issues.bloomlibrary.org/youtrack/issue/BL-7804.
+					if (description.GetAttribute("data-book") == "coverImageDescription")
+						TranslationGroupManager.UpdateContentLanguageClasses(description.ParentNode,
+							this.Book.CollectionSettings,
+							this.Book.CollectionSettings.Language1.Iso639Code,
+							this.Book.CollectionSettings.Language2.Iso639Code,
+							this.Book.CollectionSettings.Language3.Iso639Code);
 					var activeDescriptions = description.SafeSelectNodes("div[contains(@class, 'bloom-visibility-code-on')]");
 					if (activeDescriptions.Count == 0)
 						continue;
