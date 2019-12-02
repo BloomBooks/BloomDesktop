@@ -28,6 +28,7 @@ import Link from "../../react_components/link";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/ProgressDialog";
+import { PublishLanguagesGroup } from "./PublishLanguagesGroup";
 
 export const ReaderPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -57,9 +58,9 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
             ? window.location.protocol +
-              "//" +
-              window.location.host +
-              "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual bloomd in the source tree
+                  "//" +
+                  window.location.host +
+                  "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual bloomd in the source tree
             : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloomd
     );
 
@@ -133,6 +134,11 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                         }}
                     />
                     <ThumbnailGroup onChange={() => props.onReset()} />
+                    <PublishLanguagesGroup
+                        onChange={() => {
+                            props.onReset();
+                        }}
+                    />
                     <HelpGroup>
                         <HelpLink
                             l10nKey="PublishTab.Android.AboutBookFeatures"

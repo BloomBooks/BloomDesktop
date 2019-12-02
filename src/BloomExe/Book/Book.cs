@@ -1789,16 +1789,20 @@ namespace Bloom.Book
 				foreach (var div in langDivs)
 				{
 					var lang = div.Attributes["lang"].Value;
-					// The test for ContainsKey is redundant but may save a useful amount of time.
-					if (!result.ContainsKey(lang) && !string.IsNullOrWhiteSpace(div.InnerText))
+					if (!string.IsNullOrWhiteSpace(div.InnerText))
 					{
-						result[lang] = true;
-						parents.Add((XmlElement)div.ParentNode);
+						result[lang] = true;	// may be set repeatedly, but no harm.
+						// Add each parent only once, but add every parent for divs with any text.
+						var parent = (XmlElement)div.ParentNode;
+						if (!parents.Contains(parent))
+							parents.Add(parent);
 					}
 				}
 				// Second pass: for each parent, if it lacks a non-empty child for one of the languages, set value for that lang to false.
 				foreach (var lang in result.Keys.ToList()) // ToList so we can modify original collection as we go
 				{
+					// This check ignores special pages that may have fixed language settings like div[@data-default-languages="N1"]
+					// So it may be overly pessimistic about completeness.
 					foreach (var parent in parents)
 					{
 						if (!HasContentInLang(parent, lang))
@@ -1808,7 +1812,6 @@ namespace Bloom.Book
 						}
 					}
 				}
-
 				return result;
 			}
 		}
@@ -3212,15 +3215,23 @@ namespace Bloom.Book
 		/// Thus, this mechanism is not as reliable as the process used in epub publishing to delete
 		/// invisible text, which involves actually building a display of the page in the browser,
 		/// but it is much faster and simpler and seems adequate to the current purpose.
+		/// Also, (BL-7586) we don't want to delete activity pages, that may not have text, but still
+		/// could be fully functioning activities.
 		/// Currently the intention is to apply this to a copy of the book, not the original.
+		/// If the optional argument is provided, having 'visible' text is defined as text
+		/// in one of the specified languages.
 		/// </summary>
-		public void RemoveBlankPages()
+		public void RemoveBlankPages(HashSet<string> languagesToInclude = null)
 		{
 			foreach (var page in RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToArray())
 			{
+				if (PublishHelper.IsActivityPage(page))
+					continue;
 				if (PageHasImages(page))
 					continue;
-				if (PageHasVisibleText(page))
+				if (languagesToInclude == null && PageHasVisibleText(page))
+					continue;
+				if (languagesToInclude != null && PageHasTextInLanguage(page, languagesToInclude))
 					continue;
 				if (PageHasVideo(page))
 					continue;
@@ -3234,6 +3245,20 @@ namespace Bloom.Book
 			foreach (XmlElement div in page.SafeSelectNodes(".//div[contains(@class, 'bloom-visibility-code-on')]"))
 			{
 				if (!string.IsNullOrWhiteSpace(div.InnerText))
+					return true;
+			}
+			return false;
+		}
+
+		// Return true if the element contains text in (a div) whose lang is one of the specified set.
+		// Note that we're NOT checking visibility here...this is used in publishing modes where we may
+		// want to publish a page if it has content in languages the user has said to publish, even if it has
+		// none in the visible languages of this collection.
+		private static bool PageHasTextInLanguage(XmlElement page, HashSet<string> languagesToLookFor)
+		{
+			foreach (XmlElement div in page.SafeSelectNodes(".//div[@lang]"))
+			{
+				if (languagesToLookFor.Contains(div.GetStringAttribute("lang")) && !string.IsNullOrWhiteSpace(div.InnerText))
 					return true;
 			}
 			return false;

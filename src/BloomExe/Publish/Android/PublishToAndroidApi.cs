@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.ImageProcessing;
@@ -39,6 +40,9 @@ namespace Bloom.Publish.Android
 		private Color _thumbnailBackgroundColor = Color.Transparent; // can't be actual book cover color <--- why not?
 		private Book.Book _coverColorSourceBook;
 
+		private HashSet<string> _languagesToPublish = new HashSet<string>();
+		private Bloom.Book.Book _bookForLanguagesToPublish = null;
+
 		private RuntimeImageProcessor _imageProcessor;
 
 		// This constant must match the ID that is used for the listener set up in the React component AndroidPublishUI
@@ -64,6 +68,11 @@ namespace Bloom.Publish.Android
 		private static string ToCssColorString(System.Drawing.Color c)
 		{
 			return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
+		}
+
+		private AndroidPublishSettings GetSettings()
+		{
+			return new AndroidPublishSettings() {LanguagesToInclude = _languagesToPublish};
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -123,6 +132,10 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "motionBookMode",
 				readRequest =>
 				{
+					// If the user has taken off all possible motion, force not having motion in the
+					// Bloom Reader book.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7680.
+					if (!readRequest.CurrentBook.HasMotionPages)
+						readRequest.CurrentBook.UseMotionModeInBloomReader = false;
 					return readRequest.CurrentBook.UseMotionModeInBloomReader;
 				},
 				(writeRequest, value) =>
@@ -146,7 +159,7 @@ namespace Bloom.Publish.Android
 						request.Failed("aborted, no longer in publish tab");
 						return;
 					}
-					PreviewUrl = StageBloomD(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor);
+					PreviewUrl = StageBloomD(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, GetSettings());
 					_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
 					
 					request.PostSucceeded();
@@ -178,7 +191,7 @@ namespace Bloom.Publish.Android
 			{
 #if !__MonoCS__
 				SetState("UsbStarted");
-				_usbPublisher.Connect(request.CurrentBook, _thumbnailBackgroundColor);
+				_usbPublisher.Connect(request.CurrentBook, _thumbnailBackgroundColor, GetSettings());
 #endif
 				request.PostSucceeded();
 			}, true);
@@ -194,7 +207,7 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "wifi/start", request =>
 			{
 				SetState("ServingOnWifi");
-				_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _thumbnailBackgroundColor);
+				_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _thumbnailBackgroundColor, GetSettings());
 				
 				request.PostSucceeded();
 			}, true);
@@ -208,7 +221,7 @@ namespace Bloom.Publish.Android
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/save", request =>
 			{
-				FilePublisher.Save(request.CurrentBook, _bookServer, _thumbnailBackgroundColor, _progress);
+				FilePublisher.Save(request.CurrentBook, _bookServer, _thumbnailBackgroundColor, _progress, GetSettings());
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);
@@ -251,6 +264,58 @@ namespace Bloom.Publish.Android
 				null, // no write action
 				false,
 				true); // we don't really know, just safe default
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "languagesInBook", request =>
+			{
+				var allLanguages = request.CurrentBook.AllLanguages;
+				if (_bookForLanguagesToPublish != request.CurrentBook)
+				{
+					// reinitialize our list of which languages to publish, defaulting to the ones
+					// that are complete.
+					// Enhance: persist this somehow.
+					// Currently the whole Publish screen is regenerated (and languagesInBook retrieved again)
+					// whenever a check box is changed, so it's very important not to do this set-to-default
+					// code when we haven't changed books.
+					_bookForLanguagesToPublish = request.CurrentBook;
+					_languagesToPublish.Clear();
+					foreach (var kvp in allLanguages)
+					{
+						if (kvp.Value)
+							_languagesToPublish.Add(kvp.Key);
+					}
+				}
+
+				var result = "[" + string.Join(",", allLanguages.Select(kvp =>
+				{
+					var complete = kvp.Value ? "true" : "false";
+					var include = _languagesToPublish.Contains(kvp.Key) ? "true" : "false";
+					return $"{{\"code\":\"{kvp.Key}\", \"name\":\"{request.CurrentBook.PrettyPrintLanguage((kvp.Key))}\",\"complete\":{complete},\"include\":{include}}}";
+				})) + "]";
+
+				request.ReplyWithText(result);
+			}, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "includeLanguage", request =>
+			{
+				var langCode = request.RequiredParam("langCode");
+				if (request.HttpMethod == HttpMethods.Post)
+				{
+					var val = request.RequiredParam("include") == "true";
+					if (val)
+					{
+						_languagesToPublish.Add(langCode);
+					}
+					else
+					{
+						_languagesToPublish.Remove(langCode);
+					}
+					request.PostSucceeded();
+				}
+				// We don't currently need a get...it's subsumed in the 'include' value returned from allLanguages...
+				// but if we ever do this is what it would look like.
+				//else
+				//{
+				//	request.ReplyWithText(_languagesToPublish.Contains(langCode) ? "true" : "false");
+				//}
+			}, false);
 		}
 
 		public void Stop()
@@ -296,7 +361,7 @@ namespace Bloom.Publish.Android
 		/// <param name="bookServer"></param>
 		/// <param name="startingMessageFunction"></param>
 		public static void SendBook(Book.Book book, BookServer bookServer, string destFileName, Action<string, string> sendAction, WebSocketProgress progress, Func<string, string, string> startingMessageFunction,
-			Func<string, bool> confirmFunction, Color backColor)
+			Func<string, bool> confirmFunction, Color backColor, AndroidPublishSettings settings = null)
 		{
 			var bookTitle = book.Title;
 			progress.MessageUsingTitle("PackagingBook", "Packaging \"{0}\" for use with Bloom Reader...", bookTitle, MessageKind.Progress);
@@ -315,7 +380,7 @@ namespace Bloom.Publish.Android
 				// wifi or usb...make the .bloomd in a temp folder.
 				using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 				{
-					BloomReaderFileMaker.CreateBloomDigitalBook(bloomdTempFile.Path, book, bookServer, backColor, progress);
+					BloomReaderFileMaker.CreateBloomDigitalBook(bloomdTempFile.Path, book, bookServer, backColor, progress, settings);
 					sendAction(publishedFileName, bloomdTempFile.Path);
 					if (confirmFunction != null && !confirmFunction(publishedFileName))
 						throw new ApplicationException("Book does not exist after write operation.");
@@ -326,7 +391,7 @@ namespace Bloom.Publish.Android
 			{
 				// save file...user has supplied name, there is no further action.
 				Debug.Assert(sendAction == null, "further actions are not supported when passing a path name");
-				BloomReaderFileMaker.CreateBloomDigitalBook(destFileName, book, bookServer, backColor, progress);
+				BloomReaderFileMaker.CreateBloomDigitalBook(destFileName, book, bookServer, backColor, progress, settings);
 				progress.Message("PublishTab.Epub.Done", "Done", useL10nIdPrefix: false);	// share message string with epub publishing
 			}
 
@@ -334,7 +399,7 @@ namespace Bloom.Publish.Android
 
 		private static TemporaryFolder _stagingFolder;
 
-		public static string StageBloomD(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor)
+		public static string StageBloomD(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, AndroidPublishSettings settings = null)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");	// message shared with Epub publishing
 
@@ -347,7 +412,7 @@ namespace Bloom.Publish.Android
 			// We don't use the folder found here, but this method does some checks we want done.
 			BookStorage.FindBookHtmlInFolder(book.FolderPath);
 			_stagingFolder = new TemporaryFolder("PlaceForStagingBook");
-			var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book.FolderPath, bookServer, _stagingFolder, progress);
+			var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book.FolderPath, bookServer, _stagingFolder, progress, settings: settings);
 			progress.Message("Common.Done", "Shown in a list of messages when Bloom has completed a task.", "Done");
 			return modifiedBook.FolderPath.ToLocalhost();
 		}

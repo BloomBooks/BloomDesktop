@@ -9,12 +9,17 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { Comical, Bubble, BubbleSpec, BubbleSpecPattern } from "comicaljs";
+import { Point, PointScaling } from "./point";
 
 const kWebsocketContext = "textOverPicture";
 const kComicalGeneratedClass: string = "comical-generated";
 
 // references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
 export class TextOverPictureManager {
+    // The min width/height needs to be kept in sync with the corresponding values in textOverPicture.less
+    public minTextBoxWidthPx = 30;
+    public minTextBoxHeightPx = 30;
+
     private activeElement: HTMLElement | undefined;
     private isCalloutEditingOn: boolean = false;
     private notifyBubbleChange:
@@ -22,8 +27,20 @@ export class TextOverPictureManager {
         | undefined;
 
     // These variables are used by the bubble's onmouse* event handlers
-    private draggedBubble: Bubble | undefined; // Use Undefined to indicate that there is no active drag in progress
-    private bubbleGrabOffset: { x: number; y: number } = { x: 0, y: 0 };
+    private bubbleToDrag: Bubble | undefined; // Use Undefined to indicate that there is no active drag in progress
+    private bubbleDragGrabOffset: { x: number; y: number } = { x: 0, y: 0 };
+    private activeContainer: HTMLElement | undefined;
+
+    private bubbleToResize: Bubble | undefined; // Use Undefined to indicate that there is no active resize in progress
+    private bubbleResizeMode: string;
+    private bubbleResizeInitialPos: {
+        clickX: number;
+        clickY: number;
+        elementX: number;
+        elementY: number;
+        width: number;
+        height: number;
+    };
 
     public initializeTextOverPictureManager(): void {
         // currently nothing to do; used to set up web socket listener
@@ -231,8 +248,20 @@ export class TextOverPictureManager {
             });
 
             this.setDragAndDropHandlers(container);
-            this.setMouseDragHandlers(container, containerBounds);
+            this.setMouseDragHandlers(container);
         });
+
+        // The container's onmousemove handler isn't capable of reliably detecting in all cases when it goes out of bounds, because
+        // the mouse is no longer over the container.
+        // So need a handler on the .bloom-page instead, which surrounds the image container.
+        Array.from(document.getElementsByClassName("bloom-page")).forEach(
+            (pageElement: HTMLElement) => {
+                pageElement.addEventListener(
+                    "mousemove",
+                    TextOverPictureManager.onPageMouseMove
+                );
+            }
+        );
     }
 
     migrateOldTopElems(textOverPictureElems: HTMLElement[]): void {
@@ -331,136 +360,330 @@ export class TextOverPictureManager {
         };
     }
 
-    // Setup event handlers that allow the bubble to be moved around.
-    private setMouseDragHandlers(
-        container: HTMLElement,
-        containerBounds: ClientRect | DOMRect
-    ): void {
-        // Precondition: Assumes the border width / etc. never changes
-        const styleInfo = window.getComputedStyle(container);
-
+    // Setup event handlers that allow the bubble to be moved around or resized.
+    private setMouseDragHandlers(container: HTMLElement): void {
         // We use mousemove effects instead of drag due to concerns that drag effects would make the entire image container appear to drag.
         // Instead, with mousemove, we can make only the specific bubble move around
-        container.onmousedown = (ev: MouseEvent) => {
-            // Let standard clicks on the bloom editable only be processed on the editable
-            if (this.isEventForEditableOnly(ev)) {
-                return;
-            }
+        container.onmousedown = (event: MouseEvent) => {
+            this.onMouseDown(event, container);
+        };
 
-            // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
-            const coordinates = this.getContainerCoordinates(
-                ev,
-                containerBounds,
-                styleInfo
-            );
-            if (!coordinates) {
-                return;
-            }
+        container.onmousemove = (event: MouseEvent) => {
+            this.onMouseMove(event, container);
+        };
 
-            const [targetX, targetY] = coordinates;
+        container.onmouseup = (event: MouseEvent) => {
+            this.onMouseUp(event, container);
+        };
+    }
 
-            const bubble = Comical.getBubbleHit(container, targetX, targetY);
-            if (bubble) {
-                this.draggedBubble = bubble;
+    // Checks to see if the mouse has gone outside of the active container
+    private static onPageMouseMove(event: MouseEvent) {
+        // Ensures the singleton is ready. (Normally basically a NO-OP because it should already be initialized)
+        initializeTextOverPictureManager();
+
+        if (
+            !theOneTextOverPictureManager.bubbleToDrag ||
+            !theOneTextOverPictureManager.activeContainer
+        ) {
+            return;
+        }
+
+        const container = theOneTextOverPictureManager.activeContainer;
+        const containerBounds = container.getBoundingClientRect();
+
+        // Oops, the mouse cursor has left the image container
+        // Current requirements are to end the drag in this case
+        if (
+            event.pageX < containerBounds.left ||
+            event.pageX > containerBounds.right ||
+            event.pageY < containerBounds.top ||
+            event.pageY > containerBounds.bottom
+        ) {
+            // FYI: If you use the drag handle (which uses JQuery), it enforces the content box to stay entirely within the imageContainer.
+            // This code currently doesn't do that.
+            theOneTextOverPictureManager.bubbleToDrag = undefined;
+            theOneTextOverPictureManager.activeContainer = undefined;
+            container.classList.remove("grabbing");
+        }
+
+        // Note: Resize is not stopped here. IMO I think this is more natural, and it also lines up with our current JQuery Resize code
+        // (Which does not constrain the resize at all. It also lets you to come back into the container and have the resize continue.)
+    }
+
+    private onMouseDown(event: MouseEvent, container: HTMLElement) {
+        // Let standard clicks on the bloom editable only be processed on the editable
+        if (this.isEventForEditableOnly(event)) {
+            return;
+        }
+
+        // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
+        const coordinates = this.getPointRelativeToCanvas(event, container);
+
+        if (!coordinates) {
+            return;
+        }
+
+        const bubble = Comical.getBubbleHit(
+            container,
+            coordinates.getUnscaledX(),
+            coordinates.getUnscaledY()
+        );
+
+        if (bubble) {
+            const positionInfo = bubble.content.getBoundingClientRect();
+
+            if (!event.altKey) {
+                // Move action started
+                this.bubbleToDrag = bubble;
+                this.activeContainer = container;
 
                 // Remember the offset between the top-left of the content box and the initial location of the mouse pointer
-                const positionInfo = bubble.content.getBoundingClientRect();
-                const deltaX = ev.pageX - positionInfo.left;
-                const deltaY = ev.pageY - positionInfo.top;
-                this.bubbleGrabOffset = { x: deltaX, y: deltaY };
+                const deltaX = event.pageX - positionInfo.left;
+                const deltaY = event.pageY - positionInfo.top;
+                this.bubbleDragGrabOffset = { x: deltaX, y: deltaY };
 
+                // Even though Alt+Drag resize is not in effect, we still check using isResizing() to make sure JQuery Resizing is not in effect before proceeding
                 if (!this.isResizing(container)) {
                     container.classList.add("grabbing");
                 }
-            }
-        };
-
-        container.onmousemove = (ev: MouseEvent) => {
-            // Prevent two event handlers from triggering if the text box is currently being resized
-            if (this.isResizing(container)) {
-                this.draggedBubble = undefined;
-                return;
-            }
-
-            if (this.draggedBubble) {
-                // A bubble is currently in drag mode, and the mouse is being moved.
-                // Move the bubble accordingly.
-                this.calculateAndFixInitialLocation(
-                    $(this.draggedBubble.content),
-                    $(container),
-                    ev.pageX - this.bubbleGrabOffset.x, // These coordinates need to be relative to the document
-                    ev.pageY - this.bubbleGrabOffset.y
-                );
             } else {
-                // Not currently dragging
-                // Determine whether there is something under the mouse that could be dragged/resized,
-                // and add or remove the class we use to indicate this
-                const coordinates = this.getContainerCoordinates(
-                    ev,
-                    containerBounds,
-                    styleInfo
+                // Resize action started. Save some information from the initial click for later.
+                this.bubbleToResize = bubble;
+
+                // Save the resize mode. Later on, based on what the initial resize mode was, we'll parse the string
+                // and determine how to calculate the new boundaries of the content box.
+                this.bubbleResizeMode = this.getResizeMode(
+                    bubble.content,
+                    event
                 );
-                if (!coordinates) {
-                    container.classList.remove("grabbable");
-                    return;
-                }
-                const [targetX, targetY] = coordinates;
+                this.cleanupMouseMoveHover(container); // Need to clear both grabbable and *-resizables
+                container.classList.add(`${this.bubbleResizeMode}-resizable`);
 
-                if (
-                    !this.isEventForEditableOnly(ev) &&
-                    Comical.getBubbleHit(container, targetX, targetY)
-                ) {
-                    // Over a bubble that could be dragged (ignoring the bloom-editable portion).
-                    // Make the mouse indicate that dragging is possible
-                    container.classList.add("grabbable");
-                } else {
-                    // Cleanup the previous iteration's state
-                    container.classList.remove("grabbable");
-                }
+                const bubbleContentJQuery = $(bubble.content);
+                this.bubbleResizeInitialPos = {
+                    clickX: event.pageX,
+                    clickY: event.pageY,
+                    elementX: positionInfo.left,
+                    elementY: positionInfo.top,
+                    // Use JQuery here to have consistent calculations with the rest of the code.
+                    // Jquery width(): Only the Content width. (No padding, border, scrollbar, or margin)
+                    // Javascript clientWidth: Content plus Padding. (No border, scrollbar, or margin)
+                    // Javascript offsetWidth: Content, Padding, Border, and scrollbar. (No margin
+                    // References:
+                    //   https://www.w3schools.com/jsref/prop_element_clientheight.asp
+                    //   https://www.w3schools.com/jsref/prop_element_offsetheight.asp
+                    width: bubbleContentJQuery.width(),
+                    height: bubbleContentJQuery.height()
+                };
             }
-
-            // ENHANCE: If you first select the text in a text-over-picture, then Ctrl+drag it, you will both drag the bubble and drag the text.
-            //   Ideally I'd like to only handle the drag the bubble event
-            //   I tried to move the event handler to the preliminary Capture phase, then use stopPropagation, cancelBubble, and/or PreventDefault
-            //   to stop the event from reaching the target element (the paragraph or the .bloom-editable div or whatever).
-            //   Unfortunately, while it prevented the event handlers in the subsequent Bubble phase from being fired,
-            //   this funny dual-drag behavior would still happen.  I don't have a solution for that yet.
-        };
-
-        container.onmouseup = (ev: MouseEvent) => {
-            // ENHANCE: If you release the mouse outside of the container, it is not registered as a mouseup here.
-            //          The bubble will continue to be dragged inside the container until you click and release.
-            this.draggedBubble = undefined;
-            container.classList.remove("grabbing");
-        };
-
-        // The container's onmousemove handler isn't capable of reliably detecting in all cases when it goes out of bounds, because
-        // the mouse is no longer over the container.
-        // So need a handler on the .bloom-page instead, which surrounds the image container.
-        const currentPageElement = container.closest(".bloom-page");
-        if (currentPageElement) {
-            (currentPageElement as HTMLElement).onmousemove = (
-                ev: MouseEvent
-            ) => {
-                if (!this.draggedBubble) {
-                    return;
-                }
-
-                // Oops, the mouse cursor has left the image container
-                // Current requirements are to end the drag in this case
-                if (
-                    ev.pageX < containerBounds.left ||
-                    ev.pageX > containerBounds.right ||
-                    ev.pageY < containerBounds.top ||
-                    ev.pageY > containerBounds.bottom
-                ) {
-                    // FYI: If you use the drag handle (which uses the JQuery drag handle), it enforces the content box to stay entirely within the imageContainer.
-                    // This code currently doesn't do that.
-                    this.draggedBubble = undefined;
-                    container.classList.remove("grabbing");
-                }
-            };
         }
+    }
+
+    private onMouseMove(event: MouseEvent, container: HTMLElement) {
+        // Prevent two event handlers from triggering if the text box is currently being resized
+        if (this.isResizing(container)) {
+            this.bubbleToDrag = undefined;
+            this.activeContainer = undefined;
+            return;
+        }
+
+        if (!this.bubbleToDrag && !this.bubbleToResize) {
+            this.handleMouseMoveHover(event, container);
+        } else if (this.bubbleToDrag) {
+            this.handleMouseMoveDragBubble(event, container);
+        } else {
+            this.handleMouseMoveResizeBubble(event, container);
+        }
+    }
+
+    // Mouse hover - No move or resize is currently active, but check if there is a bubble under the mouse that COULD be
+    // and add or remove the classes we use to indicate this
+    private handleMouseMoveHover(event: MouseEvent, container: HTMLElement) {
+        const coordinates = this.getPointRelativeToCanvas(event, container);
+        if (!coordinates) {
+            this.cleanupMouseMoveHover(container);
+            return;
+        }
+
+        if (this.isEventForEditableOnly(event)) {
+            this.cleanupMouseMoveHover(container);
+            return;
+        }
+
+        const hoveredBubble = Comical.getBubbleHit(
+            container,
+            coordinates.getUnscaledX(),
+            coordinates.getUnscaledY()
+        );
+
+        if (!hoveredBubble) {
+            // Cleanup the previous iteration's state
+            this.cleanupMouseMoveHover(container);
+            return;
+        }
+
+        // Over a bubble that could be dragged (ignoring the bloom-editable portion).
+        // Make the mouse indicate that dragging/resizing is possible
+        if (!event.altKey) {
+            container.classList.add("grabbable");
+        } else {
+            const resizeMode = this.getResizeMode(hoveredBubble.content, event);
+
+            this.cleanupMouseMoveHover(container); // Need to clear both grabbable and *-resizables
+            container.classList.add(`${resizeMode}-resizable`);
+        }
+    }
+
+    // A bubble is currently in drag mode, and the mouse is being moved.
+    // Move the bubble accordingly.
+    private handleMouseMoveDragBubble(
+        event: MouseEvent,
+        container: HTMLElement
+    ) {
+        if (!this.bubbleToDrag) {
+            console.assert(false, "bubbleToDrag is undefined");
+            return;
+        }
+
+        this.calculateAndFixInitialLocation(
+            $(this.bubbleToDrag.content),
+            $(container),
+            event.pageX - this.bubbleDragGrabOffset.x, // These coordinates need to be relative to the document
+            event.pageY - this.bubbleDragGrabOffset.y
+        );
+
+        // ENHANCE: If you first select the text in a text-over-picture, then Ctrl+drag it, you will both drag the bubble and drag the text.
+        //   Ideally I'd like to only handle the drag-the-bubble event, not the drag-the-text event.
+        //   I tried to move the event handler to the preliminary Capture phase, then use stopPropagation, cancelBubble, and/or PreventDefault
+        //   to stop the event from reaching the target element (the paragraph or the .bloom-editable div or whatever).
+        //   Unfortunately, while it prevented the event handlers in the subsequent Bubble phase from being fired,
+        //   this funny dual-drag behavior would still happen.  I don't have a solution for that yet.
+    }
+
+    // Resizes the current bubble
+    private handleMouseMoveResizeBubble(
+        event: MouseEvent,
+        container: HTMLElement
+    ) {
+        if (!this.bubbleToResize) {
+            console.assert(false, "bubbleToResize is undefined");
+            return;
+        }
+
+        const content = $(this.bubbleToResize.content);
+
+        const positionInfo = content[0].getBoundingClientRect();
+        const oldLeft = positionInfo.left;
+        const oldTop = positionInfo.top;
+        // Note: This uses the JQuery width() function, which returns just the width of the element without padding/border.
+        //       The ClientRect width includes the padding and border
+        //       The child functions we later call expect the width without padding/border (because they use JQuery),
+        //       so make sure to pass in the appropriate one
+        const oldWidth = content.width();
+        const oldHeight = content.height();
+
+        let newLeft = oldLeft;
+        let newTop = oldTop;
+        let newWidth = oldWidth;
+        let newHeight = oldHeight;
+
+        // Rather than using the current iteration's movementX/Y, we use the distance away from the original click.
+        // This gives behavior consistent with what JQuery resize handles do.
+        // If the user resizes it below the minimum width (which prevents the box from actually getting any smaller),
+        // they will not start immediately expanding the box when they move the mouse back, but only once they reach the minimum width threshold again.
+        const totalMovementX = event.pageX - this.bubbleResizeInitialPos.clickX;
+        const totalMovementY = event.pageY - this.bubbleResizeInitialPos.clickY;
+
+        // Determine the vertical component
+        if (this.bubbleResizeMode.charAt(0) == "n") {
+            // The top edge is moving, but the bottom edge is anchored.
+            newTop =
+                event.pageY -
+                this.bubbleResizeInitialPos.clickY +
+                this.bubbleResizeInitialPos.elementY;
+            newHeight = this.bubbleResizeInitialPos.height - totalMovementY;
+
+            if (newHeight < this.minTextBoxHeightPx) {
+                newHeight = this.minTextBoxHeightPx;
+
+                // Even though we capped newHeight, it's still possible that the height shrunk,
+                // so we may possibly still need to adjust the value of 'top'
+                newTop = oldTop + (oldHeight - newHeight);
+            }
+        } else {
+            // The bottom edge is moving, while the top edge is anchored.
+            newHeight = this.bubbleResizeInitialPos.height + totalMovementY;
+            newHeight = Math.max(newHeight, this.minTextBoxHeightPx);
+        }
+
+        // Determine the horizontal component
+        if (this.bubbleResizeMode.charAt(1) == "w") {
+            // The left edge is moving, but the right edge is anchored.
+            newLeft =
+                event.pageX -
+                this.bubbleResizeInitialPos.clickX +
+                this.bubbleResizeInitialPos.elementX;
+            newWidth = this.bubbleResizeInitialPos.width - totalMovementX;
+
+            if (newWidth < this.minTextBoxWidthPx) {
+                newWidth = this.minTextBoxWidthPx;
+
+                // Even though we capped newWidth, it's still possible that the width shrunk,
+                // so we may possibly still need to adjust left
+                newLeft = oldLeft + (oldWidth - newWidth);
+            }
+        } else {
+            // The right edge is moving, but the left edge is anchored.
+            newWidth = this.bubbleResizeInitialPos.width + totalMovementX;
+            newWidth = Math.max(newWidth, this.minTextBoxWidthPx);
+        }
+
+        // console.log(
+        //     `Calculated: (${newLeft}, ${newTop}) with w,h= (${newWidth}, ${newHeight})`
+        // );
+
+        if (
+            newTop == oldTop &&
+            newLeft == oldLeft &&
+            newWidth == oldWidth &&
+            newHeight == oldHeight
+        ) {
+            // Nothing changed. Abort early to try to avoid rounding errors or minor discrepancies from accumulating
+            return;
+        }
+
+        content.width(newWidth);
+        content.height(newHeight);
+
+        this.calculateAndFixInitialLocation(
+            content,
+            $(container),
+            newLeft,
+            newTop
+        );
+
+        // ENHANCE: Get the final value to match up perfectly with the Calculated value.
+        // If you wiggle the mouse up and down over and over and over,
+        // you can observe the text box will be moved downwards slowly but steadily.
+        // This seems to indicate that it's not rounding error, which should manifest as a random 1 pixel up or 1 pixel down.
+        // The slow erosion downward seems to indicate that calculateAndFixInitialLocation() has a small but systemic bias.
+        // const positionInfo2 = this.draggedBubble.content.getBoundingClientRect();
+        // console.log(
+        //     `Final: (${positionInfo2.left}, ${
+        //         positionInfo2.top
+        //     }) with w/h (${$(
+        //         this.draggedBubble.content
+        //     ).width()}, ${$(this.draggedBubble.content).height()})`
+        // );
+    }
+
+    private onMouseUp(event: MouseEvent, container: HTMLElement) {
+        this.bubbleToDrag = undefined;
+        this.activeContainer = undefined;
+        this.bubbleToResize = undefined;
+        this.bubbleResizeMode = "";
+        container.classList.remove("grabbing");
     }
 
     // Returns true if any of the container's children are currently being resized
@@ -477,7 +700,7 @@ export class TextOverPictureManager {
     }
 
     private isEventForEditableOnly(ev): boolean {
-        if (ev.ctrlKey) {
+        if (ev.ctrlKey || ev.altKey) {
             return false;
         }
 
@@ -486,50 +709,89 @@ export class TextOverPictureManager {
         return isInsideEditable;
     }
 
-    // Gets the coordinates of the specified event relative to the container.
-    private getContainerCoordinates(
+    // Gets the coordinates of the specified event relative to the canvas element.
+    private getPointRelativeToCanvas(
         event: MouseEvent,
-        containerBounds: ClientRect | DOMRect,
-        styleInfo: CSSStyleDeclaration
-    ): number[] | undefined {
-        const targetElement = event.target as HTMLElement;
-        if (!(typeof targetElement.getBoundingClientRect === "function")) {
+        container: Element
+    ): Point | undefined {
+        const canvas = this.getFirstCanvasForContainer(container);
+        if (!canvas) {
             return undefined;
         }
-        const targetBounds = targetElement.getBoundingClientRect();
 
-        const [x, y] = this.getCoordinatesRelativeTo(
-            event.offsetX,
-            event.offsetY,
-            targetBounds,
-            containerBounds,
-            styleInfo
-        );
-
-        return [x, y];
+        return this.getPointRelativeToElement(event, canvas);
     }
 
-    // Recomputes the coordinates of element relative to the specified origin's info
-    private getCoordinatesRelativeTo(
-        elementX: number, // elementX: The offsetX relative to the element's top left.
-        elementY: number, // elementY: The offsetY relative to the element's top left.
-        elementBounds: ClientRect | DOMRect, // The Bounding Client Rectangle of the element
-        originBounds: ClientRect | DOMRect, // The BoundingClientRectangle of the HTMLElement whose top-left and right will be treated as the new origin
-        originStyleInfo: CSSStyleDeclaration // The computed style of the origin
-    ): number[] {
-        // ENHANCE: Might need to account for padding later too? Not sure.
-        // ENHANCE: Do we need to adjust elementX/elementY if the element has a non-zero border width?
+    // Returns the first canvas in the container, or returns undefined if it does not exist.
+    private getFirstCanvasForContainer(
+        container: Element
+    ): HTMLCanvasElement | undefined {
+        const collection = container.getElementsByTagName("canvas");
+        if (!collection || collection.length <= 0) {
+            return undefined;
+        }
+
+        return collection.item(0) as HTMLCanvasElement;
+    }
+
+    // Gets the coordinates of the specified event relative to the specified element.
+    private getPointRelativeToElement(
+        event: MouseEvent,
+        element: Element
+    ): Point | undefined {
+        // ClientX is scaled and relative to the viewport
+        const currentPoint = new Point(
+            event.clientX,
+            event.clientY,
+            PointScaling.Scaled,
+            "MouseEvent Client (Relative to viewport)"
+        );
+
+        const referenceBounds = element.getBoundingClientRect();
+        const origin = new Point(
+            referenceBounds.left,
+            referenceBounds.top,
+            PointScaling.Scaled,
+            "BoundingClientRect (Relative to viewport)"
+        );
+
+        // Origin gives the location of the outside edge of the border. But we want values relative to the inside edge of the padding.
+        // So we need to subtract out the border and padding
+        const styleInfo = window.getComputedStyle(element);
+        // These return the original, unscaled values of the border width
         const borderLeft: number = TextOverPictureManager.extractNumber(
-            originStyleInfo.getPropertyValue("border-left-width")
+            styleInfo.getPropertyValue("border-left-width")
         );
         const borderTop: number = TextOverPictureManager.extractNumber(
-            originStyleInfo.getPropertyValue("border-top-width")
+            styleInfo.getPropertyValue("border-top-width")
         );
 
-        const relativeX = elementBounds.left - originBounds.left - borderLeft;
-        const relativeY = elementBounds.top - originBounds.top - borderTop;
+        const border = new Point(
+            borderLeft,
+            borderTop,
+            PointScaling.Unscaled,
+            "getComputedStyle() result"
+        );
 
-        return [relativeX + elementX, relativeY + elementY];
+        const paddingLeft: number = TextOverPictureManager.extractNumber(
+            styleInfo.getPropertyValue("padding-left")
+        );
+        const paddingTop: number = TextOverPictureManager.extractNumber(
+            styleInfo.getPropertyValue("padding-top")
+        );
+
+        const padding = new Point(
+            paddingLeft,
+            paddingTop,
+            PointScaling.Unscaled,
+            "getComputedStyle() result"
+        );
+
+        const relativePoint = currentPoint
+            .subtract(origin)
+            .subtract(border)
+            .subtract(padding);
+        return relativePoint;
     }
 
     // Removes the units from a string like "10px"
@@ -553,6 +815,60 @@ export class TextOverPictureManager {
         }
 
         return Number(numberStr);
+    }
+
+    // Returns a string representing which style of resize to use
+    // This is based on where the mouse event is relative to the center of the element
+    //
+    // The returned string is the directional prefix to the *-resize cursor values
+    // e.g., if "ne-resize" would be appropriate, this function will return the "ne" prefix
+    // e.g. "ne" = Northeast, "nw" = Northwest", "sw" = Southwest, "se" = Southeast"
+    private getResizeMode(element: HTMLElement, event: MouseEvent): string {
+        // Convert into a coordinate system where the origin is the center of the element (rather than the top-left of the page)
+        const center = this.getCenterPosition(element);
+        const clickCoordinates = { x: event.pageX, y: event.pageY };
+        const relativeCoordinates = {
+            x: clickCoordinates.x - center.x,
+            y: clickCoordinates.y - center.y
+        };
+
+        let resizeMode: string;
+        if (relativeCoordinates.y! < 0) {
+            if (relativeCoordinates.x! >= 0) {
+                resizeMode = "ne"; // NorthEast = top-right
+            } else {
+                resizeMode = "nw"; // NorthWest = top-left
+            }
+        } else {
+            if (relativeCoordinates.x! < 0) {
+                resizeMode = "sw"; // SouthWest = bottom-left
+            } else {
+                resizeMode = "se"; // SouthEast = bottom-right
+            }
+        }
+
+        return resizeMode;
+    }
+
+    // Calculates the center of an element
+    public getCenterPosition(element: HTMLElement): { x: number; y: number } {
+        const positionInfo = element.getBoundingClientRect();
+        const centerX = positionInfo.left + positionInfo.width / 2;
+        const centerY = positionInfo.top + positionInfo.height / 2;
+
+        return { x: centerX, y: centerY };
+    }
+
+    private cleanupMouseMoveHover(element: HTMLElement): void {
+        element.classList.remove("grabbable");
+        this.clearResizeModeClasses(element);
+    }
+
+    private clearResizeModeClasses(element: HTMLElement): void {
+        element.classList.remove("ne-resizable");
+        element.classList.remove("nw-resizable");
+        element.classList.remove("sw-resizable");
+        element.classList.remove("se-resizable");
     }
 
     public turnOffHidingImageButtons() {
@@ -744,8 +1060,7 @@ export class TextOverPictureManager {
         return contentElement;
     }
 
-    // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
-    // to create the context menu
+    // mouseX and mouseY are the location in the viewport of the mouse
     private getImageContainerFromMouse(mouseX: number, mouseY: number): JQuery {
         const clickElement = document.elementFromPoint(mouseX, mouseY);
         if (!clickElement) {
@@ -755,8 +1070,8 @@ export class TextOverPictureManager {
         return $(clickElement).closest(".bloom-imageContainer");
     }
 
-    // mouseX and mouseY are the location in the viewport of the mouse when right-clicking
-    // to create the context menu
+    // mouseX and mouseY are the location in the viewport of the position at which to place the text box
+    // These define the top-left corner of wrapperBox
     private calculateAndFixInitialLocation(
         wrapperBox: JQuery,
         container: JQuery,
@@ -765,8 +1080,18 @@ export class TextOverPictureManager {
     ) {
         const scale = EditableDivUtils.getPageScale();
         const containerPosition = container[0].getBoundingClientRect();
-        const xOffset = (mouseX - containerPosition.left) / scale;
-        const yOffset = (mouseY - containerPosition.top) / scale;
+        const containerStyle = window.getComputedStyle(container[0]);
+        const containerBorderLeft: number = TextOverPictureManager.extractNumber(
+            containerStyle.getPropertyValue("border-left-width")
+        );
+        const containerBorderTop: number = TextOverPictureManager.extractNumber(
+            containerStyle.getPropertyValue("border-top-width")
+        );
+
+        const xOffset =
+            (mouseX - containerPosition.left - containerBorderLeft) / scale;
+        const yOffset =
+            (mouseY - containerPosition.top - containerBorderTop) / scale;
 
         // Note: This code will not clear out the rest of the style properties... they are preserved.
         //       If some or all style properties need to be removed before doing this processing, it is the caller's responsibility to do so beforehand

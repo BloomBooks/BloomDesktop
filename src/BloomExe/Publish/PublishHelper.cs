@@ -216,6 +216,15 @@ namespace Bloom.Publish
 			}
 		}
 
+		public static bool IsActivityPage(XmlElement pageElement)
+		{
+			var classes = pageElement.GetAttribute("class");
+			// I'd say it's impossible for this to be empty or null, but...
+			Debug.Assert(!string.IsNullOrEmpty(classes), "How did we get a page with no classes!?");
+			// The class is for 4.6, the attribute is for later versions.
+			return classes.Contains("bloom-interactive-page") || pageElement.HasAttribute("data-activity");
+		}
+
 		public static void RemoveEnterpriseFeaturesIfNeeded(Book.Book book, List<XmlElement> pageElts, ISet<string> warningMessages)
 		{
 			if (RemoveEnterprisePagesIfNeeded(book.CollectionSettings, book.Storage.Dom, pageElts))
