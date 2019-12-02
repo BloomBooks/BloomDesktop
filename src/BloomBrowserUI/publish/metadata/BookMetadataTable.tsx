@@ -98,12 +98,18 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         return <div>{f.value}</div>;
 
                                     case "editableText":
+                                    case "bigEditableText":
                                         return (
                                             <TextField
-                                                id="outlined-bare"
                                                 defaultValue={f.value}
                                                 margin="normal"
                                                 variant="outlined"
+                                                fullWidth={
+                                                    f.type == "bigEditableText"
+                                                }
+                                                multiline={
+                                                    f.type == "bigEditableText"
+                                                }
                                                 onBlur={(
                                                     event: React.FocusEvent<
                                                         HTMLTextAreaElement
@@ -114,7 +120,6 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                                     ].value =
                                                         event.currentTarget.value;
                                                 }}
-                                                // value={f.value}
                                             />
                                         );
 
