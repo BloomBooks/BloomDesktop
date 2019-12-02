@@ -49,6 +49,8 @@ namespace Bloom.web.controllers
 							translatedLabel = LocalizationManager.GetString("BookMetadata.License", "License") },
 						author = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.author", "Author") },
+						summary = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Summary,
+							translatedLabel = LocalizationManager.GetString("BookMetadata.summary", "Summary") },
 						typicalAgeRange = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.typicalAgeRange", "Typical age range") },
 						level = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription,

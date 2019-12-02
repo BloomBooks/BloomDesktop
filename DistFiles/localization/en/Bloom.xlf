@@ -266,6 +266,10 @@
         <source xml:lang="en">Subjects</source>
         <note>ID: BookMetadata.subjects</note>
       </trans-unit>
+      <trans-unit id="BookMetadata.summary">
+        <source xml:lang="en">Summary</source>
+        <note>ID: BookMetadata.summary</note>
+      </trans-unit>
       <trans-unit id="BookMetadata.typicalAgeRange">
         <source xml:lang="en">Typical age range</source>
         <note>ID: BookMetadata.typicalAgeRange</note>
