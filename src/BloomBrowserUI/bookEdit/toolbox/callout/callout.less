@@ -9,10 +9,19 @@
     padding-left: 1px !important; // Don't want a big border of highly contrasting colors
 }
 
+#calloutControls {
+    display: flex;
+    flex-direction: column;
+    // fill available toolbox space, part of pushing help to the bottom.
+    // If the content won't fit, it gets a scroll bar.
+    height: 100%;
+}
+
 #calloutControlShapeChooserRegion {
     background-color: @bloom-blue;
     color: black;
     height: 183px;
+    min-height: 133px;
     padding: 10px;
     display: flex;
     flex-wrap: wrap;
@@ -26,7 +35,7 @@
     #calloutControlTextBlockButton {
         border: 1px dotted white;
         padding: 10px 20px;
-        margin-left: 40px;
+        margin-left: 25px;
         color: white;
         height: 18px;
     }
@@ -85,12 +94,18 @@
     }
 }
 
-#calloutControlFooterRegion {
-    // Make it stick to the bottom of the parent
-    position: absolute;
-    bottom: 3px;
+// Empty region that does all the growing and shrinking.
+// makes the calloutControlFooterRegion go to the bottom,
+// but unlike making it position: absolute and bottom:3,
+// it can get pushed out of view if the view gets too small.
+#calloutControlFillerRegion {
+    flex: 1 1 0;
+}
 
+#calloutControlFooterRegion {
     padding-left: 3px;
+    margin-bottom: 3px;
+    margin-top: 10px;
 }
 
 .callout-options-dropdown-menu {

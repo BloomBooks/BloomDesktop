@@ -173,7 +173,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
     };
 
     return (
-        <div>
+        <div id="calloutControls">
             <div id={"calloutControlShapeChooserRegion"}>
                 <div className="calloutControlDragInstructions">
                     Drag one of these on top of an image
@@ -396,6 +396,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                     />
                 </form>
             </div>
+            <div id="calloutControlFillerRegion" />
             <div id={"calloutControlFooterRegion"}>
                 {/* TODO: Update the help link */}
                 <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm" />
