@@ -1931,12 +1931,6 @@ namespace Bloom.Book
 			return nodes?.Count >= 1;
 		}
 
-		public bool DoesContainNarrationAudioRecordedUsingWholeTextBox()
-		{
-			var nodes = _dom.SafeSelectNodes("//*[@data-audiorecordingmode='TextBox']");
-			return nodes?.Count >= 1;
-		}
-
 		public static bool HasMotionFeature(XmlElement element)
 		{
 			var nodes = element.SafeSelectNodes("//*[@data-initialrect]");
