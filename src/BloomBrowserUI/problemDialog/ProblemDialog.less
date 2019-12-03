@@ -1,6 +1,10 @@
 @import "../bloomWebFonts.less";
 
 .problem-dialog {
+    .MuiDialogActions-spacing {
+        // balance spacing at the bottom of the dialog
+        padding-bottom: 8px;
+    }
     .content {
         #please_help_us {
             flex: 0 0 100%;
@@ -95,13 +99,18 @@
     }
 
     #privacyDetails {
-        .backButton {
-            position: absolute; // floats the button above the scrolling text
-            top: 67px;
-            left: 24px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        .buttonWrapper {
+            margin-bottom: 20px;
+        }
+        .privacy_report {
+            overflow: scroll;
         }
         .privacy_info {
-            margin-top: 50px; // so Back button doesn't cover anything up when scroll bar is at the top
+            margin-top: 1em;
             margin-bottom: 1em;
         }
         .intro_to_report {

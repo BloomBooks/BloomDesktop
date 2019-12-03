@@ -37,24 +37,28 @@ export const PrivacyScreen: React.FunctionComponent<{
 
     return (
         <div id="privacyDetails">
-            <BloomButton
-                className="backButton"
-                enabled={true}
-                hasText={true}
-                l10nKey="Common.BackButton"
-                variant="contained"
-                onClick={() => props.onBack()}
-                iconBeforeText={<ArrowBack />}
-            >
-                Back
-            </BloomButton>
-            <Typography className="privacy_info">
-                {localizedPrivacyInfoMessage}
-            </Typography>
-            <Typography className="intro_to_report">
-                {localizedPrivacyIntro}
-            </Typography>
-            <code id="report">{log}</code>
+            <div className="buttonWrapper">
+                <BloomButton
+                    className="backButton"
+                    enabled={true}
+                    hasText={true}
+                    l10nKey="Common.BackButton"
+                    variant="contained"
+                    onClick={() => props.onBack()}
+                    iconBeforeText={<ArrowBack />}
+                >
+                    Back
+                </BloomButton>
+            </div>
+            <div className="privacy_report">
+                <Typography className="privacy_info">
+                    {localizedPrivacyInfoMessage}
+                </Typography>
+                <Typography className="intro_to_report">
+                    {localizedPrivacyIntro}
+                </Typography>
+                <code id="report">{log}</code>
+            </div>
         </div>
     );
 };
