@@ -330,11 +330,10 @@ namespace Bloom.Book
 			}
 			BookInfo.FormatVersion = formatVersion;
 
-			VersionRequirement[] requiredVersions = GetRequiredVersions(Dom).ToArray();
-			if (requiredVersions != null && requiredVersions.Length >= 1)
+			var requiredVersions = GetRequiredVersionsString(Dom);
+			if (!string.IsNullOrEmpty(requiredVersions))
 			{
-				string json = JsonConvert.SerializeObject(requiredVersions);
-				Dom.UpdateMetaElement("FeatureRequirement", json);
+				Dom.UpdateMetaElement("FeatureRequirement", requiredVersions);
 			}
 			else
 			{
@@ -657,21 +656,68 @@ namespace Bloom.Book
 			}
 		}
 
+		// It would be nice if this could simply extend VersionRequirement, but structs don't have
+		// inheritance, and I'm not sure why it was made a struct: it may make some difference
+		// to how it is serialized to JSON. And I don't want to risk that because the JSON has
+		// to be read by older versions of Bloom.
+		class Feature
+		{
+			public string BloomDesktopMinVersion { get; set; }
+			public string BloomReaderMinVersion { get; set; }
+			public string FeatureId { get; set; }
+			public string FeaturePhrase { get; set; }
+
+			public string XPath { get; set; }
+		}
+
+		static Feature[] _features =
+		{
+			new Feature() {FeatureId = "wholeTextBoxAudio",
+				FeaturePhrase = "Whole Text Box Audio",
+				BloomDesktopMinVersion = "4.4",
+				BloomReaderMinVersion = "1.0",
+				XPath = "//*[@data-audiorecordingmode='TextBox']"
+			},
+			new Feature() {FeatureId = "comics",
+				FeaturePhrase = "Support for Comics",
+				BloomDesktopMinVersion = "4.7",
+				BloomReaderMinVersion = "1.0",
+				// We're looking for a text-over-picture box with non-trivial data-bubble,
+				// but as a special case ones with style none are OK, as these can continue to work
+				// as old-style TOP boxes, with the data-bubble ignored.
+				XPath = "//*[contains(@class, 'bloom-textOverPicture') and contains(@data-bubble, '`style`:') and not(contains(@data-bubble, '`style`:`none`'))]"
+			}
+		};
+
+		public static string GetRequiredVersionsString(HtmlDom dom)
+		{
+			var requiredVersions = GetRequiredVersions(dom).ToArray();
+			if (requiredVersions != null && requiredVersions.Length >= 1)
+			{
+				return JsonConvert.SerializeObject(requiredVersions);
+			}
+
+			return "";
+		}
+
 		// Determines which features will have serious breaking effects if not opened in the proper version of any relevant Bloom products
 		// Note: This should include not only BloomDesktop considerations, but needs to insert enough information for things like BloomReader to be able to figure it out too
 		public static IOrderedEnumerable<VersionRequirement> GetRequiredVersions(HtmlDom dom)
 		{
 			var reqList = new List<VersionRequirement>();
 
-			if (dom.DoesContainNarrationAudioRecordedUsingWholeTextBox())
+			foreach (var feature in _features)
 			{
-				reqList.Add(new VersionRequirement()
+				if (dom.SelectSingleNode(feature.XPath) != null)
 				{
-					FeatureId = "wholeTextBoxAudio",
-					FeaturePhrase = "Whole Text Box Audio",
-					BloomDesktopMinVersion = "4.4",
-					BloomReaderMinVersion = "1.0"
-				});
+					reqList.Add(new VersionRequirement()
+					{
+						FeatureId = feature.FeatureId,
+						FeaturePhrase = feature.FeaturePhrase,
+						BloomDesktopMinVersion = feature.BloomDesktopMinVersion,
+						BloomReaderMinVersion = feature.BloomReaderMinVersion
+					});
+				}
 			}
 
 			return reqList.OrderByDescending(x => x.BloomDesktopMinVersion);
