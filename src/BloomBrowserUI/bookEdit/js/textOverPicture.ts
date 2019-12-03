@@ -545,11 +545,16 @@ export class TextOverPictureManager {
             return;
         }
 
+        const newPosition = new Point(
+            event.pageX - this.bubbleDragGrabOffset.x,
+            event.pageY - this.bubbleDragGrabOffset.y,
+            PointScaling.Scaled,
+            "Created by handleMouseMoveDragBubble()"
+        );
         this.placeElementAtPosition(
             $(this.bubbleToDrag.content),
             $(container),
-            event.pageX - this.bubbleDragGrabOffset.x, // These coordinates need to be relative to the document
-            event.pageY - this.bubbleDragGrabOffset.y
+            newPosition
         );
 
         // ENHANCE: If you first select the text in a text-over-picture, then Ctrl+drag it, you will both drag the bubble and drag the text.
@@ -602,9 +607,8 @@ export class TextOverPictureManager {
         if (this.bubbleResizeMode.charAt(0) == "n") {
             // The top edge is moving, but the bottom edge is anchored.
             newTop =
-                event.pageY -
-                this.bubbleResizeInitialPos.clickY +
-                this.bubbleResizeInitialPos.elementY;
+                this.bubbleResizeInitialPos.elementY +
+                totalMovement.getScaledY();
             newHeight =
                 this.bubbleResizeInitialPos.height -
                 totalMovement.getUnscaledY();
@@ -628,9 +632,8 @@ export class TextOverPictureManager {
         if (this.bubbleResizeMode.charAt(1) == "w") {
             // The left edge is moving, but the right edge is anchored.
             newLeft =
-                event.pageX -
-                this.bubbleResizeInitialPos.clickX +
-                this.bubbleResizeInitialPos.elementX;
+                this.bubbleResizeInitialPos.elementX +
+                totalMovement.getScaledX();
             newWidth =
                 this.bubbleResizeInitialPos.width -
                 totalMovement.getUnscaledX();
@@ -660,10 +663,17 @@ export class TextOverPictureManager {
             return;
         }
 
+        // Width/Height should use unscaled units
         content.width(newWidth);
         content.height(newHeight);
 
-        this.placeElementAtPosition(content, $(container), newLeft, newTop);
+        const newPoint = new Point(
+            newLeft,
+            newTop,
+            PointScaling.Scaled,
+            "Created by handleMouseMoveResizeBubble()"
+        );
+        this.placeElementAtPosition(content, $(container), newPoint);
     }
 
     private onMouseUp(event: MouseEvent, container: HTMLElement) {
@@ -749,9 +759,11 @@ export class TextOverPictureManager {
         // So we need to subtract out the border and padding
         // Exterior gives the location of the outside edge of the border. But we want values relative to the inside edge of the padding.
         // So we need to subtract out the border and padding
-        const borderAndPadding = TextOverPictureManager.getBorderAndPaddingWidthHeight(
+        const border = TextOverPictureManager.getLeftAndTopBorderWidths(
             element
         );
+        const padding = TextOverPictureManager.getLeftAndTopPaddings(element);
+        const borderAndPadding = border.add(padding);
 
         const transposedPoint = pointRelativeToViewport
             .subtract(origin)
@@ -759,39 +771,135 @@ export class TextOverPictureManager {
         return transposedPoint;
     }
 
-    private static getBorderAndPaddingWidthHeight(element: Element): Point {
+    // Gets an element's border width/height of an element
+    //   The x coordinate of the point represents the left border width
+    //   The y coordinate of the point represents the top border height
+    private static getLeftAndTopBorderWidths(element: Element): Point {
+        return new Point(
+            element.clientLeft,
+            element.clientTop,
+            PointScaling.Unscaled,
+            "Element ClientLeft/Top (Unscaled)"
+        );
+    }
+
+    // Gets an element's border width/height of an element
+    //   The x coordinate of the point represents the right border width
+    //   The y coordinate of the point represents the bottom border height
+    private static getRightAndBottomBorderWidths(
+        element: Element,
+        styleInfo?: CSSStyleDeclaration
+    ): Point {
+        // There is no such field as element.clientRight, so we have to get it from the CSS style info instead.
+        if (!styleInfo) {
+            styleInfo = window.getComputedStyle(element);
+        }
+
+        const borderRight: number = TextOverPictureManager.extractNumber(
+            styleInfo.getPropertyValue("border-right-width")
+        );
+        const borderBottom: number = TextOverPictureManager.extractNumber(
+            styleInfo.getPropertyValue("border-bottom-width")
+        );
+
+        return new Point(
+            borderRight,
+            borderBottom,
+            PointScaling.Unscaled,
+            "Element ClientRight/Bottom (Unscaled)"
+        );
+    }
+
+    // Gets an element's border width/height
+    //   The x coordinate of the point represents the sum of the left and right border width
+    //   The y coordinate of the point represents the sum of the top and bottom border width
+    private static getCombinedBorderWidths(
+        element: Element,
+        styleInfo?: CSSStyleDeclaration
+    ): Point {
+        if (!styleInfo) {
+            styleInfo = window.getComputedStyle(element);
+        }
+
+        return this.getLeftAndTopBorderWidths(element).add(
+            this.getRightAndBottomBorderWidths(element, styleInfo)
+        );
+    }
+
+    // Given a CSSStyleDeclearation, retrieves the requested padding and converts it to a number
+    private static getPadding(
+        side: string,
+        styleInfo: CSSStyleDeclaration
+    ): number {
+        const propertyKey = `padding-${side}`;
+        const paddingString = styleInfo.getPropertyValue(propertyKey);
+        const padding: number = this.extractNumber(paddingString);
+        return padding;
+    }
+
+    // Gets the padding of an element
+    //   The x coordinate of the point represents the left padding
+    //   The y coordinate of the point represents the bottom padding
+    private static getLeftAndTopPaddings(
+        element: Element, // The element to check
+        styleInfo?: CSSStyleDeclaration // Optional. If you have it handy, you can pass in the computed style of the element. Otherwise, it will be determined for you
+    ): Point {
+        if (!styleInfo) {
+            styleInfo = window.getComputedStyle(element);
+        }
+
+        return new Point(
+            this.getPadding("left", styleInfo),
+            this.getPadding("top", styleInfo),
+            PointScaling.Unscaled,
+            "CSSStyleDeclaration padding"
+        );
+    }
+
+    // Gets the padding of an element
+    //   The x coordinate of the point represents the left padding
+    //   The y coordinate of the point represents the bottom padding
+    private static getRightAndBottomPaddings(
+        element: Element, // The element to check
+        styleInfo?: CSSStyleDeclaration // Optional. If you have it handy, you can pass in the computed style of the element. Otherwise, it will be determined for you
+    ): Point {
+        if (!styleInfo) {
+            styleInfo = window.getComputedStyle(element);
+        }
+
+        return new Point(
+            this.getPadding("right", styleInfo),
+            this.getPadding("bottom", styleInfo),
+            PointScaling.Unscaled,
+            "Padding"
+        );
+    }
+
+    // Gets the padding of an element
+    // The x coordinate of the point represents the sum of the left and right padding
+    // The y coordinate of the point represents the sum of the top and bottom padding
+    private static getCombinedPaddings(
+        element: Element,
+        styleInfo?: CSSStyleDeclaration
+    ): Point {
+        if (!styleInfo) {
+            styleInfo = window.getComputedStyle(element);
+        }
+
+        return this.getLeftAndTopPaddings(element, styleInfo).add(
+            this.getRightAndBottomPaddings(element, styleInfo)
+        );
+    }
+
+    // Gets the sum of an element's borders and paddings
+    // The x coordinate of the point represents the sum of the left and right
+    // The y coordinate of the point represents the sum of the top and bottom
+    private static getCombinedBordersAndPaddings(element: Element): Point {
         const styleInfo = window.getComputedStyle(element);
-        // These return the original, unscaled values of the border width
-        const borderLeft: number = TextOverPictureManager.extractNumber(
-            styleInfo.getPropertyValue("border-left-width")
-        );
-        const borderTop: number = TextOverPictureManager.extractNumber(
-            styleInfo.getPropertyValue("border-top-width")
-        );
 
-        const border = new Point(
-            borderLeft,
-            borderTop,
-            PointScaling.Unscaled,
-            "getComputedStyle() result"
-        );
-
-        const paddingLeft: number = TextOverPictureManager.extractNumber(
-            styleInfo.getPropertyValue("padding-left")
-        );
-        const paddingTop: number = TextOverPictureManager.extractNumber(
-            styleInfo.getPropertyValue("padding-top")
-        );
-
-        const padding = new Point(
-            paddingLeft,
-            paddingTop,
-            PointScaling.Unscaled,
-            "getComputedStyle() result"
-        );
-
-        const borderAndPadding = border.add(padding);
-        return borderAndPadding;
+        const borders = this.getCombinedBorderWidths(element);
+        const paddings = this.getCombinedPaddings(element, styleInfo);
+        return borders.add(paddings);
     }
 
     // Removes the units from a string like "10px"
@@ -1040,7 +1148,13 @@ export class TextOverPictureManager {
         const firstContainerChild = container.children().first();
         const wrapperBox = $(wrapperHtml).insertBefore(firstContainerChild);
         // initial mouseX, mouseY coordinates are relative to viewport
-        this.placeElementAtPosition(wrapperBox, container, mouseX, mouseY);
+        const positionInViewport = new Point(
+            mouseX,
+            mouseY,
+            PointScaling.Scaled,
+            "Scaled Viewport coordinates"
+        );
+        this.placeElementAtPosition(wrapperBox, container, positionInViewport);
 
         const contentElement = wrapperBox.get(0);
         const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
@@ -1065,23 +1179,14 @@ export class TextOverPictureManager {
         return $(clickElement).closest(".bloom-imageContainer");
     }
 
-    // mouseX and mouseY are the location in the viewport of the position at which to place the text box
-    // These define the top-left corner of wrapperBox
-    // If the zoom is not 100%, these should be the scaled units, not the unscaled units
+    // positionInViewport is the position to place the top-left corner of the wrapperBox
     private placeElementAtPosition(
         wrapperBox: JQuery,
         container: JQuery,
-        viewportX: number,
-        viewportY: number
+        positionInViewport: Point
     ) {
-        const pointRelativeToViewport = new Point(
-            viewportX,
-            viewportY,
-            PointScaling.Scaled,
-            "MouseX/Y (Relative to Viewport)"
-        );
         const newPoint = this.convertPointFromViewportToElementFrame(
-            pointRelativeToViewport,
+            positionInViewport,
             container[0]
         );
         const xOffset = newPoint.getUnscaledX();
@@ -1339,10 +1444,7 @@ export class TextOverPictureManager {
 
         // Exterior gives the location of the outside edge of the border. But we want values relative to the inside edge of the padding.
         // So we need to subtract out the border and padding, once for each side of the box
-        const borderAndPadding = this.getBorderAndPaddingWidthHeight(
-            element
-        ).multiply(2);
-
+        const borderAndPadding = this.getCombinedBordersAndPaddings(element);
         const interior = exterior.subtract(borderAndPadding);
         return interior;
     }
