@@ -49,6 +49,8 @@ namespace Bloom.web.controllers
 							translatedLabel = LocalizationManager.GetString("BookMetadata.License", "License") },
 						author = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.author", "Author") },
+						summary = new { type = "bigEditableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Summary,
+							translatedLabel = LocalizationManager.GetString("PublishTab.Upload.Summary", "Summary") },
 						typicalAgeRange = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange,
 							translatedLabel = LocalizationManager.GetString("BookMetadata.typicalAgeRange", "Typical age range") },
 						level = new { type = "editableText", value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription,
@@ -85,6 +87,7 @@ namespace Bloom.web.controllers
 					var json = request.RequiredPostJson();
 					var settings = DynamicJson.Parse(json);
 					_bookSelection.CurrentSelection.BookInfo.MetaData.Author = settings["author"].value.Trim();
+					_bookSelection.CurrentSelection.BookInfo.MetaData.Summary = settings["summary"].value.Trim();
 					_bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange = settings["typicalAgeRange"].value.Trim();
 					_bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription = settings["level"].value.Trim();
 					_bookSelection.CurrentSelection.BookInfo.MetaData.Subjects = settings["subjects"].value;

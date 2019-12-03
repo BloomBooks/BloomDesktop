@@ -426,6 +426,8 @@ namespace Bloom.Publish.Epub
 					new XElement(dc + "source", source));
 			if (!string.IsNullOrEmpty(bookMetaData.Author))
 				metadataElt.Add(new XElement(dc + "creator", new XAttribute("id", "author"), bookMetaData.Author));
+			if (!string.IsNullOrEmpty(bookMetaData.Summary))
+				metadataElt.Add(new XElement(dc + "description", bookMetaData.Summary));
 			// Per BL-6438 and a reply from the GDL (Global Digital Library), it is better to put
 			// this in the field than to leave it blank when there is no URL available that specifies
 			// the license. Unfortunately there is nowhere to put the RightsStatement that might
