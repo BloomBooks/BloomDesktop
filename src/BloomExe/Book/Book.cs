@@ -1725,6 +1725,19 @@ namespace Bloom.Book
 		/// </summary>
 		public string MultilingualContentLanguage3 => _bookData.MultilingualContentLanguage3;
 
+		public IEnumerable<string> ActiveLanguages
+		{
+			get
+			{
+				var result = new HashSet<string>(new [] {CollectionSettings.Language1Iso639Code});
+				if (MultilingualContentLanguage2 != null)
+					result.Add(MultilingualContentLanguage2);
+				if (MultilingualContentLanguage3 != null)
+					result.Add(MultilingualContentLanguage3);
+				return result;
+			}
+		}
+
 		public BookInfo BookInfo { get; protected set; }
 
 		public UserPrefs UserPrefs { get; private set; }

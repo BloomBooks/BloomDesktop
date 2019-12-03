@@ -305,6 +305,7 @@
     <Compile Include="BloomWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Book\LicenseChecker.cs" />
     <Compile Include="CLI\CreateArtifactsCommand.cs" />
     <Compile Include="Collection\WritingSystem.cs" />
     <Compile Include="Publish\Android\AndroidPublishSettings.cs" />
