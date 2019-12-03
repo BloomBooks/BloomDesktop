@@ -545,11 +545,16 @@ export class TextOverPictureManager {
             return;
         }
 
+        const newPosition = new Point(
+            event.pageX - this.bubbleDragGrabOffset.x,
+            event.pageY - this.bubbleDragGrabOffset.y,
+            PointScaling.Scaled,
+            "Created by handleMouseMoveDragBubble()"
+        );
         this.placeElementAtPosition(
             $(this.bubbleToDrag.content),
             $(container),
-            event.pageX - this.bubbleDragGrabOffset.x, // These coordinates need to be relative to the document
-            event.pageY - this.bubbleDragGrabOffset.y
+            newPosition
         );
 
         // ENHANCE: If you first select the text in a text-over-picture, then Ctrl+drag it, you will both drag the bubble and drag the text.
@@ -602,9 +607,8 @@ export class TextOverPictureManager {
         if (this.bubbleResizeMode.charAt(0) == "n") {
             // The top edge is moving, but the bottom edge is anchored.
             newTop =
-                event.pageY -
-                this.bubbleResizeInitialPos.clickY +
-                this.bubbleResizeInitialPos.elementY;
+                this.bubbleResizeInitialPos.elementY +
+                totalMovement.getScaledY();
             newHeight =
                 this.bubbleResizeInitialPos.height -
                 totalMovement.getUnscaledY();
@@ -628,9 +632,8 @@ export class TextOverPictureManager {
         if (this.bubbleResizeMode.charAt(1) == "w") {
             // The left edge is moving, but the right edge is anchored.
             newLeft =
-                event.pageX -
-                this.bubbleResizeInitialPos.clickX +
-                this.bubbleResizeInitialPos.elementX;
+                this.bubbleResizeInitialPos.elementX +
+                totalMovement.getScaledX();
             newWidth =
                 this.bubbleResizeInitialPos.width -
                 totalMovement.getUnscaledX();
@@ -660,10 +663,17 @@ export class TextOverPictureManager {
             return;
         }
 
+        // Width/Height should use unscaled units
         content.width(newWidth);
         content.height(newHeight);
 
-        this.placeElementAtPosition(content, $(container), newLeft, newTop);
+        const newPoint = new Point(
+            newLeft,
+            newTop,
+            PointScaling.Scaled,
+            "Created by handleMouseMoveResizeBubble()"
+        );
+        this.placeElementAtPosition(content, $(container), newPoint);
     }
 
     private onMouseUp(event: MouseEvent, container: HTMLElement) {
@@ -1040,7 +1050,13 @@ export class TextOverPictureManager {
         const firstContainerChild = container.children().first();
         const wrapperBox = $(wrapperHtml).insertBefore(firstContainerChild);
         // initial mouseX, mouseY coordinates are relative to viewport
-        this.placeElementAtPosition(wrapperBox, container, mouseX, mouseY);
+        const positionInViewport = new Point(
+            mouseX,
+            mouseY,
+            PointScaling.Scaled,
+            "Scaled Viewport coordinates"
+        );
+        this.placeElementAtPosition(wrapperBox, container, positionInViewport);
 
         const contentElement = wrapperBox.get(0);
         const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
@@ -1065,23 +1081,14 @@ export class TextOverPictureManager {
         return $(clickElement).closest(".bloom-imageContainer");
     }
 
-    // mouseX and mouseY are the location in the viewport of the position at which to place the text box
-    // These define the top-left corner of wrapperBox
-    // If the zoom is not 100%, these should be the scaled units, not the unscaled units
+    // positionInViewport is the position to place the top-left corner of the wrapperBox
     private placeElementAtPosition(
         wrapperBox: JQuery,
         container: JQuery,
-        viewportX: number,
-        viewportY: number
+        positionInViewport: Point
     ) {
-        const pointRelativeToViewport = new Point(
-            viewportX,
-            viewportY,
-            PointScaling.Scaled,
-            "MouseX/Y (Relative to Viewport)"
-        );
         const newPoint = this.convertPointFromViewportToElementFrame(
-            pointRelativeToViewport,
+            positionInViewport,
             container[0]
         );
         const xOffset = newPoint.getUnscaledX();
