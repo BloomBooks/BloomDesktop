@@ -7,7 +7,7 @@ import { Link } from "../../react_components/link";
 import "./BookMetadataTable.less";
 import SubjectChooser from "./SubjectChooser";
 import A11yLevelChooser from "./A11yLevelChooser";
-import { TextField } from "@material-ui/core";
+import TextField from "@material-ui/core/TextField";
 
 interface IProps {
     // We don't know or care what the top level elements are to this. We will show a row for each

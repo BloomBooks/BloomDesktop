@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.ToPalaso;
+using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using DesktopAnalytics;
@@ -246,7 +247,10 @@ namespace Bloom
 			{
 				// Note: if this happens a lot we'd want to make it localizable. I think that's unlikely, so it may not be worth the
 				// burden on localizers.
-				ErrorReport.ReportFatalException(new FileNotFoundException("Bloom was not able to find some of its files. The shortcut icon you clicked on may be out of date. Try deleting it and reinstalling Bloom"));
+				var exception =
+					new FileNotFoundException(
+						"Bloom was not able to find some of its files. The shortcut icon you clicked on may be out of date. Try deleting it and reinstalling Bloom");
+				ProblemReportApi.ShowProblemDialog(null, exception);
 				// Not sure these lines are reachable. Just making sure.
 				Application.Exit();
 				return;

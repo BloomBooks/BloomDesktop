@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
+using Bloom.web.controllers;
 using Gecko;
 using MarkdownDeep;
 using SIL.IO;
@@ -234,28 +235,7 @@ namespace Bloom.CollectionTab
 		{
 			if (GetAnchorHref(e).EndsWith("ReportProblem"))
 			{
-				using (var dlg = new ProblemReporterDialog(null,_bookSelection))
-				{
-					dlg.SetDefaultIncludeBookSetting(true);
-					dlg.Description =
-						"This book had a problem. Please tell us anything that might be helpful in diagnosing the problem here:" +
-						Environment.NewLine;
-
-					try
-					{
-						dlg.Description += Environment.NewLine + Environment.NewLine + Environment.NewLine;
-						if(_bookSelection.CurrentSelection.Storage != null)
-						{
-							dlg.Description += _bookSelection.CurrentSelection.Storage.ErrorMessagesHtml;
-						}
-					}
-					catch (Exception)
-					{
-						//no use chasing errors generated getting error info
-					}
-					dlg.ShowInTaskbar = true;
-                    dlg.ShowDialog();
-				}
+				ProblemReportApi.ShowProblemDialog(_previewBrowser, "nonfatal");
 			}
 		}
 

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Typography } from "@material-ui/core";
+import Typography from "@material-ui/core/Typography";
 import "./BasePublishScreen.less";
 import { LocalizedString } from "../../react_components/l10nComponents";
 
@@ -50,9 +50,7 @@ export const SettingsGroup: React.FunctionComponent<{
 }> = props => {
     return (
         <section className={"settingsGroup"}>
-            <Typography component="h1" variant="h6">
-                {props.label}
-            </Typography>
+            <Typography variant="h6">{props.label}</Typography>
             {props.children}
         </section>
     );
@@ -60,7 +58,7 @@ export const SettingsGroup: React.FunctionComponent<{
 export const HelpGroup: React.FunctionComponent = props => {
     return (
         <section className={"helpGroup"}>
-            <Typography component="h1" variant="h6">
+            <Typography variant="h6">
                 <LocalizedString l10nKey="Common.Help">Help</LocalizedString>
             </Typography>
             {props.children}

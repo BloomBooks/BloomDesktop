@@ -1,6 +1,5 @@
 ﻿using Bloom.Api;
 using Bloom.Book;
-using Bloom.Collection;
 using NUnit.Framework;
 
 namespace BloomTests.web

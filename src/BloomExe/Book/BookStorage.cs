@@ -6,7 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -17,6 +16,7 @@ using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.MiscUI;
 using Bloom.web;
+using Bloom.web.controllers;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
@@ -1701,8 +1701,8 @@ namespace Bloom.Book
 			}
 			catch (Exception err)
 			{
-				ErrorReport.ReportNonFatalExceptionWithMessage(err,
-					"There was a problem applying the branding: " + _collectionSettings.BrandingProjectKey);
+				ProblemReportApi.ShowProblemDialog(null, err,
+					"There was a problem applying the branding: " + _collectionSettings.BrandingProjectKey, "nonfatal");
 			}
 		}
 

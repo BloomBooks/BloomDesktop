@@ -1,7 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
-import { ReactElement } from "react";
 
 export interface IRadioProps extends ILocalizationProps {
     value: string; // identifies this radio in set
@@ -9,7 +7,7 @@ export interface IRadioProps extends ILocalizationProps {
     inputClass?: string; // class for the input element (the radio button itself), in addition to default "radioInput"
     labelClass?: string; // class for the label (text next to the radio button), in addition to default "radioLabel"
     defaultChecked?: boolean; // true if button should be checked; usually controlled by containing RadioGroup
-    onSelected?: (string) => void; // passed this button's value when it is clicked; usually used by containing RadioGroup.
+    onSelected?: (value: string) => void; // passed this button's value when it is clicked; usually used by containing RadioGroup.
 }
 
 // A radio button that is localizable.
@@ -92,7 +90,7 @@ export class RadioGroup extends React.Component<IRadioGroupProps, {}> {
     // onSelected and defaultChecked properties to function in the group.
     private recursiveFixRadio(children: React.ReactNode): React.ReactNode {
         return React.Children.map(children, child => {
-            let childProps: any = {};
+            const childProps: any = {};
             const childElt = child as React.ReactElement<any>;
             if (childElt == null) {
                 return child;
