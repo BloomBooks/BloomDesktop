@@ -181,6 +181,19 @@ namespace Bloom.web.controllers
 		}
 
 		/// <summary>
+		/// Shows a problem dialog after logging an exception. Use to match Action<Exception, string> signature
+		/// in ErrorReport.OnShowDetails.
+		/// </summary>
+		/// <param name="exception"></param>
+		/// <param name="detailedMessage"></param>
+		public static void ShowProblemDialogForNonFatalException(Exception exception,
+			string detailedMessage = "")
+		{
+			Logger.WriteError(string.IsNullOrEmpty(detailedMessage) ? exception.Message : detailedMessage, exception);
+			ShowProblemDialog(null, "nonfatal");
+		}
+
+		/// <summary>
 		/// Shows a problem dialog. Has no extra provision for exceptions.
 		/// </summary>
 		/// <param name="controlForScreenshotting"></param>
@@ -189,6 +202,8 @@ namespace Bloom.web.controllers
 		{
 			if (controlForScreenshotting == null)
 				controlForScreenshotting = Form.ActiveForm;
+			if (controlForScreenshotting == null) // still possible if we come from a "Details" button
+				controlForScreenshotting = FatalExceptionHandler.ControlOnUIThread;
 			SafeInvoke.InvokeIfPossible("Screen Shot", controlForScreenshotting, false,
 				() =>
 				{
