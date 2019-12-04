@@ -7,7 +7,7 @@ import { Link } from "../../react_components/link";
 import "./BookMetadataTable.less";
 import SubjectChooser from "./SubjectChooser";
 import A11yLevelChooser from "./A11yLevelChooser";
-import { TextField } from "@material-ui/core";
+import TextField from "@material-ui/core/TextField";
 
 interface IProps {
     // We don't know or care what the top level elements are to this. We will show a row for each
@@ -98,12 +98,18 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         return <div>{f.value}</div>;
 
                                     case "editableText":
+                                    case "bigEditableText":
                                         return (
                                             <TextField
-                                                id="outlined-bare"
                                                 defaultValue={f.value}
                                                 margin="normal"
                                                 variant="outlined"
+                                                fullWidth={
+                                                    f.type == "bigEditableText"
+                                                }
+                                                multiline={
+                                                    f.type == "bigEditableText"
+                                                }
                                                 onBlur={(
                                                     event: React.FocusEvent<
                                                         HTMLTextAreaElement
@@ -114,7 +120,6 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                                     ].value =
                                                         event.currentTarget.value;
                                                 }}
-                                                // value={f.value}
                                             />
                                         );
 

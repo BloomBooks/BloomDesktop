@@ -8,7 +8,6 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
-using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.Registration;
@@ -20,7 +19,6 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ReleaseNotes;
 using SIL.Windows.Forms.SettingProtection;
 using System.Collections.Generic;
-using Bloom.Publish.Epub;
 using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using Gecko.Cache;
@@ -36,7 +34,6 @@ namespace Bloom.Workspace
 		private readonly SelectedTabAboutToChangeEvent _selectedTabAboutToChangeEvent;
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
-		private readonly ProblemReporterDialog.Factory _problemReportDialogFactory;
 		private readonly CollectionSettings _collectionSettings;
 #if CHORUS
 			private readonly ChorusSystem _chorusSystem;
@@ -70,16 +67,15 @@ namespace Bloom.Workspace
 //autofac uses this
 
 		public WorkspaceView(WorkspaceModel model,
-							 Control libraryView,
-							 EditingView.Factory editingViewFactory,
-							 PublishView.Factory pdfViewFactory,
-							 CollectionSettingsDialog.Factory settingsDialogFactory,
-							 EditBookCommand editBookCommand,
+							Control libraryView,
+							EditingView.Factory editingViewFactory,
+							PublishView.Factory pdfViewFactory,
+							CollectionSettingsDialog.Factory settingsDialogFactory,
+							EditBookCommand editBookCommand,
 							SendReceiveCommand sendReceiveCommand,
-							 SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
+							SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
 							LocalizationChangedEvent localizationChangedEvent,
-							ProblemReporterDialog.Factory problemReportDialogFactory,
 							//ChorusSystem chorusSystem,
 							ILocalizationManager localizationManager,
 							CollectionSettings collectionSettings
@@ -91,7 +87,7 @@ namespace Bloom.Workspace
 			_selectedTabAboutToChangeEvent = selectedTabAboutToChangeEvent;
 			_selectedTabChangedEvent = selectedTabChangedEvent;
 			_localizationChangedEvent = localizationChangedEvent;
-			_problemReportDialogFactory = problemReportDialogFactory;
+
 			_collectionSettings = collectionSettings;
 			//_chorusSystem = chorusSystem;
 			_localizationManager = localizationManager;
@@ -122,11 +118,8 @@ namespace Bloom.Workspace
 			editBookCommand.Subscribe(OnEditBook);
 			sendReceiveCommand.Subscribe(OnSendReceive);
 
-			//Cursor = Cursors.AppStarting;
 			Application.Idle += new EventHandler(Application_Idle);
 			Text = _model.ProjectName;
-
-			//SetupTabIcons();
 
 			//
 			// _collectionView
@@ -156,16 +149,8 @@ namespace Bloom.Workspace
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
 
-//			if (Program.StartUpWithFirstOrNewVersionBehavior)
-//			{
-//				_tabStrip.SelectedTab = _infoTab;
-//				SelectPage(_infoView);
-//			}
-//			else
-//			{
-				_tabStrip.SelectedTab = _collectionTab;
-				SelectPage(_collectionView);
-//			}
+			_tabStrip.SelectedTab = _collectionTab;
+			SelectPage(_collectionView);
 
 			if (SIL.PlatformUtilities.Platform.IsMono)
 			{
@@ -328,20 +313,6 @@ namespace Bloom.Workspace
 			// (and vice versa)
 			_helpMenu.Click += (sender, args) => _uiLanguageMenu.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
 			_uiLanguageMenu.Click += (sender, e) => _helpMenu.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
-
-			// Removing this for now (BL-5111)
-			//_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
-			//var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.MoreLanguagesMenuItem", "More..."));
-			//menu.Click += new EventHandler((a, b) =>
-			//{
-			//	_localizationManager.ShowLocalizationDialogBox(false);
-			//	SetupUiLanguageMenu();
-			//	LocalizationManager.ReapplyLocalizationsToAllObjectsInAllManagers(); //review: added this based on its name... does it help?
-			//	_localizationChangedEvent.Raise(null);
-			//	// The following is needed for proper display on Linux, and doesn't hurt anything on Windows.
-			//	// See http://issues.bloomlibrary.org/youtrack/issue/BL-3444.
-			//	AdjustButtonTextsForLocale();
-			//});
 		}
 
 		private void ToggleShowingOnlyApprovedTranslations()
@@ -467,8 +438,7 @@ namespace Bloom.Workspace
 			item.Select();
 			UpdateMenuTextToShorterNameOfSelection(toolStripButton, item.Text);
 
-			if (finishClickAction != null)
-				finishClickAction();
+			finishClickAction?.Invoke();
 		}
 
 		private void FinishUiLanguageMenuItemClick()
@@ -920,11 +890,14 @@ namespace Bloom.Workspace
 		private void StartProblemReport(object sender, EventArgs e)
 		{
 			Application.Idle -= StartProblemReport;
-			using (var dlg = _problemReportDialogFactory(this))
-			{
-				dlg.SetDefaultIncludeBookSetting(true);
-				dlg.ShowDialog();
-			}
+
+			// To test the Problem Dialog with a real "green screen" type error, uncomment this next line.
+			// throw new ApplicationException("I just felt like an error!");
+
+			// To test the Problem Dialog with a real "yellow screen" type error, uncomment this next line.
+			//NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "My test 'yellow screen' error", "Any more details here?");
+
+			ProblemReportApi.ShowProblemDialog(this);
 		}
 
 		public void SetStateOfNonPublishTabs(bool enable)

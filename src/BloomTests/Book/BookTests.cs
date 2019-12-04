@@ -2803,87 +2803,165 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void RepairCoverImageDescriptions_ReplacesIncorrectStyle()
+		public void RepairCoverImageDescriptions_ExtractsMultipleDescriptions()
 		{
-			string html = @"<html><head></head><body>
+			string html = @"<html><head></head>
+<body>
 	<div id='bloomDataDiv'>
 		<div data-book='coverImageDescription' lang='*'>
 			<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' lang='en' contenteditable='true'>
 				<p>musical score in artistic waves</p>
 			</div>
 			<div style='' class='bloom-editable normal-style' lang='z' contenteditable='true'></div>
-			<div data-languagetipcontent='español' style='' class='bloom-editable normal-style bloom-contentNational2' lang='es' contenteditable='true'></div>
+			<div data-languagetipcontent='español' style='' class='bloom-editable normal-style bloom-contentNational2' lang='es' contenteditable='true'>
+				<p>partitura musical en ondas artísticas</p>
+			</div>
 			<div data-languagetipcontent='français' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='' class='bloom-editable normal-style bloom-contentNational1' lang='fr' contenteditable='true'>
-				<p></p>
+				<p>partition musicale en vagues artistiques</p>
 			</div>
 		</div>
-		<div class='bloom-page' id='guid1'>
-			<div class='bloom-editable bloom-content1' contenteditable='true'></div>
-			<div class='bloom-editable bloom-content2' contenteditable='true'></div>
-			<div class='bloom-editable bloom-content3' contenteditable='true'></div>
-		</div>
+	</div>
+	<div class='bloom-page' id='guid1'>
+		<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+		<div class='bloom-editable bloom-content2' contenteditable='true'></div>
+		<div class='bloom-editable bloom-content3' contenteditable='true'></div>
 	</div>
 </body></html>";
 			var dom = new HtmlDom(html);
 
-			// The old xmatter incorrectly inserted the class 'normal-style' to image description divs for the cover page.
-			// Verify this old (incorrect) data setup.
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'bloom-editable')]", 4);
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'normal-style')]", 4);
-			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'ImageDescriptionEdit-style')]");
+			// The old xmatter template put the data-book attribute on the translationGroup level instead of the editable level.
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription' and @lang='*']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div", 4);
 
 			// SUT
 			Bloom.Book.Book.RepairCoverImageDescriptions(dom);
 
-			// Verify that the class 'normal-style' has been replaced by the class "ImageDescriptionEdit-style' in all of
-			// the image description divs for the cover page.
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'bloom-editable')]", 4);
-			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'normal-style')]");
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(concat(' ',@class,' '), ' ImageDescriptionEdit-style ')]", 4);
+			CheckForGoodSetOfCoverImageDescriptionDataDivs(dom);
 		}
 
 		[Test]
-		public void RepairCoverImageDescriptions_InsertsMissingStyle()
+		public void RepairCoverImageDescriptions_LeavesWellEnoughAlone()
 		{
-			string html = @"<html><head></head><body>
+			string html = @"<html><head></head>
+<body>
 	<div id='bloomDataDiv'>
-		<div data-book='coverImageDescription' lang='*'>
-			<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
-				<p></p>
-			</div>
-			<div data-languagetipcontent='español' style='' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-contentNational2' contenteditable='true' lang='es'>
-				<p></p>
-			</div>
-			<div data-languagetipcontent='français' style='' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-contentNational1' contenteditable='true' lang='fr'>
-				<p></p>
-			</div>
-			<div style='' class='bloom-editable' contenteditable='true' lang='z'>
-				<p></p>
-			</div>
+		<div data-book='coverImageDescription' lang='en'>
+			<p>musical score in artistic waves</p>
 		</div>
-		<div class='bloom-page' id='guid1'>
-			<div class='bloom-editable bloom-content1' contenteditable='true'></div>
-			<div class='bloom-editable bloom-content2' contenteditable='true'></div>
-			<div class='bloom-editable bloom-content3' contenteditable='true'></div>
+		<div data-book='coverImageDescription' lang='es'>
+			<p>partitura musical en ondas artísticas</p>
 		</div>
+		<div data-book='coverImageDescription' lang='fr'>
+			<p>partition musicale en vagues artistiques</p>
+		</div>
+	</div>
+	<div class='bloom-page' id='guid1'>
+		<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+		<div class='bloom-editable bloom-content2' contenteditable='true'></div>
+		<div class='bloom-editable bloom-content3' contenteditable='true'></div>
 	</div>
 </body></html>";
 			var dom = new HtmlDom(html);
 
-			// The old xmatter did not insert the class 'ImageDescriptionEdit-style' to image description divs for the cover page.
-			// Repair should handle cases where 'normal-style' is also missing.  Verify the (incorrect) data setup for the test.
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'bloom-editable')]", 4);
-			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'normal-style')]");
-			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'ImageDescriptionEdit-style')]");
+			CheckForGoodSetOfCoverImageDescriptionDataDivs(dom);
 
 			// SUT
 			Bloom.Book.Book.RepairCoverImageDescriptions(dom);
 
-			// Verify that the class "ImageDescriptionEdit-style' has been inserted in all of the image description divs for the
-			// cover page, and that 'normal-style' still does not exist.
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'bloom-editable')]", 4);
-			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(@class, 'normal-style')]");
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[contains(concat(' ',@class,' '), ' ImageDescriptionEdit-style ')]", 4);
+			// Verify that nothing has changed materially.  (same set of assertions)
+			CheckForGoodSetOfCoverImageDescriptionDataDivs(dom);
+		}
+
+		private void CheckForGoodSetOfCoverImageDescriptionDataDivs(HtmlDom dom)
+		{
+			// This checking method is shared by the two previous tests.
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']", 3);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/p", 3);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription' and @lang='es']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription' and @lang='fr']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription' and @lang='z']");
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div");
+		}
+
+		[Test]
+		public void RepairCoverImageDescriptions_RemovesEmptyDescription()
+		{
+			string html = @"<html><head></head>
+<body>
+	<div id='bloomDataDiv'>
+		<div data-book='coverImageDescription' lang='*'>
+			<div style='' class='bloom-editable normal-style' lang='z' contenteditable='true'></div>
+		</div>
+	</div>
+	<div class='bloom-page' id='guid1'>
+		<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+		<div class='bloom-editable bloom-content2' contenteditable='true'></div>
+		<div class='bloom-editable bloom-content3' contenteditable='true'></div>
+	</div>
+</body></html>";
+			var dom = new HtmlDom(html);
+
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div[@lang='z']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']", 1);
+
+			// SUT
+			Bloom.Book.Book.RepairCoverImageDescriptions(dom);
+
+			// Verify that nothing is now stored for coverImageDescription.
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']");
+		}
+
+		[Test]
+		public void RepairCoverImageDescriptions_DoesNotDoubleData()
+		{
+			string html = @"<html><head></head>
+<body>
+	<div id='bloomDataDiv'>
+		<div data-book='coverImageDescription' lang='*'>
+			<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' lang='en' contenteditable='true'>
+				<p>mother cat carrying a kitten</p>
+			</div>
+			<div style='' class='bloom-editable normal-style' lang='z' contenteditable='true'></div>
+			<div data-languagetipcontent='español' style='' class='bloom-editable normal-style bloom-contentNational2' lang='es' contenteditable='true'>
+				<p>madre gato llevando un gatito</p>
+			</div>
+		</div>
+		<div data-book='coverImageDescription' lang='en'>
+			<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' lang='en' contenteditable='true'>
+				<p>mother cat carrying a kitten</p>
+			</div>
+			<div style='' class='bloom-editable normal-style' lang='z' contenteditable='true'></div>
+			<div data-languagetipcontent='español' style='' class='bloom-editable normal-style bloom-contentNational2' lang='es' contenteditable='true'>
+				<p>madre gato llevando un gatito</p>
+			</div>
+		</div>
+	</div>
+	<div class='bloom-page' id='guid1'>
+		<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+		<div class='bloom-editable bloom-content2' contenteditable='true'></div>
+		<div class='bloom-editable bloom-content3' contenteditable='true'></div>
+	</div>
+</body></html>";
+			var dom = new HtmlDom(html);
+
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']", 2);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription' and @lang='*']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div", 6);
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/p");
+
+			// SUT
+			Bloom.Book.Book.RepairCoverImageDescriptions(dom);
+
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']", 2);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription' and @lang='es']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/p", 2);
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription' and @lang='z']");
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription']/div");
 		}
 
 		[Test]

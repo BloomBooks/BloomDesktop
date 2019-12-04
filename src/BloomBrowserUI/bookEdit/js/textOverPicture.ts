@@ -78,9 +78,8 @@ export class TextOverPictureManager {
             return false;
         }
         wrapperBox.style.height = newHeight + "px"; // next line will change to percent
-        TextOverPictureManager.calculatePercentagesAndFixTextboxPosition(
-            $(wrapperBox)
-        );
+        // TODO: GrowOverflowingBox doesn't work properly when scaled.
+        TextOverPictureManager.setTextboxPositionAsPercentage($(wrapperBox));
         return true;
     }
 
@@ -546,11 +545,16 @@ export class TextOverPictureManager {
             return;
         }
 
-        this.calculateAndFixInitialLocation(
+        const newPosition = new Point(
+            event.pageX - this.bubbleDragGrabOffset.x,
+            event.pageY - this.bubbleDragGrabOffset.y,
+            PointScaling.Scaled,
+            "Created by handleMouseMoveDragBubble()"
+        );
+        this.placeElementAtPosition(
             $(this.bubbleToDrag.content),
             $(container),
-            event.pageX - this.bubbleDragGrabOffset.x, // These coordinates need to be relative to the document
-            event.pageY - this.bubbleDragGrabOffset.y
+            newPosition
         );
 
         // ENHANCE: If you first select the text in a text-over-picture, then Ctrl+drag it, you will both drag the bubble and drag the text.
@@ -592,17 +596,22 @@ export class TextOverPictureManager {
         // This gives behavior consistent with what JQuery resize handles do.
         // If the user resizes it below the minimum width (which prevents the box from actually getting any smaller),
         // they will not start immediately expanding the box when they move the mouse back, but only once they reach the minimum width threshold again.
-        const totalMovementX = event.pageX - this.bubbleResizeInitialPos.clickX;
-        const totalMovementY = event.pageY - this.bubbleResizeInitialPos.clickY;
+        const totalMovement = new Point(
+            event.pageX - this.bubbleResizeInitialPos.clickX,
+            event.pageY - this.bubbleResizeInitialPos.clickY,
+            PointScaling.Scaled,
+            "PageX - ClickX (Scaled)"
+        );
 
         // Determine the vertical component
         if (this.bubbleResizeMode.charAt(0) == "n") {
             // The top edge is moving, but the bottom edge is anchored.
             newTop =
-                event.pageY -
-                this.bubbleResizeInitialPos.clickY +
-                this.bubbleResizeInitialPos.elementY;
-            newHeight = this.bubbleResizeInitialPos.height - totalMovementY;
+                this.bubbleResizeInitialPos.elementY +
+                totalMovement.getScaledY();
+            newHeight =
+                this.bubbleResizeInitialPos.height -
+                totalMovement.getUnscaledY();
 
             if (newHeight < this.minTextBoxHeightPx) {
                 newHeight = this.minTextBoxHeightPx;
@@ -613,7 +622,9 @@ export class TextOverPictureManager {
             }
         } else {
             // The bottom edge is moving, while the top edge is anchored.
-            newHeight = this.bubbleResizeInitialPos.height + totalMovementY;
+            newHeight =
+                this.bubbleResizeInitialPos.height +
+                totalMovement.getUnscaledY();
             newHeight = Math.max(newHeight, this.minTextBoxHeightPx);
         }
 
@@ -621,10 +632,11 @@ export class TextOverPictureManager {
         if (this.bubbleResizeMode.charAt(1) == "w") {
             // The left edge is moving, but the right edge is anchored.
             newLeft =
-                event.pageX -
-                this.bubbleResizeInitialPos.clickX +
-                this.bubbleResizeInitialPos.elementX;
-            newWidth = this.bubbleResizeInitialPos.width - totalMovementX;
+                this.bubbleResizeInitialPos.elementX +
+                totalMovement.getScaledX();
+            newWidth =
+                this.bubbleResizeInitialPos.width -
+                totalMovement.getUnscaledX();
 
             if (newWidth < this.minTextBoxWidthPx) {
                 newWidth = this.minTextBoxWidthPx;
@@ -635,13 +647,11 @@ export class TextOverPictureManager {
             }
         } else {
             // The right edge is moving, but the left edge is anchored.
-            newWidth = this.bubbleResizeInitialPos.width + totalMovementX;
+            newWidth =
+                this.bubbleResizeInitialPos.width +
+                totalMovement.getUnscaledX();
             newWidth = Math.max(newWidth, this.minTextBoxWidthPx);
         }
-
-        // console.log(
-        //     `Calculated: (${newLeft}, ${newTop}) with w,h= (${newWidth}, ${newHeight})`
-        // );
 
         if (
             newTop == oldTop &&
@@ -649,33 +659,21 @@ export class TextOverPictureManager {
             newWidth == oldWidth &&
             newHeight == oldHeight
         ) {
-            // Nothing changed. Abort early to try to avoid rounding errors or minor discrepancies from accumulating
+            // Nothing changed, can abort early.
             return;
         }
 
+        // Width/Height should use unscaled units
         content.width(newWidth);
         content.height(newHeight);
 
-        this.calculateAndFixInitialLocation(
-            content,
-            $(container),
+        const newPoint = new Point(
             newLeft,
-            newTop
+            newTop,
+            PointScaling.Scaled,
+            "Created by handleMouseMoveResizeBubble()"
         );
-
-        // ENHANCE: Get the final value to match up perfectly with the Calculated value.
-        // If you wiggle the mouse up and down over and over and over,
-        // you can observe the text box will be moved downwards slowly but steadily.
-        // This seems to indicate that it's not rounding error, which should manifest as a random 1 pixel up or 1 pixel down.
-        // The slow erosion downward seems to indicate that calculateAndFixInitialLocation() has a small but systemic bias.
-        // const positionInfo2 = this.draggedBubble.content.getBoundingClientRect();
-        // console.log(
-        //     `Final: (${positionInfo2.left}, ${
-        //         positionInfo2.top
-        //     }) with w/h (${$(
-        //         this.draggedBubble.content
-        //     ).width()}, ${$(this.draggedBubble.content).height()})`
-        // );
+        this.placeElementAtPosition(content, $(container), newPoint);
     }
 
     private onMouseUp(event: MouseEvent, container: HTMLElement) {
@@ -719,7 +717,17 @@ export class TextOverPictureManager {
             return undefined;
         }
 
-        return this.getPointRelativeToElement(event, canvas);
+        const pointRelativeToViewport = new Point(
+            event.clientX,
+            event.clientY,
+            PointScaling.Scaled,
+            "MouseEvent Client (Relative to viewport)"
+        );
+
+        return this.convertPointFromViewportToElementFrame(
+            pointRelativeToViewport,
+            canvas
+        );
     }
 
     // Returns the first canvas in the container, or returns undefined if it does not exist.
@@ -735,18 +743,10 @@ export class TextOverPictureManager {
     }
 
     // Gets the coordinates of the specified event relative to the specified element.
-    private getPointRelativeToElement(
-        event: MouseEvent,
-        element: Element
-    ): Point | undefined {
-        // ClientX is scaled and relative to the viewport
-        const currentPoint = new Point(
-            event.clientX,
-            event.clientY,
-            PointScaling.Scaled,
-            "MouseEvent Client (Relative to viewport)"
-        );
-
+    private convertPointFromViewportToElementFrame(
+        pointRelativeToViewport: Point, // The current point, relative to the top-left of the viewport
+        element: Element // The element to reference for the new origin
+    ): Point {
         const referenceBounds = element.getBoundingClientRect();
         const origin = new Point(
             referenceBounds.left,
@@ -757,41 +757,149 @@ export class TextOverPictureManager {
 
         // Origin gives the location of the outside edge of the border. But we want values relative to the inside edge of the padding.
         // So we need to subtract out the border and padding
-        const styleInfo = window.getComputedStyle(element);
-        // These return the original, unscaled values of the border width
-        const borderLeft: number = TextOverPictureManager.extractNumber(
-            styleInfo.getPropertyValue("border-left-width")
+        // Exterior gives the location of the outside edge of the border. But we want values relative to the inside edge of the padding.
+        // So we need to subtract out the border and padding
+        const border = TextOverPictureManager.getLeftAndTopBorderWidths(
+            element
         );
-        const borderTop: number = TextOverPictureManager.extractNumber(
-            styleInfo.getPropertyValue("border-top-width")
-        );
+        const padding = TextOverPictureManager.getLeftAndTopPaddings(element);
+        const borderAndPadding = border.add(padding);
 
-        const border = new Point(
-            borderLeft,
-            borderTop,
-            PointScaling.Unscaled,
-            "getComputedStyle() result"
-        );
-
-        const paddingLeft: number = TextOverPictureManager.extractNumber(
-            styleInfo.getPropertyValue("padding-left")
-        );
-        const paddingTop: number = TextOverPictureManager.extractNumber(
-            styleInfo.getPropertyValue("padding-top")
-        );
-
-        const padding = new Point(
-            paddingLeft,
-            paddingTop,
-            PointScaling.Unscaled,
-            "getComputedStyle() result"
-        );
-
-        const relativePoint = currentPoint
+        const transposedPoint = pointRelativeToViewport
             .subtract(origin)
-            .subtract(border)
-            .subtract(padding);
-        return relativePoint;
+            .subtract(borderAndPadding);
+        return transposedPoint;
+    }
+
+    // Gets an element's border width/height of an element
+    //   The x coordinate of the point represents the left border width
+    //   The y coordinate of the point represents the top border height
+    private static getLeftAndTopBorderWidths(element: Element): Point {
+        return new Point(
+            element.clientLeft,
+            element.clientTop,
+            PointScaling.Unscaled,
+            "Element ClientLeft/Top (Unscaled)"
+        );
+    }
+
+    // Gets an element's border width/height of an element
+    //   The x coordinate of the point represents the right border width
+    //   The y coordinate of the point represents the bottom border height
+    private static getRightAndBottomBorderWidths(
+        element: Element,
+        styleInfo?: CSSStyleDeclaration
+    ): Point {
+        // There is no such field as element.clientRight, so we have to get it from the CSS style info instead.
+        if (!styleInfo) {
+            styleInfo = window.getComputedStyle(element);
+        }
+
+        const borderRight: number = TextOverPictureManager.extractNumber(
+            styleInfo.getPropertyValue("border-right-width")
+        );
+        const borderBottom: number = TextOverPictureManager.extractNumber(
+            styleInfo.getPropertyValue("border-bottom-width")
+        );
+
+        return new Point(
+            borderRight,
+            borderBottom,
+            PointScaling.Unscaled,
+            "Element ClientRight/Bottom (Unscaled)"
+        );
+    }
+
+    // Gets an element's border width/height
+    //   The x coordinate of the point represents the sum of the left and right border width
+    //   The y coordinate of the point represents the sum of the top and bottom border width
+    private static getCombinedBorderWidths(
+        element: Element,
+        styleInfo?: CSSStyleDeclaration
+    ): Point {
+        if (!styleInfo) {
+            styleInfo = window.getComputedStyle(element);
+        }
+
+        return this.getLeftAndTopBorderWidths(element).add(
+            this.getRightAndBottomBorderWidths(element, styleInfo)
+        );
+    }
+
+    // Given a CSSStyleDeclearation, retrieves the requested padding and converts it to a number
+    private static getPadding(
+        side: string,
+        styleInfo: CSSStyleDeclaration
+    ): number {
+        const propertyKey = `padding-${side}`;
+        const paddingString = styleInfo.getPropertyValue(propertyKey);
+        const padding: number = this.extractNumber(paddingString);
+        return padding;
+    }
+
+    // Gets the padding of an element
+    //   The x coordinate of the point represents the left padding
+    //   The y coordinate of the point represents the bottom padding
+    private static getLeftAndTopPaddings(
+        element: Element, // The element to check
+        styleInfo?: CSSStyleDeclaration // Optional. If you have it handy, you can pass in the computed style of the element. Otherwise, it will be determined for you
+    ): Point {
+        if (!styleInfo) {
+            styleInfo = window.getComputedStyle(element);
+        }
+
+        return new Point(
+            this.getPadding("left", styleInfo),
+            this.getPadding("top", styleInfo),
+            PointScaling.Unscaled,
+            "CSSStyleDeclaration padding"
+        );
+    }
+
+    // Gets the padding of an element
+    //   The x coordinate of the point represents the left padding
+    //   The y coordinate of the point represents the bottom padding
+    private static getRightAndBottomPaddings(
+        element: Element, // The element to check
+        styleInfo?: CSSStyleDeclaration // Optional. If you have it handy, you can pass in the computed style of the element. Otherwise, it will be determined for you
+    ): Point {
+        if (!styleInfo) {
+            styleInfo = window.getComputedStyle(element);
+        }
+
+        return new Point(
+            this.getPadding("right", styleInfo),
+            this.getPadding("bottom", styleInfo),
+            PointScaling.Unscaled,
+            "Padding"
+        );
+    }
+
+    // Gets the padding of an element
+    // The x coordinate of the point represents the sum of the left and right padding
+    // The y coordinate of the point represents the sum of the top and bottom padding
+    private static getCombinedPaddings(
+        element: Element,
+        styleInfo?: CSSStyleDeclaration
+    ): Point {
+        if (!styleInfo) {
+            styleInfo = window.getComputedStyle(element);
+        }
+
+        return this.getLeftAndTopPaddings(element, styleInfo).add(
+            this.getRightAndBottomPaddings(element, styleInfo)
+        );
+    }
+
+    // Gets the sum of an element's borders and paddings
+    // The x coordinate of the point represents the sum of the left and right
+    // The y coordinate of the point represents the sum of the top and bottom
+    private static getCombinedBordersAndPaddings(element: Element): Point {
+        const styleInfo = window.getComputedStyle(element);
+
+        const borders = this.getCombinedBorderWidths(element);
+        const paddings = this.getCombinedPaddings(element, styleInfo);
+        return borders.add(paddings);
     }
 
     // Removes the units from a string like "10px"
@@ -1040,12 +1148,13 @@ export class TextOverPictureManager {
         const firstContainerChild = container.children().first();
         const wrapperBox = $(wrapperHtml).insertBefore(firstContainerChild);
         // initial mouseX, mouseY coordinates are relative to viewport
-        this.calculateAndFixInitialLocation(
-            wrapperBox,
-            container,
+        const positionInViewport = new Point(
             mouseX,
-            mouseY
+            mouseY,
+            PointScaling.Scaled,
+            "Scaled Viewport coordinates"
         );
+        this.placeElementAtPosition(wrapperBox, container, positionInViewport);
 
         const contentElement = wrapperBox.get(0);
         const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
@@ -1070,28 +1179,18 @@ export class TextOverPictureManager {
         return $(clickElement).closest(".bloom-imageContainer");
     }
 
-    // mouseX and mouseY are the location in the viewport of the position at which to place the text box
-    // These define the top-left corner of wrapperBox
-    private calculateAndFixInitialLocation(
+    // positionInViewport is the position to place the top-left corner of the wrapperBox
+    private placeElementAtPosition(
         wrapperBox: JQuery,
         container: JQuery,
-        mouseX: number,
-        mouseY: number
+        positionInViewport: Point
     ) {
-        const scale = EditableDivUtils.getPageScale();
-        const containerPosition = container[0].getBoundingClientRect();
-        const containerStyle = window.getComputedStyle(container[0]);
-        const containerBorderLeft: number = TextOverPictureManager.extractNumber(
-            containerStyle.getPropertyValue("border-left-width")
+        const newPoint = this.convertPointFromViewportToElementFrame(
+            positionInViewport,
+            container[0]
         );
-        const containerBorderTop: number = TextOverPictureManager.extractNumber(
-            containerStyle.getPropertyValue("border-top-width")
-        );
-
-        const xOffset =
-            (mouseX - containerPosition.left - containerBorderLeft) / scale;
-        const yOffset =
-            (mouseY - containerPosition.top - containerBorderTop) / scale;
+        const xOffset = newPoint.getUnscaledX();
+        const yOffset = newPoint.getUnscaledY();
 
         // Note: This code will not clear out the rest of the style properties... they are preserved.
         //       If some or all style properties need to be removed before doing this processing, it is the caller's responsibility to do so beforehand
@@ -1100,8 +1199,10 @@ export class TextOverPictureManager {
         wrapperBox.css("left", xOffset); // assumes numbers are in pixels
         wrapperBox.css("top", yOffset); // assumes numbers are in pixels
 
-        TextOverPictureManager.calculatePercentagesAndFixTextboxPosition(
-            wrapperBox
+        TextOverPictureManager.setTextboxPositionAsPercentage(
+            wrapperBox,
+            xOffset,
+            yOffset
         ); // translate px to %
     }
 
@@ -1170,7 +1271,7 @@ export class TextOverPictureManager {
                 stop: (event, ui) => {
                     const target = event.target;
                     if (target) {
-                        TextOverPictureManager.calculatePercentagesAndFixTextboxPosition(
+                        TextOverPictureManager.setTextboxPositionAsPercentage(
                             $(target)
                         );
                     }
@@ -1217,7 +1318,7 @@ export class TextOverPictureManager {
                 const target = event.target as Element;
                 if (target) {
                     // Resizing also changes size and position to pixels. Fix it.
-                    TextOverPictureManager.calculatePercentagesAndFixTextboxPosition(
+                    TextOverPictureManager.setTextboxPositionAsPercentage(
                         $(target)
                     );
                     // There was a problem where resizing a box messed up its draggable containment,
@@ -1285,29 +1386,67 @@ export class TextOverPictureManager {
         }
     }
 
-    private static calculatePercentagesAndFixTextboxPosition(
-        wrapperBox: JQuery
+    // Converts a text box's position into percentages (using CSS styling)
+    // wrapperBox: The text box in question
+    // unscaledRelativeLeft/unscaledRelativeTop: Optional
+    //   If specified, it specifies the position to place the top-left corner/at. It should be in unscaled pixels, relative to the parent.
+    //   If undefined, then the current position is automatically retrieved instead.
+    private static setTextboxPositionAsPercentage(
+        wrapperBox: JQuery,
+        unscaledRelativeLeft?: number,
+        unscaledRelativeTop?: number
     ) {
         const scale = EditableDivUtils.getPageScale();
+        if (!unscaledRelativeLeft || !unscaledRelativeTop) {
+            const pos = wrapperBox.position();
+            if (!unscaledRelativeLeft) {
+                unscaledRelativeLeft = pos.left / scale;
+            }
+
+            if (!unscaledRelativeTop) {
+                unscaledRelativeTop = pos.top / scale;
+            }
+        }
+
         const container = wrapperBox.closest(".bloom-imageContainer");
-        const pos = wrapperBox.position();
+        const containerSize = this.getInteriorWidthHeight(container[0]);
+        const width = containerSize.getUnscaledX();
+        const height = containerSize.getUnscaledY();
+
         // the textbox is contained by the image, and it's actual positioning is now based on the imageContainer too.
         // so we will position by percentage of container size.
-        const containerSize = {
-            height: container.height(),
-            width: container.width()
-        };
         wrapperBox
-            .css("left", (pos.left / scale / containerSize.width) * 100 + "%")
-            .css("top", (pos.top / scale / containerSize.height) * 100 + "%")
-            .css(
-                "width",
-                (wrapperBox.width() / containerSize.width) * 100 + "%"
-            )
-            .css(
-                "height",
-                (wrapperBox.height() / containerSize.height) * 100 + "%"
-            );
+            .css("left", (unscaledRelativeLeft / width) * 100 + "%")
+            .css("top", (unscaledRelativeTop / height) * 100 + "%")
+            // FYI: The wrapperBox width/height is rounded to the nearest whole pixel. Ideally we might like its more precise value...
+            // But it's a huge performance hit to get its getBoundingClientRect()
+            // It seems that getBoundingClientRect() may be internally cached under the hood,
+            // since getting the bounding rect of the image container once per mousemove event or even 100x per mousemove event caused no ill effect,
+            // but getting this one is quite taxing on the CPU
+            .css("width", (wrapperBox.width() / width) * 100 + "%")
+            .css("height", (wrapperBox.height() / height) * 100 + "%");
+    }
+
+    // Determines the unrounded width/height of the content of an element (i.e, excluding its margin, border, padding)
+    //
+    // This differs from JQuery width/height because those functions give you values rounded to the nearest pixel.
+    // This differs from getBoundingClientRect().width because that function includes the border and padding of the element in the width.
+    // This function returns the interior content's width/height (unrounded), without any margin, border, or padding
+    private static getInteriorWidthHeight(element: HTMLElement): Point {
+        const boundingRect = element.getBoundingClientRect();
+
+        const exterior = new Point(
+            boundingRect.width,
+            boundingRect.height,
+            PointScaling.Scaled,
+            "getBoundingClientRect() result (Relative to viewport)"
+        );
+
+        // Exterior gives the location of the outside edge of the border. But we want values relative to the inside edge of the padding.
+        // So we need to subtract out the border and padding, once for each side of the box
+        const borderAndPadding = this.getCombinedBordersAndPaddings(element);
+        const interior = exterior.subtract(borderAndPadding);
+        return interior;
     }
 
     // Gets the bloom-imageContainer that hosts this TextOverPictureManager textbox.

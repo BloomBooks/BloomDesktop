@@ -161,6 +161,7 @@
     <Compile Include="Book\BookCollectionTests.cs" />
     <Compile Include="Book\DataSetTests.cs" />
     <Compile Include="Book\BookStorage_ReplacePageTests.cs" />
+    <Compile Include="Book\LicenseCheckerTests.cs" />
     <Compile Include="TestDoubles\Book\FakeBookServer.cs" />
     <Compile Include="CollectionTab\LibraryListViewTests.cs" />
     <Compile Include="Publish\BloomReaderPublishTests.cs" />

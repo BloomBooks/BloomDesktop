@@ -1,6 +1,5 @@
 import * as React from "react";
 import "./DeviceFrame.less";
-import { Button } from "@material-ui/core";
 import { useState, useEffect } from "react";
 
 /*
@@ -17,12 +16,9 @@ export const DeviceAndControls: React.FunctionComponent<{
     iframeClass?: string;
 }> = props => {
     const [landscape, setLandscape] = useState(props.defaultLandscape);
-    useEffect(
-        () => {
-            setLandscape(props.defaultLandscape);
-        },
-        [props]
-    );
+    useEffect(() => {
+        setLandscape(props.defaultLandscape);
+    }, [props]);
 
     return (
         <div className="deviceAndControls">

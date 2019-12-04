@@ -755,12 +755,12 @@ namespace Bloom
 
 			Application.Idle += new EventHandler(Application_Idle);
 
-		   //NO. We want to leave it around for debugging purposes. It will be deleted when the next page comes along, or when this class is disposed of
-//    		if(_tempHtmlFile!=null)
-//    		{
-//				_tempHtmlFile.Dispose();
-//    			_tempHtmlFile = null;
-//    		}
+			//NO. We want to leave it around for debugging purposes. It will be deleted when the next page comes along, or when this class is disposed of
+			//    		if(_tempHtmlFile!=null)
+			//    		{
+			//				_tempHtmlFile.Dispose();
+			//    			_tempHtmlFile = null;
+			//    		}
 			//didn't seem to do anything:  _browser.WebBrowserFocus.SetFocusAtFirstElement();
 		}
 

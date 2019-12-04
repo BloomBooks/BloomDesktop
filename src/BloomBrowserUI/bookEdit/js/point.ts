@@ -38,6 +38,10 @@ export class Point {
         this.comment = comment;
     }
 
+    public clone(): Point {
+        return new Point(this.x, this.y, PointScaling.Unscaled, this.comment);
+    }
+
     public static getScalingFactor(): number {
         return EditableDivUtils.getPageScale();
     }
@@ -83,6 +87,16 @@ export class Point {
             this.getUnscaledY() - other.getUnscaledY(),
             PointScaling.Unscaled,
             "Subtraction result"
+        );
+    }
+
+    // Returns the result of "this" multiplied by a scalar factor
+    public multiply(multiplier: number): Point {
+        return new Point(
+            this.x * multiplier,
+            this.y * multiplier,
+            PointScaling.Unscaled,
+            "Multiplication result"
         );
     }
 

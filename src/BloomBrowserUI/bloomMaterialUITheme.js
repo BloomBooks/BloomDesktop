@@ -30,6 +30,11 @@ const theme = createMuiTheme({
     props: {
         MuiLink: {
             variant: "body1" // without this, they come out in times new roman :-)
+        },
+        MuiTypography: {
+            variantMapping: {
+                h6: "h1"
+            }
         }
     },
     overrides: {

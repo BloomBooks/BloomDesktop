@@ -1288,28 +1288,41 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Repair the cover image descriptions to use ImageDescriptionEdit-style instead of normal-style.
+		/// Repair the cover image descriptions to be language specific, storing only the internal paragraph(s) for
+		/// each language, instead of the entire translationGroup div as a single piece.
 		/// </summary>
 		/// <remarks>
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7039.
+		/// This replaces the need to update the bloomDataDiv item to use ImageDescriptionEdit-style
+		/// instead of normal-style as done for https://issues.bloomlibrary.org/youtrack/issue/BL-7804.
 		/// </remarks>
 		internal static void RepairCoverImageDescriptions(HtmlDom bookDOM)
 		{
 			var dataDiv = bookDOM?.Body?.SelectSingleNode("div[@id='bloomDataDiv']");
 			var coverImageDiv = dataDiv?.SelectSingleNode("div[@data-book='coverImageDescription' and @lang='*']");
 			if (coverImageDiv == null)
-				return;		// must be a test running...  or a very old book?
-			var coverImageDescriptionDivs = coverImageDiv.SafeSelectNodes("div[contains(@class,'bloom-editable')]");
-			foreach (XmlNode descriptionDiv in coverImageDescriptionDivs)
+				return;		// nothing to fix
+			foreach (XmlElement coverImageDescription in dataDiv.SafeSelectNodes("div[@data-book='coverImageDescription']").Cast<XmlElement>().ToList())
 			{
-				//XmlElement descriptionDiv = xnode as XmlElement;
-				var classAttr = descriptionDiv.Attributes["class"].Value;
-				if (classAttr.Contains("normal-style"))
-					classAttr = classAttr.Replace("normal-style","").Replace("  ", " ");
-				if (!classAttr.Contains("ImageDescriptionEdit-style"))
-					classAttr = classAttr + " ImageDescriptionEdit-style";
-				if (classAttr != descriptionDiv.Attributes["class"].Value)
-					descriptionDiv.Attributes["class"].Value = classAttr;
+				var lang = coverImageDescription.GetAttribute("lang");
+				if (lang == "*")
+				{
+					foreach (XmlNode descriptionDiv in coverImageDescription.SafeSelectNodes("div[contains(@class,'bloom-editable')]"))
+					{
+						var innerLang = descriptionDiv.Attributes["lang"]?.Value;
+						if (String.IsNullOrEmpty(innerLang) || innerLang == "z")
+							continue;
+						var newDescriptionDiv = dataDiv.OwnerDocument.CreateElement("div");
+						newDescriptionDiv.SetAttribute("data-book", "coverImageDescription");
+						newDescriptionDiv.SetAttribute("lang", innerLang);
+						newDescriptionDiv.InnerXml = descriptionDiv.InnerXml;
+						dataDiv.AppendChild(newDescriptionDiv);
+					}
+				}
+				// Get rid of the obsolete data-book element.  If the user went from 4.7 with separate language specific entries
+				// back to 4.6 with the single lang="*" entry, then all of the entries got filled in with the same obsolete data,
+				// so all of them have to be removed.
+				dataDiv.RemoveChild(coverImageDescription);
 			}
 		}
 
@@ -1724,6 +1737,19 @@ namespace Bloom.Book
 		/// For trilingual books, this is the third language to show
 		/// </summary>
 		public string MultilingualContentLanguage3 => _bookData.MultilingualContentLanguage3;
+
+		public IEnumerable<string> ActiveLanguages
+		{
+			get
+			{
+				var result = new HashSet<string>(new [] {CollectionSettings.Language1Iso639Code});
+				if (MultilingualContentLanguage2 != null)
+					result.Add(MultilingualContentLanguage2);
+				if (MultilingualContentLanguage3 != null)
+					result.Add(MultilingualContentLanguage3);
+				return result;
+			}
+		}
 
 		public BookInfo BookInfo { get; protected set; }
 

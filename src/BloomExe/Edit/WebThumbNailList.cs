@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Design;
@@ -34,6 +34,7 @@ namespace Bloom.Edit
 		private int _verticalScrollDistance;
 		private static string _thumbnailInterval;
 		private string _baseForRelativePaths;
+		private HtmlDom _baseDom; // so we don't have to reload the thing from disk everytime we want to refresh the screen
 
 		internal class MenuItemSpec
 		{
@@ -85,6 +86,21 @@ namespace Bloom.Edit
 				{
 					_thumbnailInterval = "100";
 				}
+			}
+			var frame = BloomFileLocator.GetBrowserFile(false, "bookEdit", "pageThumbnailList", "pageThumbnailList.html");
+			var backColor = ColorToHtmlCode(BackColor);
+			var htmlText = RobustFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
+			_usingTwoColumns = RoomForTwoColumns;
+			if (!RoomForTwoColumns)
+				htmlText = htmlText.Replace("columns: 4", "columns: 2").Replace("<div class=\"gridItem placeholder\" id=\"placeholder\"></div>", "");
+			_baseDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(htmlText));
+
+			// BL-987: Add styles to optimize performance on Linux
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+			{
+				var style = _baseDom.RawDom.CreateElement("style");
+				style.InnerXml = "img { image-rendering: optimizeSpeed; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }";
+				_baseDom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
 			}
 		}
 
@@ -263,23 +279,8 @@ namespace Bloom.Edit
 				_browser.Navigate(@"about:blank", false); // no pages, we just want a blank screen, if anything.
 				return result;
 			}
-			var frame = BloomFileLocator.GetBrowserFile(false, "bookEdit", "pageThumbnailList", "pageThumbnailList.html");
-			var backColor = ColorToHtmlCode(BackColor);
-			var htmlText = RobustFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
-			_usingTwoColumns = RoomForTwoColumns;
-			if (!RoomForTwoColumns)
-				htmlText = htmlText.Replace("columns: 4", "columns: 2").Replace("<div class=\"gridItem placeholder\" id=\"placeholder\"></div>", "");
-			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(htmlText));
-			dom = firstRealPage.Book.GetHtmlDomReadyToAddPages(dom);
+			var dom = firstRealPage.Book.GetHtmlDomReadyToAddPages(_baseDom);
 			var pageDoc = dom.RawDom;
-
-			// BL-987: Add styles to optimize performance on Linux
-			if (SIL.PlatformUtilities.Platform.IsLinux)
-			{
-				var style = pageDoc.CreateElement("style");
-				style.InnerXml = "img { image-rendering: optimizeSpeed; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }";
-				pageDoc.GetElementsByTagName("head")[0].AppendChild(style);
-			}
 
 			var body = pageDoc.GetElementsByTagName("body")[0];
 			var gridlyParent = body.SelectSingleNode("//*[@id='pageGrid']");
@@ -338,7 +339,7 @@ namespace Bloom.Edit
 				// The nature of how we're doing the thumbnails (relying on scaling) seems to mess up
 				// the browser's normal ability to assign a width to the parent div. So our parent
 				// here, .pageContainer, doesn't grow with the size of its child. Sigh. So for the
-				// moment, we assign appropriate sizes, by hand.We rely on c# code to add these
+				// moment, we assign appropriate sizes, by hand. We rely on c# code to add these
 				// classes, since we can't write a rule in css3 that peeks into a child attribute.
 
 				if (!string.IsNullOrEmpty(cssClass))
@@ -352,7 +353,7 @@ namespace Bloom.Edit
 				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber, out captionI18nId);
 				if (!string.IsNullOrEmpty(captionOrPageNumber))
 					captionDiv.InnerText = I18NApi.GetTranslationDefaultMayNotBeEnglish(captionI18nId, captionOrPageNumber);
-			}
+			} // end pages foreach
 
 			// set interval based on physical RAM
 			var intervalAttrib = pageDoc.CreateAttribute("data-thumbnail-interval");

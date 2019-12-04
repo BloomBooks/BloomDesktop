@@ -304,6 +304,8 @@ namespace Bloom.Publish.Epub
 			// Form.ActiveForms.Last(), but that fails when debugging; this is more robust.
 			EpubMaker.ControlForInvoke = ControlForInvoke;
 			EpubMaker.StageEpub(_progress);
+			if (StagingDirectory == null)
+				return null; // aborted, hopefully already reported.
 
 			var fileLocator = _bookSelection.CurrentSelection.GetFileLocator();
 			var root = fileLocator.LocateDirectoryWithThrow("Readium");

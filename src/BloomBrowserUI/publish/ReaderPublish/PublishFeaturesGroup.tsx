@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FormGroup } from "@material-ui/core";
+import FormGroup from "@material-ui/core/FormGroup";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { SettingsGroup } from "../commonPublish/BasePublishScreen";
 import { useL10n } from "../../react_components/l10nHooks";

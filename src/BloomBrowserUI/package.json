@@ -34,7 +34,8 @@
         "watchBookEditLess": "less-watch-compiler bookEdit ../../output/browser/bookEdit",
         "watchBookLayoutLess": "less-watch-compiler bookLayout ../../output/browser/bookLayout",
         "watchPageChooserLess": "less-watch-compiler pageChooser ../../output/browser/pageChooser",
-        "watch": "npm-run-all --parallel watchBrandingLess watchTemplatesLess watchBookEditLess watchBookLayoutLess watchBrandingFiles watchPageChooserLess watchCode",
+        "watchProblemDialogLess": "less-watch-compiler problemDialog ../../output/browser/problemDialog",
+        "watch": "npm-run-all --parallel watchBrandingLess watchTemplatesLess watchBookEditLess watchBookLayoutLess watchBrandingFiles watchPageChooserLess watchProblemDialogLess watchCode",
         "gitSemiClean": "git clean -X --dry-run --exclude='!node_modules'",
         "gitSemiCleanForReal": "git clean -fX --exclude='!node_modules'",
         "tslint": "tslint --project tsconfig.json",
@@ -95,6 +96,7 @@
         "time-require": "^0.1.2",
         "toastr": "^2.1.4",
         "underscore": "^1.9.1",
+        "use-debounce": "^2.1.0",
         "xregexp": "^4.2.4"
     },
     "devDependencies": {
