@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -100,9 +101,7 @@ namespace Bloom.web.controllers
 							var msg = "***Error as ProblemReportApi attempted to zip up the book: " + error.Message;
 							userDesc += Environment.NewLine + msg;
 							Logger.WriteEvent(msg);
-							// if an error happens in the zipper, the zip file stays locked, so we just leak it
-							_bookZipFileTemp.Detach();
-							_bookZipFile = null;
+							DisposeOfZipRemnants(report.includeBook);
 						}
 					}
 					var diagnosticInfo = GetDiagnosticInfo(report.includeBook, userDesc, userEmail);
@@ -113,7 +112,17 @@ namespace Bloom.web.controllers
 					}
 
 					const string failureResult = "failed";
-					var issueId = issueSubmission.SubmitToYouTrack(subject, diagnosticInfo);
+					string issueId;
+					try
+					{
+						issueId = issueSubmission.SubmitToYouTrack(subject, diagnosticInfo);
+					}
+					catch (Exception e)
+					{
+						Debug.Fail("Submitting problem report to YouTrack failed with '" + e.Message + "'.");
+						DisposeOfZipRemnants(report.includeBook);
+						issueId = failureResult;
+					}
 					object linkToNewIssue;
 					if (issueId == failureResult)
 					{
@@ -126,6 +135,17 @@ namespace Bloom.web.controllers
 					}
 					request.ReplyWithJson(linkToNewIssue);
 				}, true);
+		}
+
+		private void DisposeOfZipRemnants(bool includeBook)
+		{
+			// if an error happens in the zipper, the zip file stays locked, so we just leak it
+			if (includeBook)
+			{
+				_bookZipFileTemp.Detach();
+			}
+
+			_bookZipFile = null;
 		}
 
 		private void AddReaderInfo()
@@ -146,6 +166,25 @@ namespace Bloom.web.controllers
 			}
 		}
 
+		/// <summary>
+		/// Shows a problem dialog after logging an exception. Allows for level of problem to be set.
+		/// </summary>
+		/// <param name="controlForScreenshotting"></param>
+		/// <param name="exception"></param>
+		/// <param name="detailedMessage"></param>
+		/// <param name="levelOfProblem"></param>
+		public static void ShowProblemDialog(Control controlForScreenshotting, Exception exception,
+			string detailedMessage = "", string levelOfProblem = "fatal")
+		{
+			Logger.WriteError(string.IsNullOrEmpty(detailedMessage) ? exception.Message : detailedMessage, exception);
+			ShowProblemDialog(controlForScreenshotting, levelOfProblem);
+		}
+
+		/// <summary>
+		/// Shows a problem dialog. Has no extra provision for exceptions.
+		/// </summary>
+		/// <param name="controlForScreenshotting"></param>
+		/// <param name="levelOfProblem"></param>
 		public static void ShowProblemDialog(Control controlForScreenshotting, string levelOfProblem="user")
 		{
 			if (controlForScreenshotting == null)

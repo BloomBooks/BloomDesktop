@@ -47,8 +47,8 @@ namespace Bloom.Edit
 				}
 				catch (IOException e)
 				{
-					Logger.WriteError("Problem copying Reader Tools Settings from an installed BloomPack.", e);
-					ProblemReportApi.ShowProblemDialog(null, "nonfatal");
+					ProblemReportApi.ShowProblemDialog(null, e,
+						"Problem copying Reader Tools Settings from an installed BloomPack.", "nonfatal");
 				}
 			}
 		}
@@ -72,8 +72,7 @@ namespace Bloom.Edit
 				catch (IOException e)
 				{
 					var msg = $"Cannot copy {sourcePath} to {destPath}.";
-					Logger.WriteError(msg, e);
-					ProblemReportApi.ShowProblemDialog(null, "nonfatal");
+					ProblemReportApi.ShowProblemDialog(null, e, msg, "nonfatal");
 				}
 			}
 		}

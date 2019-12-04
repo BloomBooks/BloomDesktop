@@ -234,8 +234,7 @@ namespace Bloom.WebLibraryIntegration
 					progressDialog.ProgressStateResult.ExceptionThatWasEncountered != null)
 				{
 					var exc = progressDialog.ProgressStateResult.ExceptionThatWasEncountered;
-					Logger.WriteError(exc.Message, exc);
-					ProblemReportApi.ShowProblemDialog(null, "fatal");
+					ProblemReportApi.ShowProblemDialog(null, exc);
 				}
 			}
 		}

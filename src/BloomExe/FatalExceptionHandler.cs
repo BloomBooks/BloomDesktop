@@ -49,12 +49,10 @@ namespace Bloom
 
 		protected override bool DisplayError(Exception exception)
 		{
-			Logger.WriteError(exception.Message, exception); // Otherwise the exception won't show up in the log.
-
 			// Review: Do we need to add any other code from WinFormsExceptionHandler?
 
 			// If there is no ActiveForm, SafeInvoke will hit a "Guard against null".
-			ProblemReportApi.ShowProblemDialog(System.Windows.Forms.Form.ActiveForm, "fatal");
+			ProblemReportApi.ShowProblemDialog(System.Windows.Forms.Form.ActiveForm, exception);
 
 			return true;
 		}

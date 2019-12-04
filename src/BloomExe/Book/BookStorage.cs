@@ -1701,8 +1701,8 @@ namespace Bloom.Book
 			}
 			catch (Exception err)
 			{
-				Logger.WriteError("There was a problem applying the branding: " + _collectionSettings.BrandingProjectKey, err);
-				ProblemReportApi.ShowProblemDialog(null, "nonfatal");
+				ProblemReportApi.ShowProblemDialog(null, err,
+					"There was a problem applying the branding: " + _collectionSettings.BrandingProjectKey, "nonfatal");
 			}
 		}
 
