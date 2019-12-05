@@ -5,6 +5,14 @@
 @DefaultTextBoxHeight: @MinTextBoxHeight;
 @DragHandleBackgroundColor: transparent;
 
+// This can color the svg into whatever color we want. Currently bloom-purple.
+// While working on this PR I changed the color 4 times and it's a pain to keep
+// exporting new svgs.
+// Eventually if the color settles down, we can replace this with just svg's colored like we want.
+// To generate new filter rules like this, use https://codepen.io/sosuke/pen/Pjoqqp
+@ComicAffordanceFilter: invert(48%) sepia(14%) saturate(1147%)
+    hue-rotate(257deg) brightness(90%) contrast(84%);
+
 // Don't show text over picture borders, resizing handles, or format buttons unless hovering over the image
 .bloom-imageContainer:not(.hoverUp) .bloom-textOverPicture {
     .bloom-editable {
@@ -20,7 +28,7 @@
     .ui-resizable-handle {
         display: none !important;
     }
-    .bloom-dragHandleTOP {
+    .bloom-dragHandle {
         display: none;
     }
     #formatButton {
@@ -48,7 +56,7 @@
     }
 
     .bloom-textOverPicture:not(.ui-resizable-resizing) {
-        .bloom-dragHandleTOP {
+        .bloom-dragHandle {
             cursor: grab;
 
             &.grabbing {
@@ -102,15 +110,13 @@
         border-radius: 3px;
         border: none !important; // needed to override ui-draggable blue border
         z-index: @textOverPictureZIndex;
-        .bloom-dragHandleTOP {
+        .bloom-dragHandle {
+            filter: @ComicAffordanceFilter;
             position: absolute;
-            background: url("/bloom/bookEdit/img/dragHandleWhiteWithGreyOutline.svg")
-                no-repeat center;
-            background-size: auto;
-            background-color: @DragHandleBackgroundColor;
+            left: unset;
+            // NB: right is set by a rule at the end of this file
             width: 22px;
             height: 22px;
-            left: -15px;
             top: -15px;
             z-index: @dragHandleZIndex; // keep above textbox
         }
@@ -125,22 +131,14 @@
                 // Move the format button and language tip out of the box, since we have a smaller-than-normal editable box here
                 overflow: visible;
                 #formatButton {
-                    left: 100%;
-                    right: unset;
-                    bottom: 1.3em;
-                    font-size: xx-small; // Even though font size isn't directly relevant to an image, it allows us to have the correct units on our "bottom: 1em" rule.
-                    background-color: @bloom-gray; // Specifically set the background color to gray to make it easier to see since it now goes outside the bubbles.
-                    margin-left: 0px; // Override the inherited 3px so that this one will appear flush with the border
-
-                    // The dragHandleWhiteWithGreyOutline.svg image is certainly off-center by a fraction of a pixel, so padding-right needs a fraction more padding than left.
-                    padding-left: 1.75px;
-                    padding-right: 2px;
-
-                    // Ensure it's aligned left.
-                    img {
-                        position: relative;
-                        float: left;
+                    &:hover {
+                        background-color: white;
                     }
+                    filter: @ComicAffordanceFilter;
+                    left: unset;
+                    // NB: right is set by a rule at the end of this file
+                    //right: 100% + 33px;
+                    bottom: -18px;
                 }
             }
 
@@ -161,17 +159,17 @@
 
                 &:focus:after {
                     display: block;
-                    left: 100%; // Align the left edge of the language tip content to the right edge
-                    right: unset; // Need to clear an inherited property
-                    bottom: 0;
-                    color: white;
-                    background-color: @bloom-gray; // Specifically set the background color to gray to make it easier to see since it now goes outside the bubbles.
-                    font-size: xx-small;
-                    padding-left: 2px;
-                    padding-right: 5px;
-
-                    // ENHANCE: See if you can use padding-top instead. But need to ensure there's enough on the bottom to handle letters that extend below line like 'g'
-                    line-height: 1.3em;
+                    left: unset;
+                    text-align: right;
+                    // NB: right is set by a rule at the end of this file
+                    bottom: 3px;
+                    color: @bloom-purple;
+                    background-color: white;
+                    font-size: small;
+                    cursor: auto;
+                    &:hover {
+                        background-color: white;
+                    }
                 }
             }
             // Allows the format gear and language tip to be suppressed by adding a class
@@ -226,5 +224,24 @@
 .bloom-showImageDescriptions {
     .bloom-textOverPicture {
         display: none; // Turn this off because it's complicated to deal with these while image description tool active.  Re-positioning and shrinking the text boxes proportionally while ImageDescription tool is active is possible but hugely complicates the code... so for now, just disable it.
+    }
+}
+
+// different bubble shapes require different positioning of the affordances
+[data-bubble] {
+    .bloom-dragHandle {
+        right: 100% + 1px;
+    }
+    #formatButton {
+        right: 100% + 2px;
+    }
+    // we need to push the label left-ward to get out of the way of the fat part of the bubble
+    [data-languageTipContent]:after {
+        right: 100% + 10px !important;
+    }
+}
+[data-bubble*="caption"] {
+    [data-languageTipContent]:after {
+        right: 100% + 2px !important;
     }
 }
