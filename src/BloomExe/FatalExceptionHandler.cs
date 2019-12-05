@@ -1,11 +1,23 @@
 ﻿using Bloom.web.controllers;
 using System;
+using System.Threading;
 using SIL.Reporting;
+using System.Windows.Forms;
 
 namespace Bloom
 {
-	internal class FatalExceptionHandler : SIL.Reporting.ExceptionHandler
+	internal class FatalExceptionHandler : ExceptionHandler
 	{
+		internal static Control ControlOnUIThread { get; private set; }
+
+		internal static bool InvokeRequired
+		{
+			get
+			{
+				return !ControlOnUIThread.IsDisposed && ControlOnUIThread.InvokeRequired;
+			}
+		}
+
 		/// ------------------------------------------------------------------------------------
 		/// <summary>
 		/// Set exception handler. Needs to be done before we create splash screen (don't
@@ -14,9 +26,42 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		public FatalExceptionHandler()
 		{
+			// We need to create a control on the UI thread so that we have a control that we
+			// can use to invoke the error reporting dialog on the correct thread.
+			ControlOnUIThread = new Control();
+			ControlOnUIThread.CreateControl();
+
+			// Using Application.ThreadException rather than
+			// AppDomain.CurrentDomain.UnhandledException has the advantage that the
+			// program doesn't necessarily end - we can ignore the exception and continue.
+			Application.ThreadException += HandleTopLevelError;
+
 			// We also want to catch the UnhandledExceptions for all the cases that
 			// ThreadException don't catch, e.g. in the startup.
 			AppDomain.CurrentDomain.UnhandledException += HandleUnhandledException;
+		}
+
+		/// ------------------------------------------------------------------------------------
+		/// <summary>
+		/// Catches and displays a otherwise unhandled exception.
+		/// </summary>
+		/// <param name="sender">sender</param>
+		/// <param name="e">Exception</param>
+		/// <remarks>previously <c>AfApp::HandleTopLevelError</c></remarks>
+		/// ------------------------------------------------------------------------------------
+		protected void HandleTopLevelError(object sender, ThreadExceptionEventArgs e)
+		{
+			if (!GetShouldHandleException(sender, e.Exception))
+				return;
+
+			if (DisplayError(e.Exception))
+			{
+				//Are we inside a Application.Run() statement?
+				if (Application.MessageLoop)
+					Application.Exit();
+				else
+					Environment.Exit(1); //the 1 here is just non-zero
+			}
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -49,11 +94,7 @@ namespace Bloom
 
 		protected override bool DisplayError(Exception exception)
 		{
-			// Review: Do we need to add any other code from WinFormsExceptionHandler?
-
-			// If there is no ActiveForm, SafeInvoke will hit a "Guard against null".
-			ProblemReportApi.ShowProblemDialog(System.Windows.Forms.Form.ActiveForm, exception);
-
+			ProblemReportApi.ShowProblemDialog(Form.ActiveForm, exception);
 			return true;
 		}
 	}

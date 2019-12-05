@@ -92,6 +92,7 @@ namespace Bloom.Workspace
 			//_chorusSystem = chorusSystem;
 			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
+			ErrorReport.OnShowDetails = ProblemReportApi.ShowProblemDialogForNonFatalException;
 			InitializeComponent();
 
 			_checkForNewVersionMenuItem.Visible = SIL.PlatformUtilities.Platform.IsWindows;
@@ -891,11 +892,15 @@ namespace Bloom.Workspace
 		{
 			Application.Idle -= StartProblemReport;
 
-			// To test the Problem Dialog with a real "green screen" type error, uncomment this next line.
+			// To test the Problem Dialog with a fatal error, uncomment this next line.
 			// throw new ApplicationException("I just felt like an error!");
 
-			// To test the Problem Dialog with a real "yellow screen" type error, uncomment this next line.
-			//NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "My test 'yellow screen' error", "Any more details here?");
+			// To test the Problem Dialog with a nonfatal error, uncomment this next line.
+			// NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "My test 'yellow screen' error", "Any more details here?");
+			// To test clicking 'Report' in a toast, uncomment the line above, but use ModalIf.None.
+
+			// To test the old ErrorReport.NotifyUserOfProblem, uncomment this next line.
+			// ErrorReport.NotifyUserOfProblem(new ApplicationException("internal exception message"), "My main message");
 
 			ProblemReportApi.ShowProblemDialog(this);
 		}
