@@ -181,7 +181,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                 <img
                     id="calloutControlSpeechButton"
                     className="calloutControlDraggableBubble"
-                    src="callout-icon.svg"
+                    src="comic-icon.svg"
                     draggable={true}
                     onDragStart={ev => ondragstart(ev, "speech")}
                 />
@@ -426,7 +426,7 @@ export class CalloutTool extends ToolboxToolReactAdaptor {
     }
 
     public id(): string {
-        return "callout";
+        return "comic";
     }
 
     public isExperimental(): boolean {
