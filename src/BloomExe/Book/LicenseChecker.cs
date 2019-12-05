@@ -27,6 +27,9 @@ namespace Bloom.Book
     {
         private static string _offlineFolderPath = ProjectContext.GetBloomAppDataFolder(); // normally stays here except in unit tests
         private static bool _allowInternetAccess = true;
+        public static string kUnlicenseLanguageMessage = "The copyright holder of this book has not licensed it for publishing in {0}. You can deselect languages using the checkboxes on the right of this screen. Please contact the copyright holder to learn more about licensing.";
+        public static string kCannotReachLicenseServerMessage = "To publish this book, Bloom must check which languages the copyright owner has permitted, but Bloom is having trouble reaching the server that has this information.";
+
         public IEnumerable<string> GetProblemLanguages(string[] inputLangs, string key, out bool didCheck)
         {
             string permissionsJson;
@@ -172,10 +175,10 @@ namespace Bloom.Book
             if (!didCheck)
             {
                 return LocalizationManager.GetString("PublishTab.Android.CantGetLicenseInfo",
-                    "To publish this book, Bloom must check which languages the copyright owner has permitted, but Bloom is having trouble reaching the server that has this information.");
+                    kCannotReachLicenseServerMessage);
             }
             var template = LocalizationManager.GetString("PublishTab.Android.UnlicensedLanguages",
-                    "The copyright holder of this book has not licensed it for publishing in {0}. You can deselect languages using the checkboxes on the right of this screen. Please contact the copyright holder to learn more about licensing.",
+                    kUnlicenseLanguageMessage,
                     "{0} will be a language name or a list of them");
             // In real life we always have a book and can get nicer names. I put the fallback in for testing.
             var langs = string.Join(CultureInfo.CurrentCulture.TextInfo.ListSeparator + " ",

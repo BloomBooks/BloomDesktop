@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Book;
 using BloomTemp;
@@ -161,8 +158,7 @@ namespace BloomTests.Book
 			using (var folder = SetupDefaultOfflineLicenseInfo())
 			{
 				var checker = new LicenseChecker();
-				var expectedTemplate =
-					"The copyright owner of this book has not licensed it for publishing in {0}. Please publish it only in permitted languages.";
+				var expectedTemplate = LicenseChecker.kUnlicenseLanguageMessage;
 				var expectedEn = string.Format(expectedTemplate, "English");
 				Assert.That(checker.CheckBook(dom, new[] {"en"}), Is.EqualTo(expectedEn));
 				var expectedFr = string.Format(expectedTemplate, "français");
@@ -207,9 +203,7 @@ namespace BloomTests.Book
 			LicenseChecker.SetAllowInternetAccess(false);
 			LicenseChecker.SetOfflineFolder(null);
 			var checker = new LicenseChecker();
-			var expected =
-				"To publish this book, Bloom must check which languages the copyright owner has permitted, and Bloom cannot reach the server that has this information";
-			Assert.That(checker.CheckBook(dom, new[] {"en"}), Is.EqualTo(expected));
+			Assert.That(checker.CheckBook(dom, new[] {"en"}), Is.EqualTo(LicenseChecker.kCannotReachLicenseServerMessage));
 		}
 	}
 }
