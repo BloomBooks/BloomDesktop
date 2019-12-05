@@ -34,7 +34,7 @@ namespace Bloom.Edit
 		private int _verticalScrollDistance;
 		private static string _thumbnailInterval;
 		private string _baseForRelativePaths;
-		private HtmlDom _baseDom; // so we don't have to reload the thing from disk everytime we want to refresh the screen
+		private readonly string _baseHtml; // so we don't have to reload the thing from disk everytime we want to refresh the screen
 
 		internal class MenuItemSpec
 		{
@@ -89,19 +89,7 @@ namespace Bloom.Edit
 			}
 			var frame = BloomFileLocator.GetBrowserFile(false, "bookEdit", "pageThumbnailList", "pageThumbnailList.html");
 			var backColor = ColorToHtmlCode(BackColor);
-			var htmlText = RobustFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
-			_usingTwoColumns = RoomForTwoColumns;
-			if (!RoomForTwoColumns)
-				htmlText = htmlText.Replace("columns: 4", "columns: 2").Replace("<div class=\"gridItem placeholder\" id=\"placeholder\"></div>", "");
-			_baseDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(htmlText));
-
-			// BL-987: Add styles to optimize performance on Linux
-			if (SIL.PlatformUtilities.Platform.IsLinux)
-			{
-				var style = _baseDom.RawDom.CreateElement("style");
-				style.InnerXml = "img { image-rendering: optimizeSpeed; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }";
-				_baseDom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
-			}
+			_baseHtml = RobustFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
 		}
 
 		public Func<GeckoContextMenuEventArgs, bool> ContextMenuProvider
@@ -279,7 +267,20 @@ namespace Bloom.Edit
 				_browser.Navigate(@"about:blank", false); // no pages, we just want a blank screen, if anything.
 				return result;
 			}
-			var dom = firstRealPage.Book.GetHtmlDomReadyToAddPages(_baseDom);
+			_usingTwoColumns = RoomForTwoColumns;
+			var htmlText = _baseHtml;
+			if (!RoomForTwoColumns)
+				htmlText = htmlText.Replace("columns: 4", "columns: 2").Replace("<div class=\"gridItem placeholder\" id=\"placeholder\"></div>", "");
+			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(htmlText));
+
+			// BL-987: Add styles to optimize performance on Linux
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+			{
+				var style = dom.RawDom.CreateElement("style");
+				style.InnerXml = "img { image-rendering: optimizeSpeed; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }";
+				dom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
+			}
+			dom = firstRealPage.Book.GetHtmlDomReadyToAddPages(dom);
 			var pageDoc = dom.RawDom;
 
 			var body = pageDoc.GetElementsByTagName("body")[0];
