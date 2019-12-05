@@ -70,17 +70,17 @@
             left: 0;
         }
     }
-    .languageLabel {
-        display: block;
-        &.incompleteTranslation {
-            color: grey;
-        }
-    }
+
     .scrollingFeature {
         overflow-y: scroll;
-        max-height: 100px;
+        max-height: 150px;
         flex-wrap: nowrap; // mockup has a single column, but it works quite well with default wrap
         margin-right: 20px;
+        // These two "cancel out" except that they defeat a bug in the HTML spec that prevents
+        // overflow-x from being visible when overflow-y is hidden. The check box shadows can
+        // 'overflow' from the normal space occupied by the scrollingFeature.
+        padding-left: 11px;
+        margin-left: -11px;
     }
 
     .playIcon {

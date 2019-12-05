@@ -5,6 +5,7 @@ import { SettingsGroup } from "../commonPublish/BasePublishScreen";
 import { useL10n } from "../../react_components/l10nHooks";
 import { BloomApi } from "../../utils/bloomApi";
 import { MuiCheckbox } from "../../react_components/muiCheckBox";
+import "./PublishLanguagesGroup.less";
 
 class NameRec {
     public code: string;
@@ -39,10 +40,7 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
     const languageCheckboxes = langs.map(item => (
         <FormControlLabel
             key={item.code}
-            className={
-                "languageLabel" +
-                (item.complete ? "" : " incompleteTranslation")
-            }
+            className="languageLabel"
             control={
                 <Checkbox
                     checked={item.include}
@@ -74,7 +72,16 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
                     color="primary"
                 />
             }
-            label={item.name + (item.complete ? "" : " " + incomplete)}
+            label={
+                <div className="check-box-label">
+                    <div>{item.name}</div>
+                    {item.complete || (
+                        <div className="incompleteTranslation">
+                            {incomplete}
+                        </div>
+                    )}
+                </div>
+            }
         />
     ));
     return (
