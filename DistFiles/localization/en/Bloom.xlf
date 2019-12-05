@@ -1763,97 +1763,97 @@
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool" sil:dynamic="true">
         <source xml:lang="en">Comic Tool</source>
-        <note>ID: EditTab.Toolbox.CalloutTool</note>
+        <note>ID: EditTab.Toolbox.ComicTool</note>
         <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.AddChildBubble" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true">
         <source xml:lang="en">Add Child Bubble</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.AddChildBubble</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.AddChildBubble</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor" sil:dynamic="true">
         <source xml:lang="en">Background Color</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor</note>
         <note>Refers to the Background Color of the bubble used by the callout</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.OldLace" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace" sil:dynamic="true">
         <source xml:lang="en">Old Lace</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.OldLace</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
         <note>A background color that looks like old lace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToCalico" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico" sil:dynamic="true">
         <source xml:lang="en">White to Calico</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToCalico</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico</note>
         <note>A background color that is a gradient starting with white blending into calico color</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
         <source xml:lang="en">White to French Pass</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToFrenchPass</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass</note>
         <note>A background color that is a gradient starting with white blending into the "French pass" color</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true">
         <source xml:lang="en">White to Portafino</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToPortafino</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino</note>
         <note>A background color that is a gradient starting with white blending into the "Portafino" color</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true">
         <source xml:lang="en">Outer Outline Color</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor</note>
         <note>Refers to the Outer Outline Color of the bubble used by the callout</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor.None" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor.None</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style" sil:dynamic="true">
         <source xml:lang="en">Style</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
         <note>Refers to the STYLE of bubble used by the callout</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Caption" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Caption" sil:dynamic="true">
         <source xml:lang="en">Caption</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Caption</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Caption</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a description which is not directly stated by any characters.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Ellipse" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Ellipse" sil:dynamic="true">
         <source xml:lang="en">Ellipse</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Ellipse</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Ellipse</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a round bubble shaped like an ellipse.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Exclamation" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Exclamation" sil:dynamic="true">
         <source xml:lang="en">Exclamation</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Exclamation</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Exclamation</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a shout or exclamatory statement. Like this: "Watch out!"</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.JustText" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.JustText" sil:dynamic="true">
         <source xml:lang="en">Just Text</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.JustText</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.JustText</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style does not have any bubble at all.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Speech" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Speech" sil:dynamic="true">
         <source xml:lang="en">Speech</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Speech</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Speech</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents standard speech/dialogue.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Thought" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Thought" sil:dynamic="true">
         <source xml:lang="en">Thought</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Thought</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Thought</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents the thoughts of a person who is thinking.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.TextColor" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextColor" sil:dynamic="true">
         <source xml:lang="en">Text Color</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.TextColor</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.ControlsAvailable" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ControlsAvailable" sil:dynamic="true">
         <source xml:lang="en">The selected item has these controls:</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.ControlsAvailable</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.ControlsAvailable</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
