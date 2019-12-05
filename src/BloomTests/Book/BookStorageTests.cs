@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using Bloom;
 using Bloom.Api;
 using Bloom.Book;
@@ -934,6 +935,59 @@ namespace BloomTests.Book
 			Assert.IsFalse(File.Exists(Path.Combine(folderForDuplicate, "something.bloombookorder")));
 			Assert.IsFalse(File.Exists(Path.Combine(folderForDuplicate, "something.pdf")));
 			Assert.IsFalse(File.Exists(Path.Combine(folderForDuplicate, "something.map")));
+		}
+
+		[Test]
+		public void GetRequiredVersions_TextBoxAndComic_ReturnsBoth()
+		{
+			var storage = GetInitialStorageWithCustomHtml(@"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
+			<body><div class='bloom-page'>
+				<div data-audiorecordingmode='TextBox'/>
+				<div class='bloom-textOverPicture' data-bubble='`style`:`speech`'/>
+			</div></body></html>");
+			var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
+
+			Assert.That(requiredVersions.Length, Is.EqualTo(2));
+
+			Assert.That(requiredVersions[1].FeatureId, Is.EqualTo("wholeTextBoxAudio"));
+			Assert.That(requiredVersions[1].FeaturePhrase, Is.EqualTo("Whole Text Box Audio"));
+			Assert.That(requiredVersions[1].BloomDesktopMinVersion, Is.EqualTo("4.4"));
+			Assert.That(requiredVersions[1].BloomReaderMinVersion, Is.EqualTo("1.0"));
+
+			Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("comical-1"));
+			Assert.That(requiredVersions[0].FeaturePhrase, Is.EqualTo("Support for Comics"));
+			Assert.That(requiredVersions[0].BloomDesktopMinVersion, Is.EqualTo("4.7"));
+			Assert.That(requiredVersions[0].BloomReaderMinVersion, Is.EqualTo("1.0"));
+		}
+
+		[Test]
+		public void GetRequiredVersions_ComicStyleNone_ReturnsNone()
+		{
+			var storage = GetInitialStorageWithCustomHtml(@"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
+			<body><div class='bloom-page'>
+				<div class='bloom-textOverPicture' data-bubble='`style`:`none`'/>
+			</div></body></html>");
+			var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
+
+			Assert.That(requiredVersions.Length, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void GetRequiredVersions_MixtureOfComicStyles_ReturnsComic()
+		{
+			var storage = GetInitialStorageWithCustomHtml(@"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
+			<body><div class='bloom-page'>
+				<div class='bloom-textOverPicture' data-bubble='`style`:`none`'/>
+				<div class='bloom-textOverPicture' data-bubble='`style`:`ellipse`'/>
+			</div></body></html>");
+			var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
+
+			Assert.That(requiredVersions.Length, Is.EqualTo(1));
+
+			Assert.That(requiredVersions[0].FeatureId, Is.EqualTo("comical-1"));
+			Assert.That(requiredVersions[0].FeaturePhrase, Is.EqualTo("Support for Comics"));
+			Assert.That(requiredVersions[0].BloomDesktopMinVersion, Is.EqualTo("4.7"));
+			Assert.That(requiredVersions[0].BloomReaderMinVersion, Is.EqualTo("1.0"));
 		}
 	}
 }
