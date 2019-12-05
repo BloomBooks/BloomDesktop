@@ -1261,6 +1261,11 @@
         <note>ID: EditTab.FormatDialog.DefaultStyles.BigWords-style</note>
         <note>Appears in most templates</note>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Bubble-style" sil:dynamic="true">
+        <source xml:lang="en">Bubble</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Bubble-style</note>
+        <note>Default style for comic bubbles</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Cover-Default-style" sil:dynamic="true">
         <source xml:lang="en">Cover Default</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Cover-Default-style</note>
