@@ -181,7 +181,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                 <img
                     id="calloutControlSpeechButton"
                     className="calloutControlDraggableBubble"
-                    src="callout-icon.svg"
+                    src="comic-icon.svg"
                     draggable={true}
                     onDragStart={ev => ondragstart(ev, "speech")}
                 />
@@ -207,14 +207,14 @@ const CalloutToolControls: React.FunctionComponent = () => {
                 id={"calloutControlOptionsRegion"}
                 className={bubbleActive ? "" : "disabled"}
             >
-                <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.ControlsAvailable">
+                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.ControlsAvailable">
                     The selected item has these controls:
                 </Div>
                 <br />
                 <form autoComplete="off">
                     <FormControl>
                         <InputLabel htmlFor="callout-style-dropdown">
-                            <Span l10nKey="EditTab.Toolbox.CalloutTool.Options.Style">
+                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
                                 Style
                             </Span>
                         </InputLabel>
@@ -233,32 +233,32 @@ const CalloutToolControls: React.FunctionComponent = () => {
                             }}
                         >
                             <MenuItem value="caption">
-                                <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.Caption">
+                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption">
                                     Caption
                                 </Div>
                             </MenuItem>
                             <MenuItem value="pointedArcs">
-                                <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.Exclamation">
+                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Exclamation">
                                     Exclamation
                                 </Div>
                             </MenuItem>
                             <MenuItem value="none">
-                                <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.JustText">
+                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.JustText">
                                     Just Text
                                 </Div>
                             </MenuItem>
                             <MenuItem value="speech">
-                                <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.Speech">
+                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Speech">
                                     Speech
                                 </Div>
                             </MenuItem>
                             <MenuItem value="ellipse">
-                                <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.Ellipse">
+                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Ellipse">
                                     Ellipse
                                 </Div>
                             </MenuItem>
                             <MenuItem value="thought">
-                                <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.Style.Thought">
+                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Thought">
                                     Thought
                                 </Div>
                             </MenuItem>
@@ -268,7 +268,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                     {/*
                     <FormControl>
                         <InputLabel htmlFor="callout-textColor-dropdown">
-                            <Span l10nKey="EditTab.Toolbox.CalloutTool.Options.TextColor">
+                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextColor">
                                 Text Color
                             </Span>
                         </InputLabel>
@@ -297,7 +297,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                     <br />
                     <FormControl>
                         <InputLabel htmlFor="callout-backgroundColor-dropdown">
-                            <Span l10nKey="EditTab.Toolbox.CalloutTool.Options.BackgroundColor">
+                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor">
                                 Background Color
                             </Span>
                         </InputLabel>
@@ -322,22 +322,22 @@ const CalloutToolControls: React.FunctionComponent = () => {
                                 <Div l10nKey="Common.Colors.Black">Black</Div>
                             </MenuItem>
                             <MenuItem value="oldLace">
-                                <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.OldLace">
+                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace">
                                     Old Lace
                                 </Div>
                             </MenuItem>
                             <MenuItem value="whiteToCalico">
-                                <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToCalico">
+                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico">
                                     White to Calico
                                 </Div>
                             </MenuItem>
                             <MenuItem value="whiteToFrenchPass">
-                                <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToFrenchPass">
+                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass">
                                     White to French Pass
                                 </Div>
                             </MenuItem>
                             <MenuItem value="whiteToPortafino">
-                                <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToPortafino">
+                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino">
                                     White to Portafino
                                 </Div>
                             </MenuItem>
@@ -347,7 +347,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                         */}
                     <FormControl>
                         <InputLabel htmlFor="callout-outlineColor-dropdown">
-                            <Span l10nKey="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor">
+                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor">
                                 Outer Outline Color
                             </Span>
                         </InputLabel>
@@ -366,7 +366,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                             }}
                         >
                             <MenuItem value="none">
-                                <Div l10nKey="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor.None">
+                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None">
                                     None
                                 </Div>
                             </MenuItem>
@@ -382,7 +382,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                     </FormControl>
                     <br />
                     <Link
-                        l10nKey="EditTab.Toolbox.CalloutTool.Options.AddChildBubble"
+                        l10nKey="EditTab.Toolbox.ComicTool.Options.AddChildBubble"
                         onClick={event => {
                             handleChildBubbleLinkClick(event);
                         }}
@@ -426,7 +426,7 @@ export class CalloutTool extends ToolboxToolReactAdaptor {
     }
 
     public id(): string {
-        return "callout";
+        return "comic";
     }
 
     public isExperimental(): boolean {

@@ -4,9 +4,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Xml;
-using Bloom.Api;
 using Bloom.Collection;
 using L10NSharp;
 using SIL.Extensions;
@@ -29,9 +27,6 @@ namespace Bloom.Book
 		/// <summary>
 		/// Create a Clearshare.Metadata object by reading values out of the dom's bloomDataDiv
 		/// </summary>
-		/// <param name="brandingNameOrFolderPath"> Normally, the branding is just a name, which we look up in the official branding folder
-		//but unit tests can instead provide a path to the folder.
-		/// </param>
 		public static Metadata GetMetadata(HtmlDom dom)
 		{
 			if (ShouldSetToDefaultCopyrightAndLicense(dom))
@@ -126,7 +121,7 @@ namespace Bloom.Book
 			dom.SetBookSetting("copyright","*", ConvertNewLinesToHtmlBreaks(metadata.CopyrightNotice));
 			dom.SetBookSetting("licenseUrl","*",metadata.License.Url);
 			// This is for backwards compatibility. The book may have  licenseUrl in 'en' created by an earlier version of Bloom.
-			// For backwards compatibiilty, GetMetaData will read that if it doesn't find a '*' license first. So now that we're
+			// For backwards compatibility, GetMetaData will read that if it doesn't find a '*' license first. So now that we're
 			// setting a licenseUrl for '*', we must make sure the 'en' one is gone, because if we're setting a non-CC license,
 			// the new URL will be empty and the '*' one will go away, possibly exposing the 'en' one to be used by mistake.
 			// See BL-3166.
@@ -178,10 +173,8 @@ namespace Bloom.Book
 			CopyItemToFieldsInPages(dom, "licenseImage", valueAttribute:"src");
 			// If we're using the original copyright, we don't need to show it separately.
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-7381.
-			if (useOriginalCopyright)
-				CopyStringToFieldsInPages(dom, "originalCopyrightAndLicense", null, "*");
-			else
-				CopyStringToFieldsInPages(dom, "originalCopyrightAndLicense", GetOriginalCopyrightAndLicenseNotice(collectionSettings, dom), "*");
+			CopyStringToFieldsInPages(dom, "originalCopyrightAndLicense",
+				useOriginalCopyright ? null : GetOriginalCopyrightAndLicenseNotice(collectionSettings, dom), "*");
 
 			if (!String.IsNullOrEmpty(bookFolderPath)) //unit tests may not be interested in checking this part
 				UpdateBookLicenseIcon(GetMetadata(dom), bookFolderPath);
@@ -321,25 +314,28 @@ namespace Bloom.Book
 			Logger.WriteEvent("");
 		}
 
+		public static bool IsDerivative(Metadata originalMetadata)
+		{
+			// Checking for a license which is not a NullLicense is not sufficient because that indicates the user has selected
+			// "Contact the copyright holder..." for the license. But in order to do so, he must have entered a copyright.
+			return !String.IsNullOrEmpty(originalMetadata.CopyrightNotice) || !(originalMetadata.License is NullLicense);
+		}
+
 		internal static string GetOriginalCopyrightAndLicenseNotice(CollectionSettings collectionSettings, HtmlDom dom)
 		{
-			// Can't have any original copyright in an original book we are now editing, only in derivatives.
-			if (!dom.RecordedAsLockedDown)
+			var originalMetadata = GetOriginalMetadata(dom);
+
+			// As of BL-7898, we are using the existence of an original copyright/license to determine if we are working with a derivative.
+			if (!IsDerivative(originalMetadata))
 				return null;
-			var metadata = GetOriginalMetadata(dom);
-			// In a source collection, unless we really already have some original license information,
-			// we don't want to generate any...probably we are authoring an original book. (Note that
-			// new books created from templates have RecordedAsLockedDown true, which is overridden
-			// in Book.LockedDown for source collections.)
-			if ((collectionSettings.IsSourceCollection || Program.RunningHarvesterMode) && string.IsNullOrEmpty(metadata.CopyrightNotice))
-				return null;
+
 			string idOfLanguageUsed;
 			var languagePriorityIds = collectionSettings.LicenseDescriptionLanguagePriorities;
 
-			var license = metadata.License.GetMinimalFormForCredits(languagePriorityIds, out idOfLanguageUsed);
+			var license = originalMetadata.License.GetMinimalFormForCredits(languagePriorityIds, out idOfLanguageUsed);
 			string originalLicenseSentence;
 			var preferredLanguageIds = new[] {collectionSettings.Language2Iso639Code, LocalizationManager.UILanguageId, "en"};
-			if (metadata.License is CustomLicense)
+			if (originalMetadata.License is CustomLicense)
 			{
 				// I can imagine being more fancy... something like "Licensed under custom license:", and get localizations
 				// for that... but sheesh, these are even now very rare in Bloom-land and should become more rare.
@@ -357,7 +353,7 @@ namespace Bloom.Book
 			}
 
 			string copyrightNotice;
-			if (string.IsNullOrWhiteSpace(metadata.CopyrightNotice))
+			if (string.IsNullOrWhiteSpace(originalMetadata.CopyrightNotice))
 			{
 				var noCopyrightSentence = LocalizationManager.GetString("EditTab.FrontMatter.OriginalHadNoCopyrightSentence",
 					"Adapted from original without a copyright notice.",
@@ -372,7 +368,7 @@ namespace Bloom.Book
 					"Adapted from original, {0}.",
 					"On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.",
 					preferredLanguageIds, out idOfLanguageUsed);
-				copyrightNotice = String.Format(originalCopyrightSentence, metadata.CopyrightNotice.Trim()) + " " +
+				copyrightNotice = String.Format(originalCopyrightSentence, originalMetadata.CopyrightNotice.Trim()) + " " +
 				                  originalLicenseSentence;
 			}
 

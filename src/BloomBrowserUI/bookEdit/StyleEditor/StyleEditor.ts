@@ -888,7 +888,7 @@ export default class StyleEditor {
         let formatButtonFilename = "cogGrey.svg";
         const isTextOverPicture = targetBox.closest(".bloom-textOverPicture");
         if (isTextOverPicture) {
-            formatButtonFilename = "cogWhiteTOP.svg";
+            formatButtonFilename = "cog.svg";
         }
 
         // put the format button in the editable text box itself, so that it's always in the right place.
