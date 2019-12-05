@@ -72,6 +72,8 @@ namespace Bloom.Api
 		/// Requests that come into the _listener are placed in the _queue so they can be processed
 		/// </summary>
 		private readonly Queue<HttpListenerContext> _queue;
+		// tasks that should be postponed until no server actions are happening.
+		private readonly Queue<Action> _idleTasks = new Queue<Action>(); // access locked with _queue
 
 		/// <summary>
 		/// Some requests which may be made to the server require other requests to be initiated
@@ -134,6 +136,8 @@ namespace Bloom.Api
 		// This is useful for debugging.
 		public static Dictionary<string, string> SimulatedPageContent => _urlToSimulatedPageContent;
 
+		private static BloomServer _theOneInstance;
+
 		/// <summary>
 		/// This is only used in a few special cases where we need one to pass as an argument but it won't be fully used.
 		/// </summary>
@@ -153,7 +157,7 @@ namespace Bloom.Api
 			_useCache = Settings.Default.ImageHandler != "off";
 			CurrentCollectionSettings = collectionSettings;
 			ApiHandler = new BloomApiHandler(bookSelection, collectionSettings);
-
+			_theOneInstance = this;
 		}
 
 #if DEBUG
@@ -298,15 +302,26 @@ namespace Bloom.Api
 
 		internal static void RemoveSimulatedPageFile(string key)
 		{
-			if (key.StartsWith("file://"))
+			// There are potential race conditions where one server thread is asked to fetch a simulated page,
+			// but meanwhile, some other thread disposes of it, so it can't be found. We therefore wait to dispose
+			// of simulated pages until there are no busy worker threads and no queued actions.
+			Action removeIt = () =>
 			{
-				var uri = new Uri(key);
-				RobustFile.Delete(uri.LocalPath);
-				return;
-			}
-			lock (_urlToSimulatedPageContent)
+				if (key.StartsWith("file://"))
+				{
+					var uri = new Uri(key);
+					RobustFile.Delete(uri.LocalPath);
+					return;
+				}
+
+				lock (_urlToSimulatedPageContent)
+				{
+					_urlToSimulatedPageContent.Remove(key.FromLocalhost());
+				}
+			};
+			lock (_theOneInstance._queue)
 			{
-				_urlToSimulatedPageContent.Remove(key.FromLocalhost());
+				_theOneInstance._idleTasks.Enqueue(removeIt);
 			}
 		}
 
@@ -1008,6 +1023,8 @@ namespace Bloom.Api
 			}
 		}
 
+		private int _busyThreads; // access locked to _queue
+
 		/// <summary>
 		/// The worker threads run this function
 		/// </summary>
@@ -1045,6 +1062,8 @@ namespace Bloom.Api
 						if (_threadsDoingRecursiveRequests > _workers.Count - 3)
 							SpinUpAWorker();
 					}
+
+					_busyThreads++;
 				}
 
 				var rawurl = "unknown";
@@ -1108,6 +1127,37 @@ namespace Bloom.Api
 							_threadsDoingRecursiveRequests--;
 						}
 					}
+				}
+
+				lock (_queue)
+				{
+					_busyThreads--;
+				}
+
+				// If nothing is happening, perform any tasks we could not safely do while other workers
+				// were busy.
+				for (;;) // as long as we find idleTasks to do
+				{
+					// The lock makes sure that exactly one thread will take on a particular idle task,
+					// and only if we have reached the safe state.
+					Action idleTask = null;
+					lock (_queue)
+					{
+						if (_busyThreads == 0 && _queue.Count == 0 && _idleTasks.Count > 0)
+						{
+							idleTask = _idleTasks.Dequeue();
+						}
+					}
+
+					if (idleTask == null)
+						break;
+					// but, we don't need to lock up the queue while we actually do it. Of course, some worker
+					// thread may become busy before we finish the idleTask. But that's OK. We just wanted
+					// to be sure it wasn't done while something else that was started before it was still
+					// in progress. In fact, it's important NOT to let the _queue be locked while we perform
+					// the action. The one current instance of idleTask currently involves locking ANOTHER
+					// data structure, and if we independently lock two objects, we risk deadlock.
+					idleTask.Invoke();
 				}
 			}
 		}

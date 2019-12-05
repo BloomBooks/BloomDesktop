@@ -6,6 +6,7 @@ using System.Linq;
 using Bloom.Book;
 using System.Windows.Forms;
 using System.Xml;
+using SIL.Reporting;
 using SIL.Xml;
 using Bloom.Publish.Epub;
 using Bloom.web;
@@ -88,57 +89,6 @@ namespace Bloom.Publish
 
 			RemoveEnterpriseFeaturesIfNeeded(book, pageElts, warningMessages);
 
-			HtmlDom displayDom = null;
-			foreach (XmlElement page in pageElts)
-			{
-				EnsureAllThingsThatCanBeHiddenHaveIds(page);
-				if (displayDom == null)
-				{
-					displayDom = book.GetHtmlDomWithJustOnePage(page);
-				}
-				else
-				{
-					var pageNode = displayDom.RawDom.ImportNode(page, true);
-					displayDom.Body.AppendChild(pageNode);
-				}
-			}
-			if (displayDom == null)
-				return;
-			if (epubMaker != null)
-				epubMaker.AddEpubVisibilityStylesheetAndClass(displayDom);
-			if (this != _latestInstance)
-				return;
-			_browser.NavigateAndWaitTillDone(displayDom, 10000, "publish", () => this != _latestInstance);
-			if (this != _latestInstance)
-				return;
-
-			var toBeDeleted = new List<XmlElement>();
-			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
-			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
-			foreach (XmlElement page in pageElts)
-			{
-				// As the constant's name here suggests, in theory, we could include divs
-				// that don't have .bloom-editable, and all their children.
-				// But I'm not smart enough to write that selector and for bloomds, all we're doing here is saving space,
-				// so those other divs we are missing doesn't seem to matter as far as I can think.
-				var kSelectThingsThatCanBeHiddenButAreNotText = ".//img";
-				var selector = removeInactiveLanguages ?  kSelectThingsThatCanBeHidden  : kSelectThingsThatCanBeHiddenButAreNotText ;
-				foreach (XmlElement elt in page.SafeSelectNodes(selector))
-				{
-					// Even when they are not displayed we want to keep image descriptions.
-					// This is necessary for retaining any associated audio files to play.
-					// See https://issues.bloomlibrary.org/youtrack/issue/BL-7237.
-					if (!IsDisplayed(elt) && !IsImageDescription(elt))
-						toBeDeleted.Add(elt);
-				}
-				foreach (var elt in toBeDeleted)
-				{
-					elt.ParentNode.RemoveChild(elt);
-				}
-				RemoveTempIds(page); // don't need temporary IDs any more.
-				toBeDeleted.Clear();
-			}
-
 			// Remove any left-over bubbles
 			foreach (XmlElement elt in dom.RawDom.SafeSelectNodes("//label"))
 			{
@@ -214,6 +164,75 @@ namespace Bloom.Publish
 			{
 				div.ParentNode.RemoveChild(div);
 			}
+
+			// Finally we try to remove elements (except image descriptions) that aren't visible.
+			// To accurately determine visibility, we point a real browser at the document.
+			// We've had some problems with this; if it doesn't work, we just skip this, and
+			// the document will end up a little bigger. BloomReader and most epub readers
+			// won't display things that are supposed to be invisible.
+
+			HtmlDom displayDom = null;
+			foreach (XmlElement page in pageElts)
+			{
+				EnsureAllThingsThatCanBeHiddenHaveIds(page);
+				if (displayDom == null)
+				{
+					displayDom = book.GetHtmlDomWithJustOnePage(page);
+				}
+				else
+				{
+					var pageNode = displayDom.RawDom.ImportNode(page, true);
+					displayDom.Body.AppendChild(pageNode);
+				}
+			}
+			if (displayDom == null)
+				return;
+			if (epubMaker != null)
+				epubMaker.AddEpubVisibilityStylesheetAndClass(displayDom);
+			if (this != _latestInstance)
+				return;
+			var tries = 0;
+			if (!_browser.NavigateAndWaitTillDone(displayDom, 10000, "publish", () => this != _latestInstance,
+				false))
+			{
+				// We started having problems with timeouts here (BL-7892).
+				// We may as well carry on. We only need the browser to have navigated so calls to IsDisplayed(elt)
+				// below will give accurate answers. If the browser hasn't navigated enough so that an element with
+				// the desired ID exists, we will not remove it. No great harm done.
+				// There seems to be some randomness involved, so trying a few times and with a new browser instance
+				// seems as if it might help.
+				Debug.WriteLine("Failed to navigate fully to RemoveUnwantedContentInternal DOM");
+				Logger.WriteEvent("Failed to navigate fully to RemoveUnwantedContentInternal DOM");
+			}
+			if (this != _latestInstance)
+				return;
+
+			var toBeDeleted = new List<XmlElement>();
+			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
+			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
+			foreach (XmlElement page in pageElts)
+			{
+				// As the constant's name here suggests, in theory, we could include divs
+				// that don't have .bloom-editable, and all their children.
+				// But I'm not smart enough to write that selector and for bloomds, all we're doing here is saving space,
+				// so those other divs we are missing doesn't seem to matter as far as I can think.
+				var kSelectThingsThatCanBeHiddenButAreNotText = ".//img";
+				var selector = removeInactiveLanguages ? kSelectThingsThatCanBeHidden : kSelectThingsThatCanBeHiddenButAreNotText;
+				foreach (XmlElement elt in page.SafeSelectNodes(selector))
+				{
+					// Even when they are not displayed we want to keep image descriptions.
+					// This is necessary for retaining any associated audio files to play.
+					// See https://issues.bloomlibrary.org/youtrack/issue/BL-7237.
+					if (!IsDisplayed(elt) && !IsImageDescription(elt))
+						toBeDeleted.Add(elt);
+				}
+				foreach (var elt in toBeDeleted)
+				{
+					elt.ParentNode.RemoveChild(elt);
+				}
+				RemoveTempIds(page); // don't need temporary IDs any more.
+				toBeDeleted.Clear();
+			}
 		}
 
 		public static bool IsActivityPage(XmlElement pageElement)
@@ -271,7 +290,11 @@ namespace Bloom.Publish
 		private bool IsDisplayed(XmlElement elt)
 		{
 			var id = elt.Attributes["id"].Value;
-			var display = _browser.RunJavaScript ("getComputedStyle(document.getElementById('" + id + "'), null).display");
+			var display = _browser.RunJavaScript ("document.getElementById('" + id + "') ? getComputedStyle(document.getElementById('" + id + "'), null).display : 'not found'");
+			if (display == "not found")
+			{
+				Debug.WriteLine("element not found in IsDisplayed()");
+			}
 			return display != "none";
 		}
 

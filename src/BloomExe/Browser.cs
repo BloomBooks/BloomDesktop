@@ -338,15 +338,17 @@ namespace Bloom
 				return;
 			if (disposing)
 			{
-				if (_dependentContent != null)
-				{
-					_dependentContent.Dispose();
-					_dependentContent = null;
-				}
 				if (_browser != null)
 				{
 					_browser.Dispose();
 					_browser = null;
+				}
+				// Dispose of this AFTER the _browser. We've seen cases where, if we dispose _dependentContent first, some threading issue causes
+				// the browser to request the simulated page (which is often the _dependentContent) AFTER it's disposed, leading to an error.
+				if (_dependentContent != null)
+				{
+					_dependentContent.Dispose();
+					_dependentContent = null;
 				}
 				if (components != null)
 				{
@@ -876,7 +878,7 @@ namespace Bloom
 			UpdateDisplay();
 		}
 
-		public void NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav", Func<bool> cancelCheck = null)
+		public bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav", Func<bool> cancelCheck = null, bool throwOnTimeout = true)
 		{
 			// Should be called on UI thread. Since it is quite typical for this method to create the
 			// window handle and browser, it can't do its own Invoke, which depends on already having a handle.
@@ -899,7 +901,7 @@ namespace Bloom
 				if (cancelCheck != null && cancelCheck())
 				{
 					navTimer.Stop();
-					return;
+					return false;
 				}
 				// Keeping this code as a reminder: it seems to be a reliable way of telling when
 				// the nothing happens when told to navigate problem is rearing its ugly head.
@@ -914,8 +916,12 @@ namespace Bloom
 
 			if (!done)
 			{
-				throw new ApplicationException("Browser unexpectedly took too long to load a page");
+				if (throwOnTimeout)
+					throw new ApplicationException("Browser unexpectedly took too long to load a page");
+				else return false;
 			}
+
+			return true;
 		}
 
 		public void NavigateRawHtml(string html)
