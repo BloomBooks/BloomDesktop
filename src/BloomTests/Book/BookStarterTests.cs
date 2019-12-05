@@ -1014,27 +1014,18 @@ namespace BloomTests.Book
 		}
 
 		// It's rather arbitrary what happens in this case, since we don't think it's possible for the original
-		// to have no license (short of hand-editing the HTML).
-		[Test]
-		public void SetOriginalCopyrightAndLicense_HasNoCopyrightOrLicense_GetsWithoutCopyrightNotice()
-		{
-			var dom = SetOriginalCopyrightAndLicense(@" <div id='bloomDataDiv'>
-					  <div data-book='bookTitle' lang='en'>A really really empty book</div>
-					</div>");
-			Assert.AreEqual("Adapted from original without a copyright notice.", GetEnglishOriginalCopyrightAndLicense(dom));
-			AssertOriginalCopyrightAndLicense(dom, "", "", "");
-		}
-
-		[Test]
-		public void SetOriginalCopyrightAndLicense_HasNoCopyrightOrLicense_SourceCollection_GetsNoOriginalNotice()
+		// to have a null license AND no copyright (short of hand-editing the HTML).
+		[TestCase(true)]
+		[TestCase(false)]
+		public void SetOriginalCopyrightAndLicense_HasNoCopyrightOrLicense_GetsNoOriginalNotice(bool sourceCollection)
 		{
 			try
 			{
-				_collectionSettings.IsSourceCollection = true;
+				_collectionSettings.IsSourceCollection = sourceCollection;
 				var dom = SetOriginalCopyrightAndLicense(@" <div id='bloomDataDiv'>
 					  <div data-book='bookTitle' lang='en'>A really really empty book</div>
 					</div>");
-				Assert.AreEqual(null, GetEnglishOriginalCopyrightAndLicense(dom));
+				Assert.IsNull(GetEnglishOriginalCopyrightAndLicense(dom));
 				AssertOriginalCopyrightAndLicense(dom, "", "", "");
 			}
 			finally
@@ -1058,7 +1049,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void SetOriginalCopyrightAndLicense_NoLicense_GetsExpectedOriginalCopyrightAndLicense()
+		public void SetOriginalCopyrightAndLicense_NullLicense_GetsExpectedOriginalCopyrightAndLicense()
 		{
 			var dom = SetOriginalCopyrightAndLicense(
 				@" <div id='bloomDataDiv'>
