@@ -685,6 +685,7 @@ namespace Bloom.Edit
 		}
 
 		private DataSet _pageDataBeforeEdits;
+		private string _featureRequirementsBeforeEdits;
 
 		private DataSet GetPageData(XmlNode page)
 		{
@@ -697,6 +698,7 @@ namespace Bloom.Edit
 		{
 			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			_pageDataBeforeEdits = GetPageData(_domForCurrentPage.RawDom);
+			_featureRequirementsBeforeEdits = CurrentBook.OurHtmlDom.GetMetaValue("FeatureRequirement", "");
 			CheckForBL2634("setup");
 			SetupPageZoom();
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
@@ -1072,7 +1074,9 @@ namespace Bloom.Edit
 		// result in this flag being set.
 		private bool NeedToDoFullSave(DataSet newPageData)
 		{
-			return _pageHasUnsavedDataDerivedChange || !newPageData.SameAs(_pageDataBeforeEdits);
+			var newFeatureRequirements = BookStorage.GetRequiredVersionsString(CurrentBook.OurHtmlDom);
+			return _pageHasUnsavedDataDerivedChange || !newPageData.SameAs(_pageDataBeforeEdits)
+				|| _featureRequirementsBeforeEdits != newFeatureRequirements;
 		}
 
 		/// <summary>
