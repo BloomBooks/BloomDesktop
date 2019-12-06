@@ -22,6 +22,7 @@ import { useDrawAttention } from "./UseDrawAttention";
 import ReactDOM = require("react-dom");
 import { PrivacyScreen } from "./PrivacyScreen";
 import { useL10n } from "../react_components/l10nHooks";
+import Close from "@material-ui/icons/Close";
 
 export enum ProblemKind {
     User = "User",
@@ -232,7 +233,15 @@ export const ProblemDialog: React.FunctionComponent<{
                 fullScreen={true}
                 onClose={() => BloomApi.post("dialog/close")}
             >
-                <DialogTitle>{localizedDlgTitle}</DialogTitle>
+                {/* The whole disableTypography and Typography thing gets around Material-ui putting the
+                    Close icon inside of the title's Typography element, where we don't have control over its CSS. */}
+                <DialogTitle className="dialog-title" disableTypography={true}>
+                    <Typography variant="h6">{localizedDlgTitle}</Typography>
+                    <Close
+                        className="close-in-title"
+                        onClick={() => BloomApi.post("dialog/close")}
+                    />
+                </DialogTitle>
                 <DialogContent className="content">
                     {(() => {
                         switch (mode) {
