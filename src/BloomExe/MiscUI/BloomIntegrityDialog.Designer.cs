@@ -1,4 +1,4 @@
-﻿namespace Bloom.MiscUI
+namespace Bloom.MiscUI
 {
 	partial class BloomIntegrityDialog
 	{
@@ -46,7 +46,7 @@
 			this._reportButton.Name = "_reportButton";
 			this._reportButton.Size = new System.Drawing.Size(135, 23);
 			this._reportButton.TabIndex = 0;
-			this._reportButton.Text = "Report Problem";
+			this._reportButton.Text = "Close";
 			this._reportButton.UseVisualStyleBackColor = true;
 			this._reportButton.Click += new System.EventHandler(this._reportButton_Click);
 			// 

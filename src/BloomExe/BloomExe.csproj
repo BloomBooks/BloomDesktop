@@ -498,12 +498,6 @@
       <DependentUpon>ToastNotifier.cs</DependentUpon>
     </Compile>
     <Compile Include="NavigationIsolator.cs" />
-    <Compile Include="MiscUI\ProblemReporterDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MiscUI\ProblemReporterDialog.Designer.cs">
-      <DependentUpon>ProblemReporterDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="Publish\PDF\AdobeReaderControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -872,9 +866,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\HtmlTextBox.resx">
       <DependentUpon>HtmlTextBox.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\ProblemReporterDialog.resx">
-      <DependentUpon>ProblemReporterDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\TipDialog.resx">
       <DependentUpon>TipDialog.cs</DependentUpon>

@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.PlatformUtilities;
+using SIL.Reporting;
 
 namespace Bloom.MiscUI
 {
@@ -31,7 +31,7 @@ namespace Bloom.MiscUI
 				"BloomPdfMaker.exe", "optipng.exe" };
 
 				string[] dirs;
-			if (SIL.PlatformUtilities.Platform.IsWindows)
+			if (Platform.IsWindows)
 				dirs = new[] { "AndikaNewBasic", "localization", "xslts", "icons" };
 			else
 				dirs = new[] { "localization", "xslts", "icons" };
@@ -69,11 +69,12 @@ namespace Bloom.MiscUI
 
 			using(var dlg = new BloomIntegrityDialog())
 			{
+				const string nonHtmlMessage = "Bloom cannot find some of its own files, and cannot continue. After you submit this report, we will contact you and help you work this out. In the meantime, you can run the Bloom installer again.";
 				var messagePath = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "help", "IntegrityFailureAdvice-en.htm");
 				string message;
 				if(messagePath == null) // maybe we can't even get at this file we need for a good description of the problem
 				{
-					message = "Bloom cannot find some of its own files, and cannot continue. After you submit this report, we will contact you and help you work this out. In the meantime, you can run the Bloom installer again.";
+					message = nonHtmlMessage;
 				}
 				else
 				{
@@ -83,54 +84,13 @@ namespace Bloom.MiscUI
 					message = message.Replace("{installFolder}", installFolder);  //old
 				}
 
-				message = message + Environment.NewLine + Environment.NewLine + errors.ToString();
+				message = message + Environment.NewLine + Environment.NewLine + errors;
 				dlg.htmlTextBox1.HtmlText = message;
 				dlg.ShowDialog();
-			}
-			using(var dlg = new ProblemReporterDialog())
-			{
-				dlg.Summary = "Bloom Integrity Check Failed: {0}";
-				dlg.Description = "Please answer any of these questions that you understand:"
-								  + Environment.NewLine + Environment.NewLine
-								  + "Did you install Bloom just now, or maybe allow it to update?"
-								  + Environment.NewLine + Environment.NewLine
-								  + "Is your computer locked down against installing new software?"
-								  + Environment.NewLine + Environment.NewLine
-								  + "What antivirus program do you use?"
-								  + Environment.NewLine + Environment.NewLine
-								  + "--------------------------------------------"
-								  + Environment.NewLine + Environment.NewLine
-								  + "The following information is for Bloom developers to see just what is and isn't missing:"
-								  + Environment.NewLine + Environment.NewLine
-								  + errors.ToString()
-								  + GetDirectoryListing(FileLocationUtilities.DirectoryOfTheApplicationExecutable)
-								  + Environment.NewLine + Environment.NewLine
-								  + "Detected Antivirus Program(s): " + InstalledAntivirusPrograms();
-
-#if !__MonoCS__
-
-				try
-				{
-					var logPath =
-						Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-							.CombineForPath(Application.ProductName, "SquirrelSetup.log");
-					dlg.Description += "=Squirrel Log=" + Environment.NewLine;
-					dlg.Description += logPath + Environment.NewLine;
-					if(RobustFile.Exists(logPath))
-					{
-						dlg.Description += RobustFile.ReadAllText(logPath);
-					}
-					else
-					{
-						dlg.Description += logPath + "not found";
-					}
-				}
-				catch(Exception error)
-				{
-					dlg.Description += error.Message;
-				}
-#endif
-				dlg.ShowDialog();
+				Logger.WriteEvent("Bloom Integrity Check Failed: " + message);
+				// We would like to do this:
+				// ProblemReportApi.ShowProblemDialog(null, "fatal");
+				// But that can't work because BloomServer isn't running yet.
 			}
 
 			return false; //Force termination of the current process.
@@ -139,74 +99,6 @@ namespace Bloom.MiscUI
 		private void _reportButton_Click(object sender, EventArgs e)
 		{
 			Close();
-		}
-
-		static string GetDirectoryListing(string directory)
-		{
-			var builder = new StringBuilder();
-			builder.AppendLine("The following are under " + directory);
-			GetDirectoryListing(directory.Length, directory, builder);
-			return builder.ToString();
-		}
-
-		static void GetDirectoryListing(int rootDirectoryLength, string directory, StringBuilder builder)
-		{
-			try
-			{
-				foreach(var f in Directory.GetFiles(directory))
-				{
-					builder.AppendLine(Path.GetFileName(f));
-				}
-			}
-			catch(Exception error)
-			{
-				builder.AppendLine("**** " + error.Message);
-			}
-			try
-			{
-				//If we let this box get too full, the user can't type into it (BL-2575). So we clip the tree on some big directories:
-				// The problem reappeared on Linux (BL-2895), so we avoid redundant printing of subdirectory paths in the filenames.
-				string[] bigDirectoriesToSkip = new string[] { "pdf", "Mercurial", BloomFileLocator.BrowserRoot };
-				foreach(var d in Directory.GetDirectories(directory))
-				{
-					if(bigDirectoriesToSkip.Contains(Path.GetFileName(d)))
-					{
-						builder.AppendLine(d + " (will not list contents)");
-					}
-					else
-					{
-						builder.AppendLine(d + " contains these files:");
-						GetDirectoryListing(rootDirectoryLength, d, builder);
-					}
-				}
-			}
-			catch(Exception error)
-			{
-				builder.AppendLine("**** " + error.Message);
-			}
-		}
-
-		private static string InstalledAntivirusPrograms()
-		{
-			string result = "";
-#if !__MonoCS__
-			string wmipathstr = @"\\" + Environment.MachineName + @"\root\SecurityCenter2";
-			try
-			{
-				var searcher = new System.Management.ManagementObjectSearcher(wmipathstr, "SELECT * FROM AntivirusProduct");
-				var instances = searcher.Get();
-
-				foreach(var instance in instances)
-				{
-					result += instance.GetText(System.Management.TextFormat.Mof).ToString() + Environment.NewLine;
-				}
-			}
-			catch(Exception error)
-			{
-				return error.Message;
-			}
-#endif
-			return result;
 		}
 	}
 }
