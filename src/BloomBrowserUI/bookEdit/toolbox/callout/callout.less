@@ -1,7 +1,12 @@
 @import "../../../bloomUI.less";
 
-.ui-accordion h3[data-toolId="comicTool"] span.ui-accordion-header-icon {
-    background-image: url("comic-icon.svg") !important;
+@SideMargin: 13px;
+
+.ui-accordion h3[data-toolId="comicTool"] {
+    span.ui-accordion-header-icon {
+        background-image: url("comic-icon.svg") !important;
+        left: @SideMargin;
+    }
 }
 
 #ui-accordion-toolbox-panel-0.CalloutBody {
@@ -15,64 +20,132 @@
     // fill available toolbox space, part of pushing help to the bottom.
     // If the content won't fit, it gets a scroll bar.
     height: 100%;
+
+    color: white;
 }
 
 #calloutControlShapeChooserRegion {
-    background-color: @bloom-blue;
-    color: black;
-    height: 183px;
-    min-height: 133px;
-    padding: 10px;
+    background-color: #4e4e4e;
+    padding: @SideMargin;
     display: flex;
     flex-wrap: wrap;
     .calloutControlDraggableBubble {
         cursor: grab;
     }
-    #calloutControlSpeechButton {
-        height: 40px;
-        width: 40px;
+
+    .shapeChooserRow {
+        // Each row fills the entire width of the parent horizontally
+        width: 100%;
+
+        // Each row gets a little vertical cusion
+        margin-top: 10px;
+        margin-bottom: 10px;
     }
-    #calloutControlTextBlockButton {
-        border: 1px dotted white;
-        padding: 10px 20px;
-        margin-left: 25px;
-        color: white;
-        height: 18px;
+
+    #shapeChooserRow1 {
+        // Using display: flex helps us grow some of the children
+        // while also allowing us to adapt to the presence or absence of the vertical scrollbar
+        display: flex;
+        height: 50px;
+
+        #shapeChooserSpeechBubble {
+            width: 50px;
+            height: 50px;
+        }
+
+        #shapeChooserTextBlock {
+            margin-left: 15px; // Create enough spacing between this and the icon to its left
+            flex-grow: 1; // Let it fill as much space as possible to the right
+            text-align: center; // Center the text horizontally
+
+            margin-top: 9px; // this is just an arbitrary number to match the mockup
+            padding-top: 15px; // uneven top/bottom paddings to get the text to be slightly down from center
+            padding-bottom: 10px;
+            margin-bottom: 3px; // aligns the bottom of the border to the visible bottom of the speech bubble (there is some whitespace at the bottom of the speech bubbble icon)
+
+            border: 1px dotted white;
+        }
     }
-    #calloutControlCaptionButton {
-        border: 1px solid black;
-        padding: 5px 40px;
-        color: black;
-        background-color: white;
-        margin-left: 30px;
-        height: 18px;
+
+    #shapeChooserRow2 {
+        display: flex; // Lets us have the button expand to fill the appropriate area
+
+        #shapeChooserCaption {
+            // Horizontal positioning / sizing of the element
+            margin-left: 14px;
+            flex-grow: 1; // Allow it to fill the entire space (but with margin-left and margin-right outside of it)
+            margin-right: 14px;
+            text-align: center;
+
+            // Vertical sizing
+            padding-top: 5px;
+            padding-bottom: 5px;
+
+            border: 1px solid black;
+            color: black;
+            background-color: white;
+        }
     }
 }
 
 #calloutControlOptionsRegion {
-    padding-top: 20px;
-    padding-left: 10px;
+    padding: @SideMargin @SideMargin 0 @SideMargin;
 
-    color: @bloom-toolboxWhite;
+    color: white;
+
+    // This corresponds to the wrapper div generated for each control within the form
+    // It is also the parent flex container for each option
+    .MuiFormControl-root {
+        width: 100%; // Make it occupy 100% of its parent (which is the form)
+
+        .MuiInputLabel-formControl {
+            // The default generates it with position: absolute.
+            // If it has position:absolute, then it is not a child of the flex container
+            // That would mean that the flex-container height is determined purely by the remaining (one) child
+            // We need the flex-container height to factor in the height of the child label too though!!!
+            // So we turn off position:absolute so that it can become a child of the flex-container
+            position: unset;
+        }
+
+        .MuiInputLabel-shrink {
+            // MaterialUI assumes the label will be exactly 1 line. It allocates 12 pixels for the line + 4 pixels whitespace for 16 pixels total.
+            // I want it to be more flexible. Who knows how long the translated text will be? Maybe it's multiple lines
+            // MaterialUI does a 75% scaling in order to reduce the size of the text (12 pixels per line). But flexbox still lays out the full size (16 pixels per line)
+            // This gives a 4 pixels per line whitespace.
+            // That looks nice when there is only one line (which is MaterialUI's assumption).
+            // When there are multiple lines, the amount of whitespace grows linearly, which looks really awkward IMO. I'd rather have a constant 4 pixel whitespace.
+            //
+            // Also, when you use scale=0.75, font-size=1 like MUI, the line-wrapping is determined based on scale=1,font-size=1, then just scaled smaller.
+            // Yes, the letters will be 75% of the size, but the width available is also only 75%!!! Ahhh!
+            // When we use scale=1, font-size=0.75, we get letters that are 75% of the size but which can utilize the full width.
+            // So that's a 2nd pro for undoing MaterialUI's scaling.
+            transform: translate(0, 1.5px) scale(1);
+            font-size: 0.75rem;
+        }
+
+        label + .MuiInput-formControl {
+            // This does 2 things:
+            // 1) MUI's default is 16px, but that also takes into account that the label uses position: absolute instead of being positioned as a flex-item.
+            //    Now that we're positioning it as a flex-item, we need to unset or override margin-top:
+            // 2) Now that we're undoing MUI's 75% scaling (which was providing a 4 pixel whitespace area by transforming a 16-pixel line into a 12-pixel one),
+            //    we need to create that manually.
+            margin-top: 4px;
+        }
+    }
 
     .MuiFormLabel-root,
     .MuiSelect-icon,
     .calloutOptionDropdown {
-        color: @bloom-toolboxWhite;
+        color: white;
     }
     .MuiInput-underline::after {
         // Normally there is a 2px border when the dropdown menu is open. I like it better without it, because
         // the removal of the effect seems a little off because the border persists until after you select AND THEN after you click somewhere else.
         border-bottom-width: 0px;
-        border-bottom-color: @bloom-toolboxWhite; // FYI, the Material UI default is dark blue.
-    }
-
-    .MuiFormLabel-root {
-        width: 180px; // It could have more like 196px, but leave some room for a potential scrollbar
+        border-bottom-color: white; // FYI, the Material UI default is dark blue.
     }
 
     .MuiSelect-selectMenu {
-        width: 140px;
         border: 1px solid;
         border-radius: 5px; // The rounded corners
         padding-left: 10px;
@@ -86,9 +159,19 @@
         margin-bottom: 10px;
     }
 
+    .MuiButton-root {
+        padding-left: 0px; // strip out Material's default padding
+        color: @bloom-blue;
+
+        // MaterialUI and JQuery both attempt to set the font size.
+        // MUI's 0.875rem rule has lower precedence than JQuery's ".ui-widget button: 1em" rule,
+        // but we want to go with the MaterialUI look, so here's the MUI rule again, at a higher precedence.
+        font-size: 0.875rem;
+    }
+
     #trashIcon {
         color: @bloom-blue;
-        margin-top: 24px;
+        margin-top: 18px;
         margin-left: -5px; // hack to left-align the icon itself, which is framed by a larger SVG
         display: block;
     }
