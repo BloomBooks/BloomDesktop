@@ -122,6 +122,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                             "bloom-player/dist/bloomplayer.htm?url=" +
                             bookUrl
                         }
+                        showRefresh={true}
+                        onRefresh={() => props.onReset()}
                     />
                 </PreviewPanel>
                 <PublishPanel>
@@ -134,11 +136,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                         }}
                     />
                     <ThumbnailGroup onChange={() => props.onReset()} />
-                    <PublishLanguagesGroup
-                        onChange={() => {
-                            props.onReset();
-                        }}
-                    />
+                    <PublishLanguagesGroup />
                     <HelpGroup>
                         <HelpLink
                             l10nKey="PublishTab.Android.AboutBookFeatures"

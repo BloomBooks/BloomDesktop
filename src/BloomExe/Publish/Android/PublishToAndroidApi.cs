@@ -72,7 +72,8 @@ namespace Bloom.Publish.Android
 
 		private AndroidPublishSettings GetSettings()
 		{
-			return new AndroidPublishSettings() {LanguagesToInclude = _languagesToPublish};
+			// We need a copy of the hashset, so that if _languagesToPublish changes, this settings object won't.
+			return new AndroidPublishSettings() {LanguagesToInclude = new HashSet<string>(_languagesToPublish)};
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -159,9 +160,8 @@ namespace Bloom.Publish.Android
 						request.Failed("aborted, no longer in publish tab");
 						return;
 					}
-					PreviewUrl = StageBloomD(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, GetSettings());
-					_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
-					
+					UpdatePreview(request);
+
 					request.PostSucceeded();
 				}
 			}, false);
@@ -190,7 +190,9 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "usb/start", request =>
 			{
 #if !__MonoCS__
+
 				SetState("UsbStarted");
+				UpdatePreviewIfNeeded(request);
 				_usbPublisher.Connect(request.CurrentBook, _thumbnailBackgroundColor, GetSettings());
 #endif
 				request.PostSucceeded();
@@ -207,6 +209,7 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "wifi/start", request =>
 			{
 				SetState("ServingOnWifi");
+				UpdatePreviewIfNeeded(request);
 				_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _thumbnailBackgroundColor, GetSettings());
 				
 				request.PostSucceeded();
@@ -221,6 +224,7 @@ namespace Bloom.Publish.Android
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/save", request =>
 			{
+				UpdatePreviewIfNeeded(request);
 				FilePublisher.Save(request.CurrentBook, _bookServer, _thumbnailBackgroundColor, _progress, GetSettings());
 				SetState("stopped");
 				request.PostSucceeded();
@@ -316,6 +320,27 @@ namespace Bloom.Publish.Android
 				//	request.ReplyWithText(_languagesToPublish.Contains(langCode) ? "true" : "false");
 				//}
 			}, false);
+		}
+
+		private AndroidPublishSettings _lastSettings;
+		private Color _lastThumbnailBackgroundColor;
+
+		private void UpdatePreview(ApiRequest request)
+		{
+			_lastSettings = GetSettings();
+			_lastThumbnailBackgroundColor = _thumbnailBackgroundColor;
+			PreviewUrl = StageBloomD(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings);
+			_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
+		}
+
+		private void UpdatePreviewIfNeeded(ApiRequest request)
+		{
+			var newSettings = GetSettings();
+			if (newSettings.Equals(_lastSettings) && _thumbnailBackgroundColor == _lastThumbnailBackgroundColor)
+			{
+				return;
+			}
+			UpdatePreview(request);
 		}
 
 		public void Stop()

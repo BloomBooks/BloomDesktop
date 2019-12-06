@@ -13,5 +13,18 @@ namespace Bloom.Publish.Android
 	public class AndroidPublishSettings
 	{
 		public HashSet<string> LanguagesToInclude;
+
+		public override bool Equals(object obj)
+		{
+			if (!(obj is AndroidPublishSettings))
+				return false;
+			var other = (AndroidPublishSettings) obj;
+			return LanguagesToInclude.SetEquals(other.LanguagesToInclude);
+		}
+
+		public override int GetHashCode()
+		{
+			return LanguagesToInclude.GetHashCode();
+		}
 	}
 }

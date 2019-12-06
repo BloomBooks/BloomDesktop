@@ -457,66 +457,11 @@ namespace Bloom.Collection
 
 		private void DoOneTimeCheck()
 		{
-			// If we ever have to do another one of these besides our minimal Andika New Basic migration
-			// we should refactor this so it calls a method based on the OneTimeCheckVersionNumber
-			do
-			{
-				if(!MigrateSettingsToAndikaNewBasicFont())
-					break; // in case of failed migration
-				OneTimeCheckVersionNumber++;
-
-			} while (OneTimeCheckVersionNumber < kCurrentOneTimeCheckVersionNumber);
+			// We had a migration from Andika to Andika New Basic for a long time, but it's no longer useful.
+			// (See https://issues.bloomlibrary.org/youtrack/issue/BL-7868.)
+			// If we ever have to do another one of these, we should call a method based on OneTimeCheckVersionNumber.
+			OneTimeCheckVersionNumber = kCurrentOneTimeCheckVersionNumber;
 			Save(); // save updated settings
-		}
-
-		private bool MigrateSettingsToAndikaNewBasicFont()
-		{
-			const string newFont = "Andika New Basic";
-			if (WritingSystem.GetDefaultFontName() != newFont) // sanity check to make sure Andika New Basic is installed
-				return false;
-
-			const string id = "CollectionSettingsDialog.AndikaNewBasicUpdate";
-			var basicMessage = LocalizationManager.GetDynamicString("Bloom", id + "1",
-				"Bloom is switching the default font for \"{0}\" to the new \"Andika New Basic\".");
-			var secondaryMessage = LocalizationManager.GetDynamicString("Bloom", id + "2",
-				"This will improve the printed output for most languages. If your language is one of the few that need \"Andika\", you can switch it back in Settings:Book Making.");
-			const string oldFont = "Andika";
-			var safeLanguages = new[] {"en", "es", "fr", "id", "tpi"};
-			string msg = string.Empty;
-			if(Language1.FontName == oldFont)
-			{
-				Language1.FontName = newFont;
-				if (!safeLanguages.Contains(Language1Iso639Code))
-				{
-					msg += String.Format(basicMessage, Language1.Name) + Environment.NewLine;
-				}
-			}
-			if (Language2.FontName == oldFont)
-			{
-				Language2.FontName = newFont;
-				if (!String.IsNullOrEmpty(Language2Iso639Code) && !safeLanguages.Contains(Language2Iso639Code))
-				{
-					msg += String.Format(basicMessage, Language2.GetNameInLanguage(Language2Iso639Code)) + Environment.NewLine;
-				}
-			}
-			if (Language3.FontName == oldFont)
-			{
-				Language3.FontName = newFont;
-				if (!String.IsNullOrEmpty(Language3Iso639Code) && !safeLanguages.Contains(Language3Iso639Code))
-				{
-					msg += String.Format(basicMessage, Language3.GetNameInLanguage(Language2Iso639Code)) + Environment.NewLine;
-				}
-			}
-			// Only notify the user if the change involves a language that is not known to be okay with
-			// the new font.
-			if (!String.IsNullOrEmpty(msg) && ErrorReport.IsOkToInteractWithUser)
-			{
-				msg += Environment.NewLine + secondaryMessage;
-				// NB: this MessageBoxOptions.DefaultDesktopOnly option is more than the name implies. It changes the message to a "service message" which is the only
-				// way I've found to get the box into the taskbar.
-				MessageBox.Show(msg, "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
-			}
-			return true;
 		}
 
 		private bool ReadBoolean(XElement xml, string id, bool defaultValue)

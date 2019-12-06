@@ -24,7 +24,7 @@ export const PrivacyNotice: React.FunctionComponent<{
                 hasText={true}
                 onClick={() => props.onLearnMore()}
             >
-                Learn More...
+                Learn More
             </BloomButton>
         </div>
     );

@@ -99,9 +99,9 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"bin/YouTrackSharp.dll"=>"lib/dotnet", "bin/YouTrackSharp.pdb"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/YouTrackSharp.git [LinuxCompatible]
-# [4] build: Bloom Help 4.6 (Bloom_Help_BloomHelp46)
+# [4] build: Bloom Help 4.7 (Bloom_Help_BloomHelp47)
 #     project: Help
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp46
+#     URL: https://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp47
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
@@ -212,7 +212,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/l
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/signtool.exe ../lib/dotnet/signtool.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.dll ../lib/dotnet/YouTrackSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.pdb ../lib/dotnet/YouTrackSharp.pdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp46/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp47/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfGeckofx60Win32continuous/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfGeckofx60Win32continuous/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe

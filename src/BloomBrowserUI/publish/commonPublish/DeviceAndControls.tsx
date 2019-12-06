@@ -1,6 +1,7 @@
 import * as React from "react";
 import "./DeviceFrame.less";
 import { useState, useEffect } from "react";
+import { Div } from "../../react_components/l10nComponents";
 
 /*
   Example usage:
@@ -14,6 +15,8 @@ export const DeviceAndControls: React.FunctionComponent<{
     canRotate: boolean;
     url: string;
     iframeClass?: string;
+    showRefresh?: boolean;
+    onRefresh?: () => void;
 }> = props => {
     const [landscape, setLandscape] = useState(props.defaultLandscape);
     useEffect(() => {
@@ -47,6 +50,21 @@ export const DeviceAndControls: React.FunctionComponent<{
                         onClick={() => setLandscape(true)}
                     />
                 </>
+            )}
+            {props.showRefresh && (
+                <div
+                    className={
+                        "refresh-button-row" +
+                        (landscape ? " landscape" : "") +
+                        (props.canRotate ? " with-orientation-buttons" : "")
+                    }
+                    onClick={() => props.onRefresh && props.onRefresh()}
+                >
+                    <div className="refresh-icon" />
+                    <Div className="refresh" l10nKey="Common.Refresh">
+                        Refresh
+                    </Div>
+                </div>
             )}
         </div>
     );
