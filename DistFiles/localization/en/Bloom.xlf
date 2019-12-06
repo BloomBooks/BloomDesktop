@@ -821,11 +821,6 @@
         <note>ID: CollectionTab.Updating</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Downloading update to {0} ({1}kb).</note>
       </trans-unit>
-      <trans-unit id="Common.LearnMore" sil:dynamic="true">
-        <source xml:lang="en">Learn More...</source>
-        <note>A link or button that leads to something that tells the user more about what they just read.</note>
-        <note>ID: Common.LearnMore</note>
-      </trans-unit>
       <trans-unit id="Common.Advanced">
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
@@ -846,11 +841,6 @@
       <trans-unit id="Common.Colors.White">
         <source xml:lang="en">White</source>
         <note>ID: Common.Colors.White</note>
-      </trans-unit>
-      <trans-unit id="Common.LearnMore" sil:dynamic="true">
-        <source xml:lang="en">Learn More</source>
-        <note>ID: Common.LearnMore</note>
-        <note>This is the same as Settings.Enterprise.LearnMore</note>
       </trans-unit>
       <trans-unit id="Common.BackButton">
         <source xml:lang="en">Back</source>
@@ -897,6 +887,12 @@
       <trans-unit id="Common.HelpButton">
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
+      </trans-unit>
+      <trans-unit id="Common.LearnMore" sil:dynamic="true">
+        <source xml:lang="en">Learn More</source>
+        <note>ID: Common.LearnMore</note>
+        <note>A link or button that leads to something that tells the user more about what they just read.</note>
+        <note>This is the same as Settings.Enterprise.LearnMore</note>
       </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true">
         <source xml:lang="en">Loading...</source>
