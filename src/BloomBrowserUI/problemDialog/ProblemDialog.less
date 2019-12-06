@@ -1,9 +1,13 @@
 @import "../bloomWebFonts.less";
 
 .problem-dialog {
-    .MuiDialogActions-spacing {
-        // balance spacing at the bottom of the dialog
-        padding-bottom: 8px;
+    .dialog-title {
+        flex-direction: row;
+        display: flex;
+        justify-content: space-between; // right-justifies close X
+        .close-in-title {
+            padding-top: 4px;
+        }
     }
     .content {
         #please_help_us {
