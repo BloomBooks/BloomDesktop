@@ -47,6 +47,10 @@
             margin-top: -4px;
             background-size: 1.7em;
             background-repeat: none;
+            // coverts black in SVG to roughly 152,139,139 as used for text.
+            // see https://codepen.io/sosuke/pen/Pjoqqp
+            filter: invert(65%) sepia(3%) saturate(836%) hue-rotate(314deg)
+                brightness(87%) contrast(83%);
         }
         .refresh {
             color: rgb(
