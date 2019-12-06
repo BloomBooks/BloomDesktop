@@ -1137,31 +1137,38 @@ namespace Bloom.Api
 					}
 				}
 
-				// If nothing is happening, perform any tasks we could not safely do while other workers
-					// were busy.
-					for (;;) // as long as we find idleTasks to do
-				{
-					// The lock makes sure that exactly one thread will take on a particular idle task,
-					// and only if we have reached the safe state.
-					Action idleTask = null;
-					lock (_queue)
-					{
-						if (_busyThreads == 0 && _queue.Count == 0 && _idleTasks.Count > 0)
-						{
-							idleTask = _idleTasks.Dequeue();
-						}
-					}
+				DoIdleTasksIfNoActivity();
+			}
+		}
 
-					if (idleTask == null)
-						break;
-					// but, we don't need to lock up the queue while we actually do it. Of course, some worker
-					// thread may become busy before we finish the idleTask. But that's OK. We just wanted
-					// to be sure it wasn't done while something else that was started before it was still
-					// in progress. In fact, it's important NOT to let the _queue be locked while we perform
-					// the action. The one current instance of idleTask currently involves locking ANOTHER
-					// data structure, and if we independently lock two objects, we risk deadlock.
-					idleTask.Invoke();
+		/// <summary>
+		///  If nothing is happening, perform any tasks we could not safely do while other workers
+		/// were busy.
+		/// </summary>
+		internal void DoIdleTasksIfNoActivity()
+		{
+			for (; ; ) // as long as we find idleTasks to do
+			{
+				// The lock makes sure that exactly one thread will take on a particular idle task,
+				// and only if we have reached the safe state.
+				Action idleTask = null;
+				lock (_queue)
+				{
+					if (_busyThreads == 0 && _queue.Count == 0 && _idleTasks.Count > 0)
+					{
+						idleTask = _idleTasks.Dequeue();
+					}
 				}
+
+				if (idleTask == null)
+					break;
+				// but, we don't need to lock up the queue while we actually do it. Of course, some worker
+				// thread may become busy before we finish the idleTask. But that's OK. We just wanted
+				// to be sure it wasn't done while something else that was started before it was still
+				// in progress. In fact, it's important NOT to let the _queue be locked while we perform
+				// the action. The one current instance of idleTask currently involves locking ANOTHER
+				// data structure, and if we independently lock two objects, we risk deadlock.
+				idleTask.Invoke();
 			}
 		}
 

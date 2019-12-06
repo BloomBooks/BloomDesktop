@@ -300,6 +300,7 @@ namespace BloomTests.web
 					Assert.That(transaction.ReplyContents,
 						Is.EqualTo(TempFileUtils.CreateHtml5StringFromXml(dom.RawDom)));
 				}
+				server.DoIdleTasksIfNoActivity();
 				var transactionFail = new PretendRequestInfo(url);
 
 				// Execute
