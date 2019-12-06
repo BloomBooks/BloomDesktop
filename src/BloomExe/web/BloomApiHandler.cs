@@ -28,7 +28,7 @@ namespace Bloom.Api
 		// This dictionary ties API endpoints to functions that handle the requests.
 		private Dictionary<string, EndpointRegistration> _endpointRegistrations = new Dictionary<string, EndpointRegistration>();
 		// Special lock for making thumbnails. See discussion at the one point of usage.
-		private object ThumbnailSyncObj = new object();
+		private object ThumbnailsAndPreviewsSyncObj = new object();
 		// We use two different locks to synchronize access to API requests.
 		// This allows certain methods to run concurrently.
 		private object I18NLock = new object();		// used to synchronize access to I18N methods
@@ -129,7 +129,8 @@ namespace Bloom.Api
 		// NOTE: this method gets called on different threads!
 		public bool ProcessRequest(IRequestInfo info, string localPath)
 		{
-			if (localPath.ToLowerInvariant().StartsWith("api/", StringComparison.InvariantCulture))
+			var localPathLc = localPath.ToLowerInvariant();
+			if (localPathLc.StartsWith("api/", StringComparison.InvariantCulture))
 			{
 				var endpoint = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});
 				foreach (var pair in _endpointRegistrations.Where(pair =>
@@ -140,17 +141,25 @@ namespace Bloom.Api
 				{
 					if (pair.Value.RequiresSync)
 					{
-						// A single synchronization object won't do, because when processing a request to create a thumbnail,
-						// we have to load the HTML page the thumbnail is based on. If the page content somehow includes
+						// A single synchronization object won't do, because when processing a request to create a thumbnail or update a preview,
+						// we have to load the HTML page the thumbnail is based on, or other HTML pages (like one used to figure what's
+						// visible in a preview). If the page content somehow includes
 						// an api request (api/branding/image is one example), that request will deadlock if the
 						// api/pageTemplateThumbnail request already has the main lock.
-						// To the best of my knowledge, there's no shared data between the thumbnailing process and any
+						// Another case is the Bloom Reader preview, where the whole UI is rebuilt at the same time as the preview.
+						// This leads to multiple api requests racing with the preview one, and it was possible for all
+						// the server threads to be processing these and waiting for SyncObject while the updatePreview
+						// request held the lock...and the request for the page that would free the lock was sitting in
+						// the queue, waiting for a thread.
+						// To the best of my knowledge, there's no shared data between the thumbnailing and preview processes and any
 						// other api requests, so it seems safe to have one lock that prevents working on multiple
-						// thumbnails at the same time, and one that prevents working on other api requests at the same time.
+						// thumbnails/previews at the same time, and one that prevents working on other api requests at the same time.
 						var syncOn = SyncObj;
-						if (localPath.ToLowerInvariant().StartsWith("api/pagetemplatethumbnail", StringComparison.InvariantCulture))
-							syncOn = ThumbnailSyncObj;
-						else if (localPath.ToLowerInvariant().StartsWith("api/i18n/"))
+						if (localPathLc.StartsWith("api/pagetemplatethumbnail", StringComparison.InvariantCulture)
+						|| localPathLc == "api/publish/android/thumbnail"
+						|| localPathLc == "api/publish/android/updatepreview")
+							syncOn = ThumbnailsAndPreviewsSyncObj;
+						else if (localPathLc.StartsWith("api/i18n/"))
 							syncOn = I18NLock;
 						lock (syncOn)
 						{
