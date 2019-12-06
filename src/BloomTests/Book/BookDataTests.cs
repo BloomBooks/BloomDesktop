@@ -1339,31 +1339,6 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void OneTimeCheckVersionNumber_AndikaNewBasicMigration_DoIt()
-		{
-			// This test needs Andika New Basic installed to work
-			// dump out and pass if the font isn't installed
-			if (!AndikaNewBasicIsInstalled())
-				return; // quietly pass the test if the font isn't installed
-
-			var filepath = _collectionSettings.SettingsFilePath;
-			WriteSettingsFile(filepath, _preAndikaMigrationCollection);
-
-			// SUT
-			_collectionSettings.Load();
-
-			// Verify
-			var oneTimeCheckVersion = _collectionSettings.OneTimeCheckVersionNumber;
-			Assert.That(Convert.ToInt32(oneTimeCheckVersion).Equals(1));
-			var font1 = _collectionSettings.Language1.FontName;
-			Assert.That(font1.Equals("Andika New Basic"));
-			var font2 = _collectionSettings.Language1.FontName;
-			Assert.That(font2.Equals("Andika New Basic"));
-			var font3 = _collectionSettings.Language1.FontName;
-			Assert.That(font3.Equals("Andika New Basic"));
-		}
-
-		[Test]
 		public void OneTimeCheckVersionNumber_AndikaNewBasicMigration_alreadyDone()
 		{
 			var filepath = _collectionSettings.SettingsFilePath;
