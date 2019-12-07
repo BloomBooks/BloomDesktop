@@ -10,6 +10,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Gecko;
 using L10NSharp;
 using SIL.Code;
 using SIL.CommandLineProcessing;
@@ -81,9 +82,9 @@ namespace Bloom.web.controllers
 						{
 							rawVideoInput.CopyTo(rawVideoOutput);
 						}
-
-						SaveVideoFile(path, rawVideo.Path);
 					}
+					// The output stream should be closed before trying to access the newly written file.
+					SaveVideoFile(path, rawVideo.Path);
 				}
 
 				var relativePath = BookStorage.GetVideoFolderName + Path.GetFileName(path);
