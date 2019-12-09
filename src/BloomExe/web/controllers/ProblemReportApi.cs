@@ -267,15 +267,26 @@ namespace Bloom.web.controllers
 			{
 				obfuscatedEmail = email; // ah well, it's not valid anyhow, so no need to obfuscate (other code may not let the user get this far anyhow)
 			}
-			return obfuscatedEmail;
+			return string.IsNullOrWhiteSpace(obfuscatedEmail) ? string.Empty : " (" + obfuscatedEmail + ")";
 		}
 
 		private static void GetInformationAboutUser(StringBuilder bldr, string userEmail)
 		{
 			var firstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName;
 			var lastName = SIL.Windows.Forms.Registration.Registration.Default.Surname;
-			bldr.AppendLine("Error Report from " + lastName + ", " + firstName + " (" + GetObfuscatedEmail(userEmail) + ") on " + DateTime.UtcNow.ToUniversalTime());
+			var nameString = GetNameString(firstName, lastName);
+			bldr.AppendLine("Error Report from " + nameString + GetObfuscatedEmail(userEmail) + " on " + DateTime.UtcNow.ToUniversalTime());
 		}
+
+		private static object GetNameString(string firstName, string lastName)
+		{
+			return !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName)
+				? lastName + ", " + firstName
+				: string.IsNullOrEmpty(lastName) && string.IsNullOrEmpty(firstName) ?
+					"unknown" :
+					lastName + firstName;
+		}
+
 
 		private static void GetStandardErrorReportingProperties(StringBuilder bldr, bool appendLog)
 		{
