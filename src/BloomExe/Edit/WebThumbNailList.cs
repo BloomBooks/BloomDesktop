@@ -23,10 +23,6 @@ namespace Bloom.Edit
 {
 	public partial class WebThumbNailList : UserControl
 	{
-		/// <summary>
-		/// The CSS class we give the main div for each page; the same element always has an id attr which identifies the page.
-		/// </summary>
-		internal const string ClassForGridItem = "gridItem";
 		public HtmlThumbNailer Thumbnailer;
 		public event EventHandler PageSelectedChanged;
 		private Bloom.Browser _browser;
@@ -34,7 +30,22 @@ namespace Bloom.Edit
 		private int _verticalScrollDistance;
 		private static string _thumbnailInterval;
 		private string _baseForRelativePaths;
-		private readonly string _baseHtml; // so we don't have to reload the thing from disk everytime we want to refresh the screen
+
+		// Store this so we don't have to reload the thing from disk everytime we refresh the screen.
+		private readonly string _baseHtml;
+
+		/// <summary>
+		/// Contains all the IPage objects currently displayed in the grid, keyed on "page-" + IdGuid.
+		/// </summary>
+		private readonly Dictionary<string, IPage> _pageMap = new Dictionary<string, IPage>();
+		private List<IPage> _pages;
+		private bool _usingTwoColumns;
+		/// <summary>
+		/// The CSS class we give the main div for each page; the same element always has an id attr which identifies the page.
+		/// </summary>
+		private const string GridItemClass = "gridItem";
+		private const string PageContainerClass = "pageContainer";
+		private const string InvisbleThumbClass = "invisibleThumbnailCover";
 
 		internal class MenuItemSpec
 		{
@@ -107,15 +118,6 @@ namespace Bloom.Edit
 			}
 		}
 
-
-		public bool KeepShowingSelection
-		{
-			set
-			{
-				//_listView.HideSelection = !value;
-			}
-		}
-
 		private void InvokePageSelectedChanged(IPage page)
 		{
 			EventHandler handler = PageSelectedChanged;
@@ -144,7 +146,6 @@ namespace Bloom.Edit
 			}
 		}
 
-		public bool CanSelect { get; set; }
 		public bool PreferPageNumbers { get; set; }
 
 		public RelocatePageEvent RelocatePageEvent { get; set; }
@@ -199,18 +200,13 @@ namespace Bloom.Edit
 			// thanks to http://stackoverflow.com/questions/982028/convert-net-color-objects-to-hex-codes-and-back
 			return string.Format("#{0:X2}{1:X2}{2:X2}", color.R, color.G, color.B);
 		}
-		Dictionary<string, IPage> _pageMap = new Dictionary<string, IPage>();
-		private List<IPage> _pages;
 
 		public void SetItems(IEnumerable<IPage> pages)
 		{
 			_pages = UpdateItems(pages);
 		}
 
-		bool RoomForTwoColumns
-		{
-			get { return Width > 199; }
-		}
+		private bool RoomForTwoColumns => Width > 199;
 
 		protected override void OnSizeChanged(EventArgs e)
 		{
@@ -238,10 +234,6 @@ namespace Bloom.Edit
 			UpdateItems(_pages);
 		}
 
-		private bool _usingTwoColumns;
-		private string PageContainerClass = "pageContainer";
-		private string InvisbleThumbClass = "invisibleThumbnailCover";
-
 		private List<IPage> UpdateItems(IEnumerable<IPage> pages)
 		{
 			List<IPage> result = null;
@@ -261,31 +253,31 @@ namespace Bloom.Edit
 		{
 			OnPaneContentsChanging(pages.Any());
 			var result = new List<IPage>();
-			var firstRealPage = pages.FirstOrDefault(p => p.Book != null);
-			if (firstRealPage == null)
+			if (pages.FirstOrDefault(p => p.Book != null) == null)
 			{
 				_browser.Navigate(@"about:blank", false); // no pages, we just want a blank screen, if anything.
 				return result;
 			}
+
+			// We can't use 'RoomForTwoColumns' in the ctor (where we set _baseHtml),
+			// because its value isn't correct at that point.
 			_usingTwoColumns = RoomForTwoColumns;
 			var htmlText = _baseHtml;
 			if (!RoomForTwoColumns)
 				htmlText = htmlText.Replace("columns: 4", "columns: 2").Replace("<div class=\"gridItem placeholder\" id=\"placeholder\"></div>", "");
-			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(htmlText));
 
-			// BL-987: Add styles to optimize performance on Linux
+			// We will end up navigating to pageListDom
+			var pageListDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(htmlText));
+
 			if (SIL.PlatformUtilities.Platform.IsLinux)
-			{
-				var style = dom.RawDom.CreateElement("style");
-				style.InnerXml = "img { image-rendering: optimizeSpeed; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }";
-				dom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
-			}
-			dom = firstRealPage.Book.GetHtmlDomReadyToAddPages(dom);
-			var pageDoc = dom.RawDom;
+				OptimizeForLinux(pageListDom);
 
-			var body = pageDoc.GetElementsByTagName("body")[0];
-			var gridlyParent = body.SelectSingleNode("//*[@id='pageGrid']");
-			int pageNumber = 0;
+			pageListDom = Model.CurrentBook.GetHtmlDomReadyToAddPages(pageListDom);
+			var pageDoc = pageListDom.RawDom;
+
+			var gridlyParent = SetupGridlyParent(pageDoc);
+
+			var pageNumber = 0;
 			_pageMap.Clear();
 			foreach (var page in pages)
 			{
@@ -293,73 +285,19 @@ namespace Bloom.Edit
 				if (pageElement == null)
 					continue; // or crash? How can this happen?
 				result.Add(page);
-				XmlElement pageElementForThumbnail = null;
-				var pageClasses = pageElement.GetStringAttribute("class").Split(new[] { ' ' });
-				var cssClass = pageClasses.FirstOrDefault(c => c.ToLowerInvariant().EndsWith("portrait") || c.ToLower().EndsWith("landscape"));
-				if (!TroubleShooterDialog.MakeEmptyPageThumbnails)
-				{
-					pageElementForThumbnail = pageDoc.ImportNode(pageElement, true) as XmlElement;
+				var layoutCssClass = GetLayoutCssClass(pageElement);
+				var pageElementForThumbnail = CreatePageElementForThumbnail(pageDoc, pageElement, layoutCssClass);
 
-					// BL-1112: Reduce size of images in page thumbnails.
-					// We are setting the src to empty so that we can use JavaScript to request the thumbnails
-					// in a controlled manner that should reduce the likelihood of not receiving the image quickly
-					// enough and displaying the alt text rather than the image.
-					DelayAllImageNodes(pageElementForThumbnail);
-				}
-				else
-				{
-					// Just make a minimal placeholder to get the white border.
-					pageElementForThumbnail = pageDoc.CreateElement("div");
-					var pageClass = "bloom-page";
-					// The page needs to have one of the classes like A4Portrait or it will have zero size and vanish.
-					if (!string.IsNullOrEmpty(cssClass))
-						pageClass += " " + cssClass;
-					pageElementForThumbnail.SetAttribute("class", pageClass);
-				}
-
-				var cellDiv = pageDoc.CreateElement("div");
-				cellDiv.SetAttribute("class", ClassForGridItem);
 				var gridId = GridId(page);
-				cellDiv.SetAttribute("id", gridId);
+				var cellDiv = CreatePageGridWrapper(pageDoc, gridId);
 				_pageMap.Add(gridId, page);
 				gridlyParent.AppendChild(cellDiv);
 
-
-				//we wrap our incredible-shrinking page in a plain 'ol div so that we
-				//have something to give a border to when this page is selected
-				var pageContainer = pageDoc.CreateElement("div");
-				pageContainer.SetAttribute("class", PageContainerClass);
-				pageContainer.AppendChild(pageElementForThumbnail);
-				// We need an invisible div covering our pageContainer, so that the user can't actually click
-				// on the underlying "incredible-shrinking page".
-				var invisibleCover = pageDoc.CreateElement("div");
-				invisibleCover.SetAttribute("class", InvisbleThumbClass);
-				pageContainer.AppendChild(invisibleCover);
-
-				// And here it gets fragile(for not).
-				// The nature of how we're doing the thumbnails (relying on scaling) seems to mess up
-				// the browser's normal ability to assign a width to the parent div. So our parent
-				// here, .pageContainer, doesn't grow with the size of its child. Sigh. So for the
-				// moment, we assign appropriate sizes, by hand. We rely on c# code to add these
-				// classes, since we can't write a rule in css3 that peeks into a child attribute.
-
-				if (!string.IsNullOrEmpty(cssClass))
-					pageContainer.SetAttribute("class", "pageContainer " + cssClass);
-
+				var pageContainer = WrapPageAndAddInvisibleCover(pageDoc, pageElementForThumbnail, layoutCssClass);
 				cellDiv.AppendChild(pageContainer);
-				var captionDiv = pageDoc.CreateElement("div");
-				captionDiv.SetAttribute("class", "thumbnailCaption");
-				cellDiv.AppendChild(captionDiv);
-				string captionI18nId;
-				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber, out captionI18nId);
-				if (!string.IsNullOrEmpty(captionOrPageNumber))
-					captionDiv.InnerText = I18NApi.GetTranslationDefaultMayNotBeEnglish(captionI18nId, captionOrPageNumber);
-			} // end pages foreach
 
-			// set interval based on physical RAM
-			var intervalAttrib = pageDoc.CreateAttribute("data-thumbnail-interval");
-			intervalAttrib.Value = _thumbnailInterval;
-			body.Attributes.Append(intervalAttrib);
+				pageNumber = AddCaptionToCell(pageDoc, cellDiv, page, pageNumber);
+			} // end pages foreach
 
 			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 			// Save the scroll position of the thumbnail list to restore in WebBrowser_DocumentCompleted.
@@ -372,9 +310,115 @@ namespace Bloom.Edit
 			// (The TryParse is probably not necessary...in an early version of this code I was getting
 			// nulls back sometimes, it may no longer be possible.)
 			int.TryParse(_browser.RunJavaScript("(document.getElementById('pageGridWrapper')) ? document.getElementById('pageGridWrapper').scrollTop.toString() : '0'"), out _verticalScrollDistance);
-			_baseForRelativePaths = dom.BaseForRelativePaths;
-			_browser.Navigate(dom, source:BloomServer.SimulatedPageFileSource.Pagelist);
+			_baseForRelativePaths = pageListDom.BaseForRelativePaths;
+			_browser.Navigate(pageListDom, source:BloomServer.SimulatedPageFileSource.Pagelist);
 			return result;
+		}
+
+		private static XmlElement CreatePageElementForThumbnail(XmlDocument pageDoc, XmlNode pageElement,
+			string layoutCssClass)
+		{
+			XmlElement pageElementForThumbnail;
+			if (!TroubleShooterDialog.MakeEmptyPageThumbnails)
+			{
+				pageElementForThumbnail = pageDoc.ImportNode(pageElement, true) as XmlElement;
+
+				// BL-1112: Reduce size of images in page thumbnails.
+				// We are setting the src to empty so that we can use JavaScript to request the thumbnails
+				// in a controlled manner that should reduce the likelihood of not receiving the image quickly
+				// enough and displaying the alt text rather than the image.
+				DelayAllImageNodes(pageElementForThumbnail);
+			}
+			else
+			{
+				// Just make a minimal placeholder to get the white border.
+				pageElementForThumbnail = pageDoc.CreateElement("div");
+				var pageClasses = "bloom-page";
+				// The page needs to have one of the classes like A4Portrait or it will have zero size and vanish.
+				if (!string.IsNullOrEmpty(layoutCssClass))
+					pageClasses += " " + layoutCssClass;
+				pageElementForThumbnail.SetAttribute("class", pageClasses);
+			}
+
+			return pageElementForThumbnail;
+		}
+
+		private static int AddCaptionToCell(XmlDocument pageDoc, XmlNode cellDiv, IPage page, int pageNumber)
+		{
+			var captionDiv = pageDoc.CreateElement("div");
+			captionDiv.SetAttribute("class", "thumbnailCaption");
+			cellDiv.AppendChild(captionDiv);
+			string captionI18nId;
+			var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber, out captionI18nId);
+			if (!string.IsNullOrEmpty(captionOrPageNumber))
+				captionDiv.InnerText = I18NApi.GetTranslationDefaultMayNotBeEnglish(captionI18nId, captionOrPageNumber);
+			return pageNumber;
+		}
+
+		private static XmlElement WrapPageAndAddInvisibleCover(XmlDocument pageDoc, XmlNode pageElementForThumbnail,
+			string layoutCssClass)
+		{
+			// We wrap our incredible-shrinking page in a plain 'ol div so that we
+			// have something to give a border to when this page is selected
+			var pageContainer = pageDoc.CreateElement("div");
+			pageContainer.SetAttribute("class", PageContainerClass);
+			if (pageElementForThumbnail != null)
+			{
+				pageContainer.AppendChild(pageElementForThumbnail);
+			}
+
+			// We need an invisible div covering our pageContainer, so that the user can't actually click
+			// on the underlying "incredible-shrinking page".
+			var invisibleCover = pageDoc.CreateElement("div");
+			invisibleCover.SetAttribute("class", InvisbleThumbClass);
+			pageContainer.AppendChild(invisibleCover);
+
+			// And here it gets fragile (or not).
+			// The nature of how we're doing the thumbnails (relying on scaling) seems to mess up
+			// the browser's normal ability to assign a width to the parent div. So our parent
+			// here, .pageContainer, doesn't grow with the size of its child. Sigh. So for the
+			// moment, we assign appropriate sizes, by hand. We rely on c# code to add these
+			// classes, since we can't write a rule in css3 that peeks into a child attribute.
+
+			if (!string.IsNullOrEmpty(layoutCssClass))
+				pageContainer.SetAttribute("class", "pageContainer " + layoutCssClass);
+
+			return pageContainer;
+		}
+
+		private static void OptimizeForLinux(HtmlDom pageListDom)
+		{
+			// BL-987: Add styles to optimize performance on Linux
+			var style = pageListDom.RawDom.CreateElement("style");
+			style.InnerXml =
+				"img { image-rendering: optimizeSpeed; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }";
+			pageListDom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
+		}
+
+		private static string GetLayoutCssClass(XmlElement pageElement)
+		{
+			var pageClasses = pageElement.GetStringAttribute("class").Split(new[] { ' ' });
+			return pageClasses.FirstOrDefault(c => c.ToLowerInvariant().EndsWith("portrait") || c.ToLower().EndsWith("landscape"));
+		}
+
+		private static XmlNode SetupGridlyParent(XmlDocument pageDoc)
+		{
+			var body = pageDoc.GetElementsByTagName("body")[0];
+
+			// set interval based on physical RAM
+			var intervalAttrib = pageDoc.CreateAttribute("data-thumbnail-interval");
+			intervalAttrib.Value = _thumbnailInterval;
+			body.Attributes?.Append(intervalAttrib);
+
+			return body.SelectSingleNode("//*[@id='pageGrid']");
+		}
+
+		private static XmlElement CreatePageGridWrapper(XmlDocument pageDoc, string gridId)
+		{
+			var cellDiv = pageDoc.CreateElement("div");
+			cellDiv.SetAttribute("class", GridItemClass);
+			cellDiv.SetAttribute("id", gridId);
+			return cellDiv;
 		}
 
 		private static void DelayAllImageNodes(XmlElement pageElementForThumbnail)
@@ -521,7 +565,7 @@ namespace Bloom.Edit
 						gotPageElt = true;
 						continue;
 					}
-					if (className.Contains(" " + ClassForGridItem + " "))
+					if (className.Contains(" " + GridItemClass + " "))
 					{
 						if (!gotPageElt)
 							return null; // clicked somewhere in a grid, but not actually on the page: intended page may be ambiguous.
