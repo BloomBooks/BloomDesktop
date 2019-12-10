@@ -277,7 +277,7 @@ namespace Bloom.web.controllers
 			var nameString = GetNameString(firstName, lastName);
 			var obfuscatedEmail = GetObfuscatedEmail(userEmail);
 			var emailString = string.IsNullOrWhiteSpace(obfuscatedEmail) ? string.Empty : " (" + obfuscatedEmail + ")";
-			bldr.AppendLine("Error Report from " + nameString + emailString + " on " + DateTime.UtcNow.ToUniversalTime() + " (UTC)");
+			bldr.AppendLine("Error Report from " + nameString + emailString + " on " + DateTime.UtcNow.ToUniversalTime() + " UTC");
 		}
 
 		private static object GetNameString(string firstName, string lastName)
