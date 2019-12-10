@@ -1303,6 +1303,33 @@ namespace Bloom.Publish.Epub
 						// (and tie the image to it). 'ImageDescriptionEdit-style' works with the 'lang' attribute
 						// to style the aside in the ePUB.
 						aside.SetAttribute("class", "imageDescription ImageDescriptionEdit-style");
+
+						// If the aside contains a TextBox mode recording, we need to maintain a div with the recording
+						// data attributes inside the aside element.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7805.
+						// Note that if the recording hasn't been split, the data-audiorecordingendtimes attribute will not exist
+						// and the sentences won't be marked with the bloom-highlightSegment class.
+						if (activeDescription.GetOptionalStringAttribute("data-audiorecordingmode", null) == "TextBox" &&
+							activeDescription.GetStringAttribute("class").Contains("audio-sentence"))
+						{
+							var duration = activeDescription.GetOptionalStringAttribute("data-duration", null);
+							var audioId = activeDescription.GetOptionalStringAttribute("id", null);
+							// If we don't have the id and data-duration values, playback won't work in the epub,
+							// and we may as well leave the current aside (which contains the text) alone.
+							if (!String.IsNullOrEmpty(duration) && !String.IsNullOrEmpty(audioId))
+							{
+								aside.InnerXml = "";
+								var divAudio = description.OwnerDocument.CreateElement("div");
+								divAudio.InnerXml = activeDescription.InnerXml;
+								divAudio.SetAttribute("class", "audio-sentence");
+								divAudio.SetAttribute("data-audiorecordingmode", "TextBox");
+								var endTimes = activeDescription.GetOptionalStringAttribute("data-audiorecordingendtimes", null);
+								if (!String.IsNullOrEmpty(endTimes))
+									divAudio.SetAttribute("data-audiorecordingendtimes", endTimes);
+								divAudio.SetAttribute("data-duration", duration);
+								divAudio.SetAttribute("id", audioId);
+								aside.AppendChild(divAudio);
+							}
+						}
 						asideContainer.AppendChild(aside);
 					}
 					// Delete the original image description since its content has been copied into the aside we
