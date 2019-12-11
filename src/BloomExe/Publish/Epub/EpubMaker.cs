@@ -1310,11 +1310,17 @@ namespace Bloom.Publish.Epub
 					description.ParentNode.RemoveChild(description);
 				}
 			}
+			else if (PublishImageDescriptions == BookInfo.HowToPublishImageDescriptions.None)
+			{
+				// This ensures that we get rid of audio as well as the text display.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-7839.
+				var imageDescriptions = bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]");
+				foreach (XmlElement description in imageDescriptions)
+				{
+					description.ParentNode.RemoveChild(description);
+				}
+			}
 			// code to handle HowToPublishImageDescriptions.Links was removed from Bloom 4.6 on June 28, 2019.
-			// If HowToPublishImageDescriptions.None, leave alone, and they will be invisible, but not deleted.
-			// This allows the image description audio to play even when the description isn't displayed in
-			// written form (BL-7237).  (For broken readers, the text might still be visible, but then it's
-			// likely the audio wouldn't play anyway.)
 		}
 
 		/// <summary>
