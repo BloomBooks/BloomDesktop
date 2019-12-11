@@ -167,7 +167,7 @@ namespace BloomTests.Publish
 		}
 
 		[Test]
-		public void HandleImageDescriptions_HowTo_None_LeavesDescriptionAlone()
+		public void HandleImageDescriptions_HowTo_None_RemovesDescription()
 		{
 			string inputImageHtml = "<img src='a.png'/>";
 			var htmlDom = new HtmlDom($@"<html><body>
@@ -194,28 +194,11 @@ namespace BloomTests.Publish
 			Assert.That(divImage.GetAttribute("class"), Is.EqualTo("bloom-imageContainer"));
 			var imgNodes = divImage.SafeSelectNodes("./*");
 			Assert.That(imgNodes, Is.Not.Null);
-			Assert.That(imgNodes.Count, Is.EqualTo(2));
+			Assert.That(imgNodes.Count, Is.EqualTo(1));
 
 			var img = imgNodes[0] as System.Xml.XmlElement;
 			Assert.That(img.LocalName, Is.EqualTo("img"));
 			Assert.That(img.GetAttribute("alt"), Is.EqualTo("This is a test."));
-
-			var div = imgNodes[1] as System.Xml.XmlElement;
-			Assert.That(div.LocalName, Is.EqualTo("div"));
-			Assert.That(div.GetAttribute("class"), Is.EqualTo("bloom-translationGroup bloom-imageDescription"));
-			var divDescList = div.SafeSelectNodes("./*");
-			Assert.That(divDescList, Is.Not.Null);
-			Assert.That(divDescList.Count, Is.EqualTo(1));
-			var divDesc = divDescList[0] as System.Xml.XmlElement;
-			Assert.That(divDesc.LocalName, Is.EqualTo("div"));
-			Assert.That(divDesc.GetAttribute("lang"), Is.EqualTo("en"));
-			var paraNodes = divDesc.SafeSelectNodes("./*");
-			Assert.That(paraNodes, Is.Not.Null);
-			Assert.That(paraNodes.Count, Is.EqualTo(1));
-			var para = paraNodes[0] as System.Xml.XmlElement;
-			Assert.That(para.LocalName, Is.EqualTo("p"));
-			Assert.That(para.InnerText, Is.EqualTo("This is a test."));
-			Assert.That(para.InnerXml, Is.EqualTo("This is a test."));
 		}
 
 		private void HandleImageDescriptions(HtmlDom htmlDom, BookInfo.HowToPublishImageDescriptions howTo = BookInfo.HowToPublishImageDescriptions.None)
