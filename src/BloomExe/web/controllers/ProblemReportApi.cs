@@ -27,6 +27,12 @@ namespace Bloom.web.controllers
 		private static Exception _currentException;
 		private static string _detailedMessage; // usually from Bloom itself
 
+		/// <summary>
+		/// We want this name "different" enough that it's not likely to be supplied by a user in a book,
+		/// since we turn off caching for this file in web/RequestInfo.cs to avoid stale screenshots.
+		/// </summary>
+		internal const string ScreenshotName = "ProblemReportScreenshot.png";
+
 		private string CollectionFolder => Path.GetDirectoryName(_bookSelection.CurrentSelection.StoragePageFolder);
 
 		public ProblemReportApi(BookSelection bookSelection)
@@ -196,6 +202,7 @@ namespace Bloom.web.controllers
 				controlForScreenshotting = Form.ActiveForm;
 			if (controlForScreenshotting == null) // still possible if we come from a "Details" button
 				controlForScreenshotting = FatalExceptionHandler.ControlOnUIThread;
+			ResetScreenshotFile();
 			SafeInvoke.InvokeIfPossible("Screen Shot", controlForScreenshotting, false,
 				() =>
 				{
@@ -209,12 +216,12 @@ namespace Bloom.web.controllers
 								bounds.Size);
 						}
 
-						_screenshotTempFile = TempFile.WithFilename("screenshot.png");
+						_screenshotTempFile = TempFile.WithFilename(ScreenshotName);
 						RobustImageIO.SaveImage(screenshot, _screenshotTempFile.Path, ImageFormat.Png);
 					}
 					catch (Exception e)
 					{
-						_screenshotTempFile = null;
+						ResetScreenshotFile();
 						Logger.WriteError("Bloom was unable to create a screenshot.", e);
 					}
 
@@ -226,6 +233,12 @@ namespace Bloom.web.controllers
 						dlg.ShowDialog();
 					}
 				});
+		}
+
+		private static void ResetScreenshotFile()
+		{
+			_screenshotTempFile?.Dispose();
+			_screenshotTempFile = null;
 		}
 
 		private string GetDiagnosticInfo(bool includeBook, string userDescription, string userEmail)
