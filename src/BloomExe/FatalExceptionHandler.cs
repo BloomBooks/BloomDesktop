@@ -94,7 +94,7 @@ namespace Bloom
 
 		protected override bool DisplayError(Exception exception)
 		{
-			ProblemReportApi.ShowProblemDialog(Form.ActiveForm, exception);
+			ProblemReportApi.ShowProblemDialog(Form.ActiveForm, exception, "", "fatal");
 			return true;
 		}
 	}
