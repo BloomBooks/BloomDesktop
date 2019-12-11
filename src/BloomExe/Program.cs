@@ -1303,7 +1303,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 				var name = process.ProcessName.ToLowerInvariant();
 				// The second test prevents counting the Bloom.vshost.exe process which Visual Studio and similar tools
 				// create to speed up launching the program in debug mode. It's only useful for developers.
-				return name.Contains("bloom") && !name.Contains("vshost");
+				return name.Contains("bloom") && !name.Contains("vshost") && !name.Contains("bloomharvester");
 			}
 			catch (System.InvalidOperationException)
 			{

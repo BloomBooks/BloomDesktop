@@ -251,6 +251,10 @@ namespace Bloom.Collection
 				// Following should be consistent with LanguageIdControl constructor.
 				dlg.UseSimplifiedChinese();
 
+				// Avoid showing gratuitous script markers in language tags.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-7641.
+				dlg.IncludeScriptMarkers = false;
+
 				if (DialogResult.OK != dlg.ShowDialog())
 				{
 					return null;

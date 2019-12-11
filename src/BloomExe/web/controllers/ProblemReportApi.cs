@@ -274,8 +274,21 @@ namespace Bloom.web.controllers
 		{
 			var firstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName;
 			var lastName = SIL.Windows.Forms.Registration.Registration.Default.Surname;
-			bldr.AppendLine("Error Report from " + lastName + ", " + firstName + " (" + GetObfuscatedEmail(userEmail) + ") on " + DateTime.UtcNow.ToUniversalTime());
+			var nameString = GetNameString(firstName, lastName);
+			var obfuscatedEmail = GetObfuscatedEmail(userEmail);
+			var emailString = string.IsNullOrWhiteSpace(obfuscatedEmail) ? string.Empty : " (" + obfuscatedEmail + ")";
+			bldr.AppendLine("Error Report from " + nameString + emailString + " on " + DateTime.UtcNow.ToUniversalTime() + " UTC");
 		}
+
+		private static object GetNameString(string firstName, string lastName)
+		{
+			return !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName)
+				? lastName + ", " + firstName
+				: string.IsNullOrWhiteSpace(lastName) && string.IsNullOrWhiteSpace(firstName) ?
+					"unknown" :
+					(lastName + firstName).Trim();
+		}
+
 
 		private static void GetStandardErrorReportingProperties(StringBuilder bldr, bool appendLog)
 		{

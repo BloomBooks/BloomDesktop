@@ -74,7 +74,8 @@ namespace Bloom.Api
 		/// </summary>
 		private readonly Queue<HttpListenerContext> _queue;
 		// tasks that should be postponed until no server actions are happening.
-		private readonly Queue<Action> _idleTasks = new Queue<Action>(); // access locked with _queue
+
+		private readonly Queue<IdleTaskQueueItem> _idleTasks = new Queue<IdleTaskQueueItem>(); // access locked with _queue
 
 		/// <summary>
 		/// Some requests which may be made to the server require other requests to be initiated
@@ -267,10 +268,24 @@ namespace Bloom.Api
 				ReplaceAnyVideoElementsWithPlaceholder(dom);
 			}
 			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
+			lock (_theOneInstance._queue)
+			{
+				foreach (var item in _theOneInstance._idleTasks)
+				{
+					if (item.Id == key)
+					{
+						// Making a new value for this key AFTER we scheduled deleting it means we have
+						// to prevent the deletion, or we'll lose the NEW value. We'd prefer to just delete
+						// the item from the queue, but the Queue API doesn't support this.
+						item.Cancelled = true;
+					}
+				}
+			}
 			lock (_urlToSimulatedPageContent)
 			{
 				_urlToSimulatedPageContent[key] = html5String;
 			}
+
 			return new SimulatedPageFile {Key = url};
 		}
 
@@ -306,6 +321,7 @@ namespace Bloom.Api
 			// There are potential race conditions where one server thread is asked to fetch a simulated page,
 			// but meanwhile, some other thread disposes of it, so it can't be found. We therefore wait to dispose
 			// of simulated pages until there are no busy worker threads and no queued actions.
+			var realKey = key.FromLocalhost();
 			Action removeIt = () =>
 			{
 				if (key.StartsWith("file://"))
@@ -317,12 +333,12 @@ namespace Bloom.Api
 
 				lock (_urlToSimulatedPageContent)
 				{
-					_urlToSimulatedPageContent.Remove(key.FromLocalhost());
+					_urlToSimulatedPageContent.Remove(realKey);
 				}
 			};
 			lock (_theOneInstance._queue)
 			{
-				_theOneInstance._idleTasks.Enqueue(removeIt);
+				_theOneInstance._idleTasks.Enqueue(new IdleTaskQueueItem() {Id = realKey, WhatToDo = removeIt});
 			}
 		}
 
@@ -1143,20 +1159,27 @@ namespace Bloom.Api
 		/// </summary>
 		internal void DoIdleTasksIfNoActivity()
 		{
-			for (; ; ) // as long as we find idleTasks to do
+			for (; ; ) // as long as we find idleTasks to do (and no non-idle ones in progress or waiting)
 			{
 				// The lock makes sure that exactly one thread will take on a particular idle task,
-				// and only if we have reached the safe state.
-				Action idleTask = null;
+				// and only if we have reached the safe state. (Since we're also checking _queue.Count
+				// here, we need a lock on _queue. Rather than messing with two lock objects, I decided
+				// to let _queue be used as a lock object for all access to either queue.)
+				Action whatToDo = null;
 				lock (_queue)
 				{
-					if (_busyThreads == 0 && _queue.Count == 0 && _idleTasks.Count > 0)
+					while (_busyThreads == 0 && _queue.Count == 0 && _idleTasks.Count > 0)
 					{
-						idleTask = _idleTasks.Dequeue();
+						var idleTaskQueueItem = _idleTasks.Dequeue();
+						if (!idleTaskQueueItem.Cancelled)
+						{
+							whatToDo = idleTaskQueueItem.WhatToDo;
+							break;
+						}
 					}
 				}
 
-				if (idleTask == null)
+				if (whatToDo == null)
 					break;
 				// but, we don't need to lock up the queue while we actually do it. Of course, some worker
 				// thread may become busy before we finish the idleTask. But that's OK. We just wanted
@@ -1164,7 +1187,7 @@ namespace Bloom.Api
 				// in progress. In fact, it's important NOT to let the _queue be locked while we perform
 				// the action. The one current instance of idleTask currently involves locking ANOTHER
 				// data structure, and if we independently lock two objects, we risk deadlock.
-				idleTask.Invoke();
+				whatToDo.Invoke();
 			}
 		}
 
@@ -1382,5 +1405,21 @@ namespace Bloom.Api
 		}
 
 #endregion
+	}
+
+	class IdleTaskQueueItem
+	{
+		// The actual thing to do when idle
+		// (currently typically to delete an obsolete simulated page)
+		public Action WhatToDo;
+		// An ID which can be used to identify obsolete idle tasks
+		// (currently typically the Key of a simulated page)
+		public string Id;
+		// True if the idle task should not be done after all;
+		// we need this because there is no API to simply remove an
+		// item from a Queue.
+		// (currently set when we add a new simulated page with the same
+		// key as one we had queued for deletion but not yet deleted)
+		public bool Cancelled;
 	}
 }

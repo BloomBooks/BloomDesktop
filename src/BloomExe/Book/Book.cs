@@ -1827,11 +1827,9 @@ namespace Bloom.Book
 				// Second pass: for each parent, if it lacks a non-empty child for one of the languages, set value for that lang to false.
 				foreach (var lang in result.Keys.ToList()) // ToList so we can modify original collection as we go
 				{
-					// This check ignores special pages that may have fixed language settings like div[@data-default-languages="N1"]
-					// So it may be overly pessimistic about completeness.
 					foreach (var parent in parents)
 					{
-						if (!HasContentInLang(parent, lang))
+						if (IsLanguageWanted(parent, lang) && !HasContentInLang(parent, lang))
 						{
 							result[lang] = false; // not complete
 							break; // no need to check other parents.
@@ -1840,6 +1838,36 @@ namespace Bloom.Book
 				}
 				return result;
 			}
+		}
+
+		private bool IsLanguageWanted(XmlElement parent, string lang)
+		{
+			var defaultLangs = parent.GetAttribute("data-default-languages");
+			if (String.IsNullOrEmpty(defaultLangs) || defaultLangs == "auto")
+				return true;	// assume we want everything
+			var dataDefaultLanguages = defaultLangs.Split(new char[] {',',' '}, StringSplitOptions.RemoveEmptyEntries);
+			foreach (var defaultLang in dataDefaultLanguages)
+			{
+				switch (defaultLang)
+				{
+				case "V":
+				case "L1":
+					if (lang == CollectionSettings.Language1.Iso639Code)
+						return true;
+					break;
+				case "N1":
+				case "L2":
+					if (lang == CollectionSettings.Language2.Iso639Code)
+						return true;
+					break;
+				case "N2":
+				case "L3":
+					if (lang == CollectionSettings.Language3.Iso639Code)
+						return true;
+					break;
+				}
+			}
+			return false;
 		}
 
 		private static bool HasContentInLang(XmlElement parent, string lang)
