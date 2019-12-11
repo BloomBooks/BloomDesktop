@@ -10,6 +10,7 @@ using System.Net;
 using System.Text;
 using System.Web;
 using Bloom.web;
+using Bloom.web.controllers;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -235,6 +236,8 @@ namespace Bloom.Api
 			// So, obviously, you want to comment this line out to test caching.
 			return false;
 #endif
+			if (path.EndsWith(ProblemReportApi.ScreenshotName))
+				return false; // Otherwise we can get stale screenshot images from our ProblemReportApi
 			if (string.IsNullOrEmpty(DoNotCacheFolder))
 				return false; // if for some reason this hasn't been set, play safe and don't cache.
 			// if we're using a lower resolution version of an image (with a generated filename),
