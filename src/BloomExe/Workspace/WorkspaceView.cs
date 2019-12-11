@@ -902,7 +902,7 @@ namespace Bloom.Workspace
 			// To test the old ErrorReport.NotifyUserOfProblem, uncomment this next line.
 			// ErrorReport.NotifyUserOfProblem(new ApplicationException("internal exception message"), "My main message");
 
-			ProblemReportApi.ShowProblemDialog(this);
+			ProblemReportApi.ShowProblemDialog(this, null);
 		}
 
 		public void SetStateOfNonPublishTabs(bool enable)

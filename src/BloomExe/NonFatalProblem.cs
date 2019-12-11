@@ -90,7 +90,7 @@ namespace Bloom
 						{
 							// N.B.: We should be more careful than ever about when we want 'showSendReport' to be 'true',
 							// since this new "nonfatal" UI doesn't have a "Cancel" button.
-							ProblemReportApi.ShowProblemDialog(Form.ActiveForm, exception, "nonfatal");
+							ProblemReportApi.ShowProblemDialog(Form.ActiveForm, exception, fullDetailedMessage, "nonfatal");
 						}
 						else
 						{

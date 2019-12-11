@@ -235,7 +235,7 @@ namespace Bloom.CollectionTab
 		{
 			if (GetAnchorHref(e).EndsWith("ReportProblem"))
 			{
-				ProblemReportApi.ShowProblemDialog(_previewBrowser, "nonfatal");
+				ProblemReportApi.ShowProblemDialog(_previewBrowser, null, "", "nonfatal");
 			}
 		}
 
