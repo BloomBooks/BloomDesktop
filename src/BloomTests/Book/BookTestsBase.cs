@@ -224,7 +224,7 @@ namespace BloomTests.Book
 						<textarea id='6' lang='xyz'>original2</textarea>
 					</p>
 					<p>
-						<textarea lang='xyz' id='copyOfVTitle'  data-book='bookTitle'>tree</textarea>
+						<textarea lang='xyz' idc='copyOfVTitle'  data-book='bookTitle'>tree</textarea>
 						<textarea lang='xyz' id='aa'  data-collection='testLibraryVariable'>aa</textarea>
 					   <textarea lang='xyz' id='bb'  data-collection='testLibraryVariable'>bb</textarea>
 
