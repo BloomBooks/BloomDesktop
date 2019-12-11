@@ -678,6 +678,14 @@ namespace Bloom.Book
 				BloomReaderMinVersion = "1.0",
 				XPath = "//*[@data-audiorecordingmode='TextBox']"
 			},
+			new Feature() {FeatureId = "wholeTextBoxAudioInXmatter",
+				// technically could be in back matter, but typically back matter has no recordable text,
+				// and xmatter seems too technical a term for end users to see.
+				FeaturePhrase = "Whole Text Box Audio in Front/Back Matter",
+				BloomDesktopMinVersion = "4.7",
+				BloomReaderMinVersion = "1.0",
+				XPath = "//div[@data-xmatter-page]//*[@data-audiorecordingmode='TextBox']"
+			},
 			new Feature() {FeatureId = "comical-1",
 				FeaturePhrase = "Support for Comics",
 				BloomDesktopMinVersion = "4.7",

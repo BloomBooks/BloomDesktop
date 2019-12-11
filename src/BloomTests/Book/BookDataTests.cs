@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -17,6 +18,11 @@ using SIL.Xml;
 
 namespace BloomTests.Book
 {
+	// Tests of BookData, especially SynchronizeDataItemsThroughoutDOM and friends.
+	// When testing these, it's important to note that attribute values, including id, are
+	// now copied to output elements. So be careful about using id to get an element
+	// you want to test in the result. It may be better to use a unique attribute name.
+	// However, any attribute on the input element will get copied to the output unless forbidden.
 	[TestFixture]
 	public sealed class BookDataTests
 	{
@@ -611,15 +617,15 @@ namespace BloomTests.Book
 			var dom = new HtmlDom(@"<html ><head></head><body>
 				<div class='bloom-page' id='guid3'>
 					<p>
-						<textarea lang='xyz' id='copyOfVTitle'  data-book='bookTitle'>tree</textarea>
+						<textarea lang='xyz' idc='copyOfVTitle'  data-book='bookTitle'>tree</textarea>
 						<textarea lang='xyz' id='1' data-collection='testLibraryVariable'>aa</textarea>
-					   <textarea lang='xyz' id='2'  data-collection='testLibraryVariable'>bb</textarea>
+					   <textarea lang='xyz' id2='2'  data-collection='testLibraryVariable'>bb</textarea>
 					</p>
 				</div>
 				</body></html>");
 			var data = new BookData(dom, _collectionSettings, null);
 			data.UpdateVariablesAndDataDivThroughDOM();
-			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2']");
+			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id2='2']");
 			Assert.AreEqual("aa", textarea2.InnerText);
 		}
 
@@ -690,7 +696,7 @@ namespace BloomTests.Book
 				</div>
 				<div class='bloom-page' id='guid3'>
 					<p>
-						<textarea lang='xyz' id='3'  data-book='bookTitle'>xyzTitle</textarea>
+						<textarea lang='xyz' id3='3'  data-book='bookTitle'>xyzTitle</textarea>
 					</p>
 				</div>
 			 </body></html>");
@@ -702,7 +708,7 @@ namespace BloomTests.Book
 			textarea2.InnerText = "newXyzTitle";
 			var data = new BookData(dom, CreateCollection(Language1Iso639Code: "etr"), null);
 			data.SynchronizeDataItemsThroughoutDOM();
-			var textarea3 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='3']");
+			var textarea3 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id3='3']");
 			Assert.AreEqual("newXyzTitle", textarea3.InnerText);
 			AssertThatXmlIn.Dom(dom.RawDom)
 				.HasSpecifiedNumberOfMatchesForXpath("//textarea[@id='1' and text()='EnglishTitle']", 1);
@@ -720,7 +726,7 @@ namespace BloomTests.Book
 				</div>
 				<div class='bloom-page' id='guid3'>
 					<p>
-						<textarea lang='xyz' id='3'  data-book='bookTitle'>xyzTitle</textarea>
+						<textarea lang='xyz' id3='3'  data-book='bookTitle'>xyzTitle</textarea>
 					</p>
 				</div>
 			 </body></html>");
@@ -734,7 +740,7 @@ namespace BloomTests.Book
 			data.SynchronizeDataItemsThroughoutDOM();
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2']");
 			Assert.AreEqual("xyzTitle", textarea2.InnerText);
-			var textarea3 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='3']");
+			var textarea3 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id3='3']");
 			Assert.AreEqual("xyzTitle", textarea3.InnerText);
 		}
 
@@ -1651,6 +1657,84 @@ namespace BloomTests.Book
 			data.SynchronizeDataItemsThroughoutDOM();
 			var foo = (XmlElement) dom.SelectSingleNodeHonoringDefaultNS("//*[@id='foo']");
 			Assert.That(foo.InnerXml, Contains.Substring("<label>some label</label>"));
+		}
+
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_CopiesTextBoxAudioData_ButNotJunkData_RemovesUnwantedItems()
+		{
+			// This is not very realistic. We expect that the junk attributes (aria-label, role, spellcheck) will NOT ever get into the bloomDataDiv.
+			// But we're trying to test what happens when they are present on the source element that SynchronizeDataItemsThroughoutDOM
+			// copies FROM, and that is the FIRST element it encounters in the document with a given data-book.
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				< div id='bloomDataDiv'>
+					 <div data-book='bookTitle' lang='en' data-duration='5.839433' id='i6a720491' data-audiorecordingmode='TextBox' aria-describedby='qtip-3' aria-label='false' role='textbox' spellcheck='true' tabindex='0' data-hasqtip='true' data-languagetipcontent='English' class='bloom-editable bloom-nodefaultstylerule testClass Title-On-Cover-style bloom-padForOverflow audio-sentence bloom-content1 bloom-visibility-code-on'><p>something</p></div>
+				</div>
+				<div class='bloom-page'>
+					 <div findMe='foo' data-book='bookTitle' data-duration='1.0' lang='en' keepMe='keep me' aria-describedby='qtip-5' data-audiorecordingendtimes='1.640 4.640' class='bloom-editable bloom-nodefaultstylerule bloom-postAudioSplit Title-On-Title-style bloom-padForOverflow'><p/></div>
+				</div>
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			var foo = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='foo']");
+			// an attribute that isn't present on the destination
+			Assert.That(foo.GetAttribute("id"), Is.EqualTo("i6a720491"));
+			// an attribute that needs to be overwritten.
+			Assert.That(foo.GetAttribute("data-duration"), Is.EqualTo("5.839433"));
+			// One that should not be copied
+			Assert.That(foo.Attributes["tabindex"], Is.Null);
+			// One that should be removed
+			Assert.That(foo.Attributes["data-audiorecordingendtimes"], Is.Null);
+			// One that should not be overwritten (though more commonly it wouldn't be in the destination)
+			Assert.That(foo.GetAttribute("aria-describedby"), Is.EqualTo("qtip-5"));
+			// One that is not in the source and should be left alone
+			Assert.That(foo.GetAttribute("keepMe"), Is.EqualTo("keep me"));
+
+			var classes = new HashSet<string>(foo.GetAttribute("class", "").Split());
+			// a class that should be added to the destination
+			Assert.That(classes, Does.Contain("testClass"));
+			// Classes that should not be added
+			Assert.That(classes, Does.Not.Contain("bloom-content1"));
+			Assert.That(classes, Does.Not.Contain("bloom-visibility-code-on"));
+			// Some important ones that should not be messed with
+			Assert.That(classes, Does.Contain("bloom-editable"));
+			Assert.That(classes, Does.Contain("bloom-padForOverflow"));
+			// Style classes are specific to locations in the book
+			Assert.That(classes, Does.Not.Contain("Title-On-Cover-style"));
+			Assert.That(classes, Does.Contain("Title-On-Title-style"));
+			// Classes that should be removed
+			Assert.That(classes, Does.Not.Contain("bloom-postAudioSplit"));
+		}
+
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_DoesNotRemoveRemovableAttrsAndClasses_IfInSource()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					 <div data-book='bookTitle' lang='en' data-duration='5.839433' id='i6a720491' data-audiorecordingmode='TextBox' data-audiorecordingendtimes='1.640 4.640' aria-describedby='qtip-3' aria-label='false' role='textbox' spellcheck='true' tabindex='0' data-hasqtip='true' data-languagetipcontent='English' class='bloom-editable bloom-postAudioSplit bloom-nodefaultstylerule testClass Title-On-Cover-style bloom-padForOverflow audio-sentence bloom-content1 bloom-visibility-code-on'><p>something</p></div>
+				</div>
+				<div class='bloom-page'>
+					 <div findMe='foo' data-book='bookTitle' data-duration='1.0' lang='en' keepMe='keep me' aria-describedby='qtip-5' data-audiorecordingendtimes='2.7' class='bloom-editable bloom-postAudioSplit bloom-nodefaultstylerule Title-On-Title-style bloom-padForOverflow'><p/></div>
+				</div>
+				<div class='bloom-page'>
+					 <div findMe='foo2' data-book='bookTitle' data-duration='1.0' lang='en' keepMe='keep me' aria-describedby='qtip-5' class='bloom-editable bloom-nodefaultstylerule Title-On-Title-style bloom-padForOverflow'><p/></div>
+				</div>
+
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			var foo = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='foo']");
+			var foo2 = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='foo2']");
+			// an attribute that is potentially deletable, but present in source, gets copied to destination, overwriting old value
+			Assert.That(foo.GetAttribute("data-audiorecordingendtimes"), Is.EqualTo("1.640 4.640"));
+			// also copied to destination that previously didn't have it.
+			Assert.That(foo2.GetAttribute("data-audiorecordingendtimes"), Is.EqualTo("1.640 4.640"));
+
+			var classes = new HashSet<string>(foo.GetAttribute("class", "").Split());
+			var classes2 = new HashSet<string>(foo2.GetAttribute("class", "").Split());
+			// a class that is potentially deletable, but present in source and destination, is kept
+			Assert.That(classes, Does.Contain("bloom-postAudioSplit"));
+			// a class that is potentially deletable, present in source but not destination, is added
+			Assert.That(classes2, Does.Contain("bloom-postAudioSplit"));
 		}
 
 		[Test]

@@ -335,33 +335,16 @@ export default class AudioRecording {
             return;
         }
 
-        // We initialize the checkbox based on our state and whether this is an xMatter
-        // page or not. We ran into a problem (BL-6737) where audio was lost if it was
-        // recorded in TextBox mode, because the xMatter replacement code (using DataDiv)
-        // didn't handle that case. We decided it was best to only allow Sentence mode on
-        // xMatter pages.
-        if (ToolBox.isXmatterPage()) {
-            this.recordingModeInput.checked = false;
-            this.disableRecordingModeControl(false);
-            // We want this setting change to be a temporary thing, in the sense that
-            // when we move to a non-xMatter (normal content) page, the UI will still be
-            // in whatever mode the user had it in. Since the mode input is disabled, it
-            // won't get set to anything else until we select a non-xMatter page.
-            this.audioRecordingMode = AudioRecordingMode.Sentence;
-
-            // In the else, this gets called by setRecordingModeCheckbox
-            this.renderImportRecordingButton();
+        // We initialize the checkbox based on our state.
+        if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
+            this.setRecordingModeCheckbox(false);
+        } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
+            this.setRecordingModeCheckbox(true);
         } else {
-            if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
-                this.setRecordingModeCheckbox(false);
-            } else if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
-                this.setRecordingModeCheckbox(true);
-            } else {
-                console.assert(
-                    false,
-                    "Unimplemented format: " + this.audioRecordingMode
-                );
-            }
+            console.assert(
+                false,
+                "Unimplemented format: " + this.audioRecordingMode
+            );
         }
     }
 
@@ -1427,13 +1410,6 @@ export default class AudioRecording {
 
     // Update the input element (e.g. checkbox) which visually represents the recording mode and updates the textbox markup to reflect the new mode.
     public updateRecordingMode(forceOverwrite: boolean = false) {
-        // These two checks are here for paranoia. Normally if the function is disabled
-        // we don't install this click handler at all.
-        if (ToolBox.isXmatterPage()) {
-            this.notifyRecordingModeControlDisabledXMatter();
-            return;
-        }
-
         // Check if there are any audio recordings present.
         //   If so, these would become invalidated (and deleted down the road when the book's unnecessary files gets cleaned up)
         //   Warn the user if this deletion could happen
@@ -2871,31 +2847,24 @@ export default class AudioRecording {
         }
 
         // Recording Mode checkbox
-        if (ToolBox.isXmatterPage()) {
-            // We don't want to enable the checkbox if we are on an xMatter page (BL-6737).
-            // It is probably already disabled at this point, but might as well play it safe.
-            this.disableRecordingModeControl(false);
-        } else {
-            // Normal page
 
-            // Determine whether the recording mode checkbox should be enabled or not, based on whether any audio files are present
-            // for anything in the current text box
-            if (doesTextBoxAudioExist) {
-                if (
-                    this.audioRecordingMode === AudioRecordingMode.TextBox &&
-                    currentPlaybackMode === AudioRecordingMode.TextBox
-                ) {
-                    // There is some audio set to play back in Text Box mode. If we switch the Record Mode to sentence mode, it also implies switching the Playback mode to Sentence mode.
-                    // Disable the control so that the user can't accidentally lose data during this switch.
-                    this.disableRecordingModeControl(true);
-                } else {
-                    // Even though there is audio on this page, nothing immediately bad will happen if the user switches the checkbox mode, so go ahead and enable it.
-                    this.enableRecordingModeControl();
-                }
+        // Determine whether the recording mode checkbox should be enabled or not, based on whether any audio files are present
+        // for anything in the current text box
+        if (doesTextBoxAudioExist) {
+            if (
+                this.audioRecordingMode === AudioRecordingMode.TextBox &&
+                currentPlaybackMode === AudioRecordingMode.TextBox
+            ) {
+                // There is some audio set to play back in Text Box mode. If we switch the Record Mode to sentence mode, it also implies switching the Playback mode to Sentence mode.
+                // Disable the control so that the user can't accidentally lose data during this switch.
+                this.disableRecordingModeControl(true);
             } else {
-                // No existing audio on a normal page means definitely safe to enable. (No audio can be lost because none exists)
+                // Even though there is audio on this page, nothing immediately bad will happen if the user switches the checkbox mode, so go ahead and enable it.
                 this.enableRecordingModeControl();
             }
+        } else {
+            // No existing audio on a normal page means definitely safe to enable. (No audio can be lost because none exists)
+            this.enableRecordingModeControl();
         }
 
         // Note: Listen (Listen to whole page) button is not included here. Call it separately.
@@ -2956,10 +2925,7 @@ export default class AudioRecording {
     private enableRecordingModeIfAppropriate() {
         // The 'false' parameter here checks for visible text divs, but doesn't check
         // for actual text in them. We already know there aren't any WITH text.
-        if (
-            !ToolBox.isXmatterPage() &&
-            this.getRecordableDivs(false).length > 0
-        ) {
+        if (this.getRecordableDivs(false).length > 0) {
             // Enable the control, although we don't currently have any text on this page, because
             // we could add text at some point.
             this.enableRecordingModeControl();

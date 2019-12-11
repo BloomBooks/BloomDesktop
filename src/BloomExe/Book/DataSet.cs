@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SIL.Extensions;
 using SIL.Text;
@@ -12,7 +13,7 @@ namespace Bloom.Book
 		public DataSet()
 		{
 			WritingSystemAliases = new Dictionary<string, string>();
-			TextVariables = new Dictionary<string, NamedMutliLingualValue>();
+			TextVariables = new Dictionary<string, DataSetElementValue>();
 			XmatterPageDataAttributeSets = new Dictionary<string, ISet<KeyValuePair<string, string>>>();
 		}
 
@@ -24,7 +25,7 @@ namespace Bloom.Book
 		/// </summary>
 		public Dictionary<string, string> WritingSystemAliases { get; private set; }
 
-		public Dictionary<string, NamedMutliLingualValue> TextVariables { get; private set; }
+		public Dictionary<string, DataSetElementValue> TextVariables { get; private set; }
 
 		/// <summary>
 		/// The key is the name of the xmatter page (such as frontCover).
@@ -41,15 +42,15 @@ namespace Bloom.Book
 			{
 				TextVariables.Remove(key);
 			}
-			TextVariables.Add(key, new NamedMutliLingualValue(text, isCollectionValue));
+			TextVariables.Add(key, new DataSetElementValue(text, isCollectionValue));
 		}
 
 		public void UpdateLanguageString(string key,  string value, string writingSystemId,bool isCollectionValue)
 		{
-			NamedMutliLingualValue namedMutliLingualValue;
+			DataSetElementValue dataSetElementValue;
 			MultiTextBase text;
-			if(TextVariables.TryGetValue(key,out namedMutliLingualValue))
-				text = namedMutliLingualValue.TextAlternatives;
+			if(TextVariables.TryGetValue(key,out dataSetElementValue))
+				text = dataSetElementValue.TextAlternatives;
 			else
 			{
 				text = new MultiTextBase();
@@ -57,7 +58,7 @@ namespace Bloom.Book
 			text.SetAlternative(DealiasWritingSystemId(writingSystemId), value);
 			TextVariables.Remove(key);
 			if(text.Count>0)
-				TextVariables.Add(key, new NamedMutliLingualValue(text, isCollectionValue));
+				TextVariables.Add(key, new DataSetElementValue(text, isCollectionValue));
 		}
 
 		public string DealiasWritingSystemId(string writingSystemId)
@@ -74,7 +75,7 @@ namespace Bloom.Book
 			if(!TextVariables.ContainsKey(key))
 			{
 				var text = new MultiTextBase();
-				TextVariables.Add(key, new NamedMutliLingualValue(text, isCollectionValue));
+				TextVariables.Add(key, new DataSetElementValue(text, isCollectionValue));
 			}
 			TextVariables[key].TextAlternatives.SetAlternative(writingSystemId,value);
 		}
@@ -102,7 +103,7 @@ namespace Bloom.Book
 				return false;
 			foreach (var key in TextVariables.Keys)
 			{
-				NamedMutliLingualValue otherVal;
+				DataSetElementValue otherVal;
 				if (!other.TextVariables.TryGetValue(key, out otherVal))
 					return false;
 				var ourVal = TextVariables[key];
@@ -110,6 +111,29 @@ namespace Bloom.Book
 					return false;
 				if (!ourVal.TextAlternatives.Equals(otherVal.TextAlternatives))
 					return false;
+				if (!ourVal.AttributeListKeys.SetEquals(otherVal.AttributeListKeys))
+					return false;
+				foreach (var lang in ourVal.AttributeListKeys)
+				{
+					var ourAttrs = ourVal.GetAttributeList(lang);
+					var otherAttrs = otherVal.GetAttributeList(lang);
+					if (ourAttrs.Count != otherAttrs.Count)
+						return false;
+					var otherDict = new Dictionary<string, string>();
+					// We don't care about the order of the lists, so make a dictionary of one set of tuples,
+					// and use it to see whether the other list has the same keys and values.
+					foreach (var tuple in otherAttrs)
+					{
+						otherDict[tuple.Item1] = tuple.Item2;
+					}
+
+					foreach (var tuple in ourAttrs)
+					{
+						string otherItem2;
+						if (!otherDict.TryGetValue(tuple.Item1, out otherItem2) || tuple.Item2 != otherItem2)
+							return false;
+					}
+				}
 			}
 
 			foreach (var key in XmatterPageDataAttributeSets.Keys)
@@ -120,19 +144,65 @@ namespace Bloom.Book
 				if (!XmatterPageDataAttributeSets[key].KeyedSetsEqual(otherVal))
 					return false;
 			}
+
 			return true;
 		}
 	}
 
-	public class NamedMutliLingualValue
+
+
+	/// <summary>
+	/// The values stored in DataSet.TextVariables. Each instance possibly stores data about multiple
+	/// languages. For each language, it stores data taken from some element that has a corresponding
+	/// lang attribute (and a data-book attribute, or one of the other data-X attributes, with
+	/// a value correspoding to the key under which this element is stored in DataSet.TextVariables).
+	/// The value stored in the TextAlternatives is, with some slight adjustments, the InnerXml of
+	/// the element. In addition, some of the attribute values of the element may be stored in
+	/// AttributeAlternatives under the same language key.
+	/// </summary>
+	public class DataSetElementValue
 	{
-		public NamedMutliLingualValue(MultiTextBase text, bool isCollectionValue)
+		public DataSetElementValue(MultiTextBase text, bool isCollectionValue)
 		{
 			TextAlternatives = text;
 			IsCollectionValue = isCollectionValue;
 		}
 		public MultiTextBase TextAlternatives;
 		public bool IsCollectionValue;
+		/// <summary>
+		/// Keyed by language code, value is a list of (attribute name, attribute value) pairs.
+		/// </summary>
+		private Dictionary<string, List<Tuple<string, string>>> _attributeAlternatives;
+
+		public void SetAttributeList(string lang, List<Tuple<string, string>> alternatives)
+		{
+			if (_attributeAlternatives == null)
+			{
+				_attributeAlternatives = new Dictionary<string, List<Tuple<string, string>>>();
+			}
+
+			if (alternatives == null)
+				_attributeAlternatives.Remove(lang);
+			else
+				_attributeAlternatives[lang] = alternatives;
+		}
+
+		public List<Tuple<string, string>> GetAttributeList(string lang)
+		{
+			List<Tuple<string, string>> result = null;
+			_attributeAlternatives?.TryGetValue(lang, out result);
+			return result;
+		}
+
+		public HashSet<string> AttributeListKeys
+		{
+			get
+			{
+				if (_attributeAlternatives == null)
+					return new HashSet<string>();
+				return new HashSet<string>(_attributeAlternatives.Keys);
+			}
+		}
 
 	}
 }
