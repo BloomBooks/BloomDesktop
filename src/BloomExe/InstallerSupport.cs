@@ -250,7 +250,7 @@ namespace Bloom
 				var exception =
 					new FileNotFoundException(
 						"Bloom was not able to find some of its files. The shortcut icon you clicked on may be out of date. Try deleting it and reinstalling Bloom");
-				ProblemReportApi.ShowProblemDialog(null, exception);
+				ProblemReportApi.ShowProblemDialog(null, exception, "", "fatal");
 				// Not sure these lines are reachable. Just making sure.
 				Application.Exit();
 				return;

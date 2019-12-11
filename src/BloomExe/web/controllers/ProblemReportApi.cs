@@ -24,6 +24,8 @@ namespace Bloom.web.controllers
 		private BloomZipFile _bookZipFile;
 		private readonly TempFile _bookZipFileTemp;
 		protected string YouTrackProjectKey = "BL";
+		private static Exception _currentException;
+		private static string _detailedMessage; // usually from Bloom itself
 
 		private string CollectionFolder => Path.GetDirectoryName(_bookSelection.CurrentSelection.StoragePageFolder);
 
@@ -167,39 +169,29 @@ namespace Bloom.web.controllers
 		}
 
 		/// <summary>
-		/// Shows a problem dialog after logging an exception. Allows for level of problem to be set.
-		/// </summary>
-		/// <param name="controlForScreenshotting"></param>
-		/// <param name="exception"></param>
-		/// <param name="detailedMessage"></param>
-		/// <param name="levelOfProblem"></param>
-		public static void ShowProblemDialog(Control controlForScreenshotting, Exception exception,
-			string detailedMessage = "", string levelOfProblem = "fatal")
-		{
-			Logger.WriteError(string.IsNullOrEmpty(detailedMessage) ? exception.Message : detailedMessage, exception);
-			ShowProblemDialog(controlForScreenshotting, levelOfProblem);
-		}
-
-		/// <summary>
-		/// Shows a problem dialog after logging an exception. Use to match Action<Exception, string> signature
-		/// in ErrorReport.OnShowDetails.
+		/// Shows a problem dialog. Use to match <code>Action<Exception, string></code> signature
+		/// in ErrorReport.OnShowDetails().
 		/// </summary>
 		/// <param name="exception"></param>
 		/// <param name="detailedMessage"></param>
 		public static void ShowProblemDialogForNonFatalException(Exception exception,
 			string detailedMessage = "")
 		{
-			Logger.WriteError(string.IsNullOrEmpty(detailedMessage) ? exception.Message : detailedMessage, exception);
-			ShowProblemDialog(null, "nonfatal");
+			ShowProblemDialog(null, exception, detailedMessage, "nonfatal");
 		}
 
 		/// <summary>
-		/// Shows a problem dialog. Has no extra provision for exceptions.
+		/// Shows a problem dialog.
 		/// </summary>
 		/// <param name="controlForScreenshotting"></param>
+		/// <param name="exception"></param>
+		/// <param name="detailedMessage"></param>
 		/// <param name="levelOfProblem"></param>
-		public static void ShowProblemDialog(Control controlForScreenshotting, string levelOfProblem="user")
+		public static void ShowProblemDialog(Control controlForScreenshotting, Exception exception,
+			string detailedMessage = "", string levelOfProblem="user")
 		{
+			_currentException = exception;
+			_detailedMessage = detailedMessage;
 			if (controlForScreenshotting == null)
 				controlForScreenshotting = Form.ActiveForm;
 			if (controlForScreenshotting == null) // still possible if we come from a "Details" button
@@ -245,10 +237,38 @@ namespace Bloom.web.controllers
 			bldr.AppendLine();
 
 			GetInformationAboutUser(bldr, userEmail);
+			GetExceptionInformation(bldr);
 			GetStandardErrorReportingProperties(bldr, true);
 			GetAdditionalBloomEnvironmentInfo(bldr);
 			GetAdditionalFileInfo(bldr, includeBook);
 			return bldr.ToString();
+		}
+
+		private static void GetExceptionInformation(StringBuilder bldr)
+		{
+			if (_currentException == null && string.IsNullOrWhiteSpace(_detailedMessage))
+				return;
+			if (_currentException != null)
+			{
+				Exception dummy = null;
+				bldr.AppendLine();
+				bldr.AppendLine("#### Exception Details");
+				if (!string.IsNullOrWhiteSpace(_detailedMessage))
+				{
+					bldr.AppendLine(_detailedMessage);
+					bldr.AppendLine();
+				}
+				bldr.AppendLine("```stacktrace");
+				bldr.Append(ExceptionHelper.GetHiearchicalExceptionInfo(_currentException, ref dummy));
+				bldr.AppendLine("```");
+			}
+			else
+			{
+				// No exception, but we do have a detailed message from Bloom. This may not actually ever occur.
+				bldr.AppendLine();
+				bldr.AppendLine("#### Detailed message");
+				bldr.AppendLine(_detailedMessage);
+			}
 		}
 
 		private static string GetObfuscatedEmail(string userEmail = "")
@@ -293,7 +313,6 @@ namespace Bloom.web.controllers
 		private static void GetStandardErrorReportingProperties(StringBuilder bldr, bool appendLog)
 		{
 			const string Version = "Version";
-			bldr.AppendLine();
 			bldr.AppendLine("#### Error Reporting Properties");
 			foreach (string label in ErrorReport.Properties.Keys)
 			{
