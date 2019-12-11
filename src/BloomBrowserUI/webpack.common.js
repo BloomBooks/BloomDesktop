@@ -44,7 +44,10 @@ module.exports = merge(core, {
             "./bookEdit/pageThumbnailList/pageThumbnailList.ts",
         pageControlsBundle:
             "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
-        publishUIBundle: globule.find(["./publish/**/*.tsx"]),
+        publishUIBundle: globule.find([
+            "./publish/**/*.tsx",
+            "!./publish/**/stories.tsx"
+        ]),
         enterpriseSettingsBundle: "./collection/enterpriseSettings.tsx",
         testBundle: globule.find([
             "./bookEdit/**/*Spec.ts",
