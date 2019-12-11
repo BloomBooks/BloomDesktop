@@ -228,7 +228,7 @@ namespace BloomTests.Book
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2' and @lang='xyz']");
 			textarea1.InnerText = "peace";
 			book.BringBookUpToDate(new NullProgress());
-			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='copyOfVTitle'  and @lang='xyz']");
+			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@idc='copyOfVTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", textarea2.InnerText);
 		}
 

@@ -257,7 +257,7 @@ namespace Bloom.Book
 			//translate from all those languages to all other languages. Now, we just save English, and translate from English to whatever.
 			//By far the largest number of books posted to bloomlibrary with this problem were Tok Pisin books, which actually just had
 			//an English word as their value for "topic", so there we just switch it over to English.
-			NamedMutliLingualValue topic;
+			DataSetElementValue topic;
 			if (!data.TextVariables.TryGetValue("topic", out topic))
 				return;
 			var topicStrings = topic.TextAlternatives;
@@ -294,7 +294,7 @@ namespace Bloom.Book
 			if (info == null)
 				return;
 
-			NamedMutliLingualValue creditsData;
+			DataSetElementValue creditsData;
 			string credits = "";
 			var idsToTry = WritingSystemIdsToTry.ToList();
 			while (string.IsNullOrWhiteSpace(credits) && idsToTry.Count > 0)
@@ -351,7 +351,7 @@ namespace Bloom.Book
 			topicPageElement.RemoveAttribute("lang");
 			topicPageElement.InnerText = "";
 
-			NamedMutliLingualValue topicData;
+			DataSetElementValue topicData;
 
 			var parentOfTopicDisplayElement = ((XmlElement)(topicPageElement.ParentNode));
 			//this just lets us have css rules that vary if there is a topic (allows other text to be centered instead left-aligned)
@@ -413,7 +413,7 @@ namespace Bloom.Book
 			if (info == null)
 				return;
 
-			NamedMutliLingualValue isbnData;
+			DataSetElementValue isbnData;
 			string isbn = null;
 			if (_dataset.TextVariables.TryGetValue("ISBN", out isbnData))
 			{
@@ -596,25 +596,30 @@ namespace Bloom.Book
 		/// <param name="elementToReadFrom"> </param>
 		private DataSet SynchronizeDataItemsFromContentsOfElement(XmlNode elementToReadFrom, HashSet<Tuple<string, string>> itemsToDelete)
 		{
+			// We make a new dataset here, distinct from _dataset in our member variable. This is because, in GatherDataItemsFromXElement below,
+			// we want to populate the data set (and then later UpdateDomFromDataSet) using the data in elementToReadFrom, often a just-edited page.
+			// Since GatherDataItemsFromXElement prefers the first value it finds for any key combination, and does this by ignoring any
+			// data for a key combination already present, we would not use the new data in elementToReadFrom if we started with
+			// _dataset, which is already populated from the current document.
 			DataSet data = GatherDataItemsFromCollectionSettings(_collectionSettings);
 
 			// The first encountered value for data-book/data-collection wins... so the rest better be read-only to the user, or they're in for some frustration!
-			// If we don't like that, we'd need to create an event to notice when field are changed.
+			// If we don't like that, we'd need to create an event to notice when field are changed. Usually this is fine, because
+			// we're gathering from a single page we just edited, and don't usually have duplicate data on the same page.
+			// If we're reading from the whole book, the data div comes first and wins as intended.
 
 			GatherDataItemsFromXElement(data, elementToReadFrom, itemsToDelete);
-
-			//REVIEW: this method, SynchronizeDataItemsFromContentsOfElement(), is confusing because it  is not static and yet it
-			//creates a new DataSet, ignoring its member variable _dataset. In MigrateData, we are changing things in the datadiv and
-			//want to both change the values in our _dataset but also have those changes pushed throughout the DOM via the following
-			//call to UpdateDomFromDataSet().
 
 			MigrateData(data);
 
 			//            SendDataToDebugConsole(data);
 			UpdateDomFromDataSet(data, "*", _dom.RawDom, itemsToDelete);
 
-			//REVIEW: the other methods here are, for some reason, acting on a local DataSet, "data".
-			//But then this one is acting on the member variable. First Q: why is the rest of this method acting on a local variable dataset?
+			//REVIEW: the calls above are, for the reason stated, acting on a local DataSet, "data".
+			//But then these ones are acting on the member variable. Seems like something should update _dataset
+			// to account for the changes we just pulled in, and before we UpdateTitle, etc. It's possible that
+			// another method of this class typically gets called after this one and fixes things (in which case the
+			// calls below are possibly redundant).
 			UpdateTitle();
 			SetUpDisplayOfTopicInBook(_dataset);
 			return data;
@@ -794,17 +799,31 @@ namespace Bloom.Book
 								node.OuterXml);
 						}
 
-						//if we don't have a value for this variable and this language, add it
-						if (!data.TextVariables.ContainsKey(key))
+						// if we don't have a value for this variable and this language, add it.
+						// (If we already do, keep the first value we found.)
+						// There are two ways we could NOT have a value already: either the key is not
+						// in data.TextVariables at all, or there is a DataSetElementValue for that key,
+						// but it contains no data for lang.
+						DataSetElementValue dsv;
+						bool added = false; // did we add a new value?
+						if (!data.TextVariables.TryGetValue(key, out dsv))
 						{
 							var t = new MultiTextBase();
 							t.SetAlternative(lang, value);
-							data.TextVariables.Add(key, new NamedMutliLingualValue(t, isCollectionValue));
+							dsv = new DataSetElementValue(t, isCollectionValue);
+							data.TextVariables.Add(key, dsv);
+							added = true;
 						}
-						else if (!data.TextVariables[key].TextAlternatives.ContainsAlternative(lang))
+						else if (!dsv.TextAlternatives.ContainsAlternative(lang))
 						{
-							MultiTextBase t = data.TextVariables[key].TextAlternatives;
+							MultiTextBase t = dsv.TextAlternatives;
 							t.SetAlternative(lang, value);
+							added = true;
+						}
+
+						if (added)
+						{
+							dsv.SetAttributeList(lang, GetAttributesToSave(node));
 						}
 					}
 
@@ -821,6 +840,56 @@ namespace Bloom.Book
 					"Error in GatherDataItemsFromDom(," + elementName + "). RawDom was:\r\n" + sourceElement.OuterXml,
 					error);
 			}
+		}
+
+		// Attributes not to copy when saving element attribute data in a DataSetElementValue.
+		static HashSet<string> _attributesNotToCopy = new HashSet<string>(
+			new [] {
+				// Junk that gets left behind by UI
+				"tabindex", "aria-describedby", "aria-label", "role", "spellcheck",
+				"data-hasqtip", "data-languagetipcontent",
+				// These are the keys that are used to match the copy-from and copy-to elements.
+				// They are already on both so no point in copying.
+				"data-book", "data-collection",
+				// This is important because without it magic languages like "N1" could get overwritten by specific ones.
+				"lang",
+				// If there's explicit formatting on an element, we probably don't want the same on every copy of
+				// the corresponding data-book.
+				"style"
+			});
+		// These bloom-managed attributes must actually be removed from the destination if the element we're copying from
+		// doesn't have them.
+		static HashSet<string> _attributesToRemoveIfAbsent = new HashSet<string>(new [] { "data-audiorecordingendtimes" });
+		// Classes not to copy when saving a class attribute as part of a DataSetElementValue.
+		// In addition we don't copy any class ending in -style, as these are key to the possibly different
+		// appearance we want for the same data in different places.
+		static HashSet<string> _classesNotToCopy = new HashSet<string>(new []
+				{
+					// Really important NOT to copy; bloom code manages these.
+					"bloom-content1", "bloom-visibility-code-on", "bloom-content2", "bloom-content3", "bloom-contentNational1", "bloom-contentNational2"
+				}
+			);
+		// These bloom-managed classes must actually be removed from the destination if the element we're copying from
+		// doesn't have them.
+		static HashSet<string> _classesToRemoveIfAbsent = new HashSet<string>(new[] { "bloom-postAudioSplit" });
+
+		private List<Tuple<string, string>> GetAttributesToSave(XmlElement node)
+		{
+			var result = new List<Tuple<string, string>>();
+			foreach (XmlAttribute attr in node.Attributes)
+			{
+				if (_attributesNotToCopy.Contains(attr.Name))
+					continue;
+				if (attr.Name == "class")
+				{
+					var classes = attr.Value.Split().ToList();
+					classes.RemoveAll(x => _classesNotToCopy.Contains(x) || x.EndsWith("-style"));
+					result.Add(Tuple.Create("class", string.Join(" ", classes)));
+					continue;
+				}
+				result.Add(Tuple.Create(attr.Name, attr.Value));
+			}
+			return result;
 		}
 
 		/// <summary>
@@ -912,7 +981,9 @@ namespace Bloom.Book
 							//if we don't even have this language specified (e.g. no national language), the  give up
 						{
 							//Ideally, we have this string, in this desired language.
-							var s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[] {lang, "*"});
+							DataSetElementValue dsv = data.TextVariables[key];
+							var form = dsv.TextAlternatives.GetBestAlternative(new[] {lang, "*"});
+							var s = form == null ? "" : form.Form;
 
 							if (KeysOfVariablesThatAreUrlEncoded.Contains(key))
 							{
@@ -929,7 +1000,7 @@ namespace Bloom.Book
 							//REVIEW: what affect will this have in other pages, other circumstances. Will it make it impossible to clear a value?
 							//Hoping not, as we are differentiating between "" and just not being in the multitext at all.
 							//don't overwrite a datadiv alternative with empty just becuase this page has no value for it.
-							if (s == "" && !data.TextVariables[key].TextAlternatives.ContainsAlternative(lang))
+							if (s == "" && !dsv.TextAlternatives.ContainsAlternative(lang))
 								continue;
 
 							//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
@@ -941,6 +1012,11 @@ namespace Bloom.Book
 								s = ""; //don't show it in N2, since it's the same as N1
 							}
 							SetInnerXmlPreservingLabel(key, node, s);
+							var attrs = dsv.GetAttributeList(lang);
+							if (attrs != null)
+							{
+								MergeAttrsIntoElement(attrs, node);
+							}
 						}
 					}
 					else if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
@@ -961,6 +1037,42 @@ namespace Bloom.Book
 				throw new ApplicationException(
 					"Error in UpdateDomFromDataSet(," + elementName + "). RawDom was:\r\n" +
 					targetDom.OuterXml, error);
+			}
+		}
+
+		internal void MergeAttrsIntoElement(List<Tuple<string, string>> attrs, XmlElement node)
+		{
+			var attrsToRemove = new HashSet<string>(_attributesToRemoveIfAbsent);
+			foreach (var tuple in attrs)
+			{
+				attrsToRemove.Remove(tuple.Item1); // won't remove this one!
+				// class requires special treatment. We want a union of the classes the element already has
+				// and the ones from the data set.
+				if (tuple.Item1 == "class")
+				{
+					var classesToRemove = new HashSet<string>(_classesToRemoveIfAbsent);
+					// There's probably a HashSet union function we could use here a little more concisely.
+					// I prefer not to disturb the order of the classes more than we have to.
+					var newClasses = tuple.Item2.Split();
+					var classes = node.GetAttribute("class", "").Split().ToList();
+					var currentSet = new HashSet<string>(classes);
+					foreach (var newClass in newClasses)
+					{
+						classesToRemove.Remove(newClass); // in the source, should not remove
+						if (!currentSet.Contains(newClass))
+							classes.Add(newClass);
+					}
+
+					node.SetAttribute("class", string.Join(" ", classes.Where(x => !classesToRemove.Contains(x))));
+					continue;
+				}
+				node.SetAttribute(tuple.Item1, tuple.Item2);
+			}
+
+			foreach (var attr in attrsToRemove)
+			{
+				if (node.HasAttribute(attr)) // not sure if we need this, RemoveAttribute may handle not found OK.
+					node.RemoveAttribute(attr);
 			}
 		}
 
@@ -1192,7 +1304,7 @@ namespace Bloom.Book
 
 		private void UpdateTitle(BookInfo info = null)
 		{
-			NamedMutliLingualValue title;
+			DataSetElementValue title;
 			if (_dataset.TextVariables.TryGetValue("bookTitleTemplate", out title))
 			{
 				//NB: In seleting from an ordered shopping list of priority entries, this is only
@@ -1291,7 +1403,7 @@ namespace Bloom.Book
 			Set("contentLanguage3", language3Code, false);
 		}
 
-//        public IEnumerable<KeyValuePair<string,NamedMutliLingualValue>>  GetCollectionVariables()
+//        public IEnumerable<KeyValuePair<string,DataSetElementValue>>  GetCollectionVariables()
 //        {
 //            return from v in this._dataset.TextVariables where v.Value.IsCollectionValue select v;
 //        }
