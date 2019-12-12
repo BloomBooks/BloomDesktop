@@ -1792,6 +1792,23 @@ export default class AudioRecording {
     }
 
     // Called on initial setup and on toolbox updateMarkup(), including when a new page is created with Talking Book tab open
+    // The 'playback' mode here is needed to distinguish how the markup elements are arranged
+    // to store any current recording, as opposed to the recording mode which indicates how
+    // we will make any new recording. The main case in which they are different is a textbox
+    // recording that has been split in 4.5, which acutally broke the recording up and
+    // created audio-sentence elements with ids pointing to distinct recording files,
+    // so that markup/playback were done as sentence mode, while a new recording would
+    // be made at the textbox level. Another ambiguous case is a new element where no recording
+    // has been made. Currently this gets marked up as sentence mode (since on a brand new
+    // element, getCurrentPlaybackMode finds no audio-sentence elements and defaults to sentence).
+    // However, a more sophisticated algorithm is used to decide how it will actually get recorded,
+    // and if the conclusion is TextBox mode, this method will be called again to switch the markup
+    // to TextBox when a recording is made.
+    // Review: possibly 'audioMarkupMode' would be a better name than 'audioPlaybackMode'?
+    // Review: possibly getCurrentPlaybackMode() should return the result of
+    // getRecordingModeOfTextBox(currentTextBox) when it finds no existing audio markup?
+    // This would save switching when we actually go to make the recording; howver, this code
+    // is very complex and we are hesitant to make changes which are not strictly necessary.
     public updateMarkupForCurrentText(
         audioPlaybackMode,
         allowUpdateOfCurrent: boolean = true
@@ -1816,26 +1833,21 @@ export default class AudioRecording {
                 // but it's easier to determine the recording mode and apply the audio-sentence markup if we move the current highlight first than vice-versa.
                 // Calling InitializeForMarkup (called by updateMarkupForCurrentText) and updateMarkupForCurrentText should get us back into a 100% valid state.
                 this.moveCurrentHighlightToTextBox(selectedTextBox);
-                this.audioRecordingMode = AudioRecordingMode.Unknown; // Clear the mode to signal that re-doing initialization is necessary.
-
-                this.updateMarkupForCurrentText(
-                    AudioRecordingMode.Unknown,
-                    false
-                );
-                return;
+                // We need to redo initialization
+                this.initializeAudioRecordingMode();
+                audioPlaybackMode = this.getCurrentPlaybackMode();
+                // and then we can carry on with the markup of the new current box.
             }
         }
 
         this.isShowing = true;
 
-        if (audioPlaybackMode == AudioRecordingMode.Unknown) {
-            this.initializeAudioRecordingMode(); // Setup any dependencies
-            // The reason we force the new playback mode to be sentence is that
-            // The only way it is allowed to reach PlaybackMode = TextBox is immediately after doing a recording by TextBox mode.
-            // So here, (e.g. when you type into a text box for the first time), we want you to be in Recording=*,Playback=Sentence mode.
-            this.updateMarkupForCurrentText(AudioRecordingMode.Sentence, false);
-            return;
-        }
+        // getCurrentPlaybackMode() never returns unknown, and all callers of this method pass
+        // either that or an explicit value.
+        console.assert(
+            audioPlaybackMode != AudioRecordingMode.Unknown,
+            "updateMarkupForCurrentText should not be passed mode unknown"
+        );
 
         // In addition to us processing currentTextBox, also add any unprocessed divs
         const recordableDivs = this.getRecordableDivs();
