@@ -211,7 +211,6 @@
     <Compile Include="ToPalaso\XmlExtensionsTests.cs" />
     <Compile Include="UrlPathStringTests.cs" />
     <Compile Include="ElementProxyTests.cs" />
-    <Compile Include="ProblemReporterDialogTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PdfMakerTests.cs" />
     <Compile Include="OpenCreateDialogTests.cs" />
@@ -241,6 +240,7 @@
     <Compile Include="web\controllers\EndpointHandlerTests.cs" />
     <Compile Include="web\RequestInfoTests.cs" />
     <Compile Include="web\WebSocketServerSpy.cs" />
+    <Compile Include="web\YouTrackIssueSubmitterTests.cs" />
     <Compile Include="XmlHtmlConverterTests.cs" />
     <Compile Include="web\BloomServerTests.cs" />
     <Compile Include="PretendRequestInfo.cs" />
