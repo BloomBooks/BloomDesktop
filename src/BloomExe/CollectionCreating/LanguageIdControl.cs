@@ -18,6 +18,7 @@ namespace Bloom.CollectionCreating
 			// Following should be consistent with CollectionSettingsDialog.ChangeLanguage()
 			_lookupISOControl.UseSimplifiedChinese();
 			_lookupISOControl.IsScriptAndVariantLinkVisible = true;
+			_lookupISOControl.IncludeScriptMarkers = false;
 		}
 
 		private void OnLookupISOControlReadinessChanged(object sender, EventArgs e)
