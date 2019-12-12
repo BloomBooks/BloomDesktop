@@ -670,6 +670,9 @@ namespace Bloom.Book
 			public string XPath { get; set; }
 		}
 
+		public static string ComicalXpath =
+			"//*[contains(@class, 'bloom-textOverPicture') and contains(@data-bubble, '`style`:') and not(contains(@data-bubble, '`style`:`none`'))]";
+
 		static Feature[] _features =
 		{
 			new Feature() {FeatureId = "wholeTextBoxAudio",
@@ -685,7 +688,7 @@ namespace Bloom.Book
 				// We're looking for a text-over-picture box with non-trivial data-bubble,
 				// but as a special case ones with style none are OK, as these can continue to work
 				// as old-style TOP boxes, with the data-bubble ignored.
-				XPath = "//*[contains(@class, 'bloom-textOverPicture') and contains(@data-bubble, '`style`:') and not(contains(@data-bubble, '`style`:`none`'))]"
+				XPath = ComicalXpath
 			}
 		};
 
