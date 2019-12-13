@@ -587,7 +587,7 @@ namespace BloomTests.Book
 
 		private BookStorage GetInitialStorageUsingUNCPath()
 		{
-			var testFolder = new TemporaryFolder();
+			var testFolder = new TemporaryFolder(_fixtureFolder.Path);
 			var bookPath = testFolder.Combine("theBook.htm");
 			File.WriteAllText(bookPath,
 				"<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
@@ -607,7 +607,7 @@ namespace BloomTests.Book
 		private BookStorage GetInitialStorageWithCustomHtml(string html, bool doSave = true)
 		{
 			RobustFile.WriteAllText(_bookPath, html);
-			var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
+			var projectFolder = new TemporaryFolder(_fixtureFolder, "BookStorageTests_ProjectCollection");
 			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
 			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
 			if (doSave)
@@ -632,7 +632,7 @@ namespace BloomTests.Book
 		{
 			var bookPath = _folder.Combine(bookName + ".htm");
 			File.WriteAllText(bookPath, "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-			var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
+			var projectFolder = new TemporaryFolder(_fixtureFolder, "BookStorageTests_ProjectCollection");
 			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
 			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
 			storage.Save();
@@ -660,7 +660,7 @@ namespace BloomTests.Book
 			{
 				File.WriteAllText(Path.Combine(original.Path, "original.htm"), "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
 
-				var projectFolder = new TemporaryFolder("BookStorage_ProjectCollection");
+				var projectFolder = new TemporaryFolder(_fixtureFolder, "BookStorage_ProjectCollection");
 				var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
 				var storage = new BookStorage(original.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
 				storage.Save();
@@ -671,6 +671,125 @@ namespace BloomTests.Book
 				storage.SetBookName(newBookName);
 				var newPath = z.Combine("foo2.htm");
 				Assert.IsTrue(Directory.Exists(z.Path), "Expected folder:" + z.Path);
+				Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
+			}
+		}
+
+		[Test]
+		public void SetBookName_FolderWithSanitizedNameAlreadyExists_AddsANumberToName()
+		{
+			using (var original = new TemporaryFolder(_folder, "original"))
+			using (var x = new TemporaryFolder(_folder, "foo"))
+			using (new TemporaryFolder(_folder, "foo1"))
+			using (var z = new TemporaryFolder(_folder, "foo2"))
+			{
+				File.WriteAllText(Path.Combine(original.Path, "original.htm"), "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
+
+				var projectFolder = new TemporaryFolder(_fixtureFolder, "BookStorage_ProjectCollection");
+				var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
+				var storage = new BookStorage(original.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
+				storage.Save();
+
+				Directory.Delete(z.Path);
+				//so, we ask for "foo", but should get "foo2", because there is already a foo and foo1
+				// BL-7816 We added some new characters to the sanitization routine
+				const string newBookName = "foo?:&<>\'\"{}";
+				storage.SetBookName(newBookName);
+				var newPath = z.Combine("foo2.htm");
+				Assert.IsTrue(Directory.Exists(z.Path), "Expected folder:" + z.Path);
+				Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
+			}
+		}
+
+		[Test]
+		public void SetBookName_FolderWithSanitizedNameAlreadyExists_DoesNotChangeFolderOrBookName()
+		{
+			using (new TemporaryFolder(_folder, "foo"))
+			using (var x = new TemporaryFolder(_folder, "foo1"))
+			{
+				File.WriteAllText(Path.Combine(x.Path, "foo1.htm"), "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
+
+				var projectFolder = new TemporaryFolder(_fixtureFolder, "BookStorage_ProjectCollection");
+				var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
+				var storage = new BookStorage(x.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
+				storage.Save();
+
+				// So, we ask for "foo", and should get "foo1", because there is already a foo1
+				// BL-7816 We added some new characters to the sanitization routine
+				const string newBookName = "foo?:&<>\'\"{}";
+				storage.SetBookName(newBookName);
+				var newPath = x.Combine("foo1.htm");
+				Assert.IsTrue(Directory.Exists(x.Path), "Expected folder:" + x.Path);
+				Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
+			}
+		}
+
+		[Test]
+		public void SetBookName_SanitizedName_JunkPreFoo_ChangesFolder()
+		{
+			using (var x = new TemporaryFolder(_folder, "foo"))
+			using (var y = new TemporaryFolder(_folder, "foobar"))
+			{
+				File.WriteAllText(Path.Combine(x.Path, "foo.htm"), "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
+
+				var projectFolder = new TemporaryFolder(_fixtureFolder, "BookStorage_ProjectCollection");
+				var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
+				var storage = new BookStorage(x.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
+				storage.Save();
+
+				Directory.Delete(y.Path);
+				// BL-7816 We added some new characters to the sanitization routine
+				const string newBookName = "?:&<>\'\"{}foobar";
+				storage.SetBookName(newBookName);
+				var newPath = y.Combine("foobar.htm");
+				Assert.IsTrue(Directory.Exists(y.Path), "Expected folder:" + y.Path);
+				Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
+			}
+		}
+
+		[Test]
+		public void SetBookName_SanitizedName_JunkMidFoo_ChangesFolder()
+		{
+			using (var x = new TemporaryFolder(_folder, "foo"))
+			using (var y = new TemporaryFolder(_folder, "fo         o"))
+			{
+				File.WriteAllText(Path.Combine(x.Path, "foo.htm"), "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
+
+				var projectFolder = new TemporaryFolder(_fixtureFolder, "BookStorage_ProjectCollection");
+				var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
+				var storage = new BookStorage(x.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
+				storage.Save();
+
+				Directory.Delete(y.Path);
+				// BL-7816 We added some new characters to the sanitization routine
+				const string newBookName = "fo?:&<>\'\"{}o";
+				storage.SetBookName(newBookName);
+				var newPath = y.Combine("fo         o.htm");
+				Assert.IsTrue(Directory.Exists(y.Path), "Expected folder:" + y.Path);
+				Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
+			}
+		}
+
+		[Test]
+		public void SetBookName_ShortenBooknameWorks()
+		{
+			using (var x = new TemporaryFolder(_folder, "foo and cap"))
+			using (var y = new TemporaryFolder(_folder, "foo"))
+			{
+				File.WriteAllText(Path.Combine(x.Path, "foo and cap.htm"), "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
+
+				var projectFolder = new TemporaryFolder(_fixtureFolder, "BookStorage_ProjectCollection");
+				var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
+				var storage = new BookStorage(x.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
+				storage.Save();
+
+				Directory.Delete(y.Path);
+
+				// We are taking a longer name and shortening it.
+				const string newBookName = "foo";
+				storage.SetBookName(newBookName);
+				var newPath = y.Combine("foo.htm");
+				Assert.IsTrue(Directory.Exists(y.Path), "Expected folder:" + y.Path);
 				Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
 			}
 		}
