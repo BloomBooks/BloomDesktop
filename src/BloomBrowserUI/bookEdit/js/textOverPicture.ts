@@ -63,17 +63,51 @@ export class TextOverPictureManager {
     // at all.
     public static growOverflowingBox(
         box: HTMLElement,
-        needToGrow: number
+        overflowY: number
     ): boolean {
         const wrapperBox = box.closest(".bloom-textOverPicture") as HTMLElement;
         if (!wrapperBox) {
             return false; // we can't fix it
         }
+
         const container = wrapperBox.closest(".bloom-imageContainer");
         if (!container) {
             return false; // paranoia; TOP box should always be in image container
         }
-        const newHeight = wrapperBox.clientHeight + needToGrow;
+
+        if (overflowY > -6 && overflowY < -2) {
+            return false; // near enough, avoid jitter; -4 would be no change, see below.
+        }
+        // The +4 is based on experiment. It may relate to a couple of 'fudge factors'
+        // in OverflowChecker.getSelfOverflowAmounts, which I don't want to mess with
+        // as a lot of work went into getting overflow reporting right. We seem to
+        // need a bit of extra space to make sure the last line of text fits.
+        // The 27 is the minimumSize that CSS imposes on TOP boxes; it may cause
+        // Comical some problems if we try to set the actual size smaller.
+        // (I think I saw background gradients behaving strangely, for example.)
+        let newHeight = Math.max(wrapperBox.clientHeight + overflowY + 4, 27);
+        if (overflowY < -4) {
+            if (!wrapperBox.classList.contains("bloom-allowAutoShrink")) {
+                return false; // currently auto-shrink is only allowed when manually changing width
+            }
+            // the scrollSize property that overflowY is based on is not useful when it's nowhere
+            // near overflowing. So figure the new size we need another way.
+            // This is not ideal, we're not going to get the exact same
+            // size when the bubble is shrinking as when it's growing. But in practice it
+            // seems near enough for automatic sizing. The user can take over and fine tune
+            // it if desired.
+            let maxContentBottom = 0;
+            Array.from(box.children).forEach((x: HTMLElement) => {
+                if (!(x instanceof HTMLElement)) return; // not an element
+                if (window.getComputedStyle(x).position === "absolute") return; // special element like format button
+                let xbottom = x.offsetTop + x.offsetHeight;
+                if (xbottom > maxContentBottom) {
+                    maxContentBottom = xbottom;
+                }
+            });
+            newHeight = Math.max(maxContentBottom + box.scrollTop + 4, 27);
+        }
+
         if (newHeight + wrapperBox.offsetTop > container.clientHeight) {
             return false;
         }
@@ -379,6 +413,19 @@ export class TextOverPictureManager {
         container.onmouseup = (event: MouseEvent) => {
             this.onMouseUp(event, container);
         };
+
+        container.onkeypress = (event: Event) => {
+            // If the user is typing in a bubble, make sure automatic shrinking is off.
+            // Automatic shrinking while typing might be useful when originally authoring a comic,
+            // but it's a nuisance when translating one, as the bubble is initially empty
+            // and shrinks to one line, messing up the whole layout.
+            if (!event.target || !(event.target as Element).closest) return;
+            const topBox = (event.target as Element).closest(
+                ".bloom-textOverPicture"
+            ) as HTMLElement;
+            if (!topBox) return;
+            topBox.classList.remove("bloom-allowAutoShrink");
+        };
     }
 
     // Checks to see if the mouse has gone outside of the active container
@@ -666,6 +713,13 @@ export class TextOverPictureManager {
         ) {
             // Nothing changed, can abort early.
             return;
+        }
+
+        // If the drag changed the height of the bubble, we'd better turn off
+        // the behavior that will otherwise immediately force it back to
+        // the standard height!
+        if (newHeight !== oldHeight) {
+            content.get(0).classList.remove("bloom-allowAutoShrink");
         }
 
         // Width/Height should use unscaled units
@@ -1337,6 +1391,20 @@ export class TextOverPictureManager {
 
                     // Clear the custom class used to indicate that a resize action may have been started
                     TextOverPictureManager.clearResizingClass(target);
+                }
+            },
+            resize: (event, ui) => {
+                const target = event.target as Element;
+                if (target) {
+                    // If the user changed the height, prevent automatic shrinking.
+                    // If only the width changed, this is the case where we want it.
+                    // This needs to happen during the drag so that the right automatic
+                    // behavior happens during it.
+                    if (ui.originalSize.height !== ui.size.height) {
+                        target.classList.remove("bloom-allowAutoShrink");
+                    } else {
+                        target.classList.add("bloom-allowAutoShrink");
+                    }
                 }
             }
         });
