@@ -445,11 +445,13 @@ export class TextOverPictureManager {
 
         // Oops, the mouse cursor has left the image container
         // Current requirements are to end the drag in this case
+        // If adjusting this, be careful to use pairs of event/object properties
+        // that are consistent even if the page is scrolled and/or zoomed.
         if (
-            event.pageX < containerBounds.left ||
-            event.pageX > containerBounds.right ||
-            event.pageY < containerBounds.top ||
-            event.pageY > containerBounds.bottom
+            event.clientX < containerBounds.left ||
+            event.clientX > containerBounds.right ||
+            event.clientY < containerBounds.top ||
+            event.clientY > containerBounds.bottom
         ) {
             // FYI: If you use the drag handle (which uses JQuery), it enforces the content box to stay entirely within the imageContainer.
             // This code currently doesn't do that.
