@@ -6,14 +6,12 @@ import "./callout.less";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import { TextOverPictureManager } from "../../js/textOverPicture";
 import { BubbleSpec } from "comicaljs";
-import { Link } from "../../../react_components/link";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
-import { MenuItem } from "@material-ui/core";
+import { MenuItem, Button } from "@material-ui/core";
 import { values } from "mobx";
 import { Div, Span } from "../../../react_components/l10nComponents";
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles"; // TODO: Am I really needed?
 import InputLabel from "@material-ui/core/InputLabel";
 import * as toastr from "toastr";
 import { default as TrashIcon } from "@material-ui/icons/Delete";
@@ -175,42 +173,44 @@ const CalloutToolControls: React.FunctionComponent = () => {
     return (
         <div id="calloutControls">
             <div id={"calloutControlShapeChooserRegion"}>
-                <div className="calloutControlDragInstructions">
-                    Drag one of these on top of an image
+                <Div
+                    l10nKey="EditTab.Toolbox.ComicTool.DragInstructions"
+                    className="calloutControlDragInstructions"
+                >
+                    Drag to add to an image
+                </Div>
+                <div className={"shapeChooserRow"} id={"shapeChooserRow1"}>
+                    <img
+                        id="shapeChooserSpeechBubble"
+                        className="calloutControlDraggableBubble"
+                        src="comic-icon.svg"
+                        draggable={true}
+                        onDragStart={ev => ondragstart(ev, "speech")}
+                    />
+                    <span
+                        id="shapeChooserTextBlock"
+                        className="calloutControlDraggableBubble"
+                        draggable={true}
+                        onDragStart={ev => ondragstart(ev, "none")}
+                    >
+                        Text Block
+                    </span>
                 </div>
-                <img
-                    id="calloutControlSpeechButton"
-                    className="calloutControlDraggableBubble"
-                    src="comic-icon.svg"
-                    draggable={true}
-                    onDragStart={ev => ondragstart(ev, "speech")}
-                />
-                <span
-                    id="calloutControlTextBlockButton"
-                    className="calloutControlDraggableBubble"
-                    draggable={true}
-                    onDragStart={ev => ondragstart(ev, "none")}
-                >
-                    Text Block
-                </span>
-                <br />
-                <span
-                    id="calloutControlCaptionButton"
-                    className="calloutControlDraggableBubble"
-                    draggable={true}
-                    onDragStart={ev => ondragstart(ev, "caption")}
-                >
-                    Caption
-                </span>
+                <div className={"shapeChooserRow"} id={"shapeChooserRow2"}>
+                    <span
+                        id="shapeChooserCaption"
+                        className="calloutControlDraggableBubble"
+                        draggable={true}
+                        onDragStart={ev => ondragstart(ev, "caption")}
+                    >
+                        Caption
+                    </span>
+                </div>
             </div>
             <div
                 id={"calloutControlOptionsRegion"}
                 className={bubbleActive ? "" : "disabled"}
             >
-                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.ControlsAvailable">
-                    The selected item has these controls:
-                </Div>
-                <br />
                 <form autoComplete="off">
                     <FormControl>
                         <InputLabel htmlFor="callout-style-dropdown">
@@ -380,15 +380,11 @@ const CalloutToolControls: React.FunctionComponent = () => {
                             </MenuItem>
                         </Select>
                     </FormControl>
-                    <br />
-                    <Link
-                        l10nKey="EditTab.Toolbox.ComicTool.Options.AddChildBubble"
-                        onClick={event => {
-                            handleChildBubbleLinkClick(event);
-                        }}
-                    >
-                        Add Child Bubble
-                    </Link>
+                    <Button>
+                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.AddChildBubble">
+                            Add Child Bubble
+                        </Div>
+                    </Button>
                     <TrashIcon
                         id="trashIcon"
                         color="primary"
@@ -398,8 +394,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
             </div>
             <div id="calloutControlFillerRegion" />
             <div id={"calloutControlFooterRegion"}>
-                {/* TODO: Update the help link */}
-                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm" />
+                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Comic_Tool/Comic_Tool_overview.htm" />
             </div>
         </div>
     );
