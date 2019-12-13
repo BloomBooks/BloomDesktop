@@ -349,14 +349,18 @@ export class TextOverPictureManager {
         // set in CalloutControls.ondragstart() and make a bubble with that style
         // at the drop position.
         container.ondrop = ev => {
-            ev.preventDefault();
-            const style = ev.dataTransfer
-                ? ev.dataTransfer.getData("bloomBubble")
-                : "speech";
-            this.addFloatingTOPBox(ev.clientX, ev.clientY, style);
-            BloomApi.postThatMightNavigate(
-                "common/saveChangesAndRethinkPageEvent"
-            );
+            // test this so we don't interfere with dragging for text edit,
+            // nor add bubbles when something else is dragged
+            if (ev.dataTransfer && ev.dataTransfer.getData("bloomBubble")) {
+                ev.preventDefault();
+                const style = ev.dataTransfer
+                    ? ev.dataTransfer.getData("bloomBubble")
+                    : "speech";
+                this.addFloatingTOPBox(ev.clientX, ev.clientY, style);
+                BloomApi.postThatMightNavigate(
+                    "common/saveChangesAndRethinkPageEvent"
+                );
+            }
         };
     }
 
@@ -704,7 +708,11 @@ export class TextOverPictureManager {
         }
 
         const targetElement = ev.target as HTMLElement;
-        const isInsideEditable = !!targetElement.closest(".bloom-editable");
+        // I'm not sure what else targetElement can be, but have seen JS errors
+        // when closest is not defined.
+        const isInsideEditable = !!(
+            targetElement.closest && targetElement.closest(".bloom-editable")
+        );
         return isInsideEditable;
     }
 
