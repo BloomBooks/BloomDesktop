@@ -486,6 +486,16 @@ div.bloom-editable.Heading2-style {
     font-size: 13pt;
     font-weight: bold;
 }
+.Bubble-style {
+    /*  This (currently) empty style lets the Style dropdown find Bubble to add to its list.
+        If we decide later, we could give it a default style different than normal.
+        While it seems odd/wrong to put this in editMode.less (instead of Basic Book.less, for example),
+        it has some advantages:
+            1. It is placed with Heading1 and Heading2 above.
+            2. It prevents the empty rule from getting deployed with the book unnecessarily.
+
+        This type of comment allows the less compiler to keep the empty rule set. */
+}
 .centered {
     text-align: center;
 }

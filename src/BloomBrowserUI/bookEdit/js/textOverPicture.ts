@@ -1136,11 +1136,11 @@ export class TextOverPictureManager {
         }
         // add a draggable text bubble to the html dom of the current page
         const editableDivClasses =
-            "bloom-editable bloom-content1 bloom-visibility-code-on normal-style";
+            "bloom-editable bloom-content1 bloom-visibility-code-on Bubble-style";
         const editableDivHtml =
             "<div class='" + editableDivClasses + "' ><p></p></div>";
         const transGroupDivClasses =
-            "bloom-translationGroup bloom-leadingElement normal-style";
+            "bloom-translationGroup bloom-leadingElement Bubble-style";
         const transGroupHtml =
             "<div class='" +
             transGroupDivClasses +
