@@ -374,7 +374,10 @@ namespace Bloom.Book
 		{
 			set
 			{
-				UpdateOneTypeOfMetaDataTags(TagIsBookshelf, kBookshelfPrefix, new [] { value });
+				if (string.IsNullOrWhiteSpace(value))
+					ClearBookshelf();
+				else
+					UpdateOneTypeOfMetaDataTags(TagIsBookshelf, kBookshelfPrefix, new[] { value });
 				Save();
 			}
 		}
