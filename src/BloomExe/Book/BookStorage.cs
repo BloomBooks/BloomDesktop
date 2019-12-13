@@ -15,6 +15,7 @@ using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.MiscUI;
+using Bloom.Publish.Android;
 using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
@@ -1162,26 +1163,40 @@ namespace Bloom.Book
 				// that tries to make sure we save on exit. Get lots of flashing windows during shutdown.
 				Environment.Exit(-1);
 			}
-			name = SanitizeNameForFileSystem(name);
+
+			var forceRename = FolderPath.Contains(PublishToAndroidApi.StagingFolder) || FolderPath.Contains(BloomReaderFileMaker.BRExportFolder);
+			name = SanitizeNameForFileSystem(name, forceRename);
 
 			var currentFilePath = PathToExistingHtml;
-			//REVIEW: This doesn't immediately make sense; if this function is told to call it Foo but it's current Foo1... why does this just return?
-
-			if (Path.GetFileNameWithoutExtension(currentFilePath).StartsWith(name)) //starts with because maybe we have "myBook1"
+			// REVIEW: This doesn't immediately make sense;
+			//  - If this function is told to call it Foo but it's current Foo1... why does this just return?
+			//		(StartsWith because maybe we have "myBook1".)
+			//  - But if we sanitized the name for bloom-player, we still want to rename the htm file.
+			if (Path.GetFileNameWithoutExtension(currentFilePath).StartsWith(name) && !forceRename)
 				return;
 
-			//figure out what name we're really going to use (might need to add a number suffix)
+			// Figure out what name we're really going to use (might need to add a number suffix).
 			var newFolderPath = Path.Combine(Directory.GetParent(FolderPath).FullName, name);
-			newFolderPath = GetUniqueFolderPath(newFolderPath);
+			// Except forceRename also means we're in a staging folder, which will only ever have the one book we are renaming.
+			if (!forceRename)
+			{
+				newFolderPath = GetUniqueFolderPath(newFolderPath);
+			}
 
-			Logger.WriteEvent("Renaming html from '{0}' to '{1}.htm'", currentFilePath, newFolderPath);
-
-			//next, rename the file
+			// Next, rename the file
 			Guard.Against(FolderPath.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory, StringComparison.Ordinal),
 				"Cannot rename template books!");
-			RobustFile.Move(currentFilePath, Path.Combine(FolderPath, Path.GetFileName(newFolderPath) + ".htm"));
+			// We seem to come through here several times in the process of creating a BR book file, so skip
+			// the rename if we've already done it!
+			if (Path.GetFileNameWithoutExtension(currentFilePath) != Path.GetFileName(newFolderPath))
+			{
+				Logger.WriteEvent("Renaming html from '{0}' to '{1}.htm'", currentFilePath, newFolderPath);
+				RobustFile.Move(currentFilePath, Path.Combine(FolderPath, Path.GetFileName(newFolderPath) + ".htm"));
+			}
 
-			//next, rename the enclosing folder
+			// Next, rename the enclosing folder, unless they're the same (sometimes in the case of "forceRename=true").
+			if (FolderPath == newFolderPath)
+				return;
 			var fromToPair = new KeyValuePair<string, string>(FolderPath, newFolderPath);
 			try
 			{
@@ -2014,7 +2029,7 @@ namespace Bloom.Book
 		}
 
 
-		internal static string SanitizeNameForFileSystem(string name)
+		internal static string SanitizeNameForFileSystem(string name, bool forBloomPlayer = false)
 		{
 			// First make sure it's not too long.
 			const int MAX = 50;	//arbitrary
@@ -2022,24 +2037,29 @@ namespace Bloom.Book
 				name = name.Substring(0, MAX);
 			// Then replace invalid characters with spaces and trim off characters
 			// that shouldn't start or finish a directory name.
-			name = RemoveDangerousCharacters(name);
+			// BL-7816: Unfortunately, bloom-player requires a few extra characters be considered dangerous.
+			name = RemoveDangerousCharacters(name, forBloomPlayer);
 			if (name.Length == 0)
 			{
 				// The localized default book name could itself have dangerous characters.
-				name = RemoveDangerousCharacters(BookStarter.UntitledBookName);
+				name = RemoveDangerousCharacters(BookStarter.UntitledBookName, forBloomPlayer);
 				if (name.Length == 0)
 					name = "Book";	// This should absolutely never be needed, but let's be paranoid.
 			}
 			return name;
 		}
 
-		private static string RemoveDangerousCharacters(string name)
+		private static string RemoveDangerousCharacters(string name, bool forBloomPlayer = false)
 		{
 			var dangerousCharacters = new List<char>();
 			dangerousCharacters.AddRange(PathUtilities.GetInvalidOSIndependentFileNameChars());
 			// NBSP also causes problems.  See https://issues.bloomlibrary.org/youtrack/issue/BL-5212.
 			dangerousCharacters.Add('\u00a0');
 			//dangerousCharacters.Add('.'); Moved this to a trim because SHRP uses names like "SHRP 2.3" (term 2, week 3)
+			if (forBloomPlayer)
+			{
+				dangerousCharacters.AddRange("&'{}");
+			}
 			foreach (char c in dangerousCharacters)
 			{
 				name = name.Replace(c, ' ');
