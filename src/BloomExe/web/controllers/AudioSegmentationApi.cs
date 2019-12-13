@@ -164,7 +164,7 @@ namespace Bloom.web.controllers
 					RedirectStandardError = true,
 				},
 			};
-			if (!string.IsNullOrEmpty(workingDirectory))
+			if (!string.IsNullOrEmpty(workingDirectory) && Directory.Exists(workingDirectory))
 				process.StartInfo.WorkingDirectory = workingDirectory;
 			process.Start();
 			process.WaitForExit();

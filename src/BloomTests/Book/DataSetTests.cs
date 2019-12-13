@@ -155,6 +155,61 @@ namespace BloomTests.Book
 			Assert.That(first.SameAs(second), Is.True);
 		}
 
+		[Test]
+		public void SameAs_OneHasAttrVals_False()
+		{
+			var first = MakeComplexDataSet();
+			var second = MakeComplexDataSet();
+			DataSetElementValue dsv2 = second.TextVariables["one"];
+			dsv2.SetAttributeList("fr", null);
+			Assert.That(first.SameAs(second), Is.False);
+			Assert.That(second.SameAs(first), Is.False);
+		}
+
+		[Test]
+		public void SameAs_OneHasMoreAttrVals_False()
+		{
+			var first = MakeComplexDataSet();
+			var second = MakeComplexDataSet();
+			DataSetElementValue dsv2 = second.TextVariables["one"];
+			dsv2.SetAttributeList("fr", MakeList("attr1", "val1fr"));
+			Assert.That(first.SameAs(second), Is.False);
+			Assert.That(second.SameAs(first), Is.False);
+		}
+
+		[Test]
+		public void SameAs_OneHasDifferentAttrVals_False()
+		{
+			var first = MakeComplexDataSet();
+			var second = MakeComplexDataSet();
+			DataSetElementValue dsv2 = second.TextVariables["one"];
+			dsv2.SetAttributeList("fr", MakeList("attr1", "val1fr", "attr4", "val4modifed"));
+			Assert.That(first.SameAs(second), Is.False);
+			Assert.That(second.SameAs(first), Is.False);
+		}
+
+		[Test]
+		public void SameAs_OneHasDifferentAttrOrder_True()
+		{
+			var first = MakeComplexDataSet();
+			var second = MakeComplexDataSet();
+			DataSetElementValue dsv2 = second.TextVariables["one"];
+			dsv2.SetAttributeList("fr", MakeList("attr4", "val4", "attr1", "val1fr"));
+			Assert.That(first.SameAs(second), Is.True);
+			Assert.That(second.SameAs(first), Is.True);
+		}
+
+		[Test]
+		public void SameAs_OneHasDifferentAttrKeys_False()
+		{
+			var first = MakeComplexDataSet();
+			var second = MakeComplexDataSet();
+			DataSetElementValue dsv2 = second.TextVariables["one"];
+			dsv2.SetAttributeList("fr", MakeList("attr1", "val1fr", "attrModified", "val4"));
+			Assert.That(first.SameAs(second), Is.False);
+			Assert.That(second.SameAs(first), Is.False);
+		}
+
 		private static DataSet MakeComplexDataSet()
 		{
 			var ds = new DataSet();
@@ -164,7 +219,23 @@ namespace BloomTests.Book
 			var values = new HashSet<KeyValuePair<string, string>>();
 			values.Add(new KeyValuePair<string, string>("key", "value"));
 			ds.UpdateXmatterPageDataAttributeSet("one", values);
+			DataSetElementValue dsv = ds.TextVariables["one"];
+			dsv.SetAttributeList("en", MakeList("attr1", "val1", "attr2", "val2"));
+			dsv.SetAttributeList("de", MakeList("attr1", "val1de", "attr3", "val3de"));
+			DataSetElementValue dsv2 = ds.TextVariables["one"];
+			dsv2.SetAttributeList("fr", MakeList("attr1", "val1fr", "attr4", "val4"));
 			return ds;
+		}
+
+		static List<Tuple<string, string>> MakeList(params string[] args)
+		{
+			var result = new List<Tuple<string, string>>();
+			Assert.That(args.Length %2, Is.EqualTo(0));
+			for (var i = 0; i < args.Length / 2; i++)
+			{
+				result.Add(Tuple.Create(args[i * 2], args[i * 2 + 1]));
+			}
+			return result;
 		}
 	}
 }
