@@ -47,7 +47,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("problemReport/screenshot",
 				(ApiRequest request) =>
 				{
-					request.ReplyWithImage(_screenshotTempFile.Path); 
+					request.ReplyWithImage(_screenshotTempFile?.Path);
 				}, true);
 
 			// ProblemDialog.tsx uses this endpoint to get the name of the book.
