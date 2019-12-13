@@ -270,14 +270,7 @@ export default class OverflowChecker {
         let [overflowX, overflowY] = OverflowChecker.getSelfOverflowAmounts(
             box
         );
-        if (
-            overflowY > 0 &&
-            // The +4 is based on experiment. It may relate to a couple of 'fudge factors'
-            // in OverflowChecker.getSelfOverflowAmounts, which I don't want to mess with
-            // as a lot of work went into getting overflow reporting right. We seem to
-            // need a bit of extra space to make sure the last line of text fits.
-            TextOverPictureManager.growOverflowingBox(box, overflowY + 4)
-        ) {
+        if (TextOverPictureManager.growOverflowingBox(box, overflowY)) {
             overflowY = 0;
             box.scrollTop = 0; // now it should all fit, so no need to be scrolled down
         }
