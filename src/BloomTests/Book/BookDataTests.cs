@@ -1666,7 +1666,7 @@ namespace BloomTests.Book
 			// But we're trying to test what happens when they are present on the source element that SynchronizeDataItemsThroughoutDOM
 			// copies FROM, and that is the FIRST element it encounters in the document with a given data-book.
 			var dom = new HtmlDom(@"<html ><head></head><body>
-				< div id='bloomDataDiv'>
+				<div id='bloomDataDiv'>
 					 <div data-book='bookTitle' lang='en' data-duration='5.839433' id='i6a720491' data-audiorecordingmode='TextBox' aria-describedby='qtip-3' aria-label='false' role='textbox' spellcheck='true' tabindex='0' data-hasqtip='true' data-languagetipcontent='English' class='bloom-editable bloom-nodefaultstylerule testClass Title-On-Cover-style bloom-padForOverflow audio-sentence bloom-content1 bloom-visibility-code-on'><p>something</p></div>
 				</div>
 				<div class='bloom-page'>
