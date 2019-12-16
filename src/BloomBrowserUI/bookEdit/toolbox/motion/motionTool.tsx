@@ -950,20 +950,30 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
     private calculateDuration(page: HTMLDocument): number {
         let duration = 0;
-        $(page)
-            .find(".bloom-editable.bloom-content1")
-            .find(".audio-sentence")
-            .each((index, span) => {
-                const spanDuration = parseFloat($(span).attr("data-duration"));
-                if (spanDuration) {
-                    // might be NaN if missing or somehow messed up
-                    duration += spanDuration;
-                }
-            });
+
+        // Array.from required in Geckofx45
+        Array.from(page.querySelectorAll(".audio-sentence")).forEach(
+            audioPortion => {
+                duration += this.getDurationOrZero(audioPortion);
+            }
+        );
+
         if (duration < 0.5) {
             duration = 4;
         }
         return duration;
+    }
+
+    private getDurationOrZero(element: Element): number {
+        const portionDuration = element.attributes["data-duration"];
+        if (portionDuration) {
+            const spanDuration = parseFloat(portionDuration.value);
+
+            if (spanDuration) {
+                return spanDuration;
+            }
+        }
+        return 0;
     }
 
     private cleanupAnimation() {
