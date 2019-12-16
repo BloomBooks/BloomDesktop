@@ -188,7 +188,12 @@ const CalloutToolControls: React.FunctionComponent = () => {
 
     return (
         <div id="calloutControls">
-            <div id={"calloutControlShapeChooserRegion"}>
+            <div
+                id={"calloutControlShapeChooserRegion"}
+                className={
+                    !ToolboxToolReactAdaptor.isXmatter() ? "" : "disabled"
+                }
+            >
                 <Div
                     l10nKey="EditTab.Toolbox.ComicTool.DragInstructions"
                     className="calloutControlDragInstructions"
@@ -225,7 +230,11 @@ const CalloutToolControls: React.FunctionComponent = () => {
             </div>
             <div
                 id={"calloutControlOptionsRegion"}
-                className={bubbleActive ? "" : "disabled"}
+                className={
+                    bubbleActive && !ToolboxToolReactAdaptor.isXmatter()
+                        ? ""
+                        : "disabled"
+                }
             >
                 <form autoComplete="off">
                     <FormControl>

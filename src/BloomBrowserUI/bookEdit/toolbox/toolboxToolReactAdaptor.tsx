@@ -71,4 +71,12 @@ export default abstract class ToolboxToolReactAdaptor
         if (!page) return;
         page.setAttribute(name, val);
     }
+
+    public static isXmatter(): boolean {
+        const pageClass = this.getBloomPageAttr("class");
+        return !pageClass
+            ? false // paranoia
+            : pageClass.indexOf("bloom-frontMatter") >= 0 ||
+                  pageClass.indexOf("bloom-backMatter") >= 0;
+    }
 }
