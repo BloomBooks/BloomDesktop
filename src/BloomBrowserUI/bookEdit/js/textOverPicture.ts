@@ -117,11 +117,22 @@ export class TextOverPictureManager {
         return true;
     }
 
+    public static hideImageButtonsIfNotPlaceHolder(container: HTMLElement) {
+        const images = Array.from(container.getElementsByTagName("img"));
+        if (
+            !images.some(img => img.getAttribute("src") === "placeHolder.png")
+        ) {
+            container.classList.add("bloom-hideImageButtons");
+        }
+    }
+
     public turnOnHidingImageButtons() {
         const imageContainers: HTMLElement[] = Array.from(
             document.getElementsByClassName("bloom-imageContainer") as any
         );
-        imageContainers.forEach(e => e.classList.add("bloom-hideImageButtons"));
+        imageContainers.forEach(e => {
+            TextOverPictureManager.hideImageButtonsIfNotPlaceHolder(e);
+        });
     }
 
     public turnOnBubbleEditing(): void {
