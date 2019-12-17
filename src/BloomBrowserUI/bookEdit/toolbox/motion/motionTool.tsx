@@ -951,12 +951,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private calculateDuration(page: HTMLDocument): number {
         let duration = 0;
 
-        // Array.from required in Geckofx45
-        Array.from(page.querySelectorAll(".audio-sentence")).forEach(
-            audioPortion => {
-                duration += this.getDurationOrZero(audioPortion);
-            }
-        );
+        const audioPortions = page.querySelectorAll(".audio-sentence");
+        for (let i = 0; i < audioPortions.length; i++) {
+            duration += this.getDurationOrZero(audioPortions[i]);
+        }
 
         if (duration < 0.5) {
             duration = 4;
