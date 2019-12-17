@@ -232,11 +232,19 @@ namespace Bloom.Book
 		/// But books creates with those custom templates should just use whatever xmatter normal books use,
 		/// at least until we allow users to choose different ones, or allow template makers to specify which
 		/// xmatter children should use.
+		/// Templates should also be able to specify a fixed xmatter for books to use when based on that
+		/// template.  (See https://issues.bloomlibrary.org/youtrack/issue/BL-7921.)
 		/// </summary>
 		private static void ProcessXMatterMetaTags(BookStorage storage)
 		{
 			// Don't copy the parent's xmatter if they specify it
 			storage.Dom.RemoveMetaElement("xmatter");
+
+			// If the parent specifies a required xmatter, use that.
+			if (storage.Dom.HasMetaElement("requiredXMatter"))
+			{
+				storage.Dom.UpdateMetaElement("xmatter", storage.Dom.GetMetaValue("requiredXMatter", ""));
+			}
 
 			// But if the parent says what children should use, then use that.
 			if(storage.Dom.HasMetaElement("xmatter-for-children"))
