@@ -65,7 +65,7 @@
         "@types/stacktrace-js": "^0.0.32",
         "@types/webrtc": "^0.0.25",
         "axios": "^0.18.0",
-        "bloom-player": "1.0.14",
+        "bloom-player": "^1.1.34",
         "calculate-aspect-ratio": "^0.1.3",
         "color-blind": "^0.1.1",
         "comicaljs": "^0.1.6",
