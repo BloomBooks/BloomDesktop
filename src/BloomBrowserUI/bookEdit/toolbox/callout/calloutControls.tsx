@@ -404,7 +404,9 @@ const CalloutToolControls: React.FunctionComponent = () => {
                             </MenuItem>
                         </Select>
                     </FormControl>
-                    <Button>
+                    <Button
+                        onClick={event => handleChildBubbleLinkClick(event)}
+                    >
                         <Div l10nKey="EditTab.Toolbox.ComicTool.Options.AddChildBubble">
                             Add Child Bubble
                         </Div>
