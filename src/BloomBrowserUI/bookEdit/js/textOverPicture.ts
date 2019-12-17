@@ -10,6 +10,7 @@ import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { Comical, Bubble, BubbleSpec, BubbleSpecPattern } from "comicaljs";
 import { Point, PointScaling } from "./point";
+import { isLinux } from "../../utils/isLinux";
 
 const kWebsocketContext = "textOverPicture";
 const kComicalGeneratedClass: string = "comical-generated";
@@ -383,6 +384,7 @@ export class TextOverPictureManager {
 
     // drag-and-drop support for bubbles from comical toolbox
     private setDragAndDropHandlers(container: HTMLElement): void {
+        if (isLinux()) return; // these events never fire on Linux: see BL-7958.
         // This suppresses the default behavior, which is to forbid dragging things to
         // an element, but only if the source of the drag is a bloom bubble.
         container.ondragover = ev => {
@@ -1190,6 +1192,16 @@ export class TextOverPictureManager {
         // Need to reload the page to get it editable/draggable/etc,
         // and to get the Comical bubbles consistent with the new bubble specs
         BloomApi.postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+    }
+
+    public addFloatingTOPBoxWithScreenCoords(
+        screenX: number,
+        screenY: number,
+        style: string
+    ): HTMLElement | undefined {
+        const clientX = screenX - window.screenX;
+        const clientY = screenY - window.screenY;
+        return this.addFloatingTOPBox(clientX, clientY, style);
     }
 
     public addFloatingTOPBox(

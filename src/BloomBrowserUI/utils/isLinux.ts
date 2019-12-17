@@ -4,5 +4,5 @@ export function isLinux(): boolean {
     if (i >= 0) {
         return searchString.substr(i + "isLinux=".length, 4) === "true";
     }
-    return false;
+    return window.navigator.userAgent.indexOf("Linux") >= 0;
 }

@@ -15,6 +15,8 @@ import { Div, Span } from "../../../react_components/l10nComponents";
 import InputLabel from "@material-ui/core/InputLabel";
 import * as toastr from "toastr";
 import { default as TrashIcon } from "@material-ui/icons/Delete";
+import { BloomApi } from "../../../utils/bloomApi";
+import { isLinux } from "../../../utils/isLinux";
 
 const CalloutToolControls: React.FunctionComponent = () => {
     // Declare all the hooks
@@ -178,6 +180,26 @@ const CalloutToolControls: React.FunctionComponent = () => {
         ev.dataTransfer.setData("bloomBubble", style);
     };
 
+    const ondragend = (ev, style) => {
+        // The Linux/Mono/Geckofx environment does not produce the dragenter, dragover,
+        // and drop events for the targeted element.  It does produce the dragend event
+        // for the source element with screen coordinates of where the mouse was released.
+        // This can be used to simulate the drop event with coordinate transformation.
+        // See https://issues.bloomlibrary.org/youtrack/issue/BL-7958.
+        if (
+            isLinux() &&
+            CalloutTool.bubbleManager().addFloatingTOPBoxWithScreenCoords(
+                ev.screenX,
+                ev.screenY,
+                style
+            )
+        ) {
+            BloomApi.postThatMightNavigate(
+                "common/saveChangesAndRethinkPageEvent"
+            );
+        }
+    };
+
     const deleteBubble = () => {
         const bubbleManager = CalloutTool.bubbleManager();
         const active = bubbleManager.getActiveElement();
@@ -207,12 +229,14 @@ const CalloutToolControls: React.FunctionComponent = () => {
                         src="comic-icon.svg"
                         draggable={true}
                         onDragStart={ev => ondragstart(ev, "speech")}
+                        onDragEnd={ev => ondragend(ev, "speech")}
                     />
                     <span
                         id="shapeChooserTextBlock"
                         className="calloutControlDraggableBubble"
                         draggable={true}
                         onDragStart={ev => ondragstart(ev, "none")}
+                        onDragEnd={ev => ondragend(ev, "none")}
                     >
                         Text Block
                     </span>
@@ -223,6 +247,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                         className="calloutControlDraggableBubble"
                         draggable={true}
                         onDragStart={ev => ondragstart(ev, "caption")}
+                        onDragEnd={ev => ondragend(ev, "caption")}
                     >
                         Caption
                     </span>
