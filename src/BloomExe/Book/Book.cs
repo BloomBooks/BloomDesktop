@@ -2832,8 +2832,7 @@ namespace Bloom.Book
 		{
 			foreach (var span in htmlDom.RawDom.SafeSelectNodes("//span[@data-duration and @id]").Cast<XmlElement>())
 			{
-				var path = FolderPath.CombineForPath("audio", span.GetStringAttribute("id") + ".wav");
-				if (!RobustFile.Exists(path))
+				if (!AudioProcessor.DoesAudioExistForSegment(Storage.FolderPath, span.GetStringAttribute("id")))
 					span.RemoveAttribute("data-duration");	// file no longer exists, shouldn't have any duration setting
 			}
 		}
