@@ -23,7 +23,9 @@ const CalloutToolControls: React.FunctionComponent = () => {
     const [style, setStyle] = useState("none");
     const [textColor, setTextColor] = useState("black");
     const [backgroundColor, setBackgroundColor] = useState("white");
-    const [outlineColor, setOutlineColor] = useState("none");
+    const [outlineColor, setOutlineColor] = useState<string | undefined>(
+        undefined
+    );
     const [bubbleActive, setBubbleActive] = useState(false);
 
     // if bubbleActive is true, corresponds to the active bubble. Otherwise, corresponds to the most recently active bubble.
@@ -67,7 +69,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
     useEffect(() => {
         if (currentBubbleSpec) {
             setStyle(currentBubbleSpec.style);
-            setOutlineColor(currentBubbleSpec.outerBorderColor || "none");
+            setOutlineColor(currentBubbleSpec.outerBorderColor);
             setBubbleActive(true);
         } else {
             setBubbleActive(false);
@@ -133,7 +135,11 @@ const CalloutToolControls: React.FunctionComponent = () => {
 
     // Callback when outline color of the callout is changed
     const handleOutlineColorChanged = event => {
-        const newValue = event.target.value;
+        let newValue = event.target.value;
+
+        if (newValue === "none") {
+            newValue = undefined;
+        }
 
         // Update the toolbox controls
         setOutlineColor(newValue);
@@ -401,7 +407,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                             </Span>
                         </InputLabel>
                         <Select
-                            value={outlineColor}
+                            value={outlineColor ? outlineColor : "none"}
                             className="calloutOptionDropdown"
                             inputProps={{
                                 name: "outlineColor",
