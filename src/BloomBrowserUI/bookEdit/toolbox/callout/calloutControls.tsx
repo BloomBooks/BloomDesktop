@@ -106,10 +106,26 @@ const CalloutToolControls: React.FunctionComponent = () => {
         // Update the toolbox controls
         setBackgroundColor(newValue);
 
-        // TODO: Handle the gradients
         // Update the Comical canvas on the page frame
+        let backgroundColors = [newValue];
+        switch (newValue) {
+            case "whiteToCalico":
+                // #DFB28B is the color Comical has been using as the default for captions.
+                // It's fairly close to the "Calico" color defined at https://www.htmlcsscolor.com/hex/D5B185 (#D5B185)
+                // so I decided it was the best choice for keeping that option.
+                backgroundColors = ["white", "#DFB28B"];
+                break;
+            case "whiteToFrenchPass":
+                // https://www.htmlcsscolor.com/hex/ACCCDD
+                backgroundColors = ["white", "#ACCCDD"];
+                break;
+            case "whiteToPortafino":
+                // https://encycolorpedia.com/7b8eb8
+                backgroundColors = ["white", "#7b8eb8"];
+                break;
+        }
         CalloutTool.bubbleManager().updateSelectedItemBubbleSpec({
-            backgroundColors: [newValue]
+            backgroundColors: backgroundColors
         });
     };
 
@@ -172,7 +188,12 @@ const CalloutToolControls: React.FunctionComponent = () => {
 
     return (
         <div id="calloutControls">
-            <div id={"calloutControlShapeChooserRegion"}>
+            <div
+                id={"calloutControlShapeChooserRegion"}
+                className={
+                    !ToolboxToolReactAdaptor.isXmatter() ? "" : "disabled"
+                }
+            >
                 <Div
                     l10nKey="EditTab.Toolbox.ComicTool.DragInstructions"
                     className="calloutControlDragInstructions"
@@ -209,7 +230,11 @@ const CalloutToolControls: React.FunctionComponent = () => {
             </div>
             <div
                 id={"calloutControlOptionsRegion"}
-                className={bubbleActive ? "" : "disabled"}
+                className={
+                    bubbleActive && !ToolboxToolReactAdaptor.isXmatter()
+                        ? ""
+                        : "disabled"
+                }
             >
                 <form autoComplete="off">
                     <FormControl>
@@ -294,7 +319,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                             </MenuItem>
                         </Select>
                     </FormControl>
-                    <br />
+                        <br /> */}
                     <FormControl>
                         <InputLabel htmlFor="callout-backgroundColor-dropdown">
                             <Span l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor">
@@ -344,7 +369,6 @@ const CalloutToolControls: React.FunctionComponent = () => {
                         </Select>
                     </FormControl>
                     <br />
-                        */}
                     <FormControl>
                         <InputLabel htmlFor="callout-outlineColor-dropdown">
                             <Span l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor">
