@@ -3374,6 +3374,25 @@ namespace Bloom.Book
 
 		public bool HasQuizPages => HtmlDom.HasQuizFeature(OurHtmlDom.Body);
 
+		public bool HasOnlyPictureOnlyPages()
+		{
+			foreach (var page in GetPages())
+			{
+				if (page.IsXMatter)
+					continue;
+				var pageDiv = page.GetDivNodeForThisPage();
+				foreach (var groupDiv in pageDiv.SafeSelectNodes(".//div[contains(@class, 'bloom-translationGroup')]").Cast<XmlElement>())
+				{
+					var classes = groupDiv.GetAttribute("class");
+					if (!classes.Contains("bloom-imageDescription"))
+						return false;
+				}
+			}
+			return true;
+		}
+
+
+
 		// This is a shorthand for a whole set of features.
 		// Note: we are currently planning to eventually store this primarily in the data-div, with the
 		// body feature attributes present only so that CSS can base things on it. This method would then
