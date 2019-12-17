@@ -16,11 +16,7 @@ import BloomField from "../bloomField/BloomField";
 import BloomNotices from "./bloomNotices";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
-import {
-    initializeTextOverPictureManager,
-    theOneTextOverPictureManager
-} from "./textOverPicture";
-export { theOneTextOverPictureManager } from "./textOverPicture";
+import { initializeBubbleManager, theOneBubbleManager } from "./bubbleManager";
 import TopicChooser from "../TopicChooser/TopicChooser";
 import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
@@ -387,7 +383,7 @@ window.onload = () => {
 export function SetupElements(container) {
     SetupImagesInContainer(container);
     SetupVideoEditing(container);
-    initializeTextOverPictureManager();
+    initializeBubbleManager();
 
     //add a marginBox if it's missing. We introduced it early in the first beta
     $(container)
@@ -810,8 +806,8 @@ export function SetupElements(container) {
         });
 
     // make any added text-over-picture bubbles draggable and clickable
-    if (theOneTextOverPictureManager) {
-        theOneTextOverPictureManager.initializeTextOverPictureEditing();
+    if (theOneBubbleManager) {
+        theOneBubbleManager.initializeTextOverPictureEditing();
     }
 
     // focus on the first editable field
@@ -1034,11 +1030,11 @@ export const pageSelectionChanging = () => {
 
 // For usage, see editViewFrame.switchContentPage()
 export const prepareToSavePage = () => {
-    theOneTextOverPictureManager.turnOffBubbleEditing();
+    theOneBubbleManager.turnOffBubbleEditing();
 };
 
 export const pageUnloading = () => {
-    theOneTextOverPictureManager.cleanUp();
+    theOneBubbleManager.cleanUp();
 };
 
 // This is invoked from C# when we are about to leave a page (often right after the previous

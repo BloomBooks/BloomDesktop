@@ -2,15 +2,14 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import * as ReactDOM from "react-dom";
-import "./callout.less";
+import "./comic.less";
 import { getPageFrameExports } from "../../js/bloomFrames";
-import { TextOverPictureManager } from "../../js/textOverPicture";
+import { BubbleManager } from "../../js/bubbleManager";
 import { BubbleSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import { MenuItem, Button } from "@material-ui/core";
-import { values } from "mobx";
 import { Div, Span } from "../../../react_components/l10nComponents";
 import InputLabel from "@material-ui/core/InputLabel";
 import * as toastr from "toastr";
@@ -18,7 +17,7 @@ import { default as TrashIcon } from "@material-ui/icons/Delete";
 import { BloomApi } from "../../../utils/bloomApi";
 import { isLinux } from "../../../utils/isLinux";
 
-const CalloutToolControls: React.FunctionComponent = () => {
+const ComicToolControls: React.FunctionComponent = () => {
     // Declare all the hooks
     const [style, setStyle] = useState("none");
     const [textColor, setTextColor] = useState("black");
@@ -35,7 +34,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
 
     // Callback to initialize bubbleEditing and get the initial bubbleSpec
     const bubbleSpecInitialization = () => {
-        const bubbleManager = CalloutTool.bubbleManager();
+        const bubbleManager = ComicTool.bubbleManager();
         if (!bubbleManager) {
             console.assert(
                 false,
@@ -61,9 +60,9 @@ const CalloutToolControls: React.FunctionComponent = () => {
     };
 
     // Enhance: if we don't want to have a static, or don't want
-    // this function to know about CalloutTool, we could just pass
+    // this function to know about ComicTool, we could just pass
     // a setter for this as a property.
-    CalloutTool.theOneCalloutTool!.callOnNewPageReady = () => {
+    ComicTool.theOneComicTool!.callOnNewPageReady = () => {
         bubbleSpecInitialization();
     };
     useEffect(() => {
@@ -84,7 +83,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
         setStyle(newStyle);
 
         // Update the Comical canvas on the page frame
-        CalloutTool.bubbleManager().updateSelectedItemBubbleSpec({
+        ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
             style: newStyle
         });
     };
@@ -98,12 +97,12 @@ const CalloutToolControls: React.FunctionComponent = () => {
 
         // TODO: IMPLEMENT ME in Comical
         // // Update the Comical canvas on the page frame
-        // CalloutTool.bubbleManager().updateSelectedItemBubbleSpec({
+        // ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
         //     textColor: newTextColor
         // });
     };
 
-    // Callback when background color of the callout is changed
+    // Callback when background color of the bubble is changed
     const handleBackgroundColorChanged = event => {
         const newValue = event.target.value;
 
@@ -128,12 +127,12 @@ const CalloutToolControls: React.FunctionComponent = () => {
                 backgroundColors = ["white", "#7b8eb8"];
                 break;
         }
-        CalloutTool.bubbleManager().updateSelectedItemBubbleSpec({
+        ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
             backgroundColors: backgroundColors
         });
     };
 
-    // Callback when outline color of the callout is changed
+    // Callback when outline color of the bubble is changed
     const handleOutlineColorChanged = event => {
         let newValue = event.target.value;
 
@@ -146,13 +145,13 @@ const CalloutToolControls: React.FunctionComponent = () => {
 
         // TODO: May need to massage the values before passing them to Comical
         // Update the Comical canvas on the page frame
-        CalloutTool.bubbleManager().updateSelectedItemBubbleSpec({
+        ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
             outerBorderColor: newValue
         });
     };
 
     const handleChildBubbleLinkClick = event => {
-        const bubbleManager = CalloutTool.bubbleManager();
+        const bubbleManager = ComicTool.bubbleManager();
 
         const parentElement = bubbleManager.getActiveElement();
 
@@ -166,7 +165,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
 
         // Retrieve the latest bubbleSpec
         const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
-        const [offsetX, offsetY] = CalloutTool.GetChildPositionFromParentBubble(
+        const [offsetX, offsetY] = ComicTool.GetChildPositionFromParentBubble(
             parentElement,
             bubbleSpec
         );
@@ -179,7 +178,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
 
     const ondragstart = (ev, style) => {
         // Here "bloomBubble" is a unique, private data type recognised
-        // by ondragover and ondragdrop methods that TextOverPicture
+        // by ondragover and ondragdrop methods that BubbleManager
         // attaches to bloom image containers. It doesn't make sense to
         // drag these objects anywhere else, so they don't need any of
         // the common data types.
@@ -194,7 +193,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-7958.
         if (
             isLinux() &&
-            CalloutTool.bubbleManager().addFloatingTOPBoxWithScreenCoords(
+            ComicTool.bubbleManager().addFloatingTOPBoxWithScreenCoords(
                 ev.screenX,
                 ev.screenY,
                 style
@@ -207,7 +206,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
     };
 
     const deleteBubble = () => {
-        const bubbleManager = CalloutTool.bubbleManager();
+        const bubbleManager = ComicTool.bubbleManager();
         const active = bubbleManager.getActiveElement();
         if (active) {
             bubbleManager.deleteTOPBox(active);
@@ -215,23 +214,23 @@ const CalloutToolControls: React.FunctionComponent = () => {
     };
 
     return (
-        <div id="calloutControls">
+        <div id="comicToolControls">
             <div
-                id={"calloutControlShapeChooserRegion"}
+                id={"comicToolControlShapeChooserRegion"}
                 className={
                     !ToolboxToolReactAdaptor.isXmatter() ? "" : "disabled"
                 }
             >
                 <Div
                     l10nKey="EditTab.Toolbox.ComicTool.DragInstructions"
-                    className="calloutControlDragInstructions"
+                    className="comicToolControlDragInstructions"
                 >
                     Drag to add to an image
                 </Div>
                 <div className={"shapeChooserRow"} id={"shapeChooserRow1"}>
                     <img
                         id="shapeChooserSpeechBubble"
-                        className="calloutControlDraggableBubble"
+                        className="comicToolControlDraggableBubble"
                         src="comic-icon.svg"
                         draggable={true}
                         onDragStart={ev => ondragstart(ev, "speech")}
@@ -239,7 +238,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                     />
                     <span
                         id="shapeChooserTextBlock"
-                        className="calloutControlDraggableBubble"
+                        className="comicToolControlDraggableBubble"
                         draggable={true}
                         onDragStart={ev => ondragstart(ev, "none")}
                         onDragEnd={ev => ondragend(ev, "none")}
@@ -250,7 +249,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                 <div className={"shapeChooserRow"} id={"shapeChooserRow2"}>
                     <span
                         id="shapeChooserCaption"
-                        className="calloutControlDraggableBubble"
+                        className="comicToolControlDraggableBubble"
                         draggable={true}
                         onDragStart={ev => ondragstart(ev, "caption")}
                         onDragEnd={ev => ondragend(ev, "caption")}
@@ -260,7 +259,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
                 </div>
             </div>
             <div
-                id={"calloutControlOptionsRegion"}
+                id={"comicToolControlOptionsRegion"}
                 className={
                     bubbleActive && !ToolboxToolReactAdaptor.isXmatter()
                         ? ""
@@ -269,7 +268,7 @@ const CalloutToolControls: React.FunctionComponent = () => {
             >
                 <form autoComplete="off">
                     <FormControl>
-                        <InputLabel htmlFor="callout-style-dropdown">
+                        <InputLabel htmlFor="bubble-style-dropdown">
                             <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
                                 Style
                             </Span>
@@ -279,13 +278,13 @@ const CalloutToolControls: React.FunctionComponent = () => {
                             onChange={event => {
                                 handleStyleChanged(event);
                             }}
-                            className="calloutOptionDropdown"
+                            className="bubbleOptionDropdown"
                             inputProps={{
                                 name: "style",
-                                id: "callout-style-dropdown"
+                                id: "bubble-style-dropdown"
                             }}
                             MenuProps={{
-                                className: "callout-options-dropdown-menu"
+                                className: "bubble-options-dropdown-menu"
                             }}
                         >
                             <MenuItem value="caption">
@@ -323,20 +322,20 @@ const CalloutToolControls: React.FunctionComponent = () => {
                     <br />
                     {/*
                     <FormControl>
-                        <InputLabel htmlFor="callout-textColor-dropdown">
+                        <InputLabel htmlFor="bubble-textColor-dropdown">
                             <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextColor">
                                 Text Color
                             </Span>
                         </InputLabel>
                         <Select
                             value={textColor}
-                            className="calloutOptionDropdown"
+                            className="bubbleOptionDropdown"
                             inputProps={{
                                 name: "textColor",
-                                id: "callout-textColor-dropdown"
+                                id: "bubble-textColor-dropdown"
                             }}
                             MenuProps={{
-                                className: "callout-options-dropdown-menu"
+                                className: "bubble-options-dropdown-menu"
                             }}
                             onChange={event => {
                                 handleTextColorChanged(event);
@@ -352,20 +351,20 @@ const CalloutToolControls: React.FunctionComponent = () => {
                     </FormControl>
                         <br /> */}
                     <FormControl>
-                        <InputLabel htmlFor="callout-backgroundColor-dropdown">
+                        <InputLabel htmlFor="bubble-backgroundColor-dropdown">
                             <Span l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor">
                                 Background Color
                             </Span>
                         </InputLabel>
                         <Select
                             value={backgroundColor}
-                            className="calloutOptionDropdown"
+                            className="bubbleOptionDropdown"
                             inputProps={{
                                 name: "backgroundColor",
-                                id: "callout-backgroundColor-dropdown"
+                                id: "bubble-backgroundColor-dropdown"
                             }}
                             MenuProps={{
-                                className: "callout-options-dropdown-menu"
+                                className: "bubble-options-dropdown-menu"
                             }}
                             onChange={event => {
                                 handleBackgroundColorChanged(event);
@@ -401,20 +400,20 @@ const CalloutToolControls: React.FunctionComponent = () => {
                     </FormControl>
                     <br />
                     <FormControl>
-                        <InputLabel htmlFor="callout-outlineColor-dropdown">
+                        <InputLabel htmlFor="bubble-outlineColor-dropdown">
                             <Span l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor">
                                 Outer Outline Color
                             </Span>
                         </InputLabel>
                         <Select
                             value={outlineColor ? outlineColor : "none"}
-                            className="calloutOptionDropdown"
+                            className="bubbleOptionDropdown"
                             inputProps={{
                                 name: "outlineColor",
-                                id: "callout-outlineColor-dropdown"
+                                id: "bubble-outlineColor-dropdown"
                             }}
                             MenuProps={{
-                                className: "callout-options-dropdown-menu"
+                                className: "bubble-options-dropdown-menu"
                             }}
                             onChange={event => {
                                 handleOutlineColorChanged(event);
@@ -449,31 +448,31 @@ const CalloutToolControls: React.FunctionComponent = () => {
                     />
                 </form>
             </div>
-            <div id="calloutControlFillerRegion" />
-            <div id={"calloutControlFooterRegion"}>
+            <div id="comicToolControlFillerRegion" />
+            <div id={"comicToolControlFooterRegion"}>
                 <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Comic_Tool/Comic_Tool_overview.htm" />
             </div>
         </div>
     );
 };
-export default CalloutToolControls;
+export default ComicToolControls;
 
-export class CalloutTool extends ToolboxToolReactAdaptor {
-    public static theOneCalloutTool: CalloutTool | undefined;
+export class ComicTool extends ToolboxToolReactAdaptor {
+    public static theOneComicTool: ComicTool | undefined;
 
     public callOnNewPageReady: () => void | undefined;
 
     public constructor() {
         super();
 
-        CalloutTool.theOneCalloutTool = this;
+        ComicTool.theOneComicTool = this;
     }
 
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
-        root.setAttribute("class", "CalloutBody");
+        root.setAttribute("class", "ComicBody");
 
-        ReactDOM.render(<CalloutToolControls />, root);
+        ReactDOM.render(<ComicToolControls />, root);
         return root as HTMLDivElement;
     }
 
@@ -497,7 +496,7 @@ export class CalloutTool extends ToolboxToolReactAdaptor {
     }
 
     public newPageReady() {
-        const bubbleManager = CalloutTool.bubbleManager();
+        const bubbleManager = ComicTool.bubbleManager();
         if (!bubbleManager) {
             // probably the toolbox just finished loading before the page.
             // No clean way to fix this
@@ -516,7 +515,7 @@ export class CalloutTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        const bubbleManager = CalloutTool.bubbleManager();
+        const bubbleManager = ComicTool.bubbleManager();
         if (bubbleManager) {
             // For now we are leaving bubble editing on, because even with the toolbox hidden,
             // the user might edit text, delete bubbles, move handles, etc.
@@ -528,7 +527,7 @@ export class CalloutTool extends ToolboxToolReactAdaptor {
         }
     }
 
-    public static bubbleManager(): TextOverPictureManager {
+    public static bubbleManager(): BubbleManager {
         return getPageFrameExports().getTheOneBubbleManager();
     }
 
