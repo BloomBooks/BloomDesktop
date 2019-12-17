@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Xml;
 using Bloom.Properties;
 using BookInstance = Bloom.Book.Book;
 using Bloom.WebLibraryIntegration;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.Progress;
+using SIL.Xml;
 using BloomTemp;
 using System.IO;
 
@@ -140,11 +143,29 @@ namespace Bloom.Publish.BloomLibrary
 
 		/// <summary>
 		/// We would like users to be able to publish picture books that don't have any text.  Historically, we've required
-		/// non-empty books with text unless the book is marked as being a template.  This restriction is too severe, but
-		/// it's not clear what feasible restriction is actually helpful.  So for now, we have no restriction imposed.
-		/// (See https://issues.bloomlibrary.org/youtrack/issue/BL-7514 for what triggered this decision.)
+		/// non-empty books with text unless the book is marked as being a template.  This restriction is too severe, so for
+		/// now, we require either a template or a pure picture book.  (No text boxes apart from image description boxes on
+		/// content pages.)  (See https://issues.bloomlibrary.org/youtrack/issue/BL-7514 for the initial user request, and
+		/// https://issues.bloomlibrary.org/youtrack/issue/BL-7799 for why we made this property non-trivial.)
 		/// </summary>
-		internal bool OkToUploadWithNoLanguages => true;
+		internal bool OkToUploadWithNoLanguages => Book.BookInfo.IsSuitableForMakingShells || HasOnlyPictureOnlyPages();
+
+		private bool HasOnlyPictureOnlyPages()
+		{
+			foreach (var page in Book.GetPages())
+			{
+				var pageDiv = page.GetDivNodeForThisPage();
+				if (!String.IsNullOrEmpty(pageDiv.GetAttribute("data-xmatter-page")))
+					continue;	// skip xmatter pages
+				foreach (var groupDiv in pageDiv.SafeSelectNodes(".//div[contains(@class, 'bloom-translationGroup')]").Cast<XmlElement>())
+				{
+					var classes = groupDiv.GetAttribute("class");
+					if (!classes.Contains("bloom-imageDescription"))
+						return false;
+				}
+			}
+			return true;
+		}
 
 		internal bool IsThisVersionAllowedToUpload => _transferrer.IsThisVersionAllowedToUpload();
 
