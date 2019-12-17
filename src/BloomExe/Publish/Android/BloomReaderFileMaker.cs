@@ -23,6 +23,7 @@ namespace Bloom.Publish.Android
 	public static class BloomReaderFileMaker
 	{
 		public const string kQuestionFileName = "questions.json";
+		public const string BRExportFolder = "BloomReaderExport";
 
 		public static Control ControlForInvoke { get; set; }
 
@@ -33,7 +34,7 @@ namespace Bloom.Publish.Android
 
 		// Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
 		public static void CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
-			WebSocketProgress progress, string tempFolderName = "BloomReaderExport", AndroidPublishSettings settings = null)
+			WebSocketProgress progress, string tempFolderName = BRExportFolder, AndroidPublishSettings settings = null)
 		{
 			using (var temp = new TemporaryFolder(tempFolderName))
 			{
