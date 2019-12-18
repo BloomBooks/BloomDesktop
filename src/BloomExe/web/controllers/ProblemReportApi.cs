@@ -186,6 +186,7 @@ namespace Bloom.web.controllers
 			ShowProblemDialog(null, exception, detailedMessage, "nonfatal");
 		}
 
+		static bool _showingProblemReport;
 		/// <summary>
 		/// Shows a problem dialog.
 		/// </summary>
@@ -196,6 +197,24 @@ namespace Bloom.web.controllers
 		public static void ShowProblemDialog(Control controlForScreenshotting, Exception exception,
 			string detailedMessage = "", string levelOfProblem="user")
 		{
+			if (_showingProblemReport)
+			{
+				// If a problem is reported when already reporting a problem, that's most likely going
+				// to be an unbounded recursion that freezes the program and prevents the original
+				// problem from being reported.  So minimally report the recursive problem and stop
+				// the recursion in its tracks.
+				var sb = new StringBuilder();
+				sb.AppendLine("RECURSIVE CALL TO ShowProblemDialog:");
+				sb.AppendLineFormat("    exception = {0}", exception.ToString());
+				if (!string.IsNullOrWhiteSpace(detailedMessage))
+					sb.AppendLineFormat("   detailed message = {0}", detailedMessage);
+				sb.AppendLineFormat("    level of problem = {0}", levelOfProblem);
+				var msg = sb.ToString();
+				Console.Write(msg);
+				Logger.WriteEvent(msg);
+				return;	// break recursion...
+			}
+			_showingProblemReport = true;
 			_currentException = exception;
 			_detailedMessage = detailedMessage;
 			if (controlForScreenshotting == null)
@@ -232,6 +251,7 @@ namespace Bloom.web.controllers
 					{
 						dlg.ShowDialog();
 					}
+					_showingProblemReport = false;
 				});
 		}
 
