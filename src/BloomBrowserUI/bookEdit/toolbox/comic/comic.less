@@ -8,12 +8,12 @@
     }
 }
 
-#ui-accordion-toolbox-panel-0.CalloutBody {
+#ui-accordion-toolbox-panel-0.ComicBody {
     padding-top: 1px; // The design for this has a very small boundary between the header and the start of the tool
     padding-left: 1px !important; // Don't want a big border of highly contrasting colors
 }
 
-#calloutControls {
+#comicToolControls {
     display: flex;
     flex-direction: column;
     // fill available toolbox space, part of pushing help to the bottom.
@@ -23,12 +23,12 @@
     color: @bloom-toolboxWhite;
 }
 
-#calloutControlShapeChooserRegion {
+#comicToolControlShapeChooserRegion {
     background-color: @bloom-gray;
     padding: @SideMargin;
     display: flex;
     flex-wrap: wrap;
-    .calloutControlDraggableBubble {
+    .comicToolControlDraggableBubble {
         cursor: grab;
     }
 
@@ -88,7 +88,7 @@
     }
 }
 
-#calloutControlOptionsRegion {
+#comicToolControlOptionsRegion {
     padding: @SideMargin @SideMargin 0 @SideMargin;
 
     color: @bloom-toolboxWhite;
@@ -135,7 +135,7 @@
 
     .MuiFormLabel-root,
     .MuiSelect-icon,
-    .calloutOptionDropdown {
+    .bubbleOptionDropdown {
         color: @bloom-toolboxWhite;
     }
     .MuiInput-underline::after {
@@ -178,20 +178,20 @@
 }
 
 // Empty region that does all the growing and shrinking.
-// makes the calloutControlFooterRegion go to the bottom,
+// makes the comicToolControlFooterRegion go to the bottom,
 // but unlike making it position: absolute and bottom:3,
 // it can get pushed out of view if the view gets too small.
-#calloutControlFillerRegion {
+#comicToolControlFillerRegion {
     flex: 1 1 0;
 }
 
-#calloutControlFooterRegion {
+#comicToolControlFooterRegion {
     padding-left: 3px;
     margin-bottom: 3px;
     margin-top: 10px;
 }
 
-.callout-options-dropdown-menu {
+.bubble-options-dropdown-menu {
     // Getting overwritten by the inline styles... :(
     // TODO: Experiment with whether you can pass in a style through Material UI instead of using !important to bypass the inline style.
     z-index: 999999 !important; // Note: 18,000 was experimentally determined to be the minimum required z-index, but seems safer to go up a bit from the minimum

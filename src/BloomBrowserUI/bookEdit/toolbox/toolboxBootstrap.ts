@@ -19,7 +19,7 @@ import { handleBookSettingCheckboxClick } from "./bookSettings/bookSettings";
 import { SignLanguageTool } from "./signLanguage/signLanguageTool";
 import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 import "errorHandler";
-import { CalloutTool } from "./callout/calloutControls";
+import { ComicTool } from "./comic/comicTool";
 
 // each of these exports shows up under this window's FrameExports object (see bloomFrames.ts)
 export { removeToolboxMarkup, showOrHideTool_click };
@@ -71,4 +71,4 @@ ToolBox.registerTool(new MotionTool());
 ToolBox.registerTool(new TalkingBookTool());
 ToolBox.registerTool(new SignLanguageTool());
 ToolBox.registerTool(new ImageDescriptionAdapter());
-ToolBox.registerTool(new CalloutTool());
+ToolBox.registerTool(new ComicTool());

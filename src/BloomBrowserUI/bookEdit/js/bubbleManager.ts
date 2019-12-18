@@ -15,14 +15,14 @@ import { isLinux } from "../../utils/isLinux";
 const kWebsocketContext = "textOverPicture";
 const kComicalGeneratedClass: string = "comical-generated";
 
-// references to "TOP" in the code refer to the actual TextOverPicture box installed in the Bloom page.
-export class TextOverPictureManager {
-    // The min width/height needs to be kept in sync with the corresponding values in textOverPicture.less
+// references to "TOP" in the code refer to the actual TextOverPicture box (what "Bubble"s were originally called) installed in the Bloom page.
+export class BubbleManager {
+    // The min width/height needs to be kept in sync with the corresponding values in bubble.less
     public minTextBoxWidthPx = 30;
     public minTextBoxHeightPx = 30;
 
     private activeElement: HTMLElement | undefined;
-    private isCalloutEditingOn: boolean = false;
+    private isComicEditingOn: boolean = false;
     private notifyBubbleChange:
         | ((x: BubbleSpec | undefined) => void)
         | undefined;
@@ -43,14 +43,14 @@ export class TextOverPictureManager {
         height: number;
     };
 
-    public initializeTextOverPictureManager(): void {
+    public initializeBubbleManager(): void {
         // currently nothing to do; used to set up web socket listener
         // for right-click messages to add and delete TOP boxes.
         // Keeping hook in case we want it one day...
     }
 
-    public getIsCalloutEditingOn(): boolean {
-        return this.isCalloutEditingOn;
+    public getIsComicEditingOn(): boolean {
+        return this.isComicEditingOn;
     }
 
     // Given the box has been determined to be overflowing vertically by
@@ -114,7 +114,7 @@ export class TextOverPictureManager {
         }
         wrapperBox.style.height = newHeight + "px"; // next line will change to percent
         // TODO: GrowOverflowingBox doesn't work properly when scaled.
-        TextOverPictureManager.setTextboxPositionAsPercentage($(wrapperBox));
+        BubbleManager.setTextboxPositionAsPercentage($(wrapperBox));
         return true;
     }
 
@@ -132,15 +132,15 @@ export class TextOverPictureManager {
             document.getElementsByClassName("bloom-imageContainer") as any
         );
         imageContainers.forEach(e => {
-            TextOverPictureManager.hideImageButtonsIfNotPlaceHolder(e);
+            BubbleManager.hideImageButtonsIfNotPlaceHolder(e);
         });
     }
 
     public turnOnBubbleEditing(): void {
-        if (this.isCalloutEditingOn === true) {
+        if (this.isComicEditingOn === true) {
             return; // Already on. No work needs to be done
         }
-        this.isCalloutEditingOn = true;
+        this.isComicEditingOn = true;
 
         Comical.setActiveBubbleListener(activeElement => {
             if (activeElement) {
@@ -185,12 +185,12 @@ export class TextOverPictureManager {
                 // Don't use an arrow function as an event handler here. These can never be identified as duplicate event listeners, so we'll end up with tons of duplicates
                 element.addEventListener(
                     "focus",
-                    TextOverPictureManager.onFocusSetActiveElement
+                    BubbleManager.onFocusSetActiveElement
                 );
             });
             document.addEventListener(
                 "click",
-                TextOverPictureManager.onDocClickClearActiveElement
+                BubbleManager.onDocClickClearActiveElement
             );
         }
 
@@ -285,7 +285,7 @@ export class TextOverPictureManager {
                             // And we want the usual behavior when it gets focus!
                             somethingElseToFocus.addEventListener(
                                 "focus",
-                                TextOverPictureManager.onFocusSetActiveElement
+                                BubbleManager.onFocusSetActiveElement
                             );
                         }
                         somethingElseToFocus.focus();
@@ -304,7 +304,7 @@ export class TextOverPictureManager {
             (pageElement: HTMLElement) => {
                 pageElement.addEventListener(
                     "mousemove",
-                    TextOverPictureManager.onPageMouseMove
+                    BubbleManager.onPageMouseMove
                 );
             }
         );
@@ -336,17 +336,17 @@ export class TextOverPictureManager {
 
             // We don't think this function ever gets called when it's not initialized, but it doesn't
             // hurt to make sure.
-            initializeTextOverPictureManager();
+            initializeBubbleManager();
 
             const bubbleElement = focusedElement.closest(
                 ".bloom-textOverPicture"
             );
             if (bubbleElement) {
-                theOneTextOverPictureManager.setActiveElement(
+                theOneBubbleManager.setActiveElement(
                     bubbleElement as HTMLElement
                 );
             } else {
-                theOneTextOverPictureManager.setActiveElement(undefined);
+                theOneBubbleManager.setActiveElement(undefined);
             }
         }
     }
@@ -364,7 +364,7 @@ export class TextOverPictureManager {
         // the active element for clicks outside the content window, e.g., on the
         // toolbox controls, or even in a debug window. This event handler is
         // attached to the page frame document.)
-        theOneTextOverPictureManager.setActiveElement(undefined);
+        theOneBubbleManager.setActiveElement(undefined);
     }
 
     public getActiveElement() {
@@ -393,7 +393,7 @@ export class TextOverPictureManager {
             }
         };
         // Controls what happens when a bloom bubble is dropped. We get the style
-        // set in CalloutControls.ondragstart() and make a bubble with that style
+        // set in ComicToolControls.ondragstart() and make a bubble with that style
         // at the drop position.
         container.ondrop = ev => {
             // test this so we don't interfere with dragging for text edit,
@@ -444,16 +444,16 @@ export class TextOverPictureManager {
     // Checks to see if the mouse has gone outside of the active container
     private static onPageMouseMove(event: MouseEvent) {
         // Ensures the singleton is ready. (Normally basically a NO-OP because it should already be initialized)
-        initializeTextOverPictureManager();
+        initializeBubbleManager();
 
         if (
-            !theOneTextOverPictureManager.bubbleToDrag ||
-            !theOneTextOverPictureManager.activeContainer
+            !theOneBubbleManager.bubbleToDrag ||
+            !theOneBubbleManager.activeContainer
         ) {
             return;
         }
 
-        const container = theOneTextOverPictureManager.activeContainer;
+        const container = theOneBubbleManager.activeContainer;
         const containerBounds = container.getBoundingClientRect();
 
         // Oops, the mouse cursor has left the image container
@@ -468,8 +468,8 @@ export class TextOverPictureManager {
         ) {
             // FYI: If you use the drag handle (which uses JQuery), it enforces the content box to stay entirely within the imageContainer.
             // This code currently doesn't do that.
-            theOneTextOverPictureManager.bubbleToDrag = undefined;
-            theOneTextOverPictureManager.activeContainer = undefined;
+            theOneBubbleManager.bubbleToDrag = undefined;
+            theOneBubbleManager.activeContainer = undefined;
             container.classList.remove("grabbing");
         }
 
@@ -837,10 +837,8 @@ export class TextOverPictureManager {
         // So we need to subtract out the border and padding
         // Exterior gives the location of the outside edge of the border. But we want values relative to the inside edge of the padding.
         // So we need to subtract out the border and padding
-        const border = TextOverPictureManager.getLeftAndTopBorderWidths(
-            element
-        );
-        const padding = TextOverPictureManager.getLeftAndTopPaddings(element);
+        const border = BubbleManager.getLeftAndTopBorderWidths(element);
+        const padding = BubbleManager.getLeftAndTopPaddings(element);
         const borderAndPadding = border.add(padding);
 
         const transposedPoint = pointRelativeToViewport
@@ -873,10 +871,10 @@ export class TextOverPictureManager {
             styleInfo = window.getComputedStyle(element);
         }
 
-        const borderRight: number = TextOverPictureManager.extractNumber(
+        const borderRight: number = BubbleManager.extractNumber(
             styleInfo.getPropertyValue("border-right-width")
         );
-        const borderBottom: number = TextOverPictureManager.extractNumber(
+        const borderBottom: number = BubbleManager.extractNumber(
             styleInfo.getPropertyValue("border-bottom-width")
         );
 
@@ -1064,10 +1062,10 @@ export class TextOverPictureManager {
     }
 
     public turnOffBubbleEditing(): void {
-        if (this.isCalloutEditingOn === false) {
+        if (this.isComicEditingOn === false) {
             return; // Already off. No work needs to be done.
         }
-        this.isCalloutEditingOn = false;
+        this.isComicEditingOn = false;
 
         Comical.setActiveBubbleListener(undefined);
         Comical.stopEditing();
@@ -1079,13 +1077,13 @@ export class TextOverPictureManager {
             element => {
                 element.removeEventListener(
                     "focus",
-                    TextOverPictureManager.onFocusSetActiveElement
+                    BubbleManager.onFocusSetActiveElement
                 );
             }
         );
         document.removeEventListener(
             "click",
-            TextOverPictureManager.onDocClickClearActiveElement
+            BubbleManager.onDocClickClearActiveElement
         );
     }
 
@@ -1183,7 +1181,7 @@ export class TextOverPictureManager {
 
         const childElement = this.addFloatingTOPBox(newX, newY);
         if (!childElement) {
-            toastr.info("Failed to place a new child callout.");
+            toastr.info("Failed to place a new child bubble.");
             return;
         }
 
@@ -1284,7 +1282,7 @@ export class TextOverPictureManager {
         wrapperBox.css("left", xOffset); // assumes numbers are in pixels
         wrapperBox.css("top", yOffset); // assumes numbers are in pixels
 
-        TextOverPictureManager.setTextboxPositionAsPercentage(
+        BubbleManager.setTextboxPositionAsPercentage(
             wrapperBox,
             xOffset,
             yOffset
@@ -1360,9 +1358,7 @@ export class TextOverPictureManager {
                 stop: (event, ui) => {
                     const target = event.target;
                     if (target) {
-                        TextOverPictureManager.setTextboxPositionAsPercentage(
-                            $(target)
-                        );
+                        BubbleManager.setTextboxPositionAsPercentage($(target));
                     }
 
                     thisTOPBox
@@ -1382,7 +1378,7 @@ export class TextOverPictureManager {
         this.turnOnBubbleEditing();
     }
 
-    // Make any added TextOverPictureManager textboxes draggable, clickable, and resizable.
+    // Make any added BubbleManager textboxes draggable, clickable, and resizable.
     // Called by bloomEditing.ts.
     public makeTextOverPictureBoxDraggableClickableAndResizable() {
         // get all textOverPicture elements
@@ -1407,15 +1403,13 @@ export class TextOverPictureManager {
                 const target = event.target as Element;
                 if (target) {
                     // Resizing also changes size and position to pixels. Fix it.
-                    TextOverPictureManager.setTextboxPositionAsPercentage(
-                        $(target)
-                    );
+                    BubbleManager.setTextboxPositionAsPercentage($(target));
                     // There was a problem where resizing a box messed up its draggable containment,
                     // so now after we resize we go back through making it draggable and clickable again.
                     this.makeTOPBoxesDraggableAndClickable($(target), scale);
 
                     // Clear the custom class used to indicate that a resize action may have been started
-                    TextOverPictureManager.clearResizingClass(target);
+                    BubbleManager.clearResizingClass(target);
                 }
             },
             resize: (event, ui) => {
@@ -1449,7 +1443,7 @@ export class TextOverPictureManager {
 
                 handle.addEventListener(
                     "mousedown",
-                    TextOverPictureManager.addResizingClassHandler
+                    BubbleManager.addResizingClassHandler
                 );
 
                 // Even though we clear it in the JQuery Resize Stop handler, we also need one here
@@ -1457,7 +1451,7 @@ export class TextOverPictureManager {
                 // but we also need to make sure it gets cleaned up, even though no formal Resize Start/Stop events occurred.
                 handle.addEventListener(
                     "mouseup",
-                    TextOverPictureManager.clearResizingClassHandler
+                    BubbleManager.clearResizingClassHandler
                 );
             }
         }
@@ -1477,9 +1471,7 @@ export class TextOverPictureManager {
 
     // An event handler that adds the "bloom-resizing" class to the image container.
     private static clearResizingClassHandler(event: MouseEvent) {
-        TextOverPictureManager.clearResizingClass(
-            event.currentTarget as Element
-        );
+        BubbleManager.clearResizingClass(event.currentTarget as Element);
     }
 
     private static clearResizingClass(element: Element) {
@@ -1552,17 +1544,17 @@ export class TextOverPictureManager {
         return interior;
     }
 
-    // Gets the bloom-imageContainer that hosts this TextOverPictureManager textbox.
+    // Gets the bloom-imageContainer that hosts this BubbleManager textbox.
     // The imageContainer will define the dragging boundaries for the textbox.
     private getImageContainer(wrapperBox: JQuery): JQuery {
         return wrapperBox.parent(".bloom-imageContainer").first();
     }
 }
 
-export let theOneTextOverPictureManager: TextOverPictureManager;
+export let theOneBubbleManager: BubbleManager;
 
-export function initializeTextOverPictureManager() {
-    if (theOneTextOverPictureManager) return;
-    theOneTextOverPictureManager = new TextOverPictureManager();
-    theOneTextOverPictureManager.initializeTextOverPictureManager();
+export function initializeBubbleManager() {
+    if (theOneBubbleManager) return;
+    theOneBubbleManager = new BubbleManager();
+    theOneBubbleManager.initializeBubbleManager();
 }
