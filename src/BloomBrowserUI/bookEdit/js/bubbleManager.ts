@@ -297,9 +297,9 @@ export class BubbleManager {
             this.setMouseDragHandlers(container);
         });
 
-        // The container's onmousemove handler isn't capable of reliably detecting in all cases when it goes out of bounds, because
-        // the mouse is no longer over the container.
-        // So need a handler on the .bloom-page instead, which surrounds the image container.
+        // The container's onmousemove handler isn't capable of reliably detecting in all cases
+        // when it goes out of bounds, because the mouse is no longer over the container.
+        // So we need a handler on the .bloom-page instead, which surrounds the image container.
         Array.from(document.getElementsByClassName("bloom-page")).forEach(
             (pageElement: HTMLElement) => {
                 pageElement.addEventListener(
@@ -310,7 +310,7 @@ export class BubbleManager {
         );
     }
 
-    migrateOldTopElems(textOverPictureElems: HTMLElement[]): void {
+    private migrateOldTopElems(textOverPictureElems: HTMLElement[]): void {
         textOverPictureElems.forEach(top => {
             if (!top.getAttribute("data-bubble")) {
                 const bubbleSpec = Bubble.getDefaultBubbleSpec(top, "none");
@@ -1334,7 +1334,10 @@ export class BubbleManager {
             thisTOPBox.find(".bloom-ui").remove(); // Just in case somehow one is stuck in there
             thisTOPBox.find(".bloom-dragHandleTOP").remove(); // BL-7903 remove any left over drag handles (this was the class used in 4.7 alpha)
             thisTOPBox.append(
-                "<img class='bloom-ui bloom-dragHandle' src='/bloom/bookEdit/img/dragHandle.svg'/>"
+                "<img class='bloom-ui bloom-dragHandle visible' src='/bloom/bookEdit/img/dragHandle.svg'/>"
+            );
+            thisTOPBox.append(
+                "<img class='bloom-ui bloom-dragHandle transparent' src='/bloom/bookEdit/img/dragHandle.svg'/>"
             );
 
             // Containment, drag and stop work when scaled (zoomed) as long as the page has been saved since the zoom
@@ -1353,8 +1356,14 @@ export class BubbleManager {
                     ui.position.top = ui.position.top / scale;
                     ui.position.left = ui.position.left / scale;
                     thisTOPBox.find(".bloom-dragHandle").addClass("grabbing");
+
+                    console.log("Hello world");
+                    //console.log("pageX" + event.pageX);
+                    // TODO: Make it not do anything if it's underneath a bubble
+
+                    // ENHANCE: It'd be great if you could prevent the hover icon from changing if it's under a bubble, but that sounds hard.
                 },
-                handle: ".bloom-dragHandle",
+                handle: ".bloom-dragHandle.transparent",
                 stop: (event, ui) => {
                     const target = event.target;
                     if (target) {
