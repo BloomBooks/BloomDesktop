@@ -27,6 +27,8 @@ const ComicToolControls: React.FunctionComponent = () => {
     );
     const [bubbleActive, setBubbleActive] = useState(false);
 
+    const [isXmatter, setIsXmatter] = useState(true);
+
     // if bubbleActive is true, corresponds to the active bubble. Otherwise, corresponds to the most recently active bubble.
     const [currentBubbleSpec, setCurrentBubbleSpec] = useState(undefined as (
         | BubbleSpec
@@ -64,6 +66,7 @@ const ComicToolControls: React.FunctionComponent = () => {
     // a setter for this as a property.
     ComicTool.theOneComicTool!.callOnNewPageReady = () => {
         bubbleSpecInitialization();
+        setIsXmatter(ToolboxToolReactAdaptor.isXmatter());
     };
     useEffect(() => {
         if (currentBubbleSpec) {
@@ -217,9 +220,7 @@ const ComicToolControls: React.FunctionComponent = () => {
         <div id="comicToolControls">
             <div
                 id={"comicToolControlShapeChooserRegion"}
-                className={
-                    !ToolboxToolReactAdaptor.isXmatter() ? "" : "disabled"
-                }
+                className={!isXmatter ? "" : "disabled"}
             >
                 <Div
                     l10nKey="EditTab.Toolbox.ComicTool.DragInstructions"
@@ -260,11 +261,7 @@ const ComicToolControls: React.FunctionComponent = () => {
             </div>
             <div
                 id={"comicToolControlOptionsRegion"}
-                className={
-                    bubbleActive && !ToolboxToolReactAdaptor.isXmatter()
-                        ? ""
-                        : "disabled"
-                }
+                className={bubbleActive && !isXmatter ? "" : "disabled"}
             >
                 <form autoComplete="off">
                     <FormControl>
