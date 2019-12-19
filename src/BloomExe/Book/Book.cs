@@ -2086,7 +2086,12 @@ namespace Bloom.Book
 
 		public void InitCoverColor()
 		{
-			AddCoverColor(this.OurHtmlDom, CoverColors[s_coverColorIndex]);
+			// for digital comic template, we want a black cover. 
+			var preserve = this.OurHtmlDom.GetMetaValue("preserveCoverColor", "false");
+			if ( preserve == "false")
+			{
+				AddCoverColor(this.OurHtmlDom, CoverColors[s_coverColorIndex]);
+			}
 		}
 
 		private void AddCoverColor(HtmlDom dom, Color coverColor)
@@ -2096,7 +2101,6 @@ namespace Bloom.Book
 			XmlElement colorStyle = dom.RawDom.CreateElement("style");
 			colorStyle.SetAttribute("type","text/css");
 			colorStyle.InnerXml = @"
-				DIV.coverColor  TEXTAREA	{		background-color: colorValue !important;	}
 				DIV.bloom-page.coverColor	{		background-color: colorValue !important;	}
 				".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
 
@@ -2115,7 +2119,7 @@ namespace Bloom.Book
 				string content = stylesheet.InnerText;
 				// Our XML representation of an HTML DOM doesn't seem to have any object structure we can
 				// work with. The Stylesheet content is just raw CDATA text.
-				var match = new Regex(@"DIV.coverColor\s*TEXTAREA\s*{\s*background-color:\s*(#[0-9a-fA-F]*)")
+				var match = new Regex(@"DIV.bloom-page.coverColor\s*{\s*background-color:\s*(#[0-9a-fA-F]*)")
 					.Match(content);
 				if (match.Success)
 				{

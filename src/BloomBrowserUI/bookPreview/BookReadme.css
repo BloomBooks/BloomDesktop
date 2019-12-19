@@ -1,13 +1,10 @@
-*
-{
+* {
     font-family: sans-serif;
     font-size: 10pt;
 }
-H1
-{
+h1 {
     font-size: 15pt;
 }
-BODY
-{
-    background-color: #D3D3D3;
+body {
+    background-color: #fcfafa;
 }

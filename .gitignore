@@ -116,3 +116,4 @@ DistFiles/localization/*.htm
 src/BloomBrowserUI/yarn-error\.log
 
 src/BloomBrowserUI/updateFiles.bat
+src/BloomBrowserUI/templates/template books/Digital Comic Book/Digital Comic Book.css
