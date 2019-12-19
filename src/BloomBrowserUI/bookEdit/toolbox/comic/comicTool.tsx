@@ -73,6 +73,7 @@ const ComicToolControls: React.FunctionComponent = () => {
             setStyle(currentBubbleSpec.style);
             setOutlineColor(currentBubbleSpec.outerBorderColor);
             setBubbleActive(true);
+            setBackgroundColor(getBackgroundColorValue(currentBubbleSpec));
         } else {
             setBubbleActive(false);
         }
@@ -105,6 +106,36 @@ const ComicToolControls: React.FunctionComponent = () => {
         // });
     };
 
+    const specialColors = [
+        // #DFB28B is the color Comical has been using as the default for captions.
+        // It's fairly close to the "Calico" color defined at https://www.htmlcsscolor.com/hex/D5B185 (#D5B185)
+        // so I decided it was the best choice for keeping that option.
+        { name: "whiteToCalico", colors: ["white", "#DFB28B"] },
+        // https://www.htmlcsscolor.com/hex/ACCCDD
+        { name: "whiteToFrenchPass", colors: ["white", "#ACCCDD"] },
+        // https://encycolorpedia.com/7b8eb8
+        { name: "whiteToPortafino", colors: ["white", "#7b8eb8"] }
+    ];
+
+    const getBackgroundColorValue = (spec: BubbleSpec) => {
+        if (!spec.backgroundColors || spec.backgroundColors.length == 0) {
+            return "white";
+        }
+        if (spec.backgroundColors.length == 1) {
+            return spec.backgroundColors[0];
+        }
+        // love to use forEach, but we want to return from this function if we match.
+        for (let i = 0; i < specialColors.length; i++) {
+            const combo = specialColors[i];
+            // For the special colors we currently have, checking the second item is enough.
+            if (combo.colors[1] === spec.backgroundColors![1]) {
+                return combo.name;
+            }
+        }
+        // maybe from a later version of Bloom? All we can do.
+        return "white";
+    };
+
     // Callback when background color of the bubble is changed
     const handleBackgroundColorChanged = event => {
         const newValue = event.target.value;
@@ -114,21 +145,13 @@ const ComicToolControls: React.FunctionComponent = () => {
 
         // Update the Comical canvas on the page frame
         let backgroundColors = [newValue];
-        switch (newValue) {
-            case "whiteToCalico":
-                // #DFB28B is the color Comical has been using as the default for captions.
-                // It's fairly close to the "Calico" color defined at https://www.htmlcsscolor.com/hex/D5B185 (#D5B185)
-                // so I decided it was the best choice for keeping that option.
-                backgroundColors = ["white", "#DFB28B"];
+        // love to use forEach, but we want to return from this function if we match.
+        for (let i = 0; i < specialColors.length; i++) {
+            const combo = specialColors[i];
+            if (combo.name === newValue) {
+                backgroundColors = combo.colors;
                 break;
-            case "whiteToFrenchPass":
-                // https://www.htmlcsscolor.com/hex/ACCCDD
-                backgroundColors = ["white", "#ACCCDD"];
-                break;
-            case "whiteToPortafino":
-                // https://encycolorpedia.com/7b8eb8
-                backgroundColors = ["white", "#7b8eb8"];
-                break;
+            }
         }
         ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
             backgroundColors: backgroundColors
