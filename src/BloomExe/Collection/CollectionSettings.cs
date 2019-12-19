@@ -101,12 +101,9 @@ namespace Bloom.Collection
 
 		public CollectionSettings()
 		{
-			//Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
-			//See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
-			Func<string> getCodeOfDefaultLanguageForNaming = ()=> Language2.Iso639Code;
-			Language1 = new WritingSystem(1, getCodeOfDefaultLanguageForNaming);
-			Language2 = new WritingSystem(2,getCodeOfDefaultLanguageForNaming);
-			Language3 = new WritingSystem(3, getCodeOfDefaultLanguageForNaming);
+			Language1 = new WritingSystem(1);
+			Language2 = new WritingSystem(2);
+			Language3 = new WritingSystem(3);
 			LanguagesZeroBased = new WritingSystem[3];
 			this.LanguagesZeroBased[0] = Language1;
 			this.LanguagesZeroBased[1] = Language2;
@@ -619,8 +616,14 @@ namespace Bloom.Collection
 			for (int i = 0; i < isoCodes.Length; i++)
 			{
 				var code = isoCodes[i];
-				string name = Language1.Name;
-				if (code != Language1Iso639Code)
+				string name;
+				if (code == Language1.Iso639Code)
+					name = Language1.Name;
+				else if (code == Language2.Iso639Code)
+					name = Language2.Name;
+				else if (code == Language3.Iso639Code)
+					name = Language3.Name;
+				else
 					WritingSystem.LookupIsoCode.GetBestLanguageName(code, out name);
 				string ethCode;
 				LanguageSubtag data;
