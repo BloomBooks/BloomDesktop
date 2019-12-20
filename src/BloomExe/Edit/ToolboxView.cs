@@ -80,7 +80,7 @@ namespace Bloom.Edit
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/readers/readerSetup");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/signLanguage");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/imageDescription");
-			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/callout");
+			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/comic");
 		}
 
 		public static string MakeToolboxContent(Book.Book book)

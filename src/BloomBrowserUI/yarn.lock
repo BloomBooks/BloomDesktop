@@ -3117,9 +3117,11 @@ blob@0.0.5:
   integrity sha512-gaqbzQPqOoamawKg0LGVd7SzLgXS+JH61oWprSLH+P+abTczqJbhTR8CmJ2u9/bUYNmHTGJx/UEmn6doAvvuig==
 
 bloom-player@*:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-1.0.2.tgz#1e9b75bc07545292eb2c12ec5c1e6a5557967c54"
-  integrity sha512-ZEH3h8/AH0+E/PWrI52pn16szeMVEjVhuPwcA3Wol3kaa3UnxyEfUioJHuaH6j527XghCsO+iJunqFI0Y8OaOA==
+  version "1.1.34"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-1.1.34.tgz#d4ceca61fbec0ec07448826621b3db8e80612683"
+  integrity sha512-+mvJlok9IlsDN2uOiNQG/AmgC1Neqjuypz5GZ9shmhU/kIx6gLGFsc9HUoOPHn8Sdyc9mIxX4q4aNZLuAbmxpA==
+  dependencies:
+    dynamic-import-polyfill "^0.1.1"
 
 bluebird@^3.3.0, bluebird@^3.3.5, bluebird@^3.5.3:
   version "3.5.4"
@@ -4752,6 +4754,11 @@ duplexify@^3.6.0:
     inherits "^2.0.1"
     readable-stream "^2.0.0"
     stream-shift "^1.0.0"
+
+dynamic-import-polyfill@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/dynamic-import-polyfill/-/dynamic-import-polyfill-0.1.1.tgz#e1f9eb1876ee242bd56572f8ed4df768e143083f"
+  integrity sha512-m953zv0w5oDagTItWm6Auhmk/pY7EiejaqiVbnzSS3HIjh1FCUeK7WzuaVtWPNs58A+/xpIE+/dVk6pKsrua8g==
 
 each-props@^1.3.0:
   version "1.3.2"

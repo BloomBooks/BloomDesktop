@@ -5,7 +5,7 @@
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
-import { TextOverPictureManager } from "../js/textOverPicture";
+import { BubbleManager } from "../js/bubbleManager";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -270,7 +270,7 @@ export default class OverflowChecker {
         let [overflowX, overflowY] = OverflowChecker.getSelfOverflowAmounts(
             box
         );
-        if (TextOverPictureManager.growOverflowingBox(box, overflowY)) {
+        if (BubbleManager.growOverflowingBox(box, overflowY)) {
             overflowY = 0;
             box.scrollTop = 0; // now it should all fit, so no need to be scrolled down
         }

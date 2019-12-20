@@ -47,7 +47,10 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("problemReport/screenshot",
 				(ApiRequest request) =>
 				{
-					request.ReplyWithImage(_screenshotTempFile?.Path);
+					if (_screenshotTempFile == null)
+						request.Failed();
+					else
+						request.ReplyWithImage(_screenshotTempFile.Path);
 				}, true);
 
 			// ProblemDialog.tsx uses this endpoint to get the name of the book.
@@ -186,6 +189,7 @@ namespace Bloom.web.controllers
 			ShowProblemDialog(null, exception, detailedMessage, "nonfatal");
 		}
 
+		static bool _showingProblemReport;
 		/// <summary>
 		/// Shows a problem dialog.
 		/// </summary>
@@ -196,6 +200,24 @@ namespace Bloom.web.controllers
 		public static void ShowProblemDialog(Control controlForScreenshotting, Exception exception,
 			string detailedMessage = "", string levelOfProblem="user")
 		{
+			if (_showingProblemReport)
+			{
+				// If a problem is reported when already reporting a problem, that's most likely going
+				// to be an unbounded recursion that freezes the program and prevents the original
+				// problem from being reported.  So minimally report the recursive problem and stop
+				// the recursion in its tracks.
+				var sb = new StringBuilder();
+				sb.AppendLine("RECURSIVE CALL TO ShowProblemDialog:");
+				sb.AppendLineFormat("    exception = {0}", exception.ToString());
+				if (!string.IsNullOrWhiteSpace(detailedMessage))
+					sb.AppendLineFormat("   detailed message = {0}", detailedMessage);
+				sb.AppendLineFormat("    level of problem = {0}", levelOfProblem);
+				var msg = sb.ToString();
+				Console.Write(msg);
+				Logger.WriteEvent(msg);
+				return;	// break recursion...
+			}
+			_showingProblemReport = true;
 			_currentException = exception;
 			_detailedMessage = detailedMessage;
 			if (controlForScreenshotting == null)
@@ -208,29 +230,36 @@ namespace Bloom.web.controllers
 				{
 					try
 					{
-						var bounds = controlForScreenshotting.Bounds;
-						var screenshot = new Bitmap(bounds.Width, bounds.Height);
-						using (var g = Graphics.FromImage(screenshot))
+						try
 						{
-							g.CopyFromScreen(controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)), Point.Empty,
-								bounds.Size);
+							var bounds = controlForScreenshotting.Bounds;
+							var screenshot = new Bitmap(bounds.Width, bounds.Height);
+							using (var g = Graphics.FromImage(screenshot))
+							{
+								g.CopyFromScreen(controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)), Point.Empty,
+									bounds.Size);
+							}
+
+							_screenshotTempFile = TempFile.WithFilename(ScreenshotName);
+							RobustImageIO.SaveImage(screenshot, _screenshotTempFile.Path, ImageFormat.Png);
+						}
+						catch (Exception e)
+						{
+							ResetScreenshotFile();
+							Logger.WriteError("Bloom was unable to create a screenshot.", e);
 						}
 
-						_screenshotTempFile = TempFile.WithFilename(ScreenshotName);
-						RobustImageIO.SaveImage(screenshot, _screenshotTempFile.Path, ImageFormat.Png);
+						var query = "?" + levelOfProblem;
+						var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false,  "problemDialog", "loader.html");
+						var url = problemDialogRootPath.ToLocalhost() + query;
+						using (var dlg = new BrowserDialog(url))
+						{
+							dlg.ShowDialog();
+						}
 					}
-					catch (Exception e)
+					finally
 					{
-						ResetScreenshotFile();
-						Logger.WriteError("Bloom was unable to create a screenshot.", e);
-					}
-
-					var query = "?" + levelOfProblem;
-					var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false,  "problemDialog", "loader.html");
-					var url = problemDialogRootPath.ToLocalhost() + query;
-					using (var dlg = new BrowserDialog(url))
-					{
-						dlg.ShowDialog();
+						_showingProblemReport = false;
 					}
 				});
 		}

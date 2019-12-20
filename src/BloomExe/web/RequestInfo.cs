@@ -258,10 +258,12 @@ namespace Bloom.Api
 
 		public void ReplyWithImage(string path, string originalPath = null)
 		{
-			var pos = path.LastIndexOf('.');
-			if(pos > 0)
-				_actualContext.Response.ContentType = BloomServer.GetContentType(path.Substring(pos));
-
+			if (path != null)
+			{
+				var pos = path.LastIndexOf('.');
+				if (pos > 0)
+					_actualContext.Response.ContentType = BloomServer.GetContentType(path.Substring(pos));
+			}
 			ReplyWithFileContent(path, originalPath);
 		}
 

@@ -11,6 +11,7 @@ using Bloom.Utils;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
+using SIL.PlatformUtilities;
 
 namespace Bloom.web.controllers
 {
@@ -37,7 +38,7 @@ namespace Bloom.web.controllers
 	public class AudioSegmentationApi
 	{
 		public const string kApiUrlPart = "audioSegmentation/";
-		private const string kWorkingDirectory = "%HOMEDRIVE%\\%HOMEPATH%";	// TODO: Linux compatability
+		private const string kWorkingDirectory = "%HOMEDRIVE%\\%HOMEPATH%";	// Linux will use "/tmp" when the working directory doesn't matter
 		private const string kTimingsOutputFormat = "tsv";
 		private const float maxAudioHeadDurationSec = 0;	// maximum potentially allowable length in seconds of the non-useful "head" part of the audio which Aeneas will attempt to identify (if it exists) and then exclude from the timings
 
@@ -85,6 +86,12 @@ namespace Bloom.web.controllers
 			}
 		}
 
+		// Save the values written to stdout which checking for dependencies.
+		// These may be used later in an error log message to help diagnose what went wrong when running aeneas.
+		private string _pythonFound;
+		private string _espeakFound;
+		private string _ffmpegFound;
+		private string _aeneasInfo;
 		/// <summary>
 		/// Checks if all dependencies necessary to run Split feature are present.
 		/// </summary>
@@ -92,38 +99,48 @@ namespace Bloom.web.controllers
 		/// <returns>True if all dependencies are met, meaning Split feature should be able to run successfully. False if Split feature is missing a dependency</returns>
 		public bool AreAutoSegmentDependenciesMet(out string message)
 		{
-			if (DoesCommandCauseError("WHERE python", kWorkingDirectory))   // TODO: Linux compatability. Also more below.   Probably use "which" command on Linux.
+			string locateCmd = Platform.IsLinux ? "/usr/bin/which" : "WHERE";
+			string workingDir = Platform.IsLinux ? "/tmp" : kWorkingDirectory;
+			string stdout;
+			if (DoesCommandCauseError($"{locateCmd} python", out stdout, workingDir))
 			{
 				message = "Python";
 				Logger.WriteEvent("Discovered a missing dependency for AutoSegment function: " + message);
 				return false;
 			}
-			else if (DoesCommandCauseError("WHERE espeak", kWorkingDirectory))
+			_pythonFound = stdout.Trim();
+
+			if (DoesCommandCauseError($"{locateCmd} espeak", out stdout, workingDir))
 			{
 				message = "espeak";
 				Logger.WriteEvent("Discovered a missing dependency for AutoSegment function: " + message);
 				return false;
 			}
-			else if (DoesCommandCauseError("WHERE ffmpeg", kWorkingDirectory))
+			_espeakFound = stdout.Trim();
+
+			if (DoesCommandCauseError($"{locateCmd} ffmpeg", out stdout, workingDir))
 			{
 				message = "FFMPEG";
 				Logger.WriteEvent("Discovered a missing dependency for AutoSegment function: " + message);
 				return false;
 			}
-			else if (DoesCommandCauseError("python -m aeneas.tools.execute_task", kWorkingDirectory, 2))    // Expected to list usage. Error Code 0 = Success, 1 = Error, 2 = Help shown.
+			_ffmpegFound = stdout.Trim();
+
+			string pythonCmd = Platform.IsLinux ? _pythonFound : "python";
+			if (DoesCommandCauseError($"{pythonCmd} -m aeneas.tools.execute_task", out stdout, workingDir, 2))    // Expected to list usage. Error Code 0 = Success, 1 = Error, 2 = Help shown.
 			{
 				message = "Aeneas for Python";
 				Logger.WriteEvent("Discovered a missing dependency for AutoSegment function: " + message);
 				return false;
 			}
+			_aeneasInfo = stdout.Trim();
 
 			message = "";
 			return true;
 		}
 
-		protected bool DoesCommandCauseError(string commandString, string workingDirectory = "", params int[] errorCodesToIgnore)
+		protected bool DoesCommandCauseError(string commandString, out string stdOut, string workingDirectory = "", params int[] errorCodesToIgnore)
 		{
-			string stdOut;
 			string stdErr;
 			return DoesCommandCauseError(commandString, workingDirectory, out stdOut, out stdErr, errorCodesToIgnore);
 		}
@@ -133,21 +150,24 @@ namespace Bloom.web.controllers
 		{
 			string command;
 			string arguments;
-			if (SIL.PlatformUtilities.Platform.IsLinux)
+			if (Platform.IsLinux)
 			{
-				// REVIEW: Why run bash or cmd instead of running the command directly?  we get issues of possibly needing two levels of quoting,
-				// one for the overall command and one for each file pathname.  Running the command directly also removes the need for the final exit command.
-				// But maybe we need the shell's PATH search to find the program? (at least on Windows).  Running the program directly would require two
-				// arguments (command and arguments) instead of just one (commandString).
-				command = "/bin/bash";
-				arguments = "-c \"{commandString} ; exit $?\"";
-				standardOutput = "";
-				standardError = "";
-				return true;	// TODO: Linux compatibility.
+				var idx = commandString.IndexOf(' ');
+				if (idx < 0)
+				{
+					command = commandString;
+					arguments = "";
+				}
+				else
+				{
+					command = commandString.Substring(0, idx);
+					arguments = commandString.Substring(idx+1);
+				}
 			}
 			else
 			{
-				command = "CMD";
+				// REVIEW: Why run CMD.EXE instead of running the command directly?  is it needed for PATH search?
+				command = "CMD.EXE";
 				arguments = $"/C {commandString} ; exit %ERRORLEVEL%";
 				if (!string.IsNullOrEmpty(workingDirectory) && workingDirectory.Contains("%"))
 					workingDirectory = Environment.ExpandEnvironmentVariables(workingDirectory);
@@ -166,6 +186,7 @@ namespace Bloom.web.controllers
 			};
 			if (!string.IsNullOrEmpty(workingDirectory) && Directory.Exists(workingDirectory))
 				process.StartInfo.WorkingDirectory = workingDirectory;
+			SetPythonEncodingIfNeeded(process.StartInfo);
 			process.Start();
 			process.WaitForExit();
 
@@ -449,18 +470,16 @@ namespace Bloom.web.controllers
 
 
 		/// <summary>
-		/// Given a filename base, finds the appropriate extension (if it exists) of a segmentable file.
+		/// Given a directory and a filename base, finds the appropriate extension (if it exists) of a segmentable file.
 		/// </summary>
-		/// <param name="directoryName"></param>
-		/// <param name="fileNameBase"></param>
 		/// <returns>The file path (including directory) of a valid file if it exists, or null otherwise</returns>
 		private string GetFileNameToSegment(string directoryName, string fileNameBase)
 		{
-			var extensions = new string[] { "mp3", "wav" };
+			var extensions = new string[] { ".mp3", ".wav" };
 
 			foreach (var extension in extensions)
 			{
-				string filePath = $"{directoryName}\\{fileNameBase}.{extension}";
+				string filePath =  Path.Combine(directoryName, fileNameBase + extension);
 
 				if (File.Exists(filePath))
 				{
@@ -523,22 +542,30 @@ namespace Bloom.web.controllers
 			var fragmentsFile = Path.GetFileName(inputTextFragmentsFilename);
 			var outputFile = Path.GetFileName(outputTimingsFilename);
 			string commandString = $"python -m aeneas.tools.execute_task \"{audioFile}\" \"{fragmentsFile}\" \"task_language={aeneasLang}|is_text_type=plain|os_task_file_format={kTimingsOutputFormat}{audioHeadParams}{boundaryAdjustmentParams}\" \"{outputFile}\" --runtime-configuration=\"tts_voice_code={ttsEngineLang}\"";
+			string command;
+			string arguments;
+			if (Platform.IsLinux)
+			{
+				command = _pythonFound;
+				arguments = commandString.Substring(7);
+			}
+			else
+			{
+				command = "CMD.EXE";
+				arguments = $"/C {commandString}";
+			}
 
 			var processStartInfo = new ProcessStartInfo()
 			{
-				FileName = "CMD.EXE",	// TODO: Linux compatability
-				Arguments = $"/C {commandString}",
+				FileName = command,
+				Arguments = arguments,
 				UseShellExecute = false,
 				RedirectStandardOutput = true,
 				RedirectStandardError = true,
 				WorkingDirectory = workingDirectory,
 				CreateNoWindow = true
 			};
-			string pythonIoEncodingKey = "PYTHONIOENCODING";
-			if (!processStartInfo.EnvironmentVariables.ContainsKey(pythonIoEncodingKey))
-			{
-				processStartInfo.EnvironmentVariables.Add(pythonIoEncodingKey, "UTF-8");    // quiets a python complaint if nothing else
-			}
+			SetPythonEncodingIfNeeded(processStartInfo);
 
 			var process = Process.Start(processStartInfo);
 
@@ -550,15 +577,24 @@ namespace Bloom.web.controllers
 			// Note: we could also request Aeneas write the standard output/error, or a log (or verbose log... or very verbose log) if desired
 			if (process.ExitCode != 0)
 			{
-				Console.WriteLine("ERROR: python aeneas process to segment the audio file finished with exit code = {0}.", process.ExitCode);
-				Console.WriteLine($"working directory = {workingDirectory}");
-				Console.WriteLine($"failed command = {commandString}");
 				var stdout = process.StandardOutput.ReadToEnd();
-				if (!string.IsNullOrWhiteSpace(stdout))
-					Console.WriteLine($"process.stdout = {stdout}");
 				var stderr = process.StandardError.ReadToEnd();
-				if (!string.IsNullOrWhiteSpace(stderr))
-					Console.WriteLine($"process.stderr = {stderr}");
+				var sb = new StringBuilder();
+				sb.AppendLine($"ERROR: python aeneas process to segment the audio file finished with exit code = {process.ExitCode}.");
+				sb.AppendLine($"working directory = {workingDirectory}");
+				sb.AppendLine($"failed command = {commandString}");
+				sb.AppendLine($"process.stdout = {stdout.Trim()}");
+				sb.AppendLine($"process.stderr = {stderr.Trim()}");
+				// Add information found during check for dependencies: it might be the wrong python or ffmpeg...
+				sb.AppendLine("--------");
+				sb.AppendLine($"python found = {_pythonFound}");
+				sb.AppendLine($"espeak found = {_espeakFound}");
+				sb.AppendLine($"ffmpeg found = {_ffmpegFound}");
+				sb.AppendLine($"aeneas information = {_aeneasInfo}");
+				sb.AppendLine("======== end of aeneas error report ========");
+				var msg = sb.ToString();
+				Console.Write(msg);
+				Logger.WriteEvent(msg);
 			}
 
 
@@ -577,6 +613,18 @@ namespace Bloom.web.controllers
 
 			Logger.WriteMinorEvent($"AudioSegmentationApi.GetSplitStartEndTimings(): Returning with count={timingStartEndRangeList.Count}.");
 			return timingStartEndRangeList;
+		}
+
+		/// <summary>
+		/// Prevent python from complaining about unspecified encoding.  UTF-8 has to be what we want.
+		/// </summary>
+		private static void SetPythonEncodingIfNeeded(ProcessStartInfo processStartInfo)
+		{
+			string pythonIoEncodingKey = "PYTHONIOENCODING";
+			if (!processStartInfo.EnvironmentVariables.ContainsKey(pythonIoEncodingKey))
+			{
+				processStartInfo.EnvironmentVariables.Add(pythonIoEncodingKey, "UTF-8");
+			}
 		}
 
 
@@ -715,11 +763,25 @@ namespace Bloom.web.controllers
 		/// <returns></returns>
 		private Task<int> ExtractAudioSegmentAsync(string inputAudioFilename, string timingStartString, string timingEndString, string outputSplitFilename)
 		{
-			string commandString = $"cd {kWorkingDirectory} && ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
+			string commandString = $"ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
+			string command;
+			string arguments;
+			var workingDir = Platform.IsLinux ? "/tmp" : kWorkingDirectory;
+			if (Platform.IsLinux)
+			{
+				command = _ffmpegFound;
+				arguments = commandString.Substring(7);
+			}
+			else
+			{
+				command = "CMD.EXE";
+				arguments = $"/C {commandString}";
+			}
 			var startInfo = new ProcessStartInfo()
 			{
-				FileName = "CMD",    // TODO: Linux compatability
-				Arguments = $"/C {commandString}",
+				FileName = command,
+				Arguments = arguments,
+				WorkingDirectory = workingDir,
 				UseShellExecute = false,
 				CreateNoWindow = true
 			};	
@@ -805,8 +867,9 @@ namespace Bloom.web.controllers
 			string responseJson = JsonConvert.SerializeObject(response);
 			request.ReplyWithJson(responseJson);
 
+			string stdout;
 			string command = $"espeak -v {langCode} -f \"{textToSpeakFullPath}\"";
-			bool success = !DoesCommandCauseError(command);
+			bool success = !DoesCommandCauseError(command, out stdout);
 			RobustFile.Delete(textToSpeakFullPath);
 			Logger.WriteEvent("AudioSegmentationApi.ESpeakPreview() Completed with success = " + success);
 			if (!success)

@@ -1,0 +1,34 @@
+/* Note: font colors work in our normal user-modifiable style system, so
+   they are defined in the Digital Comic Book.htm instead of here.
+   That way, users can change them (when we eventually offer controls to change text color).
+*/
+@dark: #222222;
+
+.frontCover {
+    background-color: @dark;
+    .bloom-editable {
+        // you can't see the default border with a black background
+        border-color: rgba(69, 69, 69, 0.5);
+    }
+}
+
+.comic {
+    background-color: @dark !important;
+    &::after {
+        /* Hide page number */
+        display: none;
+    }
+
+    .marginBox {
+        left: 0 !important;
+        top: 0 !important;
+        height: 100% !important;
+        width: 100% !important;
+    }
+
+    /* make highlighted white text easier to read if it is normally a light color (like white)*/
+    span.ui-audioCurrent:not(.disableHighlight),
+    div.ui-audioCurrent:not(.disableHighlight) p {
+        color: black;
+    }
+}
