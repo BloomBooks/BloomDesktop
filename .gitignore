@@ -116,3 +116,4 @@ DistFiles/localization/*.htm
 src/BloomBrowserUI/yarn-error\.log
 
 src/BloomBrowserUI/updateFiles.bat
+src/BloomBrowserUI/branding/Nirmaan/branding.css
