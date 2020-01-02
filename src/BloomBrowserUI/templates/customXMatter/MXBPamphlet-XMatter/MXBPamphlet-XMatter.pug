@@ -17,7 +17,7 @@ mixin mxb-combinedTitleCreditsPage-inside-front-cover
 			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
 		#languageInformation.Credits-Page-style('lang'='N1')
-			.languagesOfBook(data-book='languagesOfBook')
+			.languagesOfBook(data-derived='languagesOfBook')
 			//- review: can we get rid of these "langName" classes?
 			.langName('data-library'='dialect')
 			.langName(data-library='languageLocation').bloom-writeOnly
