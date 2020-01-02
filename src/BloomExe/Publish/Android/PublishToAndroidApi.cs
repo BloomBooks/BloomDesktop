@@ -43,6 +43,7 @@ namespace Bloom.Publish.Android
 
 		// This constant must match the ID that is used for the listener set up in the React component AndroidPublishUI
 		private const string kWebsocketEventId_Preview = "androidPreview";
+		public const string StagingFolder = "PlaceForStagingBook";
 
 		public static string PreviewUrl { get; set; }
 
@@ -311,7 +312,7 @@ namespace Bloom.Publish.Android
 				progress.Message("CompressingAudio", "Compressing audio files");
 				AudioProcessor.TryCompressingAudioAsNeeded(book.FolderPath, book.RawDom);
 			}
-			var publishedFileName = BookStorage.SanitizeNameForFileSystem(bookTitle) + BookCompressor.ExtensionForDeviceBloomBook;
+			var publishedFileName = bookTitle + BookCompressor.ExtensionForDeviceBloomBook;
 			if (startingMessageFunction != null)
 				progress.MessageWithoutLocalizing(startingMessageFunction(publishedFileName, bookTitle));
 			if (destFileName == null)
@@ -350,7 +351,7 @@ namespace Bloom.Publish.Android
 			}
 			// We don't use the folder found here, but this method does some checks we want done.
 			BookStorage.FindBookHtmlInFolder(book.FolderPath);
-			_stagingFolder = new TemporaryFolder("PlaceForStagingBook");
+			_stagingFolder = new TemporaryFolder(StagingFolder);
 			var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book.FolderPath, bookServer, _stagingFolder, progress, book.CollectionSettings.HaveEnterpriseFeatures);
 			progress.Message("Common.Done", "Shown in a list of messages when Bloom has completed a task.", "Done");
 			return modifiedBook.FolderPath.ToLocalhost();

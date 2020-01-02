@@ -6,7 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -1074,6 +1073,31 @@ namespace Bloom.Book
 			return relocatableDom;
 		}
 
+		private static bool ShouldWeChangeFolderName(string sanitizedFilename, string currentFolderName, string idealFolderName)
+		{
+			// As of 16 Dec 2019 we changed our definition of "sanitized" to include some more characters that can
+			// cause problems in an HTML/XML-based app that passes information around in JSON and URLs.
+			// We would like to make sure that if the further sanitization of the name changes what already exists,
+			// we go ahead and do the rename.
+			// The various cases of sanitized names and folders and existing book names (e.g. Foo1) are tricky
+			// to tease apart. We can't just let it go, though, since the new higher level of sanitization is
+			// necessary to keep bloom-player from throwing an error.
+
+			// 1. If the current folder name needs sanitizing, we definitely can't use it; keep going.
+			if (currentFolderName != SanitizeNameForFileSystem(currentFolderName))
+				return true;
+			// 2. If the name we are already using is the name we want, keep using it (don't change anything)
+			if (currentFolderName == sanitizedFilename)
+				return false;
+			// 3. If our most prefered sanitized filename works (doesn't exist), go ahead and change to it; keep going.
+			if (!Directory.Exists(idealFolderName))
+				return true;
+			// 4. If our current folder name is one of the possible work-arounds (because preferred name is in use),
+			//    then return early and don't change. (We don't need to generate another alternative.)
+			// 5. Otherwise change to some other (sanitized) name, ensuring availability.
+			return !currentFolderName.StartsWith(sanitizedFilename);
+		}
+
 		public void SetBookName(string name)
 		{
 			if (!Directory.Exists(FolderPath)) //bl-290 (user had 4 month-old version, so the bug may well be long gone)
@@ -1088,39 +1112,37 @@ namespace Bloom.Book
 				// that tries to make sure we save on exit. Get lots of flashing windows during shutdown.
 				Environment.Exit(-1);
 			}
+
 			name = SanitizeNameForFileSystem(name);
 
 			var currentFilePath = PathToExistingHtml;
-			//REVIEW: This doesn't immediately make sense; if this function is told to call it Foo but it's current Foo1... why does this just return?
-
-			if (Path.GetFileNameWithoutExtension(currentFilePath).StartsWith(name)) //starts with because maybe we have "myBook1"
+			var currentFolderName = Path.GetFileNameWithoutExtension(currentFilePath);
+			var idealFolderName = Path.Combine(Directory.GetParent(FolderPath).FullName, name);
+			if (!ShouldWeChangeFolderName(name, currentFolderName, idealFolderName))
 				return;
 
-			//figure out what name we're really going to use (might need to add a number suffix)
-			var newFolderPath = Path.Combine(Directory.GetParent(FolderPath).FullName, name);
-			newFolderPath = GetUniqueFolderPath(newFolderPath);
+			// Figure out what name we're really going to use (might need to add a number suffix).
+			idealFolderName = GetUniqueFolderPath(idealFolderName);
 
-			Logger.WriteEvent("Renaming html from '{0}' to '{1}.htm'", currentFilePath, newFolderPath);
-
-			//next, rename the file
+			// Next, rename the file
 			Guard.Against(FolderPath.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory, StringComparison.Ordinal),
 				"Cannot rename template books!");
-			RobustFile.Move(currentFilePath, Path.Combine(FolderPath, Path.GetFileName(newFolderPath) + ".htm"));
+			Logger.WriteEvent("Renaming html from '{0}' to '{1}.htm'", currentFilePath, idealFolderName);
+			RobustFile.Move(currentFilePath, Path.Combine(FolderPath, Path.GetFileName(idealFolderName) + ".htm"));
 
-			//next, rename the enclosing folder
-			var fromToPair = new KeyValuePair<string, string>(FolderPath, newFolderPath);
+			var fromToPair = new KeyValuePair<string, string>(FolderPath, idealFolderName);
 			try
 			{
-				Logger.WriteEvent("Renaming folder from '{0}' to '{1}'", FolderPath, newFolderPath);
+				Logger.WriteEvent("Renaming folder from '{0}' to '{1}'", FolderPath, idealFolderName);
 
 				//This one can't handle network paths and isn't necessary, since we know these are on the same volume:
 				//SIL.IO.DirectoryUtilities.MoveDirectorySafely(FolderPath, newFolderPath);
-				SIL.IO.RobustIO.MoveDirectory(FolderPath, newFolderPath);
+				SIL.IO.RobustIO.MoveDirectory(FolderPath, idealFolderName);
 
 				_fileLocator.RemovePath(FolderPath);
-				_fileLocator.AddPath(newFolderPath);
+				_fileLocator.AddPath(idealFolderName);
 
-				FolderPath = newFolderPath;
+				FolderPath = idealFolderName;
 			}
 			catch (Exception e)
 			{
@@ -1966,6 +1988,8 @@ namespace Bloom.Book
 			// NBSP also causes problems.  See https://issues.bloomlibrary.org/youtrack/issue/BL-5212.
 			dangerousCharacters.Add('\u00a0');
 			//dangerousCharacters.Add('.'); Moved this to a trim because SHRP uses names like "SHRP 2.3" (term 2, week 3)
+			// Add characters to the list that will bother bloom-player (and JSON and URLs in general)
+			dangerousCharacters.AddRange("&'{},;()$@");
 			foreach (char c in dangerousCharacters)
 			{
 				name = name.Replace(c, ' ');
