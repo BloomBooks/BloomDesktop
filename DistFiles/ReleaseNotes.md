@@ -6,13 +6,11 @@
 
 We simplified book thumbnails to just show the image on the cover.
 
-_Coming in 4.7 but not in this release: New Problem Report Dialog_
+We have created a New Problem Report Dialog which is both more convenient for users and should help us get the information we need to be of help.
 
 ## Edit Tab
 
 ⭐Import Audio ([Feature Request](https://community.software.sil.org/t/ability-to-add-pre-recorded-audio-files/958))
-
-_Known limitation in this release: You cannot currently import audio into front and back matter pages._
 
 ⭐Comic Tool ([Feature Request](https://community.software.sil.org/t/comic-book-feature/942)). Look out world, here come beautiful comics in minority languages!
 
@@ -20,9 +18,10 @@ _Known limitation in this release: If you turn a comic book into a Talking Book,
 
 _Known limitation in this release: There is not yet a way to have an exclamation bubble without a tails._
 
-_Known limitation in this release: When you change the width of a bubble, it should automatically update the height required to fit the text._
-
 _Known limitation in this release: When the Comic Book tool is visible, you can't change the image. Just close the tool, set the image, then re-open the tool._
+
+
+⭐Digital Comic Book Template. Use this when starting a new comic designed for screens.
 
 ⭐For some complex scripts, the size of language text in the Decodable Reader was too small. We added a font-size chooser under `Settings:Book Making:Special Script Settings:Font size when displayed in tools`.
 
@@ -30,9 +29,11 @@ _Known limitation in this release: When the Comic Book tool is visible, you can'
 
 ⭐We added a way to export a single mp3 file for each page of the book. Right click on the left bar, then choose "Export audio files, 1 per page".
 
-_Coming in 4.7 but not in this release: In epub and Bloom Reader publishing, you will be able to decide which of the languages in a book you want to publish._
+In all publish screens, if a book uses Bloom's new Content Licensing system, Bloom will prevent publishing a language that has not yet been licensed for that book. This will prevent accidental violation of license agreements in which a publisher needs to limit which languages are published. For example, they may allow minority language translations to be Creative Commons licensed while relying on sales of the original English version for company revenue.
 
-TODO: Add summary/description to epub metadata
+In Publish: Bloom Reader screen, you can now decide which of the languages in a book you want to publish.
+
+In Publish: ePUB, you can now add a summary/description to the ePUB metadata.
 
 # 4.6
 
