@@ -22,7 +22,7 @@ Unless the original image is already 16x9 in proportion, you have several choice
 
 ## Tips on using the Comic Toolbox
 
--   When the comic tool is open and you have already selected an image, Bloom hides the normal picture-changing buttons so that they don’t get the way of working with bubbles. If you need to change the image, first close the Toolbox so that these buttons become available again.
+-   When the comic tool is open and you have already selected an image, Bloom hides the normal picture-changing buttons so that they don’t get in the way of working with bubbles. If you need to change the image, first close the Toolbox so that these buttons become available again.
 -   To move a bubble, click on the hand icon, or CTRL-drag anywhere in the bubble.
 -   To resize a bubble, move your mouse cursor to the little resize icon, or ALT-drag anywhere in the bubble.
 -   In the rare case that you need to change the curve of a bubble tail, drag the circle that is in the middle of the tail. It will become a solid color to indicate that you have left “auto mode”. To return to “auto mode”, double click that circle.
