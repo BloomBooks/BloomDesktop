@@ -8,7 +8,7 @@
         "test": "test"
     },
     "engines": {
-        "node": "~10.15.3"
+        "node": "~12.14.0"
     },
     "scripts": {
         "test": "karma start --browsers Firefox  --single-run",
