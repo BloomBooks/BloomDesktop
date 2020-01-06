@@ -18,7 +18,9 @@
         /* Hide page number */
         display: none;
     }
-
+    &.Device16x9Landscape .marginBox img {
+        max-width: unset; // device.less sets this, presumably expecting a margin
+    }
     .marginBox {
         left: 0 !important;
         top: 0 !important;

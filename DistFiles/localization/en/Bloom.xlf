@@ -3073,7 +3073,7 @@
         <note>The second heading in the Settings section, which shows a checklist of various features.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.UnlicensedLanguages" sil:dynamic="true">
-        <source xml:lang="en">The copyright holder of this book has not licensed it for publishing in {0}. You can deselect languages using the checkboxes on the right of this screen. Please contact the copyright holder to learn more about licensing.</source>
+        <source xml:lang="en">The copyright holder of this book has not licensed it for publishing in {0}. Please contact the copyright holder to learn more about licensing.</source>
         <note>ID: PublishTab.Android.UnlicensedLanguages</note>
         <note>{0} will be a language name or a list of them</note>
       </trans-unit>
