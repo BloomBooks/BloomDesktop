@@ -1757,7 +1757,9 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void AllLanguages_FindsBloomEditableElements()
+		[TestCase(false)]
+		[TestCase(true)]
+		public void AllLanguages_FindsBloomEditableElements(bool countXmatter)
 		{
 			_bookDom = new HtmlDom(
 				@"<html>
@@ -1826,13 +1828,29 @@ namespace BloomTests.Book
 				</body></html>");
 
 			var book = CreateBook();
-			var allLanguages = book.AllLanguages;
-			Assert.That(allLanguages["en"], Is.True);
-			Assert.That(allLanguages["de"], Is.True);
-			Assert.That(allLanguages["fr"], Is.True);
-			Assert.That(allLanguages["es"], Is.False); // in first group this is empty
-			Assert.That(allLanguages["xkal"], Is.False); // not in first group at all
-			Assert.That(allLanguages.Count, Is.EqualTo(5)); // no * or z or tr
+			var allLanguages = book.AllLanguages(countXmatter);
+			// In the case where 'countXmatter' is true, the stored bools will all be false. For thai, this is because
+			// there is only text in xmatter pages. For all the others, this is because there is no text in the xmatter pages.
+			if (countXmatter)
+			{
+				Assert.That(allLanguages["en"], Is.False);
+				Assert.That(allLanguages["de"], Is.False);
+				Assert.That(allLanguages["fr"], Is.False);
+				Assert.That(allLanguages["es"], Is.False); // in first group this is empty
+				Assert.That(allLanguages["xkal"], Is.False); // not in first group at all
+				Assert.That(allLanguages["tr"], Is.False);
+			}
+			else
+			{
+				Assert.That(allLanguages["en"], Is.True);
+				Assert.That(allLanguages["de"], Is.True);
+				Assert.That(allLanguages["fr"], Is.True);
+				Assert.That(allLanguages["es"], Is.False); // in first group this is empty
+				Assert.That(allLanguages["xkal"], Is.False); // not in first group at all
+				bool dummy;
+				Assert.That(allLanguages.TryGetValue("tr", out dummy), Is.False);
+			}
+			Assert.That(allLanguages.Count, Is.EqualTo(countXmatter ? 6 : 5)); // no * or z or tr (unless param is true)
 		}
 
 		[Test]
@@ -1872,7 +1890,7 @@ namespace BloomTests.Book
 				</body></html>");
 
 			var book = CreateBook();
-			var allLanguages = book.AllLanguages;
+			var allLanguages = book.AllLanguages();
 			Assert.That(allLanguages["aaa"], Is.True);
 			Assert.That(allLanguages["bbb"], Is.True);
 			Assert.That(allLanguages.Count, Is.EqualTo(2));
