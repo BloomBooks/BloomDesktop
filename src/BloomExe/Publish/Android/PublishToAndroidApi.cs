@@ -270,7 +270,7 @@ namespace Bloom.Publish.Android
 				true); // we don't really know, just safe default
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "languagesInBook", request =>
 			{
-				var allLanguages = request.CurrentBook.AllLanguages;
+				var allLanguages = request.CurrentBook.AllLanguages(countXmatter: true);
 				// For comical books, we only publish a single language. It's not currently feasible to
 				// allow the reader to switch language in a Comical book, because typically that requires
 				// adjusting the positions of the bubbles, and we don't yet support having more than one
