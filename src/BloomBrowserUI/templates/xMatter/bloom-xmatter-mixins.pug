@@ -115,7 +115,7 @@ mixin standard-cover-contents
 				+field-prototypeDeclaredExplicity("V")
 					+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
 			.bottomRow
-				.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook')
+				.coverBottomLangName.Cover-Default-style(data-derived='languagesOfBook')
 				+chooser-topic.coverBottomBookTopic
 
 // Standard cover image has a (normally hidden) image description field.
@@ -211,7 +211,7 @@ mixin title-page-contents
 		+editable(kLanguageForPrototypeOnly).funding.Content-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
 	div.largeFlexGap
 	#languageInformation.Content-On-Title-Page-style
-	.languagesOfBook(data-book='languagesOfBook')
+	.languagesOfBook(data-derived='languagesOfBook')
 	//- review: can we get rid of these "langName" classes?
 	.langName('data-library'='dialect')
 	.langName(data-library='languageLocation').bloom-writeOnly

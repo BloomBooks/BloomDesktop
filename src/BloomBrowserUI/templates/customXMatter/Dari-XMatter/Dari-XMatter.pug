@@ -65,7 +65,7 @@ mixin afg-outsideFrontCover
 					+field-prototypeDeclaredExplicity("N1")
 						+editable(kLanguageForPrototypeOnly).Cover-Default-style(data-book='levelInformation')
 				.bottomRow
-					.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook')
+					.coverBottomLangName.Cover-Default-style(data-derived='languagesOfBook')
 					+chooser-topic.coverBottomBookTopic
 
 mixin afg-titlePage
@@ -82,7 +82,7 @@ mixin afg-titlePage
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Extra-On-Title-Page-style(data-book='extraTitle')
 		+underLogo
 		#languageInformation.Content-On-Title-Page-style
-		.languagesOfBook(data-book='languagesOfBook')
+		.languagesOfBook(data-derived='languagesOfBook')
 		//- review: can we get rid of these "langName" classes?
 		.langName('data-library'='dialect')
 		.langName(data-library='languageLocation').bloom-writeOnly
@@ -100,7 +100,7 @@ mixin afg-outsideBackCover
 	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-matter-back-cover')&attributes(attributes)#6AB1D898-9E35-498E-99D4-132B46FAFDA4
 		.ownership
 			p كتاب هاى درسى متعلق به وزارت معارف بوده خريد و فروش آن
-			p جداً ممنوع است. با متخلفين برخورد قانونى صورت مى گيرد 
+			p جداً ممنوع است. با متخلفين برخورد قانونى صورت مى گيرد
 
 doctype html
 html
