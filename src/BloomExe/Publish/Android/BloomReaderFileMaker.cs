@@ -104,7 +104,7 @@ namespace Bloom.Publish.Android
 			}
 			modifiedBook.RemoveBlankPages(settings?.LanguagesToInclude);
 			if (settings?.LanguagesToInclude != null)
-				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings?.LanguagesToInclude);
+				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude);
 
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6835.
 			RemoveInvisibleImageElements(modifiedBook);
