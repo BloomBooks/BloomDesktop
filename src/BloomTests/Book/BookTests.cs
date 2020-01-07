@@ -1395,7 +1395,9 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			book.CollectionSettings.Language1.Name = "My Language Name";
 			book.BringBookUpToDate(new NullProgress());
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='languagesOfBook' and text()='My Language Name' and not(@lang='en')]", 3);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='languagesOfBook' and text()='My Language Name' and @lang='*']", 1);
+			// We need to specify the language for display: see https://issues.bloomlibrary.org/youtrack/issue/BL-7968.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-derived='languagesOfBook' and text()='My Language Name' and @lang='en']", 2);
 		}
 
 		private TempFile MakeTempImage(string name)
