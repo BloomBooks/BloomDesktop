@@ -5,6 +5,8 @@ using System.Linq;
 using Bloom.Publish;
 using Bloom.Publish.Epub;
 using CommandLine;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Bloom.CLI
 {
@@ -53,7 +55,7 @@ namespace Bloom.CLI
 
 			//book.BringBookUpToDate(new NullProgress());
 
-			var fonts = EpubMaker.GetFontsUsed(options.BookPath, false).ToList();
+			var fonts = GetFontsUsed(options.BookPath, false).ToList();
 			fonts.Sort();
 
 			Directory.CreateDirectory(Path.GetDirectoryName(options.ReportPath));
@@ -68,6 +70,23 @@ namespace Bloom.CLI
 			Console.WriteLine("Finished gathering font data.");
 			Debug.WriteLine("Finished gathering font data.");
 			return 0;
+		}
+
+		/// <summary>
+		/// First step of embedding fonts: determine what are used in the document.
+		/// Eventually we may load each page into a DOM and use JavaScript to ask each
+		/// bit of text what actual font and face it is using.
+		/// For now we examine the stylesheets and collect the font families they mention.
+		/// </summary>
+		public static IEnumerable<string> GetFontsUsed (string bookPath, bool includeFallbackFonts)
+		{
+			var result = new HashSet<string> ();
+			// Css for styles are contained in the actual html
+			foreach (var ss in Directory.EnumerateFiles (bookPath, "*.*").Where (f => f.EndsWith (".css") || f.EndsWith (".htm") || f.EndsWith (".html"))) {
+				var root = SIL.IO.RobustFile.ReadAllText (ss, Encoding.UTF8);
+				Bloom.Book.HtmlDom.FindFontsUsedInCss (root, result, includeFallbackFonts);
+			}
+			return result;
 		}
 	}
 }

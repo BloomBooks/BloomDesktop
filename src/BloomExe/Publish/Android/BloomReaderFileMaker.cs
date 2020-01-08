@@ -312,11 +312,7 @@ namespace Bloom.Publish.Android
 		public static void EmbedFonts(Book.Book book, WebSocketProgress progress, IFontFinder fontFileFinder)
 		{
 			const string defaultFont = "Andika New Basic"; // already in BR, don't need to embed or make rule.
-			// The 'false' here says to ignore all but the first font face in CSS's ordered lists of desired font faces.
-			// If someone is publishing an Epub, they should have that font showing. For one thing, this makes it easier
-			// for us to not embed fonts we don't want/ need.For another, it makes it less likely that an epub will look
-			// different or have glyph errors when shown on a machine that does have that primary font.
-			var fontsWanted = EpubMaker.GetFontsUsed(book.FolderPath, false).ToList();
+			var fontsWanted = book.GetFontsUsedInBook().ToList();	// filters out fonts used only for unused langs and custom styles
 			fontsWanted.Remove(defaultFont);
 			fontFileFinder.NoteFontsWeCantInstall = true;
 			var filesToEmbed = new List<string>();

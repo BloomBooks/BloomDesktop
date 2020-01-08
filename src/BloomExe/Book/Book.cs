@@ -1126,6 +1126,170 @@ namespace Bloom.Book
 			RobustFile.WriteAllText(path, cssBuilder.ToString());
 		}
 
+		/// <summary>
+		/// Get the names of the fonts currently used in this book based on content of the HTML file and
+		/// associated CSS files.  As much as possible, filter out fonts selected for languages that are
+		/// not being used or for customized styles that are not being used.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7998.
+		/// </remarks>
+		public IEnumerable<string> GetFontsUsedInBook()
+		{
+			var fontsUsed = new HashSet<string>();
+			// Record which languages have text data in the book.
+			var langsUsed = new HashSet<string>();
+			foreach (XmlElement div in OurHtmlDom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]//div[@class and @lang and normalize-space(text())!='']").Cast<XmlElement>())
+			{
+				var lang = div.GetAttribute("lang");
+				if (!String.IsNullOrWhiteSpace(lang) && lang.Length >= 2)	// ignore * and z if found...
+					langsUsed.Add(lang);
+			}
+			// Scan the head for embedded CSS and extract any fonts assigned in that area which are actually used.
+			foreach (XmlElement style in OurHtmlDom.RawDom.SafeSelectNodes("//head/style[@type='text/css']").Cast<XmlElement>())
+			{
+				var css = style.InnerText;
+				if (String.IsNullOrWhiteSpace(css))
+					continue;
+				// We know that the rules in the HTML header are written one per line, so split into lines.
+				foreach (var line in css.Split(new[]{'\n','\r'}, StringSplitOptions.RemoveEmptyEntries))
+				{
+					if (String.IsNullOrWhiteSpace(line))
+						continue;
+					var font = GetFontFromCssRule(line);
+					if (String.IsNullOrEmpty(font))
+						continue;
+					// Now check that the associated class and font are used in the book.
+					var match = Regex.Match(line, "^\\s*(\\.[^\\s\\[{]+)(\\[lang=\"([a-z]+)\"\\])? *{", RegexOptions.CultureInvariant);
+					if (match.Success)
+					{
+						if (match.Groups[3].Success)	// (optional?) lang value is in match.Groups[3]
+						{
+							if (!langsUsed.Contains(match.Groups[3].Value))
+								continue;
+						}
+						if (match.Groups[1].Success)	// class selector is in match.Groups[1]
+						{
+							var className = match.Groups[1].Value;
+							var divsWithClass =  OurHtmlDom.RawDom.SafeSelectNodes($"//div[contains(@class,'bloom-page')]//div[contains(@class,'{className}')]");
+							if (divsWithClass.Count == 0)
+								continue;
+						}
+					}
+					fontsUsed.Add(font);
+				}
+			}
+			// Scan the head for links to CSS and extract any fonts referenced in those files.
+			foreach (XmlElement link in OurHtmlDom.RawDom.SafeSelectNodes("//head/link[@rel='stylesheet' and @type='text/css']").Cast<XmlElement>())
+			{
+				var href = link.GetAttribute("href");
+				if (String.IsNullOrWhiteSpace(href))
+					continue;
+				var filepath = Path.Combine(this.FolderPath, href);
+				fontsUsed.UnionWith(GetFontsFromCssFile(filepath, langsUsed));
+			}
+			return fontsUsed;
+		}
+
+		/// <summary>
+		/// Get the font (if any) from the given css rule from the HTML file.
+		/// </summary>
+		/// <remarks>
+		/// We need to return only the one font so it can filtered based on the rule's selector.
+		/// </remarks>
+		private string GetFontFromCssRule(string cssRule)
+		{
+			var fontsFound = new HashSet<string>();
+			HtmlDom.FindFontsUsedInCss(cssRule, fontsFound, false);
+			foreach (var font in fontsFound)
+				return font;	// return the first and presumably only font found
+			return null;
+		}
+
+		/// <summary>
+		/// Get the fonts referenced in the given css file.
+		/// </summary>
+		/// <remarks>
+		/// In a perfect world, we would parse the css and use the associated classes and languages
+		/// for each rule to determine whether any fonts found the rule are actually used.  Since a
+		/// css parser seems like overkill, any fonts found by regular expression scanning are assumed
+		/// to be needed.
+		/// However, for defaultLangStyles.css, we know the syntax written to the file, so we can scan
+		/// more thoroughly and filter based on the language used.  Note that defaultLangStyles.css may
+		/// have font data for more languages than just the 2-3 active languages in the collection.
+		/// </remarks>
+		private IEnumerable<string> GetFontsFromCssFile(string filepath, HashSet<string> langsUsed)
+		{
+			var fontsFound = new HashSet<string>();
+			if (!RobustFile.Exists(filepath))
+				return fontsFound;
+			var cssContent = RobustFile.ReadAllText(filepath);
+			if (Path.GetFileName(filepath) == "defaultLangStyles.css")
+			{
+				FindFontsInDefaultLangStyles(cssContent, fontsFound, langsUsed);
+			}
+			else
+			{
+				HtmlDom.FindFontsUsedInCss(cssContent, fontsFound, false);
+			}
+			return fontsFound;
+		}
+
+		/// <summary>
+		/// Scan through the content of defaultLangStyles.css to find fonts, filtering based on the language
+		/// (if any) associated with each CSS rule.
+		/// </summary>
+		private void FindFontsInDefaultLangStyles(string cssContent, HashSet<string> fontsFound, HashSet<string> langsUsed)
+		{
+			var cssLines = cssContent.Split(new[]{'\n','\r'}, StringSplitOptions.RemoveEmptyEntries);
+			for (int i = 0; i < cssLines.Length; ++i)
+			{
+				var line = cssLines[i];
+				if (line ==".numberedPage::after")
+				{
+					AddNextFontFamily(cssLines, ref i, fontsFound);
+				}
+				if (line.StartsWith("[lang='"))
+				{
+					var idx = line.LastIndexOf("'");
+					if (idx > 7)
+					{
+						var lang = line.Substring(7, idx - 7);
+						if (langsUsed.Contains(lang))
+							AddNextFontFamily(cssLines, ref i, fontsFound);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Scan through the lines of the current CSS rule looking for a font-family value.
+		/// If found, add it to the set of fontsFound.
+		/// </summary>
+		/// <remarks>
+		/// The index into cssLines is advanced as a side-effect of this method.  I think this is
+		/// clearer than just embedding the content of this method inside the calling method.
+		/// </remarks>
+		private void AddNextFontFamily(string[] cssLines, ref int index, HashSet<string> fontsFound)
+		{
+			for (++index; index < cssLines.Length; ++index)
+			{
+				var line = cssLines[index];
+				if (line.Contains("font-family: '"))
+				{
+					var idxBegin = line.IndexOf("'") + 1;
+					var idxEnd = line.LastIndexOf("'");
+					if (idxEnd > idxBegin)
+					{
+						var font = line.Substring(idxBegin, idxEnd - idxBegin);
+						fontsFound.Add(font);
+					}
+				}
+				if (line.Contains("}"))
+					return;
+			}
+		}
+
 		private void UpdateCollectionSettingsInBookMetaData()
 		{
 			Debug.WriteLine($"updating page number style and language display names in {FolderPath}/meta.json");
