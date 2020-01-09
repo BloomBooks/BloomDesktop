@@ -669,7 +669,12 @@ div[data-book*="branding"] {
     z-index: 1;
     position: absolute;
 }
-
+//BL-7929 Sometimes text in bubbles gets cut off. In lieu of understanding exactly
+// what causes the discrepancy and how to compensate for it, we are just turning
+// off the cutoff when it's displayed by BloomPlayer. (Problem does not occur in PDF)
+.bloomPlayer-page .bloom-textOverPicture[data-bubble] {
+    height: auto !important;
+}
 //... to be continued. We sandwich most other sheets between this one and the langVisibility.css, which comes last-ish
 
 // now apply any book features
