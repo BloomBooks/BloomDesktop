@@ -94,17 +94,20 @@ namespace Bloom.Publish.Android
 			PublishHelper.SetMotionFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
 			PublishHelper.SetQuizFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
 
+			if (settings?.LanguagesToInclude != null)
+				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude);
+
 			// Do this after processing interactive pages, as they can satisfy the criteria for being 'blank'
+			HashSet<string> fontsUsed = null;
 			using (var helper = new PublishHelper())
 			{
 				helper.ControlForInvoke = ControlForInvoke;
 				ISet<string> warningMessages = new HashSet<string>();
 				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook, false, warningMessages);
 				PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
+				fontsUsed = helper.FontsUsed;
 			}
 			modifiedBook.RemoveBlankPages(settings?.LanguagesToInclude);
-			if (settings?.LanguagesToInclude != null)
-				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude);
 
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6835.
 			RemoveInvisibleImageElements(modifiedBook);
@@ -121,7 +124,7 @@ namespace Bloom.Publish.Android
 
 			modifiedBook.OurHtmlDom.SetMedia("bloomReader");
 			modifiedBook.OurHtmlDom.AddOrReplaceMetaElement("bloom-digital-creator", creator);
-			EmbedFonts(modifiedBook, progress, new FontFileFinder());
+			EmbedFonts(modifiedBook, progress, fontsUsed, new FontFileFinder());
 
 			var bookFile = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);
 			StripImgIfWeCannotFindFile(modifiedBook.RawDom, bookFile);
@@ -299,8 +302,8 @@ namespace Bloom.Publish.Android
 
 		/// <summary>
 		/// Given a book, typically one in a temporary folder made just for exporting (or testing),
-		/// examine the CSS files and determine what fonts should be necessary. (Enhance: we could actually
-		/// load the book into a DOM and find out what font IS used for each block.)
+		/// and given the set of fonts found while creating that book and removing hidden elements,
+		/// find the files needed for those fonts.
 		/// Copy the font file for the normal style of that font family from the system font folder,
 		/// if permitted; or post a warning in progress if we can't embed it.
 		/// Create an extra css file (fonts.css) which tells the book to find the font files for those font families
@@ -309,14 +312,9 @@ namespace Bloom.Publish.Android
 		/// <param name="book"></param>
 		/// <param name="progress"></param>
 		/// <param name="fontFileFinder">use new FontFinder() for real, or a stub in testing</param>
-		public static void EmbedFonts(Book.Book book, WebSocketProgress progress, IFontFinder fontFileFinder)
+		public static void EmbedFonts(Book.Book book, WebSocketProgress progress, HashSet<string> fontsWanted, IFontFinder fontFileFinder)
 		{
 			const string defaultFont = "Andika New Basic"; // already in BR, don't need to embed or make rule.
-			// The 'false' here says to ignore all but the first font face in CSS's ordered lists of desired font faces.
-			// If someone is publishing an Epub, they should have that font showing. For one thing, this makes it easier
-			// for us to not embed fonts we don't want/ need.For another, it makes it less likely that an epub will look
-			// different or have glyph errors when shown on a machine that does have that primary font.
-			var fontsWanted = EpubMaker.GetFontsUsed(book.FolderPath, false).ToList();
 			fontsWanted.Remove(defaultFont);
 			fontFileFinder.NoteFontsWeCantInstall = true;
 			var filesToEmbed = new List<string>();

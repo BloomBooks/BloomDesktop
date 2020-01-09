@@ -157,6 +157,7 @@ namespace Bloom.Publish.Epub
 		private BookThumbNailer _thumbNailer;
 		public bool PublishWithoutAudio { get; set; }
 		private PublishHelper _publishHelper = new PublishHelper();
+		private HashSet<string> _fontsUsedInBook = new HashSet<string>();
 		private BookServer _bookServer;
 		// Ordered list of Table of Content entries.
 		List<string> _tocList = new List<string>();
@@ -297,6 +298,7 @@ namespace Bloom.Publish.Epub
 			_scriptedItems = new List<string>();
 			_svgItems = new List<string>();
 			_firstContentPageItem = null;
+			_fontsUsedInBook.Clear();
 			ISet<string> warningMessages = new HashSet<string>();
 
 			HandleImageDescriptions(Book.OurHtmlDom);
@@ -1020,6 +1022,7 @@ namespace Bloom.Publish.Epub
 
 			// Remove stuff that we don't want displayed. Some e-readers don't obey display:none. Also, not shipping it saves space.
 			_publishHelper.RemoveUnwantedContent(pageDom, this.Book, true, warningMessages, this);
+			_fontsUsedInBook.UnionWith(_publishHelper.FontsUsed);	// filled in as side-effect of removing unwanted content
 
 			pageDom.SortStyleSheetLinks();
 			pageDom.AddPublishClassToBody();
@@ -1809,18 +1812,13 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		private void EmbedFonts()
 		{
-			// The 'false' here says to ignore all but the first font face in CSS's ordered lists of desired font faces.
-			// If someone is publishing an Epub, they should have that font showing. For one thing, this makes it easier
-			// for us to not embed fonts we don't want/ need.For another, it makes it less likely that an epub will look
-			// different or have glyph errors when shown on a machine that does have that primary font.
-			var fontsWanted = GetFontsUsed (Book.FolderPath, false);
 			var fontFileFinder = new FontFileFinder ();
-			var filesToEmbed = fontsWanted.SelectMany (fontFileFinder.GetFilesForFont).ToArray ();
+			var filesToEmbed = _fontsUsedInBook.SelectMany(fontFileFinder.GetFilesForFont).ToArray();
 			foreach (var file in filesToEmbed) {
 				CopyFileToEpub(file, subfolder:kFontsFolder);
 			}
 			var sb = new StringBuilder ();
-			foreach (var font in fontsWanted) {
+			foreach (var font in _fontsUsedInBook) {
 				var group = fontFileFinder.GetGroupForFont (font);
 				if (group != null) {
 					// The fonts.css file is stored in a subfolder as are the font files.  They are in different
