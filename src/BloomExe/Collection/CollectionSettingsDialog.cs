@@ -118,11 +118,7 @@ namespace Bloom.Collection
 			string defaultFontText =
 				LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.DefaultFontFor", "Default Font for {0}", "{0} is a language name.");
 			var lang1UiName = _collectionSettings.Language1.GetNameInLanguage(LocalizationManager.UILanguageId);
-			if (_collectionSettings.Language1.IsCustomName)
-				lang1UiName = _collectionSettings.Language1.Name;
 			var lang2UiName = _collectionSettings.Language2.GetNameInLanguage(LocalizationManager.UILanguageId);
-			if (_collectionSettings.Language2.IsCustomName)
-				lang2UiName = _collectionSettings.Language2.Name;
 			_language1Name.Text = string.Format("{0} ({1})", lang1UiName, _collectionSettings.Language1Iso639Code);
 			_language2Name.Text = string.Format("{0} ({1})", lang2UiName, _collectionSettings.Language2Iso639Code);
 			_language1FontLabel.Text = string.Format(defaultFontText, lang1UiName);
@@ -142,8 +138,6 @@ namespace Bloom.Collection
 			else
 			{
 				lang3UiName = _collectionSettings.Language3.GetNameInLanguage(LocalizationManager.UILanguageId);
-				if (_collectionSettings.Language3.IsCustomName)
-					lang3UiName = _collectionSettings.Language3.Name;
 				_language3Name.Text = string.Format("{0} ({1})", lang3UiName, _collectionSettings.Language3Iso639Code);
 				_language3FontLabel.Text = string.Format(defaultFontText, lang3UiName);
 				_removeLanguage3Link.Visible = true;
@@ -185,7 +179,6 @@ namespace Bloom.Collection
 			{
 				_collectionSettings.Language1.Iso639Code = l.LanguageTag;
 				_collectionSettings.Language1.Name = l.DesiredName;
-				_collectionSettings.Language1.IsCustomName = l.DesiredName != l.Names.FirstOrDefault();
 				ChangeThatRequiresRestart();
 			}
 		}
@@ -197,7 +190,6 @@ namespace Bloom.Collection
 			{
 				_collectionSettings.Language2Iso639Code = l.LanguageTag;
 				_collectionSettings.Language2.Name = l.DesiredName;
-				_collectionSettings.Language2.IsCustomName = l.DesiredName != l.Names.FirstOrDefault();
 				ChangeThatRequiresRestart();
 			}
 		}
@@ -210,7 +202,6 @@ namespace Bloom.Collection
 			{
 				_collectionSettings.Language3Iso639Code = l.LanguageTag;
 				_collectionSettings.Language3.Name = l.DesiredName;
-				_collectionSettings.Language3.IsCustomName = l.DesiredName != l.Names.FirstOrDefault();
 				ChangeThatRequiresRestart();
 			}
 		}

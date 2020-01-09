@@ -387,14 +387,32 @@ namespace Bloom.Edit
 				//_contentLanguages.Clear();		CAREFUL... the tags in the dropdown are ContentLanguage's, so changing them breaks that binding
 				if (_contentLanguages.Count() == 0)
 				{
-					_contentLanguages.Add(new ContentLanguage(_collectionSettings.Language1) { Locked = true, Selected = true });
+					_contentLanguages.Add(new ContentLanguage(_collectionSettings.Language1Iso639Code,
+															  _collectionSettings.Language1.GetNameInLanguage("en"))
+											{Locked = true, Selected = true, IsRtl = _collectionSettings.Language1.IsRightToLeft});
 
 					//NB: these won't *always* be tied to the national and regional languages, but they are for now. We would need more UI, without making for extra complexity
-					var item2 = new ContentLanguage(_collectionSettings.Language2);
+					var item2 = new ContentLanguage(_collectionSettings.Language2Iso639Code,
+													_collectionSettings.Language2.GetNameInLanguage("en"))
+									{
+										IsRtl = _collectionSettings.Language1.IsRightToLeft
+//					            		Selected =
+//					            			CurrentBook.MultilingualContentLanguage2 ==
+//					            			_librarySettings.Language2Iso639Code
+									};
 					_contentLanguages.Add(item2);
 					if (!String.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
 					{
-						var item3 = new ContentLanguage(_collectionSettings.Language3);
+						//NB: this could be the 2nd language (when the national 1 language is not selected)
+//						bool selected = CurrentBook.MultilingualContentLanguage2 ==
+//						                _librarySettings.Language3Iso639Code ||
+//						                CurrentBook.MultilingualContentLanguage3 ==
+//						                _librarySettings.Language3Iso639Code;
+						var item3 = new ContentLanguage(_collectionSettings.Language3Iso639Code,
+														_collectionSettings.Language3.GetNameInLanguage("en"))
+						{
+							IsRtl = _collectionSettings.Language3.IsRightToLeft
+						};// {Selected = selected};
 						_contentLanguages.Add(item3);
 					}
 				}
@@ -525,20 +543,15 @@ namespace Bloom.Edit
 		{
 			public readonly string Iso639Code;
 			public readonly string Name;
-			private readonly WritingSystem _ws;
 
-			public ContentLanguage(WritingSystem ws)
+			public ContentLanguage(string iso639Code, string name)
 			{
-				Iso639Code = ws.Iso639Code;
-				Name = ws.Name;
-				IsRtl = ws.IsRightToLeft;
-				_ws = ws;
+				Iso639Code = iso639Code;
+				Name = name;
 			}
 			public override string ToString()
 			{
-				if (_ws.IsCustomName)
-					return Name;
-				return _ws.GetNameInLanguage(LocalizationManager.UILanguageId);
+				return Name;
 			}
 
 			public bool Selected;
