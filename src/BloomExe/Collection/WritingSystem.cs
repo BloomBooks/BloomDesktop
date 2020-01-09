@@ -13,10 +13,10 @@ namespace Bloom.Collection
 	public class WritingSystem
 	{
 		private readonly int _languageNumberInCollection;
-		private readonly Func<string> _codeOfDefaultLanguageForNaming;
-		public static LanguageLookupModel LookupIsoCode = new LanguageLookupModel();
+		public static LanguageLookupModel LookupIsoCode = new LanguageLookupModel() { IncludeScriptMarkers = false };
 		private string _iso639Code;
 		public string Name;
+		public bool IsCustomName;
 		public bool IsRightToLeft;
 
 		// Line breaks are always wanted only between words.  (ignoring hyphenation)
@@ -42,13 +42,9 @@ namespace Bloom.Collection
 		public decimal LineHeight;
 		public string FontName;
 
-		public WritingSystem(int languageNumberInCollection, Func<string> codeOfDefaultLanguageForNaming)
+		public WritingSystem(int languageNumberInCollection)
 		{
 			_languageNumberInCollection = languageNumberInCollection;
-
-			//Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
-			//See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
-			_codeOfDefaultLanguageForNaming = codeOfDefaultLanguageForNaming;
 		}
 
 		public string Iso639Code
@@ -56,13 +52,13 @@ namespace Bloom.Collection
 			get { return _iso639Code; }
 			set {
 				_iso639Code = value;
-				Name = GetLanguageName_NoCache(_codeOfDefaultLanguageForNaming());
+				Name = GetLanguageName_NoCache("en");	// effectively what happens in palaso dialog
 			}
 		}
 
 		public string GetNameInLanguage(string inLanguage)
 		{
-			if (!string.IsNullOrEmpty(Iso639Code) && !String.IsNullOrEmpty(Name) && inLanguage == _codeOfDefaultLanguageForNaming())
+			if (!string.IsNullOrEmpty(Iso639Code) && !String.IsNullOrEmpty(Name) && IsCustomName)
 				return Name;
 
 			return GetLanguageName_NoCache(inLanguage);
@@ -98,6 +94,7 @@ namespace Bloom.Collection
 		{
 			var pfx = "Language" + _languageNumberInCollection;
 			xml.Add(new XElement(pfx+"Name", Name));
+			xml.Add(new XElement(pfx+"IsCustomName", IsCustomName));
 			xml.Add(new XElement(pfx + "Iso639Code", Iso639Code));
 			xml.Add(new XElement($"DefaultLanguage{_languageNumberInCollection}FontName", FontName));
 			xml.Add(new XElement($"IsLanguage{_languageNumberInCollection}Rtl", IsRightToLeft));
@@ -161,10 +158,33 @@ namespace Bloom.Collection
 			{
 				Name = GetLanguageName_NoCache(languageForDefaultNameLookup=="self"?Iso639Code:languageForDefaultNameLookup);
 			}
+			IsCustomName = ReadOrComputeIsCustomName(xml, pfx+"IsCustomName");
 			LineHeight = ReadDecimal(xml, pfx+"LineHeight", 0);
 			FontName = ReadString(xml, $"DefaultLanguage{_languageNumberInCollection}FontName", GetDefaultFontName());
 			BreaksLinesOnlyAtSpaces = ReadBoolean(xml, pfx+"BreaksLinesOnlyAtSpaces", false);
 			BaseUIFontSizeInPoints = ReadInt(xml, pfx + "BaseUIFontSizeInPoints", 0 /* 0 means "default" */);
+		}
+
+		private bool ReadOrComputeIsCustomName(XElement xml, string id)
+		{
+			string s = ReadString(xml, id, null);
+			if (s != null)
+			{
+				bool b;
+				if (bool.TryParse(s, out b))
+					return b;
+			}
+			// Compute value since it wasn't stored.  Creating a LanguageLookup object is expensive enough to try obtaining
+			// the one created by LanguageLookupModel. Using LanguageLookup is only way to get the language names loaded.
+			var type = typeof(LanguageLookupModel);
+			var fieldInfo = type.GetField("_languageLookup", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+			SIL.WritingSystems.LanguageLookup lookup = null;
+			if (fieldInfo != null)
+				lookup = fieldInfo.GetValue(LookupIsoCode) as SIL.WritingSystems.LanguageLookup;
+			if (lookup == null)
+				lookup = new SIL.WritingSystems.LanguageLookup(true);
+			var language = lookup.GetLanguageFromCode(Iso639Code);
+			return Name != language.Names.FirstOrDefault();
 		}
 
 		private bool ReadBoolean(XElement xml, string id, bool defaultValue)
