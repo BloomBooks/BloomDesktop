@@ -1244,7 +1244,13 @@ namespace BloomTests.Publish
 				calibreGroup.Normal = calibrePath;
 				fontFileFinder.FontGroups["Calibre"] = calibreGroup;
 
-				BloomReaderFileMaker.EmbedFonts(testBook, stubProgress, fontFileFinder);
+				HashSet<string> fontsWanted = new HashSet<string>();
+				fontsWanted.Add("Times New Roman");
+				fontsWanted.Add("Calibre");
+				fontsWanted.Add("NotAllowed");
+				fontsWanted.Add("NotFound");	// probably wouldn't happen with new approach for fonts, but leave in the test
+
+				BloomReaderFileMaker.EmbedFonts(testBook, stubProgress, fontsWanted, fontFileFinder);
 
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, timesNewRomanFileName)));
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, calibreFileName)));
