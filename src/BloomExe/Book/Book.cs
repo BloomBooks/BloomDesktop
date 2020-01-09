@@ -1769,32 +1769,18 @@ namespace Bloom.Book
 		/// </summary>
 		private void InjectStringListingActiveLanguagesOfBook()
 		{
-			string codeOfNationalLanguage = CollectionSettings.Language2.Iso639Code;
-			var languagesOfBook = CollectionSettings.Language1.IsCustomName ?
-				CollectionSettings.Language1.Name :
-				CollectionSettings.Language1.GetNameInLanguage(codeOfNationalLanguage);
+			string codeOfNationalLanguage = CollectionSettings.Language2Iso639Code;
+			var languagesOfBook = CollectionSettings.Language1.GetNameInLanguage(codeOfNationalLanguage);
 
 			if (MultilingualContentLanguage2 != null)
 			{
-				languagesOfBook += ", ";
-				if (MultilingualContentLanguage2 == CollectionSettings.Language2.Iso639Code)
-				{
-					languagesOfBook += CollectionSettings.Language2.IsCustomName ?
-						CollectionSettings.Language2.Name :
-						CollectionSettings.Language2.GetNameInLanguage(codeOfNationalLanguage);
-				}
-				else
-				{
-					languagesOfBook += CollectionSettings.Language3.IsCustomName ?
-						CollectionSettings.Language3.Name :
-						CollectionSettings.Language3.GetNameInLanguage(codeOfNationalLanguage);
-				}
+				languagesOfBook += ", " + ((MultilingualContentLanguage2 == CollectionSettings.Language2Iso639Code) ?
+					CollectionSettings.Language2.GetNameInLanguage(codeOfNationalLanguage) :
+					CollectionSettings.Language3.GetNameInLanguage(codeOfNationalLanguage));
 			}
 			if (MultilingualContentLanguage3 != null)
 			{
-				languagesOfBook += ", " + (CollectionSettings.Language3.IsCustomName ?
-					CollectionSettings.Language3.Name :
-					CollectionSettings.Language3.GetNameInLanguage(codeOfNationalLanguage));
+				languagesOfBook += ", " + CollectionSettings.Language3.GetNameInLanguage(codeOfNationalLanguage);
 			}
 
 			_bookData.Set("languagesOfBook", languagesOfBook, false);
