@@ -493,8 +493,8 @@ namespace Bloom.Edit
 			GetMultilingualContentLanguages(out l2, out l3);
 
 			//Reload to display these changes
+			CurrentBook.SetMultilingualContentLanguages(l2, l3);	// set langs before saving page
 			SaveNow();
-			CurrentBook.SetMultilingualContentLanguages(l2, l3);
 			CurrentBook.PrepareForEditing();
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 			_view.UpdatePageList(true);//counting on this to redo the thumbnails

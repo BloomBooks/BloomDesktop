@@ -49,9 +49,13 @@ namespace Bloom.Publish
 		// remove any elements that the style rules would hide, because epub readers ignore visibility settings.
 		private const string kSelectThingsThatCanBeHidden = ".//div | .//img";
 
-		
+		/// <summary>
+		/// Remove unwanted content from the XHTML of this book.  As a side-effect, store the fonts used in the remaining
+		/// content of the book.
+		/// </summary>
 		public void RemoveUnwantedContent(HtmlDom dom, Book.Book book, bool removeInactiveLanguages, ISet<string> warningMessages, EpubMaker epubMaker = null)
 		{
+			FontsUsed.Clear();
 			// Removing unwanted content involves a real browser really navigating. I'm not sure exactly why,
 			// but things freeze up if we don't do it on the UI thread.
 			if (ControlForInvoke != null)
@@ -221,17 +225,26 @@ namespace Bloom.Publish
 				var selector = removeInactiveLanguages ? kSelectThingsThatCanBeHidden : kSelectThingsThatCanBeHiddenButAreNotText;
 				foreach (XmlElement elt in page.SafeSelectNodes(selector))
 				{
-					// Even when they are not displayed we want to keep image descriptions.
+					// Even when they are not displayed we want to keep image descriptions if they aren't empty.
 					// This is necessary for retaining any associated audio files to play.
+					// (If they are empty, they won't have any audio and may trigger embedding an unneeded font.)
 					// See https://issues.bloomlibrary.org/youtrack/issue/BL-7237.
 					// As noted above, if the displayDom is not sufficiently loaded for a definitive
 					// answer to IsDisplayed, we will throw when making epubs but not for bloom reader.
-					if (!IsDisplayed(elt, epubMaker != null) && !IsImageDescription(elt))
+					if (!IsDisplayed(elt, epubMaker != null) && !IsNonEmptyImageDescription(elt))
+					{
 						toBeDeleted.Add(elt);
+					}
 				}
 				foreach (var elt in toBeDeleted)
 				{
 					elt.ParentNode.RemoveChild(elt);
+				}
+				// We need the font information for visible text elements as well.  This is a side-effect but related to
+				// unwanted elements in that we don't need fonts that are used only by unwanted elements.
+				foreach (XmlElement elt in page.SafeSelectNodes(".//div"))
+				{
+					StoreFontUsed(elt);
 				}
 				RemoveTempIds(page); // don't need temporary IDs any more.
 				toBeDeleted.Clear();
@@ -305,14 +318,32 @@ namespace Bloom.Publish
 			return display != "none";
 		}
 
-		private bool IsImageDescription(XmlElement elt)
+		public HashSet<string> FontsUsed = new HashSet<string>();
+		/// <summary>
+		/// Stores the font used.  Note that unwanted elements should have been removed already.
+		/// </summary>
+		private void StoreFontUsed(XmlElement elt)
+		{
+			var id = elt.Attributes["id"].Value;
+			var fontFamily = _browser.RunJavaScript($"document.getElementById('{id}') ? getComputedStyle(document.getElementById('{id}'), null).getPropertyValue('font-family') : 'not found'");
+			if (fontFamily == "not found")
+				return;	// shouldn't happen, but ignore if it does.
+			// we actually can get a comma-separated list with fallback font options: split into an array so we can use just the first one
+			var fonts = fontFamily.Split(new[]{','}, StringSplitOptions.RemoveEmptyEntries);
+			// Fonts whose names contain spaces are quoted: remove the quotes.
+			var font = fonts[0].Replace("\"", "");
+			//Console.WriteLine("DEBUG font=\"{0}\", fontFamily=\"{1}\"", font, fontFamily);
+			FontsUsed.Add(font);
+		}
+
+		private bool IsNonEmptyImageDescription(XmlElement elt)
 		{
 			var classes = elt.Attributes["class"]?.Value;
 			if (!String.IsNullOrEmpty(classes) &&
 				(classes.Contains("ImageDescriptionEdit-style") ||
 					classes.Contains("bloom-imageDescription")))
 			{
-				return true;
+				return !String.IsNullOrWhiteSpace(elt.InnerText);
 			}
 			return false;
 		}

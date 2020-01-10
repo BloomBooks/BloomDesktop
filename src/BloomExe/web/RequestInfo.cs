@@ -271,6 +271,12 @@ namespace Bloom.Api
 		{
 			_actualContext.Response.StatusCode = errorCode;
 			_actualContext.Response.StatusDescription = errorDescription;
+			// The firefox javascript engine apparently considers empty json data to be xml
+			// and tries to parse it as such if we don't specify that it is actually json.
+			// This happens before we even see the data in the axios.get().then().catch() code!
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-7900.
+			if (LocalPathWithoutQuery.ToLowerInvariant().EndsWith(".json"))
+				_actualContext.Response.ContentType = "application/json";
 			_actualContext.Response.Close();
 			HaveOutput = true;
 		}

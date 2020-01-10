@@ -767,7 +767,7 @@ namespace Bloom.WebLibraryIntegration
 				string dummy;
 
 				// Normally we let the user choose which languages to upload. Here, just the ones that have complete information.
-				var langDict = book.AllLanguages;
+				var langDict = book.AllLanguages();
 				var languagesToUpload = langDict.Keys.Where(l => langDict[l]).ToList();
 				if (!string.IsNullOrEmpty(book.CollectionSettings.SignLanguageIso639Code) && GetVideoFilesToInclude(book).Any())
 				{

@@ -323,6 +323,35 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Setup the display of the book's languages.  These are supposed to be in the national language (L2)
+		/// if at all possible, so display using that language in order to use its font settings.
+		/// </summary>
+		/// <remarks>
+		/// The places in the xmatter that use the languagesofBook value have a @data-derived attribute instead
+		/// of a @data-book attribute.  Old books with @data-book attributes should be updated automatically
+		/// when the xmatter is refreshed.
+		/// </remarks>
+		private void SetupDisplayOfLanguagesOfBook(DataSet data)
+		{
+			DataSetElementValue langData;
+			if (!data.TextVariables.TryGetValue("languagesOfBook", out langData))
+				return;
+			var languages = langData.TextAlternatives.GetExactAlternative("*");
+			if (string.IsNullOrEmpty(languages))
+				return;
+			var elements = this._dom.SafeSelectNodes("//div[@data-derived='languagesOfBook']");
+			if (elements == null || elements.Count == 0)
+				elements = this._dom.SafeSelectNodes("//div[not(id='bloomDataDiv')]//div[@data-book='languagesOfBook']");
+			if (elements == null || elements.Count == 0)
+				return;		// must be in a test...
+			foreach (var element in elements.Cast<XmlElement>().ToList())
+			{
+				element.SetAttribute("lang", _collectionSettings.Language2.Iso639Code);
+				element.InnerText = languages;
+			}
+		}
+
+		/// <summary>
 		/// Topics are uni-directional value, react™-style. The UI tells the book to change the topic
 		/// key, and then eventually the page/book is re-evaluated and the appropriate topic is displayed
 		/// on the page.
@@ -621,6 +650,7 @@ namespace Bloom.Book
 			// another method of this class typically gets called after this one and fixes things (in which case the
 			// calls below are possibly redundant).
 			UpdateTitle();
+			SetupDisplayOfLanguagesOfBook(_dataset);
 			SetUpDisplayOfTopicInBook(_dataset);
 			return data;
 		}

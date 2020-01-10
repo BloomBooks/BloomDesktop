@@ -95,6 +95,8 @@ namespace BloomTemp
 
 		public TemporaryFolder(string name)
 		{
+			Debug.Assert(!String.IsNullOrWhiteSpace(name));
+
 			_path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), name);
 			if (Directory.Exists(_path))
 			{

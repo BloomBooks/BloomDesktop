@@ -30,3 +30,7 @@ Unless the original image is already 16x9 in proportion, you have several choice
 ## Tips on “lettering”
 
 _“Lettering”_ is the term used for adding bubbles and text to comics. Take some time to learn what professional _letterers_ say about making a good looking comics. Bloom takes care of some of these things for you, but there are many things that require training your eye. See https://blambot.com/pages/lettering-tips. Note, you do _not_ need to only use upper case letters. It does look cool because we are used to seeing comics done this way, but you should do whatever is best for your audience. If you do choose upper case _and_ have a script that is widely supported, consider using a special comic book font. See [here](https://blambot.com/collections/all-fonts/dialogue) and [here](https://jasonthibault.com/comic-book-fonts/).
+
+## A note on White on Black Text
+
+You can use "Change Layout" to divide the screen and add a text box on the size. The background will be black, so you'll need to select the style "WhiteText".

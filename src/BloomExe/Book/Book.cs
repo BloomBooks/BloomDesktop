@@ -1790,54 +1790,57 @@ namespace Bloom.Book
 		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languages
 		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful?
 		/// Based on BL-2017, we now return a Dictionary of booleans indicating whether a language should be uploaded by default.
-		/// The dictionary contains an entry for every language where the book contains non-x-matter text.
-		/// The value is true if every non-x-matter field which contains text in any language contains text in this.
+		/// The dictionary contains an entry for every language where the book contains (non-x-matter) text.
+		/// The value is true if every (non-x-matter) field which contains text in any language contains text in this.
+		/// 
+		/// For determining which Text Languages to display in Publish -> Android and which pages to delete
+		/// from a .bloomd file, we pass the true parameter. Then the "(non-x-matter)" above doesn't apply.
 		/// </summary>
 		/// <remarks>The logic here is used to determine which language checkboxes to show in the web upload.
 		/// Nearly identical logic is used in bloom-player to determine which languages to show on the Language Menu,
 		/// so changes here may need to be reflected there and vice versa.</remarks>
-		public Dictionary<string, bool> AllLanguages
+		public Dictionary<string, bool> AllLanguages(bool countXmatter = false)
 		{
-			get
-			{
-				var result = new Dictionary<string, bool>();
-				var parents = new HashSet<XmlElement>(); // of interesting non-empty children
-				// editable divs that are in non-x-matter pages and have a potentially interesting language.
-				var langDivs = OurHtmlDom.SafeSelectNodes("//div[contains(@class, 'bloom-page') and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))]//div[@class and @lang]").Cast<XmlElement>()
-					.Where(div => !div.ParentNode.Attributes["class"].Value.Contains("bloom-ignoreChildrenForBookLanguageList"))
-					.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
-					.Where(div =>
-					{
-						var lang = div.Attributes["lang"].Value;
-						return lang != "*" && lang != "z" && lang != ""; // Not valid languages, though we sometimes use them for special purposes
-					}).ToArray();
-				// First pass: fill in the dictionary with languages which have non-empty content in relevant divs
-				foreach (var div in langDivs)
+			var result = new Dictionary<string, bool>();
+			var parents = new HashSet<XmlElement>(); // of interesting non-empty children
+			const string pageXpathFront = "//div[contains(@class, 'bloom-page')";
+			const string xpathEnd = "]//div[@class and @lang]";
+			var xmatterXpath = countXmatter ? "" : " and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))";
+			// editable divs that are in non-x-matter pages and have a potentially interesting language.
+			var langDivs = OurHtmlDom.SafeSelectNodes(pageXpathFront + xmatterXpath + xpathEnd).Cast<XmlElement>()
+				.Where(div => !div.ParentNode.Attributes["class"].Value.Contains("bloom-ignoreChildrenForBookLanguageList"))
+				.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
+				.Where(div =>
 				{
 					var lang = div.Attributes["lang"].Value;
-					if (!string.IsNullOrWhiteSpace(div.InnerText))
-					{
-						result[lang] = true;	// may be set repeatedly, but no harm.
-						// Add each parent only once, but add every parent for divs with any text.
-						var parent = (XmlElement)div.ParentNode;
-						if (!parents.Contains(parent))
-							parents.Add(parent);
-					}
-				}
-				// Second pass: for each parent, if it lacks a non-empty child for one of the languages, set value for that lang to false.
-				foreach (var lang in result.Keys.ToList()) // ToList so we can modify original collection as we go
+					return lang != "*" && lang != "z" && lang != ""; // Not valid languages, though we sometimes use them for special purposes
+				}).ToArray();
+			// First pass: fill in the dictionary with languages which have non-empty content in relevant divs
+			foreach (var div in langDivs)
+			{
+				var lang = div.Attributes["lang"].Value;
+				if (!string.IsNullOrWhiteSpace(div.InnerText))
 				{
-					foreach (var parent in parents)
+					result[lang] = true;	// may be set repeatedly, but no harm.
+					// Add each parent only once, but add every parent for divs with any text.
+					var parent = (XmlElement)div.ParentNode;
+					if (!parents.Contains(parent))
+						parents.Add(parent);
+				}
+			}
+			// Second pass: for each parent, if it lacks a non-empty child for one of the languages, set value for that lang to false.
+			foreach (var lang in result.Keys.ToList()) // ToList so we can modify original collection as we go
+			{
+				foreach (var parent in parents)
+				{
+					if (IsLanguageWanted(parent, lang) && !HasContentInLang(parent, lang))
 					{
-						if (IsLanguageWanted(parent, lang) && !HasContentInLang(parent, lang))
-						{
-							result[lang] = false; // not complete
-							break; // no need to check other parents.
-						}
+						result[lang] = false; // not complete
+						break; // no need to check other parents.
 					}
 				}
-				return result;
 			}
+			return result;
 		}
 
 		private bool IsLanguageWanted(XmlElement parent, string lang)

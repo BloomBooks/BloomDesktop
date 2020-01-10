@@ -1395,7 +1395,9 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			book.CollectionSettings.Language1.Name = "My Language Name";
 			book.BringBookUpToDate(new NullProgress());
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='languagesOfBook' and text()='My Language Name' and not(@lang='en')]", 3);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='languagesOfBook' and text()='My Language Name' and @lang='*']", 1);
+			// We need to specify the language for display: see https://issues.bloomlibrary.org/youtrack/issue/BL-7968.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-derived='languagesOfBook' and text()='My Language Name' and @lang='en']", 2);
 		}
 
 		private TempFile MakeTempImage(string name)
@@ -1757,13 +1759,15 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void AllLanguages_FindsBloomEditableElements()
+		[TestCase(false)]
+		[TestCase(true)]
+		public void AllLanguages_FindsBloomEditableElements(bool countXmatter)
 		{
 			_bookDom = new HtmlDom(
 				@"<html>
 				<head>
 					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
-				   <title>Test Shell</title>
+					<title>Test Shell</title>
 					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
 					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
 				</head>
@@ -1771,7 +1775,7 @@ namespace BloomTests.Book
 					<div class='bloom-page bloom-frontMatter'>
 					   <div class='bloom-translationGroup bloom-trailingElement'>
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='tr'>
-								Some Thai in front matter. Should not count at all.
+								Some Thai in front matter. Should not count at all, except for testcase true.
 							</div>
 						</div>
 					</div>
@@ -1788,6 +1792,9 @@ namespace BloomTests.Book
 								Whatever.
 							</div>
 							<div class='bloom-editable' contenteditable='true' lang='es'>
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='tr'>
+								Thai whatever.
 							</div>
 						</div>
 					</div>
@@ -1814,25 +1821,43 @@ namespace BloomTests.Book
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='z'>
 								We use z for some special purpose, seems to occur in every book, don't want it.
 							</div>
+							<div class='bloom-editable' contenteditable='true' lang='tr'>
+								Some Thai.
+							</div>
 						</div>
 					</div>
 					<div class='bloom-page bloom-backMatter'>
 					   <div class='bloom-translationGroup bloom-trailingElement'>
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='tr'>
-								Some Thai in back matter. Should not count at all.
+								Some Thai in back matter. Should not count at all, except for testcase true.
 							</div>
 						</div>
 					</div>
 				</body></html>");
 
 			var book = CreateBook();
-			var allLanguages = book.AllLanguages;
-			Assert.That(allLanguages["en"], Is.True);
-			Assert.That(allLanguages["de"], Is.True);
-			Assert.That(allLanguages["fr"], Is.True);
-			Assert.That(allLanguages["es"], Is.False); // in first group this is empty
-			Assert.That(allLanguages["xkal"], Is.False); // not in first group at all
-			Assert.That(allLanguages.Count, Is.EqualTo(5)); // no * or z or tr
+			var allLanguages = book.AllLanguages(countXmatter);
+			// In the case where 'countXmatter' is true, the stored bool will be true for thai, which occurs
+			// on all pages. For all the others, it will be false, since there is no text in the xmatter pages.
+			if (countXmatter)
+			{
+				Assert.That(allLanguages["en"], Is.False);
+				Assert.That(allLanguages["de"], Is.False);
+				Assert.That(allLanguages["fr"], Is.False);
+				Assert.That(allLanguages["es"], Is.False); // in first group this is empty
+				Assert.That(allLanguages["xkal"], Is.False); // not in first group at all
+				Assert.That(allLanguages["tr"], Is.True);
+			}
+			else
+			{
+				Assert.That(allLanguages["en"], Is.True);
+				Assert.That(allLanguages["de"], Is.True);
+				Assert.That(allLanguages["fr"], Is.True);
+				Assert.That(allLanguages["es"], Is.False); // in first group this is empty
+				Assert.That(allLanguages["xkal"], Is.False); // not in first group at all
+				Assert.That(allLanguages["tr"], Is.True);
+			}
+			Assert.That(allLanguages.Count, Is.EqualTo(6)); // no * or z
 		}
 
 		[Test]
@@ -1872,7 +1897,7 @@ namespace BloomTests.Book
 				</body></html>");
 
 			var book = CreateBook();
-			var allLanguages = book.AllLanguages;
+			var allLanguages = book.AllLanguages();
 			Assert.That(allLanguages["aaa"], Is.True);
 			Assert.That(allLanguages["bbb"], Is.True);
 			Assert.That(allLanguages.Count, Is.EqualTo(2));

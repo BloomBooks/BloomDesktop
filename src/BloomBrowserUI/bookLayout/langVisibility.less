@@ -23,12 +23,11 @@
 // but a bug in Firefox causes bizarre behavior of up and down arrow keys in
 // paragraphs inside display:flex blocks, and we want to limit this to the unusual cases.
 // See BL-4781 and BL-5217
+// UPDATE for 4.7: we can work around this by switching to display:table. See BL-8000
 .bloom-vertical-align-center,
 .bloom-vertical-align-bottom {
-    .bloom-editable.bloom-visibility-code-on {
-        display: flex;
-    }
+    .bloom-editable.bloom-visibility-code-on,
     .bloom-editable.bloom-visibility-user-on {
-        display: flex;
+        display: table;
     }
 }
