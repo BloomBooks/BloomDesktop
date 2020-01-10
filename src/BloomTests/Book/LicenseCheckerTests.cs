@@ -13,7 +13,7 @@ namespace BloomTests.Book
 		[Test]
 		public void ProblemLanguages_KeepsExactMatchNeedingTrim_RemovesNotMatched_WritesOfflineCache()
 		{
-			using (var folder = new TemporaryFolder(""))
+			using (var folder = new TemporaryFolder("ProblemLanguages_KeepsExactMatchNeedingTrim_RemovesNotMatched_WritesOfflineCache"))
 			{
 				LicenseChecker.SetOfflineFolder(folder.FolderPath);
 				var checker = SimpleTest(true);
