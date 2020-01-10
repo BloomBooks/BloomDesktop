@@ -17,6 +17,7 @@ namespace Bloom.Collection
 		public static LanguageLookupModel LookupIsoCode = new LanguageLookupModel();
 		private string _iso639Code;
 		public string Name;
+		public bool IsCustomName;
 		public bool IsRightToLeft;
 
 		// Line breaks are always wanted only between words.  (ignoring hyphenation)
@@ -62,11 +63,17 @@ namespace Bloom.Collection
 
 		public string GetNameInLanguage(string inLanguage)
 		{
-			if (!string.IsNullOrEmpty(Iso639Code) && !String.IsNullOrEmpty(Name) && inLanguage == _codeOfDefaultLanguageForNaming())
+			if (!string.IsNullOrEmpty(Iso639Code) && !String.IsNullOrEmpty(Name) && IsCustomName)
 				return Name;
 
 			return GetLanguageName_NoCache(inLanguage);
 		}
+
+		public string UiName
+		{
+			get { return GetNameInLanguage(L10NSharp.LocalizationManager.UILanguageId); }
+		}
+
 		private string GetLanguageName_NoCache(string inLanguage)
 		{
 			try {
@@ -98,6 +105,7 @@ namespace Bloom.Collection
 		{
 			var pfx = "Language" + _languageNumberInCollection;
 			xml.Add(new XElement(pfx+"Name", Name));
+			xml.Add(new XElement(pfx+"IsCustomName", IsCustomName));
 			xml.Add(new XElement(pfx + "Iso639Code", Iso639Code));
 			xml.Add(new XElement($"DefaultLanguage{_languageNumberInCollection}FontName", FontName));
 			xml.Add(new XElement($"IsLanguage{_languageNumberInCollection}Rtl", IsRightToLeft));
@@ -161,10 +169,35 @@ namespace Bloom.Collection
 			{
 				Name = GetLanguageName_NoCache(languageForDefaultNameLookup=="self"?Iso639Code:languageForDefaultNameLookup);
 			}
+			IsCustomName = ReadOrComputeIsCustomName(xml, pfx+"IsCustomName");
 			LineHeight = ReadDecimal(xml, pfx+"LineHeight", 0);
 			FontName = ReadString(xml, $"DefaultLanguage{_languageNumberInCollection}FontName", GetDefaultFontName());
 			BreaksLinesOnlyAtSpaces = ReadBoolean(xml, pfx+"BreaksLinesOnlyAtSpaces", false);
 			BaseUIFontSizeInPoints = ReadInt(xml, pfx + "BaseUIFontSizeInPoints", 0 /* 0 means "default" */);
+		}
+
+		private bool ReadOrComputeIsCustomName(XElement xml, string id)
+		{
+			string s = ReadString(xml, id, null);
+			if (s != null)
+			{
+				bool b;
+				if (bool.TryParse(s, out b))
+					return b;
+			}
+			// Compute value since it wasn't stored.
+			if (!LookupIsoCode.AreLanguagesLoaded)
+			{
+				if (!SIL.WritingSystems.Sldr.IsInitialized)
+					SIL.WritingSystems.Sldr.Initialize(true);	// needed for tests
+				LookupIsoCode.IncludeScriptMarkers = false;
+				// The previous line should have loaded the LanguageLookup object: if something changes so that
+				// it doesn't, ensure that happens anyway.
+				if (!LookupIsoCode.AreLanguagesLoaded)
+					LookupIsoCode.LoadLanguages();
+			}
+			var language = LookupIsoCode.LanguageLookup.GetLanguageFromCode(Iso639Code);
+			return Name != language.Names.FirstOrDefault();
 		}
 
 		private bool ReadBoolean(XElement xml, string id, bool defaultValue)
