@@ -619,8 +619,14 @@ namespace Bloom.Collection
 			for (int i = 0; i < isoCodes.Length; i++)
 			{
 				var code = isoCodes[i];
-				string name = Language1.Name;
-				if (code != Language1Iso639Code)
+				string name;
+				if (code == Language1.Iso639Code)
+					name = Language1.Name;
+				else if (code == Language2.Iso639Code)
+					name = Language2.Name;
+				else if (code == Language3.Iso639Code)
+					name = Language3.Name;
+				else
 					WritingSystem.LookupIsoCode.GetBestLanguageName(code, out name);
 				string ethCode;
 				LanguageSubtag data;
