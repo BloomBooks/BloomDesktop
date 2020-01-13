@@ -333,16 +333,16 @@ namespace BloomTests.Book
 
 			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code);
 
-			//note: our code currently only knows how to display French *in French* and Spanish *in Spanish*; Thai comes out in English.
-			//It may be better to be writing "Thai" in Thai (or possibly French) or "Spanish" in French.
+			//note: our code currently only knows how to display Thai *in Thai*, French *in French*, and Spanish *in Spanish*.
+			//It may be better to be writing "Thai" and "Spanish" in French.
 			//That's not part of this test, and will have to be changed as we improve that aspect of things.
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai, français, español']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='ไทย, français, español']", 1);
 
 			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, null);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai, français']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='ไทย, français']", 1);
 
 			book.SetMultilingualContentLanguages("", null);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='ไทย']", 1);
 		}
 
 		[Test]
