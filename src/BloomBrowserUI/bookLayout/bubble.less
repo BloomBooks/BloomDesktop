@@ -59,6 +59,10 @@
         .bloom-dragHandle {
             cursor: grab;
 
+            &:not(.ui-draggable-handle) {
+                cursor: text;
+            }
+
             &.grabbing {
                 cursor: grabbing;
             }
