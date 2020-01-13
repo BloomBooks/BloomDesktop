@@ -8,7 +8,7 @@
 import { EditableDivUtils } from "./editableDivUtils";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager from "../../utils/WebSocketManager";
-import { Comical, Bubble, BubbleSpec, BubbleSpecPattern } from "comicaljs";
+import { Bubble, BubbleSpec, BubbleSpecPattern, Comical } from "comicaljs";
 import { Point, PointScaling } from "./point";
 import { isLinux } from "../../utils/isLinux";
 
@@ -198,7 +198,6 @@ export class BubbleManager {
         Array.from(
             document.getElementsByClassName("bloom-imageContainer")
         ).forEach((container: HTMLElement) => {
-            const containerBounds = container.getBoundingClientRect(); // Assumption: the container never moves after setup
             container.addEventListener("click", event => {
                 // The goal here is that if the user clicks outside any comical bubble,
                 // we want none of the comical bubbles selected, so that
@@ -1333,37 +1332,86 @@ export class BubbleManager {
             const wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
             thisTOPBox.find(".bloom-ui").remove(); // Just in case somehow one is stuck in there
             thisTOPBox.find(".bloom-dragHandleTOP").remove(); // BL-7903 remove any left over drag handles (this was the class used in 4.7 alpha)
+
+            // Add dragHandles in occluded state initially; the 'mouseover' event listener below
+            // will set them to the right state. I think this avoids some flicker of cursor state.
             thisTOPBox.append(
-                "<img class='bloom-ui bloom-dragHandle visible' src='/bloom/bookEdit/img/dragHandle.svg'/>"
+                "<img class='bloom-ui bloom-dragHandle visible occluded' src='/bloom/bookEdit/img/dragHandle.svg'/>"
             );
             thisTOPBox.append(
-                "<img class='bloom-ui bloom-dragHandle transparent' src='/bloom/bookEdit/img/dragHandle.svg'/>"
+                "<img class='bloom-ui bloom-dragHandle transparent occluded' src='/bloom/bookEdit/img/dragHandle.svg'/>"
             );
+
+            // Save the two dragHandles and set their 'occluded' state.
+            const transparentHandle = thisTOPBox.find(
+                ".bloom-dragHandle.transparent"
+            )[0];
+            const visibleHandle = thisTOPBox.find(
+                ".bloom-dragHandle.visible"
+            )[0];
+            transparentHandle.addEventListener("mouseover", event => {
+                if (this.isVisibleHandleOccluded(image[0], transparentHandle)) {
+                    // console.log("isHidden is true");
+                    $(transparentHandle).addClass("occluded");
+                    $(visibleHandle).addClass("occluded");
+                } else {
+                    $(transparentHandle).removeClass("occluded");
+                    $(visibleHandle).removeClass("occluded");
+                }
+            });
 
             // Containment, drag and stop work when scaled (zoomed) as long as the page has been saved since the zoom
             // factor was last changed. Therefore we force reconstructing the page
             // in the EditingView.Zoom setter (in C#).
             thisTOPBox.draggable({
-                // adjust containment by scaling
+                // Adjust containment by scaling
                 containment: [
                     imagePos.left,
                     imagePos.top,
                     imagePos.left + imagePos.width - wrapperBoxRectangle.width,
                     imagePos.top + imagePos.height - wrapperBoxRectangle.height
                 ],
+                cancel: ".occluded",
+                revertDuration: 0,
+                handle: ".bloom-dragHandle.transparent",
+                start: (event, ui) => {
+                    // Clear cancelling state here
+                    thisTOPBox.data({
+                        isCancelling: false
+                    });
+                    thisTOPBox.draggable("option", { revert: false });
+                    if (
+                        this.isVisibleHandleOccluded(
+                            image[0],
+                            transparentHandle
+                        )
+                    ) {
+                        // Try to cancel the drag
+                        thisTOPBox.data({
+                            isCancelling: true,
+                            originalLeft: ui.position.left,
+                            originalTop: ui.position.top
+                        });
+                        thisTOPBox.draggable("option", { revert: true });
+                        event.stopImmediatePropagation();
+                    }
+                },
                 drag: (event, ui) => {
                     ui.helper.children(".bloom-editable").blur();
+                    // Detect if we are cancelling this drag
+                    const isCancelling: boolean = thisTOPBox.data(
+                        "isCancelling"
+                    );
+                    if (isCancelling) {
+                        ui.position.left = thisTOPBox.data("originalLeft");
+                        ui.position.top = thisTOPBox.data("originalTop");
+                        thisTOPBox.stop(true, true);
+                        return;
+                    }
                     ui.position.top = ui.position.top / scale;
                     ui.position.left = ui.position.left / scale;
                     thisTOPBox.find(".bloom-dragHandle").addClass("grabbing");
-
-                    console.log("Hello world");
-                    //console.log("pageX" + event.pageX);
-                    // TODO: Make it not do anything if it's underneath a bubble
-
-                    // ENHANCE: It'd be great if you could prevent the hover icon from changing if it's under a bubble, but that sounds hard.
                 },
-                handle: ".bloom-dragHandle.transparent",
                 stop: (event, ui) => {
                     const target = event.target;
                     if (target) {
@@ -1380,6 +1428,25 @@ export class BubbleManager {
                 this.focus();
             });
         });
+    }
+
+    private isVisibleHandleOccluded(
+        imgContainerElement: HTMLElement,
+        handle: HTMLElement
+    ): boolean {
+        const divTOPElement = handle.parentElement;
+
+        const left = divTOPElement!.offsetLeft + handle.offsetLeft;
+        const right = left + handle.offsetWidth;
+        const top = divTOPElement!.offsetTop + handle.offsetTop;
+        const bottom = top + handle.offsetHeight;
+        return Comical.somethingHitArea(
+            imgContainerElement,
+            left,
+            right,
+            top,
+            bottom
+        );
     }
 
     public initializeTextOverPictureEditing(): void {
