@@ -501,7 +501,7 @@ export class ComicTool extends ToolboxToolReactAdaptor {
     }
 
     public isExperimental(): boolean {
-        return true;
+        return false;
     }
 
     public toolRequiresEnterprise(): boolean {
