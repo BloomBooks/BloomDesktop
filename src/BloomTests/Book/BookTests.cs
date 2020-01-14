@@ -321,7 +321,7 @@ namespace BloomTests.Book
 		public void SetMultilingualContentLanguages_UpdatesLanguagesOfBookFieldInDOM()
 		{
 			SetDom(@"<div class='bloom-page'>
-						 <span data-book='languagesOfBook' lang='*'></span>
+						 <div data-derived='languagesOfBook' lang='*'></div>
 					</div>
 			");
 
@@ -333,16 +333,16 @@ namespace BloomTests.Book
 
 			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code);
 
-			//note: our code currently only knows how to display French *in French* and Spanish *in Spanish*; Thai comes out in English.
-			//It may be better to be writing "Thai" in Thai (or possibly French) or "Spanish" in French.
+			//note: our code currently only knows how to display Thai *in Thai*, French *in French*, and Spanish *in Spanish*.
+			//It may be better to be writing "Thai" and "Spanish" in French.
 			//That's not part of this test, and will have to be changed as we improve that aspect of things.
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai, français, español']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[text()='ไทย, français, español']", 1);
 
 			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, null);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai, français']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[text()='ไทย, français']", 1);
 
 			book.SetMultilingualContentLanguages("", null);
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-derived='languagesOfBook' and text()='ไทย']", 1);
 		}
 
 		[Test]
@@ -1393,7 +1393,7 @@ namespace BloomTests.Book
 					</body>
 				</html>");
 			var book = CreateBook();
-			book.CollectionSettings.Language1.Name = "My Language Name";
+			book.CollectionSettings.Language1.SetName("My Language Name", true);
 			book.BringBookUpToDate(new NullProgress());
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='languagesOfBook' and text()='My Language Name' and @lang='*']", 1);
 			// We need to specify the language for display: see https://issues.bloomlibrary.org/youtrack/issue/BL-7968.

@@ -178,8 +178,7 @@ namespace Bloom.Collection
 			if (l != null)
 			{
 				_collectionSettings.Language1.Iso639Code = l.LanguageTag;
-				_collectionSettings.Language1.Name = l.DesiredName;
-				_collectionSettings.Language1.IsCustomName = l.DesiredName != l.Names.FirstOrDefault();
+				_collectionSettings.Language1.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
 				ChangeThatRequiresRestart();
 			}
 		}
@@ -190,8 +189,7 @@ namespace Bloom.Collection
 			if (l != null)
 			{
 				_collectionSettings.Language2Iso639Code = l.LanguageTag;
-				_collectionSettings.Language2.Name = l.DesiredName;
-				_collectionSettings.Language2.IsCustomName = l.DesiredName != l.Names.FirstOrDefault();
+				_collectionSettings.Language2.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
 				ChangeThatRequiresRestart();
 			}
 		}
@@ -203,8 +201,7 @@ namespace Bloom.Collection
 			if (l != null)
 			{
 				_collectionSettings.Language3Iso639Code = l.LanguageTag;
-				_collectionSettings.Language3.Name = l.DesiredName;
-				_collectionSettings.Language3.IsCustomName = l.DesiredName != l.Names.FirstOrDefault();
+				_collectionSettings.Language3.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
 				ChangeThatRequiresRestart();
 			}
 		}

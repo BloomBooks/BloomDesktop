@@ -100,7 +100,7 @@ namespace BloomTests.Book
 		[Test]
 		public void MakeLanguageUploadData_FindsOverriddenNames()
 		{
-			_collectionSettings.Language1.Name = "Cockney";
+			_collectionSettings.Language1.SetName("Cockney", true);
 			// Note: no current way of overriding others; verify they aren't changed.
 			var results = _collectionSettings.MakeLanguageUploadData(new[] {"en", "tpi", "xyz"});
 			Assert.That(results.Length, Is.EqualTo(3), "should get one result per input");
@@ -1780,7 +1780,7 @@ namespace BloomTests.Book
 
 			if (Language1Name != null)
 			{
-				c.Language1.Name = Language1Name;
+				c.Language1.SetName(Language1Name, false);
 			}
 
 			if (Language2Iso639Code != null)
@@ -1790,7 +1790,7 @@ namespace BloomTests.Book
 
 			if (Language2Name != null)
 			{
-				c.Language2.Name = Language2Name;
+				c.Language2.SetName(Language2Name, false);
 			}
 
 			if (Language3Iso639Code != null)
@@ -1800,7 +1800,7 @@ namespace BloomTests.Book
 
 			if (Language3Name != null)
 			{
-				c.Language3.Name = Language3Name;
+				c.Language3.SetName(Language3Name, false);
 			}
 
 			return c;
