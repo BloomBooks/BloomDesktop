@@ -201,6 +201,8 @@ namespace Bloom.Collection
 				if (!LookupIsoCode.AreLanguagesLoaded)
 					LookupIsoCode.LoadLanguages();
 			}
+			if (String.IsNullOrWhiteSpace(Iso639Code))
+				return false;	// undefined (probably language3)
 			var language = LookupIsoCode.LanguageLookup.GetLanguageFromCode(Iso639Code);
 			return Name != language.Names.FirstOrDefault();
 		}
