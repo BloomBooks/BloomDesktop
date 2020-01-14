@@ -59,6 +59,10 @@
         .bloom-dragHandle {
             cursor: grab;
 
+            &:not(.ui-draggable-handle) {
+                cursor: text;
+            }
+
             &.grabbing {
                 cursor: grabbing;
             }
@@ -109,7 +113,6 @@
         min-height: @MinTextBoxHeight;
         border-radius: 3px;
         border: none !important; // needed to override ui-draggable blue border
-        z-index: @textOverPictureZIndex;
         .bloom-dragHandle {
             filter: @ComicAffordanceFilter;
             position: absolute;
@@ -118,11 +121,23 @@
             width: 22px;
             height: 22px;
             top: -15px;
-            z-index: @dragHandleZIndex; // keep above textbox
+
+            &.visible {
+                // This z-index should be below the canvas
+                z-index: @dragHandleVisibleZIndex;
+            }
+
+            &.transparent {
+                // This z-index should be above the canvas
+                z-index: @dragHandleEventZIndex;
+                opacity: 0; // Fully transparent (aka invisible)
+            }
         }
+
         .bloom-translationGroup {
             background: transparent; // don't want to worry about what background the image has
             border: none;
+            z-index: @textOverPictureZIndex;
             .bloom-editable {
                 min-width: @MinTextBoxWidth - 3;
                 min-height: @MinTextBoxHeight - 3 !important;
