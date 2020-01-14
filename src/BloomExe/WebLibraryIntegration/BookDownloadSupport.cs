@@ -41,7 +41,7 @@ namespace Bloom.WebLibraryIntegration
 					// All other defaults are fine
 				};
 				settings.Language1.Iso639Code = "en";
-				settings.Language1.Name = "English";
+				settings.Language1.SetName("English", false);
 				CollectionSettings.CreateNewCollection(settings);
 			}
 		}

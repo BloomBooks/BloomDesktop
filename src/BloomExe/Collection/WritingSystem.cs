@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Bloom.ToPalaso;
 using SIL.Windows.Forms.WritingSystems;
@@ -16,8 +14,6 @@ namespace Bloom.Collection
 		private readonly Func<string> _codeOfDefaultLanguageForNaming;
 		public static LanguageLookupModel LookupIsoCode = new LanguageLookupModel();
 		private string _iso639Code;
-		public string Name;
-		public bool IsCustomName;
 		public bool IsRightToLeft;
 
 		// Line breaks are always wanted only between words.  (ignoring hyphenation)
@@ -50,6 +46,15 @@ namespace Bloom.Collection
 			//Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
 			//See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
 			_codeOfDefaultLanguageForNaming = codeOfDefaultLanguageForNaming;
+		}
+
+		public string Name { get; private set; }
+		public bool IsCustomName { get; private set; }
+
+		public void SetName(string name, bool isCustom)
+		{
+			Name = name;
+			IsCustomName = isCustom;
 		}
 
 		public string Iso639Code
