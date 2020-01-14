@@ -170,7 +170,7 @@ namespace BloomTests.Publish
 						</div>
 					</div>
 					<div class='bottomRow' data-have-topic='false'>
-						<div class='coverBottomLangName Cover-Default-style' data-book='languagesOfBook'>English</div>
+						<div class='coverBottomLangName Cover-Default-style' data-derived='languagesOfBook'>English</div>
 						<div class='coverBottomBookTopic bloom-alwaysShowBubble Cover-Default-style' data-derived='topic' data-functiononhintclick='ShowTopicChooser()' data-hint='Click to choose topic'></div>
 					</div>
 				</div>

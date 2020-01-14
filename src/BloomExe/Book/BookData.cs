@@ -327,7 +327,7 @@ namespace Bloom.Book
 		/// if at all possible, so display using that language in order to use its font settings.
 		/// </summary>
 		/// <remarks>
-		/// The places in the xmatter that use the languagesofBook value have a @data-derived attribute instead
+		/// The places in the xmatter that use the languagesOfBook value have a @data-derived attribute instead
 		/// of a @data-book attribute.  Old books with @data-book attributes should be updated automatically
 		/// when the xmatter is refreshed.
 		/// </remarks>
@@ -340,8 +340,11 @@ namespace Bloom.Book
 			if (string.IsNullOrEmpty(languages))
 				return;
 			var elements = this._dom.SafeSelectNodes("//div[@data-derived='languagesOfBook']");
+
+			// We don't think this can happen because xmatter pages should get updated to have data-derived.
 			if (elements == null || elements.Count == 0)
 				elements = this._dom.SafeSelectNodes("//div[not(id='bloomDataDiv')]//div[@data-book='languagesOfBook']");
+
 			if (elements == null || elements.Count == 0)
 				return;		// must be in a test...
 			foreach (var element in elements.Cast<XmlElement>().ToList())

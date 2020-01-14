@@ -117,8 +117,8 @@ namespace Bloom.Collection
 		{
 			string defaultFontText =
 				LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.DefaultFontFor", "Default Font for {0}", "{0} is a language name.");
-			var lang1UiName = _collectionSettings.Language1.GetNameInLanguage(LocalizationManager.UILanguageId);
-			var lang2UiName = _collectionSettings.Language2.GetNameInLanguage(LocalizationManager.UILanguageId);
+			var lang1UiName = _collectionSettings.Language1.UiName;
+			var lang2UiName = _collectionSettings.Language2.UiName;
 			_language1Name.Text = string.Format("{0} ({1})", lang1UiName, _collectionSettings.Language1Iso639Code);
 			_language2Name.Text = string.Format("{0} ({1})", lang2UiName, _collectionSettings.Language2Iso639Code);
 			_language1FontLabel.Text = string.Format(defaultFontText, lang1UiName);
@@ -137,7 +137,7 @@ namespace Bloom.Collection
 			}
 			else
 			{
-				lang3UiName = _collectionSettings.Language3.GetNameInLanguage(LocalizationManager.UILanguageId);
+				lang3UiName = _collectionSettings.Language3.UiName;
 				_language3Name.Text = string.Format("{0} ({1})", lang3UiName, _collectionSettings.Language3Iso639Code);
 				_language3FontLabel.Text = string.Format(defaultFontText, lang3UiName);
 				_removeLanguage3Link.Visible = true;
@@ -178,7 +178,7 @@ namespace Bloom.Collection
 			if (l != null)
 			{
 				_collectionSettings.Language1.Iso639Code = l.LanguageTag;
-				_collectionSettings.Language1.Name = l.DesiredName;
+				_collectionSettings.Language1.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
 				ChangeThatRequiresRestart();
 			}
 		}
@@ -189,7 +189,7 @@ namespace Bloom.Collection
 			if (l != null)
 			{
 				_collectionSettings.Language2Iso639Code = l.LanguageTag;
-				_collectionSettings.Language2.Name = l.DesiredName;
+				_collectionSettings.Language2.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
 				ChangeThatRequiresRestart();
 			}
 		}
@@ -201,7 +201,7 @@ namespace Bloom.Collection
 			if (l != null)
 			{
 				_collectionSettings.Language3Iso639Code = l.LanguageTag;
-				_collectionSettings.Language3.Name = l.DesiredName;
+				_collectionSettings.Language3.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
 				ChangeThatRequiresRestart();
 			}
 		}
