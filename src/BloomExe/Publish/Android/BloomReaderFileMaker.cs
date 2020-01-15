@@ -95,7 +95,7 @@ namespace Bloom.Publish.Android
 			PublishHelper.SetQuizFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
 
 			if (settings?.LanguagesToInclude != null)
-				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude);
+				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude, modifiedBook.CollectionSettings.Language2.Iso639Code);
 
 			// Do this after processing interactive pages, as they can satisfy the criteria for being 'blank'
 			HashSet<string> fontsUsed = null;

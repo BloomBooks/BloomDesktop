@@ -570,9 +570,14 @@ namespace Bloom.Publish
 		/// </summary>
 		/// <remarks>
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7124.
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7998 for when we need to prune xmatter pages.
 		/// </remarks>
-		public static void RemoveUnwantedLanguageData(HtmlDom dom, IEnumerable<string> languagesToInclude)
+		public static void RemoveUnwantedLanguageData(HtmlDom dom, IEnumerable<string> languagesToInclude, string nationalLang=null)
 		{
+			//Debug.Write("PublishModel.RemoveUnwantedLanguageData(): languagesToInclude =");
+			//foreach (var lang in languagesToInclude)
+			//	Debug.Write($" {lang}");
+			//Debug.WriteLine();
 			// Place the desired language tags plus the two standard pseudolanguage tags in a HashSet
 			// for fast access.
 			var contentLanguages = new HashSet<string>();
@@ -580,19 +585,25 @@ namespace Bloom.Publish
 				contentLanguages.Add(lang);
 			contentLanguages.Add("*");
 			contentLanguages.Add("z");
-			// Don't change the xMatter (or the div#bloomDataDiv):  thus we have an outer loop that
-			// selects only user content pages.
-			// While we could probably safely remove some elements from xMatter,
+			// Don't change the div#bloomDataDiv:  thus we have an outer loop that
+			// selects only xmatter and user content pages.
+			// While we could probably safely remove elements from div#bloomDataDiv,
 			// we decided to play it very safe for now and leave it all intact.
+			// The default behavior is also to not touch xmatter pages.  But if the code for the national language (aka L2) is
+			// provided, then we prune xmatter pages as well but add the national language to the list of languages whose data
+			// we keep in the xmatter.
 			// We can always come back to this if we realize we should be removing more.
 			// If that happens, removing the outer loop and checking the data-book attribute (and
 			// maybe the data-derived attribute) may become necessary.
-			foreach (var page in dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(@data-xmatter-page)]").Cast<XmlElement>().ToList())
+			foreach (var page in dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Cast<XmlElement>().ToList())
 			{
+				var isXMatter = !String.IsNullOrWhiteSpace(page.GetAttribute("data-xmatter-page"));
+				if (isXMatter && nationalLang == null)
+					continue;	// default behavior is to skip pruning data from xmatter
 				foreach (var div in page.SafeSelectNodes(".//div[@lang]").Cast<XmlElement>().ToList())
 				{
 					var lang = div.GetAttribute("lang");
-					if (String.IsNullOrEmpty(lang) || contentLanguages.Contains(lang))
+					if (String.IsNullOrEmpty(lang) || contentLanguages.Contains(lang) || (isXMatter && lang == nationalLang))
 						continue;
 					var classAttr = div.GetAttribute("class");
 					// retain the .pageLabel and .pageDescription divs (which are always lang='en')
@@ -608,7 +619,7 @@ namespace Bloom.Publish
 						var sublang = subdiv.GetAttribute("lang");
 						if (String.IsNullOrEmpty(sublang))
 							continue;
-						if (contentLanguages.Contains(sublang))
+						if (contentLanguages.Contains(sublang) || (isXMatter && sublang == nationalLang))
 						{
 							deleteDiv = false;
 							break;
