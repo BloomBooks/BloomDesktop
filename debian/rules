@@ -27,13 +27,13 @@ override_dh_auto_build:
 	# Note that Node dropped 32-bit support in version 10, so downloads would fail, killing the build.
 	if [ "`uname -m`" != "x_86_64" ]; then exit 0; fi
 	if [ "`uname -m`" = "x86_64" ]; then \
-	    wget https://nodejs.org/dist/v10.15.3/node-v10.15.3-linux-x64.tar.xz && \
-	    tar xf node-v10.15.3-linux-x64.tar.xz && \
-	    export PATH="`pwd`/node-v10.15.3-linux-x64/bin:$$PATH"; \
+	    wget https://nodejs.org/dist/v12.14.0/node-v12.14.0-linux-x64.tar.xz && \
+	    tar xf node-v12.14.0-linux-x64.tar.xz && \
+	    export PATH="`pwd`/node-v12.14.0-linux-x64/bin:$$PATH"; \
 	else \
-	    wget https://nodejs.org/dist/v10.15.3/node-v10.15.3-linux-x86.tar.xz && \
-	    tar xf node-v10.15.3-linux-x86.tar.xz && \
-	    export PATH="`pwd`/node-v10.15.3-linux-x86/bin:$$PATH"; \
+	    wget https://nodejs.org/dist/v12.14.0/node-v12.14.0-linux-x86.tar.xz && \
+	    tar xf node-v12.14.0-linux-x86.tar.xz && \
+	    export PATH="`pwd`/node-v12.14.0-linux-x86/bin:$$PATH"; \
 	fi && \
 	export HOME=/tmp && \
 	npm install --no-save yarn && \
