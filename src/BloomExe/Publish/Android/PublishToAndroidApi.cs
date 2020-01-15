@@ -39,6 +39,8 @@ namespace Bloom.Publish.Android
 		private Color _thumbnailBackgroundColor = Color.Transparent; // can't be actual book cover color <--- why not?
 		private Book.Book _coverColorSourceBook;
 
+		private object _lockForLanguages = new object();
+		private Dictionary<string, bool> _allLanguages;
 		private HashSet<string> _languagesToPublish = new HashSet<string>();
 		private Bloom.Book.Book _bookForLanguagesToPublish = null;
 
@@ -270,37 +272,8 @@ namespace Bloom.Publish.Android
 				true); // we don't really know, just safe default
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "languagesInBook", request =>
 			{
-				var allLanguages = request.CurrentBook.AllLanguages(countXmatter: true);
-				// For comical books, we only publish a single language. It's not currently feasible to
-				// allow the reader to switch language in a Comical book, because typically that requires
-				// adjusting the positions of the bubbles, and we don't yet support having more than one
-				// set of bubble locations in a single book. See BL-7912 for some ideas on how we might
-				// eventually improve this. In the meantime, switching language would have bad effects,
-				// and if you can't switch language, there's no point in the book containing more than one.
-				// Not including other languages neatly prevents switching and automatically saves the space.
-				if (request.CurrentBook.OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
-				{
-					allLanguages.Clear();
-					allLanguages[request.CurrentBook.CollectionSettings.Language1Iso639Code] = true;
-				}
-				if (_bookForLanguagesToPublish != request.CurrentBook)
-				{
-					// reinitialize our list of which languages to publish, defaulting to the ones
-					// that are complete.
-					// Enhance: persist this somehow.
-					// Currently the whole Publish screen is regenerated (and languagesInBook retrieved again)
-					// whenever a check box is changed, so it's very important not to do this set-to-default
-					// code when we haven't changed books.
-					_bookForLanguagesToPublish = request.CurrentBook;
-					_languagesToPublish.Clear();
-					foreach (var kvp in allLanguages)
-					{
-						if (kvp.Value)
-							_languagesToPublish.Add(kvp.Key);
-					}
-				}
-
-				var result = "[" + string.Join(",", allLanguages.Select(kvp =>
+				InitializeLanguagesInBook(request);
+				var result = "[" + string.Join(",", _allLanguages.Select(kvp =>
 				{
 					var complete = kvp.Value ? "true" : "false";
 					var include = _languagesToPublish.Contains(kvp.Key) ? "true" : "false";
@@ -337,8 +310,52 @@ namespace Bloom.Publish.Android
 		private AndroidPublishSettings _lastSettings;
 		private Color _lastThumbnailBackgroundColor;
 
+		/// <summary>
+		/// The book language data needs to be initialized before handling updatePreview requests, but the
+		/// languagesInBook request comes in after the updatePreview request.  So we call this method in
+		/// both places with a lock to prevent stepping on each other.  This results in duplicate
+		/// calls for AllLanguages, but is safest since the user could leave the publish tab, change the
+		/// languages in the book, and then come back to the publish tab with the same book.
+		/// </summary>
+		private void InitializeLanguagesInBook(ApiRequest request)
+		{
+			lock (_lockForLanguages)
+			{
+				_allLanguages = request.CurrentBook.AllLanguages(countXmatter: true);
+				// For comical books, we only publish a single language. It's not currently feasible to
+				// allow the reader to switch language in a Comical book, because typically that requires
+				// adjusting the positions of the bubbles, and we don't yet support having more than one
+				// set of bubble locations in a single book. See BL-7912 for some ideas on how we might
+				// eventually improve this. In the meantime, switching language would have bad effects,
+				// and if you can't switch language, there's no point in the book containing more than one.
+				// Not including other languages neatly prevents switching and automatically saves the space.
+				if (request.CurrentBook.OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
+				{
+					_allLanguages.Clear();
+					_allLanguages[request.CurrentBook.CollectionSettings.Language1Iso639Code] = true;
+				}
+				if (_bookForLanguagesToPublish != request.CurrentBook)
+				{
+					// reinitialize our list of which languages to publish, defaulting to the ones
+					// that are complete.
+					// Enhance: persist this somehow.
+					// Currently the whole Publish screen is regenerated (and languagesInBook retrieved again)
+					// whenever a check box is changed, so it's very important not to do this set-to-default
+					// code when we haven't changed books.
+					_bookForLanguagesToPublish = request.CurrentBook;
+					_languagesToPublish.Clear();
+					foreach (var kvp in _allLanguages)
+					{
+						if (kvp.Value)
+							_languagesToPublish.Add(kvp.Key);
+					}
+				}
+			}
+		}
+
 		private void UpdatePreview(ApiRequest request)
 		{
+			InitializeLanguagesInBook(request);
 			_lastSettings = GetSettings();
 			_lastThumbnailBackgroundColor = _thumbnailBackgroundColor;
 			PreviewUrl = StageBloomD(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings);
