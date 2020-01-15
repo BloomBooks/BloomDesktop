@@ -4,7 +4,9 @@ using System.IO;
 using Bloom.Api;
 using Bloom.Book;
 using BloomTemp;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
+using Assert = NUnit.Framework.Assert;
 
 namespace BloomTests.Book
 {
@@ -205,5 +207,41 @@ namespace BloomTests.Book
 			var checker = new LicenseChecker();
 			Assert.That(checker.CheckBook(dom, new[] {"en"}), Is.EqualTo(LicenseChecker.kCannotReachLicenseServerMessage));
 		}
+
+		[Test]
+		public void GetAllowedLanguageCodes_ErroneousJson_SkipsOverLine()
+		{
+			string badJson = GetProblematicJson();
+			var invoker = new PrivateType(typeof(LicenseChecker));
+			var observedAllowedLangs = invoker.InvokeStatic("GetAllowedLanguageCodes", badJson, "kingstone.superbible.*") as HashSet<string>;
+			Assert.That(observedAllowedLangs.Contains("tr"), Is.True);
+			Assert.That(observedAllowedLangs.Count, Is.GreaterThan(0));
+		}
+
+		private static string GetProblematicJson()
+		{
+			return
+@"{
+  ""range"": ""Sheet1!A1:B1001"",
+  ""majorDimension"": ""ROWS"",
+  ""values"": [
+	[
+      ""content-id\n"",
+      ""language-code""
+    ],
+    [
+      ""kingstone.superbible.*"",
+      ""ar\n""
+    ],
+    [
+      ""kingstone.superbible.*""
+    ],
+    [
+      ""kingstone.superbible.*"",
+      ""tr\n""
+    ],
+  ]
+}";
+}
 	}
 }
