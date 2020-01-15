@@ -1557,6 +1557,9 @@ export class BubbleManager {
             for (let i = 0; i < handles.length; ++i) {
                 const handle = handles[i];
 
+                // Add a class that indicates these elements are only needed for the UI and aren't needed to be saved in the book's HTML
+                handle.classList.add("bloom-ui");
+
                 handle.addEventListener(
                     "mousedown",
                     BubbleManager.addResizingClassHandler
