@@ -99,7 +99,7 @@ namespace BloomTests.Publish
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang and contains(@class,'ImageDescriptionEdit-style')]", 6);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, "en");
 
 			// Check occurrences in modified HTML.  This should be exactly the same as before.
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='contentLanguage1']", 1);
@@ -472,6 +472,209 @@ namespace BloomTests.Publish
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 4);	// one div[@lang] removed
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@testRemoves='false']", 4);
 			assertThatDom.HasNoMatchForXpath("//div[@testRemoves='true']");
+		}
+
+		[Test]
+		public void RemoveUnwantedLanguageData_FrontCoverPage_RemovesUnwantedButKeepsN1()
+		{
+			var html = @"<!DOCTYPE html>
+<html>
+<body>
+	<div class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right A4Landscape' data-page='required singleton' data-export='front-matter-cover' data-xmatter-page='frontCover' id='f9b3d571-ea2d-4c67-9a4e-137a718c90d1' data-page-number=''>
+		<div class='pageLabel' lang='en' data-i18n='TemplateBooks.PageLabel.Front Cover'>Front Cover</div>
+		<div class='pageDescription' lang='en'></div>
+		<div class='marginBox'>
+			<div class='bloom-translationGroup bookTitle' data-default-languages='V,N1'>
+				<label class='bubble'>Book title in {lang}</label>
+				<div class='bloom-editable Title-On-Cover-style' lang='z' contenteditable='true' data-book='bookTitle'></div>
+				<div class='bloom-editable Title-On-Cover-style' lang='tl' contenteditable='true' data-book='bookTitle'><p>Count tayo kasama ni Robin</p></div>
+				<div class='bloom-editable Title-On-Cover-style bloom-content1 bloom-visibility-code-on' lang='en' contenteditable='true' data-book='bookTitle'><p>Counting</p></div>
+				<div class='bloom-editable Title-On-Cover-style' lang='es' contenteditable='true' data-book='bookTitle'><p>Contando</p></div>
+				<div class='bloom-editable Title-On-Cover-style' lang='fr' contenteditable='true' data-book='bookTitle'><p>Compte</p></div>
+			</div>
+			<div class='bloom-imageContainer'>
+				<img data-book='coverImage' src='aor_ara008.png' data-copyright='Copyright SIL International 2009' data-creator='' data-license='cc-by-sa' alt=''></img>
+				<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement' data-default-languages='auto' data-book='coverImageDescription'>
+					<div data-languagetipcontent='English' role='textbox' class='bloom-editable bloom-content1 bloom-visibility-code-on ImageDescriptionEdit-style' contenteditable='true' lang='en'><p></p></div>
+					<div data-languagetipcontent='Tagalog' role='textbox' class='bloom-editable ImageDescriptionEdit-style' contenteditable='true' lang='tl'><p></p></div>
+					<div data-languagetipcontent='Cebuano' role='textbox' class='bloom-editable ImageDescriptionEdit-style' contenteditable='true' lang='ceb'></div>
+					<div class='bloom-editable ImageDescriptionEdit-style' contenteditable='true' lang='z'></div>
+					<div data-languagetipcontent='Spanish' role='textbox' class='bloom-editable ImageDescriptionEdit-style' contenteditable='true' lang='es'><p></p></div>
+					<div data-languagetipcontent='French' role='textbox' class='bloom-editable ImageDescriptionEdit-style' contenteditable='true' lang='fr'><p></p></div>
+				</div>
+			</div>
+			<div class='bottomBlock'>
+				<div data-book='cover-branding-left-html' lang='*'></div>
+				<div class='bottomTextContent'>
+					<div class='creditsRow' data-hint='You may use this space for author/illustrator, or anything else.'>
+						<div class='bloom-translationGroup' data-default-languages='V'>
+							<div class='bloom-editable smallCoverCredits Cover-Default-style bloom-content1 bloom-visibility-code-on' lang='en' contenteditable='true' data-book='smallCoverCredits'></div>
+							<div class='bloom-editable smallCoverCredits Cover-Default-style' lang='z' contenteditable='true' data-book='smallCoverCredits'></div>
+						</div>
+					</div>
+					<div class='bottomRow' data-have-topic='false'>
+						<div class='coverBottomLangName Cover-Default-style' data-derived='languagesOfBook' lang='en'>Tagalog</div>
+						<div class='coverBottomBookTopic bloom-alwaysShowBubble Cover-Default-style' data-derived='topic' data-functiononhintclick='ShowTopicChooser()' data-hint='Click to choose topic'></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>";
+			// Check occurrences in original HTML.
+			var dom = new HtmlDom(html);
+			var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'pageLabel')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'pageDescription')]", 1);
+
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='tl' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", 1);
+
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class,'ImageDescriptionEdit-style')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='tl' and contains(@class,'ImageDescriptionEdit-style')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'ImageDescriptionEdit-style')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='ceb' and contains(@class,'ImageDescriptionEdit-style')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and contains(@class,'ImageDescriptionEdit-style')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and contains(@class,'ImageDescriptionEdit-style')]", 1);
+
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='cover-branding-left-html']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'smallCoverCredits') and @data-book='smallCoverCredits']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class,'smallCoverCredits') and @data-book='smallCoverCredits']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'coverBottomLangName') and @data-derived='languagesOfBook']", 1);
+
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 17);
+
+			// SUT
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"tl"}, "en");
+
+			// Check occurrences in modified HTML.  This should be exactly the same as before.
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'pageLabel')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'pageDescription')]", 1);
+
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='tl' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", 1);
+			assertThatDom.HasNoMatchForXpath("//div[@lang='es' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']");
+			assertThatDom.HasNoMatchForXpath("//div[@lang='fr' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']");
+
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class,'ImageDescriptionEdit-style')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'ImageDescriptionEdit-style')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='tl' and contains(@class,'ImageDescriptionEdit-style')]", 1);
+			assertThatDom.HasNoMatchForXpath("//div[@lang='ceb' and contains(@class,'ImageDescriptionEdit-style')]");
+			assertThatDom.HasNoMatchForXpath("//div[@lang='es' and contains(@class,'ImageDescriptionEdit-style')]");
+			assertThatDom.HasNoMatchForXpath("//div[@lang='fr' and contains(@class,'ImageDescriptionEdit-style')]");
+
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='cover-branding-left-html']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'smallCoverCredits') and @data-book='smallCoverCredits']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class,'smallCoverCredits') and @data-book='smallCoverCredits']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'coverBottomLangName') and @data-derived='languagesOfBook']", 1);
+
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 12);
+		}
+
+		[Test]
+		public void RemoveUnwantedLanguageData_CreditsPage_RemovesRemovesUnwantedExceptN1()
+		{
+			var html = @"<!DOCTYPE html>
+<html>
+<body>
+	<div class='bloom-page bloom-frontMatter credits' data-xmatter-page='credits' id='2cea9462-98e9-4077-be4e-d303a45e95b3' lang=''>
+		<div data-after-content='Traditional Front/Back Matter' class='pageLabel' data-i18n='TemplateBooks.PageLabel.Credits Page' lang='en'>Credits Page</div>
+		<div class='pageDescription' lang='en'></div>
+		<div data-hasqtip='true' class='bloom-metaData licenseAndCopyrightBlock' data-functiononhintclick='bookMetadataEditor' data-hint='Click to Edit Copyright &amp; License' lang='en'>
+			<div class='copyright Credits-Page-style' data-derived='copyright' lang='*'>Copyright © 2019, Stephen McConnel</div>
+			<div class='licenseBlock'>
+				<img class='licenseImage' src='license.png' data-derived='licenseImage' alt=''></img>
+				<div class='licenseUrl' data-derived='licenseUrl' lang='*'>http://creativecommons.org/licenses/by/4.0/</div>
+				<div class='licenseDescription Credits-Page-style' data-derived='licenseDescription' lang='en'>
+					http://creativecommons.org/licenses/by/4.0/ <br />You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.
+				</div>
+				<div class='licenseNotes Credits-Page-style' data-derived='licenseNotes'></div>
+			</div>
+		</div>
+		<div class='bloom-translationGroup versionAcknowledgments' data-default-languages='N1'>
+			<div data-languagetipcontent='English' class='bloom-editable versionAcknowledgments Credits-Page-style bloom-content1' data-book='versionAcknowledgments' lang='en' contenteditable='true'></div>
+			<div data-hasqtip='true' data-languagetipcontent='français' class='bloom-editable versionAcknowledgments Credits-Page-style bloom-content2 bloom-visibility-code-on' data-book='versionAcknowledgments' lang='fr' contenteditable='true'>
+				<p>Joe a traduit ce livre.</p>
+			</div>
+			<div data-languagetipcontent='español' style='' class='bloom-editable versionAcknowledgments Credits-Page-style bloom-content3' data-book='versionAcknowledgments' lang='es' contenteditable='true'></div>
+		</div>
+		<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense'></div>
+		<div class='bloom-translationGroup originalAcknowledgments' data-default-languages='N1'>
+			<div data-languagetipcontent='English' style='' class='bloom-editable bloom-copyFromOtherLanguageIfNecessary Credits-Page-style bloom-content1' data-book='originalAcknowledgments' lang='en' contenteditable='true'></div>
+			<div data-languagetipcontent='español' style='' class='bloom-editable bloom-copyFromOtherLanguageIfNecessary Credits-Page-style bloom-content3 bloom-contentNational2' data-book='originalAcknowledgments' lang='es' contenteditable='true'></div>
+			<div data-hasqtip='true' data-languagetipcontent='français' class='bloom-editable bloom-copyFromOtherLanguageIfNecessary Credits-Page-style bloom-content2 bloom-contentNational1 bloom-visibility-code-on' data-book='originalAcknowledgments' lang='fr' contenteditable='true'>
+				<p>Les tests ont produit ce livre.</p>
+			</div>
+			<div style='' class='bloom-editable bloom-copyFromOtherLanguageIfNecessary Credits-Page-style' data-book='originalAcknowledgments' lang='z' contenteditable='true'></div>
+		</div>
+		<div data-hasqtip='true' class='ISBNContainer' data-hint='International Standard Book Number. Leave blank if you do not have one of these.'>
+			<span class='bloom-doNotPublishIfParentOtherwiseEmpty Credits-Page-style'>ISBN</span>
+			<div class='bloom-translationGroup bloom-recording-optional' data-default-languages='*'>
+				<div data-languagetipcontent='English' style='' class='bloom-editable Credits-Page-style bloom-content1' data-book='ISBN' lang='en' contenteditable='true'></div>
+				<div data-languagetipcontent='español' style='' class='bloom-editable Credits-Page-style bloom-content3 bloom-contentNational2' data-book='ISBN' lang='es' contenteditable='true'></div>
+				<div data-languagetipcontent='français' style='' class='bloom-editable Credits-Page-style bloom-content2 bloom-contentNational1' data-book='ISBN' lang='fr' contenteditable='true'></div>
+				<div class='bloom-editable Credits-Page-style bloom-visibility-code-on' data-book='ISBN' lang='*' contenteditable='true'></div>
+			</div>
+		</div>
+		<div data-book='credits-page-branding-bottom-html' lang='*'><img class='branding' src='butterfly.png' alt=''></img></div>
+	</div>
+</body>
+</html>";
+			// Check occurrences in original HTML.
+			var dom = new HtmlDom(html);
+			var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='' and contains(@class, 'bloom-page')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @class='pageLabel']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @class='pageDescription']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class, 'licenseAndCopyrightBlock')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and contains(@class, 'copyright')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @class='licenseUrl']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class, 'licenseDescription')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='versionAcknowledgments']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='versionAcknowledgments']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and @data-book='versionAcknowledgments']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='originalAcknowledgments']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and @data-book='originalAcknowledgments']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='originalAcknowledgments']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and @data-book='originalAcknowledgments']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='ISBN']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and @data-book='ISBN']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='ISBN']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='ISBN']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='credits-page-branding-bottom-html']", 1);
+
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 19);
+
+			// SUT
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, "en");
+
+			// Check occurrences in modified HTML.  This should be exactly the same as before.
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='' and contains(@class, 'bloom-page')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @class='pageLabel']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @class='pageDescription']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class, 'licenseAndCopyrightBlock')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and contains(@class, 'copyright')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @class='licenseUrl']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class, 'licenseDescription')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='versionAcknowledgments']", 1);
+			assertThatDom.HasNoMatchForXpath("//div[@lang='fr' and @data-book='versionAcknowledgments']");
+			assertThatDom.HasNoMatchForXpath("//div[@lang='es' and @data-book='versionAcknowledgments']");
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='originalAcknowledgments']", 1);
+			assertThatDom.HasNoMatchForXpath("//div[@lang='es' and @data-book='originalAcknowledgments']");
+			assertThatDom.HasNoMatchForXpath("//div[@lang='fr' and @data-book='originalAcknowledgments']");
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and @data-book='originalAcknowledgments']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='ISBN']", 1);
+			assertThatDom.HasNoMatchForXpath("//div[@lang='es' and @data-book='ISBN']");
+			assertThatDom.HasNoMatchForXpath("//div[@lang='fr' and @data-book='ISBN']");
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='ISBN']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='credits-page-branding-bottom-html']", 1);
+
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 13);
 		}
 	}
 }
