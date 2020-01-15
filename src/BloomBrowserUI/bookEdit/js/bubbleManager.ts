@@ -171,6 +171,10 @@ export class BubbleManager {
             const editable = textOverPictureElems[0].getElementsByClassName(
                 "bloom-editable bloom-visibility-code-on"
             )[0] as HTMLElement;
+            // This focus call doesn't seem to work, at least in a lasting fashion.
+            // See the code in bloomEditing.ts/SetupElements() that sets focus after
+            // calling BloomSourceBubbles.MakeSourceBubblesIntoQtips() in a delayed loop.
+            // That code usually finds that nothing is focused. (??)
             editable.focus();
             Comical.setUserInterfaceProperties({ tailHandleColor: "#96668F" }); // light bloom purple
             Comical.startEditing(imageContainers);
