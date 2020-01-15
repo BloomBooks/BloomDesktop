@@ -573,6 +573,10 @@ namespace Bloom.Publish
 		/// </remarks>
 		public static void RemoveUnwantedLanguageData(HtmlDom dom, IEnumerable<string> languagesToInclude)
 		{
+			//Debug.Write("PublishModel.RemoveUnwantedLanguageData(): languagesToInclude =");
+			//foreach (var lang in languagesToInclude)
+			//	Debug.Write($" {lang}");
+			//Debug.WriteLine();
 			// Place the desired language tags plus the two standard pseudolanguage tags in a HashSet
 			// for fast access.
 			var contentLanguages = new HashSet<string>();
@@ -580,14 +584,14 @@ namespace Bloom.Publish
 				contentLanguages.Add(lang);
 			contentLanguages.Add("*");
 			contentLanguages.Add("z");
-			// Don't change the xMatter (or the div#bloomDataDiv):  thus we have an outer loop that
-			// selects only user content pages.
-			// While we could probably safely remove some elements from xMatter,
+			// Don't change the div#bloomDataDiv:  thus we have an outer loop that
+			// selects only xmatter and user content pages.
+			// While we could probably safely remove elements from div#bloomDataDiv,
 			// we decided to play it very safe for now and leave it all intact.
 			// We can always come back to this if we realize we should be removing more.
 			// If that happens, removing the outer loop and checking the data-book attribute (and
 			// maybe the data-derived attribute) may become necessary.
-			foreach (var page in dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(@data-xmatter-page)]").Cast<XmlElement>().ToList())
+			foreach (var page in dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Cast<XmlElement>().ToList())
 			{
 				foreach (var div in page.SafeSelectNodes(".//div[@lang]").Cast<XmlElement>().ToList())
 				{
