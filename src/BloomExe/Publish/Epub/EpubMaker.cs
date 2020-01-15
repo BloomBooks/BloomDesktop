@@ -307,15 +307,27 @@ namespace Bloom.Publish.Epub
 				Logger.WriteEvent("Cannot find ffmpeg program while preparing videos for publishing.");
 			}
 
-			var pageLabelProgress = progress.WithL10NPrefix("TemplateBooks.PageLabel.");
+			var nsManager = new XmlNamespaceManager(Book.RawDom.NameTable);
+			nsManager.AddNamespace("svg", "http://www.w3.org/2000/svg");
+
+			var pageLabelProgress = progress.WithL10NPrefix("TemplateBooks.PageLabel.");			
 			foreach (XmlElement pageElement in Book.GetPageElements())
 			{
+				var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
+				
+				var comicalMatches = pageElement.SafeSelectNodes(".//svg:svg[contains(@class, 'comical-generated')]", nsManager);
+				if (comicalMatches.Count > 0)
+				{
+					progress.Message("Common.Error", "Error", MessageKind.Error, false);
+					progress.MessageWithParams("PublishTab.Epub.NoComicSupport", "Error shown if book contains comic bubbles.", "Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.", MessageKind.Error, pageLabelEnglish);
+					AbortRequested = true;
+				}
+
 				// We could check for this in a few more places, but once per page seems enough in practice.
 				if (AbortRequested)
 					break;
 				if (MakePageFile(pageElement, warningMessages))
 				{
-					var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
 					pageLabelProgress.Message(pageLabelEnglish, pageLabelEnglish);
 				};
 			}
