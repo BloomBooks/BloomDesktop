@@ -69,22 +69,58 @@ namespace Bloom.Book
                 }
             }
 
-            var permissions = DynamicJson.Parse(permissionsJson);
-            var values = permissions.values;
-            var allowed = new HashSet<string>();
-            foreach (var val in values)
-            {
-                string contentId = val[0];
-                string languageCode = val[1];
-                if (MatchingKey(contentId.Trim(), key))
-                {
-                    allowed.Add(languageCode.Trim());
-                }
-            }
+			HashSet<string> allowed = GetAllowedLanguageCodes(permissionsJson, key);
 
-            didCheck = true;
+			didCheck = true;
             return inputLangs.Where(c => !allowed.Contains(c));
         }
+
+		// Parses the permissions JSON and returns the set of language codes that match the given contentId key
+		private static HashSet<string> GetAllowedLanguageCodes(string permissionsJson, string key)
+		{
+			var allowed = new HashSet<string>();
+
+			dynamic permissions;
+			dynamic values;
+			try
+			{
+				permissions = DynamicJson.Parse(permissionsJson);
+				values = permissions.values;
+			}
+			catch
+			{
+				return allowed;
+			}
+
+			foreach (var val in values)
+			{
+				string contentId, languageCode;
+				try
+				{
+					contentId = val[0];
+					languageCode = val[1];
+				}
+				catch
+				{
+					continue;
+				}
+
+				// empty strings are not considered valid
+				// no need to process header rows either
+				if (string.IsNullOrWhiteSpace(contentId) || string.IsNullOrWhiteSpace(languageCode) ||
+				    contentId == "content-id" || languageCode == "language-code")
+				{
+					continue;
+				}
+
+				if (MatchingKey(contentId.Trim(), key))
+				{
+					allowed.Add(languageCode.Trim());
+				}
+			}
+
+			return allowed;
+		}
 
         private bool TryGetOfflineCache(out string permissionsJson)
         {
@@ -114,7 +150,7 @@ namespace Bloom.Book
 
         // A key like "kingstone.superbible.ruth" mathces a rule like ["kingstone.superbible.ruth", "ru"]
         // but also one like ["kingstone.superbible.*", "ru"].
-        private bool MatchingKey(string contentId, string key)
+        private static bool MatchingKey(string contentId, string key)
         {
             if (contentId == key)
                 return true;
