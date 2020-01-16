@@ -24,10 +24,11 @@
 // paragraphs inside display:flex blocks, and we want to limit this to the unusual cases.
 // See BL-4781 and BL-5217
 // UPDATE for 4.7: we can work around this by switching to display:table. See BL-8000
+// The fix for BL-8000 causes overflow indication to disappear (BL-8014), so we reverted it.
 .bloom-vertical-align-center,
 .bloom-vertical-align-bottom {
     .bloom-editable.bloom-visibility-code-on,
     .bloom-editable.bloom-visibility-user-on {
-        display: table;
+        display: flex;
     }
 }
