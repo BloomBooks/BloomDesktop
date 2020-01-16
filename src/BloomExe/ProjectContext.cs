@@ -44,6 +44,13 @@ namespace Bloom
 		public ProjectContext(string projectSettingsPath, IContainer parentContainer)
 		{
 			SettingsPath = projectSettingsPath;
+			// BL-8019: A couple lines down, BuildSubContainerForThisProject() starts BloomServer with the new project.
+			// While we are starting (or restarting, in the case of switching collections) BloomServer we need to use
+			// the WinFormsExceptionHandler mechanism, which doesn't use a browser.
+			// The ProblemReportApi, which uses the browser (and therefore BloomServer) isn't available to us
+			// while BloomServer is starting up. By the time WorkspaceView comes online and sets the error reporting
+			// to the ProblemReportApi mechanism, BloomServer will be up and running again.
+			ErrorReport.OnShowDetails = null;
 			BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
 
 			_scope.Resolve<CollectionSettings>().CheckAndFixDependencies(_scope.Resolve<BloomFileLocator>());
