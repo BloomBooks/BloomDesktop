@@ -1330,8 +1330,6 @@ export class BubbleManager {
             const imageContainer = this.getImageContainer(thisTOPBox);
             const imagePos = imageContainer[0].getBoundingClientRect();
             const wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
-            thisTOPBox.find(".bloom-ui").remove(); // Just in case somehow one is stuck in there
-            thisTOPBox.find(".bloom-dragHandleTOP").remove(); // BL-7903 remove any left over drag handles (this was the class used in 4.7 alpha)
 
             // Add the dragHandles. The visible one has a zindex below the canvas. The transparent one is above.
             // The 'mouseover' event listener below will make sure the .ui-draggable-handle class
@@ -1490,13 +1488,29 @@ export class BubbleManager {
     }
 
     public initializeTextOverPictureEditing(): void {
-        this.makeTextOverPictureBoxDraggableClickableAndResizable();
+        // Cleanup old .bloom-ui elements and old drag handles etc.
+        // We want to clean these up sooner rather than later so that there's less chance of accidentally blowing away
+        // a UI element that we'll actually need now
+        // (e.g. the ui-resizable-handles or the format gear, which both have .bloom-ui applied to them)
+        this.cleanupTOPBoxes();
+
+        this.makeTOPBoxesDraggableClickableAndResizable();
         this.turnOnBubbleEditing();
+    }
+
+    public cleanupTOPBoxes() {
+        const allTOPBoxes = $("body").find(".bloom-textOverPicture");
+        allTOPBoxes.each((index, element) => {
+            const thisTOPBox = $(element);
+
+            thisTOPBox.find(".bloom-ui").remove(); // Just in case somehow one is stuck in there
+            thisTOPBox.find(".bloom-dragHandleTOP").remove(); // BL-7903 remove any left over drag handles (this was the class used in 4.7 alpha)
+        });
     }
 
     // Make any added BubbleManager textboxes draggable, clickable, and resizable.
     // Called by bloomEditing.ts.
-    public makeTextOverPictureBoxDraggableClickableAndResizable() {
+    public makeTOPBoxesDraggableClickableAndResizable() {
         // get all textOverPicture elements
         const textOverPictureElems = $("body").find(".bloom-textOverPicture");
         if (textOverPictureElems.length === 0) {
