@@ -4,276 +4,106 @@
     <body>
       <trans-unit id="training.videos" approved="yes">
         <source xml:lang="en">Bloom Training Videos</source>
-        <target xml:lang="id" state="translated">Video Pelatihan Bloom</target>
+        <target xml:lang="id" state="final">Video Pelatihan Bloom</target>
         <note>ID: training.videos</note>
       </trans-unit>
       <trans-unit id="training.videos.watch" approved="yes">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
-        <target xml:lang="id" state="translated">Jika Anda sedang terhubung ke internet, Anda dapat menonton video di browser web:</target>
+        <target xml:lang="id" state="final">Jika Anda sedang terhubung ke internet, Anda dapat menonton video di browser web:</target>
         <note>ID: training.videos.watch</note>
       </trans-unit>
       <trans-unit id="training.videos.all" approved="yes">
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
-        <target xml:lang="id" state="translated"><g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Semua video</g></target>
+        <target xml:lang="id" state="final"><g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Semua video</g></target>
         <note>ID: training.videos.all</note>
       </trans-unit>
       <trans-unit id="training.videos.intro" approved="yes">
         <source xml:lang="en">Introductory Videos</source>
-        <target xml:lang="id" state="translated">Video Pengantar</target>
+        <target xml:lang="id" state="final">Video Pengantar</target>
         <note>ID: training.videos.intro</note>
       </trans-unit>
       <trans-unit id="training.videos.whofor" approved="yes">
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
-        <target xml:lang="id" state="translated"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Siapa penggunanya</g></target>
+        <target xml:lang="id" state="final"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Siapa penggunanya</g></target>
         <note>ID: training.videos.whofor</note>
       </trans-unit>
       <trans-unit id="training.videos.templates" approved="yes">
         <source xml:lang="en">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
         </source>
-        <target xml:lang="id" state="translated"><g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Memahami Template dan Buku Kerangka</g></target>
+        <target xml:lang="id" state="final"><g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Memahami Template dan Buku Kerangka</g></target>
         <note>ID: training.videos.templates</note>
       </trans-unit>
       <trans-unit id="training.videos.basicbook" approved="yes">
         <source xml:lang="en">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Using the Basic Book template</g>
         </source>
-        <target xml:lang="id" state="translated"><g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Menggunakan template Buku Dasar</g></target>
+        <target xml:lang="id" state="final"><g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Menggunakan template Buku Dasar</g></target>
         <note>ID: training.videos.basicbook</note>
       </trans-unit>
       <trans-unit id="training.videos.readers" approved="yes">
         <source xml:lang="en">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="id" state="translated"><g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Menggunakan Template Pembaca yang Dapat Didekodekan dan Bertingkat (beberapa video)</g></target>
+        <target xml:lang="id" state="final"><g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Menggunakan Template Pembaca yang Dapat Didekodekan dan Bertingkat (beberapa video)</g></target>
         <note>ID: training.videos.readers</note>
       </trans-unit>
       <trans-unit id="training.videos.advanced" approved="yes">
         <source xml:lang="en">Advanced Topics</source>
-        <target xml:lang="id" state="translated">Topik Tingkat Mahir</target>
+        <target xml:lang="id" state="final">Topik Tingkat Mahir</target>
         <note>ID: training.videos.advanced</note>
       </trans-unit>
       <trans-unit id="training.videos.formatting" approved="yes">
         <source xml:lang="en">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Changing the format of text</g>
         </source>
-        <target xml:lang="id" state="translated"><g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Mengubah format teks</g></target>
+        <target xml:lang="id" state="final"><g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Mengubah format teks</g></target>
         <note>ID: training.videos.formatting</note>
       </trans-unit>
       <trans-unit id="training.videos.custompage" approved="yes">
         <source xml:lang="en">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
         </source>
-        <target xml:lang="id" state="translated"><g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Menggunakan template Halaman Khusus</g></target>
+        <target xml:lang="id" state="final"><g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Menggunakan template Halaman Khusus</g></target>
         <note>ID: training.videos.custompage</note>
       </trans-unit>
       <trans-unit id="training.videos.specialcharacters" approved="yes">
         <source xml:lang="en">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Inserting special characters</g>
         </source>
-        <target xml:lang="id" state="translated"><g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Menyisipkan karakter khusus</g></target>
+        <target xml:lang="id" state="final"><g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Menyisipkan karakter khusus</g></target>
         <note>ID: training.videos.specialcharacters</note>
       </trans-unit>
       <trans-unit id="training.videos.readertemplates" approved="yes">
         <source xml:lang="en">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="id" state="translated"><g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Membuat seperangkat Template Pembaca yang Dapat Didekodekan dan Bertingkat (beberapa video)</g></target>
+        <target xml:lang="id" state="final"><g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Membuat seperangkat Template Pembaca yang Dapat Didekodekan dan Bertingkat (beberapa video)</g></target>
         <note>ID: training.videos.readertemplates</note>
       </trans-unit>
       <trans-unit id="training.videos.offline" approved="yes">
         <source xml:lang="en">Offline Viewing</source>
-        <target xml:lang="id" state="translated">Menonton Secara Offline</target>
+        <target xml:lang="id" state="final">Menonton Secara Offline</target>
         <note>ID: training.videos.offline</note>
       </trans-unit>
       <trans-unit id="training.videos.download" approved="yes">
         <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</source>
-        <target xml:lang="id" state="translated">Jika Anda ingin mengunduh salah satu video untuk ditampilkan dan dibagikan saat koneksi internet tidak tersedia, Anda bisa mengunduh video ke komputer Anda:</target>
+        <target xml:lang="id" state="final">Jika Anda ingin mengunduh salah satu video untuk ditampilkan dan dibagikan saat koneksi internet tidak tersedia, Anda bisa mengunduh video ke komputer Anda:</target>
         <note>ID: training.videos.download</note>
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
-        <target xml:lang="id" state="translated"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Resolusi Tinggi</g> (Berkas Besar)</target>
+        <target xml:lang="id" state="final"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Resolusi Tinggi</g> (Berkas Besar)</target>
         <note>ID: training.videos.hires</note>
-        <alt-trans>
-          <target xml:lang="id">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Resolusi Tinggi</g> (Berkas Besar)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Resolusi Tinggi</g> (Berkas Besar)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Resolusi Tinggi</g> (Berkas Besar)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Resolusi Tinggi</g> (Berkas Besar)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Resolusi Tinggi</g> (Berkas Besar)</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.lores" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
-        <target xml:lang="id" state="translated"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Resolusi Rendah</g> (Smaller files)</target>
+        <target xml:lang="id" state="final"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Resolusi Rendah</g> (Smaller files)</target>
         <note>ID: training.videos.lores</note>
-        <alt-trans>
-          <target xml:lang="id">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Resolusi Rendah</g> (Smaller files)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Resolusi Rendah</g> (Smaller files)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Resolusi Rendah</g> (Smaller files)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Resolusi Rendah</g> (Smaller files)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="id">
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Resolusi Rendah</g> (Smaller files)</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

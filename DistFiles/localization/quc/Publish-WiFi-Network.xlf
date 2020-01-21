@@ -6,25 +6,16 @@
         <source xml:lang="en">Ways to make a temporary Wi-Fi Network</source>
         <target xml:lang="quc" state="translated">Uwach taq uwokik jun uk'atil Wi-Fi xaq rech keb' oxib' q'ij</target>
         <note>ID: publish.help.tips.tempWiFi.title</note>
-        <alt-trans>
-          <target xml:lang="quc">K'i ub'antajik ri uwokik jun k'at Wi-Fi xaq rech keb' oxib' q'ij</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hotspot">
         <source xml:lang="en">Start a phone hotspot</source>
         <target xml:lang="quc" state="translated">Umajik jun retal rech okib'al ch'awab'al</target>
         <note>ID: publish.help.tips.tempWiFi.hotspot</note>
-        <alt-trans>
-          <target xml:lang="quc">Umajik jun retal rech okib'al re oyonib'al</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hostednetwork">
         <source xml:lang="en">Start a network using your laptop</source>
         <target xml:lang="quc" state="translated">Chamaja' jun uk'atil chak ruk' wakatel kematz'ib'</target>
         <note>ID: publish.help.tips.tempWiFi.hostednetwork</note>
-        <alt-trans>
-          <target xml:lang="quc">Chamaja' jun k'at are kakoj ri a kematz'ib'</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

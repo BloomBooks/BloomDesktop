@@ -11,9 +11,6 @@
         <source xml:lang="en">Possible Causes</source>
         <target xml:lang="bn" state="final">সম্ভাব্য কারণসমূহ</target>
         <note>ID: integrity.causes</note>
-        <alt-trans>
-          <target xml:lang="bn">সম্ভাব্য কারণগুলি </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.causes.1" approved="yes">
         <source xml:lang="en">Your antivirus may have "quarantined" one or more Bloom files.</source>
@@ -24,9 +21,6 @@
         <source xml:lang="en">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </source>
         <target xml:lang="bn" state="final">২)  আপনার কম্পিউটার প্রশাসক খারাপ জিনিস থেকে আপনার কম্পিউটারকে রক্ষা করার জন্য তালাবদ্ধ করে রাখতে পারে, কিন্তু এইভাবে ব্লুম কোন ফাইল যেখানে থাকা উচিত সেখানে রাখতে পারে না। </target>
         <note>ID: integrity.causes.2</note>
-        <alt-trans>
-          <target xml:lang="bn">২) আপনার কম্পিউটার প্রশাসক খারাপ জিনিস থেকে আপনার কম্পিউটারকে রক্ষা করার জন্য তালাবদ্ধ করে রাখতে পারে, কিন্তু এইভাবে ব্লুম কোন ফাইল যেখানে থাকা উচিত সেখানে রাখতে পারে না। </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo" approved="yes">
         <source xml:lang="en">What To Do</source>
@@ -63,9 +57,6 @@
         <target xml:lang="bn" state="final">এভিজি: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">এভিজি এর নির্দেশনাসমূহ</g>।</target>
         <note>ID: integrity.todo.ideas.AVG</note>
         <note>The former source text had an incorrect &amp;amp; following l=en_US in the href attribute value.</note>
-        <alt-trans>
-          <target xml:lang="bn">এভিজি: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">এভিজি এর নির্দেশনাসমূহ</g>।.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Others" approved="yes">
         <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>

@@ -41,9 +41,6 @@
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
         <target xml:lang="prs" state="final">اگر این حلش نکند، وقت است که به برنامه انتی ویروس تان برگردید. اگر بخش "فایل های گم شده" در پائین کدام فایل نشان دهد که با ‏".exe"‏ ختم شده باشد، فولدر به نامه لیست سفید ‏"whitelisting"‏  بلوم را ملاحظه کنید، که در ‏ <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
-        <alt-trans>
-          <target xml:lang="prs">اگر این حلش نکند، وقت است که به برنامه انتی ویروس تان برگردید. اگر بخش "فایل های گم شده" در پائین کدام فایل نشان دهد که با ‏".exe"‏ ختم شده باشد، لیست سفید ‏"whitelisting"‏ فولدر برنامه بلوم را ملاحظه کنید، که در ‏ <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVAST" approved="yes">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</source>

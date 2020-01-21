@@ -6,9 +6,6 @@
         <source xml:lang="en">Ways to make a temporary Wi-Fi Network</source>
         <target xml:lang="mam" state="final">Ju'njun qe tumlal tza'n tu'n tb'inchet jun chemajxin Wi-Fi noqx te jte' q'ij</target>
         <note>ID: publish.help.tips.tempWiFi.title</note>
-        <alt-trans>
-          <target xml:lang="mam">Ju'njun qe tumlal tza'n tu'n tb'inchet jun chemajxin Wi-Fi noqx te kab'e q'ij</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hotspot" approved="yes">
         <source xml:lang="en">Start a phone hotspot</source>
