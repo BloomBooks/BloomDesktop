@@ -1565,28 +1565,22 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       <trans-unit id="Common.Colors.Black">
         <source xml:lang="en">Black</source>
         <note>ID: Common.Colors.Black</note>
-        <target xml:lang="es-ES" state="needs-translation">Black</target>
+        <target xml:lang="es-ES" state="translated">Negro</target>
       </trans-unit>
       <trans-unit id="Common.Colors.Crimson">
         <source xml:lang="en">Crimson</source>
         <note>ID: Common.Colors.Crimson</note>
-        <target xml:lang="es-ES" state="needs-translation">Crimson</target>
+        <target xml:lang="es-ES" state="translated">Carmesí</target>
       </trans-unit>
       <trans-unit id="Common.Colors.Yellow">
         <source xml:lang="en">Yellow</source>
         <note>ID: Common.Colors.Yellow</note>
-        <target xml:lang="es-ES" state="needs-translation">Yellow</target>
+        <target xml:lang="es-ES" state="translated">Amarillo</target>
       </trans-unit>
       <trans-unit id="Common.Colors.White">
         <source xml:lang="en">White</source>
         <note>ID: Common.Colors.White</note>
-        <target xml:lang="es-ES" state="needs-translation">White</target>
-      </trans-unit>
-      <trans-unit id="Common.LearnMore" sil:dynamic="true">
-        <source xml:lang="en">Learn More</source>
-        <note>ID: Common.LearnMore</note>
-        <note>This is the same as Settings.Enterprise.LearnMore</note>
-        <target xml:lang="es-ES" state="translated">Aprender más</target>
+        <target xml:lang="es-ES" state="translated">Blanco</target>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
@@ -1606,6 +1600,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
         <target xml:lang="es-ES" state="final">&amp;Cancelar</target>
+      </trans-unit>
+      <trans-unit id="Common.Error">
+        <source xml:lang="en">Error</source>
+        <note>ID: Common.Error</note>
+        <note>A heading shown above some messages.</note>
+        <target xml:lang="es-ES" state="needs-translation">Error</target>
       </trans-unit>
       <trans-unit id="Common.Finish" approved="yes">
         <source xml:lang="en">&amp;Finish</source>
@@ -1652,6 +1652,13 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
         <target xml:lang="es-ES" state="final">Ayuda</target>
+      </trans-unit>
+      <trans-unit id="Common.LearnMore" sil:dynamic="true">
+        <source xml:lang="en">Learn More</source>
+        <note>ID: Common.LearnMore</note>
+        <note>A link or button that leads to something that tells the user more about what they just read.</note>
+        <note>This is the same as Settings.Enterprise.LearnMore</note>
+        <target xml:lang="es-ES" state="translated">Aprender más</target>
       </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Loading...</source>
@@ -1711,7 +1718,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       <trans-unit id="Common.Replace">
         <source xml:lang="en">Replace</source>
         <note>ID: Common.Replace</note>
-        <target xml:lang="es-ES" state="needs-translation">Replace</target>
+        <target xml:lang="es-ES" state="translated">Reemplazar</target>
       </trans-unit>
       <trans-unit id="Common.SeeWebPage" approved="yes">
         <source xml:lang="en">See {0}.</source>
@@ -1902,6 +1909,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       <trans-unit id="EditTab.AddTextBoxToImage" approved="yes">
         <source xml:lang="en">Add Text Box To Image</source>
         <note>ID: EditTab.AddTextBoxToImage</note>
+        <note>Obsolete for Bloom 4.7 and later</note>
         <target xml:lang="es-ES" state="final">Añadir cuadro de texto a la imagen</target>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true" approved="yes">
@@ -2166,6 +2174,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       <trans-unit id="EditTab.DeleteTextBoxFromImage" approved="yes">
         <source xml:lang="en">Delete Text Box From Image</source>
         <note>ID: EditTab.DeleteTextBoxFromImage</note>
+        <note>Obsolete for Bloom 4.7 and later</note>
         <target xml:lang="es-ES" state="final">Eliminar cuadro de texto de la imagen</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true" approved="yes">
@@ -2334,6 +2343,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.BigWords-style</note>
         <note>Appears in most templates</note>
         <target xml:lang="es-ES" state="final">Palabras Grandes</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Bubble-style" sil:dynamic="true">
+        <source xml:lang="en">Bubble</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Bubble-style</note>
+        <note>Default style for comic bubbles</note>
+        <target xml:lang="es-ES" state="translated">Burbuja</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Cover-Default-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cover Default</source>
@@ -3222,115 +3237,115 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
           <target xml:lang="es-ES">Información de propiedad intelectual de la ilustración</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool" sil:dynamic="true">
         <source xml:lang="en">Comic Tool</source>
-        <note>ID: EditTab.Toolbox.CalloutTool</note>
+        <note>ID: EditTab.Toolbox.ComicTool</note>
         <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
-        <target xml:lang="es-ES" state="needs-translation">Comic Tool</target>
+        <target xml:lang="es-ES" state="translated">Herramienta de cómic</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.AddChildBubble" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
+        <source xml:lang="en">Drag to add to an image</source>
+        <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
+        <target xml:lang="es-ES" state="translated">Arrastra para añadir a una imagen</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true">
         <source xml:lang="en">Add Child Bubble</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.AddChildBubble</note>
-        <target xml:lang="es-ES" state="needs-translation">Add Child Bubble</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.AddChildBubble</note>
+        <target xml:lang="es-ES" state="translated">Añadir burbuja infantil</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor" sil:dynamic="true">
         <source xml:lang="en">Background Color</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor</note>
         <note>Refers to the Background Color of the bubble used by the callout</note>
-        <target xml:lang="es-ES" state="needs-translation">Background Color</target>
+        <target xml:lang="es-ES" state="translated">Color del fondo</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.OldLace" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace" sil:dynamic="true">
         <source xml:lang="en">Old Lace</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.OldLace</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
         <note>A background color that looks like old lace</note>
-        <target xml:lang="es-ES" state="needs-translation">Old Lace</target>
+        <target xml:lang="es-ES" state="translated">Encaje antiguo</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToCalico" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico" sil:dynamic="true">
         <source xml:lang="en">White to Calico</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToCalico</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico</note>
         <note>A background color that is a gradient starting with white blending into calico color</note>
-        <target xml:lang="es-ES" state="needs-translation">White to Calico</target>
+        <target xml:lang="es-ES" state="translated">Blanco a Calico</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
         <source xml:lang="en">White to French Pass</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToFrenchPass</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass</note>
         <note>A background color that is a gradient starting with white blending into the "French pass" color</note>
-        <target xml:lang="es-ES" state="needs-translation">White to French Pass</target>
+        <target xml:lang="es-ES" state="translated">Blanco a Paso Francés</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true">
         <source xml:lang="en">White to Portafino</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.BackgroundColor.WhiteToPortafino</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino</note>
         <note>A background color that is a gradient starting with white blending into the "Portafino" color</note>
-        <target xml:lang="es-ES" state="needs-translation">White to Portafino</target>
+        <target xml:lang="es-ES" state="translated">Blanco a Portafino</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true">
         <source xml:lang="en">Outer Outline Color</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor</note>
         <note>Refers to the Outer Outline Color of the bubble used by the callout</note>
-        <target xml:lang="es-ES" state="needs-translation">Outer Outline Color</target>
+        <target xml:lang="es-ES" state="translated">Color de contorno exterior</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor.None" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.OuterOutlineColor.None</note>
-        <target xml:lang="es-ES" state="needs-translation">None</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
+        <target xml:lang="es-ES" state="translated">Ninguno</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style" sil:dynamic="true">
         <source xml:lang="en">Style</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
         <note>Refers to the STYLE of bubble used by the callout</note>
-        <target xml:lang="es-ES" state="needs-translation">Style</target>
+        <target xml:lang="es-ES" state="translated">Estilo</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Caption" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Caption" sil:dynamic="true">
         <source xml:lang="en">Caption</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Caption</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Caption</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a description which is not directly stated by any characters.</note>
-        <target xml:lang="es-ES" state="needs-translation">Caption</target>
+        <target xml:lang="es-ES" state="translated">Título</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Ellipse" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Ellipse" sil:dynamic="true">
         <source xml:lang="en">Ellipse</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Ellipse</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Ellipse</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a round bubble shaped like an ellipse.</note>
-        <target xml:lang="es-ES" state="needs-translation">Ellipse</target>
+        <target xml:lang="es-ES" state="translated">Elipsis</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Exclamation" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Exclamation" sil:dynamic="true">
         <source xml:lang="en">Exclamation</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Exclamation</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Exclamation</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a shout or exclamatory statement. Like this: "Watch out!"</note>
-        <target xml:lang="es-ES" state="needs-translation">Exclamation</target>
+        <target xml:lang="es-ES" state="translated">Exclamación</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.JustText" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.JustText" sil:dynamic="true">
         <source xml:lang="en">Just Text</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.JustText</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.JustText</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style does not have any bubble at all.</note>
-        <target xml:lang="es-ES" state="needs-translation">Just Text</target>
+        <target xml:lang="es-ES" state="translated">Solamente texto</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Speech" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Speech" sil:dynamic="true">
         <source xml:lang="en">Speech</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Speech</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Speech</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents standard speech/dialogue.</note>
-        <target xml:lang="es-ES" state="needs-translation">Speech</target>
+        <target xml:lang="es-ES" state="translated">Voz</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.Style.Thought" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Thought" sil:dynamic="true">
         <source xml:lang="en">Thought</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.Style.Thought</note>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Thought</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents the thoughts of a person who is thinking.</note>
-        <target xml:lang="es-ES" state="needs-translation">Thought</target>
+        <target xml:lang="es-ES" state="translated">Pensamiento</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.TextColor" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextColor" sil:dynamic="true">
         <source xml:lang="en">Text Color</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.TextColor</note>
-        <target xml:lang="es-ES" state="needs-translation">Text Color</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CalloutTool.Options.ControlsAvailable" sil:dynamic="true">
-        <source xml:lang="en">The selected item has these controls:</source>
-        <note>ID: EditTab.Toolbox.CalloutTool.Options.ControlsAvailable</note>
-        <target xml:lang="es-ES" state="needs-translation">The selected item has these controls:</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
+        <target xml:lang="es-ES" state="translated">Color del texto</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Impairment Visualizer</source>
@@ -4152,17 +4167,17 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
         <source xml:lang="en">Import Recording</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
-        <target xml:lang="es-ES" state="needs-translation">Import Recording</target>
+        <target xml:lang="es-ES" state="translated">Importar grabación</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true">
         <source xml:lang="en">Replace with new audio?</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace</note>
-        <target xml:lang="es-ES" state="needs-translation">Replace with new audio?</target>
+        <target xml:lang="es-ES" state="translated">¿Reemplazar con un nuevo audio?</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true">
         <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
-        <target xml:lang="es-ES" state="needs-translation">If you import this recording, it will replace all the audio for this text box.</target>
+        <target xml:lang="es-ES" state="translated">Si importa esta grabación, reemplazará todo el audio de este cuadro de texto.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true" approved="yes">
         <source xml:lang="en">2) Look at the highlighted text</source>
@@ -5394,6 +5409,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
           <target xml:lang="es-ES">Estantería del LectorBloom</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.CantGetLicenseInfo" sil:dynamic="true">
+        <source xml:lang="en">To publish this book, Bloom must check which languages the copyright owner has permitted, but Bloom is having trouble reaching the server that has this information.</source>
+        <note>ID: PublishTab.Android.CantGetLicenseInfo</note>
+        <target xml:lang="es-ES" state="translated">Para publicar este libro, Bloom debe comprobar qué idiomas ha permitido el propietario de los derechos de autor, pero Bloom está teniendo problemas para llegar al servidor que tiene esta información.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Save Bloom Reader File</source>
         <note>ID: PublishTab.Android.ChooseFile</note>
@@ -5458,6 +5478,12 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.Android.Features</note>
         <note>The second heading in the Settings section, which shows a checklist of various features.</note>
         <target xml:lang="es-ES" state="final">Funciones</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.UnlicensedLanguages" sil:dynamic="true">
+        <source xml:lang="en">The copyright holder of this book has not licensed it for publishing in {0}. Please contact the copyright holder to learn more about licensing.</source>
+        <note>ID: PublishTab.Android.UnlicensedLanguages</note>
+        <note>{0} will be a language name or a list of them</note>
+        <target xml:lang="es-ES" state="translated">El titular de derechos de autor de este libro no lo ha licenciado para publicar en {0}. Puede anular la selección de idiomas utilizando las casillas de verificación de la derecha de esta pantalla. Por favor, contacte con el titular de los derechos de autor para obtener más información acerca de la licencia.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
@@ -5590,6 +5616,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">Settings</source>
         <note>ID: PublishTab.Android.Settings</note>
         <target xml:lang="es-ES" state="final">Configuración</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.TextLanguages" sil:dynamic="true">
+        <source xml:lang="en">Text Languages</source>
+        <note>ID: PublishTab.Android.TextLanguages</note>
+        <target xml:lang="es-ES" state="translated">Idiomas del texto</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Thumbnail" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Thumbnail</source>
@@ -6067,6 +6098,12 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">No recorded audio image descriptions</source>
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
         <target xml:lang="es-ES" state="final">No hay grabaciones de las descripciones de las imágenes</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.NoComicSupport">
+        <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.</source>
+        <note>ID: PublishTab.Epub.NoComicSupport</note>
+        <note>The {0} will be replaced with the page number (or name of page). For example, it might be replaced by "1" or "Front Cover"</note>
+        <target xml:lang="es-ES" state="needs-translation">Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.OmittedPages">
         <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
@@ -7710,10 +7747,33 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Bloom no pudo enviar su informe directamente a nuestro servidor. Vuelva a intentarlo o enviar un correo electrónico {0} a {1}.</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="ReportProblemDialog.DiagnosticReportIntro">
+        <source xml:lang="en">Bloom will include the following diagnostic information with your report:</source>
+        <note>ID: ReportProblemDialog.DiagnosticReportIntro</note>
+        <target xml:lang="es-ES" state="translated">Bloom incluirá la siguiente información de diagnóstico con su informe:</target>
+      </trans-unit>
       <trans-unit id="ReportProblemDialog.Email" approved="yes">
         <source xml:lang="en">Email</source>
         <note>ID: ReportProblemDialog.Email</note>
         <target xml:lang="es-ES" state="final">Correo electrónico</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.FatalTitle">
+        <source xml:lang="en">Bloom encountered an error and needs to quit</source>
+        <note>ID: ReportProblemDialog.FatalTitle</note>
+        <note>The title of the dialog after a Fatal error will cause Bloom to close.</note>
+        <target xml:lang="es-ES" state="translated">Bloom encontró un error y necesita salir</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.FirstTime">
+        <source xml:lang="en">First Time</source>
+        <note>ID: ReportProblemDialog.FirstTime</note>
+        <note>The begin point label for the frequency slider.</note>
+        <target xml:lang="es-ES" state="translated">Primera vez</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.HowMuch">
+        <source xml:lang="en">How much has this happened?</source>
+        <note>ID: ReportProblemDialog.HowMuch</note>
+        <note>The label above the frequency slider.</note>
+        <target xml:lang="es-ES" state="translated">¿Cuánto ha pasado esto?</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.IncludeBookButton" approved="yes">
         <source xml:lang="en">Include Book '{0}'</source>
@@ -7728,10 +7788,50 @@ Desea seguir?</target>
         <note>ID: ReportProblemDialog.IncludeScreenshotButton</note>
         <target xml:lang="es-ES" state="final">Incluir esta captura de pantalla</target>
       </trans-unit>
+      <trans-unit id="ReportProblemDialog.IssueLink">
+        <source xml:lang="en">This issue can be viewed here:</source>
+        <note>ID: ReportProblemDialog.IssueLink</note>
+        <note>This label is displayed before a link to the issue after it is created.</note>
+        <target xml:lang="es-ES" state="translated">Este problema se puede ver aquí:</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.ItKeepsHappening">
+        <source xml:lang="en">It keeps happening</source>
+        <note>ID: ReportProblemDialog.ItKeepsHappening</note>
+        <note>The end point label for the frequency slider.</note>
+        <target xml:lang="es-ES" state="translated">Sigue sucediendo</target>
+      </trans-unit>
       <trans-unit id="ReportProblemDialog.Name" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: ReportProblemDialog.Name</note>
         <target xml:lang="es-ES" state="final">Nombre</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.NonFatalTitle">
+        <source xml:lang="en">Bloom had a problem</source>
+        <note>ID: ReportProblemDialog.NonFatalTitle</note>
+        <note>The title of the dialog caused by a NonFatal error.</note>
+        <target xml:lang="es-ES" state="translated">Bloom tuvo un problema</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.PleaseHelpUs">
+        <source xml:lang="en">Please help us reproduce this problem on our computers.</source>
+        <note>ID: ReportProblemDialog.PleaseHelpUs</note>
+        <target xml:lang="es-ES" state="translated">Por favor, ayúdenos a reproducir este problema en nuestras computadoras.</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.PrivacyInfo">
+        <source xml:lang="en">Your report will go into our issue tracking system and will be visible via the web. If you have something private to say, please email to '{0}'.</source>
+        <note>ID: ReportProblemDialog.PrivacyInfo</note>
+        <note>The {0} is where the Bloom team's private email address will be inserted.</note>
+        <target xml:lang="es-ES" state="translated">Su informe entrará en nuestro sistema de seguimiento de incidencias y será visible a través de la web. Si tienes algo privado que decir, por favor envía un correo electrónico a '{0}'.</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.PrivacyNotice">
+        <source xml:lang="en">Bloom will include diagnostic information with your report. Your report will not be private.</source>
+        <note>ID: ReportProblemDialog.PrivacyNotice</note>
+        <target xml:lang="es-ES" state="translated">Bloom incluirá información de diagnóstico con su informe. Su informe no será privado.</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Quit">
+        <source xml:lang="en">Quit</source>
+        <note>ID: ReportProblemDialog.Quit</note>
+        <note>Shown in the button that closes the dialog after a successful report submission, if there was a fatal error and we need to exit the program.</note>
+        <target xml:lang="es-ES" state="translated">Salir</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.Retry" approved="yes">
         <source xml:lang="en">Retry</source>
@@ -7778,10 +7878,22 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Hemos recibido su informe. Gracias por tomarse el tiempo para ayudar a mejorar Bloom!</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="ReportProblemDialog.UserTitle">
+        <source xml:lang="en">Report a Problem</source>
+        <note>ID: ReportProblemDialog.UserTitle</note>
+        <note>The title of the dialog when a user chooses to Report a Problem.</note>
+        <target xml:lang="es-ES" state="translated">Informar de un problema</target>
+      </trans-unit>
       <trans-unit id="ReportProblemDialog.WhatsTheProblem" approved="yes">
         <source xml:lang="en">What seems to be the problem?</source>
         <note>ID: ReportProblemDialog.WhatsTheProblem</note>
         <target xml:lang="es-ES" state="final">¿Cuál parece ser el problema?</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.WhatDoing">
+        <source xml:lang="en">What were you doing?</source>
+        <note>ID: ReportProblemDialog.WhatDoing</note>
+        <note>This is the label for the text field where the user enters what they were doing at the time of the problem.</note>
+        <target xml:lang="es-ES" state="translated">¿Qué estaba haciendo?</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Report A Problem</source>

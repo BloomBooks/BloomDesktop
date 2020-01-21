@@ -4,13 +4,13 @@
     <body>
       <trans-unit id="template.starter" approved="yes">
         <source xml:lang="en">How to use the Template Starter</source>
-        <target xml:lang="pbu" state="translated">د نموني پیلونکي کارولو څرنګوالی</target>
+        <target xml:lang="pbu" state="final">د نموني پیلونکي کارولو څرنګوالی</target>
         <note>ID: template.starter</note>
       </trans-unit>
       <trans-unit id="template.starter.firstusage" approved="yes">
         <source xml:lang="en">This special template lets you make your own templates. A template provides a set of related page layouts that an author can choose from in writing an original book. Usually the text blocks and picture blocks on template pages will be empty, ready for an author to fill in. Sometimes there may be standard text or pictures that should be on every copy of the page.
 There are two ways people can use your template. The first way is to start new books. For example, imagine student books that have one page for each school day of the week. You could make a template with 5 pages, each with places to type in text and choose pictures. Curriculum authors could select your template and make a new book, one for each week<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</source>
-        <target xml:lang="pbu" state="translated">دا ځانګړی نمونه تاسو وړتیا درکوي چي خپل ځانونه ته بیلګی جوړي کړئ. یوه نمونه د اړونده مخونو یو سیت وړاندې کوي چې یو لیکوال کولی شي د اصلي کتاب په لیکلو کې تری وټاکي. عموما د متن بلاکونه او د انځور بلاکونه د بیلګو په پاڼوکی خالي وي، د لیکونکي د ډکولو لپاره چمتو وي. ځینی وختونه ممکن معياري متن یا انځورونه وي چې باید د پاڼې هر نقل کې وي.
+        <target xml:lang="pbu" state="final">دا ځانګړی نمونه تاسو وړتیا درکوي چي خپل ځانونه ته بیلګی جوړي کړئ. یوه نمونه د اړونده مخونو یو سیت وړاندې کوي چې یو لیکوال کولی شي د اصلي کتاب په لیکلو کې تری وټاکي. عموما د متن بلاکونه او د انځور بلاکونه د بیلګو په پاڼوکی خالي وي، د لیکونکي د ډکولو لپاره چمتو وي. ځینی وختونه ممکن معياري متن یا انځورونه وي چې باید د پاڼې هر نقل کې وي.
 دلته ستاسو د بیلګو کارولو لپاره دوه لارې خلکو ته شتون لري. لومړی لار د نوو کتابونو پیل دی. د مثال په توګه، د زده کونکو کتابونه تصور کړئ چې د اونۍ د هر ښوونځي ورځی لپاره یوه پاڼه لري. تاسو کولی شئ د 5 پاڼو یوه بیلګه جوړه کړئ، هر یو د متن ځایونو او انځورونو غوره کولو سره. نصاب لیکونکي کولی شي ستاسو بیلګه انتخاب کړي او یو نوی کتاب جوړ کړي، یو د هرې اونۍ لپاره <g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
         <note>ID: template.starter.firstusage</note>
         <alt-trans>
@@ -20,47 +20,47 @@ There are two ways people can use your template. The first way is to start new b
       </trans-unit>
       <trans-unit id="template.starter.secondusage" approved="yes">
         <source xml:lang="en">The second way people can use templates is as source of new pages, regardless of how they started the book. For example, in some places, each book requires a page as part of a government approval process. You might make a template containing that page and give it to others in your country. Then, when people translate a shellbook, they go to the end of the book and click “Add Page”. The page you made will appear in their list of choices. Some other ideas for templates are alphabet charts, glossaries, and instructions on how to use the book in a classroom. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></source>
-        <target xml:lang="pbu" state="translated">دویمه لاره چې خلک نموني کاروي کولی شي د نوو پاڼو سرچینه وي، پرته له دې چې دوی څنګه کتاب پیل کړ. د بیلګې په توګه، په ځینو ځایونو کې، هر کتاب د حکومت د تایید بهیر پروسې یوې پاڼې ته اړتیا لري. تاسو ممکن یو داسې بیلکه چمتو کړئ چې دا پاڼه ولري او ستاسو په هیواد کې نورو ته یې ورکړئ. بیا، کله چې خلک د نورو ژبو جوړ شوی کتابونو ژباړه کوي، دوی د کتاب پای ته ځي او د "پاڼه اضافه کړئ" ته زور وکړئ. هغه پاڼه چې تاسو یې جوړه کړئ د انتخابونو په لست کې راشي. ځینې نور نظرونه د الفبا چارټونه، ګالګري، او لارښوونې دي چې په ټولګي کې کتاب څنګه کارول کیږي. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
+        <target xml:lang="pbu" state="final">دویمه لاره چې خلک نموني کاروي کولی شي د نوو پاڼو سرچینه وي، پرته له دې چې دوی څنګه کتاب پیل کړ. د بیلګې په توګه، په ځینو ځایونو کې، هر کتاب د حکومت د تایید بهیر پروسې یوې پاڼې ته اړتیا لري. تاسو ممکن یو داسې بیلکه چمتو کړئ چې دا پاڼه ولري او ستاسو په هیواد کې نورو ته یې ورکړئ. بیا، کله چې خلک د نورو ژبو جوړ شوی کتابونو ژباړه کوي، دوی د کتاب پای ته ځي او د "پاڼه اضافه کړئ" ته زور وکړئ. هغه پاڼه چې تاسو یې جوړه کړئ د انتخابونو په لست کې راشي. ځینې نور نظرونه د الفبا چارټونه، ګالګري، او لارښوونې دي چې په ټولګي کې کتاب څنګه کارول کیږي. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
         <note>ID: template.starter.secondusage</note>
       </trans-unit>
       <trans-unit id="template.starter.waystohelp" approved="yes">
         <source xml:lang="en">Making templates is just like making any other custom book; all the same controls are available for making and customizing pages. But since you will probably be sharing with other people, there are a number of things you can do to help users of your template:</source>
-        <target xml:lang="pbu" state="translated">نمونه جوړول د نورو دودیزو کتاب جوړولو په څیر دي؛ ټول ورته کنټرولونه د مخونو جوړولو او له خپلې خوښې سره د پاڼو برابرول لپاره شته دي. مګر له دې امله چې تاسو به د نورو خلکو سره شریک وئ، هلته د دې نموني کاروونکو سره د مرستې لپاره یو شمیر شیان شتون لري:</target>
+        <target xml:lang="pbu" state="final">نمونه جوړول د نورو دودیزو کتاب جوړولو په څیر دي؛ ټول ورته کنټرولونه د مخونو جوړولو او له خپلې خوښې سره د پاڼو برابرول لپاره شته دي. مګر له دې امله چې تاسو به د نورو خلکو سره شریک وئ، هلته د دې نموني کاروونکو سره د مرستې لپاره یو شمیر شیان شتون لري:</target>
         <note>ID: template.starter.waystohelp</note>
       </trans-unit>
       <trans-unit id="template.starter.labelpages" approved="yes">
         <source xml:lang="en">Label Your Pages</source>
-        <target xml:lang="pbu" state="translated">خپل پاڼې لیبل کړئ</target>
+        <target xml:lang="pbu" state="final">خپل پاڼې لیبل کړئ</target>
         <note>ID: template.starter.labelpages</note>
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage" approved="yes">
         <source xml:lang="en">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</source>
-        <target xml:lang="pbu" state="translated">کله چې تاسو خپل بیلګی ته پاڼې اضافه کړئ، ډاډ ترلاسه کړئ چې هر یوی ته کټور لیبل ورکړئ<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
+        <target xml:lang="pbu" state="final">کله چې تاسو خپل بیلګی ته پاڼې اضافه کړئ، ډاډ ترلاسه کړئ چې هر یوی ته کټور لیبل ورکړئ<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
         <note>ID: template.starter.labeleachpage</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails" approved="yes">
         <source xml:lang="en">Check Your Thumbnails</source>
-        <target xml:lang="pbu" state="translated">خپل وړوکی انځورونه وګورئ</target>
+        <target xml:lang="pbu" state="final">خپل وړوکی انځورونه وګورئ</target>
         <note>ID: template.starter.thumbnails</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails.onlyonce" approved="yes">
         <source xml:lang="en">To speed things up, Bloom only makes this thumbnail once, and stores it in the "template" subdirectory of your template:</source>
-        <target xml:lang="pbu" state="translated">د شیانو د چټکولو لپاره، بلوم یوازې یو ځل دا وړوکی انځور جوړوي، او دا د ستاسو د سانچہ "نمونه" فرعي پوښتی کې ساتي:</target>
+        <target xml:lang="pbu" state="final">د شیانو د چټکولو لپاره، بلوم یوازې یو ځل دا وړوکی انځور جوړوي، او دا د ستاسو د سانچہ "نمونه" فرعي پوښتی کې ساتي:</target>
         <note>ID: template.starter.thumbnails.onlyonce</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails.update" approved="yes">
         <source xml:lang="en">If you later make a change to the page, the thumbnail will be out of date. To fix that, click the "Add Page" button, and Bloom will regenerate those thumbnails. If the automatically generated thumbnail doesn't convey the purpose of the page, you can make your own. Just make sure to mark the file as "Read Only" so that Bloom doesn't overwrite it. You can also make your thumbnails as svgs, if you like (that's what we do for templates we ship with Bloom).  In any case, make sure to click "Add Page" at least once before distributing your template, so that all the thumbnails are already generated.</source>
-        <target xml:lang="pbu" state="translated">که تاسو وروسته په پاڼه کې بدلون راولی، نو د وړوکی انځور تاریخ به تیر وي. د دې د حل کولو لپاره، "پاڼه اضافه کړئ" باندی زور وکړئ، او بلوم به هغه وړوکی انځورونه بیا تکرار کړي. که په اتوماتيک ډول جوړ شوی وړوکې انځور د پاڼې موخه یې ونښوده، تاسو کولی شئ د خپل ځان لپاره جوړ کړئ. بس ځان ډاډه کړئ چې دوسیه د "یواځې لوستل" نښه کړئ ځکه چې بلوم پر دی بیا لیکنه ونه کوي. تاسو کولی شئ خپلی بیلګی د svgs په توګه هم ثبت کړئ، که تاسو غواړئ (دا هغه څه دي چې موږ یې د بیلګو لپاره کوو کوم چي د بلوم سره لیږدول کیږي). په هر حالت کې، ډاډ ترلاسه کړئ چې لږترلږه یوځل په "پاڼه اضافه کړئ" باندی زور وکړی مخکی له دی چي خپل نموني وویشئ، ترڅو ټول وړوکي انځورونونه مخکې له مخکې تولید شي.</target>
+        <target xml:lang="pbu" state="final">که تاسو وروسته په پاڼه کې بدلون راولی، نو د وړوکی انځور تاریخ به تیر وي. د دې د حل کولو لپاره، "پاڼه اضافه کړئ" باندی زور وکړئ، او بلوم به هغه وړوکی انځورونه بیا تکرار کړي. که په اتوماتيک ډول جوړ شوی وړوکې انځور د پاڼې موخه یې ونښوده، تاسو کولی شئ د خپل ځان لپاره جوړ کړئ. بس ځان ډاډه کړئ چې دوسیه د "یواځې لوستل" نښه کړئ ځکه چې بلوم پر دی بیا لیکنه ونه کوي. تاسو کولی شئ خپلی بیلګی د svgs په توګه هم ثبت کړئ، که تاسو غواړئ (دا هغه څه دي چې موږ یې د بیلګو لپاره کوو کوم چي د بلوم سره لیږدول کیږي). په هر حالت کې، ډاډ ترلاسه کړئ چې لږترلږه یوځل په "پاڼه اضافه کړئ" باندی زور وکړی مخکی له دی چي خپل نموني وویشئ، ترڅو ټول وړوکي انځورونونه مخکې له مخکې تولید شي.</target>
         <note>ID: template.starter.thumbnails.update</note>
       </trans-unit>
       <trans-unit id="template.starter.document" approved="yes">
         <source xml:lang="en">Document Your Template</source>
-        <target xml:lang="pbu" state="translated">خپل نمونه مستند کړئ</target>
+        <target xml:lang="pbu" state="final">خپل نمونه مستند کړئ</target>
         <note>ID: template.starter.document</note>
       </trans-unit>
       <trans-unit id="template.starter.describeyours" approved="yes">
         <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
-        <target xml:lang="pbu" state="translated">همدا رنګه د خپل نمونی د تفصیل اضافه کولو په هکله فکر وکړئ، لکه څنګه چې اوس تاسو یو لولئ. د دې کولو لپاره، د متن دوسیه ته د ستاسو د نمونو په پوښتي کې <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> نوم ورکړئ. دا دوسیه باید <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/"> د نښه کولو معیارتعقیب کړي</g>. په نورو ژبو کې ستاسو لارښوونې چمتو کولو لپاره، د هغه دوسیې نسخه جوړ کړئ چې د هری ژبې د دوو لیکو کوډ کې "en" بدلوي. د مثال په توګه <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> به هغه وخت وښودل شي چې بلوم په فرانسوی کې لیبلونه وټاکي. تاسو کولی شئ د پردې انځورونه شامل کړئ، لکه څنګه چې موږ په دې سند کې لرو. هر هغه انځورونه چې تاسو یې کاروئ د "ReadMeImages" په نامه یوی پوښتی کې ځای ورکړئ، ترڅو انځورونه د دې په څیر حواله شي:</target>
+        <target xml:lang="pbu" state="final">همدا رنګه د خپل نمونی د تفصیل اضافه کولو په هکله فکر وکړئ، لکه څنګه چې اوس تاسو یو لولئ. د دې کولو لپاره، د متن دوسیه ته د ستاسو د نمونو په پوښتي کې <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> نوم ورکړئ. دا دوسیه باید <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/"> د نښه کولو معیارتعقیب کړي</g>. په نورو ژبو کې ستاسو لارښوونې چمتو کولو لپاره، د هغه دوسیې نسخه جوړ کړئ چې د هری ژبې د دوو لیکو کوډ کې "en" بدلوي. د مثال په توګه <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> به هغه وخت وښودل شي چې بلوم په فرانسوی کې لیبلونه وټاکي. تاسو کولی شئ د پردې انځورونه شامل کړئ، لکه څنګه چې موږ په دې سند کې لرو. هر هغه انځورونه چې تاسو یې کاروئ د "ReadMeImages" په نامه یوی پوښتی کې ځای ورکړئ، ترڅو انځورونه د دې په څیر حواله شي:</target>
         <note>ID: template.starter.describeyours</note>
         <alt-trans>
           <target xml:lang="pbu">همدا رنګه د خپل نمونی د تفصیل اضافه کولو په هکله فکر وکړئ، لکه څنګه چې اوس تاسو یو لولئ. د دې کولو لپاره، د متن دوسیه ته د ستاسو د نمونو په پوښتي کې <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> نوم ورکړئ. دا دوسیه باید <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/"> د نښه کولو معیارتعقیب کړي</g>. په نورو ژبو کې ستاسو لارښوونې چمتو کولو لپاره، د هغه دوسیې نسخه جوړ کړئ چې د هری ژبې د دوو لیکو کوډ کې "en" بدلوي. د مثال په توګه <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> به هغه وخت وښودل شي چې بلوم په فرانسوی کې لیبلونه وټاکي. تاسو کولی شئ د پردې انځورونه شامل کړئ، لکه څنګه چې موږ په دې سند کې لرو. هر هغه انځورونه چې تاسو یې کاروئ د "ReadMeImages" په نامه یوی پوښتی کې ځای ورکړئ، ترڅو انځورونه د دې په څیر حواله شي:</target>
@@ -68,7 +68,7 @@ There are two ways people can use your template. The first way is to start new b
       </trans-unit>
       <trans-unit id="template.starter.thumbnailsshown" approved="yes">
         <source xml:lang="en">When the Add Page dialog box shows your template pages, it will show a thumbnail:</source>
-        <target xml:lang="pbu" state="translated">کله چې د د ډیالوګ مخ چوکات ریات کړئ (Add Page dialog) ستاسو نمونه پاڼو ښکارندوی کوي، دا به د یو وړوکي انځور ښودنه وکړي:</target>
+        <target xml:lang="pbu" state="final">کله چې د د ډیالوګ مخ چوکات ریات کړئ (Add Page dialog) ستاسو نمونه پاڼو ښکارندوی کوي، دا به د یو وړوکي انځور ښودنه وکړي:</target>
         <note>ID: template.starter.thumbnailsshown</note>
         <alt-trans>
           <target xml:lang="pbu">کله چې د د ډیالوګ مخ چوکات ریات کړئ (Add Page dialog) ستاسو نمونه پاڼو ښکارندوی کوي، دا به د یو وړوکي انځور ښودنه وکړي:
@@ -77,27 +77,27 @@ There are two ways people can use your template. The first way is to start new b
       </trans-unit>
       <trans-unit id="template.starter.share" approved="yes">
         <source xml:lang="en">Share Your Template</source>
-        <target xml:lang="pbu" state="translated">خپل بیلګه شریک کړئ</target>
+        <target xml:lang="pbu" state="final">خپل بیلګه شریک کړئ</target>
         <note>ID: template.starter.share</note>
       </trans-unit>
       <trans-unit id="template.starter.share.publish" approved="yes">
         <source xml:lang="en">Remember that Bloom is about planting seeds, about sharing. So plan to share your template on the BloomLibrary for people around the world to find. This takes just a few clicks in the Publish Tab.</source>
-        <target xml:lang="pbu" state="translated">په ياد ولرئ چې بلوم د شراکت د تخم کرلو، په اړه دي. له دې امله د ستاسو د نموني شریکول د نړۍ په ګوټ ګوټ کې د BloomLibrary له لاری دخلکو لپاره چي پیدایی کړي پلان کړئ. دا د خپرېدو ټب (Publish Tab) کې یوازې د څو کلیکونو خبر ده.</target>
+        <target xml:lang="pbu" state="final">په ياد ولرئ چې بلوم د شراکت د تخم کرلو، په اړه دي. له دې امله د ستاسو د نموني شریکول د نړۍ په ګوټ ګوټ کې د BloomLibrary له لاری دخلکو لپاره چي پیدایی کړي پلان کړئ. دا د خپرېدو ټب (Publish Tab) کې یوازې د څو کلیکونو خبر ده.</target>
         <note>ID: template.starter.share.publish</note>
       </trans-unit>
       <trans-unit id="template.starter.share.bloompack" approved="yes">
         <source xml:lang="en">For local colleagues, an easy way to distribute your template is via a Bloom Pack. In the collections tab, right-click on your template's thumbnail. Choose 'Make Bloom Pack'. Save that somewhere, for example to a USB Key. Then take it to another computer, double click on the file you made, and your template will be added to the "Sources for New Books" on that computer.</source>
-        <target xml:lang="pbu" state="translated">د محلي همکارانو لپاره، ستاسو د بیلګي ویشلو اسانه لاره د بلوم کڅوړی له لارې ده. د ټولګو په ټب کې، د خپل بیلګی په وړوکې انځور باندی ښي تڼۍ کیکاږئ. د "بلوم کڅوړي جوړول" وټاکئ. د هغه یو ځای خوندي کړئ، د بیلګې په توګه په USB کی. بیا یې بل کمپیوټر ته واستئ، په هغه دوسیه کې دوه ځله زور وکړئ چې تاسو جوړه کړی، او ستاسو نمونه به په دې کمپیوټر "د نوي کتابونو سرچینې" کې اضافه شي.</target>
+        <target xml:lang="pbu" state="final">د محلي همکارانو لپاره، ستاسو د بیلګي ویشلو اسانه لاره د بلوم کڅوړی له لارې ده. د ټولګو په ټب کې، د خپل بیلګی په وړوکې انځور باندی ښي تڼۍ کیکاږئ. د "بلوم کڅوړي جوړول" وټاکئ. د هغه یو ځای خوندي کړئ، د بیلګې په توګه په USB کی. بیا یې بل کمپیوټر ته واستئ، په هغه دوسیه کې دوه ځله زور وکړئ چې تاسو جوړه کړی، او ستاسو نمونه به په دې کمپیوټر "د نوي کتابونو سرچینې" کې اضافه شي.</target>
         <note>ID: template.starter.share.bloompack</note>
       </trans-unit>
       <trans-unit id="template.starter.notes" approved="yes">
         <source xml:lang="en">Notes</source>
-        <target xml:lang="pbu" state="translated">یادښتونه</target>
+        <target xml:lang="pbu" state="final">یادښتونه</target>
         <note>ID: template.starter.notes</note>
       </trans-unit>
-      <trans-unit id="template.starter.nothingautomatic">
+      <trans-unit id="template.starter.nothingautomatic" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
-        <target xml:lang="pbu" state="translated"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: دا کتابونه به وروسته د راتلونکی فولیو(Folio) د ځانګړتیاوو په کارولو سره ګډ شي. يادونه: چې بلوم تر اوسه تاسو ته داسې لار نه ده درښودلې چې يوه پاڼه بايد په اوتومات ډول په نوي کتابونو کې شامل شي؛ لیکوال باید د اضافې مخ ډیالوګ (Add Page dialog) څخه هر یو اضافه کړي.</target>
+        <target xml:lang="pbu" state="final"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: دا کتابونه به وروسته د راتلونکی فولیو(Folio) د ځانګړتیاوو په کارولو سره ګډ شي. يادونه: چې بلوم تر اوسه تاسو ته داسې لار نه ده درښودلې چې يوه پاڼه بايد په اوتومات ډول په نوي کتابونو کې شامل شي؛ لیکوال باید د اضافې مخ ډیالوګ (Add Page dialog) څخه هر یو اضافه کړي.</target>
         <note>ID: template.starter.nothingautomatic</note>
         <alt-trans>
           <target xml:lang="pbu">
@@ -150,9 +150,9 @@ There are two ways people can use your template. The first way is to start new b
 <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: دا کتابونه به وروسته د راتلونکی فولیو(Folio) د ځانګړتیاوو په کارولو سره ګډ شي. يادونه: چې بلوم تر اوسه تاسو ته داسې لار نه ده درښودلې چې يوه پاڼه بايد په اوتومات ډول په نوي کتابونو کې شامل شي؛ لیکوال باید د اضافې مخ ډیالوګ (Add Page dialog) څخه هر یو اضافه کړي.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.nametonotaddpage">
+      <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
-        <target xml:lang="pbu" state="translated"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: که تاسو نه غواړئ چې ستاسو د نمونو پاڼی د اضافې مخ ډیالوګ (Add Page Dialogue) کې ښکاره شي، تاسو کولی شئ دا بلوم ته د کتاب نمونه کی د فایل جوړولو له لاری چي د NotForAddPage.txt په نوم یادیږي جوړ کړئ.</target>
+        <target xml:lang="pbu" state="final"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: که تاسو نه غواړئ چې ستاسو د نمونو پاڼی د اضافې مخ ډیالوګ (Add Page Dialogue) کې ښکاره شي، تاسو کولی شئ دا بلوم ته د کتاب نمونه کی د فایل جوړولو له لاری چي د NotForAddPage.txt په نوم یادیږي جوړ کړئ.</target>
         <note>ID: template.starter.nametonotaddpage</note>
         <alt-trans>
           <target xml:lang="pbu">
@@ -280,9 +280,9 @@ There are two ways people can use your template. The first way is to start new b
 <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: که تاسو نه غواړئ چې ستاسو د نمونو پاڼی د اضافې مخ ډیالوګ (Add Page Dialogue) کې ښکاره شي، تاسو کولی شئ دا بلوم ته د کتاب نمونه کی د فایل جوړولو له لاری چي د NotForAddPage.txt په نوم یادیږي جوړ کړئ.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.labelsnottranslatable">
+      <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
-        <target xml:lang="pbu" state="translated"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: خلک به ونشي کولی ستاسو لیبلونه او شریحي نورو ملی ژبو ته وژباړي. که دا ستونزه وي، مهرباني وکړئ د بلوم ټیم سره اړیکه ونیسئ.</target>
+        <target xml:lang="pbu" state="final"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: خلک به ونشي کولی ستاسو لیبلونه او شریحي نورو ملی ژبو ته وژباړي. که دا ستونزه وي، مهرباني وکړئ د بلوم ټیم سره اړیکه ونیسئ.</target>
         <note>ID: template.starter.labelsnottranslatable</note>
         <alt-trans>
           <target xml:lang="pbu">
@@ -410,11 +410,14 @@ There are two ways people can use your template. The first way is to start new b
 <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: خلک به ونشي کولی ستاسو لیبلونه او شریحي نورو ملی ژبو ته وژباړي. که دا ستونزه وي، مهرباني وکړئ د بلوم ټیم سره اړیکه ونیسئ.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.editrawhtml">
+      <trans-unit id="template.starter.editrawhtml" approved="yes">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
-        <target xml:lang="pbu" state="translated"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: که تاسو غواړئ د پاڼه اضافه کړئ(Add Page) پرده هم د پاڼې لنډ تفصیل چمتو کړئ، تاسو به د بلوم څخه ووځئ او د نموني Html په Notepad کې ایډیت کړئ، لکه څنګه چې: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        <target xml:lang="pbu" state="final"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: که تاسو غواړئ پاڼه اضافه کړئ(Add Page) پرده هم د پاڼې لنډ تفصیل چمتو کړئ، تاسو به د بلوم څخه ووځئ او د نموني Html په Notepad کې ایډیت کړئ، لکه څنګه چې: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
         <alt-trans>
+          <target xml:lang="pbu"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: که تاسو غواړئ د پاڼه اضافه کړئ(Add Page) پرده هم د پاڼې لنډ تفصیل چمتو کړئ، تاسو به د بلوم څخه ووځئ او د نموني Html په Notepad کې ایډیت کړئ، لکه څنګه چې: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="pbu">
           
           
@@ -495,29 +498,6 @@ There are two ways people can use your template. The first way is to start new b
         <alt-trans>
           <target xml:lang="pbu">
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-<g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: که تاسو غواړئ د پاڼه اضافه کړئ(Add Page) پرده هم د پاڼې لنډ تفصیل چمتو کړئ، تاسو به د بلوم څخه ووځئ او د نموني Html په Notepad کې ایډیت کړئ، لکه څنګه چې: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">
           
           
           

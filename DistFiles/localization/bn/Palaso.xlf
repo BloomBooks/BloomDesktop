@@ -6,7 +6,7 @@
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
-        <target xml:lang="bn" state="translated">{0} এ নির্মিত</target>
+        <target xml:lang="bn" state="final">{0} এ নির্মিত</target>
         <alt-trans>
           <target xml:lang="bn">{0} নির্মিত</target>
         </alt-trans>
@@ -14,13 +14,13 @@
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="bn" state="translated">কোন আপডেট নেই</target>
+        <target xml:lang="bn" state="final">কোন আপডেট নেই</target>
       </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle" approved="yes">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="bn" state="translated">{0} সম্পর্কে</target>
+        <target xml:lang="bn" state="final">{0} সম্পর্কে</target>
         <alt-trans>
           <target xml:lang="bn">সম্পর্কে {0}</target>
         </alt-trans>
@@ -28,7 +28,7 @@
       <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="bn" state="translated">আপডেটের জন্য খুঁজুন</target>
+        <target xml:lang="bn" state="final">আপডেটের জন্য খুঁজুন</target>
         <alt-trans>
           <target xml:lang="bn">আপডেটের জন্য চেক করুন</target>
         </alt-trans>
@@ -36,7 +36,7 @@
       <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="bn" state="translated">রিলিজ নোট/ মুক্ত স্মারকলিপি</target>
+        <target xml:lang="bn" state="final">রিলিজ নোট/ মুক্ত স্মারকলিপি</target>
         <alt-trans>
           <target xml:lang="bn">রিলিজ  লিপি</target>
         </alt-trans>
@@ -50,7 +50,7 @@
       <trans-unit id="Application.AlreadyRunning.General" approved="yes">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.General</note>
-        <target xml:lang="bn" state="translated">অ্যাপ্লিকেশনের অন্য একটি কপি ইতিমধ্যে চলছে। যদি আপনি এটি খুঁজে না পান, আপনার কম্পিউটার রিস্টার্ট করুন।</target>
+        <target xml:lang="bn" state="final">অ্যাপ্লিকেশনের অন্য একটি কপি ইতিমধ্যে চলছে। যদি আপনি এটি খুঁজে না পান, আপনার কম্পিউটার রিস্টার্ট করুন।</target>
         <alt-trans>
           <target xml:lang="bn">অ্যাপ্লিকেশনের অন্য একটি কপি ইতোমধ্যে চলছে।যদি আপনি এটি খুঁজে না পান, আপনার কম্পিউটারে রিস্টার্ট দিন।</target>
         </alt-trans>
@@ -62,7 +62,7 @@
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="bn" state="translated">{0} এর অন্য একটি কপি ইতোমধ্যে চলছে। যদি আপনি {0} এর ঐ কপিটি খুঁজে না পান, আপনার কম্পিউটার রিস্টার্ট করুন।</target>
+        <target xml:lang="bn" state="final">{0} এর অন্য একটি কপি ইতোমধ্যে চলছে। যদি আপনি {0} এর ঐ কপিটি খুঁজে না পান, আপনার কম্পিউটার রিস্টার্ট করুন।</target>
         <alt-trans>
           <target xml:lang="bn">{0} এর অন্য একটি কপি ইতোমধ্যে চলছে।যদি আপনি {0} এর ঐ কপিটি খুঁজে না পান, আপনার কম্পিউটারে রিস্টার্ট দিন।</target>
         </alt-trans>
@@ -73,7 +73,7 @@
       <trans-unit id="Application.ProblemStarting.General" approved="yes">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
-        <target xml:lang="bn" state="translated">অ্যাপ্লিকেশনটি চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হতে পারে।</target>
+        <target xml:lang="bn" state="final">অ্যাপ্লিকেশনটি চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হতে পারে।</target>
         <alt-trans>
           <target xml:lang="bn">অ্যাপ্লিকেশনটি চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হইতে পারে।</target>
         </alt-trans>
@@ -85,7 +85,7 @@
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="bn" state="translated">{0} চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হতে পারে।</target>
+        <target xml:lang="bn" state="final">{0} চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হতে পারে।</target>
         <alt-trans>
           <target xml:lang="bn">{0} চালু হতে সমস্যা হয়েছিল তাই আপনার কম্পিউটারটি রিস্টার্ট করার প্রয়োজন হইতে পারে।</target>
         </alt-trans>
@@ -96,7 +96,7 @@
       <trans-unit id="Application.WaitingFinish.General" approved="yes">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
-        <target xml:lang="bn" state="translated">অন্যান্য অ্যাপ্লিকেশন শেষ হওয়ার অপেক্ষা...</target>
+        <target xml:lang="bn" state="final">অন্যান্য অ্যাপ্লিকেশন শেষ হওয়ার অপেক্ষা...</target>
         <alt-trans>
           <target xml:lang="bn">অন্যান্য অ্যাপ্লিকেশন শেষ হতে অপেক্ষা...</target>
         </alt-trans>
@@ -105,7 +105,7 @@
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="bn" state="translated">অন্যান্য {0} শেষ হওয়ার অপেক্ষা...</target>
+        <target xml:lang="bn" state="final">অন্যান্য {0} শেষ হওয়ার অপেক্ষা...</target>
         <alt-trans>
           <target xml:lang="bn">অন্যান্য {0} শেষ হতে অপেক্ষা...</target>
         </alt-trans>
@@ -113,12 +113,12 @@
       <trans-unit id="Common.AbortButton" approved="yes">
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
-        <target xml:lang="bn" state="translated">&amp;বাদ দিন</target>
+        <target xml:lang="bn" state="final">&amp;বাদ দিন</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="bn" state="translated">&amp;বাতিল</target>
+        <target xml:lang="bn" state="final">&amp;বাতিল</target>
         <alt-trans>
           <target xml:lang="bn">&amp;এবং বাতিল</target>
         </alt-trans>
@@ -129,7 +129,7 @@
       <trans-unit id="Common.IgnoreButton" approved="yes">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="bn" state="translated">&amp;উপেক্ষা করুন</target>
+        <target xml:lang="bn" state="final">&amp;উপেক্ষা করুন</target>
         <alt-trans>
           <target xml:lang="bn">&amp;অগ্রাহ্য করা</target>
         </alt-trans>
@@ -143,22 +143,22 @@
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="bn" state="translated">না</target>
+        <target xml:lang="bn" state="final">না</target>
       </trans-unit>
       <trans-unit id="Common.NoButton" approved="yes">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
-        <target xml:lang="bn" state="translated">&amp;না</target>
+        <target xml:lang="bn" state="final">&amp;না</target>
       </trans-unit>
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="bn" state="translated">&amp;ঠিক আছে</target>
+        <target xml:lang="bn" state="final">&amp;ঠিক আছে</target>
       </trans-unit>
       <trans-unit id="Common.RetryButton" approved="yes">
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
-        <target xml:lang="bn" state="translated">&amp;পুনরায় করুন</target>
+        <target xml:lang="bn" state="final">&amp;পুনরায় করুন</target>
         <alt-trans>
           <target xml:lang="bn">&amp; আরেকবার চেষ্টা করুন</target>
         </alt-trans>
@@ -166,12 +166,12 @@
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
-        <target xml:lang="bn" state="translated">হ্যাঁ</target>
+        <target xml:lang="bn" state="final">হ্যাঁ</target>
       </trans-unit>
       <trans-unit id="Common.YesButton" approved="yes">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="bn" state="translated">&amp;হ্যাঁ</target>
+        <target xml:lang="bn" state="final">&amp;হ্যাঁ</target>
         <alt-trans>
           <target xml:lang="bn">&amp;হ্যা</target>
         </alt-trans>
@@ -180,8 +180,11 @@
         <source xml:lang="en">RFC5646 code:</source>
         <note>ID: CustomIdentifierView.betterLabel1</note>
         <note>label describes the code for a custom identifier. Translate only 'code'</note>
-        <target xml:lang="bn" state="translated">
+        <target xml:lang="bn" state="translated">আরএফসি 5646 কোড</target>
+        <alt-trans>
+          <target xml:lang="bn">
 আরএফসি 5646 কোড</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CustomIdentifierView.linkLabel1">
         <source xml:lang="en">Read about language identifiers on the web</source>
@@ -193,23 +196,23 @@
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
-        <target xml:lang="bn" state="translated">{0} রিসাইকেল বিনে স্থানান্তরিত হবে।</target>
+        <target xml:lang="bn" state="final">{0} রিসাইকেল বিনে স্থানান্তরিত হবে।</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Param {0} is a file name</note>
-        <target xml:lang="bn" state="translated">{0} রিসাইকেল বিনে স্থানান্তরিত হবে।</target>
+        <target xml:lang="bn" state="final">{0} রিসাইকেল বিনে স্থানান্তরিত হবে।</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Confirm Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
-        <target xml:lang="bn" state="translated">মুছে দেওয়া নিশ্চিত করুন</target>
+        <target xml:lang="bn" state="final">মুছে দেওয়া নিশ্চিত করুন</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="bn" state="translated">&amp;বাতিল</target>
+        <target xml:lang="bn" state="final">&amp;বাতিল</target>
         <alt-trans>
           <target xml:lang="bn">&amp;এবং বাতিল</target>
         </alt-trans>
@@ -220,13 +223,13 @@
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn" approved="yes">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="bn" state="translated">&amp;মুছে দিন</target>
+        <target xml:lang="bn" state="final">&amp;মুছে দিন</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages" approved="yes">
         <source xml:lang="en">Found {0} images with names close to “{1}”</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
-        <target xml:lang="bn" state="translated">{1} এর কাছাকাছি নামের {0} ছবি পাওয়া গিয়েছে</target>
+        <target xml:lang="bn" state="final">{1} এর কাছাকাছি নামের {0} ছবি পাওয়া গিয়েছে</target>
         <alt-trans>
           <target xml:lang="bn">{1} এর কাছাকাছি নামের {0} ছবি পাওয়া গেছে</target>
         </alt-trans>
@@ -237,7 +240,7 @@
       <trans-unit id="ImageToolbox.ArtOfReading" approved="yes">
         <source xml:lang="en">Art Of Reading</source>
         <note>ID: ImageToolbox.ArtOfReading</note>
-        <target xml:lang="bn" state="translated">আর্ট অফ রিডিং</target>
+        <target xml:lang="bn" state="final">আর্ট অফ রিডিং</target>
         <alt-trans>
           <target xml:lang="bn">আর্ট অফ রিডিং/ পড়ার শৈলী/ধরন</target>
         </alt-trans>
@@ -245,13 +248,13 @@
       <trans-unit id="ImageToolbox.Camera" approved="yes">
         <source xml:lang="en">Camera</source>
         <note>ID: ImageToolbox.Camera</note>
-        <target xml:lang="bn" state="translated">ক্যামেরা</target>
+        <target xml:lang="bn" state="final">ক্যামেরা</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.CopyExemplarMetadata" approved="yes">
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="bn" state="translated">{0} ব্যবহার করুন</target>
+        <target xml:lang="bn" state="final">{0} ব্যবহার করুন</target>
         <alt-trans>
           <target xml:lang="bn">{0} ব্যবহার</target>
         </alt-trans>
@@ -259,7 +262,7 @@
       <trans-unit id="ImageToolbox.Crop" approved="yes">
         <source xml:lang="en">Crop</source>
         <note>ID: ImageToolbox.Crop</note>
-        <target xml:lang="bn" state="translated">ক্রপ/ কেটে সংকোচন করুন</target>
+        <target xml:lang="bn" state="final">ক্রপ/ কেটে সংকোচন করুন</target>
         <alt-trans>
           <target xml:lang="bn">ক্রপ করা</target>
         </alt-trans>
@@ -270,12 +273,12 @@
       <trans-unit id="ImageToolbox.DownloadArtOfReading" approved="yes">
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
-        <target xml:lang="bn" state="translated">আর্ট অফ রিডিং ইনস্টলার ডাউনলোড করুন</target>
+        <target xml:lang="bn" state="final">আর্ট অফ রিডিং ইনস্টলার ডাউনলোড করুন</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EditMetadataLink" approved="yes">
         <source xml:lang="en">Edit...</source>
         <note>ID: ImageToolbox.EditMetadataLink</note>
-        <target xml:lang="bn" state="translated">এডিট/ সম্পাদনা...</target>
+        <target xml:lang="bn" state="final">এডিট/ সম্পাদনা...</target>
         <alt-trans>
           <target xml:lang="bn">এডিট</target>
         </alt-trans>
@@ -290,7 +293,7 @@
         <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
-        <target xml:lang="bn" state="translated">আপনি যা অনুসন্ধান করছেন তা উপরের বাক্সে লিখুন এবং এন্টার/ENTER টিপুন।</target>
+        <target xml:lang="bn" state="final">আপনি যা অনুসন্ধান করছেন তা উপরের বাক্সে লিখুন এবং এন্টার/ENTER টিপুন।</target>
         <alt-trans>
           <target xml:lang="bn">আপনি যা অনুসন্ধান করছেন তা উপরের বাক্সে লিখুন এবং এন্টার করুন।</target>
         </alt-trans>
@@ -304,18 +307,18 @@
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
-        <target xml:lang="bn" state="translated">ফাইল</target>
+        <target xml:lang="bn" state="final">ফাইল</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileChooserTitle" approved="yes">
         <source xml:lang="en">Choose Picture File</source>
         <note>ID: ImageToolbox.FileChooserTitle</note>
         <note>Title shown for a file chooser dialog brought up by the ImageToolbox</note>
-        <target xml:lang="bn" state="translated">ছবির ফাইল পছন্দ করুন</target>
+        <target xml:lang="bn" state="final">ছবির ফাইল পছন্দ করুন</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Galleries" approved="yes">
         <source xml:lang="en">Galleries</source>
         <note>ID: ImageToolbox.Galleries</note>
-        <target xml:lang="bn" state="translated">ছবি সংগ্রহালয়</target>
+        <target xml:lang="bn" state="final">ছবি সংগ্রহালয়</target>
         <alt-trans>
           <target xml:lang="bn">ছবি প্রদর্শনী</target>
         </alt-trans>
@@ -323,7 +326,7 @@
       <trans-unit id="ImageToolbox.GenericGettingImageProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
         <note>ID: ImageToolbox.GenericGettingImageProblem</note>
-        <target xml:lang="bn" state="translated">দুঃখিত, ইমেজটি নেওয়ার সময় কোনকিছুর ত্রুটি হয়েছিল।</target>
+        <target xml:lang="bn" state="final">দুঃখিত, ইমেজটি নেওয়ার সময় কোনকিছুর ত্রুটি হয়েছিল।</target>
         <alt-trans>
           <target xml:lang="bn">ক্ষমা করুন, ইমেজটি নেওয়ার সময় কোনকিছুর ত্রুটি হয়েছিল।</target>
         </alt-trans>
@@ -334,7 +337,7 @@
       <trans-unit id="ImageToolbox.GenericProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
-        <target xml:lang="bn" state="translated">দুঃখিত, ইমেজ টুলবক্সের সাথে কোনকিছুর ত্রুটি হয়েছিল।</target>
+        <target xml:lang="bn" state="final">দুঃখিত, ইমেজ টুলবক্সের সাথে কোনকিছুর ত্রুটি হয়েছিল।</target>
         <alt-trans>
           <target xml:lang="bn">ক্ষমা করুন, ইমেজ টুলবক্সের সাথে কোনকিছুর ত্রুটি হয়েছিল।</target>
         </alt-trans>
@@ -345,12 +348,12 @@
       <trans-unit id="ImageToolbox.GetPicture" approved="yes">
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
-        <target xml:lang="bn" state="translated">ছবি নিন</target>
+        <target xml:lang="bn" state="final">ছবি নিন</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageGalleries" approved="yes">
         <source xml:lang="en">Image Galleries</source>
         <note>ID: ImageToolbox.ImageGalleries</note>
-        <target xml:lang="bn" state="translated">ফটো সংগ্রহালয়</target>
+        <target xml:lang="bn" state="final">ফটো সংগ্রহালয়</target>
         <alt-trans>
           <target xml:lang="bn">ফটো প্রদর্শনী</target>
         </alt-trans>
@@ -358,18 +361,18 @@
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle" approved="yes">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="bn" state="translated">ইমেজ টুলবক্স</target>
+        <target xml:lang="bn" state="final">ইমেজ টুলবক্স</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.InstallArtOfReading" approved="yes">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
         <note>ID: ImageToolbox.InstallArtOfReading</note>
-        <target xml:lang="bn" state="translated">আর্ট অফ রিডিং প্যাকেজ ইনস্টল করুন (এটি খুব ধীর গতির হতে পারে)</target>
+        <target xml:lang="bn" state="final">আর্ট অফ রিডিং প্যাকেজ ইনস্টল করুন (এটি খুব ধীর গতির হতে পারে)</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.MatchingImages" approved="yes">
         <source xml:lang="en">Found {0} images</source>
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
-        <target xml:lang="bn" state="translated">{0} ইমেজ/ ছবি পাওয়া গিয়েছে</target>
+        <target xml:lang="bn" state="final">{0} ইমেজ/ ছবি পাওয়া গিয়েছে</target>
         <alt-trans>
           <target xml:lang="bn">{0} ইমেজ পাওয়া গেছে</target>
         </alt-trans>
@@ -381,7 +384,7 @@
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space): Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</note>
-        <target xml:lang="bn" state="translated">আপনি জানেন কি এই সংগ্রহের একটি নতুন সংস্করন এসেছে যা আপনাকে আরবী, বাংলা, চীনা, ইংরেজি, ফ্রেঞ্চ, ইন্দোনেশীয়, হিন্দি, পর্তুগীজ, স্প্যানিশ, থাই, অথবা সোয়াহিলি ভাষায় খুঁজতে সাহায্য করবে? এটি ফ্রী এবং ডাউনলোডের জন্য পাওয়া যাচ্ছে।</target>
+        <target xml:lang="bn" state="final">আপনি জানেন কি এই সংগ্রহের একটি নতুন সংস্করন এসেছে যা আপনাকে আরবী, বাংলা, চীনা, ইংরেজি, ফ্রেঞ্চ, ইন্দোনেশীয়, হিন্দি, পর্তুগীজ, স্প্যানিশ, থাই, অথবা সোয়াহিলি ভাষায় খুঁজতে সাহায্য করবে? এটি ফ্রী এবং ডাউনলোডের জন্য পাওয়া যাচ্ছে।</target>
         <alt-trans>
           <target xml:lang="bn">আপনি জানেন কি এই সংগ্রহের একটি নতুন সংস্করন এসেছে যা আপনাকে আরবী, বাংলা, চীনা, ইংরেজি, ফ্রেঞ্চ, ইন্দোনেশীয়, হিন্দি, পর্তুগীজ, স্প্যানিশ, থাই, অথবা সোয়াহিলি ভাষায় খুঁজতে সাহায্য করবে? এটি ফ্রী এবং ডাউনলোডের জন্য পাওয়া যাইতেছে
 </target>
@@ -390,7 +393,7 @@
       <trans-unit id="ImageToolbox.NoArtOfReading" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
-        <target xml:lang="bn" state="translated">এখন পর্যন্ত এই কম্পিউটারে 'আর্ট অফ রিডিং' গ্যালারি ইনস্টল করা হয়নি বলে মনে হচ্ছে।</target>
+        <target xml:lang="bn" state="final">এখন পর্যন্ত এই কম্পিউটারে 'আর্ট অফ রিডিং' গ্যালারি ইনস্টল করা হয়নি বলে মনে হচ্ছে।</target>
         <alt-trans>
           <target xml:lang="bn">এখন পর্যন্ত এই কম্পিউটারে 'আর্ট অফ রিডিং' গ্যালারি ইনস্টল করা হয়নি বলে মনে হইতেছে।</target>
         </alt-trans>
@@ -401,7 +404,7 @@
       <trans-unit id="ImageToolbox.NoGalleries" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
         <note>ID: ImageToolbox.NoGalleries</note>
-        <target xml:lang="bn" state="translated">এই কম্পিউটারে এখন পর্যন্ত ছবি সংগ্রহালয় প্রতিস্থাপন হয়নি মনে হয়।</target>
+        <target xml:lang="bn" state="final">এই কম্পিউটারে এখন পর্যন্ত ছবি সংগ্রহালয় প্রতিস্থাপন হয়নি মনে হয়।</target>
         <alt-trans>
           <target xml:lang="bn">এই কম্পিউটারে এখন পর্যন্ত ছবি প্রদর্শনী প্রতিস্থাপন হয়নি মনে হয়।</target>
         </alt-trans>
@@ -412,7 +415,7 @@
       <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
         <note>ID: ImageToolbox.NoMatchingImages</note>
-        <target xml:lang="bn" state="translated">কোন সমজাতীয় ইমেজ/ছবি পাওয়া যায়নি</target>
+        <target xml:lang="bn" state="final">কোন সমজাতীয় ইমেজ/ছবি পাওয়া যায়নি</target>
         <alt-trans>
           <target xml:lang="bn">কোন ম্যাচ করা ইমেজ পাওয়া যায়নি</target>
         </alt-trans>
@@ -421,12 +424,12 @@
         <source xml:lang="en">picture files</source>
         <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
-        <target xml:lang="bn" state="translated">ছবির ফাইলসমূহ</target>
+        <target xml:lang="bn" state="final">ছবির ফাইলসমূহ</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice" approved="yes">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="bn" state="translated">ইমেজ/ছবি পেতে সমস্যা</target>
+        <target xml:lang="bn" state="final">ইমেজ/ছবি পেতে সমস্যা</target>
         <alt-trans>
           <target xml:lang="bn">ইমেজ পেতে সমস্যা হইতেছে</target>
         </alt-trans>
@@ -437,7 +440,7 @@
       <trans-unit id="ImageToolbox.ProblemLoadingImage" approved="yes">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <note>ID: ImageToolbox.ProblemLoadingImage</note>
-        <target xml:lang="bn" state="translated">দুঃখিত, ইমেজ/ ছবি লোড হতে সমস্যা হচ্ছিল।</target>
+        <target xml:lang="bn" state="final">দুঃখিত, ইমেজ/ ছবি লোড হতে সমস্যা হচ্ছিল।</target>
         <alt-trans>
           <target xml:lang="bn">দুঃখিত, ইমেজ লোড হতে সমস্যা হচ্ছিল।</target>
         </alt-trans>
@@ -445,7 +448,7 @@
       <trans-unit id="ImageToolbox.PromptForMissingMetadata" approved="yes">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
-        <target xml:lang="bn" state="translated">এই ইমেজটি/ ছবিটি জানে না যে:\n\nকে এটি তৈরি করেছিল?\nকে এটি ব্যবহার করতে পারবে?</target>
+        <target xml:lang="bn" state="final">এই ইমেজটি/ ছবিটি জানে না যে:\n\nকে এটি তৈরি করেছিল?\nকে এটি ব্যবহার করতে পারবে?</target>
         <alt-trans>
           <target xml:lang="bn">এই ইমেজটি জানে না:\n\nকে এটি তৈরি করেছিল?\nকে এটি ব্যবহার করতে পারবে?</target>
         </alt-trans>
@@ -453,12 +456,12 @@
       <trans-unit id="ImageToolbox.Scanner" approved="yes">
         <source xml:lang="en">Scanner</source>
         <note>ID: ImageToolbox.Scanner</note>
-        <target xml:lang="bn" state="translated">স্ক্যানার</target>
+        <target xml:lang="bn" state="final">স্ক্যানার</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchArtOfReading" approved="yes">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
-        <target xml:lang="bn" state="translated">আর্ট অফ রিডিং গ্যালারিটি অনুসন্ধান করুন</target>
+        <target xml:lang="bn" state="final">আর্ট অফ রিডিং গ্যালারিটি অনুসন্ধান করুন</target>
         <alt-trans>
           <target xml:lang="bn">আর্ট অফ রিডিং গ্যালারিটি খোঁজ করুন।</target>
         </alt-trans>
@@ -467,19 +470,22 @@
         <source xml:lang="en">The search box is currently set to {0}</source>
         <note>ID: ImageToolbox.SearchLanguage</note>
         <note>The {0} will be replaced by the name of the language used in the searches.</note>
-        <target xml:lang="bn" state="translated">অনুসন্ধান বাক্সটি বর্তমানে {0} তে সেট করা আছে</target>
+        <target xml:lang="bn" state="final">অনুসন্ধান বাক্সটি বর্তমানে {0} তে সেট করা আছে</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SetUpMetadataLink" approved="yes">
         <source xml:lang="en">Set up metadata...</source>
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
-        <target xml:lang="bn" state="translated">মেটাডাটা সেট আপ...</target>
+        <target xml:lang="bn" state="final">মেটাডাটা সেট আপ...</target>
       </trans-unit>
       <trans-unit id="IpaIdentifierView.betterLabel1">
         <source xml:lang="en">Purpose:</source>
         <note>ID: IpaIdentifierView.betterLabel1</note>
         <note>In writing system setup when IPA special option is selected: Label for the purpose combo box</note>
-        <target xml:lang="bn" state="translated">
+        <target xml:lang="bn" state="translated">উদ্দেশ্য:</target>
+        <alt-trans>
+          <target xml:lang="bn">
 উদ্দেশ্য:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="IpaIdentifierView.linkLabel1">
         <source xml:lang="en">Read about IPA transcription on the web</source>
@@ -490,7 +496,7 @@
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
-        <target xml:lang="bn" state="translated">অন্যান্য নামসমূহ</target>
+        <target xml:lang="bn" state="final">অন্যান্য নামসমূহ</target>
         <alt-trans>
           <target xml:lang="bn">অন্যান্য নামগুলো</target>
         </alt-trans>
@@ -498,7 +504,7 @@
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2" approved="yes">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
-        <target xml:lang="bn" state="translated">এই তালিকায় আইএসও-639 ভাষাসমূহ অন্তর্ভুক্ত থাকতে হবে, যাতে অন্তর্ভুক্ত থাকবে সকল বিকল্প নামসমূহ যা ethnologue.com এর পরিচিত। \n\nপ্রয়োজন হলে, "অতালিকাভুক্ত ভাষা" অপশন/বিকল্প ব্যবহার করুন, যা আপনার জন্য এখন নির্বাচন করা হবে।</target>
+        <target xml:lang="bn" state="final">এই তালিকায় আইএসও-639 ভাষাসমূহ অন্তর্ভুক্ত থাকতে হবে, যাতে অন্তর্ভুক্ত থাকবে সকল বিকল্প নামসমূহ যা ethnologue.com এর পরিচিত। \n\nপ্রয়োজন হলে, "অতালিকাভুক্ত ভাষা" অপশন/বিকল্প ব্যবহার করুন, যা আপনার জন্য এখন নির্বাচন করা হবে।</target>
         <alt-trans>
           <target xml:lang="bn">এই তালিকায় আইএসও-639 ভাষাসমূহ অন্তর্ভুক্ত থাকতে হবে, যাতে অন্তর্ভুক্ত থাকবে সকল বিকল্প নামসমূহ যা ethnologue.com এর পরিচিত।\n\nপ্রয়োজন হলে, "অতালিকাভুক্ত ভাষা" অপশন ব্যবহার করুন, যা আপনার জন্য এখন নির্বাচন করা হবে।</target>
         </alt-trans>
@@ -510,7 +516,7 @@
         <source xml:lang="en">Ethnologue.com</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
-        <target xml:lang="bn" state="translated">Ethnologue.com</target>
+        <target xml:lang="bn" state="final">Ethnologue.com</target>
         <alt-trans>
           <target xml:lang="bn">এথনোলগ.কম</target>
         </alt-trans>
@@ -518,7 +524,7 @@
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="bn" state="translated">ভাষা 639-3 কোড &amp;amp সম্পর্কে; তা কিভাবে নতুনটির জন্য তা প্রয়োগ করা যায়</target>
+        <target xml:lang="bn" state="final">ভাষা 639-3 কোড &amp;amp সম্পর্কে; তা কিভাবে নতুনটির জন্য তা প্রয়োগ করা যায়</target>
         <alt-trans>
           <target xml:lang="bn">ভাষা 639-3 কোড &amp;amp সম্পর্কে; তা কিভাবে নতুনটির জন্য তা প্রয়োগ করা যায়</target>
         </alt-trans>
@@ -538,7 +544,7 @@
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle" approved="yes">
         <source xml:lang="en">About The ISO Language Registry</source>
         <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
-        <target xml:lang="bn" state="translated">আইএসও(ISO) ভাষা রেজিস্ট্রি/ নিবন্ধন সম্পর্কে</target>
+        <target xml:lang="bn" state="final">আইএসও(ISO) ভাষা রেজিস্ট্রি/ নিবন্ধন সম্পর্কে</target>
         <alt-trans>
           <target xml:lang="bn">আইএসও ভাষা রেজিস্ট্রি সম্পর্কে</target>
         </alt-trans>
@@ -546,13 +552,13 @@
       <trans-unit id="LanguageLookup.CodeHeader" approved="yes">
         <source xml:lang="en">Code</source>
         <note>ID: LanguageLookup.CodeHeader</note>
-        <target xml:lang="bn" state="translated">কোড</target>
+        <target xml:lang="bn" state="final">কোড</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryCount" approved="yes">
         <source xml:lang="en">{0} Countries</source>
         <note>ID: LanguageLookup.CountryCount</note>
         <note>Shown when there are multiple countries and it is just confusing to list them all. {0} is a count of countries.</note>
-        <target xml:lang="bn" state="translated">{0} দেশসমূহ</target>
+        <target xml:lang="bn" state="final">{0} দেশসমূহ</target>
         <alt-trans>
           <target xml:lang="bn">{0} দেশগুলি</target>
         </alt-trans>
@@ -560,12 +566,12 @@
       <trans-unit id="LanguageLookup.CountryHeader" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: LanguageLookup.CountryHeader</note>
-        <target xml:lang="bn" state="translated">দেশ</target>
+        <target xml:lang="bn" state="final">দেশ</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel" approved="yes">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
         <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
-        <target xml:lang="bn" state="translated">কিভাবে এখানে ভাষার নাম প্রদর্শিত হবে তা আপনি পরিবর্তন করতে পারবেন:</target>
+        <target xml:lang="bn" state="final">কিভাবে এখানে ভাষার নাম প্রদর্শিত হবে তা আপনি পরিবর্তন করতে পারবেন:</target>
         <alt-trans>
           <target xml:lang="bn">কিভাবে এখানে ভাষার নামসমূহ প্রদর্শিত হবে তা আপনি পরিবর্তন করতে পারবেন:</target>
         </alt-trans>
@@ -573,7 +579,7 @@
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle" approved="yes">
         <source xml:lang="en">Lookup Language Code...</source>
         <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
-        <target xml:lang="bn" state="translated">ভাষা কোডটি দেখুন...</target>
+        <target xml:lang="bn" state="final">ভাষা কোডটি দেখুন...</target>
         <alt-trans>
           <target xml:lang="bn">ভাষা কোড খুঁজে দেখুন...</target>
         </alt-trans>
@@ -581,12 +587,12 @@
       <trans-unit id="LanguageLookup.PrimaryNameHeader" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: LanguageLookup.PrimaryNameHeader</note>
-        <target xml:lang="bn" state="translated">নাম</target>
+        <target xml:lang="bn" state="final">নাম</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel" approved="yes">
         <source xml:lang="en">Show regional dialects</source>
         <note>ID: LanguageLookup.ShowRegionalDialectsLabel</note>
-        <target xml:lang="bn" state="translated">আঞ্চলিক উপভাষা দেখান</target>
+        <target xml:lang="bn" state="final">আঞ্চলিক উপভাষা দেখান</target>
         <alt-trans>
           <target xml:lang="bn">আঞ্চলিক উপভাষা প্রদর্শন</target>
         </alt-trans>
@@ -594,12 +600,12 @@
       <trans-unit id="LanguageLookup.UnlistedLanguage" approved="yes">
         <source xml:lang="en">Unlisted Language</source>
         <note>ID: LanguageLookup.UnlistedLanguage</note>
-        <target xml:lang="bn" state="translated">অতালিকাভুক্ত ভাষা</target>
+        <target xml:lang="bn" state="final">অতালিকাভুক্ত ভাষা</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._cannotFindLanguageLink" approved="yes">
         <source xml:lang="en">Can't find your language?</source>
         <note>ID: LanguageLookup._cannotFindLanguageLink</note>
-        <target xml:lang="bn" state="translated">আপনার ভাষা খুঁজে পাচ্ছেন না?</target>
+        <target xml:lang="bn" state="final">আপনার ভাষা খুঁজে পাচ্ছেন না?</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLabel">
         <source xml:lang="en">my script variant label</source>
@@ -626,7 +632,7 @@
       <trans-unit id="MemoryWarning" approved="yes">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
         <note>ID: MemoryWarning</note>
-        <target xml:lang="bn" state="translated">দুরভাগ্যবশত , {0}–এর মেমরি স্বল্পতা দেখা দেওয়া শুরু হয়েছে, এবং খুব শীঘ্র ধীর গতির হতে পারে অথবা অন্যান্য সমস্যার সম্মুখীন হতে পারেন। আমরা পরামর্শ দেই যে আপনার সুবিধা মতো আপনি কম্পিউটারটি বন্ধ করুন এবং রিস্টার্ট করুন।</target>
+        <target xml:lang="bn" state="final">দুরভাগ্যবশত , {0}–এর মেমরি স্বল্পতা দেখা দেওয়া শুরু হয়েছে, এবং খুব শীঘ্র ধীর গতির হতে পারে অথবা অন্যান্য সমস্যার সম্মুখীন হতে পারেন। আমরা পরামর্শ দেই যে আপনার সুবিধা মতো আপনি কম্পিউটারটি বন্ধ করুন এবং রিস্টার্ট করুন।</target>
         <alt-trans>
           <target xml:lang="bn">অপ্রত্যাশিত, {0} শুরু হতে মেমরি স্বল্পতা দেখা দিয়েছে, এবং খুব শীঘ্র ধীর গতির হতে পারে অথবা অন্যান্য সমস্যার সম্মুখীন হতে পারেন।  আমরা পরামর্শ দেই যে যখন আপনার সুবিধা হবে আপনি এটি বন্ধ করুন এবং রিস্টার্ট দিন।</target>
         </alt-trans>
@@ -634,7 +640,7 @@
       <trans-unit id="MetadataDisplay.Creator" approved="yes">
         <source xml:lang="en">Creator: {0}</source>
         <note>ID: MetadataDisplay.Creator</note>
-        <target xml:lang="bn" state="translated">সৃষ্টিকারী: {0}</target>
+        <target xml:lang="bn" state="final">সৃষ্টিকারী: {0}</target>
         <alt-trans>
           <target xml:lang="bn">প্রস্তুতকারী: {0}</target>
         </alt-trans>
@@ -642,7 +648,7 @@
       <trans-unit id="MetadataDisplay.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataDisplay.CreatorLabel</note>
-        <target xml:lang="bn" state="translated">সৃষ্টিকারী</target>
+        <target xml:lang="bn" state="final">সৃষ্টিকারী</target>
         <alt-trans>
           <target xml:lang="bn">প্রস্তুতকারী</target>
         </alt-trans>
@@ -650,13 +656,13 @@
       <trans-unit id="MetadataDisplay.LicenseInfo" approved="yes">
         <source xml:lang="en">License Info</source>
         <note>ID: MetadataDisplay.LicenseInfo</note>
-        <target xml:lang="bn" state="translated">লাইসেন্সের তথ্য</target>
+        <target xml:lang="bn" state="final">লাইসেন্সের তথ্য</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="bn" state="translated">আপনাকে অবশ্যই লেখক, শিল্পী প্রমুখদের কপিরাইট এবং কৃতজ্ঞতা জানাতে করত হবে।</target>
+        <target xml:lang="bn" state="final">আপনাকে অবশ্যই লেখক, শিল্পী প্রমুখদের কপিরাইট এবং কৃতজ্ঞতা জানাতে করত হবে।</target>
         <alt-trans>
           <target xml:lang="bn">আপনাকে অবশ্যই লেখক, শিল্পী, ইত্যাদির কপিরাইট এবং কৃতজ্ঞতা প্রকাশ করতে হবে।</target>
         </alt-trans>
@@ -665,7 +671,7 @@
         <source xml:lang="en">You are free to make commercial use of this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="bn" state="translated">আপনি এই কাজটির বাণিজ্যিক ব্যবহার করতে পারেন।</target>
+        <target xml:lang="bn" state="final">আপনি এই কাজটির বাণিজ্যিক ব্যবহার করতে পারেন।</target>
         <alt-trans>
           <target xml:lang="bn">এই কাজটির বাণিজ্যিক ব্যবহারে আপনি অনুমতিপ্রাপ্ত।</target>
         </alt-trans>
@@ -674,13 +680,13 @@
         <source xml:lang="en">You may adapt and add to this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="bn" state="translated">আপনি এই কাজটি পরিবর্তন এবং যুক্ত করতে পারবেন।</target>
+        <target xml:lang="bn" state="final">আপনি এই কাজটি পরিবর্তন এবং যুক্ত করতে পারবেন।</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="bn" state="translated">আপনি এই কাজে যুক্ত এবং পরিবর্তন করতে পারবেন, কিন্তু আপনি শুধুমাত্র এটির সাথে একই অথবা অনুরূপ লাইসেন্সের অধীনে কাজে ফলাফল বিতরণ করতে পারবেন।</target>
+        <target xml:lang="bn" state="final">আপনি এই কাজে যুক্ত এবং পরিবর্তন করতে পারবেন, কিন্তু আপনি শুধুমাত্র এটির সাথে একই অথবা অনুরূপ লাইসেন্সের অধীনে কাজে ফলাফল বিতরণ করতে পারবেন।</target>
         <alt-trans>
           <target xml:lang="bn">আপনি এই কাজটি পরিবর্তন এবং যুক্ত করতে পারবেন, কিন্তু আপনি শুধুমাত্র এটির সাথে একই অথবা অনুরূপ লাইসেন্সের অধীনে ফলাফলের কাজ বিতরণ করতে পারবেন।</target>
         </alt-trans>
@@ -689,13 +695,13 @@
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="bn" state="translated">অনুমতি ব্যতীত আপনি হয়তো এই কাজটি পরিবর্তন অথবা তৈরি করতে পারবেন না।</target>
+        <target xml:lang="bn" state="final">অনুমতি ব্যতীত আপনি হয়তো এই কাজটি পরিবর্তন অথবা তৈরি করতে পারবেন না।</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not use this work for commercial purposes.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="bn" state="translated">আপনি হয়তো বা এই কাজটি বাণিজ্যিক উদ্দেশ্যে ব্যবহার করতে পারবেন না।</target>
+        <target xml:lang="bn" state="final">আপনি হয়তো বা এই কাজটি বাণিজ্যিক উদ্দেশ্যে ব্যবহার করতে পারবেন না।</target>
         <alt-trans>
           <target xml:lang="bn">আপনি হয়তো এই কাজটি বাণিজ্যিক উদ্দেশ্যে ব্যবহার করতে পারবেন না।</target>
         </alt-trans>
@@ -704,7 +710,7 @@
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="bn" state="translated">আপনি এই কাজের প্রতিলিপি করতে পারেন ও উন্নত করতে পারেন, এ ছাড়াও বিতরন করতে পারেন এমনকি ব্যানিজ্যিক উদ্দ্যেশেও, সমস্ত কিছুই কোনোরকম অনুমতি ছাড়াই করতে পারেন।</target>
+        <target xml:lang="bn" state="final">আপনি এই কাজের প্রতিলিপি করতে পারেন ও উন্নত করতে পারেন, এ ছাড়াও বিতরন করতে পারেন এমনকি ব্যানিজ্যিক উদ্দ্যেশেও, সমস্ত কিছুই কোনোরকম অনুমতি ছাড়াই করতে পারেন।</target>
         <alt-trans>
           <target xml:lang="bn">আপনি এই কাজের প্রতিলিপি করতে পারেন ও উন্নত করতে পারেন, এ ছাড়াও বিতরন করতে পারেন এমনকি ব্যানিজ্যিক 
 উদ্দেশ্যও, সমস্ত কিছুই কোনোরকম অনুমতি ছাড়াই করতে পারেন।</target>
@@ -717,32 +723,32 @@
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
         <note>ID: MetadataDisplay.Licenses.NullLicense</note>
         <note>This is used when all we have is a copyright, no other license.</note>
-        <target xml:lang="bn" state="translated">পুনর্ব্যবহারের অনুমতির জন্য, কপিরাইট ধারণকারীর সাথে যোগাযোগ করুন।</target>
+        <target xml:lang="bn" state="final">পুনর্ব্যবহারের অনুমতির জন্য, কপিরাইট ধারণকারীর সাথে যোগাযোগ করুন।</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.NoLicense" approved="yes">
         <source xml:lang="en">No license specified</source>
         <note>ID: MetadataDisplay.NoLicense</note>
-        <target xml:lang="bn" state="translated">কোন লাইসেন্স নির্ধারিত নয়</target>
+        <target xml:lang="bn" state="final">কোন লাইসেন্স নির্ধারিত নয়</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse" approved="yes">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <note>ID: MetadataEditor.AllowCommercialUse</note>
-        <target xml:lang="bn" state="translated">আপনার কাজের বাণিজ্যিক ব্যবহারের অনুমতি দিচ্ছেন কি?</target>
+        <target xml:lang="bn" state="final">আপনার কাজের বাণিজ্যিক ব্যবহারের অনুমতি দিচ্ছেন কি?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowDerivatives" approved="yes">
         <source xml:lang="en">Allow modifications of your work?</source>
         <note>ID: MetadataEditor.AllowDerivatives</note>
-        <target xml:lang="bn" state="translated">আপনার কাজের পরিবর্তনের অনুমতি দিচ্ছেন কি?</target>
+        <target xml:lang="bn" state="final">আপনার কাজের পরিবর্তনের অনুমতি দিচ্ছেন কি?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightHolder" approved="yes">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: MetadataEditor.CopyrightHolder</note>
-        <target xml:lang="bn" state="translated">কপিরাইট ধারণকারী</target>
+        <target xml:lang="bn" state="final">কপিরাইট ধারণকারী</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightYear" approved="yes">
         <source xml:lang="en">Copyright Year</source>
         <note>ID: MetadataEditor.CopyrightYear</note>
-        <target xml:lang="bn" state="translated">কপিরাইট বছর </target>
+        <target xml:lang="bn" state="final">কপিরাইট বছর </target>
         <alt-trans>
           <target xml:lang="bn">কপিরাইট বৎসর</target>
         </alt-trans>
@@ -750,7 +756,7 @@
       <trans-unit id="MetadataEditor.CreativeCommons" approved="yes">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
-        <target xml:lang="bn" state="translated">ক্রিয়েটিভ কমন্স/ সার্বজনীন ব্যবহারের জন্য</target>
+        <target xml:lang="bn" state="final">ক্রিয়েটিভ কমন্স/ সার্বজনীন ব্যবহারের জন্য</target>
         <alt-trans>
           <target xml:lang="bn">ক্রিয়েটিভ কমন্স</target>
         </alt-trans>
@@ -758,12 +764,12 @@
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental" approved="yes">
         <source xml:lang="en">Intergovernmental Version</source>
         <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
-        <target xml:lang="bn" state="translated">আন্তঃসরকারী সংস্করণ</target>
+        <target xml:lang="bn" state="final">আন্তঃসরকারী সংস্করণ</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataEditor.CreatorLabel</note>
-        <target xml:lang="bn" state="translated">সৃষ্টিকারী</target>
+        <target xml:lang="bn" state="final">সৃষ্টিকারী</target>
         <alt-trans>
           <target xml:lang="bn">প্রস্তুতকারী</target>
         </alt-trans>
@@ -771,7 +777,7 @@
       <trans-unit id="MetadataEditor.CustomLicense" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: MetadataEditor.CustomLicense</note>
-        <target xml:lang="bn" state="translated">কাস্টম/ প্রয়োজন অনুসারে পরিবর্তন</target>
+        <target xml:lang="bn" state="final">কাস্টম/ প্রয়োজন অনুসারে পরিবর্তন</target>
         <alt-trans>
           <target xml:lang="bn">কাস্টম</target>
         </alt-trans>
@@ -779,7 +785,7 @@
       <trans-unit id="MetadataEditor.License" approved="yes">
         <source xml:lang="en">License</source>
         <note>ID: MetadataEditor.License</note>
-        <target xml:lang="bn" state="translated">লাইসেন্স/ অনুমতি পত্র</target>
+        <target xml:lang="bn" state="final">লাইসেন্স/ অনুমতি পত্র</target>
         <alt-trans>
           <target xml:lang="bn">অনুজ্ঞা</target>
         </alt-trans>
@@ -795,34 +801,34 @@
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
-        <target xml:lang="bn" state="translated">কপিরাইট এবং লাইসেন্স</target>
+        <target xml:lang="bn" state="final">কপিরাইট এবং লাইসেন্স</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleWithCredit" approved="yes">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="bn" state="translated">কৃতজ্ঞতা, কপিরাইট, এবং লাইসেন্স</target>
+        <target xml:lang="bn" state="final">কৃতজ্ঞতা, কপিরাইট, এবং লাইসেন্স</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.UnknownLicense" approved="yes">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense</note>
-        <target xml:lang="bn" state="translated">যেকোনো অনুমতির জন্য কপিরাইট ধারণকারীর সাথে যোগাযোগ করুন</target>
+        <target xml:lang="bn" state="final">যেকোনো অনুমতির জন্য কপিরাইট ধারণকারীর সাথে যোগাযোগ করুন</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.YesShareAlike" approved="yes">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
-        <target xml:lang="bn" state="translated">হ্যাঁ, যতক্ষণ পর্যন্ত অন্যরা একই রকম শেয়ার করে</target>
+        <target xml:lang="bn" state="final">হ্যাঁ, যতক্ষণ পর্যন্ত অন্যরা একই রকম শেয়ার করে</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.additionalRequestsLabel" approved="yes">
         <source xml:lang="en">Additional Requests</source>
         <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
-        <target xml:lang="bn" state="translated">অতিরিক্ত অনুরোধসমূহ</target>
+        <target xml:lang="bn" state="final">অতিরিক্ত অনুরোধসমূহ</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.betterLinkLabel1" approved="yes">
         <source xml:lang="en">more info</source>
         <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
-        <target xml:lang="bn" state="translated">আরো তথ্য</target>
+        <target xml:lang="bn" state="final">আরো তথ্য</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToPublicDomainCC0">
         <source xml:lang="en">about {0} Public Domain</source>
@@ -834,7 +840,7 @@
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
-        <target xml:lang="bn" state="translated">প্রয়োগযোগ্য নয়</target>
+        <target xml:lang="bn" state="final">প্রয়োগযোগ্য নয়</target>
       </trans-unit>
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton">
         <source xml:lang="en">Cancel</source>
@@ -854,7 +860,7 @@
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
-        <target xml:lang="bn" state="translated">অনুন্নত ব্যবহারকারীদের প্রয়োজন নয় এমন বোতামসমূহ এটি লুকিয়ে রাখতে পারে।</target>
+        <target xml:lang="bn" state="final">অনুন্নত ব্যবহারকারীদের প্রয়োজন নয় এমন বোতামসমূহ এটি লুকিয়ে রাখতে পারে।</target>
         <alt-trans>
           <target xml:lang="bn">অদক্ষ ব্যবহারকারীদের প্রয়োজন নয় এমন বোতামসমূহ এটি লুকিয়ে রাখতে পারে।</target>
         </alt-trans>
@@ -862,13 +868,13 @@
       <trans-unit id="SettingsProtection.CtrlShiftHint" approved="yes">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
-        <target xml:lang="bn" state="translated">কন্ট্রোল এবং শিফট কী একসাথে চেপে ধরলে বোতামটি দৃশ্যমান হবে।</target>
+        <target xml:lang="bn" state="final">কন্ট্রোল এবং শিফট কী একসাথে চেপে ধরলে বোতামটি দৃশ্যমান হবে।</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.LauncherButtonLabel" approved="yes">
         <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
-        <target xml:lang="bn" state="translated">সেটিংস সুরক্ষা...</target>
+        <target xml:lang="bn" state="final">সেটিংস সুরক্ষা...</target>
         <alt-trans>
           <target xml:lang="bn">সেটিংস...</target>
         </alt-trans>
@@ -876,33 +882,33 @@
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox" approved="yes">
         <source xml:lang="en">Hide the button that opens settings.</source>
         <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
-        <target xml:lang="bn" state="translated">সেটিংস উন্মুক্তকারী বোতামটি লুকিয়ে রাখুন।</target>
+        <target xml:lang="bn" state="final">সেটিংস উন্মুক্তকারী বোতামটি লুকিয়ে রাখুন।</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword" approved="yes">
         <source xml:lang="en">Factory Password</source>
         <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
-        <target xml:lang="bn" state="translated">ফ্যাক্টরি পাসওয়ার্ড</target>
+        <target xml:lang="bn" state="final">ফ্যাক্টরি পাসওয়ার্ড</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation" approved="yes">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
-        <target xml:lang="bn" state="translated">দুর্ঘটনাবশত পরিবর্তন রোধে যা এই টুলটি আপনার জন্য কাজ করা বন্ধ করে দিতে পারে, এই সেটিংসসমূহ বদ্ধ করে রাখা হয়েছে।</target>
+        <target xml:lang="bn" state="final">দুর্ঘটনাবশত পরিবর্তন রোধে যা এই টুলটি আপনার জন্য কাজ করা বন্ধ করে দিতে পারে, এই সেটিংসসমূহ বদ্ধ করে রাখা হয়েছে।</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle" approved="yes">
         <source xml:lang="en">Settings Protection Password</source>
         <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
-        <target xml:lang="bn" state="translated">সেটিংস সুরক্ষা পাসওয়ার্ড</target>
+        <target xml:lang="bn" state="final">সেটিংস সুরক্ষা পাসওয়ার্ড</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox" approved="yes">
         <source xml:lang="en">Show Characters</source>
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
-        <target xml:lang="bn" state="translated">অক্ষর প্রদর্শন</target>
+        <target xml:lang="bn" state="final">অক্ষর প্রদর্শন</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice" approved="yes">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page.</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
-        <target xml:lang="bn" state="translated">এই সেটিংসসমূহের জন্য ফ্যাক্টরি পাসওয়ার্ডটি হল "{0}"।যদি আপনি এটি ভুলে যান, আপনি সবসময় {1} সহায়তা কারি পৃষ্ঠাতে যান।</target>
+        <target xml:lang="bn" state="final">এই সেটিংসসমূহের জন্য ফ্যাক্টরি পাসওয়ার্ডটি হল "{0}"।যদি আপনি এটি ভুলে যান, আপনি সবসময় {1} সহায়তা কারি পৃষ্ঠাতে যান।</target>
         <alt-trans>
           <target xml:lang="bn">এই সেটিংসসমূহের জন্য ফ্যাক্টরি পাসওয়ার্ডটি হল "{0}"।যদি আপনি এটি ভুলে যান, আপনি সবসময় {1} সহায়তা কারি পেজে যান।</target>
         </alt-trans>
@@ -922,17 +928,17 @@
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
-        <target xml:lang="bn" state="translated">সেটিংসে প্রবেশের জন্য ফ্যাক্টরি পাসওয়ার্ডটি প্রয়োজন।</target>
+        <target xml:lang="bn" state="final">সেটিংসে প্রবেশের জন্য ফ্যাক্টরি পাসওয়ার্ডটি প্রয়োজন।</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle" approved="yes">
         <source xml:lang="en">Settings Protection</source>
         <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
-        <target xml:lang="bn" state="translated">সেটিংস সুরক্ষা</target>
+        <target xml:lang="bn" state="final">সেটিংস সুরক্ষা</target>
       </trans-unit>
       <trans-unit id="ShowReleaseNotesDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
-        <target xml:lang="bn" state="translated">রিলিজ নোট/ মুক্ত স্মারকলিপি</target>
+        <target xml:lang="bn" state="final">রিলিজ নোট/ মুক্ত স্মারকলিপি</target>
         <alt-trans>
           <target xml:lang="bn">রিলিজ নোট</target>
         </alt-trans>
@@ -952,12 +958,12 @@
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="bn" state="translated">&amp;ফন্ট:</target>
+        <target xml:lang="bn" state="final">&amp;ফন্ট:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.FontNotAvailable" approved="yes">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="bn" state="translated">(নির্বাচিত ফন্টটি এই যন্ত্রে বিদ্যমান নেই। ডিফল্ট ব্যবহার করুন।)</target>
+        <target xml:lang="bn" state="final">(নির্বাচিত ফন্টটি এই যন্ত্রে বিদ্যমান নেই। ডিফল্ট ব্যবহার করুন।)</target>
         <alt-trans>
           <target xml:lang="bn">(নির্বাচিত ফন্টটি এই যন্ত্রে নেই। ডিফল্ট ব্যবহার করুন।)</target>
         </alt-trans>
@@ -965,12 +971,12 @@
       <trans-unit id="WSFontControl.RightToLeftWS" approved="yes">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="bn" state="translated">এটি একটি ডান হতে বামে লিখন পদ্ধতি।</target>
+        <target xml:lang="bn" state="final">এটি একটি ডান হতে বামে লিখন পদ্ধতি।</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
-        <target xml:lang="bn" state="translated">এবং আকার:</target>
+        <target xml:lang="bn" state="final">এবং আকার:</target>
         <alt-trans>
           <target xml:lang="bn">&amp; আকার:</target>
         </alt-trans>
@@ -978,7 +984,7 @@
       <trans-unit id="WSFontControl.TestArea" approved="yes">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="bn" state="translated">&amp; পরীক্ষা ক্ষেত্র:</target>
+        <target xml:lang="bn" state="final">&amp; পরীক্ষা ক্ষেত্র:</target>
         <alt-trans>
           <target xml:lang="bn">&amp; পরীক্ষা এলাকা:</target>
         </alt-trans>
@@ -1016,32 +1022,32 @@
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <note>ID: WSKeyboardControl.KeyboardNotListed</note>
-        <target xml:lang="bn" state="translated">আপনার যে কীবোর্ডটি প্রয়োজন তা যদি তালিকায় না থাকে, তাহলে সেট আপ করতে নীচের যথাযথ লিংকে ক্লিক করুন</target>
+        <target xml:lang="bn" state="final">আপনার যে কীবোর্ডটি প্রয়োজন তা যদি তালিকায় না থাকে, তাহলে সেট আপ করতে নীচের যথাযথ লিংকে ক্লিক করুন</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardSettingsLink" approved="yes">
         <source xml:lang="en">Windows keyboard settings</source>
         <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
-        <target xml:lang="bn" state="translated">উইন্ডোজের কীবোর্ড সেটিংস</target>
+        <target xml:lang="bn" state="final">উইন্ডোজের কীবোর্ড সেটিংস</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsAvailable" approved="yes">
         <source xml:lang="en">Available keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
-        <target xml:lang="bn" state="translated">বিদ্যমান কীবোর্ডসমূহ</target>
+        <target xml:lang="bn" state="final">বিদ্যমান কীবোর্ডসমূহ</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed" approved="yes">
         <source xml:lang="en">Previously used keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
-        <target xml:lang="bn" state="translated">পূর্বে ব্যবহৃত কীবোর্ডসমূহ</target>
+        <target xml:lang="bn" state="final">পূর্বে ব্যবহৃত কীবোর্ডসমূহ</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanConfigurationLink" approved="yes">
         <source xml:lang="en">Keyman Configuration</source>
         <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
-        <target xml:lang="bn" state="translated">কিম্যান কনফিগারেশন</target>
+        <target xml:lang="bn" state="final">কিম্যান কনফিগারেশন</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanNotInstalled" approved="yes">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="bn" state="translated">কিম্যান 5.0 অথবা পরবর্তী সংস্করণ ইনস্টল নেই।</target>
+        <target xml:lang="bn" state="final">কিম্যান 5.0 অথবা পরবর্তী সংস্করণ ইনস্টল নেই।</target>
         <alt-trans>
           <target xml:lang="bn">কিম্যান ৫.০ অথবা পরবর্তী সংস্করণ ইনস্টল নেই।</target>
         </alt-trans>
@@ -1049,17 +1055,17 @@
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel" approved="yes">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="bn" state="translated">{0} লেখা টাইপ করার জন্য &amp;কীবোর্ডটি নির্বাচন করুন</target>
+        <target xml:lang="bn" state="final">{0} লেখা টাইপ করার জন্য &amp;কীবোর্ডটি নির্বাচন করুন</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SetupKeyboards" approved="yes">
         <source xml:lang="en">Set up keyboards</source>
         <note>ID: WSKeyboardControl.SetupKeyboards</note>
-        <target xml:lang="bn" state="translated">কী –বোর্ড স্থাপনা   </target>
+        <target xml:lang="bn" state="final">কী –বোর্ড স্থাপনা   </target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="bn" state="translated">&amp;পরীক্ষা ক্ষেত্র (আপনার কীবোর্ডটি পরীক্ষা করার জন্য এই ক্ষেত্রটি ব্যবহার করুন)</target>
+        <target xml:lang="bn" state="final">&amp;পরীক্ষা ক্ষেত্র (আপনার কীবোর্ডটি পরীক্ষা করার জন্য এই ক্ষেত্রটি ব্যবহার করুন)</target>
         <alt-trans>
           <target xml:lang="bn">&amp;পরীক্ষা এলাকা (আপনার কীবোর্ডটি পরীক্ষা করার জন্য এই এলাকাটি ব্যবহার করুন)</target>
         </alt-trans>
@@ -1067,7 +1073,7 @@
       <trans-unit id="Warning" approved="yes">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
-        <target xml:lang="bn" state="translated">সতর্কতা</target>
+        <target xml:lang="bn" state="final">সতর্কতা</target>
         <alt-trans>
           <target xml:lang="bn">সাবধানবাণী</target>
         </alt-trans>
@@ -1075,17 +1081,17 @@
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption" approved="yes">
         <source xml:lang="en">Unable to connect to SLDR</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
-        <target xml:lang="bn" state="translated">এসএলডিআর এর সাথে সংযুক্ত হতে পারছে না</target>
+        <target xml:lang="bn" state="final">এসএলডিআর এর সাথে সংযুক্ত হতে পারছে না</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText" approved="yes">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
-        <target xml:lang="bn" state="translated">এই ভাষা সম্পর্কে সাম্প্রতিক তথ্য পুনরুদ্ধার করতে অ্যাপ্লিকেশনটি এসআইএল লোকাল ডাটা রিপোজিটরির সাথে সংযুক্ত হতে পারছে না।  যদি আপনি এই লেখার প্রক্রিয়াটি তৈরি করেন, ডিফল্ট সেটিংসটি ভুল হতে পারে অথবা মেয়াদ উত্তীর্ণ হতে পারে। আপনি কি নিশ্চিত যে আপনি একটি লেখার নতুন প্রক্রিয়া তৈরি করতে চান?</target>
+        <target xml:lang="bn" state="final">এই ভাষা সম্পর্কে সাম্প্রতিক তথ্য পুনরুদ্ধার করতে অ্যাপ্লিকেশনটি এসআইএল লোকাল ডাটা রিপোজিটরির সাথে সংযুক্ত হতে পারছে না।  যদি আপনি এই লেখার প্রক্রিয়াটি তৈরি করেন, ডিফল্ট সেটিংসটি ভুল হতে পারে অথবা মেয়াদ উত্তীর্ণ হতে পারে। আপনি কি নিশ্চিত যে আপনি একটি লেখার নতুন প্রক্রিয়া তৈরি করতে চান?</target>
       </trans-unit>
       <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard" approved="yes">
         <source xml:lang="en">[Missing] {0} ({1})</source>
         <note>ID: XkbKeyboardAdaptor.MissingKeyboard</note>
-        <target xml:lang="bn" state="translated">[অনুপস্থিত] {0} ({1})</target>
+        <target xml:lang="bn" state="final">[অনুপস্থিত] {0} ({1})</target>
         <alt-trans>
           <target xml:lang="bn">[Missing] {0} ({1})</target>
         </alt-trans>
