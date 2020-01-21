@@ -442,10 +442,7 @@ namespace BloomTests.Publish
 			assertThatDom.HasNoMatchForXpath("//div[@lang and @testRemoves='true']");
 		}
 
-		[Test]
-		public void RemoveUnwantedLanguageData_PreserveIfEmbeddedDivWanted()
-		{
-			var html = @"<!DOCTYPE html>
+		string kEmbeddedLangDivsHtml = @"<!DOCTYPE html>
 <html>
 <body>
 	<div class='bloom-page numberedPage customPage side-right A4Landscape bloom-monolingual' data-page='' id='ba82b94f-71ec-48f7-a1cc-a68d5765e255' testRemoves='false' lang=''>
@@ -454,6 +451,8 @@ namespace BloomTests.Publish
 				<div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto' testRemoves='false' lang='de'>
 					<div role='textbox' class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' contenteditable='true' testRemoves='false' lang='en'><p>Hello</p></div>
 					<div class='bloom-editable normal-style' role='textbox' contenteditable='true' testRemoves='true' lang='de'></div>
+					<div class='bloom-editable normal-style' role='textbox' contenteditable='true' testRemoves='true' lang='es'></div>
+					<div class='bloom-editable normal-style' role='textbox' contenteditable='true' testRemoves='true' lang='fr'></div>
 					<div class='bloom-editable normal-style' contenteditable='true' testRemoves='false' lang='z'></div>
 				</div>
 			</div>
@@ -461,32 +460,114 @@ namespace BloomTests.Publish
 	</div>
 </body>
 </html>";
-			// Check occurrences in original HTML.
-			var dom = new HtmlDom(html);
-			var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='' and contains(@class, 'bloom-page')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and contains(@class, 'bloom-translationGroup')]", 1);	// bogus value for test
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class, 'bloom-editable') and @role='textbox']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and contains(@class, 'bloom-editable') and @role='textbox']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class, 'bloom-editable') and @contenteditable='true']", 1);
 
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 5);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@testRemoves='false']", 4);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@testRemoves='true']", 1);
+		[Test]
+		public void RemoveUnwantedLanguageData_PreserveIfEmbeddedDivWanted()
+		{
+			var dom = new HtmlDom(kEmbeddedLangDivsHtml);
+			// Check occurrences in original HTML.
+			VerifyOriginalEmbeddedDivsAreAllThere(dom);
 
 			// SUT
 			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
 
 			// Check occurrences in modified HTML.
+			VerifyOnlyUnwantedEmbeddedDivsAreRemoved(dom, false);
+		}
+
+		[Test]
+		public void RemoveUnwantedLanguageData_PreserveIfEmbeddedDivWantedWithN1()
+		{
+			var dom = new HtmlDom(kEmbeddedLangDivsHtml);
+			// Check occurrences in original HTML.
+			VerifyOriginalEmbeddedDivsAreAllThere(dom);
+
+			// SUT
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, "de");
+
+			// Check occurrences in modified HTML: should be same for content page regardless of specifying national language.
+			VerifyOnlyUnwantedEmbeddedDivsAreRemoved(dom, false);
+		}
+
+		string kEmbeddedLangDivsXMatterHtml = @"<!DOCTYPE html>
+<html>
+<body>
+	<div class='bloom-page cover frontCover A4Landscape bloom-monolingual' data-page='required singleton'  data-xmatter-page='frontCover' id='ba82b94f-71ec-48f7-a1cc-a68d5765e255' testRemoves='false' lang=''>
+		<div class='marginBox'>
+			<div class='split-pane-component-inner'>
+				<div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto' testRemoves='false' lang='de'>
+					<div role='textbox' class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' contenteditable='true' testRemoves='false' lang='en'><p>Hello</p></div>
+					<div class='bloom-editable normal-style' role='textbox' contenteditable='true' testRemoves='true' lang='de'></div>
+					<div class='bloom-editable normal-style' role='textbox' contenteditable='true' testRemoves='true' lang='es'></div>
+					<div class='bloom-editable normal-style' role='textbox' contenteditable='true' testRemoves='true' lang='fr'></div>
+					<div class='bloom-editable normal-style' contenteditable='true' testRemoves='false' lang='z'></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>";
+
+		[Test]
+		public void RemoveUnwantedLanguageData_PreserveIfEmbeddedDivWantedWithXmatter()
+		{
+			var dom = new HtmlDom(kEmbeddedLangDivsXMatterHtml);
+			// Check occurrences in original HTML.
+			VerifyOriginalEmbeddedDivsAreAllThere(dom);
+
+			// SUT
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
+
+			// Check occurrences in modified HTML: nothing removed from xmatter unless national language is specified.
+			VerifyOriginalEmbeddedDivsAreAllThere(dom);
+		}
+
+
+		[Test]
+		public void RemoveUnwantedLanguageData_PreserveIfEmbeddedDivWantedWithXmatterN1()
+		{
+			var dom = new HtmlDom(kEmbeddedLangDivsXMatterHtml);
+			// Check occurrences in original HTML.
+			VerifyOriginalEmbeddedDivsAreAllThere(dom);
+
+			// SUT
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, "de");
+
+			// Check occurrences in modified HTML: German should be preserved, French and Spanish removed.
+			VerifyOnlyUnwantedEmbeddedDivsAreRemoved(dom, true);
+		}
+
+		private void VerifyOriginalEmbeddedDivsAreAllThere(HtmlDom dom)
+		{
+			var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='' and contains(@class, 'bloom-page')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and contains(@class, 'bloom-translationGroup')]", 1);	// bogus value for test
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class, 'bloom-editable') and @role='textbox']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and contains(@class, 'bloom-editable') and @role='textbox']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and contains(@class, 'bloom-editable') and @role='textbox']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and contains(@class, 'bloom-editable') and @role='textbox']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class, 'bloom-editable') and @contenteditable='true']", 1);
+
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 7);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@testRemoves='false']", 4);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@testRemoves='true']", 3);
+		}
+
+		private void VerifyOnlyUnwantedEmbeddedDivsAreRemoved(HtmlDom dom, bool isXMatterWithN1)
+		{
+			var countOfGerman = isXMatterWithN1 ? 1 : 0;
+			var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='' and contains(@class, 'bloom-page')]", 1);	// unchanged
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and contains(@class, 'bloom-translationGroup')]", 1);	// unchanged
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class, 'bloom-editable') and @role='textbox']", 1);	// unchanged
-			assertThatDom.HasNoMatchForXpath("//div[@lang='de' and contains(@class, 'bloom-editable') and @role='textbox']");	// removed
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and contains(@class, 'bloom-editable') and @role='textbox']", countOfGerman);	// removed if German not N1
+			assertThatDom.HasNoMatchForXpath("//div[@lang='es' and contains(@class, 'bloom-editable') and @role='textbox']");	// removed
+			assertThatDom.HasNoMatchForXpath("//div[@lang='fr' and contains(@class, 'bloom-editable') and @role='textbox']");	// removed
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class, 'bloom-editable') and @contenteditable='true']", 1);	// unchanged
 
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 4);	// one div[@lang] removed
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 4 + countOfGerman);	// two or three div[@lang] removed
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@testRemoves='false']", 4);
-			assertThatDom.HasNoMatchForXpath("//div[@testRemoves='true']");
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@testRemoves='true']", countOfGerman);
 		}
 	}
 }
