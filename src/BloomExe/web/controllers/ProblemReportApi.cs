@@ -200,19 +200,15 @@ namespace Bloom.web.controllers
 		public static void ShowProblemDialog(Control controlForScreenshotting, Exception exception,
 			string detailedMessage = "", string levelOfProblem="user")
 		{
+			// Before we do anything that might be "risky", put the problem in the log.
+			LogProblem(exception, detailedMessage, levelOfProblem);
 			if (_showingProblemReport)
 			{
 				// If a problem is reported when already reporting a problem, that's most likely going
 				// to be an unbounded recursion that freezes the program and prevents the original
 				// problem from being reported.  So minimally report the recursive problem and stop
 				// the recursion in its tracks.
-				var sb = new StringBuilder();
-				sb.AppendLine("RECURSIVE CALL TO ShowProblemDialog:");
-				sb.AppendLineFormat("    exception = {0}", exception.ToString());
-				if (!string.IsNullOrWhiteSpace(detailedMessage))
-					sb.AppendLineFormat("   detailed message = {0}", detailedMessage);
-				sb.AppendLineFormat("    level of problem = {0}", levelOfProblem);
-				var msg = sb.ToString();
+				const string msg = "The last call logged was a RECURSIVE CALL to ShowProblemDialog";
 				Console.Write(msg);
 				Logger.WriteEvent(msg);
 				return;	// break recursion...
@@ -262,6 +258,18 @@ namespace Bloom.web.controllers
 						_showingProblemReport = false;
 					}
 				});
+		}
+
+		private static void LogProblem(Exception exception, string detailedMessage, string levelOfProblem)
+		{
+			var sb = new StringBuilder();
+			sb.AppendLine("*** ProblemReportApi is about to report:");
+			sb.AppendLineFormat("    exception = {0}", exception.ToString());
+			if (!string.IsNullOrWhiteSpace(detailedMessage))
+				sb.AppendLineFormat("   detailed message = {0}", detailedMessage);
+			sb.AppendLineFormat("    level of problem = {0}", levelOfProblem);
+			var msg = sb.ToString();
+			Logger.WriteEvent(msg);
 		}
 
 		private static void ResetScreenshotFile()
