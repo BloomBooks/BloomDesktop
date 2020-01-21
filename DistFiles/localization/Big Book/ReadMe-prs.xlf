@@ -4,51 +4,43 @@
     <body>
       <trans-unit id="bigbook.title" approved="yes">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="prs" state="translated">درباره کتاب های بزرگ</target>
+        <target xml:lang="prs" state="final">درباره کتاب های بزرگ</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
       <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="prs" state="translated">کتاب های بزرگ برای استادان طرح ریزی شده که در دست بگیرند و درپیش صنف بخوانند. برای معلومات بیشتر، این <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF‏ را از آموزشی</g>.</target>
+        <target xml:lang="prs" state="final">کتاب های بزرگ برای استادان طرح ریزی شده که در دست بگیرند و درپیش صنف بخوانند. برای معلومات بیشتر، این <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF‏ را از آموزشی</g>.</target>
         <note>ID: bigbook.use</note>
-        <alt-trans>
-          <target xml:lang="prs">کتاب های بزرگ برای استادان طرح ریزی شده که در دست بگیرند و درپیش صنف بخوانند. برای معلومات بیشتر، این <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF را از آموزشی</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.printing" approved="yes">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="prs" state="translated">چاپ کردن یک کتاب بزرگ</target>
+        <target xml:lang="prs" state="final">چاپ کردن یک کتاب بزرگ</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
       <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="prs" state="translated">بخاطر مدیریت بهتر اشیا، این تیمپلیت به شکل افقی ‏A4‏ با نوع خط بزرگ گذاشته شده است.
+        <target xml:lang="prs" state="final">بخاطر مدیریت بهتر اشیا، این تیمپلیت به شکل افقی ‏A4‏ با نوع خط بزرگ گذاشته شده است.
 شما به آسانی میتوانید کتاب های ‏A3‏ را تولید نمایید (که دو چند بزرگتراست).
 فقط PDF ‏‏A4‏ را به یک پرنتر ببرید و ازشان بخواهید که به A3 بزرگتر سازند.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
-        <alt-trans>
-          <target xml:lang="prs">بخاطر مدیریت بهتر اشیا، این تیمپلیت به شکل افقی ‏A4‏ با نوع خط بزرگ گذاشته شده است.
-شما به آسانی میتوانید کتاب های ‏A3‏ را تولید نمایید (که دو چند بزرگتراست).
-یفقط PDF ‏‏A4‏ را به یک پرنتر ببرید و ازشان بخواهید که به A3 بزرگتر سازند.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="prs" state="translated">محدودیت های این نسخه</target>
+        <target xml:lang="prs" state="final">محدودیت های این نسخه</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="prs" state="translated">اگر شما سکرین یا صفحه خورد را استعمال میکنید، خواندن صفحه امتیاز مشکل خواهد بود. کوشش کنید که ‏CTRL‏+ تایرک موز را برای زوم کردن یا بزرګ ساختن در صفحه و ایدیت آن استعمال کنید.</target>
+        <target xml:lang="prs" state="final">اگر شما سکرین یا صفحه خورد را استعمال میکنید، خواندن صفحه امتیاز مشکل خواهد بود. کوشش کنید که ‏CTRL‏+ تایرک موز را برای زوم کردن یا بزرګ ساختن در صفحه و ایدیت آن استعمال کنید.</target>
         <note>ID: bigbook.limits.smallscreen</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="prs" state="translated">این نسخه شامل "رهنمود برای استادان" میشود صفحه که قبلآ به انګلیسی خانه پری ګردیده.
+        <target xml:lang="prs" state="final">این نسخه شامل "رهنمود برای استادان" میشود صفحه که قبلآ به انګلیسی خانه پری ګردیده.
 اگر شما میخواهید که در زبانهای مختلف رهنمود داشته باشید ، آن متن را فسخ کرده میتوانید و خودتان تایپ کرده میتوانید.
 اگر آن متن را به ما ارسال نمایید ما آنرا در نسخه بعدی تیمپلیت شامل کرده میتوانیم.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>

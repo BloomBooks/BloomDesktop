@@ -6,9 +6,6 @@
         <source xml:lang="en">Accessibility Checker</source>
         <note>ID: AccessibilityCheck.AccessibilityChecker</note>
         <target xml:lang="az" state="translated">Əlverişlilik Yoxlayıcısı</target>
-        <alt-trans>
-          <target xml:lang="az">Xüsusi İmkanlar Yoxlayıcısı</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.ACEByDaisy" sil:dynamic="true">
         <source xml:lang="en">Ace by DAISY Automated Checks</source>
@@ -48,9 +45,6 @@
         <note>ID: AccessibilityCheck.Checklist</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
         <target xml:lang="az" state="translated">Əlverişlilik Kontrol Siyahısı</target>
-        <alt-trans>
-          <target xml:lang="az">Əlverişlilik Yoxlayıcısı</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.descriptionsForAllImages" sil:dynamic="true">
         <source xml:lang="en">Descriptions for all images</source>
@@ -139,9 +133,6 @@
         <source xml:lang="en">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>
         <note>ID: BloomPackInstallDialog.BadCharsInFileName</note>
         <target xml:lang="az" state="final">Yəqin ki, bu, Bloom Pack-ın fayl adlarının xüsusi simvollarını oxumaq xüsusiyyətinə malik olmasından öncə yaradılmış Bloom Pack-ın köhnə versiyasıdır.  Siz cari versiyanı istifadə edərək, yeni fayl yaratmaq üçün müəllifdən kömək əldə edə bilərsiniz. Bu mümkün deyilsə, texniki ekspert vəziyyəti bərpa edə bilər.</target>
-        <alt-trans>
-          <target xml:lang="az">-- Yəqin ki, bu, Bloom Pack-ın fayl adlarının xüsusi simvollarını oxumaq xüsusiyyətinə malik olmasından öncə yaradılmış Bloom Pack-ın köhnə versiyasıdır. Siz cari versiyanı istifadə edərək, yeni fayl yaratmaq üçün müəllifdən kömək əldə edə bilərsiniz. Bu mümkün deyilsə, texniki ekspert vəziyyəti bərpa edə bilər.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BloomPackInstallation">
         <source xml:lang="en">Bloom Pack Installation</source>
@@ -173,26 +164,17 @@
         <source xml:lang="en">Bloom was not able to install that Bloom Pack</source>
         <note>ID: BloomPackInstallDialog.ErrorInstallingBloomPack</note>
         <target xml:lang="az" state="final">Bloom proqramı Bloom Paketini quraşdıra bilmədi</target>
-        <alt-trans>
-          <target xml:lang="az">Bloom proqramı o Bloom Paketini quraşdıra bilmədi</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Extracting" approved="yes">
         <source xml:lang="en">Extracting...</source>
         <note>ID: BloomPackInstallDialog.Extracting</note>
         <note>Shown while Bloom Packs are being installed</note>
         <target xml:lang="az" state="final">Çıxarılır…</target>
-        <alt-trans>
-          <target xml:lang="az">Çıxarılır...</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.MustRestartToSee" approved="yes">
         <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
         <note>ID: BloomPackInstallDialog.MustRestartToSee</note>
         <target xml:lang="az" state="final">"Bloom" proqramı artıq işləyir, lakin proqramı növbəti dəfə işə salanadək məzmunu göstərilməyəcək.</target>
-        <alt-trans>
-          <target xml:lang="az">"Bloom" proqramı artıq işləyir, lakin "Bloom" proqramı növbəti dəfə işə salanadək məzmunu göstərilməyəcək</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.NotInstalled">
         <source xml:lang="en">The Bloom collection will not be installed.</source>
@@ -203,9 +185,6 @@
         <source xml:lang="en">Opening {0}...</source>
         <note>ID: BloomPackInstallDialog.Opening</note>
         <target xml:lang="az" state="final">...{0} Açılır…</target>
-        <alt-trans>
-          <target xml:lang="az">{0} Açılır...</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Replace">
         <source xml:lang="en">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</source>
@@ -221,9 +200,6 @@
         <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
         <note>ID: BloomPackInstallDialog.UnableToReplace</note>
         <target xml:lang="az" state="final">Bloom '{0}' artıq mövcud olan nüsxəsini silə bilmədi. Əgər Bloom açıqdırsa, Bloomdan çıxın və yenidən cəhd edin. Əks halda, kompüterinizi söndürüb-yandırdıqdan sonra, yenidən cəhd edin.</target>
-        <alt-trans>
-          <target xml:lang="az">Bloom '{0}' artıq mövcud olan nüsxəsini silə bilmədi. Əgər Bloom açıqdırsa, Bloomdan çıxın və &amp; yenidən cəhd edin. Əks halda, kompüterinizi söndürüb-yandırdıqdan sonra, yenidən cəhd edin.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</source>
@@ -236,25 +212,16 @@
         <source xml:lang="en">This formatting is the default for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.DefaultForText</note>
         <target xml:lang="az" state="final">Bu formatlaşdırma '{0}' üslubu olan bütün mətn qutuları üçün standartdur</target>
-        <alt-trans>
-          <target xml:lang="az">Bu formatlaşdırma '{0}' üslubu olan bütün mətn qutuları üçün standartdur.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.ForText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.ForText</note>
         <target xml:lang="az" state="final">Bu formatlaşdırma bütün {0} üslubu daşayan mətn qutuları üçündür</target>
-        <alt-trans>
-          <target xml:lang="az">Bu formatlaşdırma {0} üslubu daşayan bütün mətn qutuları üçündür.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is for all {0} text boxes with '{1}' style.</source>
         <note>ID: BookEditor.ForTextInLang</note>
         <target xml:lang="az" state="final">Bu formatlaşdırma '{1}' üslubu daşayan bütün {0} mətn qutuları üçündür</target>
-        <alt-trans>
-          <target xml:lang="az">Bu formatlaşdırma {1} üslubu daşayan bütün {0} mətn qutuları üçündür.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true">
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
@@ -588,17 +555,11 @@
         <source xml:lang="en">Myanmar</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar</note>
         <target xml:lang="az" state="translated">Myanmar dili</target>
-        <alt-trans>
-          <target xml:lang="az">Myanmar</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya" sil:dynamic="true">
         <source xml:lang="en">Oriya</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya</note>
         <target xml:lang="az" state="translated">Oriya dili</target>
-        <alt-trans>
-          <target xml:lang="az">Oriya</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
         <source xml:lang="en">Page Numbering Style</source>
@@ -821,6 +782,11 @@
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
         <target xml:lang="az" state="translated">Bloom Paketi Yarat...</target>
       </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
+        <source xml:lang="en">Save as single file (.bloom)...</source>
+        <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
+        <target xml:lang="az" state="translated">Hamısı bir bütöv fayl kimi saxla (.bloom)...</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
         <source xml:lang="en">Update Book</source>
         <note>ID: CollectionTab.BookMenu.UpdateFrontMatterToolStrip</note>
@@ -835,9 +801,6 @@
         <source xml:lang="en">Sources For New Books</source>
         <note>ID: CollectionTab.BookSourceHeading</note>
         <target xml:lang="az" state="final">Yeni Kitablar Üçün Mənbələr</target>
-        <alt-trans>
-          <target xml:lang="az">Yeni kitablar üçün mənbələr</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.BookSourcesLockNotice">
         <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
@@ -1102,7 +1065,7 @@
         <source xml:lang="en">Error</source>
         <note>ID: Common.Error</note>
         <note>A heading shown above some messages.</note>
-        <target xml:lang="az" state="needs-translation">Error</target>
+        <target xml:lang="az" state="translated">Səhv</target>
       </trans-unit>
       <trans-unit id="Common.Finish" approved="yes">
         <source xml:lang="en">&amp;Finish</source>
@@ -1156,9 +1119,6 @@
         <note>ID: Common.Loading</note>
         <note>This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.</note>
         <target xml:lang="az" state="final">Yükləməkdədir...</target>
-        <alt-trans>
-          <target xml:lang="az">Yüklənir...</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.Next">
         <source xml:lang="en">&amp;Next</source>
@@ -1186,9 +1146,6 @@
         <source xml:lang="en">optional</source>
         <note>ID: Common.Optional</note>
         <target xml:lang="az" state="final">İxtiyari</target>
-        <alt-trans>
-          <target xml:lang="az">əlavə</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.Preview">
         <source xml:lang="en">Preview</source>
@@ -1301,7 +1258,7 @@
       <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true">
         <source xml:lang="en">This kind of page will be included only in digital book outputs, not in PDF.</source>
         <note>ID: EditTab.AddPageDialog.DigitalPage</note>
-        <target xml:lang="az" state="needs-translation">This kind of page will be included only in digital book outputs, not in PDF.</target>
+        <target xml:lang="az" state="translated">Bu səhifə növü PDF-da deyil, ancaq rəqəmsal kitab çıxışlarda daxil olunacaq.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
         <source xml:lang="en">Could not find {0}</source>
@@ -1553,7 +1510,7 @@
         <source xml:lang="en">Bloom Enterprise Settings</source>
         <note>ID: EditTab.EnterpriseSettingsButton</note>
         <note>Text of button that appears when Bloom Enterprise is needed for access to a feature.</note>
-        <target xml:lang="az" state="needs-translation">Bloom Enterprise Settings</target>
+        <target xml:lang="az" state="translated">Bloom Müəssisə Parametrləri</target>
       </trans-unit>
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
@@ -1611,7 +1568,7 @@
         <source xml:lang="en">Bubble</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Bubble-style</note>
         <note>Default style for comic bubbles</note>
-        <target xml:lang="az" state="needs-translation">Bubble</target>
+        <target xml:lang="az" state="translated">Qabarcıq</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Cover-Default-style" sil:dynamic="true">
         <source xml:lang="en">Cover Default</source>
@@ -1642,9 +1599,6 @@
         <note>ID: EditTab.FormatDialog.DefaultStyles.Heading1-style</note>
         <note>Used on the Arithmetic template</note>
         <target xml:lang="az" state="translated">Başlıq 1</target>
-        <alt-trans>
-          <target xml:lang="az">Başlıq</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading2-style" sil:dynamic="true">
         <source xml:lang="en">Heading 2</source>
@@ -1667,17 +1621,17 @@
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizAnswer-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Answer</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizAnswer-style</note>
-        <target xml:lang="az" state="needs-translation">Quiz Answer</target>
+        <target xml:lang="az" state="translated">Viktorina cavabı</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizHeader-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Header</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizHeader-style</note>
-        <target xml:lang="az" state="needs-translation">Quiz Header</target>
+        <target xml:lang="az" state="translated">Viktorina başlığı</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizQuestion-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Question</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizQuestion-style</note>
-        <target xml:lang="az" state="needs-translation">Quiz Question</target>
+        <target xml:lang="az" state="translated">Viktorina sualı</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true">
         <source xml:lang="en">Title On Cover</source>
@@ -1829,6 +1783,21 @@
         <note>ID: EditTab.FrontMatter.CreditTranslator</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
         <target xml:lang="az" state="translated">{lang} dakı bu versiya üçün təşəkkürlər. Məsələn, müəllif və ya tərcümçiyə təşəkkürlər bildirmək lazımdır.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitleCaption" sil:dynamic="true">
+        <source xml:lang="en">Edit Original Title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitleCaption</note>
+        <target xml:lang="az" state="translated">İlk başlıq düzəliş et</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitleLabel" sil:dynamic="true">
+        <source xml:lang="en">Original Title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitleLabel</note>
+        <target xml:lang="az" state="translated">İlk başlıq</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitlePlaceholder" sil:dynamic="true">
+        <source xml:lang="en">click to edit original title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitlePlaceholder</note>
+        <target xml:lang="az" state="translated">ilk başlıq düzəliş etmək üçün tıklayın</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
@@ -2113,7 +2082,7 @@
         <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
         <note>ID: EditTab.RequiresEnterprise</note>
         <note>Appears in notice (possibly obscuring other controls when they may not be used) because no Bloom Enterprise project has been selected.</note>
-        <target xml:lang="az" state="needs-translation">To use this feature, you'll need to enable Bloom Enterprise.</target>
+        <target xml:lang="az" state="translated">Bu xüsusiyyətdən istifadə etmək üçün, siz Bloom Müəssisələrə versiyasını aktivləşdirməlisiniz.</target>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
         <source xml:lang="en">Saving...</source>
@@ -2180,7 +2149,7 @@
       <trans-unit id="EditTab.TextBoxProperties.NormalLabel" sil:dynamic="true">
         <source xml:lang="en">"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</source>
         <note>ID: EditTab.TextBoxProperties.NormalLabel</note>
-        <target xml:lang="az" state="needs-translation">"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</target>
+        <target xml:lang="az" state="translated">Çox dilli parametrləri əsasən, Standart yerli dil, və mümkün rayonlıq və ya memləkət dili göstərəcək. Bu paramətr əksəriyyəti məzmun üçün istifadə edilə bilər.</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.OtherLanguagesLabel" sil:dynamic="true">
         <source xml:lang="en">Use one of these for simple text boxes that are always in only one language.</source>
@@ -2338,6 +2307,11 @@
         <source xml:lang="en">Text Color</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
         <target xml:lang="az" state="needs-translation">Text Color</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.TextBlock" sil:dynamic="true">
+        <source xml:lang="en">Text Block</source>
+        <note>ID: EditTab.Toolbox.ComicTool.TextBlock</note>
+        <target xml:lang="az" state="needs-translation">Text Block</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
@@ -2814,9 +2788,6 @@
         <source xml:lang="en">Press any key to cancel</source>
         <note>ID: EditTab.Toolbox.SignLanguage.PressCancel</note>
         <target xml:lang="az" state="translated">Ləğv etmək üçün, hər hansı bir düyməni basın</target>
-        <alt-trans>
-          <target xml:lang="az">Ləğv etmək üçün, hər hansı düyməni basın</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.PressStop" sil:dynamic="true">
         <source xml:lang="en">Press any key to stop</source>
@@ -2967,6 +2938,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
         <source xml:lang="en">Import Recording</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
         <target xml:lang="az" state="needs-translation">Import Recording</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true">
@@ -2991,6 +2963,11 @@
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.LookAtSentence if possible, but without the number</note>
         <target xml:lang="az" state="translated">Vurğulayan cümləyə baxın</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneProblem" sil:dynamic="true">
+        <source xml:lang="en">Bloom is having problems connecting to your microphone. Please restart your computer and try again.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneProblem</note>
+        <target xml:lang="az" state="translated">Bloom mikrofonunuza qoşulmaqda problem yaranır. Zəhmət olmasa kompüterinizi yenidən başladın və yenidən cəhd edin.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true" approved="yes">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
@@ -3012,6 +2989,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordByTextBox" sil:dynamic="true">
         <source xml:lang="en">Record by whole text box, then let Bloom split it into sentences later.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordByTextBox</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
         <target xml:lang="az" state="needs-translation">Record by whole text box, then let Bloom split it into sentences later.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings" sil:dynamic="true">
@@ -3033,6 +3011,12 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter</note>
         <note>Shown if you open TalkingBookTool and then attempt to toggle the "Record by Sentences" input on an XMatter page</note>
         <target xml:lang="az" state="needs-translation">Sorry, front and back-matter pages must be recorded by sentences.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder" sil:dynamic="true">
+        <source xml:lang="en">Show playback order buttons</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
+        <target xml:lang="az" state="needs-translation">Show playback order buttons</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true" approved="yes">
         <source xml:lang="en">3) Speak</source>
@@ -3838,7 +3822,7 @@
         <source xml:lang="en">Features</source>
         <note>ID: PublishTab.Android.Features</note>
         <note>The second heading in the Settings section, which shows a checklist of various features.</note>
-        <target xml:lang="az" state="needs-translation">Features</target>
+        <target xml:lang="az" state="translated">Xüsusiyyətlər</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.UnlicensedLanguages" sil:dynamic="true">
         <source xml:lang="en">The copyright holder of this book has not licensed it for publishing in {0}. Please contact the copyright holder to learn more about licensing.</source>

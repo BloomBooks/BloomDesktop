@@ -11,9 +11,6 @@
         <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="pbu" state="final">د Wifi شبکې له لاری شریک کړئ</target>
         <note>ID: android.publish.wifi</note>
-        <alt-trans>
-          <target xml:lang="pbu">د WiFi شبکه کې لټون وکړئ</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.unseen" approved="yes">
         <source xml:lang="en">Problem: Android Device is not seeing book advertisements</source>
@@ -24,28 +21,16 @@
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
         <target xml:lang="pbu" state="final">کله چې دا طریقه کاروئ، تاسو باید د بلوم ریډر فعاله کړئ، خپل مینو کې یې پرانیزئ، او "د WiFi څخه ترلاسه کړئ" انتخاب کړئ.</target>
         <note>ID: android.publish.wifi.run.receive</note>
-        <alt-trans>
-          <target xml:lang="pbu">کله چې دا طریقه کاروئ، تاسو باید د بلوم کتاب فعاله کړئ، خپل مینو کې یې پرانیزئ، او "د WiFi څخه ترلاسه کړئ" انتخاب کړئ.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from" approved="yes">
         <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
         <target xml:lang="pbu" state="final">ډاډ ترلاسه کړئ چې دا وسیله د "WiFi څخه ترلاسه کړئ" سکرین کې ده</target>
         <note>ID: android.publish.wifi.receive.from</note>
-        <alt-trans>
-          <target xml:lang="pbu">ډاډ ترلاسه کړئ چې دا وسیله "د WiFi څخه ترلاسه کړئ" سکرین کې ده</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">ډاډ ترلاسه کړئ چې دا وسیله "د WiFi څخه ترلاسه کړئ" پرده کې ده</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.same.network" approved="yes">
         <source xml:lang="en">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
         <target xml:lang="pbu" state="final">ځان ډاډه کړئ چې کمپیوټر او وسیله ورته WiFi شبکه کې دي. یو کمپیوټر چی د کیبل له لارې د WiFi روټرسره وصل شوی اوس هم کیدای شي په خپل شبکه کې وي. دا د تخنیکي پلوه ممکنه ده چې یو سیم لرونکي شبکه د WiFi سره په فرعي شبکه کې وصل شي او یو شان subnet ولری، مګر د بلوم ټیم به دا توان ونه لري چې د دی په تیاره ولو کی مرسته وکړي، بخښنه غواړو.</target>
         <note>ID: android.publish.wifi.same.network</note>
-        <alt-trans>
-          <target xml:lang="pbu">ډاډه کړئ چې کمپیوټر او وسیله ورته WiFi شبکه کې دي. یو کمپیوټر چی د کیبل له لارې د WiFi روټرسره وصل شوی اوس هم کیدای شي په خپل شبکه کې وي. دا د تخنیکي پلوه ممکنه ده چې یو سیم لرونکي شبکه د WiFi سره په فرعي شبکه کې وصل شي او یو شان subnet ولری، مګر د بلوم ټیم به دا توان ونه لري چې د دی په تیاره ولو کی مرسته وکړي، بخښنه غواړو.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.firewalls" approved="yes">
         <source xml:lang="en">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</source>
@@ -56,9 +41,6 @@
         <source xml:lang="en">Send Over USB Cable</source>
         <target xml:lang="pbu" state="final">د USB کیبل له لاری یی ولېږئ</target>
         <note>ID: android.publish.usb</note>
-        <alt-trans>
-          <target xml:lang="pbu">د USB کیبل له لاری واستوئ</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.usb.not.connect" approved="yes">
         <source xml:lang="en">Problem: Bloom is not connecting to my device</source>

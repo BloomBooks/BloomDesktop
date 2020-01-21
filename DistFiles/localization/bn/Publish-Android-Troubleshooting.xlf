@@ -6,17 +6,11 @@
         <source xml:lang="en">Troubleshooting Tips for Android Publishing</source>
         <target xml:lang="bn" state="final">অ্যান্ড্রয়েড প্রকাশনীর জন্য সমস্যা সমাধানের টিপস</target>
         <note>ID: android.publish.trouble.tips</note>
-        <alt-trans>
-          <target xml:lang="bn">অ্যান্ড্রয়েড প্রকাশনীর জন্য সমস্যা সমাধানের ইঙ্গিত</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi">
         <source xml:lang="en">Share over Wi-Fi</source>
         <target xml:lang="bn" state="translated">Wi-Fi নেটওয়ার্কে পাঠান/ সরবরাহ করুন</target>
         <note>ID: android.publish.wifi</note>
-        <alt-trans>
-          <target xml:lang="bn">Wi-Fi নেটওয়ার্কে সেবা দিন</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.unseen" approved="yes">
         <source xml:lang="en">Problem: Android Device is not seeing book advertisements</source>
@@ -37,9 +31,6 @@
         <source xml:lang="en">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
         <target xml:lang="bn" state="translated">নিশ্চিত করুন যে কম্পিউটার এবং ডিভাইসটি একই ওয়াইফাই নেটওয়ার্কে আছে।কম্পিউটার তারের মাধ্যমে WiFi রাউটারে সংযুক্ত থাকার পরেও নিজস্ব নেটওয়ার্কে থাকতে পারে। WiFi এর মত একই স্থানীয় সাবনেটে সংযুক্ত থাকাটা তারযুক্ত নেটওয়ার্কেও প্রযুক্তিগতভাবে সম্ভব, কিন্তু ব্লুম দল সেটি সেট করতে কোন সাহায্য প্রদান করতে সক্ষম হবে না, দুঃখিত।</target>
         <note>ID: android.publish.wifi.same.network</note>
-        <alt-trans>
-          <target xml:lang="bn">নিশ্চিত করুন যে কম্পিউটার এবং ডিভাইসটি একই ওয়াইফাই নেটওয়ার্কে আছে। তারের মাধ্যমে কম্পিউটার WiFi রাউটারে সংযুক্ত থাকার পরেও নিজস্ব নেটওয়ার্কে থাকতে পারে। WiFi এর মত একই স্থানীয় সাবনেটে সংযুক্ত থাকাটা তারযুক্ত নেটওয়ার্কেও প্রযুক্তিগতভাবে সম্ভব, কিন্তু ব্লুম দল সেটি সেট করতে কোন সাহায্য প্রদান করতে সক্ষম হবে না, দুঃখিত।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.firewalls" approved="yes">
         <source xml:lang="en">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</source>
@@ -67,9 +58,6 @@
         <source xml:lang="en">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
         <target xml:lang="bn" state="final">এই পদ্ধতি ব্যবহার করার সময় আপনাকে বই পেতে কোন বিশেষ মোডে যেতে হবে না। শুধু ব্লুম পাঠক চালান। বই স্থানান্তরিত হয়ে গেলে নিজে থেকেই প্রদর্শিত হবে।</target>
         <note>ID: android.publish.usb.automatic</note>
-        <alt-trans>
-          <target xml:lang="bn">এই পদ্ধতি ব্যবহার করার সময় আপনাকে বই পেতে কোন বিশেষ মোডে যেতে হবে না। শুধু ব্লুম পুস্তক চালান। বই স্থানান্তরিত হয়ে গেলে নিজে থেকেই প্রদর্শিত হবে।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.usb.uses.mtp" approved="yes">
         <source xml:lang="en">Some Android devices have multiple modes they can be in when connected to a computer. Some will ask you as soon as you connect the cable to the computer. Bloom will be trying to talk to the device using a protocol called "MTP". If you're not sure that your device is connecting using MTP, try googling the name of your device + "MTP".</source>
@@ -85,9 +73,6 @@
         <source xml:lang="en">Try a different cable, or a different USB port.</source>
         <target xml:lang="bn" state="final">অন্য তার বা অন্য USB পোর্ট ব্যবহার করতে চেষ্টা করুন।</target>
         <note>ID: android.publish.usb.cable.or.port</note>
-        <alt-trans>
-          <target xml:lang="bn">অন্য তার বা অন্য USB পোর্ট ব্যবহার করুন।</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

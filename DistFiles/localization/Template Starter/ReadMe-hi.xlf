@@ -4,256 +4,105 @@
     <body>
       <trans-unit id="template.starter" approved="yes">
         <source xml:lang="en">How to use the Template Starter</source>
-        <target xml:lang="hi" state="translated">टेम्पलेट स्टार्टर का उपयोग कैसे करें</target>
+        <target xml:lang="hi" state="final">टेम्पलेट स्टार्टर का उपयोग कैसे करें</target>
         <note>ID: template.starter</note>
       </trans-unit>
       <trans-unit id="template.starter.firstusage" approved="yes">
         <source xml:lang="en">This special template lets you make your own templates. A template provides a set of related page layouts that an author can choose from in writing an original book. Usually the text blocks and picture blocks on template pages will be empty, ready for an author to fill in. Sometimes there may be standard text or pictures that should be on every copy of the page.
 There are two ways people can use your template. The first way is to start new books. For example, imagine student books that have one page for each school day of the week. You could make a template with 5 pages, each with places to type in text and choose pictures. Curriculum authors could select your template and make a new book, one for each week<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</source>
-        <target xml:lang="hi" state="translated">यह विशेष टेम्पलेट आपको आपकी अपनी टेम्पलेट्स बनाने देता है। एक टेम्पलेट संबंधित पन्ना लेआउट्स का एक संग्रह उपलब्ध कराता है जिसमें से लेखक एक मूल पुस्तक बनाते समय चुनाव कर सकता है। सामान्यतः टेम्पलेट पन्नों पर टेक्स्ट ब्लॉक और चित्र ब्लॉक खाली और लेखक द्वारा भरने के लिए तैयार होते हैं। कभी कभार आदर्श टेक्स्ट या चित्र हो सकते हैं जिन्हें पन्ने के हर प्रति पर होना जरुरी होता है। 
+        <target xml:lang="hi" state="final">यह विशेष टेम्पलेट आपको आपकी अपनी टेम्पलेट्स बनाने देता है। एक टेम्पलेट संबंधित पन्ना लेआउट्स का एक संग्रह उपलब्ध कराता है जिसमें से लेखक एक मूल पुस्तक बनाते समय चुनाव कर सकता है। सामान्यतः टेम्पलेट पन्नों पर टेक्स्ट ब्लॉक और चित्र ब्लॉक खाली और लेखक द्वारा भरने के लिए तैयार होते हैं। कभी कभार आदर्श टेक्स्ट या चित्र हो सकते हैं जिन्हें पन्ने के हर प्रति पर होना जरुरी होता है। 
 दो तरीके हैं जिनके द्वारा लोग आपके टेम्पलेट का उपयोग कर सकते हैं। पहला तरीका है नए पुस्तकों को शुरू करना। उदाहरण के लिए, विद्यार्थी के पुस्तकों की कल्पना करें जिसमें सप्ताह में हर एक स्कूल दिन के लिए एक ही पन्ना है। आप 5 पन्नों का एक टेम्पलेट बना सकते हैं, जिसमें प्रत्येक पन्ने पर टेक्स्ट टाइप करने और चित्र चुनने की जगह हो। पाठ्यक्रम लेखक आपकी हर सप्ताह एक टेम्पलेट चुनकर नई पुस्तक बना सकते हैं<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g></target>
         <note>ID: template.starter.firstusage</note>
-        <alt-trans>
-          <target xml:lang="hi">यह विशेष टेम्पलेट आपको आपकी अपनी टेम्पलेट्स बनाने देता है। एक टेम्पलेट संबंधित पन्ना लेआउट्स का एक संग्रह उपलब्ध कराता है जिसमें से लेखक एक मूल पुस्तक बनाते समय चुनाव कर सकता है। सामान्यतः टेम्पलेट पन्नों पर टेक्स्ट ब्लॉक और चित्र ब्लॉक खाली और लेखक द्वारा भरने के लिए तैयार होते हैं। कभी कभार आदर्श टेक्स्ट या चित्र हो सकते हैं जिन्हें पन्ने के हर प्रति पर होना जरुरी होता है। 
-दो तरीके हैं जिनके द्वारा लोग आपके टेम्पलेट का उपयोग कर सकते हैं। पहला तरीका है नए पुस्तकों को शुरू करना। उदाहरण के लिए, विद्यार्थी के पुस्तकों की कल्पना करें जिसमें सप्ताह में हर एक स्कूल दिन के लिए एक ही पन्ना है। आप 5 पन्नों का एक टेम्पलेट बना सकते हैं, जिसमें प्रत्येक पन्ने पर टेक्स्ट टाइप करने और चित्र चुनने की जगह हो। पाठ्यक्रम लेखक आपकी हर सप्ताह एक टेम्पलेट चुनकर नई पुस्तक बना सकते हैं<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">यह विशेष टेम्पलेट आपको आपकी अपनी टेम्पलेट्स बनाने देती है। एक टेम्पलेट संबंधित पन्ना लेआउट्स का एक संग्रह उपलब्ध कराती है जिसमें से लेखक एक मूल पुस्तक बनाते समय चुनाव कर सकता है। सामान्यतः टेम्पलेट पन्नों पर टेक्स्ट ब्लॉक और चित्र ब्लॉक खाली और लेखक द्वारा भरने के लिए तैयार होते हैं। कभी कभार आदर्श टेक्स्ट या चित्र हो सकते हैं जिन्हें पन्ने के हर प्रति पर होना जरुरी होता है। दो तरीके हैं जिनके द्वारा लोग आपकी टेम्पलेट का उपयोग कर सकते हैं। पहला तरीका है नए पुस्तकों को शुरू करना। उदाहरण के लिए, विद्यार्थी के पुस्तकों की कल्पना करें जिसमें सप्ताह में हर एक स्कूल दिन के लिए एक ही पन्ना है। आप 5 पन्नों की एक टेम्पलेट बना सकते हैं, जिसमें प्रत्येक पन्ने पर टेक्स्ट टाइप करने और चित्र चुनने की जगह हो। पाठ्यक्रम लेखक आपकी हर सप्ताह एक टेम्पलेट चुनकर नई पुस्तक बना सकते हैं<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.secondusage" approved="yes">
         <source xml:lang="en">The second way people can use templates is as source of new pages, regardless of how they started the book. For example, in some places, each book requires a page as part of a government approval process. You might make a template containing that page and give it to others in your country. Then, when people translate a shellbook, they go to the end of the book and click “Add Page”. The page you made will appear in their list of choices. Some other ideas for templates are alphabet charts, glossaries, and instructions on how to use the book in a classroom. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></source>
-        <target xml:lang="hi" state="translated">लोगों के पास टेम्पलेट्स उपयोग करने का दूसरा तरीका यह है कि उन्होंने जिस भी रीति से पुस्तक बनाना शुरू किया हो, वे नए पन्नों के स्त्रोत के रूप में उसका उपयोग कर सकते हैं। उदाहरण के लिए, कुछ स्थानों में, प्रत्येक पुस्तक में सरकारी मान्यता प्रक्रिया का पन्ना होना जरुरी होता है। आप उस पन्ने को शामिल करके एक टेम्पलेट बना सकते हैं और आपके देश में दूसरों को दे सकते हैं। फिर, जब लोग किसी शेलपुस्तक का अनुवाद करेंगे, वे पुस्तक के अंत में जाकर "पन्ना जोड़ें" पर क्लिक करेंगे। आपने निर्माण किया हुआ पन्ना उनकी चुनाव सूची में आ जाएगा। टेम्पलेट्स के कुछ अन्य उद्देश्य हैं जैसे कि वर्णमाला चार्ट, शब्दकोष, और किसी कक्षा में पुस्तक इस्तेमाल करने के निर्देश। <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
+        <target xml:lang="hi" state="final">लोगों के पास टेम्पलेट्स उपयोग करने का दूसरा तरीका यह है कि उन्होंने जिस भी रीति से पुस्तक बनाना शुरू किया हो, वे नए पन्नों के स्त्रोत के रूप में उसका उपयोग कर सकते हैं। उदाहरण के लिए, कुछ स्थानों में, प्रत्येक पुस्तक में सरकारी मान्यता प्रक्रिया का पन्ना होना जरुरी होता है। आप उस पन्ने को शामिल करके एक टेम्पलेट बना सकते हैं और आपके देश में दूसरों को दे सकते हैं। फिर, जब लोग किसी शेलपुस्तक का अनुवाद करेंगे, वे पुस्तक के अंत में जाकर "पन्ना जोड़ें" पर क्लिक करेंगे। आपने निर्माण किया हुआ पन्ना उनकी चुनाव सूची में आ जाएगा। टेम्पलेट्स के कुछ अन्य उद्देश्य हैं जैसे कि वर्णमाला चार्ट, शब्दकोष, और किसी कक्षा में पुस्तक इस्तेमाल करने के निर्देश। <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
         <note>ID: template.starter.secondusage</note>
       </trans-unit>
       <trans-unit id="template.starter.waystohelp" approved="yes">
         <source xml:lang="en">Making templates is just like making any other custom book; all the same controls are available for making and customizing pages. But since you will probably be sharing with other people, there are a number of things you can do to help users of your template:</source>
-        <target xml:lang="hi" state="translated">टेम्पलेट्स बनाना विशिष्ट रूप से किसी अन्य पुस्तक को बनाने जैसा ही है: पन्ने बनाने और उनका विशिष्ट रूप से निर्माण करने के लिए सारे समान नियंत्रण उपलब्ध हैं। लेकिन क्योंकि आप दूसरे लोगों के साथ भी सांझा करेंगे, आप अपनी टेम्पलेट से दूसरे लोगों की सहायता करने के लिए कुछ और बातों को कर सकते हैं:</target>
+        <target xml:lang="hi" state="final">टेम्पलेट्स बनाना विशिष्ट रूप से किसी अन्य पुस्तक को बनाने जैसा ही है: पन्ने बनाने और उनका विशिष्ट रूप से निर्माण करने के लिए सारे समान नियंत्रण उपलब्ध हैं। लेकिन क्योंकि आप दूसरे लोगों के साथ भी सांझा करेंगे, आप अपनी टेम्पलेट से दूसरे लोगों की सहायता करने के लिए कुछ और बातों को कर सकते हैं:</target>
         <note>ID: template.starter.waystohelp</note>
-        <alt-trans>
-          <target xml:lang="hi">टेम्पलेट्स बनाना विशिष्ट रूप से किसी अन्य पुस्तक को बनाने जैसा ही है: पन्ने बनाने और उनका विशिष्ट रूप से निर्माण करने के लिए सारे समान नियंत्रण उपलब्ध हैं। लेकिन क्योंकि आप दूसरे लोगों के साथ भी सांझा करेंगे, आप अपनी टेम्पलेट से दूसरे लोगों की मदद करने के लिए कुछ और बातों को कर सकते हैं:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.labelpages" approved="yes">
         <source xml:lang="en">Label Your Pages</source>
-        <target xml:lang="hi" state="translated">अपने पन्नों को अंकित करें</target>
+        <target xml:lang="hi" state="final">अपने पन्नों को अंकित करें</target>
         <note>ID: template.starter.labelpages</note>
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage" approved="yes">
         <source xml:lang="en">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</source>
-        <target xml:lang="hi" state="translated">जब आप अपने टेम्पलेट में पन्ने जोड़ते हैं, तब हर एक को एक उपयुक्त लेबल देना निश्चित कर लें<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
+        <target xml:lang="hi" state="final">जब आप अपने टेम्पलेट में पन्ने जोड़ते हैं, तब हर एक को एक उपयुक्त लेबल देना निश्चित कर लें<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
         <note>ID: template.starter.labeleachpage</note>
-        <alt-trans>
-          <target xml:lang="hi">जब आप अपनी टेम्पलेट में पन्ने जोड़ते हैं, तब हर एक को एक उपयुक्त लेबल देना निश्चित कर लें<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails" approved="yes">
         <source xml:lang="en">Check Your Thumbnails</source>
-        <target xml:lang="hi" state="translated">अपने थंबनेल की जांच करें</target>
+        <target xml:lang="hi" state="final">अपने थंबनेल की जांच करें</target>
         <note>ID: template.starter.thumbnails</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails.onlyonce" approved="yes">
         <source xml:lang="en">To speed things up, Bloom only makes this thumbnail once, and stores it in the "template" subdirectory of your template:</source>
-        <target xml:lang="hi" state="translated">चीजों को तेजी से करने के लिए, ब्लूम इस थंबनेल को केवल एक बार बनाता है, और इसे आपकी टेम्पलेट के "टेम्पलेट" उपनिर्देशिका में संग्रहीत करता है:</target>
+        <target xml:lang="hi" state="final">चीजों को तेजी से करने के लिए, ब्लूम इस थंबनेल को केवल एक बार बनाता है, और इसे आपकी टेम्पलेट के "टेम्पलेट" उपनिर्देशिका में संग्रहीत करता है:</target>
         <note>ID: template.starter.thumbnails.onlyonce</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails.update" approved="yes">
         <source xml:lang="en">If you later make a change to the page, the thumbnail will be out of date. To fix that, click the "Add Page" button, and Bloom will regenerate those thumbnails. If the automatically generated thumbnail doesn't convey the purpose of the page, you can make your own. Just make sure to mark the file as "Read Only" so that Bloom doesn't overwrite it. You can also make your thumbnails as svgs, if you like (that's what we do for templates we ship with Bloom).  In any case, make sure to click "Add Page" at least once before distributing your template, so that all the thumbnails are already generated.</source>
-        <target xml:lang="hi" state="translated">यदि आप बाद में पन्ने पर कोई बदलाव करते हैं, तो थंबनेल चलन से बाहर हो जाएगा। उसे चलन में लाने के लिए, "पृष्ठ जोड़ें" बटन पर क्लिक करें, और ब्लूम उन थंबनेल को फिर से चलन में लाएगा। यदि स्वचालित रूप से जनरेट किया गया थंबनेल पन्ने के उद्देश्य को व्यक्त नहीं करता है, तो आप अपना स्वयं का थंबनेल बना सकते हैं। सिर्फ "केवल पढ़ने के लिए" के रूप में फाइल को चिह्नित करना सुनिश्चित कर लें ताकि ब्लूम इस पर उपरिलेखन न करे। यदि आप चाहते हैं, तो आप भी svgs के रूप में अपने थंबनेल बना सकते हैं, (ब्लूम के साथ हम जिन टेंपलेट्स को भेजते हैं हम उनके साथ यही करते हैं)। हर हालत में, अपनी टेम्प्लेट को वितरित करने से पहले कम से कम एक बार "पेज जोड़ें" पर क्लिक करना सुनिश्चित करें, ताकि सभी थंबनेल पहले से जेनरेट हों।</target>
+        <target xml:lang="hi" state="final">यदि आप बाद में पन्ने पर कोई बदलाव करते हैं, तो थंबनेल चलन से बाहर हो जाएगा। उसे चलन में लाने के लिए, "पृष्ठ जोड़ें" बटन पर क्लिक करें, और ब्लूम उन थंबनेल को फिर से चलन में लाएगा। यदि स्वचालित रूप से जनरेट किया गया थंबनेल पन्ने के उद्देश्य को व्यक्त नहीं करता है, तो आप अपना स्वयं का थंबनेल बना सकते हैं। सिर्फ "केवल पढ़ने के लिए" के रूप में फाइल को चिह्नित करना सुनिश्चित कर लें ताकि ब्लूम इस पर उपरिलेखन न करे। यदि आप चाहते हैं, तो आप भी svgs के रूप में अपने थंबनेल बना सकते हैं, (ब्लूम के साथ हम जिन टेंपलेट्स को भेजते हैं हम उनके साथ यही करते हैं)। हर हालत में, अपनी टेम्प्लेट को वितरित करने से पहले कम से कम एक बार "पेज जोड़ें" पर क्लिक करना सुनिश्चित करें, ताकि सभी थंबनेल पहले से जेनरेट हों।</target>
         <note>ID: template.starter.thumbnails.update</note>
-        <alt-trans>
-          <target xml:lang="hi">यदि आप बाद में पन्ने पर कोई बदलाव करते हैं, तो थंबनेल चलन से बाहर हो जाएगा। उसे चलन में लाने के लिए, "पृष्ठ जोड़ें" बटन पर क्लिक करें, और ब्लूम उन थंबनेल को फिर से चलन में लाएगा। यदि स्वचालित रूप से जनरेट किया गया थंबनेल पन्ने के उद्देश्य को व्यक्त नहीं करता है, तो आप अपना स्वयं का थंबनेल बना सकते हैं। सिर्फ "केवल पढ़ने के लिए" के रूप में फाइल को चिह्नित करना सुनिश्चित कर लें ताकि ब्लूम इस पर उपरिलेखन न करे। अगर आप चाहते हैं, तो आप भी svgs के रूप में अपने थंबनेल बना सकते हैं, (ब्लूम के साथ हम जिन टेंपलेट्स को भेजते हैं हम उनके साथ यही करते हैं)। हर हालत में, अपनी टेम्प्लेट को वितरित करने से पहले कम से कम एक बार "पेज जोड़ें" पर क्लिक करना सुनिश्चित करें, ताकि सभी थंबनेल पहले से जेनरेट हों।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.document" approved="yes">
         <source xml:lang="en">Document Your Template</source>
-        <target xml:lang="hi" state="translated">अपने टेम्पलेट में विवरण जोड़ें</target>
+        <target xml:lang="hi" state="final">अपने टेम्पलेट में विवरण जोड़ें</target>
         <note>ID: template.starter.document</note>
       </trans-unit>
       <trans-unit id="template.starter.describeyours" approved="yes">
         <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
-        <target xml:lang="hi" state="translated">इसके अलावा आपके टेम्पलेट का वर्णन जोड़ने पर विचार करें, जैसे आप इस समय पढ़ रहे हैं। ऐसा करने के लिए, <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g>नाम की एक टेक्स्ट फाइल आपके टेम्पलेट के फोल्डर में रखें। इस फाइल को <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">मार्कडाउन स्टैंडर्ड</g> का पालन करना चाहिए। अन्य भाषाओं में अपने निर्देश प्रदान करने के लिए, उस फाइल के संस्करण बनाएं जो "en" को प्रत्येक भाषा के दो अक्षर कोड में बदल दें। उदाहरण के लिए, <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> दिखाया जाएगा जब ब्लूम फ्रेंच में लेबल दिखाने के लिए सेट किया जाएगा। आप स्क्रीनशॉट भी शामिल कर सकते हैं, जैसे हमारे पास इस डॉक्यूमेंट में है। आप जिस किसी भी चित्र का उपयोग करते हैं उन्हें "readmeimages" नाम के फोल्डर में डालें, ताकि चित्रों को इस तरह से संदर्भित किया जाए:</target>
+        <target xml:lang="hi" state="final">इसके अलावा आपके टेम्पलेट का वर्णन जोड़ने पर विचार करें, जैसे आप इस समय पढ़ रहे हैं। ऐसा करने के लिए, <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g>नाम की एक टेक्स्ट फाइल आपके टेम्पलेट के फोल्डर में रखें। इस फाइल को <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">मार्कडाउन स्टैंडर्ड</g> का पालन करना चाहिए। अन्य भाषाओं में अपने निर्देश प्रदान करने के लिए, उस फाइल के संस्करण बनाएं जो "en" को प्रत्येक भाषा के दो अक्षर कोड में बदल दें। उदाहरण के लिए, <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> दिखाया जाएगा जब ब्लूम फ्रेंच में लेबल दिखाने के लिए सेट किया जाएगा। आप स्क्रीनशॉट भी शामिल कर सकते हैं, जैसे हमारे पास इस डॉक्यूमेंट में है। आप जिस किसी भी चित्र का उपयोग करते हैं उन्हें "readmeimages" नाम के फोल्डर में डालें, ताकि चित्रों को इस तरह से संदर्भित किया जाए:</target>
         <note>ID: template.starter.describeyours</note>
-        <alt-trans>
-          <target xml:lang="hi">इसके अलावा आपके टेम्पलेट का वर्णन जोड़ने पर विचार करें, जैसे आप इस समय पढ़ रहे हैं। ऐसा करने के लिए, <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g>नाम की एक टेक्स्ट फाइल आपके टेम्पलेट के फोल्डर में रखें। इस फाइल को <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">मार्कडाउन स्टैंडर्ड</g> का पालन करना चाहिए। अन्य भाषाओं में अपने निर्देश प्रदान करने के लिए, उस फाइल के संस्करण बनाएं जो "en" को प्रत्येक भाषा के दो अक्षर कोड में बदल दें। उदाहरण के लिए, <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> दिखाया जाएगा जब ब्लूम फ्रेंच में लेबल दिखाने के लिए सेट किया जाएगा। आप स्क्रीनशॉट भी शामिल कर सकते हैं, जैसे हमारे पास इस डॉक्यूमेंट में है। आप जिस किसी भी चित्र का उपयोग करते हैं उन्हें "readmeimages" नाम के फोल्डर में डालें, ताकि चित्रों को इस तरह से संदर्भित किया जाए:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">इसके अलावा आपके टेम्पलेट का वर्णन जोड़ने पर विचार करें, जैसे आप इस समय पढ़ रहे हैं। ऐसा करने के लिए, <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g>नाम की एक टेक्स्ट फाइल आपके टेम्पलेट के फोल्डर में रखें। इस फाइल को <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">मार्कडाउन स्टैंडर्ड</g> का पालन करना चाहिए। अन्य भाषाओं में अपने निर्देश प्रदान करने के लिए, उस फाइल के संस्करण बनाएं जो "en" को प्रत्येक भाषा के दो अक्षर कोड में बदल दें। उदाहरण के लिए, <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> दिखाया जाएगा जब ब्लूम फ्रेंच में लेबल दिखाने के लिए सेट किया जाएगा। आप स्क्रीनशॉट भी शामिल कर सकते हैं, जैसे हमारे पास इस डॉक्यूमेंट में है। आप जिस किसी भी चित्र का उपयोग करते हैं उन्हें "readmeimages" नाम के फोल्डर में डालें, ताकि चित्रों को इस तरह से संदर्भित किया जाए:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">इसके अलावा आपकी टेम्पलेट का वर्णन जोड़ने पर विचार करें, जैसे आप इस समय पढ़ रहे हैं। ऐसा करने के लिए, <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g>नाम की एक टेक्स्ट फाइल आपके टेम्पलेट के फोल्डर में रखें। इस फाइल को <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">मार्कडाउन स्टैंडर्ड</g> का पालन करना चाहिए। अन्य भाषाओं में अपने निर्देश प्रदान करने के लिए, उस फाइल के संस्करण बनाएं जो "en" को प्रत्येक भाषा के दो अक्षर कोड में बदल दें। उदाहरण के लिए, <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> दिखाया जाएगा जब ब्लूम फ्रेंच में लेबल दिखाने के लिए सेट किया जाएगा। आप स्क्रीनशॉट भी शामिल कर सकते हैं, जैसे हमारे पास इस डॉक्यूमेंट में है। आप जिस किसी भी चित्र का उपयोग करते हैं उन्हें "readmeimages" नाम के फोल्डर में डालें, ताकि चित्रों को इस तरह से संदर्भित किया जाए:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.thumbnailsshown" approved="yes">
         <source xml:lang="en">When the Add Page dialog box shows your template pages, it will show a thumbnail:</source>
-        <target xml:lang="hi" state="translated">जब पन्ना जोड़ें डायलॉग बक्सा आपके टेम्पलेट पन्नों को दिखाता है, तो वह एक थंबनेल दिखाएगा:</target>
+        <target xml:lang="hi" state="final">जब पन्ना जोड़ें डायलॉग बक्सा आपके टेम्पलेट पन्नों को दिखाता है, तो वह एक थंबनेल दिखाएगा:</target>
         <note>ID: template.starter.thumbnailsshown</note>
       </trans-unit>
       <trans-unit id="template.starter.share" approved="yes">
         <source xml:lang="en">Share Your Template</source>
-        <target xml:lang="hi" state="translated">अपनी टेंपलेट को सांझा करें</target>
+        <target xml:lang="hi" state="final">अपनी टेंपलेट को सांझा करें</target>
         <note>ID: template.starter.share</note>
       </trans-unit>
       <trans-unit id="template.starter.share.publish" approved="yes">
         <source xml:lang="en">Remember that Bloom is about planting seeds, about sharing. So plan to share your template on the BloomLibrary for people around the world to find. This takes just a few clicks in the Publish Tab.</source>
-        <target xml:lang="hi" state="translated">याद रखें कि ब्लूम बीज बोने के बारे में, बांटने के बारे में है। इसलिए आपके टेम्पलेट को ब्लूमलाइब्रेरी पर साझा करने की योजना बनाएं ताकि दुनिया भर के लोगों के द्वारा उसे खोजा जा सके। इसके लिए प्रकाशित करें टैब में कुछ क्लिक ही करने पड़ते हैं।</target>
+        <target xml:lang="hi" state="final">याद रखें कि ब्लूम बीज बोने के बारे में, बांटने के बारे में है। इसलिए आपके टेम्पलेट को ब्लूमलाइब्रेरी पर साझा करने की योजना बनाएं ताकि दुनिया भर के लोगों के द्वारा उसे खोजा जा सके। इसके लिए प्रकाशित करें टैब में कुछ क्लिक ही करने पड़ते हैं।</target>
         <note>ID: template.starter.share.publish</note>
-        <alt-trans>
-          <target xml:lang="hi">याद रखें कि ब्लूम बीज बोने के बारे में, बांटने के बारे में है। इसलिए आपकी टेम्पलेट को ब्लूमलाइब्रेरी पर साझा करने की योजना बनाएं ताकि दुनिया भर के लोगों के द्वारा उसे खोजा जा सके। इसके लिए प्रकाशित करें टैब में कुछ क्लिक ही करने पड़ते हैं।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.share.bloompack" approved="yes">
         <source xml:lang="en">For local colleagues, an easy way to distribute your template is via a Bloom Pack. In the collections tab, right-click on your template's thumbnail. Choose 'Make Bloom Pack'. Save that somewhere, for example to a USB Key. Then take it to another computer, double click on the file you made, and your template will be added to the "Sources for New Books" on that computer.</source>
-        <target xml:lang="hi" state="translated">स्थानीय सहयोगियों के लिए, आपके टेम्पलेट को ब्लूम पैक के माध्यम से वितरित करना एक आसान तरीका है। संग्रह टैब में, अपने टेम्पलेट के थंबनेल पर राइट-क्लिक करें। 'ब्लूम पैक बनाएं' चुनें। उसे किसी जगह पर सेव करें, उदाहरण के लिए, जैसे कि यूएसबी key में। फिर उसे किसी अन्य कंप्यूटर में ले जाएं, आपने बनाई फाइल पर डबल क्लिक करें, और आपके टेम्पलेट को "नई पुस्तकों के लिए स्रोत" में जोड़ दिया जाएगा।</target>
+        <target xml:lang="hi" state="final">स्थानीय सहयोगियों के लिए, आपके टेम्पलेट को ब्लूम पैक के माध्यम से वितरित करना एक आसान तरीका है। संग्रह टैब में, अपने टेम्पलेट के थंबनेल पर राइट-क्लिक करें। 'ब्लूम पैक बनाएं' चुनें। उसे किसी जगह पर सेव करें, उदाहरण के लिए, जैसे कि यूएसबी key में। फिर उसे किसी अन्य कंप्यूटर में ले जाएं, आपने बनाई फाइल पर डबल क्लिक करें, और आपके टेम्पलेट को "नई पुस्तकों के लिए स्रोत" में जोड़ दिया जाएगा।</target>
         <note>ID: template.starter.share.bloompack</note>
-        <alt-trans>
-          <target xml:lang="hi">स्थानीय सहयोगियों के लिए, आपकी टेम्पलेट को ब्लूम पैक के माध्यम से वितरित करना एक आसान तरीका है। संग्रह टैब में, अपने टेम्पलेट के थंबनेल पर राइट-क्लिक करें। 'ब्लूम पैक बनाएं' चुनें। उसे किसी जगह पर सेव करें, उदाहरण के लिए, जैसे कि यूएसबी की में। फिर उसे किसी अन्य कंप्यूटर में ले जाएं, आपने बनाई फाइल पर डबल क्लिक करें, और आपकी टेम्पलेट को "नई पुस्तकों के लिए स्रोत" में जोड़ दिया जाएगा।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.notes" approved="yes">
         <source xml:lang="en">Notes</source>
-        <target xml:lang="hi" state="translated">नोट्स</target>
+        <target xml:lang="hi" state="final">नोट्स</target>
         <note>ID: template.starter.notes</note>
       </trans-unit>
       <trans-unit id="template.starter.nothingautomatic">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
         <target xml:lang="hi" state="translated"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: इन पुस्तकों को बाद में आगामी फोलियो फीचर का इस्तेमाल कर संयोजित किया जा सकता है। ध्यान दें कि ब्लूम अभी तक आपको कोई उपाय नहीं देता है जो संकेत दे कि कोई पन्ना स्वचालित रूप से नई पुस्तकों में शामिल किया जाना चाहिए; लेखक को पन्ना जोड़ें डायलॉग से हर एक पन्ने को जोड़ना होगा।</target>
         <note>ID: template.starter.nothingautomatic</note>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: इन पुस्तकों को बाद में आगामी फोलियो फीचर का इस्तेमाल कर संयोजित किया जा सकता है। ध्यान दें कि ब्लूम अभी तक आपको कोई उपाय नहीं देता है जो संकेत दे कि कोई पन्ना स्वचालित रूप से नई पुस्तकों में शामिल किया जाना चाहिए; लेखक को पन्ना जोड़ें डायलॉग से हर एक पन्ने को जोड़ना होगा।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: इन पुस्तकों को बाद में आगामी फोलियो फीचर का इस्तेमाल कर संयोजित किया जा सकता है। ध्यान दें कि ब्लूम अभी तक आपको कोई उपाय नहीं देता है जो संकेत दे कि कोई पन्ना स्वचालित रूप से नई पुस्तकों में शामिल किया जाना चाहिए; लेखक को पन्ना जोड़ें डायलॉग से हर एक पन्ने को जोड़ना होगा।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-          <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: इन पुस्तकों को बाद में आगामी फोलियो फीचर का इस्तेमाल कर संयोजित किया जा सकता है। ध्यान दें कि ब्लूम अभी तक आपको कोई उपाय नहीं देता है जो संकेत दे कि कोई पन्ना स्वचालित रूप से नई पुस्तकों में शामिल किया जाना चाहिए; लेखक को पन्ना जोड़ें डायलॉग से हर एक पन्ने को जोड़ना होगा।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: इन पुस्तकों को बाद में आगामी फोलियो फीचर का इस्तेमाल कर संयोजित किया जा सकता है। ध्यान दें कि ब्लूम अभी तक आपको कोई उपाय नहीं देता है जो संकेत दे कि कोई पन्ना स्वचालित रूप से नई पुस्तकों में शामिल किया जाना चाहिए; लेखक को पन्ना जोड़ें डायलॉग से हर एक पन्ने को जोड़ना होगा।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: इन पुस्तकों को बाद में आगामी फोलियो फीचर का इस्तेमाल कर संयोजित किया जा सकता है। ध्यान दें कि ब्लूम अभी तक आपको कोई उपाय नहीं देता है जो संकेत दे कि कोई पन्ना स्वचालित रूप से नई पुस्तकों में शामिल किया जाना चाहिए; लेखक को पन्ना जोड़ें डायलॉग से हर एक पन्ने को जोड़ना होगा।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
         <target xml:lang="hi" state="translated"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: यदि आप नहीं चाहते कि आपके टेंपलेट के पन्ने, पन्ना जोड़ें डायलॉग में दिखाई दे, तो आप पन्नाजोड़नेकेलिएनहीं.txt नाम के पुस्तक टेंपलेट फोल्डर में एक फाइल निर्माण करने के द्वारा ब्लूम को इसकी सूचना दे सकते हैं।</target>
         <note>ID: template.starter.nametonotaddpage</note>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-          
-          
-          <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: यदि आप नहीं चाहते कि आपके टेंपलेट के पन्ने, पन्ना जोड़ें डायलॉग में दिखाई दे, तो आप पन्नाजोड़नेकेलिएनहीं.txt नाम के पुस्तक टेंपलेट फोल्डर में एक फाइल निर्माण करने के द्वारा ब्लूम को इसकी सूचना दे सकते हैं।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-          
-          <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: यदि आप नहीं चाहते कि आपके टेंपलेट के पन्ने, पन्ना जोड़ें डायलॉग में दिखाई दे, तो आप पन्नाजोड़नेकेलिएनहीं.txt नाम के पुस्तक टेंपलेट फोल्डर में एक फाइल निर्माण करने के द्वारा ब्लूम को इसकी सूचना दे सकते हैं।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-          <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: यदि आप नहीं चाहते कि आपके टेंपलेट के पन्ने, पन्ना जोड़ें डायलॉग में दिखाई दे, तो आप पन्नाजोड़नेकेलिएनहीं.txt नाम के पुस्तक टेंपलेट फोल्डर में एक फाइल निर्माण करने के द्वारा ब्लूम को इसकी सूचना दे सकते हैं।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: यदि आप नहीं चाहते कि आपके टेंपलेट के पन्ने, पन्ना जोड़ें डायलॉग में दिखाई दे, तो आप पन्नाजोड़नेकेलिएनहीं.txt नाम के पुस्तक टेंपलेट फोल्डर में एक फाइल निर्माण करने के द्वारा ब्लूम को इसकी सूचना दे सकते हैं।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          <g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: यदि आप नहीं चाहते कि आपके टेंपलेट के पन्ने, पन्ना जोड़ें डायलॉग में दिखाई दे, तो आप पन्नाजोड़नेकेलिएनहीं.txt नाम के पुस्तक टेंपलेट फोल्डर में एक फाइल निर्माण करने के द्वारा ब्लूम को इसकी सूचना दे सकते हैं।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.labelsnottranslatable">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
         <target xml:lang="hi" state="translated"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: लोग आपके लेबलों और विवरणों का अन्य राष्ट्रीय भाषाओं में अनुवाद नहीं कर पाएंगे। यदि यह एक समस्या है, तो कृपया ब्लूम टीम से संपर्क करें।</target>
         <note>ID: template.starter.labelsnottranslatable</note>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-          
-          
-          <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: लोग आपके लेबलों और विवरणों का अन्य राष्ट्रीय भाषाओं में अनुवाद नहीं कर पाएंगे। यदि यह एक समस्या है, तो कृपया ब्लूम टीम से संपर्क करें।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-          
-          <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: लोग आपके लेबलों और विवरणों का अन्य राष्ट्रीय भाषाओं में अनुवाद नहीं कर पाएंगे। यदि यह एक समस्या है, तो कृपया ब्लूम टीम से संपर्क करें।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-          <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: लोग आपके लेबलों और विवरणों का अन्य राष्ट्रीय भाषाओं में अनुवाद नहीं कर पाएंगे। यदि यह एक समस्या है, तो कृपया ब्लूम टीम से संपर्क करें।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: लोग आपके लेबलों और विवरणों का अन्य राष्ट्रीय भाषाओं में अनुवाद नहीं कर पाएंगे। यदि यह एक समस्या है, तो कृपया ब्लूम टीम से संपर्क करें।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: लोग आपके लेबलों और विवरणों का अन्य राष्ट्रीय भाषाओं में अनुवाद नहीं कर पाएंगे। यदि यह एक समस्या है, तो कृपया ब्लूम टीम से संपर्क करें।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.editrawhtml">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
         <target xml:lang="hi" state="translated"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: अगर आप आप चाहते हैं कि पन्ना जोड़ें स्क्रीन भी पन्ने पर एक संक्षिप्त विवरण दे, तो आपको ब्लूम को बंद करना होगा और नोटपैड में टेंपलेट के एचटीएमएल को एडिट करना होगा, जैसे की: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-          
-          
-          <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: अगर आप आप चाहते हैं कि पन्ना जोड़ें स्क्रीन भी पन्ने पर एक संक्षिप्त विवरण दे, तो आपको ब्लूम को बंद करना होगा और नोटपैड में टेंपलेट के एचटीएमएल को एडिट करना होगा, जैसे की: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-          
-          <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: अगर आप आप चाहते हैं कि पन्ना जोड़ें स्क्रीन भी पन्ने पर एक संक्षिप्त विवरण दे, तो आपको ब्लूम को बंद करना होगा और नोटपैड में टेंपलेट के एचटीएमएल को एडिट करना होगा, जैसे की: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-          <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: अगर आप आप चाहते हैं कि पन्ना जोड़ें स्क्रीन भी पन्ने पर एक संक्षिप्त विवरण दे, तो आपको ब्लूम को बंद करना होगा और नोटपैड में टेंपलेट के एचटीएमएल को एडिट करना होगा, जैसे की: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: अगर आप आप चाहते हैं कि पन्ना जोड़ें स्क्रीन भी पन्ने पर एक संक्षिप्त विवरण दे, तो आपको ब्लूम को बंद करना होगा और नोटपैड में टेंपलेट के एचटीएमएल को एडिट करना होगा, जैसे की: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: अगर आप आप चाहते हैं कि पन्ना जोड़ें स्क्रीन भी पन्ने पर एक संक्षिप्त विवरण दे, तो आपको ब्लूम को बंद करना होगा और नोटपैड में टेंपलेट के एचटीएमएल को एडिट करना होगा, जैसे की: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

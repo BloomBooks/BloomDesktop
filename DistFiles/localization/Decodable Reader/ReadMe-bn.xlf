@@ -6,9 +6,6 @@
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
         <target xml:lang="bn" state="final">একটি <g id="genid-1" ctype="x-html-strong">ডিকোডেবল রিডার</g> হল একটি বই যা সতর্কতার সাথে অক্ষর এবং শব্দ কমায় যাতে একজন নতুন পাঠক সহজে তা পড়তে পারে।শিক্ষার্থীদের অগ্রগতির জন্য সাধারণত, একটি ভাষা শেখার প্রক্রিয়ায় ৫-১০টি <g id="genid-2" ctype="x-html-em">ডিকোডেবল পর্যায়</g> আছে।</target>
         <note>ID: decodable.definition</note>
-        <alt-trans>
-          <target xml:lang="bn">একটি <g id="genid-1" ctype="x-html-strong">ডিকোডেবল রিডার</g> হল একটি বই যা ব্যবহৃত বর্ণ এবং শব্দ সমূহ সতর্কতা সহকারে সীমিত রাখে যেন একটি নতুন পুস্তক যা পড়ার জন্য প্রস্তুত হয়ে আছে তা উপযুক্ত হয়। সাধারণত একটি ভাষায় এমন ৫-১০টি <g id="genid-2" ctype="x-html-em">ডিকোডেবল পর্যায়</g> থাকতে পারে যেগুলির মাধ্যমে শিক্ষার্থীরা উন্নতি করেন।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.stages" approved="yes">
         <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
@@ -24,9 +21,6 @@
         <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
         <target xml:lang="bn" state="final">ব্লুমের মধ্যে বিভিন্ন রিডারদের ব্যবহার সম্পর্কে জানতে, আপনি যা করতে পারেন:</target>
         <note>ID: decodable.learn</note>
-        <alt-trans>
-          <target xml:lang="bn">ব্লুমের মধ্যে বিভিন্ন পাঠকদের ব্যবহার সম্পর্কে জানতে, আপনি যা করতে পারেন:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
@@ -37,20 +31,11 @@
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
         <target xml:lang="bn" state="final">সহায়তা তালিকায় যান, "দলিল রচনা/ডকুমেন্টেশন" নির্বাচন করুন এবং "ডিকোডেবল রিডার" এর নীচে সূচিপত্র দেখুন।</target>
         <note>ID: decodable.learn.helpindex</note>
-        <alt-trans>
-          <target xml:lang="bn">সহায়তা/সাহায্যের  তালিকায় যান, "দলিল রচনা/ডকুমেন্টেশন" নির্বাচন করুন এবং "ডিকোডেবল রিডার" এর নীচে সূচিপত্র দেখুন।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">সহায়তা তালিকাতে যান, নির্বাচন করুন 'সহায়তা' এবং "লেভেলড রিডার" এর নীচে সূচিপত্র দেখুন।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
         <target xml:lang="bn" state="final">সহায়তা মেনুতে যান, নির্বাচন করুন: "রিডারদের নমুনা” তৈরি"।</target>
         <note>ID: decodable.learn.helpmenu</note>
-        <alt-trans>
-          <target xml:lang="bn">সহায়তা মেনুতে যান, নির্বাচন করুন: "পাঠকদের নমুনা” তৈরি"।</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

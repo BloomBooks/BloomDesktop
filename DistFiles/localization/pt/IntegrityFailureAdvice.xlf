@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="integrity.causes" approved="yes">
         <source xml:lang="en">Possible Causes</source>
-        <target xml:lang="pt-PT" state="translated">Possíveis causas</target>
+        <target xml:lang="pt-PT" state="final">Possíveis causas</target>
         <note>ID: integrity.causes</note>
       </trans-unit>
       <trans-unit id="integrity.causes.1">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="integrity.todo" approved="yes">
         <source xml:lang="en">What To Do</source>
-        <target xml:lang="pt-PT" state="translated">Como Resolver</target>
+        <target xml:lang="pt-PT" state="final">Como Resolver</target>
         <note>ID: integrity.todo</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas">
@@ -75,7 +75,7 @@
       </trans-unit>
       <trans-unit id="integrity.missing" approved="yes">
         <source xml:lang="en">Missing Files</source>
-        <target xml:lang="pt-PT" state="translated">Arquivos ausentes</target>
+        <target xml:lang="pt-PT" state="final">Arquivos ausentes</target>
         <note>ID: integrity.missing</note>
       </trans-unit>
     </body>

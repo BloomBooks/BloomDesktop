@@ -6,41 +6,26 @@
         <source xml:lang="en">Vocabulary</source>
         <target xml:lang="mam" state="final">Yol</target>
         <note>ID: leveled.reader.vocabulary</note>
-        <alt-trans>
-          <target xml:lang="mam">Saqlajpakab</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.start.simple" approved="yes">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
         <target xml:lang="mam" state="final">Kyuj tnejel kol anjyz tuj t-xe tnejel chin kajb’el ch’in twitz yol ojtzqi’n kyu’n qe' tal k'wal. Qa at tumel tuj kyyol, kchi ajb’el twitz yol tuj jun ẍq'u'n, tza’nx nchi b’etx qe tal k'wal kuyqe' junjun kol, b’a’n tu’n tajb’en twitz yol tuk’il txqantl ẍq'u'n. Ex b’a’n tu’n t-xi’qe tu’n tajb’en qe twitz yol mya’ nim tzqib’ilte. Qe tal skwel ja'ka b’ant chi na’nte ti’j t-xilen twitz yol noq tu'n tkyaqil tok ti’j ex ti’jqe jun txolyol naqayin ti’j ex tu’n tlaj qe' tilb’ilal tok.</target>
         <note>ID: leveled.reader.start.simple</note>
-        <alt-trans>
-          <target xml:lang="mam">Kyuj qe kol ajns tuj te t-xe tnejel kajb’el qe ch’in twitz yol tzqi’n kyu’n qe tal k'wal. Qa at tu'mel tuj ky-yolb’il, kajb’el qe twitz yol tuj jun ẍq'u'n, tza’nx nche b’etx qe tal k'wal kuyqe ju'njun qe kol, b’a’n tu’n tajb’en qe twitz yol tuk’ txqantl ẍq'u'n. Ax b’a’n tu’n txi’ qe’ tu’n tajb’en qe twitz yol nya’ nim tzqib’ilte. Qe tal skwel jaka b’ant chi na’nte ti’j txilen qe twitz yol noq tu'n kyaqil tok ti’j ex ti’jqe jun txolyol naqayin tok ti’j ex tu’ntlaj qe tilb’ilal tok.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.formatting" approved="yes">
         <source xml:lang="en">Formatting</source>
         <target xml:lang="mam" state="final">Ka'yin</target>
         <note>ID: leveled.reader.formatting</note>
-        <alt-trans>
-          <target xml:lang="mam">Tu'mel yek'b'il</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.start.large" approved="yes">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
         <target xml:lang="mam" state="final">Qe' tz'ib'il tzma in el b'ant kyu'n ja'ka b'ant tu’n tajb’en kye tlok’b’il ma’ ex tenb’il ma’ txolyol. Ex kxe'l oqxe’ne tu’n kyok yol ex qe txolyol tuj ttenb’il tuj junjun t-xaq u'j. Tza'nx lajo’n kyu’n ajtz'ib', tlok’b’il ex qe tenb’il kyxol junjun yol ja'ka b’ant ku’tz kyi'j ex qe junjun txolyol ja'ka b’ant tu’n kykub' tuj qe' ila’ wiq tenb’il.</target>
         <note>ID: leveled.reader.start.large</note>
-        <alt-trans>
-          <target xml:lang="mam">Qe ajsch'il na'x b'ant kyu'n jaka chel wen tu’n tajb’en qe tlok’b’il ma’ ex temb’il ma’ kyxol yol. Ax ikyx kxel oqxe’ne tu’n kyok qe yol ex qe txolyol tujxe ttemb’il tuj ju’njun t-xaq. Tzanx lajo’n kyu’n qe ajsch’il, qe tlok’b’il ex qe temb’il kyxol qe ju’njun yol jaka b’ant ku’tz ky’ij ex qe ju’njun txolyol jaka b’ant tu’n kykub' tuj qe ila’ wiq tenb’il.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.increase.sizes" approved="yes">
         <source xml:lang="en">To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</source>
         <target xml:lang="mam" state="final">Tu'n tch'iy twa'l tloq'b'il, ttenb'il txolyol ex ttenb'il txol junjun yol, b'inchanxa clic tib'aj swejin at txolyol tuj oktzan b'aj b'inchet lu' b'inchanxa tib'aj techil te "nuk' tolb'il" tzaj ke''yin ex ate tuj tb'utx' te kub'ni tuj na'yaj. Qa te tib'ajxa kxe'l tb'inchana jun u'jb'il te txolb'ab'il aq'untl b'incha'n, qe' u'jb'il otaq chi b'inchet tuk'il txolb'ab'il aq'untl b'incha'n lu' ex qajb'ela qe ttxolil aq'unb'il xk'utz'ib' lu'.</target>
         <note>ID: leveled.reader.increase.sizes</note>
-        <alt-trans>
-          <target xml:lang="mam">Tu'n tch'iy twa'l tloq'b'il, ttenb'il txolyol ex ttenb'il txol ju'njun yol, b'inchanxa clic tib'aj swejin at txolyol tuj, oktzan b'aj b'inchet jlu' b'inchanxa tib'aj techi te "nuk' tolb'il" tza'j kye'yin ex ate tuj tb'utx' te kub'ni tuj na'yaj. Qa te tib'ajxa qxe'l tb'inchana jun u'jb'il te txolb'ab'il aq'untl b'incha'nmaj, qe u'jb'il otaq chi b'inechet tuk' txolb'ab'il aq'untl b'incha'nmaj lu' ax qajb'ela qe ttxolil aq'unb'il xk'utz'ib' lu'.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.predictability" approved="yes">
         <source xml:lang="en">Predictability</source>
@@ -51,33 +36,21 @@
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
         <target xml:lang="mam" state="final"><g id="genid-1" ctype="x-html-em">Aj nab'ilte</g> tuj jun txolyol in tq'uma'n qa jun u'jil b'a'n t-xi' tna'n ti' tqal tzul te ti'jxa. Qa ila' maj qajb'ela jun ximb'itz ok kch'iyil nab'ilte. Lu' jun tumel b'a'n tajb'en tu'na:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
-        <alt-trans>
-          <target xml:lang="mam"><g id="genid-1" ctype="x-html-em">Aj nab'ilte</g> tuj jun txolyol ntma'n qa jun ajsch'il b'a'n t-xi' tna'n ti tqal tzul te ti'jxa. Qa ila' maj qajb'ela jun ximb'itz ok qch'iyil aj nab'ilte. Lu ju'n qe tumlal b'a'n tajb'en tu'na:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.repetition" approved="yes">
         <source xml:lang="en">Repetition - repeating parts of the text, for example, using the same sentence with each page and just changing one word in the sentence</source>
         <target xml:lang="mam" state="final">Jun majtl - jun majtl ntzyet junjun txolyol. Yek'b'il tu'n tajb'en jun majtl txolyol tuj junjun t-xaq u'j ex noqx k'elel jun yol toj txolyol</target>
         <note>ID: leveled.reader.repetition</note>
-        <alt-trans>
-          <target xml:lang="mam">Qoq'x - qoq'x nchetz ju'njun txolyol. Qa qajb'el ax txolyol tuj ju'njun t-xaq ex noqx k'elel jun yol ti'j txolyol</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.sequencing" approved="yes">
         <source xml:lang="en">Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</source>
         <target xml:lang="mam" state="final">Txolin ten - jun b'ib'il ojtzqi'n txolil ikytza'n qe' q'ij tuj semana mo qa in ajb'en tajlal tuj jun q'il twitz</target>
         <note>ID: leveled.reader.sequencing</note>
-        <alt-trans>
-          <target xml:lang="mam">Txolin ten - jun b'ib'il tzqi'n txolil ikytza qe q'ij tuj seman mo qa n-najb'en qe tajlal tuj jun q'il twitz</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.building.sequence" approved="yes">
         <source xml:lang="en">Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
         <target xml:lang="mam" state="final">In ch'iy ttxolil - jun b'ib'il tuk'il jun q'il twitz ntzaj jun majtl ex nxwiqtz'et ti'j junjun ak'aj t-xaq</target>
         <note>ID: leveled.reader.building.sequence</note>
-        <alt-trans>
-          <target xml:lang="mam">N-ch'iy ttxolil - jun b'ib'il tuk' jun q'il twitz qoq'x n-netz ex nxwiqtz'et ti'j ju'njun ak'aj t-xaq</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.rhyme" approved="yes">
         <source xml:lang="en">Rhyme - a story with a pattern or sequence that also includes rhyme. For example:
@@ -93,94 +66,56 @@ Tana tal nchi’sa tzul b’ina tu'n ya’ xjaw</g>
 <g id="genid-4" ctype="x-html-div" html:class="author">Adriano del Valle</g>
 </g></target>
         <note>ID: leveled.reader.rhyme</note>
-        <alt-trans>
-          <target xml:lang="mam">Junxq'ajt - jun pakab’ tuk’ jun q'il twitz mo qe txolil yol tiqn kyib’ tuk'ix junxq'ajt. Yek’b’itz: 
-<g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-<g id="genid-3" ctype="x-html-pre">N-oq' chi's tuntlaj tky’i' wtan
-Tana tal nchi’sa tzul b’ina tu'n ya’ xjaw</g>
-<g id="genid-4" ctype="x-html-div" html:class="author">Adriano del Valle</g>
-</g></target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations" approved="yes">
         <source xml:lang="en">Illustration Support</source>
         <target xml:lang="mam" state="final">Onb'il kye b'inchb'il tilb'ilal</target>
         <note>ID: leveled.reader.illustrations</note>
-        <alt-trans>
-          <target xml:lang="mam">Onb'il te b'inchb'il tilb'ilal</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help" approved="yes">
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.</source>
         <target xml:lang="mam" state="final">Qe' tilb’ilal tuj jun pakab’ nchi ajb’en te onb’il. At kyoklen tilb’ilal tuj qe' b'ib'itz tuj qe ila’ wiq tnab’il tuj qe ila’ wiq <g id="genid-5" ctype="x-html-em">kol nya' ma' tuj</g> ex kye qe' ila wiq u'jil (ka'yin tjaq’). Min ku'x naj ti'j tk'u'ja qa tuj qe ila’ wiq kyanq’ib’il qe xjal nti’ u’jb'il b'incha'n, ja'ka b’ant kyiw ti'j tu'n tel kyniky’ ti’j tilb’ilal nim kyxilen.</target>
         <note>ID: leveled.reader.illustrations.help</note>
-        <alt-trans>
-          <target xml:lang="mam">Qe tilb’ilal tuj jun pakab’ nchajb’en te onb’il. At kyoklen qe tilb’ilal tuj qe b'ib'itz tuj qe ila’ wiq tnab’il tuj qe ila’ wiq <g id="genid-5" ctype="x-html-em">kol nya' ma' tuj</g> ex kye qe ila wiq ajsch’il (kyeyin oka tjaq’). Min kux naj ti'j tk'u'ja qa tuj qe ila’ wiq kyanq’ib’il qe xjal nti’ u’jb'il b'incha'nmaj, jaka b’ant kyiw ti'j tu'n tel kyniky’ ti’j qe tilb’ilal nim kyixilen.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.</source>
         <target xml:lang="mam" state="final">Kye qe <g id="genid-6" ctype="x-html-strong">u'jil na'mx tb'ant kyu'n</g> qe' tilb’ilal ilti’j at kyxilen tuk'il b'ib'il mo tuk'il na'l tqanil. Ok til jun tilb’ilal jun u'jil, ja'ku b'a'n tzaj tq'uma'n ti' t-xilen b'ib'il mo na'l tqanil. Qe' tilb’ilal tuj kol mya' ma' tuj lu’ ilti’j mya’ nim tok ti’j.</target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
-        <alt-trans>
-          <target xml:lang="mam">Kye qe <g id="genid-6" ctype="x-html-strong">ajsch’il n'ax b'ant kyu'n</g> qe tilb’ilal il ti’j at kyxilen tuk' b'ib'il mo tuk' na'ltqanil. Ok til jun tilb’ilal jun ajsch’il, jaku b'a'n tzaj tma'n ti txilen b'ib'il mo na'ltqanil. Qe tilb’ilal tuj kol nya ma' tuj lu’ il ti’j nya’ nim tok ti’j.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.</source>
         <target xml:lang="mam" state="final">Kye qe <g id="genid-7" ctype="x-html-strong">U'jil ma nb'ant kyu'nl</g> qe tilb’ilal ilti’j tu’n t-xi’ toyin onb’il ti’j t-xilen b'ib'il tza’n nch’iy txolyol, te u'jil mya’ nxi’ qe’ tk’u’j ti’j qe tilb’ilal ex ne’lxe tniky’ ti'j txolyol. B'a'n tu'n kyb'ant qe' tilb’ilal kyiw tu’n tel qniky’ ti’j.</target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
-        <alt-trans>
-          <target xml:lang="mam">Kye qe <g id="genid-7" ctype="x-html-strong">Ajsch’il ma nb'ant kyu'nl</g> qe tilb’ilal il ti’j tu’n t-xi’ toyin onb’il ti’j txilen b'ib'il tza’n nch’iy txolyol, te ajsch’il nya’ nxi’ qe’ tk’u’j ti’j qe tilb’ilal ex ne’lxe tniky’ ti'j txolyol. B'a'n tu'n kyb'ant qe tilb’ilal kyiw tu’n tel qniky’ ti’j.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.</source>
         <target xml:lang="mam" state="final">Kye qe <g id="genid-8" ctype="x-html-strong">u'jil b'a'nxix kyu'n</g> qe tilb’ilal ja'ka b’ant noq ch'in mo min ntzaj kyq’o’n onb’il ti’j t-xilen b'ib'itz. K'elel tniky' u'jil o'kx tu'n txolyol, mya' ilti'j qe' tilb'ilal. Aqe tzan tilb'ilal ja'ka b’ant tu’n kyok kyiwxix tu’n tel qniky’ kyi’j.</target>
         <note>ID: leveled.reader.fluent.reader</note>
-        <alt-trans>
-          <target xml:lang="mam">Kye qe <g id="genid-8" ctype="x-html-strong">ajsch’il b'a'nxix kyu'n</g> qe tilb’ilal jaka b’ant noq ch'in mo min tzaj kyq’o’n onb’il ti’j txilen b'ib'itz. K'elel tniky' ajsch'il o'kx tu'n txolyol, nya' il ti'j qe tilb'ilal. Aqetzan tilb'ilal jaka b’ant tu’n kyok kyiwxix tu’n tel qnik’ kyi’j.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice" approved="yes">
         <source xml:lang="en">Choice of Topic</source>
         <target xml:lang="mam" state="final">Sik'ob'il b'ixnaq'tz</target>
         <note>ID: leveled.reader.topic.choice</note>
-        <alt-trans>
-          <target xml:lang="mam">Sik'ob'il tb'i nab'il</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.discussion" approved="yes">
         <source xml:lang="en">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
         <target xml:lang="mam" state="final">Tib'aj nimqa nab'il b'a'n chi yolin qe u'jb'il. Ok chi b'ant qe' u'jb'il kye qa u'jil na'mx tb'ant kyu'n, sak'onktza twitz yol jun kmujx in el kyniky'. Qe' u'jil kyajxix chi u'jin ex nim nchi u'jin qa tb'anil nab'il nchi u'jin ex qa ojtzqi'n kyu'n. Qe' u'jil b'a'nxix kyu'n, ja'ka b'a'n tu'n kyku'x twitz yol nti' ojtzqi'n tu'n u'jil.</target>
         <note>ID: leveled.reader.topic.choice.discussion</note>
-        <alt-trans>
-          <target xml:lang="mam">Tib'aj nimqa nab'il b'a'n chi yolin qe u'jb'il. Ok chi b'ant qe u'jb'il kye qa ajsch'il na'x b'ant kyu'n, sak'onqtza qe twitz yol jorat n-nel kyniky'. Qe ajsch'il kyajxix chi sch'in ex nim chi sch'il qa tb'anil nab'il nchi sch'in ex qa tzqi'n kyu'n. Qe ajsch'il b'a'nxix kyu'n, jaka b'a'n tu'n kyku'x twitz yol nti' tzqi'n tu'n ajsch'il.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.</source>
         <target xml:lang="mam" state="final">Kye qe' <g id="genid-9" ctype="x-html-strong">u'jil na'mx tb'ant kyu'n</g> aju u'jb'il ilti'j jikan tnab'il, ex ilti'j tu'n tyolin tib'aj jun ximb'itz mo twitz yol, ojtzqi'n kyu'n ex ju kmujx in el kyniky' ti'j.</target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
-        <alt-trans>
-          <target xml:lang="mam">Kye qa <g id="genid-9" ctype="x-html-strong">Ajsch'il na'x b'ant kyu'n</g> aj u'jb'il il ti'j jikan t-nab'il, ex il ti'j tu'n tyolin tib'aj jun ximb'itz mo twitz yol, tzqi'n kyu'n ex jorat n-nel kyniky'.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.early.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.</source>
         <target xml:lang="mam" state="final">Kye qe' <g id="genid-10" ctype="x-html-strong">U'jil ma nb'ant kyu'n</g>, ilti'j tu'n tb'ant jun b'ib'itz tib'aj jun twitz yol ojtzqi'n kyu'n ex ok chi ximil ch'intl tib'aj.</target>
         <note>ID: leveled.reader.topic.choice.early.reader</note>
-        <alt-trans>
-          <target xml:lang="mam">Kye qa <g id="genid-10" ctype="x-html-strong">Ajsch'il ma nb'ant kyu'n</g>, il ti'j tu'n tb'ant jun b'ib'itz tib'aj jun twitz yol tzqi'n kyu'n ex ok chi ximil ch'intl tib'aj.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.</source>
         <target xml:lang="mam" state="final">Kye qe' <g id="genid-11" ctype="x-html-strong">U'jil b'a'nxix kyu'n</g> qe' twitz yol nti' ojtzqi'n kyu'n, ila' tumel twitz yol ex mya' q'ancha'lxix ximb'itz.</target>
         <note>ID: leveled.reader.topic.choice.fluent.reader</note>
-        <alt-trans>
-          <target xml:lang="mam">Kye qa <g id="genid-11" ctype="x-html-strong">Ajsch'il b'a'nxix kyu'n</g> qe twitz yol nti' tzqi'n kyu'n, ila' tu'mel twitz yol ex nya' q'ancha'lxix ximb'itz.</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

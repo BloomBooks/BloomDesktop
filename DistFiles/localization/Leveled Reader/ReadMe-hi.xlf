@@ -4,74 +4,58 @@
     <body>
       <trans-unit id="leveled.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
-        <target xml:lang="hi" state="translated"><g id="genid-1" ctype="x-html-strong">लेवेल्ड पुस्तक</g> एक पुस्तक है जो विशेषकर एक सिखनेवाले के लिए लिखी गई है जो पढ़ने के विकास के एक निश्चित स्तर पर है। स्तर शब्द लंबाई, वाक्य लंबाई, आदि के लक्ष्य को परिभाषित करते हैं। वे उचित फॉर्मेटिंग, शब्दावली, चित्रण सहायता और विषय भी निर्धारित करते हैं।</target>
+        <target xml:lang="hi" state="final"><g id="genid-1" ctype="x-html-strong">लेवेल्ड पुस्तक</g> एक पुस्तक है जो विशेषकर एक सिखनेवाले के लिए लिखी गई है जो पढ़ने के विकास के एक निश्चित स्तर पर है। स्तर शब्द लंबाई, वाक्य लंबाई, आदि के लक्ष्य को परिभाषित करते हैं। वे उचित फॉर्मेटिंग, शब्दावली, चित्रण सहायता और विषय भी निर्धारित करते हैं।</target>
         <note>ID: leveled.definition</note>
       </trans-unit>
       <trans-unit id="leveled.levels" approved="yes">
         <source xml:lang="en">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
-        <target xml:lang="hi" state="translated"><g id="genid-2" ctype="x-html-em">पुस्तकों</g> का अनुक्रम निर्धारित करने के बाद, आपने इस टेम्पलेट या "डिकोडेबल पुस्तक टेम्पलेट" के साथ जिन पुस्तकों को बनाया है उनके लिए आप एक स्तर ठहरा सकते हैं। जब आप पुस्तक में टाइप करेंगे, ब्लूम आपके मन में स्तर रखने में सहायता करेगा और आपने स्तर की सीमा कब पार कर ली है वह दिखाएगा।</target>
+        <target xml:lang="hi" state="final"><g id="genid-2" ctype="x-html-em">पुस्तकों</g> का अनुक्रम निर्धारित करने के बाद, आपने इस टेम्पलेट या "डिकोडेबल पुस्तक टेम्पलेट" के साथ जिन पुस्तकों को बनाया है उनके लिए आप एक स्तर ठहरा सकते हैं। जब आप पुस्तक में टाइप करेंगे, ब्लूम आपके मन में स्तर रखने में सहायता करेगा और आपने स्तर की सीमा कब पार कर ली है वह दिखाएगा।</target>
         <note>ID: leveled.levels</note>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-2" ctype="x-html-em">पुस्तकों</g> का अनुक्रम निर्धारित करने के बाद, आपने इस टेम्पलेट या "डिकोडेबल पुस्तक टेम्पलेट" के साथ जिन पुस्तकों को बनाया है उनके लिए आप एक स्तर ठहरा सकते हैं। जब आप पुस्तक में टाइप करेंगे, ब्लूम आपके मन में स्तर रखने में सहायता करेगा और आपने स्तर की सीमा कब पार कर ली है वह दिखाएगा।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-2" ctype="x-html-em">पुस्तकों</g> का अनुक्रम निर्धारित करने के बाद, आपने इस टेम्पलेट या "डिकोडेबल पुस्तक टेम्पलेट" के साथ जिन पुस्तकों को बनाया है उनके लिए आप एक स्तर ठहरा सकते हैं। जब आप पुस्तक में टाइप करेंगे, ब्लूम आपके मन में स्तर रखने में मदद करेगा और आपने स्तर की सीमा कब पार कर ली है वह दिखाएगा।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-3" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="hi" state="translated">आप <g id="genid-3" ctype="x-html-em">टेम्पलेट्स</g> का ब्लूम पैक भी बना सकते हैं जिसका एक साक्षरता विशेषज्ञ द्वारा तैयार किए गए पुस्तकों और चरणों के आधार पर दूसरे लोग जल्दी से पुस्तकें निर्माण करने में उपयोग कर सकते हैं।</target>
+        <target xml:lang="hi" state="final">आप <g id="genid-3" ctype="x-html-em">टेम्पलेट्स</g> का ब्लूम पैक भी बना सकते हैं जिसका एक साक्षरता विशेषज्ञ द्वारा तैयार किए गए पुस्तकों और चरणों के आधार पर दूसरे लोग जल्दी से पुस्तकें निर्माण करने में उपयोग कर सकते हैं।</target>
         <note>ID: leveled.templates</note>
       </trans-unit>
       <trans-unit id="leveled.learn" approved="yes">
         <source xml:lang="en">To learn about using Leveled Readers in Bloom, you can:</source>
-        <target xml:lang="hi" state="translated">ब्लूम में लेवेल्ड पुस्तकों का उपयोग करने के बारे में सीखने के लिए, आप कर सकते हैं:</target>
+        <target xml:lang="hi" state="final">ब्लूम में लेवेल्ड पुस्तकों का उपयोग करने के बारे में सीखने के लिए, आप कर सकते हैं:</target>
         <note>ID: leveled.learn</note>
       </trans-unit>
       <trans-unit id="leveled.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="hi" state="translated">इन <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">प्रशिक्षण संबंधी वीडियोस को देखें</g>.</target>
+        <target xml:lang="hi" state="final">इन <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">प्रशिक्षण संबंधी वीडियोस को देखें</g>.</target>
         <note>ID: leveled.learn.videos</note>
       </trans-unit>
       <trans-unit id="leveled.learn.helpindex">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</source>
         <target xml:lang="hi" state="translated">सहायता मेनू पर जाएं, 'सहायता' चुनें, और "लेवेल्ड पुस्तक" अंतर्गत अनुक्रमणिका में देखें।</target>
         <note>ID: leveled.learn.helpindex</note>
-        <alt-trans>
-          <target xml:lang="hi">मदद मेनू पर जाएं, 'मदद' चुनें, और "लेवेल्ड पुस्तक" अंतर्गत अनुक्रमणिका में देखें।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="hi" state="translated">सहायता मेनू पर जाएं और "पुस्तक टेम्पलेट निर्माण करना" चुनें।</target>
+        <target xml:lang="hi" state="final">सहायता मेनू पर जाएं और "पुस्तक टेम्पलेट निर्माण करना" चुनें।</target>
         <note>ID: leveled.learn.helpmenu</note>
-        <alt-trans>
-          <target xml:lang="hi">मदद मेनू पर जाएं और "पुस्तक टेम्पलेट निर्माण करना" चुनें।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.vs.decodable" approved="yes">
         <source xml:lang="en">Relationship to Decodable Readers</source>
-        <target xml:lang="hi" state="translated">डिकोडेबल पुस्तकों से संबंध</target>
+        <target xml:lang="hi" state="final">डिकोडेबल पुस्तकों से संबंध</target>
         <note>ID: leveled.vs.decodable</note>
       </trans-unit>
       <trans-unit id="leveled.and.decodable" approved="yes">
         <source xml:lang="en">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</source>
-        <target xml:lang="hi" state="translated">तो लेवेल्ड पुस्तक <g id="genid-5" ctype="x-html-em">स्तर</g> डिकोडेबल पुस्तक<g id="genid-6" ctype="x-html-em">चरणों</g> में कैसे सही बैठते हैं? दो सिद्धांत पूरक हैं, और ब्लूम आपको आप जो पुस्तक लिख रहे हैं उसके लिए <g id="genid-7" ctype="x-html-em">डिकोडेबल चरण</g> और <g id="genid-8" ctype="x-html-em">लेवेल्ड पुस्तक स्तर</g> दोनों को सेट करने की अनुमति देता है। 
+        <target xml:lang="hi" state="final">तो लेवेल्ड पुस्तक <g id="genid-5" ctype="x-html-em">स्तर</g> डिकोडेबल पुस्तक<g id="genid-6" ctype="x-html-em">चरणों</g> में कैसे सही बैठते हैं? दो सिद्धांत पूरक हैं, और ब्लूम आपको आप जो पुस्तक लिख रहे हैं उसके लिए <g id="genid-7" ctype="x-html-em">डिकोडेबल चरण</g> और <g id="genid-8" ctype="x-html-em">लेवेल्ड पुस्तक स्तर</g> दोनों को सेट करने की अनुमति देता है। 
 आमतौर पर स्तर 1 में और संभवतः स्तर 2 में भी पुस्तकों को <g id="genid-9" ctype="x-html-em">डिकोडेबिलिटी चरणों</g> को मन में रखकर लिखने की आवश्यकता होगी। पहले या दूसरे स्तर पर की पुस्तकों को भी <g id="genid-10" ctype="x-html-em">डिकोडेबल</g> होने के प्रति सावधान रहने की आवश्यकता होगी (मतलब अक्षरों का प्रयोग कर पुस्तक ने सीखा है). तो किताबों का एक अनुक्रम इस तरह दिखाई दे सकता है:</target>
         <note>ID: leveled.and.decodable</note>
-        <alt-trans>
-          <target xml:lang="hi">तो लेवेल्ड पुस्तक <g id="genid-5" ctype="x-html-em">स्तर</g> डिकोडेबल पुस्तक<g id="genid-6" ctype="x-html-em">चरणों</g> में कैसे सही बैठते हैं? दो सिद्धांत पूरक हैं, और ब्लूम आपको आप जो पुस्तक लिख रहे हैं उसके लिए <g id="genid-7" ctype="x-html-em">डिकोडेबल चरण</g> और <g id="genid-8" ctype="x-html-em">लेवेल्ड पुस्तक स्तर</g> दोनों को सेट करने की अनुमति देता है। 
-आमतौर पर स्तर 1 में और संभवतः स्तर 2 में भी पुस्तकों को <g id="genid-9" ctype="x-html-em">डिकोडेबिलिटी चरणों</g> को मन में रखकर लिखने की आवश्यकता होगी। पहले या दूसरे स्तर पर की पुस्तकों को भी <g id="genid-10" ctype="x-html-em">डिकोडेबल</g> होने के प्रति सावधान रहने की आवश्यकता होगी (मतलब अक्षरों का प्रयोग कर पुस्तक ने सीखा है). तो किताबों का एक अनुक्रम इस तरह दिखाई दे सकता है:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.level" approved="yes">
         <source xml:lang="en">Leveled Reader Level</source>
-        <target xml:lang="hi" state="translated">लेवल्ड पुस्तक स्तर</target>
+        <target xml:lang="hi" state="final">लेवल्ड पुस्तक स्तर</target>
         <note>ID: leveled.reader.level</note>
       </trans-unit>
       <trans-unit id="decodable.stage" approved="yes">
         <source xml:lang="en">Decodable Stage</source>
-        <target xml:lang="hi" state="translated">डिकोडेबल चरण</target>
+        <target xml:lang="hi" state="final">डिकोडेबल चरण</target>
         <note>ID: decodable.stage</note>
       </trans-unit>
     </body>
