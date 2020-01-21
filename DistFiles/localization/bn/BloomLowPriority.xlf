@@ -6,25 +6,25 @@
         <source xml:lang="en">Conversion file used:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
         <note>After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specificies a mapping which is used to convert the script for one language into the script for another.</note>
-        <target xml:lang="bn" state="translated">রূপান্তর ফাইল ব্যবহৃত:</target>
+        <target xml:lang="bn" state="final">রূপান্তর ফাইল ব্যবহৃত:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error" approved="yes">
         <source xml:lang="en">eSpeak failed.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
         <note>This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
-        <target xml:lang="bn" state="translated">ইকথা ব্যর্থ হয়েছে </target>
+        <target xml:lang="bn" state="final">ইকথা ব্যর্থ হয়েছে </target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed" approved="yes">
         <source xml:lang="en">eSpeak language:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed</note>
         <note>After this text, the program will display the language code of the language settings that eSpeak used. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
-        <target xml:lang="bn" state="translated">ইবলার ভাষা </target>
+        <target xml:lang="bn" state="final">ইবলার ভাষা </target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion" approved="yes">
         <source xml:lang="en">Result of orthography conversion:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
         <note>After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file.</note>
-        <target xml:lang="bn" state="translated">অর্থোগ্রাফি রূপান্তরের ফলাফল:</target>
+        <target xml:lang="bn" state="final">অর্থোগ্রাফি রূপান্তরের ফলাফল:</target>
         <alt-trans>
           <target xml:lang="bn">অর্থোগ্রাফি রূপান্তর ফলাফল:</target>
         </alt-trans>
@@ -32,22 +32,22 @@
       <trans-unit id="Settings.Enterprise.Community" approved="yes">
         <source xml:lang="en">Funded by the local community only</source>
         <note>ID: Settings.Enterprise.Community</note>
-        <target xml:lang="bn" state="translated">শুধুমাত্র স্থানীয় সম্প্রদায়ের মাধ্যমে অর্থের সংস্থান</target>
+        <target xml:lang="bn" state="final">শুধুমাত্র স্থানীয় সম্প্রদায়ের মাধ্যমে অর্থের সংস্থান</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.CheckUpdates" approved="yes">
         <source xml:lang="en">Check for updates</source>
         <note>ID: Settings.Enterprise.CheckUpdates</note>
-        <target xml:lang="bn" state="translated">আপডেটের জন্য চেক করুন</target>
+        <target xml:lang="bn" state="final">আপডেটের জন্য চেক করুন</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expiration" approved="yes">
         <source xml:lang="en">Expires:</source>
         <note>ID: Settings.Enterprise.Expiration</note>
-        <target xml:lang="bn" state="translated">মেয়াদোত্তীর্ণ হবে:</target>
+        <target xml:lang="bn" state="final">মেয়াদোত্তীর্ণ হবে:</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expired" approved="yes">
         <source xml:lang="en">That code has expired.</source>
         <note>ID: Settings.Enterprise.Expired</note>
-        <target xml:lang="bn" state="translated">কোডগুলোর মেয়াদ শেষ হয়ে গেছে।</target>
+        <target xml:lang="bn" state="final">কোডগুলোর মেয়াদ শেষ হয়ে গেছে।</target>
         <alt-trans>
           <target xml:lang="bn">কোডগুলোর মেয়াদ উত্তীর্ণ হয়ে গেছে।</target>
         </alt-trans>
@@ -55,12 +55,12 @@
       <trans-unit id="Settings.Enterprise.Incomplete" approved="yes">
         <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
         <note>ID: Settings.Enterprise.Incomplete</note>
-        <target xml:lang="bn" state="translated"> এই কোডটি এমন দেখানো উচিত যেমন কোনোনাম-123456-7890</target>
+        <target xml:lang="bn" state="final"> এই কোডটি এমন দেখানো উচিত যেমন কোনোনাম-123456-7890</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.LearnMore" approved="yes">
         <source xml:lang="en">Learn More</source>
         <note>ID: Settings.Enterprise.LearnMore</note>
-        <target xml:lang="bn" state="translated">আরও শিখুন</target>
+        <target xml:lang="bn" state="final">আরও শিখুন</target>
         <alt-trans>
           <target xml:lang="bn">অধিক জানুন</target>
         </alt-trans>
@@ -70,14 +70,14 @@
             Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
         </source>
         <note>ID: Settings.Enterprise.Overview</note>
-        <target xml:lang="bn" state="translated">
+        <target xml:lang="bn" state="final">
             ব্লুম এন্টারপ্রাইজ প্রকাশক, সরকার, এবং আন্তর্জাতিক সংস্থার জন্য গুরুত্বপূর্ণ বৈশিষ্ট্য এবং পরিষেবা যুক্ত করে। অর্থ প্রদানকারী সদস্যতা তাদের অনন্য প্রয়োজন পুর্ণ করার সঙ্গে সঙ্গে সম্প্রদায়ের বৃহদাকারে বিকাশ ও ব্লুম ব্যবহারকারীদের সমর্থন করে।
         </target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None" approved="yes">
         <source xml:lang="en">None. Enterprise features will be unavailable.</source>
         <note>ID: Settings.Enterprise.None</note>
-        <target xml:lang="bn" state="translated">কোনোটিও নয়। ব্লুম এন্টারপ্রাইজ বৈশিষ্টগুলো উপলব্ধ হবে না।</target>
+        <target xml:lang="bn" state="final">কোনোটিও নয়। ব্লুম এন্টারপ্রাইজ বৈশিষ্টগুলো উপলব্ধ হবে না।</target>
         <alt-trans>
           <target xml:lang="bn">কোনোটিও নয়। ব্লুম এন্টারপ্রাইজ বৈশিষ্ট্য দেখাবে না।</target>
         </alt-trans>
@@ -86,38 +86,38 @@
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
         <note>ID: Settings.Enterprise.NeedsCode</note>
         <note>%0 will be replaced with the name of the branding. Keep surrounding **...**. [here](%1) will become a hot link; %1 will not be seen, but will be the URL for the destination page. Translate "here" and keep the [](%1) around it.</note>
-        <target xml:lang="bn" state="translated">ব্লুমের একটি পুরোনো সংস্করণে, এই প্রকল্পটি **%0** ব্যবহার করেছিল। এর ব্যবহার অবিরত রাখতে আপনাকে একটি বর্তমান সদস্যতার কোড দিতে হবে। SIL ব্র্যান্ডিংয়ের কোড [here](%1) পাওয়া যাবে। অন্যান্য সদস্যতার জন্য, আপনার প্রকল্প প্রশাসকের সাথে যোগাযোগ করুন।</target>
+        <target xml:lang="bn" state="final">ব্লুমের একটি পুরোনো সংস্করণে, এই প্রকল্পটি **%0** ব্যবহার করেছিল। এর ব্যবহার অবিরত রাখতে আপনাকে একটি বর্তমান সদস্যতার কোড দিতে হবে। SIL ব্র্যান্ডিংয়ের কোড [here](%1) পাওয়া যাবে। অন্যান্য সদস্যতার জন্য, আপনার প্রকল্প প্রশাসকের সাথে যোগাযোগ করুন।</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NotValid" approved="yes">
         <source xml:lang="en">That code appears to be incorrect.</source>
         <note>ID: Settings.Enterprise.NotValid</note>
-        <target xml:lang="bn" state="translated">কোডটি ভুল বলে মনে হচ্ছে।</target>
+        <target xml:lang="bn" state="final">কোডটি ভুল বলে মনে হচ্ছে।</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Status" approved="yes">
         <source xml:lang="en">Bloom Enterprise Status</source>
         <note>ID: Settings.Enterprise.Status</note>
-        <target xml:lang="bn" state="translated">ব্লুম এন্টারপ্রাইজ অবস্থা</target>
+        <target xml:lang="bn" state="final">ব্লুম এন্টারপ্রাইজ অবস্থা</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Subscription" approved="yes">
         <source xml:lang="en">Enterprise Subscription</source>
         <note>ID: Settings.Enterprise.Subscription</note>
-        <target xml:lang="bn" state="translated">এন্টারপ্রাইজ সদস্যতা</target>
+        <target xml:lang="bn" state="final">এন্টারপ্রাইজ সদস্যতা</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.SubscriptionCode" approved="yes">
         <source xml:lang="en">Subscription Code:</source>
         <note>ID: Settings.Enterprise.SubscriptionCode</note>
-        <target xml:lang="bn" state="translated">সদস্যতা কোড:</target>
+        <target xml:lang="bn" state="final">সদস্যতা কোড:</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.UnknownCode" approved="yes">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
         <note>ID: Settings.Enterprise.UnknownCode</note>
-        <target xml:lang="bn" state="translated">সদস্যতার সাথে চলে এমন কোন শিল্পকর্ম ব্লুমের এই সংস্করণে নেই।</target>
+        <target xml:lang="bn" state="final">সদস্যতার সাথে চলে এমন কোন শিল্পকর্ম ব্লুমের এই সংস্করণে নেই।</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.WhatsThis" approved="yes">
         <source xml:lang="en">What's This?</source>
         <note>ID: Settings.Enterprise.WhatsThis</note>
         <note>A link offering more information about the Funded Local Community Only option</note>
-        <target xml:lang="bn" state="translated">এটি কি?</target>
+        <target xml:lang="bn" state="final">এটি কি?</target>
       </trans-unit>
     </body>
   </file>

@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="picture.dictionary" approved="yes">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="mam" state="translated">Nab'il tib'aj ttenb'il u'jb'il te Pujb'ilyol tuk'il tilb'ilal</target>
+        <target xml:lang="mam" state="final">Nab'il tib'aj ttenb'il u'jb'il te Pujb'ilyol tuk'il tilb'ilal</target>
         <note>ID: picture.dictionary</note>
         <alt-trans>
           <target xml:lang="mam">Nab'il tib'aj ttenb'il u'jb'il b'ananmaj te Pujb'ilyol tuk' tilb'ilal</target>
@@ -12,7 +12,7 @@
       </trans-unit>
       <trans-unit id="picture.dictionary.use" approved="yes">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
-        <target xml:lang="mam" state="translated">Tz'ajb'en ttenb'il u'jb'il lu', tu'n tb'inchet jun Pujb'ilyol tuk'il tilb'ilal tz'ib'an tuj junyol, kab'yol mo ox yol.</target>
+        <target xml:lang="mam" state="final">Tz'ajb'en ttenb'il u'jb'il lu', tu'n tb'inchet jun Pujb'ilyol tuk'il tilb'ilal tz'ib'an tuj junyol, kab'yol mo ox yol.</target>
         <note>ID: picture.dictionary.use</note>
         <alt-trans>
           <target xml:lang="mam">B'a'n tajb'lan ttenb'il u'jb'il b'ananmaj lu' tu'n tb'inchet jun pujb'ilyol tuk' tilb'ilal tz'ib'an tuj junyol, kab'e yol mo oxe yol.</target>
@@ -20,7 +20,7 @@
       </trans-unit>
       <trans-unit id="picture.dictionary.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="mam" state="translated">Qe maqb'il ti'j tumel lu'</target>
+        <target xml:lang="mam" state="final">Qe maqb'il ti'j tumel lu'</target>
         <note>ID: picture.dictionary.limits</note>
         <alt-trans>
           <target xml:lang="mam">Qe nchi maqn ti'j tu'mel lu'</target>
@@ -28,7 +28,7 @@
       </trans-unit>
       <trans-unit id="picture.dictionary.stillexperimental" approved="yes">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
-        <target xml:lang="mam" state="translated">Aju u'jb'il lu' tok techil ja'lon ikytzan "niky'b'en" tu'n tlaj ojtzqi'nqe' mya' b'a'n ti'j tb'inchb'il ex txub'txajil.</target>
+        <target xml:lang="mam" state="final">Aju u'jb'il lu' tok techil ja'lon ikytzan "niky'b'en" tu'n tlaj ojtzqi'nqe' mya' b'a'n ti'j tb'inchb'il ex txub'txajil.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
         <alt-trans>
           <target xml:lang="mam">A u'jb'il lu' tok techil ja'lo ikytzan "niky'b'en" tu'n tlaj qtzqi'n qe nya' b'a'n ti'j tb'inchb'il ex txub'txajil.</target>
