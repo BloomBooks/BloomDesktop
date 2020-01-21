@@ -7,9 +7,6 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
         <note>After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specificies a mapping which is used to convert the script for one language into the script for another.</note>
         <target xml:lang="pbu" state="final">د تبادلې فایل کارول شوې:</target>
-        <alt-trans>
-          <target xml:lang="pbu">د تبادلې دوسیه کارول شوې:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error" approved="yes">
         <source xml:lang="en">eSpeak failed.</source>
@@ -67,11 +64,6 @@
         <target xml:lang="pbu" state="final">
             تشبثې بلوم هغه برخې او خدمات اضافه کوي چې د خپرونکو، حکومتونو، او نړیوالو سازمانونو لپاره مهم دي. دا تادیه شوی ګډون د دوی ځانګړې اړتیاوې پوره کوي پداسې حال کې چې په لویه کچه د ټولنې لپاره د بلوم پراختیا او کارن ملاتړ کوي.
         </target>
-        <alt-trans>
-          <target xml:lang="pbu">
-            تشبثی بلوم هغه برحې او خدمات اضافه کوي چې د خپرونکو، حکومتونو، او نړیوالو سازمانونو لپاره مهم دي. دا تادیه شوی ګډون د دوی ځانګړې اړتیاوې پوره کوي پداسې حال کې چې په لویه کچه د ټولنې لپاره د بلوم پراختیا او کارن ملاتړ کوي.
-        </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None" approved="yes">
         <source xml:lang="en">None. Enterprise features will be unavailable.</source>
@@ -98,9 +90,6 @@
         <source xml:lang="en">Enterprise Subscription</source>
         <note>ID: Settings.Enterprise.Subscription</note>
         <target xml:lang="pbu" state="final">تشبثی ګډون</target>
-        <alt-trans>
-          <target xml:lang="pbu">د تشبثی ګډون</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.SubscriptionCode" approved="yes">
         <source xml:lang="en">Subscription Code:</source>

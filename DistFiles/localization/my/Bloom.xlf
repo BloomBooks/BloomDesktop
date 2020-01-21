@@ -133,9 +133,6 @@
         <source xml:lang="en">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>
         <note>ID: BloomPackInstallDialog.BadCharsInFileName</note>
         <target xml:lang="my" state="final">ဘလွန်းအထုပ်အဟောင်းဖြစ်သောကြောင့် ဤအက္ခရာအချို့ကို မဖတ်နိုင်ပါ။ ဘလွန်းတီထွင်သူနှင့်ဆက်သွယ်၍ နောက်ဆုံးပေါ်ဘလွန်းကို အသုံးပြုလျှင် အက္ခရာများကို ဖတ်နိုင်မည်။ သို့မဟုတ် ကွန်ပြူတာနည်းပညာကျွမ်းကျင်သူကိုလည်း အကူအညီတောင်းနိုင်သည်။ </target>
-        <alt-trans>
-          <target xml:lang="my">ဘလွန်းအထုတ်အဟောင်းဖြစ်သောကြောင့် အက္ခရာအချို့ကို မဖတ်နိုင်ပါ။ ဘလွန်းတီထွင်သူနှင့်ဆက်သွယ်၍ နောက်ဆုံးပေါ်ဘလွန်းရနိုင် </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BloomPackInstallation" approved="yes">
         <source xml:lang="en">Bloom Pack Installation</source>
@@ -146,18 +143,12 @@
         <source xml:lang="en">The {0} Collection is now ready to use on this computer.</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstalled</note>
         <target xml:lang="my" state="final">{0} စာအုပ်ပေါင်းချုပ်ဖိုင်ကို ကွန်ပြူတာတွင် အသုံးပြုရန် အဆင်သင့်ဖြစ်ပြီ။</target>
-        <alt-trans>
-          <target xml:lang="my">ဖိုင်စာအုပ်ပေါင်းချုပ်ကို ကွန်ပြူတာတွင် အသုံးပြုရန် အဆင်သင့်ဖြစ်ပြီ။</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BloomPackInstaller" approved="yes">
         <source xml:lang="en">Bloom Pack Installer</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstaller</note>
         <note>Displayed as the message box title</note>
         <target xml:lang="my" state="final">ဘလွန်းအထုပ် ကွန်ပြူတာတွင် အသင့်ထည့်သွင်းတပ်ဆင်ရန် ဆော့ဖ်ဝဲ</target>
-        <alt-trans>
-          <target xml:lang="my">ဘလွန်းအထုတ် ထည့်သွင်းတပ်ဆင်ရန် ပစ္စည်း</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.CorruptBloomPack" approved="yes">
         <source xml:lang="en">This BloomPack appears to be incomplete or corrupt.</source>
@@ -199,9 +190,6 @@
         <source xml:lang="en">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</source>
         <note>ID: BloomPackInstallDialog.Replace</note>
         <target xml:lang="my" state="final">ကွန်ပြူတာတွင် ဤအမည်ဖြင့် ဘလွန်းပေါင်းချုပ်ဖိုင် ရှိပြီးသားဖြစ်သည်။</target>
-        <alt-trans>
-          <target xml:lang="my">ကွန်ပြူတာတွင် ဤအမည်ဖြင့် ဘလွန်းဖိုင်ပေါင်းချုပ် ရှိပြီးသားဖြစ်သည်။</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.SingleCollectionFolder" approved="yes">
         <source xml:lang="en">Bloom Packs should have only a single collection folder at the top level of the .ZIP file.</source>
@@ -224,9 +212,6 @@
         <source xml:lang="en">This formatting is the default for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.DefaultForText</note>
         <target xml:lang="my" state="final">ဤပုံစံအချိုးအစားသည် '{0}'စတိုင်ဖြင့်စာရိုက်ရန်ဇယားကွက်များအတွက် ရွေးချယ်ထားသော ပုံသေပုံစံဖြစ်သည်။ </target>
-        <alt-trans>
-          <target xml:lang="my">ဤပုံစံအချိုးအစားသည် စာရိုက်ရန်သေတ္တာအားလုံးအတွက် '{0}' စတိုင်နှင့်ရေးရန် သတ်မှတ်ရွေးချယ်ထားသောပုံစံဖြစ်သည်။</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.ForText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is for all text boxes with '{0}' style.</source>
@@ -237,10 +222,6 @@
         <source xml:lang="en">This formatting is for all {0} text boxes with '{1}' style.</source>
         <note>ID: BookEditor.ForTextInLang</note>
         <target xml:lang="my" state="final">ဤပုံစံအချိုးအစားသည် '{0}'စတိုင်ဖြင့် {0}စာရိုက်ရန်ဇယားကွက်များအတွက် ဖြစ်သည်။</target>
-        <alt-trans>
-          <target xml:lang="my">ဤပုံစံအချိုးအစားသည် '{0}'စတိုင်ဖြင့် {0}စာရိုက်ရန်ဇယားကွက်များအတွက် ဖြစ်သည်။ 
-</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
@@ -406,19 +387,11 @@
         <note xml:lang="en">OLD TEXT (before 4.3): Show Experimental Commands</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Show Experimental Commands (e.g. Export XML for InDesign)</note>
         <target xml:lang="my" state="translated">အစမ်းလုပ်ဆောင်ရန် ညွှန်ကြားချက်များ ပြသရန်</target>
-        <alt-trans>
-          <target xml:lang="my">အစမ်းလုပ်ဆောင်ရန်ညွှန်ကြားချက်များ ပြသရန်</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates" approved="yes">
         <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates</note>
         <target xml:lang="my" state="final">အစမ်းလုပ်ဆောင်ချက်နမူနာပုံစံပြသရန် (ဥပမာ-ရုပ်ပြအဘိဓာန်)</target>
-        <alt-trans>
-          <target xml:lang="my">အစမ်းလုပ်ဆောင်ချက်နမူနာပုံစံပြသရန် (ဥပမာ-ရုပ်ပြအဘိဓာန်)
-
-</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
@@ -462,9 +435,6 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device</note>
         <note>Name of a Front/Back Matter Pack used for Bloom Reader</note>
         <target xml:lang="my" state="final">ကိရိယာ (ကွန်ပြူတာ/ဖုန်း)</target>
-        <alt-trans>
-          <target xml:lang="my">ကိရိယာ</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paper Saver</source>
@@ -811,6 +781,11 @@
         <source xml:lang="en">Make Bloom Pack...</source>
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
         <target xml:lang="my" state="needs-translation">Make Bloom Pack...</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
+        <source xml:lang="en">Save as single file (.bloom)...</source>
+        <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
+        <target xml:lang="my" state="needs-translation">Save as single file (.bloom)...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
         <source xml:lang="en">Update Book</source>
@@ -1809,6 +1784,21 @@
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
         <target xml:lang="my" state="needs-translation">Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.</target>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitleCaption" sil:dynamic="true">
+        <source xml:lang="en">Edit Original Title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitleCaption</note>
+        <target xml:lang="my" state="needs-translation">Edit Original Title</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitleLabel" sil:dynamic="true">
+        <source xml:lang="en">Original Title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitleLabel</note>
+        <target xml:lang="my" state="needs-translation">Original Title</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitlePlaceholder" sil:dynamic="true">
+        <source xml:lang="en">click to edit original title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitlePlaceholder</note>
+        <target xml:lang="my" state="needs-translation">click to edit original title</target>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
         <note>ID: EditTab.FrontMatter.FundingAgenciesPrompt</note>
@@ -2317,6 +2307,11 @@
         <source xml:lang="en">Text Color</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
         <target xml:lang="my" state="needs-translation">Text Color</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.TextBlock" sil:dynamic="true">
+        <source xml:lang="en">Text Block</source>
+        <note>ID: EditTab.Toolbox.ComicTool.TextBlock</note>
+        <target xml:lang="my" state="needs-translation">Text Block</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
@@ -2943,6 +2938,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
         <source xml:lang="en">Import Recording</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
         <target xml:lang="my" state="needs-translation">Import Recording</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true">
@@ -2967,6 +2963,11 @@
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.LookAtSentence if possible, but without the number</note>
         <target xml:lang="my" state="needs-translation">Look at the highlighted text</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneProblem" sil:dynamic="true">
+        <source xml:lang="en">Bloom is having problems connecting to your microphone. Please restart your computer and try again.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneProblem</note>
+        <target xml:lang="my" state="needs-translation">Bloom is having problems connecting to your microphone. Please restart your computer and try again.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
@@ -2988,6 +2989,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordByTextBox" sil:dynamic="true">
         <source xml:lang="en">Record by whole text box, then let Bloom split it into sentences later.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordByTextBox</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
         <target xml:lang="my" state="needs-translation">Record by whole text box, then let Bloom split it into sentences later.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings" sil:dynamic="true">
@@ -3009,6 +3011,12 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter</note>
         <note>Shown if you open TalkingBookTool and then attempt to toggle the "Record by Sentences" input on an XMatter page</note>
         <target xml:lang="my" state="needs-translation">Sorry, front and back-matter pages must be recorded by sentences.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder" sil:dynamic="true">
+        <source xml:lang="en">Show playback order buttons</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
+        <target xml:lang="my" state="needs-translation">Show playback order buttons</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true">
         <source xml:lang="en">3) Speak</source>

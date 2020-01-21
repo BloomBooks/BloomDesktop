@@ -4,28 +4,28 @@
     <body>
       <trans-unit id="leveled.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
-        <target xml:lang="ar" state="translated">
+        <target xml:lang="ar" state="final">
           <g id="genid-1" ctype="x-html-strong">كتاب مستوى القارئ</g> هو كتاب يتم إعداده خصيصً لطالب في مرحلة معيَّنة من مراحل تطور القراءة. ويتم من خلال المستويات تحديد أهداف طول الكلمة وطول الجملة وما إلى ذلك. كما أنها تحدد التنسيق المناسب والمفردات ودعم الرسم والموضوع.</target>
         <note>ID: leveled.definition</note>
       </trans-unit>
       <trans-unit id="leveled.levels" approved="yes">
         <source xml:lang="en">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
-        <target xml:lang="ar" state="translated">بعد تحديد تسلسل <g id="genid-2" ctype="x-html-strong">للمستويات</g>، يمكنك تعيين مستوى للكتب التي تنشئها سواء باستخدام هذا القالب أو "قالب مراحل القارئ". أثناء إدخال النص في الكتاب، يساعدك Bloom في مراعاة المستوى المُختار وينبهك عند تجاوز حدود هذا المستوى.</target>
+        <target xml:lang="ar" state="final">بعد تحديد تسلسل <g id="genid-2" ctype="x-html-strong">للمستويات</g>، يمكنك تعيين مستوى للكتب التي تنشئها سواء باستخدام هذا القالب أو "قالب مراحل القارئ". أثناء إدخال النص في الكتاب، يساعدك Bloom في مراعاة المستوى المُختار وينبهك عند تجاوز حدود هذا المستوى.</target>
         <note>ID: leveled.levels</note>
       </trans-unit>
       <trans-unit id="leveled.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-3" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="ar" state="translated">كما يمكنك إعداد حزمة Bloom من <g id="genid-3" ctype="x-html-strong">نماذج</g> يمكن للآخرين استخدامها لإنشاء الكتب بسرعة بناءً على المستويات والمراحل التي تم تجهيزها بواسطة أحد المختصين بتعليم القراءة والكتابة.</target>
+        <target xml:lang="ar" state="final">كما يمكنك إعداد حزمة Bloom من <g id="genid-3" ctype="x-html-strong">نماذج</g> يمكن للآخرين استخدامها لإنشاء الكتب بسرعة بناءً على المستويات والمراحل التي تم تجهيزها بواسطة أحد المختصين بتعليم القراءة والكتابة.</target>
         <note>ID: leveled.templates</note>
       </trans-unit>
       <trans-unit id="leveled.learn" approved="yes">
         <source xml:lang="en">To learn about using Leveled Readers in Bloom, you can:</source>
-        <target xml:lang="ar" state="translated">للتعرف على معلومات حول استخدام كتب مستويات محددة في Bloom، يمكنك:</target>
+        <target xml:lang="ar" state="final">للتعرف على معلومات حول استخدام كتب مستويات محددة في Bloom، يمكنك:</target>
         <note>ID: leveled.learn</note>
       </trans-unit>
       <trans-unit id="leveled.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="ar" state="translated">مشاهدة <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">مقاطع الفيديو الإرشادية هذه</g>.</target>
+        <target xml:lang="ar" state="final">مشاهدة <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">مقاطع الفيديو الإرشادية هذه</g>.</target>
         <note>ID: leveled.learn.videos</note>
       </trans-unit>
       <trans-unit id="leveled.learn.helpindex">
@@ -35,27 +35,27 @@
       </trans-unit>
       <trans-unit id="leveled.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="ar" state="translated">اذهب إلى قائمة "مساعدة" واختيار "تصميم نماذج كتب".</target>
+        <target xml:lang="ar" state="final">اذهب إلى قائمة "مساعدة" واختيار "تصميم نماذج كتب".</target>
         <note>ID: leveled.learn.helpmenu</note>
       </trans-unit>
       <trans-unit id="leveled.vs.decodable" approved="yes">
         <source xml:lang="en">Relationship to Decodable Readers</source>
-        <target xml:lang="ar" state="translated">العلاقة مع كتب مستوى القارئ</target>
+        <target xml:lang="ar" state="final">العلاقة مع كتب مستوى القارئ</target>
         <note>ID: leveled.vs.decodable</note>
       </trans-unit>
       <trans-unit id="leveled.and.decodable" approved="yes">
         <source xml:lang="en">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</source>
-        <target xml:lang="ar" state="translated">كيف يمكن أن تتناسب <g id="genid-5" ctype="x-html-strong">مستويات</g> كتاب مستوى محدد مع <g id="genid-6" ctype="x-html-strong">مراحل</g> كتاب مستوى القارئ؟ هناك تكامل بين المفهومين، ويتيح لك Bloom فرصة تعيين <g id="genid-7" ctype="x-html-strong">مرحلة مستوى القارئ</g> و<g id="genid-8" ctype="x-html-strong">كتاب محدد المستوى</g> لاستخدامهما في الكتاب الذي تقوم بتأليفه. في العادة، على كتب مستوى 1 وربما مستوى 2 مراعاة <g id="genid-9" ctype="x-html-strong">مراحل مستوى القارئ</g> أثناء التأليف. كما تحتاج الكتب في المستوى الأول أو الثاني إلى وضع <g id="genid-10" ctype="x-html-strong">مستوى القارئ</g> في عين الاعتبار (أي استخدام الأحرف التي تعلمها القارئ). وبذلك يمكن أن يظهر تسلسل الكتب على النحو التالي:</target>
+        <target xml:lang="ar" state="final">كيف يمكن أن تتناسب <g id="genid-5" ctype="x-html-strong">مستويات</g> كتاب مستوى محدد مع <g id="genid-6" ctype="x-html-strong">مراحل</g> كتاب مستوى القارئ؟ هناك تكامل بين المفهومين، ويتيح لك Bloom فرصة تعيين <g id="genid-7" ctype="x-html-strong">مرحلة مستوى القارئ</g> و<g id="genid-8" ctype="x-html-strong">كتاب محدد المستوى</g> لاستخدامهما في الكتاب الذي تقوم بتأليفه. في العادة، على كتب مستوى 1 وربما مستوى 2 مراعاة <g id="genid-9" ctype="x-html-strong">مراحل مستوى القارئ</g> أثناء التأليف. كما تحتاج الكتب في المستوى الأول أو الثاني إلى وضع <g id="genid-10" ctype="x-html-strong">مستوى القارئ</g> في عين الاعتبار (أي استخدام الأحرف التي تعلمها القارئ). وبذلك يمكن أن يظهر تسلسل الكتب على النحو التالي:</target>
         <note>ID: leveled.and.decodable</note>
       </trans-unit>
       <trans-unit id="leveled.reader.level" approved="yes">
         <source xml:lang="en">Leveled Reader Level</source>
-        <target xml:lang="ar" state="translated">أداة قراءة المستوى المحدد</target>
+        <target xml:lang="ar" state="final">أداة قراءة المستوى المحدد</target>
         <note>ID: leveled.reader.level</note>
       </trans-unit>
       <trans-unit id="decodable.stage" approved="yes">
         <source xml:lang="en">Decodable Stage</source>
-        <target xml:lang="ar" state="translated">مراحل إمكانية التفكيك</target>
+        <target xml:lang="ar" state="final">مراحل إمكانية التفكيك</target>
         <note>ID: decodable.stage</note>
       </trans-unit>
     </body>

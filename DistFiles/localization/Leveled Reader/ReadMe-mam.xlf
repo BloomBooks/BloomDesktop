@@ -6,92 +6,56 @@
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
         <target xml:lang="mam" state="final">Jun <g id="genid-1" ctype="x-html-strong">U'jb'il tuj kolin</g>atzan jun u'jb'il tz'ib'an te jun xnaq'tzanjtz ma nipan nb'ant sch'in. Aqe kol mya' ma' tuj ntzaj kyma'n niky'pun kynuqil yol, tnuqil txolyol, txqantl. Ex ntzaj tma'n alkye tumel yek'b'il b'a'n tajb'en, saqlajpakab', onb'il te b'inchil qe tilb'ilal ex tb'i nab'il.</target>
         <note>ID: leveled.definition</note>
-        <alt-trans>
-          <target xml:lang="mam">Jun <g id="genid-1" ctype="x-html-strong">U'jb'il tuj kolin</g>atazan jun u'jb'il tz'ib'anmaj te jun xnaq'tzanjtz ma nipan nb'ant sch'in. A qe kol nya' ma' tuj ntzaj kyma'n nik'pun tnuqil qe yol, tnuqil txolyol, txqantl. Ax ikyx ntzaj tma'n alkye tu'mel yek'b'il b'a'n tajb'en, saqlajpakab', onb'il te b'inchil qe tilb'ilal ex tb'i nab'il.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.levels" approved="yes">
         <source xml:lang="en">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
         <target xml:lang="mam" state="final">Aj tb'aj kub' ximit jun lajetb'il te <g id="genid-2" ctype="x-html-em">kol mya' ma' tuj</g>, b'a'n tu'n t-xi' tq'o'na jun kol mya' ma' tuj kye qe' u'jb'il o' kub' tb'inchana tuj ttenb'il b'inchil u'jb'il lu' mo tuj "Ttenb'il b'inchil u'jb'il in el qniky'", b'a'n tu'n tku'x tz'ib'ana txolyol tuj u'jb'il ex lu' te Bloom qo onil ti'j tu'n min ku'x naj ti'j tk'u'ja aj kol mya' ma' tuj ex kxe'l tq'ama'n aj tik'xa tib'aj kol mya' ma' tuj.</target>
         <note>ID: leveled.levels</note>
-        <alt-trans>
-          <target xml:lang="mam">Ok b'aj kub' ximit jun lajetb'il te <g id="genid-2" ctype="x-html-em">kol nya' ma' tuj</g>, b'a'n tu'n t-xi' tq'o'ne jun kol nya' ma' tuj kye qa u'jb'il o' kub' tb'inchana tuj ttenb'il b'inchil u'jb'il b'ananmaj lu' mo tuj "Ttenb'il b'inchil u'jb'il b'ananmaj n-nel qniky'", b'a'n tu'n tku'x tz'ib'ana txol yol tuj u'jb'il ex lu te Bloom qonil ti'je tu'n min kux naj ti tk'u'ja aj kol nya' ma' tuj ex ok qtzajil tq'ama'n ok tik'xa tib'aj kol nya' ma' tuj.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-3" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
         <target xml:lang="mam" state="final">Ex b'a'n tu'n tkub' b'inchet jun tnej te Bloom te <g id="genid-3" ctype="x-html-em">ttenb'il b'inchil u'jb'il b'anan</g> b'a'n kyajb'en kyu'n ju'ntl tu'ntzan kyb'ant u'jb'il mya' kuw ti'j at kyxilen kyuk'il kol mya' ma' tuj ex qe' kol ma' kyuj b'incha'n kyu'n xjal ojtzqi'n tib'aj xnaq'tzb'il kye xjal o' tzik'x kyab'q'iyil.</target>
         <note>ID: leveled.templates</note>
-        <alt-trans>
-          <target xml:lang="mam">Ax b'a'n tu'n tkub' b'inchet jun tenej te Bloom te <g id="genid-3" ctype="x-html-em">ttenb'il b'inchil u'jb'il b'ananmaj</g> b'a'n kyajb'en kyu'n ju'ntl tu'ntzan kyb'ant qe u'jb'il nya' kyiw ti'j at kyxilen kyuk' qe kol nya' ma' tuj ex qe kol ma' kyuj b'incha'n maj kyu'n qe xjal tzqi'n tib'aj xnaq'tzb'il kye xjal o' tzik'x kyab'q'iyil.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.learn" approved="yes">
         <source xml:lang="en">To learn about using Leveled Readers in Bloom, you can:</source>
         <target xml:lang="mam" state="final">Tu'n tb'ant tza'n kyajb'en u'jb'il tuj kolin tuj Bloom, b'a'n tu'n tb'ant:</target>
         <note>ID: leveled.learn</note>
-        <alt-trans>
-          <target xml:lang="mam">Tu'n tb'ant tza'n kyajb'ena qe u'jb'il tuj kolin tuj Bloom, b'a'n tu'n tb'ant jlu':</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
         <target xml:lang="mam" state="final">Ka'yinxa <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">qe' ke'yb'il tib'aj aq'unab'il Bloom lu'</g>.</target>
         <note>ID: leveled.learn.videos</note>
-        <alt-trans>
-          <target xml:lang="mam">Ka'yinxa <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">qe keyb'il tib'aj aq'unab'itz Bloom lu'</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</source>
         <target xml:lang="mam" state="final">Txi'ya tuj k'ol te onb'il, sak'onktza 'Onb'il' ex jyonxa "U'jb'il tuj kolin'" tuj txolb'ab'il tb'i nab'il.</target>
         <note>ID: leveled.learn.helpindex</note>
-        <alt-trans>
-          <target xml:lang="mam">Txi'ya tuj menú te onb'il, sak'onqtza 'Onb'il' ex jyonxa "U'jb'il tuj kolin'" tuj txolb'ab'il tb'i nab'il.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
         <target xml:lang="mam" state="final">Txi'ya tuj k'ol te onb'il, sak'onktza: "Nb'inchet ttenb'il u'jb'il".</target>
         <note>ID: leveled.learn.helpmenu</note>
-        <alt-trans>
-          <target xml:lang="mam">Txi'ya tuj menú te onb'il, sak'onqtza: "N-b'inchet ttenb'il u'jb'il b'ananmaj".</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.vs.decodable" approved="yes">
         <source xml:lang="en">Relationship to Decodable Readers</source>
         <target xml:lang="mam" state="final">T-xilen kyuk'il u'jb'il in el qniky'</target>
         <note>ID: leveled.vs.decodable</note>
-        <alt-trans>
-          <target xml:lang="mam">T-xilemb'il kyuk' qe u'jb'il n-nel qniky'</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.and.decodable" approved="yes">
         <source xml:lang="en">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</source>
         <target xml:lang="mam" state="final">Ti' kyxilen kyuk'il qe' <g id="genid-5" ctype="x-html-em">kol mya' ma' tuj</g> kye u'jb'il tuj kolin kyuk'il qe <g id="genid-6" ctype="x-html-em"/> kye u'jb'il in el qniky'? Qe' kab' tumel nchi tz'aqset. Bloom nxi' tq'o'n amb'il tu'n tten jun nuk'b'il <g id="genid-7" ctype="x-html-em">kol ma' tuj in el qniky'</g> ex jun <g id="genid-8" ctype="x-html-em">kol mya' ma' tuj te u'jb'il tuj kolin</g> te u'jb'il ntz'ib'an. Qe' u'jb'il ite tuj kol mya' ma' tuj 1 ex b'ala ex qe' ite' tuj kol mya' ma' tuj 2 ilti'j tu'n ku'x kytz'ib'et ex min ku'x naj ti'j qk'u'j qe <g id="genid-9" ctype="x-html-em">kol ma' tuj in el qniky'</g>. Ex ilti'j tu'n tten tkub' qna'n tu'tzan qe' u'jb'il ite' tuj tnejil b'ix b'ala ite' tuj tkab'in k'loj mya' ma' tuj te <g id="genid-10" ctype="x-html-em">in el qniky'</g> (tu'n kyajb'en techtz'ib' ma tz'el kynik'). Tu'ntzan jun lajetb'il te u'jb'il ja'ka tz'ok ikytan lu':</target>
         <note>ID: leveled.and.decodable</note>
-        <alt-trans>
-          <target xml:lang="mam">Ti kyxilen kyuk' qe <g id="genid-5" ctype="x-html-em">kol nya' ma' tuj</g> kye u'jb'il tuj kolin kyuk' qe <g id="genid-6" ctype="x-html-em"/> kye u'jb'il n-nel kniky'? Qe kab'e tu'mel nchi tz'aqset. Bloom nxi' tq'o'n amb'il tu'n ten jun nik'ub'il <g id="genid-7" ctype="x-html-em">kol ma' tuj n-nel kniky'</g> ex jun <g id="genid-8" ctype="x-html-em">kol nya' ma' tuj te u'jb'il tuj kolin</g> te u'jb'il ntz'ib'ana. Qe u'jb'il ite tuj kol nya' ma' tuj 1 ex b'ala ax ikyx qe ite' tuj kol nya' ma' tuj 2 ilx ti'j tu'n ku'x kytz'ib'et ex min kux naj ti'j qk'u'j qe <g id="genid-9" ctype="x-html-em">kol ma' tuj n-nel qniky'</g>. Ax ikyx ilx ti'j tu'n ten qna'n tu'tzan qe u'jb'il ite' tuj tnejil b'ix b'ala qe ite' tuj tkab'in k'loj nya' ma' tuj te <g id="genid-10" ctype="x-html-em">n-nel qniky'</g> (tu'n kyajb'en qe tech tz'ib' ma tz'el kynik'). Tu'ntzanjo jun lajetb'il te u'jb'il jaka tz'ok ikytan jlu':</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="mam">Ti kyxilen kyuk' qe <g id="genid-5" ctype="x-html-em">kol nya' ma' tuj</g> kye u'jb'il tuj kolin kyuk' qe <g id="genid-6" ctype="x-html-em"/> kye u'jb'il n-nel kniky'? Qe kab'e tu'mel nchi tz'aqset. Bloom nxi' tq'o'n amb'il tu'n ten jun nik'ub'il <g id="genid-7" ctype="x-html-em">kol ma' tuj n-nel kniky'</g> ex jun <g id="genid-8" ctype="x-html-em">kol nya' ma' tuj te u'jb'il tuj kolin</g> te u'jb'il ntz'ib'ana. Qe u'jb'il ite tuj kol nya' ma' tuj 1 ex b'ala ax ikyx qe ite' tuj kol nya' ma' tuj 2 ilx ti'j tu'n ku'x kytz'ib'et ex min kux naj ti'j qk'u'j qe <g id="genid-9" ctype="x-html-em">kol ma' tuj n-nel qniky'</g>. Ax ikyx ilx ti'j tu'n ten qna'n tu'tzan qe u'jb'il ite' tuj tnejil b'ix b'ala qe ite' tuj tkab'in k'loj nya' ma' tuj te <g id="genid-10" ctype="x-html-em">n-nel qniky'</g> (tu'n kyajb'en qe tech tz'ib' ma tz'el kynik'). Tu'ntzanjo jun lajetb'il te u'jb'il jaka tz'ok ikytan jlu':</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.level" approved="yes">
         <source xml:lang="en">Leveled Reader Level</source>
         <target xml:lang="mam" state="final">Tnej te u'jb'il tuj kolin</target>
         <note>ID: leveled.reader.level</note>
-        <alt-trans>
-          <target xml:lang="mam">Kol nya' ma' tuj te u'jb'il tuj kolin</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.stage" approved="yes">
         <source xml:lang="en">Decodable Stage</source>
         <target xml:lang="mam" state="final">Kol in el qniky' ti'j</target>
         <note>ID: decodable.stage</note>
-        <alt-trans>
-          <target xml:lang="mam">Kol ma' tuj n-ne'l qniky'</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

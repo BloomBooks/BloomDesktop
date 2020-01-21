@@ -11,7 +11,7 @@
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="te" state="translated">ఏ నవీకరణలు</target>
+        <target xml:lang="te" state="final">ఏ నవీకరణలు</target>
       </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle">
         <source xml:lang="en">About {0}</source>
@@ -22,12 +22,12 @@
       <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="te" state="translated">నవీకరణలు కోసం తనిఖీ</target>
+        <target xml:lang="te" state="final">నవీకరణలు కోసం తనిఖీ</target>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="te" state="translated">విడుదల గమనికలు</target>
+        <target xml:lang="te" state="final">విడుదల గమనికలు</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
@@ -70,7 +70,7 @@
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="te" state="translated">రద్దు</target>
+        <target xml:lang="te" state="final">రద్దు</target>
       </trans-unit>
       <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
@@ -80,7 +80,7 @@
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="te" state="translated">ఏ</target>
+        <target xml:lang="te" state="final">ఏ</target>
       </trans-unit>
       <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
@@ -90,7 +90,7 @@
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="te" state="translated">సరే</target>
+        <target xml:lang="te" state="final">సరే</target>
       </trans-unit>
       <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
@@ -100,7 +100,7 @@
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
-        <target xml:lang="te" state="translated">అవును</target>
+        <target xml:lang="te" state="final">అవును</target>
       </trans-unit>
       <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
@@ -123,28 +123,28 @@
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
-        <target xml:lang="te" state="translated">{0} రీసైకిల్ బిన్ తరలించబడతాయి</target>
+        <target xml:lang="te" state="final">{0} రీసైకిల్ బిన్ తరలించబడతాయి</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Param {0} is a file name</note>
-        <target xml:lang="te" state="translated">{0} రీసైకిల్ బిన్ తరలించబడతాయి</target>
+        <target xml:lang="te" state="final">{0} రీసైకిల్ బిన్ తరలించబడతాయి</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Confirm Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
-        <target xml:lang="te" state="translated">నిర్ధారించండి తొలగించండి</target>
+        <target xml:lang="te" state="final">నిర్ధారించండి తొలగించండి</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="te" state="translated">రద్దు</target>
+        <target xml:lang="te" state="final">రద్దు</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn" approved="yes">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="te" state="translated">తొలగించండి</target>
+        <target xml:lang="te" state="final">తొలగించండి</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
         <source xml:lang="en">Found {0} images with names close to “{1}”</source>
@@ -155,23 +155,23 @@
       <trans-unit id="ImageToolbox.ArtOfReading" approved="yes">
         <source xml:lang="en">Art Of Reading</source>
         <note>ID: ImageToolbox.ArtOfReading</note>
-        <target xml:lang="te" state="translated">పఠనం ఆర్ట్</target>
+        <target xml:lang="te" state="final">పఠనం ఆర్ట్</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Camera" approved="yes">
         <source xml:lang="en">Camera</source>
         <note>ID: ImageToolbox.Camera</note>
-        <target xml:lang="te" state="translated">కెమెరా</target>
+        <target xml:lang="te" state="final">కెమెరా</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.CopyExemplarMetadata" approved="yes">
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="te" state="translated">యూజ్{0}</target>
+        <target xml:lang="te" state="final">యూజ్{0}</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop" approved="yes">
         <source xml:lang="en">Crop</source>
         <note>ID: ImageToolbox.Crop</note>
-        <target xml:lang="te" state="translated">పంట</target>
+        <target xml:lang="te" state="final">పంట</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.DownloadArtOfReading">
         <source xml:lang="en">Download Art Of Reading Installer</source>
@@ -181,18 +181,18 @@
       <trans-unit id="ImageToolbox.EditMetadataLink" approved="yes">
         <source xml:lang="en">Edit...</source>
         <note>ID: ImageToolbox.EditMetadataLink</note>
-        <target xml:lang="te" state="translated">మార్చు...</target>
+        <target xml:lang="te" state="final">మార్చు...</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms" approved="yes">
         <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
-        <target xml:lang="te" state="translated">ఈ 'కళ చాలక గ్యాలరీ' ఉంది. పైన బాక్స్ లో నమోదు నొక్కండి, అప్పుడు మీరు శోధిస్తున్నారు ఏమి టైప్ చేయండి. మీరు ఇంగ్లీష్ మరియు ఇండోనేషియా లో టైప్ చేయవచ్చు.</target>
+        <target xml:lang="te" state="final">ఈ 'కళ చాలక గ్యాలరీ' ఉంది. పైన బాక్స్ లో నమోదు నొక్కండి, అప్పుడు మీరు శోధిస్తున్నారు ఏమి టైప్ చేయండి. మీరు ఇంగ్లీష్ మరియు ఇండోనేషియా లో టైప్ చేయవచ్చు.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
-        <target xml:lang="te" state="translated">ఫైల్</target>
+        <target xml:lang="te" state="final">ఫైల్</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileChooserTitle">
         <source xml:lang="en">Choose Picture File</source>
@@ -208,17 +208,17 @@
       <trans-unit id="ImageToolbox.GenericGettingImageProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
         <note>ID: ImageToolbox.GenericGettingImageProblem</note>
-        <target xml:lang="te" state="translated">చిత్రం పొందడానికి క్షమించండి, ఏదో తప్పు జరిగింది</target>
+        <target xml:lang="te" state="final">చిత్రం పొందడానికి క్షమించండి, ఏదో తప్పు జరిగింది</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
-        <target xml:lang="te" state="translated">క్షమించండి, ఏదో చిత్రం టూల్ బాక్స్ తప్పు జరిగింది</target>
+        <target xml:lang="te" state="final">క్షమించండి, ఏదో చిత్రం టూల్ బాక్స్ తప్పు జరిగింది</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GetPicture" approved="yes">
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
-        <target xml:lang="te" state="translated">చిత్రాన్ని పొందండి</target>
+        <target xml:lang="te" state="final">చిత్రాన్ని పొందండి</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageGalleries">
         <source xml:lang="en">Image Galleries</source>
@@ -228,7 +228,7 @@
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle" approved="yes">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="te" state="translated">చిత్రం పేజీలు</target>
+        <target xml:lang="te" state="final">చిత్రం పేజీలు</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.InstallArtOfReading">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
@@ -260,33 +260,33 @@
       <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
         <note>ID: ImageToolbox.NoMatchingImages</note>
-        <target xml:lang="te" state="translated">సరిపోలే చిత్రాలను దొరకలేదు</target>
+        <target xml:lang="te" state="final">సరిపోలే చిత్రాలను దొరకలేదు</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PictureFiles" approved="yes">
         <source xml:lang="en">picture files</source>
         <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
-        <target xml:lang="te" state="translated">చిత్రాన్ని ఫైళ్లు</target>
+        <target xml:lang="te" state="final">చిత్రాన్ని ఫైళ్లు</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice" approved="yes">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="te" state="translated">సమస్య పొందడానికి చిత్రం</target>
+        <target xml:lang="te" state="final">సమస్య పొందడానికి చిత్రం</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemLoadingImage" approved="yes">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <note>ID: ImageToolbox.ProblemLoadingImage</note>
-        <target xml:lang="te" state="translated">ఆ చిత్రం లోడ్ ఒక సమస్య ఉంది</target>
+        <target xml:lang="te" state="final">ఆ చిత్రం లోడ్ ఒక సమస్య ఉంది</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PromptForMissingMetadata" approved="yes">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
-        <target xml:lang="te" state="translated">చిత్రం తెలియదు: \ n \ n ఎవరు దానిని ఉపయోగించవచ్చు?</target>
+        <target xml:lang="te" state="final">చిత్రం తెలియదు: \ n \ n ఎవరు దానిని ఉపయోగించవచ్చు?</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Scanner" approved="yes">
         <source xml:lang="en">Scanner</source>
         <note>ID: ImageToolbox.Scanner</note>
-        <target xml:lang="te" state="translated">స్కానర్</target>
+        <target xml:lang="te" state="final">స్కానర్</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchArtOfReading">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
@@ -302,7 +302,7 @@
       <trans-unit id="ImageToolbox.SetUpMetadataLink" approved="yes">
         <source xml:lang="en">Set up metadata...</source>
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
-        <target xml:lang="te" state="translated">అప్ సెట్ మెటాడేటా</target>
+        <target xml:lang="te" state="final">అప్ సెట్ మెటాడేటా</target>
       </trans-unit>
       <trans-unit id="IpaIdentifierView.betterLabel1">
         <source xml:lang="en">Purpose:</source>
@@ -319,7 +319,7 @@
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
-        <target xml:lang="te" state="translated">ఇతర పేర్లు</target>
+        <target xml:lang="te" state="final">ఇతర పేర్లు</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
@@ -335,17 +335,17 @@
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="te" state="translated">భాష గురించి 639-3 కోడ్లను &amp; క్రొత్త వాటిని దరఖాస్తు ఎలా</target>
+        <target xml:lang="te" state="final">భాష గురించి 639-3 కోడ్లను &amp; క్రొత్త వాటిని దరఖాస్తు ఎలా</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle" approved="yes">
         <source xml:lang="en">About The ISO Language Registry</source>
         <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
-        <target xml:lang="te" state="translated">ISO భాషను రిజిస్ట్రీ గురించి</target>
+        <target xml:lang="te" state="final">ISO భాషను రిజిస్ట్రీ గురించి</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CodeHeader" approved="yes">
         <source xml:lang="en">Code</source>
         <note>ID: LanguageLookup.CodeHeader</note>
-        <target xml:lang="te" state="translated">కోడ్</target>
+        <target xml:lang="te" state="final">కోడ్</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryCount">
         <source xml:lang="en">{0} Countries</source>
@@ -356,22 +356,22 @@
       <trans-unit id="LanguageLookup.CountryHeader" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: LanguageLookup.CountryHeader</note>
-        <target xml:lang="te" state="translated">దేశం</target>
+        <target xml:lang="te" state="final">దేశం</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel" approved="yes">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
         <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
-        <target xml:lang="te" state="translated">మీరు భాష పేరు ఇక్కడ ప్రదర్శించబడుతుంది ఎలా మార్చవచ్చు</target>
+        <target xml:lang="te" state="final">మీరు భాష పేరు ఇక్కడ ప్రదర్శించబడుతుంది ఎలా మార్చవచ్చు</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle" approved="yes">
         <source xml:lang="en">Lookup Language Code...</source>
         <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
-        <target xml:lang="te" state="translated">భాష కోడ్ వెదకండి</target>
+        <target xml:lang="te" state="final">భాష కోడ్ వెదకండి</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.PrimaryNameHeader" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: LanguageLookup.PrimaryNameHeader</note>
-        <target xml:lang="te" state="translated">పేరు</target>
+        <target xml:lang="te" state="final">పేరు</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel">
         <source xml:lang="en">Show regional dialects</source>
@@ -381,12 +381,12 @@
       <trans-unit id="LanguageLookup.UnlistedLanguage" approved="yes">
         <source xml:lang="en">Unlisted Language</source>
         <note>ID: LanguageLookup.UnlistedLanguage</note>
-        <target xml:lang="te" state="translated">జాబితా చెయ్యని భాషా</target>
+        <target xml:lang="te" state="final">జాబితా చెయ్యని భాషా</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._cannotFindLanguageLink" approved="yes">
         <source xml:lang="en">Can't find your language?</source>
         <note>ID: LanguageLookup._cannotFindLanguageLink</note>
-        <target xml:lang="te" state="translated">మీ భాషను దొరకదు?</target>
+        <target xml:lang="te" state="final">మీ భాషను దొరకదు?</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLabel">
         <source xml:lang="en">my script variant label</source>
@@ -406,7 +406,7 @@
       <trans-unit id="MetadataDisplay.Creator" approved="yes">
         <source xml:lang="en">Creator: {0}</source>
         <note>ID: MetadataDisplay.Creator</note>
-        <target xml:lang="te" state="translated">సృష్టికర్త</target>
+        <target xml:lang="te" state="final">సృష్టికర్త</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.CreatorLabel">
         <source xml:lang="en">Creator</source>
@@ -416,7 +416,7 @@
       <trans-unit id="MetadataDisplay.LicenseInfo" approved="yes">
         <source xml:lang="en">License Info</source>
         <note>ID: MetadataDisplay.LicenseInfo</note>
-        <target xml:lang="te" state="translated">లైసెన్సు</target>
+        <target xml:lang="te" state="final">లైసెన్సు</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true">
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
@@ -469,22 +469,22 @@
       <trans-unit id="MetadataDisplay.NoLicense" approved="yes">
         <source xml:lang="en">No license specified</source>
         <note>ID: MetadataDisplay.NoLicense</note>
-        <target xml:lang="te" state="translated">పేర్కొన్న ఎటువంటి లైసెన్స్</target>
+        <target xml:lang="te" state="final">పేర్కొన్న ఎటువంటి లైసెన్స్</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse" approved="yes">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <note>ID: MetadataEditor.AllowCommercialUse</note>
-        <target xml:lang="te" state="translated">మీ పని వ్యాపార ఉపయోగాలు అనుమతించాలా?</target>
+        <target xml:lang="te" state="final">మీ పని వ్యాపార ఉపయోగాలు అనుమతించాలా?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowDerivatives" approved="yes">
         <source xml:lang="en">Allow modifications of your work?</source>
         <note>ID: MetadataEditor.AllowDerivatives</note>
-        <target xml:lang="te" state="translated">మీ పని మార్పులతో అనుమతించాలా?</target>
+        <target xml:lang="te" state="final">మీ పని మార్పులతో అనుమతించాలా?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightHolder" approved="yes">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: MetadataEditor.CopyrightHolder</note>
-        <target xml:lang="te" state="translated">కాపీరైట్ హక్కుదారు</target>
+        <target xml:lang="te" state="final">కాపీరైట్ హక్కుదారు</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightYear">
         <source xml:lang="en">Copyright Year</source>
@@ -494,7 +494,7 @@
       <trans-unit id="MetadataEditor.CreativeCommons" approved="yes">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
-        <target xml:lang="te" state="translated">క్రియేటివ్ కామన్స్</target>
+        <target xml:lang="te" state="final">క్రియేటివ్ కామన్స్</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental">
         <source xml:lang="en">Intergovernmental Version</source>
@@ -504,12 +504,12 @@
       <trans-unit id="MetadataEditor.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataEditor.CreatorLabel</note>
-        <target xml:lang="te" state="translated">సృష్టికర్త</target>
+        <target xml:lang="te" state="final">సృష్టికర్త</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CustomLicense" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: MetadataEditor.CustomLicense</note>
-        <target xml:lang="te" state="translated">కస్టమ్</target>
+        <target xml:lang="te" state="final">కస్టమ్</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.License">
         <source xml:lang="en">License</source>
@@ -524,34 +524,34 @@
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
-        <target xml:lang="te" state="translated">కాపీరైట్ &amp; లైసెన్సు</target>
+        <target xml:lang="te" state="final">కాపీరైట్ &amp; లైసెన్సు</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleWithCredit" approved="yes">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="te" state="translated">క్రెడిట్, కాపీరైట్ &amp; లైసెన్సు</target>
+        <target xml:lang="te" state="final">క్రెడిట్, కాపీరైట్ &amp; లైసెన్సు</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.UnknownLicense" approved="yes">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense</note>
-        <target xml:lang="te" state="translated">క్రెడిట్, ఏ అనుమతులు కోసం కాపీహక్కుదారుని</target>
+        <target xml:lang="te" state="final">క్రెడిట్, ఏ అనుమతులు కోసం కాపీహక్కుదారుని</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.YesShareAlike" approved="yes">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
-        <target xml:lang="te" state="translated">అవును, కాలం ఇతరులు ఇలానే పంచుకోవాలి వంటి</target>
+        <target xml:lang="te" state="final">అవును, కాలం ఇతరులు ఇలానే పంచుకోవాలి వంటి</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.additionalRequestsLabel" approved="yes">
         <source xml:lang="en">Additional Requests</source>
         <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
-        <target xml:lang="te" state="translated">అదనపు విన్నపాలు</target>
+        <target xml:lang="te" state="final">అదనపు విన్నపాలు</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.betterLinkLabel1" approved="yes">
         <source xml:lang="en">more info</source>
         <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
-        <target xml:lang="te" state="translated">మరింత సమాచారం</target>
+        <target xml:lang="te" state="final">మరింత సమాచారం</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToPublicDomainCC0">
         <source xml:lang="en">about {0} Public Domain</source>
@@ -563,7 +563,7 @@
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
-        <target xml:lang="te" state="translated">అమలు చేయలేని</target>
+        <target xml:lang="te" state="final">అమలు చేయలేని</target>
       </trans-unit>
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton">
         <source xml:lang="en">Cancel</source>
@@ -583,52 +583,49 @@
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
-        <target xml:lang="te" state="translated">ఈ కూడా కాని ఆధునిక వినియోగదారు అవసరమైన ఇతర బటన్లు దాచవచ్చు.</target>
+        <target xml:lang="te" state="final">ఈ కూడా కాని ఆధునిక వినియోగదారు అవసరమైన ఇతర బటన్లు దాచవచ్చు.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.CtrlShiftHint" approved="yes">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
-        <target xml:lang="te" state="translated">బటన్ మీరు Ctrl తగ్గేందుకు మరియు కలిసి కీలను Shift ఉన్నప్పుడు కనిపిస్తాయి</target>
+        <target xml:lang="te" state="final">బటన్ మీరు Ctrl తగ్గేందుకు మరియు కలిసి కీలను Shift ఉన్నప్పుడు కనిపిస్తాయి</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.LauncherButtonLabel" approved="yes">
         <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
-        <target xml:lang="te" state="translated">సెట్టింగులు రక్షణ ...</target>
+        <target xml:lang="te" state="final">సెట్టింగులు రక్షణ ...</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox" approved="yes">
         <source xml:lang="en">Hide the button that opens settings.</source>
         <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
-        <target xml:lang="te" state="translated">సెట్టింగులను తెరుచుకునే బటన్ దాచు.</target>
+        <target xml:lang="te" state="final">సెట్టింగులను తెరుచుకునే బటన్ దాచు.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword" approved="yes">
         <source xml:lang="en">Factory Password</source>
         <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
-        <target xml:lang="te" state="translated">ఫ్యాక్టరీ పాస్వర్డ్ను</target>
+        <target xml:lang="te" state="final">ఫ్యాక్టరీ పాస్వర్డ్ను</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation" approved="yes">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
-        <target xml:lang="te" state="translated">ఈ సాధనం మీరు కోసం పని ఆపడానికి కారణం కావచ్చు ఇది ప్రమాదవశాత్తు మార్పులు నివారించడానికి, ఈ సెట్టింగులను లాక్ చేశారు.</target>
+        <target xml:lang="te" state="final">ఈ సాధనం మీరు కోసం పని ఆపడానికి కారణం కావచ్చు ఇది ప్రమాదవశాత్తు మార్పులు నివారించడానికి, ఈ సెట్టింగులను లాక్ చేశారు.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle" approved="yes">
         <source xml:lang="en">Settings Protection Password</source>
         <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
-        <target xml:lang="te" state="translated">సెట్టింగులు రక్షణ పాస్వర్డ్ను</target>
+        <target xml:lang="te" state="final">సెట్టింగులు రక్షణ పాస్వర్డ్ను</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox" approved="yes">
         <source xml:lang="en">Show Characters</source>
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
-        <target xml:lang="te" state="translated">కార్యక్రమం పాత్రలు</target>
+        <target xml:lang="te" state="final">కార్యక్రమం పాత్రలు</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page.</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
         <target xml:lang="te" state="translated">ఈ సెట్టింగులను కోసం కర్మాగారం పాస్వర్డ్ "{0}". మీరు మర్చిపోతే, మీరు ఎల్లప్పుడూ "{1}" మరియు కోసం గూగుల్ చేయవచ్చు</target>
-        <alt-trans>
-          <target xml:lang="te">ఈ సెట్టింగులను కోసం కర్మాగారం పాస్వర్డ్ "{0}". మీరు మర్చిపోతే, మీరు ఎల్లప్పుడూ "{1}" మరియు "{2}" కోసం గూగుల్ చేయవచ్చు</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
@@ -639,12 +636,12 @@
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
-        <target xml:lang="te" state="translated">సెట్టింగులను పొందడానికి ఫ్యాక్టరీ పాస్వర్డ్ అవసరం</target>
+        <target xml:lang="te" state="final">సెట్టింగులను పొందడానికి ఫ్యాక్టరీ పాస్వర్డ్ అవసరం</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle" approved="yes">
         <source xml:lang="en">Settings Protection</source>
         <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
-        <target xml:lang="te" state="translated">సెట్టింగులు రక్షణ</target>
+        <target xml:lang="te" state="final">సెట్టింగులు రక్షణ</target>
       </trans-unit>
       <trans-unit id="ShowReleaseNotesDialog.WindowTitle">
         <source xml:lang="en">Release Notes</source>
@@ -715,37 +712,37 @@
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <note>ID: WSKeyboardControl.KeyboardNotListed</note>
-        <target xml:lang="te" state="translated">మీరు అవసరం కీబోర్డ్ జాబితా కాకపోతే, దానిని సెట్ క్రింద తగిన లింక్ క్లిక్ చేయండి.</target>
+        <target xml:lang="te" state="final">మీరు అవసరం కీబోర్డ్ జాబితా కాకపోతే, దానిని సెట్ క్రింద తగిన లింక్ క్లిక్ చేయండి.</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardSettingsLink" approved="yes">
         <source xml:lang="en">Windows keyboard settings</source>
         <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
-        <target xml:lang="te" state="translated">విండో కీబోర్డ్ సెట్టింగ్లు</target>
+        <target xml:lang="te" state="final">విండో కీబోర్డ్ సెట్టింగ్లు</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsAvailable" approved="yes">
         <source xml:lang="en">Available keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
-        <target xml:lang="te" state="translated">అందుబాటులో కీబోర్డులు</target>
+        <target xml:lang="te" state="final">అందుబాటులో కీబోర్డులు</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed" approved="yes">
         <source xml:lang="en">Previously used keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
-        <target xml:lang="te" state="translated">గతంలో ఉపయోగించిన కీబోర్డ్</target>
+        <target xml:lang="te" state="final">గతంలో ఉపయోగించిన కీబోర్డ్</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanConfigurationLink" approved="yes">
         <source xml:lang="en">Keyman Configuration</source>
         <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
-        <target xml:lang="te" state="translated">Keyman ఆకృతీకరణ</target>
+        <target xml:lang="te" state="final">Keyman ఆకృతీకరణ</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanNotInstalled" approved="yes">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="te" state="translated">Keyman 5.0 or తరువాత ఇన్స్టాల్ కాలేదు.</target>
+        <target xml:lang="te" state="final">Keyman 5.0 or తరువాత ఇన్స్టాల్ కాలేదు.</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel" approved="yes">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="te" state="translated">{0} టెక్స్ట్ టైప్ చేయడానికి ఇది ఫలక ఎంచుకోండి</target>
+        <target xml:lang="te" state="final">{0} టెక్స్ట్ టైప్ చేయడానికి ఇది ఫలక ఎంచుకోండి</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SetupKeyboards">
         <source xml:lang="en">Set up keyboards</source>
@@ -755,7 +752,7 @@
       <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="te" state="translated">&amp; టెస్ట్ ఏరియా (మీ కీబోర్డ్ పరీక్షించడానికి ఏదో టైప్ ఈ ప్రాంతంలో ఉపయోగించండి.)</target>
+        <target xml:lang="te" state="final">&amp; టెస్ట్ ఏరియా (మీ కీబోర్డ్ పరీక్షించడానికి ఏదో టైప్ ఈ ప్రాంతంలో ఉపయోగించండి.)</target>
       </trans-unit>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>

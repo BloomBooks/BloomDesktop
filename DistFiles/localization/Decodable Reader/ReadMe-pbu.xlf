@@ -6,25 +6,16 @@
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
         <target xml:lang="pbu" state="final">یو <g id="genid-1" ctype="x-html-strong">تجزیه (هجي) کېدو وړ کتاب</g> یو کتاب دی چې په احتیاط سره توری او کلمې کارول محدوده وي ترڅو دا وټاکي چې کوم نوی لوستونکی د لوستلو لپاره تیار دی. عموما، یوه ژبه ممکن د 5 - 10 پورې د <g id="genid-2" ctype="x-html-strong">تجزیه (هجي) کېدوډ مرحلې</g> ولري چې زده کوونکي د هغه په وسیله پرمختګ کوي.</target>
         <note>ID: decodable.definition</note>
-        <alt-trans>
-          <target xml:lang="pbu">یو <g id="genid-1" ctype="x-html-strong">تجزیه (هجي) کېدو وړ کتاب</g> یو کتاب دی چې په احتیاط سره توری او کلمې کارول محدودوي ترڅو دا وټاکي چې کوم نوی لوستونکی د لوستلو لپاره تیار دی. عموما، یوه ژبه ممکن د 5 - 10 پورې د <g id="genid-2" ctype="x-html-strong">تجزیه (هجي) کېدوډ مرحلې</g> ولري چې زده کوونکي د هغه په وسیله پرمختګ کوي.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.stages" approved="yes">
         <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
         <target xml:lang="pbu" state="final">بلوم له تاسې سره مرسته کوي چې د <g id="genid-3" ctype="x-html-strong">مرحلو</g> سلسه تعریف کړي چې کتابونه له هغه لاري کار وکړي. هر کتاب چې تاسې جوړوئ، یو له دغو مرحلو به ورباندې ترسره شي او بلوم له تاسې سره مرسته کوي څو مطمئن شئ ستاسې کتاب د <g id="genid-4" ctype="x-html-strong">تجزیه (هجي) کېدو وړ دی</g> (د پیژندلو وړ) ده د زده کوونکو په وسیله په هغه <g id="genid-5" ctype="x-html-strong">مرحله کې</g>.</target>
         <note>ID: decodable.stages</note>
-        <alt-trans>
-          <target xml:lang="pbu">بلوم له تاسې سره مرسته کوي چې د <g id="genid-3" ctype="x-html-strong">مرحلو</g> سلسه تعریف کړي چې لوستونکي له هغه لاري کار وکړي. هر کتاب چې تاسې جوړوئ، یو له دغو مرحلو به ورباندې ترسره شي او بلوم له تاسې سره مرسته کوي څو مطمئن شئ ستاسې کتاب د <g id="genid-4" ctype="x-html-strong">تجزیه (هجي) کېدو وړ دی</g> (د پیژندلو وړ) ده د زده کوونکو په وسیله په هغه <g id="genid-5" ctype="x-html-strong">مرحله کې</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
         <target xml:lang="pbu" state="final">تاسو کولی شی د هغو <g id="genid-6" ctype="x-html-strong">نمونو</g> څخه چی د سواد د متخصص په وسیله آماده شوي د بلوم یوه کڅوړه جوړه کړئ چې نور یې وکارولی شي او نظر په سویو او مرحلو کتابونه ژر جوړ کړي.</target>
         <note>ID: decodable.templates</note>
-        <alt-trans>
-          <target xml:lang="pbu">تاسو کولی شی د هغو <g id="genid-6" ctype="x-html-strong">نمونو</g> څخه چی د سواد د متخصص په وسیله آماده شوي د بلوم یوه کڅوړه جوړه کړئ چې نور یې وکارولی شي او نظر په سویو او مرحلو کتابونه ژر جوړې کړي.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn" approved="yes">
         <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
@@ -40,9 +31,6 @@
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
         <target xml:lang="pbu" state="final">د مرستې مینو ته لاړ شئ ، 'اسناد' غوره کړئ ، او د "تجزیه (هجي) کېدو وړ کتاب" لاندې شاخص کې وګورئ.</target>
         <note>ID: decodable.learn.helpindex</note>
-        <alt-trans>
-          <target xml:lang="pbu">د مرستې مینیو ته لاړ شئ، او مرسته انتخاب کړئ، او لاندې وګورئ "د تجزیه (هجي) کېدو وړ کتاب".</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>

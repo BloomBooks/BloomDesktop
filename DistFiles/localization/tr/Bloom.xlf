@@ -344,9 +344,6 @@
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
         <target xml:lang="tr" state="translated">Bloom'un bu kitabı okurken bir problemi vardı ve son yedeklemeyi geri getirerek kurtarıldı. Lütfen bu kitaptaki son değişikliği kontrol edin. Bunun herhangi bir nedenden ötürü olmaması durumunda lütfen aşağıdaki ayrıntıları tıklayın ve bize bildirin.</target>
-        <alt-trans>
-          <target xml:lang="tr">Bloom, bu kitabı okurken bir sorun yaşadı ve son yedeklemeyi geri yükleyerek kurtardı. Lütfen bu kitaptaki son değişiklikleri kontrol edin. Bunun belli bir nedenden ötürü olmaması durumunda lütfen aşağıdaki Ayrıntıları tıklayın ve bize bildirin.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BookStorage.FolderMoved">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
@@ -373,9 +370,6 @@
         <note>ID: CollectionSettingsDialog.AboutBloomEnterprise</note>
         <note>New string in Bloom 4.1</note>
         <target xml:lang="tr" state="final">Bloom Kurumsal Hizmeti Hakkında</target>
-        <alt-trans>
-          <target xml:lang="tr">Bloom kurumsal yazılım hakkında</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
         <source xml:lang="en">Advanced Program Settings</source>
@@ -430,17 +424,11 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
         <note>{0} is a language name.</note>
         <target xml:lang="tr" state="translated">{0} için Varsayılan Yazı tipi</target>
-        <alt-trans>
-          <target xml:lang="tr">{0} için Varsayılan Yazı tipi </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
         <source xml:lang="en">Front/Back Matter Pack</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
         <target xml:lang="tr" state="translated">Ön / Arka madde paketi</target>
-        <alt-trans>
-          <target xml:lang="tr">Ön / Arka madde paketi </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device" sil:dynamic="true">
         <source xml:lang="en">Device</source>
@@ -459,9 +447,6 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG</note>
         <note>Name of a Front/Back Matter Pack that has SIL Papua New Guinea customizations</note>
         <target xml:lang="tr" state="translated">SIL - PNG</target>
-        <alt-trans>
-          <target xml:lang="tr">SIL - PNG </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Super Paper Saver</source>
@@ -485,9 +470,6 @@
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
         <target xml:lang="tr" state="translated">Hint - Arap</target>
-        <alt-trans>
-          <target xml:lang="tr">Hint - Arap </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian" sil:dynamic="true">
         <source xml:lang="en">Armenian</source>
@@ -799,6 +781,11 @@
         <source xml:lang="en">Make Bloom Pack...</source>
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
         <target xml:lang="tr" state="translated">Bloom Pakedi Yap...</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
+        <source xml:lang="en">Save as single file (.bloom)...</source>
+        <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
+        <target xml:lang="tr" state="needs-translation">Save as single file (.bloom)...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
         <source xml:lang="en">Update Book</source>
@@ -1235,9 +1222,6 @@
         <note>ID: EditTab.AddPageDialog.AddPageButton</note>
         <note>This is for the button that LAUNCHES the dialog, not the 'Add this page' button that is IN the dialog.</note>
         <target xml:lang="tr" state="final">Sayfayı Ekle</target>
-        <alt-trans>
-          <target xml:lang="tr">Sayfa Ekle</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.AddThisPageButton" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add This Page</source>
@@ -1288,9 +1272,6 @@
         <note>ID: EditTab.AddPageDialog.Title</note>
         <note>found in 3.9 and earlier</note>
         <target xml:lang="tr" state="final">Sayfayı Ekle...</target>
-        <alt-trans>
-          <target xml:lang="tr">Sayfa Ekle...</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddTextBoxToImage" approved="yes">
         <source xml:lang="en">Add Text Box To Image</source>
@@ -1803,6 +1784,21 @@
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
         <target xml:lang="tr" state="translated">{lang} dilindeki çevirmenin adı</target>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitleCaption" sil:dynamic="true">
+        <source xml:lang="en">Edit Original Title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitleCaption</note>
+        <target xml:lang="tr" state="needs-translation">Edit Original Title</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitleLabel" sil:dynamic="true">
+        <source xml:lang="en">Original Title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitleLabel</note>
+        <target xml:lang="tr" state="needs-translation">Original Title</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitlePlaceholder" sil:dynamic="true">
+        <source xml:lang="en">click to edit original title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitlePlaceholder</note>
+        <target xml:lang="tr" state="needs-translation">click to edit original title</target>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
         <note>ID: EditTab.FrontMatter.FundingAgenciesPrompt</note>
@@ -1868,18 +1864,12 @@
         <note>ID: EditTab.FrontMatter.OriginalCopyrightSentence</note>
         <note>On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.</note>
         <target xml:lang="tr" state="final">Aslından uyarlanmış, {0}.</target>
-        <alt-trans>
-          <target xml:lang="tr">Orijinalinden uyarlanan, {0}.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalHadNoCopyrightSentence" approved="yes">
         <source xml:lang="en">Adapted from original without a copyright notice.</source>
         <note>ID: EditTab.FrontMatter.OriginalHadNoCopyrightSentence</note>
         <note>On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.</note>
         <target xml:lang="tr" state="final">Telif hakkı bildirimi olmadan aslından uyarlanmıştır.</target>
-        <alt-trans>
-          <target xml:lang="tr">Telif hakkı bildirimi olmadan orijinalinden uyarlanmıştır.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalLicenseSentence">
         <source xml:lang="en">Licensed under {0}.</source>
@@ -1891,9 +1881,6 @@
         <source xml:lang="en">Paste Image Credits</source>
         <note>ID: EditTab.FrontMatter.PasteImageCreditsLink</note>
         <target xml:lang="tr" state="translated">Resim kredisini yapıştır</target>
-        <alt-trans>
-          <target xml:lang="tr">Resim kredisini yapıştır </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.PasteMissingCredits">
         <source xml:lang="en">Missing credits:</source>
@@ -1922,9 +1909,6 @@
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
         <target xml:lang="tr" state="final">{lang} dilinde tercüme edilmiş sürüm için teşekkürler</target>
-        <alt-trans>
-          <target xml:lang="tr">Tercüme edilmiş sürüm için teşekkür ederiz, {lang}</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.HowToUnlockBook">
         <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
@@ -1962,12 +1946,6 @@
         <note>ID: EditTab.Image.EditMetadata</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Edit Image Credits, Copyright, and License</note>
         <target xml:lang="tr" state="translated">Resim kredilerini, telif hakkı ve &amp;, Lisans</target>
-        <alt-trans>
-          <target xml:lang="tr">Resim kredilerini, telif hakkı ve &amp;vamp, Lisans</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="tr">Resim kredilerini, telif hakkı ve &amp;vamp, Lisans</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true">
         <source xml:lang="en">Image is missing information on Credits, Copyright, or License</source>
@@ -2003,9 +1981,6 @@
         <source xml:lang="en">The file you’ve chosen is a “JPEG” file. JPEG files are perfect for photographs and color artwork. However, JPEG files are a big problem for black and white line art. Problems include:\n• Fuzziness and grey dots.\n• Large file sizes, making the book hard to share.\n• If there are many large JPEGs, Bloom may not have enough memory to make PDF files.\n\nNote: Because JPEG is “lossy”, converting a JPEG to PNG, TIFF, or BMP actually makes things even worse. If this is black and white line art, you want to get an original scan in one of those formats.\n\nPlease select from one of the following, then click “OK”:</source>
         <note>ID: EditTab.JpegWarningDialog.WarningText</note>
         <target xml:lang="tr" state="translated">Seçtiğiniz dosya "JPEG" dosyasıdır. JPEG dosyaları fotoğraflar ve renk resimleri için mükemmeldir. Bununla birlikte, JPEG dosyaları siyah beyaz çizgi sanatı için büyük bir sorundur. Sorunlar şunları içerir:\n• Bulanıklık ve gri noktalar.\n• Büyük dosya boyutları, kitabı paylaşmayı zorlaştırıyor.\n• Birçok büyük JPEG'ler varsa, Bloom'un PDF dosyalarını ouşturacak kadar bellek olmayabilir.\n\nNot: JPEG "kayıplı" olduğu için bir JPEG'i PNG, TIFF veya BMP2ye dönüştürmek aslında işleri daha da kötüleştiriyor. Bu siyah beyaz çizgi sanatı ise, bu biçimlerden birinde orjinal tarama almak istiyorsunuz.\n\nLütfen aşağıdakilerden birini seçin ve ardından "Tamam" ı tıklayın:</target>
-        <alt-trans>
-          <target xml:lang="tr">Seçtiğiniz dosya "JPEG" dosyasıdır. JPEG dosyaları fotoğraflar ve renk resimleri için mükemmeldir. Bununla birlikte, JPEG dosyaları siyah beyaz çizgi sanatı için büyük bir sorundur. Sorunlar şunları içerir: \ n • Bulanıklık ve gri noktalar.\ n • Büyük dosya boyutları, kitabı paylaşmayı zorlaştırıyor.\ n • Birçok büyük JPEG'ler varsa, Bloom'un PDF dosyalarını ouşturacak kadar bellek olmayabilir. \ n Not: JPEG "kayıplı" olduğu için bir JPEG'i PNG, TIFF veya BMP2ye dönüştürmek aslında işleri daha da kötüleştiriyor. Bu siyah beyaz çizgi sanatı ise, bu biçimlerden birinde orjinal tarama almak istiyorsunuz. \ n Lütfen aşağıdakilerden birini seçin ve ardından "Tamam" ı tıklayın:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.JpegWarningDialog.WindowTitle">
         <source xml:lang="en">JPEG Warning</source>
@@ -2138,9 +2113,6 @@
         <source xml:lang="en">Borders &amp; Background</source>
         <note>ID: EditTab.TextBoxProperties.BordersAndBackground</note>
         <target xml:lang="tr" state="translated">Sınırlar &amp; amp, Arka fon</target>
-        <alt-trans>
-          <target xml:lang="tr">Sınırlar &amp; amp, Arka fon</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.HintBubbles" sil:dynamic="true">
         <source xml:lang="en">Hint Bubbles</source>
@@ -2336,6 +2308,11 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
         <target xml:lang="tr" state="needs-translation">Text Color</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.TextBlock" sil:dynamic="true">
+        <source xml:lang="en">Text Block</source>
+        <note>ID: EditTab.Toolbox.ComicTool.TextBlock</note>
+        <target xml:lang="tr" state="needs-translation">Text Block</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer</note>
@@ -2507,9 +2484,6 @@
         <source xml:lang="en">Complete Word List</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList</note>
         <target xml:lang="tr" state="translated">Komple kelime listesi</target>
-        <alt-trans>
-          <target xml:lang="tr">Komple kelime listesi </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage" sil:dynamic="true">
         <source xml:lang="en">Letters in this stage</source>
@@ -2662,9 +2636,6 @@
         <source xml:lang="en">Actual</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Actual</note>
         <target xml:lang="tr" state="final">Gerçek</target>
-        <alt-trans>
-          <target xml:lang="tr">Güncel</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Average" sil:dynamic="true">
         <source xml:lang="en">avg per sentence</source>
@@ -2927,9 +2898,6 @@
         <note>As in, play the current audio file to "CHECK" that the audio is OK.</note>
         <note>Last used in version 4.4, deprecated in 4.5</note>
         <target xml:lang="tr" state="final">4) Kontrol Et</target>
-        <alt-trans>
-          <target xml:lang="tr">4) Kontrol</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Check</source>
@@ -2970,6 +2938,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
         <source xml:lang="en">Import Recording</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
         <target xml:lang="tr" state="needs-translation">Import Recording</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true">
@@ -2994,6 +2963,11 @@
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.LookAtSentence if possible, but without the number</note>
         <target xml:lang="tr" state="translated">Vurgulanan cümleye bak</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneProblem" sil:dynamic="true">
+        <source xml:lang="en">Bloom is having problems connecting to your microphone. Please restart your computer and try again.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneProblem</note>
+        <target xml:lang="tr" state="needs-translation">Bloom is having problems connecting to your microphone. Please restart your computer and try again.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true" approved="yes">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
@@ -3015,6 +2989,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordByTextBox" sil:dynamic="true">
         <source xml:lang="en">Record by whole text box, then let Bloom split it into sentences later.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordByTextBox</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
         <target xml:lang="tr" state="needs-translation">Record by whole text box, then let Bloom split it into sentences later.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings" sil:dynamic="true">
@@ -3036,6 +3011,12 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter</note>
         <note>Shown if you open TalkingBookTool and then attempt to toggle the "Record by Sentences" input on an XMatter page</note>
         <target xml:lang="tr" state="needs-translation">Sorry, front and back-matter pages must be recorded by sentences.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder" sil:dynamic="true">
+        <source xml:lang="en">Show playback order buttons</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
+        <target xml:lang="tr" state="needs-translation">Show playback order buttons</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true" approved="yes">
         <source xml:lang="en">3) Speak</source>
@@ -3336,9 +3317,6 @@
         <source xml:lang="en">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</source>
         <note>ID: InstallProblem.BloomPdfMaker</note>
         <target xml:lang="tr" state="final">Bloom'un bir bileşeni, BloomPdfMaker.exe eksik görünüyor. Bu önizlemeyi ve yazdırmayı engelliyor. Zaman zaman antivirüs yazılımları bunu yapabilir. Bloom kurulumunu onarmak ve bu dosyanın tekrar silinmesinden korumak için teknik destek gerekebilir.</target>
-        <alt-trans>
-          <target xml:lang="tr">Bloom'un bir bileşeni, BloomPdfMaker.exe eksik gibi duruyor. Bu yazdırma ve görüntülemeyi engeller. Antivirüs yazılımları bazen bunu yapar. Bloom kurulumunu onarmak ve bu dosyanın tekrar silinmesinden korumak için teknik destek gerekebilir.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="LameEncoder.DeleteFailedShort">
         <source xml:lang="en">Cannot replace mp3 file. Check antivirus</source>
@@ -3373,73 +3351,46 @@
         <source xml:lang="en">A3Landscape</source>
         <note>ID: LayoutChoices.A3Landscape</note>
         <target xml:lang="tr" state="final">A3Yatay</target>
-        <alt-trans>
-          <target xml:lang="tr">A3Manzara</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Landscape</source>
         <note>ID: LayoutChoices.A4Landscape</note>
         <target xml:lang="tr" state="final">A4Yatay</target>
-        <alt-trans>
-          <target xml:lang="tr">A4Manzara</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Landscape SideBySide</source>
         <note>ID: LayoutChoices.A4Landscape SideBySide</note>
         <target xml:lang="tr" state="final">A4Yatay Yanyana</target>
-        <alt-trans>
-          <target xml:lang="tr">A4Manzara yanyana</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Landscape SplitAcrossPages</source>
         <note>ID: LayoutChoices.A4Landscape SplitAcrossPages</note>
         <target xml:lang="tr" state="final">A4Yatay SayfalarArasındaBölünmüş</target>
-        <alt-trans>
-          <target xml:lang="tr">A4Manzara SayfayaBölmek</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Portrait</source>
         <note>ID: LayoutChoices.A4Portrait</note>
         <target xml:lang="tr" state="final">A4Dikey</target>
-        <alt-trans>
-          <target xml:lang="tr">A4Portre</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="LayoutChoices.A5Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A5Landscape</source>
         <note>ID: LayoutChoices.A5Landscape</note>
         <target xml:lang="tr" state="final">A5Yatay</target>
-        <alt-trans>
-          <target xml:lang="tr">A5Manzara</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="LayoutChoices.A5Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A5Portrait</source>
         <note>ID: LayoutChoices.A5Portrait</note>
         <target xml:lang="tr" state="final">A5Dikey</target>
-        <alt-trans>
-          <target xml:lang="tr">A5Portre</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="LayoutChoices.A6Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A6Landscape</source>
         <note>ID: LayoutChoices.A6Landscape</note>
         <target xml:lang="tr" state="final">A6Yatay</target>
-        <alt-trans>
-          <target xml:lang="tr">A6Manzara</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="LayoutChoices.A6Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A6Portrait</source>
         <note>ID: LayoutChoices.A6Portrait</note>
         <target xml:lang="tr" state="final">A6Dikey</target>
-        <alt-trans>
-          <target xml:lang="tr">A6Portre</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true">
         <source xml:lang="en">B5Portrait</source>
@@ -3672,12 +3623,6 @@
         <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. The first thing we need to do is make one for you.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine2</note>
         <target xml:lang="tr" state="translated">İşleri basitleştirmek ve organize etmek için, Bloom size birinde veya daha fazlasında yapmak için tüm kitapları tutar &lt;i&gt;Koleksiyonlar&lt;/i&gt;. Yapmanız gereken ilk şey sizin için bir tane hazırlamak.</target>
-        <alt-trans>
-          <target xml:lang="tr">İşleri basitleştirmek ve organize etmek için, Bloom size birinde veya daha fazlasında yapmak için tüm kitapları tutar &amp; ıt; i &gt; Koleksiyonlar &amp; lt; /i &amp; gt;. Yapmanız gereken ilk şey sizin için bir tane hazırlamak.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="tr">İşleri basitleştirmek ve organize etmek için, Bloom size birinde veya daha fazlasında yapmak için tüm kitapları tutar &amp; ıt; i &gt; Koleksiyonlar &amp; lt; /i &amp; gt;. Yapmanız gereken ilk şey sizin için bir tane hazırlamak.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine3">
         <source xml:lang="en">Click 'Next' to get started.</source>
@@ -3740,9 +3685,6 @@
         <source xml:lang="en">Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</source>
         <note>ID: OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus</note>
         <target xml:lang="tr" state="translated">Bir koleksiyonu sizinle paylaşmak için bir başkası Gönder / Al gönderimini kullandı mı?\nKoleksiyonlarınızı bilgisayarınıza kopyalamak için bu kırmızı düğmelerden birini kullanın.\nDaha sonra, çalışmalarınızı onlarla paylaşmak için Gönder / Al'ı kullanın.</target>
-        <alt-trans>
-          <target xml:lang="tr">Bir koleksiyonu sizinle paylaşmak için bir başkası Gönder / Al gönderimini kullandı mı?\ n Koleksiyonlarınızı bilgisayarınıza kopyalamak için bu kırmızı düğmelerden birini kullanın. \ n Daha sonra, çalışmalarınızı onlarla paylaşmak için Gönder / Al'ı kullanın.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.UILanguageMenu_ToolTip_">
         <source xml:lang="en">Change user interface language</source>
@@ -3759,9 +3701,6 @@
         <note>ID: PublishTab.AdobeEulaTitle</note>
         <note>dialog title for license agreement</note>
         <target xml:lang="tr" state="final">Adobe Renk Profil Lisans Sözleşmesi</target>
-        <alt-trans>
-          <target xml:lang="tr">Adobe renkli profil lisans sözleşmesi</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Common.Publishing">
         <source xml:lang="en">Publishing</source>
@@ -4134,9 +4073,6 @@
         <source xml:lang="en">Advertising book to Bloom Readers on local network...</source>
         <note>ID: PublishTab.Android.Wifi.Progress.beginAdvertising</note>
         <target xml:lang="tr" state="final">Kitab yerel ağdaki Bloom Okuyucular'ı ilan ediliyor...</target>
-        <alt-trans>
-          <target xml:lang="tr">Yerel ağdaki Bloom Reader'ları için reklam kitabı...</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Start" sil:dynamic="true">
         <source xml:lang="en">Share</source>
@@ -4670,9 +4606,6 @@
         <source xml:lang="en">Account Already Exists</source>
         <note>ID: PublishTab.Upload.Login.AccountAlreadyExists</note>
         <target xml:lang="tr" state="final">Zaten Bir Hesap Oluşturulmuş</target>
-        <alt-trans>
-          <target xml:lang="tr">Hesap Zaten Var</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount">
         <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</source>
@@ -4921,17 +4854,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Add Level</source>
         <note>ID: ReaderSetup.AddLevel</note>
         <target xml:lang="tr" state="final">Düzeyi Ekle</target>
-        <alt-trans>
-          <target xml:lang="tr">Seviye Ekle</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.AddStage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Stage</source>
         <note>ID: ReaderSetup.AddStage</note>
         <target xml:lang="tr" state="final">Aşamayı Ekle</target>
-        <alt-trans>
-          <target xml:lang="tr">Aşama ekle</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.AllowedWords" sil:dynamic="true">
         <source xml:lang="en">allowed words</source>
@@ -5085,9 +5012,6 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Powered by </source>
         <note>ID: ReaderSetup.PoweredBy</note>
         <target xml:lang="tr" state="translated">Destekleyen </target>
-        <alt-trans>
-          <target xml:lang="tr">Destekleyen</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Punctuation" sil:dynamic="true">
         <source xml:lang="en">Punctuation</source>
@@ -5193,9 +5117,6 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Stage </source>
         <note>ID: ReaderSetup.StageLabel</note>
         <target xml:lang="tr" state="translated">Aşama </target>
-        <alt-trans>
-          <target xml:lang="tr">Aşama</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Stages" sil:dynamic="true">
         <source xml:lang="en">Stages</source>
@@ -5668,9 +5589,6 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.1 Problem</note>
         <note>This label indicates a page with one arithmetic problem on it.</note>
         <target xml:lang="tr" state="final">1 Soru</target>
-        <alt-trans>
-          <target xml:lang="tr">1 Problem</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.10" sil:dynamic="true" approved="yes">
         <source xml:lang="en">10</source>
@@ -5732,9 +5650,6 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.2 Problems</note>
         <note>This label indicates a page with two arithmetic problems on it.</note>
         <target xml:lang="tr" state="final">2 Soru</target>
-        <alt-trans>
-          <target xml:lang="tr">2 Sorun</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.20" sil:dynamic="true" approved="yes">
         <source xml:lang="en">20</source>
@@ -5756,9 +5671,6 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.3 Problems</note>
         <note>This label indicates a page with three arithmetic problems on it.</note>
         <target xml:lang="tr" state="final">3 Soru</target>
-        <alt-trans>
-          <target xml:lang="tr">3 Sorun</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.4" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4</source>
@@ -5770,9 +5682,6 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.PageLabel.4 Problems</note>
         <note>This label indicates a page with four arithmetic problems on it.</note>
         <target xml:lang="tr" state="final">4 Soru</target>
-        <alt-trans>
-          <target xml:lang="tr">4 Sorun</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.5" sil:dynamic="true" approved="yes">
         <source xml:lang="en">5</source>

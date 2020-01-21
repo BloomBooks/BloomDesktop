@@ -8,7 +8,7 @@
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="fr" state="translated">Ponctuation particulière en fin de phrase</target>
+        <target xml:lang="fr" state="final">Ponctuation particulière en fin de phrase</target>
       </trans-unit>
     </body>
   </file>

@@ -25,9 +25,6 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
         <note>After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file.</note>
         <target xml:lang="bn" state="final">অর্থোগ্রাফি রূপান্তরের ফলাফল:</target>
-        <alt-trans>
-          <target xml:lang="bn">অর্থোগ্রাফি রূপান্তর ফলাফল:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Community" approved="yes">
         <source xml:lang="en">Funded by the local community only</source>
@@ -48,9 +45,6 @@
         <source xml:lang="en">That code has expired.</source>
         <note>ID: Settings.Enterprise.Expired</note>
         <target xml:lang="bn" state="final">কোডগুলোর মেয়াদ শেষ হয়ে গেছে।</target>
-        <alt-trans>
-          <target xml:lang="bn">কোডগুলোর মেয়াদ উত্তীর্ণ হয়ে গেছে।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Incomplete" approved="yes">
         <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
@@ -61,9 +55,6 @@
         <source xml:lang="en">Learn More</source>
         <note>ID: Settings.Enterprise.LearnMore</note>
         <target xml:lang="bn" state="final">আরও শিখুন</target>
-        <alt-trans>
-          <target xml:lang="bn">অধিক জানুন</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Overview" approved="yes">
         <source xml:lang="en">
@@ -78,9 +69,6 @@
         <source xml:lang="en">None. Enterprise features will be unavailable.</source>
         <note>ID: Settings.Enterprise.None</note>
         <target xml:lang="bn" state="final">কোনোটিও নয়। ব্লুম এন্টারপ্রাইজ বৈশিষ্টগুলো উপলব্ধ হবে না।</target>
-        <alt-trans>
-          <target xml:lang="bn">কোনোটিও নয়। ব্লুম এন্টারপ্রাইজ বৈশিষ্ট্য দেখাবে না।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NeedsCode" approved="yes">
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>

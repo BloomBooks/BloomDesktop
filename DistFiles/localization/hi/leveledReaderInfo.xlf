@@ -4,82 +4,52 @@
     <body>
       <trans-unit id="leveled.reader.vocabulary" approved="yes">
         <source xml:lang="en">Vocabulary</source>
-        <target xml:lang="hi" state="translated">शब्दावली</target>
+        <target xml:lang="hi" state="final">शब्दावली</target>
         <note>ID: leveled.reader.vocabulary</note>
       </trans-unit>
       <trans-unit id="leveled.reader.start.simple" approved="yes">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
-        <target xml:lang="hi" state="translated">शुरुआती स्तर में, ऐसे सरल शब्दों का उपयोग करें जो बच्चों के लिए परिचित हैं। यदि आपकी भाषा में यह संभव हो, तो केवल एक अक्षर वाले शब्दों का उपयोग करें। जैसे जैसे बच्चे उच्च स्तर जाते हैं, आप अधिक अक्षरों वाले शब्दों का उपयोग करना शुरू कर सकते हैं। आप कम परिचित शब्दों का प्रयोग शुरू कर सकते हैं। बच्चों को इन कम परिचित शब्दों का अर्थ आस पास के शब्दों और वाक्यों के संदर्भ से, साथ ही चित्रांकन से समझ आना चाहिए।</target>
+        <target xml:lang="hi" state="final">शुरुआती स्तर में, ऐसे सरल शब्दों का उपयोग करें जो बच्चों के लिए परिचित हैं। यदि आपकी भाषा में यह संभव हो, तो केवल एक अक्षर वाले शब्दों का उपयोग करें। जैसे जैसे बच्चे उच्च स्तर जाते हैं, आप अधिक अक्षरों वाले शब्दों का उपयोग करना शुरू कर सकते हैं। आप कम परिचित शब्दों का प्रयोग शुरू कर सकते हैं। बच्चों को इन कम परिचित शब्दों का अर्थ आस पास के शब्दों और वाक्यों के संदर्भ से, साथ ही चित्रांकन से समझ आना चाहिए।</target>
         <note>ID: leveled.reader.start.simple</note>
       </trans-unit>
       <trans-unit id="leveled.reader.formatting" approved="yes">
         <source xml:lang="en">Formatting</source>
-        <target xml:lang="hi" state="translated">फॉर्मेटिंग</target>
+        <target xml:lang="hi" state="final">फॉर्मेटिंग</target>
         <note>ID: leveled.reader.formatting</note>
       </trans-unit>
       <trans-unit id="leveled.reader.start.large" approved="yes">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
-        <target xml:lang="hi" state="translated">शुरूआती पाठक बड़े फोंट के साथ-साथ शब्दों के बीच स्पष्ट जगह होने से लाभान्वित होंगे। प्रत्येक पन्ने पर एक ही स्थान में शब्द या वाक्य होना भी लाभदायक होगा। जैसे जैसे पाठक उच्च स्तरों तक पहुंचेंगे, फोंट का आकार और जगह कम होगी और पन्ने पर वाक्य विभिन्न स्थानों में दिखाई देंगे।</target>
+        <target xml:lang="hi" state="final">शुरूआती पाठक बड़े फोंट के साथ-साथ शब्दों के बीच स्पष्ट जगह होने से लाभान्वित होंगे। प्रत्येक पन्ने पर एक ही स्थान में शब्द या वाक्य होना भी लाभदायक होगा। जैसे जैसे पाठक उच्च स्तरों तक पहुंचेंगे, फोंट का आकार और जगह कम होगी और पन्ने पर वाक्य विभिन्न स्थानों में दिखाई देंगे।</target>
         <note>ID: leveled.reader.start.large</note>
       </trans-unit>
       <trans-unit id="leveled.reader.increase.sizes" approved="yes">
         <source xml:lang="en">To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</source>
-        <target xml:lang="hi" state="translated">ब्लूम में फोंट का आकार, पंक्ति-जगह और शब्द-जगह बढ़ाने के लिए, टेक्स्ट बक्से पर क्लिक करें और फिर निचले बाएँ कोने में धुंधले "cog" चिह्न पर क्लिक करें। यदि आप ऐसा करते हैं और फिर एक टेम्पलेट पुस्तक बनाते हैं, तो उस टेम्पलेट के साथ बनाई गई पुस्तकें भी उन फोंट सेटिंग्स का उपयोग करेंगी।</target>
+        <target xml:lang="hi" state="final">ब्लूम में फोंट का आकार, पंक्ति-जगह और शब्द-जगह बढ़ाने के लिए, टेक्स्ट बक्से पर क्लिक करें और फिर निचले बाएँ कोने में धुंधले "cog" चिह्न पर क्लिक करें। यदि आप ऐसा करते हैं और फिर एक टेम्पलेट पुस्तक बनाते हैं, तो उस टेम्पलेट के साथ बनाई गई पुस्तकें भी उन फोंट सेटिंग्स का उपयोग करेंगी।</target>
         <note>ID: leveled.reader.increase.sizes</note>
       </trans-unit>
       <trans-unit id="leveled.reader.predictability" approved="yes">
         <source xml:lang="en">Predictability</source>
-        <target xml:lang="hi" state="translated">पूर्वानुमान</target>
+        <target xml:lang="hi" state="final">पूर्वानुमान</target>
         <note>ID: leveled.reader.predictability</note>
       </trans-unit>
       <trans-unit id="leveled.reader.repeat.patterns" approved="yes">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
-        <target xml:lang="hi" state="translated"><g id="genid-1" ctype="x-html-em">पूर्वानुमान</g> किसी टेक्स्ट में, इसका मतलब है कि पुस्तक पहले से अनुमान लगा सकती है कि आगे क्या आएगा। बार-बार एक ही पैटर्न का उपयोग करके आप पूर्वानुमान में इजाफा ला सकते हैं। यहां कुछ पैटर्न हैं जिनका आप उपयोग कर सकते हैं:</target>
+        <target xml:lang="hi" state="final"><g id="genid-1" ctype="x-html-em">पूर्वानुमान</g> किसी टेक्स्ट में, इसका मतलब है कि पुस्तक पहले से अनुमान लगा सकती है कि आगे क्या आएगा। बार-बार एक ही पैटर्न का उपयोग करके आप पूर्वानुमान में इजाफा ला सकते हैं। यहां कुछ पैटर्न हैं जिनका आप उपयोग कर सकते हैं:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-          
-          
-           <g id="genid-1" ctype="x-html-em">पूर्वानुमान</g> किसी टेक्स्ट में, इसका मतलब है कि पुस्तक पहले से अनुमान लगा सकती है कि आगे क्या आएगा। बार-बार एक ही पैटर्न का उपयोग करके आप पूर्वानुमान में इजाफा ला सकते हैं। यहां कुछ पैटर्न हैं जिनका आप उपयोग कर सकते हैं:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-          
-           <g id="genid-1" ctype="x-html-em">पूर्वानुमान</g> किसी टेक्स्ट में, इसका मतलब है कि पुस्तक पहले से अनुमान लगा सकती है कि आगे क्या आएगा। बार-बार एक ही पैटर्न का उपयोग करके आप पूर्वानुमान में इजाफा ला सकते हैं। यहां कुछ पैटर्न हैं जिनका आप उपयोग कर सकते हैं:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-          
-           <g id="genid-1" ctype="x-html-em">पूर्वानुमान</g> किसी टेक्स्ट में, इसका मतलब है कि पुस्तक पहले से अनुमान लगा सकती है कि आगे क्या आएगा। बार-बार एक ही पैटर्न का उपयोग करके आप पूर्वानुमान में इजाफा ला सकते हैं। यहां कुछ पैटर्न हैं जिनका आप उपयोग कर सकते हैं:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-          
-           <g id="genid-1" ctype="x-html-em">पूर्वानुमान</g> किसी टेक्स्ट में, इसका मतलब है कि पुस्तक पहले से अनुमान लगा सकती है कि आगे क्या आएगा। बार-बार एक ही पैटर्न का उपयोग करके आप पूर्वानुमान में इजाफा ला सकते हैं। यहां कुछ पैटर्न हैं जिनका आप उपयोग कर सकते हैं:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">
-           <g id="genid-1" ctype="x-html-em">पूर्वानुमान</g> किसी टेक्स्ट में, इसका मतलब है कि पुस्तक पहले से अनुमान लगा सकती है कि आगे क्या आएगा। बार-बार एक ही पैटर्न का उपयोग करके आप पूर्वानुमान में इजाफा ला सकते हैं। यहां कुछ पैटर्न हैं जिनका आप उपयोग कर सकते हैं:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.repetition" approved="yes">
         <source xml:lang="en">Repetition - repeating parts of the text, for example, using the same sentence with each page and just changing one word in the sentence</source>
-        <target xml:lang="hi" state="translated">दोहराना - टेक्स्ट के भागों को दोहराना, उदाहरण के लिए, प्रत्येक पन्ने के साथ एक ही वाक्य का उपयोग करना और वाक्य में केवल एक शब्द बदलना</target>
+        <target xml:lang="hi" state="final">दोहराना - टेक्स्ट के भागों को दोहराना, उदाहरण के लिए, प्रत्येक पन्ने के साथ एक ही वाक्य का उपयोग करना और वाक्य में केवल एक शब्द बदलना</target>
         <note>ID: leveled.reader.repetition</note>
       </trans-unit>
       <trans-unit id="leveled.reader.sequencing" approved="yes">
         <source xml:lang="en">Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</source>
-        <target xml:lang="hi" state="translated">अनुक्रमण - एक कहानी जिस में जाना-पहचाना क्रम हो जैसे कि सप्ताह के दिन या एक ही पैटर्न में संख्या का उपयोग</target>
+        <target xml:lang="hi" state="final">अनुक्रमण - एक कहानी जिस में जाना-पहचाना क्रम हो जैसे कि सप्ताह के दिन या एक ही पैटर्न में संख्या का उपयोग</target>
         <note>ID: leveled.reader.sequencing</note>
       </trans-unit>
       <trans-unit id="leveled.reader.building.sequence" approved="yes">
         <source xml:lang="en">Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
-        <target xml:lang="hi" state="translated">अनुक्रम निर्माण - एक कहानी में एक ही पैटर्न दोहराया गया है और प्रत्येक नए पन्ने में वह ही जोड़ा गया है</target>
+        <target xml:lang="hi" state="final">अनुक्रम निर्माण - एक कहानी में एक ही पैटर्न दोहराया गया है और प्रत्येक नए पन्ने में वह ही जोड़ा गया है</target>
         <note>ID: leveled.reader.building.sequence</note>
       </trans-unit>
       <trans-unit id="leveled.reader.rhyme" approved="yes">
@@ -89,7 +59,7 @@ I see a red bird looking at me.
 Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
 Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g></source>
-        <target xml:lang="hi" state="translated">यमक - एक पैटर्न या अनुक्रम की एक कहानी जिस में यमक भी शामिल है। उदाहरण के लिए:
+        <target xml:lang="hi" state="final">यमक - एक पैटर्न या अनुक्रम की एक कहानी जिस में यमक भी शामिल है। उदाहरण के लिए:
                 <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
           <g id="genid-3" ctype="x-html-pre">भूरे भालू, भूरे भालू, क्या देखते हो?
 मैं एक लाल पक्षी को अपनी ओर देखते हुए देखता हूँ।
@@ -99,325 +69,56 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
           <g id="genid-4" ctype="x-html-div" html:class="author">- बिल मार्टिन, जूनियर और एरिक कारले</g>
         </g></target>
         <note>ID: leveled.reader.rhyme</note>
-        <alt-trans>
-          <target xml:lang="hi">यमक - एक पैटर्न या अनुक्रम की एक कहानी जिस में यमक भी शामिल है। उदाहरण के लिए:
-                <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">भूरे भालू, भूरे भालू, क्या देखते हो?
-मैं एक लाल पक्षी को अपनी ओर देखते हुए देखता हूँ।
-लाल पक्षी, लाल पक्षी, क्या देखते हो?
-मैं एक पीले रंग की बतख को अपनी ओर देखते हुए देखता हूँ। 
-पीली बतख, पीली बतख, क्या देखते हो?</g> 
-          <g id="genid-4" ctype="x-html-div" html:class="author">- बिल मार्टिन, जूनियर और एरिक कारले</g>
-        </g>
-      
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">यमक - एक पैटर्न या अनुक्रम की एक कहानी जिस में यमक भी शामिल है। उदाहरण के लिए:
-                <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">भूरे भालू, भूरे भालू, क्या देखते हो?
-मैं एक लाल पक्षी को अपनी ओर देखते हुए देखता हूँ।
-लाल पक्षी, लाल पक्षी, क्या देखते हो?
-मैं एक पीले रंग की बतख को अपनी ओर देखते हुए देखता हूँ। 
-पीली बतख, पीली बतख, क्या देखते हो?</g> 
-          <g id="genid-4" ctype="x-html-div" html:class="author">- बिल मार्टिन, जूनियर और एरिक कारले</g>
-        </g>
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">यमक - एक पैटर्न या अनुक्रम की एक कहानी जिस में यमक भी शामिल है। उदाहरण के लिए:
-                <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">भूरे भालू, भूरे भालू, क्या देखते हो?
-मैं एक लाल पक्षी को अपनी ओर देखते हुए देखता हूँ।
-लाल पक्षी, लाल पक्षी, क्या देखते हो?
-मैं एक पीले रंग की बतख को अपनी ओर देखते हुए देखता हूँ। 
-पीली बतख, पीली बतख, क्या देखते हो?</g> 
-          <g id="genid-4" ctype="x-html-div" html:class="author">- बिल मार्टिन, जूनियर और एरिक कारले</g>
-        </g>
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">यमक - एक पैटर्न या अनुक्रम की एक कहानी जिस में यमक भी शामिल है। उदाहरण के लिए:
-                <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">भूरे भालू, भूरे भालू, क्या देखते हो?
-मैं एक लाल पक्षी को अपनी ओर देखते हुए देखता हूँ।
-लाल पक्षी, लाल पक्षी, क्या देखते हो?
-मैं एक पीले रंग की बतख को अपनी ओर देखते हुए देखता हूँ। 
-पीली बतख, पीली बतख, क्या देखते हो?</g> 
-          <g id="genid-4" ctype="x-html-div" html:class="author">- बिल मार्टिन, जूनियर और एरिक कारले</g>
-        </g>
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">यमक - एक पैटर्न या अनुक्रम की एक कहानी जिस में यमक भी शामिल है। उदाहरण के लिए:
-                <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">भूरे भालू, भूरे भालू, क्या देखते हो?
-मैं एक लाल पक्षी को अपनी ओर देखते हुए देखता हूँ।
-लाल पक्षी, लाल पक्षी, क्या देखते हो?
-मैं एक पीले रंग की बतख को अपनी ओर देखते हुए देखता हूँ। 
-पीली बतख, पीली बतख, क्या देखते हो?</g> 
-          <g id="genid-4" ctype="x-html-div" html:class="author">- बिल मार्टिन, जूनियर और एरिक कारले</g>
-        </g>
-      
-      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations" approved="yes">
         <source xml:lang="en">Illustration Support</source>
-        <target xml:lang="hi" state="translated">चित्रण सहायता</target>
+        <target xml:lang="hi" state="final">चित्रण सहायता</target>
         <note>ID: leveled.reader.illustrations</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help" approved="yes">
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.</source>
-        <target xml:lang="hi" state="translated">चित्रण कहानी को आधार प्रदान करते हैं। चित्रण अलग अलग तरीके से अलग अलग <g id="genid-5" ctype="x-html-em">पुस्तकों में</g> और विभिन्न प्रकार के पाठकों को (नीचे देखें) कहानी को समझाते हैं। याद रखें कि कई संस्कृतियों में जहां ज्यादा मुद्रित सामग्री उपलब्ध नहीं है, जटिल चित्रों को समझना मुश्किल हो सकता है।</target>
+        <target xml:lang="hi" state="final">चित्रण कहानी को आधार प्रदान करते हैं। चित्रण अलग अलग तरीके से अलग अलग <g id="genid-5" ctype="x-html-em">पुस्तकों में</g> और विभिन्न प्रकार के पाठकों को (नीचे देखें) कहानी को समझाते हैं। याद रखें कि कई संस्कृतियों में जहां ज्यादा मुद्रित सामग्री उपलब्ध नहीं है, जटिल चित्रों को समझना मुश्किल हो सकता है।</target>
         <note>ID: leveled.reader.illustrations.help</note>
-        <alt-trans>
-          <target xml:lang="hi">चित्रण कहानी को आधार प्रदान करते हैं। चित्रण अलग अलग तरीके से अलग अलग <g id="genid-5" ctype="x-html-em">पुस्तकों में</g> और विभिन्न प्रकार के पाठकों को (नीचे देखें) कहानी को समझाते हैं। याद रखें कि कई संस्कृतियों में जहां ज्यादा मुद्रित सामग्री उपलब्ध नहीं है, जटिल चित्रों को समझना मुश्किल हो सकता है। 
-    
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">चित्रण कहानी को आधार प्रदान करते हैं। चित्रण अलग अलग तरीके से अलग अलग <g id="genid-5" ctype="x-html-em">पुस्तकों में</g> और विभिन्न प्रकार के पाठकों को (नीचे देखें) कहानी को समझाते हैं। याद रखें कि कई संस्कृतियों में जहां ज्यादा मुद्रित सामग्री उपलब्ध नहीं है, जटिल चित्रों को समझना मुश्किल हो सकता है। 
-    
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">चित्रण कहानी को आधार प्रदान करते हैं। चित्रण अलग अलग तरीके से अलग अलग <g id="genid-5" ctype="x-html-em">पुस्तकों में</g> और विभिन्न प्रकार के पाठकों को (नीचे देखें) कहानी को समझाते हैं। याद रखें कि कई संस्कृतियों में जहां ज्यादा मुद्रित सामग्री उपलब्ध नहीं है, जटिल चित्रों को समझना मुश्किल हो सकता है। 
-    
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">चित्रण कहानी को आधार प्रदान करते हैं। चित्रण अलग अलग तरीके से अलग अलग <g id="genid-5" ctype="x-html-em">पुस्तकों में</g> और विभिन्न प्रकार के पाठकों को (नीचे देखें) कहानी को समझाते हैं। याद रखें कि कई संस्कृतियों में जहां ज्यादा मुद्रित सामग्री उपलब्ध नहीं है, जटिल चित्रों को समझना मुश्किल हो सकता है। 
-    
-    </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi">चित्रण कहानी को आधार प्रदान करते हैं। चित्रण अलग अलग तरीके से अलग अलग <g id="genid-5" ctype="x-html-em">पुस्तकों में</g> और विभिन्न प्रकार के पाठकों को (नीचे देखें) कहानी को समझाते हैं। याद रखें कि कई संस्कृतियों में जहां ज्यादा मुद्रित सामग्री उपलब्ध नहीं है, जटिल चित्रों को समझना मुश्किल हो सकता है। 
-    </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.</source>
-        <target xml:lang="hi" state="translated"><g id="genid-6" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> चित्र बारीकी से कहानी से मेल खाना चाहिए। पाठक केवल चित्रों को देखकर कहानी की रुपरेखा पहले से देखने में समर्थ होना चाहिए। इस स्तर पर यह चित्रण सरल होने चाहिए।</target>
+        <target xml:lang="hi" state="final"><g id="genid-6" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> चित्र बारीकी से कहानी से मेल खाना चाहिए। पाठक केवल चित्रों को देखकर कहानी की रुपरेखा पहले से देखने में समर्थ होना चाहिए। इस स्तर पर यह चित्रण सरल होने चाहिए।</target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-6" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> चित्र बारीकी से कहानी से मेल खाना चाहिए। पाठक केवल चित्रों को देखकर कहानी की रुपरेखा पहले से देखने में समर्थ होना चाहिए। इस स्तर पर यह चित्रण सरल होने चाहिए।      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-6" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> चित्र बारीकी से कहानी से मेल खाना चाहिए। पाठक केवल चित्रों को देखकर कहानी की रुपरेखा पहले से देखने में समर्थ होना चाहिए। इस स्तर पर यह चित्रण सरल होने चाहिए।      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-6" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> चित्र बारीकी से कहानी से मेल खाना चाहिए। पाठक केवल चित्रों को देखकर कहानी की रुपरेखा पहले से देखने में समर्थ होना चाहिए। इस स्तर पर यह चित्रण सरल होने चाहिए।      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-6" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> चित्र बारीकी से कहानी से मेल खाना चाहिए। पाठक केवल चित्रों को देखकर कहानी की रुपरेखा पहले से देखने में समर्थ होना चाहिए। इस स्तर पर यह चित्रण सरल होने चाहिए।      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-6" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> चित्र बारीकी से कहानी से मेल खाना चाहिए। पाठक केवल चित्रों को देखकर कहानी की रुपरेखा पहले से देखने में समर्थ होना चाहिए। इस स्तर पर यह चित्रण सरल होने चाहिए।      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.</source>
-        <target xml:lang="hi" state="translated"><g id="genid-7" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g> चित्र कहानी रुपरेखा में सहायता करना चाहिए। जैसे-जैसे टेक्स्ट की मात्रा बढ़ती है, पाठक चित्रों पर कम निर्भर होता है और उसे टेक्स्ट से अधिक अर्थ समझने लगता है। चित्रांकन अधिक जटिल हो सकता है।</target>
+        <target xml:lang="hi" state="final"><g id="genid-7" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g> चित्र कहानी रुपरेखा में सहायता करना चाहिए। जैसे-जैसे टेक्स्ट की मात्रा बढ़ती है, पाठक चित्रों पर कम निर्भर होता है और उसे टेक्स्ट से अधिक अर्थ समझने लगता है। चित्रांकन अधिक जटिल हो सकता है।</target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-7" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g> चित्र कहानी रुपरेखा में सहायता करना चाहिए। जैसे-जैसे टेक्स्ट की मात्रा बढ़ती है, पाठक चित्रों पर कम निर्भर होता है और उसे टेक्स्ट से अधिक अर्थ समझने लगता है। चित्रांकन अधिक जटिल हो सकता है।
-      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-7" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g> चित्र कहानी रुपरेखा में सहायता करना चाहिए। जैसे-जैसे टेक्स्ट की मात्रा बढ़ती है, पाठक चित्रों पर कम निर्भर होता है और उसे टेक्स्ट से अधिक अर्थ समझने लगता है। चित्रांकन अधिक जटिल हो सकता है।
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-7" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g> चित्र कहानी रुपरेखा में सहायता करना चाहिए। जैसे-जैसे टेक्स्ट की मात्रा बढ़ती है, पाठक चित्रों पर कम निर्भर होता है और उसे टेक्स्ट से अधिक अर्थ समझने लगता है। चित्रांकन अधिक जटिल हो सकता है।
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-7" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g> चित्र कहानी रुपरेखा में सहायता करना चाहिए। जैसे-जैसे टेक्स्ट की मात्रा बढ़ती है, पाठक चित्रों पर कम निर्भर होता है और उसे टेक्स्ट से अधिक अर्थ समझने लगता है। चित्रांकन अधिक जटिल हो सकता है।
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-7" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g> चित्र कहानी रुपरेखा में सहायता करना चाहिए। जैसे-जैसे टेक्स्ट की मात्रा बढ़ती है, पाठक चित्रों पर कम निर्भर होता है और उसे टेक्स्ट से अधिक अर्थ समझने लगता है। चित्रांकन अधिक जटिल हो सकता है।
-      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.</source>
-        <target xml:lang="hi" state="translated"><g id="genid-8" ctype="x-html-strong">धड़ाके से बोलनेवाले पाठकों के लिए</g> चित्रों द्वारा कहानी रुपरेखा में बहुत कम कोई सहायता नहीं मिलनी चाहिए। अर्थ समझने के लिए पाठक चित्रों से ज्यादा टेक्स्ट पर निर्भर होता है। चित्रण और अधिक जटिल हो सकता है।</target>
+        <target xml:lang="hi" state="final"><g id="genid-8" ctype="x-html-strong">धड़ाके से बोलनेवाले पाठकों के लिए</g> चित्रों द्वारा कहानी रुपरेखा में बहुत कम कोई सहायता नहीं मिलनी चाहिए। अर्थ समझने के लिए पाठक चित्रों से ज्यादा टेक्स्ट पर निर्भर होता है। चित्रण और अधिक जटिल हो सकता है।</target>
         <note>ID: leveled.reader.fluent.reader</note>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-8" ctype="x-html-strong">धड़ाके से बोलनेवाले पाठकों के लिए</g> चित्रों द्वारा कहानी रुपरेखा में बहुत कम कोई सहायता नहीं मिलनी चाहिए। अर्थ समझने के लिए पाठक चित्रों से ज्यादा टेक्स्ट पर निर्भर होता है। चित्रण और अधिक जटिल हो सकता है।      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-8" ctype="x-html-strong">धड़ाके से बोलनेवाले पाठकों के लिए</g> चित्रों द्वारा कहानी रुपरेखा में बहुत कम कोई सहायता नहीं मिलनी चाहिए। अर्थ समझने के लिए पाठक चित्रों से ज्यादा टेक्स्ट पर निर्भर होता है। चित्रण और अधिक जटिल हो सकता है।      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-8" ctype="x-html-strong">धड़ाके से बोलनेवाले पाठकों के लिए</g> चित्रों द्वारा कहानी रुपरेखा में बहुत कम कोई सहायता नहीं मिलनी चाहिए। अर्थ समझने के लिए पाठक चित्रों से ज्यादा टेक्स्ट पर निर्भर होता है। चित्रण और अधिक जटिल हो सकता है।      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-8" ctype="x-html-strong">धड़ाके से बोलनेवाले पाठकों के लिए</g> चित्रों द्वारा कहानी रुपरेखा में बहुत कम कोई सहायता नहीं मिलनी चाहिए। अर्थ समझने के लिए पाठक चित्रों से ज्यादा टेक्स्ट पर निर्भर होता है। चित्रण और अधिक जटिल हो सकता है।      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-8" ctype="x-html-strong">धड़ाके से बोलनेवाले पाठकों के लिए</g> चित्रों द्वारा कहानी रुपरेखा में बहुत कम कोई सहायता नहीं मिलनी चाहिए। अर्थ समझने के लिए पाठक चित्रों से ज्यादा टेक्स्ट पर निर्भर होता है। चित्रण और अधिक जटिल हो सकता है।      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice" approved="yes">
         <source xml:lang="en">Choice of Topic</source>
-        <target xml:lang="hi" state="translated">विषय के विकल्प</target>
+        <target xml:lang="hi" state="final">विषय के विकल्प</target>
         <note>ID: leveled.reader.topic.choice</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.discussion" approved="yes">
         <source xml:lang="en">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
-        <target xml:lang="hi" state="translated">पुस्तकें कई विषयों पर हो सकती हैं। शुरुआती पाठकों के लिए पुस्तकें बनाते समय, ऐसे विषय चुनें जो उनके लिए परिचित है। पाठक पढ़ने के लिए तब उत्सुक होते हैं तथा और अधिक पढ़ते है जब जो बातें वे पढ़ रहे हैं उन्हें दिलचस्प और परिचित लगें। अधिक अनुभवी पाठकों के लिए, विषय में जानकारी शामिल कर सकते हैं जिसके बारे में पाठक पहले से ही परिचित नहीं है।</target>
+        <target xml:lang="hi" state="final">पुस्तकें कई विषयों पर हो सकती हैं। शुरुआती पाठकों के लिए पुस्तकें बनाते समय, ऐसे विषय चुनें जो उनके लिए परिचित है। पाठक पढ़ने के लिए तब उत्सुक होते हैं तथा और अधिक पढ़ते है जब जो बातें वे पढ़ रहे हैं उन्हें दिलचस्प और परिचित लगें। अधिक अनुभवी पाठकों के लिए, विषय में जानकारी शामिल कर सकते हैं जिसके बारे में पाठक पहले से ही परिचित नहीं है।</target>
         <note>ID: leveled.reader.topic.choice.discussion</note>
-        <alt-trans>
-          <target xml:lang="hi">पुस्तकें कई विषयों पर हो सकती हैं। शुरुआती पाठकों के लिए पुस्तकें बनाते समय, ऐसे विषय चुनें जो उनके लिए परिचित है। पाठक पढ़ने के लिए तब उत्सुक होते हैं तथा और अधिक पढ़ते है जब वे जो बातें पढ़ रहे हैं वे उन्हें दिलचस्प और परिचित लगती हैं। अधिक अनुभवी पाठकों के लिए, विषय में जानकारी शामिल कर सकते हैं जिसके बारे में पाठक पहले से ही परिचित नहीं है।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.</source>
-        <target xml:lang="hi" state="translated"><g id="genid-9" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> पुस्तक ठोस होनी चाहिए, किसी एक विचार/विषय पर केंद्रित होनी चाहिए, और परिचित तथा समझने में आसान होनी चाहिए।</target>
+        <target xml:lang="hi" state="final"><g id="genid-9" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> पुस्तक ठोस होनी चाहिए, किसी एक विचार/विषय पर केंद्रित होनी चाहिए, और परिचित तथा समझने में आसान होनी चाहिए।</target>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-9" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> पुस्तक ठोस होनी चाहिए, किसी एक विचार/विषय पर केंद्रित होनी चाहिए, और परिचित तथा समझने में आसान होनी चाहिए।      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-9" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> पुस्तक ठोस होनी चाहिए, किसी एक विचार/विषय पर केंद्रित होनी चाहिए, और परिचित तथा समझने में आसान होनी चाहिए।      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-9" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> पुस्तक ठोस होनी चाहिए, किसी एक विचार/विषय पर केंद्रित होनी चाहिए, और परिचित तथा समझने में आसान होनी चाहिए।      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-9" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> पुस्तक ठोस होनी चाहिए, किसी एक विचार/विषय पर केंद्रित होनी चाहिए, और परिचित तथा समझने में आसान होनी चाहिए।      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-9" ctype="x-html-strong">अनपेक्षित पाठकों के लिए</g> पुस्तक ठोस होनी चाहिए, किसी एक विचार/विषय पर केंद्रित होनी चाहिए, और परिचित तथा समझने में आसान होनी चाहिए।      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.early.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.</source>
-        <target xml:lang="hi" state="translated"><g id="genid-10" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g>, प्रचलित अवधारणा के चारों ओर लेकिन गहरे अर्थ वाली कहानी विकसित करें।</target>
+        <target xml:lang="hi" state="final"><g id="genid-10" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g>, प्रचलित अवधारणा के चारों ओर लेकिन गहरे अर्थ वाली कहानी विकसित करें।</target>
         <note>ID: leveled.reader.topic.choice.early.reader</note>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-10" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g>, प्रचलित अवधारणा के चारों ओर लेकिन गहरे अर्थ वाली कहानी विकसित करें।      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-10" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g>, प्रचलित अवधारणा के चारों ओर लेकिन गहरे अर्थ वाली कहानी विकसित करें।      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-10" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g>, प्रचलित अवधारणा के चारों ओर लेकिन गहरे अर्थ वाली कहानी विकसित करें।      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-10" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g>, प्रचलित अवधारणा के चारों ओर लेकिन गहरे अर्थ वाली कहानी विकसित करें।      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-10" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g>, प्रचलित अवधारणा के चारों ओर लेकिन गहरे अर्थ वाली कहानी विकसित करें।      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-10" ctype="x-html-strong">प्रारंभिक पाठकों के लिए</g>, प्रचलित संकल्पना के आधार लेकिन गहरे अर्थ वाली कहानी विकसित करें।      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.</source>
-        <target xml:lang="hi" state="translated"><g id="genid-11" ctype="x-html-strong">धड़ाके से बोलनेवालों के लिए</g>अवधारणा जो प्रचलित है उससे परे, तरह-तरह की, और गूढ़ हो सकती है।</target>
+        <target xml:lang="hi" state="final"><g id="genid-11" ctype="x-html-strong">धड़ाके से बोलनेवालों के लिए</g>अवधारणा जो प्रचलित है उससे परे, तरह-तरह की, और गूढ़ हो सकती है।</target>
         <note>ID: leveled.reader.topic.choice.fluent.reader</note>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-11" ctype="x-html-strong">धड़ाके से बोलनेवालों के लिए</g>अवधारणा जो प्रचलित है उससे परे, तरह-तरह की, और गूढ़ हो सकती है।      
-      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-11" ctype="x-html-strong">धड़ाके से बोलनेवालों के लिए</g>अवधारणा जो प्रचलित है उससे परे, तरह-तरह की, और गूढ़ हो सकती है।      
-      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-11" ctype="x-html-strong">धड़ाके से बोलनेवालों के लिए</g>अवधारणा जो प्रचलित है उससे परे, तरह-तरह की, और गूढ़ हो सकती है।      
-      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-11" ctype="x-html-strong">धड़ाके से बोलनेवालों के लिए</g>अवधारणा जो प्रचलित है उससे परे, तरह-तरह की, और गूढ़ हो सकती है।      
-      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-11" ctype="x-html-strong">धड़ाके से बोलनेवालों के लिए</g>अवधारणा जो प्रचलित है उससे परे, तरह-तरह की, और गूढ़ हो सकती है।      </target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="hi"><g id="genid-11" ctype="x-html-strong">धड़ाके से बोलनेवालों के लिए</g>संकल्पना जो प्रचलित है उससे परे, तरह-तरह की, और गूढ़ हो सकती है।      </target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>
