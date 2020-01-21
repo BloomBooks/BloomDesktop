@@ -4,42 +4,42 @@
     <body>
       <trans-unit id="integrity.title" approved="yes">
         <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
-        <target xml:lang="prs" state="translated">بلوم نمیتواند بعضی از فایل های خودش را پیدا نماید، و ادامه نیز داده نمیتواند</target>
+        <target xml:lang="prs" state="final">بلوم نمیتواند بعضی از فایل های خودش را پیدا نماید، و ادامه نیز داده نمیتواند</target>
         <note>ID: integrity.title</note>
       </trans-unit>
       <trans-unit id="integrity.causes" approved="yes">
         <source xml:lang="en">Possible Causes</source>
-        <target xml:lang="prs" state="translated">عوامل ممکن</target>
+        <target xml:lang="prs" state="final">عوامل ممکن</target>
         <note>ID: integrity.causes</note>
       </trans-unit>
       <trans-unit id="integrity.causes.1" approved="yes">
         <source xml:lang="en">Your antivirus may have "quarantined" one or more Bloom files.</source>
-        <target xml:lang="prs" state="translated">انتی ویروس شما شاید یک یا چند فایل بلوم را "کوارنتین" کرده باشد.</target>
+        <target xml:lang="prs" state="final">انتی ویروس شما شاید یک یا چند فایل بلوم را "کوارنتین" کرده باشد.</target>
         <note>ID: integrity.causes.1</note>
       </trans-unit>
       <trans-unit id="integrity.causes.2" approved="yes">
         <source xml:lang="en">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </source>
-        <target xml:lang="prs" state="translated">اداره کننده کمپیوتر شما شاید کمپیوتر تانرا "قفل" کرده باشد تا از اشیای بد جلوگیری نماید، اما به شکل که بلوم نتواند این فایل ها را در جای که تعلق دارد جاگزین نماید. </target>
+        <target xml:lang="prs" state="final">اداره کننده کمپیوتر شما شاید کمپیوتر تانرا "قفل" کرده باشد تا از اشیای بد جلوگیری نماید، اما به شکل که بلوم نتواند این فایل ها را در جای که تعلق دارد جاگزین نماید. </target>
         <note>ID: integrity.causes.2</note>
       </trans-unit>
       <trans-unit id="integrity.todo" approved="yes">
         <source xml:lang="en">What To Do</source>
-        <target xml:lang="prs" state="translated">چه باید کرد</target>
+        <target xml:lang="prs" state="final">چه باید کرد</target>
         <note>ID: integrity.todo</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas" approved="yes">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
-        <target xml:lang="prs" state="translated">بعد ازتسلیم کردن این گزارش، ما در اجرا نمودن این کار به شما در تماس خواهیم شد و کمک خواهیم نمود. در عین زمان، اینجا چند نظریه است:</target>
+        <target xml:lang="prs" state="final">بعد ازتسلیم کردن این گزارش، ما در اجرا نمودن این کار به شما در تماس خواهیم شد و کمک خواهیم نمود. در عین زمان، اینجا چند نظریه است:</target>
         <note>ID: integrity.todo.ideas</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Reinstall" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
-        <target xml:lang="prs" state="translated">نصب کننده بلوم را دوباره فعال کنید، و ببنید که این بار درست آغاز میشود یا نه.</target>
+        <target xml:lang="prs" state="final">نصب کننده بلوم را دوباره فعال کنید، و ببنید که این بار درست آغاز میشود یا نه.</target>
         <note>ID: integrity.todo.ideas.Reinstall</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Antivirus" approved="yes">
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
-        <target xml:lang="prs" state="translated">اگر این حلش نکند، وقت است که به برنامه انتی ویروس تان برگردید. اگر بخش "فایل های گم شده" در پائین کدام فایل نشان دهد که با ‏".exe"‏ ختم شده باشد، فولدر به نامه لیست سفید ‏"whitelisting"‏  بلوم را ملاحظه کنید، که در ‏ <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
+        <target xml:lang="prs" state="final">اگر این حلش نکند، وقت است که به برنامه انتی ویروس تان برگردید. اگر بخش "فایل های گم شده" در پائین کدام فایل نشان دهد که با ‏".exe"‏ ختم شده باشد، فولدر به نامه لیست سفید ‏"whitelisting"‏  بلوم را ملاحظه کنید، که در ‏ <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
         <alt-trans>
           <target xml:lang="prs">اگر این حلش نکند، وقت است که به برنامه انتی ویروس تان برگردید. اگر بخش "فایل های گم شده" در پائین کدام فایل نشان دهد که با ‏".exe"‏ ختم شده باشد، لیست سفید ‏"whitelisting"‏ فولدر برنامه بلوم را ملاحظه کنید، که در ‏ <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
@@ -47,38 +47,38 @@
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVAST" approved="yes">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</source>
-        <target xml:lang="prs" state="translated">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">رهنمودها</g>.</target>
+        <target xml:lang="prs" state="final">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">رهنمودها</g>.</target>
         <note>ID: integrity.todo.ideas.AVAST</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Norton" approved="yes">
         <source xml:lang="en">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>.</source>
-        <target xml:lang="prs" state="translated">انتی ویروس ‏Norton‏: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">رهنمود ها از ‏Symantec‏</g>.</target>
+        <target xml:lang="prs" state="final">انتی ویروس ‏Norton‏: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">رهنمود ها از ‏Symantec‏</g>.</target>
         <note>ID: integrity.todo.ideas.Norton</note>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.AVG">
+      <trans-unit id="integrity.todo.ideas.AVG" approved="yes">
         <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
-        <target xml:lang="prs" state="translated">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">رهنمود ها از ‏AVG‏</g>.</target>
+        <target xml:lang="prs" state="final">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">رهنمود ها از ‏AVG‏</g>.</target>
         <note>ID: integrity.todo.ideas.AVG</note>
         <note>The former source text had an incorrect &amp;amp; following l=en_US in the href attribute value.</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Others" approved="yes">
         <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>
-        <target xml:lang="prs" state="translated">دیگر: "برای لیست سفید (‏whitelist‏) کردن اسم دایریکتری تان" را در گوگل بررسی نمائید</target>
+        <target xml:lang="prs" state="final">دیگر: "برای لیست سفید (‏whitelist‏) کردن اسم دایریکتری تان" را در گوگل بررسی نمائید</target>
         <note>ID: integrity.todo.ideas.Others</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Restart" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
-        <target xml:lang="prs" state="translated">نصب کننده بلوم را دوباره فعال کنید، و ببنید که این بار درست آغاز میشود یا نه.</target>
+        <target xml:lang="prs" state="final">نصب کننده بلوم را دوباره فعال کنید، و ببنید که این بار درست آغاز میشود یا نه.</target>
         <note>ID: integrity.todo.ideas.Restart</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Retrieve" approved="yes">
         <source xml:lang="en">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.</source>
-        <target xml:lang="prs" state="translated">شما همچنان کوشش کرده میتوانید که بخش بلوم را دوباره بدست آورده بتوانید که برنامه انتی ویروس گرفته است. برای ‏AVG‏، شما به پیدا کردن "اختیارات" ‏AVG‏ نیاز دارید ‏"virus vault"در مینیو، را کلیک کنید، و خانه بلوم را کلیک کنید، و "ریستور" را کلیک کنید. برای رهنمای دیداری این  <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">تصویر</g> را ببنید.</target>
+        <target xml:lang="prs" state="final">شما همچنان کوشش کرده میتوانید که بخش بلوم را دوباره بدست آورده بتوانید که برنامه انتی ویروس گرفته است. برای ‏AVG‏، شما به پیدا کردن "اختیارات" ‏AVG‏ نیاز دارید ‏"virus vault"در مینیو، را کلیک کنید، و خانه بلوم را کلیک کنید، و "ریستور" را کلیک کنید. برای رهنمای دیداری این  <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">تصویر</g> را ببنید.</target>
         <note>ID: integrity.todo.ideas.Retrieve</note>
       </trans-unit>
       <trans-unit id="integrity.missing" approved="yes">
         <source xml:lang="en">Missing Files</source>
-        <target xml:lang="prs" state="translated">فایل های گم شده</target>
+        <target xml:lang="prs" state="final">فایل های گم شده</target>
         <note>ID: integrity.missing</note>
       </trans-unit>
     </body>

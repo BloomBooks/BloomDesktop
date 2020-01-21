@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="wall.calendar" approved="yes">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="bn" state="translated">দেয়াল পঞ্জিকা টেমপ্লেট বিষয়ক</target>
+        <target xml:lang="bn" state="final">দেয়াল পঞ্জিকা টেমপ্লেট বিষয়ক</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use" approved="yes">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="bn" state="translated">এই টেমপ্লেটটি ব্যবহার করে, আপনি ছবি এবং পাতার উপরের অংশে উদ্ধৃতি এবং নীচের অংশে দিন/ বারের নাম সম্বলিত একটি A5 আকারের 12 মাসিক পঞ্জিকা তৈরি করতে পারেন। এই পঞ্জিকায় আপনার ভাষায় মাস এবং দিনের নাম ব্যবহার করা হবে।</target>
+        <target xml:lang="bn" state="final">এই টেমপ্লেটটি ব্যবহার করে, আপনি ছবি এবং পাতার উপরের অংশে উদ্ধৃতি এবং নীচের অংশে দিন/ বারের নাম সম্বলিত একটি A5 আকারের 12 মাসিক পঞ্জিকা তৈরি করতে পারেন। এই পঞ্জিকায় আপনার ভাষায় মাস এবং দিনের নাম ব্যবহার করা হবে।</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="bn" state="translated">এই সংস্করণের সীমাবদ্ধতা</target>
+        <target xml:lang="bn" state="final">এই সংস্করণের সীমাবদ্ধতা</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells" approved="yes">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="bn" state="translated">বর্তমানে, আপনি অন্য ভাষায় ব্যবহার করার জন্য 'শেল' তৈরি করতে পারবেন না।</target>
+        <target xml:lang="bn" state="final">বর্তমানে, আপনি অন্য ভাষায় ব্যবহার করার জন্য 'শেল' তৈরি করতে পারবেন না।</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits" approved="yes">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="bn" state="translated">ক্রেডিট</target>
+        <target xml:lang="bn" state="final">ক্রেডিট</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks" approved="yes">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="bn" state="translated">এই টেমপ্লেটটি শুরু করার জন্য Bruce Cox (SIL Cameroon) কে ধন্যবাদ।</target>
+        <target xml:lang="bn" state="final">এই টেমপ্লেটটি শুরু করার জন্য Bruce Cox (SIL Cameroon) কে ধন্যবাদ।</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>

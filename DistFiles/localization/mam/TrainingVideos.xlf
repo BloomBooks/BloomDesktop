@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="training.videos" approved="yes">
         <source xml:lang="en">Bloom Training Videos</source>
-        <target xml:lang="mam" state="translated">Qe' ka'yb'itz te xnaq'tzb'il te Bloom</target>
+        <target xml:lang="mam" state="final">Qe' ka'yb'itz te xnaq'tzb'il te Bloom</target>
         <note>ID: training.videos</note>
         <alt-trans>
           <target xml:lang="mam">Qe kyb'il aq'unb'il te Bloom</target>
@@ -12,7 +12,7 @@
       </trans-unit>
       <trans-unit id="training.videos.watch" approved="yes">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
-        <target xml:lang="mam" state="translated">Qa tok t-xk'utz'ib'a ti'j paqanil, b'a'n tu'n tka'yina kyi'j ka'yb'itz:</target>
+        <target xml:lang="mam" state="final">Qa tok t-xk'utz'ib'a ti'j paqanil, b'a'n tu'n tka'yina kyi'j ka'yb'itz:</target>
         <note>ID: training.videos.watch</note>
         <alt-trans>
           <target xml:lang="mam">Qa txk'utz'ib'a tok ti'j chemajxin, b'a'n tu'n tok tka'yina qe keyb'il tu'n jyetb'il:</target>
@@ -22,7 +22,7 @@
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
-        <target xml:lang="mam" state="translated"><g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Kykyaqil ka'yb'itz</g></target>
+        <target xml:lang="mam" state="final"><g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Kykyaqil ka'yb'itz</g></target>
         <note>ID: training.videos.all</note>
         <alt-trans>
           <target xml:lang="mam"><g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Kyaqil qe keyb'il</g></target>
@@ -30,7 +30,7 @@
       </trans-unit>
       <trans-unit id="training.videos.intro" approved="yes">
         <source xml:lang="en">Introductory Videos</source>
-        <target xml:lang="mam" state="translated">Qe' tnejel ka'yb'itz</target>
+        <target xml:lang="mam" state="final">Qe' tnejel ka'yb'itz</target>
         <note>ID: training.videos.intro</note>
         <alt-trans>
           <target xml:lang="mam">Qe tnejsal keyb'il</target>
@@ -40,7 +40,7 @@
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
-        <target xml:lang="mam" state="translated"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: alkye tzulo tajuw</g></target>
+        <target xml:lang="mam" state="final"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: alkye tzulo tajuw</g></target>
         <note>ID: training.videos.whofor</note>
         <alt-trans>
           <target xml:lang="mam"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Te alkye</g></target>
@@ -50,7 +50,7 @@
         <source xml:lang="en">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
         </source>
-        <target xml:lang="mam" state="translated"><g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">In el qniky kyi'j ttenb'il b'inchil u'jb'il ex qe' u'jb'il b'inchanpin</g></target>
+        <target xml:lang="mam" state="final"><g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">In el qniky kyi'j ttenb'il b'inchil u'jb'il ex qe' u'jb'il b'inchanpin</g></target>
         <note>ID: training.videos.templates</note>
         <alt-trans>
           <target xml:lang="mam"><g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Ne'l nik'b'aj kyi'jqe ttenb'il b'inchil u'jb'il b'ananmaj ex qe u'jb'il b'ananmaj</g></target>
@@ -60,7 +60,7 @@
         <source xml:lang="en">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Using the Basic Book template</g>
         </source>
-        <target xml:lang="mam" state="translated"><g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">In ajb'en ttenb'il b'inchil u'jb'il kye tnejenel u'jb'il</g></target>
+        <target xml:lang="mam" state="final"><g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">In ajb'en ttenb'il b'inchil u'jb'il kye tnejenel u'jb'il</g></target>
         <note>ID: training.videos.basicbook</note>
         <alt-trans>
           <target xml:lang="mam"><g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">N-najb'en ttenb'il b'inchil u'jb'il b'ananmaj te qe tnejenel u'jb'il</g></target>
@@ -70,7 +70,7 @@
         <source xml:lang="en">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="mam" state="translated"><g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">In chin ajb'en qe' ttenb'il b'inchil u'jb'il kye u'jb'il in el qniky' kyi'j ex qe u'jb'il tuj kolin (ila' ka'yb'itz)</g></target>
+        <target xml:lang="mam" state="final"><g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">In chin ajb'en qe' ttenb'il b'inchil u'jb'il kye u'jb'il in el qniky' kyi'j ex qe u'jb'il tuj kolin (ila' ka'yb'itz)</g></target>
         <note>ID: training.videos.readers</note>
         <alt-trans>
           <target xml:lang="mam"><g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">N-najb'en qe ttenb'il b'inchil u'jb'il b'ananmaj te qe u'jb'il n-nel qniky' ex qe u'jb'il tuj kolin (ila' keyb'il)</g></target>
@@ -78,7 +78,7 @@
       </trans-unit>
       <trans-unit id="training.videos.advanced" approved="yes">
         <source xml:lang="en">Advanced Topics</source>
-        <target xml:lang="mam" state="translated">B'ixnaq'tz nim kyxilen</target>
+        <target xml:lang="mam" state="final">B'ixnaq'tz nim kyxilen</target>
         <note>ID: training.videos.advanced</note>
         <alt-trans>
           <target xml:lang="mam">Twitz yol nim txilen</target>
@@ -88,7 +88,7 @@
         <source xml:lang="en">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Changing the format of text</g>
         </source>
-        <target xml:lang="mam" state="translated"><g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Nch'ixpet tten txolyol</g></target>
+        <target xml:lang="mam" state="final"><g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Nch'ixpet tten txolyol</g></target>
         <note>ID: training.videos.formatting</note>
         <alt-trans>
           <target xml:lang="mam"><g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">N-ch'ixpet tu'mel yek'b'il txolyol</g></target>
@@ -98,7 +98,7 @@
         <source xml:lang="en">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
         </source>
-        <target xml:lang="mam" state="translated"><g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">In ajb'en ttenb'il b'inchil u'jb'il te t-xaq u'j b'icha'n tten</g></target>
+        <target xml:lang="mam" state="final"><g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">In ajb'en ttenb'il b'inchil u'jb'il te t-xaq u'j b'icha'n tten</g></target>
         <note>ID: training.videos.custompage</note>
         <alt-trans>
           <target xml:lang="mam"><g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Najb'en ttenb'il b'inchil u'jb'il b'ananmaj te t-xaq teklx ju'n</g></target>
@@ -108,7 +108,7 @@
         <source xml:lang="en">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Inserting special characters</g>
         </source>
-        <target xml:lang="mam" state="translated"><g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Nchi okx b'ant tb'anil toklen ti'j ti'chaq</g></target>
+        <target xml:lang="mam" state="final"><g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Nchi okx b'ant tb'anil toklen ti'j ti'chaq</g></target>
         <note>ID: training.videos.specialcharacters</note>
         <alt-trans>
           <target xml:lang="mam"><g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Nchokxb'ant qe tb'anil toklen ti'j qe ti'chaq</g></target>
@@ -118,7 +118,7 @@
         <source xml:lang="en">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="mam" state="translated"><g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Nchi b'inchet jun k'loj ttenb'il b'inchil kye u'jb'il in el qniky' kyi'j ex kye u'jb'il tuj kolin (ila' ka'yb'itz)</g></target>
+        <target xml:lang="mam" state="final"><g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Nchi b'inchet jun k'loj ttenb'il b'inchil kye u'jb'il in el qniky' kyi'j ex kye u'jb'il tuj kolin (ila' ka'yb'itz)</g></target>
         <note>ID: training.videos.readertemplates</note>
         <alt-trans>
           <target xml:lang="mam"><g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Nb'inchet jun k'loj qe ttenb'il b'inchil u'jb'il b'ananmaj kye qe u'jb'il n-nel qniky' ex kye qe u'jb'il tuj kolin (ila' keyb'il)</g></target>
@@ -126,7 +126,7 @@
       </trans-unit>
       <trans-unit id="training.videos.offline" approved="yes">
         <source xml:lang="en">Offline Viewing</source>
-        <target xml:lang="mam" state="translated">Nka'yit ex mya' toksa'n toj paqanil</target>
+        <target xml:lang="mam" state="final">Nka'yit ex mya' toksa'n toj paqanil</target>
         <note>ID: training.videos.offline</note>
         <alt-trans>
           <target xml:lang="mam">B'a'n ka'yit ex nya' toksa'n ti'j chemaj xin</target>
@@ -134,7 +134,7 @@
       </trans-unit>
       <trans-unit id="training.videos.download" approved="yes">
         <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</source>
-        <target xml:lang="mam" state="translated">Qa tajb'ila tu'n tku'tz iqat junjun ka'yb'itz lu' tu'ntzan t-xi' tyek'an ex tu'n tb'aj tsipan mya' toksa'n toj paqanil, b'a'n tu'n tkutz iqat tuj t-xk'utz'ib'a:</target>
+        <target xml:lang="mam" state="final">Qa tajb'ila tu'n tku'tz iqat junjun ka'yb'itz lu' tu'ntzan t-xi' tyek'an ex tu'n tb'aj tsipan mya' toksa'n toj paqanil, b'a'n tu'n tkutz iqat tuj t-xk'utz'ib'a:</target>
         <note>ID: training.videos.download</note>
         <alt-trans>
           <target xml:lang="mam">Qa tajb'ila tu'n tku'tz iqat ju'nqe keyb'il lu' tu'ntzan txi' yek'an ex tu'n tb'aj tsipan nya' toksa'n ti'j chemaj xin, b'a'n tu'n tkutz iqat tuj teya txk'utz'ib'a:</target>
@@ -142,12 +142,12 @@
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
-        <target xml:lang="mam" state="translated"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">B'anxix kin</g>(Matij naq'ub'il aq'unb'il)</target>
+        <target xml:lang="mam" state="final"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">B'anxix kin</g>(Matij naq'ub'il aq'unb'il)</target>
         <note>ID: training.videos.hires</note>
       </trans-unit>
       <trans-unit id="training.videos.lores" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
-        <target xml:lang="mam" state="translated"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Ajns kin</g>(Ajns ch'in naq'ub'il aq'unb'il)</target>
+        <target xml:lang="mam" state="final"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Ajns kin</g>(Ajns ch'in naq'ub'il aq'unb'il)</target>
         <note>ID: training.videos.lores</note>
       </trans-unit>
     </body>

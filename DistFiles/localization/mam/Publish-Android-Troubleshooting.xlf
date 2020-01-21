@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="android.publish.trouble.tips" approved="yes">
         <source xml:lang="en">Troubleshooting Tips for Android Publishing</source>
-        <target xml:lang="mam" state="translated">Qee nab'il tu'n tnajset mya' b'a'n ite' ti'j pakb'ab'il te Android</target>
+        <target xml:lang="mam" state="final">Qee nab'il tu'n tnajset mya' b'a'n ite' ti'j pakb'ab'il te Android</target>
         <note>ID: android.publish.trouble.tips</note>
         <alt-trans>
           <target xml:lang="mam">Qe tu'mel yol tu'ntzan tnajset qe nya' b'a'n ite' ti'j pakb'ab'il te Android</target>
@@ -12,7 +12,7 @@
       </trans-unit>
       <trans-unit id="android.publish.wifi" approved="yes">
         <source xml:lang="en">Share over Wi-Fi</source>
-        <target xml:lang="mam" state="translated">Samalte tuj paqanil WiFi</target>
+        <target xml:lang="mam" state="final">Samalte tuj paqanil WiFi</target>
         <note>ID: android.publish.wifi</note>
         <alt-trans>
           <target xml:lang="mam">Sipb'il tuj paqanil WiFi</target>
@@ -23,7 +23,7 @@
       </trans-unit>
       <trans-unit id="android.publish.wifi.unseen" approved="yes">
         <source xml:lang="en">Problem: Android Device is not seeing book advertisements</source>
-        <target xml:lang="mam" state="translated">Il: aju makb'il te xk'utz'ib' Android nti' nk'amon pakb'ab'il te u'jb'il</target>
+        <target xml:lang="mam" state="final">Il: aju makb'il te xk'utz'ib' Android nti' nk'amon pakb'ab'il te u'jb'il</target>
         <note>ID: android.publish.wifi.unseen</note>
         <alt-trans>
           <target xml:lang="mam">Jun nya' b'a'n: Makb'il aq'unb'il xk'utz'ib' Android nti' nk'amon pakb'ab'il te u'jb'il</target>
@@ -31,7 +31,7 @@
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive" approved="yes">
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
-        <target xml:lang="mam" state="translated">Aj tajb'en tumel aq'untl lu', ilti'j tu'n taq'unan Bloom Reader. Jaqonkxa menú ex sak'onktza "K'amob'il te WiFi".</target>
+        <target xml:lang="mam" state="final">Aj tajb'en tumel aq'untl lu', ilti'j tu'n taq'unan Bloom Reader. Jaqonkxa menú ex sak'onktza "K'amob'il te WiFi".</target>
         <note>ID: android.publish.wifi.run.receive</note>
         <alt-trans>
           <target xml:lang="mam">Aj najb'en tu'mel aq'untl lu', ilx ti'j tu'n taq'nan Bloom Reader. Jaqonxa menú ex sak'onqtza "K'amob'il te WiFi".</target>
@@ -39,7 +39,7 @@
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from" approved="yes">
         <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
-        <target xml:lang="mam" state="translated">Ka'yinxa qa b'a'n tok makb'il xk'utz'ib' ti'j twitz "K'amob'il te WiFi"</target>
+        <target xml:lang="mam" state="final">Ka'yinxa qa b'a'n tok makb'il xk'utz'ib' ti'j twitz "K'amob'il te WiFi"</target>
         <note>ID: android.publish.wifi.receive.from</note>
         <alt-trans>
           <target xml:lang="mam">Tka'yinxa qa b'a'n tok makb'il xk'utz'ib' ti'j twitz "K'amob'il te WiFi"</target>
@@ -50,7 +50,7 @@
       </trans-unit>
       <trans-unit id="android.publish.wifi.same.network" approved="yes">
         <source xml:lang="en">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
-        <target xml:lang="mam" state="translated">Ka'yinka qa aju xk'utz'ib' ex tmakb'il junx ate' ti'j paqanil WiFi. Jun xk'utz'ib' tok ti'j ajb'eyil WiFi tu'n taq'il b'ala ax ta' tuj ttex paqanil. Ja'ka b'a'n tz'ok qe' paqanil tu'n taq'il tu'ntzan tten tujxix tkab'in paqanil te tzalu' ikytza'n WiFi, alkyeqe' nchi aq'unan ti'j Bloom mlayx chi onin tu'n tok q'ol tilb'ilal aq'unb'il lu'.</target>
+        <target xml:lang="mam" state="final">Ka'yinka qa aju xk'utz'ib' ex tmakb'il junx ate' ti'j paqanil WiFi. Jun xk'utz'ib' tok ti'j ajb'eyil WiFi tu'n taq'il b'ala ax ta' tuj ttex paqanil. Ja'ka b'a'n tz'ok qe' paqanil tu'n taq'il tu'ntzan tten tujxix tkab'in paqanil te tzalu' ikytza'n WiFi, alkyeqe' nchi aq'unan ti'j Bloom mlayx chi onin tu'n tok q'ol tilb'ilal aq'unb'il lu'.</target>
         <note>ID: android.publish.wifi.same.network</note>
         <alt-trans>
           <target xml:lang="mam">Ka'yinka qa aju xk'utz'ib' ex tmakb'il junx ite' ti'j paqanil WiFi. Jun xk'utz'ib' tok ti'j ajb'eyil WiFi tu'n taq'il b'ala ax ta' tuj ttex paqanil. Ja'ka b'a'n tz'ok qe' paqanil tu'n taq'il tu'ntzan tten tujxix tkab'in paqanil te tzalu' ikytza'n WiFi, alkyeqe' nchi aq'unan ti'j Bloom mlayx chi onin tu'n tok q'ol tilb'ilal aq'unb'il lu'.</target>
@@ -61,7 +61,7 @@
       </trans-unit>
       <trans-unit id="android.publish.wifi.firewalls" approved="yes">
         <source xml:lang="en">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</source>
-        <target xml:lang="mam" state="translated">Ka'yinka qa aju t-xk'utz'ib'a nti' tok yupil q'aq' ti'j (firewall) qa nmaqan ti'j. Aj yupil q'aq' te Windows ntzaj tyek'an tib' majtaq nxi' qe' sipil tu'j. Qa ma tzaj tq'uma'n "Mi'" ti'jo, ja'ka b'ant min tzajil tqanin juntl maj teye. Qa at txqantl yupil q'aq' tok ti'j, q'in ela ti'j. Bloom ntzaj tq'o'n jun u'jb'il b'ix ntzaj tyek'an b'ib'il te tuj paqanil te tzalu' tuj UDP tuj ttenb'il 5913 ex Bloom Reader ntzaj tqa'n jun u'jb'il tuj ttenb'il 5915.</target>
+        <target xml:lang="mam" state="final">Ka'yinka qa aju t-xk'utz'ib'a nti' tok yupil q'aq' ti'j (firewall) qa nmaqan ti'j. Aj yupil q'aq' te Windows ntzaj tyek'an tib' majtaq nxi' qe' sipil tu'j. Qa ma tzaj tq'uma'n "Mi'" ti'jo, ja'ka b'ant min tzajil tqanin juntl maj teye. Qa at txqantl yupil q'aq' tok ti'j, q'in ela ti'j. Bloom ntzaj tq'o'n jun u'jb'il b'ix ntzaj tyek'an b'ib'il te tuj paqanil te tzalu' tuj UDP tuj ttenb'il 5913 ex Bloom Reader ntzaj tqa'n jun u'jb'il tuj ttenb'il 5915.</target>
         <note>ID: android.publish.wifi.firewalls</note>
         <alt-trans>
           <target xml:lang="mam">Ka'yin oka qa txk'utz'ib'a nti' tok yupil q'aq' ti'j (firewall) qa nmaqan ti'j. Aj yupil q'aq' te Windows ntzaj tyek'an tib' mataq nxi' qe' sipil tu'j. Qa ma tzaj tma'n "Mi'" ti'jo, jaka b'ant min tzajil tqanin juntl maj teye. Qa at txqantl yupil q'aq' tok ti'j, q'in ela ti'j. Bloom ntzaj tq'o'n jun u'jb'il b'ix ntzaj tyek'an b'ib'il te tuj chemaj xin te tzalu' tuj UDP tuj ttenb'il 5913 ex Bloom Reader ntzaj tqa'n jun u'jb'il tuj ttenb'il 5915.</target>
@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="android.publish.usb" approved="yes">
         <source xml:lang="en">Send Over USB Cable</source>
-        <target xml:lang="mam" state="translated">Nsamet tuj taq'el USB</target>
+        <target xml:lang="mam" state="final">Nsamet tuj taq'el USB</target>
         <note>ID: android.publish.usb</note>
         <alt-trans>
           <target xml:lang="mam">Tu'n txi' samet tuj taq'el USB</target>
@@ -77,7 +77,7 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.not.connect" approved="yes">
         <source xml:lang="en">Problem: Bloom is not connecting to my device</source>
-        <target xml:lang="mam" state="translated">Il: Bloom mixti' tok ti'j nmakb'il xk'utz'ib'a</target>
+        <target xml:lang="mam" state="final">Il: Bloom mixti' tok ti'j nmakb'il xk'utz'ib'a</target>
         <note>ID: android.publish.usb.not.connect</note>
         <alt-trans>
           <target xml:lang="mam">Jun nya' b'a'n: Bloom nya' tok tij n-makb'ila aq'unb'il xk'utz'ib'</target>
@@ -87,7 +87,7 @@
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the Wi-Fi method even if you are only working with a single device.</g>
         </source>
-        <target xml:lang="mam" state="translated"><g id="genid-1" ctype="x-html-p">Ma tz'el qniky'e qa aju tumel aq'untl lu' in tq'o'n mya' b'a'n kye nimaq makb'il te xk'utz'ib'. Tu'ntzan tlaj ximinxe qa aju tumel aq'untl WiFi b'a'n ex qa in aq'unane o'kx tuk'il jun makb'il te xk'utz'ib'.</g></target>
+        <target xml:lang="mam" state="final"><g id="genid-1" ctype="x-html-p">Ma tz'el qniky'e qa aju tumel aq'untl lu' in tq'o'n mya' b'a'n kye nimaq makb'il te xk'utz'ib'. Tu'ntzan tlaj ximinxe qa aju tumel aq'untl WiFi b'a'n ex qa in aq'unane o'kx tuk'il jun makb'il te xk'utz'ib'.</g></target>
         <note>ID: android.publish.usb.consider.wifi</note>
         <alt-trans>
           <target xml:lang="mam"><g id="genid-1" ctype="x-html-p">Ma kanet qu'na qa a tu'mel aq'untl lu' ntq'o'n nya' b'a'n kye qe nimka makb'il aq'unb'il xk'utz'ib. Tu'ntzan tlaj ximinxe qa a tu'mel aq'untl WiFi b'a'n ax ikyxjo qa n-naq'unane o'kx tuk' jun makb'il aq'unb'il xk'utz'ib'.</g></target>
@@ -95,7 +95,7 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.automatic" approved="yes">
         <source xml:lang="en">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
-        <target xml:lang="mam" state="translated">In ajb'enpin aju tumel aq'untl lu', nti'x tu'n tokxa tuj juntl tenb'il k'amol qe' u'jb'il. O'kx nb'aj taq'unan Bloom Reader. Qe' u'jb'il ilti'j tu'n ttzaj tyek'an junx kyeqe o'kx ky'elix tuj juntl tenb'il.</target>
+        <target xml:lang="mam" state="final">In ajb'enpin aju tumel aq'untl lu', nti'x tu'n tokxa tuj juntl tenb'il k'amol qe' u'jb'il. O'kx nb'aj taq'unan Bloom Reader. Qe' u'jb'il ilti'j tu'n ttzaj tyek'an junx kyeqe o'kx ky'elix tuj juntl tenb'il.</target>
         <note>ID: android.publish.usb.automatic</note>
         <alt-trans>
           <target xml:lang="mam">Tajlal n-ajb'en aju tu'mel aq'untl lu', nti'x tu'n tokxa tuj mijun tenb'ilxix k'amol qe u'jb'il. O'kx nb'aj taq'unan Bloom Reader. Qe u'jb'il ilx ti'j tu'n tzaj tyek'an junx kyeqe o'kx ok kyex tuj juntl tenb'il.</target>
@@ -103,7 +103,7 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.uses.mtp" approved="yes">
         <source xml:lang="en">Some Android devices have multiple modes they can be in when connected to a computer. Some will ask you as soon as you connect the cable to the computer. Bloom will be trying to talk to the device using a protocol called "MTP". If you're not sure that your device is connecting using MTP, try googling the name of your device + "MTP".</source>
-        <target xml:lang="mam" state="translated">Ate' qe' junjun makb'il aq'unb'il xk'utz'ib' Android ja'ka b'ant tu'n kyten tuj nimaq tumel aj tokq'et ti'j jun xk'utz'ib'. Atla jun tzul kyqanan mataq toklen q'ot taq'al ti'j xk'utz'ib'. Kxe'l tjyo'n Bloom tumel tu'n tyolin tuj makb'il aq'unb'il xk'utz'ib' tu'n jun txolb'ab'il twitz yol "MTP". Qa mixti' tojtzqi'na qa tmakb'ila aq'unb'il txk'utz'ib'a tok ti'j MTP, kxe'l tjyo'na tuj tumel Google tb'i tmakb'ila aq'unb'il txk'utz'ib'a ex "MTP".</target>
+        <target xml:lang="mam" state="final">Ate' qe' junjun makb'il aq'unb'il xk'utz'ib' Android ja'ka b'ant tu'n kyten tuj nimaq tumel aj tokq'et ti'j jun xk'utz'ib'. Atla jun tzul kyqanan mataq toklen q'ot taq'al ti'j xk'utz'ib'. Kxe'l tjyo'n Bloom tumel tu'n tyolin tuj makb'il aq'unb'il xk'utz'ib' tu'n jun txolb'ab'il twitz yol "MTP". Qa mixti' tojtzqi'na qa tmakb'ila aq'unb'il txk'utz'ib'a tok ti'j MTP, kxe'l tjyo'na tuj tumel Google tb'i tmakb'ila aq'unb'il txk'utz'ib'a ex "MTP".</target>
         <note>ID: android.publish.usb.uses.mtp</note>
         <alt-trans>
           <target xml:lang="mam">Atqe ju'n makb'il aq'unb'il xk'utz'ib' Android jaka b'ant tu'n kyten tuj nimka tumlal taj tokqa ti'j jun xk'utz'ib'. Atla ju'n tzul kyqanan mataq toklen q'ot taq'al ti'j xk'utz'ib'. Qxel tjyo'n Bloom tu'mel tu'n tyolin tuk' makb'il aq'unb'il xk'utz'ib' tu'n jun txolb'ab'il twitz yol "MTP". Qa nya' axix tzqi'na qa tmakb'ila aq'unb'il txk'utz'ib'a tok ti'j MTP, kxel tjyo'na tuj tu'mel Google tb'i tmakb'ila aq'unb'il txk'utz'ib'a ex "MTP".</target>
@@ -111,7 +111,7 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.windows" approved="yes">
         <source xml:lang="en">The device should be showing up in Windows File Explorer (this feature is Windows-only)</source>
-        <target xml:lang="mam" state="translated">Aju makb'il toj xk'utz'ib' ilti'j tu'n tetz tyek'an tib' tuj jyob'il nuk'b'il aq'unb'il te Windows (Qe' ti'chaq tok ti'j nkanet o'kx ten tuj Windows)</target>
+        <target xml:lang="mam" state="final">Aju makb'il toj xk'utz'ib' ilti'j tu'n tetz tyek'an tib' tuj jyob'il nuk'b'il aq'unb'il te Windows (Qe' ti'chaq tok ti'j nkanet o'kx ten tuj Windows)</target>
         <note>ID: android.publish.usb.windows</note>
         <alt-trans>
           <target xml:lang="mam">Aju makb'il aq'unb'il xk'utz'ib' il ti'j tu'n tetz tye'k'an tib' tuj jyob'il nak'ub'il aq'unb'il te Windows (Qe ti'chaq tok ti'j nkanet o'kxten tuj Windows)</target>
@@ -119,7 +119,7 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.cable.or.port" approved="yes">
         <source xml:lang="en">Try a different cable, or a different USB port.</source>
-        <target xml:lang="mam" state="translated">B'inchama tu'n juntl taq'al mo junxitl tenb'il USB.</target>
+        <target xml:lang="mam" state="final">B'inchama tu'n juntl taq'al mo junxitl tenb'il USB.</target>
         <note>ID: android.publish.usb.cable.or.port</note>
         <alt-trans>
           <target xml:lang="mam">Nib'enxa tu'n tok tq'ona junxitl taq'al mo junxitl tenb'il USB.</target>

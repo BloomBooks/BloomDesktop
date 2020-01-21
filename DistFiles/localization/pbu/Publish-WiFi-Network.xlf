@@ -2,19 +2,19 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Publish-WiFi-Network-en.htm" datatype="html" source-language="en" target-language="pbu">
     <body>
-      <trans-unit id="publish.help.tips.tempWiFi.title">
+      <trans-unit id="publish.help.tips.tempWiFi.title" approved="yes">
         <source xml:lang="en">Ways to make a temporary Wi-Fi Network</source>
-        <target xml:lang="pbu" state="needs-translation">Ways to make a temporary Wi-Fi Network</target>
+        <target xml:lang="pbu" state="final">د موقتي بی سیمه شبکې جوړولو لارې</target>
         <note>ID: publish.help.tips.tempWiFi.title</note>
       </trans-unit>
-      <trans-unit id="publish.help.tips.tempWiFi.hotspot">
+      <trans-unit id="publish.help.tips.tempWiFi.hotspot" approved="yes">
         <source xml:lang="en">Start a phone hotspot</source>
-        <target xml:lang="pbu" state="needs-translation">Start a phone hotspot</target>
+        <target xml:lang="pbu" state="final">د تلیفون hotspot پیل کړئ</target>
         <note>ID: publish.help.tips.tempWiFi.hotspot</note>
       </trans-unit>
-      <trans-unit id="publish.help.tips.tempWiFi.hostednetwork">
+      <trans-unit id="publish.help.tips.tempWiFi.hostednetwork" approved="yes">
         <source xml:lang="en">Start a network using your laptop</source>
-        <target xml:lang="pbu" state="needs-translation">Start a network using your laptop</target>
+        <target xml:lang="pbu" state="final">د خپل لیپ ټاپ په کارولو سره شبکه پیل کړئ</target>
         <note>ID: publish.help.tips.tempWiFi.hostednetwork</note>
       </trans-unit>
     </body>

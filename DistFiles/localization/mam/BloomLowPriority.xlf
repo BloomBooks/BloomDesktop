@@ -6,7 +6,7 @@
         <source xml:lang="en">Conversion file used:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
         <note>After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specificies a mapping which is used to convert the script for one language into the script for another.</note>
-        <target xml:lang="mam" state="translated">Nak'ub'il aq'unb'il te Tx'ixpub'il:</target>
+        <target xml:lang="mam" state="final">Nak'ub'il aq'unb'il te Tx'ixpub'il:</target>
         <alt-trans>
           <target xml:lang="mam">Nak'ub'il aq'unb'il te ch'ixpub'il nk'aj:</target>
         </alt-trans>
@@ -15,7 +15,7 @@
         <source xml:lang="en">eSpeak failed.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
         <note>This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
-        <target xml:lang="mam" state="translated">ma tzakj eSpeak.</target>
+        <target xml:lang="mam" state="final">ma tzakj eSpeak.</target>
         <alt-trans>
           <target xml:lang="mam">ma tzaq eSpeak.</target>
         </alt-trans>
@@ -27,13 +27,13 @@
         <source xml:lang="en">eSpeak language:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed</note>
         <note>After this text, the program will display the language code of the language settings that eSpeak used. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
-        <target xml:lang="mam" state="translated">yol eSpeak:</target>
+        <target xml:lang="mam" state="final">yol eSpeak:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion" approved="yes">
         <source xml:lang="en">Result of orthography conversion:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
         <note>After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file.</note>
-        <target xml:lang="mam" state="translated">Tqanil tib'aj tx'ixpub'il tten tz'ib'b'il:</target>
+        <target xml:lang="mam" state="final">Tqanil tib'aj tx'ixpub'il tten tz'ib'b'il:</target>
         <alt-trans>
           <target xml:lang="mam">Tu'mel ntzaj tq'o'n ch'ixpub'il tz'ib'il tuj tu'melxix:</target>
         </alt-trans>
@@ -41,7 +41,7 @@
       <trans-unit id="Settings.Enterprise.Community" approved="yes">
         <source xml:lang="en">Funded by the local community only</source>
         <note>ID: Settings.Enterprise.Community</note>
-        <target xml:lang="mam" state="translated">Onb'il tu'n kojb'il  te tzalu'</target>
+        <target xml:lang="mam" state="final">Onb'il tu'n kojb'il  te tzalu'</target>
         <alt-trans>
           <target xml:lang="mam">Onb'il o'kxten kyu'n qe k'loj xjal te tzalu'</target>
         </alt-trans>
@@ -49,7 +49,7 @@
       <trans-unit id="Settings.Enterprise.CheckUpdates" approved="yes">
         <source xml:lang="en">Check for updates</source>
         <note>ID: Settings.Enterprise.CheckUpdates</note>
-        <target xml:lang="mam" state="translated">Jayol ak'aj aq'unb'il</target>
+        <target xml:lang="mam" state="final">Jayol ak'aj aq'unb'il</target>
         <alt-trans>
           <target xml:lang="mam">Jyol qe ak'aj aq'unb'il</target>
         </alt-trans>
@@ -57,12 +57,12 @@
       <trans-unit id="Settings.Enterprise.Expiration" approved="yes">
         <source xml:lang="en">Expires:</source>
         <note>ID: Settings.Enterprise.Expiration</note>
-        <target xml:lang="mam" state="translated">Njapan b'aj twi’:</target>
+        <target xml:lang="mam" state="final">Njapan b'aj twi’:</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expired" approved="yes">
         <source xml:lang="en">That code has expired.</source>
         <note>ID: Settings.Enterprise.Expired</note>
-        <target xml:lang="mam" state="translated">Ma japan b'aj twi' techlal.</target>
+        <target xml:lang="mam" state="final">Ma japan b'aj twi' techlal.</target>
         <alt-trans>
           <target xml:lang="mam">Aj techil tajlal lu' o japan b'aj twi'.</target>
         </alt-trans>
@@ -70,7 +70,7 @@
       <trans-unit id="Settings.Enterprise.Incomplete" approved="yes">
         <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
         <note>ID: Settings.Enterprise.Incomplete</note>
-        <target xml:lang="mam" state="translated"> Ilti'j tu'n tten tilb'il TB'I-123456-7890</target>
+        <target xml:lang="mam" state="final"> Ilti'j tu'n tten tilb'il TB'I-123456-7890</target>
         <alt-trans>
           <target xml:lang="mam"> Il ti'j tu'n tok ti'j techil tajlal aq'unb'il xk'utz'ib' TB'I-123456-7890</target>
         </alt-trans>
@@ -78,7 +78,7 @@
       <trans-unit id="Settings.Enterprise.LearnMore" approved="yes">
         <source xml:lang="en">Learn More</source>
         <note>ID: Settings.Enterprise.LearnMore</note>
-        <target xml:lang="mam" state="translated">Txqantl xnaq'tzb'il</target>
+        <target xml:lang="mam" state="final">Txqantl xnaq'tzb'il</target>
         <alt-trans>
           <target xml:lang="mam">Xnaq'tzb'il txqantl</target>
         </alt-trans>
@@ -88,7 +88,7 @@
             Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
         </source>
         <note>ID: Settings.Enterprise.Overview</note>
-        <target xml:lang="mam" state="translated">
+        <target xml:lang="mam" state="final">
             In ok q'o' txqantl aq'unb'il ex tajb'en Bloom Empresarial kye ajxtokil u'j, ajkawil ex k'loj xjal twitz nimaq tnam. In onin chojb'il tu'n tklet ti'j txqantk tajb'ila ex in onina atu'n tok tipumal Bloom tu'n tajb'en kye txqantl xjal.
         </target>
         <alt-trans>
@@ -100,7 +100,7 @@
       <trans-unit id="Settings.Enterprise.None" approved="yes">
         <source xml:lang="en">None. Enterprise features will be unavailable.</source>
         <note>ID: Settings.Enterprise.None</note>
-        <target xml:lang="mam" state="translated">Mijun. Mlay tzaj tyek'in Bloom aq'unb'il kywitz ja aq'untl.</target>
+        <target xml:lang="mam" state="final">Mijun. Mlay tzaj tyek'in Bloom aq'unb'il kywitz ja aq'untl.</target>
         <alt-trans>
           <target xml:lang="mam">Mijun. Bloom min tzaj tye'k'an alkye twitz aq'untl empresariales.</target>
         </alt-trans>
@@ -109,7 +109,7 @@
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
         <note>ID: Settings.Enterprise.NeedsCode</note>
         <note>%0 will be replaced with the name of the branding. Keep surrounding **...**. [here](%1) will become a hot link; %1 will not be seen, but will be the URL for the destination page. Translate "here" and keep the [](%1) around it.</note>
-        <target xml:lang="mam" state="translated">Toj tnejnel tu'mel Bloom, ma ajb'en aq'untl lu' **%0**. Tu'n tajb'en jun majtl teya tz'ib'ankub'a techlal tok te ja'la. Aqe' techlal SIL jaku' yajet tu'na toj [here](%1). Tu'n tku'x junjuntl b'ib'aj ilti'j tu'n tyolina tuk' ajka'yil aq'unb'il te twitz aq'untl lu'. </target>
+        <target xml:lang="mam" state="final">Toj tnejnel tu'mel Bloom, ma ajb'en aq'untl lu' **%0**. Tu'n tajb'en jun majtl teya tz'ib'ankub'a techlal tok te ja'la. Aqe' techlal SIL jaku' yajet tu'na toj [here](%1). Tu'n tku'x junjuntl b'ib'aj ilti'j tu'n tyolina tuk' ajka'yil aq'unb'il te twitz aq'untl lu'. </target>
         <alt-trans>
           <target xml:lang="mam">Tuj jun tnejnel tu'mel te Bloom, ajb'en tu'n aq'untl lu' **%0**. Tu'n tajb'en ex tu'n mi'n twe' il ti'j tu'n tokx techil tajlal tu'n tku'x b'ib'aj te ja'lo. Qe techil tajlal tok kyi'j techil SIL jaka b'ant tu'n kykanet tuj [here](%1). Tu'n tku'x b'ib'aj kyuj qe juntl, il ti'j tu'n tyolina tuk' ajka'yil aq'unb'il xk'utz'ib' te twitz aq'untl lu'.</target>
         </alt-trans>
@@ -117,7 +117,7 @@
       <trans-unit id="Settings.Enterprise.NotValid" approved="yes">
         <source xml:lang="en">That code appears to be incorrect.</source>
         <note>ID: Settings.Enterprise.NotValid</note>
-        <target xml:lang="mam" state="translated">Mya' toj tu'mel ta'ya techlal lu'.</target>
+        <target xml:lang="mam" state="final">Mya' toj tu'mel ta'ya techlal lu'.</target>
         <alt-trans>
           <target xml:lang="mam">Aju techil tajlal lu' nya' tuj tu'mel ta'.</target>
         </alt-trans>
@@ -125,22 +125,22 @@
       <trans-unit id="Settings.Enterprise.Status" approved="yes">
         <source xml:lang="en">Bloom Enterprise Status</source>
         <note>ID: Settings.Enterprise.Status</note>
-        <target xml:lang="mam" state="translated">Tza'n ta' Bloom Empresarial</target>
+        <target xml:lang="mam" state="final">Tza'n ta' Bloom Empresarial</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Subscription" approved="yes">
         <source xml:lang="en">Enterprise Subscription</source>
         <note>ID: Settings.Enterprise.Subscription</note>
-        <target xml:lang="mam" state="translated">Tu'n tku'x b'ib'aj Empresarial</target>
+        <target xml:lang="mam" state="final">Tu'n tku'x b'ib'aj Empresarial</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.SubscriptionCode" approved="yes">
         <source xml:lang="en">Subscription Code:</source>
         <note>ID: Settings.Enterprise.SubscriptionCode</note>
-        <target xml:lang="mam" state="translated">Techil tajlal tu'n tku'x b'ib'aj:</target>
+        <target xml:lang="mam" state="final">Techil tajlal tu'n tku'x b'ib'aj:</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.UnknownCode" approved="yes">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
         <note>ID: Settings.Enterprise.UnknownCode</note>
-        <target xml:lang="mam" state="translated">Mixti' tku'x qe tilb'ilal ttz'b'il b'ib'aj toj Bloom lu'.</target>
+        <target xml:lang="mam" state="final">Mixti' tku'x qe tilb'ilal ttz'b'il b'ib'aj toj Bloom lu'.</target>
         <alt-trans>
           <target xml:lang="mam">Tuj tu'mel lu' te Bloom nti' tku'x qe tilb'ilal mojin tuk' tu'n tku'x b'ib'aj.</target>
         </alt-trans>
@@ -149,7 +149,7 @@
         <source xml:lang="en">What's This?</source>
         <note>ID: Settings.Enterprise.WhatsThis</note>
         <note>A link offering more information about the Funded Local Community Only option</note>
-        <target xml:lang="mam" state="translated">Ti' tzan lu'?</target>
+        <target xml:lang="mam" state="final">Ti' tzan lu'?</target>
         <alt-trans>
           <target xml:lang="mam">Ti tqal jlu'?</target>
         </alt-trans>

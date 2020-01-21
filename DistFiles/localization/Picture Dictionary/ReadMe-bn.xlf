@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="picture.dictionary" approved="yes">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="bn" state="translated">ছবির অভিধান টেমপ্লেট বিষয়ক</target>
+        <target xml:lang="bn" state="final">ছবির অভিধান টেমপ্লেট বিষয়ক</target>
         <note>ID: picture.dictionary</note>
         <alt-trans>
           <target xml:lang="bn">ছবির অভিধান টেমপ্লেট সম্পর্কে </target>
@@ -12,17 +12,17 @@
       </trans-unit>
       <trans-unit id="picture.dictionary.use" approved="yes">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
-        <target xml:lang="bn" state="translated">একভাষিক, দ্বিভাষিক, বা ত্রিভাষিক ছবির অভিধান তৈরি করার জন্য এই টেম্পলেট ব্যবহার করুন।</target>
+        <target xml:lang="bn" state="final">একভাষিক, দ্বিভাষিক, বা ত্রিভাষিক ছবির অভিধান তৈরি করার জন্য এই টেম্পলেট ব্যবহার করুন।</target>
         <note>ID: picture.dictionary.use</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="bn" state="translated">এই সংস্করণের সীমাবদ্ধতা</target>
+        <target xml:lang="bn" state="final">এই সংস্করণের সীমাবদ্ধতা</target>
         <note>ID: picture.dictionary.limits</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.stillexperimental" approved="yes">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
-        <target xml:lang="bn" state="translated">লেআউট বিষয়ক সমস্যা এবং আরো কিছু সমস্যার জন্য বর্তমানে এই বইটি চিহ্নিত "পরীক্ষামূলক" হিসেবে চিহ্নিত রয়েছে।</target>
+        <target xml:lang="bn" state="final">লেআউট বিষয়ক সমস্যা এবং আরো কিছু সমস্যার জন্য বর্তমানে এই বইটি চিহ্নিত "পরীক্ষামূলক" হিসেবে চিহ্নিত রয়েছে।</target>
         <note>ID: picture.dictionary.stillexperimental</note>
       </trans-unit>
     </body>

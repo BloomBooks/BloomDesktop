@@ -1275,9 +1275,12 @@ namespace Bloom.Book
 			// Note that EditingView.CleanHtmlAndCopyToPageDom() also removes bits
 			// of html that are used during editing but are not saved to disk.  (It calls javascript to deal with items inserted
 			// by javascript.)
-			foreach(
+			string[] classNamesToUnion = new string[] { "bloom-ui", "ui-resizable-handle" };
+			var selectorsToUnion = classNamesToUnion.Select(className => $"//*[contains(concat(' ', @class, ' '), ' {className} ')]");
+			var unionedXPathExpression = String.Join(" | ", selectorsToUnion);
+			foreach (
 				var node in
-					edittedPageDiv.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
+					edittedPageDiv.SafeSelectNodes(unionedXPathExpression).Cast<XmlNode>().ToArray())
 				node.ParentNode.RemoveChild(node);
 			RemoveTemplateEditingMarkup(edittedPageDiv);
 			RemoveCkEditorMarkup(edittedPageDiv);

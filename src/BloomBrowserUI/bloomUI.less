@@ -12,10 +12,13 @@
 // there are probably other sources of ui font size.
 @ui-font-size: 10pt;
 
+@bubbleCanvasZIndex: 2;
+@dragHandleVisibleZIndex: @bubbleCanvasZIndex - 1;
+
 @imageContainerZIndex: 1000;
 @textOverPictureZIndex: @imageContainerZIndex + 1;
 @formatButtonZIndex: @textOverPictureZIndex + 1;
-@dragHandleZIndex: @textOverPictureZIndex + 1;
+@dragHandleEventZIndex: @textOverPictureZIndex + 1;
 
 // Bloom's web palette
 @bloom-blue: #1d94a4; // used in decodable reader and various text backgrounds and Paste Image button

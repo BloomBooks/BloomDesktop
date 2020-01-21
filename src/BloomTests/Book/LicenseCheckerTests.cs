@@ -4,7 +4,9 @@ using System.IO;
 using Bloom.Api;
 using Bloom.Book;
 using BloomTemp;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
+using Assert = NUnit.Framework.Assert;
 
 namespace BloomTests.Book
 {
@@ -204,6 +206,85 @@ namespace BloomTests.Book
 			LicenseChecker.SetOfflineFolder(null);
 			var checker = new LicenseChecker();
 			Assert.That(checker.CheckBook(dom, new[] {"en"}), Is.EqualTo(LicenseChecker.kCannotReachLicenseServerMessage));
+		}
+
+		[Test]
+		public void GetAllowedLanguageCodes_JsonMissingContentId_SkipsOverLine()
+		{
+			string badJson = GetBadJsonMissingContentId();
+			var invoker = new PrivateType(typeof(LicenseChecker));
+			var observedAllowedLangs = invoker.InvokeStatic("GetAllowedLanguageCodes", badJson, "") as HashSet<string>;
+			Assert.That(observedAllowedLangs.Contains(""), Is.False, "Empty string should be skipped over");
+			Assert.That(observedAllowedLangs.Count, Is.EqualTo(0));
+
+			// Now look it up with a more "realisitc" key
+			observedAllowedLangs = invoker.InvokeStatic("GetAllowedLanguageCodes", badJson, "kingstone.superbible.*") as HashSet<string>;
+			Assert.That(observedAllowedLangs.Contains(""), Is.False);
+			Assert.That(observedAllowedLangs.Contains("tr"), Is.True);
+			Assert.That(observedAllowedLangs.Count, Is.GreaterThan(0), "Search for Kingstone should return the other valid values");
+		}
+
+		[Test]
+		public void GetAllowedLanguageCodes_JsonMissingLangCode_SkipsOverLine()
+		{
+			string badJson = GetBadJsonMissingLangCode();
+			var invoker = new PrivateType(typeof(LicenseChecker));
+			var observedAllowedLangs = invoker.InvokeStatic("GetAllowedLanguageCodes", badJson, "kingstone.superbible.*") as HashSet<string>;
+			Assert.That(observedAllowedLangs.Contains("tr"), Is.True);
+			Assert.That(observedAllowedLangs.Count, Is.GreaterThan(0));
+		}
+
+		private static string GetBadJsonMissingContentId()
+		{
+			return
+@"{
+  ""range"": ""Sheet1!A1:B1001"",
+  ""majorDimension"": ""ROWS"",
+  ""values"": [
+	[
+      ""content-id\n"",
+      ""language-code""
+    ],
+    [
+      ""kingstone.superbible.*"",
+      ""ar\n""
+    ],
+    [
+	  """",
+      ""fa""
+    ],
+    [
+      ""kingstone.superbible.*"",
+      ""tr\n""
+    ],
+  ]
+}";
+		}
+
+		private static string GetBadJsonMissingLangCode()
+		{
+			return
+@"{
+  ""range"": ""Sheet1!A1:B1001"",
+  ""majorDimension"": ""ROWS"",
+  ""values"": [
+	[
+      ""content-id\n"",
+      ""language-code""
+    ],
+    [
+      ""kingstone.superbible.*"",
+      ""ar\n""
+    ],
+    [
+      ""kingstone.superbible.*""
+    ],
+    [
+      ""kingstone.superbible.*"",
+      ""tr\n""
+    ],
+  ]
+}";
 		}
 	}
 }

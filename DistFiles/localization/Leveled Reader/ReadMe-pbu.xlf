@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="leveled.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
-        <target xml:lang="pbu" state="translated">یو <g id="genid-1" ctype="x-html-strong">د زده کوونکو له سویې سره برابر کتاب</g> هغه کتاب دی چې په خاصه توګه د هغه لوستونکي لپاره وي چې د لوستلو د ودې په یوې مشخصې مرحلې کې وي. سويه بندي د کلمو د اوږدوالي، د جملو د اوږدوالي، او داسې نور شیان تعریفوي. او مناسبه طرحه، د لغتونو ټولګه، د انځور ملاتړ او عنوان مشخص کوي.</target>
+        <target xml:lang="pbu" state="final">یو <g id="genid-1" ctype="x-html-strong">د زده کوونکو له سویې سره برابر کتاب</g> هغه کتاب دی چې په خاصه توګه د هغه لوستونکي لپاره وي چې د لوستلو د ودې په یوې مشخصې مرحلې کې وي. سويه بندي د کلمو د اوږدوالي، د جملو د اوږدوالي، او داسې نور شیان تعریفوي. او مناسبه طرحه، د لغتونو ټولګه، د انځور ملاتړ او عنوان مشخص کوي.</target>
         <note>ID: leveled.definition</note>
       </trans-unit>
       <trans-unit id="leveled.levels" approved="yes">
         <source xml:lang="en">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
-        <target xml:lang="pbu" state="translated">وروسته له هغه چې تاسو د <g id="genid-2" ctype="x-html-strong">سويه بنديو</g> ، سلسله تعریف کړه، تاسو یو کتاب سويه بندی کوئ چې تاسې جوړ کړی، په هم دې نمونه او یا د "تجزیه (هجي) کېدو وړنمونه یی کتاب " په وسیله. کله چې تاسې په کتاب کې ټایپ کوئ، بلوم به تاسې سره د سویه په پام نیولو کې مرسته وکړي او درته وبه وایې چې کله د کچی له محدودیت نه بهر شئ.</target>
+        <target xml:lang="pbu" state="final">وروسته له هغه چې تاسو د <g id="genid-2" ctype="x-html-strong">سويه بنديو</g> ، سلسله تعریف کړه، تاسو یو کتاب سويه بندی کوئ چې تاسې جوړ کړی، په هم دې نمونه او یا د "تجزیه (هجي) کېدو وړنمونه یی کتاب " په وسیله. کله چې تاسې په کتاب کې ټایپ کوئ، بلوم به تاسې سره د سویه په پام نیولو کې مرسته وکړي او درته وبه وایې چې کله د کچی له محدودیت نه بهر شئ.</target>
         <note>ID: leveled.levels</note>
         <alt-trans>
           <target xml:lang="pbu">وروسته له هغه چې تاسو د <g id="genid-2" ctype="x-html-strong">سويه بنديو</g> ، سلسله تعریف کړه، تاسو یو کتاب سويه بندی کوئ چې تاسې جوړ کړی، په هم دې نمونه او یا د "تجزیه (هجي) کېدو وړنمونه یی کتاب " په وسیله. کله چې تاسې په کتاب کې ټایپ کوئ، بلوم به تاسې سره د سویه په پام نیولو کې مرسته وکړي او درته وبه وایې چې کله د کچی له محدودیته نه بهر شئ.</target>
@@ -17,47 +17,50 @@
       </trans-unit>
       <trans-unit id="leveled.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-3" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="pbu" state="translated">تاسو کولی شی د هغو <g id="genid-3" ctype="x-html-strong">نمونو</g> څخه چی د سواد د متخصص په وسیله آماده شوي د بلوم یوه کڅوړه جوړه کړئ چې نور یې وکارولی شي او نظر په سویو او مرحلو کتابونه ژر جوړې کړي.</target>
+        <target xml:lang="pbu" state="final">تاسو کولی شی د هغو <g id="genid-3" ctype="x-html-strong">نمونو</g> څخه چی د سواد د متخصص په وسیله آماده شوي د بلوم یوه کڅوړه جوړه کړئ چې نور یې وکارولی شي او نظر په سویو او مرحلو کتابونه ژر جوړې کړي.</target>
         <note>ID: leveled.templates</note>
       </trans-unit>
       <trans-unit id="leveled.learn" approved="yes">
         <source xml:lang="en">To learn about using Leveled Readers in Bloom, you can:</source>
-        <target xml:lang="pbu" state="translated">د دې لپاره چې د زده کوونکو له سویې سره برابر کتابونه په اړه په بلوم کې پوه شئ، تاسو کولی شئ:</target>
+        <target xml:lang="pbu" state="final">د دې لپاره چې د زده کوونکو له سویې سره برابر کتابونه په اړه په بلوم کې پوه شئ، تاسو کولی شئ:</target>
         <note>ID: leveled.learn</note>
       </trans-unit>
       <trans-unit id="leveled.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="pbu" state="translated">وګورئ <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">دا ښوونیزې ویډیوګانې</g>.</target>
+        <target xml:lang="pbu" state="final">وګورئ <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">دا ښوونیزې ویډیوګانې</g>.</target>
         <note>ID: leveled.learn.videos</note>
       </trans-unit>
-      <trans-unit id="leveled.learn.helpindex">
+      <trans-unit id="leveled.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</source>
-        <target xml:lang="pbu" state="translated">د مرستې مینیو ته لاړ شئ، مرسته انتخاب کړئ، او لاندې "د زده کوونکو له سویې سره برابر کتابونو ته" وګورئ.</target>
+        <target xml:lang="pbu" state="final">د مرستې مینو ته لاړ شئ، 'اسناد' غوره کړئ، او د "زده کوونکو له سویې سره برابر کتابونو ته" لاندې شاخص کې وګورئ.</target>
         <note>ID: leveled.learn.helpindex</note>
+        <alt-trans>
+          <target xml:lang="pbu">د مرستې مینیو ته لاړ شئ، مرسته انتخاب کړئ، او لاندې "د زده کوونکو له سویې سره برابر کتابونو ته" وګورئ.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="pbu" state="translated">د مرستې مینیو ته لاړ شئ او انتخاب کړئ: "د کتاب نمونو جوړول".</target>
+        <target xml:lang="pbu" state="final">د مرستې مینیو ته لاړ شئ او انتخاب کړئ: "د کتاب نمونو جوړول".</target>
         <note>ID: leveled.learn.helpmenu</note>
       </trans-unit>
       <trans-unit id="leveled.vs.decodable" approved="yes">
         <source xml:lang="en">Relationship to Decodable Readers</source>
-        <target xml:lang="pbu" state="translated">له تجزیه (هجي) کېدو وړ کتاب سره ارتباط</target>
+        <target xml:lang="pbu" state="final">له تجزیه (هجي) کېدو وړ کتاب سره ارتباط</target>
         <note>ID: leveled.vs.decodable</note>
       </trans-unit>
       <trans-unit id="leveled.and.decodable" approved="yes">
         <source xml:lang="en">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</source>
-        <target xml:lang="pbu" state="translated">نو څنګه د زده کوونکو له سویې سره برابر <g id="genid-5" ctype="x-html-strong">سویي</g> په مناسب ډول د تجزیه (هجي) کېدو وړ کتاب د <g id="genid-6" ctype="x-html-strong">مرحلو</g>سره برابریږی؟ دوه مفکورې بشپړې دي، او بلوم اجازه درکوي چې دواړه تنظیم کړئ یو <g id="genid-7" ctype="x-html-strong">مرحلة مستوى القارئ</g> او یو <g id="genid-8" ctype="x-html-strong">د زده کونکو له سویي سره برابره کچه</g> د کتاب لپاره چې تاسې یې لیکئ. په همدې ډول کتابونه په 1 کچه او 2 کچه کې اړتیا لري چې <g id="genid-9" ctype="x-html-strong">د تجزی وړ مرحلو</g> په پام کې نیولو سره ولیکل شي. کتابونه په لومړي یا دویم کچه کې باید <g id="genid-10" ctype="x-html-strong">د تجزی وړ والي</g> سره محتاط اوسي (د بیلګي په توګه: هغه توری وکارول شی چې لوستونکي زده کړي وي). نو د کتابونو سلسله به داسې ښکاري:</target>
+        <target xml:lang="pbu" state="final">نو څنګه د زده کوونکو له سویې سره برابر <g id="genid-5" ctype="x-html-strong">سویي</g> په مناسب ډول د تجزیه (هجي) کېدو وړ کتاب د <g id="genid-6" ctype="x-html-strong">مرحلو</g>سره برابریږی؟ دوه مفکورې بشپړې دي، او بلوم اجازه درکوي چې دواړه تنظیم کړئ یو <g id="genid-7" ctype="x-html-strong">مرحلة مستوى القارئ</g> او یو <g id="genid-8" ctype="x-html-strong">د زده کونکو له سویي سره برابره کچه</g> د کتاب لپاره چې تاسې یې لیکئ. په همدې ډول کتابونه په 1 کچه او 2 کچه کې اړتیا لري چې <g id="genid-9" ctype="x-html-strong">د تجزی وړ مرحلو</g> په پام کې نیولو سره ولیکل شي. کتابونه په لومړي یا دویم کچه کې باید <g id="genid-10" ctype="x-html-strong">د تجزی وړ والي</g> سره محتاط اوسي (د بیلګي په توګه: هغه توری وکارول شی چې لوستونکي زده کړي وي). نو د کتابونو سلسله به داسې ښکاري:</target>
         <note>ID: leveled.and.decodable</note>
       </trans-unit>
       <trans-unit id="leveled.reader.level" approved="yes">
         <source xml:lang="en">Leveled Reader Level</source>
-        <target xml:lang="pbu" state="translated">د زده کوونکو له سویې سره برابره کچه</target>
+        <target xml:lang="pbu" state="final">د زده کوونکو له سویې سره برابره کچه</target>
         <note>ID: leveled.reader.level</note>
       </trans-unit>
       <trans-unit id="decodable.stage" approved="yes">
         <source xml:lang="en">Decodable Stage</source>
-        <target xml:lang="pbu" state="translated">د تجزیه (هجي) مرحله</target>
+        <target xml:lang="pbu" state="final">د تجزیه (هجي) مرحله</target>
         <note>ID: decodable.stage</note>
         <alt-trans>
           <target xml:lang="pbu">د تجزیه مرحله</target>

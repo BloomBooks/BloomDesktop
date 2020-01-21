@@ -3,11 +3,14 @@ using System;
 using System.Threading;
 using SIL.Reporting;
 using System.Windows.Forms;
+using SIL.Windows.Forms.Reporting;
 
 namespace Bloom
 {
 	internal class FatalExceptionHandler : ExceptionHandler
 	{
+		private WinFormsExceptionHandler _fallbackHandler;
+
 		internal static Control ControlOnUIThread { get; private set; }
 
 		internal static bool InvokeRequired
@@ -26,6 +29,14 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		public FatalExceptionHandler()
 		{
+			// We need to create a WinFormsExceptionHandler so that if we ever need to use the fallback
+			// SIL.Reporting.ErrorReport system it has a valid ControlOnUIThread prop.
+			// Creating the object is enough to solve this problem. We keep a reference so it gets collected
+			// when we go away.
+			// Passing false keeps the WinForms handler from responding to exceptions, so we don't get two
+			// handlers vying for who gets to report an error.
+			_fallbackHandler = new WinFormsExceptionHandler(false);
+
 			// We need to create a control on the UI thread so that we have a control that we
 			// can use to invoke the error reporting dialog on the correct thread.
 			ControlOnUIThread = new Control();

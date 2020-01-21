@@ -855,6 +855,11 @@
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
       </trans-unit>
+      <trans-unit id="Common.Error">
+        <source xml:lang="en">Error</source>
+        <note>ID: Common.Error</note>
+        <note>A heading shown above some messages.</note>
+      </trans-unit>
       <trans-unit id="Common.Finish">
         <source xml:lang="en">&amp;Finish</source>
         <note>ID: Common.Finish</note>
@@ -3387,6 +3392,11 @@
       <trans-unit id="PublishTab.Epub.NoAudioDescriptions">
         <source xml:lang="en">No recorded audio image descriptions</source>
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.NoComicSupport">
+        <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.</source>
+        <note>ID: PublishTab.Epub.NoComicSupport</note>
+        <note>The {0} will be replaced with the page number (or name of page). For example, it might be replaced by "1" or "Front Cover"</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.OmittedPages">
         <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>

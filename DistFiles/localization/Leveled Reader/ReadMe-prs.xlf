@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="leveled.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
-        <target xml:lang="prs" state="translated">یک <g id="genid-1" ctype="x-html-strong">کتاب متناسب با سویه</g> یک کتاب است که خاصتا برای کسی نوشته شده است که دارای سطح خاص نمو باشد. سطوح یا مراحل اهداف را برای طول کلیمات، طول جملات، و غیره تعریف میکند. آنها همچنان فارمت کردن مناسب، ذخیره لغات، حمایت رهنمود، و مقاله را مشخص میسازد.</target>
+        <target xml:lang="prs" state="final">یک <g id="genid-1" ctype="x-html-strong">کتاب متناسب با سویه</g> یک کتاب است که خاصتا برای کسی نوشته شده است که دارای سطح خاص نمو باشد. سطوح یا مراحل اهداف را برای طول کلیمات، طول جملات، و غیره تعریف میکند. آنها همچنان فارمت کردن مناسب، ذخیره لغات، حمایت رهنمود، و مقاله را مشخص میسازد.</target>
         <note>ID: leveled.definition</note>
         <alt-trans>
           <target xml:lang="prs">یک <g id="genid-1" ctype="x-html-strong">کتاب متناسب با سویه خواننده</g> یک کتاب است که خاصتا برای کسی نوشته شده است که دارای سطح خاص نمو باشد. سطوح یا مراحل اهداف را برای طول کلیمات، طول جملات، و غیره تعریف میکند. آنها همچنان فارمت کردن مناسب، ذخیره لغات، حمایت رهنمود، و مقاله را مشخص میسازد.</target>
@@ -12,17 +12,17 @@
       </trans-unit>
       <trans-unit id="leveled.levels" approved="yes">
         <source xml:lang="en">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
-        <target xml:lang="prs" state="translated">بعد از آنکه شما تسلسل <g id="genid-2" ctype="x-html-strong">مراحل</g> را تعریف نمودید، شما میتوانید مراحل را به کتاب های که شما میسازید بدهید یا با این تیمپلیت و یا با "تیمپلیت کتاب قابل تجزیه". قسمیکه شما کتاب را تایپ میکنید، بلوم باشما در یاد داشتن لیول در ذهن کمک خواهد نمود و اشاره خواهد کرد اگر از محدودیت مرحله بگذرید.</target>
+        <target xml:lang="prs" state="final">بعد از آنکه شما تسلسل <g id="genid-2" ctype="x-html-strong">مراحل</g> را تعریف نمودید، شما میتوانید مراحل را به کتاب های که شما میسازید بدهید یا با این تیمپلیت و یا با "تیمپلیت کتاب قابل تجزیه". قسمیکه شما کتاب را تایپ میکنید، بلوم باشما در یاد داشتن لیول در ذهن کمک خواهد نمود و اشاره خواهد کرد اگر از محدودیت مرحله بگذرید.</target>
         <note>ID: leveled.levels</note>
       </trans-unit>
       <trans-unit id="leveled.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-3" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="prs" state="translated">شما از <g id="genid-2" ctype="x-html-strong">تیمپلیت هایکه</g> توسط متخصص سواد آماده شده است، یک بستۀ بلوم را بسازید که دیگران با استفاده از آن به سرعت کتاب ها را نظز به سطوح و مراحل، آماده سازند.</target>
+        <target xml:lang="prs" state="final">شما از <g id="genid-2" ctype="x-html-strong">تیمپلیت هایکه</g> توسط متخصص سواد آماده شده است، یک بستۀ بلوم را بسازید که دیگران با استفاده از آن به سرعت کتاب ها را نظز به سطوح و مراحل، آماده سازند.</target>
         <note>ID: leveled.templates</note>
       </trans-unit>
       <trans-unit id="leveled.learn" approved="yes">
         <source xml:lang="en">To learn about using Leveled Readers in Bloom, you can:</source>
-        <target xml:lang="prs" state="translated">بخاطر آموختن درباره کتاب متناسب با سویه در بلوم، شما میتوانید:</target>
+        <target xml:lang="prs" state="final">بخاطر آموختن درباره کتاب متناسب با سویه در بلوم، شما میتوانید:</target>
         <note>ID: leveled.learn</note>
         <alt-trans>
           <target xml:lang="prs">بخاطر آموختن درباره کتاب متناسب با سویه خواننده در بلوم، شما میتوانید:</target>
@@ -30,15 +30,15 @@
       </trans-unit>
       <trans-unit id="leveled.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="prs" state="translated">تماشا نمائید <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">این ویدیو های رهنمودی را‏</g>.</target>
+        <target xml:lang="prs" state="final">تماشا نمائید <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">این ویدیو های رهنمودی را‏</g>.</target>
         <note>ID: leveled.learn.videos</note>
         <alt-trans>
           <target xml:lang="prs">تماشا نمائید <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">ین ویدیو های رهنمودی را‏</g>.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.learn.helpindex">
+      <trans-unit id="leveled.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</source>
-        <target xml:lang="prs" state="translated">به مینیو کمک بروید، کمک را انتخاب نمائید و در اندکس زیر "متناسب با سویه" نگاه کنید.</target>
+        <target xml:lang="prs" state="final">به مینیو کمک بروید، کمک را انتخاب نمائید و در اندکس زیر "متناسب با سویه" نگاه کنید.</target>
         <note>ID: leveled.learn.helpindex</note>
         <alt-trans>
           <target xml:lang="prs">به مینیو کمک بروید، کمک را انتخاب نمائید و در اندکس زیر "متناسب با سویه خواننده" نگاه کنید.</target>
@@ -46,7 +46,7 @@
       </trans-unit>
       <trans-unit id="leveled.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="prs" state="translated">به مینیو کمک بروید و انتخاب کنید: "ساختن تیمپلیت های کتاب".</target>
+        <target xml:lang="prs" state="final">به مینیو کمک بروید و انتخاب کنید: "ساختن تیمپلیت های کتاب".</target>
         <note>ID: leveled.learn.helpmenu</note>
         <alt-trans>
           <target xml:lang="prs">به مینیو کمک بروید و انتخاب کنید: "ساختن تیمپلیت های خواننده".</target>
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="leveled.vs.decodable" approved="yes">
         <source xml:lang="en">Relationship to Decodable Readers</source>
-        <target xml:lang="prs" state="translated">رابطه با کناب قابل تجزیه</target>
+        <target xml:lang="prs" state="final">رابطه با کناب قابل تجزیه</target>
         <note>ID: leveled.vs.decodable</note>
       </trans-unit>
       <trans-unit id="leveled.and.decodable" approved="yes">
         <source xml:lang="en">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</source>
-        <target xml:lang="prs" state="translated">پس چگونه <g id="genid-5" ctype="x-html-strong">سویه</g> کتاب متناسب با سویه خواننده در <g id="genid-6" ctype="x-html-strong">مراحل</g>قابل تجزیه تطابق میکند؟ هردو مفهوم تکمیل کننده است و بلوم استعمال هردو را اجازه میدهد که تنظیم نمائید یک <g id="genid-7" ctype="x-html-strong">مرحله قابل تجزیه</g> و یک <g id="genid-8" ctype="x-html-strong">سطح کتاب متناسب با سویه</g> برای کتاب یکه شما مینویسید. بطور معمولی کتاب های مرحله 1 و ممکن مرحله 2 هم نوشته شود همراه <g id="genid-9" ctype="x-html-strong">مراحل قابل تجزیه</g> در ذهن. کتاب ها در لیول اول و دو هم ضرورت دارد که با <g id="genid-10" ctype="x-html-strong">کتاب قابل تجزیه</g> محتاط باشید (استعمال حروف که شاه گرد اموخته است). یعنی یک سلسله کتاب ها شاید اینطور معلوم شود:</target>
+        <target xml:lang="prs" state="final">پس چگونه <g id="genid-5" ctype="x-html-strong">سویه</g> کتاب متناسب با سویه خواننده در <g id="genid-6" ctype="x-html-strong">مراحل</g>قابل تجزیه تطابق میکند؟ هردو مفهوم تکمیل کننده است و بلوم استعمال هردو را اجازه میدهد که تنظیم نمائید یک <g id="genid-7" ctype="x-html-strong">مرحله قابل تجزیه</g> و یک <g id="genid-8" ctype="x-html-strong">سطح کتاب متناسب با سویه</g> برای کتاب یکه شما مینویسید. بطور معمولی کتاب های مرحله 1 و ممکن مرحله 2 هم نوشته شود همراه <g id="genid-9" ctype="x-html-strong">مراحل قابل تجزیه</g> در ذهن. کتاب ها در لیول اول و دو هم ضرورت دارد که با <g id="genid-10" ctype="x-html-strong">کتاب قابل تجزیه</g> محتاط باشید (استعمال حروف که شاه گرد اموخته است). یعنی یک سلسله کتاب ها شاید اینطور معلوم شود:</target>
         <note>ID: leveled.and.decodable</note>
         <alt-trans>
           <target xml:lang="prs">پس چگونه <g id="genid-5" ctype="x-html-strong">سویه</g> کتاب متناسب با سویه خواننده در <g id="genid-6" ctype="x-html-strong">مراحل</g>قابل تجزیه تطابق میکند؟ هردو مفهوم تکمیل کننده است و بلوم استعمال هردو را اجازه میدهد که تنظیم نمائید یک <g id="genid-7" ctype="x-html-strong">مرحله قابل تجزیه</g> و یک <g id="genid-8" ctype="x-html-strong">سطح کتاب متناسب با سویه خواننده</g> برای کتاب یکه شما مینویسید. بطور معمولی کتاب های مرحله 1 و ممکن مرحله 2 هم نوشته شود همراه <g id="genid-9" ctype="x-html-strong">مراحل قابل تجزیه</g> در ذهن. کتاب ها در لیول اول و دو هم ضرورت دارد که با <g id="genid-10" ctype="x-html-strong">کتاب قابل تجزیه</g> محتاط باشید (استعمال حروف که شاه ګرد اموخته است). یعنی یک سلسله کتاب ها شاید اینطور معلوم شود:</target>
@@ -67,7 +67,7 @@
       </trans-unit>
       <trans-unit id="leveled.reader.level" approved="yes">
         <source xml:lang="en">Leveled Reader Level</source>
-        <target xml:lang="prs" state="translated">سطح متناسب با سویه</target>
+        <target xml:lang="prs" state="final">سطح متناسب با سویه</target>
         <note>ID: leveled.reader.level</note>
         <alt-trans>
           <target xml:lang="prs">سطح متناسب با سویه خواننده</target>
@@ -75,7 +75,7 @@
       </trans-unit>
       <trans-unit id="decodable.stage" approved="yes">
         <source xml:lang="en">Decodable Stage</source>
-        <target xml:lang="prs" state="translated">مرحله قابل تجزیه</target>
+        <target xml:lang="prs" state="final">مرحله قابل تجزیه</target>
         <note>ID: decodable.stage</note>
       </trans-unit>
     </body>

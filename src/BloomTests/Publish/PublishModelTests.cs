@@ -10,10 +10,7 @@ namespace BloomTests.Publish
 	[TestFixture]
 	public class PublishModelTests
 	{
-		[Test]
-		public void RemoveUnwantedLanguageData_BloomDataDiv_RemovesNothing()
-		{
-			var html = @"<!DOCTYPE html>
+		private const string kDataDivHtml = @"<!DOCTYPE html>
 <html>
 <body>
 	<div id='bloomDataDiv'>
@@ -63,45 +60,40 @@ namespace BloomTests.Publish
 	</div>
 </body>
 </html>";
-			// Check occurrences in original HTML.
-			var dom = new HtmlDom(html);
-			var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='contentLanguage1']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='contentLanguage2']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='contentLanguage3']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='bookTitle']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='bookTitle']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='coverImage']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='coverImageDescription']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and contains(@class,'ImageDescriptionEdit-style')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'ImageDescriptionEdit-style')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and contains(@class,'ImageDescriptionEdit-style')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and contains(@class,'ImageDescriptionEdit-style')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='tl' and contains(@class,'ImageDescriptionEdit-style')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class,'ImageDescriptionEdit-style')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='smallCoverCredits']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='originalContributions']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and @data-book='originalContributions']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='funding']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and @data-book='funding']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='versionAcknowledgments']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='originalAcknowledgments']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='outsideBackCover']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='copyright']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='licenseUrl']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='licenseDescription']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='licenseImage']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='insideFontCover']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='insideBackCover']", 1);
 
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 27);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang and @data-book]", 21);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang and contains(@class,'ImageDescriptionEdit-style')]", 6);
+		[Test]
+		public void RemoveUnwantedLanguageData_BloomDataDiv_RemovesNothing()
+		{
+			var dom = new HtmlDom(kDataDivHtml);
+
+			// Check occurrences in original HTML.
+			VerifyDataDivValues(dom);
 
 			// SUT
 			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
 
 			// Check occurrences in modified HTML.  This should be exactly the same as before.
+			VerifyDataDivValues(dom);
+		}
+
+		[Test]
+		public void RemoveUnwantedLanguageData_BloomDataDiv_RemovesNothingEvenWithN1()
+		{
+			var dom = new HtmlDom(kDataDivHtml);
+
+			// Check occurrences in original HTML.
+			VerifyDataDivValues(dom);
+
+			// SUT
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, "en");
+
+			// Check occurrences in modified HTML.  This should be exactly the same as before.
+			VerifyDataDivValues(dom);
+		}
+
+		private void VerifyDataDivValues(HtmlDom dom)
+		{
+			var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='contentLanguage1']", 1);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='contentLanguage2']", 1);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='contentLanguage3']", 1);
@@ -135,10 +127,7 @@ namespace BloomTests.Publish
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang and contains(@class,'ImageDescriptionEdit-style')]", 6);
 		}
 
-		[Test]
-		public void RemoveUnwantedLanguageData_FrontCoverPage_RemovesNothing()
-		{
-			var html = @"<!DOCTYPE html>
+		string kFrontCoverHtml = @"<!DOCTYPE html>
 <html>
 <body>
 	<div class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right A4Landscape' data-page='required singleton' data-export='front-matter-cover' data-xmatter-page='frontCover' id='f9b3d571-ea2d-4c67-9a4e-137a718c90d1' data-page-number=''>
@@ -150,6 +139,8 @@ namespace BloomTests.Publish
 				<div class='bloom-editable Title-On-Cover-style' lang='z' contenteditable='true' data-book='bookTitle'></div>
 				<div class='bloom-editable Title-On-Cover-style' lang='tl' contenteditable='true' data-book='bookTitle'><p>Count tayo kasama ni Robin</p></div>
 				<div class='bloom-editable Title-On-Cover-style bloom-content1 bloom-visibility-code-on' lang='en' contenteditable='true' data-book='bookTitle'><p>Counting</p></div>
+				<div class='bloom-editable Title-On-Cover-style' lang='es' contenteditable='true' data-book='bookTitle'><p>Contando</p></div>
+				<div class='bloom-editable Title-On-Cover-style' lang='fr' contenteditable='true' data-book='bookTitle'><p>Compte</p></div>
 			</div>
 			<div class='bloom-imageContainer'>
 				<img data-book='coverImage' src='aor_ara008.png' data-copyright='Copyright SIL International 2009' data-creator='' data-license='cc-by-sa' alt=''></img>
@@ -158,6 +149,8 @@ namespace BloomTests.Publish
 					<div data-languagetipcontent='Tagalog' role='textbox' class='bloom-editable ImageDescriptionEdit-style' contenteditable='true' lang='tl'><p></p></div>
 					<div data-languagetipcontent='Cebuano' role='textbox' class='bloom-editable ImageDescriptionEdit-style' contenteditable='true' lang='ceb'></div>
 					<div class='bloom-editable ImageDescriptionEdit-style' contenteditable='true' lang='z'></div>
+					<div data-languagetipcontent='Spanish' role='textbox' class='bloom-editable ImageDescriptionEdit-style' contenteditable='true' lang='es'><p></p></div>
+					<div data-languagetipcontent='French' role='textbox' class='bloom-editable ImageDescriptionEdit-style' contenteditable='true' lang='fr'><p></p></div>
 				</div>
 			</div>
 			<div class='bottomBlock'>
@@ -170,7 +163,7 @@ namespace BloomTests.Publish
 						</div>
 					</div>
 					<div class='bottomRow' data-have-topic='false'>
-						<div class='coverBottomLangName Cover-Default-style' data-derived='languagesOfBook'>English</div>
+						<div class='coverBottomLangName Cover-Default-style' data-derived='languagesOfBook' lang='en'>Tagalog</div>
 						<div class='coverBottomBookTopic bloom-alwaysShowBubble Cover-Default-style' data-derived='topic' data-functiononhintclick='ShowTopicChooser()' data-hint='Click to choose topic'></div>
 					</div>
 				</div>
@@ -179,47 +172,65 @@ namespace BloomTests.Publish
 	</div>
 </body>
 </html>";
-			// Check occurrences in original HTML.
-			var dom = new HtmlDom(html);
-			var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'pageLabel')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'pageDescription')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='tl' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'ImageDescriptionEdit-style')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='tl' and contains(@class,'ImageDescriptionEdit-style')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='ceb' and contains(@class,'ImageDescriptionEdit-style')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class,'ImageDescriptionEdit-style')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='cover-branding-left-html']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'smallCoverCredits') and @data-book='smallCoverCredits']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class,'smallCoverCredits') and @data-book='smallCoverCredits']", 1);
 
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 12);
+		[Test]
+		public void RemoveUnwantedLanguageData_FrontCoverPage_RemovesNothing()
+		{
+			var dom = new HtmlDom(kFrontCoverHtml);
+
+			// Check occurrences in original HTML.
+			VerifyFrontCoverValues(dom, false);
 
 			// SUT
 			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
 
 			// Check occurrences in modified HTML.  This should be exactly the same as before.
+			VerifyFrontCoverValues(dom, false);
+		}
+
+		[Test]
+		public void RemoveUnwantedLanguageData_FrontCoverPage_RemovesUnwantedButKeepsN1()
+		{
+			// Check occurrences in original HTML.
+			var dom = new HtmlDom(kFrontCoverHtml);
+			VerifyFrontCoverValues(dom, false);
+
+			// SUT
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"tl"}, "en");
+
+			// Check occurrences in modified HTML.  This should NOT be exactly the same as before.
+			VerifyFrontCoverValues(dom, true);
+		}
+
+		private void VerifyFrontCoverValues(HtmlDom dom, bool divsRemoved)
+		{
+			var divsExpected = divsRemoved ? 0 : 1;
+			var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'pageLabel')]", 1);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'pageDescription')]", 1);
+
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", 1);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='tl' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", 1);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'ImageDescriptionEdit-style')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='tl' and contains(@class,'ImageDescriptionEdit-style')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='ceb' and contains(@class,'ImageDescriptionEdit-style')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", divsExpected);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and contains(@class,'Title-On-Cover-style') and @data-book='bookTitle']", divsExpected);
+
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class,'ImageDescriptionEdit-style')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='tl' and contains(@class,'ImageDescriptionEdit-style')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'ImageDescriptionEdit-style')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='ceb' and contains(@class,'ImageDescriptionEdit-style')]", divsExpected);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and contains(@class,'ImageDescriptionEdit-style')]", divsExpected);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and contains(@class,'ImageDescriptionEdit-style')]", divsExpected);
+
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='cover-branding-left-html']", 1);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'smallCoverCredits') and @data-book='smallCoverCredits']", 1);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class,'smallCoverCredits') and @data-book='smallCoverCredits']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class,'coverBottomLangName') and @data-derived='languagesOfBook']", 1);
 
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 12);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", divsRemoved ? 12 : 17);
 		}
-		[Test]
-		public void RemoveUnwantedLanguageData_CreditsPage_RemovesNothing()
-		{
-			var html = @"<!DOCTYPE html>
+
+		string kCreditsPageHtml = @"<!DOCTYPE html>
 <html>
 <body>
 	<div class='bloom-page bloom-frontMatter credits' data-xmatter-page='credits' id='2cea9462-98e9-4077-be4e-d303a45e95b3' lang=''>
@@ -265,8 +276,38 @@ namespace BloomTests.Publish
 	</div>
 </body>
 </html>";
+
+		[Test]
+		public void RemoveUnwantedLanguageData_CreditsPage_RemovesNothing()
+		{
+			var dom = new HtmlDom(kCreditsPageHtml);
 			// Check occurrences in original HTML.
-			var dom = new HtmlDom(html);
+			VerifyCreditsPageValues(dom, false);
+
+			// SUT
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
+
+			// Check occurrences in modified HTML.  This should be exactly the same as before.
+			VerifyCreditsPageValues(dom, false);
+		}
+
+		[Test]
+		public void RemoveUnwantedLanguageData_CreditsPage_RemovesRemovesUnwantedButKeepsN1()
+		{
+			var dom = new HtmlDom(kCreditsPageHtml);
+			// Check occurrences in original HTML.
+			VerifyCreditsPageValues(dom, false);
+
+			// SUT
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, "en");
+
+			// Check occurrences in modified HTML.  This should NOT be exactly the same as before.
+			VerifyCreditsPageValues(dom, true);
+		}
+
+		private void VerifyCreditsPageValues(HtmlDom dom, bool divsRemoved)
+		{
+			var divsExpected = divsRemoved ? 0 : 1;
 			var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='' and contains(@class, 'bloom-page')]", 1);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @class='pageLabel']", 1);
@@ -276,45 +317,19 @@ namespace BloomTests.Publish
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @class='licenseUrl']", 1);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class, 'licenseDescription')]", 1);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='versionAcknowledgments']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='versionAcknowledgments']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and @data-book='versionAcknowledgments']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='versionAcknowledgments']", divsExpected);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and @data-book='versionAcknowledgments']", divsExpected);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='originalAcknowledgments']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and @data-book='originalAcknowledgments']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='originalAcknowledgments']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and @data-book='originalAcknowledgments']", divsExpected);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='originalAcknowledgments']", divsExpected);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and @data-book='originalAcknowledgments']", 1);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='ISBN']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and @data-book='ISBN']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='ISBN']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and @data-book='ISBN']", divsExpected);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='ISBN']", divsExpected);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='ISBN']", 1);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='credits-page-branding-bottom-html']", 1);
 
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 19);
-
-			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
-
-			// Check occurrences in modified HTML.  This should be exactly the same as before.
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='' and contains(@class, 'bloom-page')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @class='pageLabel']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @class='pageDescription']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class, 'licenseAndCopyrightBlock')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and contains(@class, 'copyright')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @class='licenseUrl']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class, 'licenseDescription')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='versionAcknowledgments']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='versionAcknowledgments']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and @data-book='versionAcknowledgments']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='originalAcknowledgments']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and @data-book='originalAcknowledgments']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='originalAcknowledgments']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and @data-book='originalAcknowledgments']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and @data-book='ISBN']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and @data-book='ISBN']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and @data-book='ISBN']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='ISBN']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='*' and @data-book='credits-page-branding-bottom-html']", 1);
-
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 19);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", divsRemoved ? 13 : 19);
 		}
 
 		[Test]
@@ -427,10 +442,7 @@ namespace BloomTests.Publish
 			assertThatDom.HasNoMatchForXpath("//div[@lang and @testRemoves='true']");
 		}
 
-		[Test]
-		public void RemoveUnwantedLanguageData_PreserveIfEmbeddedDivWanted()
-		{
-			var html = @"<!DOCTYPE html>
+		string kEmbeddedLangDivsHtml = @"<!DOCTYPE html>
 <html>
 <body>
 	<div class='bloom-page numberedPage customPage side-right A4Landscape bloom-monolingual' data-page='' id='ba82b94f-71ec-48f7-a1cc-a68d5765e255' testRemoves='false' lang=''>
@@ -439,6 +451,8 @@ namespace BloomTests.Publish
 				<div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto' testRemoves='false' lang='de'>
 					<div role='textbox' class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' contenteditable='true' testRemoves='false' lang='en'><p>Hello</p></div>
 					<div class='bloom-editable normal-style' role='textbox' contenteditable='true' testRemoves='true' lang='de'></div>
+					<div class='bloom-editable normal-style' role='textbox' contenteditable='true' testRemoves='true' lang='es'></div>
+					<div class='bloom-editable normal-style' role='textbox' contenteditable='true' testRemoves='true' lang='fr'></div>
 					<div class='bloom-editable normal-style' contenteditable='true' testRemoves='false' lang='z'></div>
 				</div>
 			</div>
@@ -446,32 +460,114 @@ namespace BloomTests.Publish
 	</div>
 </body>
 </html>";
-			// Check occurrences in original HTML.
-			var dom = new HtmlDom(html);
-			var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='' and contains(@class, 'bloom-page')]", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and contains(@class, 'bloom-translationGroup')]", 1);	// bogus value for test
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class, 'bloom-editable') and @role='textbox']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and contains(@class, 'bloom-editable') and @role='textbox']", 1);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class, 'bloom-editable') and @contenteditable='true']", 1);
 
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 5);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@testRemoves='false']", 4);
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@testRemoves='true']", 1);
+		[Test]
+		public void RemoveUnwantedLanguageData_PreserveIfEmbeddedDivWanted()
+		{
+			var dom = new HtmlDom(kEmbeddedLangDivsHtml);
+			// Check occurrences in original HTML.
+			VerifyOriginalEmbeddedDivsAreAllThere(dom);
 
 			// SUT
 			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
 
 			// Check occurrences in modified HTML.
+			VerifyOnlyUnwantedEmbeddedDivsAreRemoved(dom, false);
+		}
+
+		[Test]
+		public void RemoveUnwantedLanguageData_PreserveIfEmbeddedDivWantedWithN1()
+		{
+			var dom = new HtmlDom(kEmbeddedLangDivsHtml);
+			// Check occurrences in original HTML.
+			VerifyOriginalEmbeddedDivsAreAllThere(dom);
+
+			// SUT
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, "de");
+
+			// Check occurrences in modified HTML: should be same for content page regardless of specifying national language.
+			VerifyOnlyUnwantedEmbeddedDivsAreRemoved(dom, false);
+		}
+
+		string kEmbeddedLangDivsXMatterHtml = @"<!DOCTYPE html>
+<html>
+<body>
+	<div class='bloom-page cover frontCover A4Landscape bloom-monolingual' data-page='required singleton'  data-xmatter-page='frontCover' id='ba82b94f-71ec-48f7-a1cc-a68d5765e255' testRemoves='false' lang=''>
+		<div class='marginBox'>
+			<div class='split-pane-component-inner'>
+				<div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto' testRemoves='false' lang='de'>
+					<div role='textbox' class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' contenteditable='true' testRemoves='false' lang='en'><p>Hello</p></div>
+					<div class='bloom-editable normal-style' role='textbox' contenteditable='true' testRemoves='true' lang='de'></div>
+					<div class='bloom-editable normal-style' role='textbox' contenteditable='true' testRemoves='true' lang='es'></div>
+					<div class='bloom-editable normal-style' role='textbox' contenteditable='true' testRemoves='true' lang='fr'></div>
+					<div class='bloom-editable normal-style' contenteditable='true' testRemoves='false' lang='z'></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>";
+
+		[Test]
+		public void RemoveUnwantedLanguageData_PreserveIfEmbeddedDivWantedWithXmatter()
+		{
+			var dom = new HtmlDom(kEmbeddedLangDivsXMatterHtml);
+			// Check occurrences in original HTML.
+			VerifyOriginalEmbeddedDivsAreAllThere(dom);
+
+			// SUT
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
+
+			// Check occurrences in modified HTML: nothing removed from xmatter unless national language is specified.
+			VerifyOriginalEmbeddedDivsAreAllThere(dom);
+		}
+
+
+		[Test]
+		public void RemoveUnwantedLanguageData_PreserveIfEmbeddedDivWantedWithXmatterN1()
+		{
+			var dom = new HtmlDom(kEmbeddedLangDivsXMatterHtml);
+			// Check occurrences in original HTML.
+			VerifyOriginalEmbeddedDivsAreAllThere(dom);
+
+			// SUT
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, "de");
+
+			// Check occurrences in modified HTML: German should be preserved, French and Spanish removed.
+			VerifyOnlyUnwantedEmbeddedDivsAreRemoved(dom, true);
+		}
+
+		private void VerifyOriginalEmbeddedDivsAreAllThere(HtmlDom dom)
+		{
+			var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='' and contains(@class, 'bloom-page')]", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and contains(@class, 'bloom-translationGroup')]", 1);	// bogus value for test
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class, 'bloom-editable') and @role='textbox']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and contains(@class, 'bloom-editable') and @role='textbox']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es' and contains(@class, 'bloom-editable') and @role='textbox']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr' and contains(@class, 'bloom-editable') and @role='textbox']", 1);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class, 'bloom-editable') and @contenteditable='true']", 1);
+
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 7);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@testRemoves='false']", 4);
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@testRemoves='true']", 3);
+		}
+
+		private void VerifyOnlyUnwantedEmbeddedDivsAreRemoved(HtmlDom dom, bool isXMatterWithN1)
+		{
+			var countOfGerman = isXMatterWithN1 ? 1 : 0;
+			var assertThatDom = AssertThatXmlIn.Dom(dom.RawDom);
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='' and contains(@class, 'bloom-page')]", 1);	// unchanged
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and contains(@class, 'bloom-translationGroup')]", 1);	// unchanged
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(@class, 'bloom-editable') and @role='textbox']", 1);	// unchanged
-			assertThatDom.HasNoMatchForXpath("//div[@lang='de' and contains(@class, 'bloom-editable') and @role='textbox']");	// removed
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='de' and contains(@class, 'bloom-editable') and @role='textbox']", countOfGerman);	// removed if German not N1
+			assertThatDom.HasNoMatchForXpath("//div[@lang='es' and contains(@class, 'bloom-editable') and @role='textbox']");	// removed
+			assertThatDom.HasNoMatchForXpath("//div[@lang='fr' and contains(@class, 'bloom-editable') and @role='textbox']");	// removed
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='z' and contains(@class, 'bloom-editable') and @contenteditable='true']", 1);	// unchanged
 
-			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 4);	// one div[@lang] removed
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang]", 4 + countOfGerman);	// two or three div[@lang] removed
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@testRemoves='false']", 4);
-			assertThatDom.HasNoMatchForXpath("//div[@testRemoves='true']");
+			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@testRemoves='true']", countOfGerman);
 		}
 	}
 }
