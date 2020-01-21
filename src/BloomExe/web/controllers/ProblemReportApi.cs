@@ -178,7 +178,7 @@ namespace Bloom.web.controllers
 		}
 
 		/// <summary>
-		/// Shows a problem dialog. Use to match <code>Action<Exception, string></code> signature
+		/// Shows a problem dialog. Use to match <code>Action&lt;Exception, string&gt;</code> signature
 		/// in ErrorReport.OnShowDetails().
 		/// </summary>
 		/// <param name="exception"></param>
