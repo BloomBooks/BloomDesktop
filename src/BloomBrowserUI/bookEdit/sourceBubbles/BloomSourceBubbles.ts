@@ -10,6 +10,7 @@ import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import "../../lib/jquery.easytabs.js"; //load into global space
 import BloomHintBubbles from "../js/BloomHintBubbles";
+import { BloomApi } from "../../utils/bloomApi";
 
 declare function GetSettings(): any; //c# injects this
 
@@ -387,239 +388,217 @@ export default class BloomSourceBubbles {
         let shouldShowAlways = true;
 
         const $group = $(group);
-        // We seem to need a delay to get a reliable result from mightCauseHorizontallyOverlappingBubbles(); see comment there.
-        setTimeout(() => {
-            if (
-                bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($group)
-            ) {
-                showEvents = true;
-                showEventsStr = "focusin";
-                hideEvents = true;
-                hideEventsStr = "focusout";
-                shouldShowAlways = false;
-            }
+        if (bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($group)) {
+            showEvents = true;
+            showEventsStr = "focusin";
+            hideEvents = true;
+            hideEventsStr = "focusout";
+            shouldShowAlways = false;
+        }
 
-            // turn that tab thing into a bubble, and attach it to the original div ("group")
-            $group.each(function() {
-                // const targetHeight = Math.max(55, $(this).height()); // This ensures we get at least one line of the source text!
+        // turn that tab thing into a bubble, and attach it to the original div ("group")
+        $group.each(function() {
+            // const targetHeight = Math.max(55, $(this).height()); // This ensures we get at least one line of the source text!
 
-                const $this: JQuery = $(this);
+            const $this: JQuery = $(this);
 
-                $this.qtip({
-                    position: {
-                        my: "left top",
-                        at: "right top",
-                        adjust: {
-                            x: 0,
-                            y: 0
-                        },
-                        container: bloomQtipUtils.qtipZoomContainer()
+            $this.qtip({
+                position: {
+                    my: "left top",
+                    at: "right top",
+                    adjust: {
+                        x: 0,
+                        y: 0
                     },
-                    content: divForBubble,
+                    container: bloomQtipUtils.qtipZoomContainer()
+                },
+                content: divForBubble,
 
-                    show: {
-                        event: showEvents ? showEventsStr : showEvents,
-                        ready: shouldShowAlways
+                show: {
+                    event: showEvents ? showEventsStr : showEvents,
+                    ready: shouldShowAlways
+                },
+                style: {
+                    tip: {
+                        corner: true,
+                        width: 10,
+                        height: 10,
+                        mimic: "left center",
+                        offset: 20
                     },
-                    style: {
-                        tip: {
-                            corner: true,
-                            width: 10,
-                            height: 10,
-                            mimic: "left center",
-                            offset: 20
-                        },
-                        classes:
-                            "ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble"
-                    },
-                    hide: hideEvents ? hideEventsStr : hideEvents,
-                    events: {
-                        show: (event, api) => {
-                            // don't need to do this if there is only one editable area
-                            const $body: JQuery = $("body");
+                    classes:
+                        "ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble"
+                },
+                hide: hideEvents ? hideEventsStr : hideEvents,
+                events: {
+                    show: (event, api) => {
+                        // don't need to do this if there is only one editable area
+                        const $body: JQuery = $("body");
+                        if (
+                            $body
+                                .find("*.bloom-translationGroup")
+                                .not(".bloom-readOnlyInTranslationMode")
+                                .length < 2
+                        )
+                            return;
+
+                        // BL-878: set the tool tips to not be larger than the text area so they don't overlap each other
+                        const $tip = api.elements.tooltip;
+                        const $div = $body.find(
+                            '[aria-describedby="' + $tip.attr("id") + '"]'
+                        );
+                        let maxHeight = $div.height();
+                        if ($tip.height() > maxHeight) {
+                            // make sure to show a minimum size
+                            if (maxHeight < 70) maxHeight = 70;
+
+                            // This code may run AFTER the code in SetupTooltips that removes passive-bubble
+                            // and max-height from a qtip whose element has focus.
                             if (
-                                $body
-                                    .find("*.bloom-translationGroup")
-                                    .not(".bloom-readOnlyInTranslationMode")
-                                    .length < 2
-                            )
-                                return;
-
-                            // BL-878: set the tool tips to not be larger than the text area so they don't overlap each other
-                            const $tip = api.elements.tooltip;
-                            const $div = $body.find(
-                                '[aria-describedby="' + $tip.attr("id") + '"]'
-                            );
-                            let maxHeight = $div.height();
-                            if ($tip.height() > maxHeight) {
-                                // make sure to show a minimum size
-                                if (maxHeight < 70) maxHeight = 70;
-
-                                // This code may run AFTER the code in SetupTooltips that removes passive-bubble
-                                // and max-height from a qtip whose element has focus.
-                                if (
-                                    document.activeElement &&
-                                    !$.contains(
-                                        $div.get(0),
-                                        document.activeElement
-                                    )
-                                ) {
-                                    $tip.css("max-height", maxHeight);
-                                    $tip.addClass("passive-bubble");
-                                }
-                                $tip.attr("data-max-height", maxHeight);
+                                document.activeElement &&
+                                !$.contains($div.get(0), document.activeElement)
+                            ) {
+                                $tip.css("max-height", maxHeight);
+                                $tip.addClass("passive-bubble");
                             }
-                        },
-                        render: (event, api) => {
-                            if (
-                                !api.elements.tooltip ||
-                                !api.elements.tooltip[0]
-                            )
-                                return;
-                            const paras = api.elements.tooltip[0].getElementsByTagName(
-                                "p"
-                            );
-                            for (let i = 0; i < paras.length; i++) {
-                                const p = paras[i] as HTMLElement;
-                                // won't let us tab to it, but lets it get focus when we do a drag selection,
-                                // which allows keyboard events to be raised and ctrl-A intercepted.
-                                p.setAttribute("tabindex", "-1");
-                                p.addEventListener("keydown", kevent => {
-                                    // When the user types <Control-A> inside a source bubble, we don't
-                                    // want the whole page selected.  We want just the current text of
-                                    // the bubble to be selected.
-                                    // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3899.
-                                    // The selection code was adapted from one of the answers given on
-                                    // http://stackoverflow.com/questions/985272/selecting-text-in-an-element-akin-to-highlighting-with-your-mouse
-                                    if (kevent.ctrlKey && kevent.which == 65) {
-                                        kevent.preventDefault();
-                                        kevent.stopImmediatePropagation();
-                                        const target = kevent.target as HTMLElement;
-                                        if (!target) return; // unlikely, makes checker happy
-                                        // Since the event is attached to a paragraph, the parent should be the whole bloom-editable
-                                        const wholeSource =
-                                            target.parentElement;
-                                        if (
-                                            wholeSource &&
-                                            wholeSource.ownerDocument &&
-                                            wholeSource.ownerDocument
-                                                .defaultView
-                                        ) {
-                                            const selection = wholeSource.ownerDocument.defaultView.getSelection();
-                                            if (selection) {
-                                                const range = wholeSource.ownerDocument.createRange();
-                                                range.selectNodeContents(
-                                                    wholeSource
-                                                );
-                                                selection.removeAllRanges();
-                                                selection.addRange(range);
-                                            }
+                            $tip.attr("data-max-height", maxHeight);
+                        }
+                    },
+                    render: (event, api) => {
+                        if (!api.elements.tooltip || !api.elements.tooltip[0])
+                            return;
+                        const paras = api.elements.tooltip[0].getElementsByTagName(
+                            "p"
+                        );
+                        for (let i = 0; i < paras.length; i++) {
+                            const p = paras[i] as HTMLElement;
+                            // won't let us tab to it, but lets it get focus when we do a drag selection,
+                            // which allows keyboard events to be raised and ctrl-A intercepted.
+                            p.setAttribute("tabindex", "-1");
+                            p.addEventListener("keydown", kevent => {
+                                // When the user types <Control-A> inside a source bubble, we don't
+                                // want the whole page selected.  We want just the current text of
+                                // the bubble to be selected.
+                                // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3899.
+                                // The selection code was adapted from one of the answers given on
+                                // http://stackoverflow.com/questions/985272/selecting-text-in-an-element-akin-to-highlighting-with-your-mouse
+                                if (kevent.ctrlKey && kevent.which == 65) {
+                                    kevent.preventDefault();
+                                    kevent.stopImmediatePropagation();
+                                    const target = kevent.target as HTMLElement;
+                                    if (!target) return; // unlikely, makes checker happy
+                                    // Since the event is attached to a paragraph, the parent should be the whole bloom-editable
+                                    const wholeSource = target.parentElement;
+                                    if (
+                                        wholeSource &&
+                                        wholeSource.ownerDocument &&
+                                        wholeSource.ownerDocument.defaultView
+                                    ) {
+                                        const selection = wholeSource.ownerDocument.defaultView.getSelection();
+                                        if (selection) {
+                                            const range = wholeSource.ownerDocument.createRange();
+                                            range.selectNodeContents(
+                                                wholeSource
+                                            );
+                                            selection.removeAllRanges();
+                                            selection.addRange(range);
                                         }
                                     }
-                                });
-                            }
-
-                            // For clicks in the dropdown menu of the source bubble's final tab, we need to prevent
-                            // the default behavior in order for the click to get through to styledSelectChangeHandler()
-                            // reliably.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6940.
-                            // But if we always prevent the default behavior, it won't be possible to select and copy
-                            // text from inside the source bubble.
-                            api.elements.tooltip.mousedown(ev => {
-                                const cls = ev.target.getAttribute("class");
-                                const href = ev.target.getAttribute("href");
-                                if (
-                                    cls == "sourceTextTab" &&
-                                    href &&
-                                    href.startsWith("#")
-                                ) {
-                                    ev.preventDefault();
-                                }
-                            });
-
-                            // This started out as an attempt to keep the bubble from getting focus, but didn't do that
-                            // reliably for some undetermined reason. It's still useful so that clicking on a tooltip focuses its element.
-                            // Otherwise the bubble may stay hidden behind something else even when clicked.
-                            // However, if the user drags and makes a range selection, we don't want to hide it.
-                            api.elements.tooltip.click(ev => {
-                                const sel = window.getSelection();
-                                if (sel && !sel.isCollapsed) {
-                                    // user made a range selection, probably to copy. Don't mess with it.
-                                    return;
-                                }
-                                // We're going to pick an element to focus. We start by getting the element our qtip
-                                // is attached to.
-                                let baseElement = $("body").find(
-                                    "[aria-describedby='" +
-                                        api.elements.tooltip.attr("id") +
-                                        "']"
-                                );
-                                // That might be either a group or an editable div. Focus needs to go to something actually editable,
-                                // so a group is not a candidate. Fortunately, source bubbles are always attached to the top
-                                // of a group (relating to translating the vernacular language, which is first), so focusing
-                                // to the first visible child works.
-                                // (Review: This probably depends on the children actually being in the order they are displayed,
-                                // not re-ordered by flex rules. Seems to be true currently at least.)
-                                if (
-                                    baseElement.hasClass(
-                                        "bloom-translationGroup"
-                                    )
-                                ) {
-                                    baseElement = baseElement
-                                        .find(".bloom-editable:visible")
-                                        .first();
-                                }
-                                // Apparently you can't focus a div that lacks a tabindex, even if it is contenteditable.
-                                // We don't want to permanently modify the element, so cheat by giving it one temporarily.
-                                // -1 won't even temporarily affect any tabbing, since it means only focusable by code.
-                                const hadTabIndex = baseElement.hasAttr(
-                                    "tabindex"
-                                );
-                                if (!hadTabIndex) {
-                                    baseElement.attr("tabindex", "-1");
-                                }
-                                baseElement.focus();
-                                if (!hadTabIndex) {
-                                    baseElement.removeAttr("tabindex");
                                 }
                             });
                         }
-                    }
-                });
 
-                BloomSourceBubbles.SetupTooltips($this);
+                        // For clicks in the dropdown menu of the source bubble's final tab, we need to prevent
+                        // the default behavior in order for the click to get through to styledSelectChangeHandler()
+                        // reliably.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6940.
+                        // But if we always prevent the default behavior, it won't be possible to select and copy
+                        // text from inside the source bubble.
+                        api.elements.tooltip.mousedown(ev => {
+                            const cls = ev.target.getAttribute("class");
+                            const href = ev.target.getAttribute("href");
+                            if (
+                                cls == "sourceTextTab" &&
+                                href &&
+                                href.startsWith("#")
+                            ) {
+                                ev.preventDefault();
+                            }
+                        });
+
+                        // This started out as an attempt to keep the bubble from getting focus, but didn't do that
+                        // reliably for some undetermined reason. It's still useful so that clicking on a tooltip focuses its element.
+                        // Otherwise the bubble may stay hidden behind something else even when clicked.
+                        // However, if the user drags and makes a range selection, we don't want to hide it.
+                        api.elements.tooltip.click(ev => {
+                            const sel = window.getSelection();
+                            if (sel && !sel.isCollapsed) {
+                                // user made a range selection, probably to copy. Don't mess with it.
+                                return;
+                            }
+                            // We're going to pick an element to focus. We start by getting the element our qtip
+                            // is attached to.
+                            let baseElement = $("body").find(
+                                "[aria-describedby='" +
+                                    api.elements.tooltip.attr("id") +
+                                    "']"
+                            );
+                            // That might be either a group or an editable div. Focus needs to go to something actually editable,
+                            // so a group is not a candidate. Fortunately, source bubbles are always attached to the top
+                            // of a group (relating to translating the vernacular language, which is first), so focusing
+                            // to the first visible child works.
+                            // (Review: This probably depends on the children actually being in the order they are displayed,
+                            // not re-ordered by flex rules. Seems to be true currently at least.)
+                            if (
+                                baseElement.hasClass("bloom-translationGroup")
+                            ) {
+                                baseElement = baseElement
+                                    .find(".bloom-editable:visible")
+                                    .first();
+                            }
+                            // Apparently you can't focus a div that lacks a tabindex, even if it is contenteditable.
+                            // We don't want to permanently modify the element, so cheat by giving it one temporarily.
+                            // -1 won't even temporarily affect any tabbing, since it means only focusable by code.
+                            const hadTabIndex = baseElement.hasAttr("tabindex");
+                            if (!hadTabIndex) {
+                                baseElement.attr("tabindex", "-1");
+                            }
+                            baseElement.focus();
+                            if (!hadTabIndex) {
+                                baseElement.removeAttr("tabindex");
+                            }
+                        });
+                    }
+                }
             });
-        }, bloomQtipUtils.horizontalOverlappingBubblesDelay);
+
+            BloomSourceBubbles.SetupTooltips($this);
+        });
     }
 
     private static SetupTooltips(editableDiv: JQuery): void {
         // BL-878: show the full-size tool tip when the text area has focus
-        editableDiv.find(".bloom-editable").each((i, elt) => {
+        editableDiv.find(".bloom-editable:visible").each((i, elt) => {
+            // BloomApi.postDebugMessage(
+            //     "DEBUG BloomSourceBubbles.SetupTooltips/setting focus and blur handlers on " +
+            //         elt.outerHTML
+            // );
             $(elt).focus(event => {
-                // reset tool tips that may be expanded
-                const $body = $("body");
-                $body.find(".qtip").each((idx, obj) => {
-                    const $thisTip = $(obj);
-                    $thisTip.addClass("passive-bubble");
-                    const maxHeight = $thisTip.attr("data-max-height");
-                    if (maxHeight)
-                        $thisTip.css("max-height", parseInt(maxHeight));
-                });
-
-                // show the full tip, if needed
-                const tipId = (<Element>event.target.parentNode).getAttribute(
-                    "aria-describedby"
-                );
-                const $tip = $body.find("#" + tipId);
-                $tip.removeClass("passive-bubble");
-                const maxHeight = $tip.attr("data-max-height");
-                if (maxHeight) {
-                    $tip.css("max-height", "");
-                }
+                // BloomApi.postDebugMessage(
+                //     "DEBUG BloomSourceBubbles.SetupTooltips/on focus - element=" +
+                //         (<Element>event.target).outerHTML
+                // );
+                const element = <Element>event.target;
+                BloomSourceBubbles.ShowSourceBubbleForElement(element);
             });
             // reset the tooltip when it loses focus. The "reset other tooltips" code
-            // above is not enough because the field receiving focus may not be one
-            // that has been configured with this event.
+            // in ShowSourceBubbleForElement() below (called by the focus handler) is
+            // not enough because the field receiving focus may not be one that has
+            // been configured with this event.
             $(elt).blur(ev => {
+                // BloomApi.postDebugMessage(
+                //     "DEBUG BloomSourceBubbles.SetupTooltips/on blur - element=" +
+                //         (<Element>ev.target).outerHTML
+                // );
                 const tipId = (<Element>ev.target.parentNode).getAttribute(
                     "aria-describedby"
                 );
@@ -629,5 +608,26 @@ export default class BloomSourceBubbles {
                 if (maxHeight) $tip.css("max-height", parseInt(maxHeight));
             });
         });
+    }
+
+    public static ShowSourceBubbleForElement(element: Element) {
+        const $body = $("body");
+        // reset tool tips that may be expanded
+        $body.find(".qtip").each((idx, obj) => {
+            const $thisTip = $(obj);
+            $thisTip.addClass("passive-bubble");
+            const maxHeight = $thisTip.attr("data-max-height");
+            if (maxHeight) $thisTip.css("max-height", parseInt(maxHeight));
+        });
+        // show the full tip, if needed
+        const tipId = (<Element>element.parentNode).getAttribute(
+            "aria-describedby"
+        );
+        const $tip = $body.find("#" + tipId);
+        $tip.removeClass("passive-bubble");
+        const maxHeight = $tip.attr("data-max-height");
+        if (maxHeight) {
+            $tip.css("max-height", "");
+        }
     }
 }

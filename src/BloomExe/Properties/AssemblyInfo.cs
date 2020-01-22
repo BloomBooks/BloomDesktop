@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("SIL")]
 [assembly: AssemblyProduct("Bloom")]
-[assembly: AssemblyCopyright("© SIL International 2012-2019")]
+[assembly: AssemblyCopyright("© SIL International 2012-2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -34,9 +34,9 @@ using System.Runtime.InteropServices;
 // Note that an automated process updates these in the TeamCity build; these ones however are important
 // for whether a local build satisfies BloomParseClient.GetIsThisVersionAllowedToUpload.
 // [assembly: AssemblyVersion("0.9.999.0")]
-[assembly: AssemblyVersion("4.7.000.0")]
-[assembly: AssemblyFileVersion("4.7.000.0")]
-[assembly: AssemblyInformationalVersion("4.7.000.0")]
+[assembly: AssemblyVersion("4.8.000.0")]
+[assembly: AssemblyFileVersion("4.8.000.0")]
+[assembly: AssemblyInformationalVersion("4.8.000.0")]
 [assembly: InternalsVisibleTo("BloomTests")]
 [assembly: InternalsVisibleTo("BloomHarvester")]
 [assembly: InternalsVisibleTo("BloomHarvesterTests")]
