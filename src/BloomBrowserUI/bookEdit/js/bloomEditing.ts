@@ -737,12 +737,56 @@ export function SetupElements(container) {
         bubbleDivs
     );
 
-    for (let i = 0; i < bubbleDivs.length; i++) {
-        BloomSourceBubbles.MakeSourceBubblesIntoQtips(
-            divsThatHaveSourceBubbles[i],
-            bubbleDivs[i]
-        );
-    }
+    // We seem to need a delay to get a reliable result in BloomSourceBubbles.MakeSourceBubblesIntoQtips()
+    // as it calls BloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(), which ends by calling
+    // bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(); see the comment on this last method.
+    // For getting focus set reliably, it seems best to do this whole loop inside one delay, rather than
+    // have separate delays invoked each time through the loop.
+    setTimeout(() => {
+        for (let i = 0; i < bubbleDivs.length; i++) {
+            BloomSourceBubbles.MakeSourceBubblesIntoQtips(
+                divsThatHaveSourceBubbles[i],
+                bubbleDivs[i]
+            );
+        }
+        // Ensure focus exists as best we can (BL-7994)
+        if (
+            document.hasFocus() &&
+            document.activeElement &&
+            $(document.activeElement).find(":focusable").length > 0
+        ) {
+            // There seem to be cases where the active element does not actually have focus.
+            // We like it to, so the user can actually type there.
+            (document.activeElement as HTMLElement).focus();
+            // It may already be focused, in which case, focusing it again may not trigger the side effect.
+            // So do it explicitly.
+            BloomSourceBubbles.ShowSourceBubbleForElement(
+                document.activeElement
+            );
+            // BloomApi.postDebugMessage(
+            //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - trying to show source bubble on " +
+            //         document.activeElement.outerHTML
+            // );
+        } else {
+            // BloomApi.postDebugMessage(
+            //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - no active element: try to set focus"
+            // );
+            const firstEditable = $("body")
+                .find("textarea:visible, div.bloom-editable:visible")
+                .first();
+            if (firstEditable.length) {
+                // BloomApi.postDebugMessage(
+                //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - setting focus on " +
+                //         firstEditable.get(0).outerHTML
+                // );
+                firstEditable.focus();
+            } else {
+                // BloomApi.postDebugMessage(
+                //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - nothing to focus??"
+                // );
+            }
+        }
+    }, bloomQtipUtils.horizontalOverlappingBubblesDelay);
 
     // Add overflow event handlers so that when a div is overfull,
     // we add the overflow class and it gets a red background or something
@@ -815,11 +859,29 @@ export function SetupElements(container) {
     // quick typing on a newly loaded page to get the cursor messed up. So for the Reader tools, the
     // user will need to actually click in the div to start typing.
     if (!toolboxVisible) {
+        // The focus set here may not actually be what is focused in the end.  Other setup
+        // code (such as for Comical) may have other--or identical--ideas and set focus.
         //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
-        $(container)
-            .find("textarea, div.bloom-editable")
-            .first()
-            .focus();
+        const editableElement = $(container)
+            .find("textarea:visible, div.bloom-editable:visible")
+            .first();
+        if (editableElement.length) {
+            // BloomApi.postDebugMessage(
+            //     "DEBUG bloomEditing/SetupElements() - setting focus on " +
+            //         editableElement.get(0).outerHTML
+            // );
+            editableElement.focus();
+            // BloomApi.postDebugMessage(
+            //     "DEBUG bloomEditing/SetupElements() - activeElement=" +
+            //         (document.activeElement
+            //             ? document.activeElement.outerHTML
+            //             : "<NULL>")
+            // );
+        } else {
+            // BloomApi.postDebugMessage(
+            //     "DEBUG bloomEditing/SetupElements() - found nothing to focus"
+            // );
+        }
     }
 
     AddXMatterLabelAfterPageLabel(container);
