@@ -68,7 +68,7 @@
         "bloom-player": "^1.1.41",
         "calculate-aspect-ratio": "^0.1.3",
         "color-blind": "^0.1.1",
-        "comicaljs": "^0.1.6",
+        "comicaljs": "^0.1.49",
         "css-element-queries": "^0.3.2",
         "global": "^4.3.2",
         "jquery": "^1.12.4",
