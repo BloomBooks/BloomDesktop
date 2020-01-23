@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -305,6 +305,13 @@ namespace Bloom
 				if (string.IsNullOrEmpty(node.InnerText) && node.ChildNodes.Count == 0)
 				{
 					node.InnerText = " ";
+				}
+			}
+			foreach (XmlElement node in dom.SafeSelectNodes("//iframe"))
+			{
+				if (!node.HasChildNodes)
+				{
+					node.AppendChild(node.OwnerDocument.CreateTextNode("Must have a closing tag in HTML"));
 				}
 			}
 		}
