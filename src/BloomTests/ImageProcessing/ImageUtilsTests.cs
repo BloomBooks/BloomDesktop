@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Bloom;
 using Bloom.ImageProcessing;
 using NUnit.Framework;
+using SIL.IO;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ImageToolbox;
 
@@ -51,7 +46,8 @@ namespace BloomTests.ImageProcessing
 			ProcessAndSaveImageIntoFolder_AndTestResults("bird.png", ImageFormat.Png);
 		}
 
-		private static void ProcessAndSaveImageIntoFolder_AndTestResults(string testImageName, ImageFormat expectedOutputFormat)
+		private static void ProcessAndSaveImageIntoFolder_AndTestResults(string testImageName,
+			ImageFormat expectedOutputFormat)
 		{
 			var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, testImageName);
 			using (var image = PalasoImage.FromFileRobustly(inputPath))
@@ -65,6 +61,7 @@ namespace BloomTests.ImageProcessing
 					{
 						Assert.AreEqual(expectedOutputFormat, img.RawFormat);
 					}
+
 					var alternativeThatShouldNotBeThere = Path.Combine(Path.GetDirectoryName(outputPath),
 						Path.GetFileNameWithoutExtension(outputPath) + (expectedOutputFormat.Equals(ImageFormat.Jpeg) ? ".png" : ".jpg"));
 					Assert.IsFalse(File.Exists(alternativeThatShouldNotBeThere),
@@ -75,10 +72,13 @@ namespace BloomTests.ImageProcessing
 
 		// See BL-3646 which showed we were blacking out the image when converting from png to jpg
 		[Test]
-		[Platform(Exclude = "Linux", Reason = "This test throws a low-level warning which TC is currently treating as an error")]
-		public static void ProcessAndSaveImageIntoFolder_SimpleImageHasTransparentBackground_ImageNotConvertedAndFileSizeNotIncreased()
+		[Platform(Exclude = "Linux",
+			Reason = "This test throws a low-level warning which TC is currently treating as an error")]
+		public static void
+			ProcessAndSaveImageIntoFolder_SimpleImageHasTransparentBackground_ImageNotConvertedAndFileSizeNotIncreased()
 		{
-			var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirtWithTransparentBg.png");
+			var inputPath =
+				SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirtWithTransparentBg.png");
 			var originalFileSize = new FileInfo(inputPath).Length;
 			using (var image = PalasoImage.FromFileRobustly(inputPath))
 			{
@@ -99,7 +99,8 @@ namespace BloomTests.ImageProcessing
 		// I think shirt.png still has a transparent background after being fixed by optipng, but I'm not absolutely sure,
 		// so I'm leaving both tests in place.
 		[Test]
-		public static void ProcessAndSaveImageIntoFolder_SimpleImageHasTransparentBackground_ImageNotConvertedAndFileSizeNotIncreased2()
+		public static void
+			ProcessAndSaveImageIntoFolder_SimpleImageHasTransparentBackground_ImageNotConvertedAndFileSizeNotIncreased2()
 		{
 			var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png");
 			var originalFileSize = new FileInfo(inputPath).Length;
@@ -116,6 +117,27 @@ namespace BloomTests.ImageProcessing
 						Assert.That(originalFileSize <= new FileInfo(outputPath).Length);
 					}
 				}
+			}
+		}
+
+		[Test]
+		[TestCase("box", "box1")]
+		[TestCase("box1", "box2")]
+		[TestCase("12311", "12312")]
+		[TestCase("12box", "12box1")]
+		[TestCase("9", "10")]
+		[TestCase("b", "b1")]
+		[TestCase("box99", "box100")]
+		public static void GetUnusedFilenameTests(string basename, string expectedResult)
+		{
+			const string extension = ".txt";
+			using (var folder = new TemporaryFolder("UnusedFilenameTest"))
+			{
+				var basePath = Path.Combine(folder.Path, basename + extension);
+				RobustFile.Delete(basePath); // just in case
+				RobustFile.WriteAllText(basePath, "test contents");
+				var filename = ImageUtils.GetUnusedFilename(Path.GetDirectoryName(basePath), basename, extension);
+				Assert.That(Path.GetFileNameWithoutExtension(filename), Is.EqualTo(expectedResult));
 			}
 		}
 	}

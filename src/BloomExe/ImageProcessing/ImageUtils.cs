@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
@@ -178,19 +177,55 @@ namespace Bloom.ImageProcessing
 		}
 
 		/// <summary>
-		/// Get an unused filename in the given folder based on the basename and extension.  extension must
+		/// Get an unused filename in the given folder based on the basename and extension. "extension" must
 		/// start with a period.
 		/// </summary>
 		internal static string GetUnusedFilename(string bookFolderPath, string basename, string extension)
 		{
-			var i = 0;
-			var suffix = "";
-			while (RobustFile.Exists(Path.Combine(bookFolderPath, basename + suffix + extension)))
+			// basename may already end in one or more digits. Try to strip off digits, parse and increment.
+			int i;
+			var newBasename = ParseFilename(basename, out i);
+			while (RobustFile.Exists(ConstructFilename(bookFolderPath, newBasename, i, extension)))
 			{
 				++i;
-				suffix = i.ToString(CultureInfo.InvariantCulture);
 			}
-			return basename + suffix + extension;
+			return newBasename + i.ToString(CultureInfo.InvariantCulture) + extension;
+		}
+
+		private static string ConstructFilename(string folderPath, string basename, int currentNum, string extension)
+		{
+			return Path.Combine(folderPath,
+				basename +
+				(currentNum == 0 ? "" : currentNum.ToString(CultureInfo.InvariantCulture)) +
+				extension);
+		}
+
+		private static string ParseFilename(string basename, out int versionNumber)
+		{
+			const string digits = "0123456789";
+			var length = basename.Length;
+			var i = length;
+			while (i > 0 && digits.Contains(basename[i - 1]))
+			{
+				--i;
+			}
+			// i will be the index of the first digit
+			if (i == length)
+			{
+				// In this case, there are no digits to be had
+				versionNumber = 0;
+				return basename;
+			}
+			if (i == 0)
+			{
+				// In this case, the whole filename is digits
+				versionNumber = int.Parse(basename);
+				return string.Empty;
+			}
+			// We have some combination of letters with digits at the end.
+			var newBasename = basename.Substring(0, i);
+			versionNumber = int.Parse(basename.Substring(i, length - i));
+			return newBasename;
 		}
 
 		private static void LogMemoryUsage()
