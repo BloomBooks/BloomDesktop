@@ -75,9 +75,17 @@ namespace Bloom.Publish.Android
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
 			// And bloom-player expects folder name to match html file name.
 			var htmPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
-			var modifiedBookFolderPath = Path.Combine(temp.FolderPath, Path.GetFileNameWithoutExtension(htmPath));
-			Directory.CreateDirectory(modifiedBookFolderPath);
-			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer, modifiedBookFolderPath);
+			var tentativeBookFolderPath = Path.Combine(temp.FolderPath, Path.GetFileNameWithoutExtension(htmPath));
+			Directory.CreateDirectory(tentativeBookFolderPath);
+			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer, tentativeBookFolderPath);
+
+			// Although usually tentativeBookFolderPath and modifiedBook.FolderPath are the same, there are some exceptions
+			// In the process of bringing a book up-to-date (called by MakeDeviceXmatterTempBook), the folder path may change.
+			// For example, it could change if the original folder path contains punctuation marks now deemed dangerous.
+			//    The book will be moved to the sanitized version of the file name instead.
+			// It can also happen if we end up picking a different version of the title (i.e. in a different language)
+			//    than the one written to the .htm file.
+			string modifiedBookFolderPath = modifiedBook.FolderPath;
 
 			if (modifiedBook.CollectionSettings.HaveEnterpriseFeatures)
 				ProcessQuizzes(modifiedBookFolderPath, modifiedBook.RawDom);
