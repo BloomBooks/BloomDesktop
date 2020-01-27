@@ -189,15 +189,20 @@ namespace Bloom.ImageProcessing
 			{
 				++i;
 			}
-			return newBasename + i.ToString(CultureInfo.InvariantCulture) + extension;
+			return newBasename + GetCounterString(i) + extension;
 		}
 
 		private static string ConstructFilename(string folderPath, string basename, int currentNum, string extension)
 		{
 			return Path.Combine(folderPath,
 				basename +
-				(currentNum == 0 ? "" : currentNum.ToString(CultureInfo.InvariantCulture)) +
+				GetCounterString(currentNum) +
 				extension);
+		}
+
+		private static string GetCounterString(int currentCounter)
+		{
+			return currentCounter == 0 ? string.Empty : currentCounter.ToString(CultureInfo.InvariantCulture);
 		}
 
 		private static string ParseFilename(string basename, out int versionNumber)
