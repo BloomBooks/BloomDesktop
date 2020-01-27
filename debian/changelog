@@ -1,3 +1,10 @@
+bloom-desktop-beta (4.7.0) stable; urgency=medium
+
+  * Change 4.7 to beta
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Mon, 27 Jan 2020 11:17:40 -0700
+
 bloom-desktop-alpha (4.7.0) stable; urgency=medium
 
   * Up the version number on the master (alpha) branch to 4.7.
