@@ -84,9 +84,9 @@ namespace BloomTests.Book
 //        }
 
 		[Test]
-		public void CreateBookOnDiskFromTemplate_OriginalHasISBN_CopyDoesNotHaveISBN()
+		public void CreateBookOnDiskFromTemplate_OriginalHasNoISBN_CopyDoesNotHaveISBN()
 		{
-			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory,"Vaccinations");
+			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory,"The Moon and the Cap");
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
@@ -114,7 +114,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_CoverHasOneVisibleVernacularTitle()
 		{
-			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory, "Vaccinations");
+			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory, "The Moon and the Cap");
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
@@ -123,13 +123,13 @@ namespace BloomTests.Book
 
 		//regression
 		[Test]
-		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_DoesNotLoseTokPisinTitle()
+		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_DoesNotLoseVernacularTitle()
 		{
-			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory, "Vaccinations");
+			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory, "The Moon and the Cap");
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
-			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='tpi' and text()='Tambu Sut']", 1);
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='bo']/p[text()='ཟླ་དཀར་དང་ཞྭ་མོ།།']", 1);
 		}
 
 		private BookServer CreateBookServer()
@@ -163,9 +163,9 @@ namespace BloomTests.Book
 		}*/
 
 		[Test]
-		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_InitialFolderNameIsJustBook()
+		public void CreateBookOnDiskFromTemplate_FromFactoryMoonAndCap_InitialFolderNameIsJustBook()
 		{
-			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory, "Vaccinations");
+			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory, "The Moon and the Cap");
 
 			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 			Assert.AreEqual("Book", Path.GetFileName(path));
@@ -175,33 +175,33 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasDataDivIntact()
 		{
-			AssertThatXmlIn.HtmlFile(GetNewVaccinationsBookPath()).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']", 1);
+			AssertThatXmlIn.HtmlFile(GetNewMoonAndCapBookPath()).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']", 1);
 		}
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasTitlePage()
 		{
-			AssertThatXmlIn.HtmlFile(GetNewVaccinationsBookPath()).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'titlePage')]", 1);
+			AssertThatXmlIn.HtmlFile(GetNewMoonAndCapBookPath()).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'titlePage')]", 1);
 		}
 
 		[Test, Ignore("Current architecture gives responsibility for updating to Book, so can't be tested here.")]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasCorrectImageOnCover()
 		{
-			AssertThatXmlIn.HtmlFile(GetNewVaccinationsBookPath()).HasSpecifiedNumberOfMatchesForXpath(
+			AssertThatXmlIn.HtmlFile(GetNewMoonAndCapBookPath()).HasSpecifiedNumberOfMatchesForXpath(
 				"//div[contains(@class,'cover')]//img[@src='HL0014-1.png']", 1);
 		}
 
 		[Test, Ignore("Current architecture spreads this responsibility for updating to Book, so can't be tested here.")]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasCorrectTopicOnCover()
 		{
-			AssertThatXmlIn.HtmlFile(GetNewVaccinationsBookPath()).HasSpecifiedNumberOfMatchesForXpath(
+			AssertThatXmlIn.HtmlFile(GetNewMoonAndCapBookPath()).HasSpecifiedNumberOfMatchesForXpath(
 				"//div[contains(@class,'cover')]//*[@data-derived='topic' and text()='Health']", 1);
 		}
 
 
-		private string GetNewVaccinationsBookPath()
+		private string GetNewMoonAndCapBookPath()
 		{
-			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory, "Vaccinations");
+			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory, "The Moon and the Cap");
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 			return path;
@@ -249,24 +249,24 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromShell_OriginalCC0_BookIsCC0()
 		{
-			var originalSource = Path.Combine(BloomFileLocator.SampleShellsDirectory, "Vaccinations");
-			using (var tempFolder = new TemporaryFolder("VaccinationsCc0"))
-			using (var destFolder = new TemporaryFolder("Vaccinations_BookIsCC0"))
+			var originalSource = Path.Combine(BloomFileLocator.SampleShellsDirectory, "The Moon and the Cap");
+			using (var tempFolder = new TemporaryFolder("MoonCapCc0"))
+			using (var destFolder = new TemporaryFolder("MoonCap_BookIsCC0"))
 			{
-				var source = Path.Combine(tempFolder.Path, "Vaccinations");
+				var source = Path.Combine(tempFolder.Path, "The Moon and the Cap");
 				if (Directory.Exists(source))
 					Directory.Delete(source, true);
 				DirectoryUtilities.CopyDirectory(originalSource, tempFolder.Path);
-				var htmPath = Path.Combine(source, "Vaccinations.htm");
+				var htmPath = Path.Combine(source, "The Moon and the Cap.htm");
 				var content = RobustFile.ReadAllText(htmPath);
 				// insert cc0 stuff in data div
-				var patched = content.Replace("http://creativecommons.org/licenses/by-nc/3.0/", "http://creativecommons.org/publicdomain/zero/1.0/");
+				var patched = content.Replace("http://creativecommons.org/licenses/by/4.0/", "http://creativecommons.org/publicdomain/zero/1.0/");
 				RobustFile.WriteAllText(htmPath, patched);
 				var bookPath = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, destFolder.Path));
 				var assertThatBook = AssertThatXmlIn.HtmlFile(bookPath);
 				// For some reason Vaccinations specifies licenseUrl in three ways (no lang, lang="en", lang="*").
 				// We don't want any of them messed with.
-				assertThatBook.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='licenseUrl' and contains(text(), '/zero/1.0')]", 3);
+				assertThatBook.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='licenseUrl' and contains(text(), '/zero/1.0')]", 1);
 			}
 		}
 
