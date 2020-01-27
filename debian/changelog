@@ -1,3 +1,10 @@
+bloom-desktop (4.6.0) stable; urgency=medium
+
+  * Change 4.6 to release
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Mon, 27 Jan 2020 10:17:33 -0700
+
 bloom-desktop-beta (4.6.0) stable; urgency=medium
 
   * Change 4.6 to beta
