@@ -43,6 +43,7 @@ namespace Bloom.CollectionTab
 		private bool _disposed;
 		private BookCollection _downloadedBookCollection;
 		private Image _dropdownImage;
+		private string _previousTargetSaveAs = null;
 
 		enum ButtonManagementStage
 		{
@@ -1355,6 +1356,39 @@ namespace Bloom.CollectionTab
 				SelectBook(bookInfo);
 				HighlightBookButtonAndShowContextMenuButton(bookInfo);
 			}
+		}
+
+		private void SaveAsBloomToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (SelectedBook == null) return;
+
+			const string bloomFilter = "Bloom files (*.bloom)|*.bloom|All files (*.*)|*.*";
+
+			OnBringBookUpToDate_Click(sender, e);
+
+			var srcFolderName = SelectedBook.StoragePageFolder;
+
+			// Save As dialog, initially proposing My Documents, then defaulting to last target folder
+			// Review: Do we need to persist this to some settings somewhere, or just for the current run?
+			var dlg = new SaveFileDialog
+			{
+				AddExtension = true,
+				OverwritePrompt = true,
+				DefaultExt = "bloom",
+				FileName = Path.GetFileName(srcFolderName),
+				Filter = bloomFilter,
+				InitialDirectory = _previousTargetSaveAs != null ?
+					_previousTargetSaveAs :
+					Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+			};
+			var result = dlg.ShowDialog(this);
+			if (result != DialogResult.OK)
+				return;
+
+			var destFileName = dlg.FileName;
+			_previousTargetSaveAs = Path.GetDirectoryName(destFileName);
+
+			_model.SaveAsBloomFile(srcFolderName, destFileName);
 		}
 	}
 
