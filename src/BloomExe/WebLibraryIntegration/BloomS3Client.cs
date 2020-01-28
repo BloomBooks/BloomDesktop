@@ -581,8 +581,13 @@ namespace Bloom.WebLibraryIntegration
 
 			// Get the top-level directory name of the book from the first object key.
 			var bookFolderName = matching.S3Objects[0].Key.Substring(storageKeyOfBookFolder.Length);
-			while(bookFolderName.Contains("/"))
+			while (bookFolderName.Contains("/") || bookFolderName.Contains("\\"))
+			{
+				// Note: Path.GetDirectoryName may replace "/" (URL format) with "\" (Windows format),
+				// which can be problematic when examining bookFolderName in a loop.
+				// Need to check both / and \
 				bookFolderName = Path.GetDirectoryName(bookFolderName);
+			}
 
 			// Amazon.S3 appears to truncate titles at 50 characters when building directory and filenames.  This means
 			// that relative paths can be as long as 117 characters (2 * 50 + 2 for slashes + 15 for .BloomBookOrder).
