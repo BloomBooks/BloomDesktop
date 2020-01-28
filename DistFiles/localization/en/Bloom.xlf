@@ -665,6 +665,10 @@
         <source xml:lang="en">Rescue Missing Images...</source>
         <note>ID: CollectionTab.CollectionMenu.rescueMissingImages</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.saveAsbloomToolStripMenuItem">
+        <source xml:lang="en">Save As .bloom file...</source>
+        <note>ID: CollectionTab.CollectionMenu.saveAsbloomToolStripMenuItem</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.showHistory">
         <source xml:lang="en">Collection History...</source>
         <note>ID: CollectionTab.CollectionMenu.showHistory</note>

@@ -43,6 +43,7 @@ namespace Bloom.CollectionTab
 		private bool _disposed;
 		private BookCollection _downloadedBookCollection;
 		private Image _dropdownImage;
+		private string _previousTargetSaveAs = string.Empty;
 
 		enum ButtonManagementStage
 		{
@@ -1355,6 +1356,57 @@ namespace Bloom.CollectionTab
 				SelectBook(bookInfo);
 				HighlightBookButtonAndShowContextMenuButton(bookInfo);
 			}
+		}
+
+		private void SaveAsbloomToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (SelectedBook == null) return;
+
+			const string bloomFilter = "Bloom files (*.bloom)|*.bloom|All files (*.*)|*.*";
+			var excludedExtensions = new []{".pdf", ".bloombookorder", ".map", ".bloompack", ".db"};
+
+			OnBringBookUpToDate_Click(sender, e);
+
+			var folderName = SelectedBook.StoragePageFolder;
+
+			// Save As dialog, initially proposing My Documents, then defaulting to last target folder
+			// Review: Do we need to persist this to some settings somewhere, or just for the current run?
+			var dlg = new SaveFileDialog
+			{
+				AddExtension = true,
+				OverwritePrompt = true,
+				DefaultExt = "bloom",
+				FileName = Path.GetFileName(folderName),
+				Filter = bloomFilter,
+				InitialDirectory = _previousTargetSaveAs != string.Empty ?
+					_previousTargetSaveAs :
+					Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+			};
+			var result = dlg.ShowDialog(this);
+			if (result != DialogResult.OK)
+				return;
+
+			_previousTargetSaveAs = Path.GetDirectoryName(dlg.FileName);
+
+			// Zip up the book folder, excluding .pdf, .bloombookorder, .map, .bloompack, .db
+			Logger.WriteEvent("Zipping up {0} ...", dlg.FileName);
+			var zipFile = new BloomZipFile(dlg.FileName);
+			var foldersToZip = Directory.GetDirectories(folderName);
+			foreach (var folder in foldersToZip)
+			{
+				zipFile.AddDirectory(folder); // not worried about contents of folders; zip 'em up!
+			}
+
+			foreach (var fileName in Directory.GetFiles(folderName))
+			{
+				var extension = Path.GetExtension(fileName).ToLowerInvariant();
+				if (excludedExtensions.Contains(extension))
+					continue;
+				zipFile.AddTopLevelFile(fileName);
+			}
+			Logger.WriteEvent("Saving {0} ...", dlg.FileName);
+			zipFile.Save();
+			Logger.WriteEvent("Finished writing .bloom file.");
 		}
 	}
 
