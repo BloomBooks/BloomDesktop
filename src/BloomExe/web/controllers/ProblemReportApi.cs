@@ -221,43 +221,55 @@ namespace Bloom.web.controllers
 			if (controlForScreenshotting == null) // still possible if we come from a "Details" button
 				controlForScreenshotting = FatalExceptionHandler.ControlOnUIThread;
 			ResetScreenshotFile();
-			SafeInvoke.InvokeIfPossible("Screen Shot", controlForScreenshotting, false,
-				() =>
+			// SafeInvoke is great for trying to get a screenshot, but having the actual dialog inside
+			// of it was causing problems for handling any errors in showing the dialog.
+			TryGetScreenshot(controlForScreenshotting);
+
+			try
+			{
+				var query = "?" + levelOfProblem;
+				var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false, "problemDialog", "loader.html");
+				var url = problemDialogRootPath.ToLocalhost() + query;
+				using (var dlg = new BrowserDialog(url))
+				{
+					dlg.ShowDialog();
+				}
+			}
+			catch (Exception problemReportException)
+			{
+				FatalExceptionHandler.UseFallback = true;
+				throw problemReportException;
+			}
+			finally
+			{
+				_showingProblemReport = false;
+			}
+		}
+
+		private static void TryGetScreenshot(Control controlForScreenshotting)
+		{
+			SafeInvoke.InvokeIfPossible("Screen Shot", controlForScreenshotting, false, () =>
 				{
 					try
 					{
-						try
+						var bounds = controlForScreenshotting.Bounds;
+						var screenshot = new Bitmap(bounds.Width, bounds.Height);
+						using (var g = Graphics.FromImage(screenshot))
 						{
-							var bounds = controlForScreenshotting.Bounds;
-							var screenshot = new Bitmap(bounds.Width, bounds.Height);
-							using (var g = Graphics.FromImage(screenshot))
-							{
-								g.CopyFromScreen(controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)), Point.Empty,
-									bounds.Size);
-							}
-
-							_screenshotTempFile = TempFile.WithFilename(ScreenshotName);
-							RobustImageIO.SaveImage(screenshot, _screenshotTempFile.Path, ImageFormat.Png);
-						}
-						catch (Exception e)
-						{
-							ResetScreenshotFile();
-							Logger.WriteError("Bloom was unable to create a screenshot.", e);
+							g.CopyFromScreen(controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)), Point.Empty,
+								bounds.Size);
 						}
 
-						var query = "?" + levelOfProblem;
-						var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false,  "problemDialog", "loader.html");
-						var url = problemDialogRootPath.ToLocalhost() + query;
-						using (var dlg = new BrowserDialog(url))
-						{
-							dlg.ShowDialog();
-						}
+						_screenshotTempFile = TempFile.WithFilename(ScreenshotName);
+						RobustImageIO.SaveImage(screenshot, _screenshotTempFile.Path, ImageFormat.Png);
 					}
-					finally
+					catch (Exception e)
 					{
-						_showingProblemReport = false;
+						ResetScreenshotFile();
+						Logger.WriteError("Bloom was unable to create a screenshot.", e);
 					}
-				});
+				}
+			);
 		}
 
 		private static void LogProblem(Exception exception, string detailedMessage, string levelOfProblem)

@@ -89,10 +89,13 @@ namespace Bloom.Workspace
 			_localizationChangedEvent = localizationChangedEvent;
 
 			_collectionSettings = collectionSettings;
+
 			//_chorusSystem = chorusSystem;
 			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			ErrorReport.OnShowDetails = ProblemReportApi.ShowProblemDialogForNonFatalException;
+			FatalExceptionHandler.UseFallback = false;
+
 			InitializeComponent();
 
 			_checkForNewVersionMenuItem.Visible = SIL.PlatformUtilities.Platform.IsWindows;

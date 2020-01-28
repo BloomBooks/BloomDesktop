@@ -21,6 +21,8 @@ namespace Bloom
 			}
 		}
 
+		internal static bool UseFallback;
+
 		/// ------------------------------------------------------------------------------------
 		/// <summary>
 		/// Set exception handler. Needs to be done before we create splash screen (don't
@@ -36,6 +38,7 @@ namespace Bloom
 			// Passing false keeps the WinForms handler from responding to exceptions, so we don't get two
 			// handlers vying for who gets to report an error.
 			_fallbackHandler = new WinFormsExceptionHandler(false);
+			UseFallback = true; // WorkspaceView will set this to false when BloomServer is up and listening.
 
 			// We need to create a control on the UI thread so that we have a control that we
 			// can use to invoke the error reporting dialog on the correct thread.
@@ -64,15 +67,25 @@ namespace Bloom
 		{
 			if (!GetShouldHandleException(sender, e.Exception))
 				return;
+			if (UseFallback)
+			{
+				_fallbackHandler.HandleTopLevelError(sender, e);
+				QuitCleanly();
+			}
 
 			if (DisplayError(e.Exception))
 			{
-				//Are we inside a Application.Run() statement?
-				if (Application.MessageLoop)
-					Application.Exit();
-				else
-					Environment.Exit(1); //the 1 here is just non-zero
+				QuitCleanly();
 			}
+		}
+
+		private static void QuitCleanly()
+		{
+			//Are we inside a Application.Run() statement?
+			if (Application.MessageLoop)
+				Application.Exit();
+			else
+				Environment.Exit(1); //the 1 here is just non-zero
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -83,19 +96,22 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		protected void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
 		{
-			// We're already handling an unhandled exception, let's not handle another while we are handling this one.
-			AppDomain.CurrentDomain.UnhandledException -= HandleUnhandledException;
+			// Actually this turned out to be unwise.
+			//AppDomain.CurrentDomain.UnhandledException -= HandleUnhandledException;
 
 			if (!GetShouldHandleException(sender, e.ExceptionObject as Exception))
 				return;
+
+			if (UseFallback)
+			{
+				_fallbackHandler.HandleUnhandledException(sender, e);
+				return;
+			}
 
 			if (e.ExceptionObject is Exception)
 				DisplayError(e.ExceptionObject as Exception);
 			else
 				DisplayError(new ApplicationException("Got unknown exception"));
-
-			// Reinstate, just in case. (Bloom should be closing now.)
-			AppDomain.CurrentDomain.UnhandledException += HandleUnhandledException;
 		}
 
 		protected override bool ShowUI
