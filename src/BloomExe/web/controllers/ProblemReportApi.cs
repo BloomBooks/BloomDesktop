@@ -190,6 +190,7 @@ namespace Bloom.web.controllers
 		}
 
 		static bool _showingProblemReport;
+
 		/// <summary>
 		/// Shows a problem dialog.
 		/// </summary>
@@ -198,7 +199,7 @@ namespace Bloom.web.controllers
 		/// <param name="detailedMessage"></param>
 		/// <param name="levelOfProblem"></param>
 		public static void ShowProblemDialog(Control controlForScreenshotting, Exception exception,
-			string detailedMessage = "", string levelOfProblem="user")
+			string detailedMessage = "", string levelOfProblem = "user")
 		{
 			// Before we do anything that might be "risky", put the problem in the log.
 			LogProblem(exception, detailedMessage, levelOfProblem);
@@ -211,8 +212,9 @@ namespace Bloom.web.controllers
 				const string msg = "The last call logged was a RECURSIVE CALL to ShowProblemDialog";
 				Console.Write(msg);
 				Logger.WriteEvent(msg);
-				return;	// break recursion...
+				return; // break recursion...
 			}
+
 			_showingProblemReport = true;
 			_currentException = exception;
 			_detailedMessage = detailedMessage;
@@ -221,43 +223,69 @@ namespace Bloom.web.controllers
 			if (controlForScreenshotting == null) // still possible if we come from a "Details" button
 				controlForScreenshotting = FatalExceptionHandler.ControlOnUIThread;
 			ResetScreenshotFile();
-			SafeInvoke.InvokeIfPossible("Screen Shot", controlForScreenshotting, false,
-				() =>
+			// Originally, we used SafeInvoke for both the screenshot and the new dialog display. SafeInvoke was great
+			// for trying to get a screenshot, but having the actual dialog inside
+			// of it was causing problems for handling any errors in showing the dialog.
+			// Now we use SafeInvoke only inside of this extracted method.
+			TryGetScreenshot(controlForScreenshotting);
+
+			try
+			{
+				var query = "?" + levelOfProblem;
+				var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false, "problemDialog", "loader.html");
+				var url = problemDialogRootPath.ToLocalhost() + query;
+				using (var dlg = new BrowserDialog(url))
+				{
+					dlg.ShowDialog();
+				}
+			}
+			catch (Exception problemReportException)
+			{
+				Logger.WriteError("*** ProblemReportApi threw an exception trying to display", problemReportException);
+				// At this point we would like the old WinForms handler to report both the original error
+				// for which we tried to open our dialog and this new one where the dialog itself failed.
+				// In order to do that, I (gjm) tried creating a new exception with the original error
+				// as the inner exception and the message of the exception we just caught. Then I told our handler
+				// to use the fallback handler (old WinForms version) and rethrow the new exception. Didn't work.
+				// I can't get any combination of in/out of SafeInvoke or rethrow same exception or new exception
+				// to hit the UnhandledExceptionHandler if we are already in that method somewhere in the call stack.
+				// But at least we're logging this error now as well as the reason for coming into ProblemReportApi
+				// in the first place.
+				// If we weren't in the exception handler already (we were just reporting a "User" or "NonFatal" error),
+				// then this will cause us to use the old WinForms handler (green screen).
+				FatalExceptionHandler.UseFallback = true;
+				throw;
+			}
+			finally
+			{
+				_showingProblemReport = false;
+			}
+		}
+
+		private static void TryGetScreenshot(Control controlForScreenshotting)
+		{
+			SafeInvoke.InvokeIfPossible("Screen Shot", controlForScreenshotting, false, () =>
 				{
 					try
 					{
-						try
+						var bounds = controlForScreenshotting.Bounds;
+						var screenshot = new Bitmap(bounds.Width, bounds.Height);
+						using (var g = Graphics.FromImage(screenshot))
 						{
-							var bounds = controlForScreenshotting.Bounds;
-							var screenshot = new Bitmap(bounds.Width, bounds.Height);
-							using (var g = Graphics.FromImage(screenshot))
-							{
-								g.CopyFromScreen(controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)), Point.Empty,
-									bounds.Size);
-							}
-
-							_screenshotTempFile = TempFile.WithFilename(ScreenshotName);
-							RobustImageIO.SaveImage(screenshot, _screenshotTempFile.Path, ImageFormat.Png);
-						}
-						catch (Exception e)
-						{
-							ResetScreenshotFile();
-							Logger.WriteError("Bloom was unable to create a screenshot.", e);
+							g.CopyFromScreen(controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)), Point.Empty,
+								bounds.Size);
 						}
 
-						var query = "?" + levelOfProblem;
-						var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false,  "problemDialog", "loader.html");
-						var url = problemDialogRootPath.ToLocalhost() + query;
-						using (var dlg = new BrowserDialog(url))
-						{
-							dlg.ShowDialog();
-						}
+						_screenshotTempFile = TempFile.WithFilename(ScreenshotName);
+						RobustImageIO.SaveImage(screenshot, _screenshotTempFile.Path, ImageFormat.Png);
 					}
-					finally
+					catch (Exception e)
 					{
-						_showingProblemReport = false;
+						ResetScreenshotFile();
+						Logger.WriteError("Bloom was unable to create a screenshot.", e);
 					}
-				});
+				}
+			);
 		}
 
 		private static void LogProblem(Exception exception, string detailedMessage, string levelOfProblem)
