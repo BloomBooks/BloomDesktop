@@ -264,7 +264,8 @@ namespace Bloom.web.controllers
 		{
 			var sb = new StringBuilder();
 			sb.AppendLine("*** ProblemReportApi is about to report:");
-			sb.AppendLineFormat("    exception = {0}", exception.ToString());
+			if (exception != null)
+				sb.AppendLineFormat("    exception = {0}", exception.ToString());
 			if (!string.IsNullOrWhiteSpace(detailedMessage))
 				sb.AppendLineFormat("   detailed message = {0}", detailedMessage);
 			sb.AppendLineFormat("    level of problem = {0}", levelOfProblem);
