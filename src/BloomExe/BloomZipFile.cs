@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using SIL.IO;
@@ -49,26 +50,43 @@ namespace Bloom
 		}
 
 		/// <summary>
+		/// Adds a directory's contents (all files and subdirectories), but not the directory itself.
+		/// </summary>
+		/// <param name="directoryPath">The directory to add recursively</param>
+		/// <param name="extensionsToExclude">An array of extensions to exlude from the zip file, null excludes nothing.</param>
+		public void AddDirectoryContents(string directoryPath, string[] extensionsToExclude = null)
+		{
+			AddDirectory(directoryPath, directoryPath.Length, extensionsToExclude);
+		}
+
+		/// <summary>
 		/// Adds a directory, along with all files and subdirectories
 		/// </summary>
 		/// <param name="directoryPath">The directory to add recursively</param>
-		public void AddDirectory(string directoryPath)
+		/// <param name="extensionsToExclude">An array of extensions to exlude from the zip file, null excludes nothing.</param>
+		public void AddDirectory(string directoryPath, string[] extensionsToExclude = null)
 		{
 			var rootName = Path.GetFileName(directoryPath);
 			if (rootName == null)
 				return;
 
 			var dirNameOffset = directoryPath.Length - rootName.Length;
-			AddDirectory(directoryPath, dirNameOffset);
+			AddDirectory(directoryPath, dirNameOffset, extensionsToExclude);
 		}
 
-		private void AddDirectory(string directoryPath, int dirNameOffest)
+		private void AddDirectory(string directoryPath, int dirNameOffest, string[] extensionsToExclude)
 		{
 			var files = Directory.GetFiles(directoryPath);
 			foreach (var path in files)
 			{
 				var entryName = path.Substring(dirNameOffest);
 				entryName = ZipEntry.CleanName(entryName); // Removes drive from name and fixes slash direction
+				if (extensionsToExclude != null)
+				{
+					var fileExtension = Path.GetExtension(entryName).ToLowerInvariant();
+					if (extensionsToExclude.Contains(fileExtension))
+						continue;
+				}
 				AddFile(path, entryName);
 			}
 
@@ -80,7 +98,7 @@ namespace Bloom
 				if (dirName == null)
 					continue; // Don't want to bundle these up
 
-				AddDirectory(folder, dirNameOffest);
+				AddDirectory(folder, dirNameOffest, extensionsToExclude);
 			}
 		}
 	}
