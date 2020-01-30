@@ -1,19 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using Bloom.Book;
-using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using CommandLine;
 using L10NSharp;
-using SIL.IO;
-using SIL.Progress;
 
 namespace Bloom.CLI
 {
