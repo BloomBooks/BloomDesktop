@@ -51,6 +51,8 @@ namespace Bloom
 			// while BloomServer is starting up. By the time WorkspaceView comes online and sets the error reporting
 			// to the ProblemReportApi mechanism, BloomServer will be up and running again.
 			ErrorReport.OnShowDetails = null;
+			FatalExceptionHandler.UseFallback = true;
+
 			BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
 
 			_scope.Resolve<CollectionSettings>().CheckAndFixDependencies(_scope.Resolve<BloomFileLocator>());
