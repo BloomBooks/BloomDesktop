@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.IO;
-using System.Threading;
 using System.Windows.Forms;
-using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Api;
 using Newtonsoft.Json.Linq;

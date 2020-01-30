@@ -1,14 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
-using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Publish.Epub;
 using Bloom.web;

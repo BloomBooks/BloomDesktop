@@ -22,7 +22,8 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// Initially true for setup, WorkspaceView sets this to false when BloomServer is up and listening.
+		/// Initially true for setup, WorkspaceView sets this to false when BloomServer is up and listening
+		/// and the webcontroller api has registered the ProblemReportApi.
 		/// </summary>
 		internal static bool UseFallback;
 
