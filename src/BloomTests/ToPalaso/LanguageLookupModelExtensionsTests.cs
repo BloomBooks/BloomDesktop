@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Bloom.ToPalaso;
+﻿using Bloom.ToPalaso;
 using NUnit.Framework;
 using SIL.Windows.Forms.WritingSystems;
 
@@ -58,6 +53,18 @@ namespace BloomTests.ToPalaso
 			string name;
 			Assert.That(sut.GetBestLanguageName("arab", out name), Is.False);
 			Assert.That(name, Is.EqualTo("arab"));
+		}
+
+		/// <summary>
+		/// In this test, StandardSubtags.RegisteredLanguages has some, but none have the exact right code.
+		/// </summary>
+		[Test]
+		public void GetBestLanguageName_ForNaskapiLatin_FindsNaskapi()
+		{
+			var sut = new LanguageLookupModel();
+			string name;
+			Assert.That(sut.GetBestLanguageName("nsk-Latn", out name), Is.True);
+			Assert.That(name, Is.EqualTo("Naskapi"));
 		}
 	}
 }
