@@ -36,6 +36,19 @@ namespace Bloom.ToPalaso
 					return true;
 				}
 			}
+			// BL-8081: In case we got this far and still haven't found anything, perhaps we got in here
+			// with Script/Region/Variant tag(s)? Try one last time to get a match on the part of the code
+			// up to the first hyphen (can't do this sooner, because a bunch of the names in the RegisteredLanguages
+			// collection have hyphens in the language name anyway).
+			codeToMatch = codeToMatch.Split('-')[0];
+			if (!string.IsNullOrEmpty(codeToMatch))
+			{
+				if (StandardSubtags.RegisteredLanguages.TryGet(codeToMatch, out match))
+				{
+					name = match.Name;
+					return true;
+				}
+			}
 			name = code; // best name we can come up with is the code itself
 			return false;
 		}
