@@ -89,10 +89,16 @@ namespace Bloom.Workspace
 			_localizationChangedEvent = localizationChangedEvent;
 
 			_collectionSettings = collectionSettings;
+
 			//_chorusSystem = chorusSystem;
 			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
+
+			// By this point, BloomServer is up and listening and our web controllers are registered,
+			// so our new ProblemReportApi will function. These next two lines activate it.
 			ErrorReport.OnShowDetails = ProblemReportApi.ShowProblemDialogForNonFatalException;
+			FatalExceptionHandler.UseFallback = false;
+
 			InitializeComponent();
 
 			_checkForNewVersionMenuItem.Visible = SIL.PlatformUtilities.Platform.IsWindows;
