@@ -10,10 +10,8 @@ using SIL.Windows.Forms.WritingSystems;
 using SIL.Extensions;
 using SIL.WritingSystems;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Bloom.MiscUI;
 using Bloom.web.controllers;
-using Gecko;
 
 namespace Bloom.Collection
 {
