@@ -14,8 +14,11 @@ namespace Bloom.CLI
 	/// </summary>
 	class UploadCommand
 	{
+		public static bool IsUploading;
+
 		public static int Handle(UploadParameters options)
 		{
+			IsUploading = true;
 			// This task will be all the program does. We need to do enough setup so that
 			// the upload code can work, then tear it down.
 			Program.SetUpErrorHandling();
