@@ -8,30 +8,6 @@ namespace BloomTests.ToPalaso
 	public class LanguageLookupModelExtensionsTests
 	{
 		/// <summary>
-		/// This is the one the extension was made for, finds a name that matches only by 3-letter code
-		/// </summary>
-		[Test]
-		public void GetBestLanguageName_ForARA_FindsArabic()
-		{
-			var sut = new LanguageLookupModel();
-			string name;
-			Assert.That(sut.GetBestLanguageName("ara", out name), Is.True);
-			Assert.That(name, Is.EqualTo("Arabic"));
-		}
-
-		/// <summary>
-		/// Routine match in StandardSubtags.RegisteredLanguages.
-		/// </summary>
-		[Test]
-		public void GetBestLanguageName_ForFR_FindsFrench()
-		{
-			var sut = new LanguageLookupModel();
-			string name;
-			Assert.That(sut.GetBestLanguageName("fr", out name), Is.True);
-			Assert.That(name, Is.EqualTo("French"));
-		}
-
-		/// <summary>
 		/// No match at all.
 		/// </summary>
 		[Test]
@@ -56,15 +32,31 @@ namespace BloomTests.ToPalaso
 		}
 
 		/// <summary>
-		/// In this test, StandardSubtags.RegisteredLanguages has some, but none have the exact right code.
+		/// We test various 2 and 3-letter codes to make sure they get the expected language name.
+		/// We also make sure that various tags get stripped off when searching for Best Name.
+		/// The method for getting the "General code" (w/o Script/Region/Variant codes) has an exception for Chinese.
+		/// But this method doesn't trigger it (which is okay at this point).
 		/// </summary>
 		[Test]
-		public void GetBestLanguageName_ForNaskapiLatin_FindsNaskapi()
+		[TestCase("ara", "Arabic")] // classic 3-letter code
+		[TestCase("fr", "French")] // classic 2-letter code
+		[TestCase("nsk", "Naskapi")]
+		[TestCase("nsk-Latn", "Naskapi")]
+		[TestCase("nsk-Latn-x-Quebec", "Naskapi")]
+		[TestCase("nsk-Latn-CA-x-Quebec", "Naskapi")]
+		[TestCase("nsk-misc-garbage", "Naskapi")]
+		[TestCase("shu", "Chadian Arabic")]
+		[TestCase("shu-arab", "Chadian Arabic")]
+		[TestCase("shu-latn", "Chadian Arabic")]
+		[TestCase("sok", "Sokoro")] // Should not be required to have a '-Latn' tag.
+		[TestCase("zh-CN", "Chinese")]
+		[TestCase("zho", "Chinese")]
+		public void GetBestLanguageName_ForLotsOfVariants_FindsExpectedName(string codeVariant, string expectedResult)
 		{
 			var sut = new LanguageLookupModel();
 			string name;
-			Assert.That(sut.GetBestLanguageName("nsk-Latn", out name), Is.True);
-			Assert.That(name, Is.EqualTo("Naskapi"));
+			Assert.That(sut.GetBestLanguageName(codeVariant, out name), Is.True);
+			Assert.That(name, Is.EqualTo(expectedResult));
 		}
 	}
 }
