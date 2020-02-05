@@ -11,7 +11,9 @@ using Microsoft.Win32;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
-#if !__MonoCS__
+#if __MonoCS__
+using System.Diagnostics;
+#else
 using Squirrel;
 #endif
 
