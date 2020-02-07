@@ -46,6 +46,9 @@ namespace Bloom.WebLibraryIntegration
 		// The full path of the log text file used to restart failed bulk uploads.
 		private string _bulkUploadLogPath;
 
+		// Restrict folder parsing to only top-level bookshelf name, with no subshelf.
+		private bool _singleBookshelfLevel;
+
 		public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
 
 		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, BookThumbNailer htmlThumbnailer, BookDownloadStartingEvent bookDownloadStartingEvent)
@@ -603,7 +606,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="container"></param>
 		/// <param name="excludeNarrationAudio"></param>
 		/// <remarks>This method is triggered by starting Bloom with "upload" on the cmd line.</remarks>
-		public void UploadFolder(string folder, ApplicationContainer container, bool excludeNarrationAudio = false)
+		public void UploadFolder(string folder, ApplicationContainer container, bool excludeNarrationAudio = false, string user = null, string password = null, bool singleBookshelfLevel = false)
 		{
 			if (!IsThisVersionAllowedToUpload())
 			{
@@ -611,13 +614,25 @@ namespace Bloom.WebLibraryIntegration
 					"Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.");
 				Console.WriteLine(oldVersionMsg);
 			}
-			if (!LogIn(Settings.Default.WebUserId, Settings.Default.WebPassword))
+			if (!String.IsNullOrWhiteSpace(user) && !String.IsNullOrWhiteSpace(password))
+			{
+				if (!LogIn(user, password))
+				{
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem($"Could not log you in using user='{user}' and password='{password}'.");
+					Console.WriteLine();
+					Console.WriteLine("Failed to login as {0} with password {1}.", user, password);
+					return;
+				}
+				Console.WriteLine("Uploading books as user {0}", user);
+			}
+			else if (!LogIn(Settings.Default.WebUserId, Settings.Default.WebPassword))
 			{
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem("Could not log you in using user='" + Settings.Default.WebUserId + "' and pwd='" + Settings.Default.WebPassword+"'."+System.Environment.NewLine+
 					"For some reason, from the command line, we cannot get these credentials out of Settings.Default. However if you place your command line arguments in the properties of the project in visual studio and run from there, it works. If you are already doing that and get this message, then try running Bloom normally (gui), go to publish, and make sure you are logged in. Then quit and try this again.");
 				Console.WriteLine("\nFailed to login.");
 				return;
 			}
+			_singleBookshelfLevel = singleBookshelfLevel;
 			using (var dlg = new BulkUploadProgressDlg())
 			{
 				var worker = new BackgroundWorker();
@@ -707,9 +722,10 @@ namespace Bloom.WebLibraryIntegration
 				return "";
 
 			// With what remains, the first directory is our shelf and second, if any, is our sub-shelf
+			// (unless we've requested no sub-shelf)
 			var splitPathArray = pathUsedToDetermineBookshelf.Replace("\\", "/").Split('/').ToList();
 			splitPathArray.RemoveAll(string.IsNullOrWhiteSpace);
-			if (splitPathArray.Count == 1)
+			if (splitPathArray.Count == 1 || _singleBookshelfLevel)
 				return splitPathArray[0];
 			return $"{splitPathArray[0]}/{splitPathArray[1]}";
 		}
@@ -799,11 +815,14 @@ namespace Bloom.WebLibraryIntegration
 						FullUpload(book, dlg.Progress, view, languagesToUpload.ToArray(), excludeNarrationAudio, excludeMusic, out dummy);
 					}
 					AppendBookToUploadLogFile(folder);
+					Console.WriteLine("{0} has been uploaded", folder);
 				}
 				else
 				{
 					// report to the user why we are not uploading their book
-					ReportToLogBoxAndLogger(dlg.Progress, folder, blPublishModel.GetReasonForNotUploadingBook());
+					var reason = blPublishModel.GetReasonForNotUploadingBook();
+					ReportToLogBoxAndLogger(dlg.Progress, folder, reason);
+					Console.WriteLine("{0} was not uploaded.  {1}", folder, reason);
 				}
 				return;
 			}
