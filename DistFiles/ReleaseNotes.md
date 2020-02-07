@@ -1,12 +1,4 @@
-# 4.7 (Currently Alpha-quality)
-
-⭐ _Really_ complex scripts. Bloom 4.7 is available in two versions. The new version, "Bloom CS 4.7", supports those scripts that require the latest _graphite_ font rendering. We are still working out some performance kinks in Bloom CS, so only use it if you need it are are willing to help us find bugs.
-
-## Collection Tab
-
-We simplified book thumbnails to just show the image on the cover.
-
-We have created a New Problem Report Dialog which is both more convenient for users and should help us get the information we need to be of help.
+# 4.7 (Currently in Beta-test)
 
 ## Edit Tab
 
@@ -14,12 +6,11 @@ We have created a New Problem Report Dialog which is both more convenient for us
 
 ⭐Comic Tool ([Feature Request](https://community.software.sil.org/t/comic-book-feature/942)). Look out world, here come beautiful comics in minority languages!
 
-_Known limitation in this release: If you turn a comic book into a Talking Book, it will playback in the order that the bubbles were created. We will be following up with way to change the order of bubbles._
+_Known limitation in this release: If you turn a comic book into a Talking Book, it will play back in the reverse of the order that the bubbles were created. We will be following up with way to change the order of bubbles._
 
-_Known limitation in this release: There is not yet a way to have an exclamation bubble without a tails._
+_Known limitation in this release: There is not yet a way to have an exclamation bubble with a tail._
 
 _Known limitation in this release: When the Comic Book tool is visible, you can't change the image. Just close the tool, set the image, then re-open the tool._
-
 
 ⭐Digital Comic Book Template. Use this when starting a new comic designed for screens.
 
@@ -27,13 +18,23 @@ _Known limitation in this release: When the Comic Book tool is visible, you can'
 
 ## Publish Tab
 
-⭐We added a way to export a single mp3 file for each page of the book. Right click on the left bar, then choose "Export audio files, 1 per page".
+In Publish: Bloom Reader screen, you can now decide which of the languages in a book you want to publish.
 
 In all publish screens, if a book uses Bloom's new Content Licensing system, Bloom will prevent publishing a language that has not yet been licensed for that book. This will prevent accidental violation of license agreements in which a publisher needs to limit which languages are published. For example, they may allow minority language translations to be Creative Commons licensed while relying on sales of the original English version for company revenue.
 
-In Publish: Bloom Reader screen, you can now decide which of the languages in a book you want to publish.
-
 In Publish: ePUB, you can now add a summary/description to the ePUB metadata.
+
+We added a way to export a single mp3 file for each page of the book. Right click on the left bar, then choose "Export audio files, 1 per page".
+
+## Collection Tab
+
+We simplified book thumbnails to just show the image on the cover.
+
+We have created a New Problem Report Dialog which is both more convenient for users and should help us get the information we need to be of help.
+
+## Other
+
+⭐ _Really_ complex scripts. Bloom 4.7 is available in two versions. The new version, "Bloom CS 4.7", supports those scripts that require the latest _graphite_ font rendering. We are still working out some performance kinks in Bloom CS, so only use it if you need it are are willing to help us find bugs.
 
 # 4.6
 
