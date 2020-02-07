@@ -1,26 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Bloom.MiscUI;
-using Bloom.Properties;
 using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
-using Bloom.Workspace;
 using DesktopAnalytics;
-using L10NSharp;
 using Microsoft.Win32;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
-#if !__MonoCS__
+#if __MonoCS__
+using System.Diagnostics;
+#else
 using Squirrel;
 #endif
 

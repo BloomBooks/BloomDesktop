@@ -809,7 +809,8 @@ namespace Bloom.Book
 						province = ProvinceName,
 						district = DistrictName,
 						features = Features,
-						internetLimits = InternetLimits
+						internetLimits = InternetLimits,
+						originalBookSourceUrl = OriginalBookSourceUrl
 						// Other fields are not needed by the web site and we don't expect they will be.
 					});
 			}
@@ -1118,6 +1119,13 @@ namespace Bloom.Book
 		/// </summary>
 		[JsonProperty("use-original-copyright")]
 		public bool UseOriginalCopyright { get; set; }
+
+		/// <summary>
+		/// The URL the source of this book was downloaded from before conversion to Bloom source format.
+		/// This is set by RoseGarden, but expected to be empty for books that originate in Bloom.
+		/// </summary>
+		[JsonProperty("original-book-source-url")]
+		public string OriginalBookSourceUrl { get; set; }
 	}
 
 	/// <summary>

@@ -203,8 +203,10 @@ namespace Bloom.Collection
 			}
 			if (String.IsNullOrWhiteSpace(Iso639Code))
 				return false;	// undefined (probably language3)
+
 			var language = LookupIsoCode.LanguageLookup.GetLanguageFromCode(Iso639Code);
-			return Name != language.Names.FirstOrDefault();
+			// (If the lookup didn't find a language, treat the name as custom.)
+			return Name != language?.Names?.FirstOrDefault();
 		}
 
 		private bool ReadBoolean(XElement xml, string id, bool defaultValue)

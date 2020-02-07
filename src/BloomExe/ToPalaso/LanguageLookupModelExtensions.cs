@@ -12,31 +12,33 @@ namespace Bloom.ToPalaso
 	public static class LanguageLookupModelExtensions
 	{
 		/// <summary>
-		/// A smarter way to get a name for an iso code. Currently StandardSubtags.RegisteredLanguages.TryGet does not find
-		/// an entry at all using 3-letter codes. This adds a fall-back which still finds a language
-		/// that has the exact requested language code.
-		/// If we can't find ANY name, the out param is set to the code itself, and we return false.
-		/// Possibly obsolete, I don't know whether the recent rework of writing systems in libpalaso fixed the problem.
+		/// A smarter way to get a name for an iso code. Recent rework on writing systems in libpalaso has
+		/// apparently fixed much of our problems as StandardSubtags.TryGetLanguageFromIso3Code() finds 3-letter
+		/// entries now. This adds fall-backs for 2-letter codes and strips off Script/Region/Variant codes.
+		/// If we can't find ANY name, the out param is set to the isoCode itself, and we return false.
 		/// </summary>
 		/// <returns>true if it found a name</returns>
-		public static bool GetBestLanguageName(this LanguageLookupModel isoModel, string code, out string name)
+		public static bool GetBestLanguageName(this LanguageLookupModel isoModel, string isoCode, out string name)
 		{
-			LanguageSubtag match;
-			var codeToMatch = code.ToLowerInvariant();
-			if (StandardSubtags.RegisteredLanguages.TryGet(codeToMatch, out match))
+			// BL-8081/8096: Perhaps we got in here with Script/Region/Variant tag(s).
+			// Try to get a match on the part of the isoCode up to the first hyphen.
+			var codeToMatch = GetGeneralCode(isoCode.ToLowerInvariant());
+			if (!string.IsNullOrEmpty(codeToMatch))
 			{
-				name = match.Name;
-				return true;
-			}
-			foreach (var lang in StandardSubtags.RegisteredLanguages)
-			{
-				if (lang.Iso3Code == codeToMatch)
+				LanguageSubtag match;
+				if (StandardSubtags.TryGetLanguageFromIso3Code(codeToMatch, out match))
 				{
-					name = lang.Name;
+					name = match.Name;
+					return true;
+				}
+				// Perhaps we only have a 2-letter code (e.g. 'fr'), in that case, this will likely find it.
+				if (StandardSubtags.RegisteredLanguages.TryGet(codeToMatch, out match))
+				{
+					name = match.Name;
 					return true;
 				}
 			}
-			name = code; // best name we can come up with is the code itself
+			name = isoCode; // At this point, the best name we can come up with is the isoCode itself.
 			return false;
 		}
 

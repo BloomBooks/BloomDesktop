@@ -38,7 +38,8 @@ namespace Bloom.CollectionTab
 			//_sendReceiver = sendReceiver;
 			_createFromSourceBookCommand = createFromSourceBookCommand;
 			_editBookCommand = editBookCommand;
-			bookSelection.SelectionChanged += OnBookSelectionChanged;
+			if (!Bloom.CLI.UploadCommand.IsUploading)
+				bookSelection.SelectionChanged += OnBookSelectionChanged;
 
 			selectedTabAboutToChangeEvent.Subscribe(c =>
 			{

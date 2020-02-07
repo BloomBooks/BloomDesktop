@@ -633,6 +633,10 @@
         <source xml:lang="en">Make Bloom Pack...</source>
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
+        <source xml:lang="en">Save as single file (.bloom)...</source>
+        <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
         <source xml:lang="en">Update Book</source>
         <note>ID: CollectionTab.BookMenu.UpdateFrontMatterToolStrip</note>

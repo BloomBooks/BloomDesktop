@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition.Primitives;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -16,16 +15,11 @@ using L10NSharp;
 using SIL.Reporting;
 using SIL.IO;
 using System.Drawing;
-using System.Dynamic;
 using Bloom.Api;
 using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
-using Bloom.web.controllers;
-using Fleck;
-using Newtonsoft.Json;
-using RestSharp.Extensions;
 
 namespace Bloom.Publish
 {
