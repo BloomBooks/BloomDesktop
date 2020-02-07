@@ -185,12 +185,15 @@ namespace Bloom.WebLibraryIntegration
 					action.Invoke();
 		}
 
-		private static void DisplayNetworkUploadProblem(Exception e, IProgress progress)
+		private void DisplayNetworkUploadProblem(Exception e, IProgress progress)
 		{
-			progress.WriteError(LocalizationManager.GetString("PublishTab.Upload.GenericUploadProblemNotice",
-				"There was a problem uploading your book."));
-			progress.WriteError(e.Message.Replace("{", "{{").Replace("}", "}}"));
+			var msg1 = LocalizationManager.GetString("PublishTab.Upload.GenericUploadProblemNotice",
+				"There was a problem uploading your book.");
+			var msg2 = e.Message.Replace("{", "{{").Replace("}", "}}");
+			progress.WriteError(msg1);
+			progress.WriteError(msg2);
 			progress.WriteVerbose(e.StackTrace);
+			AppendErrorMessageToUploadLogFile(msg1, msg2);
 		}
 
 		public static string DownloadFolder
@@ -475,12 +478,15 @@ namespace Bloom.WebLibraryIntegration
 				}
 				catch (Exception e)
 				{
-					progress.WriteError(LocalizationManager.GetString("PublishTab.Upload.UploadProblemNotice",
-						"There was a problem uploading your book. You may need to restart Bloom or get technical help."));
-					progress.WriteError(e.Message.Replace("{", "{{").Replace("}", "}}"));
+					var msg1 = LocalizationManager.GetString("PublishTab.Upload.UploadProblemNotice",
+						"There was a problem uploading your book. You may need to restart Bloom or get technical help.");
+					var msg2 = e.Message.Replace("{", "{{").Replace("}", "}}");
+					progress.WriteError(msg1);
+					progress.WriteError(msg2);
 					progress.WriteVerbose(e.StackTrace);
 					if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
 						Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() {{"url", metadata.BookOrder}, {"title", metadata.Title}, {"error", e.Message}});
+					AppendErrorMessageToUploadLogFile(msg1, msg2);
 					return "";
 				}
 			}
@@ -667,6 +673,13 @@ namespace Bloom.WebLibraryIntegration
 			var path = GetUploadFilePath();
 			Debug.Assert(path.Length > 0);
 			File.AppendAllLines(path, new []{ newBook });
+		}
+
+		private void AppendErrorMessageToUploadLogFile(string message, string extra)
+		{
+			var path = GetUploadFilePath();
+			Debug.Assert(path.Length > 0);
+			File.AppendAllLines(path, new []{message, extra});
 		}
 
 		private string[] GetUploadedPathsFromLogIfPresent(string folder)
