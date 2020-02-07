@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -91,6 +92,8 @@ namespace Bloom.CLI
 					Application.DoEvents();
 				}
 			}
+
+			CreateThumbnailArtifact(parameters);
 		}
 
 		public static void CreateBloomDigitalArtifacts(string bookPath, string creator, string zippedBloomDOutputPath, string unzippedBloomDigitalOutputPath)
@@ -143,6 +146,20 @@ namespace Bloom.CLI
 			}
 		}
 
+		// Consumers expect the file to be in index.htm name, not {title}.htm name.
+		private static void RenameBloomDigitalFiles(string bookDirectory)
+		{
+			string originalHtmFilePath = Bloom.Book.BookStorage.FindBookHtmlInFolder(bookDirectory);
+
+			Debug.Assert(RobustFile.Exists(originalHtmFilePath), "Book HTM not found: " + originalHtmFilePath);
+			if (RobustFile.Exists(originalHtmFilePath))
+			{
+				string newHtmFilePath = Path.Combine(bookDirectory, $"index.htm");
+				RobustFile.Copy(originalHtmFilePath, newHtmFilePath);
+				RobustFile.Delete(originalHtmFilePath);
+			}
+		}
+
 		/// <summary>
 		/// Creates an ePub file at the location specified by parametersr
 		/// </summary>
@@ -179,17 +196,57 @@ namespace Bloom.CLI
 			}
 		}
 
-		// Consumers expect the file to be in index.htm name, not {title}.htm name.
-		private static void RenameBloomDigitalFiles(string bookDirectory)
-		{
-			string originalHtmFilePath = Bloom.Book.BookStorage.FindBookHtmlInFolder(bookDirectory);
 
-			Debug.Assert(RobustFile.Exists(originalHtmFilePath), "Book HTM not found: " + originalHtmFilePath);
-			if (RobustFile.Exists(originalHtmFilePath))
+		public static void CreateThumbnailArtifact(CreateArtifactsParameters parameters)
+		{
+			if (!String.IsNullOrWhiteSpace(parameters.ThumbnailOutputInfoPath))
 			{
-				string newHtmFilePath = Path.Combine(bookDirectory, $"index.htm");
-				RobustFile.Copy(originalHtmFilePath, newHtmFilePath);
-				RobustFile.Delete(originalHtmFilePath);
+				return;
+			}
+
+			BookServer bookServer = _projectContext.BookServer;
+			var book = bookServer.GetBookFromBookInfo(new BookInfo(parameters.BookPath, true));
+
+			var outputPaths = new List<string>();
+
+			int[] requestedHeights = new int[2] { 256, 70 };
+			foreach (int height in requestedHeights)
+			{
+				string thumbnailFilename = $"thumbnail-{height}.png";
+
+				// A potential "enhancement" is that we could try to re-use the thumbnail generated when making an ePUB.
+				//   That could be helpful if creating new thumbnails was a big enough cost
+				// The ePub Path looks like this: $"%TEMP%\\ePUB_export\\{i}\\{book.Title}\\thumbnail-{height}.png"
+				// (where i is an integer between 0-19. Depends on whether it's been locked or not.)
+				//
+				// For now, we'll just create the thumbnail every time
+				// It makes the code simpler than having fallback logic not to mention the complications of determining which folder the ePub is in, whether it's really up-to-date, etc.
+				var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
+				{
+					CenterImageUsingTransparentPadding = false,
+					RequestId = new Guid(),
+					Width = -1,
+					Height = height,
+					FileName = thumbnailFilename
+				};
+
+				BookThumbNailer.CreateThumbnailOfCoverImage(book, thumbnailOptions, null);
+
+				// The thumbnail has now been saved in the book's storage folder.
+				// Copy it over to the requested output destination
+				string thumbnailPath = Path.Combine(book.FolderPath, thumbnailOptions.FileName);
+				if (RobustFile.Exists(thumbnailPath))
+				{
+					outputPaths.Add(thumbnailPath);
+				}
+			}
+
+			using (var writer = new StreamWriter(parameters.ThumbnailOutputInfoPath, append: false))
+			{
+				foreach (var path in outputPaths)
+				{
+					writer.WriteLine(path);
+				}
 			}
 		}
 	}
@@ -211,6 +268,9 @@ namespace Bloom.CLI
 
 		[Option("epubOutputPath", HelpText = "Output destination path in which to place epub file", Required = false)]
 		public string EpubOutputPath { get; set; }
+
+		[Option("thumbnailOutputInfoPath", HelpText = "Output destination path in which to write the path information of where to find thumbnail output", Required = false)]
+		public string ThumbnailOutputInfoPath { get; set; }
 
 		[Option("creator", Required = false, Default = "harvester", HelpText = "The value of the \"creator\" meta tag passed along when creating the bloomdigital.")]
 		public string Creator{ get; set; }

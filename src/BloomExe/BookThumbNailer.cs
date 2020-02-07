@@ -102,10 +102,18 @@ namespace Bloom
 				CenterImageUsingTransparentPadding = false,
 				FileName = "coverImage200.jpg"
 			};
+			// TODO: This seems to be basically a NULL OP. Maybe we shouldn't bother exposing this function nor called it on line 55?
 			CreateThumbnailOfCoverImage(book, options);
 		}
 
-		private static bool CreateThumbnailOfCoverImage(Book.Book book, HtmlThumbNailer.ThumbnailOptions options, Action<Image> callback = null)
+		/// <summary>
+		/// Creates a thumbnail of just the cover image (no title, language name, etc.)
+		/// </summary>
+		/// <param name="book"></param>
+		/// <param name="options"></param>
+		/// <param name="callback"></param>
+		/// <returns>Returns true if successful; false otherwise. </returns>
+		internal static bool CreateThumbnailOfCoverImage(Book.Book book, HtmlThumbNailer.ThumbnailOptions options, Action<Image> callback = null)
 		{
 			var imageSrc = book.GetCoverImagePath();
 			if (string.IsNullOrEmpty(imageSrc) || (Path.GetFileName(imageSrc) == "placeHolder.png" && !Regex.IsMatch(options.FileName, "thumbnail(-[0-9]+)?\\.png")))
