@@ -572,11 +572,18 @@ namespace Bloom
 			return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData).CombineForPath("SIL").CombineForPath("Bloom");
 		}
 
-
+		private static void ResetToFallbackHandler()
+		{
+			ErrorReport.OnShowDetails = null;
+			FatalExceptionHandler.UseFallback = true;
+		}
 
 		/// ------------------------------------------------------------------------------------
 		public void Dispose()
 		{
+			// Disposing ProjectContext disables api functionality and disposes WorkspaceModel/View, BloomServer, et al.,
+			// so we need to resort to our fallback error handler.
+			ResetToFallbackHandler();
 			_scope.Dispose();
 			_scope = null;
 
