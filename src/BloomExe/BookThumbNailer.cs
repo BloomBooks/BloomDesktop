@@ -105,7 +105,11 @@ namespace Bloom
 			CreateThumbnailOfCoverImage(book, options);
 		}
 
-		private static bool CreateThumbnailOfCoverImage(Book.Book book, HtmlThumbNailer.ThumbnailOptions options, Action<Image> callback = null)
+		/// <summary>
+		/// Creates a thumbnail of just the cover image (no title, language name, etc.)
+		/// </summary>
+		/// <returns>Returns true if successful; false otherwise. </returns>
+		internal static bool CreateThumbnailOfCoverImage(Book.Book book, HtmlThumbNailer.ThumbnailOptions options, Action<Image> callback = null)
 		{
 			var imageSrc = book.GetCoverImagePath();
 			if (string.IsNullOrEmpty(imageSrc) || (Path.GetFileName(imageSrc) == "placeHolder.png" && !Regex.IsMatch(options.FileName, "thumbnail(-[0-9]+)?\\.png")))
@@ -169,6 +173,15 @@ namespace Bloom
 		/// <param name="height">Optional parameter. If unspecified, use defaults</param>
 		public void MakeThumbnailOfCover(Book.Book book, int height = -1, Guid requestId = new Guid())
 		{
+			HtmlThumbNailer.ThumbnailOptions options = GetCoverThumbnailOptions(height, requestId);
+			RebuildThumbNailNow(book, options);
+		}
+
+		/// <summary>
+		/// Gets the default thumbnail options to use when creating a thumbnail of a book's cover
+		/// </summary>
+		public static HtmlThumbNailer.ThumbnailOptions GetCoverThumbnailOptions(int height, Guid requestId)
+		{
 			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions
 			{
 				//since this is destined for HTML, it's much easier to handle if there is no pre-padding
@@ -184,7 +197,7 @@ namespace Bloom
 			}
 			// else use the defaults
 
-			RebuildThumbNailNow(book, options);
+			return options;
 		}
 
 		///   <summary>
