@@ -69,7 +69,7 @@ namespace Bloom.CLI
 [Verb("upload", HelpText = "Upload a book or folder of books to bloomlibrary.org.")]
 public class UploadParameters
 {
-	[Value(0, MetaName = "path", HelpText = "Path to a folder containing books to upload at some level within.  The two directory levels beneath the given folder are used to determine the bookshelf name and possibly the sub-level name name.", Required = true)]
+	[Value(0, MetaName = "path", HelpText = "Path to a folder containing books to upload at some level within.  The two directory levels beneath the given folder are used to determine the bookshelf name and possibly the sub-level name.", Required = true)]
 	public string Path { get; set; }
 
 	[Option('x', "excludeNarrationAudio", HelpText = "Exclude narration audio files from upload (default is to upload audio files)", Required = false)]
