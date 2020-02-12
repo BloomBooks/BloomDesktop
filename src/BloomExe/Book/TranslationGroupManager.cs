@@ -281,6 +281,9 @@ namespace Bloom.Book
 			string contentLanguageIso2, string contentLanguageIso3, // these are effected by the multilingual settings for this book
 			CollectionSettings settings) // use to get the collection's current N1 and N2 in xmatter or other template pages that specify default languages
 		{
+			// Note: There is code in bloom-player that is modeled after this code.
+			//       If this function changes, you should check in bloom-player's bloom-player-core.tsx file, function shouldNormallyShowEditable().
+			//       It may benefit from being updated too.
 			if (dataDefaultLanguages == null || dataDefaultLanguages.Length == 0
 				|| string.IsNullOrWhiteSpace(dataDefaultLanguages[0])
 				|| dataDefaultLanguages[0].Equals("auto",StringComparison.InvariantCultureIgnoreCase))
@@ -289,7 +292,7 @@ namespace Bloom.Book
 			}
 			else
 			{
-				// Hote there are (perhaps unfortunately) two different labelling systems, but they have a 1-to-1 correspondence:
+				// Note there are (perhaps unfortunately) two different labelling systems, but they have a 1-to-1 correspondence:
 				// The V/N1/N2 system feels natural in vernacular book contexts
 				// The L1/L2/L3 system is more natural in source book contexts.
 				return (lang == settings.Language1Iso639Code && dataDefaultLanguages.Contains("V")) ||
