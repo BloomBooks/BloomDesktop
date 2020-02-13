@@ -412,7 +412,7 @@ export class Span extends LocalizableElement<
     ILocalizationState
 > {
     public render() {
-        const { onClick, ...restOfProps } = this.props;
+        const { onClick, l10nKey, ...restOfProps } = this.props;
         return (
             <span
                 {...restOfProps}
