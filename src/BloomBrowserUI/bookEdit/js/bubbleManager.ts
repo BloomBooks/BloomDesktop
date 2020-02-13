@@ -112,9 +112,27 @@ export class BubbleManager {
         if (newHeight + wrapperBox.offsetTop > container.clientHeight) {
             return false;
         }
+
+        const positionInfo = wrapperBox.getBoundingClientRect();
+        const wrapperBoxPos = new Point(
+            positionInfo.left,
+            positionInfo.top,
+            PointScaling.Scaled,
+            "GrowOverflowingBox"
+        );
+        const reframedPoint = this.convertPointFromViewportToElementFrame(
+            wrapperBoxPos,
+            container
+        );
+
         wrapperBox.style.height = newHeight + "px"; // next line will change to percent
         // TODO: GrowOverflowingBox doesn't work properly when scaled.
-        BubbleManager.setTextboxPositionAsPercentage($(wrapperBox));
+        //BubbleManager.setTextboxPositionAsPercentage($(wrapperBox));
+        BubbleManager.setTextboxPositionAsPercentage(
+            $(wrapperBox),
+            reframedPoint.getUnscaledX(),
+            reframedPoint.getUnscaledY()
+        );
         return true;
     }
 
@@ -481,6 +499,7 @@ export class BubbleManager {
     }
 
     private onMouseDown(event: MouseEvent, container: HTMLElement) {
+        console.log("onMouseDOwn");
         // Let standard clicks on the bloom editable only be processed on the editable
         if (this.isEventForEditableOnly(event)) {
             return;
@@ -552,17 +571,21 @@ export class BubbleManager {
     private onMouseMove(event: MouseEvent, container: HTMLElement) {
         // Prevent two event handlers from triggering if the text box is currently being resized
         if (this.isResizing(container)) {
+            console.log("Ending mousemove");
             this.bubbleToDrag = undefined;
             this.activeContainer = undefined;
             return;
         }
 
         if (!this.bubbleToDrag && !this.bubbleToResize) {
+            console.log("handleMouseMoveHover");
             this.handleMouseMoveHover(event, container);
         } else if (this.bubbleToDrag) {
+            console.log("OnMouseMoveDragBubble");
             this.handleMouseMoveDragBubble(event, container);
         } else {
             this.handleMouseMoveResizeBubble(event, container);
+            console.log("OnMouseMoveREsizeBubble");
         }
     }
 
@@ -662,6 +685,10 @@ export class BubbleManager {
         let newWidth = oldWidth;
         let newHeight = oldHeight;
 
+        console.log(
+            `Old: (${oldLeft}, ${oldTop}) with width/height= ${oldWidth}, ${oldHeight}`
+        );
+
         // Rather than using the current iteration's movementX/Y, we use the distance away from the original click.
         // This gives behavior consistent with what JQuery resize handles do.
         // If the user resizes it below the minimum width (which prevents the box from actually getting any smaller),
@@ -751,9 +778,14 @@ export class BubbleManager {
             "Created by handleMouseMoveResizeBubble()"
         );
         this.placeElementAtPosition(content, $(container), newPoint);
+
+        console.log(
+            `New: (${newLeft}, ${newTop}) with width/height= ${newWidth}, ${newHeight}`
+        );
     }
 
     private onMouseUp(event: MouseEvent, container: HTMLElement) {
+        console.log("bubbleToResize cleared out by onMouseUp()");
         this.bubbleToDrag = undefined;
         this.activeContainer = undefined;
         this.bubbleToResize = undefined;
@@ -805,7 +837,7 @@ export class BubbleManager {
             "MouseEvent Client (Relative to viewport)"
         );
 
-        return this.convertPointFromViewportToElementFrame(
+        return BubbleManager.convertPointFromViewportToElementFrame(
             pointRelativeToViewport,
             canvas
         );
@@ -824,7 +856,7 @@ export class BubbleManager {
     }
 
     // Gets the coordinates of the specified event relative to the specified element.
-    private convertPointFromViewportToElementFrame(
+    private static convertPointFromViewportToElementFrame(
         pointRelativeToViewport: Point, // The current point, relative to the top-left of the viewport
         element: Element // The element to reference for the new origin
     ): Point {
@@ -1271,7 +1303,7 @@ export class BubbleManager {
         container: JQuery,
         positionInViewport: Point
     ) {
-        const newPoint = this.convertPointFromViewportToElementFrame(
+        const newPoint = BubbleManager.convertPointFromViewportToElementFrame(
             positionInViewport,
             container[0]
         );
@@ -1537,6 +1569,7 @@ export class BubbleManager {
                 const target = event.target as Element;
                 if (target) {
                     // Resizing also changes size and position to pixels. Fix it.
+                    console.log("Resize stop");
                     BubbleManager.setTextboxPositionAsPercentage($(target));
                     // There was a problem where resizing a box messed up its draggable containment,
                     // so now after we resize we go back through making it draggable and clickable again.
@@ -1549,6 +1582,7 @@ export class BubbleManager {
             resize: (event, ui) => {
                 const target = event.target as Element;
                 if (target) {
+                    console.log("Resize event");
                     // If the user changed the height, prevent automatic shrinking.
                     // If only the width changed, this is the case where we want it.
                     // This needs to happen during the drag so that the right automatic
@@ -1558,6 +1592,8 @@ export class BubbleManager {
                     } else {
                         target.classList.add("bloom-allowAutoShrink");
                     }
+
+                    // TODO: Add some code here to deal with the border???
                 }
             }
         });
@@ -1645,6 +1681,7 @@ export class BubbleManager {
         const width = containerSize.getUnscaledX();
         const height = containerSize.getUnscaledY();
 
+        console.log("In setTextboxPositionAsPercentage");
         // the textbox is contained by the image, and it's actual positioning is now based on the imageContainer too.
         // so we will position by percentage of container size.
         wrapperBox
