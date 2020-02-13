@@ -34,6 +34,8 @@ export interface IUILanguageAwareProps {
 }
 
 export interface ILocalizationProps extends IUILanguageAwareProps {
+    // Remember to update localizationPropsKeys when modifying these keys
+
     l10nKey: string;
     l10nComment?: string;
     l10nTipEnglishEnabled?: string;
@@ -43,6 +45,22 @@ export interface ILocalizationProps extends IUILanguageAwareProps {
     l10nParam1?: string;
     onClick?: () => void; // not yet implemented by String subclass and maybe others outside this file
 }
+
+// This object contains is an exemplar object of the ILocalizationProps interface
+// It needs to specify each key, including the optional ones (including the optional ones of any parent interface that ILocalizationProps extends).
+const localizationPropsKeys: ILocalizationProps = {
+    l10nKey: "",
+    l10nComment: undefined,
+    l10nTipEnglishEnabled: undefined,
+    l10nTipEnglishDisabled: undefined,
+    alreadyLocalized: undefined,
+    l10nParam0: undefined,
+    l10nParam1: undefined,
+    // onClick: undefined,  // Purposefully excluded because it's a duplicate of an HTML attribute
+    currentUILanguage: undefined,
+    hidden: undefined,
+    className: undefined
+};
 
 export interface ILocalizationState {
     translation?: string;
@@ -277,6 +295,51 @@ export class LocalizableElement<
             (this.props.hidden ? "hidden " : "") + this.props.className
         ).trim();
     }
+
+    // Looks at this.props, and returns a copy without any of the keys in ILocalizationProps
+    public getStandardHtmlProps(): React.HTMLAttributes<HTMLElement> {
+        return this.removeCustomProps(localizationPropsKeys);
+    }
+
+    // Looks at this.props and removes any props belonging to a custom type
+    // Returns a new object which passes through only props belonging to the standard HTML
+    //
+    // customTypeExemplar - An object of the custom type.
+    //   It should include every field in the custom type. (null/undefined is ok)
+    //   Take special care to make sure it includes every optional field in the type and any types it derives from
+    //     (It's harder to mess up the required fields because the compiler will detect those. But it'll let missing optional fields slide.)
+    //
+    // Note: if an prop key is in both the ${customTypeExemplar} and is also a standard HTML prop,
+    //       it will be treated the same as any other custom prop. (That is, removed)
+    //       If desired, you may wish for ${customTypeExemplar} to exclude fields which are included in the custom type but also included in Standard HTML attributes
+    //       Then it would return ALL of the standard ones.
+    public removeCustomProps(
+        customTypeExemplar: object
+    ): React.HTMLAttributes<HTMLElement> {
+        // We may often have properties that are a union of types.
+        // Here is a common pattern:
+        //     ILocalizationProps & React.HTMLAttributes<HTMLElement>
+        // We would like to be able to separate out which subset belong to ILocalizationProps and which subset belongs to HTMLAttributes.
+        // However, since Javascript doesn't really have much typing at runtime (the type system in TypeScript is compile time),
+        // there's not an easy way to just figure out via reflection which fields are in HTMLAttributes.
+        // But if we have an exemplar object of one of the types (an object whose fields are exactly equal to the fields of a class),
+        // now it becomes a tractable problem to figure out which fields belong to one or the other.
+        // (At runtime we can examine the fields of an OBJECT, but not the fields of a TYPE/CLASS/INTERFACE.)
+        //
+        // Ideally, it would be better to have an exemplar object of the HTMLAttributes...
+        // But, 1) Probably lengthier to list
+        //      2) Not actually so straightforward to define what are all the attributes.  It can vary depending on whether it's a SPAN, INPUT, etc.
+        // It's more tractable to be given the custom props, and remove these and be left with the standard props.
+        const htmlProps: React.HTMLAttributes<HTMLElement> = {};
+
+        Object.keys(this.props).forEach(key => {
+            if (!(key in customTypeExemplar)) {
+                htmlProps[key] = this.props[key];
+            }
+        });
+
+        return htmlProps;
+    }
 }
 
 export class H1 extends LocalizableElement<
@@ -287,11 +350,7 @@ export class H1 extends LocalizableElement<
         return (
             <h1
                 className={this.getClassName()}
-                onClick={() => {
-                    if (this.props.onClick) {
-                        this.props.onClick();
-                    }
-                }}
+                {...this.getStandardHtmlProps()}
             >
                 {this.getLocalizedContent()}
             </h1>
@@ -307,11 +366,7 @@ export class H2 extends LocalizableElement<
         return (
             <h2
                 className={this.getClassName()}
-                onClick={() => {
-                    if (this.props.onClick) {
-                        this.props.onClick();
-                    }
-                }}
+                {...this.getStandardHtmlProps()}
             >
                 {this.getLocalizedContent()}
             </h2>
@@ -327,11 +382,7 @@ export class H3 extends LocalizableElement<
         return (
             <h3
                 className={this.getClassName()}
-                onClick={() => {
-                    if (this.props.onClick) {
-                        this.props.onClick();
-                    }
-                }}
+                {...this.getStandardHtmlProps()}
             >
                 {this.getLocalizedContent()}
             </h3>
@@ -345,14 +396,7 @@ export class P extends LocalizableElement<
 > {
     public render() {
         return (
-            <p
-                className={this.getClassName()}
-                onClick={() => {
-                    if (this.props.onClick) {
-                        this.props.onClick();
-                    }
-                }}
-            >
+            <p className={this.getClassName()} {...this.getStandardHtmlProps()}>
                 {this.getLocalizedContent()}
             </p>
         );
@@ -367,11 +411,7 @@ export class Div extends LocalizableElement<
         return (
             <div
                 className={this.getClassName()}
-                onClick={() => {
-                    if (this.props.onClick) {
-                        this.props.onClick();
-                    }
-                }}
+                {...this.getStandardHtmlProps()}
             >
                 {this.getLocalizedContent()}
             </div>
@@ -391,15 +431,17 @@ export class LocalizedString extends LocalizableElement<
 export interface ILabelProps extends ILocalizationProps {}
 
 export class Label extends LocalizableElement<ILabelProps, ILocalizationState> {
+    public getStandardHtmlProps() {
+        // Theoretically, we should override this function because using ILabelProps instead of ILocalizationPros,
+        // but currently there is no difference.
+        return super.getStandardHtmlProps();
+    }
+
     public render() {
         return (
             <label
                 className={this.getClassName()}
-                onClick={() => {
-                    if (this.props.onClick) {
-                        this.props.onClick();
-                    }
-                }}
+                {...this.getStandardHtmlProps()}
             >
                 {this.getLocalizedContent()}
             </label>
@@ -412,16 +454,10 @@ export class Span extends LocalizableElement<
     ILocalizationState
 > {
     public render() {
-        const { onClick, ...restOfProps } = this.props;
         return (
             <span
-                {...restOfProps}
                 className={this.getClassName()}
-                onClick={() => {
-                    if (this.props.onClick) {
-                        this.props.onClick();
-                    }
-                }}
+                {...this.getStandardHtmlProps()}
             >
                 {this.getLocalizedContent()}
             </span>
