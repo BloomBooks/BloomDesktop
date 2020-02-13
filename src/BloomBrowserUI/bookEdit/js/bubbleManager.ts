@@ -113,30 +113,9 @@ export class BubbleManager {
             return false;
         }
 
-        const positionInfo = wrapperBox.getBoundingClientRect();
-        const wrapperBoxPos = new Point(
-            positionInfo.left,
-            positionInfo.top,
-            PointScaling.Scaled,
-            "GrowOverflowingBox"
-        );
-        const reframedPoint = this.convertPointFromViewportToElementFrame(
-            wrapperBoxPos,
-            container
-        );
-
         wrapperBox.style.height = newHeight + "px"; // next line will change to percent
 
-        //BubbleManager.setTextboxPositionAsPercentageDeprecated($(wrapperBox));
-        BubbleManager.setTextboxPositionAsPercentageNewCalc(
-            wrapperBox,
-            container
-        );
-        // BubbleManager.setTextboxPositionAsPercentage(
-        //     $(wrapperBox),
-        //     reframedPoint.getUnscaledX(),
-        //     reframedPoint.getUnscaledY()
-        // );
+        BubbleManager.convertTextboxPositionToPercentage(wrapperBox, container);
         return true;
     }
 
@@ -503,7 +482,6 @@ export class BubbleManager {
     }
 
     private onMouseDown(event: MouseEvent, container: HTMLElement) {
-        console.log("onMouseDOwn");
         // Let standard clicks on the bloom editable only be processed on the editable
         if (this.isEventForEditableOnly(event)) {
             return;
@@ -575,21 +553,17 @@ export class BubbleManager {
     private onMouseMove(event: MouseEvent, container: HTMLElement) {
         // Prevent two event handlers from triggering if the text box is currently being resized
         if (this.isResizing(container)) {
-            console.log("Ending mousemove");
             this.bubbleToDrag = undefined;
             this.activeContainer = undefined;
             return;
         }
 
         if (!this.bubbleToDrag && !this.bubbleToResize) {
-            console.log("handleMouseMoveHover");
             this.handleMouseMoveHover(event, container);
         } else if (this.bubbleToDrag) {
-            console.log("OnMouseMoveDragBubble");
             this.handleMouseMoveDragBubble(event, container);
         } else {
             this.handleMouseMoveResizeBubble(event, container);
-            console.log("OnMouseMoveREsizeBubble");
         }
     }
 
@@ -689,10 +663,6 @@ export class BubbleManager {
         let newWidth = oldWidth;
         let newHeight = oldHeight;
 
-        console.log(
-            `Old: (${oldLeft}, ${oldTop}) with width/height= ${oldWidth}, ${oldHeight}`
-        );
-
         // Rather than using the current iteration's movementX/Y, we use the distance away from the original click.
         // This gives behavior consistent with what JQuery resize handles do.
         // If the user resizes it below the minimum width (which prevents the box from actually getting any smaller),
@@ -782,14 +752,9 @@ export class BubbleManager {
             "Created by handleMouseMoveResizeBubble()"
         );
         this.placeElementAtPosition(content, $(container), newPoint);
-
-        console.log(
-            `New: (${newLeft}, ${newTop}) with width/height= ${newWidth}, ${newHeight}`
-        );
     }
 
     private onMouseUp(event: MouseEvent, container: HTMLElement) {
-        console.log("bubbleToResize cleared out by onMouseUp()");
         this.bubbleToDrag = undefined;
         this.activeContainer = undefined;
         this.bubbleToResize = undefined;
@@ -1419,17 +1384,13 @@ export class BubbleManager {
                 stop: event => {
                     const target = event.target as Element;
                     if (target) {
-                        // BubbleManager.setTextboxPositionAsPercentageDeprecated(
-                        //     $(target)
-                        // );
-
                         const container = target.closest(
                             ".bloom-imageContainer"
                         );
-                        // TODO: Deal with null case
-                        BubbleManager.setTextboxPositionAsPercentageNewCalc(
+
+                        BubbleManager.convertTextboxPositionToPercentage(
                             target,
-                            container!
+                            container
                         );
                     }
 
@@ -1583,20 +1544,14 @@ export class BubbleManager {
             stop: (event, ui) => {
                 const target = event.target as Element;
                 if (target) {
-                    // Resizing also changes size and position to pixels. Fix it.
-                    console.log("Resize stop");
-
-                    // Note: Confirmed buggy. The text box jerks slightly at the end of a resize.
-                    // BubbleManager.setTextboxPositionAsPercentageDeprecated(
-                    //     $(target)
-                    // );
+                    // Resizing also changes size and position to pixels. Change it back to percentage.
 
                     const container = target.closest(".bloom-imageContainer");
-                    // TODO: Deal with null case
-                    BubbleManager.setTextboxPositionAsPercentageNewCalc(
+                    BubbleManager.convertTextboxPositionToPercentage(
                         target,
-                        container!
+                        container
                     );
+
                     // There was a problem where resizing a box messed up its draggable containment,
                     // so now after we resize we go back through making it draggable and clickable again.
                     this.makeTOPBoxesDraggableAndClickable($(target), scale);
@@ -1608,7 +1563,6 @@ export class BubbleManager {
             resize: (event, ui) => {
                 const target = event.target as Element;
                 if (target) {
-                    console.log("Resize event");
                     // If the user changed the height, prevent automatic shrinking.
                     // If only the width changed, this is the case where we want it.
                     // This needs to happen during the drag so that the right automatic
@@ -1680,11 +1634,9 @@ export class BubbleManager {
         }
     }
 
-    // Converts a text box's position into percentages (using CSS styling)
+    // Sets a text box's position in percentages (using CSS styling)
     // wrapperBox: The text box in question
-    // unscaledRelativeLeft/unscaledRelativeTop: Optional
-    //   If specified, it specifies the position to place the top-left corner/at. It should be in unscaled pixels, relative to the parent.
-    //   If undefined, then the current position is automatically retrieved instead.
+    // unscaledRelativeLeft/unscaledRelativeTop: The position to set the top-left corner/at. It should be in unscaled pixels, relative to the parent.
     private static setTextboxPositionAsPercentage(
         wrapperBox: JQuery,
         unscaledRelativeLeft: number,
@@ -1695,7 +1647,6 @@ export class BubbleManager {
         const width = containerSize.getUnscaledX();
         const height = containerSize.getUnscaledY();
 
-        console.log("In setTextboxPositionAsPercentage");
         // the textbox is contained by the image, and it's actual positioning is now based on the imageContainer too.
         // so we will position by percentage of container size.
         wrapperBox
@@ -1711,44 +1662,47 @@ export class BubbleManager {
     }
 
     // Converts a text box's position into percentages (using CSS styling)
-    // Uses the old method of calculating position. However, it seems to have trouble dealing with the imageContainer's border when zoomed.
-    private static setTextboxPositionAsPercentageDeprecated(
-        wrapperBox: JQuery
-    ) {
-        const scale = EditableDivUtils.getPageScale();
-        const pos = wrapperBox.position();
-        const unscaledRelativeLeft = pos.left / scale;
-        const unscaledRelativeTop = pos.top / scale;
-
-        this.setTextboxPositionAsPercentage(
-            wrapperBox,
-            unscaledRelativeLeft,
-            unscaledRelativeTop
-        );
-    }
-
-    // Converts a text box's position into percentages (using CSS styling)
     // Calculates the original text box position automatically, using an updated calculation which properly handles the imageContainer's border when zoomed.
-    private static setTextboxPositionAsPercentageNewCalc(
+    private static convertTextboxPositionToPercentage(
         wrapperBoxElement: Element,
-        container: Element
+        container: Element | null | undefined
     ) {
-        const positionInfo = wrapperBoxElement.getBoundingClientRect();
-        const wrapperBoxPos = new Point(
-            positionInfo.left,
-            positionInfo.top,
-            PointScaling.Scaled,
-            "setTextboxPositionAsPercentageNewCalc()"
-        );
-        const reframedPoint = this.convertPointFromViewportToElementFrame(
-            wrapperBoxPos,
-            container
-        );
+        let unscaledRelativeLeft: number;
+        let unscaledRelativeTop: number;
+
+        if (container) {
+            const positionInfo = wrapperBoxElement.getBoundingClientRect();
+            const wrapperBoxPos = new Point(
+                positionInfo.left,
+                positionInfo.top,
+                PointScaling.Scaled,
+                "convertTextboxPositionToPercentage()"
+            );
+            const reframedPoint = this.convertPointFromViewportToElementFrame(
+                wrapperBoxPos,
+                container
+            );
+            unscaledRelativeLeft = reframedPoint.getUnscaledX();
+            unscaledRelativeTop = reframedPoint.getUnscaledY();
+        } else {
+            console.assert(
+                false,
+                "setTextboxPositionAsPercentage(): container was null or undefined."
+            );
+
+            // If can't find the container for some reason, fallback to the old, deprecated calculation.
+            // (This algorithm does not properly account for the border of the imageContainer when zoomed,
+            //  so the results may be slightly off by perhaps up to 2 pixels)
+            const scale = EditableDivUtils.getPageScale();
+            const pos = $(wrapperBoxElement).position();
+            unscaledRelativeLeft = pos.left / scale;
+            unscaledRelativeTop = pos.top / scale;
+        }
 
         this.setTextboxPositionAsPercentage(
             $(wrapperBoxElement),
-            reframedPoint.getUnscaledX(),
-            reframedPoint.getUnscaledY()
+            unscaledRelativeLeft,
+            unscaledRelativeTop
         );
     }
 
