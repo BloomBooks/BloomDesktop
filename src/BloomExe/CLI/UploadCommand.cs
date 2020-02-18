@@ -18,7 +18,18 @@ namespace Bloom.CLI
 
 		public static int Handle(UploadParameters options)
 		{
+			bool valid = true;
+			if (String.IsNullOrWhiteSpace(options.UploadUser))
+				valid = String.IsNullOrWhiteSpace(options.UploadPassword);
+			else
+				valid = !String.IsNullOrWhiteSpace(options.UploadPassword);
+			if (!valid)
+			{
+				Console.WriteLine("Error: upload -u user and -p password must be used together");
+				return 1;
+			}
 			IsUploading = true;
+
 			// This task will be all the program does. We need to do enough setup so that
 			// the upload code can work, then tear it down.
 			Program.SetUpErrorHandling();
@@ -36,7 +47,7 @@ namespace Bloom.CLI
 					// Since Bloom is not a normal console app, when run from a command line, the new command prompt
 					// appears at once. The extra newlines here are attempting to separate this from our output.
 					Console.WriteLine("\nstarting upload");
-					transfer.UploadFolder(options.Path, applicationContainer, options.ExcludeNarrationAudio);
+					transfer.UploadFolder(options.Path, applicationContainer, options.ExcludeNarrationAudio, options.UploadUser, options.UploadPassword, options.SingleBookshelfLevel);
 					Console.WriteLine(("\nupload complete\n"));
 				}
 				return 0;
@@ -58,9 +69,18 @@ namespace Bloom.CLI
 [Verb("upload", HelpText = "Upload a book or folder of books to bloomlibrary.org.")]
 public class UploadParameters
 {
-	[Value(0, MetaName = "path", HelpText = "Path to the book or folder, determined automatically.", Required = true)]
+	[Value(0, MetaName = "path", HelpText = "Path to a folder containing books to upload at some level within.  The two directory levels beneath the given folder are used to determine the bookshelf name and possibly the sub-level name.", Required = true)]
 	public string Path { get; set; }
 
-	[Option('x', "excludeNarrationAudio", HelpText = "Option excludes narration audio files from upload", Required = false)]
+	[Option('x', "excludeNarrationAudio", HelpText = "Exclude narration audio files from upload (default is to upload audio files)", Required = false)]
 	public bool ExcludeNarrationAudio { get; set; }
+
+	[Option('u', "user", HelpText = "Bloomlibrary user for the upload (default is the local Bloom's most recent upload user)", Required = false)]
+	public string UploadUser { get; set; }
+
+	[Option('p', "password", HelpText = "Password for the given upload user (default is the local Bloom's most recent upload password)", Required = false)]
+	public string UploadPassword { get; set; }
+
+	[Option('s', "singleBookshelfLevel", HelpText = "Restrict bookshelf name to only the top directory level immediately under the path folder.  (default limit is 2 levels)", Required = false)]
+	public bool SingleBookshelfLevel { get; set; }
 }

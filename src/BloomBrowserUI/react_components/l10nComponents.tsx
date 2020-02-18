@@ -408,12 +408,14 @@ export class Label extends LocalizableElement<ILabelProps, ILocalizationState> {
 }
 
 export class Span extends LocalizableElement<
-    ILocalizationProps,
+    ILocalizationProps & React.HTMLAttributes<HTMLElement>,
     ILocalizationState
 > {
     public render() {
+        const { onClick, l10nKey, ...restOfProps } = this.props;
         return (
             <span
+                {...restOfProps}
                 className={this.getClassName()}
                 onClick={() => {
                     if (this.props.onClick) {
