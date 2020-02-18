@@ -272,15 +272,16 @@ const ComicToolControls: React.FunctionComponent = () => {
                     </Span>
                 </div>
                 <div className={"shapeChooserRow"} id={"shapeChooserRow2"}>
-                    <span
+                    <Span
                         id="shapeChooserCaption"
+                        l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
                         className="comicToolControlDraggableBubble"
                         draggable={true}
                         onDragStart={ev => ondragstart(ev, "caption")}
                         onDragEnd={ev => ondragend(ev, "caption")}
                     >
                         Caption
-                    </span>
+                    </Span>
                 </div>
             </div>
             <div
