@@ -3116,10 +3116,10 @@ blob@0.0.5:
   resolved "https://registry.yarnpkg.com/blob/-/blob-0.0.5.tgz#d680eeef25f8cd91ad533f5b01eed48e64caf683"
   integrity sha512-gaqbzQPqOoamawKg0LGVd7SzLgXS+JH61oWprSLH+P+abTczqJbhTR8CmJ2u9/bUYNmHTGJx/UEmn6doAvvuig==
 
-bloom-player@1.1.42:
-  version "1.1.42"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-1.1.42.tgz#618dfbecdf207dbe4e25b85a1ba2ed4acaba77d8"
-  integrity sha512-Y48TtxjuaVovfkgNmu2m9J1eJnKT1bBM/AJDCTS//8bTkDpK/1IZXjGfMj3pDoNIsM/moEE1ez6O+z9hjNtB5g==
+bloom-player@1.1.51:
+  version "1.1.51"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-1.1.51.tgz#06ad1a5ed98592a2dc3a501f6188542c12bc5587"
+  integrity sha512-Del9n+VzUC/R5xiymqc1NbKNyrYA6btB507qEiQoF3yAfqvq8zsk+miI/MU4My9rEtQcmXgTJ7/r6EMA6tFV/Q==
   dependencies:
     dynamic-import-polyfill "^0.1.1"
 
@@ -3861,10 +3861,10 @@ combined-stream@^1.0.6:
   dependencies:
     delayed-stream "~1.0.0"
 
-comicaljs@0.1.49:
-  version "0.1.49"
-  resolved "https://registry.yarnpkg.com/comicaljs/-/comicaljs-0.1.49.tgz#0fe1231e8d5ee9a64239f07f3c1ceeaaafe19a90"
-  integrity sha512-TgBMFm/+AMMVNYONdNqSYxWApL62zLBDQnuXt/uKOo7yG/GKHy62PovBMCmqeGE0+nn6+2xzDbkcKgv/57YOtw==
+comicaljs@0.1.50:
+  version "0.1.50"
+  resolved "https://registry.yarnpkg.com/comicaljs/-/comicaljs-0.1.50.tgz#43f1dea6dd79a4a22476d2f6c7355792eb77dd7e"
+  integrity sha512-eWbk0tu3eDkZofd9dBM8g5jpNv8TSTeP8oCjLTfVe9rsoZQPJvRCFuasMZUkOxCE2P2XWdP4QSt4BWPRLAeJAQ==
 
 comma-separated-tokens@^1.0.0:
   version "1.0.6"
