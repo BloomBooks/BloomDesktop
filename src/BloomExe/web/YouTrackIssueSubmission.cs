@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using Bloom.web;
+using SIL.Code;
 using SIL.IO;
 using SIL.Reporting;
 using YouTrackSharp.Infrastructure;
@@ -14,6 +15,8 @@ namespace Bloom
 	/// <summary>
 	/// Simplifies the process of submitting issues to our issue tracking system.
 	/// Usage: 1) initialize the process via the ctor, 2) add attachments, 3) submit.
+	/// Exception: We don't get an issue id until we submit, so we have a way to add an attachment after submitting
+	/// so that we can name our book zip file after the issue.
 	/// </summary>
 	public class YouTrackIssueSubmitter
 	{
@@ -22,6 +25,7 @@ namespace Bloom
 
 		private readonly Connection _youTrackConnection = new Connection(UrlLookup.LookupUrl(UrlType.IssueTrackingSystemBackend, false, true), 0 /* BL-5500 don't specify port */, true, "youtrack");
 		private readonly List<string> _filesToAttach;
+		private IssueManagement _issueManagement;
 
 		/// <summary>
 		/// A new instance should be constructed for every issue.
@@ -30,6 +34,7 @@ namespace Bloom
 		{
 			_youTrackProjectKey = projectKey;
 			_filesToAttach = new List<string>();
+			_issueManagement = null;
 		}
 
 		/// <summary>
@@ -37,15 +42,15 @@ namespace Bloom
 		/// We may not be able to attach now, because we don't have an actual issue Id until we submit the issue
 		/// and we can't guarantee that the caller will not try to AddAttachment() before calling SubmitToYouTrack().
 		/// </summary>
-		/// <param name="file"></param>
-		public void AddAttachment(string file)
+		/// <param name="filePath"></param>
+		public void AddAttachmentWhenWeHaveAnIssue(string filePath)
 		{
-			if (!RobustFile.Exists(file))
+			if (!RobustFile.Exists(filePath))
 			{
-				Logger.WriteEvent("YouTrack issue submitter failed to attach non-existent file: " + file);
+				Logger.WriteEvent("YouTrack issue submitter failed to attach non-existent file: " + filePath);
 				return;
 			}
-			_filesToAttach.Add(file);
+			_filesToAttach.Add(filePath);
 		}
 
 		/// <summary>
@@ -60,16 +65,16 @@ namespace Bloom
 			try
 			{
 				_youTrackConnection.Authenticate("auto_report_creator", "thisIsInOpenSourceCode");
-				var issueManagement = new IssueManagement(_youTrackConnection);
+				_issueManagement = new IssueManagement(_youTrackConnection);
 				dynamic youTrackIssue = new Issue();
 				youTrackIssue.ProjectShortName = _youTrackProjectKey;
 				youTrackIssue.Type = "Awaiting Classification";
 				youTrackIssue.Summary = summary;
 				youTrackIssue.Description = description;
-				youTrackIssueId = issueManagement.CreateIssue(youTrackIssue);
+				youTrackIssueId = _issueManagement.CreateIssue(youTrackIssue);
 
 				// Now that we have an issue Id, attach any files.
-				AttachFiles(issueManagement, youTrackIssueId);
+				AttachFiles(youTrackIssueId);
 			}
 			catch (WebException e)
 			{
@@ -79,12 +84,28 @@ namespace Bloom
 			return youTrackIssueId;
 		}
 
-		private void AttachFiles(IssueManagement management, string youTrackIssueId)
+		private void AttachFiles(string youTrackIssueId)
 		{
 			foreach (var filename in _filesToAttach)
 			{
-				management.AttachFileToIssue(youTrackIssueId, filename);
+				_issueManagement.AttachFileToIssue(youTrackIssueId, filename);
 			}
+		}
+
+		/// <summary>
+		/// This is the only way to add a zip file of the book's contents that is named after the issue.
+		/// </summary>
+		/// <param name="youTrackIssueId"></param>
+		/// <param name="filePath"></param>
+		public void AttachFileToExistingIssue(string youTrackIssueId, string filePath)
+		{
+			Guard.Against(_issueManagement == null, "_issueManagement should have been created by SubmitToYouTrack()");
+			if (!RobustFile.Exists(filePath))
+			{
+				Logger.WriteEvent("YouTrack issue submitter failed to attach non-existent file: " + filePath);
+				return;
+			}
+			_issueManagement.AttachFileToIssue(youTrackIssueId, filePath);
 		}
 	}
 }
