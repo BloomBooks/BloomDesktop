@@ -242,18 +242,23 @@
 // different bubble shapes require different positioning of the affordances
 [data-bubble] {
     .bloom-dragHandle {
-        right: 100% + 1px;
+        right: calc(100% + 1px);
     }
     #formatButton {
-        right: 100% + 2px;
+        right: calc(100% + 2px);
     }
     // we need to push the label left-ward to get out of the way of the fat part of the bubble
     [data-languageTipContent]:after {
-        right: 100% + 10px !important;
+        right: calc(100% + 10px) !important;
     }
 }
-[data-bubble*="caption"] {
+[data-bubble*="`caption`"] {
     [data-languageTipContent]:after {
-        right: 100% + 2px !important;
+        right: calc(100% + 2px) !important;
+    }
+}
+[data-bubble*="`style`:`none`"] {
+    [data-languageTipContent]:after {
+        right: calc(100% + 1px) !important;
     }
 }
