@@ -120,8 +120,6 @@ export default class AudioRecording {
 
     private stringToSentencesCache: object = {};
 
-    private listenerFunction: (MessageEvent) => void;
-
     constructor() {
         this.audioSplitButton = <HTMLButtonElement>(
             document.getElementById(kAudioSplitId)!
@@ -412,6 +410,7 @@ export default class AudioRecording {
         this.changeStateAndSetExpectedAsync("record");
 
         this.addAudioLevelListener();
+        this.addAudioRecordStartListener();
     }
 
     // Called when a new page is loaded and (above) when the Talking Book Tool is chosen.
@@ -814,6 +813,22 @@ export default class AudioRecording {
                 "&nocache=" +
                 new Date().getTime()
         );
+    }
+
+    // Gets a definitive indication from C#-land that the recording did or did not actually start.
+    // "failure" message comes from an instance of BL-7568 and isn't (as far as we've been able
+    // to determine) Bloom's fault.
+    private addAudioRecordStartListener(): void {
+        WebSocketManager.addListener(kWebsocketContext, e => {
+            if (e.id === "recordStartStatus") {
+                // handle e.message "failure" ("success is a no-op")
+                if (e.message === "failure") {
+                    this.setStatus("record", Status.Disabled);
+                    this.recording = false;
+                    $("#mic-problem-message").removeClass("initiallyHidden");
+                }
+            }
+        });
     }
 
     private startRecordCurrent(): void {
