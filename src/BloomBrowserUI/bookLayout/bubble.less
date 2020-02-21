@@ -241,19 +241,20 @@
 
 // different bubble shapes require different positioning of the affordances
 [data-bubble] {
+    // These happen to be multiples of 1.4 is because they are 1% increments of 140px (the default text box width)
     .bloom-dragHandle {
-        right: 100% + 1px;
+        right: calc(100% + 1.4px);
     }
     #formatButton {
-        right: 100% + 2px;
+        right: calc(100% + 2.8px);
     }
     // we need to push the label left-ward to get out of the way of the fat part of the bubble
     [data-languageTipContent]:after {
-        right: 100% + 10px !important;
+        right: calc(100% + 14px) !important;
     }
 }
 [data-bubble*="caption"] {
     [data-languageTipContent]:after {
-        right: 100% + 2px !important;
+        right: calc(100% + 2.8px) !important;
     }
 }
