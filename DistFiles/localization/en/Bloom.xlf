@@ -2395,6 +2395,10 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel</note>
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.LookAtSentence if possible, but without the number</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneProblem" sil:dynamic="true">
+        <source xml:lang="en">Bloom is having problems connecting to your microphone. Please restart your computer and try again.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneProblem</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>

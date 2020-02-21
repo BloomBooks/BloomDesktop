@@ -23,7 +23,7 @@ using Timer = System.Windows.Forms.Timer;
 namespace Bloom.Edit
 {
 
-	public delegate AudioRecording Factory();//autofac uses this
+	public delegate AudioRecording Factory(); //autofac uses this
 
 	/// <summary>
 	/// This is a clean back-end service that provides recording to files
@@ -471,7 +471,17 @@ namespace Bloom.Edit
 		{
 			_startRecordingTimer.Stop();
 			Debug.WriteLine("Start actual recording");
-			Recorder.BeginRecording(PathToTemporaryWav);
+			try
+			{
+				Recorder.BeginRecording(PathToTemporaryWav);
+				_webSocketServer.SendString(kWebsocketContext, "recordStartStatus", "success");
+			}
+			catch (InvalidOperationException)
+			{
+				// Likely a case of BL-7568, which as far as we can figure isn't Bloom's fault.
+				// Show a friendly message in the TalkingBook toolbox.
+				_webSocketServer.SendString(kWebsocketContext, "recordStartStatus", "failure");
+			}
 		}
 
 		private void CleanUpAfterPressTooShort()
