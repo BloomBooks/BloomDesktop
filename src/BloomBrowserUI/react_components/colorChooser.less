@@ -40,7 +40,8 @@
     top: @cc-arrow-height + @cc-arrow-height;
     left: -@cc-arrow-height;
     background-color: white;
-    z-index: 1; // pop-up above surrounding stuff
+    // BL-8115: z-index of 1 is not enough to cover a Mui checkbox, which also has z-index: 1)
+    z-index: 5;
     .cc-pulldown-left & {
         left: initial;
         right: -@cc-arrow-height;
