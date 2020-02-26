@@ -878,22 +878,24 @@ namespace Bloom.WebLibraryIntegration
 			book.BookInfo.LanguageTableReferences = _parseClient.GetLanguagePointers(book.CollectionSettings.MakeLanguageUploadData(languages));
 			book.BookInfo.PageCount = book.GetPages().Count();
 			book.BookInfo.Save();
-			progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));
-			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
-			_thumbnailer.MakeThumbnailOfCover(book, 70); // this is a sacrificial one to prime the pump, to fix BL-2673
-			_thumbnailer.MakeThumbnailOfCover(book, 70);
-			if (progressBox.CancelRequested)
-				return "";
-			_thumbnailer.MakeThumbnailOfCover(book, 256);
-			if (progressBox.CancelRequested)
-				return "";
+			if (!File.Exists(Path.Combine(bookFolder, "thumbnail-70.png")) || !File.Exists(Path.Combine(bookFolder, "thumbnail-256.png")) || !File.Exists(Path.Combine(bookFolder, "thumbnail.png")))
+			{
+				progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));
+				//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
+				_thumbnailer.MakeThumbnailOfCover(book, 70); // this is a sacrificial one to prime the pump, to fix BL-2673
+				_thumbnailer.MakeThumbnailOfCover(book, 70);
+				if (progressBox.CancelRequested)
+					return "";
+				_thumbnailer.MakeThumbnailOfCover(book, 256);
+				if (progressBox.CancelRequested)
+					return "";
 
-			// It is possible the user never went back to the Collection tab after creating/updating the book, in which case
-			// the 'normal' thumbnail never got created/updating. See http://issues.bloomlibrary.org/youtrack/issue/BL-3469.
-			_thumbnailer.MakeThumbnailOfCover(book);
-			if (progressBox.CancelRequested)
-				return "";
-
+				// It is possible the user never went back to the Collection tab after creating/updating the book, in which case
+				// the 'normal' thumbnail never got created/updating. See http://issues.bloomlibrary.org/youtrack/issue/BL-3469.
+				_thumbnailer.MakeThumbnailOfCover(book);
+				if (progressBox.CancelRequested)
+					return "";
+			}
 			var uploadPdfPath = UploadPdfPath(bookFolder);
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
