@@ -2142,8 +2142,9 @@ namespace Bloom.Book
 			foreach (XmlElement stylesheet in RawDom.SafeSelectNodes("//style"))
 			{
 				string content = stylesheet.InnerXml;
+				// BL-8115 add lowercase HTML tag versions to match htm files that our code linters have mucked with.
 				var regex =
-					new Regex(@"(DIV.(coverColor\s*TEXTAREA|bloom-page.coverColor)\s*{\s*background-color:\s*)(#[0-9a-fA-F]*)");
+					new Regex(@"((DIV|div).(coverColor\s*(TEXTAREA|textarea)|bloom-page.coverColor)\s*{\s*background-color:\s*)(#[0-9a-fA-F]*)");
 				if (regex.IsMatch(content))
 				{
 					var newContent = regex.Replace(content, "$1" + color);
