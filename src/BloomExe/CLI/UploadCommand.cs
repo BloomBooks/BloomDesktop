@@ -47,7 +47,7 @@ namespace Bloom.CLI
 					// Since Bloom is not a normal console app, when run from a command line, the new command prompt
 					// appears at once. The extra newlines here are attempting to separate this from our output.
 					Console.WriteLine("\nstarting upload");
-					transfer.UploadFolder(options.Path, applicationContainer, options.ExcludeNarrationAudio, options.UploadUser, options.UploadPassword, options.SingleBookshelfLevel);
+					transfer.UploadFolder(options.Path, applicationContainer, options.ExcludeNarrationAudio, options.UploadUser, options.UploadPassword, options.SingleBookshelfLevel, options.PreserveThumbnails);
 					Console.WriteLine(("\nupload complete\n"));
 				}
 				return 0;
@@ -83,4 +83,8 @@ public class UploadParameters
 
 	[Option('s', "singleBookshelfLevel", HelpText = "Restrict bookshelf name to only the top directory level immediately under the path folder.  (default limit is 2 levels)", Required = false)]
 	public bool SingleBookshelfLevel { get; set; }
+
+	[Option('T', "preserveThumbnails", HelpText = "Preserve any existing thumbnail images: don't try to recreate them.", Required = false)]
+	public bool PreserveThumbnails { get; set; }
 }
+
