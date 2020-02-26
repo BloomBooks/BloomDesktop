@@ -89,8 +89,24 @@ storiesOf("Publish/DeviceFrame", module)
             Portrait
         </DeviceAndControls>
     ))
-    .add("DeviceFrame Landscape only", () => (
-        <DeviceAndControls defaultLandscape={true} canRotate={false} url="">
+    .add("DeviceFrame Landscape only with Refresh button", () => (
+        <DeviceAndControls
+            defaultLandscape={true}
+            canRotate={false}
+            url=""
+            showRefresh={true}
+        >
+            Landscape
+        </DeviceAndControls>
+    ))
+    .add("DeviceFrame Landscape only with highlighted Refresh button", () => (
+        <DeviceAndControls
+            defaultLandscape={true}
+            canRotate={false}
+            url=""
+            showRefresh={true}
+            highlightRefreshIcon={true}
+        >
             Landscape
         </DeviceAndControls>
     ))
