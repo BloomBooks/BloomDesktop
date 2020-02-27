@@ -2139,20 +2139,35 @@ namespace Bloom.Book
 		/// <param name="color"></param>
 		public void SetCoverColor(string color)
 		{
+			if (SetCoverColorInternal(color))
+			{
+				Save();
+				ContentsChanged?.Invoke(this, new EventArgs());	
+			}
+		}
+
+		/// <summary>
+		/// Internal method is testable
+		/// </summary>
+		/// <param name="color"></param>
+		/// <returns>true if a change was made</returns>
+		internal bool SetCoverColorInternal(string color)
+		{
 			foreach (XmlElement stylesheet in RawDom.SafeSelectNodes("//style"))
 			{
 				string content = stylesheet.InnerXml;
 				var regex =
-					new Regex(@"(DIV.(coverColor\s*TEXTAREA|bloom-page.coverColor)\s*{\s*background-color:\s*)(#[0-9a-fA-F]*)");
-				if (regex.IsMatch(content))
-				{
-					var newContent = regex.Replace(content, "$1" + color);
-					stylesheet.InnerXml = newContent;
-					Save();
-					ContentsChanged?.Invoke(this, new EventArgs());
-					return;
-				}
+					new Regex(
+						@"(DIV.(coverColor\s*TEXTAREA|bloom-page.coverColor)\s*{\s*background-color:\s*)(#[0-9a-fA-F]*)",
+						RegexOptions.IgnoreCase);
+				if (!regex.IsMatch(content))
+					continue;
+				var newContent = regex.Replace(content, "$1" + color);
+				stylesheet.InnerXml = newContent;
+				return true;
 			}
+
+			return false;
 		}
 
 		/// <summary>

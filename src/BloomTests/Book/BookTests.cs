@@ -43,6 +43,60 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void SetCoverColor_WorksWithCaps()
+		{
+			var newValue = "#777777";
+			SetDom("",
+				@"<style type='text/css'>
+				</style>
+				<style type='text/css'>
+					DIV.coverColor  TEXTAREA {
+						background-color: #B2CC7D !important;
+					}
+					DIV.bloom-page.coverColor {
+						background-color: #B2CC7D !important;
+					}
+				</style>
+				<style type='text/css'>
+				</style>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.SetCoverColorInternal(newValue);
+			var coverColorText = dom.SafeSelectNodes("//style[text()]")[0].InnerText;
+			var first = coverColorText.IndexOf(newValue, StringComparison.InvariantCulture);
+			var last = coverColorText.LastIndexOf(newValue, StringComparison.InvariantCulture);
+			Assert.That(first > 0);
+			Assert.That(last > 0 && last != first);
+		}
+
+		[Test]
+		public void SetCoverColor_WorksWithLowercase()
+		{
+			var newValue = "#777777";
+			SetDom("",
+				@"<style type='text/css'>
+				</style>
+				<style type='text/css'>
+					div.coverColor  textarea {
+						background-color: #B2CC7D !important;
+					}
+					div.bloom-page.coverColor {
+						background-color: #B2CC7D !important;
+					}
+				</style>
+				<style type='text/css'>
+				</style>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.SetCoverColorInternal(newValue);
+			var coverColorText = dom.SafeSelectNodes("//style[text()]")[0].InnerText;
+			var first = coverColorText.IndexOf(newValue, StringComparison.InvariantCulture);
+			var last = coverColorText.LastIndexOf(newValue, StringComparison.InvariantCulture);
+			Assert.That(first > 0);
+			Assert.That(last > 0 && last != first);
+		}
+
+		[Test]
 		public void BringBookUpToDate_EmbeddedXmlImgTagRemoved()
 		{
 			// Some older books had XML img tags inside the coverImage data-book value. This resulted in an
