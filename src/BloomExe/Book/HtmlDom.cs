@@ -803,6 +803,34 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// Returns the bloom-editable divs that have valid (e.g. non-empty) language attributes on them.
+		/// Ignores divs that are under bloom-ignoreChildrenForBookLanguageList
+		/// </summary>
+		/// <param name="includeXMatter">True to include divs in xmatter pages, false to exclude them</param>
+		internal IEnumerable<XmlElement> GetLanguageDivs(bool includeXMatter)
+		{
+			const string pageXpathFront = "//div[contains(@class, 'bloom-page')";
+			const string xpathEnd = "]//div[@class and @lang]";
+			var xmatterXpath = includeXMatter ? "" : " and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))";
+			// editable divs that are in non-x-matter pages and have a potentially interesting language.
+
+			var langDivs = this.SafeSelectNodes(pageXpathFront + xmatterXpath + xpathEnd).Cast<XmlElement>()
+				.Where(div => !div.ParentNode.Attributes["class"].Value.Contains("bloom-ignoreChildrenForBookLanguageList"))
+				.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
+				.Where(div => HtmlDom.IsLanguageValid(div.Attributes["lang"].Value));
+
+			return langDivs;
+		}
+
+		/// <summary>
+		/// Checks if the specified language is considered valid (e.g. non-empty, not "*", not "z")
+		/// </summary>
+		internal static bool IsLanguageValid(string lang)
+		{
+			return !String.IsNullOrWhiteSpace(lang) && lang != "*" && lang != "z";  // Not valid languages, though we sometimes use them for special purposes
+		}
+
 		private static void RemovePlaceholderVideoClass(XmlElement newPage)
 		{
 			const string videoPlaceholderClass = "bloom-noVideoSelected";
@@ -1947,6 +1975,50 @@ namespace Bloom.Book
 			// Legacy style comprehension quiz pages
 			var nodes2 = element.SafeSelectNodes("//*[contains(@class, 'questions')]");
 			return nodes1?.Count >= 1 || nodes2?.Count >= 1;
+		}
+
+		public XmlNodeList SelectVideoElements()
+		{
+			return RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-videoContainer')]//source");
+		}
+
+		/// <summary>
+		/// Determines which languages contain at least one meaningful image description
+		/// Image descriptions in XMatter don't count
+		/// </summary>
+		/// <returns>Returns a distinct list of the language codes that do</returns>
+		public IEnumerable<string> GetLangCodesWithImageDescription()
+		{
+			var langCodes = this.SafeSelectNodes(".//*[contains(@class, 'bloom-page') and not(@data-xmatter-page)]//*[contains(@class, 'bloom-imageDescription')]/div[@lang]")
+				.Cast<XmlElement>()
+				.Where(node => !String.IsNullOrWhiteSpace(node.InnerText))  // Note that it is common for InnerText to contain whitespace like "\r\n"
+				.Select(node => node.GetAttribute("lang"))
+				.Where(IsLanguageValid)
+				.Distinct();
+
+			return langCodes;
+		}
+
+		/// <summary>
+		/// Finds the lanaguage code which is closest to the startElement
+		/// The search begins at (and includes) the startElement and continues up through its ancestors
+		/// </summary>
+		/// <param name="startElement">The element to start at</param>
+		/// <returns>The first lang code found on a "lang" attribute, or "" if none found.</returns>
+		internal static string GetClosestLangCode(XmlElement startElement)
+		{
+			XmlElement currentElement = startElement;
+			while (currentElement != null)
+			{
+				if (currentElement.HasAttribute("lang"))
+				{
+					return currentElement.GetAttribute("lang");
+				}
+
+				currentElement = currentElement.ParentNode as XmlElement;
+			}
+
+			return "";
 		}
 
 		public static bool IsImgOrSomethingWithBackgroundImage(XmlElement element)

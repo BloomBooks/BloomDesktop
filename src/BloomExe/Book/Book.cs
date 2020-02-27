@@ -1803,18 +1803,8 @@ namespace Bloom.Book
 		{
 			var result = new Dictionary<string, bool>();
 			var parents = new HashSet<XmlElement>(); // of interesting non-empty children
-			const string pageXpathFront = "//div[contains(@class, 'bloom-page')";
-			const string xpathEnd = "]//div[@class and @lang]";
-			var xmatterXpath = countXmatter ? "" : " and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))";
-			// editable divs that are in non-x-matter pages and have a potentially interesting language.
-			var langDivs = OurHtmlDom.SafeSelectNodes(pageXpathFront + xmatterXpath + xpathEnd).Cast<XmlElement>()
-				.Where(div => !div.ParentNode.Attributes["class"].Value.Contains("bloom-ignoreChildrenForBookLanguageList"))
-				.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
-				.Where(div =>
-				{
-					var lang = div.Attributes["lang"].Value;
-					return lang != "*" && lang != "z" && lang != ""; // Not valid languages, though we sometimes use them for special purposes
-				}).ToArray();
+			var langDivs = OurHtmlDom.GetLanguageDivs(countXmatter).ToArray();
+
 			// First pass: fill in the dictionary with languages which have non-empty content in relevant divs
 			foreach (var div in langDivs)
 			{
@@ -1842,7 +1832,7 @@ namespace Bloom.Book
 			}
 			return result;
 		}
-
+		
 		private bool IsLanguageWanted(XmlElement parent, string lang)
 		{
 			var defaultLangs = parent.GetAttribute("data-default-languages");
@@ -1937,11 +1927,19 @@ namespace Bloom.Book
 		/// <returns></returns>
 		public bool HasAudio()
 		{
+			return GetRecordedAudioSentences().Any();
+		}
+
+		/// <summary>
+		/// Returns the elements that reference an audio file that exist
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<XmlElement> GetRecordedAudioSentences()
+		{
 			return
 				HtmlDom.SelectAudioSentenceElements(RawDom.DocumentElement)
 					.Cast<XmlElement>()
-					.Any(
-						span => AudioProcessor.DoesAudioExistForSegment(Storage.FolderPath, span.Attributes["id"]?.Value));
+					.Where(span => AudioProcessor.DoesAudioExistForSegment(Storage.FolderPath, span.Attributes["id"]?.Value));
 		}
 
 		/// <summary>
@@ -2042,8 +2040,17 @@ namespace Bloom.Book
 		/// <returns></returns>
 		public bool HasVideos()
 		{
-			return RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-videoContainer')]//source")
+			return OurHtmlDom.SelectVideoElements()
 				.Cast<XmlElement>().Any(NonTrivialVideoFileExists);
+		}
+
+		/// <summary>
+		/// Returns whether the book references any existing sign language video files.
+		/// </summary>
+		public bool HasSignLanguageVideos()
+		{
+			// Currently no difference between videos and sign language videos
+			return HasVideos();
 		}
 
 		private bool NonTrivialVideoFileExists(XmlElement vidSource)
@@ -3398,8 +3405,118 @@ namespace Bloom.Book
 			return true;
 		}
 
+		/// <summary>
+		/// Re-compute and update all of the metadata features for the book
+		/// </summary>
+		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified</param>
+		internal void UpdateMetadataFeatures(
+			bool isBlindEnabled, bool isTalkingBookEnabled, bool isSignLanguageEnabled,
+			IEnumerable<string> allowedLanguages = null)
+		{
+			// Language-specific features
+			UpdateBlindFeature(isBlindEnabled, allowedLanguages);
+			UpdateTalkingBookFeature(isTalkingBookEnabled, allowedLanguages);
 
+			// Sign Language is a special case - the SL videos are not marekd up with lang attributes
+			UpdateSignLanguageFeature(isSignLanguageEnabled);
 
+			// Language-independent features
+			UpdateQuizFeature();
+			UpdateMotionFeature();
+		}
+
+		/// <summary>
+		/// Updates the feature in bookInfo.metadata to indicate whether the book is accessible to the blind/visually impaired
+		/// </summary>
+		/// <param name="isEnabled">True to indicate the feature is enabled, or false for disabled (will clear the feature in the metadata)</param>
+		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified</param>
+		private void UpdateBlindFeature(bool isEnabled, IEnumerable<string> allowedLanguages = null)
+		{
+			if (!isEnabled)
+			{
+				BookInfo.MetaData.Feature_Blind_LangCodes = Enumerable.Empty<string>();
+				return;
+			}
+
+			// Set the metadata feature that indicates a book is accessible to the blind. Our current automated
+			// definition of this is the presence of image descriptions in the non-xmatter part of the book.
+			// This is very imperfect. Minimally, to be accessible to the blind, it should also be a talking book
+			// and everything, including image descriptions, should have audio; but talkingBook is a separate feature.
+			// Also we aren't checking that EVERY image has a description. What we have is therefore too weak,
+			// but EVERY image might be too strong...some may just be decorative. Then there are considerations
+			// like contrast and no essential information conveyed by color and other stuff that the DAISY code
+			// checks. If we were going to use this feature to actually help blind people find books they could
+			// use, we might well want a control (like in upload to BL) to allow the author to specify whether
+			// to claim the book is accessible to the blind. But currently this is just used for reporting the
+			// feature in analytics, so it's not worth bothering the author with something that has no obvious
+			// effect. If it has image descriptions, there's been at least some effort to make it accessible
+			// to the blind.
+			var langCodes = OurHtmlDom.GetLangCodesWithImageDescription();
+
+			if (allowedLanguages != null)
+				langCodes = langCodes.Intersect(allowedLanguages);
+
+			BookInfo.MetaData.Feature_Blind_LangCodes = langCodes.ToList();
+		}
+
+		/// <summary>
+		/// Updates the feature in bookInfo.metadata to indicate whether the book contains meaningful narration audio
+		/// Narration audio in XMatter DOES count (for now?)
+		/// </summary>
+		/// <param name="isEnabled">True to indicate the feature is enabled, or false for disabled (will clear the feature in the metadata)</param>
+		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified</param>
+		private void UpdateTalkingBookFeature(bool isEnabled, IEnumerable<string> allowedLanguages = null)
+		{
+			if (!isEnabled)
+			{
+				BookInfo.MetaData.Feature_TalkingBook_LangCodes = Enumerable.Empty<string>();
+				return;
+			}
+
+			var langCodes = GetRecordedAudioSentences()
+				.Select(HtmlDom.GetClosestLangCode)
+				.Where(HtmlDom.IsLanguageValid)
+				.Distinct();
+
+			if (allowedLanguages != null)
+				langCodes = langCodes.Intersect(allowedLanguages);
+
+			BookInfo.MetaData.Feature_TalkingBook_LangCodes = langCodes.ToList();
+		}
+
+		/// <summary>
+		/// Updates the feature in bookInfo.metadata to indicate whether the book contains sign language video
+		/// </summary>
+		/// <param name="isEnabled">True to indicate the feature is enabled, or false for disabled (will clear the feature in the metadata)</param>
+		private void UpdateSignLanguageFeature(bool isEnabled)
+		{
+			if (isEnabled && HasSignLanguageVideos())
+				// FYI: this might be "", but that's OK. Pass it through anyway
+				BookInfo.MetaData.Feature_SignLanguage_LangCodes = new string[] { this.CollectionSettings.SignLanguageIso639Code };
+			else
+				BookInfo.MetaData.Feature_SignLanguage_LangCodes = Enumerable.Empty<string>();
+		}
+
+		/// <summary>
+		/// Updates the feature in bookInfo.metadata to indicate whether the book contains quizzes
+		/// </summary>
+		private void UpdateQuizFeature()
+		{
+			// For now, our model is that quizzes are a language-independent feature.
+			// If the book has a quiz and the user uploads it with an incomplete translation (quizzes not translated), so be it.
+			// If we wanted to, it is also possible to compute it as a language-specific feature.
+			// (That is, check if the languages in the book have non-empty text for part of the quiz section)
+			BookInfo.MetaData.Feature_Quiz = CollectionSettings.HaveEnterpriseFeatures && HasQuizPages;
+		}
+
+		/// <summary>
+		/// Updates the feature in bookInfo.metadata to indicate whether the book is a motion book
+		/// </summary>
+		private void UpdateMotionFeature()
+		{
+			BookInfo.MetaData.Feature_Motion = UseMotionModeInBloomReader;
+		}
+		
 		// This is a shorthand for a whole set of features.
 		// Note: we are currently planning to eventually store this primarily in the data-div, with the
 		// body feature attributes present only so that CSS can base things on it. This method would then
