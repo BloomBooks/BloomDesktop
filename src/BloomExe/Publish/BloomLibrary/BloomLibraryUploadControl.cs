@@ -177,7 +177,7 @@ namespace Bloom.Publish.BloomLibrary
 			var bookInfoMetaData = _model.Book.BookInfo.MetaData;
 			var hasEnterpriseFeatures = _model.Book.CollectionSettings.HaveEnterpriseFeatures;
 			_blindCheckBox.Checked = bookInfoMetaData.Feature_Blind;
-			_signLanguageCheckBox.Enabled = hasEnterpriseFeatures && _model.Book.HasVideos();
+			_signLanguageCheckBox.Enabled = hasEnterpriseFeatures && _model.Book.HasSignLanguageVideos();
 			_signLanguageCheckBox.Checked = hasEnterpriseFeatures && bookInfoMetaData.Feature_SignLanguage;
 
 			// Set Sign Language link
@@ -512,19 +512,19 @@ namespace Bloom.Publish.BloomLibrary
 				e.Result = "quiet"; // suppress other completion/fail messages
 				return;
 			}
+
 			if (_signLanguageCheckBox.Checked && !string.IsNullOrEmpty(book.CollectionSettings.SignLanguageIso639Code))
 			{
 				languages.Insert(0, book.CollectionSettings.SignLanguageIso639Code);
-				PublishHelper.SetSignLanguageFeature(true, book.BookInfo.MetaData);
 			}
-			else
-			{
-				PublishHelper.SetSignLanguageFeature(false, book.BookInfo.MetaData);
-			}
+
+			book.UpdateMetadataFeatures(
+				isBlindEnabled: _blindCheckBox.Checked,
+				isTalkingBookEnabled: _narrationAudioCheckBox.Checked,
+				isSignLanguageEnabled: _signLanguageCheckBox.Checked,
+				allowedLanguages: languages);
+
 			var includeNarrationAudio = _narrationAudioCheckBox.Checked;
-			PublishHelper.SetTalkingBookFeature(includeNarrationAudio, book.BookInfo.MetaData);
-			PublishHelper.SetQuizFeature(book, book.BookInfo.MetaData);
-			PublishHelper.SetMotionFeature(book, book.BookInfo.MetaData);
 			var includeBackgroundMusic = _backgroundMusicCheckBox.Checked;
 			var result = _model.UploadOneBook(book, _progressBox, _parentView, languages.ToArray(), !includeNarrationAudio, !includeBackgroundMusic, out _parseId);
 			e.Result = result;
@@ -550,14 +550,8 @@ namespace Bloom.Publish.BloomLibrary
 			}
 		}
 
-		private void _blindCheckBox_CheckedChanged(object sender, EventArgs e)
-		{
-			_model.Book.BookInfo.MetaData.Feature_Blind = _blindCheckBox.Checked;
-		}
-
 		private void _signLanguageCheckBox_CheckedChanged(object sender, EventArgs e)
 		{
-			_model.Book.BookInfo.MetaData.Feature_SignLanguage = _signLanguageCheckBox.Checked;
 			_changeSignLanguageLinkLabel.Visible = _signLanguageCheckBox.Checked;
 		}
 

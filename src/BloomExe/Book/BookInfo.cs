@@ -1072,29 +1072,93 @@ namespace Bloom.Book
 			get
 			{
 				var features = new List<string>(5);
-				if (Feature_Blind) features.Add("blind");
-				if (Feature_SignLanguage) features.Add("signLanguage");
-				if (Feature_TalkingBook) features.Add("talkingBook");
+
+				AddFeaturesToList(features, "blind", Feature_Blind_LangCodes);
+				AddFeaturesToList(features, "talkingBook", Feature_TalkingBook_LangCodes);
+
+				AddFeaturesToList(features, "signLanguage", Feature_SignLanguage_LangCodes?.Where(HtmlDom.IsLanguageValid));
+
 				if (Feature_Motion) features.Add("motion");
 				if (Feature_Quiz) features.Add("quiz");
+
 				return features.ToArray();
 			}
 			set
 			{
-				Feature_Blind = value.Contains("blind");
-				Feature_SignLanguage = value.Contains("signLanguage");
-				Feature_TalkingBook = value.Contains("talkingBook");
 				Feature_Motion = value.Contains("motion");
 				Feature_Quiz = value.Contains("quiz");
+
+				Feature_Blind_LangCodes = new HashSet<string>();
+				Feature_TalkingBook_LangCodes = new HashSet<string>();
+				Feature_SignLanguage_LangCodes = new HashSet<string>();
+
+				foreach (var featureString in value)
+				{
+					var fields = featureString.Split(':');
+					if (fields.Length < 2)
+					{
+						continue;
+					}
+
+					string featureName = fields[0];
+					string langCode = fields[1];
+
+					switch (featureName)
+					{
+						case "blind":
+							((HashSet<string>)Feature_Blind_LangCodes).Add(langCode);
+							break;
+						case "talkingBook":
+							((HashSet<string>)Feature_TalkingBook_LangCodes).Add(langCode);
+							break;
+						case "signLanguage":
+							((HashSet<string>)Feature_SignLanguage_LangCodes).Add(langCode);
+							break;
+					}
+				}
+
+				// Handle special case for sign language if it had a sign language video but the sign language code was not set in collection settings
+				if (value.Contains("signLanguage") && !Feature_SignLanguage_LangCodes.Any())
+				{
+					((HashSet<string>)Feature_SignLanguage_LangCodes).Add("");
+				}
+			}
+		}
+
+		/// <summary>
+		/// Modifies featureList with the new features to be added
+		/// Includes both the overall feature (e.g. "talkingBook" as well as the language-specific features ("talkingBook:en")
+		/// </summary>
+		/// <param name="featureList">The list that will be modified. This method may add discovered features here</param>
+		/// <param name="featureName">The name (prefix) of the feature. e.g. "talkingBook" in "talkingBook:en"</param>
+		/// <param name="languagesWithFeature">An IEnumerable of language codes that contain the specified feature</param>
+		private static void AddFeaturesToList(IList<string> featureList, string featureName, IEnumerable<string> languagesWithFeature)
+		{
+			if (languagesWithFeature?.Any() == true)
+			{
+				featureList.Add(featureName);
+				var featureValues = languagesWithFeature.Select(langCode => $"{featureName}:{langCode}");
+				featureList.AddRange(featureValues);
 			}
 		}
 
 		[JsonIgnore]
-		public bool Feature_Blind { get; set; }
+		public IEnumerable<string> Feature_Blind_LangCodes { get; set; }
 		[JsonIgnore]
-		public bool Feature_SignLanguage { get; set; }
+		public IEnumerable<string> Feature_TalkingBook_LangCodes { get; set; }
+
+		// SL only expected to have 0 or 1 elements. Kind of like a bool, but the difference is
+		// we do actually need to know what the language code is for it too.
+		// The element might be "", which means that the SL language code was not set in the collection settings.
 		[JsonIgnore]
-		public bool Feature_TalkingBook { get; set; }
+		public IEnumerable<string> Feature_SignLanguage_LangCodes { get; set; }
+
+		[JsonIgnore]
+		public bool Feature_Blind { get { return Feature_Blind_LangCodes.Any(); } }
+		[JsonIgnore]
+		public bool Feature_TalkingBook { get { return Feature_TalkingBook_LangCodes.Any(); } }
+		[JsonIgnore]
+		public bool Feature_SignLanguage { get { return Feature_SignLanguage_LangCodes.Any(); } }
 		[JsonIgnore]
 		public bool Feature_Motion { get; set; }
 		[JsonIgnore]
