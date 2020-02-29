@@ -134,17 +134,13 @@ namespace Bloom.Book
 				var fileName = link.GetStringAttribute("href");
 				if (fileName.ToLowerInvariant().Contains("mode") || fileName.ToLowerInvariant().Contains("page") ||
 					fileName.ToLowerInvariant().Contains("matter") || fileName.ToLowerInvariant().Contains("languagedisplay") ||
-					fileName.ToLowerInvariant().Contains("origami") || fileName.ToLowerInvariant().Contains("defaultlangstyles"))
+					fileName.ToLowerInvariant().Contains("origami") || fileName.ToLowerInvariant().Contains("defaultlangstyles") ||
+					fileName.ToLowerInvariant().Contains("customcollectionstyles"))
 					continue;
 
 				fileName = fileName.Replace("file://", "").Replace("%5C", "/").Replace("%20", " ");
-				// Some older Bloom files still have references like "..\customCollectionStyles.css".  They get
-				// cleaned up as far as I can tell, but can still cause a toast when first looking at the book.
-				// (This can happen even on Windows:  see https://issues.bloomlibrary.org/youtrack/issue/BL-7047.)
 				fileName = fileName.Replace("\\", "/");
 				var path = fileLocator.LocateFile(fileName);
-				// "../customCollectionStyles.css" won't be found when
-				// creating a book from a BloomPack shell book.
 				if (string.IsNullOrEmpty(path) && fileName.StartsWith("../"))
 					path = fileLocator.LocateFile(fileName.Substring(3));
 				if(string.IsNullOrEmpty(path))
@@ -154,15 +150,15 @@ namespace Bloom.Book
 					// It seems safe to ignore a reference to some missing style sheet.
 					if (fileName.ToLowerInvariant().Contains("branding"))
 						continue; // these don't contain page size info, anyhow.
-					NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Could not find " + fileName+" while looking for size choices");
+					NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Could not find " + fileName + " while looking for size choices");
 					continue;
 				}
 				var contents = RobustFile.ReadAllText(path);
-				var start = contents.IndexOf("STARTLAYOUTS");
+				var start = contents.IndexOf("STARTLAYOUTS", StringComparison.InvariantCulture);
 				if (start < 0)
-					 continue; //yield break; // continue;//move on to the next stylesheet
+					 continue; //move on to the next stylesheet
 				start += "STARTLAYOUTS".Length;
-				var end = contents.IndexOf("ENDLAYOUTS",start);
+				var end = contents.IndexOf("ENDLAYOUTS", start, StringComparison.InvariantCulture);
 				var s = contents.Substring(start, end - start);
 
 				IEnumerable<Layout> layouts = null;

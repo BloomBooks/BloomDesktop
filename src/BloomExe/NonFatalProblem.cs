@@ -126,7 +126,7 @@ namespace Bloom
 				{
 					Debug.Fail("error in nonfatalError reporting");
 				}
-				if (channel.Contains("alpha"))
+				if (channel.Contains("developer") || channel.Contains("alpha"))
 					ErrorReport.NotifyUserOfProblem(errorWhileReporting,"Error while reporting non fatal error");
 			}
 		}
