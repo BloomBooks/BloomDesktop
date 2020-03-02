@@ -3408,7 +3408,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// Re-compute and update all of the metadata features for the book
 		/// </summary>
-		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified</param>
+		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified. Applies only to language-specific features (e.g. blind and talkingBook. Does not apply to Sign Language or language-independent faetures</param>
 		internal void UpdateMetadataFeatures(
 			bool isBlindEnabled, bool isTalkingBookEnabled, bool isSignLanguageEnabled,
 			IEnumerable<string> allowedLanguages = null)

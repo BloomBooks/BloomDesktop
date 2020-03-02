@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using Bloom.Book;
 using Bloom.Edit;
@@ -212,5 +213,110 @@ namespace BloomTests.Book
 			BookMetaData metadata = (BookMetaData) ReflectionHelper.GetField(bi, "_metadata");
 			Assert.AreEqual(expectedTags, metadata.Tags);
 		}
+
+		[TestCase(null, new string[0], TestName="FeaturesGetter_BlindLangCodesNull_NoException")]
+		[TestCase(new string[0], new string[0], TestName = "FeaturesGetter_BlindLangCodesEmpty_Empty")]
+		[TestCase(new string[] { "en", "es" }, new string[] { "blind", "blind:en", "blind:es" }, TestName = "FeaturesGetter_BlindLangCodesMultiple_OverallAndLangSpecificFeatures")]
+		public void FeaturesGetter_Blind(IEnumerable<string> langCodes, string[] featuresExpected)
+		{
+			var metadata = new BookMetaData();
+			metadata.Feature_Blind_LangCodes = langCodes;
+
+			// System under test
+			string[] featuresResult = metadata.Features;
+			bool featureBlindResult = metadata.Feature_Blind;
+
+			Assert.AreEqual(featuresExpected, featuresResult, "Features");
+			Assert.AreEqual(featuresExpected.Any(), featureBlindResult, "Feature_Blind");
+		}
+
+		[TestCase(null, new string[0], TestName = "FeaturesGetter_TalkingBookLangCodesNull_NoException")]
+		[TestCase(new string[0], new string[0], TestName = "FeaturesGetter_TalkingBookLangCodesEmpty_Empty")]
+		[TestCase(new string[] { "en", "es" }, new string[] { "talkingBook", "talkingBook:en", "talkingBook:es" }, TestName = "FeaturesGetter_TalkingBookLangCodesMultiple_OverallAndLangSpecificFeatures")]
+		public void FeaturesGetter_TalkingBook(IEnumerable<string> langCodes, string[] featuresExpected)
+		{
+			var metadata = new BookMetaData();
+			metadata.Feature_TalkingBook_LangCodes = langCodes;
+
+			// System under test
+			string[] result = metadata.Features;
+			bool featureTalkingBookResult = metadata.Feature_TalkingBook;
+
+			Assert.AreEqual(featuresExpected, result, "Features");
+			Assert.AreEqual(featuresExpected.Any(), featureTalkingBookResult, "Feature_TalkingBook");
+		}
+
+		[TestCase(null, new string[0], TestName = "FeaturesGetter_SignLanguageLangCodesNull_NoException")]
+		[TestCase(new string[0], new string[0], TestName = "FeaturesGetter_SignLanguageLangCodesEmptyArray_Empty")]
+		[TestCase(new string[] { "" }, new string[] { "signLanguage" }, TestName = "FeaturesGetter_SignLanguageLangCodesEmptyString_OverallOnly")]
+		[TestCase(new string[] { "ase" }, new string[] { "signLanguage", "signLanguage:ase" }, TestName = "FeaturesGetter_SignLanguageLangCodeSet_OverallAndLangSpecificFeatures")]
+		public void FeaturesGetter_SignLanguage(IEnumerable<string> langCodes, string[] featuresExpected)
+		{
+			var metadata = new BookMetaData();
+			metadata.Feature_SignLanguage_LangCodes = langCodes;
+
+			// System under test
+			string[] result = metadata.Features;
+			bool featureSignLanguageResult = metadata.Feature_SignLanguage;
+
+			Assert.AreEqual(featuresExpected, result, "Features");
+			Assert.AreEqual(featuresExpected.Any(), featureSignLanguageResult, "Feature_SignLanguage");
+		}
+
+		[TestCase(false)]
+		[TestCase(true)]
+		public void FeaturesGetter_Quiz(bool containsQuiz)
+		{
+			var metadata = new BookMetaData();
+			metadata.Feature_Quiz = containsQuiz;
+
+			// System under test
+			string[] result = metadata.Features;
+
+			string[] expectedResult = containsQuiz ? new string[] { "quiz" } : new string[0];			
+			Assert.AreEqual(expectedResult, result);
+		}
+
+
+		[TestCase(false)]
+		[TestCase(true)]
+		public void FeaturesGetter_Motion(bool containsMotion)
+		{
+			var metadata = new BookMetaData();
+			metadata.Feature_Motion = containsMotion;
+
+			// System under test
+			string[] result = metadata.Features;
+
+			string[] expectedResult = containsMotion ? new string[] { "motion" } : new string[0];
+			Assert.AreEqual(expectedResult, result);
+		}
+
+		[Test]
+		public void FeaturesSetter_OverallFeaturesOnly_ConvertBackGetsSameResult()
+		{
+			var input = new string[] { "blind", "talkingBook", "signLanguage", "quiz", "motion" };
+			var metadata = new BookMetaData();
+
+			// System under test
+			metadata.Features = input;  // Run the setter
+			string[] convertBackResult = metadata.Features;	// Run the getter
+
+			// Verify that converting back gets the same result (We don't care about the order they're in, though))
+			CollectionAssert.AreEqual(input.OrderBy(x => x), convertBackResult.OrderBy(x => x));
+
+			// Verify individual other properties too
+			Assert.AreEqual(true, metadata.Feature_Blind, "Blind");
+			Assert.AreEqual(true, metadata.Feature_TalkingBook, "TalkingBook");
+			Assert.AreEqual(true, metadata.Feature_SignLanguage, "SignLanguage");
+			Assert.AreEqual(true, metadata.Feature_Quiz, "Quiz");
+			Assert.AreEqual(true, metadata.Feature_Motion, "Motion");
+
+			string[] expectedResult = new string[] { "" };
+			CollectionAssert.AreEqual(expectedResult, metadata.Feature_Blind_LangCodes, "Blind Language Codes");
+			CollectionAssert.AreEqual(expectedResult, metadata.Feature_TalkingBook_LangCodes, "TB Language Codes");
+			CollectionAssert.AreEqual(expectedResult, metadata.Feature_SignLanguage_LangCodes, "SL Language Codes");
+		}
+
 	}
 }
