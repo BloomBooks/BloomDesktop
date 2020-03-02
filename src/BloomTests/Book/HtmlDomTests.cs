@@ -1358,5 +1358,184 @@ p {
 				}
 			}
 		}
+
+		[TestCase(true, 3)]
+		[TestCase(false, 1)]
+		public void GetLanguageDivs_CheckXmatter_ReturnsCorrectNumberOfDivs(bool includeXMatter, int expectedCount)
+		{
+			var htmlDom = new HtmlDom(
+@"<html>
+	<body>
+		<div class='bloom-page bloom-frontMatter'>
+			<div class='marginBox'>
+				<div class='bloom-translationGroup'>
+					<div id='page1box1' class='bloom-editable' lang='en'>
+						<p><span>Page 1</span></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class='bloom-page'>
+			<div class='marginBox'>
+				<div class='bloom-translationGroup'>
+					<div id='page2box1' class='bloom-editable' lang='es'>
+						<p><span>Page 2</span></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class='bloom-page bloom-backMatter'>
+			<div class='marginBox'>
+				<div class='bloom-translationGroup'>
+					<div id='page3box1' class='bloom-editable' lang='fr'>
+						<p><span>Page 3</span></p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>");
+
+			List<XmlElement> result = htmlDom.GetLanguageDivs(includeXMatter).ToList();
+
+			Assert.AreEqual(expectedCount, result.Count);
+		}
+
+		[TestCase("en")]
+		[TestCase("zzz")]
+		public void IsLanguageValid_ValidLanguages_ReturnsTrue(string lang)
+		{
+			bool result = HtmlDom.IsLanguageValid(lang);
+			Assert.IsTrue(result);
+		}
+
+		[TestCase(null)]
+		[TestCase("")]
+		[TestCase("*")]
+		[TestCase("z")]
+		public void IsLanguageValid_InvalidLanguages_ReturnsFalse(string lang)
+		{
+			bool result = HtmlDom.IsLanguageValid(lang);
+			Assert.IsFalse(result);
+		}
+
+		[Test]
+		public void SelectVideoElements()
+		{
+			var htmlDom = new HtmlDom(
+@"<html>
+	<div class='bloom-page bloom-frontMatter'>
+		<div class='bloom-translationGroup'>
+			<div id='page1box1' class='bloom-editable' lang='en'>
+				<p><span>Page 1</span></p>
+			</div>
+		</div>
+		<div class='bloom-videoContainer'>
+			<video><source id='vidSource'></source></video>
+		</div>
+	</div>
+</html>");
+
+			XmlNodeList result = htmlDom.SelectVideoElements();
+
+			Assert.AreEqual(1, result.Count, "Count does not match");
+			Assert.AreEqual("vidSource", ((XmlElement)result[0]).GetAttribute("id"), "ID does not match.");
+		}
+
+		[Test]
+		public void GetLangCodesWithImageDescription()
+		{
+			var htmlDom = new HtmlDom(
+@"<html>
+	<body>
+		<div class='bloom-page bloom-frontMatter'>
+			<div class='bloom-imageContainer'>
+				<img src='coverImage.jpg'></img>
+				<div class='bloom-translationGroup bloom-imageDescription'>
+					<div id='badFrontXmatter' class='bloom-editable' lang='en'>
+						<p>Image Description, Cover</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class='bloom-page'>
+			<div class='bloom-imageContainer'>
+				<img src='page1Image.jpg'></img>
+				<div class='bloom-translationGroup bloom-imageDescription'>
+					<div id='good1' class='bloom-editable' lang='es'>
+						<p>Image Description, Cover</p>
+					</div>
+				</div>
+				<div class='bloom-translationGroup bloom-imageDescription'>
+					<div id='badInvalidLangStar' class='bloom-editable' lang='*'>
+						<p>Image Description, Cover</p>
+					</div>
+				</div>
+				<div class='bloom-translationGroup bloom-imageDescription'>
+					<div id='badInvalidLangZ' class='bloom-editable' lang='z'>
+						<p>Image Description, Cover</p>
+					</div>
+				</div>
+				<div class='bloom-translationGroup bloom-imageDescription'>
+					<div id='badAllWhitespace' class='bloom-editable' lang='fr'>					
+					</div>
+				</div>
+			</div>
+			<div class='bloom-translationGroup'>
+				<div id='badNotAnImageDescription' lang='de'>
+					Hallo Welt
+				</div>
+			</div>
+		</div>
+		<div class='bloom-page bloom-backMatter'>
+			<div class='bloom-imageContainer'>
+				<img src='backCoverImage.jpg'></img>
+				<div class='bloom-translationGroup bloom-imageDescription'>
+					<div id='badBackXmatter' class='bloom-editable' lang='fr'>
+						<p>Image Description, Back Cover</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>");
+
+			List<string> result = htmlDom.GetLangCodesWithImageDescription().ToList();
+
+			var expectedLangCodes = new string[] { "es" };
+			CollectionAssert.AreEqual(expectedLangCodes, result);
+		}
+
+		[TestCase("audioSpanId", "es")]	// Tests the "child" case, where we need to search up the tree to find the lang
+		[TestCase("editableId", "es")]	// Tests the "self" case, where the element itself contains the lang
+		[TestCase("pageId", "")]		// Tests the case where lang cannot be found
+		public void GetClosestLangCode_GivenAnElement_FindsCorrectLangCode(string id, string expectedLangCode)
+		{
+			var htmlDom = new HtmlDom(
+@"<html>
+	<body>
+		<div id='pageId' class='bloom-page'>
+			<div class='marginBox'>
+				<div id='wrongMatch' class='someMisguidedDivThatAccidentallyHasLang' lang='de'>
+					<div class='bloom-translationGroup bloom-imageDescription'>
+						<div id='editableId' class='bloom-editable' lang='es'>
+							<p><span id='audioSpanId'>Sentence 1.</span></p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>");
+			// Continue setting up test: Go from an ID to the corresonding XmlElement instance for that ID.
+			var element = htmlDom.SafeSelectNodes($"//*[@id='{id}']").Cast<XmlElement>().FirstOrDefault();
+			Assert.IsNotNull(element, "Test setup failure: element was not found");
+
+			// System under test
+			var langCode = HtmlDom.GetClosestLangCode(element);
+
+			// Verification
+			Assert.AreEqual(expectedLangCode, langCode);
+		}
 	}
 }
