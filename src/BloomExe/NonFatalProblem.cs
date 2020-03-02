@@ -72,6 +72,13 @@ namespace Bloom
 
 				Logger.WriteError("NonFatalProblem: " + fullDetailedMessage, exception);
 
+				if (Program.RunningInConsoleMode)
+				{
+					// This is "nonfatal", so report as best we can (standard error) and keep going...
+					Console.Error.WriteLine($"Nonfatal problem: {fullDetailedMessage}");
+					return;
+				}
+
 				//just convert from PassiveIf to ModalIf so that we don't have to duplicate code
 				var passive = (ModalIf)ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
 				var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
