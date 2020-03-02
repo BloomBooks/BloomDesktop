@@ -67,11 +67,11 @@ var paths = {
         "!./**/node_modules/**/*.*"
     ],
     nodeFilesNeededInOutput: [
-        "./**/bloom-player/dist/bloomPlayer.min.js",
-        "./**/bloom-player/dist/simpleComprehensionQuiz.js",
+        "./**/bloom-player/dist/bloomPlayer*.min.js",
+        // doesn't exist currently, may be needed again later, possibly with a hash.
+        //"./**/bloom-player/dist/simpleComprehensionQuiz.js",
         "./**/bloom-player/dist/bloomplayer.htm",
-        "./**/bloom-player/dist/*.mp3",
-        "./**/bloom-player/dist/*.css"
+        "./**/bloom-player/dist/*.mp3"
     ],
     // List all the HTML files created by markdown or pug earlier in this gulp process.
     htmlFiles: ["../../output/browser/**/*-en.htm*"],
