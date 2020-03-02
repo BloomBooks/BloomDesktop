@@ -22,7 +22,7 @@ namespace Bloom.web.controllers
 		private readonly BookSelection _bookSelection;
 		private static TempFile _screenshotTempFile;
 		private BloomZipFile _bookZipFile;
-		private readonly TempFile _bookZipFileTemp;
+		private TempFile _bookZipFileTemp;
 		protected string YouTrackProjectKey = "BL";
 		private static Exception _currentException;
 		private static string _detailedMessage; // usually from Bloom itself
@@ -38,7 +38,6 @@ namespace Bloom.web.controllers
 		public ProblemReportApi(BookSelection bookSelection)
 		{
 			_bookSelection = bookSelection;
-			_bookZipFileTemp = TempFile.WithFilenameInTempFolder("bookData.zip");
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -91,29 +90,7 @@ namespace Bloom.web.controllers
 					var userEmail = report.email as string;
 					if (report.includeScreenshot && _screenshotTempFile != null && RobustFile.Exists(_screenshotTempFile.Path))
 					{
-						issueSubmission.AddAttachment(_screenshotTempFile?.Path);
-					}
-					if(report.includeBook)
-					{
-						try
-						{
-							_bookZipFile = new BloomZipFile(_bookZipFileTemp.Path);
-							_bookZipFile.AddDirectory(_bookSelection.CurrentSelection.StoragePageFolder);
-							if (WantReaderInfo(true))
-							{
-								AddReaderInfo();
-							}
-							AddCollectionSettings();
-							_bookZipFile.Save();
-							issueSubmission.AddAttachment(_bookZipFileTemp.Path);
-						}
-						catch (Exception error)
-						{
-							var msg = "***Error as ProblemReportApi attempted to zip up the book: " + error.Message;
-							userDesc += Environment.NewLine + msg;
-							Logger.WriteEvent(msg);
-							DisposeOfZipRemnants(report.includeBook);
-						}
+						issueSubmission.AddAttachmentWhenWeHaveAnIssue(_screenshotTempFile?.Path);
 					}
 					var diagnosticInfo = GetDiagnosticInfo(report.includeBook, userDesc, userEmail);
 					if (!string.IsNullOrWhiteSpace(userEmail))
@@ -143,6 +120,29 @@ namespace Bloom.web.controllers
 					else
 					{
 						linkToNewIssue = new { issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId};
+						if (report.includeBook)
+						{
+							try
+							{
+								_bookZipFileTemp = TempFile.WithFilenameInTempFolder(issueId + ".zip");
+								_bookZipFile = new BloomZipFile(_bookZipFileTemp.Path);
+								_bookZipFile.AddDirectory(_bookSelection.CurrentSelection.StoragePageFolder);
+								if (WantReaderInfo(true))
+								{
+									AddReaderInfo();
+								}
+								AddCollectionSettings();
+								_bookZipFile.Save();
+								issueSubmission.AttachFileToExistingIssue(issueId, _bookZipFileTemp.Path);
+							}
+							catch (Exception error)
+							{
+								var msg = "***Error as ProblemReportApi attempted to zip up the book: " + error.Message;
+								userDesc += Environment.NewLine + msg;
+								Logger.WriteEvent(userDesc);
+								DisposeOfZipRemnants(report.includeBook);
+							}
+						}
 					}
 					request.ReplyWithJson(linkToNewIssue);
 				}, true);

@@ -7,6 +7,8 @@
 @sectionVerticalGap: 25px;
 @buttonColumnWidth: 40px;
 @splitAnimationTime: 300ms;
+@micProblemColor: @bloom-warning;
+@textOnLightBackground: black;
 
 // See BL-7442: When low line height causes lines to overlap, the highlighting overlaps and
 // can over up the bottom of the characters in the line above. For Chrome/Safari we have
@@ -20,7 +22,7 @@ span.ui-audioCurrent:not(.disableHighlight),
 div.ui-audioCurrent:not(.disableHighlight) p {
     background: @highlightColor;
     /* make highlighted text easier to read if it is normally a light color (like white)*/
-    color: black;
+    color: @textOnLightBackground;
 
     &:before {
         background-image: url(currentTextIndicator.svg);
@@ -191,7 +193,7 @@ div.ui-audioCurrent:not(.disableHighlight) p {
         li {
             min-height: 20px;
             font-size: 12px;
-            color: black;
+            color: @textOnLightBackground;
             padding-left: 5px;
             white-space: nowrap;
             &:hover {
@@ -375,4 +377,15 @@ body .cursor-progress {
     .MuiButton-iconSizeSmall > :first-child {
         font-size: 16px;
     }
+}
+
+#mic-problem-message {
+    &.initiallyHidden {
+        display: none;
+    }
+    background-color: @micProblemColor;
+    color: @textOnLightBackground;
+    border-radius: 6px;
+    font-size: medium;
+    padding: 6px;
 }

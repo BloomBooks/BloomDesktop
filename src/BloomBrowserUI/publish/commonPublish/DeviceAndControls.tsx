@@ -1,7 +1,10 @@
 import * as React from "react";
 import "./DeviceFrame.less";
 import { useState, useEffect } from "react";
-import { Div } from "../../react_components/l10nComponents";
+import { useL10n } from "../../react_components/l10nHooks";
+import { useTheme, Theme, Typography } from "@material-ui/core";
+import IconButton from "@material-ui/core/IconButton";
+import RefreshIcon from "@material-ui/icons/Refresh";
 
 /*
   Example usage:
@@ -16,12 +19,15 @@ export const DeviceAndControls: React.FunctionComponent<{
     url: string;
     iframeClass?: string;
     showRefresh?: boolean;
+    highlightRefreshIcon?: boolean;
     onRefresh?: () => void;
 }> = props => {
     const [landscape, setLandscape] = useState(props.defaultLandscape);
+    const theme: Theme = useTheme();
     useEffect(() => {
         setLandscape(props.defaultLandscape);
     }, [props]);
+    const refreshText = useL10n("Refresh", "Common.Refresh");
 
     return (
         <div className="deviceAndControls">
@@ -60,10 +66,28 @@ export const DeviceAndControls: React.FunctionComponent<{
                     }
                     onClick={() => props.onRefresh && props.onRefresh()}
                 >
-                    <div className="refresh-icon" />
-                    <Div className="refresh" l10nKey="Common.Refresh">
-                        Refresh
-                    </Div>
+                    <IconButton
+                        aria-label="refresh preview"
+                        className="refresh-icon"
+                    >
+                        <RefreshIcon
+                            fontSize="large"
+                            htmlColor={
+                                props.highlightRefreshIcon
+                                    ? theme.palette.primary.main
+                                    : theme.palette.text.secondary
+                            }
+                        />
+                    </IconButton>
+                    <Typography
+                        color={
+                            props.highlightRefreshIcon
+                                ? "primary"
+                                : "textSecondary"
+                        }
+                    >
+                        {refreshText}
+                    </Typography>
                 </div>
             )}
         </div>

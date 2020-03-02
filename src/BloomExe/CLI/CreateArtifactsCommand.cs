@@ -29,7 +29,6 @@ namespace Bloom.CLI
 			{
 				using (var applicationContainer = new ApplicationContainer())
 				{
-					Bloom.Program.RunningNonApplicationMode = true;
 					Program.SetUpLocalization(applicationContainer);
 					Browser.SetUpXulRunner();
 					Browser.XulRunnerShutdown += Program.OnXulRunnerShutdown;

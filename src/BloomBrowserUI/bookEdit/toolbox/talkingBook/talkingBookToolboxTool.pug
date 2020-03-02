@@ -39,6 +39,7 @@ html
 						canvas(id='audio-meter' width='80' height='15')
 				div.audio-label.talking-book-counter(id='audio-look-at' data-i18n='EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel') Look at the highlighted text
 				+buttonGroup('record', 'expected', 'talking-book-counter', '', 'Speak', 'SpeakLabel')
+				div.initiallyHidden(id='mic-problem-message' data-i18n='EditTab.Toolbox.TalkingBookTool.MicrophoneProblem') Bloom is having problems connecting to your microphone. Please restart your computer and try again.
 				+buttonGroup('play', 'enabled', 'talking-book-counter', '', 'Check', 'CheckLabel')
 				+buttonGroup('split', 'enabled', 'talking-book-counter', 'initial-state', 'Split', 'SplitLabel')
 				+buttonGroup('next', 'enabled', 'talking-book-counter', '', 'Next', 'NextLabel')

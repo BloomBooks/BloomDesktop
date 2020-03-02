@@ -106,6 +106,9 @@ namespace Bloom
 #if !__MonoCS__
 				AttachConsole(-1);
 #endif
+
+				RunningInConsoleMode = true;
+
 				var exitCode = CommandLine.Parser.Default.ParseArguments(args1,
 					new[] {typeof (HydrateParameters), typeof(UploadParameters), typeof(DownloadBookOptions), typeof (GetUsedFontsParameters), typeof(ChangeLayoutParameters), typeof(CreateArtifactsParameters)})
 					.MapResult(
@@ -1379,7 +1382,8 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			}
 		}
 
-		public static bool RunningNonApplicationMode { get; set; }
+		// Set to true when Bloom is running one of the command line verbs, e.g. hydrate or createArtifacts
+		public static bool RunningInConsoleMode { get; set; }
 
 		// Should be set to true if this is being called by Harvester, false otherwise.
 		public static bool RunningHarvesterMode { get; set; }

@@ -54,6 +54,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         useL10n("Creating Digital Book", "PublishTab.Android.Creating")
     );
     const [closePending, setClosePending] = useState(false);
+    const [highlightRefresh, setHighlightRefresh] = useState(false);
     const [progressState, setProgressState] = useState(ProgressState.Working);
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
@@ -125,6 +126,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                             bookUrl
                         }
                         showRefresh={true}
+                        highlightRefreshIcon={highlightRefresh}
                         onRefresh={() => props.onReset()}
                     />
                 </PreviewPanel>
@@ -138,7 +140,9 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                         }}
                     />
                     <ThumbnailGroup onChange={() => props.onReset()} />
-                    <PublishLanguagesGroup />
+                    <PublishLanguagesGroup
+                        onChange={() => setHighlightRefresh(true)}
+                    />
                     <HelpGroup>
                         <HelpLink
                             l10nKey="PublishTab.Android.AboutBookFeatures"

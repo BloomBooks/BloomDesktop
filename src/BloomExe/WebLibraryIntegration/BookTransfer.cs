@@ -602,11 +602,9 @@ namespace Bloom.WebLibraryIntegration
 		/// N.B. The bulk upload process will go ahead and upload templates and books that are already on the server
 		/// (over-writing the existing book) without informing the user.
 		/// </summary>
-		/// <param name="folder"></param>
-		/// <param name="container"></param>
-		/// <param name="excludeNarrationAudio"></param>
 		/// <remarks>This method is triggered by starting Bloom with "upload" on the cmd line.</remarks>
-		public void UploadFolder(string folder, ApplicationContainer container, bool excludeNarrationAudio = false, string user = null, string password = null, bool singleBookshelfLevel = false)
+		public void UploadFolder(string folder, ApplicationContainer container, bool excludeNarrationAudio = false, string user = null, string password = null,
+			bool singleBookshelfLevel = false, bool preserveThumbnails = false)
 		{
 			if (!IsThisVersionAllowedToUpload())
 			{
@@ -644,7 +642,7 @@ namespace Bloom.WebLibraryIntegration
 						throw args.Error;
 					dlg.Close();
 				};
-				worker.RunWorkerAsync(new object[] { folder, dlg, container, excludeNarrationAudio });
+				worker.RunWorkerAsync(new object[] { folder, dlg, container, excludeNarrationAudio, preserveThumbnails });
 				dlg.ShowDialog(); // waits until worker completed closes it.
 			}
 		}
@@ -661,13 +659,14 @@ namespace Bloom.WebLibraryIntegration
 			var dlg = (BulkUploadProgressDlg) args[1];
 			var appContext = (ApplicationContainer)args[2];
 			var excludeNarrationAudio = (bool)args[3];
+			var preserveThumbnails = (bool)args[4];
 			var excludeMusic = false; // I (AP) made the executive decision this wasn't worth another option right now
 			var alreadyUploaded = GetUploadedPathsFromLogIfPresent(folder);
 			BulkRepairInstanceIds(folder);
 			ProjectContext context = null; // Expensive to create; hold each one we make until we find a book that needs a different one.
 			try
 			{
-				UploadInternal(folder, dlg, appContext, excludeNarrationAudio, excludeMusic, alreadyUploaded, ref context);
+				UploadInternal(folder, dlg, appContext, excludeNarrationAudio, excludeMusic, preserveThumbnails, alreadyUploaded, ref context);
 
 				// If we make it here, append a "finished" note to our log file
 				AppendBookToUploadLogFile("\n\nAll finished!\nIn order to repeat the uploading, this file will need to be deleted.");
@@ -740,7 +739,8 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="excludeNarrationAudio"></param>
 		/// <param name="alreadyUploaded"></param>
 		/// <param name="context"></param>
-		private void UploadInternal(string folder, BulkUploadProgressDlg dlg, ApplicationContainer container, bool excludeNarrationAudio, bool excludeMusic, string[] alreadyUploaded, ref ProjectContext context)
+		private void UploadInternal(string folder, BulkUploadProgressDlg dlg, ApplicationContainer container, bool excludeNarrationAudio, bool excludeMusic, bool preserveThumbnails,
+			string[] alreadyUploaded, ref ProjectContext context)
 		{
 			var lastFolderPart = Path.GetFileName(folder);
 			if (lastFolderPart != null && lastFolderPart.StartsWith("."))
@@ -812,7 +812,7 @@ namespace Bloom.WebLibraryIntegration
 					using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 					{
 						PrepareBookForUpload(ref book, server, tempFolder.FolderPath, dlg.Progress);
-						FullUpload(book, dlg.Progress, view, languagesToUpload.ToArray(), excludeNarrationAudio, excludeMusic, out dummy);
+						FullUpload(book, dlg.Progress, view, languagesToUpload.ToArray(), excludeNarrationAudio, excludeMusic, preserveThumbnails, out dummy);
 					}
 					AppendBookToUploadLogFile(folder);
 					Console.WriteLine("{0} has been uploaded", folder);
@@ -828,7 +828,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			foreach (var sub in Directory.GetDirectories(folder))
 			{
-				UploadInternal(sub, dlg, container, excludeNarrationAudio, excludeMusic, alreadyUploaded, ref context);
+				UploadInternal(sub, dlg, container, excludeNarrationAudio, excludeMusic, preserveThumbnails, alreadyUploaded, ref context);
 			}
 		}
 
@@ -868,7 +868,8 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// Common routine used in normal upload and bulk upload.
 		/// </summary>
-		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, bool excludeNarrationAudio, bool excludeMusic, out string parseId)
+		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, bool excludeNarrationAudio, bool excludeMusic,
+			bool preserveThumbnails, out string parseId)
 		{
 			var bookFolder = book.FolderPath;
 			parseId = ""; // in case of early return
@@ -878,22 +879,28 @@ namespace Bloom.WebLibraryIntegration
 			book.BookInfo.LanguageTableReferences = _parseClient.GetLanguagePointers(book.CollectionSettings.MakeLanguageUploadData(languages));
 			book.BookInfo.PageCount = book.GetPages().Count();
 			book.BookInfo.Save();
-			progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));
-			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
-			_thumbnailer.MakeThumbnailOfCover(book, 70); // this is a sacrificial one to prime the pump, to fix BL-2673
-			_thumbnailer.MakeThumbnailOfCover(book, 70);
-			if (progressBox.CancelRequested)
-				return "";
-			_thumbnailer.MakeThumbnailOfCover(book, 256);
-			if (progressBox.CancelRequested)
-				return "";
+			// If the caller wants to preserve existing thumbnails, recreate them only if one or more of them do not exist.
+			var thumbnailsExist = File.Exists(Path.Combine(bookFolder, "thumbnail-70.png")) &&
+				File.Exists(Path.Combine(bookFolder, "thumbnail-256.png")) &&
+				File.Exists(Path.Combine(bookFolder, "thumbnail.png"));
+			if (!preserveThumbnails || !thumbnailsExist)
+			{
+				progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));
+				//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
+				_thumbnailer.MakeThumbnailOfCover(book, 70); // this is a sacrificial one to prime the pump, to fix BL-2673
+				_thumbnailer.MakeThumbnailOfCover(book, 70);
+				if (progressBox.CancelRequested)
+					return "";
+				_thumbnailer.MakeThumbnailOfCover(book, 256);
+				if (progressBox.CancelRequested)
+					return "";
 
-			// It is possible the user never went back to the Collection tab after creating/updating the book, in which case
-			// the 'normal' thumbnail never got created/updating. See http://issues.bloomlibrary.org/youtrack/issue/BL-3469.
-			_thumbnailer.MakeThumbnailOfCover(book);
-			if (progressBox.CancelRequested)
-				return "";
-
+				// It is possible the user never went back to the Collection tab after creating/updating the book, in which case
+				// the 'normal' thumbnail never got created/updating. See http://issues.bloomlibrary.org/youtrack/issue/BL-3469.
+				_thumbnailer.MakeThumbnailOfCover(book);
+				if (progressBox.CancelRequested)
+					return "";
+			}
 			var uploadPdfPath = UploadPdfPath(bookFolder);
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
