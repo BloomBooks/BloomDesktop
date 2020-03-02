@@ -810,12 +810,15 @@ namespace Bloom.Book
 		/// <param name="includeXMatter">True to include divs in xmatter pages, false to exclude them</param>
 		internal IEnumerable<XmlElement> GetLanguageDivs(bool includeXMatter)
 		{
-			const string pageXpathFront = "//div[contains(@class, 'bloom-page')";
-			const string xpathEnd = "]//div[@class and @lang]";
-			var xmatterXpath = includeXMatter ? "" : " and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))";
-			// editable divs that are in non-x-matter pages and have a potentially interesting language.
+			// These are the elements that represent a bloom-page
+			var pageElements = includeXMatter ? GetPageElements() : GetContentPageElements();
 
-			var langDivs = this.SafeSelectNodes(pageXpathFront + xmatterXpath + xpathEnd).Cast<XmlElement>()
+			// Search the bloom-page for which elements are the language divs,
+			// then flattern the list of lists into a single list.
+			var langDivs = pageElements.SelectMany(page => page.SafeSelectNodes(".//div[@class and @lang]").Cast<XmlElement>());
+
+			// Check each language div against some additional criteria
+			langDivs = langDivs
 				.Where(div => !div.ParentNode.Attributes["class"].Value.Contains("bloom-ignoreChildrenForBookLanguageList"))
 				.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
 				.Where(div => HtmlDom.IsLanguageValid(div.Attributes["lang"].Value));
@@ -1246,13 +1249,11 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Remove the specified feature. I included the constraints for consistency with SetBookFeature,
-		/// but actually we don't currently support more than one constraint pair per feature, so any remove
-		/// removes that featre completely, irrespective of constraints.
+		/// Returns true if the specified feature name matches the specified orientationConstraint, mediaConstraint pair
 		/// </summary>
-		/// <param name="featureName"></param>
-		/// <param name="orientationConstraint"></param>
-		/// <param name="mediaConstraint"></param>
+		/// <param name="featureName">The data-bf feature to check if its value matches</param>
+		/// <param name="orientationConstraint">The orientation constraint to match</param>
+		/// <param name="mediaConstraint">The media constraint to match</param>
 		public bool BookHasFeature(string featureName, string orientationConstraint, string mediaConstraint)
 		{
 			var attr = Body.Attributes["data-bf" + featureName];
@@ -1989,9 +1990,13 @@ namespace Bloom.Book
 		/// <returns>Returns a distinct list of the language codes that do</returns>
 		public IEnumerable<string> GetLangCodesWithImageDescription()
 		{
-			var langCodes = this.SafeSelectNodes(".//*[contains(@class, 'bloom-page') and not(@data-xmatter-page)]//*[contains(@class, 'bloom-imageDescription')]/div[@lang]")
-				.Cast<XmlElement>()
-				.Where(node => !String.IsNullOrWhiteSpace(node.InnerText))  // Note that it is common for InnerText to contain whitespace like "\r\n"
+			var pageElements = GetContentPageElements();
+
+			// Search the bloom-page for which elements are the language divs (under image descriptions),
+			// then flattern the list of lists into a single list.
+			var langDivs = pageElements.SelectMany(page => page.SafeSelectNodes(".//*[contains(@class, 'bloom-imageDescription')]/div[@lang]").Cast<XmlElement>()).ToList();
+
+			var langCodes = langDivs.Where(node => !String.IsNullOrWhiteSpace(node.InnerText))  // Note that it is common for InnerText to contain whitespace like "\r\n"
 				.Select(node => node.GetAttribute("lang"))
 				.Where(IsLanguageValid)
 				.Distinct();

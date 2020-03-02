@@ -1075,8 +1075,7 @@ namespace Bloom.Book
 
 				AddFeaturesToList(features, "blind", Feature_Blind_LangCodes);
 				AddFeaturesToList(features, "talkingBook", Feature_TalkingBook_LangCodes);
-
-				AddFeaturesToList(features, "signLanguage", Feature_SignLanguage_LangCodes?.Where(HtmlDom.IsLanguageValid));
+				AddFeaturesToList(features, "signLanguage", Feature_SignLanguage_LangCodes);
 
 				if (Feature_Motion) features.Add("motion");
 				if (Feature_Quiz) features.Add("quiz");
@@ -1122,6 +1121,16 @@ namespace Bloom.Book
 				{
 					((HashSet<string>)Feature_SignLanguage_LangCodes).Add("");
 				}
+
+				// Backwards compatability for reading old JSONs that don't contain language-specific features
+				if (value.Contains("blind") && !Feature_Blind_LangCodes.Any())
+				{
+					((HashSet<string>)Feature_Blind_LangCodes).Add("");
+				}
+				if (value.Contains("talkingBook") && !Feature_TalkingBook_LangCodes.Any())
+				{
+					((HashSet<string>)Feature_TalkingBook_LangCodes).Add("");
+				}
 			}
 		}
 
@@ -1137,7 +1146,7 @@ namespace Bloom.Book
 			if (languagesWithFeature?.Any() == true)
 			{
 				featureList.Add(featureName);
-				var featureValues = languagesWithFeature.Select(langCode => $"{featureName}:{langCode}");
+				var featureValues = languagesWithFeature.Where(HtmlDom.IsLanguageValid).Select(langCode => $"{featureName}:{langCode}");
 				featureList.AddRange(featureValues);
 			}
 		}
@@ -1154,11 +1163,11 @@ namespace Bloom.Book
 		public IEnumerable<string> Feature_SignLanguage_LangCodes { get; set; }
 
 		[JsonIgnore]
-		public bool Feature_Blind { get { return Feature_Blind_LangCodes.Any(); } }
+		public bool Feature_Blind { get { return Feature_Blind_LangCodes?.Any() == true; } }
 		[JsonIgnore]
-		public bool Feature_TalkingBook { get { return Feature_TalkingBook_LangCodes.Any(); } }
+		public bool Feature_TalkingBook { get { return Feature_TalkingBook_LangCodes?.Any() == true; } }
 		[JsonIgnore]
-		public bool Feature_SignLanguage { get { return Feature_SignLanguage_LangCodes.Any(); } }
+		public bool Feature_SignLanguage { get { return Feature_SignLanguage_LangCodes?.Any() == true; } }
 		[JsonIgnore]
 		public bool Feature_Motion { get; set; }
 		[JsonIgnore]

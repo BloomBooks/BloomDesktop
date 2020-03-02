@@ -2382,6 +2382,177 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath(@"//div[@id='guid4']/div[contains(@class,'bloom-imageContainer') and @data-duration]");
 		}
 
+		private void SetupUpdateMetadataFeaturesTest()
+		{
+			string audioPrefix = "audio";
+			string videoFilename = "video1.mp4";
+
+			SetDom($@"
+<div class='bloom-page'>
+	<div id='somewrapper'>
+		<div class='bloom-imageContainer'>
+			<div class='bloom-imageDescription bloom-translationGroup'>
+				<div class='bloom-editable' lang='en'>
+					A Picture
+				</div>
+				<div class='bloom-editable' lang='es'>
+					A Picture
+				</div>
+			</div>
+		</div>
+		<div class='bloom-translationGroup'>
+			<div id='{audioPrefix}1' class='audio-sentence bloom-editable' lang='en'>
+				Page One
+			</div>
+			<div id='{audioPrefix}2' class='audio-sentence bloom-editable' lang='es'>
+				Pagino Dos
+			</div>
+		</div>
+		<div class='bloom-videoContainer'>
+			<video><source src='video/{videoFilename}'>
+			</source></video>
+		</div>
+	</div>
+</div>");
+
+			for (int i = 1; i <= 2; ++i)
+				BookStorageTests.MakeSampleAudioFiles(_tempFolder.Path, $"{audioPrefix}{i}", ".mp3");
+
+			Directory.CreateDirectory(Path.Combine(_tempFolder.Path, "video"));
+			BookStorageTests.MakeSampleVideoFiles(_tempFolder.Path, videoFilename);
+		}
+
+		[TestCase(true, true, true)]
+		[TestCase(true, false, false)]
+		[TestCase(false, true, false)]
+		[TestCase(false, false, true)]
+		[TestCase(false, false, false)]
+		public void UpdateMetadataFeatures_TestEnabledFlags_SwitchesWork(bool isBlindEnabled, bool isTalkingBookEnabled, bool isSignLanguageEnabled)
+		{
+			SetupUpdateMetadataFeaturesTest();
+			var book = CreateBook();
+
+			book.UpdateMetadataFeatures(isBlindEnabled, isTalkingBookEnabled, isSignLanguageEnabled, null);
+			
+			Assert.That(book.BookInfo.MetaData.Feature_Blind, Is.EqualTo(isBlindEnabled), "Feature_Blind");
+			Assert.That(book.BookInfo.MetaData.Feature_TalkingBook, Is.EqualTo(isTalkingBookEnabled), "Feature_TalkingBook");
+			Assert.That(book.BookInfo.MetaData.Feature_SignLanguage, Is.EqualTo(isSignLanguageEnabled), "Feature_SignLanguage");
+		}
+
+		[TestCase(null, new string[] { "en", "es" }, TestName= "UpdateMetadataFeatures_AllLangsAllowed_AllLangsReturned")]
+		[TestCase(new string[] { "en", "es" }, new string[] { "en", "es" }, TestName= "UpdateMetadataFeatures_TwoLangsAllowed_TwoLangsReturned")]
+		[TestCase(new string[] { "en" }, new string[] { "en" }, TestName= "UpdateMetadataFeatures_OneLangAllowed_OnlyOneLangReturned")]
+		[TestCase(new string[] { "fr" }, new string[0], TestName= "UpdateMetadataFeatures_UntranslatedLangAllowed_NoneReturned")]
+		[TestCase(new string[0], new string[0], TestName= "UpdateMetadataFeatures_NoneAllowed_NoneReturned")]
+		public void UpdateMetadataFeatures_CheckAllowedLanguages(string[] allowedLangs, string[] expectedResults)
+		{
+			const string signLangaugeCode = "ase";
+			SetupUpdateMetadataFeaturesTest();
+			var book = CreateBook();
+			book.CollectionSettings.SignLanguageIso639Code = signLangaugeCode;
+
+			book.UpdateMetadataFeatures(true, true, true, allowedLangs);
+
+			CollectionAssert.AreEquivalent(expectedResults, book.BookInfo.MetaData.Feature_Blind_LangCodes, "Blind");
+			CollectionAssert.AreEquivalent(expectedResults, book.BookInfo.MetaData.Feature_TalkingBook_LangCodes, "TalkingBook");
+
+			// SignLanaguage doesn't care about allowedLangs setting, only its enabled flag.
+			CollectionAssert.AreEquivalent(new string[1] { signLangaugeCode }, book.BookInfo.MetaData.Feature_SignLanguage_LangCodes, "SignLanguage");
+		}
+
+		[Test]
+		public void UpdateMetadataFeatures_QuizMissing_QuizFeatureFalse()
+		{
+			SetDom($@"
+<div class='bloom-page numberedPage'>
+	<div class='marginBox'>
+		<div class='bloom-translationGroup'>
+			<!-- Blah blah, more content goes here -->
+		</div>
+	</div>
+</div>");
+
+			var book = CreateBook();
+			book.CollectionSettings.BrandingProjectKey = "MyCustomBrand";   // Needed so Enterprise Features is considered enabled which is needed for quizzes
+
+			book.UpdateMetadataFeatures(false, false, false, null);
+
+			Assert.AreEqual(false, book.BookInfo.MetaData.Feature_Quiz, "Quiz");
+		}
+
+		[Test]
+		public void UpdateMetadataFeatures_QuizAdded_QuizFeatureTrue()
+		{
+			SetDom($@"
+<div class='bloom-page simple-comprehension-quiz bloom-interactive-page'>
+	<div class='marginBox'>
+		<div class='quiz'>
+			<!-- Blah blah, a bunch of quiz content would go in here -->
+		</div>
+	</div>
+</div>");
+
+			var book = CreateBook();
+			book.CollectionSettings.BrandingProjectKey = "MyCustomBrand";   // Needed so Enterprise Features is considered enabled which is needed for quizzes
+			
+			book.UpdateMetadataFeatures(false, false, false, null);
+
+			Assert.AreEqual(true, book.BookInfo.MetaData.Feature_Quiz, "Quiz");
+		}
+
+
+		[Test]
+		public void UpdateMetadataFeatures_MotionMissing_MotionFeatureFalse()
+		{
+			_bookDom = new HtmlDom(
+$@"<html>
+	<body>
+		 <div class='bloom-page numberedPage'>
+			<div class='marginBox'>
+				<div class='bloom-imageContainer'>
+					<img src='aor_CMB001.png'></img>
+				</div>
+				<div class='bloom-translationGroup'>
+					<!-- Blah blah, more content goes here -->
+				</div>
+			</div>
+		</div>
+	</body>
+</html>");
+
+			var book = CreateBook();
+
+			book.UpdateMetadataFeatures(false, false, false, null);
+
+			Assert.AreEqual(false, book.BookInfo.MetaData.Feature_Motion, "Feature_Motion");
+		}
+
+		[Test]
+		public void UpdateMetadataFeatures_MotionAdded_MotionFeatureTrue()
+		{
+			_bookDom = new HtmlDom(
+$@"<html>
+	<body data-bffullscreenpicture='landscape;bloomReader'>
+		 <div class='bloom-page numberedPage'>
+			<div class='marginBox'>
+				<div class='bloom-imageContainer' data-initialrect='0 0 1 1' data-finalrect='0.3 0.3 0.5 0.5'>
+					<img src='aor_CMB001.png'></img>
+				</div>
+				<div class='bloom-translationGroup'>
+					<!-- Blah blah, more content goes here -->
+				</div>
+			</div>
+		</div>
+	</body>
+</html>");
+
+			var book = CreateBook();
+
+			book.UpdateMetadataFeatures(false, false, false, null);
+
+			Assert.AreEqual(true, book.BookInfo.MetaData.Feature_Motion, "Feature_Motion");
+		}
+
 		private Mock<IPage> CreateTemplatePage(string divContent)
 		{
 
