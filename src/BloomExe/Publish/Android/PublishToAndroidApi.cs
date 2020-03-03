@@ -138,12 +138,12 @@ namespace Bloom.Publish.Android
 					// If the user has taken off all possible motion, force not having motion in the
 					// Bloom Reader book.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7680.
 					if (!readRequest.CurrentBook.HasMotionPages)
-						readRequest.CurrentBook.UseMotionModeInBloomReader = false;
-					return readRequest.CurrentBook.UseMotionModeInBloomReader;
+						readRequest.CurrentBook.MotionMode = false;
+					return readRequest.CurrentBook.MotionMode;
 				},
 				(writeRequest, value) =>
 				{
-					writeRequest.CurrentBook.UseMotionModeInBloomReader = value;
+					writeRequest.CurrentBook.MotionMode = value;
 				}
 			, true);
 
@@ -256,7 +256,7 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "canRotate",
 				request =>
 				{
-					return request.CurrentBook.UseMotionModeInBloomReader && request.CurrentBook.HasMotionPages;
+					return request.CurrentBook.MotionMode && request.CurrentBook.HasMotionPages;
 				},
 				null, // no write action
 				false,
