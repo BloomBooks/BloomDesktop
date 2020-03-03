@@ -1949,6 +1949,11 @@ namespace Bloom.Book
 			return nodes1?.Count >= 1 || nodes2?.Count >= 1;
 		}
 
+		public static bool HasComicFeature(XmlElement element)
+		{
+			return element.SelectSingleNode(BookStorage.ComicalXpath) != null;
+		}
+
 		public static bool IsImgOrSomethingWithBackgroundImage(XmlElement element)
 		{
 			return element.SelectNodes("self::img | self::*[contains(@style,'background-image')]").Count == 1;

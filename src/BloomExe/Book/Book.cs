@@ -3381,6 +3381,8 @@ namespace Bloom.Book
 
 		public bool HasQuizPages => HtmlDom.HasQuizFeature(OurHtmlDom.Body);
 
+		public bool HasComicPages => HtmlDom.HasComicFeature(OurHtmlDom.Body);
+
 		public bool HasOnlyPictureOnlyPages()
 		{
 			foreach (var page in GetPages())
