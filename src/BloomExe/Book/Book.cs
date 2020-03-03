@@ -3403,6 +3403,8 @@ namespace Bloom.Book
 
 		public bool HasQuizPages => HtmlDom.HasQuizFeature(OurHtmlDom.Body);
 
+		public bool HasComicPages => HtmlDom.HasComicFeature(OurHtmlDom.Body);
+
 		public bool HasOnlyPictureOnlyPages()
 		{
 			foreach (var page in GetPages())
@@ -3438,6 +3440,7 @@ namespace Bloom.Book
 			// Language-independent features
 			UpdateQuizFeature();
 			UpdateMotionFeature();
+			UpdateComicFeature();
 		}
 
 		/// <summary>
@@ -3525,13 +3528,21 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Updates the feature in bookInfo.metadata to indicate whether the book contains comic pages
+		/// </summary>
+		private void UpdateComicFeature()
+		{
+			BookInfo.MetaData.Feature_Comic = HasComicPages;
+		}
+
+		/// <summary>
 		/// Updates the feature in bookInfo.metadata to indicate whether the book is a motion book
 		/// </summary>
 		private void UpdateMotionFeature()
 		{
 			BookInfo.MetaData.Feature_Motion = UseMotionModeInBloomReader;
 		}
-		
+
 		// This is a shorthand for a whole set of features.
 		// Note: we are currently planning to eventually store this primarily in the data-div, with the
 		// body feature attributes present only so that CSS can base things on it. This method would then

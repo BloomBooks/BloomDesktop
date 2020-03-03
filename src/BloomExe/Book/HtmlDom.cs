@@ -1978,6 +1978,11 @@ namespace Bloom.Book
 			return nodes1?.Count >= 1 || nodes2?.Count >= 1;
 		}
 
+		public static bool HasComicFeature(XmlElement element)
+		{
+			return element.SelectSingleNode(BookStorage.ComicalXpath) != null;
+		}
+
 		public XmlNodeList SelectVideoElements()
 		{
 			return RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-videoContainer')]//source");
