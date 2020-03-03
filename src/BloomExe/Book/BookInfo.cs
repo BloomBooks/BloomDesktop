@@ -1079,6 +1079,7 @@ namespace Bloom.Book
 
 				if (Feature_Motion) features.Add("motion");
 				if (Feature_Quiz) features.Add("quiz");
+				if (Feature_Comic) features.Add("comic");
 
 				return features.ToArray();
 			}
@@ -1086,6 +1087,7 @@ namespace Bloom.Book
 			{
 				Feature_Motion = value.Contains("motion");
 				Feature_Quiz = value.Contains("quiz");
+				Feature_Comic = value.Contains("comic");
 
 				Feature_Blind_LangCodes = new HashSet<string>();
 				Feature_TalkingBook_LangCodes = new HashSet<string>();
@@ -1172,6 +1174,8 @@ namespace Bloom.Book
 		public bool Feature_Motion { get; set; }
 		[JsonIgnore]
 		public bool Feature_Quiz { get; set; }
+		[JsonIgnore]
+		public bool Feature_Comic { get; set; }
 
 		[JsonProperty("page-number-style")]
 		public string PageNumberStyle { get; set; }

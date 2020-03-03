@@ -2517,7 +2517,7 @@ namespace BloomTests.Book
 		[Test]
 		public void UpdateMetadataFeatures_QuizMissing_QuizFeatureFalse()
 		{
-			SetDom($@"
+			SetDom(@"
 <div class='bloom-page numberedPage'>
 	<div class='marginBox'>
 		<div class='bloom-translationGroup'>
@@ -2532,12 +2532,13 @@ namespace BloomTests.Book
 			book.UpdateMetadataFeatures(false, false, false, null);
 
 			Assert.AreEqual(false, book.BookInfo.MetaData.Feature_Quiz, "Quiz");
+			CollectionAssert.AreEquivalent(new string[0], book.BookInfo.MetaData.Features, "Features");
 		}
 
 		[Test]
 		public void UpdateMetadataFeatures_QuizAdded_QuizFeatureTrue()
 		{
-			SetDom($@"
+			SetDom(@"
 <div class='bloom-page simple-comprehension-quiz bloom-interactive-page'>
 	<div class='marginBox'>
 		<div class='quiz'>
@@ -2552,14 +2553,69 @@ namespace BloomTests.Book
 			book.UpdateMetadataFeatures(false, false, false, null);
 
 			Assert.AreEqual(true, book.BookInfo.MetaData.Feature_Quiz, "Quiz");
+			CollectionAssert.AreEquivalent(new string[] { "quiz" }, book.BookInfo.MetaData.Features, "Features");
 		}
 
+		[Test]
+		public void UpdateMetadataFeatures_ComicMissing_ComicFeatureFalse()
+		{
+			// Setup
+			SetDom(@"
+<html>
+	<body>
+		<div class='bloom-page'>
+			<div class='bloom-imageContainer'>
+			</div>
+		</div>
+	</body>
+</html>
+");
+			var book = CreateBook();
+
+			// System under test
+			bool propertyResult = book.HasComicPages;
+			book.UpdateMetadataFeatures(false, false, false, null);
+
+			// Verification
+			Assert.AreEqual(false, propertyResult);
+			Assert.AreEqual(false, book.BookInfo.MetaData.Feature_Comic, "Comic");
+			CollectionAssert.AreEquivalent(new string[0], book.BookInfo.MetaData.Features, "Features");
+		}
+
+		[Test]
+		public void UpdateMetadataFeatures_ComicAdded_ComicFeatureTrue()
+		{
+			// Setup
+			SetDom(@"
+<html>
+	<body>
+		<div class='bloom-page'>
+			<div class='bloom-imageContainer'>
+				<div class='bloom-textOverPicture' data-bubble='{`style`:`caption`'>
+					<!-- Stuff goes here -->
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
+");
+			var book = CreateBook();
+
+			// System under test
+			bool propertyResult = book.HasComicPages;
+			book.UpdateMetadataFeatures(false, false, false, null);
+
+			// Verification
+			Assert.AreEqual(true, propertyResult);
+			Assert.AreEqual(true, book.BookInfo.MetaData.Feature_Comic, "Comic");
+			CollectionAssert.AreEquivalent(new string[] { "comic" }, book.BookInfo.MetaData.Features, "Features");
+		}
 
 		[Test]
 		public void UpdateMetadataFeatures_MotionMissing_MotionFeatureFalse()
 		{
 			_bookDom = new HtmlDom(
-$@"<html>
+@"<html>
 	<body>
 		 <div class='bloom-page numberedPage'>
 			<div class='marginBox'>
@@ -2579,13 +2635,14 @@ $@"<html>
 			book.UpdateMetadataFeatures(false, false, false, null);
 
 			Assert.AreEqual(false, book.BookInfo.MetaData.Feature_Motion, "Feature_Motion");
+			CollectionAssert.AreEquivalent(new string[0], book.BookInfo.MetaData.Features, "Features");
 		}
 
 		[Test]
 		public void UpdateMetadataFeatures_MotionAdded_MotionFeatureTrue()
 		{
 			_bookDom = new HtmlDom(
-$@"<html>
+@"<html>
 	<body data-bffullscreenpicture='landscape;bloomReader'>
 		 <div class='bloom-page numberedPage'>
 			<div class='marginBox'>
@@ -2605,6 +2662,7 @@ $@"<html>
 			book.UpdateMetadataFeatures(false, false, false, null);
 
 			Assert.AreEqual(true, book.BookInfo.MetaData.Feature_Motion, "Feature_Motion");
+			CollectionAssert.AreEquivalent(new string[] { "motion" }, book.BookInfo.MetaData.Features, "Features");
 		}
 
 		private Mock<IPage> CreateTemplatePage(string divContent)

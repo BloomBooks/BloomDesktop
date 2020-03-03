@@ -277,7 +277,6 @@ namespace BloomTests.Book
 			Assert.AreEqual(expectedResult, result);
 		}
 
-
 		[TestCase(false)]
 		[TestCase(true)]
 		public void FeaturesGetter_Motion(bool containsMotion)
@@ -292,10 +291,24 @@ namespace BloomTests.Book
 			Assert.AreEqual(expectedResult, result);
 		}
 
+		[TestCase(false)]
+		[TestCase(true)]
+		public void FeaturesGetter_Comic(bool containsComic)
+		{
+			var metadata = new BookMetaData();
+			metadata.Feature_Comic = containsComic;
+
+			// System under test
+			string[] result = metadata.Features;
+
+			string[] expectedResult = containsComic ? new string[] { "comic" } : new string[0];
+			Assert.AreEqual(expectedResult, result);
+		}
+
 		[Test]
 		public void FeaturesSetter_OverallFeaturesOnly_ConvertBackGetsSameResult()
 		{
-			var input = new string[] { "blind", "talkingBook", "signLanguage", "quiz", "motion" };
+			var input = new string[] { "blind", "talkingBook", "signLanguage", "quiz", "motion", "comic" };
 			var metadata = new BookMetaData();
 
 			// System under test
@@ -311,6 +324,7 @@ namespace BloomTests.Book
 			Assert.AreEqual(true, metadata.Feature_SignLanguage, "SignLanguage");
 			Assert.AreEqual(true, metadata.Feature_Quiz, "Quiz");
 			Assert.AreEqual(true, metadata.Feature_Motion, "Motion");
+			Assert.AreEqual(true, metadata.Feature_Comic, "Comic");
 
 			string[] expectedResult = new string[] { "" };
 			CollectionAssert.AreEqual(expectedResult, metadata.Feature_Blind_LangCodes, "Blind Language Codes");
