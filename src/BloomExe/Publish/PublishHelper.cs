@@ -447,6 +447,11 @@ namespace Bloom.Publish
 				metaData.Feature_Quiz = false;
 		}
 
+		public static void SetComicFeature(Book.Book book, BookMetaData metaData)
+		{
+			metaData.Feature_Comic = book.HasComicPages;
+		}
+
 		public static void SetTalkingBookFeature(bool hasAudio, BookMetaData metaData)
 		{
 			metaData.Feature_TalkingBook = hasAudio;

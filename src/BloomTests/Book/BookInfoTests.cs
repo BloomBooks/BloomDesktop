@@ -212,5 +212,19 @@ namespace BloomTests.Book
 			BookMetaData metadata = (BookMetaData) ReflectionHelper.GetField(bi, "_metadata");
 			Assert.AreEqual(expectedTags, metadata.Tags);
 		}
+
+		[TestCase(false)]
+		[TestCase(true)]
+		public void FeaturesGetter_Comic(bool containsComic)
+		{
+			var metadata = new BookMetaData();
+			metadata.Feature_Comic = containsComic;
+
+			// System under test
+			string[] result = metadata.Features;
+
+			string[] expectedResult = containsComic ? new string[] { "comic" } : new string[0];
+			Assert.AreEqual(expectedResult, result);
+		}
 	}
 }

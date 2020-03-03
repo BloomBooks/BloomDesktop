@@ -525,6 +525,7 @@ namespace Bloom.Publish.BloomLibrary
 			PublishHelper.SetTalkingBookFeature(includeNarrationAudio, book.BookInfo.MetaData);
 			PublishHelper.SetQuizFeature(book, book.BookInfo.MetaData);
 			PublishHelper.SetMotionFeature(book, book.BookInfo.MetaData);
+			PublishHelper.SetComicFeature(book, book.BookInfo.MetaData);
 			var includeBackgroundMusic = _backgroundMusicCheckBox.Checked;
 			var result = _model.UploadOneBook(book, _progressBox, _parentView, languages.ToArray(), !includeNarrationAudio, !includeBackgroundMusic, out _parseId);
 			e.Result = result;
