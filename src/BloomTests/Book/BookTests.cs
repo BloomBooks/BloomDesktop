@@ -3235,6 +3235,51 @@ namespace BloomTests.Book
 			VerifyInitialTextBoxModeMarkup();
 		}
 
+		[Test]
+		public void HasComicPages_BookMissingComics_ReturnsFalse()
+		{
+			_bookDom = new HtmlDom(
+@"<html>
+	<body>
+		<div class='bloom-page'>
+			<div class='bloom-imageContainer'>
+			</div>
+		</div>
+	</body>
+</html>
+");
+			var book = CreateBook();
+
+			// SUT
+			bool result = book.HasComicPages;
+
+			Assert.AreEqual(false, result);
+		}
+
+		[Test]
+		public void HasComicPages_BookContainsComics_ReturnsTrue()
+		{
+			_bookDom = new HtmlDom(
+@"<html>
+	<body>
+		<div class='bloom-page'>
+			<div class='bloom-imageContainer'>
+				<div class='bloom-textOverPicture' data-bubble='{`style`:`caption`'>
+					<!-- Stuff goes here -->
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
+");
+			var book = CreateBook();
+
+			// SUT
+			bool result = book.HasComicPages;
+
+			Assert.AreEqual(true, result);
+		}
+
 		private void VerifyInitialTextBoxModeMarkup()
 		{
 			AssertThatXmlIn.Dom(_bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-audiorecordingmode]", 2);

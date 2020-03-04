@@ -3381,6 +3381,8 @@ namespace Bloom.Book
 
 		public bool HasQuizPages => HtmlDom.HasQuizFeature(OurHtmlDom.Body);
 
+		public bool HasComicPages => HtmlDom.HasComicFeature(OurHtmlDom.Body);
+
 		public bool HasOnlyPictureOnlyPages()
 		{
 			foreach (var page in GetPages())
@@ -3403,8 +3405,8 @@ namespace Bloom.Book
 		// This is a shorthand for a whole set of features.
 		// Note: we are currently planning to eventually store this primarily in the data-div, with the
 		// body feature attributes present only so that CSS can base things on it. This method would then
-		// be responsible to set that too...and probaby that is what it should read.
-		public bool UseMotionModeInBloomReader
+		// be responsible to set that too...and probably that is what it should read.
+		public bool MotionMode
 		{
 			// Review: the issue suggested that it's only true if it has all of them. Currently they all get
 			// set or cleared together, so it makes no difference.
@@ -3432,6 +3434,11 @@ namespace Bloom.Book
 				//modifiedBook.OurHtmlDom.SetBookFeature("hideMargin", "landscape", "bloomReader");
 				//modifiedBook.OurHtmlDom.SetBookFeature("hidePageNumbers", "landscape", "bloomReader");
 				addOrRemove("fullscreenpicture", "landscape", "bloomReader");
+
+				// Though the feature was/is getting set correctly at publish time, somehow it was getting out of
+				// sync (see BL-8049). So, now we also set it here immediately when the value changes.
+				BookInfo.MetaData.Feature_Motion = value;
+
 				Save();
 			}
 		}

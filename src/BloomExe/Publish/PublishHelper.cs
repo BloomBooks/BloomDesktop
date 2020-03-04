@@ -436,7 +436,7 @@ namespace Bloom.Publish
 
 		public static void SetMotionFeature(Book.Book book, BookMetaData metaData)
 		{
-			metaData.Feature_Motion = book.UseMotionModeInBloomReader;
+			metaData.Feature_Motion = book.MotionMode;
 		}
 
 		public static void SetQuizFeature(Book.Book book, BookMetaData metaData)
@@ -445,6 +445,11 @@ namespace Bloom.Publish
 				metaData.Feature_Quiz = book.HasQuizPages;
 			else
 				metaData.Feature_Quiz = false;
+		}
+
+		public static void SetComicFeature(Book.Book book, BookMetaData metaData)
+		{
+			metaData.Feature_Comic = book.HasComicPages;
 		}
 
 		public static void SetTalkingBookFeature(bool hasAudio, BookMetaData metaData)

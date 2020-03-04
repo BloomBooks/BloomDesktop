@@ -93,6 +93,7 @@ namespace Bloom.Publish.Android
 			PublishHelper.SetBlindFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
 			PublishHelper.SetMotionFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
 			PublishHelper.SetQuizFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
+			PublishHelper.SetComicFeature(modifiedBook, modifiedBook.Storage.BookInfo.MetaData);
 
 			if (settings?.LanguagesToInclude != null)
 				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude, modifiedBook.CollectionSettings.Language2.Iso639Code);
