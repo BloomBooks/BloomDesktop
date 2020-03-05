@@ -809,6 +809,7 @@ namespace Bloom.Book
 						province = ProvinceName,
 						district = DistrictName,
 						features = Features,
+						publisher = Publisher,
 						internetLimits = InternetLimits,
 						importedBookSourceUrl = ImportedBookSourceUrl
 						// Other fields are not needed by the web site and we don't expect they will be.
@@ -1203,6 +1204,12 @@ namespace Bloom.Book
 		/// </summary>
 		[JsonProperty("imported-book-source-url")]
 		public string ImportedBookSourceUrl { get; set; }
+
+		/// <summary>
+		/// The publisher of the book.  For many books, this may be unset because the book is "self-published".
+		/// </summary>
+		[JsonProperty("publisher")]
+		public string Publisher { get; set; }
 	}
 
 	/// <summary>
