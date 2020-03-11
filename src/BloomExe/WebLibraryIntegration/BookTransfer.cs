@@ -811,10 +811,15 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// If we do not have enterprise enabled, copy the book and remove all enterprise level features.
 		/// </summary>
-		public static bool PrepareBookForUpload(ref Book.Book book, BookServer bookServer, string tempFolderPath, LogBox progressBox)
+		internal static bool PrepareBookForUpload(ref Book.Book book, BookServer bookServer, string tempFolderPath, LogBox progressBox)
 		{
 			if (book.CollectionSettings.HaveEnterpriseFeatures)
 				return false;
+
+			// We need to be sure that any in-memory changes have been written to disk
+			// before we start copying/loading the new book to/from disk
+			book.Save();
+
 			Directory.CreateDirectory(tempFolderPath);
 			BookStorage.CopyDirectory(book.FolderPath, tempFolderPath);
 			var bookInfo = new BookInfo(tempFolderPath, true);

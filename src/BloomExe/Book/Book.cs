@@ -1808,6 +1808,12 @@ namespace Bloom.Book
 			var xmatterXpath = countXmatter ? "" : " and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))";
 			// editable divs that are in non-x-matter pages and have a potentially interesting language.
 			var langDivs = OurHtmlDom.SafeSelectNodes(pageXpathFront + xmatterXpath + xpathEnd).Cast<XmlElement>()
+				// BL-8228. Don't proceed if this is a text without normal parentage, e.g. boilerplate text from a Branding pack.
+				// Before we added this line, the next one (testing for bloom-ignoreChildrenForBookLanguageList) would throw with
+				// the Juarez and Associates (Guatemala) Branding Pack.
+				.Where(div => div.ParentNode?.Attributes?["class"] != null)
+				// At least up through 4.7, bloom-ignoreChildrenForBookLanguageList is used to prevent counting localized 
+				// headers in comprehension quiz as languages of the book.
 				.Where(div => !div.ParentNode.Attributes["class"].Value.Contains("bloom-ignoreChildrenForBookLanguageList"))
 				.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
 				.Where(div =>
