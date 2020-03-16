@@ -279,13 +279,15 @@ namespace Bloom.Publish.Android
 				true); // we don't really know, just safe default
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "languagesInBook", request =>
 			{
-				InitializeLanguagesInBook(request);
-				var result = "[" + string.Join(",", _allLanguages.Select(kvp =>
+				try
 				{
-					var complete = kvp.Value ? "true" : "false";
-					var include = _languagesToPublish.Contains(kvp.Key) ? "true" : "false";
-					return $"{{\"code\":\"{kvp.Key}\", \"name\":\"{request.CurrentBook.PrettyPrintLanguage((kvp.Key))}\",\"complete\":{complete},\"include\":{include}}}";
-				})) + "]";
+					InitializeLanguagesInBook(request);
+					var result = "[" + string.Join(",", _allLanguages.Select(kvp =>
+					{
+						var complete = kvp.Value ? "true" : "false";
+						var include = _languagesToPublish.Contains(kvp.Key) ? "true" : "false";
+						return $"{{\"code\":\"{kvp.Key}\", \"name\":\"{request.CurrentBook.PrettyPrintLanguage((kvp.Key))}\",\"complete\":{complete},\"include\":{include}}}";
+					})) + "]";
 
 					request.ReplyWithText(result);
 				}
