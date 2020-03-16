@@ -1,10 +1,8 @@
 import * as React from "react";
 import { FormGroup, Checkbox, FormControlLabel } from "@material-ui/core";
-import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { SettingsGroup } from "../commonPublish/BasePublishScreen";
 import { useL10n } from "../../react_components/l10nHooks";
 import { BloomApi } from "../../utils/bloomApi";
-import { MuiCheckbox } from "../../react_components/muiCheckBox";
 import "./PublishLanguagesGroup.less";
 
 class NameRec {
@@ -21,21 +19,32 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
 }> = props => {
     const initialValue: NameRec[] = [];
     const [langs, setLangs] = React.useState(initialValue);
+    const [errorEncountered, setErrorEncountered] = React.useState(false);
     const incomplete = useL10n(
         "(incomplete translation)",
         "PublishTab.Upload.IncompleteTranslation"
     );
     React.useEffect(() => {
-        BloomApi.get("publish/android/languagesInBook", result => {
-            let newLangs = result.data;
-            // This is for debugging. When all is well, the JSON gets parsed automatically.
-            // If there's a syntax error in the JSON, result.data is just the string.
-            // Trying to parse it ourselves at least gets the syntax error into our log/debugger.
-            if (!newLangs.map) {
-                newLangs = JSON.parse(newLangs);
+        BloomApi.get(
+            "publish/android/languagesInBook",
+
+            // onSuccess
+            result => {
+                let newLangs = result.data;
+                // This is for debugging. When all is well, the JSON gets parsed automatically.
+                // If there's a syntax error in the JSON, result.data is just the string.
+                // Trying to parse it ourselves at least gets the syntax error into our log/debugger.
+                if (!newLangs.map) {
+                    newLangs = JSON.parse(newLangs);
+                }
+                setLangs(newLangs as NameRec[]);
+            },
+
+            // onError
+            () => {
+                setErrorEncountered(true);
             }
-            setLangs(newLangs as NameRec[]);
-        });
+        );
     }, []);
     const languageCheckboxes = langs.map(item => (
         <FormControlLabel
@@ -84,16 +93,27 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
             }
         />
     ));
+
+    let formJSX: JSX.Element = (
+        <FormGroup className="scrollingFeature">{languageCheckboxes}</FormGroup>
+    );
+    if (errorEncountered) {
+        formJSX = (
+            <span className="error">
+                Error: Could not determine languages in the book.
+            </span>
+        );
+    }
     return (
-        <SettingsGroup
-            label={useL10n(
-                "Text Languages",
-                "PublishTab.Android.TextLanguages"
-            )}
-        >
-            <FormGroup className="scrollingFeature">
-                {languageCheckboxes}
-            </FormGroup>
-        </SettingsGroup>
+        <div className="publishLanguagesGroup">
+            <SettingsGroup
+                label={useL10n(
+                    "Text Languages",
+                    "PublishTab.Android.TextLanguages"
+                )}
+            >
+                {formJSX}
+            </SettingsGroup>
+        </div>
     );
 };
