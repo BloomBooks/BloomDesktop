@@ -191,6 +191,8 @@ namespace Bloom.web.controllers
 
 		static bool _showingProblemReport;
 
+		public delegate void ShowProblemDialogDelegate(string levelOfProblem);
+
 		/// <summary>
 		/// Shows a problem dialog.
 		/// </summary>
@@ -205,14 +207,18 @@ namespace Bloom.web.controllers
 			LogProblem(exception, detailedMessage, levelOfProblem);
 			if (_showingProblemReport)
 			{
-				// If a problem is reported when already reporting a problem, that's most likely going
-				// to be an unbounded recursion that freezes the program and prevents the original
+				// If a problem is reported when already reporting a problem, that could
+				// be an unbounded recursion that freezes the program and prevents the original
 				// problem from being reported.  So minimally report the recursive problem and stop
 				// the recursion in its tracks.
-				const string msg = "The last call logged was a RECURSIVE CALL to ShowProblemDialog";
+				//
+				// Alternatively, can happen if multiple async BloomAPI calls go out and return errors.
+				// It's probably not helpful to have multiple problem report dialogs at the same time
+				// in this case either (even if there are theoretically a finite (not infinite) number of them)
+				const string msg = "MULTIPLE CALLs to ShowProblemDialog. Suppressing the subsequent calls";
 				Console.Write(msg);
 				Logger.WriteEvent(msg);
-				return; // break recursion...
+				return; // Abort
 			}
 
 			_showingProblemReport = true;
@@ -229,11 +235,24 @@ namespace Bloom.web.controllers
 			// Now we use SafeInvoke only inside of this extracted method.
 			TryGetScreenshot(controlForScreenshotting);
 
+			var problemDialogDelegate = new ShowProblemDialogDelegate(ShowProblemInBrowserDialog);
+			controlForScreenshotting.BeginInvoke(problemDialogDelegate, levelOfProblem);
+		}
+
+		/// <summary>
+		/// Uses a browser dialog to show the problem report
+		/// Precondition: Must be called by the UI thread
+		/// </summary>
+		/// <param name="levelOfProblem">A string representing the level of problem, e.g. "user"</param>
+		private static void ShowProblemInBrowserDialog(string levelOfProblem)
+		{
 			try
 			{
 				var query = "?" + levelOfProblem;
 				var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false, "problemDialog", "loader.html");
 				var url = problemDialogRootPath.ToLocalhost() + query;
+
+				// Precondition: we must be on the UI thread for Gecko to work.
 				using (var dlg = new BrowserDialog(url))
 				{
 					dlg.ShowDialog();
