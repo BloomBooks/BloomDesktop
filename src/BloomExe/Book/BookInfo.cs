@@ -811,7 +811,8 @@ namespace Bloom.Book
 						features = Features,
 						publisher = Publisher,
 						internetLimits = InternetLimits,
-						importedBookSourceUrl = ImportedBookSourceUrl
+						importedBookSourceUrl = ImportedBookSourceUrl,
+						phashOfFirstContentImage = PHashOfFirstContentImage
 						// Other fields are not needed by the web site and we don't expect they will be.
 					});
 			}
@@ -1210,6 +1211,15 @@ namespace Bloom.Book
 		/// </summary>
 		[JsonProperty("publisher")]
 		public string Publisher { get; set; }
+
+		/// <summary>
+		/// This is a "perceptual hash" (http://phash.org/) of the image in the first bloom-imageContainer
+		/// we find on the first page after any xmatter pages. We use this to suggest which books are
+		/// probably related to each other. This allows us to link, for example, books that are translations
+		/// of each other.  (https://www.nuget.org/packages/Shipwreck.Phash/ is used to calculate the phash.)
+		/// </summary>
+		[JsonProperty("phashOfFirstContentImage")]
+		public string PHashOfFirstContentImage { get; set; }
 	}
 
 	/// <summary>
