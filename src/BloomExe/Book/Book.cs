@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
 using System.Xml;
+using Shipwreck.Phash;
+using Shipwreck.Phash.Bitmaps;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
@@ -780,6 +782,70 @@ namespace Bloom.Book
 			BookInfo.CountryName = CollectionSettings.Country;
 			BookInfo.ProvinceName = CollectionSettings.Province;
 			BookInfo.DistrictName = CollectionSettings.District;
+		}
+
+		/// <summary>
+		/// Find the first content image on a content page (or the cover image if no content images) and
+		/// compute its "perceptual hash".
+		/// </summary>
+		/// <remarks>
+		/// This can be rather slow, as much as a second or more per image.  DO NOT ADD THIS TO BringBookUpToDate!
+		/// It may be called only by an external program such as Harvester.
+		/// </remarks>
+		public string ComputePHashOfFirstContentImage()
+		{
+#if DEBUG
+			var startTime = DateTime.UtcNow;
+#endif
+			try
+			{
+				var max = this.GetLastNumberedPageNumber();
+				for (int num = 1; num <= max; ++num)
+				{
+					var firstContentImageElement = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page') and @data-page-number='{num}']//div[contains(@class,'bloom-imageContainer')]/img");
+					if (firstContentImageElement != null)
+					{
+						var src = firstContentImageElement.GetAttribute("src");
+						return ComputePHashOfImageFile(src);
+					}
+				}
+				// No content page images found.  Try the cover page, then give up.
+				var coverImg = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page') and @data-xmatter-page='frontCover']//div[contains(@class,'bloom-imageContainer')]/img");
+				if (coverImg != null)
+				{
+					var src = coverImg.GetAttribute("src");
+					return ComputePHashOfImageFile(src);
+				}
+				// no images found anywhere??
+				return null;
+			}
+			finally
+			{
+#if DEBUG
+				var endTime = DateTime.UtcNow;
+				Console.WriteLine("Computing PHash for {0} took {1}", this.Title, endTime - startTime);
+#endif
+			}
+		}
+
+		private string ComputePHashOfImageFile(string src)
+		{
+			if (src == "placeholder.png")
+				return null;
+			var path = Path.Combine(FolderPath, src);
+			if (RobustFile.Exists(path))
+			{
+				try
+				{
+					var bitmap = (Bitmap)Image.FromFile(path);
+					var hash = ImagePhash.ComputeDigest(bitmap.ToLuminanceImage());
+					return hash.ToString();
+				} catch
+				{
+					return null;
+				}
+			}
+			return null;
 		}
 
 		/// <summary>
