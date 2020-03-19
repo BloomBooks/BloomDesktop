@@ -257,3 +257,37 @@
         right: 100% + 2px !important;
     }
 }
+
+// Set vertical alignment to center
+.bloom-imageContainer {
+    // We exclude "Just Text" bubbles because
+    // 1) Visually there's not a lot of profit to it
+    // 2) So for existing books there won't be a subtle movement in the text position
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) {
+        // Note: This needs a little bit of specificity to beat out some other rules which set it to display: block instead
+        .bloom-editable {
+            // Best to do this with flex boxes.
+            // First, vertical-align: middle doesn't work on display:block, only inline and table-cell
+            // If the bloom-editable is display:inline and the paragraphs align middle, all the paragraphs will EACH be aligned middle... they'll all run together on the same line.
+            // So we'll use a flexbox to ensure that all the items inside of it are collectively centered.
+            display: flex;
+            flex-direction: column; // This is supposed to be redundant, but since it's crucial to enabling the vertical alignment to work properly, set it again
+
+            // Make sure not to set align-items. You want to let the StyleEditor's Paragraph -> (Horizontal) Alignment button be able to effectively control that. (It may insert text-align: initial)
+
+            // Vertical alignment
+            justify-content: center;
+
+            // These probably can't be reached, but just in case...
+            .bloom-vertical-align-top {
+                justify-content: flex-start;
+            }
+            .bloom-vertical-align-center {
+                justify-content: center;
+            }
+            .bloom-vertical-align-bottom {
+                justify-content: flex-end;
+            }
+        }
+    }
+}
