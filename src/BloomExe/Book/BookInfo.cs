@@ -321,6 +321,12 @@ namespace Bloom.Book
 			set { MetaData.DistrictName = value; }
 		}
 
+		public string PHashOfFirstContentImage
+		{
+			get { return MetaData.PHashOfFirstContentImage; }
+			set { MetaData.PHashOfFirstContentImage = value; }
+		}
+
 		internal string MetaDataPath
 		{
 			get { return BookMetaData.MetaDataPath(FolderPath); }

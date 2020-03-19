@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
 using System.Xml;
+using Shipwreck.Phash;
+using Shipwreck.Phash.Bitmaps;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
@@ -780,6 +782,50 @@ namespace Bloom.Book
 			BookInfo.CountryName = CollectionSettings.Country;
 			BookInfo.ProvinceName = CollectionSettings.Province;
 			BookInfo.DistrictName = CollectionSettings.District;
+			var startTime = DateTime.UtcNow;
+			BookInfo.PHashOfFirstContentImage = ComputePHashOfFirstContentImage();
+			var endTime = DateTime.UtcNow;
+			Console.WriteLine("Computing PHash for {0} took {1}", this.Title, endTime - startTime);
+		}
+
+		public string ComputePHashOfFirstContentImage()
+		{
+			var max = this.GetLastNumberedPageNumber();
+			for (int num = 1; num <= max; ++num)
+			{
+				var firstContentImageElement = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page') and @data-page-number='{num}']//div[contains(@class,'bloom-imageContainer')]/img");
+				if (firstContentImageElement != null)
+				{
+					var src = firstContentImageElement.GetAttribute("src");
+					var hash = ComputePHashOfImageFile(src);
+					if (hash != null)
+						return String.Format("{0}:{1}", num, hash);
+				}
+			}
+			// No content page images found.  Try the cover page, then give up.
+			var coverImg = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page') and @data-xmatter-page='frontCover']//div[contains(@class,'bloom-imageContainer')]/img");
+			if (coverImg != null)
+			{
+				var src = coverImg.GetAttribute("src");
+				var hash = ComputePHashOfImageFile(src);
+				if (hash != null)
+					return String.Format("C:{0}", hash);
+			}
+			return null;
+		}
+
+		private string ComputePHashOfImageFile(string src)
+		{
+			if (src == "placeholder.png")
+				return null;
+			var path = Path.Combine(FolderPath, src);
+			if (File.Exists(path))
+			{
+				var bitmap = (Bitmap)Image.FromFile(path);
+				var hash = ImagePhash.ComputeDigest(bitmap.ToLuminanceImage());
+				return hash.ToString();
+			}
+			return null;
 		}
 
 		/// <summary>
