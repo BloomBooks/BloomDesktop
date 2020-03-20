@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -57,6 +57,9 @@
     <DebugSymbols>true</DebugSymbols>
     <DefineConstants>TRACE</DefineConstants>
     <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)'!='Windows_NT'">
+    <DefineConstants>__MonoCS__</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -292,7 +295,7 @@
       <HintPath>..\..\lib\dotnet\YouTrackSharp.dll</HintPath>
     </Reference>
     <Reference Include="DialogAdapters">
-      <HintPath>..\..\lib\dotnet\DialogAdapters.dll</HintPath>
+      <HintPath>..\..\packages\DialogAdapters.0.1.4.30000\lib\net45\DialogAdapters.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -1244,7 +1247,7 @@
     <None Include="Resources\cutDisable16x16.png" />
   </ItemGroup>
   <ItemGroup>
-    <COMReference Include="IWshRuntimeLibrary">
+    <COMReference Include="IWshRuntimeLibrary" Condition="'$(OS)'=='Windows_NT'">
       <Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>
       <VersionMajor>1</VersionMajor>
       <VersionMinor>0</VersionMinor>
