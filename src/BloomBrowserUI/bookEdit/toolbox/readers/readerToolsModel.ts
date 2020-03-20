@@ -435,10 +435,10 @@ export class ReaderToolsModel {
     }
 
     public updateLevelLimit(id: string, limit: number): void {
-        if (limit !== 0) {
+        if (limit !== Infinity) {
             this.updateElementContent(id, limit.toString());
         }
-        this.updateDisabledLimit(id, limit === 0);
+        this.updateDisabledLimit(id, limit === Infinity);
     }
 
     public updateDisabledLimit(eltId: string, isDisabled: boolean): void {

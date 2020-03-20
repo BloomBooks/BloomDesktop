@@ -40,12 +40,12 @@ export class ReaderLevel {
     public name: string;
     public thingsToRemember: string[] = [];
 
-    // For each of these, 0 signifies unlimited.
-    public maxWordsPerPage: number = 0;
-    public maxWordsPerSentence: number = 0;
-    public maxWordsPerBook: number = 0;
-    public maxUniqueWordsPerBook: number = 0;
-    public maxAverageWordsPerSentence: number = 0;
+    // For each of these, default to unlimited.
+    public maxWordsPerPage: number = Infinity;
+    public maxWordsPerSentence: number = Infinity;
+    public maxWordsPerBook: number = Infinity;
+    public maxUniqueWordsPerBook: number = Infinity;
+    public maxAverageWordsPerSentence: number = Infinity;
 
     constructor(name: string) {
         this.name = name;
@@ -56,22 +56,22 @@ export class ReaderLevel {
     }
 
     public getMaxWordsPerPage(): number {
-        return this.maxWordsPerPage || 0;
+        return this.maxWordsPerPage || Infinity;
     }
 
     public getMaxWordsPerSentence(): number {
-        return this.maxWordsPerSentence || 0;
+        return this.maxWordsPerSentence || Infinity;
     }
 
     public getMaxWordsPerBook(): number {
-        return this.maxWordsPerBook || 0;
+        return this.maxWordsPerBook || Infinity;
     }
 
     public getMaxUniqueWordsPerBook(): number {
-        return this.maxUniqueWordsPerBook || 0;
+        return this.maxUniqueWordsPerBook || Infinity;
     }
 
     public getMaxAverageWordsPerSentence(): number {
-        return this.maxAverageWordsPerSentence || 0;
+        return this.maxAverageWordsPerSentence || Infinity;
     }
 }
