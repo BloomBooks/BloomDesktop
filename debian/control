@@ -9,7 +9,7 @@ Standards-Version: 3.9.7
 Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
  wget, unzip, desktop-file-utils, curl,
  optipng, libsndfile1,
- mono4-sil, libgdiplus4-sil,
+ mono5-sil, libgdiplus5-sil,
  libenchant-dev, libxklavier-dev, libdconf-dev,
  libicu-dev,
  libgtk2.0-cil (>= 2.12.10), libgtk2.0-dev (>= 2.14), libasound2-dev,
@@ -18,7 +18,7 @@ Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
 Package: bloom-desktop-alpha
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
- mono4-sil, libgdiplus4-sil, gtk-sharp4-sil, gtklp,
+ mono5-sil, libgdiplus5-sil, gtk-sharp5-sil, gtklp,
  chmsee | xchm | kchmviewer, libtidy-sil,
  fonts-sil-andika-new-basic | fonts-sil-andikanewbasic,
  optipng, libsndfile1,
