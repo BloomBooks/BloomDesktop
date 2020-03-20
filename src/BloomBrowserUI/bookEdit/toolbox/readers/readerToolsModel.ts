@@ -996,55 +996,55 @@ export class ReaderToolsModel {
 
     public maxWordsPerSentenceOnThisPage(): number {
         if (!this.synphony) {
-            return 9999; // not loaded yet
+            return Infinity; // not loaded yet
         }
         const levels: ReaderLevel[] = this.synphony.getLevels();
         if (levels.length <= 0) {
-            return 9999;
+            return Infinity;
         }
         return levels[this.levelNumber - 1].getMaxWordsPerSentence();
     }
 
     public maxWordsPerBook(): number {
         if (!this.synphony) {
-            return 999999; // not loaded yet
+            return Infinity; // not loaded yet
         }
         const levels: ReaderLevel[] = this.synphony.getLevels();
         if (levels.length <= 0) {
-            return 999999;
+            return Infinity;
         }
         return levels[this.levelNumber - 1].getMaxWordsPerBook();
     }
 
     public maxUniqueWordsPerBook(): number {
         if (!this.synphony) {
-            return 99999; // not loaded yet
+            return Infinity; // not loaded yet
         }
         const levels: ReaderLevel[] = this.synphony.getLevels();
         if (levels.length <= 0) {
-            return 99999;
+            return Infinity;
         }
         return levels[this.levelNumber - 1].getMaxUniqueWordsPerBook();
     }
 
     public maxAverageWordsPerSentence(): number {
         if (!this.synphony) {
-            return 99999; // not loaded yet
+            return Infinity; // not loaded yet
         }
         const levels: ReaderLevel[] = this.synphony.getLevels();
         if (levels.length <= 0) {
-            return 99999;
+            return Infinity;
         }
         return levels[this.levelNumber - 1].getMaxAverageWordsPerSentence();
     }
 
     public maxWordsPerPage(): number {
         if (!this.synphony) {
-            return 9999; // not loaded yet
+            return Infinity; // not loaded yet
         }
         const levels: ReaderLevel[] = this.synphony.getLevels();
         if (levels.length <= 0) {
-            return 9999;
+            return Infinity;
         }
         return levels[this.levelNumber - 1].getMaxWordsPerPage();
     }

@@ -68,6 +68,18 @@ describe("jquery.text-markup", function() {
         expect(result).toBe(out2);
     });
 
+    it("checkLeveledReader.handleDefaults.maxWordsPerSentence", function() {
+        var input = "This sentence should have enough words";
+        var out = "This sentence should have enough words";
+
+        // check 2 word sentences
+        $("#text_entry1")
+            .html(input)
+            .checkLeveledReader({ maxWordsPerSentence: 0 });
+        var result = $("#text_entry1").html();
+        expect(result).toBe(out);
+    });
+
     it("marks up invalid words", function() {
         var input = "a ae big";
         var out =
