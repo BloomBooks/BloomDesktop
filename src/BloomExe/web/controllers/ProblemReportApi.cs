@@ -215,7 +215,7 @@ namespace Bloom.web.controllers
 				// Alternatively, can happen if multiple async BloomAPI calls go out and return errors.
 				// It's probably not helpful to have multiple problem report dialogs at the same time
 				// in this case either (even if there are theoretically a finite (not infinite) number of them)
-				const string msg = "MULTIPLE CALLs to ShowProblemDialog. Suppressing the subsequent calls";
+				const string msg = "MULTIPLE CALLS to ShowProblemDialog. Suppressing the subsequent calls";
 				Console.Write(msg);
 				Logger.WriteEvent(msg);
 				return; // Abort

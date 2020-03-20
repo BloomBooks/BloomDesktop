@@ -19,7 +19,6 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
 }> = props => {
     const initialValue: NameRec[] = [];
     const [langs, setLangs] = React.useState(initialValue);
-    const [errorEncountered, setErrorEncountered] = React.useState(false);
     const incomplete = useL10n(
         "(incomplete translation)",
         "PublishTab.Upload.IncompleteTranslation"
@@ -38,12 +37,12 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
                     newLangs = JSON.parse(newLangs);
                 }
                 setLangs(newLangs as NameRec[]);
-            },
+            }
 
             // onError
-            () => {
-                setErrorEncountered(true);
-            }
+            // Currently just ignoring errors... letting BloomServer take care of reporting anything that comes up
+            // () => {
+            // }
         );
     }, []);
     const languageCheckboxes = langs.map(item => (
@@ -93,17 +92,6 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
             }
         />
     ));
-
-    let formJSX: JSX.Element = (
-        <FormGroup className="scrollingFeature">{languageCheckboxes}</FormGroup>
-    );
-    if (errorEncountered) {
-        formJSX = (
-            <span className="error">
-                Error: Could not determine languages in the book.
-            </span>
-        );
-    }
     return (
         <div className="publishLanguagesGroup">
             <SettingsGroup
@@ -112,7 +100,9 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
                     "PublishTab.Android.TextLanguages"
                 )}
             >
-                {formJSX}
+                <FormGroup className="scrollingFeature">
+                    {languageCheckboxes}
+                </FormGroup>
             </SettingsGroup>
         </div>
     );

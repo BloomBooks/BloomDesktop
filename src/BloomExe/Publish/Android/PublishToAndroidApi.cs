@@ -170,7 +170,7 @@ namespace Bloom.Publish.Android
 					catch (Exception e)
 					{
 						request.Failed("Error while updating preview. Message: " + e.Message);
-						NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Error while updating preview.", null, e, true);
+						NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Error while updating preview.", null, e, true);
 					}
 				}
 			}, false);
@@ -294,7 +294,7 @@ namespace Bloom.Publish.Android
 				catch (Exception e)
 				{
 					request.Failed("Error while determining languages in book. Message: " + e.Message);
-					NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Error determining which languages are in the book.", null, e, true);
+					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Error determining which languages are in the book.", null, e, true);
 				}
 			}, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "includeLanguage", request =>
