@@ -97,6 +97,3 @@ export HGRCPATH=
 
 #sets keyboard input method to none
 unset XMODIFIERS
-
-# prevent crash due to incompatible Gtk/mono5 problem (TEMPORARY HACK)
-export USE_GTK_DIALOGS=0
