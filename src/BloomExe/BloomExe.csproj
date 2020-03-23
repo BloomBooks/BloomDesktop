@@ -295,7 +295,7 @@
       <HintPath>..\..\lib\dotnet\YouTrackSharp.dll</HintPath>
     </Reference>
     <Reference Include="DialogAdapters">
-      <HintPath>..\..\lib\dotnet\DialogAdapters.dll</HintPath>
+      <HintPath>..\..\packages\DialogAdapters.0.1.4.30000\lib\net45\DialogAdapters.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
