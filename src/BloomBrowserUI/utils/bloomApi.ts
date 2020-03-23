@@ -136,7 +136,8 @@ export class BloomApi {
     // This method is used to get a result from Bloom.
     public static get(
         urlSuffix: string,
-        successCallback: (r: AxiosResponse) => void
+        successCallback: (r: AxiosResponse) => void,
+        errorCallback?: (r: AxiosResponse) => void
     ) {
         if (mockReplies[urlSuffix]) {
             // like the "real thing", this is going to return and
@@ -145,7 +146,16 @@ export class BloomApi {
             window.setTimeout(() => successCallback(mockReplies[urlSuffix]), 0);
         }
         BloomApi.wrapAxios(
-            axios.get(this.kBloomApiPrefix + urlSuffix).then(successCallback)
+            axios
+                .get(this.kBloomApiPrefix + urlSuffix)
+                .then(successCallback)
+                .catch(r => {
+                    if (errorCallback) {
+                        errorCallback(r);
+                    } else {
+                        throw r;
+                    }
+                })
         );
     }
 
@@ -281,12 +291,20 @@ export class BloomApi {
     public static postData(
         urlSuffix: string,
         data: any,
-        successCallback?: (r: AxiosResponse) => void
+        successCallback?: (r: AxiosResponse) => void,
+        errorCallback?: (r: AxiosResponse) => void
     ) {
         BloomApi.wrapAxios(
             axios
                 .post(this.kBloomApiPrefix + urlSuffix, data)
                 .then(successCallback ? successCallback : () => {})
+                .catch(r => {
+                    if (errorCallback) {
+                        errorCallback(r);
+                    } else {
+                        throw r;
+                    }
+                })
         );
     }
 
