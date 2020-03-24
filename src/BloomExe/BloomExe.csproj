@@ -223,6 +223,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>../../packages/SharpFont.3.1.0/lib/net20/SharpFont.dll</HintPath>
     </Reference>
+    <Reference Include="Shipwreck.Phash">
+      <HintPath>..\..\packages\Shipwreck.Phash.0.5.0\lib\net461\Shipwreck.Phash.dll</HintPath>
+    </Reference>
+    <Reference Include="Shipwreck.Phash.Bitmaps">
+      <HintPath>..\..\packages\Shipwreck.Phash.Bitmaps.0.5.0\lib\net461\Shipwreck.Phash.Bitmaps.dll</HintPath>
+    </Reference>
     <Reference Include="SIL.Core">
       <HintPath>..\..\lib\dotnet\SIL.Core.dll</HintPath>
     </Reference>
@@ -262,6 +268,10 @@
     <Reference Include="System.Management" Condition="'$(OS)'=='Windows_NT'" />
     <Reference Include="System.Printing" Condition="'$(OS)'=='Windows_NT'" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Numerics" Condition="'$(OS)'=='Windows_NT'" />
+    <Reference Include="System.Numerics.Vectors" Condition="'$(OS)'=='Windows_NT'" >
+      <HintPath>..\..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
     </Reference>
