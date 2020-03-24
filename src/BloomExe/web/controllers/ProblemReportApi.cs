@@ -191,8 +191,6 @@ namespace Bloom.web.controllers
 
 		static bool _showingProblemReport;
 
-		public delegate void ShowProblemDialogDelegate(string levelOfProblem);
-
 		/// <summary>
 		/// Shows a problem dialog.
 		/// </summary>
@@ -235,56 +233,41 @@ namespace Bloom.web.controllers
 			// Now we use SafeInvoke only inside of this extracted method.
 			TryGetScreenshot(controlForScreenshotting);
 
-			if (controlForScreenshotting.InvokeRequired)
+			SafeInvoke.InvokeIfPossible("Show Problem Dialog", controlForScreenshotting, false, () =>
 			{
-				var problemDialogDelegate = new ShowProblemDialogDelegate(ShowProblemInBrowserDialog);
-				controlForScreenshotting.BeginInvoke(problemDialogDelegate, levelOfProblem);
-			}
-			else
-			{
-				// Otherwise, if you use BeginInvoke instead, it's possible to have the program terminate before the dialog is shown.
-				// I think the requisite conditions are 1) a Fatal Exception, 2) on the UI thread, and 3) use BeginInvoke instead
-				ShowProblemInBrowserDialog(levelOfProblem);
-			}
-		}
-
-		/// <summary>
-		/// Uses a browser dialog to show the problem report
-		/// Precondition: Must be called by the UI thread
-		/// </summary>
-		/// <param name="levelOfProblem">A string representing the level of problem, e.g. "user"</param>
-		private static void ShowProblemInBrowserDialog(string levelOfProblem)
-		{
-			try
-			{
-				var query = "?" + levelOfProblem;
-				var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false, "problemDialog", "loader.html");
-				var url = problemDialogRootPath.ToLocalhost() + query;
-
-				// Precondition: we must be on the UI thread for Gecko to work.
-				using (var dlg = new BrowserDialog(url))
+				// Uses a browser dialog to show the problem report
+				try
 				{
-					dlg.ShowDialog();
+					var query = "?" + levelOfProblem;
+					var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false, "problemDialog", "loader.html");
+					var url = problemDialogRootPath.ToLocalhost() + query;
+
+					// Precondition: we must be on the UI thread for Gecko to work.
+					using (var dlg = new BrowserDialog(url))
+					{
+						dlg.ShowDialog();
+					}
 				}
-			}
-			catch (Exception problemReportException)
-			{
-				Logger.WriteError("*** ProblemReportApi threw an exception trying to display", problemReportException);
-				// At this point our problem reporter has failed for some reason, so we want the old WinForms handler
-				// to report both the original error for which we tried to open our dialog and this new one where
-				// the dialog itself failed.
-				// In order to do that, we create a new exception with the original exception (if there was one) as the
-				// inner exception. We include the message of the exception we just caught. Then we call the
-				// old WinForms fatal exception report directly.
-				// In any case, both of the errors will be logged by now.
-				var message = "Bloom's error reporting failed: " + problemReportException.Message;
-				ErrorReport.ReportFatalException(new ApplicationException(message, _currentException ?? problemReportException));
-			}
-			finally
-			{
-				_showingProblemReport = false;
-			}
+				catch (Exception problemReportException)
+				{
+					Logger.WriteError("*** ProblemReportApi threw an exception trying to display", problemReportException);
+					// At this point our problem reporter has failed for some reason, so we want the old WinForms handler
+					// to report both the original error for which we tried to open our dialog and this new one where
+					// the dialog itself failed.
+					// In order to do that, we create a new exception with the original exception (if there was one) as the
+					// inner exception. We include the message of the exception we just caught. Then we call the
+					// old WinForms fatal exception report directly.
+					// In any case, both of the errors will be logged by now.
+					var message = "Bloom's error reporting failed: " + problemReportException.Message;
+					ErrorReport.ReportFatalException(new ApplicationException(message, _currentException ?? problemReportException));
+				}
+				finally
+				{
+					_showingProblemReport = false;
+				}
+			});
 		}
+
 
 		private static void TryGetScreenshot(Control controlForScreenshotting)
 		{
