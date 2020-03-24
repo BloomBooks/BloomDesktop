@@ -235,8 +235,17 @@ namespace Bloom.web.controllers
 			// Now we use SafeInvoke only inside of this extracted method.
 			TryGetScreenshot(controlForScreenshotting);
 
-			var problemDialogDelegate = new ShowProblemDialogDelegate(ShowProblemInBrowserDialog);
-			controlForScreenshotting.BeginInvoke(problemDialogDelegate, levelOfProblem);
+			if (controlForScreenshotting.InvokeRequired)
+			{
+				var problemDialogDelegate = new ShowProblemDialogDelegate(ShowProblemInBrowserDialog);
+				controlForScreenshotting.BeginInvoke(problemDialogDelegate, levelOfProblem);
+			}
+			else
+			{
+				// Otherwise, if you use BeginInvoke instead, it's possible to have the program terminate before the dialog is shown.
+				// I think the requisite conditions are 1) a Fatal Exception, 2) on the UI thread, and 3) use BeginInvoke instead
+				ShowProblemInBrowserDialog(levelOfProblem);
+			}
 		}
 
 		/// <summary>
