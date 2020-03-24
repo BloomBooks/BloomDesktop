@@ -31,10 +31,18 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
     $.fn.checkLeveledReader = function(options) {
         var allWords = "";
 
-        var opts = $.extend(
-            { maxWordsPerSentence: 999, maxWordsPerPage: 9999 },
+        const opts = $.extend(
+            { maxWordsPerSentence: Infinity, maxWordsPerPage: Infinity },
             options
         );
+
+        // 0 means unlimited. So convert them to Infinity
+        if (opts.maxWordsPerSentence <= 0) {
+            opts.maxWordsPerSentence = Infinity;
+        }
+        if (opts.maxWordsPerPage <= 0) {
+            opts.maxWordsPerPage = Infinity;
+        }
 
         // remove previous synphony markup
         this.removeSynphonyMarkup();
