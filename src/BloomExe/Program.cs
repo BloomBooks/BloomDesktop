@@ -110,7 +110,7 @@ namespace Bloom
 				var exitCode = CommandLine.Parser.Default.ParseArguments(args1,
 					new[] {typeof (HydrateParameters), typeof(UploadParameters), typeof(DownloadBookOptions), typeof (GetUsedFontsParameters), typeof(ChangeLayoutParameters), typeof(CreateArtifactsParameters)})
 					.MapResult(
-						(HydrateParameters opts) => HandlePrepareCommandLine(opts),
+						(HydrateParameters opts) => HydrateBookCommand.Handle(opts),
 						(UploadParameters opts) =>
 						{
 							using (InitializeAnalytics())
@@ -407,11 +407,6 @@ namespace Bloom
 				_harvestFinalized = true;
 			}
 #endif
-		}
-
-		private static int HandlePrepareCommandLine(HydrateParameters opts)
-		{
-			return HydrateBookCommand.Handle(opts);
 		}
 
 		/// <summary>
