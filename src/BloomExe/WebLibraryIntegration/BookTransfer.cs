@@ -733,12 +733,6 @@ namespace Bloom.WebLibraryIntegration
 		/// Handles the recursion through directories: if a folder looks like a Bloom book upload it; otherwise, try its children.
 		/// Invisible folders like .hg are ignored.
 		/// </summary>
-		/// <param name="folder"></param>
-		/// <param name="dlg"></param>
-		/// <param name="container"></param>
-		/// <param name="excludeNarrationAudio"></param>
-		/// <param name="alreadyUploaded"></param>
-		/// <param name="context"></param>
 		private void UploadInternal(string folder, BulkUploadProgressDlg dlg, ApplicationContainer container, bool excludeNarrationAudio, bool excludeMusic, bool preserveThumbnails,
 			string[] alreadyUploaded, ref ProjectContext context)
 		{
@@ -761,8 +755,21 @@ namespace Bloom.WebLibraryIntegration
 				var parent = Path.GetDirectoryName(folder);
 				var collectionPath = Directory.GetFiles(parent, "*.bloomCollection").FirstOrDefault();
 				if (collectionPath == null)
-					collectionPath = Settings.Default.MruProjects.Latest;
-				if (collectionPath == null)
+				{
+					var latestCollectionPath = Settings.Default.MruProjects.Latest;
+					if (RobustFile.Exists(latestCollectionPath))
+					{
+						var msg =
+							"Collection settings will be gathered from the most recently used collection for this channel:" +
+							Environment.NewLine + latestCollectionPath + Environment.NewLine + Environment.NewLine +
+							"Do you want to continue?";
+
+						if (DialogResult.Yes == MessageBox.Show(msg, "Collection Settings Not Found", MessageBoxButtons.YesNo, MessageBoxIcon.Warning))
+							collectionPath = latestCollectionPath;
+					}
+				}
+
+				if (collectionPath == null || !RobustFile.Exists(collectionPath))
 					throw new ApplicationException("Collection not found in this or parent directory.");
 				if (context == null || context.SettingsPath != collectionPath)
 				{
