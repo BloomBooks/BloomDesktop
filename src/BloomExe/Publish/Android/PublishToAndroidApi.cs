@@ -138,12 +138,12 @@ namespace Bloom.Publish.Android
 					// If the user has taken off all possible motion, force not having motion in the
 					// Bloom Reader book.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7680.
 					if (!readRequest.CurrentBook.HasMotionPages)
-						readRequest.CurrentBook.UseMotionModeInBloomReader = false;
-					return readRequest.CurrentBook.UseMotionModeInBloomReader;
+						readRequest.CurrentBook.MotionMode = false;
+					return readRequest.CurrentBook.MotionMode;
 				},
 				(writeRequest, value) =>
 				{
-					writeRequest.CurrentBook.UseMotionModeInBloomReader = value;
+					writeRequest.CurrentBook.MotionMode = value;
 				}
 			, true);
 
@@ -162,9 +162,16 @@ namespace Bloom.Publish.Android
 						request.Failed("aborted, no longer in publish tab");
 						return;
 					}
-					UpdatePreview(request);
-
-					request.PostSucceeded();
+					try
+					{
+						UpdatePreview(request);
+						request.PostSucceeded();
+					}
+					catch (Exception e)
+					{
+						request.Failed("Error while updating preview. Message: " + e.Message);
+						NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Error while updating preview.", null, e, true);
+					}
 				}
 			}, false);
 
@@ -256,7 +263,7 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "canRotate",
 				request =>
 				{
-					return request.CurrentBook.UseMotionModeInBloomReader && request.CurrentBook.HasMotionPages;
+					return request.CurrentBook.MotionMode && request.CurrentBook.HasMotionPages;
 				},
 				null, // no write action
 				false,
@@ -272,15 +279,23 @@ namespace Bloom.Publish.Android
 				true); // we don't really know, just safe default
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "languagesInBook", request =>
 			{
-				InitializeLanguagesInBook(request);
-				var result = "[" + string.Join(",", _allLanguages.Select(kvp =>
+				try
 				{
-					var complete = kvp.Value ? "true" : "false";
-					var include = _languagesToPublish.Contains(kvp.Key) ? "true" : "false";
-					return $"{{\"code\":\"{kvp.Key}\", \"name\":\"{request.CurrentBook.PrettyPrintLanguage((kvp.Key))}\",\"complete\":{complete},\"include\":{include}}}";
-				})) + "]";
+					InitializeLanguagesInBook(request);
+					var result = "[" + string.Join(",", _allLanguages.Select(kvp =>
+					{
+						var complete = kvp.Value ? "true" : "false";
+						var include = _languagesToPublish.Contains(kvp.Key) ? "true" : "false";
+						return $"{{\"code\":\"{kvp.Key}\", \"name\":\"{request.CurrentBook.PrettyPrintLanguage((kvp.Key))}\",\"complete\":{complete},\"include\":{include}}}";
+					})) + "]";
 
-				request.ReplyWithText(result);
+					request.ReplyWithText(result);
+				}
+				catch (Exception e)
+				{
+					request.Failed("Error while determining languages in book. Message: " + e.Message);
+					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Error determining which languages are in the book.", null, e, true);
+				}
 			}, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "includeLanguage", request =>
 			{

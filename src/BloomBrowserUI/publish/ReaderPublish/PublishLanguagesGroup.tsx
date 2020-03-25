@@ -1,10 +1,8 @@
 import * as React from "react";
 import { FormGroup, Checkbox, FormControlLabel } from "@material-ui/core";
-import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { SettingsGroup } from "../commonPublish/BasePublishScreen";
 import { useL10n } from "../../react_components/l10nHooks";
 import { BloomApi } from "../../utils/bloomApi";
-import { MuiCheckbox } from "../../react_components/muiCheckBox";
 import "./PublishLanguagesGroup.less";
 
 class NameRec {
@@ -26,16 +24,26 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
         "PublishTab.Upload.IncompleteTranslation"
     );
     React.useEffect(() => {
-        BloomApi.get("publish/android/languagesInBook", result => {
-            let newLangs = result.data;
-            // This is for debugging. When all is well, the JSON gets parsed automatically.
-            // If there's a syntax error in the JSON, result.data is just the string.
-            // Trying to parse it ourselves at least gets the syntax error into our log/debugger.
-            if (!newLangs.map) {
-                newLangs = JSON.parse(newLangs);
+        BloomApi.get(
+            "publish/android/languagesInBook",
+
+            // onSuccess
+            result => {
+                let newLangs = result.data;
+                // This is for debugging. When all is well, the JSON gets parsed automatically.
+                // If there's a syntax error in the JSON, result.data is just the string.
+                // Trying to parse it ourselves at least gets the syntax error into our log/debugger.
+                if (!newLangs.map) {
+                    newLangs = JSON.parse(newLangs);
+                }
+                setLangs(newLangs as NameRec[]);
             }
-            setLangs(newLangs as NameRec[]);
-        });
+
+            // onError
+            // Currently just ignoring errors... letting BloomServer take care of reporting anything that comes up
+            // () => {
+            // }
+        );
     }, []);
     const languageCheckboxes = langs.map(item => (
         <FormControlLabel
@@ -85,15 +93,17 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
         />
     ));
     return (
-        <SettingsGroup
-            label={useL10n(
-                "Text Languages",
-                "PublishTab.Android.TextLanguages"
-            )}
-        >
-            <FormGroup className="scrollingFeature">
-                {languageCheckboxes}
-            </FormGroup>
-        </SettingsGroup>
+        <div className="publishLanguagesGroup">
+            <SettingsGroup
+                label={useL10n(
+                    "Text Languages",
+                    "PublishTab.Android.TextLanguages"
+                )}
+            >
+                <FormGroup className="scrollingFeature">
+                    {languageCheckboxes}
+                </FormGroup>
+            </SettingsGroup>
+        </div>
     );
 };

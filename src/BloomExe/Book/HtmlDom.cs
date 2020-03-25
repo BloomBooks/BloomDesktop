@@ -819,6 +819,12 @@ namespace Bloom.Book
 
 			// Check each language div against some additional criteria
 			langDivs = langDivs
+				// BL-8228. Don't proceed if this is a text without normal parentage, e.g. boilerplate text from a Branding pack.
+				// Before we added this line, the next one (testing for bloom-ignoreChildrenForBookLanguageList) would throw with
+				// the Juarez and Associates (Guatemala) Branding Pack.
+				.Where(div => div.ParentNode?.Attributes?["class"] != null)
+				// At least up through 4.7, bloom-ignoreChildrenForBookLanguageList is used to prevent counting localized 
+				// headers in comprehension quiz as languages of the book.
 				.Where(div => !div.ParentNode.Attributes["class"].Value.Contains("bloom-ignoreChildrenForBookLanguageList"))
 				.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
 				.Where(div => HtmlDom.IsLanguageValid(div.Attributes["lang"].Value));
@@ -1976,6 +1982,11 @@ namespace Bloom.Book
 			// Legacy style comprehension quiz pages
 			var nodes2 = element.SafeSelectNodes("//*[contains(@class, 'questions')]");
 			return nodes1?.Count >= 1 || nodes2?.Count >= 1;
+		}
+
+		public static bool HasComicFeature(XmlElement element)
+		{
+			return element.SelectSingleNode(BookStorage.ComicalXpath) != null;
 		}
 
 		public XmlNodeList SelectVideoElements()

@@ -481,6 +481,9 @@ namespace Bloom.Book
 				//if there is an id, get rid of it, because we don't want 2 elements with the same id
 				newElementInThisLanguage.RemoveAttribute("id");
 
+				// Since we change the ID, the corresponding mp3 will change, which means the duration is no longer valid
+				newElementInThisLanguage.RemoveAttribute("data-duration");  
+
 				// No need to copy over the audio-sentence markup
 				// Various code expects elements with class audio-sentence to have an ID.
 				// Both will be added when and if  we do audio recording (in whole-text-box mode) on the new div.
@@ -489,6 +492,14 @@ namespace Bloom.Book
 				// Also, if audio recording markup is done using one audio-sentence span per sentence, we won't copy it.  (Because we strip all out the text underneath this node)
 				// So, it's more consistent to treat all scenarios the same way (don't copy the audio-sentence markup)
 				HtmlDom.RemoveClass(newElementInThisLanguage, "audio-sentence");
+
+				// Nor any need to copy over other audio markup
+				// We want to clear up all the audio markup so it's not left in an inconsistent state
+				// where the Talking Book JS code thinks it's been initialized already, but actually all the audio-sentence markup has been stripped out :(
+				// See BL-8215
+				newElementInThisLanguage.RemoveAttribute("data-audiorecordingmode");
+				newElementInThisLanguage.RemoveAttribute("data-audiorecordingendtimes");
+				HtmlDom.RemoveClass(newElementInThisLanguage, "bloom-postAudioSplit");
 
 				//OK, now any text in there will belong to the prototype language, so remove it, while retaining everything else
 				StripOutText(newElementInThisLanguage);

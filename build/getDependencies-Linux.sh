@@ -57,7 +57,7 @@ echo "wget: $2 <= $1"
 f1=$(basename $1)
 f2=$(basename $2)
 cd $(dirname $2)
-wget -nv -L -N "$1"
+wget -q -L -N "$1"
 # wget has no true equivalent of curl's -o option.
 # Different versions of wget handle (or not) % escaping differently.
 # A URL query is the only reason why $f1 and $f2 should differ.

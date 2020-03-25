@@ -205,14 +205,18 @@ namespace Bloom.web.controllers
 			LogProblem(exception, detailedMessage, levelOfProblem);
 			if (_showingProblemReport)
 			{
-				// If a problem is reported when already reporting a problem, that's most likely going
-				// to be an unbounded recursion that freezes the program and prevents the original
+				// If a problem is reported when already reporting a problem, that could
+				// be an unbounded recursion that freezes the program and prevents the original
 				// problem from being reported.  So minimally report the recursive problem and stop
 				// the recursion in its tracks.
-				const string msg = "The last call logged was a RECURSIVE CALL to ShowProblemDialog";
+				//
+				// Alternatively, can happen if multiple async BloomAPI calls go out and return errors.
+				// It's probably not helpful to have multiple problem report dialogs at the same time
+				// in this case either (even if there are theoretically a finite (not infinite) number of them)
+				const string msg = "MULTIPLE CALLS to ShowProblemDialog. Suppressing the subsequent calls";
 				Console.Write(msg);
 				Logger.WriteEvent(msg);
-				return; // break recursion...
+				return; // Abort
 			}
 
 			_showingProblemReport = true;
@@ -229,34 +233,41 @@ namespace Bloom.web.controllers
 			// Now we use SafeInvoke only inside of this extracted method.
 			TryGetScreenshot(controlForScreenshotting);
 
-			try
+			SafeInvoke.InvokeIfPossible("Show Problem Dialog", controlForScreenshotting, false, () =>
 			{
-				var query = "?" + levelOfProblem;
-				var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false, "problemDialog", "loader.html");
-				var url = problemDialogRootPath.ToLocalhost() + query;
-				using (var dlg = new BrowserDialog(url))
+				// Uses a browser dialog to show the problem report
+				try
 				{
-					dlg.ShowDialog();
+					var query = "?" + levelOfProblem;
+					var problemDialogRootPath = BloomFileLocator.GetBrowserFile(false, "problemDialog", "loader.html");
+					var url = problemDialogRootPath.ToLocalhost() + query;
+
+					// Precondition: we must be on the UI thread for Gecko to work.
+					using (var dlg = new BrowserDialog(url))
+					{
+						dlg.ShowDialog();
+					}
 				}
-			}
-			catch (Exception problemReportException)
-			{
-				Logger.WriteError("*** ProblemReportApi threw an exception trying to display", problemReportException);
-				// At this point our problem reporter has failed for some reason, so we want the old WinForms handler
-				// to report both the original error for which we tried to open our dialog and this new one where
-				// the dialog itself failed.
-				// In order to do that, we create a new exception with the original exception (if there was one) as the
-				// inner exception. We include the message of the exception we just caught. Then we call the
-				// old WinForms fatal exception report directly.
-				// In any case, both of the errors will be logged by now.
-				var message = "Bloom's error reporting failed: " + problemReportException.Message;
-				ErrorReport.ReportFatalException(new ApplicationException(message, _currentException ?? problemReportException));
-			}
-			finally
-			{
-				_showingProblemReport = false;
-			}
+				catch (Exception problemReportException)
+				{
+					Logger.WriteError("*** ProblemReportApi threw an exception trying to display", problemReportException);
+					// At this point our problem reporter has failed for some reason, so we want the old WinForms handler
+					// to report both the original error for which we tried to open our dialog and this new one where
+					// the dialog itself failed.
+					// In order to do that, we create a new exception with the original exception (if there was one) as the
+					// inner exception. We include the message of the exception we just caught. Then we call the
+					// old WinForms fatal exception report directly.
+					// In any case, both of the errors will be logged by now.
+					var message = "Bloom's error reporting failed: " + problemReportException.Message;
+					ErrorReport.ReportFatalException(new ApplicationException(message, _currentException ?? problemReportException));
+				}
+				finally
+				{
+					_showingProblemReport = false;
+				}
+			});
 		}
+
 
 		private static void TryGetScreenshot(Control controlForScreenshotting)
 		{

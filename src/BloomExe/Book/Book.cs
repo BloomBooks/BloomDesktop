@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
 using System.Xml;
+using Shipwreck.Phash;
+using Shipwreck.Phash.Bitmaps;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
@@ -780,6 +782,70 @@ namespace Bloom.Book
 			BookInfo.CountryName = CollectionSettings.Country;
 			BookInfo.ProvinceName = CollectionSettings.Province;
 			BookInfo.DistrictName = CollectionSettings.District;
+		}
+
+		/// <summary>
+		/// Find the first content image on a content page (or the cover image if no content images) and
+		/// compute its "perceptual hash".
+		/// </summary>
+		/// <remarks>
+		/// This can be rather slow, as much as a second or more per image.  DO NOT ADD THIS TO BringBookUpToDate!
+		/// It may be called only by an external program such as Harvester.
+		/// </remarks>
+		public string ComputePHashOfFirstContentImage()
+		{
+#if DEBUG
+			var startTime = DateTime.UtcNow;
+#endif
+			try
+			{
+				var max = this.GetLastNumberedPageNumber();
+				for (int num = 1; num <= max; ++num)
+				{
+					var firstContentImageElement = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page') and @data-page-number='{num}']//div[contains(@class,'bloom-imageContainer')]/img");
+					if (firstContentImageElement != null)
+					{
+						var src = firstContentImageElement.GetAttribute("src");
+						return ComputePHashOfImageFile(src);
+					}
+				}
+				// No content page images found.  Try the cover page, then give up.
+				var coverImg = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page') and @data-xmatter-page='frontCover']//div[contains(@class,'bloom-imageContainer')]/img");
+				if (coverImg != null)
+				{
+					var src = coverImg.GetAttribute("src");
+					return ComputePHashOfImageFile(src);
+				}
+				// no images found anywhere??
+				return null;
+			}
+			finally
+			{
+#if DEBUG
+				var endTime = DateTime.UtcNow;
+				Console.WriteLine("Computing PHash for {0} took {1}", this.Title, endTime - startTime);
+#endif
+			}
+		}
+
+		private string ComputePHashOfImageFile(string src)
+		{
+			if (src == "placeholder.png")
+				return null;
+			var path = Path.Combine(FolderPath, src);
+			if (RobustFile.Exists(path))
+			{
+				try
+				{
+					var bitmap = (Bitmap)Image.FromFile(path);
+					var hash = ImagePhash.ComputeDigest(bitmap.ToLuminanceImage());
+					return hash.ToString();
+				} catch
+				{
+					return null;
+				}
+			}
+			return null;
 		}
 
 		/// <summary>
@@ -3403,6 +3469,8 @@ namespace Bloom.Book
 
 		public bool HasQuizPages => HtmlDom.HasQuizFeature(OurHtmlDom.Body);
 
+		public bool HasComicPages => HtmlDom.HasComicFeature(OurHtmlDom.Body);
+
 		public bool HasOnlyPictureOnlyPages()
 		{
 			foreach (var page in GetPages())
@@ -3438,6 +3506,7 @@ namespace Bloom.Book
 			// Language-independent features
 			UpdateQuizFeature();
 			UpdateMotionFeature();
+			UpdateComicFeature();
 		}
 
 		/// <summary>
@@ -3525,18 +3594,26 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Updates the feature in bookInfo.metadata to indicate whether the book contains comic pages
+		/// </summary>
+		private void UpdateComicFeature()
+		{
+			BookInfo.MetaData.Feature_Comic = HasComicPages;
+		}
+
+		/// <summary>
 		/// Updates the feature in bookInfo.metadata to indicate whether the book is a motion book
 		/// </summary>
 		private void UpdateMotionFeature()
 		{
-			BookInfo.MetaData.Feature_Motion = UseMotionModeInBloomReader;
+			BookInfo.MetaData.Feature_Motion = MotionMode;
 		}
-		
+
 		// This is a shorthand for a whole set of features.
 		// Note: we are currently planning to eventually store this primarily in the data-div, with the
 		// body feature attributes present only so that CSS can base things on it. This method would then
-		// be responsible to set that too...and probaby that is what it should read.
-		public bool UseMotionModeInBloomReader
+		// be responsible to set that too...and probably that is what it should read.
+		public bool MotionMode
 		{
 			// Review: the issue suggested that it's only true if it has all of them. Currently they all get
 			// set or cleared together, so it makes no difference.
@@ -3564,6 +3641,11 @@ namespace Bloom.Book
 				//modifiedBook.OurHtmlDom.SetBookFeature("hideMargin", "landscape", "bloomReader");
 				//modifiedBook.OurHtmlDom.SetBookFeature("hidePageNumbers", "landscape", "bloomReader");
 				addOrRemove("fullscreenpicture", "landscape", "bloomReader");
+
+				// Though the feature was/is getting set correctly at publish time, somehow it was getting out of
+				// sync (see BL-8049). So, now we also set it here immediately when the value changes.
+				BookInfo.MetaData.Feature_Motion = value;
+
 				Save();
 			}
 		}

@@ -321,6 +321,12 @@ namespace Bloom.Book
 			set { MetaData.DistrictName = value; }
 		}
 
+		public string PHashOfFirstContentImage
+		{
+			get { return MetaData.PHashOfFirstContentImage; }
+			set { MetaData.PHashOfFirstContentImage = value; }
+		}
+
 		internal string MetaDataPath
 		{
 			get { return BookMetaData.MetaDataPath(FolderPath); }
@@ -809,8 +815,10 @@ namespace Bloom.Book
 						province = ProvinceName,
 						district = DistrictName,
 						features = Features,
+						publisher = Publisher,
 						internetLimits = InternetLimits,
-						importedBookSourceUrl = ImportedBookSourceUrl
+						importedBookSourceUrl = ImportedBookSourceUrl,
+						phashOfFirstContentImage = PHashOfFirstContentImage
 						// Other fields are not needed by the web site and we don't expect they will be.
 					});
 			}
@@ -1079,6 +1087,7 @@ namespace Bloom.Book
 
 				if (Feature_Motion) features.Add("motion");
 				if (Feature_Quiz) features.Add("quiz");
+				if (Feature_Comic) features.Add("comic");
 
 				return features.ToArray();
 			}
@@ -1086,6 +1095,7 @@ namespace Bloom.Book
 			{
 				Feature_Motion = value.Contains("motion");
 				Feature_Quiz = value.Contains("quiz");
+				Feature_Comic = value.Contains("comic");
 
 				Feature_Blind_LangCodes = new HashSet<string>();
 				Feature_TalkingBook_LangCodes = new HashSet<string>();
@@ -1172,6 +1182,8 @@ namespace Bloom.Book
 		public bool Feature_Motion { get; set; }
 		[JsonIgnore]
 		public bool Feature_Quiz { get; set; }
+		[JsonIgnore]
+		public bool Feature_Comic { get; set; }
 
 		[JsonProperty("page-number-style")]
 		public string PageNumberStyle { get; set; }
@@ -1199,6 +1211,21 @@ namespace Bloom.Book
 		/// </summary>
 		[JsonProperty("imported-book-source-url")]
 		public string ImportedBookSourceUrl { get; set; }
+
+		/// <summary>
+		/// The publisher of the book.  For many books, this may be unset because the book is "self-published".
+		/// </summary>
+		[JsonProperty("publisher")]
+		public string Publisher { get; set; }
+
+		/// <summary>
+		/// This is a "perceptual hash" (http://phash.org/) of the image in the first bloom-imageContainer
+		/// we find on the first page after any xmatter pages. We use this to suggest which books are
+		/// probably related to each other. This allows us to link, for example, books that are translations
+		/// of each other.  (https://www.nuget.org/packages/Shipwreck.Phash/ is used to calculate the phash.)
+		/// </summary>
+		[JsonProperty("phashOfFirstContentImage")]
+		public string PHashOfFirstContentImage { get; set; }
 	}
 
 	/// <summary>
