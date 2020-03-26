@@ -58,13 +58,24 @@ namespace Bloom.CLI
 
 			Directory.CreateDirectory(Path.GetDirectoryName(options.ReportPath));
 
-			using (var report = new StreamWriter(options.ReportPath))
+			try
 			{
-				foreach (var font in fonts)
+				using (var report = new StreamWriter(options.ReportPath))
 				{
-					report.WriteLine(font);
+					foreach (var font in fonts)
+					{
+						report.WriteLine(font);
+					}
 				}
 			}
+			catch (IOException e)
+			{
+				string message = "Exception: " + e.ToString();
+				Debug.WriteLine(message);
+				Console.Error.WriteLine(message);
+				return 2;
+			}
+
 			Console.WriteLine("Finished gathering font data.");
 			Debug.WriteLine("Finished gathering font data.");
 			return 0;
