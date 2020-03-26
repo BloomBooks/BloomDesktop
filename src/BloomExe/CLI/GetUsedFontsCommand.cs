@@ -8,6 +8,13 @@ using CommandLine;
 
 namespace Bloom.CLI
 {
+	enum GetUsedFontsExitCode
+	{
+		Success = 0,
+		BookPathDirectoryNotFound = 1,
+		ReportIOError = 2
+	}
+
 	/// <summary>
 	/// This generates a list of the fonts used in a book.
 	/// Currently it is pretty crude, just detecting what fonts are mentioned
@@ -33,7 +40,7 @@ namespace Bloom.CLI
 					Debug.WriteLine("Could not find " + options.BookPath);
 					Console.Error.WriteLine("Could not find " + options.BookPath);
 				}
-				return 1;
+				return (int)GetUsedFontsExitCode.BookPathDirectoryNotFound;
 			}
 			Console.WriteLine("Gathering font data.");
 
@@ -58,16 +65,27 @@ namespace Bloom.CLI
 
 			Directory.CreateDirectory(Path.GetDirectoryName(options.ReportPath));
 
-			using (var report = new StreamWriter(options.ReportPath))
+			try
 			{
-				foreach (var font in fonts)
+				using (var report = new StreamWriter(options.ReportPath))
 				{
-					report.WriteLine(font);
+					foreach (var font in fonts)
+					{
+						report.WriteLine(font);
+					}
 				}
 			}
+			catch (IOException e)
+			{
+				string message = "Exception: " + e.ToString();
+				Debug.WriteLine(message);
+				Console.Error.WriteLine(message);
+				return (int)GetUsedFontsExitCode.ReportIOError;
+			}
+
 			Console.WriteLine("Finished gathering font data.");
 			Debug.WriteLine("Finished gathering font data.");
-			return 0;
+			return (int)GetUsedFontsExitCode.Success;
 		}
 	}
 }
