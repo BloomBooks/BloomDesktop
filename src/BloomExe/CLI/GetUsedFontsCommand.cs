@@ -8,6 +8,15 @@ using CommandLine;
 
 namespace Bloom.CLI
 {
+	[Flags]
+	enum GetUsedFontsExitCode
+	{
+		Success = 0,
+		BookPathDirectoryNotFound = 1,
+		ReportIOError = 2,
+		UnhandledException = 4
+	}
+
 	/// <summary>
 	/// This generates a list of the fonts used in a book.
 	/// Currently it is pretty crude, just detecting what fonts are mentioned
@@ -21,53 +30,74 @@ namespace Bloom.CLI
 	{
 		public static int Handle(GetUsedFontsParameters options)
 		{
-			if(!Directory.Exists(options.BookPath))
+			try
 			{
-				if(options.BookPath.Contains(".htm"))
+				if (!Directory.Exists(options.BookPath))
 				{
-					Debug.WriteLine("Supply only the directory, not the path to the file.");
-					Console.Error.WriteLine("Supply only the directory, not the path to the file.");
+					if (options.BookPath.Contains(".htm"))
+					{
+						Debug.WriteLine("Supply only the directory, not the path to the file.");
+						Console.Error.WriteLine("Supply only the directory, not the path to the file.");
+					}
+					else
+					{
+						Debug.WriteLine("Could not find " + options.BookPath);
+						Console.Error.WriteLine("Could not find " + options.BookPath);
+					}
+					return (int)GetUsedFontsExitCode.BookPathDirectoryNotFound;
 				}
-				else
+				Console.WriteLine("Gathering font data.");
+
+				// Some of this might be useful if we end up needing to instantiate the book to figure out what
+				// is REALLY needed (as opposed to just mentioned in a style sheet).
+				//var collectionFolder = Path.GetDirectoryName(options.BookPath);
+				//var projectSettingsPath = Directory.GetFiles(collectionFolder, "*.bloomCollection").FirstOrDefault();
+				//var collectionSettings = new CollectionSettings(projectSettingsPath);
+
+				//XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[] {BloomFileLocator.GetInstalledXMatterDirectory()});
+				//var locator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(),
+				//	ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
+
+				//var bookInfo = new BookInfo(options.BookPath, true);
+				//var book = new Book.Book(bookInfo, new BookStorage(options.BookPath, locator, new BookRenamedEvent(), collectionSettings),
+				//	null, collectionSettings, null, null, new BookRefreshEvent());
+
+				//book.BringBookUpToDate(new NullProgress());
+
+				var fonts = EpubMaker.GetFontsUsed(options.BookPath, false).ToList();
+				fonts.Sort();
+
+				Directory.CreateDirectory(Path.GetDirectoryName(options.ReportPath));
+
+				try
 				{
-					Debug.WriteLine("Could not find " + options.BookPath);
-					Console.Error.WriteLine("Could not find " + options.BookPath);
+					using (var report = new StreamWriter(options.ReportPath))
+					{
+						foreach (var font in fonts)
+						{
+							report.WriteLine(font);
+						}
+					}
 				}
-				return 1;
+				catch (IOException e)
+				{
+					string message = "Exception: " + e.ToString();
+					Debug.WriteLine(message);
+					Console.Error.WriteLine(message);
+					return (int)GetUsedFontsExitCode.ReportIOError;
+				}
+
+				Console.WriteLine("Finished gathering font data.");
+				Debug.WriteLine("Finished gathering font data.");
+				return (int)GetUsedFontsExitCode.Success;
 			}
-			Console.WriteLine("Gathering font data.");
-
-			// Some of this might be useful if we end up needing to instantiate the book to figure out what
-			// is REALLY needed (as opposed to just mentioned in a style sheet).
-			//var collectionFolder = Path.GetDirectoryName(options.BookPath);
-			//var projectSettingsPath = Directory.GetFiles(collectionFolder, "*.bloomCollection").FirstOrDefault();
-			//var collectionSettings = new CollectionSettings(projectSettingsPath);
-
-			//XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[] {BloomFileLocator.GetInstalledXMatterDirectory()});
-			//var locator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(),
-			//	ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
-
-			//var bookInfo = new BookInfo(options.BookPath, true);
-			//var book = new Book.Book(bookInfo, new BookStorage(options.BookPath, locator, new BookRenamedEvent(), collectionSettings),
-			//	null, collectionSettings, null, null, new BookRefreshEvent());
-
-			//book.BringBookUpToDate(new NullProgress());
-
-			var fonts = EpubMaker.GetFontsUsed(options.BookPath, false).ToList();
-			fonts.Sort();
-
-			Directory.CreateDirectory(Path.GetDirectoryName(options.ReportPath));
-
-			using (var report = new StreamWriter(options.ReportPath))
+			catch (Exception e)
 			{
-				foreach (var font in fonts)
-				{
-					report.WriteLine(font);
-				}
+				string message = "Exception: " + e.ToString();
+				Debug.WriteLine(message);
+				Console.Error.WriteLine(message);
+				return (int)GetUsedFontsExitCode.UnhandledException;
 			}
-			Console.WriteLine("Finished gathering font data.");
-			Debug.WriteLine("Finished gathering font data.");
-			return 0;
 		}
 	}
 }

@@ -16,17 +16,45 @@ using SIL.IO;
 
 namespace Bloom.CLI
 {
+	[Flags]
+	enum CreateArtifactsExitCode
+	{
+		// These flags should all be powers of 2, so they can be bit-or'd together
+		// Make sure to update GetErrorsFromExitCode() too
+		Success = 0,
+		UnhandledException = 1,
+		BookHtmlNotFound = 2
+	}
+
 	class CreateArtifactsCommand
 	{
 		private static ProjectContext _projectContext;
 
+		public static List<string> GetErrorsFromExitCode(int exitCode)
+		{
+			var errors = new List<string>();
+
+			// Check the exit code against bitmask flags
+			if ((exitCode & (int)CreateArtifactsExitCode.UnhandledException) != 0)
+				errors.Add(CreateArtifactsExitCode.UnhandledException.ToString());
+
+			if ((exitCode & (int)CreateArtifactsExitCode.BookHtmlNotFound) != 0)
+				errors.Add(CreateArtifactsExitCode.BookHtmlNotFound.ToString());
+
+			if (errors.Count == 0)
+				errors.Add("Unknown");
+
+			return errors;
+		}
+
 		public static int Handle(CreateArtifactsParameters options)
 		{
-			Console.Out.WriteLine();
-
-			Program.SetUpErrorHandling();
 			try
 			{
+				Console.Out.WriteLine();
+
+				Program.SetUpErrorHandling();
+
 				using (var applicationContainer = new ApplicationContainer())
 				{
 					Program.SetUpLocalization(applicationContainer);
@@ -45,7 +73,8 @@ namespace Bloom.CLI
 						Bloom.Program.SetProjectContext(_projectContext);
 
 						// Make the .bloomd and /bloomdigital outputs
-						CreateArtifacts(options);
+						var exitCode = CreateArtifacts(options);
+						return (int)exitCode;
 					}
 				}
 			}
@@ -53,21 +82,21 @@ namespace Bloom.CLI
 			{
 				Console.WriteLine(ex.Message);
 				Console.WriteLine(ex.StackTrace);
-				return 1;
+				return (int)CreateArtifactsExitCode.UnhandledException;
 			}
-
-			return 0;
 		}
 
-		private static void CreateArtifacts(CreateArtifactsParameters parameters)
+		private static CreateArtifactsExitCode CreateArtifacts(CreateArtifactsParameters parameters)
 		{
+			var exitCode = CreateArtifactsExitCode.Success;
+
 			string zippedBloomDOutputPath = parameters.BloomDOutputPath;
 			string unzippedBloomDigitalOutputPath = parameters.BloomDigitalOutputPath;
 
 			bool isBloomDOrBloomDigitalRequested = !String.IsNullOrEmpty(zippedBloomDOutputPath) || !String.IsNullOrEmpty(unzippedBloomDigitalOutputPath);
 			if (isBloomDOrBloomDigitalRequested)
 			{
-				CreateBloomDigitalArtifacts(parameters.BookPath, parameters.Creator, zippedBloomDOutputPath, unzippedBloomDigitalOutputPath);
+				exitCode |= CreateBloomDigitalArtifacts(parameters.BookPath, parameters.Creator, zippedBloomDOutputPath, unzippedBloomDigitalOutputPath);
 			}
 
 			Control control = new Control();
@@ -93,14 +122,20 @@ namespace Bloom.CLI
 			}
 
 			CreateThumbnailArtifact(parameters);
+
+			return exitCode;
 		}
 
-		public static void CreateBloomDigitalArtifacts(string bookPath, string creator, string zippedBloomDOutputPath, string unzippedBloomDigitalOutputPath)
+		/// <summary>
+		/// Creates the .bloomd and bloomdigital folders
+		/// </summary>
+		private static CreateArtifactsExitCode CreateBloomDigitalArtifacts(string bookPath, string creator, string zippedBloomDOutputPath, string unzippedBloomDigitalOutputPath)
 		{
 #if DEBUG
 			// Useful for allowing debugging of Bloom while running the harvester
 			//MessageBox.Show("Attach debugger now");
 #endif
+			var exitCode = CreateArtifactsExitCode.Success;
 
 			using (var tempBloomD = TempFile.CreateAndGetPathButDontMakeTheFile())
 			{
@@ -139,24 +174,30 @@ namespace Bloom.CLI
 
 						ZipFile.ExtractToDirectory(zippedBloomDOutputPath, unzippedBloomDigitalOutputPath);
 
-						RenameBloomDigitalFiles(unzippedBloomDigitalOutputPath);
+						exitCode |= RenameBloomDigitalFiles(unzippedBloomDigitalOutputPath);
 					}
 				}
 			}
+
+			return exitCode;
 		}
 
-		// Consumers expect the file to be in index.htm name, not {title}.htm name.
-		private static void RenameBloomDigitalFiles(string bookDirectory)
+		/// <summary>
+		/// Renames the {title}.htm HTM file to index.htm instead
+		/// </summary>
+		/// <param name="bookDirectory"></param>
+		private static CreateArtifactsExitCode RenameBloomDigitalFiles(string bookDirectory)
 		{
 			string originalHtmFilePath = Bloom.Book.BookStorage.FindBookHtmlInFolder(bookDirectory);
 
 			Debug.Assert(RobustFile.Exists(originalHtmFilePath), "Book HTM not found: " + originalHtmFilePath);
-			if (RobustFile.Exists(originalHtmFilePath))
-			{
-				string newHtmFilePath = Path.Combine(bookDirectory, $"index.htm");
-				RobustFile.Copy(originalHtmFilePath, newHtmFilePath);
-				RobustFile.Delete(originalHtmFilePath);
-			}
+			if (!RobustFile.Exists(originalHtmFilePath))
+				return CreateArtifactsExitCode.BookHtmlNotFound;
+
+			string newHtmFilePath = Path.Combine(bookDirectory, $"index.htm");
+			RobustFile.Copy(originalHtmFilePath, newHtmFilePath);
+			RobustFile.Delete(originalHtmFilePath);
+			return CreateArtifactsExitCode.Success;
 		}
 
 		/// <summary>
