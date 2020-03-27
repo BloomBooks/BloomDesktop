@@ -42,7 +42,7 @@ namespace Bloom.CollectionCreating
             this._languageLocationPage = new Bloom.Wizard.WizardAdapterPage();
 			this._languageFontPage = new Bloom.Wizard.WizardAdapterPage();
             this._finishPage = new Bloom.Wizard.WizardAdapterPage();
-			this.betterLabel1 = new SIL.Windows.Forms.Widgets.BetterLabel();
+			this.betterLabel1 = new SIL.Windows.Forms.Widgets.HtmlLabel();
             this._collectionNamePage = new Bloom.Wizard.WizardAdapterPage();
             this._collectionNameProblemPage = new Bloom.Wizard.WizardAdapterPage();
 			this._welcomeHtml = new SIL.Windows.Forms.Widgets.HtmlLabel();
@@ -143,9 +143,7 @@ namespace Bloom.CollectionCreating
 			this.betterLabel1.Enabled = false;
 			this.betterLabel1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.betterLabel1.Location = new System.Drawing.Point(120, 60);
-			this.betterLabel1.Multiline = true;
 			this.betterLabel1.Name = "betterLabel1";
-			this.betterLabel1.ReadOnly = true;
 			this.betterLabel1.Size = new System.Drawing.Size(631, 23);
 			this.betterLabel1.TabIndex = 0;
 			this.betterLabel1.TabStop = false;
@@ -256,7 +254,7 @@ namespace Bloom.CollectionCreating
 		private Bloom.Wizard.WizardAdapterPage _languageFontPage;
 		private Bloom.MiscUI.LanguageFontDetails _fontDetails;
 		private LanguageLocationControl _languageLocationControl;
-		private SIL.Windows.Forms.Widgets.BetterLabel betterLabel1;
+		private SIL.Windows.Forms.Widgets.HtmlLabel betterLabel1;
         private Bloom.Wizard.WizardAdapterPage _welcomePage;
 		private SIL.Windows.Forms.Widgets.HtmlLabel _welcomeHtml;
 	}
