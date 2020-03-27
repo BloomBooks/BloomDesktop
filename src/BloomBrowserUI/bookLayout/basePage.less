@@ -131,7 +131,12 @@ div.ui-tooltip-content {
     z-index: 100;
 }
 p {
-    min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
+    //without this, an empty paragraph will be invisible, making blank lines impossible
+    //but we also want to make sure that an empty paragraph is the same height as other lines...
+    //especially since in the Edit Page (but not in Publish to Reader preview, bloom-player, etc),
+    //CKEditor will insert a <br> element (making it take up the line-height) whereas without the <br>,
+    //it would take up the min-height
+    min-height: @defaultLineHeight;
 }
 textarea,
 .bloom-editable {
@@ -167,10 +172,6 @@ td {
     line-height: @defaultLineHeight;
     min-height: @defaultLineHeight + 0.3em;
     width: 100%;
-}
-
-p {
-    min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
 }
 
 //user can get this in by pressing shift-enter. See bloomField.ts
