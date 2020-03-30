@@ -34,14 +34,26 @@ namespace Bloom.CLI
 		{
 			var errors = new List<string>();
 
+			if (exitCode == 0)
+				return errors;
+
 			// Check the exit code against bitmask flags
 			if ((exitCode & (int)CreateArtifactsExitCode.UnhandledException) != 0)
+			{
 				errors.Add(CreateArtifactsExitCode.UnhandledException.ToString());
+				exitCode &= ~(int)CreateArtifactsExitCode.UnhandledException;
+			}
 
 			if ((exitCode & (int)CreateArtifactsExitCode.BookHtmlNotFound) != 0)
+			{
 				errors.Add(CreateArtifactsExitCode.BookHtmlNotFound.ToString());
+				exitCode &= ~(int)CreateArtifactsExitCode.BookHtmlNotFound;
+			}
 
-			if (errors.Count == 0)
+			// Check if:
+			// 1) Some error code was found
+			// 2) No unknown flags remain
+			if (errors.Count == 0 || exitCode != 0)
 				errors.Add("Unknown");
 
 			return errors;
