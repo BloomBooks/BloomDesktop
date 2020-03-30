@@ -18,7 +18,7 @@ import { HowMuchGroup } from "./HowMuchGroup";
 import { PrivacyNotice } from "./PrivacyNotice";
 import { makeTheme, kindParams } from "./theme";
 import { EmailField, isValidEmail } from "./EmailField";
-import { useDrawAttention } from "./UseDrawAttention";
+import { useDrawAttention } from "../react_components/UseDrawAttention";
 import ReactDOM = require("react-dom");
 import { PrivacyScreen } from "./PrivacyScreen";
 import { useL10n } from "../react_components/l10nHooks";

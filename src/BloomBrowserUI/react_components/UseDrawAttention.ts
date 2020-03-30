@@ -1,5 +1,7 @@
 import React = require("react");
 
+// For examples of use, see problemDialog/EmailField.tsx and publish/commonPublish/DeviceAndControls.tsx.
+// Don't for get to add the two rules to the appropriate .less file too.
 export function useDrawAttention(
     submitAttempts: number,
     validate: () => boolean

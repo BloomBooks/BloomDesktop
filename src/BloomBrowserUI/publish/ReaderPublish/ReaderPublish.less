@@ -96,4 +96,18 @@
         padding-top: 5px;
         padding-bottom: 5px;
     }
+    .deviceAndControls {
+        .drawAttention {
+            animation: shakeMe 75ms 5 ease-in alternate;
+        }
+        @keyframes shakeMe {
+            0% {
+                margin-left: 10px;
+            }
+
+            100% {
+                margin-left: 0;
+            }
+        }
+    }
 }
