@@ -158,3 +158,19 @@ input[type="checkbox"]:indeterminate::after {
     position: absolute;
     top: -8px;
 }
+
+// The following two rules are for use by the react_components/UseDrawAttention hook.
+// They make a UI element shake when the drawAttention class is added to a React element.
+.drawAttention {
+    animation: shakeMe 75ms 5 ease-in alternate;
+}
+
+@keyframes shakeMe {
+    0% {
+        margin-left: 10px;
+    }
+
+    100% {
+        margin-left: 0;
+    }
+}
