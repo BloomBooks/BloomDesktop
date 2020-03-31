@@ -35,6 +35,7 @@
 @bloom-toolboxWhite: @bloom-buff;
 @bloom-purple: #96668f;
 @bloom-warning: #f3aa18;
+@SliderRailMark: #a9a9a9;
 @DisabledButtonColor: @bloom-gray;
 @ControlColor: @bloom-purple;
 @DialogTopBottomBar: #f1f3f4;
@@ -157,4 +158,20 @@ input[type="checkbox"]:indeterminate::after {
     font-size: 14px;
     position: absolute;
     top: -8px;
+}
+
+// The following two rules are for use by the react_components/UseDrawAttention hook.
+// They make a UI element shake when the drawAttention class is added to a React element.
+.drawAttention {
+    animation: shakeMe 75ms 5 ease-in alternate;
+}
+
+@keyframes shakeMe {
+    0% {
+        margin-left: 10px;
+    }
+
+    100% {
+        margin-left: 0;
+    }
 }
