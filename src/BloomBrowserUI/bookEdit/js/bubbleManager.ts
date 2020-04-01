@@ -1563,6 +1563,7 @@ export class BubbleManager {
                     } else {
                         target.classList.add("bloom-allowAutoShrink");
                     }
+                    this.adjustResizingForScale(ui, scale);
                 }
             }
         });
@@ -1601,6 +1602,21 @@ export class BubbleManager {
         this.makeTOPBoxesDraggableAndClickable(textOverPictureElems, scale);
     }
 
+    // BL-8134: Keeps mouse movement in sync with bubble resizing when scale is not 100%.
+    private adjustResizingForScale(
+        ui: JQueryUI.ResizableUIParams,
+        scale: number
+    ) {
+        const newWidth =
+            ui.originalSize.width +
+            (ui.size.width - ui.originalSize.width) / scale;
+        const newHeight =
+            ui.originalSize.height +
+            (ui.size.height - ui.originalSize.height) / scale;
+        ui.element.width(newWidth);
+        ui.element.height(newHeight);
+    }
+
     // An event handler that adds the "bloom-resizing" class to the image container.
     private static addResizingClassHandler(event: MouseEvent) {
         const handle = event.currentTarget as Element;
@@ -1611,7 +1627,7 @@ export class BubbleManager {
         }
     }
 
-    // An event handler that adds the "bloom-resizing" class to the image container.
+    // An event handler that removes the "bloom-resizing" class from the image container.
     private static clearResizingClassHandler(event: MouseEvent) {
         BubbleManager.clearResizingClass(event.currentTarget as Element);
     }
