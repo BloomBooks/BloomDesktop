@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Bloom;
 using Bloom.Book;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using L10NSharp;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.PlatformUtilities;
@@ -21,7 +24,7 @@ namespace BloomTests.WebLibraryIntegration
 		private TemporaryFolder _workFolder;
 		private string _workFolderPath;
 		private BookTransfer _transfer;
-		private BloomParseClient _parseClient;
+		private BloomParseClientDouble _parseClient;
 		List<BookInfo> _downloadedBooks = new List<BookInfo>();
 		private HtmlThumbNailer _htmlThumbNailer;
 		private string _thisTestId;
@@ -33,17 +36,27 @@ namespace BloomTests.WebLibraryIntegration
 				// Do NOT do this...it results in creating a garbage class in Parse.com which is hard to delete (manual only).
 				//ClassesLanguagePath = "classes/language_" + testId;
 			}
-		}
 
-		[OneTimeSetUp]
-		public void TestFixtureSetUp()
-		{
-			_thisTestId = Guid.NewGuid().ToString().Replace('-', '_');
+			public bool SimulateOldBloomUpload = false;
+
+			public override string ChangeJsonBeforeCreatingOrModifyingBook(string json)
+			{
+				if (SimulateOldBloomUpload)
+				{
+					var bookRecord = JObject.Parse(json);
+					bookRecord.Remove("lastUploaded");
+					bookRecord.Remove("updateSource");
+					return bookRecord.ToString();
+				}
+				return base.ChangeJsonBeforeCreatingOrModifyingBook(json);
+			}
 		}
 
 		[SetUp]
 		public void Setup()
 		{
+			_thisTestId = Guid.NewGuid().ToString().Replace('-', '_');
+
 			_workFolder = new TemporaryFolder("unittest-" + _thisTestId);
 			_workFolderPath = _workFolder.FolderPath;
 			Assert.AreEqual(0,Directory.GetDirectories(_workFolderPath).Count(),"Some stuff was left over from a previous test");
@@ -252,11 +265,127 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(firstData, Does.Contain("something new"), "We should have overwritten the changed file");
 			Assert.That(File.Exists(newBookFolder.CombineForPath("two.css")), Is.True, "We should have added the new file");
 			Assert.That(File.Exists(newBookFolder.CombineForPath("one.css")), Is.False, "We should have deleted the obsolete file");
+
 			// Verify that metadata was overwritten, new record not created.
-			// This part of the test currently fails. New data is not showing up in parse.com unit test application soon enough.
-			//var records = _parseClient.GetBookRecords("myId");
-			//Assert.That(records.Count, Is.EqualTo(1), "Should have overwritten parse.com record, not added or deleted");
-			//Assert.That(records[0].bookLineage.Value, Is.EqualTo("other"));
+			var records = _parseClient.GetBookRecords("myId" + _thisTestId);
+			Assert.That(records.Count, Is.EqualTo(1), "Should have overwritten parse server record, not added or deleted");
+			var bookRecord = records[0];
+			Assert.That(bookRecord.bookLineage.Value, Is.EqualTo("other"));
+		}
+
+		[Test]
+		public void UploadBook_SetsInterestingParseFieldsCorrectly()
+		{
+			Login();
+			var bookFolder = MakeBook(MethodBase.GetCurrentMethod().Name, "myId", "me", "something");
+			_transfer.UploadBook(bookFolder, new NullProgress());
+			var bookInstanceId = "myId" + _thisTestId;
+			var bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+
+			// Verify new upload
+			Assert.That(bookRecord.harvestState.Value, Is.EqualTo("New"));
+			Assert.That(bookRecord.tags[0].Value, Is.EqualTo("system:Incoming"), "New books should always get the system:Incoming tag.");
+			Assert.That(bookRecord.updateSource.Value.StartsWith("BloomDesktop "), Is.True, "updateSource should start with BloomDesktop when uploaded");
+			Assert.That(bookRecord.updateSource.Value, Is.Not.EqualTo("BloomDesktop old"), "updateSource should not equal 'BloomDesktop old' when uploaded from current Bloom");
+			DateTime lastUploadedDateTime = bookRecord.lastUploaded.iso.Value;
+			var differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
+			Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromSeconds(0)), "lastUploaded should be a valid date representing now-ish");
+			Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromSeconds(5)), "lastUploaded should be a valid date representing now-ish");
+
+			// Set up for re-upload
+			_parseClient.SetBookRecord(JsonConvert.SerializeObject(
+				new
+				{
+					bookInstanceId,
+					updateSource = "not Bloom",
+					tags = new string[0],
+					lastUploaded = (ParseServerDate)null,
+					harvestState = "Done"
+				}));
+			bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+			Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Done"));
+			Assert.That(bookRecord.tags, Is.Empty);
+			Assert.That(bookRecord.updateSource.Value, Is.EqualTo("not Bloom"));
+			Assert.That(bookRecord.lastUploaded.Value, Is.Null);
+
+			_transfer.UploadBook(bookFolder, new NullProgress());
+			bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+
+			// Verify re-upload
+			Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Updated"));
+			Assert.That(bookRecord.tags[0].Value, Is.EqualTo("system:Incoming"), "Re-uploaded books should always get the system:Incoming tag.");
+			Assert.That(bookRecord.updateSource.Value.StartsWith("BloomDesktop "), Is.True, "updateSource should start with BloomDesktop when re-uploaded");
+			Assert.That(bookRecord.updateSource.Value, Is.Not.EqualTo("BloomDesktop old"), "updateSource should not equal 'BloomDesktop old' when uploaded from current Bloom");
+			lastUploadedDateTime = bookRecord.lastUploaded.iso.Value;
+			differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
+			Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromSeconds(0)), "lastUploaded should be a valid date representing now-ish");
+			Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromSeconds(5)), "lastUploaded should be a valid date representing now-ish");
+
+			_parseClient.DeleteBookRecord(bookRecord.objectId.Value);
+		}
+
+		// This is really testing parse server cloud code.
+		// We are simulating uploading from an old Bloom where the updateSource and lastUploaded were not
+		// sent from Bloom, but the cloud code sets them by recognizing we are coming from Bloom based
+		// on the headers.user-agent being RestSharp.
+		[Test]
+		public void UploadBook_SimulateOldBloom_SetsInterestingParseFieldsCorrectly()
+		{
+			try
+			{
+				_parseClient.SimulateOldBloomUpload = true;
+
+				Login();
+				var bookFolder = MakeBook(MethodBase.GetCurrentMethod().Name, "myId", "me", "something");
+				_transfer.UploadBook(bookFolder, new NullProgress());
+				var bookInstanceId = "myId" + _thisTestId;
+				var bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+
+				// Verify new upload
+				Assert.That(bookRecord.harvestState.Value, Is.EqualTo("New"));
+				Assert.That(bookRecord.tags[0].Value, Is.EqualTo("system:Incoming"), "New books should always get the system:Incoming tag.");
+				Assert.That(bookRecord.updateSource.Value, Is.EqualTo("BloomDesktop old"), "updateSource should start with BloomDesktop when uploaded");
+				DateTime lastUploadedDateTime = bookRecord.lastUploaded.iso.Value;
+				var differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
+				Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromSeconds(0)), "lastUploaded should be a valid date representing now-ish");
+				Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromSeconds(5)), "lastUploaded should be a valid date representing now-ish");
+
+				// Set up for re-upload
+				_parseClient.SimulateOldBloomUpload = false;
+				_parseClient.SetBookRecord(JsonConvert.SerializeObject(
+					new
+					{
+						bookInstanceId,
+						updateSource = "not Bloom",
+						tags = new string[0],
+						lastUploaded = (ParseServerDate) null,
+						harvestState = "Done"
+					}));
+				bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+				Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Done"));
+				Assert.That(bookRecord.tags, Is.Empty);
+				Assert.That(bookRecord.updateSource.Value, Is.EqualTo("not Bloom"));
+				Assert.That(bookRecord.lastUploaded.Value, Is.Null);
+				_parseClient.SimulateOldBloomUpload = true;
+
+				_transfer.UploadBook(bookFolder, new NullProgress());
+				bookRecord = _parseClient.GetSingleBookRecord(bookInstanceId);
+
+				// Verify re-upload
+				Assert.That(bookRecord.harvestState.Value, Is.EqualTo("Updated"));
+				Assert.That(bookRecord.tags[0].Value, Is.EqualTo("system:Incoming"), "Re-uploaded books should always get the system:Incoming tag.");
+				Assert.That(bookRecord.updateSource.Value, Is.EqualTo("BloomDesktop old"), "updateSource should start with BloomDesktop when re-uploaded");
+				lastUploadedDateTime = bookRecord.lastUploaded.iso.Value;
+				differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
+				Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromSeconds(0)), "lastUploaded should be a valid date representing now-ish");
+				Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromSeconds(5)), "lastUploaded should be a valid date representing now-ish");
+
+				_parseClient.DeleteBookRecord(bookRecord.objectId.Value);
+			}
+			finally
+			{
+				_parseClient.SimulateOldBloomUpload = false;
+			}
 		}
 
 		[Test]
