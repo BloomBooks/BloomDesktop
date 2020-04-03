@@ -347,8 +347,9 @@ namespace BloomTests.WebLibraryIntegration
 				Assert.That(bookRecord.updateSource.Value, Is.EqualTo("BloomDesktop old"), "updateSource should start with BloomDesktop when uploaded");
 				DateTime lastUploadedDateTime = bookRecord.lastUploaded.iso.Value;
 				var differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
-				Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromSeconds(0)), "lastUploaded should be a valid date representing now-ish");
-				Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromSeconds(5)), "lastUploaded should be a valid date representing now-ish");
+				// Since we are actually comparing two different system clocks (parse server vs. machine running tests), we allow for 5 minutes either way.
+				Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromMinutes(-5)), "lastUploaded should be a valid date representing now-ish");
+				Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromMinutes(5)), "lastUploaded should be a valid date representing now-ish");
 
 				// Set up for re-upload
 				_parseClient.SimulateOldBloomUpload = false;
@@ -377,8 +378,9 @@ namespace BloomTests.WebLibraryIntegration
 				Assert.That(bookRecord.updateSource.Value, Is.EqualTo("BloomDesktop old"), "updateSource should start with BloomDesktop when re-uploaded");
 				lastUploadedDateTime = bookRecord.lastUploaded.iso.Value;
 				differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
-				Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromSeconds(0)), "lastUploaded should be a valid date representing now-ish");
-				Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromSeconds(5)), "lastUploaded should be a valid date representing now-ish");
+				// Since we are actually comparing two different system clocks (parse server vs. machine running tests), we allow for 5 minutes either way.
+				Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromMinutes(-5)), "lastUploaded should be a valid date representing now-ish");
+				Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromMinutes(5)), "lastUploaded should be a valid date representing now-ish");
 
 				_parseClient.DeleteBookRecord(bookRecord.objectId.Value);
 			}
