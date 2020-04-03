@@ -1238,7 +1238,7 @@ namespace Bloom.Book
 		/// </summary>
 		private string GetUpdateSource() => $"BloomDesktop {Application.ProductVersion}";
 
-		private ParseServerDate GetCurrentDate() => new ParseSe
+		private ParseServerDate GetCurrentDate() => new ParseServerDate { Iso = DateTime.UtcNow.ToString("o") };
 	}
 
 	/// <summary>
