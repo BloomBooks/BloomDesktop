@@ -1607,14 +1607,23 @@ export class BubbleManager {
         ui: JQueryUI.ResizableUIParams,
         scale: number
     ) {
-        const newWidth =
-            ui.originalSize.width +
-            (ui.size.width - ui.originalSize.width) / scale;
-        const newHeight =
-            ui.originalSize.height +
-            (ui.size.height - ui.originalSize.height) / scale;
-        ui.element.width(newWidth);
-        ui.element.height(newHeight);
+        const deltaWidth = ui.size.width - ui.originalSize.width;
+        const deltaHeight = ui.size.height - ui.originalSize.height;
+        if (deltaWidth != 0 || deltaHeight != 0) {
+            const newWidth: number = ui.originalSize.width + deltaWidth / scale;
+            const newHeight: number =
+                ui.originalSize.height + deltaHeight / scale;
+            ui.element.width(newWidth);
+            ui.element.height(newHeight);
+        }
+        const deltaX = ui.position.left - ui.originalPosition.left;
+        const deltaY = ui.position.top - ui.originalPosition.top;
+        if (deltaX != 0 || deltaY != 0) {
+            const newX: number = ui.originalPosition.left + deltaX / scale;
+            const newY: number = ui.originalPosition.top + deltaY / scale;
+            ui.element.css("left", newX); // when passing a number as the new value; JQuery assumes "px"
+            ui.element.css("top", newY);
+        }
     }
 
     // An event handler that adds the "bloom-resizing" class to the image container.
