@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -6,6 +6,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Edit;
 using L10NSharp;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
@@ -627,6 +628,99 @@ namespace BloomTests.Book
 			data.UpdateVariablesAndDataDivThroughDOM();
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id2='2']");
 			Assert.AreEqual("aa", textarea2.InnerText);
+		}
+
+		[Test]
+		public void UpdateVariablesAndDataDivThroughDOM_LeveledReader_CopiesLevelFromBookInfo()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body class='leveled-reader'>
+				<div id='bloomDataDiv'>
+				</div>
+				<div class='bloom-page frontCover' id='guid2' data-xmatter-page='frontCover'>
+				</div>
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+			var info = GetLeveledDecodableInfo();
+			data.UpdateVariablesAndDataDivThroughDOM(info);
+
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@id='bloomDataDiv']/div[@data-book='levelOrStageNumber' and @lang='*' and text()='3']",
+				1);
+		}
+
+		[Test]
+		public void UpdateVariablesAndDataDivThroughDOM_DecodableReader_CopiesStageFromBookInfo()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body class='decodable-reader'>
+				<div id='bloomDataDiv'>
+				</div>
+				<div class='bloom-page frontCover' id='guid2' data-xmatter-page='frontCover'>
+				</div>
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+			var info = GetLeveledDecodableInfo();
+			data.UpdateVariablesAndDataDivThroughDOM(info);
+
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@id='bloomDataDiv']/div[@data-book='levelOrStageNumber' and @lang='*' and text()='4']",
+				1);
+		}
+
+		[Test]
+		public void UpdateVariablesAndDataDivThroughDOM_NotLeveledOrDecodable_DoesNotCopyLevelOrStageFromBookInfo()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+				</div>
+				<div class='bloom-page frontCover' id='guid2' data-xmatter-page='frontCover'>
+				</div>
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+			var info = GetLeveledDecodableInfo();
+			data.UpdateVariablesAndDataDivThroughDOM(info);
+
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath(
+				"//div[@id='bloomDataDiv']/div[@data-book='levelOrStageNumber']");
+		}
+
+		[Test]
+		public void UpdateVariablesAndDataDivThroughDOM_DecodableReader_SetsDecodableStageLetters()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body class='decodable-reader'>
+				<div id='bloomDataDiv'>
+				</div>
+				<div class='bloom-page frontCover' id='guid2' data-xmatter-page='frontCover'>
+				</div>
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+
+				var bookFolderPath = Path.Combine(_collectionSettings.FolderPath, "book");
+				var info = new BookInfo(bookFolderPath, true);
+				var decodableState = ToolboxToolState.CreateFromToolId("decodableReader");
+				decodableState.State = "stage:4;sort:alphabetic";
+				info.Tools.Add(decodableState);
+
+			var readerSettingsPath =
+					DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(_collectionSettings);
+				File.WriteAllText(readerSettingsPath, "{\"levels\":[{\"thingsToRemember\":[\"Simple Pictures\",\"Concrete Topics (e.g. animals, house hold objects)\"],\"maxWordsPerPage\":5,\"maxWordsPerSentence\":5,\"maxWordsPerBook\":23,\"maxUniqueWordsPerBook\":8,\"maxAverageWordsPerSentence\":0},{\"thingsToRemember\":[\"\"],\"maxWordsPerPage\":10,\"maxWordsPerSentence\":7,\"maxWordsPerBook\":72,\"maxUniqueWordsPerBook\":16,\"maxAverageWordsPerSentence\":0},{\"thingsToRemember\":[\"\"],\"maxWordsPerPage\":18,\"maxWordsPerSentence\":8,\"maxWordsPerBook\":206,\"maxUniqueWordsPerBook\":32,\"maxAverageWordsPerSentence\":0},{\"thingsToRemember\":[\"\"],\"maxWordsPerPage\":22,\"maxWordsPerSentence\":9,\"maxWordsPerBook\":294,\"maxUniqueWordsPerBook\":50,\"maxAverageWordsPerSentence\":0},{\"thingsToRemember\":[\"\"],\"maxWordsPerPage\":25,\"maxWordsPerSentence\":10,\"maxWordsPerBook\":500,\"maxUniqueWordsPerBook\":64,\"maxAverageWordsPerSentence\":0}],\"stages\":[{\"sightWords\":\"the of and to\",\"letters\":\"a e r\",\"allowedWordsFile\":\"\",\"name\":\"1\"},{\"sightWords\":\"is you that he\",\"letters\":\"i o\",\"allowedWordsFile\":\"\",\"name\":\"2\"},{\"sightWords\":\"was for as with\",\"letters\":\"n t\",\"allowedWordsFile\":\"\",\"name\":\"3\"},{\"sightWords\":\"his they I\",\"letters\":\"l s\",\"allowedWordsFile\":\"\",\"name\":\"4\"},{\"sightWords\":\"be this have from\",\"letters\":\"c u\",\"allowedWordsFile\":\"\",\"name\":\"5\"},{\"sightWords\":\"or one by what\",\"letters\":\"d ng\",\"allowedWordsFile\":\"\",\"name\":\"6\"},{\"sightWords\":\"all we when\",\"letters\":\"m p\",\"allowedWordsFile\":\"\",\"name\":\"7\"},{\"sightWords\":\"your said there\",\"letters\":\"g h\",\"allowedWordsFile\":\"\",\"name\":\"8\"},{\"sightWords\":\"she do how\",\"letters\":\"th\",\"allowedWordsFile\":\"\",\"name\":\"9\"},{\"sightWords\":\"were about out\",\"letters\":\"b sh\",\"allowedWordsFile\":\"\",\"name\":\"10\"},{\"sightWords\":\"then them little\",\"letters\":\"f y\",\"allowedWordsFile\":\"\",\"name\":\"11\"},{\"sightWords\":\"so some her\",\"letters\":\"ch w\",\"allowedWordsFile\":\"\",\"name\":\"12\"},{\"sightWords\":\"are make like\",\"letters\":\"k v\",\"allowedWordsFile\":\"\",\"name\":\"13\"},{\"sightWords\":\"into has look\",\"letters\":\"x z\",\"allowedWordsFile\":\"\",\"name\":\"14\"},{\"sightWords\":\"go see no\",\"letters\":\"j q\",\"allowedWordsFile\":\"\",\"name\":\"15\"}],\"letters\":\"a b c ch d e f g h i j k l m n ng o p q r s sh t th u v w x y z\",\"sentencePunct\":\"\",\"moreWords\":\"\",\"useAllowedWords\":0}");
+				data.UpdateVariablesAndDataDivThroughDOM(info);
+
+				AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@id='bloomDataDiv']/div[@data-book='decodableStageLetters' and @lang='" +_collectionSettings.Language1Iso639Code +  "' and text()='l s']",
+				1);
+		}
+
+		private BookInfo GetLeveledDecodableInfo()
+		{
+			// an arbitrary temp folder where we won't find any metadata, to create an empty default BookInfo.
+			var info = new BookInfo(_collectionSettings.FolderPath, true);
+			var levelState = ToolboxToolState.CreateFromToolId("leveledReader");
+			levelState.State = "3";
+			info.Tools.Add(levelState);
+			var decodableState = ToolboxToolState.CreateFromToolId("decodableReader");
+			decodableState.State = "stage:4;sort:alphabetic";
+			info.Tools.Add(decodableState);
+			return info;
 		}
 
 		[Test]
