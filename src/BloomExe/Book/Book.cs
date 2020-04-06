@@ -2589,7 +2589,7 @@ namespace Bloom.Book
 				// The main condition for being able to just write the page is that no shareable data on the
 				// page changed during editing. If that's so we can skip this step.
 				if (needToDoFullSave)
-					_bookData.SuckInDataFromEditedDom(editedPageDom); //this will do an updatetitle
+					_bookData.SuckInDataFromEditedDom(editedPageDom, BookInfo); //this will do an updatetitle
 
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles".
 				// Here we copy that over to the book DOM.

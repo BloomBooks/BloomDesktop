@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -9,7 +10,9 @@ using System.Xml;
 using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Collection;
+using Bloom.Edit;
 using L10NSharp;
+using Microsoft.CSharp.RuntimeBinder;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.Linq;
@@ -181,9 +184,9 @@ namespace Bloom.Book
 		/// Create or update the data div with all the data-book values in the document
 		/// </summary>
 		/// <param name="dom">This is either the whole document, or a page div that we just edited and want to read from.</param>
-		public void SuckInDataFromEditedDom(HtmlDom dom)
+		public void SuckInDataFromEditedDom(HtmlDom dom, BookInfo info = null)
 		{
-			UpdateVariablesAndDataDiv(dom.RawDom);
+			UpdateVariablesAndDataDiv(dom.RawDom, info);
 		}
 
 		public void SynchronizeDataItemsThroughoutDOM()
@@ -202,6 +205,7 @@ namespace Bloom.Book
 
 			var itemsToDelete = new HashSet<Tuple<string, string>>();
 			DataSet incomingData = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom, itemsToDelete);
+			UpdateToolRelatedDataFromBookInfo(info, incomingData);
 			incomingData.UpdateGenericLanguageString("contentLanguage1", _collectionSettings.Language1Iso639Code, false);
 			incomingData.UpdateGenericLanguageString("contentLanguage2",
 											 String.IsNullOrEmpty(MultilingualContentLanguage2)
@@ -229,6 +233,58 @@ namespace Bloom.Book
 			if (info != null)
 				UpdateBookInfoTags(info);
 			UpdateCredits(info);
+		}
+
+		private void UpdateToolRelatedDataFromBookInfo(BookInfo info, DataSet incomingData)
+		{
+			if (info == null)
+				return; // only in tests
+			var tools = info.Tools;
+			var bookClass = _dom.Body.Attributes["class"]?.Value ?? "";
+
+			var levelTool = tools.FirstOrDefault(t => t.ToolId == "leveledReader");
+			if (levelTool != null && bookClass.Contains("leveled-reader"))
+			{
+				var level = levelTool.State;
+				incomingData.UpdateGenericLanguageString("levelOrStageNumber", level, false);
+			}
+
+			var decodableTool = tools.FirstOrDefault(t => t.ToolId == "decodableReader");
+			if (decodableTool != null && bookClass.Contains("decodable-reader"))
+			{
+				var stageString = decodableTool.State.Split(';').FirstOrDefault()?.Split(':')?.Skip(1)?.FirstOrDefault();
+				if (!string.IsNullOrEmpty(stageString))
+					incomingData.UpdateGenericLanguageString("levelOrStageNumber", stageString, false);
+				int stage;
+				if (int.TryParse(stageString, out stage) && _collectionSettings != null)
+				{
+					var settingsPath = DecodableReaderToolSettings.GetReaderToolsSettingsFilePath(_collectionSettings);
+					if (File.Exists(settingsPath))
+					{
+						try
+						{
+							string settingsJson = File.ReadAllText(settingsPath, Encoding.UTF8);
+							var settings = DynamicJson.Parse(settingsJson);
+							var stages = settings.stages;
+							var stageData = stages[stage - 1];
+							string letters = stageData.letters;
+							incomingData.UpdateLanguageString("decodableStageLetters", letters, _collectionSettings.Language1Iso639Code, false);
+						}
+						catch (XmlException e)
+						{
+							// The file fails to parse somehow
+							Debug.WriteLine(e.Message);
+						}
+						catch (RuntimeBinderException e)
+						{
+							// Happens when we don't find the expected stages or letters properties,
+							// or when the stages array has too few elements.
+							Debug.WriteLine(e.Message);
+						}
+						// other exceptions we want to know about.
+					}
+				}
+			}
 		}
 
 		/// <summary>
