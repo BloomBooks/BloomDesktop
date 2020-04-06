@@ -73,6 +73,10 @@ const kRecordingModeControl: string = "audio-recordingModeControl";
 const kRecordingModeClickHandler: string =
     "audio-recordingModeControl-clickHandler";
 
+const kPlaybackOrderControl: string = "audio-playbackOrderControl";
+const kPlaybackOrderClickHandler: string =
+    "audio-playbackOrderControl-clickHandler";
+
 const kEndTimeAttributeName: string = "data-audioRecordingEndTimes";
 
 // Terminology //
@@ -100,6 +104,7 @@ export default class AudioRecording {
 
     private audioSplitButton: HTMLButtonElement;
     public recordingModeInput: HTMLInputElement; // Currently a checkbox, could change to a radio button in the future
+    public showPlaybackInput: HTMLInputElement;
 
     public audioRecordingMode: AudioRecordingMode;
 
@@ -137,6 +142,12 @@ export default class AudioRecording {
             // Initial state should be disabled so that enableRecordingMode will recognize it needs
             // to initialize things on startup.
             this.recordingModeInput.disabled = true;
+        }
+        this.showPlaybackInput = <HTMLInputElement>(
+            document.getElementById(kPlaybackOrderControl)
+        );
+        if (this.showPlaybackInput) {
+            this.showPlaybackInput.disabled = true;
         }
     }
 
@@ -1553,7 +1564,7 @@ export default class AudioRecording {
             handlerJquery.click(e => this.notifyRecordingModeControlDisabled());
         } else {
             handlerJquery.click(e => {
-                if (ToolBox.isXmatterPage)
+                if (ToolBox.isXmatterPage())
                     this.notifyRecordingModeControlDisabledXMatter();
             });
         }
@@ -3438,8 +3449,8 @@ export default class AudioRecording {
     }
 
     private renderImportRecordingButton(): void {
-        const container = document.querySelector(
-            "#import-recording-button-container"
+        const container = document.getElementById(
+            "import-recording-button-container"
         );
         if (!container) {
             // Won't exist for unit tests
