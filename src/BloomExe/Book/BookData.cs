@@ -684,9 +684,9 @@ namespace Bloom.Book
 				data.WritingSystemAliases.Add("V", collectionSettings.Language1Iso639Code);
 				data.AddLanguageString("nameOfLanguage", collectionSettings.Language1.Name, "*", true);
 				data.AddLanguageString("nameOfNationalLanguage1",
-									   collectionSettings.Language2.GetNameInLanguage(collectionSettings.Language2Iso639Code), "*", true);
+									   collectionSettings.Language2.Name, "*", true);
 				data.AddLanguageString("nameOfNationalLanguage2",
-									   collectionSettings.Language3.GetNameInLanguage(collectionSettings.Language2Iso639Code), "*", true);
+									   collectionSettings.Language3.Name, "*", true);
 				data.UpdateGenericLanguageString("iso639Code", collectionSettings.Language1Iso639Code, true);
 				data.UpdateGenericLanguageString("country", collectionSettings.Country, true);
 				data.UpdateGenericLanguageString("province", collectionSettings.Province, true);
@@ -737,9 +737,9 @@ namespace Bloom.Book
 			if (code == _collectionSettings.Language1Iso639Code && !string.IsNullOrWhiteSpace(_collectionSettings.Language1.Name))
 				return _collectionSettings.Language1.Name;
 			if (code == _collectionSettings.Language2Iso639Code)
-				return _collectionSettings.Language2.GetNameInLanguage(_collectionSettings.Language2Iso639Code);
+				return _collectionSettings.Language2.Name;
 			if (code == _collectionSettings.Language3Iso639Code)
-				return _collectionSettings.Language3.GetNameInLanguage(_collectionSettings.Language2Iso639Code);
+				return _collectionSettings.Language3.Name;
 			return _collectionSettings.GetLanguageName(code, _collectionSettings.Language2Iso639Code);
 		}
 

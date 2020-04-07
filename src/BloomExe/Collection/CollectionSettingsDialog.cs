@@ -531,17 +531,17 @@ namespace Bloom.Collection
 
 		private void _fontSettings1Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			FontSettingsLinkClicked(_collectionSettings.Language1.GetNameInLanguage(LocalizationManager.UILanguageId), 1);
+			FontSettingsLinkClicked(_collectionSettings.Language1.Name, 1);
 		}
 
 		private void _fontSettings2Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			FontSettingsLinkClicked(_collectionSettings.Language2.GetNameInLanguage(LocalizationManager.UILanguageId), 2);
+			FontSettingsLinkClicked(_collectionSettings.Language2.Name, 2);
 		}
 
 		private void _fontSettings3Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			FontSettingsLinkClicked(_collectionSettings.Language3.GetNameInLanguage(LocalizationManager.UILanguageId), 3);
+			FontSettingsLinkClicked(_collectionSettings.Language3.Name, 3);
 		}
 
 		private void FontSettingsLinkClicked(string langName, int langNum1Based)
