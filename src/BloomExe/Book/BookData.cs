@@ -684,9 +684,9 @@ namespace Bloom.Book
 				data.WritingSystemAliases.Add("V", collectionSettings.Language1Iso639Code);
 				data.AddLanguageString("nameOfLanguage", collectionSettings.Language1.Name, "*", true);
 				data.AddLanguageString("nameOfNationalLanguage1",
-									   collectionSettings.Language2.GetNameInLanguage(collectionSettings.Language2Iso639Code), "*", true);
+									   collectionSettings.Language2.Name, "*", true);
 				data.AddLanguageString("nameOfNationalLanguage2",
-									   collectionSettings.Language3.GetNameInLanguage(collectionSettings.Language2Iso639Code), "*", true);
+									   collectionSettings.Language3.Name, "*", true);
 				data.UpdateGenericLanguageString("iso639Code", collectionSettings.Language1Iso639Code, true);
 				data.UpdateGenericLanguageString("country", collectionSettings.Country, true);
 				data.UpdateGenericLanguageString("province", collectionSettings.Province, true);
@@ -725,21 +725,19 @@ namespace Bloom.Book
 		/// Give the string the user expects to see as the name of a specified language.
 		/// This routine uses the user-specified name for the main project language.
 		/// For the other two project languages, it explicitly uses the appropriate collection settings
-		/// name for that language, though currently this gives the same result as the final default.
-		/// This will find a fairly readable name for the languages Palaso knows about
-		/// and fall back to the code itself if it can't find a name.
-		/// Most names are not yet localized.
+		/// name for that language, which the user also set.
+		/// If the user hasn't set a name for the given language, this will find a fairly readable name
+		/// for the languages Palaso knows about (probably the autonym) and fall back to the code itself
+		/// if it can't find a name.
 		/// </summary>
-		/// <param name="code"></param>
-		/// <returns></returns>
 		public string PrettyPrintLanguage(string code)
 		{
 			if (code == _collectionSettings.Language1Iso639Code && !string.IsNullOrWhiteSpace(_collectionSettings.Language1.Name))
 				return _collectionSettings.Language1.Name;
 			if (code == _collectionSettings.Language2Iso639Code)
-				return _collectionSettings.Language2.GetNameInLanguage(_collectionSettings.Language2Iso639Code);
+				return _collectionSettings.Language2.Name;
 			if (code == _collectionSettings.Language3Iso639Code)
-				return _collectionSettings.Language3.GetNameInLanguage(_collectionSettings.Language2Iso639Code);
+				return _collectionSettings.Language3.Name;
 			return _collectionSettings.GetLanguageName(code, _collectionSettings.Language2Iso639Code);
 		}
 
