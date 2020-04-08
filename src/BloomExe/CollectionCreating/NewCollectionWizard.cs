@@ -237,7 +237,7 @@ namespace Bloom.CollectionCreating
 			// Convert newlines into HTML <br/>, handling messy \r\n or \n or \r
 			var pieces = pattern.Split(new[]{'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries);
 			var format = string.Join("<br/>", pieces);
-			betterLabel1.HTML = String.Format(format, Path.GetFileNameWithoutExtension(_collectionInfo.PathToSettingsFile));
+			_finalMessage.HTML = String.Format(format, Path.GetFileNameWithoutExtension(_collectionInfo.PathToSettingsFile));
 		}
 	}
 

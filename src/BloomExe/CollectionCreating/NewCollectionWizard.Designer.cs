@@ -42,7 +42,7 @@ namespace Bloom.CollectionCreating
             this._languageLocationPage = new Bloom.Wizard.WizardAdapterPage();
 			this._languageFontPage = new Bloom.Wizard.WizardAdapterPage();
             this._finishPage = new Bloom.Wizard.WizardAdapterPage();
-			this.betterLabel1 = new SIL.Windows.Forms.Widgets.HtmlLabel();
+			this._finalMessage = new SIL.Windows.Forms.Widgets.HtmlLabel();
             this._collectionNamePage = new Bloom.Wizard.WizardAdapterPage();
             this._collectionNameProblemPage = new Bloom.Wizard.WizardAdapterPage();
 			this._welcomeHtml = new SIL.Windows.Forms.Widgets.HtmlLabel();
@@ -127,7 +127,7 @@ namespace Bloom.CollectionCreating
 			//
 			// _finishPage
 			//
-			this._finishPage.Controls.Add(this.betterLabel1);
+			this._finishPage.Controls.Add(this._finalMessage);
 			this._finishPage.IsFinishPage = true;
 			this._finishPage.Name = "_finishPage";
 			this._finishPage.Size = new System.Drawing.Size(637, 310);
@@ -137,17 +137,17 @@ namespace Bloom.CollectionCreating
 			//
 			// betterLabel1
 			//
-			this.betterLabel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+			this._finalMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.betterLabel1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.betterLabel1.Enabled = false;
-			this.betterLabel1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.betterLabel1.Location = new System.Drawing.Point(120, 60);
-			this.betterLabel1.Name = "betterLabel1";
-			this.betterLabel1.Size = new System.Drawing.Size(631, 23);
-			this.betterLabel1.TabIndex = 0;
-			this.betterLabel1.TabStop = false;
-			this.betterLabel1.Text = "<Text>";
+			this._finalMessage.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this._finalMessage.Enabled = false;
+			this._finalMessage.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._finalMessage.Location = new System.Drawing.Point(120, 60);
+			this._finalMessage.Name = "_finalMessage";
+			this._finalMessage.Size = new System.Drawing.Size(631, 23);
+			this._finalMessage.TabIndex = 0;
+			this._finalMessage.TabStop = false;
+			this._finalMessage.Text = "<Text>";
 			//
 			// _collectionNamePage
 			//
@@ -254,7 +254,7 @@ namespace Bloom.CollectionCreating
 		private Bloom.Wizard.WizardAdapterPage _languageFontPage;
 		private Bloom.MiscUI.LanguageFontDetails _fontDetails;
 		private LanguageLocationControl _languageLocationControl;
-		private SIL.Windows.Forms.Widgets.HtmlLabel betterLabel1;
+		private SIL.Windows.Forms.Widgets.HtmlLabel _finalMessage;
         private Bloom.Wizard.WizardAdapterPage _welcomePage;
 		private SIL.Windows.Forms.Widgets.HtmlLabel _welcomeHtml;
 	}
