@@ -537,7 +537,7 @@ namespace Bloom.Edit
 			}
 			public override string ToString()
 			{
-				return _ws.UiName;
+				return _ws.Name;
 			}
 
 			public bool Selected;
