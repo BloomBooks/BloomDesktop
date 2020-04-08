@@ -234,7 +234,10 @@ namespace Bloom.CollectionCreating
 			var pattern = LocalizationManager.GetString("NewCollectionWizard.FinishPageContent",
 				"OK, that's all we need to get started with your new '{0}' collection.\r\nClick on the 'Finish' button.",
 				"{0} is the name of the new collection");
-			betterLabel1.Text = String.Format(pattern, Path.GetFileNameWithoutExtension(_collectionInfo.PathToSettingsFile));
+			// Convert newlines into HTML <br/>, handling messy \r\n or \n or \r
+			var pieces = pattern.Split(new[]{'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries);
+			var format = string.Join("<br/>", pieces);
+			_finalMessage.HTML = String.Format(format, Path.GetFileNameWithoutExtension(_collectionInfo.PathToSettingsFile));
 		}
 	}
 
