@@ -806,7 +806,7 @@ namespace Bloom.Book
 					if (firstContentImageElement != null)
 					{
 						var src = firstContentImageElement.GetAttribute("src");
-						return ComputePHashOfImageFile(src);
+						return ComputePHashOfImageSrc(src);
 					}
 				}
 				// No content page images found.  Try the cover page, then give up.
@@ -814,9 +814,10 @@ namespace Bloom.Book
 				if (coverImg != null)
 				{
 					var src = coverImg.GetAttribute("src");
-					return ComputePHashOfImageFile(src);
+					return ComputePHashOfImageSrc(src);
 				}
 				// no images found anywhere??
+				Console.Error.WriteLine("PHash: No images found.");
 				return null;
 			}
 			finally
@@ -828,11 +829,22 @@ namespace Bloom.Book
 			}
 		}
 
-		private string ComputePHashOfImageFile(string src)
+		/// <summary>
+		/// Computes the perceptual hash of the specified image
+		/// </summary>
+		/// <param name="src">The source attribute of the image. This function will apply URL-decoding on the src paramater</param>
+		/// <returns>A hexadecimal string representing the digest, or null if the digest could not be computed</returns>
+		private string ComputePHashOfImageSrc(string src)
 		{
 			if (src == "placeholder.png")
+			{
+				Console.Error.WriteLine("PHash: placeholder.png found.");
 				return null;
-			var path = Path.Combine(FolderPath, src);
+			}
+
+			var path = Path.Combine(FolderPath, HttpUtility.UrlDecode(src));
+
+			// Note: path must be URL-decoded for .Exists() to return accurate results.
 			if (RobustFile.Exists(path))
 			{
 				try
@@ -842,9 +854,12 @@ namespace Bloom.Book
 					return hash.ToString();
 				} catch
 				{
+					Console.Error.WriteLine("PHash: Exception caught.");
 					return null;
 				}
 			}
+
+			Console.Error.WriteLine("PHash: File does not exist.");
 			return null;
 		}
 
