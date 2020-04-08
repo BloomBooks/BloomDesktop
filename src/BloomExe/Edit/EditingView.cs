@@ -26,6 +26,7 @@ using SIL.IO;
 using SIL.Windows.Forms.ImageToolbox.ImageGallery;
 using SIL.Windows.Forms.Widgets;
 using System.Globalization;
+using Bloom.web;
 
 namespace Bloom.Edit
 {
@@ -47,13 +48,14 @@ namespace Bloom.Edit
 		private bool _visible;
 		private BloomWebSocketServer _webSocketServer;
 		private ZoomControl _zoomControl;
+		private PageListApi _pageListApi;
 
 		public delegate EditingView Factory(); //autofac uses this
 
 		public EditingView(EditingModel model, PageListView pageListView, CutCommand cutCommand, CopyCommand copyCommand,
 			PasteCommand pasteCommand, UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
 			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent,
-			SignLanguageApi signLanguageApi, CommonApi commonApi, EditingViewApi editingViewApi)
+			SignLanguageApi signLanguageApi, CommonApi commonApi, EditingViewApi editingViewApi, PageListApi pageListApi)
 		{
 			_model = model;
 			_pageListView = pageListView;
@@ -64,13 +66,10 @@ namespace Bloom.Edit
 			_duplicatePageCommand = duplicatePageCommand;
 			_deletePageCommand = deletePageCommand;
 			_webSocketServer = model.EditModelSocketServer;
+			_pageListApi = pageListApi;
 			InitializeComponent();
 
-			this._splitContainer1.BackColor = Palette.GeneralBackground;
 			this._splitContainer2.BackColor = Palette.GeneralBackground;
-			_splitContainer1.Tag = _splitContainer1.SplitterDistance; //save it
-			//don't let it grow automatically
-//            _splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);
 			SetupThumnailLists();
 			_model.SetView(this);
 			// We will need to handle this in another way if we ever have multiple projects open and thus
@@ -324,7 +323,7 @@ namespace Bloom.Edit
 			 * So now, when we come back to Bloom (this activated event), we *deselect* the browser, then reselect it, and it's happy.
 			 */
 
-			_splitContainer1.Select();
+			_pageListView.Select();
 			//_browser1.Select();
 			_browser1.WebBrowser.Select();
 
@@ -407,9 +406,9 @@ namespace Bloom.Edit
 
 		private void SetupThumnailLists()
 		{
-			_pageListView.Dock = DockStyle.Fill;
-			_pageListView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			_splitContainer1.Panel1.Controls.Add(_pageListView);
+			_pageListView.Dock = DockStyle.Left;
+			_pageListView.Width = 200;
+			this.Controls.Add(_pageListView);
 		}
 
 		// TODO: this _splitContainer2 could be eliminated now that we no longer have the TemplatePagesView
@@ -493,6 +492,7 @@ namespace Bloom.Edit
 				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "EditingView - about to change the page", false);
 #endif
 				_pageListView.SelectThumbnailWithoutSendingEvent(page);
+				_pageListView.UpdateThumbnailAsync(page);
 				_model.SetupServerWithCurrentPageIframeContents();
 				HtmlDom domForCurrentPage = _model.GetXmlDocumentForCurrentPage();
 				// A page can't be 'dirty' in the interval between when we start to navigate to it and when it's visible.
@@ -585,8 +585,7 @@ namespace Bloom.Edit
 
 		public void UpdatePageList(bool emptyThumbnailCache)
 		{
-			if(emptyThumbnailCache)
-				_pageListView.EmptyThumbnailCache();
+			_pageListApi.ClearPagesCache();
 			_pageListView.SetBook(_model.CurrentBook);
 		}
 

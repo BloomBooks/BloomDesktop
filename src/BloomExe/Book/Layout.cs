@@ -98,18 +98,28 @@ namespace Bloom.Book
 
 			var layout = new Layout {SizeAndOrientation = defaultIfMissing.SizeAndOrientation, Style= defaultIfMissing.Style};
 
-			foreach (var part in firstPage.GetStringAttribute("class").SplitTrimmed(' '))
+			return FromPage(firstPage, layout);
+		}
+
+		public static Layout FromPage(XmlElement page, Layout layout)
+		{
+			foreach (var part in page.GetStringAttribute("class").SplitTrimmed(' '))
 			{
 				if (part.ToLowerInvariant().Contains("portrait") || part.ToLowerInvariant().Contains("landscape"))
 				{
 					layout.SizeAndOrientation = SizeAndOrientation.FromString(part);
 				}
+
 				if (part.ToLowerInvariant().Contains("layout-style-"))
 				{
 					int startIndex = "layout-style-".Length;
-					layout.Style = part.Substring(startIndex, part.Length-startIndex);	//reivew: this might let us suck up a style that is no longer listed in any css
+					layout.Style =
+						part.Substring(startIndex,
+							part.Length -
+							startIndex); //reivew: this might let us suck up a style that is no longer listed in any css
 				}
 			}
+
 			return layout;
 		}
 

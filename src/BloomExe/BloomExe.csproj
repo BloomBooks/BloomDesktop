@@ -672,6 +672,7 @@
     <Compile Include="web\IBloomWebSocketServer.cs" />
     <Compile Include="web\controllers\MusicApi.cs" />
     <Compile Include="web\controllers\ToolboxApi.cs" />
+    <Compile Include="web\PageListApi.cs" />
     <Compile Include="web\SimulatedPageFile.cs" />
     <Compile Include="web\I18NApi.cs" />
     <Compile Include="web\ReadersApi.cs" />

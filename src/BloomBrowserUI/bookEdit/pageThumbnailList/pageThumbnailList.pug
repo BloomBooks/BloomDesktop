@@ -5,18 +5,16 @@ include ../../templates/bloom-foundation-mixins.pug
 html
 	head
 		meta(charset='utf-8')
-		+stylesheet('/bloom/modified_libraries/gridly/jquery.gridly.css')
 		+stylesheet('/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css')
 		+stylesheet('/bloom/bookEdit/pageThumbnailList/pageThumbnailList.css')
 		+stylesheet('/bloom/bookEdit/pageThumbnailList/pageControls/pageControls.css')
-	body
+		+stylesheet('/node_modules/react-grid-layout/css/styles.css')
+		+stylesheet('/node_modules/react-resizable/css/styles.css')
+	body(data-pageSize='A5Portrait')
 		#panelFlexContainer
 			#pageGridWrapper
-				#pageGrid.gridly
-					#placeholder.gridItem.placeholder
+				#pageGrid
 			#PageControls
-		#menuIconHolder.menuHolder
-			span#menu.ui-icon.ui-icon-triangle-1-s menu
 		+script('/bloom/commonBundle.js')
 		+script('/bloom/pageControlsBundle.js')
 		//- Must be loaded AFTER pageControlsBundle.js. We are violating our usual practice
