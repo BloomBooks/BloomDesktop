@@ -389,3 +389,20 @@ body .cursor-progress {
     font-size: medium;
     padding: 6px;
 }
+
+#audio-playbackOrderControl-wrapper label.checked {
+    color: @bloom-warning;
+}
+
+// This is for a div added to a visible bloom-translationGroup
+// that needs to display playback order controls.
+.bloom-playbackOrderControlsContainer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    z-index: 2001; // textOverPicture is 1001
+}

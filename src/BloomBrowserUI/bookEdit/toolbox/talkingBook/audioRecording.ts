@@ -43,6 +43,7 @@ import {
 } from "../../../react_components/confirmDialog";
 import ImportIcon from "../../../react_components/icons/ImportIcon";
 import { getEditViewFrameExports } from "../../js/bloomFrames";
+import PlaybackOrderControls from "../../../react_components/playbackOrderControls";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -76,8 +77,16 @@ const kRecordingModeClickHandler: string =
 const kPlaybackOrderControl: string = "audio-playbackOrderControl";
 const kPlaybackOrderClickHandler: string =
     "audio-playbackOrderControl-clickHandler";
+const kPlaybackOrderContainerClass: string =
+    "bloom-playbackOrderControlsContainer";
 
 const kEndTimeAttributeName: string = "data-audioRecordingEndTimes";
+
+interface IPlaybackOrderInfo {
+    containerDiv: HTMLDivElement;
+    sourceTranslationGroup: HTMLDivElement;
+    myPosition: number;
+}
 
 // Terminology //
 // AudioSegment: the smallest unit of text to playback at a time.
@@ -124,6 +133,7 @@ export default class AudioRecording {
     public __testonly__sentenceToIdListMap = this.sentenceToIdListMap; // Exposing it for unit tests. Not meant for public use.
 
     private stringToSentencesCache: object = {};
+    private playbackOrderCache: IPlaybackOrderInfo[] = [];
 
     constructor() {
         this.audioSplitButton = <HTMLButtonElement>(
@@ -146,9 +156,6 @@ export default class AudioRecording {
         this.showPlaybackInput = <HTMLInputElement>(
             document.getElementById(kPlaybackOrderControl)
         );
-        if (this.showPlaybackInput) {
-            this.showPlaybackInput.disabled = true;
-        }
     }
 
     // Class method called by exported function of the same name.
@@ -190,6 +197,10 @@ export default class AudioRecording {
         $("#audio-clear")
             .off()
             .click(e => this.clearRecording());
+
+        $("#" + kPlaybackOrderClickHandler)
+            .off()
+            .click(e => this.togglePlaybackOrder());
 
         $("#player").off();
         // The following speeds playback, ensures we get the durationchange event.
@@ -641,7 +652,7 @@ export default class AudioRecording {
             return null;
         }
 
-        if (currentTextBox == nextTextBox) {
+        if (currentTextBox === nextTextBox) {
             // Same Text Box: This case is easy because the next mode is guaranteed to be the same as the current mode.
             return nextElement;
         } else {
@@ -991,9 +1002,9 @@ export default class AudioRecording {
         for (let i = 0; i < audioSentenceCollection.length; ++i) {
             const audioSentenceElement = audioSentenceCollection.item(i);
             if (audioSentenceElement) {
-                if (audioSentenceElement.nodeName == "DIV") {
+                if (audioSentenceElement.nodeName === "DIV") {
                     ++divAudioSentenceCount;
-                } else if (audioSentenceElement.nodeName == "SPAN") {
+                } else if (audioSentenceElement.nodeName === "SPAN") {
                     ++spanAudioSentenceCount;
                 }
             }
@@ -1434,6 +1445,199 @@ export default class AudioRecording {
             .classList.contains("enabled");
     }
 
+    // Update the input element (checkbox) and turn on the playback order controls on the visible
+    // translation-groups.
+    public togglePlaybackOrder() {
+        const docBody = this.getPageDocBody();
+        if (!docBody) {
+            return;
+        }
+        if (this.showPlaybackInput.checked) {
+            this.showPlaybackInput.checked = false;
+            this.removePlaybackOrderUi(docBody);
+            this.toggleCheckedClass(false);
+        } else {
+            this.showPlaybackInput.checked = true;
+            this.showPlaybackOrderUi(docBody);
+            this.toggleCheckedClass(true);
+        }
+    }
+
+    private showPlaybackOrderUi(docBody: HTMLElement) {
+        this.playbackOrderCache = [];
+        const translationGroups = this.getVisibleTranslationGroups(docBody);
+        if (translationGroups.length < 1) {
+            // no point in displaying playback order if only 1 or none
+            return;
+        }
+
+        if (this.playbackOrderCache.length === 0) {
+            for (let i = 0; i < translationGroups.length; i++) {
+                const currentTranslationGroup = translationGroups[i];
+                const newDiv = `<div class="bloom-ui ${kPlaybackOrderContainerClass}"></div>`;
+                currentTranslationGroup.insertAdjacentHTML(
+                    "beforebegin",
+                    newDiv
+                );
+                const containerDivs = currentTranslationGroup.parentElement!.getElementsByClassName(
+                    kPlaybackOrderContainerClass
+                );
+                if (containerDivs.length !== 1) {
+                    return; // paranoia, we just put it there!
+                }
+                const containerDiv = <HTMLDivElement>containerDivs[0];
+                if (containerDiv === null) {
+                    return; // paranoia, we just put it there!
+                }
+                const existingTabindex = currentTranslationGroup.getAttribute(
+                    "tabindex"
+                );
+                this.playbackOrderCache.push({
+                    containerDiv: containerDiv,
+                    sourceTranslationGroup: currentTranslationGroup,
+                    // Give any translationGroup that doesn't already have a tabindex, an index of 0.
+                    myPosition: existingTabindex ? Number(existingTabindex) : 0
+                });
+            }
+            this.sortOutTabindexValues();
+        }
+        this.renderPlaybackControls();
+    }
+
+    private renderPlaybackControls() {
+        const cacheLength = this.playbackOrderCache.length;
+        for (let i = 0; i < cacheLength; i++) {
+            // "birth" the React component inside the containerDiv
+            const playbackOrderObj = this.playbackOrderCache[i];
+            this.renderOnePlaybackOrderButtonSet(cacheLength, playbackOrderObj);
+        }
+    }
+
+    private sortOutTabindexValues() {
+        this.playbackOrderCache.sort((a, b) => {
+            const x = a.myPosition;
+            const y = b.myPosition;
+            if (x < y) return -1;
+            if (x > y) return 1;
+            return 0;
+        });
+        if (
+            this.playbackOrderCache.length > 1 &&
+            this.playbackOrderCache[0].myPosition === 0
+        ) {
+            // Some of the translationGroups don't yet have a tabindex; reset all of them.
+            for (let i = 0; i < this.playbackOrderCache.length; i++) {
+                const playbackOrderInfo = this.playbackOrderCache[i];
+                this.setTabindexInCacheAndHtml(playbackOrderInfo, i + 1); // NOT zero-based
+            }
+        }
+    }
+
+    private setTabindexInCacheAndHtml(
+        playbackOrderInfo: IPlaybackOrderInfo,
+        index: number
+    ) {
+        playbackOrderInfo.sourceTranslationGroup.setAttribute(
+            "tabindex",
+            index.toString()
+        );
+        playbackOrderInfo.myPosition = index;
+    }
+
+    private renderOnePlaybackOrderButtonSet(
+        listSize: number,
+        playbackOrderInfo: IPlaybackOrderInfo
+    ): void {
+        ReactDOM.render(
+            React.createElement(PlaybackOrderControls, {
+                sizeOfList: listSize,
+                myOrderNum: playbackOrderInfo.myPosition,
+                bumpUp: bumpUp,
+                bumpDown: bumpDown
+            }),
+            playbackOrderInfo.containerDiv
+        );
+    }
+
+    // 'bumpUp' means increase 'myOrderNum' (Add button), or move this translationGroup
+    // closer to the end of the recording order.
+    public bumpUp(whichPositionToBump: number) {
+        if (
+            whichPositionToBump >= this.playbackOrderCache.length ||
+            whichPositionToBump < 1
+        ) {
+            return; // The React controls should ensure this anyway.
+        }
+        const srcInfo = this.playbackOrderCache[whichPositionToBump - 1];
+        const destInfo = this.playbackOrderCache[whichPositionToBump];
+        this.setTabindexInCacheAndHtml(srcInfo, whichPositionToBump + 1);
+        this.setTabindexInCacheAndHtml(destInfo, whichPositionToBump);
+
+        // re-sort
+        this.sortOutTabindexValues();
+        this.renderPlaybackControls();
+    }
+
+    // 'bumpDown' means decrease 'myOrderNum' (Remove button), or move this translationGroup
+    // closer to the beginning of the recording order.
+    public bumpDown(whichPositionToBump: number) {
+        if (
+            whichPositionToBump < 2 ||
+            whichPositionToBump > this.playbackOrderCache.length
+        ) {
+            return; // The React controls should ensure this anyway.
+        }
+        const srcInfo = this.playbackOrderCache[whichPositionToBump - 1];
+        const destInfo = this.playbackOrderCache[whichPositionToBump - 2];
+        this.setTabindexInCacheAndHtml(srcInfo, whichPositionToBump - 1);
+        this.setTabindexInCacheAndHtml(destInfo, whichPositionToBump);
+
+        // re-sort
+        this.sortOutTabindexValues();
+        this.renderPlaybackControls();
+    }
+
+    private removePlaybackOrderUi(docBody: HTMLElement) {
+        const elementsToRemove = docBody.getElementsByClassName(
+            kPlaybackOrderContainerClass
+        );
+        Array.from(elementsToRemove).forEach(element => {
+            element.parentElement!.removeChild(element);
+        });
+    }
+
+    private getVisibleTranslationGroups(
+        docBody: HTMLElement
+    ): HTMLDivElement[] {
+        const result: HTMLDivElement[] = [];
+        const transGroups = docBody.getElementsByClassName(
+            "bloom-translationGroup"
+        );
+        for (let i = 0; i < transGroups.length; i++) {
+            const currentTranslationGroup = <HTMLDivElement>transGroups.item(i);
+            const visibleEditables = currentTranslationGroup.getElementsByClassName(
+                "bloom-editable bloom-visibility-code-on"
+            );
+            if (visibleEditables.length > 0) {
+                result.push(currentTranslationGroup);
+            }
+        }
+        return result;
+    }
+
+    private toggleCheckedClass(add: boolean) {
+        const checkboxLabel = (<HTMLLabelElement>(
+            document.getElementById(kPlaybackOrderClickHandler)
+        )).nextElementSibling;
+        if (checkboxLabel != null) {
+            if (add) {
+                checkboxLabel.classList.add("checked");
+            } else {
+                checkboxLabel.classList.remove("checked");
+            }
+        }
+    }
+
     // Update the input element (e.g. checkbox) which visually represents the recording mode and updates the textbox markup to reflect the new mode.
     public updateRecordingMode(forceOverwrite: boolean = false) {
         // Check if there are any audio recordings present.
@@ -1650,7 +1854,7 @@ export default class AudioRecording {
         element: Element | null
     ): Element | null {
         const audioSentences = this.getAudioSegmentsWithinElement(element);
-        if (!audioSentences || audioSentences.length == 0) {
+        if (!audioSentences || audioSentences.length === 0) {
             return null;
         }
 
@@ -1699,7 +1903,7 @@ export default class AudioRecording {
             kAudioCurrent
         );
 
-        if (audioCurrentElements.length == 0) {
+        if (audioCurrentElements.length === 0) {
             // Oops, ui-audioCurrent not set on anything. Just going to have to stick it onto the first element.
             this.setCurrentAudioElementToFirstAudioElement();
             audioCurrentElements = pageBody.getElementsByClassName(
@@ -1782,6 +1986,13 @@ export default class AudioRecording {
             return;
         }
         this.changeStateAndSetExpectedAsync("record");
+        if (this.showPlaybackInput.checked) {
+            const docBody = this.getPageDocBody();
+            if (!docBody) {
+                return;
+            }
+            this.showPlaybackOrderUi(docBody);
+        }
     }
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
@@ -2919,7 +3130,7 @@ export default class AudioRecording {
         axios
             .get("/bloom/api/audio/checkForAnyRecording?ids=" + ids)
             .then(response => {
-                if (response.statusText == "OK") {
+                if (response.statusText === "OK") {
                     this.setStatus("listen", Status.Enabled);
                 } else {
                     this.setStatus("listen", Status.Disabled);
@@ -3551,4 +3762,18 @@ export function initializeTalkingBookTool(): Promise<any> {
             resolve();
         }
     });
+}
+
+export function bumpUp(whichPositionToBump: number) {
+    if (!theOneAudioRecorder) {
+        return; // paranoia
+    }
+    theOneAudioRecorder.bumpUp(whichPositionToBump);
+}
+
+export function bumpDown(whichPositionToBump: number) {
+    if (!theOneAudioRecorder) {
+        return; // paranoia
+    }
+    theOneAudioRecorder.bumpDown(whichPositionToBump);
 }
