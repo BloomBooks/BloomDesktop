@@ -806,7 +806,7 @@ namespace Bloom.Book
 					if (firstContentImageElement != null)
 					{
 						var src = firstContentImageElement.GetAttribute("src");
-						return ComputePHashOfImageFile(src);
+						return ComputePHashOfImageSrc(src);
 					}
 				}
 				// No content page images found.  Try the cover page, then give up.
@@ -814,9 +814,10 @@ namespace Bloom.Book
 				if (coverImg != null)
 				{
 					var src = coverImg.GetAttribute("src");
-					return ComputePHashOfImageFile(src);
+					return ComputePHashOfImageSrc(src);
 				}
 				// no images found anywhere??
+				Console.Error.WriteLine("PHash: No images found.");
 				return null;
 			}
 			finally
@@ -828,11 +829,22 @@ namespace Bloom.Book
 			}
 		}
 
-		private string ComputePHashOfImageFile(string src)
+		/// <summary>
+		/// Computes the perceptual hash of the specified image
+		/// </summary>
+		/// <param name="src">The source attribute of the image. This function will apply URL-decoding on the src paramater</param>
+		/// <returns>A hexadecimal string representing the digest, or null if the digest could not be computed</returns>
+		private string ComputePHashOfImageSrc(string src)
 		{
 			if (src == "placeholder.png")
+			{
+				Console.Error.WriteLine("PHash: placeholder.png found.");
 				return null;
-			var path = Path.Combine(FolderPath, src);
+			}
+
+			var path = Path.Combine(FolderPath, HttpUtility.UrlDecode(src));
+
+			// Note: path must be URL-decoded for .Exists() to return accurate results.
 			if (RobustFile.Exists(path))
 			{
 				try
@@ -842,9 +854,12 @@ namespace Bloom.Book
 					return hash.ToString();
 				} catch
 				{
+					Console.Error.WriteLine("PHash: Exception caught.");
 					return null;
 				}
 			}
+
+			Console.Error.WriteLine("PHash: File does not exist.");
 			return null;
 		}
 
@@ -1833,20 +1848,24 @@ namespace Bloom.Book
 		/// Bloom books can have up to 3 languages active at any time. This method pushes in a string
 		/// listing then, separated by commas. It is then usable on the front page, title page, etc.
 		/// </summary>
+		/// <remarks>
+		/// We use the name of the language assigned by the user when the language was chosen rather
+		/// than attempting to use the name in the national language (most likely getting the autonyms
+		/// from a buggy list).  This keeps things simpler and follows the principle of least surprise.
+		/// </remarks>
 		private void InjectStringListingActiveLanguagesOfBook()
 		{
-			string codeOfNationalLanguage = CollectionSettings.Language2Iso639Code;
-			var languagesOfBook = CollectionSettings.Language1.GetNameInLanguage(codeOfNationalLanguage);
+			var languagesOfBook = CollectionSettings.Language1.Name;
 
 			if (MultilingualContentLanguage2 != null)
 			{
 				languagesOfBook += ", " + ((MultilingualContentLanguage2 == CollectionSettings.Language2Iso639Code) ?
-					CollectionSettings.Language2.GetNameInLanguage(codeOfNationalLanguage) :
-					CollectionSettings.Language3.GetNameInLanguage(codeOfNationalLanguage));
+					CollectionSettings.Language2.Name :
+					CollectionSettings.Language3.Name);
 			}
 			if (MultilingualContentLanguage3 != null)
 			{
-				languagesOfBook += ", " + CollectionSettings.Language3.GetNameInLanguage(codeOfNationalLanguage);
+				languagesOfBook += ", " + CollectionSettings.Language3.Name;
 			}
 
 			_bookData.Set("languagesOfBook", languagesOfBook, false);
@@ -2671,7 +2690,7 @@ namespace Bloom.Book
 				// The main condition for being able to just write the page is that no shareable data on the
 				// page changed during editing. If that's so we can skip this step.
 				if (needToDoFullSave)
-					_bookData.SuckInDataFromEditedDom(editedPageDom); //this will do an updatetitle
+					_bookData.SuckInDataFromEditedDom(editedPageDom, BookInfo); //this will do an updatetitle
 
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles".
 				// Here we copy that over to the book DOM.

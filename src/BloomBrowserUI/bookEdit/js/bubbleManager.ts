@@ -1563,6 +1563,7 @@ export class BubbleManager {
                     } else {
                         target.classList.add("bloom-allowAutoShrink");
                     }
+                    this.adjustResizingForScale(ui, scale);
                 }
             }
         });
@@ -1601,6 +1602,30 @@ export class BubbleManager {
         this.makeTOPBoxesDraggableAndClickable(textOverPictureElems, scale);
     }
 
+    // BL-8134: Keeps mouse movement in sync with bubble resizing when scale is not 100%.
+    private adjustResizingForScale(
+        ui: JQueryUI.ResizableUIParams,
+        scale: number
+    ) {
+        const deltaWidth = ui.size.width - ui.originalSize.width;
+        const deltaHeight = ui.size.height - ui.originalSize.height;
+        if (deltaWidth != 0 || deltaHeight != 0) {
+            const newWidth: number = ui.originalSize.width + deltaWidth / scale;
+            const newHeight: number =
+                ui.originalSize.height + deltaHeight / scale;
+            ui.element.width(newWidth);
+            ui.element.height(newHeight);
+        }
+        const deltaX = ui.position.left - ui.originalPosition.left;
+        const deltaY = ui.position.top - ui.originalPosition.top;
+        if (deltaX != 0 || deltaY != 0) {
+            const newX: number = ui.originalPosition.left + deltaX / scale;
+            const newY: number = ui.originalPosition.top + deltaY / scale;
+            ui.element.css("left", newX); // when passing a number as the new value; JQuery assumes "px"
+            ui.element.css("top", newY);
+        }
+    }
+
     // An event handler that adds the "bloom-resizing" class to the image container.
     private static addResizingClassHandler(event: MouseEvent) {
         const handle = event.currentTarget as Element;
@@ -1611,7 +1636,7 @@ export class BubbleManager {
         }
     }
 
-    // An event handler that adds the "bloom-resizing" class to the image container.
+    // An event handler that removes the "bloom-resizing" class from the image container.
     private static clearResizingClassHandler(event: MouseEvent) {
         BubbleManager.clearResizingClass(event.currentTarget as Element);
     }

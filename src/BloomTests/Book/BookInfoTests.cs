@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using Bloom.Book;
 using Bloom.Edit;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SIL.TestUtilities;
 using SIL.Reflection;
@@ -134,8 +136,8 @@ namespace BloomTests.Book
 				Tags= new []{"Animals"},
 				CurrentTool = "mytool",
 				BookletMakingIsAppropriate = false, PageCount=7,
-				LanguageTableReferences = new [] {new ParseDotComObjectPointer() { ClassName = "Language", ObjectId = "23456" }},
-				Uploader = new ParseDotComObjectPointer() { ClassName="User", ObjectId = "12345"},
+				LanguageTableReferences = new [] {new ParseServerObjectPointer { ClassName = "Language", ObjectId = "23456" }},
+				Uploader = new ParseServerObjectPointer { ClassName="User", ObjectId = "12345"},
 				Tools = new List<ToolboxToolState>(new [] {ToolboxToolState.CreateFromToolId("decodableReader")}),
 				AllowUploadingToBloomLibrary = false,
 				CountryName = "InTheBush",
@@ -143,6 +145,9 @@ namespace BloomTests.Book
 				DistrictName = "Ocean"
 			};
 			var result = meta.WebDataJson;
+
+			AssertNonBookMetaDataFieldsAreValid(result);
+
 			var meta2 = BookMetaData.FromString(result);
 			Assert.That(meta2.Id, Is.EqualTo("myId"));
 			Assert.That(meta2.IsSuitableForMakingShells, Is.True);
@@ -174,6 +179,26 @@ namespace BloomTests.Book
 			Assert.That(meta2.ProvinceName, Is.EqualTo("Provence"));
 			Assert.That(meta2.DistrictName, Is.EqualTo("Ocean"));
 			Assert.That(meta2.BookletMakingIsAppropriate, Is.True); // default value
+		}
+
+		private void AssertNonBookMetaDataFieldsAreValid(string webDataJsonString)
+		{
+			// These two fields (updateSource & lastUploaded) are only sent to parse server.
+			// They are not part of BookMetaData.
+			
+			dynamic jsonResult = JObject.Parse(webDataJsonString);
+
+			// updateSource
+			Assert.True(jsonResult.updateSource.Value.StartsWith("BloomDesktop "), $"{webDataJsonString}\n\nis expected to contain a proper updateSource");
+
+			// lastUploaded.__type
+			Assert.That(jsonResult.lastUploaded.__type.Value, Is.EqualTo("Date"));
+
+			// lastUploaded.iso
+			DateTime lastUploadedDateTime = jsonResult.lastUploaded.iso.Value;
+			var differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
+			Assert.That(differenceBetweenNowAndCreationOfJson, Is.GreaterThan(TimeSpan.FromSeconds(0)), "lastUploaded should be a valid date representing now-ish");
+			Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromSeconds(5)), "lastUploaded should be a valid date representing now-ish");
 		}
 
 		[TestCase("'Fiction'", "Fiction")]

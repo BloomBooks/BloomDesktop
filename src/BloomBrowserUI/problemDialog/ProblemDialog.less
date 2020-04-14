@@ -1,4 +1,4 @@
-@import "../bloomWebFonts.less";
+@import "../bloomUI.less";
 
 .problem-dialog {
     .dialog-title {
@@ -35,13 +35,11 @@
                         .MuiSlider-mark {
                             width: 6px;
                             height: 6px;
-                            //border-radius: 4px;
                             margin-top: -2px;
                         }
                         .MuiSlider-mark,
-                        // .MuiSlider-track,
-                         .MuiSlider-rail {
-                            background-color: darkgray;
+                        .MuiSlider-rail {
+                            background-color: @SliderRailMark;
                         }
                     }
                     #scale_labels {
@@ -69,7 +67,7 @@
                     margin-left: 30px; // indent
                     width: 200px;
                     height: 140px;
-                    background-color: #404040;
+                    background-color: @bloom-unselectedTabBackground;
                     margin-bottom: 32px;
                     object-fit: contain;
                 }
@@ -86,18 +84,6 @@
                         padding-left: 0;
                     }
                 }
-            }
-        }
-        .drawAttention {
-            animation: shakeMe 75ms 5 ease-in alternate;
-        }
-        @keyframes shakeMe {
-            0% {
-                margin-left: 10px;
-            }
-
-            100% {
-                margin-left: 0;
             }
         }
     }

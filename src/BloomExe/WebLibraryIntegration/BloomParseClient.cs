@@ -220,6 +220,7 @@ namespace Bloom.WebLibraryIntegration
 				throw new ApplicationException();
 			var metadata = BookMetaData.FromString(metadataJson);
 			var book = GetSingleBookRecord(metadata.Id);
+			metadataJson = ChangeJsonBeforeCreatingOrModifyingBook(metadataJson);
 			if (book == null)
 				return CreateBookRecord(metadataJson);
 
@@ -229,6 +230,27 @@ namespace Bloom.WebLibraryIntegration
 			if (response.StatusCode != HttpStatusCode.OK)
 				throw new ApplicationException(response.StatusDescription + " " + response.Content);
 			return response;
+		}
+
+		// Currently (April 2020), this is only used by unit tests
+		public virtual string ChangeJsonBeforeCreatingOrModifyingBook(string json)
+		{
+			// No-op for base class
+			return json;
+		}
+
+		/// <summary>
+		/// Delete a book record in the parse server database
+		/// Currently (April 2020), this is only used by unit tests
+		/// </summary>
+		public void DeleteBookRecord(string bookObjectId)
+		{
+			if (!LoggedIn)
+				throw new ApplicationException("Must be logged in to delete book");
+			var request = MakeDeleteRequest("classes/books/" + bookObjectId);
+			var response = Client.Execute(request);
+			if (response.StatusCode != HttpStatusCode.OK)
+				throw new ApplicationException(response.StatusDescription + " " + response.Content);
 		}
 
 		public void CreateUser(string account, string password)
@@ -377,9 +399,9 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		/// <param name="languages"></param>
 		/// <returns></returns>
-		internal ParseDotComObjectPointer[] GetLanguagePointers(LanguageDescriptor[] languages)
+		internal ParseServerObjectPointer[] GetLanguagePointers(LanguageDescriptor[] languages)
 		{
-			var result = new ParseDotComObjectPointer[languages.Length];
+			var result = new ParseServerObjectPointer[languages.Length];
 			for (int i = 0; i < languages.Length; i++)
 			{
 				var lang = languages[i];
@@ -389,7 +411,7 @@ namespace Bloom.WebLibraryIntegration
 					var language = CreateLanguage(lang);
 					id = language["objectId"].Value;
 				}
-				result[i] = new ParseDotComObjectPointer() {ClassName = "language", ObjectId = id};
+				result[i] = new ParseServerObjectPointer() {ClassName = "language", ObjectId = id};
 			}
 			return result;
 		}

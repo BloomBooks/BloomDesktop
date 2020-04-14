@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using Bloom.ImageProcessing;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using Bloom.Edit;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -409,7 +410,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// So far, this is just a way of getting at the metadata field. It is only set during book upload.
 		/// </summary>
-		public ParseDotComObjectPointer[] LanguageTableReferences
+		public ParseServerObjectPointer[] LanguageTableReferences
 		{
 			get { return MetaData.LanguageTableReferences; }
 			set { MetaData.LanguageTableReferences = value; }
@@ -818,7 +819,9 @@ namespace Bloom.Book
 						publisher = Publisher,
 						internetLimits = InternetLimits,
 						importedBookSourceUrl = ImportedBookSourceUrl,
-						phashOfFirstContentImage = PHashOfFirstContentImage
+						phashOfFirstContentImage = PHashOfFirstContentImage,
+						updateSource = GetUpdateSource(),
+						lastUploaded = GetCurrentDate()
 						// Other fields are not needed by the web site and we don't expect they will be.
 					});
 			}
@@ -941,7 +944,7 @@ namespace Bloom.Book
 		public string[] Languages { get { return new string[0]; } set {}}
 
 		[JsonProperty("langPointers")]
-		public ParseDotComObjectPointer[] LanguageTableReferences { get; set; }
+		public ParseServerObjectPointer[] LanguageTableReferences { get; set; }
 
 		[JsonProperty("summary")]
 		public string Summary { get; set; }
@@ -1018,7 +1021,7 @@ namespace Bloom.Book
 			// The uploader is stored in a way that makes the json that parse.com requires for a 'pointer'
 			// to an object in another table: in this case the special table of users.
 			if (Uploader == null)
-				Uploader = new ParseDotComObjectPointer() { ClassName = "_User" };
+				Uploader = new ParseServerObjectPointer() { ClassName = "_User" };
 			Uploader.ObjectId = id;
 		}
 
@@ -1027,7 +1030,7 @@ namespace Bloom.Book
 		/// This is stored in a special way that parse.com requires for cross-table pointers.
 		/// </summary>
 		[JsonProperty("uploader")]
-		public ParseDotComObjectPointer Uploader { get; set; }
+		public ParseServerObjectPointer Uploader { get; set; }
 
 		/// <summary>These panels are being displayed in the toolbox for this book</summary>
 		/// <example>["decodableReader", "leveledReader", "pageElements"]</example>
@@ -1226,6 +1229,16 @@ namespace Bloom.Book
 		/// </summary>
 		[JsonProperty("phashOfFirstContentImage")]
 		public string PHashOfFirstContentImage { get; set; }
+
+		/// <summary>
+		/// UpdateSource provides information to the parse server cloud code so it knows if it is dealing with
+		/// a new upload, a re-upload, or something else when the books record changes.
+		/// We only started setting this in BloomDesktop in version 4.7.
+		/// Prior to that, it was assumed that if the updateSource was not set, the change was coming from BloomDesktop.
+		/// </summary>
+		private string GetUpdateSource() => $"BloomDesktop {Application.ProductVersion}";
+
+		private ParseServerDate GetCurrentDate() => new ParseServerDate { Iso = DateTime.UtcNow.ToString("o") };
 	}
 
 	/// <summary>
@@ -1242,13 +1255,13 @@ namespace Bloom.Book
 	}
 
 	/// <summary>
-	/// This is the required structure for a parse.com pointer to an object in another table.
+	/// This is the required structure for a parse server pointer to an object in another table.
 	/// </summary>
-	public class ParseDotComObjectPointer
+	public class ParseServerObjectPointer
 	{
-		public ParseDotComObjectPointer()
+		public ParseServerObjectPointer()
 		{
-			Type = "Pointer"; // Required for all parse.com pointers.
+			Type = "Pointer"; // Required for all parse server pointers.
 		}
 
 		[JsonProperty("__type")]
@@ -1262,18 +1275,12 @@ namespace Bloom.Book
 	}
 
 	/// <summary>
-	/// This class represents the parse.com Language class (for purposes of generating json)
+	/// This class represents the parse server Language class (for purposes of generating json)
 	/// </summary>
 	public class LanguageDescriptor
 	{
 		[JsonIgnore]
-		public string Json
-		{
-			get
-			{
-				return JsonConvert.SerializeObject(this);
-			}
-		}
+		public string Json => JsonConvert.SerializeObject(this);
 
 		[JsonProperty("isoCode")]
 		public string IsoCode { get; set; }
@@ -1283,5 +1290,22 @@ namespace Bloom.Book
 
 		[JsonProperty("ethnologueCode")]
 		public string EthnologueCode { get; set; }
+	}
+
+	/// <summary>
+	/// This class represents the parse server Date data type (for purposes of generating json)
+	/// </summary>
+	public class ParseServerDate
+	{
+		public ParseServerDate()
+		{
+			Type = "Date";
+		}
+
+		[JsonProperty("__type")]
+		public string Type { get; set; }
+
+		[JsonProperty("iso")]
+		public string Iso { get; set; }
 	}
 }

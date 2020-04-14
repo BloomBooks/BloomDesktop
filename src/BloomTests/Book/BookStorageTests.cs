@@ -998,7 +998,7 @@ namespace BloomTests.Book
 		[TestCase("foo", "foo.html")] //normal case
 		[TestCase("foobar", "foo.html")] //changed folder name
 		[TestCase("foo", "foo.html", "bar.html")] //use folder name to decide (not sure this is good idea, but it's in existing code)
-		[TestCase("foobar", "foo.html", "foo.htm.bak")]
+		[TestCase("foobar", "foo.html", "foo.htm.bak", "foo.htmbak")]
 		[TestCase("foobar", "foo.html", "foo_conflict.htm")] //own cloud
 		[TestCase("foobar", "foo.html", "foo_conflict.htm", "foo_conflict2.htm")] //two conflict files
 		[TestCase("foobar", "foo.html", "foo (Scott's conflicted copy 2009-10-15).htm")] //dropbox

@@ -16,17 +16,58 @@ using SIL.IO;
 
 namespace Bloom.CLI
 {
+	[Flags]
+	enum CreateArtifactsExitCode
+	{
+		// These flags should all be powers of 2, so they can be bit-or'd together
+		// Make sure to update GetErrorsFromExitCode() too
+		Success = 0,
+		UnhandledException = 1,
+		BookHtmlNotFound = 2
+	}
+
 	class CreateArtifactsCommand
 	{
 		private static ProjectContext _projectContext;
+		private static Book.Book _book;
+
+		public static List<string> GetErrorsFromExitCode(int exitCode)
+		{
+			var errors = new List<string>();
+
+			if (exitCode == 0)
+				return errors;
+
+			// Check the exit code against bitmask flags
+			if ((exitCode & (int)CreateArtifactsExitCode.UnhandledException) != 0)
+			{
+				errors.Add(CreateArtifactsExitCode.UnhandledException.ToString());
+				exitCode &= ~(int)CreateArtifactsExitCode.UnhandledException;
+			}
+
+			if ((exitCode & (int)CreateArtifactsExitCode.BookHtmlNotFound) != 0)
+			{
+				errors.Add(CreateArtifactsExitCode.BookHtmlNotFound.ToString());
+				exitCode &= ~(int)CreateArtifactsExitCode.BookHtmlNotFound;
+			}
+
+			// Check if:
+			// 1) Some error code was found
+			// 2) No unknown flags remain
+			if (errors.Count == 0 || exitCode != 0)
+				errors.Add("Unknown");
+
+			return errors;
+		}
 
 		public static int Handle(CreateArtifactsParameters options)
 		{
-			Console.Out.WriteLine();
-
-			Program.SetUpErrorHandling();
 			try
 			{
+				Console.Out.WriteLine();
+
+				Program.SetUpErrorHandling();
+
 				using (var applicationContainer = new ApplicationContainer())
 				{
 					Program.SetUpLocalization(applicationContainer);
@@ -45,7 +86,8 @@ namespace Bloom.CLI
 						Bloom.Program.SetProjectContext(_projectContext);
 
 						// Make the .bloomd and /bloomdigital outputs
-						CreateArtifacts(options);
+						var exitCode = CreateArtifacts(options);
+						return (int)exitCode;
 					}
 				}
 			}
@@ -53,21 +95,23 @@ namespace Bloom.CLI
 			{
 				Console.WriteLine(ex.Message);
 				Console.WriteLine(ex.StackTrace);
-				return 1;
+				return (int)CreateArtifactsExitCode.UnhandledException;
 			}
-
-			return 0;
 		}
 
-		private static void CreateArtifacts(CreateArtifactsParameters parameters)
+		private static CreateArtifactsExitCode CreateArtifacts(CreateArtifactsParameters parameters)
 		{
+			var exitCode = CreateArtifactsExitCode.Success;
+
+			LoadBook(parameters.BookPath);
+
 			string zippedBloomDOutputPath = parameters.BloomDOutputPath;
 			string unzippedBloomDigitalOutputPath = parameters.BloomDigitalOutputPath;
 
 			bool isBloomDOrBloomDigitalRequested = !String.IsNullOrEmpty(zippedBloomDOutputPath) || !String.IsNullOrEmpty(unzippedBloomDigitalOutputPath);
 			if (isBloomDOrBloomDigitalRequested)
 			{
-				CreateBloomDigitalArtifacts(parameters.BookPath, parameters.Creator, zippedBloomDOutputPath, unzippedBloomDigitalOutputPath);
+				exitCode |= CreateBloomDigitalArtifacts(parameters.BookPath, parameters.Creator, zippedBloomDOutputPath, unzippedBloomDigitalOutputPath);
 			}
 
 			Control control = new Control();
@@ -93,14 +137,27 @@ namespace Bloom.CLI
 			}
 
 			CreateThumbnailArtifact(parameters);
+
+			CreatePHashArtifact(parameters);
+
+			return exitCode;
 		}
 
-		public static void CreateBloomDigitalArtifacts(string bookPath, string creator, string zippedBloomDOutputPath, string unzippedBloomDigitalOutputPath)
+		private static void LoadBook(string bookPath)
+		{
+			_book = _projectContext.BookServer.GetBookFromBookInfo(new BookInfo(bookPath, true));
+		}
+
+		/// <summary>
+		/// Creates the .bloomd and bloomdigital folders
+		/// </summary>
+		private static CreateArtifactsExitCode CreateBloomDigitalArtifacts(string bookPath, string creator, string zippedBloomDOutputPath, string unzippedBloomDigitalOutputPath)
 		{
 #if DEBUG
 			// Useful for allowing debugging of Bloom while running the harvester
 			//MessageBox.Show("Attach debugger now");
 #endif
+			var exitCode = CreateArtifactsExitCode.Success;
 
 			using (var tempBloomD = TempFile.CreateAndGetPathButDontMakeTheFile())
 			{
@@ -139,44 +196,45 @@ namespace Bloom.CLI
 
 						ZipFile.ExtractToDirectory(zippedBloomDOutputPath, unzippedBloomDigitalOutputPath);
 
-						RenameBloomDigitalFiles(unzippedBloomDigitalOutputPath);
+						exitCode |= RenameBloomDigitalFiles(unzippedBloomDigitalOutputPath);
 					}
 				}
 			}
+
+			return exitCode;
 		}
 
-		// Consumers expect the file to be in index.htm name, not {title}.htm name.
-		private static void RenameBloomDigitalFiles(string bookDirectory)
+		/// <summary>
+		/// Renames the {title}.htm HTM file to index.htm instead
+		/// </summary>
+		/// <param name="bookDirectory"></param>
+		private static CreateArtifactsExitCode RenameBloomDigitalFiles(string bookDirectory)
 		{
 			string originalHtmFilePath = Bloom.Book.BookStorage.FindBookHtmlInFolder(bookDirectory);
 
 			Debug.Assert(RobustFile.Exists(originalHtmFilePath), "Book HTM not found: " + originalHtmFilePath);
-			if (RobustFile.Exists(originalHtmFilePath))
-			{
-				string newHtmFilePath = Path.Combine(bookDirectory, $"index.htm");
-				RobustFile.Copy(originalHtmFilePath, newHtmFilePath);
-				RobustFile.Delete(originalHtmFilePath);
-			}
+			if (!RobustFile.Exists(originalHtmFilePath))
+				return CreateArtifactsExitCode.BookHtmlNotFound;
+
+			string newHtmFilePath = Path.Combine(bookDirectory, $"index.htm");
+			RobustFile.Copy(originalHtmFilePath, newHtmFilePath);
+			RobustFile.Delete(originalHtmFilePath);
+			return CreateArtifactsExitCode.Success;
 		}
 
 		/// <summary>
-		/// Creates an ePub file at the location specified by parametersr
+		/// Creates an ePub file at the location specified by parameters
 		/// </summary>
 		/// <param name="parameters">BookPath and epubOutputPath should be set.</param>
 		/// <param name="control">The epub code needs a control that goes back to the main thread, in order to run some tasks that need to be on the main thread</param>
 		public static void CreateEpubArtifact(CreateArtifactsParameters parameters, Control control)
 		{
-			CreateEpubArtifact(parameters.BookPath, parameters.EpubOutputPath, control);
-		}
-
-		public static void CreateEpubArtifact(string downloadBookDir, string epubOutputPath, Control control)
-		{
-			if (String.IsNullOrEmpty(epubOutputPath))
+			if (String.IsNullOrEmpty(parameters.EpubOutputPath))
 			{
 				return;
 			}
 
-			string directoryName = Path.GetDirectoryName(epubOutputPath);
+			string directoryName = Path.GetDirectoryName(parameters.EpubOutputPath);
 			Directory.CreateDirectory(directoryName);	// Ensures that the directory exists
 
 			BookServer bookServer = _projectContext.BookServer;
@@ -184,13 +242,13 @@ namespace Bloom.CLI
 			var maker = new EpubMaker(thumbNailer, bookServer);
 			maker.ControlForInvoke = control;
 
-			maker.Book = bookServer.GetBookFromBookInfo(new BookInfo(downloadBookDir, true));
+			maker.Book = _book;
 			maker.Unpaginated = true; // so far they all are
 			maker.OneAudioPerPage = true; // default used in EpubApi
 										  // Enhance: maybe we want book to have image descriptions on page? use reader font sizes?
 			
 			// Make the epub
-			maker.SaveEpub(epubOutputPath, new NullWebSocketProgress());
+			maker.SaveEpub(parameters.EpubOutputPath, new NullWebSocketProgress());
 		}
 
 		public static void CreateThumbnailArtifact(CreateArtifactsParameters parameters)
@@ -199,9 +257,6 @@ namespace Bloom.CLI
 			{
 				return;
 			}
-
-			BookServer bookServer = _projectContext.BookServer;
-			var book = bookServer.GetBookFromBookInfo(new BookInfo(parameters.BookPath, true));
 
 			var outputPaths = new List<string>();
 
@@ -217,11 +272,11 @@ namespace Bloom.CLI
 				// It makes the code simpler than having fallback logic not to mention the complications of determining which folder the ePub is in, whether it's really up-to-date, etc.
 				HtmlThumbNailer.ThumbnailOptions thumbnailOptions = BookThumbNailer.GetCoverThumbnailOptions(height, new Guid());
 
-				BookThumbNailer.CreateThumbnailOfCoverImage(book, thumbnailOptions, null);
+				BookThumbNailer.CreateThumbnailOfCoverImage(_book, thumbnailOptions, null);
 
 				// The thumbnail has now been saved in the book's storage folder.
 				// Copy it over to the requested output destination
-				string thumbnailPath = Path.Combine(book.FolderPath, thumbnailOptions.FileName);
+				string thumbnailPath = Path.Combine(_book.FolderPath, thumbnailOptions.FileName);
 				if (RobustFile.Exists(thumbnailPath))
 				{
 					outputPaths.Add(thumbnailPath);
@@ -234,6 +289,29 @@ namespace Bloom.CLI
 				{
 					writer.WriteLine(path);
 				}
+			}
+		}
+
+		/// <summary>
+		/// Calculates the perceptual hash of the first content image of the book and writes it to a file
+		/// The perceptual hash may very well take on the value null. If so, the file will contain the literal string "null" (without the quotes) in it.
+		/// </summary>
+		/// <param name="parameters">parameters.PHashOutputInfoPath should contain the file path to which the create/write the PHash</param>
+		public static void CreatePHashArtifact(CreateArtifactsParameters parameters)
+		{
+			if (String.IsNullOrWhiteSpace(parameters.PHashOutputInfoPath))
+			{
+				return;
+			}
+
+			// This could take a second or more.
+			string pHash = _book.ComputePHashOfFirstContentImage();
+
+			using (var writer = new StreamWriter(parameters.PHashOutputInfoPath, append: false))
+			{
+				// Do note that the pHash may be null and it is expected that some books will legitimately have a null pHash
+				// so we write this value explicitly so that consumers can explicitly detect this.
+				writer.WriteLine(pHash ?? "null");
 			}
 		}
 	}
@@ -258,6 +336,9 @@ namespace Bloom.CLI
 
 		[Option("thumbnailOutputInfoPath", HelpText = "Output destination path for a text file which contains path information for generated thumbnail files", Required = false)]
 		public string ThumbnailOutputInfoPath { get; set; }
+
+		[Option("pHashOutputInfoPath", HelpText = "Output destination path for a text file which contains perceptual hash information for the first content image", Required = false)]
+		public string PHashOutputInfoPath { get; set; }
 
 		[Option("creator", Required = false, Default = "harvester", HelpText = "The value of the \"creator\" meta tag passed along when creating the bloomdigital.")]
 		public string Creator{ get; set; }

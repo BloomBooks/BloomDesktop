@@ -3,7 +3,7 @@ import "./ProblemDialog.less";
 import TextField from "@material-ui/core/TextField";
 import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
-import { useDrawAttention } from "./UseDrawAttention";
+import { useDrawAttention } from "../react_components/UseDrawAttention";
 import { useL10n } from "../react_components/l10nHooks";
 
 //Note: the "isemail" package was not compatible with geckofx 45, so I'm just going with regex
