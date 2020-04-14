@@ -747,12 +747,19 @@ namespace Bloom.Book
 				oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
 			}
 			BringBookUpToDate(OurHtmlDom, progress, oldMetaData);
+			progress.WriteStatus("Updating pages...");
+			foreach (XmlElement pageDiv in OurHtmlDom.SafeSelectNodes("//body/div[contains(@class, 'bloom-page')]"))
+			{
+				BringPageUpToDate(pageDiv);
+			}
+
 			if (IsEditable)
 			{
 				// If the user might be editing it we want it more thoroughly up-to-date
 				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, OurHtmlDom, progress);
-				UpdatePageFromFactoryTemplates(OurHtmlDom, progress);
-				//ImageUpdater.CompressImages(FolderPath, progress);
+				VerifyLayout(OurHtmlDom); // make sure we have something recognizable for layout
+				// Restore possibly messed up multilingual settings.
+				UpdateMultilingualSettings(OurHtmlDom);
 				// This is only needed for updating from old Bloom versions. No need if we're copying the current
 				// edit book, on which it's already been done, to make an epub or similar.
 				if (!forCopyOfUpToDateBook)
@@ -769,6 +776,11 @@ namespace Bloom.Book
 
 			Save();
 			_bookRefreshEvent?.Raise(this);
+		}
+
+		private void VerifyLayout(HtmlDom dom)
+		{
+			SetLayout(Layout.FromDom(dom, Layout.A5Portrait)); // if layout is not recognized, default to A5Portrait
 		}
 
 		private void BringBookInfoUpToDate(string oldMetaData)
@@ -1510,47 +1522,6 @@ namespace Bloom.Book
 		private void UpdateImageMetadataAttributes(XmlElement imgNode)
 		{
 			ImageUpdater.UpdateImgMetdataAttributesToMatchImage(FolderPath, imgNode, new NullProgress());
-		}
-
-		private void UpdatePageFromFactoryTemplates(HtmlDom bookDom, IProgress progress)
-		{
-			var originalLayout = Layout.FromDom(bookDom, Layout.A5Portrait);
-
-			var templatePath = BloomFileLocator.GetFactoryBookTemplateDirectory( "Basic Book");
-
-			var templateDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(templatePath.CombineForPath("Basic Book.html"), false);
-
-			progress.WriteStatus("Updating pages that were based on Basic Book...");
-			foreach (XmlElement templatePageDiv in templateDom.SafeSelectNodes("//body/div"))
-			{
-				if (templatePageDiv.GetOptionalStringAttribute("class", "").Contains("customPage"))
-					continue; // we sure don't want to revert this page to its blank custom state
-
-				var templateId = templatePageDiv.GetStringAttribute("id");
-				if (string.IsNullOrEmpty(templateId))
-					continue;
-
-				var templatePageClasses = templatePageDiv.GetAttribute("class");
-				//note, lineage is a series of guids separated by a semicolon
-				foreach (XmlElement pageDiv in bookDom.SafeSelectNodes("//body/div[contains(@data-pagelineage, '" + templateId + "')]"))
-				{
-					pageDiv.SetAttribute("class", templatePageClasses);
-
-					//now for all the editable elements within the page
-					int count = 0;
-					foreach (XmlElement templateElement in templatePageDiv.SafeSelectNodes("div/div"))
-					{
-						UpdateDivInsidePage(count, templateElement, pageDiv, progress);
-						++count;
-					}
-				}
-			}
-
-			//custom layout gets messed up when we copy classes over from, for example, Basic Book
-			SetLayout(originalLayout);
-
-			//Likewise, the multilingual settings (e.g. bloom-bilingual) get messed up, so restore those
-			UpdateMultilingualSettings(bookDom);
 		}
 
 		// Returns true if it updated something.
