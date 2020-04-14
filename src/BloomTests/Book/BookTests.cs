@@ -381,6 +381,7 @@ namespace BloomTests.Book
 
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"),
 				Language1Iso639Code = "th", Language2Iso639Code = "fr", Language3Iso639Code = "es" });
+			_collectionSettings.Language1.SetName("ไทย", false);
 			var book =  new Bloom.Book.Book(_metadata, _storage.Object, _templateFinder.Object,
 				_collectionSettings,
 				_pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());

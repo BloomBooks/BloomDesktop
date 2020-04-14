@@ -2,6 +2,7 @@ import * as React from "react";
 import "./DeviceFrame.less";
 import { useState, useEffect } from "react";
 import { useL10n } from "../../react_components/l10nHooks";
+import { useDrawAttention } from "../../react_components/UseDrawAttention";
 import { useTheme, Theme, Typography } from "@material-ui/core";
 import IconButton from "@material-ui/core/IconButton";
 import RefreshIcon from "@material-ui/icons/Refresh";
@@ -28,6 +29,13 @@ export const DeviceAndControls: React.FunctionComponent<{
         setLandscape(props.defaultLandscape);
     }, [props]);
     const refreshText = useL10n("Refresh", "Common.Refresh");
+
+    const attentionClass = useDrawAttention(
+        props.highlightRefreshIcon ? 1 : 0,
+        () => {
+            return !props.highlightRefreshIcon;
+        }
+    );
 
     return (
         <div className="deviceAndControls">
@@ -68,7 +76,7 @@ export const DeviceAndControls: React.FunctionComponent<{
                 >
                     <IconButton
                         aria-label="refresh preview"
-                        className="refresh-icon"
+                        className={"refresh-icon " + attentionClass}
                     >
                         <RefreshIcon
                             fontSize="large"

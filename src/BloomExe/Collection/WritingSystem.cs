@@ -74,10 +74,15 @@ namespace Bloom.Collection
 			return GetLanguageName_NoCache(inLanguage);
 		}
 
-		public string UiName
-		{
-			get { return GetNameInLanguage(L10NSharp.LocalizationManager.UILanguageId); }
-		}
+//		/// <remarks>
+//		/// The user has already verified in the language chooser dialog how he wants to display
+//		/// the language name.  Even if it isn't changed, the value of the Name property must be
+//		/// okay regardless of the UI language.
+//		/// </remarks>
+//		public string UiName
+//		{
+//			get { return GetNameInLanguage(L10NSharp.LocalizationManager.UILanguageId); }
+//		}
 
 		private string GetLanguageName_NoCache(string inLanguage)
 		{
