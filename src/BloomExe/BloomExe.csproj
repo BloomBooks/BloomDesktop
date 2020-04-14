@@ -58,6 +58,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)'!='Windows_NT'">
+    <DefineConstants>__MonoCS__</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
   </PropertyGroup>
@@ -289,7 +292,7 @@
       <HintPath>..\..\lib\dotnet\YouTrackSharp.dll</HintPath>
     </Reference>
     <Reference Include="DialogAdapters">
-      <HintPath>..\..\packages\DialogAdapters.0.1.5.17669\lib\net45\DialogAdapters.dll</HintPath>
+      <HintPath>..\..\packages\DialogAdapters.0.1.8.23151\lib\net45\DialogAdapters.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -1242,7 +1245,7 @@
     <None Include="Resources\cutDisable16x16.png" />
   </ItemGroup>
   <ItemGroup>
-    <COMReference Include="IWshRuntimeLibrary">
+    <COMReference Include="IWshRuntimeLibrary" Condition="'$(OS)'=='Windows_NT'">
       <Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>
       <VersionMajor>1</VersionMajor>
       <VersionMinor>0</VersionMinor>
@@ -1443,14 +1446,5 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
     <Copy SourceFiles="@(BloomPdfMakerArgs)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
-  </Target>
-  <Import Project="..\..\packages\Geckofx60.32.60.0.44\build\Geckofx60.32.targets" Condition="Exists('..\..\packages\Geckofx60.32.60.0.44\build\Geckofx60.32.targets')" />
-  <Import Project="../../packages/Geckofx60.64.Linux.60.0.44/build/Geckofx60.64.Linux.targets" Condition="Exists('../../packages/Geckofx60.64.Linux.60.0.44/build/Geckofx60.64.Linux.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\Geckofx60.32.60.0.44\build\Geckofx60.32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Geckofx60.32.60.0.44\build\Geckofx60.32.targets'))" />
-    <Error Condition="'$(OS)'!='Windows_NT' AND !Exists('../../packages/Geckofx60.64.Linux.60.0.44/build/Geckofx60.64.Linux.targets')" Text="$([System.String]::Format('$(ErrorText)', '../../packages/Geckofx60.64.Linux.60.0.44/build/Geckofx60.64.Linux.targets'))" />
   </Target>
 </Project>

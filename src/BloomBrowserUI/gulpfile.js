@@ -87,7 +87,7 @@ var paths = {
 var allXliffFiles = globule.find(paths.xliff);
 // Check for the existence of the SIL mono, which flags we're on Linux
 // and need to use it to execute HtmlXliff.exe
-var IsLinux = globule.find(["/opt/mono4-sil/**/mono"]).length > 0;
+var IsLinux = globule.find(["/opt/mono5-sil/**/mono"]).length > 0;
 
 gulp.task("less", function() {
     var less = require("gulp-less");
@@ -283,7 +283,7 @@ gulp.task("translateHtmlFiles", function() {
                     var cmd = "";
                     if (IsLinux)
                         cmd =
-                            "/opt/mono4-sil/bin/mono --debug ../../lib/dotnet/HtmlXliff.exe --inject";
+                            "/opt/mono5-sil/bin/mono --debug ../../lib/dotnet/HtmlXliff.exe --inject";
                     else cmd = "..\\..\\lib\\dotnet\\HtmlXliff.exe --inject";
                     cmd = cmd + ' -x "' + xliffFile + '"';
                     cmd = cmd + ' -o "' + outfile + '"';
@@ -313,7 +313,7 @@ gulp.task("createXliffFiles", function() {
                 var cmd = "";
                 if (IsLinux)
                     cmd =
-                        "/opt/mono4-sil/bin/mono --debug ../../lib/dotnet/HtmlXliff.exe --extract --preserve";
+                        "/opt/mono5-sil/bin/mono --debug ../../lib/dotnet/HtmlXliff.exe --extract --preserve";
                 else
                     cmd =
                         "..\\..\\lib\\dotnet\\HtmlXliff.exe --extract --preserve";

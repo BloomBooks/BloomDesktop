@@ -170,7 +170,7 @@
 			// flowLayoutPanel1
 			// 
 			this.flowLayoutPanel1.AutoSize = true;
-			this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowOnly;
 			this.flowLayoutPanel1.Controls.Add(this._languageNameLabel);
 			this.flowLayoutPanel1.Controls.Add(this.tableLayoutPanel1);
 			this.flowLayoutPanel1.Controls.Add(this._okButton);

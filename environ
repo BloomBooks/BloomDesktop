@@ -1,13 +1,13 @@
 # Environment settings for running programs with the SIL version of mono
 # Set MONO_ENVIRON to this file's pathname, then run, for example,
-#    /opt/mono4-sil/bin/mono --debug Bloom.exe
-# These setting assume that the packaged SIL Mono is installed in /opt/mono4-sil.
+#    /opt/mono5-sil/bin/mono --debug Bloom.exe
+# These setting assume that the packaged SIL Mono is installed in /opt/mono5-sil.
 # Note that this file is intended to be "sourced", not "executed".
 
 # the sourcing script should cd/pushd to the directory containing this script
 BASE="$(pwd)"
 [ -z "$BUILD" ] && BUILD=Debug
-[ -z "$MONO_PREFIX" ] && MONO_PREFIX=/opt/mono4-sil
+[ -z "$MONO_PREFIX" ] && MONO_PREFIX=/opt/mono5-sil
 
 # Dependency locations
 # Search for xulrunner and geckofx, select the best, and add its location to LD_LIBRARY_PATH.
@@ -17,7 +17,6 @@ BASE="$(pwd)"
 #GDK_SHARP=/usr/lib/cli/gdk-sharp-2.0
 GDK_SHARP=/usr/lib/cli/glib-sharp-3.0/:/usr/lib/cli/gtk-sharp-3.0/:/usr/lib/cli/gdk-sharp-3.0/:/usr/lib/cli/atk-sharp-3.0/:/usr/lib/cli/gio-sharp-3.0/
 
-MONO_RUNTIME=v4.0.30319
 MONO_PATH="${GDK_SHARP}:${GECKOFX}"
 MONO_DEBUG=explicit-null-checks
 MONO_ENV_OPTIONS="-O=-gshared"
@@ -55,10 +54,10 @@ fi
 if [ "$RUNMODE" = "PACKAGE" -o "$RUNMODE" = "INSTALLED" ]
 then
 	# Add packaged mono items to paths
-	PATH="/opt/mono4-sil/bin:${PATH}"
-	LD_LIBRARY_PATH="/opt/mono4-sil/lib:${LD_LIBRARY_PATH}"
-	PKG_CONFIG_PATH="/opt/mono4-sil/lib/pkgconfig:${PKG_CONFIG_PATH}"
-	MONO_GAC_PREFIX="/opt/mono4-sil:/usr"
+	PATH="/opt/mono5-sil/bin:${PATH}"
+	LD_LIBRARY_PATH="/opt/mono5-sil/lib:${LD_LIBRARY_PATH}"
+	PKG_CONFIG_PATH="/opt/mono5-sil/lib/pkgconfig:${PKG_CONFIG_PATH}"
+	MONO_GAC_PREFIX="/opt/mono5-sil:/usr"
 else
 	# Add locally-built mono items to paths
 	# We also add the default values for PKG_CONFIG_PATH - MonoDevelop resets the PKG_CONFIG_PATH
@@ -84,7 +83,7 @@ MONO_MWF_SCALING=disable
 export \
 	PATH LD_LIBRARY_PATH PKG_CONFIG_PATH LD_PRELOAD \
 	MONO_PATH \
-	MONO_RUNTIME MONO_PREFIX MONO_GAC_PREFIX \
+	MONO_PREFIX MONO_GAC_PREFIX \
 	MONO_TRACE_LISTENER MONO_IOMAP MONO_MWF_SCALING \
 	MONO_DEBUG MONO_ENV_OPTIONS
 

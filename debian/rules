@@ -4,7 +4,7 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-export MONO_PREFIX = /opt/mono4-sil
+export MONO_PREFIX = /opt/mono5-sil
 export BUILD = Release
 
 PACKAGE = bloom-desktop-beta
@@ -98,11 +98,11 @@ override_dh_auto_install:
 # Don't export any assemblies to other packages
 override_dh_makeclilibs:
 
-# Include mono4-sil in shlib dirs searched
+# Include mono5-sil in shlib dirs searched
 override_dh_shlibdeps:
 	dh_shlibdeps -l$(MONO_PREFIX)/lib --exclude=Firefox
 
-# Include mono4-sil in cli dirs searched
+# Include mono5-sil in cli dirs searched
 # Trying to process connections.dll now crashes on jenkins instead of merely complaining.
 # The -X (--exclude) option doesn't seem to work for dh_clideps to skip connections.dll.
 override_dh_clideps:
