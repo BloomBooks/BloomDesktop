@@ -420,7 +420,7 @@ export default class AudioRecording {
             ".uibloomSourceTextsBubble"
         );
         this.hiddenSourceBubbles.hide();
-        const editable = this.getRecordableDivs();
+        const editable = this.getRecordableDivs(true, false);
         if (editable.length === 0) {
             // no editable text on this page.
             this.changeStateAndSetExpectedAsync("");
@@ -457,16 +457,38 @@ export default class AudioRecording {
         WebSocketManager.closeSocket(kWebsocketContext);
     }
 
+    private isPlaybackOrderSpecified(): boolean {
+        const body = this.getPageDocBody();
+        if (!body) {
+            return false;
+        }
+        const visibleGroups = this.getVisibleTranslationGroups(body);
+        for (let i = 0; i < visibleGroups.length; i++) {
+            const div = visibleGroups[i];
+            const tabindexAttr = div.getAttribute("tabindex");
+            if (tabindexAttr && parseInt(tabindexAttr) > 0) {
+                // We consider that ANY positive tabindex means playback order has been specified at some point.
+                return true;
+            }
+        }
+        return false;
+    }
+
     // We now do recording in all editable divs that are visible.
     // This should NOT restrict to ones that already contain audio-sentence spans.
     // BL-5575 But we don't (at this time) want to record comprehension questions.
     // And BL-5457: Check that we actually have recordable text in the divs we return.
-    private getRecordableDivs(includeCheckForText: boolean = true): JQuery {
+    // And now (BL-7883) we want to optionally order the divs by the tabindex attribute
+    // on their parent translationGroup div.
+    private getRecordableDivs(
+        includeCheckForText: boolean = true,
+        includeCheckForPlaybackOrder: boolean = true
+    ): JQuery {
         const $this = this;
         const divs = this.getPageDocBodyJQuery().find(
             ":not(.bloom-noAudio) > " + kBloomEditableTextBoxSelector
         );
-        return divs.filter(":visible").filter((idx, elt) => {
+        const recordableDivs = divs.filter(":visible").filter((idx, elt) => {
             if (!includeCheckForText) {
                 return true;
             }
@@ -474,6 +496,34 @@ export default class AudioRecording {
                 return $this.isRecordable(frag);
             });
         });
+        if (!includeCheckForPlaybackOrder || !this.isPlaybackOrderSpecified()) {
+            return recordableDivs;
+        }
+        return this.sortByTabindex(recordableDivs);
+    }
+
+    // Param 'recordableDivs' is a JQuery of bloom-editable divs. This function serves
+    // to sort that by the parent translationGroup's tabindex attribute (if it exists).
+    // Divs inside of translationGroups that do NOT have a tabindex will be sorted to the top.
+    private sortByTabindex(recordableDivs: JQuery): JQuery {
+        return recordableDivs.sort((a, b) => {
+            return this.getParentTabindex(a) - this.getParentTabindex(b);
+        });
+    }
+
+    private getParentTabindex(recordableDiv: HTMLElement): number {
+        const translationGroup = recordableDiv.parentElement;
+        if (
+            !translationGroup ||
+            !translationGroup.classList.contains("bloom-translationGroup")
+        ) {
+            return 0; // something went wrong? xMatter bloom-editable?
+        }
+        const tabindexString = translationGroup.getAttribute("tabindex");
+        if (!tabindexString) {
+            return 0;
+        }
+        return parseInt(tabindexString);
     }
 
     // Corresponds to getRecordableDivs() but only applies the check to the current element
@@ -595,7 +645,7 @@ export default class AudioRecording {
         const incrementAmount = isTraverseInReverseOn ? -1 : 1;
 
         // Careful! Even though the Recording Mode is text box, current can be a Sentence... use currentTextBox instead
-        const allTextBoxes = this.getRecordableDivs(false);
+        const allTextBoxes = this.getRecordableDivs(false, true);
         const currentIndex = allTextBoxes.index(currentTextBox);
         console.assert(currentIndex >= 0);
         if (currentIndex < 0) {
@@ -1198,7 +1248,7 @@ export default class AudioRecording {
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
     public listen(): void {
         this.elementsToPlayConsecutivelyStack = jQuery
-            .makeArray(this.getAudioElements())
+            .makeArray(this.sortByTabindex(this.getAudioElements()))
             .reverse();
 
         const stackSize = this.elementsToPlayConsecutivelyStack.length;
@@ -1467,40 +1517,35 @@ export default class AudioRecording {
         this.playbackOrderCache = [];
         const translationGroups = this.getVisibleTranslationGroups(docBody);
         if (translationGroups.length < 1) {
-            // no point in displaying playback order if only 1 or none
+            // no point in displaying playback order if there aren't any recordable divs
             return;
         }
 
-        if (this.playbackOrderCache.length === 0) {
-            for (let i = 0; i < translationGroups.length; i++) {
-                const currentTranslationGroup = translationGroups[i];
-                const newDiv = `<div class="bloom-ui ${kPlaybackOrderContainerClass}"></div>`;
-                currentTranslationGroup.insertAdjacentHTML(
-                    "beforebegin",
-                    newDiv
-                );
-                const containerDivs = currentTranslationGroup.parentElement!.getElementsByClassName(
-                    kPlaybackOrderContainerClass
-                );
-                if (containerDivs.length !== 1) {
-                    return; // paranoia, we just put it there!
-                }
-                const containerDiv = <HTMLDivElement>containerDivs[0];
-                if (containerDiv === null) {
-                    return; // paranoia, we just put it there!
-                }
-                const existingTabindex = currentTranslationGroup.getAttribute(
-                    "tabindex"
-                );
-                this.playbackOrderCache.push({
-                    containerDiv: containerDiv,
-                    sourceTranslationGroup: currentTranslationGroup,
-                    // Give any translationGroup that doesn't already have a tabindex, an index of 0.
-                    myPosition: existingTabindex ? Number(existingTabindex) : 0
-                });
+        for (let i = 0; i < translationGroups.length; i++) {
+            const currentTranslationGroup = translationGroups[i];
+            const newDiv = `<div class="bloom-ui ${kPlaybackOrderContainerClass}"></div>`;
+            currentTranslationGroup.insertAdjacentHTML("beforebegin", newDiv);
+            const containerDivs = currentTranslationGroup.parentElement!.getElementsByClassName(
+                kPlaybackOrderContainerClass
+            );
+            if (containerDivs.length !== 1) {
+                return; // paranoia, we just put it there!
             }
-            this.sortOutTabindexValues();
+            const containerDiv = <HTMLDivElement>containerDivs[0];
+            if (containerDiv === null) {
+                return; // paranoia, we just put it there!
+            }
+            const existingTabindex = currentTranslationGroup.getAttribute(
+                "tabindex"
+            );
+            this.playbackOrderCache.push({
+                containerDiv: containerDiv,
+                sourceTranslationGroup: currentTranslationGroup,
+                // Give any translationGroup that doesn't already have a tabindex, an index of 0.
+                myPosition: existingTabindex ? Number(existingTabindex) : 0
+            });
         }
+        this.sortOutTabindexValues();
         this.renderPlaybackControls();
     }
 
@@ -1515,14 +1560,10 @@ export default class AudioRecording {
 
     private sortOutTabindexValues() {
         this.playbackOrderCache.sort((a, b) => {
-            const x = a.myPosition;
-            const y = b.myPosition;
-            if (x < y) return -1;
-            if (x > y) return 1;
-            return 0;
+            return a.myPosition - b.myPosition;
         });
         if (
-            this.playbackOrderCache.length > 1 &&
+            this.playbackOrderCache.length > 0 &&
             this.playbackOrderCache[0].myPosition === 0
         ) {
             // Some of the translationGroups don't yet have a tabindex; reset all of them.
@@ -1979,7 +2020,7 @@ export default class AudioRecording {
         // BL-7588 We were getting a timing problem where this method was overwriting the proper state to empty
         // string, when we had already arrived at the proper "record" state in setupForRecording().
         // We just need to make sure that there is editable text and set the state accordingly.
-        const editable = this.getRecordableDivs();
+        const editable = this.getRecordableDivs(true, false);
         if (editable.length === 0) {
             // no editable text on this page.
             this.changeStateAndSetExpectedAsync("");
@@ -2231,9 +2272,9 @@ export default class AudioRecording {
     }
 
     public setCurrentAudioElementToFirstAudioElement(): HTMLElement | null {
-        const firstSentenceJQuery = this.getPageDocBodyJQuery()
-            .find(kAudioSentenceClassSelector)
-            .first();
+        const firstSentenceJQuery = this.sortByTabindex(
+            this.getPageDocBodyJQuery().find(kAudioSentenceClassSelector)
+        );
         if (firstSentenceJQuery.length === 0) {
             // no recordable sentence found.
             return null;
@@ -3174,7 +3215,7 @@ export default class AudioRecording {
     private enableRecordingModeIfAppropriate() {
         // The 'false' parameter here checks for visible text divs, but doesn't check
         // for actual text in them. We already know there aren't any WITH text.
-        if (this.getRecordableDivs(false).length > 0) {
+        if (this.getRecordableDivs(false, false).length > 0) {
             // Enable the control, although we don't currently have any text on this page, because
             // we could add text at some point.
             this.enableRecordingModeControl();

@@ -13,9 +13,8 @@ interface IPlaybackOrderControlsProps {
 
 const buttonWidth = 22;
 const controlBoxWidth = buttonWidth * 3;
-const warningColor: string = theme.palette.warning.main;
+const numberBackgroundColor: string = theme.palette.tertiary.main;
 const bloomBlue: string = theme.palette.primary.main;
-const white: string = "#FFFFFF";
 const disabledColor: string = "#b0dee4"; // bloom-lightblue in bloomUI.less
 const buttonStyle: React.CSSProperties = {
     backgroundColor: bloomBlue,
@@ -48,7 +47,9 @@ const PlaybackOrderControls: React.FC<IPlaybackOrderControlsProps> = props => {
                 style={buttonStyle}
             >
                 <Remove
-                    style={{ fill: leftButtonDisabled ? disabledColor : white }}
+                    style={{
+                        fill: leftButtonDisabled ? disabledColor : "white"
+                    }}
                     fontSize="small"
                     fontWeight={800}
                     shapeRendering="crispEdges"
@@ -56,7 +57,7 @@ const PlaybackOrderControls: React.FC<IPlaybackOrderControlsProps> = props => {
             </button>
             <Typography
                 style={{
-                    backgroundColor: warningColor,
+                    backgroundColor: numberBackgroundColor,
                     width: `${buttonWidth}px`,
                     textAlign: "center",
                     fontWeight: 700
@@ -72,7 +73,7 @@ const PlaybackOrderControls: React.FC<IPlaybackOrderControlsProps> = props => {
             >
                 <Add
                     style={{
-                        fill: rightButtonDisabled ? disabledColor : white
+                        fill: rightButtonDisabled ? disabledColor : "white"
                     }}
                     fontSize="small"
                     fontWeight={800}
