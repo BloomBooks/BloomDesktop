@@ -1,6 +1,5 @@
 import * as React from "react";
 import * as mobxReact from "mobx-react";
-import { Checkbox } from "./checkbox";
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
 import { MuiCheckbox } from "./muiCheckBox";
 

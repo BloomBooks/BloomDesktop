@@ -1672,7 +1672,7 @@ function SetupTalkingBookUIElements() {
     document.body.appendChild(document.createElement("div")); // Ensures there is always an element.
 
     const html =
-        '<button id="audio-record" /><button id="audio-play" /><div id="audio-split-wrapper"><button id="audio-split"></div><button id="audio-next" /><button id="audio-prev" /><button id="audio-clear" /><input id="audio-recordingModeControl" /><audio id="player" />';
+        '<button id="audio-record" /><button id="audio-play" /><div id="audio-split-wrapper"><button id="audio-split"></div><button id="audio-next" /><button id="audio-prev" /><button id="audio-clear" /><input id="audio-recordingModeControl" /><input id="audio-playbackOrderControl" /><audio id="player" />';
     document.body.firstElementChild!.insertAdjacentHTML("afterend", html);
 }
 
