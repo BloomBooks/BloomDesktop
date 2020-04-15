@@ -9,6 +9,7 @@ import BloomButton from "./bloomButton";
 import { showConfirmDialog, IConfirmDialogProps } from "./confirmDialog";
 import ImportIcon from "./icons/ImportIcon";
 import DeleteIcon from "@material-ui/icons/Delete";
+import PlaybackOrderControls from "./playbackOrderControls";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -182,5 +183,56 @@ storiesOf("Misc", module).add("ConfirmDialog", () =>
                 Open Confirm Dialog
             </BloomButton>
         </div>
+    ))
+);
+
+const divStyles: React.CSSProperties = {
+    width: "150px",
+    height: "80px",
+    border: "1px solid red",
+    display: "flex",
+    justifyContent: "center"
+};
+
+const bumpUp = (whichPositionToBump: number): void => {
+    console.log(
+        `Bump up myOrderNum from ${whichPositionToBump} to ${++whichPositionToBump}`
+    );
+};
+
+const bumpDown = (whichPositionToBump: number): void => {
+    console.log(
+        `Bump down myOrderNum from ${whichPositionToBump} to ${--whichPositionToBump}`
+    );
+};
+
+storiesOf("PlaybackOrderControls", module).add("PlaybackOrder buttons", () =>
+    React.createElement(() => (
+        <>
+            <div style={divStyles}>
+                <PlaybackOrderControls
+                    sizeOfList={3}
+                    myOrderNum={2}
+                    bumpUp={bumpUp}
+                    bumpDown={bumpDown}
+                />
+            </div>
+            <div style={divStyles}>
+                <PlaybackOrderControls
+                    sizeOfList={3}
+                    myOrderNum={1}
+                    bumpUp={bumpUp}
+                    bumpDown={bumpDown}
+                />
+            </div>
+            <div style={divStyles}>
+                <PlaybackOrderControls
+                    sizeOfList={3}
+                    myOrderNum={3}
+                    bumpUp={bumpUp}
+                    bumpDown={bumpDown}
+                />
+            </div>
+        </>
     ))
 );
