@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -110,6 +110,12 @@
     </Reference>
     <Reference Include="DesktopAnalytics, Version=1.2.4.11, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\DesktopAnalytics.1.2.4.11\lib\net40\DesktopAnalytics.dll</HintPath>
+    </Reference>
+    <Reference Include="DialogAdapters, Version=0.1.5.17669, Culture=neutral, processorArchitecture=MSIL" Condition="'$(OS)'=='Windows_NT'">
+      <HintPath>..\..\packages\DialogAdapters.0.1.5.17669\lib\net45\DialogAdapters.dll</HintPath>
+    </Reference>
+    <Reference Include="DialogAdapters, Version=0.1.8.23151" Condition="'$(OS)'!='Windows_NT'">
+      <HintPath>..\..\packages\DialogAdapters.0.1.8.23151\lib\net45\DialogAdapters.dll</HintPath>
     </Reference>
     <Reference Include="EasyHttp, Version=1.6.86.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\EasyHttp.1.6.86.0\lib\net40\EasyHttp.dll</HintPath>
@@ -290,9 +296,6 @@
     <Reference Include="YouTrackSharp, Version=2.0.30.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\YouTrackSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="DialogAdapters">
-      <HintPath>..\..\packages\DialogAdapters.0.1.8.23151\lib\net45\DialogAdapters.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
