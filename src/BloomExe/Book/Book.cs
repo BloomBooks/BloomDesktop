@@ -811,16 +811,18 @@ namespace Bloom.Book
 #endif
 			try
 			{
-				var max = this.GetLastNumberedPageNumber();
-				for (int num = 1; num <= max; ++num)
+				// Precondition: Assumes that pages were written to the HTML in the order of their page number
+
+				// Find the first picture on a content page
+				// We use the numberedPage class to determine this now
+				// You could also try data-page-number, but it's not guaranteed to use numbers like "1", "2", "3"... the numbers may be written in the language of the book (BL-8346)
+				var firstContentImageElement = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page')][contains(@class, 'numberedPage')]//div[contains(@class,'bloom-imageContainer')]/img");
+				if (firstContentImageElement != null)
 				{
-					var firstContentImageElement = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page') and @data-page-number='{num}']//div[contains(@class,'bloom-imageContainer')]/img");
-					if (firstContentImageElement != null)
-					{
-						var src = firstContentImageElement.GetAttribute("src");
-						return ComputePHashOfImageSrc(src);
-					}
+					var src = firstContentImageElement.GetAttribute("src");
+					return ComputePHashOfImageSrc(src);
 				}
+				
 				// No content page images found.  Try the cover page, then give up.
 				var coverImg = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page') and @data-xmatter-page='frontCover']//div[contains(@class,'bloom-imageContainer')]/img");
 				if (coverImg != null)
