@@ -40,7 +40,10 @@
         "gitSemiCleanForReal": "git clean -fX --exclude='!node_modules'",
         "tslint": "tslint --project tsconfig.json",
         "// use output/browser as the root of the storybook-provided server": "",
-        "storybook": "start-storybook -s ../../output/browser"
+        "storybook": "start-storybook -s ../../output/browser",
+        "// I haven't figured out how to generalize this to all pug, but it's a helpful template for future xmatter work": "",
+        "abcpug": "pug templates/xMatter/ABC-Reader-XMatter/ABC-Reader-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/ABC-Reader-XMatter --pretty",
+        "watch-abc": "npm-run-all --parallel abcpug watchTemplatesLess"
     },
     "repository": {
         "type": "git",
@@ -78,6 +81,7 @@
         "mobx-react": "^5.4.3",
         "paper": "^0.12.3",
         "prop-types": "^15.7.2",
+        "pug-cli": "^1.0.0-alpha6",
         "rc-slider": "^8.6.9",
         "react": "16.8.6",
         "react-close-on-escape": "^3.0.0",

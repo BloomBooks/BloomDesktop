@@ -1,0 +1,21 @@
+{
+    "presets": [
+        {
+            "data-book": "licenseUrl",
+            "lang": "*",
+            "content": "http://creativecommons.org/licenses/by/3.0/igo/"
+        },
+        {
+            "data-book": "cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='BARMM-front.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='BARMM-back.png'/>",
+            "condition": "always"
+        }
+    ]
+}
