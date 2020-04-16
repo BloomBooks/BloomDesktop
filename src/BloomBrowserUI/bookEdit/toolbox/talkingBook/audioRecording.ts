@@ -134,6 +134,7 @@ export default class AudioRecording {
 
     private stringToSentencesCache: object = {};
     private playbackOrderCache: IPlaybackOrderInfo[] = [];
+    private allTopLevelToolboxElements: Element[] = [];
 
     constructor() {
         this.audioSplitButton = <HTMLButtonElement>(
@@ -433,6 +434,60 @@ export default class AudioRecording {
 
         this.addAudioLevelListener();
         this.addAudioRecordStartListener();
+        this.getToolboxElementsToDisableWhenShowingPlaybackOrdere();
+    }
+
+    private getToolboxElementsToDisableWhenShowingPlaybackOrdere(): void {
+        const uiAudioBodyDiv = document.querySelector(".ui-audioBody");
+        if (!uiAudioBodyDiv) {
+            return; // won't ever happen
+        }
+        let currentChildElement = uiAudioBodyDiv.firstElementChild;
+        while (currentChildElement !== null) {
+            // grab the Help link
+            if (currentChildElement.tagName === "A") {
+                this.allTopLevelToolboxElements.push(currentChildElement);
+            }
+            const classNamesString = currentChildElement.className;
+            // grab all the .button-label-wrappers and one other x-wrapper
+            if (classNamesString.indexOf("-wrapper") > 0) {
+                this.allTopLevelToolboxElements.push(currentChildElement);
+            }
+            // grab all the .audio-label top-level elements
+            if (classNamesString.indexOf("audio-label") > -1) {
+                this.allTopLevelToolboxElements.push(currentChildElement);
+            }
+            // grab the audio input group and about elements
+            if (
+                classNamesString.indexOf("ui-audioInputGroup") > -1 ||
+                classNamesString.indexOf("audio-about") > -1
+            ) {
+                this.allTopLevelToolboxElements.push(currentChildElement);
+            }
+            if (classNamesString.indexOf("audio-advanced") > -1) {
+                // a bit more complicated; get the next level down except our playback order control
+                this.collectAdvancedElementsExceptPlaybackControl(
+                    currentChildElement
+                );
+            }
+            currentChildElement = currentChildElement.nextElementSibling;
+        }
+    }
+
+    private collectAdvancedElementsExceptPlaybackControl(
+        advancedElement: Element
+    ) {
+        let advancedElementChild = advancedElement.firstElementChild;
+        while (advancedElementChild !== null) {
+            // grab all elements at this level except "#audio-playbackOrderControl-wrapper"
+            if (
+                advancedElementChild.id !==
+                kPlaybackOrderControl + "-wrapper"
+            ) {
+                this.allTopLevelToolboxElements.push(advancedElementChild);
+            }
+            advancedElementChild = advancedElementChild.nextElementSibling;
+        }
     }
 
     // Called when a new page is loaded and (above) when the Talking Book Tool is chosen.
@@ -1505,10 +1560,12 @@ export default class AudioRecording {
         if (this.showPlaybackInput.checked) {
             this.showPlaybackInput.checked = false;
             this.removePlaybackOrderUi(docBody);
+            this.toggleToolDisablingClass(false);
             this.toggleCheckedClass(false);
         } else {
             this.showPlaybackInput.checked = true;
             this.showPlaybackOrderUi(docBody);
+            this.toggleToolDisablingClass(true);
             this.toggleCheckedClass(true);
         }
     }
@@ -1666,15 +1723,32 @@ export default class AudioRecording {
         return result;
     }
 
-    private toggleCheckedClass(add: boolean) {
+    private toggleToolDisablingClass(addClass: boolean) {
+        // When present, this class disables everything in the Talking Book tool,
+        // except the playback order checkbox.
+        if (this.allTopLevelToolboxElements.length < 1) {
+            return; // something is wrong; we should have collected these already!
+        }
+        const elementDisablingClass = "disabled";
+        this.allTopLevelToolboxElements.forEach(elementToToggle => {
+            if (addClass) {
+                elementToToggle.classList.add(elementDisablingClass);
+            } else {
+                elementToToggle.classList.remove(elementDisablingClass);
+            }
+        });
+    }
+
+    private toggleCheckedClass(addClass: boolean) {
+        const checkedClass = "checked";
         const checkboxLabel = (<HTMLLabelElement>(
             document.getElementById(kPlaybackOrderClickHandler)
         )).nextElementSibling;
         if (checkboxLabel != null) {
-            if (add) {
-                checkboxLabel.classList.add("checked");
+            if (addClass) {
+                checkboxLabel.classList.add(checkedClass);
             } else {
-                checkboxLabel.classList.remove("checked");
+                checkboxLabel.classList.remove(checkedClass);
             }
         }
     }
