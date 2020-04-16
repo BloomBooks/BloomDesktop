@@ -134,6 +134,7 @@ export default class AudioRecording {
 
     private stringToSentencesCache: object = {};
     private playbackOrderCache: IPlaybackOrderInfo[] = [];
+    private disablingOverlay: HTMLDivElement;
 
     constructor() {
         this.audioSplitButton = <HTMLButtonElement>(
@@ -415,6 +416,9 @@ export default class AudioRecording {
     // Called by TalkingBookModel.showTool() when a different tool is added/chosen or when the toolbox is re-opened, but not when a new page is added
     public setupForRecording(): void {
         this.updateInputDeviceDisplay();
+        this.disablingOverlay = document.getElementById(
+            "disablingOverlay"
+        ) as HTMLDivElement;
 
         this.hiddenSourceBubbles = this.getPageDocBodyJQuery().find(
             ".uibloomSourceTextsBubble"
@@ -1505,10 +1509,12 @@ export default class AudioRecording {
         if (this.showPlaybackInput.checked) {
             this.showPlaybackInput.checked = false;
             this.removePlaybackOrderUi(docBody);
+            this.toggleToolDisablingOverlay(false);
             this.toggleCheckedClass(false);
         } else {
             this.showPlaybackInput.checked = true;
             this.showPlaybackOrderUi(docBody);
+            this.toggleToolDisablingOverlay(true);
             this.toggleCheckedClass(true);
         }
     }
@@ -1666,15 +1672,28 @@ export default class AudioRecording {
         return result;
     }
 
-    private toggleCheckedClass(add: boolean) {
+    private toggleToolDisablingOverlay(disableEverythingElse: boolean) {
+        if (!this.disablingOverlay) {
+            return; // should have been setup by now
+        }
+        const hiddenClass = "hiddenOverlay";
+        if (disableEverythingElse) {
+            this.disablingOverlay.classList.remove(hiddenClass);
+        } else {
+            this.disablingOverlay.classList.add(hiddenClass);
+        }
+    }
+
+    private toggleCheckedClass(addClass: boolean) {
+        const checkedClass = "checked";
         const checkboxLabel = (<HTMLLabelElement>(
             document.getElementById(kPlaybackOrderClickHandler)
         )).nextElementSibling;
         if (checkboxLabel != null) {
-            if (add) {
-                checkboxLabel.classList.add("checked");
+            if (addClass) {
+                checkboxLabel.classList.add(checkedClass);
             } else {
-                checkboxLabel.classList.remove("checked");
+                checkboxLabel.classList.remove(checkedClass);
             }
         }
     }
@@ -2017,6 +2036,16 @@ export default class AudioRecording {
         // (e.g. when opening the toolbox with an empty text box).
         this.initializeAudioRecordingMode();
 
+        // This check needs to be before the check for recordable divs below, because sometimes
+        // we may have empty textboxes that should nevertheless show the playback order UI.
+        if (this.showPlaybackInput.checked) {
+            const docBody = this.getPageDocBody();
+            if (!docBody) {
+                return;
+            }
+            this.showPlaybackOrderUi(docBody);
+        }
+
         // BL-7588 We were getting a timing problem where this method was overwriting the proper state to empty
         // string, when we had already arrived at the proper "record" state in setupForRecording().
         // We just need to make sure that there is editable text and set the state accordingly.
@@ -2027,13 +2056,6 @@ export default class AudioRecording {
             return;
         }
         this.changeStateAndSetExpectedAsync("record");
-        if (this.showPlaybackInput.checked) {
-            const docBody = this.getPageDocBody();
-            if (!docBody) {
-                return;
-            }
-            this.showPlaybackOrderUi(docBody);
-        }
     }
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)

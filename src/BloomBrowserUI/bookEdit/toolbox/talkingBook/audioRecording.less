@@ -9,6 +9,7 @@
 @splitAnimationTime: 300ms;
 @micProblemColor: @bloom-warning;
 @textOnLightBackground: black;
+@disablingOverlayZindex: 1001; // higher than #audio-devlist
 
 // See BL-7442: When low line height causes lines to overlap, the highlighting overlaps and
 // can over up the bottom of the characters in the line above. For Chrome/Safari we have
@@ -251,8 +252,13 @@ div.ui-audioCurrent:not(.disableHighlight) p {
             //font-size: 11pt;
         }
     }
+
     .audio-advanced {
         padding-top: 35px;
+    }
+
+    .help-link {
+        z-index: @disablingOverlayZindex + 1;
     }
 }
 
@@ -390,8 +396,11 @@ body .cursor-progress {
     padding: 6px;
 }
 
-#audio-playbackOrderControl-wrapper label.checked {
-    color: @bloom-yellow;
+#audio-playbackOrderControl-wrapper {
+    z-index: @disablingOverlayZindex + 1;
+    label.checked {
+        color: @highlightColor;
+    }
 }
 
 // This is for a div added to a visible bloom-translationGroup
@@ -405,4 +414,18 @@ body .cursor-progress {
     display: flex;
     justify-content: center;
     z-index: 2001; // textOverPicture is 1001
+}
+
+.hiddenOverlay {
+    display: none;
+}
+
+#disablingOverlay {
+    z-index: @disablingOverlayZindex;
+    opacity: 0.7;
+    position: fixed;
+    top: inherit;
+    background-color: @toolboxBackgroundColor;
+    height: 100%;
+    width: calc(100% - 20px);
 }
