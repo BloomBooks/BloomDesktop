@@ -706,7 +706,7 @@ namespace BloomTests.Book
 				data.UpdateVariablesAndDataDivThroughDOM(info);
 
 				AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[@id='bloomDataDiv']/div[@data-book='decodableStageLetters' and @lang='" +_collectionSettings.Language1Iso639Code +  "' and text()='l s']",
+				"//div[@id='bloomDataDiv']/div[@data-book='decodableStageLetters' and @lang='" +_collectionSettings.Language1Iso639Code +  "' and text()='a, e, r, i, o, n, t, l, s']",
 				1);
 		}
 

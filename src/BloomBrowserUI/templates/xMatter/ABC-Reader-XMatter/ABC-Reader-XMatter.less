@@ -1,0 +1,163 @@
+@import "../bloom-xmatter-common.less";
+
+@XMatterPackName: "ABC Reader";
+
+// [data-book="smallCoverCredits"],
+// [data-book="funding"] {
+//     display: none !important;
+// }
+
+@circleDiameter: 80px;
+@creditsLineSpacing: 14px;
+
+body.leveled-reader .numberCircle {
+    background-color: #ba0c2f;
+}
+body.decodable-reader .numberCircle {
+    background-color: rgb(0, 47, 108);
+}
+
+body.leveled-reader {
+    .numberLabel::before {
+        content: "Level";
+    }
+    .decodableStageLettersRow {
+        display: none !important; // for decodable only
+    }
+}
+body.decodable-reader {
+    .numberLabel::before {
+        content: "Stage";
+    }
+}
+body
+// working very hard to get this one to win over any user attempts to change it.
+// might be a mistake, if they have a good reason to change it. But at the moment I don't know
+// of a way for the xmatter to supply a different default for .Title-On-Cover style, or to introduce
+// a new alternative style for this field.
+    .Title-On-Cover-style.bloom-content1.bloom-contentNational1.bloom-visibility-code-on {
+    font-size: 36pt !important;
+}
+.cover {
+    .titleAndNumberCircle {
+        display: flex;
+        flex-direction: row;
+        flex: 0 0 auto; //this is normally on the title itself, but we're wrapping it
+        .bookTitle {
+            //flex-grow: 1;
+            width: calc(100% - @circleDiameter);
+        }
+    }
+
+    // level or stage
+    .numberCircle {
+        margin-top: -19px;
+        width: @circleDiameter;
+        height: @circleDiameter;
+        //margin-left: auto;
+        position: absolute;
+        right: 0;
+
+        border-radius: 50%;
+        color: white;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-transform: uppercase;
+        span {
+            font-weight: bold;
+        }
+
+        [data-book="levelOrStageNumber"] {
+            width: @circleDiameter;
+            font-size: 24pt;
+            font-weight: bold;
+            min-height: 1em;
+            line-height: 30px;
+        }
+        p {
+            margin-bottom: 0;
+        }
+    }
+    [data-book="readerDescription"] {
+        text-align: center;
+        font-weight: bold;
+    }
+    .branding {
+        margin-right: 0 !important;
+    }
+    [data-book="cover-branding-bottom-html"] {
+        margin-top: 1em;
+        img {
+            margin-right: 0;
+        }
+    }
+    .originalAcknowledgments .bloom-editable p {
+        text-align: center;
+        font-weight: bold;
+    }
+}
+
+.titlePage {
+    [data-book="bookTitle"] {
+        font-size: 28pt;
+    }
+    [data-book="readerDescription"] {
+        text-align: center;
+    }
+    .levelOrStageAndNumberRow {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+    }
+    .decodableStageLettersRow {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        .numberLabel {
+        }
+    }
+    .readerDescription {
+        margin-top: auto; // push to bottom
+        margin-bottom: 1em;
+    }
+}
+#stageInformation {
+    margin: 10px;
+    border: solid thin black;
+}
+
+.credits {
+    .marginBox {
+        display: flex;
+        flex-direction: column;
+
+        .levelOrStageAndNumberRow {
+            display: flex;
+            flex-direction: row;
+            margin-bottom: @creditsLineSpacing;
+        }
+        [data-book="readerDescription"] {
+            text-align: left;
+        }
+        .bloom-translationGroup {
+            margin-bottom: @creditsLineSpacing;
+        }
+        [data-book="credits-branding-approval-and-copyright-html"] {
+            margin-bottom: @creditsLineSpacing;
+        }
+
+        .bottomCredits {
+            margin-top: auto;
+        }
+        .originalAcknowledgments .bloom-editable {
+            margin-bottom: 0;
+        }
+    }
+}
+.licenseImage {
+    width: 120px;
+    margin-bottom: @creditsLineSpacing;
+}
