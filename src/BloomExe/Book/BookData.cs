@@ -263,11 +263,16 @@ namespace Bloom.Book
 					{
 						try
 						{
-							string settingsJson = File.ReadAllText(settingsPath, Encoding.UTF8);
+							var settingsJson = File.ReadAllText(settingsPath, Encoding.UTF8);
 							var settings = DynamicJson.Parse(settingsJson);
 							var stages = settings.stages;
-							var stageData = stages[stage - 1];
-							string letters = stageData.letters;
+							var allLetters = "";
+							for (var i=0; i<stage;i++)
+							{
+								var stageData = stages[i];
+								allLetters += " " + stageData.letters;
+							}
+							var letters = string.Join(", ", allLetters.Trim().Split(' '));
 							incomingData.UpdateLanguageString("decodableStageLetters", letters, _collectionSettings.Language1Iso639Code, false);
 						}
 						catch (XmlException e)
@@ -1032,6 +1037,7 @@ namespace Bloom.Book
 				foreach (XmlElement node in nodesOfInterest)
 				{
 					var key = node.GetAttribute("data-book").Trim();
+
 					if (key == string.Empty)
 					{
 						key = node.GetAttribute(kDataXmatterPage).Trim();
