@@ -364,9 +364,9 @@ namespace Bloom.Api
 			}
 			// file does not exist, so make a new one
 			// The literal string here defines our default reader settings for a collection.
-			var settingsString = "{'writingSystemTag': '" + currentCollectionSettings.Language1.Iso639Code+"', "
+			var settingsString = "{\"writingSystemTag\": \"" + currentCollectionSettings.Language1.Iso639Code+"\", "
 			                     +"\"letters\":\"a b c d e f g h i j k l m n o p q r s t u v w x y z\","
-				+ $"'lang:\"{currentCollectionSettings.Language1Iso639Code}\"'"
+				+ $"\"lang\":\"{currentCollectionSettings.Language1Iso639Code}\","
 			                     + "\"moreWords\":\"\","
 				+ "\"stages\":[{\"letters\":\"\",\"sightWords\":\"\"}],"
 				+ "\"levels\":[{\"maxWordsPerSentence\":2,\"maxWordsPerPage\":2,\"maxWordsPerBook\":20,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]},"
