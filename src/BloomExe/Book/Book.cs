@@ -14,7 +14,6 @@ using System.Web;
 using System.Windows.Forms;
 using System.Xml;
 using Shipwreck.Phash;
-using Shipwreck.Phash.Bitmaps;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
@@ -861,15 +860,21 @@ namespace Bloom.Book
 			// Note: path must be URL-decoded for .Exists() to return accurate results.
 			if (RobustFile.Exists(path))
 			{
+				Bitmap bitmap = null;
 				try
 				{
-					var bitmap = (Bitmap)Image.FromFile(path);
+					bitmap = (Bitmap)Image.FromFile(path);
 					var hash = ImagePhash.ComputeDigest(bitmap.ToLuminanceImage());
 					return hash.ToString();
-				} catch
+				}
+				catch (Exception ex)
 				{
-					Console.Error.WriteLine("PHash: Exception caught.");
+					Console.Error.WriteLine("PHash: Exception caught ({0}).", ex);
 					return null;
+				}
+				finally
+				{
+					bitmap?.Dispose();
 				}
 			}
 
