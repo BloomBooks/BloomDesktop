@@ -1,4 +1,4 @@
-﻿include ../bloom-foundation-mixins
+include ../bloom-foundation-mixins
 
 //- -------------------------------------------------------------------------------
 //-	This first group of mixins should be used to construct the factory as well
@@ -33,24 +33,25 @@ mixin field-ISBN
 		div.bloom-translationGroup.bloom-recording-optional(data-default-languages="*")
 			div.bloom-editable(data-book="ISBN", lang="*").Credits-Page-style
 
-mixin field-acknowledgments-localizedVersion
+mixin field-acknowledgments-localizedVersion(lang="N1", hint="Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.")
 	// readOnlyInAuthorMode: we want to leave this blank for if/when someone takes this doc and is translating it.
 	//- Why both versionAcknowledgments && inside-cover-version-Credits-Page-style?
 	//-   versionAcknowledgments governs placement on the page, inside-cover-version-Credits-Page-style is a
 	//-   holding place for user style adjustments (like font-size)
 	// removed .bloom-readOnlyInAuthorMode because when you're putting together a shell book, you often have to put in the name of the translator
-	+field-prototypeDeclaredExplicity("N1").versionAcknowledgments
+	+field-prototypeDeclaredExplicity(lang).versionAcknowledgments
 		//- TODO: I want to change this to "Credit people involved in this translation, in {lang}", but many localizations
 		//- will then not be used at all, even their old versions which are better than nothing. How to upgrade the English
 		//- without losing all the rest?
 		block versionAcknowledgmentsLabel
 			label.bubble
-				| Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.
-		+editable("N1").versionAcknowledgments.Credits-Page-style(data-book="versionAcknowledgments")
+				| #{hint}
+		+editable(lang).versionAcknowledgments.Credits-Page-style(data-book="versionAcknowledgments")
 
-mixin field-acknowledgments-originalVersion
-	+field-prototypeDeclaredExplicity("N1").originalAcknowledgments
-		label.bubble Original (or Shell) Acknowledgments in {lang}
+mixin field-acknowledgments-originalVersion(lang="N1", hint="Original (or Shell) Acknowledgments in {lang}")
+	+field-prototypeDeclaredExplicity(lang).originalAcknowledgments
+		label.bubble
+			| #{hint}
 		+editable(kLanguageForPrototypeOnly).bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalAcknowledgments')
 			| {Original Acknowledgments}
 
@@ -97,9 +98,13 @@ mixin standard-cover-contents
 	//- This current pattern is born of pre-jade days when it didn't matter much, but now in the
 	//- light of jade it is overly complicated.
 
-	+field-prototypeDeclaredExplicity("V,N1").bookTitle
-		label.bubble Book title in {lang}
-		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
+	block cover-above-title
+		//- normally nothing here
+
+	block cover-title
+		+field-prototypeDeclaredExplicity("V,N1").bookTitle
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
 
 	+standard-cover-image
 
@@ -109,14 +114,19 @@ mixin standard-cover-contents
 
 		// 2 rows
 		.bottomTextContent
-			//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
-			// because it is never empty
-			.creditsRow(data-hint='You may use this space for author/illustrator, or anything else.')
-				+field-prototypeDeclaredExplicity("V")
-					+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
-			.bottomRow
-				.coverBottomLangName.Cover-Default-style(data-derived='languagesOfBook')
-				+chooser-topic.coverBottomBookTopic
+			block cover-bottom-credits
+				//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
+				// because it is never empty
+				.creditsRow(data-hint='You may use this space for author/illustrator, or anything else.')
+					+field-prototypeDeclaredExplicity("V")
+						+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
+
+			block cover-bottom-row
+				.bottomRow
+					.coverBottomLangName.Cover-Default-style(data-derived='languagesOfBook')
+					+chooser-topic.coverBottomBookTopic
+
+
 
 // Standard cover image has a (normally hidden) image description field.
 // The usual code for creating image description on demand is not satisfactory,
@@ -192,42 +202,45 @@ mixin standard-creditsPage-back-cover
 		+credits-contents
 
 mixin title-page-contents
-	// TITLE PAGE
-	+field-prototypeDeclaredExplicity("V,N1")#titlePageTitleBlock
-		label.bubble Book title in {lang}
-		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style.bloom-padForOverflow(data-book='bookTitle')
-	div.largeFlexGap
-	block originalContributions
-		+field-prototypeDeclaredExplicity("N1")#originalContributions
-			block originalContributionsLabel
-				//- if you modify this next line, modify it also in the SIL PNG custom xmatter,
-				//- and probably the MXB custom Xmatter
-				label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
-					| The contributions made by writers, illustrators, editors, etc., in {lang}
-			+editable(kLanguageForPrototypeOnly).credits.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
-	div.smallFlexGap
-	+field-prototypeDeclaredExplicity("N1")#funding
-		label.bubble Use this to acknowledge any funding agencies.
-		+editable(kLanguageForPrototypeOnly).funding.Content-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
-	div.largeFlexGap
-	#languageInformation.Content-On-Title-Page-style
-	.languagesOfBook(data-derived='languagesOfBook')
-	//- review: can we get rid of these "langName" classes?
-	.langName('data-library'='dialect')
-	.langName(data-library='languageLocation').bloom-writeOnly
-	div.fillPageFlexGap.
-	+title-page-branding-bottom
+	block titlePageContents
+		// TITLE PAGE
+		+field-prototypeDeclaredExplicity("V,N1")#titlePageTitleBlock
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style.bloom-padForOverflow(data-book='bookTitle')
+		div.largeFlexGap
+		block originalContributions
+			+field-prototypeDeclaredExplicity("N1")#originalContributions
+				block originalContributionsLabel
+					//- if you modify this next line, modify it also in the SIL PNG custom xmatter,
+					//- and probably the MXB custom Xmatter
+					label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
+						| The contributions made by writers, illustrators, editors, etc., in {lang}
+				+editable(kLanguageForPrototypeOnly).credits.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
+		div.smallFlexGap
+		+field-prototypeDeclaredExplicity("N1")#funding
+			label.bubble Use this to acknowledge any funding agencies.
+			+editable(kLanguageForPrototypeOnly).funding.Content-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+		div.largeFlexGap
+		#languageInformation.Content-On-Title-Page-style
+		.languagesOfBook(data-derived='languagesOfBook')
+		//- review: can we get rid of these "langName" classes?
+		.langName('data-library'='dialect')
+		.langName(data-library='languageLocation').bloom-writeOnly
+		div.fillPageFlexGap.
+		+title-page-branding-bottom
 
-mixin standard-blankInsideFrontCover
+mixin factory-insideFrontCover
 	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='front-matter-inside-front-cover', data-xmatter-page='insideFrontCover')#BA00DE13-734C-4036-9901-7040275B9000
-		+field-mono-meta("N1","insideFontCover").Inside-Front-Cover-style
+		block insideFrontCoverContents
+			+field-mono-meta("N1","insideFontCover").Inside-Front-Cover-style
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.
 
 mixin factoryStandard-insideBackCover
 	// Inside Back Cover
 	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover', data-xmatter-page='insideBackCover')&attributes(attributes)#502BE62F-A4D0-4225-A598-1A203FA73239
-		+field-mono-meta("N1","insideBackCover").Inside-Back-Cover-style
-			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.
+		block insideBackCoverContents
+			+field-mono-meta("N1","insideBackCover").Inside-Back-Cover-style
+				label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.
 
 mixin factoryStandard-outsideBackCover
 	// Outside Back Cover
