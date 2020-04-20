@@ -211,26 +211,26 @@ storiesOf("PlaybackOrderControls", module).add("PlaybackOrder buttons", () =>
         <>
             <div style={divStyles}>
                 <PlaybackOrderControls
-                    sizeOfList={3}
-                    myOrderNum={2}
-                    bumpUp={bumpUp}
-                    bumpDown={bumpDown}
+                    maxOrder={3}
+                    orderOneBased={2}
+                    onIncrease={bumpUp}
+                    onDecrease={bumpDown}
                 />
             </div>
             <div style={divStyles}>
                 <PlaybackOrderControls
-                    sizeOfList={3}
-                    myOrderNum={1}
-                    bumpUp={bumpUp}
-                    bumpDown={bumpDown}
+                    maxOrder={3}
+                    orderOneBased={1}
+                    onIncrease={bumpUp}
+                    onDecrease={bumpDown}
                 />
             </div>
             <div style={divStyles}>
                 <PlaybackOrderControls
-                    sizeOfList={3}
-                    myOrderNum={3}
-                    bumpUp={bumpUp}
-                    bumpDown={bumpDown}
+                    maxOrder={3}
+                    orderOneBased={3}
+                    onIncrease={bumpUp}
+                    onDecrease={bumpDown}
                 />
             </div>
         </>
