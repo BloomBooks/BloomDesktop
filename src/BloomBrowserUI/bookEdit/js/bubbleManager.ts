@@ -101,7 +101,7 @@ export class BubbleManager {
             Array.from(box.children).forEach((x: HTMLElement) => {
                 if (!(x instanceof HTMLElement)) return; // not an element
                 if (window.getComputedStyle(x).position === "absolute") return; // special element like format button
-                let xbottom = x.offsetTop + x.offsetHeight;
+                const xbottom = x.offsetTop + x.offsetHeight;
                 if (xbottom > maxContentBottom) {
                     maxContentBottom = xbottom;
                 }
@@ -110,6 +110,10 @@ export class BubbleManager {
         }
 
         if (newHeight + wrapperBox.offsetTop > container.clientHeight) {
+            // The box goes out the bottom of the container :(
+            // Force the container to scroll back to the top
+            // Otherwise, the image's top will be invisible above the top level of the image container
+            container.scrollTop = 0;
             return false;
         }
 

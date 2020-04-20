@@ -22,6 +22,7 @@ html
 	body
 		h3(data-toolId='talkingBookTool', data-order='30', data-i18n='EditTab.Toolbox.TalkingBookTool') Talking Book Tool
 		div(data-toolId='talkingBookTool')
+			div.hiddenOverlay(id='disablingOverlay')
 			div.ui-audioBody
 				div
 					// preload=none prevents the audio element from asking for the audio as soon as it gets a new src value,
@@ -55,4 +56,4 @@ html
 					+checkboxWithHiddenClickHandler('playbackOrderControl', 'EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder','Show playback order buttons', false, 'padding-top:16px')
 
 				div.audio-about(data-i18n='EditTab.Toolbox.TalkingBookTool.ToolPurpose') Make an e-book that can play audio recordings while highlighting text.
-				a(href='/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Talking_Book_Tool_overview.htm', data-i18n='Common.Help') Help
+				a.help-link(href='/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Talking_Book_Tool_overview.htm', data-i18n='Common.Help') Help
