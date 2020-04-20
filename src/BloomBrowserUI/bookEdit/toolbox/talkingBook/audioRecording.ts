@@ -572,9 +572,7 @@ export default class AudioRecording {
     }
 
     private getAudioElements(): JQuery {
-        return this.getRecordableDivs()
-            .find(kAudioSentenceClassSelector) // Looks only in the descendants, but won't check any of the elements themselves in getRecordableDivs()
-            .addBack(kAudioSentenceClassSelector); // Also applies the selector to the result of getRecordableDivs()
+        return this.getRecordableDivs().filter(kAudioSentenceClassSelector);
     }
 
     private doesElementContainAnyAudioElements(element: Element): boolean {
@@ -1662,6 +1660,13 @@ export default class AudioRecording {
         );
         for (let i = 0; i < transGroups.length; i++) {
             const currentTranslationGroup = <HTMLDivElement>transGroups.item(i);
+            // Don't include translationGroups with .box-header-off, as they are left over from
+            // origami manipulations.
+            if (
+                currentTranslationGroup.className.indexOf("box-header-off") > -1
+            ) {
+                continue;
+            }
             const visibleEditables = currentTranslationGroup.getElementsByClassName(
                 "bloom-editable bloom-visibility-code-on"
             );

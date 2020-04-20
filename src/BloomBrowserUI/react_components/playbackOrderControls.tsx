@@ -1,8 +1,8 @@
 import React = require("react");
-import theme from "../bloomMaterialUITheme";
 import Add from "@material-ui/icons/Add";
 import Remove from "@material-ui/icons/Remove";
 import Typography from "@material-ui/core/Typography";
+import "./playbackOrderControls.less";
 
 interface IPlaybackOrderControlsProps {
     sizeOfList: number;
@@ -11,40 +11,18 @@ interface IPlaybackOrderControlsProps {
     bumpDown: (whichPositionToBump: number) => void; // decrease 'myOrderNum' (Remove button)
 }
 
-const buttonWidth = 22;
-const controlBoxWidth = buttonWidth * 3;
-const numberBackgroundColor: string = theme.palette.tertiary.main;
-const bloomBlue: string = theme.palette.primary.main;
 const disabledColor: string = "#b0dee4"; // bloom-lightblue in bloomUI.less
-const buttonStyle: React.CSSProperties = {
-    backgroundColor: bloomBlue,
-    boxShadow: "none",
-    border: 0,
-    padding: 0,
-    width: buttonWidth,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center"
-};
-const containerStyle: React.CSSProperties = {
-    width: controlBoxWidth,
-    position: "relative",
-    display: "flex",
-    alignSelf: "center",
-    boxShadow: "0px 2px 4px -1px",
-    cursor: "not-allowed"
-};
 
 const PlaybackOrderControls: React.FC<IPlaybackOrderControlsProps> = props => {
     const leftButtonDisabled = props.myOrderNum === 1;
     const rightButtonDisabled = props.myOrderNum === props.sizeOfList;
     return (
-        <div style={containerStyle}>
+        <div className="playbackOrderContainer">
             <button
                 type="button"
+                className="playbackOrderButton"
                 onClick={() => props.bumpDown(props.myOrderNum)}
                 disabled={leftButtonDisabled}
-                style={buttonStyle}
             >
                 <Remove
                     style={{
@@ -55,21 +33,14 @@ const PlaybackOrderControls: React.FC<IPlaybackOrderControlsProps> = props => {
                     shapeRendering="crispEdges"
                 />
             </button>
-            <Typography
-                style={{
-                    backgroundColor: numberBackgroundColor,
-                    width: `${buttonWidth}px`,
-                    textAlign: "center",
-                    fontWeight: 700
-                }}
-            >
+            <Typography className="playbackOrderNumber">
                 {props.myOrderNum}
             </Typography>
             <button
                 type="button"
+                className="playbackOrderButton"
                 onClick={() => props.bumpUp(props.myOrderNum)}
                 disabled={rightButtonDisabled}
-                style={buttonStyle}
             >
                 <Add
                     style={{
