@@ -850,9 +850,9 @@ namespace Bloom.Book
 		/// <returns>A hexadecimal string representing the digest, or null if the digest could not be computed</returns>
 		private string ComputePHashOfImageSrc(string src)
 		{
-			if (src == "placeholder.png")
+			if (src.ToLowerInvariant() == "placeholder.png")
 			{
-				Console.Error.WriteLine("PHash: placeholder.png found.");
+				Console.Error.WriteLine("PHash: placeHolder.png found.");
 				return null;
 			}
 
