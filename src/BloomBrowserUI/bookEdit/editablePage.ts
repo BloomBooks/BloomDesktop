@@ -48,6 +48,7 @@ var styleSheets = [
     "bookEdit/css/bloomDialog.css",
     "lib/long-press/longpress.css",
     "bookEdit/toolbox/talkingBook/audioRecording.css",
+    "react_components/playbackOrderControls.css",
     "bookEdit/css/legacyQuizEditing.css"
 ];
 
