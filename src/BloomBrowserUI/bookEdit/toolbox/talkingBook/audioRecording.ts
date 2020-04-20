@@ -1595,10 +1595,10 @@ export default class AudioRecording {
     ): void {
         ReactDOM.render(
             React.createElement(PlaybackOrderControls, {
-                sizeOfList: listSize,
-                myOrderNum: playbackOrderInfo.myPosition,
-                bumpUp: bumpUp,
-                bumpDown: bumpDown
+                maxOrder: listSize,
+                orderOneBased: playbackOrderInfo.myPosition,
+                onIncrease: bumpUp,
+                onDecrease: bumpDown
             }),
             playbackOrderInfo.containerDiv
         );
