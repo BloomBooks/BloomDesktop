@@ -1030,6 +1030,20 @@ namespace Bloom.Book
 			RemoveObsoleteSoundAttributes(bookDOM);
 			BringBookInfoUpToDate(oldMetaData);
 			FixErrorsEncounteredByUsers(bookDOM);
+			AddReaderBodyClass(bookDOM);
+		}
+		private void AddReaderBodyClass(HtmlDom bookDom){
+			// Bloom prior to late 4.7beta had decodable and leveled reader templates with out body classes, which
+			// became necessary for an SIL LEAD "ABC+" xmatter. Here we add that if we can tell the book decended
+			// from those templates, then add the required classes if they are missing.
+			const string kdecodableParentGuid = "f0434a0b-791f-408e-b6e6-ee92f0f02f2d";
+			const string kleveledParentGuid = "ea43ce61-a752-429d-ad1a-ec282db33328";
+			if( BookInfo.BookLineage.Contains(kdecodableParentGuid)){
+				HtmlDom.AddClassIfMissing(bookDom.Body,"decodable-reader");
+			}
+			else if( BookInfo.BookLineage.Contains(kleveledParentGuid)){
+				HtmlDom.AddClassIfMissing(bookDom.Body,"leveled-reader");
+			}
 		}
 
 		// Some books got corrupted with CKE temp data, possibly before we prevented this happening when

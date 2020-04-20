@@ -16,6 +16,12 @@
             "lang": "*",
             "content": "<img class='branding' src='BARMM-back.png'/>",
             "condition": "always"
+        },
+        {
+            "data-book": "credits-branding-approval-and-copyright-html",
+            "lang": "*",
+            "content": "<div><p>Reviewed by the Ministry of Basic, Higher and Technical Education – Instructional Materials Development Center.</p><p>©First Edition, 2020 by the U.S. Agency for International Development (USAID) through the ABC+: Advancing Basic Education in the Philippines Project. ABC+ project is a partnership of USAID and the Department of Education (DepEd) – Ministry of Basic, Higher and Technical Education, BARMM, implemented by RTI International in collaboration with SIL LEAD.</p></div>",
+            "condition": "always"
         }
     ]
 }
