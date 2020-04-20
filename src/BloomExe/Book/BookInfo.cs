@@ -672,6 +672,7 @@ namespace Bloom.Book
 			BookletMakingIsAppropriate = true;
 			IsSuitableForVernacularLibrary = true;
 			Id = Guid.NewGuid().ToString();
+			BookLineage = "";
 		}
 		public static BookMetaData FromString(string input)
 		{
