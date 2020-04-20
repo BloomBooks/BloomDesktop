@@ -37,6 +37,29 @@ namespace Bloom.web
 			apiHandler.RegisterEndpointHandler("pageList/pages", HandlePagesRequest, false);
 			apiHandler.RegisterEndpointHandler("pageList/pageContent", HandlePageContentRequest, false);
 			apiHandler.RegisterEndpointHandler("pageList/pageMoved", HandlePageMovedRequest, true);
+			apiHandler.RegisterEndpointHandler("pageList/pageClicked", HandlePageClickedRequest, true);
+			apiHandler.RegisterEndpointHandler("pageList/menuClicked", HandleShowMenuRequest, true);
+		}
+
+		private void HandlePageClickedRequest(ApiRequest request)
+		{
+			var requestData = DynamicJson.Parse(request.RequiredPostJson());
+			string pageId = requestData.pageId;
+			IPage page = PageFromId(pageId);
+			if (page != null)
+				PageList.PageClicked(page);
+			request.PostSucceeded();
+		}
+
+		// User clicked on the down arrow, we respond by showing the same menu as for right click.
+		private void HandleShowMenuRequest(ApiRequest request)
+		{
+			var requestData = DynamicJson.Parse(request.RequiredPostJson());
+			string pageId = requestData.pageId;
+			IPage page = PageFromId(pageId);
+			if (page != null)
+				PageList.MenuClicked(page);
+			request.PostSucceeded();
 		}
 
 		private void HandlePageMovedRequest(ApiRequest request)
@@ -61,7 +84,11 @@ namespace Bloom.web
 		{
 			dynamic result = new ExpandoObject();
 			string captionI18nId;
-			result.caption = page.GetCaptionOrPageNumber(ref pageNumber, out captionI18nId);
+			var caption = page.GetCaptionOrPageNumber(ref pageNumber, out captionI18nId);
+			if (!string.IsNullOrEmpty(caption))
+				caption = I18NApi.GetTranslationDefaultMayNotBeEnglish(captionI18nId, caption);
+			result.caption = caption;
+
 			// We'd like to answer XmlHtmlConverter.ConvertElementToHtml5(page.GetDivNodeForThisPage());
 			// But it's too slow...as much as 80ms/page for picture dictionary pages
 			// on a good desktop. A possible enhancement at some point is to keep track of

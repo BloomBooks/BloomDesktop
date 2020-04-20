@@ -194,7 +194,6 @@ namespace Bloom.Edit
 
 		private void OnPaneContentsChanging(bool hasPages)
 		{
-			RemoveThumbnailListeners();
 			// We try to prevent some spurious javascript errors by shutting down the websocket listener before
 			// navigating to the new root page. This may not be entirely reliable as there is a race
 			// condition between the navigation request and the reception of the stopListening message.
@@ -285,32 +284,16 @@ namespace Bloom.Edit
 
 		void WebBrowser_DocumentCompleted(object sender, Gecko.Events.GeckoDocumentCompletedEventArgs e)
 		{
-			AddThumbnailListeners();
 			SelectPage(PageListApi?.SelectedPage);
 		}
 
-		private void AddThumbnailListeners()
+		internal void PageClicked(IPage page)
 		{
-			_browser.AddMessageEventListener("gridClick", ItemClick);
-			_browser.AddMessageEventListener("menuClicked", MenuClick);
+			InvokePageSelectedChanged(page);
 		}
 
-		private void RemoveThumbnailListeners()
+		internal void MenuClicked(IPage page)
 		{
-			_browser.RemoveMessageEventListener("gridClick");
-			_browser.RemoveMessageEventListener("menuClicked");
-		}
-
-		private void ItemClick(string s)
-		{
-			IPage page = PageListApi?.PageFromId(s);
-			if (page != null)
-				InvokePageSelectedChanged(page);
-		}
-
-		private void MenuClick(string pageId)
-		{
-			IPage page = PageListApi?.PageFromId(pageId);
 			var menu = new ContextMenuStrip();
 			if (page == null)
 				return;
@@ -412,6 +395,7 @@ namespace Bloom.Edit
 			var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
 			RelocatePageEvent.Raise(relocatePageInfo);
 			UpdateItems(movedPage.Book.GetPages());
+			PageSelectedChanged(movedPage, new EventArgs());
 		}
 
 

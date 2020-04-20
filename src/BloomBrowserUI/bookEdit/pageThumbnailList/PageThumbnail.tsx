@@ -52,13 +52,15 @@ export const PageThumbnail: React.FunctionComponent<{
         // requests the browser allows to the same origin. If we use too
         // many, we may starve the main page or the toolbox, which are often
         // loading at the same time. The activePageRequestCount is used
-        // to prevent more than two running at the same time, and the
+        // to prevent more than four running at the same time, and the
         // pending count helps us estimate how long to wait if we can't do
         // it at once. Both are global across all instances of PageThumbnail.
-        // This number (currently 50ms) is in the ballpark of how long a complex page
-        // was taking to generate on a developer machine.
-        if (activePageRequestCount > 1) {
-            window.setTimeout(requestPage, pendingPageRequestCount * 50);
+        // The current value is quite a bit shorter than the time (80ms) that
+        // it was taking to generate a complex page on a developer machine.
+        // The timeout doesn't cost much, and we don't want to slow things down
+        // for simple pages on fast machines.
+        if (activePageRequestCount > 3) {
+            window.setTimeout(requestPage, pendingPageRequestCount * 5);
             return;
         }
         pendingPageRequestCount--;

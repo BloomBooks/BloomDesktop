@@ -1,5 +1,3 @@
-/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="../../typings/jquery.gridly.d.ts" />
 ///<reference path="../../typings/toastr/toastr.d.ts"/>
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 
@@ -14,8 +12,6 @@ import * as ReactDOM from "react-dom";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 import * as toastr from "toastr";
-// Todo: hope no longer needing jquery
-import * as $ from "jquery";
 import "errorHandler";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { Responsive } from "react-grid-layout";
@@ -62,11 +58,9 @@ const handleGridItemClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
     e.preventDefault();
     if (e.currentTarget) {
-        fireCSharpEvent(
-            "gridClick",
-            (e.currentTarget.parentElement!.parentElement!
-                .parentElement as HTMLElement)!.getAttribute("id")
-        );
+        const pageId = (e.currentTarget.parentElement!.parentElement!
+            .parentElement as HTMLElement)!.getAttribute("id");
+        BloomApi.postJson("pageList/pageClicked", { pageId }, () => {});
     }
 };
 
@@ -207,9 +201,12 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                                     height="18"
                                     viewBox="0 0 18 18"
                                     onClick={() => {
-                                        fireCSharpEvent(
-                                            "menuClicked",
-                                            pageContent.key
+                                        BloomApi.postJson(
+                                            "pageList/menuClicked",
+                                            {
+                                                pageId: pageContent.key
+                                            },
+                                            () => {}
                                         );
                                     }}
                                 >
@@ -308,13 +305,4 @@ function onDragStop(
         { movedPageId, newIndex },
         () => {}
     );
-}
-
-function fireCSharpEvent(eventName, eventData) {
-    const event = new MessageEvent(eventName, {
-        bubbles: true,
-        cancelable: true,
-        data: eventData
-    });
-    top.document.dispatchEvent(event);
 }

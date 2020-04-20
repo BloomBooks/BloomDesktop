@@ -581,26 +581,11 @@ namespace Bloom.Edit
 			try
 			{
 				_inProcessOfLoading = true;
-
-				// If possible, postpone trying to build the thumbnail page images that
-				// make the page list pretty until we've drawn the main content page.
 				if (page != null)
-				{
-					Browser.RequestJsNotification("editPagePainted", () =>
-					{
-						if (_view != null)
-						{
-							_view.UpdatePageList(false);
-						}
-					});
 					_pageSelection.SelectPage(page);
-				}
-				else
+				if (_view != null)
 				{
-					if (_view != null)
-					{
-						_view.UpdatePageList(false);
-					}
+					_view.UpdatePageList(false);
 				}
 
 			}
