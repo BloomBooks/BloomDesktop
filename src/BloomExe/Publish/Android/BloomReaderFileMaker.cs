@@ -245,7 +245,8 @@ namespace Bloom.Publish.Android
 			foreach (var editableElt in dom.SafeSelectNodes("//div[@contenteditable]").Cast<XmlElement>())
 				editableElt.RemoveAttribute("contenteditable");
 
-			foreach (var tabIndexDiv in dom.SafeSelectNodes("//div[@tabindex]").Cast<XmlElement>())
+			const string tabindexXpath = "//div[@tabindex and contains(concat(' ', @class, ' '), ' bloom-editable ')]";
+			foreach (var tabIndexDiv in dom.SafeSelectNodes(tabindexXpath).Cast<XmlElement>())
 				tabIndexDiv.RemoveAttribute("tabindex");
 		}
 
