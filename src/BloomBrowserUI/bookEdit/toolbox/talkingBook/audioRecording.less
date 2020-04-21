@@ -257,8 +257,11 @@ div.ui-audioCurrent:not(.disableHighlight) p {
         padding-top: 35px;
     }
 
-    .help-link {
+    .help-link,
+    .audio-about {
         z-index: @disablingOverlayZindex + 1;
+        // I have no idea why this next rule is necessary, but the z-index rule has no effect without it.
+        position: relative;
     }
 }
 
