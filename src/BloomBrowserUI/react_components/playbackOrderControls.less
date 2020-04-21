@@ -11,8 +11,7 @@
     display: flex;
     align-self: center;
     &:hover {
-        //opacity: 1;
-        .playbackOrderButton {
+        .playbackOrderButton:not(.disabled) {
             opacity: 1;
             box-shadow: 0px 2px 4px -1px;
         }
@@ -28,9 +27,6 @@
         justify-content: center;
         align-items: center;
         opacity: 0.1;
-        &.disabled {
-            opacity: 0.1;
-        }
     }
     .playbackOrderNumber {
         background-color: @numberBackgroundColor;

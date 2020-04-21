@@ -67,6 +67,7 @@ const kAudioCurrent = "ui-audioCurrent";
 const kAudioSentenceClassSelector = "." + kAudioSentence;
 const kBloomEditableTextBoxClass = "bloom-editable";
 const kBloomEditableTextBoxSelector = "div.bloom-editable";
+const kBloomTranslationGroupClass = "bloom-translationGroup";
 
 const kAudioSplitId = "audio-split";
 
@@ -487,12 +488,22 @@ export default class AudioRecording {
     private getRecordableDivs(
         includeCheckForText: boolean = true,
         includeCheckForPlaybackOrder: boolean = true
-    ): JQuery {
+    ): HTMLElement[] {
         const $this = this;
-        const divs = this.getPageDocBodyJQuery().find(
-            ":not(.bloom-noAudio) > " + kBloomEditableTextBoxSelector
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) {
+            return []; // shouldn't happen
+        }
+        const editableDivs = Array.from(
+            pageBody.querySelectorAll(
+                ":not(.bloom-noAudio) > " + kBloomEditableTextBoxSelector
+            ),
+            elem => <HTMLElement>elem
         );
-        const recordableDivs = divs.filter(":visible").filter((idx, elt) => {
+        const recordableDivs = editableDivs.filter(elt => {
+            if (this.isNotVisible(elt)) {
+                return false;
+            }
             if (!includeCheckForText) {
                 return true;
             }
@@ -506,21 +517,23 @@ export default class AudioRecording {
         return this.sortByTabindex(recordableDivs);
     }
 
-    // Param 'recordableDivs' is a JQuery of bloom-editable divs. This function serves
-    // to sort that by the parent translationGroup's tabindex attribute (if it exists).
+    // Param 'recordableDivs' is an array of bloom-editable divs. This function serves
+    // to sort that by the containing translationGroup's tabindex attribute (if it exists).
     // Divs inside of translationGroups that do NOT have a tabindex will be sorted to the top.
-    private sortByTabindex(recordableDivs: JQuery): JQuery {
+    private sortByTabindex(recordableDivs: HTMLElement[]): HTMLElement[] {
         return recordableDivs.sort((a, b) => {
-            return this.getParentTabindex(a) - this.getParentTabindex(b);
+            return this.getContainerTabindex(a) - this.getContainerTabindex(b);
         });
     }
 
-    private getParentTabindex(recordableDiv: HTMLElement): number {
-        const translationGroup = recordableDiv.parentElement;
-        if (
-            !translationGroup ||
-            !translationGroup.classList.contains("bloom-translationGroup")
-        ) {
+    // Looks for an ancestor that is a translationGroup. If it doesn't find one, or if
+    // the translationGroup doesn't have a tabindex attribute, it returns 0, otherwise
+    // it returns the tabindex as a number.
+    private getContainerTabindex(recordableDiv: HTMLElement): number {
+        const translationGroup = recordableDiv.closest(
+            "." + kBloomTranslationGroupClass
+        );
+        if (!translationGroup) {
             return 0; // something went wrong? xMatter bloom-editable?
         }
         const tabindexString = translationGroup.getAttribute("tabindex");
@@ -551,8 +564,7 @@ export default class AudioRecording {
                 return false;
             }
 
-            if (includeCheckForVisibility && !$(element).is(":visible")) {
-                // Enhance: Create a non-JQuery equivalent isVisible function
+            if (includeCheckForVisibility && this.isNotVisible(element)) {
                 return false;
             }
 
@@ -567,12 +579,33 @@ export default class AudioRecording {
         }
     }
 
+    private isNotVisible(elem: Element) {
+        const style = window.getComputedStyle(elem);
+        return style.display === "none";
+    }
+
     private containsAnyAudioElements(): boolean {
         return this.getAudioElements().length > 0;
     }
 
-    private getAudioElements(): JQuery {
-        return this.getRecordableDivs().filter(kAudioSentenceClassSelector);
+    private getAudioElements(): HTMLElement[] {
+        // Starting with the recordable divs, get all of these or their descendants that have
+        // the 'kAudioSentence' class. We now need to maintain the order that was given to us
+        // by getRecordableDivs().
+        const recordableDivs = this.getRecordableDivs();
+        let result: HTMLElement[] = [];
+        recordableDivs.forEach(div => {
+            if (div.classList.contains(kAudioSentence)) {
+                result.push(div);
+            } else {
+                const childElems = Array.from(
+                    div.getElementsByClassName(kAudioSentence),
+                    elem => <HTMLElement>elem
+                );
+                result = result.concat(childElems);
+            }
+        });
+        return result;
     }
 
     private doesElementContainAnyAudioElements(element: Element): boolean {
@@ -593,13 +626,6 @@ export default class AudioRecording {
 
     private moveToPrevAudioElement(): void {
         toastr.clear();
-        const current: JQuery = this.getPageDocBodyJQuery().find(
-            ".ui-audioCurrent"
-        );
-        const audioElts = this.getAudioElements();
-        if (current.length === 0 || audioElts.length === 0) return;
-        const currentIndex = audioElts.index(current);
-        if (currentIndex === 0) return;
         const prev = this.getPreviousAudioElement();
         if (prev == null) return;
         this.setSoundAndHighlight(prev);
@@ -648,7 +674,7 @@ export default class AudioRecording {
 
         // Careful! Even though the Recording Mode is text box, current can be a Sentence... use currentTextBox instead
         const allTextBoxes = this.getRecordableDivs(false, true);
-        const currentIndex = allTextBoxes.index(currentTextBox);
+        const currentIndex = allTextBoxes.indexOf(<HTMLElement>currentTextBox);
         console.assert(currentIndex >= 0);
         if (currentIndex < 0) {
             return null;
@@ -681,7 +707,9 @@ export default class AudioRecording {
         // Enhance: Maybe this would be safer to advance/rewind to the next SPAN instead of next audio-sentence.
 
         const incrementAmount = isTraverseInReverseOn ? -1 : 1;
-        const current = this.getPageDocBodyJQuery().find(".ui-audioCurrent");
+        const current = (<HTMLElement>(
+            this.getPageDocBody()
+        )).getElementsByClassName("ui-audioCurrent");
         if (!current || current.length === 0) {
             return null;
         }
@@ -691,7 +719,8 @@ export default class AudioRecording {
         if (audioElts.length === 0) {
             return null;
         }
-        const nextIndex = audioElts.index(current) + incrementAmount;
+        const nextIndex =
+            audioElts.indexOf(<HTMLElement>current.item(0)) + incrementAmount;
         if (nextIndex < 0 || nextIndex >= audioElts.length) {
             return null;
         }
@@ -1509,8 +1538,10 @@ export default class AudioRecording {
             this.removePlaybackOrderUi(docBody);
             this.toggleToolDisablingOverlay(false);
             this.toggleCheckedClass(false);
+            this.setCurrentAudioElementToFirstAudioElement();
         } else {
             this.showPlaybackInput.checked = true;
+            this.removeAudioCurrent(docBody);
             this.showPlaybackOrderUi(docBody);
             this.toggleToolDisablingOverlay(true);
             this.toggleCheckedClass(true);
@@ -1533,11 +1564,11 @@ export default class AudioRecording {
                 kPlaybackOrderContainerClass
             );
             if (containerDivs.length !== 1) {
-                return; // paranoia, we just put it there!
+                continue; // paranoia, we just put it there!
             }
             const containerDiv = <HTMLDivElement>containerDivs[0];
             if (containerDiv === null) {
-                return; // paranoia, we just put it there!
+                continue; // paranoia, we just put it there!
             }
             const existingTabindex = currentTranslationGroup.getAttribute(
                 "tabindex"
@@ -1656,20 +1687,16 @@ export default class AudioRecording {
     ): HTMLDivElement[] {
         const result: HTMLDivElement[] = [];
         const transGroups = docBody.getElementsByClassName(
-            "bloom-translationGroup"
+            kBloomTranslationGroupClass
         );
         for (let i = 0; i < transGroups.length; i++) {
             const currentTranslationGroup = <HTMLDivElement>transGroups.item(i);
-            // Don't include translationGroups with .box-header-off, as they are left over from
-            // origami manipulations.
-            if (
-                currentTranslationGroup.className.indexOf("box-header-off") > -1
-            ) {
+            if (this.isNotVisible(currentTranslationGroup)) {
                 continue;
             }
-            const visibleEditables = currentTranslationGroup.getElementsByClassName(
-                "bloom-editable bloom-visibility-code-on"
-            );
+            const visibleEditables = Array.from(
+                currentTranslationGroup.getElementsByClassName("bloom-editable")
+            ).filter(elem => !this.isNotVisible(elem));
             if (visibleEditables.length > 0) {
                 result.push(currentTranslationGroup);
             }
@@ -2132,17 +2159,17 @@ export default class AudioRecording {
 
         // In addition to us processing currentTextBox, also add any unprocessed divs
         const recordableDivs = this.getRecordableDivs();
-        const unprocessedRecordables = recordableDivs.filter(
-            ":not([data-audioRecordingMode])"
-        );
+        const unprocessedRecordables = recordableDivs.filter(div => {
+            div.getAttribute("data-audioRecordingMode") === null;
+        });
 
         let unionedElementsToProcess: JQuery;
         if (currentTextBox) {
             unionedElementsToProcess = $(currentTextBox).add(
-                unprocessedRecordables
+                $(unprocessedRecordables)
             );
         } else {
-            unionedElementsToProcess = unprocessedRecordables;
+            unionedElementsToProcess = $(unprocessedRecordables);
         }
 
         if (unionedElementsToProcess.length === 0) {
@@ -2156,10 +2183,9 @@ export default class AudioRecording {
             audioPlaybackMode
         );
 
-        const thisClass = this;
-
-        //thisClass.setStatus('record', Status.Expected);
-        thisClass.levelCanvas = $("#audio-meter").get()[0];
+        this.levelCanvas = <HTMLCanvasElement>(
+            document.getElementById("audio-meter")
+        );
 
         if (!currentTextBox) {
             currentTextBox = this.setCurrentAudioElementToFirstAudioElement();
@@ -2299,15 +2325,21 @@ export default class AudioRecording {
     }
 
     public setCurrentAudioElementToFirstAudioElement(): HTMLElement | null {
-        const firstSentenceJQuery = this.sortByTabindex(
-            this.getPageDocBodyJQuery().find(kAudioSentenceClassSelector)
+        const pageDocBody = this.getPageDocBody();
+        if (!pageDocBody) {
+            return null;
+        }
+        const audioSentenceElems = Array.from(
+            pageDocBody.getElementsByClassName(kAudioSentence),
+            elem => <HTMLElement>elem
         );
-        if (firstSentenceJQuery.length === 0) {
+        const firstSentenceArray = this.sortByTabindex(audioSentenceElems);
+        if (firstSentenceArray.length === 0) {
             // no recordable sentence found.
             return null;
         }
 
-        const firstSentence = firstSentenceJQuery[0];
+        const firstSentence = firstSentenceArray[0];
         this.setSoundAndHighlight(firstSentence);
 
         // In Sentence/Sentence mode: OK to move.
@@ -3192,8 +3224,8 @@ export default class AudioRecording {
 
         // First collect all the ids on this page.
         const ids: any[] = [];
-        this.getAudioElements().each(function() {
-            ids.push(this.id);
+        this.getAudioElements().forEach(element => {
+            ids.push(element.id);
         });
         axios
             .get("/bloom/api/audio/checkForAnyRecording?ids=" + ids)

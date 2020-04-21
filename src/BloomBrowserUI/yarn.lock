@@ -3124,9 +3124,9 @@ blob@0.0.5:
   integrity sha512-gaqbzQPqOoamawKg0LGVd7SzLgXS+JH61oWprSLH+P+abTczqJbhTR8CmJ2u9/bUYNmHTGJx/UEmn6doAvvuig==
 
 bloom-player@^1.1.51:
-  version "1.1.51"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-1.1.51.tgz#06ad1a5ed98592a2dc3a501f6188542c12bc5587"
-  integrity sha512-Del9n+VzUC/R5xiymqc1NbKNyrYA6btB507qEiQoF3yAfqvq8zsk+miI/MU4My9rEtQcmXgTJ7/r6EMA6tFV/Q==
+  version "1.1.64"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-1.1.64.tgz#3866f5efe8f484b94f750ee726ed7768b7b60f03"
+  integrity sha512-FmIbvDZkHTtUQK4tfAyH6jclh5kAb3e2QMevDFborhxindYv+FRCPqrz2eSewzXAI6VGgxI4NicqGeM6HJKSyA==
   dependencies:
     dynamic-import-polyfill "^0.1.1"
 
