@@ -832,7 +832,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// Finds the image to use when computing the perceptual hash of the 1st image
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>The source (no decoding is applied yet)</returns>
 		internal string GetBestPHashImageSource()
 		{
 			// Precondition: Assumes that pages were written to the HTML in the order of their page number
@@ -840,21 +840,37 @@ namespace Bloom.Book
 			// Find the first picture on a content page
 			// We use the numberedPage class to determine this now
 			// You could also try data-page-number, but it's not guaranteed to use numbers like "1", "2", "3"... the numbers may be written in the language of the book (BL-8346)
-			var firstContentImageElement = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page')][contains(@class, 'numberedPage')]//div[contains(@class,'bloom-imageContainer')]/img");
+			var firstContentImageContainerPath = "//div[contains(@class,'bloom-page')][contains(@class, 'numberedPage')]//div[contains(@class,'bloom-imageContainer')]";
+			var firstContentImageElement = OurHtmlDom.SelectSingleNode($"{firstContentImageContainerPath}/img");
 			if (firstContentImageElement != null)
 			{
 				var src = firstContentImageElement.GetAttribute("src");
 				return src;
 			}
+			var fallbackFirstContentImage = OurHtmlDom.SelectSingleNode(firstContentImageContainerPath);
+			if (fallbackFirstContentImage != null)
+			{
+				var src = HtmlDom.GetImageElementUrl(fallbackFirstContentImage).UrlEncoded;
+				return src;
+			}
 
-			// No content page images found.  Try the cover page, then give up.
-			var coverImg = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page') and @data-xmatter-page='frontCover']//div[contains(@class,'bloom-imageContainer')]/img");
+			// No content page images found.  Try the cover page
+			var coverImageContainerPath = "//div[contains(@class,'bloom-page') and @data-xmatter-page='frontCover']//div[contains(@class,'bloom-imageContainer')]";
+			var coverImg = OurHtmlDom.SelectSingleNode($"{coverImageContainerPath}/img");
 			if (coverImg != null)
 			{
 				var src = coverImg.GetAttribute("src");
 				return src;
 			}
 
+			var fallbackCoverImg = OurHtmlDom.SelectSingleNode(coverImageContainerPath);
+			if (fallbackCoverImg != null)
+			{
+				var src = HtmlDom.GetImageElementUrl(fallbackCoverImg).UrlEncoded;
+				return src;
+			}
+
+			// Nothing on the cover page either. Give up.
 			return null;
 		}
 
