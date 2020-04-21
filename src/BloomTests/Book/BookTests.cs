@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -497,7 +497,7 @@ namespace BloomTests.Book
 			var vernacularTextNodesInStorage = _storage.Object.Dom.RawDom.SafeSelectNodes("//textarea[@id='2' and @lang='xyz']");
 
 			Assert.AreEqual("changed", vernacularTextNodesInStorage.Item(0).InnerText, "the value didn't get copied to  the storage dom");
-		 }
+		}
 
 		[Test]
 		public void GetEditableHtmlDomForPage_BasicBook_HasA5PortraitClass()
@@ -804,7 +804,7 @@ namespace BloomTests.Book
 		{
 			Mock<IPage> templatePage = CreateTemplatePage(divContent);
 
-		   book.InsertPageAfter(existingPage, templatePage.Object);
+			book.InsertPageAfter(existingPage, templatePage.Object);
 			AssertPageCount(book, 4);
 			Assert.IsTrue(GetPageFromBookDom(book, 1).GetStringAttribute("class").Contains("bloom-page somekind A5Portrait"));
 		}
@@ -1314,7 +1314,7 @@ namespace BloomTests.Book
 					</body>
 				</html>");
 			var book = CreateBook();
-		   // AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A4Landscape') and contains(@class,'bloom-page')]", 5);
+			// AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A4Landscape') and contains(@class,'bloom-page')]", 5);
 			book.BringBookUpToDate(new NullProgress());
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A4Landscape') and contains(@class,'bloom-page')]", 6);
 		}
@@ -2488,7 +2488,7 @@ namespace BloomTests.Book
 			var book = CreateBook();
 
 			book.UpdateMetadataFeatures(isBlindEnabled, isTalkingBookEnabled, isSignLanguageEnabled, null);
-			
+
 			Assert.That(book.BookInfo.MetaData.Feature_Blind, Is.EqualTo(isBlindEnabled), "Feature_Blind");
 			Assert.That(book.BookInfo.MetaData.Feature_TalkingBook, Is.EqualTo(isTalkingBookEnabled), "Feature_TalkingBook");
 			Assert.That(book.BookInfo.MetaData.Feature_SignLanguage, Is.EqualTo(isSignLanguageEnabled), "Feature_SignLanguage");
@@ -2550,7 +2550,7 @@ namespace BloomTests.Book
 
 			var book = CreateBook();
 			book.CollectionSettings.BrandingProjectKey = "MyCustomBrand";   // Needed so Enterprise Features is considered enabled which is needed for quizzes
-			
+
 			book.UpdateMetadataFeatures(false, false, false, null);
 
 			Assert.AreEqual(true, book.BookInfo.MetaData.Feature_Quiz, "Quiz");
@@ -3473,7 +3473,7 @@ namespace BloomTests.Book
     </div>
   </body>
 </html>";
-		
+
 		[Test]
 		public void RemoveObsoleteAudioMarkup_WorksForTextBoxModeRecording()
 		{
@@ -3608,5 +3608,193 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@data-page='extra']");
 		}
 #endif
+
+		#region PHash related tests
+		#region GetBestPHashImageSource()
+		// First test one of the submethods of the PHash code
+		// How do we decide which image to proces on?
+
+		[TestCase("1")] // usual
+		[TestCase("၁")] // The number one in lang="mnw"
+		[TestCase("一")] // The number one in Chinese
+		public void GetBestPHashImageSource_CustomLanguagePageNumbers_FirstImageIsDetected(string pageNumberOne)
+		{
+			string html =
+$@"<html><head></head>
+	<body>
+		<div class='bloom-page cover'>
+			<div class='marginBox'>
+				<div class='bloom-imageContainer'>
+					<img data-book='coverImage' src='cover%20image.jpg'></img>
+                </div>
+			</div>
+		</div>
+		<div class='bloom-page numberedPage customPage bloom-combinedPage side-left A5Portrait bloom-monolingual' id='936be2e9-c379-4f4b-a5e8-db2a60f2573c' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398382;44402071-677f-4f7e-b322-f6c9f465ee88;1a1e05e6-7435-4e9c-9a52-5ceccc0320e8' lang='' data-page-number='{pageNumberOne}' data-page=''>
+			<div class='marginBox'><div class='split-pane-component position-top'>
+				<div class='bloom-imageContainer'>
+					<img src='Page%201%20Picture.jpg'></img>
+                </div>
+			</div></div>
+		</div>
+	</body>
+</html>
+";
+			_bookDom = new HtmlDom(html);
+			var book = CreateBook();
+
+			string imgSource = book.GetBestPHashImageSource();
+
+			Assert.That(imgSource, Is.EqualTo("Page%201%20Picture.jpg"), "Should use the picture from the 1st page, not the cover image");
+		}
+
+		[TestCase(true)]
+		[TestCase(false)]
+		public void GetBestPHashImageSource_NoImagesOnContentPages_FallbackToCoverImage(bool isAnyContentPage)
+		{
+			string contentPageHtml = "";
+			if (isAnyContentPage)
+			{
+				contentPageHtml = @"
+		<div class='bloom-page numberedPage customPage' data-page-number='1' data-page=''>
+			<div class='marginBox'><div class='split-pane-component position-top'>				
+			</div></div>
+		</div>";
+			}
+
+			string html =
+$@"<html><head></head>
+	<body>
+		<div class='bloom-page cover' data-xmatter-page='frontCover'>
+			<div class='marginBox'>
+				<div class='bloom-imageContainer'>
+					<img data-book='coverImage' src='cover%20image.jpg'></img>
+                </div>
+			</div>
+		</div>
+		{contentPageHtml}
+	</body>
+</html>
+";
+			_bookDom = new HtmlDom(html);
+			var book = CreateBook();
+
+			string imgSource = book.GetBestPHashImageSource();
+
+			Assert.That(imgSource, Is.EqualTo("cover%20image.jpg"));
+		}
+		#endregion
+
+		#region ComputePHashOfImageFullPath
+		// Next, test another submethod - of performing the actual calculation of the PHash
+
+		[TestCase(@"../../artwork/Logos/bloom.png")]    // orange against transpartent background
+		[TestCase(@"../../DistFiles/printer settings images/A4Portrait-Booklet-en.png")]    // full color screenshot
+		[TestCase(@"../../src/BloomTests/Book/images/aor_CMB0482.png")]    // an arbitrary Art Of Reading example
+		// This is the 1st image from the book "PRetty Girl" (https://dev.bloomlibrary.org/browse/detail/AaHdCjMBXW)
+		// It is a "black and white" (sort of) 1-bit colormap that is technically all black, but uses the alpha channel to encode b/w-ness
+		// This image was at point returning  0x000... (because if you ignore the alpha channel, the image appears like an all black image)
+		[TestCase(@"../../src/BloomTests/Book/images/TG000301_FromPrettyGirlBook.png")]
+		public void ComputePHashOfImageFullPath_NonSpecialImages_ReturnsNonNullNonTrivialPHash(string relativePath)
+		{
+			string path = ConvertToPathRelativeToAssembly(relativePath);
+
+			string pHash = Bloom.Book.Book.ComputePHashOfImageFullPath(path);
+
+			Assert.That(pHash, Is.Not.Null);
+			Assert.That(pHash.Contains("0x000"), Is.False, "Should not return 0x000...0 (the hash for an all-black image)");
+		}
+
+		[Test]
+		public void ComputePHashOfImageFullPath_PlaceholderImage_ReturnsNull()
+		{
+			// We don't want all the books that use placeholder to all be lumped together,
+			// so we want it to return null instead.
+			string relativePath = @"../../src/BloomBrowserUI/templates/template books/Basic Book/placeHolder.png";
+			string path = ConvertToPathRelativeToAssembly(relativePath);
+
+			string pHash = Bloom.Book.Book.ComputePHashOfImageFullPath(path);
+
+			Assert.That(pHash, Is.Null);
+		}
+
+		[Test]
+		public void ComputePHashOfImageFullPath_BlankImage_Returns0x000()
+		{
+			// This seems to be a fully transparent image
+			string relativePath = @"../../DistFiles/Blank.png";
+			string path = ConvertToPathRelativeToAssembly(relativePath);
+
+			string pHash = Bloom.Book.Book.ComputePHashOfImageFullPath(path);
+
+			Assert.That(pHash, Is.EqualTo("0x00000000000000000000000000000000000000000000000000000000000000000000000000000000"));
+		}
+
+		private static string ConvertToPathRelativeToAssembly(string relativePath)
+		{
+			// The current directory seems to be the Temp directory, so change it to relative to the assembly instead.
+			var rootDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+			return Path.Combine(rootDir, relativePath);
+		}
+		#endregion
+
+		#region ComputePHashOfFirstContentImage
+		// Put it all together - test the pHash code from start to end
+		[TestCase("placeHolder.png")]   // The proper capitalization
+		[TestCase("placeholder.png")]
+		public void ComputePHashOfFirstContentImage_PlaceHolder_Null(string placeHolderFilename)
+		{
+			string relativePath = $@"../../src/BloomBrowserUI/templates/template books/Basic Book/{placeHolderFilename}";
+			var html = GetHtmlForComputePHashOfFirstContentImageTests(relativePath);
+			_bookDom = new HtmlDom(html);
+			var book = CreateBook();
+
+			string pHash = book.ComputePHashOfFirstContentImage();
+
+			Assert.That(pHash, Is.Null);
+		}
+
+		[TestCase(@"../../artwork/Logos/bloom.png")]    // orange against transpartent background
+		[TestCase(@"../../DistFiles/printer settings images/A4Portrait-Booklet-en.png")]    // full color screenshot
+		public void ComputePHashOfFirstContentImage_NormalImages_NonNull(string relativePath)
+		{
+			var html = GetHtmlForComputePHashOfFirstContentImageTests(relativePath);
+			_bookDom = new HtmlDom(html);
+			var book = CreateBook();
+
+			string pHash = book.ComputePHashOfFirstContentImage();
+
+			Assert.That(pHash, Is.Not.Null);
+			Assert.That(pHash.Contains("0x000"), Is.False);
+		}
+
+		private string GetHtmlForComputePHashOfFirstContentImageTests(string relativePath)
+		{
+			string path = ConvertToPathRelativeToAssembly(relativePath);
+			string urlEncodedPath = HttpUtility.UrlEncode(path);
+
+			string html =
+$@"<html><head></head>
+	<body>
+		<div class='bloom-page cover'>
+			<div class='marginBox'>
+				<div class='bloom-imageContainer'>
+					<img data-book='coverImage' src='..%2F..%2F..DistFiles%2FBlank.png'></img>
+                </div>
+			</div>
+		</div>
+		<div class='bloom-page numberedPage' data-page-number='1'>
+			<div class='marginBox'><div class='split-pane-component position-top'>
+				<div class='bloom-imageContainer'>
+					<img src='{urlEncodedPath}'></img>
+                </div>
+			</div></div>
+		</div>
+	</body>
+</html>
+";
+			return html;
+		}
+		#endregion
+		#endregion
 	}
 }
