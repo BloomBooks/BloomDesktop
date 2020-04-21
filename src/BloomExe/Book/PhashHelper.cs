@@ -9,9 +9,9 @@ using Shipwreck.Phash.Imaging;
 
 namespace Bloom.Book
 {
-	// These methods are adapted from the code in Shipwreck, which fails to handle 1-bit colormap PNG images properly
-	// on both Windows and Linux, always giving them a phash of all zeroes on Windows (but a different constant value
-	// on Linux).  Many if not all AOR images fall into this category.
+	// These methods are adapted from the code in Shipwreck, which fails to handle some 1-bit colormap PNG
+	// images properly on both Windows and Linux, always giving them a phash of all zeroes on Windows (but
+	// a different constant value on Linux).
 	public static class PhashHelper
 	{
 		internal static Bitmap ToRgb24(this Bitmap bitmap)
@@ -23,14 +23,16 @@ namespace Bloom.Book
 			{
 				drawingBitmap = new Bitmap(bitmap.Width, bitmap.Height, PixelFormat.Format24bppRgb);
 				drawingBitmap.SetResolution(bitmap.HorizontalResolution, bitmap.VerticalResolution);
-				// Check for data from 1-bit colormap (Black & White) on Windows.
+				// Check for data from some 1-bit colormap PNG files on Windows.
 				// If data looks like R=G=B=0 everywhere and A has 2 values, then set each pixel from
-				// the A value of the original bitmap.  [SLOW, but simple]
-				if (IsAlphaChannelBlackAndWhite(bitmap))
+				// the A value of the original bitmap.
+				if (IsAlphaChannel32bppBlackAndWhite(bitmap))
 				{
 					SetPixelsFrom32bppArgbBWBitmap(bitmap, drawingBitmap);
 				}
-				// Check for data from 1-bit colormap (Black & White) on Linux.
+				// Check for data from other 1-bit colormap files on Windows, and all such files on
+				// Linux. Set the pixels for these explicitly because Linux can have the same problem
+				// converting from 1bpp to 24bpp via drawing.
 				else if (bitmap.PixelFormat == PixelFormat.Format1bppIndexed)
 				{
 					SetPixelsFrom1bppIndexedBWBitmap(bitmap, drawingBitmap);
@@ -96,14 +98,16 @@ namespace Bloom.Book
 			}
 		}
 
-		private static bool IsAlphaChannelBlackAndWhite(Bitmap bitmap)
+		/// <summary>
+		/// On Windows, some 1-bit colormap PNG files generate 32bpp bitmaps where the B/W distinction
+		/// is carried in the A byte (0|255) and the other bytes are always 0.  Calling ToLuminanceImage()
+		/// on this directly results in the image data bytes all being set to 16, and the computed hash
+		/// being all zero bytes.  So we record the color byte data enough to detect this situation.
+		/// </summary>
+		private static bool IsAlphaChannel32bppBlackAndWhite(Bitmap bitmap)
 		{
 			if (bitmap.PixelFormat != PixelFormat.Format32bppArgb)
 				return false;
-			// On Windows, 1-bit colormap PNG files generate 32bpp bitmaps where the B/W distinction
-			// is carried in the A byte (0|255) and the other bytes are always 0.  Calling ToLuminanceImage()
-			// on this directly would result in the image data bytes all being set to 16, and the computed
-			// hash ending up all zero bytes.  So we record the color byte data enough to detect this situation.
 			HashSet<byte> redValues = new HashSet<byte>();
 			HashSet<byte> greenValues = new HashSet<byte>();
 			HashSet<byte> blueValues = new HashSet<byte>();
@@ -130,6 +134,11 @@ namespace Bloom.Book
 					alphaValues.Count > 1);
 		}
 
+		/// <summary>
+		/// Set all color values (Red,Green,Blue) in the 24bpp bitmap from the Alpha values of
+		/// the input 32bpp bitmap.  We've already detected that this is the right thing to do
+		/// before calling this method.
+		/// </summary>
 		private static void SetPixelsFrom32bppArgbBWBitmap(Bitmap bitmap, Bitmap bitmap24bpp)
 		{
 			var data = bitmap.ToBytes();
@@ -152,20 +161,52 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// On Linux, 1-bit colormap PNG files always generate 1bpp bitmaps.  On translation to 24bpp bitmaps,
+		/// the same problem can occur as can happen on Windows (A set, RGB left all zero).  For some reason,
+		/// the generated phash isn't all zeroes like on Windows, but it's probably constant for all such 1-bit
+		/// colormap images.  So we fill in the 24bpp data explicitly even when the normal conversion would
+		/// work properly.
+		/// </summary>
 		private static void SetPixelsFrom1bppIndexedBWBitmap(Bitmap bitmap, Bitmap bitmap24bpp)
 		{
-			// On Linux, 1-bit colormap PNG files generate 1bpp bitmaps.  On translation to 24bpp bitmaps,
-			// the same problem occurs as happens on Windows (A set, RGB left all zero).  For some reason,
-			// the generated phash isn't all zeroes like on Windows, but it's probably constant for all
-			// 1-bit colormap images.  So we fill in the 24bpp data explicitly.
+			/* Bitmap/Image values for a pair of 1-bit colormap PNG files found in Bloom Books:
+			 * The Pretty Girl/TG000301.png [true only on Linux, image created as Format32bppArgb on Windows]
+			 * PixelFormat  Format1bppIndexed
+			 * Palette      {System.Drawing.Imaging.ColorPalette}
+			 *   Entries    {System.Drawing.Color[2]}
+			 *     [0]      {Color [A=0, R=0, G=0, B=0]}
+			 *     [1]      {Color [A=255, R=0, G=0, B=0]}
+			 *  Flags       1
+			 * -------------------------
+			 * Tiny Test/aor_Cat.png [true on both Linux and Windows]
+			 * PixelFormat  Format1bppIndexed
+			 * Palette      {System.Drawing.Imaging.ColorPalette}
+			 *   Entries    {System.Drawing.Color[2]}
+			 *     [0]      {Color [A=255, R=0, G=0, B=0]}
+			 *     [1]      {Color [A=255, R=255, G=255, B=255]}
+			 * Flags        0
+			*/
+			var colorValues = new HashSet<Color>(bitmap.Palette.Entries);
+			var useAlpha = false;
+			if (colorValues.Count == 2 &&
+				colorValues.Contains(Color.FromArgb(0,0,0,0)) &&
+				colorValues.Contains(Color.FromArgb(255,0,0,0)) &&
+				((bitmap.Palette.Flags & 0x1) == 0x1))	// "contain alpha information"
+			{
+				useAlpha = true;
+			}
 			for (var dy = 0; dy < bitmap.Height; dy++)
 			{
 				for (var dx = 0; dx < bitmap.Width; dx++)
 				{
-					// OPTIMIZE: interpreting the bits in the input data bytes might be faster that using GetPixel.
+					// OPTIMIZE: interpreting the bits in the input data bytes might be faster than using GetPixel.
 					// Setting the bytes in the output byte array would certainly be faster than using SetPixel.
 					var pixel = bitmap.GetPixel(dx,dy);
-					bitmap24bpp.SetPixel(dx, dy, Color.FromArgb(pixel.A, pixel.A, pixel.A, pixel.A));
+					if (useAlpha)
+						bitmap24bpp.SetPixel(dx, dy, Color.FromArgb(pixel.A, pixel.A, pixel.A, pixel.A));
+					else
+						bitmap24bpp.SetPixel(dx, dy, pixel);
 				}
 			}
 		}
