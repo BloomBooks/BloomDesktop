@@ -76,7 +76,7 @@ namespace Bloom.Publish.BloomLibrary
 		/// The dictionary contains an entry for every language where the book contains non-x-matter text.
 		/// The value is true if every non-x-matter field which contains text in any language contains text in this.
 		/// </summary>
-		internal Dictionary<string, bool> AllLanguages => Book.AllLanguages();
+		internal Dictionary<string, bool> AllLanguages => Book.AllPublishableLanguages();
 
 		/// <summary>
 		/// Gets a user-friendly language name.
