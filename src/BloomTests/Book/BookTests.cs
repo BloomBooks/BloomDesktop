@@ -1862,6 +1862,59 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void AllPublishableLanguages_OnlyFindsOneIfComical()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div id='comicalItem' class='bloom-textOverPicture' data-bubble='`style`:`speech`'>my bubble</div>
+					<div class='bloom-page' id='guid3'>
+					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='de'>
+								Some German.
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='en'>
+								Some English.
+							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='xkal'>
+								Something or other.
+							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='*'>
+								This is not in any known language
+							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='z'>
+								We use z for some special purpose, seems to occur in every book, don't want it.
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='tr'>
+								Some Thai.
+							</div>
+						</div>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+			var allLanguages = book.AllPublishableLanguages(true);
+			Assert.That(allLanguages["xyz"], Is.True);
+			Assert.That(allLanguages, Has.Count.EqualTo(1));
+
+			var comicalItem = book.OurHtmlDom.RawDom.SelectSingleNode("//div[@id='comicalItem']"); // GetElementById("comicalItem");
+			comicalItem.ParentNode.RemoveChild(comicalItem);
+
+			allLanguages = book.AllPublishableLanguages(true);
+			// Now we should get lots
+			Assert.That(allLanguages["en"], Is.True);
+			Assert.That(allLanguages["de"], Is.True);
+			Assert.That(allLanguages["xkal"], Is.True);
+			Assert.That(allLanguages["tr"], Is.True);
+		}
+
+		[Test]
 		public void AllLanguages_DoesNotFindGeneratedContent()
 		{
 			_bookDom = new HtmlDom(

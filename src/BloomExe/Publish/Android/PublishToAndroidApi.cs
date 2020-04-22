@@ -336,19 +336,7 @@ namespace Bloom.Publish.Android
 		{
 			lock (_lockForLanguages)
 			{
-				_allLanguages = request.CurrentBook.AllLanguages(countXmatter: true);
-				// For comical books, we only publish a single language. It's not currently feasible to
-				// allow the reader to switch language in a Comical book, because typically that requires
-				// adjusting the positions of the bubbles, and we don't yet support having more than one
-				// set of bubble locations in a single book. See BL-7912 for some ideas on how we might
-				// eventually improve this. In the meantime, switching language would have bad effects,
-				// and if you can't switch language, there's no point in the book containing more than one.
-				// Not including other languages neatly prevents switching and automatically saves the space.
-				if (request.CurrentBook.OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
-				{
-					_allLanguages.Clear();
-					_allLanguages[request.CurrentBook.CollectionSettings.Language1Iso639Code] = true;
-				}
+				_allLanguages = request.CurrentBook.AllPublishableLanguages(countXmatter: true);
 				if (_bookForLanguagesToPublish != request.CurrentBook)
 				{
 					// reinitialize our list of which languages to publish, defaulting to the ones
