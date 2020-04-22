@@ -10054,8 +10054,8 @@ react-focus-lock@^1.17.7:
     react-clientside-effect "^1.2.0"
 
 "react-grid-layout@https://github.com/JohnThomson/react-grid-layout.git#includeTypes":
-  version "0.18.3"
-  resolved "https://github.com/JohnThomson/react-grid-layout.git#c93a0a13e9ae0850802fcc96ebeb894c3d4879b6"
+  version "0.18.4"
+  resolved "https://github.com/JohnThomson/react-grid-layout.git#cd3f4f85ed9850d2c07e3d347f5d2a82f9d4b437"
   dependencies:
     classnames "2.x"
     lodash.isequal "^4.0.0"
