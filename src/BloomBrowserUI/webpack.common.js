@@ -41,7 +41,7 @@ module.exports = merge(core, {
         toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
         pageChooserBundle: "./pageChooser/page-chooser.ts",
         pageThumbnailListBundle:
-            "./bookEdit/pageThumbnailList/pageThumbnailList.ts",
+            "./bookEdit/pageThumbnailList/pageThumbnailList.tsx",
         pageControlsBundle:
             "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
         publishUIBundle: globule.find([

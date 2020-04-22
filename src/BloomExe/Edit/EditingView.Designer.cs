@@ -52,7 +52,6 @@
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
 			this.settingsLauncherHelper1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this._splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._splitContainer2 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._topBarPanel = new System.Windows.Forms.Panel();
 			this._undoButton = new SIL.Windows.Forms.Widgets.BitmapButton();
@@ -66,9 +65,6 @@
 			this._splitTemplateAndSource = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).BeginInit();
-			this._splitContainer1.Panel2.SuspendLayout();
-			this._splitContainer1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer2)).BeginInit();
 			this._splitContainer2.Panel1.SuspendLayout();
 			this._splitContainer2.Panel2.SuspendLayout();
@@ -91,31 +87,6 @@
 			// 
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = null;
-			// 
-			// _splitContainer1
-			// 
-			this._splitContainer1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
-			this._splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._splitContainer1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._splitContainer1, null);
-			this._L10NSharpExtender.SetLocalizingId(this._splitContainer1, "EditTab._splitContainer1");
-			this._splitContainer1.Location = new System.Drawing.Point(0, 0);
-			this._splitContainer1.Margin = new System.Windows.Forms.Padding(4);
-			this._splitContainer1.Name = "_splitContainer1";
-			// 
-			// _splitContainer1.Panel1
-			// 
-			this._splitContainer1.Panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			// 
-			// _splitContainer1.Panel2
-			// 
-			this._splitContainer1.Panel2.Controls.Add(this._splitContainer2);
-			this._splitContainer1.Size = new System.Drawing.Size(1200, 561);
-			this._splitContainer1.SplitterDistance = 200;
-			this._splitContainer1.SplitterWidth = 10;
-			this._splitContainer1.TabIndex = 0;
-			this._splitContainer1.TabStop = false;
 			// 
 			// _splitContainer2
 			// 
@@ -412,9 +383,9 @@
 			this._L10NSharpExtender.SetLocalizingId(this._betterToolTip1, "BTT_id");
 			// 
 			// EditingView
-			// 
+			//
+			this.Controls.Add(_splitContainer2);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-			this.Controls.Add(this._splitContainer1);
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "EditTab.EditingView");
@@ -422,9 +393,6 @@
 			this.Name = "EditingView";
 			this.Size = new System.Drawing.Size(1200, 561);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
-			this._splitContainer1.Panel2.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).EndInit();
-			this._splitContainer1.ResumeLayout(false);
 			this._splitContainer2.Panel1.ResumeLayout(false);
 			this._splitContainer2.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer2)).EndInit();
@@ -440,7 +408,6 @@
 
         #endregion
 
-        private Bloom.ToPalaso.BetterSplitContainer _splitContainer1;
         private Bloom.ToPalaso.BetterSplitContainer _splitContainer2;
         private Browser _browser1;
 		private Bloom.ToPalaso.BetterSplitContainer _splitTemplateAndSource;

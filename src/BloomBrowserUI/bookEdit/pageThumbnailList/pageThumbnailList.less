@@ -191,6 +191,9 @@ body {
         .pageContainer {
             float: right;
         }
+        .thumbnailCaption {
+            right: 4px; // position is absolute, so float:right won't work
+        }
     }
 }
 
@@ -199,8 +202,8 @@ body {
     position: absolute;
     display: inline-block;
     opacity: 0; // transparent
-    width: @gridWidth - 2px;
-    height: @gridHeight - 2px;
+    width: calc(100% - 2px);
+    height: calc(100% - 2px);
     top: 1px; // top and left are 'absolute', but somehow still relative to their container
     left: 1px;
 }
@@ -218,17 +221,9 @@ body {
     line-height: 1.3em;
 }
 
-.placeholder {
-    pointer-events: none;
-}
-
 html,
 body {
     height: 100%; // need this to get page browser to fill available space on the screen
-}
-
-body > #menuIconHolder {
-    display: none; // don't display icon when no page is selected (briefly)
 }
 
 #menuIconHolder {
@@ -254,4 +249,14 @@ body > #menuIconHolder {
     box-shadow: none !important;
     background-image: none !important;
     padding-left: 5px; //don't leave room for the icon
+}
+
+// other properties of this are set in basePage.less
+// these additional ones give the effect we want in the
+// thumbnail view for the special overlay div we make
+// in pageThumbnail.tsx
+.pageOverflowsIcon {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
 }
