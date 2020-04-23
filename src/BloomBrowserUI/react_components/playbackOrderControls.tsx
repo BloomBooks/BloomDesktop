@@ -1,85 +1,56 @@
 import React = require("react");
-import theme from "../bloomMaterialUITheme";
-import Add from "@material-ui/icons/Add";
-import Remove from "@material-ui/icons/Remove";
+import IncreaseIcon from "@material-ui/icons/Add";
+import DecreaseIcon from "@material-ui/icons/Remove";
 import Typography from "@material-ui/core/Typography";
+import "./playbackOrderControls.less";
 
 interface IPlaybackOrderControlsProps {
-    sizeOfList: number;
-    myOrderNum: number; // NOT zero-based; first number should be "1"
-    bumpUp: (whichPositionToBump: number) => void; // increase 'myOrderNum' (Add button)
-    bumpDown: (whichPositionToBump: number) => void; // decrease 'myOrderNum' (Remove button)
+    maxOrder: number;
+    orderOneBased: number;
+    onIncrease: (whichPositionToChange: number) => void;
+    onDecrease: (whichPositionToChange: number) => void;
 }
 
-const buttonWidth = 22;
-const controlBoxWidth = buttonWidth * 3;
-const numberBackgroundColor: string = theme.palette.tertiary.main;
-const bloomBlue: string = theme.palette.primary.main;
-const disabledColor: string = "#b0dee4"; // bloom-lightblue in bloomUI.less
-const buttonStyle: React.CSSProperties = {
-    backgroundColor: bloomBlue,
-    boxShadow: "none",
-    border: 0,
-    padding: 0,
-    width: buttonWidth,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center"
-};
-const containerStyle: React.CSSProperties = {
-    width: controlBoxWidth,
-    position: "relative",
-    display: "flex",
-    alignSelf: "center",
-    boxShadow: "0px 2px 4px -1px",
-    cursor: "not-allowed"
+const PlaybackOrderButton: React.FC<{
+    icon: JSX.Element;
+    disabled: boolean;
+    onClick: () => void;
+}> = props => {
+    const icon = React.cloneElement(props.icon, {
+        fontSize: "small" as any,
+        fontWeight: 800,
+        shapeRendering: "crispEdges",
+        fill: "white"
+    });
+    return (
+        <button
+            type="button"
+            className={`playbackOrderButton ${
+                props.disabled ? "disabled" : ""
+            }`}
+            {...props} //click and disabled
+        >
+            {icon}
+        </button>
+    );
 };
 
 const PlaybackOrderControls: React.FC<IPlaybackOrderControlsProps> = props => {
-    const leftButtonDisabled = props.myOrderNum === 1;
-    const rightButtonDisabled = props.myOrderNum === props.sizeOfList;
     return (
-        <div style={containerStyle}>
-            <button
-                type="button"
-                onClick={() => props.bumpDown(props.myOrderNum)}
-                disabled={leftButtonDisabled}
-                style={buttonStyle}
-            >
-                <Remove
-                    style={{
-                        fill: leftButtonDisabled ? disabledColor : "white"
-                    }}
-                    fontSize="small"
-                    fontWeight={800}
-                    shapeRendering="crispEdges"
-                />
-            </button>
-            <Typography
-                style={{
-                    backgroundColor: numberBackgroundColor,
-                    width: `${buttonWidth}px`,
-                    textAlign: "center",
-                    fontWeight: 700
-                }}
-            >
-                {props.myOrderNum}
+        <div className="playbackOrderContainer">
+            <PlaybackOrderButton
+                disabled={props.orderOneBased === 1}
+                onClick={() => props.onDecrease(props.orderOneBased)}
+                icon={<DecreaseIcon />}
+            />
+            <Typography className="playbackOrderNumber">
+                {props.orderOneBased}
             </Typography>
-            <button
-                type="button"
-                onClick={() => props.bumpUp(props.myOrderNum)}
-                disabled={rightButtonDisabled}
-                style={buttonStyle}
-            >
-                <Add
-                    style={{
-                        fill: rightButtonDisabled ? disabledColor : "white"
-                    }}
-                    fontSize="small"
-                    fontWeight={800}
-                    shapeRendering="crispEdges"
-                />
-            </button>
+            <PlaybackOrderButton
+                disabled={props.orderOneBased === props.maxOrder}
+                onClick={() => props.onIncrease(props.orderOneBased)}
+                icon={<IncreaseIcon />}
+            />
         </div>
     );
 };

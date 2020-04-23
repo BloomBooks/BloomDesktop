@@ -1,0 +1,37 @@
+// A separate .less file is the best (clearest and simplest) way to add :hover capability to a React component.
+@import (reference) "../bloomUI.less";
+
+@buttonWidth: 22px;
+@controlBoxWidth: @buttonWidth * 3;
+@numberBackgroundColor: @bloom-yellow;
+
+.playbackOrderContainer {
+    width: @controlBoxWidth;
+    position: relative;
+    display: flex;
+    align-self: center;
+    &:hover {
+        .playbackOrderButton:not(.disabled) {
+            opacity: 1;
+            box-shadow: 0px 2px 4px -1px;
+        }
+    }
+    .playbackOrderButton {
+        transition: opacity 0.2s;
+        background-color: @bloom-blue;
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        width: @buttonWidth;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0.1;
+    }
+    .playbackOrderNumber {
+        background-color: @numberBackgroundColor;
+        width: @buttonWidth;
+        text-align: center;
+        font-weight: 700;
+    }
+}
