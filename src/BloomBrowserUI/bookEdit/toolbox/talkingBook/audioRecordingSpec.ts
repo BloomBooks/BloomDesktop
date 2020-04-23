@@ -7,7 +7,7 @@ describe("audio recording tests", () => {
     describe(", Next()", () => {
         it("Record=Sentence, last sentence returns disabled for Next button", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-editable' data-audioRecordingMode='Sentence'><p><span id='id1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div></div>"
+                "<div id='page1'><div class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='id1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div></div>"
             );
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.Sentence;
@@ -19,7 +19,7 @@ describe("audio recording tests", () => {
 
         it("Record=TextBox/Play=Sentence, last sentence returns disabled for Next button", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'><p><span id='id1' class='audio-sentence'>Sentence 1.</span></p></div></div>"
+                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='id1' class='audio-sentence'>Sentence 1.</span></p></div></div>"
             );
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
@@ -31,7 +31,7 @@ describe("audio recording tests", () => {
 
         it("Record=TextBox/Play=TextBox, last sentence returns disabled for Next button", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'>p>Sentence 1.</p></div></div>"
+                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div></div>"
             );
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
@@ -43,9 +43,9 @@ describe("audio recording tests", () => {
 
         it("SS -> SS, returns next box's first sentence", () => {
             const box1Html =
-                "<div id='box1' class='bloom-editable' data-audioRecordingMode='Sentence'><p><span id='sentence1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div>";
+                "<div id='box1' class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='sentence1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div>";
             const box2Html =
-                "<div id='box2' class='bloom-editable' data-audioRecordingMode='Sentence'><p><span id='sentence2' class='audio-sentence'>Sentence 2.</span><span id='sentence3' class='audio-sentence'>Sentence 3.</span></p></div>";
+                "<div id='box2' class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='sentence2' class='audio-sentence'>Sentence 2.</span><span id='sentence3' class='audio-sentence'>Sentence 3.</span></p></div>";
             SetupIFrameFromHtml(`<div id='page1'>${box1Html}${box2Html}</div>`);
 
             const recording = new AudioRecording();
@@ -58,9 +58,9 @@ describe("audio recording tests", () => {
 
         it("TS -> TT, returns next box", () => {
             const box1Html =
-                "<div id='box1' class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'><p><span id='sentence1' class='audio-sentence'>Sentence 1.</span></p></div>";
+                "<div id='box1' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='sentence1' class='audio-sentence'>Sentence 1.</span></p></div>";
             const box2Html =
-                "<div id='box2' class='bloom-editable audio-sentence' data-audioRecordingMode='TextBox'><p><span id='sentence2' class='audio-sentence'>Sentence 2.</span><span id='sentence3' class=''>Sentence 3.</span></p></div>";
+                "<div id='box2' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'><p><span id='sentence2' class='audio-sentence'>Sentence 2.</span><span id='sentence3' class=''>Sentence 3.</span></p></div>";
             SetupIFrameFromHtml(`<div id='page1'>${box1Html}${box2Html}</div>`);
 
             const recording = new AudioRecording();
@@ -73,7 +73,7 @@ describe("audio recording tests", () => {
 
         it("TT -> TT, returns next box", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence' data-audioRecordingMode='TextBox'>p>Sentence 2.</p></div></div>"
+                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div>"
             );
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
@@ -85,7 +85,7 @@ describe("audio recording tests", () => {
 
         it("Next() skips over empty box, TT -> TT -> TT", () => {
             const boxTemplate = (index: number, extraClasses: string) => {
-                return `<div id="box${index}" class="bloom-editable audio-sentence${extraClasses}" data-audioRecordingMode="TextBox">p>Sentence ${index}.</p></div>`;
+                return `<div id="box${index}" class="bloom-editable audio-sentence${extraClasses}" data-audiorecordingmode="TextBox">p>Sentence ${index}.</p></div>`;
             };
             const box1Html = boxTemplate(1, " ui-audioCurrent");
             const box2Html =
@@ -109,7 +109,7 @@ describe("audio recording tests", () => {
     describe(", Prev()", () => {
         it("Record=Sentence, first sentence returns disabled for Back button", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-editable' data-audioRecordingMode='Sentence'><p><span id='id1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div></div>"
+                "<div id='page1'><div class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='id1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div></div>"
             );
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.Sentence;
@@ -121,7 +121,7 @@ describe("audio recording tests", () => {
 
         it("Record=TextBox/Play=Sentence, first sentence returns disabled for Back button", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'><p><span id='id1' class='audio-sentence'>Sentence 1.</span></p></div></div>"
+                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='id1' class='audio-sentence'>Sentence 1.</span></p></div></div>"
             );
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
@@ -133,7 +133,7 @@ describe("audio recording tests", () => {
 
         it("Record=TextBox/Play=TextBox, first sentence returns disabled for Back button", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'>p>Sentence 1.</p></div></div>"
+                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div></div>"
             );
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
@@ -145,9 +145,9 @@ describe("audio recording tests", () => {
 
         it("SS <- SS, returns previous box's last sentence", () => {
             const box1Html =
-                "<div id='box1' class='bloom-editable' data-audioRecordingMode='Sentence'><p><span id='sentence1' class='audio-sentence'>Sentence 1.</span><span id='sentence2' class='audio-sentence'>Sentence 2.</span></p></div>";
+                "<div id='box1' class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='sentence1' class='audio-sentence'>Sentence 1.</span><span id='sentence2' class='audio-sentence'>Sentence 2.</span></p></div>";
             const box2Html =
-                "<div id='box2' class='bloom-editable' data-audioRecordingMode='Sentence'><p><span id='sentence3' class='audio-sentence ui-audioCurrent'>Sentence 3.</span></p></div>";
+                "<div id='box2' class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='sentence3' class='audio-sentence ui-audioCurrent'>Sentence 3.</span></p></div>";
             SetupIFrameFromHtml(`<div id='page1'>${box1Html}${box2Html}</div>`);
 
             const recording = new AudioRecording();
@@ -160,9 +160,9 @@ describe("audio recording tests", () => {
 
         it("TS <- TT, returns previous box", () => {
             const box1Html =
-                "<div id='box1' class='bloom-editable audio-sentence' data-audioRecordingMode='TextBox'><p><span id='sentence1' class='audio-sentence'>Sentence 1.</span><span id='sentence2' class='audio-sentence'>Sentence 2.</span></p></div>";
+                "<div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'><p><span id='sentence1' class='audio-sentence'>Sentence 1.</span><span id='sentence2' class='audio-sentence'>Sentence 2.</span></p></div>";
             const box2Html =
-                "<div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'><p><span id='sentence3' class=''>Sentence 3.</span></p></div>";
+                "<div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='sentence3' class=''>Sentence 3.</span></p></div>";
             SetupIFrameFromHtml(`<div id='page1'>${box1Html}${box2Html}</div>`);
 
             const recording = new AudioRecording();
@@ -175,7 +175,7 @@ describe("audio recording tests", () => {
 
         it("TT <- TT, returns previous box", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audioRecordingMode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'>p>Sentence 2.</p></div></div>"
+                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div>"
             );
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
@@ -187,7 +187,7 @@ describe("audio recording tests", () => {
 
         it("Prev() skips over empty box, TT <- TT <- TT", () => {
             const boxTemplate = (index: number, extraClasses: string) => {
-                return `<div id="box${index}" class="bloom-editable audio-sentence${extraClasses}" data-audioRecordingMode="TextBox">p>Sentence ${index}.</p></div>`;
+                return `<div id="box${index}" class="bloom-editable audio-sentence${extraClasses}" data-audiorecordingmode="TextBox">p>Sentence ${index}.</p></div>`;
             };
             const box1Html = boxTemplate(1, "");
             const box2Html =
@@ -212,7 +212,7 @@ describe("audio recording tests", () => {
         it("returns true while in listen to whole page with multiple text boxes", () => {
             SetupTalkingBookUIElements();
             SetupIFrameFromHtml(
-                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audioRecordingMode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'>p>Sentence 2.</p></div></div>"
+                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div>"
             );
             const recording = new AudioRecording();
             recording.listen();
@@ -222,7 +222,7 @@ describe("audio recording tests", () => {
         it("returns true while in listen to whole page with only one box", () => {
             SetupTalkingBookUIElements();
             SetupIFrameFromHtml(
-                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audioRecordingMode='TextBox'>p>Sentence 1.</p></div></div>"
+                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div></div>"
             );
             const recording = new AudioRecording();
             recording.listen();
@@ -232,7 +232,7 @@ describe("audio recording tests", () => {
         it("returns false while preloading", () => {
             SetupTalkingBookUIElements();
             SetupIFrameFromHtml(
-                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audioRecordingMode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'>p>Sentence 2.</p></div></div>"
+                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div>"
             );
 
             const recording = new AudioRecording();
@@ -938,7 +938,7 @@ describe("audio recording tests", () => {
                 .append(div)
                 .clone();
             const expectedTextBoxDiv = $(textBoxDivHtml)
-                .attr("data-audioRecordingMode", "Sentence")
+                .attr("data-audiorecordingmode", "Sentence")
                 .removeClass("audio-sentence")
                 .removeAttr("id");
             const expectedTextBoxDivHtml = $("<div>")
@@ -1108,7 +1108,7 @@ describe("audio recording tests", () => {
             const pageFrame = parent.window.document.getElementById("page");
             const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
             const textBox1 = myDoc.getElementById("textBox1")!;
-            expect(textBox1.getAttribute("data-audioRecordingMode")).toBe(
+            expect(textBox1.getAttribute("data-audiorecordingmode")).toBe(
                 AudioRecordingMode.TextBox.toString()
             );
             expect(textBox1.classList.contains("ui-audioCurrent")).toBe(true);
@@ -1164,7 +1164,7 @@ describe("audio recording tests", () => {
             const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
 
             const textBox1 = myDoc.getElementById("textBox1")!;
-            expect(textBox1.getAttribute("data-audioRecordingMode")).toBe(
+            expect(textBox1.getAttribute("data-audiorecordingmode")).toBe(
                 AudioRecordingMode.Sentence.toString()
             );
             expect(textBox1.classList.contains("ui-audioCurrent")).toBe(false);
@@ -1220,7 +1220,7 @@ describe("audio recording tests", () => {
             const myDoc = (<HTMLIFrameElement>pageFrame).contentDocument!;
 
             const textBox1 = myDoc.getElementById("textBox1")!;
-            expect(textBox1.getAttribute("data-audioRecordingMode")).toBe(
+            expect(textBox1.getAttribute("data-audiorecordingmode")).toBe(
                 AudioRecordingMode.Sentence.toString()
             );
             expect(textBox1.classList.contains("ui-audioCurrent")).toBe(false);
@@ -1259,7 +1259,7 @@ describe("audio recording tests", () => {
 
         it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Text Box)", () => {
             SetupIFrameFromHtml(
-                "<div class='bloom-editable' lang='en' data-audioRecordingMode='Sentence'>Sentence 1. Sentence 2.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audioRecordingMode='TextBox'>Paragraph 2.</div>"
+                "<div class='bloom-editable' lang='en' data-audiorecordingmode='Sentence'>Sentence 1. Sentence 2.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audiorecordingmode='TextBox'>Paragraph 2.</div>"
             );
 
             const recording = new AudioRecording();
@@ -1287,7 +1287,7 @@ describe("audio recording tests", () => {
 
         it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Sentence)", () => {
             SetupIFrameFromHtml(
-                "<div class='bloom-editable' lang='en' data-audioRecordingMode='TextBox'>Paragraph 1.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audioRecordingMode='Sentence'>Paragraph 2.</div>"
+                "<div class='bloom-editable' lang='en' data-audiorecordingmode='TextBox'>Paragraph 1.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audiorecordingmode='Sentence'>Paragraph 2.</div>"
             );
 
             const recording = new AudioRecording();
@@ -1315,7 +1315,7 @@ describe("audio recording tests", () => {
 
         it("initializeAudioRecordingMode gets mode from other divs on page as fallback (synchronous) (TextBox)", () => {
             SetupIFrameFromHtml(
-                "<div class='audio-sentence bloom-editable' lang='en' data-audioRecordingMode='TextBox'>Paragraph 1</div><div class='bloom-editable' lang='es'><span id='id2' class='audio-sentence ui-audioCurrent'>Paragraph 2.</span></div>"
+                "<div class='audio-sentence bloom-editable' lang='en' data-audiorecordingmode='TextBox'>Paragraph 1</div><div class='bloom-editable' lang='es'><span id='id2' class='audio-sentence ui-audioCurrent'>Paragraph 2.</span></div>"
             );
 
             const recording = new AudioRecording();
@@ -1343,9 +1343,9 @@ describe("audio recording tests", () => {
 
         it("initializeAudioRecordingMode gets mode from other divs on page as fallback (synchronous) (Sentence)", () => {
             // The 2nd div doesn't really look well-formed because we're trying to get the test to exercise some fallback cases
-            // The first div doesn't look well-formed either but I want the test to exercise that it is getting it from the data-audioRecordingMode attribute not from any of the div's innerHTML markup.
+            // The first div doesn't look well-formed either but I want the test to exercise that it is getting it from the data-audiorecordingmode attribute not from any of the div's innerHTML markup.
             SetupIFrameFromHtml(
-                "<div class='bloom-editable' lang='en' data-audioRecordingMode='Sentence'>Paragraph 1</div><div class='bloom-editable audio-sentence ui-audioCurrent' lang='es'>Paragraph 2.</div>"
+                "<div class='bloom-editable' lang='en' data-audiorecordingmode='Sentence'>Paragraph 1</div><div class='bloom-editable audio-sentence ui-audioCurrent' lang='es'>Paragraph 2.</div>"
             );
 
             const recording = new AudioRecording();
@@ -1540,7 +1540,7 @@ describe("audio recording tests", () => {
 
     it("isInSoftSplitMode() works on positive examples", () => {
         SetupIFrameFromHtml(
-            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox' data-audioRecordingEndTimes='1.0 2.0 3.0'><p>One. Two. Three.</p></div>"
+            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox' data-audioRecordingEndTimes='1.0 2.0 3.0'><p>One. Two. Three.</p></div>"
         );
 
         const recording = new AudioRecording();
@@ -1551,11 +1551,11 @@ describe("audio recording tests", () => {
 
     it("isInSoftSplitMode() works on negative examples", () => {
         const div1 =
-            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'><p>One. Two. Three.</p></div>";
+            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p>One. Two. Three.</p></div>";
         const div2 =
-            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='TextBox'><p><span id='s1' class='audioSentence'>One.</span> <span id='s2' class='audioSentence'>Two.</span> <span id='s3' class='audioSentence'>Three.</span></p></div>";
+            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='s1' class='audioSentence'>One.</span> <span id='s2' class='audioSentence'>Two.</span> <span id='s3' class='audioSentence'>Three.</span></p></div>";
         const div3 =
-            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audioRecordingMode='Sentence'><p><span id='s1' class='audioSentence'>One.</span> <span id='s2' class='audioSentence'>Two.</span> <span id='s3' class='audioSentence'>Three.</span></p></div>";
+            "<div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='Sentence'><p><span id='s1' class='audioSentence'>One.</span> <span id='s2' class='audioSentence'>Two.</span> <span id='s3' class='audioSentence'>Three.</span></p></div>";
         SetupIFrameFromHtml(div1 + div2 + div3);
 
         const recording = new AudioRecording();
