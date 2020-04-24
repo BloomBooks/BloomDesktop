@@ -389,7 +389,7 @@ namespace Bloom.Edit
 					msg = msg + System.Environment.NewLine + EditingView.GetInstructionsForUnlockingBook();
 				}
 				MessageBox.Show(msg);
-				UpdateItems(_pages); // reset to old state
+				WebSocketServer.SendString("pageThumbnailList", "pageListNeedsReset", "");
 				return;
 			}
 			var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
