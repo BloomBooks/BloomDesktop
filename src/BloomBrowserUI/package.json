@@ -23,6 +23,7 @@
         "buildBrandingLess": "lessc-glob branding/**/*.less ../../output/browser/branding",
         "buildBrandings": "npm-run-all --parallel buildBrandingLess buildBrandingFiles ",
         "build": "gulp",
+        "build-short": "gulp build-short",
         "build-prod": "gulp build-prod",
         "watchCode": "set NODE_ENV=debug&& webpack --watch",
         "watchBrandingFiles": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm}\" ../../output/browser/branding --watch",
