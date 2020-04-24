@@ -14,6 +14,15 @@ namespace Bloom.Workspace
 		public ZoomControl()
 		{
 			InitializeComponent();
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+			{
+				// Work around a bug in Mono 5 (and Mono 6?).
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-8360.
+				this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+				this._minusButton.Location = new System.Drawing.Point(0, -8);	// restore original locations
+				this._percentLabel.Location = new System.Drawing.Point(20, 4);
+				this._plusButton.Location = new System.Drawing.Point(58, -8);
+			}
 			Zoom = 100;
 			_plusButton.ForeColor = Color.FromKnownColor(KnownColor.MenuText);
 			_plusButton.FlatAppearance.MouseOverBackColor = SystemColors.GradientActiveCaption;
