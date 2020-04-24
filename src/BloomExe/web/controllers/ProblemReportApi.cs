@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -103,7 +104,9 @@ namespace Bloom.web.controllers
 					string issueId;
 					try
 					{
-						issueId = issueSubmission.SubmitToYouTrack(subject, diagnosticInfo);
+						var task = Task.Run(async () =>
+							await issueSubmission.SubmitToYouTrackAsync(subject, diagnosticInfo));
+						issueId = task.Result;
 					}
 					catch (Exception e)
 					{
@@ -133,7 +136,12 @@ namespace Bloom.web.controllers
 								}
 								AddCollectionSettings();
 								_bookZipFile.Save();
-								issueSubmission.AttachFileToExistingIssue(issueId, _bookZipFileTemp.Path);
+								var task = Task.Run(async () => await issueSubmission.AttachFileToExistingIssueAsync(issueId, _bookZipFileTemp.Path));
+								var attached = task.Result;
+								if (!attached)
+								{
+									Debug.WriteLine("Error attaching the book zip file, but no exception thrown?");
+								}
 							}
 							catch (Exception error)
 							{
@@ -279,8 +287,10 @@ namespace Bloom.web.controllers
 						var screenshot = new Bitmap(bounds.Width, bounds.Height);
 						using (var g = Graphics.FromImage(screenshot))
 						{
-							g.CopyFromScreen(controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)), Point.Empty,
-								bounds.Size);
+							if (controlForScreenshotting.Parent == null)
+								g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, bounds.Size);	// bounds already in screen coords
+							else
+								g.CopyFromScreen(controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)), Point.Empty, bounds.Size);
 						}
 
 						_screenshotTempFile = TempFile.WithFilename(ScreenshotName);

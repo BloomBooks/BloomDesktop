@@ -1870,6 +1870,25 @@ namespace Bloom.Book
 			return result;
 		}
 
+		/// Return all the languages we should currently offer to include when publishing this book.
+		public Dictionary<string, bool> AllPublishableLanguages(bool countXmatter = false)
+		{
+			var result = AllLanguages(countXmatter);
+			// For comical books, we only publish a single language. It's not currently feasible to
+			// allow the reader to switch language in a Comical book, because typically that requires
+			// adjusting the positions of the bubbles, and we don't yet support having more than one
+			// set of bubble locations in a single book. See BL-7912 for some ideas on how we might
+			// eventually improve this. In the meantime, switching language would have bad effects,
+			// and if you can't switch language, there's no point in the book containing more than one.
+			// Not including other languages neatly prevents switching and automatically saves the space.
+			if (OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
+			{
+				result.Clear();
+				result[CollectionSettings.Language1Iso639Code] = true;
+			}
+			return result;
+		}
+
 		private bool IsLanguageWanted(XmlElement parent, string lang)
 		{
 			var defaultLangs = parent.GetAttribute("data-default-languages");

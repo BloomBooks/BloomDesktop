@@ -114,6 +114,9 @@ namespace Bloom.CollectionTab
 		//   only show "Open Folder on Disk"
 		private void _bookContextMenu_Opening(object sender, CancelEventArgs e)
 		{
+			_leveledReaderMenuItem.Checked = _model.IsBookLeveled;
+			_decodableReaderMenuItem.Checked = _model.IsBookDecodable;
+
 			var btn = (sender as ContextMenuStrip).SourceControl as Button;
 			if (btn == null)
 			{
@@ -1355,6 +1358,16 @@ namespace Bloom.CollectionTab
 				SelectBook(bookInfo);
 				HighlightBookButtonAndShowContextMenuButton(bookInfo);
 			}
+		}
+
+		private void _leveledReaderMenuItem_Click(object sender, EventArgs e)
+		{
+			_model.SetIsBookLeveled(!_model.IsBookLeveled);
+		}
+
+		private void _decodableReaderMenuItem_Click(object sender, EventArgs e)
+		{
+			_model.SetIsBookDecodable(!_model.IsBookDecodable);
 		}
 	}
 
