@@ -75,7 +75,12 @@ const pageIdToRefreshMap = new Map<string, () => void>();
 
 const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
     const [realPageList, setRealPageList] = useState<IPage[]>([]);
+    // a value to be bumped to force a reload of page content when the websocket detects
+    // a request for this.
     const [reloadValue, setReloadValue] = useState(0);
+    // a value to be bumped to force the pages to be reset to their original positions
+    // when the websocket detects a request for this.
+    const [resetValue, setResetValue] = useState(1);
     const [twoColumns, setTwoColumns] = useState(true);
 
     const [selectedPageId, setSelectedPageId] = useState("");
@@ -119,6 +124,15 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                     // when we set up this function. Bumping this number triggers
                     // re-running a useEffect.
                     setReloadValue(oldReloadValue => oldReloadValue + 1);
+                    break;
+                case "pageListNeedsReset":
+                    // Here we want to force a re-render to put the objects back in
+                    // their 'original' positions. That is difficult since nothing
+                    // has changed in the data we send to the react grid component, and
+                    // it is designed NOT to re-render when its props don't change, so
+                    // that dragged positions are not too easily lost. See the trick
+                    // below that uses resetValue for something we don't care about.
+                    setResetValue(oldResetValue => oldResetValue + 1);
                     break;
                 case "stopListening":
                     WebSocketManager.closeSocket(kWebsocketContext);
@@ -183,6 +197,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                     <LazyLoad
                         height={rowHeight}
                         scrollContainer="#pageGridWrapper"
+                        resize={true} // expand lazy elements as needed when container resizes
                     >
                         <PageThumbnail
                             page={pageContent}
@@ -239,6 +254,13 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             y: Math.floor(index / 2),
             w: 1,
             h: 1,
+            // We don't ever mess with widths other than 1, so maxW is insignificant.
+            // However, passing it as resetValue means that when we change resetValue,
+            // the react-grid component detects that we are passing in a differnt layout,
+            // even though none of the props we care about has changed. This forces
+            // the re-render we need when forcing objects back to their original positions
+            // (e.g., after a forbidden drag).
+            maxW: resetValue,
             draggable // todo: not working.
         };
     });
