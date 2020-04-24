@@ -1401,65 +1401,42 @@ describe("audio recording tests", () => {
     });
 
     it("isRecordableDiv works", () => {
-        const includeCheckForText: boolean = true;
-        let includeCheckForVisibility: boolean = false;
-
         const recording = new AudioRecording();
 
         let elem = document.createElement("div");
-
+        document.body.appendChild(elem);
         elem.classList.add("bloom-editable");
-        expect(
-            recording.isRecordableDiv(
-                elem,
-                includeCheckForText,
-                includeCheckForVisibility
-            )
-        ).toBe(false, "Case 1A: no text");
+        expect(recording.isRecordableDiv(elem)).toBe(false, "Case 1A: no text");
+
         elem.appendChild(document.createTextNode("Hello world"));
-        expect(
-            recording.isRecordableDiv(
-                elem,
-                includeCheckForText,
-                includeCheckForVisibility
-            )
-        ).toBe(true, "Case 1B: text");
+        expect(recording.isRecordableDiv(elem)).toBe(true, "Case 1B: text");
 
         const parent = document.createElement("div");
+        document.body.appendChild(parent);
         parent.classList.add("bloom-noAudio");
         parent.appendChild(elem);
-        expect(
-            recording.isRecordableDiv(
-                elem,
-                includeCheckForText,
-                includeCheckForVisibility
-            )
-        ).toBe(false, "Case 2: parent is no-audio");
+        expect(recording.isRecordableDiv(elem)).toBe(
+            false,
+            "Case 2: parent is no-audio"
+        );
 
         elem = document.createElement("div");
+        document.body.appendChild(elem);
         elem.appendChild(document.createTextNode("Layout: Basic Picture"));
-        expect(
-            recording.isRecordableDiv(
-                elem,
-                includeCheckForText,
-                includeCheckForVisibility
-            )
-        ).toBe(false, "Case 3: not recordable (no bloom-editable class)");
+        expect(recording.isRecordableDiv(elem)).toBe(
+            false,
+            "Case 3: not recordable (no bloom-editable class)"
+        );
 
-        // FYI... the :visible selector never seemed to select this (possibly an artifact of test environment),
-        //    even after attempting to setup style.height and style.display. So this test probably always return true
         elem = document.createElement("div");
+        document.body.appendChild(elem);
         elem.style.display = "none";
         elem.classList.add("bloom-editable");
         elem.appendChild(document.createTextNode("Hello world"));
-        includeCheckForVisibility = true;
-        expect(
-            recording.isRecordableDiv(
-                elem,
-                includeCheckForText,
-                includeCheckForVisibility
-            )
-        ).toBe(false, "Case 4: Element not visible");
+        expect(recording.isRecordableDiv(elem)).toBe(
+            false,
+            "Case 4: Element not visible"
+        );
     });
 
     it("getCurrentText works", () => {

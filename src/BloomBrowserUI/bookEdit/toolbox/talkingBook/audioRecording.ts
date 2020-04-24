@@ -544,11 +544,7 @@ export default class AudioRecording {
     }
 
     // Corresponds to getRecordableDivs() but only applies the check to the current element
-    public isRecordableDiv(
-        element: Element | null,
-        includeCheckForText: boolean = true,
-        includeCheckForVisibility: boolean = true
-    ): boolean {
+    public isRecordableDiv(element: Element | null): boolean {
         if (!element) {
             return false;
         }
@@ -564,13 +560,10 @@ export default class AudioRecording {
                 return false;
             }
 
-            if (includeCheckForVisibility && this.isNotVisible(element)) {
+            if (this.isNotVisible(element)) {
                 return false;
             }
 
-            if (!includeCheckForText) {
-                return true;
-            }
             return this.stringToSentences(element!.innerHTML).some(frag => {
                 return this.isRecordable(frag);
             });

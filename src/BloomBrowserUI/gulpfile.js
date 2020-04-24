@@ -382,6 +382,17 @@ gulp.task(
     )
 );
 
+// Skip branding and l10n tasks
+gulp.task(
+    "build-short",
+    gulp.series(
+        "clean",
+        "copy",
+        gulp.parallel("less", "pug"),
+        gulp.parallel("webpack")
+    )
+);
+
 gulp.task(
     //Should generally match default, with just those changes needed for a production
     // build.
