@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -195,8 +195,8 @@
     <Reference Include="NAudio">
       <HintPath>..\..\lib\dotnet\NAudio.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Core, Version=2.12.0.817, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\NuGet.Core.2.12.0\lib\net40-Client\NuGet.Core.dll</HintPath>
@@ -300,11 +300,12 @@
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
     </Reference>
+    <Reference Include="YouTrackSharp, Version=2.0.30.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\YouTrackSharp.dll</HintPath>
+    </Reference>
     <Reference Include="DialogAdapters">
       <HintPath>..\..\packages\DialogAdapters.0.1.4.30000\lib\net45\DialogAdapters.dll</HintPath>
-    </Reference>
-    <Reference Include="YouTrackSharp, Version=2020.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\YouTrackSharp.2020.1.0\lib\netstandard2.0\YouTrackSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
