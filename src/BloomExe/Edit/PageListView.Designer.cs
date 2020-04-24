@@ -74,7 +74,6 @@
 			this._L10NSharpExtender.SetLocalizingId(this._thumbNailList, "WebThumbNailList");
 			this._thumbNailList.Location = new System.Drawing.Point(0, 20);
 			this._thumbNailList.Name = "_thumbNailList";
-			this._thumbNailList.PreferPageNumbers = false;
 			this._thumbNailList.RelocatePageEvent = null;
 			this._thumbNailList.Size = new System.Drawing.Size(137, 259);
 			this._thumbNailList.TabIndex = 4;

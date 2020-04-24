@@ -245,7 +245,12 @@ namespace Bloom.Publish.Android
 			foreach (var editableElt in dom.SafeSelectNodes("//div[@contenteditable]").Cast<XmlElement>())
 				editableElt.RemoveAttribute("contenteditable");
 
-			foreach (var tabIndexDiv in dom.SafeSelectNodes("//div[@tabindex]").Cast<XmlElement>())
+			// For some reason Bloom adds tabindex="0" to bloom-editables and for some reason we remove them
+			// when we go to publish (neither reason are clear to me; "saving space" for the latter?). In any case,
+			// we need to keep the tabindex on translationGroups so we preserve audio playback order.
+			const string tabindexXpath =
+				"//div[@tabindex and not(contains(concat(' ', @class, ' '), ' bloom-translationGroup '))]";
+			foreach (var tabIndexDiv in dom.SafeSelectNodes(tabindexXpath).Cast<XmlElement>())
 				tabIndexDiv.RemoveAttribute("tabindex");
 		}
 

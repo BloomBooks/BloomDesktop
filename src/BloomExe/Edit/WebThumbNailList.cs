@@ -12,6 +12,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Api;
 using Bloom.MiscUI;
+using Bloom.web;
 using Gecko;
 using SIL.Windows.Forms.Reporting;
 using SIL.Xml;
@@ -21,23 +22,23 @@ using SIL.Reporting;
 
 namespace Bloom.Edit
 {
+	/// <summary>
+	/// Displays a list page thumbnails (the left column in Edit mode) using a separate Browser configured by
+	/// pageThumbnailList.pug to load the React component specified in pageThumbnailList.tsx.
+	/// The code here is tightly coupled to the code in pageThumbnailList.tsx and its dependencies,
+	/// and also to the code in PageListApi which supports various callbacks to C# from the JS.
+	/// Todo: rename this PageThumbnailList (but in another PR, with no other changes).
+	/// </summary>
 	public partial class WebThumbNailList : UserControl
 	{
 		public HtmlThumbNailer Thumbnailer;
 		public event EventHandler PageSelectedChanged;
 		private Bloom.Browser _browser;
 		internal EditingModel Model;
-		private int _verticalScrollDistance;
 		private static string _thumbnailInterval;
-		private string _baseForRelativePaths;
 
 		// Store this so we don't have to reload the thing from disk everytime we refresh the screen.
 		private readonly string _baseHtml;
-
-		/// <summary>
-		/// Contains all the IPage objects currently displayed in the grid, keyed on "page-" + IdGuid.
-		/// </summary>
-		private readonly Dictionary<string, IPage> _pageMap = new Dictionary<string, IPage>();
 		private List<IPage> _pages;
 		private bool _usingTwoColumns;
 		/// <summary>
@@ -45,18 +46,29 @@ namespace Bloom.Edit
 		/// </summary>
 		private const string GridItemClass = "gridItem";
 		private const string PageContainerClass = "pageContainer";
-		private const string InvisbleThumbClass = "invisibleThumbnailCover";
+
+		// intended to be private except for initialization by PageListView
+		internal PageListApi PageListApi
+		{
+			get => _pageListApi;
+			set
+			{
+				_pageListApi = value;
+				_pageListApi.PageList = this;
+			}
+		}
+
+		internal BloomWebSocketServer WebSocketServer { get; set; }
 
 		internal class MenuItemSpec
 		{
 			public string Label;
-			public Func<IPage, bool> EnableFunction;
-			public Action<IPage> ExecuteCommand;
+			public Func<IPage, bool> EnableFunction; // called to determine whether the item should be enabled.
+			public Action<IPage> ExecuteCommand; // called when the item is chosen to perform the action.
 		}
 
-		// A list of menu items that should be in both the web browser's right-click menu and
-		// the one we show ourselves when the arrow is clicked. The second item in the tuple
-		// determines whether the item should be enabled; the third performs the action.
+		// A list of menu items that should be in both the web browser'movedPageIdAndNewIndex right-click menu and
+		// the one we show ourselves when the arrow is clicked.
 		internal List<MenuItemSpec> ContextMenuItems { get; set; }
 
 		public WebThumbNailList()
@@ -109,14 +121,9 @@ namespace Bloom.Edit
 			set { _browser.ContextMenuProvider = value; }
 		}
 
-		protected bool ReallyDesignMode
-		{
-			get
-			{
-				return (base.DesignMode || GetService(typeof(IDesignerHost)) != null) ||
-					(LicenseManager.UsageMode == LicenseUsageMode.Designtime);
-			}
-		}
+		protected bool ReallyDesignMode =>
+			(base.DesignMode || GetService(typeof(IDesignerHost)) != null) ||
+			(LicenseManager.UsageMode == LicenseUsageMode.Designtime);
 
 		private void InvokePageSelectedChanged(IPage page)
 		{
@@ -146,20 +153,7 @@ namespace Bloom.Edit
 			}
 		}
 
-		public bool PreferPageNumbers { get; set; }
-
 		public RelocatePageEvent RelocatePageEvent { get; set; }
-		public void EmptyThumbnailCache()
-		{
-
-		}
-
-		public void SetPageInsertionPoint(IPage determinePageWhichWouldPrecedeNextInsertion)
-		{
-
-		}
-
-		private IPage _selectedPage;
 
 		public void SelectPage(IPage page)
 		{
@@ -171,28 +165,11 @@ namespace Bloom.Edit
 
 		private void SelectPageInternal(IPage page)
 		{
-			if (_selectedPage != null && _selectedPage != page)
+			if (PageListApi != null && PageListApi.SelectedPage != page)
 			{
-				var oldGridElt = GetGridElementForPage(_selectedPage);
-				if (oldGridElt != null)
-				{
-					var oldClassContent = oldGridElt.GetAttribute("class");
-					oldGridElt.SetAttribute("class", oldClassContent.Replace(" gridSelected", ""));
-				}
+				PageListApi.SelectedPage = page;
+				WebSocketServer.SendString("pageThumbnailList", "selecting", page.Id);
 			}
-			_selectedPage = page;
-			if (page == null)
-				return;
-			var gridElt = GetGridElementForPage(page);
-			if (gridElt == null)
-				return; // Can't find it yet, will try again after we next build pages.
-			var classContent = gridElt.GetAttribute("class");
-			if (classContent.Contains("gridSelected"))
-				return;
-			gridElt.SetAttribute("class", classContent + " gridSelected");
-			var menuElt = GetElementForMenuHolder();
-			menuElt.ParentElement.RemoveChild(menuElt);
-			gridElt.AppendChild(menuElt);
 		}
 
 		string ColorToHtmlCode(Color color)
@@ -217,16 +194,10 @@ namespace Bloom.Edit
 
 		private void OnPaneContentsChanging(bool hasPages)
 		{
-			RemoveThumbnailListeners();
-			// This check avoids a javascript error where "'stopListeningForSave' is not a function."
-			if (hasPages)
-			{
-				// We get confusing Javascript errors if the websocket made for the previous version of this page
-				// is still listening after the browser has navigated away to a new version of the page.
-				// This used to be part of RemoveThumbnailListeners(), but that function is used elsewhere such that
-				// we lost the Saving... toast functionality.
-				_browser.RunJavaScript("if (typeof FrameExports !== 'undefined') {FrameExports.stopListeningForSave();}");
-			}
+			// We try to prevent some spurious javascript errors by shutting down the websocket listener before
+			// navigating to the new root page. This may not be entirely reliable as there is a race
+			// condition between the navigation request and the reception of the stopListening message.
+			WebSocketServer.SendString("pageThumbnailList", "stopListening", "");
 		}
 
 		public void UpdateAllThumbnails()
@@ -251,20 +222,42 @@ namespace Bloom.Edit
 
 		private List<IPage> UpdateItemsInternal(IEnumerable<IPage> pages)
 		{
-			OnPaneContentsChanging(pages.Any());
-			var result = new List<IPage>();
-			if (pages.FirstOrDefault(p => p.Book != null) == null)
+			var result = pages.ToList();
+			// When it'movedPageIdAndNewIndex safe (we're not changing books etc), just send pageListNeedsRefresh to the web socket
+			// and return result. (We need to skip(1) for the placeholder to get a meaningful book comparison)
+			if (_pages != null && _pages.Skip(1).FirstOrDefault()?.Book == pages.Skip(1).FirstOrDefault()?.Book)
 			{
-				_browser.Navigate(@"about:blank", false); // no pages, we just want a blank screen, if anything.
+				WebSocketServer.SendString("pageThumbnailList", "pageListNeedsRefresh", "");
 				return result;
 			}
+			OnPaneContentsChanging(result.Any());
 
-			// We can't use 'RoomForTwoColumns' in the ctor (where we set _baseHtml),
-			// because its value isn't correct at that point.
+			if (result.FirstOrDefault(p => p.Book != null) == null)
+			{
+				_browser.Navigate(@"about:blank", false); // no pages, we just want a blank screen, if anything.
+				return new List<IPage>();
+			}
 			_usingTwoColumns = RoomForTwoColumns;
-			var htmlText = _baseHtml;
-			if (!RoomForTwoColumns)
-				htmlText = htmlText.Replace("columns: 4", "columns: 2").Replace("<div class=\"gridItem placeholder\" id=\"placeholder\"></div>", "");
+			var sizeClass = result.Count > 1
+				? Book.Layout.FromPage(result[1].GetDivNodeForThisPage(), Book.Layout.A5Portrait).SizeAndOrientation
+					.ClassName
+				: "A5Portrait";
+
+			// Somehow, the React code needs to know the page size, mainly so it can put the right class on
+			// the pageContainer element in pageThumbnail.tsx.
+			// - It could get it by parsing the HTML page content, but that'movedPageIdAndNewIndex clumsy and also really too late:
+			//   the pages are drawn empty before the page content is ever retrieved.
+			// - we can't use the class on the page element because it is inside the pageContainer we need to affect
+			// - we could put a sizeClass on the body or some other higher-level element, and rewrite the CSS
+			//   rules to look for pageContainer INSIDE a certain page class. But this seems risky.
+			//   Our expectation is that this class is applied to a page-level element. We don't want to
+			//   accidentally invoke some rule that makes the whole preview pane A5Portrait-shaped.
+			//   It also violates all our expectations, and forces us to do counter-intuitive things
+			//   like making pageContainer a certain size if it is 'inside' something that is A5Portrait.
+			// So, I ended up putting a data-pageSize attribute on the body element, and having the
+			// code that initializes React look for it and pass pageSize to the root React element
+			// as it should be, a property.
+			var htmlText = _baseHtml.Replace("data-pageSize=\"A5Portrait\"", $"data-pageSize=\"{sizeClass}\"");
 
 			// We will end up navigating to pageListDom
 			var pageListDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(htmlText));
@@ -273,117 +266,11 @@ namespace Bloom.Edit
 				OptimizeForLinux(pageListDom);
 
 			pageListDom = Model.CurrentBook.GetHtmlDomReadyToAddPages(pageListDom);
-			var pageDoc = pageListDom.RawDom;
-
-			var gridlyParent = SetupGridlyParent(pageDoc);
-
-			var pageNumber = 0;
-			_pageMap.Clear();
-			foreach (var page in pages)
-			{
-				var pageElement = page.GetDivNodeForThisPage();
-				if (pageElement == null)
-					continue; // or crash? How can this happen?
-				result.Add(page);
-				var layoutCssClass = GetLayoutCssClass(pageElement);
-				var pageElementForThumbnail = CreatePageElementForThumbnail(pageDoc, pageElement, layoutCssClass);
-
-				var gridId = GridId(page);
-				var cellDiv = CreatePageGridWrapper(pageDoc, gridId);
-				_pageMap.Add(gridId, page);
-				gridlyParent.AppendChild(cellDiv);
-
-				var pageContainer = WrapPageAndAddInvisibleCover(pageDoc, pageElementForThumbnail, layoutCssClass);
-				cellDiv.AppendChild(pageContainer);
-
-				pageNumber = AddCaptionToCell(pageDoc, cellDiv, page, pageNumber);
-			} // end pages foreach
 
 			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
-			// Save the scroll position of the thumbnail list to restore in WebBrowser_DocumentCompleted.
-			// Note that the position we want is NOT _browser.VerticalScrollDistance (as in previous code),
-			// since the actual list of pages is no longer the whole content of this browser; the
-			// page controls are at the bottom and don't scroll. So we need the scroll position of
-			// the element that overflows and scrolls.
-			// it's awkward that we have to convert to a string and back, but the current version of
-			// RunJavaScript does not support returning anything but strings.
-			// (The TryParse is probably not necessary...in an early version of this code I was getting
-			// nulls back sometimes, it may no longer be possible.)
-			int.TryParse(_browser.RunJavaScript("(document.getElementById('pageGridWrapper')) ? document.getElementById('pageGridWrapper').scrollTop.toString() : '0'"), out _verticalScrollDistance);
-			_baseForRelativePaths = pageListDom.BaseForRelativePaths;
+
 			_browser.Navigate(pageListDom, source:BloomServer.SimulatedPageFileSource.Pagelist);
-			return result;
-		}
-
-		private static XmlElement CreatePageElementForThumbnail(XmlDocument pageDoc, XmlNode pageElement,
-			string layoutCssClass)
-		{
-			XmlElement pageElementForThumbnail;
-			if (!TroubleShooterDialog.MakeEmptyPageThumbnails)
-			{
-				pageElementForThumbnail = pageDoc.ImportNode(pageElement, true) as XmlElement;
-
-				// BL-1112: Reduce size of images in page thumbnails.
-				// We are setting the src to empty so that we can use JavaScript to request the thumbnails
-				// in a controlled manner that should reduce the likelihood of not receiving the image quickly
-				// enough and displaying the alt text rather than the image.
-				DelayAllImageNodes(pageElementForThumbnail);
-			}
-			else
-			{
-				// Just make a minimal placeholder to get the white border.
-				pageElementForThumbnail = pageDoc.CreateElement("div");
-				var pageClasses = "bloom-page";
-				// The page needs to have one of the classes like A4Portrait or it will have zero size and vanish.
-				if (!string.IsNullOrEmpty(layoutCssClass))
-					pageClasses += " " + layoutCssClass;
-				pageElementForThumbnail.SetAttribute("class", pageClasses);
-			}
-
-			return pageElementForThumbnail;
-		}
-
-		private static int AddCaptionToCell(XmlDocument pageDoc, XmlNode cellDiv, IPage page, int pageNumber)
-		{
-			var captionDiv = pageDoc.CreateElement("div");
-			captionDiv.SetAttribute("class", "thumbnailCaption");
-			cellDiv.AppendChild(captionDiv);
-			string captionI18nId;
-			var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber, out captionI18nId);
-			if (!string.IsNullOrEmpty(captionOrPageNumber))
-				captionDiv.InnerText = I18NApi.GetTranslationDefaultMayNotBeEnglish(captionI18nId, captionOrPageNumber);
-			return pageNumber;
-		}
-
-		private static XmlElement WrapPageAndAddInvisibleCover(XmlDocument pageDoc, XmlNode pageElementForThumbnail,
-			string layoutCssClass)
-		{
-			// We wrap our incredible-shrinking page in a plain 'ol div so that we
-			// have something to give a border to when this page is selected
-			var pageContainer = pageDoc.CreateElement("div");
-			pageContainer.SetAttribute("class", PageContainerClass);
-			if (pageElementForThumbnail != null)
-			{
-				pageContainer.AppendChild(pageElementForThumbnail);
-			}
-
-			// We need an invisible div covering our pageContainer, so that the user can't actually click
-			// on the underlying "incredible-shrinking page".
-			var invisibleCover = pageDoc.CreateElement("div");
-			invisibleCover.SetAttribute("class", InvisbleThumbClass);
-			pageContainer.AppendChild(invisibleCover);
-
-			// And here it gets fragile (or not).
-			// The nature of how we're doing the thumbnails (relying on scaling) seems to mess up
-			// the browser's normal ability to assign a width to the parent div. So our parent
-			// here, .pageContainer, doesn't grow with the size of its child. Sigh. So for the
-			// moment, we assign appropriate sizes, by hand. We rely on c# code to add these
-			// classes, since we can't write a rule in css3 that peeks into a child attribute.
-
-			if (!string.IsNullOrEmpty(layoutCssClass))
-				pageContainer.SetAttribute("class", "pageContainer " + layoutCssClass);
-
-			return pageContainer;
+			return result.ToList();
 		}
 
 		private static void OptimizeForLinux(HtmlDom pageListDom)
@@ -395,118 +282,20 @@ namespace Bloom.Edit
 			pageListDom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
 		}
 
-		private static string GetLayoutCssClass(XmlElement pageElement)
-		{
-			var pageClasses = pageElement.GetStringAttribute("class").Split(new[] { ' ' });
-			return pageClasses.FirstOrDefault(c => c.ToLowerInvariant().EndsWith("portrait") || c.ToLower().EndsWith("landscape"));
-		}
-
-		private static XmlNode SetupGridlyParent(XmlDocument pageDoc)
-		{
-			var body = pageDoc.GetElementsByTagName("body")[0];
-
-			// set interval based on physical RAM
-			var intervalAttrib = pageDoc.CreateAttribute("data-thumbnail-interval");
-			intervalAttrib.Value = _thumbnailInterval;
-			body.Attributes?.Append(intervalAttrib);
-
-			return body.SelectSingleNode("//*[@id='pageGrid']");
-		}
-
-		private static XmlElement CreatePageGridWrapper(XmlDocument pageDoc, string gridId)
-		{
-			var cellDiv = pageDoc.CreateElement("div");
-			cellDiv.SetAttribute("class", GridItemClass);
-			cellDiv.SetAttribute("id", gridId);
-			return cellDiv;
-		}
-
-		private static void DelayAllImageNodes(XmlElement pageElementForThumbnail)
-		{
-			var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(pageElementForThumbnail);
-			if (imgNodes != null)
-			{
-				foreach (XmlElement imgNode in imgNodes)
-				{
-					var imageElementUrl = HtmlDom.GetImageElementUrl(imgNode);
-					imgNode.SetAttribute("thumb-src", imageElementUrl.PathOnly.UrlEncoded + imageElementUrl.QueryOnly.NotEncoded);
-					HtmlDom.SetImageElementUrl(new ElementProxy(imgNode), UrlPathString.CreateFromUrlEncodedString(""));
-				}
-			}
-		}
-
-		private static void MarkImageNodesForThumbnail(XmlElement pageElementForThumbnail)
-		{
-			var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(pageElementForThumbnail);
-			if (imgNodes != null)
-			{
-				foreach (XmlElement imgNode in imgNodes)
-				{
-					//We can't handle doing anything special with these /api/branding/ images yet, they get mangled.
-					var imageElementUrl = HtmlDom.GetImageElementUrl(imgNode);
-					if(imageElementUrl.NotEncoded.Contains("/api/"))
-						continue;
-
-					var filename = imageElementUrl.PathOnly.UrlEncoded;
-					if(!string.IsNullOrWhiteSpace(filename))
-					{
-						var url = filename + "?thumbnail=1";
-						var query = imageElementUrl.QueryOnly;
-						if (query.NotEncoded.Length > 0)
-						{
-							// Already has query, add another parameter. (e.g.: at one point we used optional=true for branding images).
-							// It's important that the query be not encoded, otherwise the %3f for question mark
-							// gets interpreted as part of the filename.
-							url = filename + query.NotEncoded + "&thumbnail=1";
-						}
-						// It's not strictly true that url here is unencoded. In fact it contains a file path that IS
-						// encoded. But also a query that isn't. So we need to treat it as unencoded.
-						HtmlDom.SetImageElementUrl(new ElementProxy(imgNode), UrlPathString.CreateFromUnencodedString(url));
-					}
-				}
-			}
-		}
-
-		private static string GridId(IPage page)
-		{
-			return "page-" + page.Id;
-		}
-
 		void WebBrowser_DocumentCompleted(object sender, Gecko.Events.GeckoDocumentCompletedEventArgs e)
 		{
-			AddThumbnailListeners();
-			SelectPage(_selectedPage);
-			// Since we always put this element in and the document is supposed to be completed I don't see how this can not find it,
-			// but it happens, so adding defensive code...
-			_browser.RunJavaScript("if (document.getElementById('pageGridWrapper')) {document.getElementById('pageGridWrapper').scrollTop =" + _verticalScrollDistance + ";}");
+			SelectPage(PageListApi?.SelectedPage);
 		}
 
-		private void AddThumbnailListeners()
+		internal void PageClicked(IPage page)
 		{
-			_browser.AddMessageEventListener("gridClick", ItemClick);
-			_browser.AddMessageEventListener("gridReordered", GridReordered);
-			_browser.AddMessageEventListener("menuClicked", MenuClick);
+			InvokePageSelectedChanged(page);
 		}
 
-		private void RemoveThumbnailListeners()
+		internal void MenuClicked(IPage page)
 		{
-			_browser.RemoveMessageEventListener("gridClick");
-			_browser.RemoveMessageEventListener("gridReordered");
-			_browser.RemoveMessageEventListener("menuClicked");
-		}
-
-		private void ItemClick(string s)
-		{
-			IPage page;
-			if (_pageMap.TryGetValue(s, out page))
-				InvokePageSelectedChanged(page);
-		}
-
-		private void MenuClick(string pageId)
-		{
-			IPage page;
 			var menu = new ContextMenuStrip();
-			if (!_pageMap.TryGetValue(pageId, out page))
+			if (page == null)
 				return;
 			foreach (var item in ContextMenuItems)
 			{
@@ -532,6 +321,8 @@ namespace Bloom.Edit
 		}
 
 		ContextMenuStrip _popupPageMenu;
+		private PageListApi _pageListApi;
+
 		private void Browser_Click(object sender, EventArgs e)
 		{
 			if (_popupPageMenu != null)
@@ -561,7 +352,8 @@ namespace Bloom.Edit
 					var className = " " + classAttr.NodeValue + " ";
 					if (className.Contains(" " + PageContainerClass + " "))
 					{
-						// Click is inside a page element: can succeed. But it's not this one.
+						// Click is inside a page element: can succeed. But we want to keep going to find the parent grid
+						// element that has the ID we're looking for.
 						gotPageElt = true;
 						continue;
 					}
@@ -570,212 +362,46 @@ namespace Bloom.Edit
 						if (!gotPageElt)
 							return null; // clicked somewhere in a grid, but not actually on the page: intended page may be ambiguous.
 						var id = elt.Attributes["id"].NodeValue;
-						IPage page;
-						_pageMap.TryGetValue(id, out page);
-						return page;
+						return PageListApi?.PageFromId(id);
 					}
 				}
 			}
 			return null;
 		}
 
-		private void GridReordered(string s)
+		// This gets invoked by Javascript (via the PageListApi) when it determines that a particular page has been moved.
+		// newIndex is the (zero-based) index that the page is moving to
+		// in the whole list of pages, including the placeholder.
+		internal void PageMoved(IPage movedPage, int newPageIndex)
 		{
-			var newSeq = new List<IPage>();
-			var keys = s.Split(new [] {','}, StringSplitOptions.RemoveEmptyEntries);
-			foreach (var key in keys)
+			// accounts for placeholder.
+			// Enhance: may not be needed in single-column mode, if we ever restore that.
+			newPageIndex--;
+			if (!movedPage.CanRelocate || !_pages[newPageIndex+1].CanRelocate)
 			{
-				IPage page;
-				if (_pageMap.TryGetValue(key, out page))
-					newSeq.Add(page);
-			}
-			Debug.Assert(newSeq.Count == _pages.Count);
-			// Now, which one moved?
-			int firstDiff = 0;
-			while (firstDiff < _pages.Count && _pages[firstDiff] == newSeq[firstDiff])
-				firstDiff++;
-			int limDiff = _pages.Count;
-			while (limDiff > firstDiff && _pages[limDiff-1] == newSeq[limDiff-1])
-				limDiff--;
-			if (firstDiff == limDiff)
-				return; // spurious notification somehow? Nothing changed.
-			// We have the subsequence that altered.
-			// Is the change legal?
-			for (int i = firstDiff; i < limDiff; i++)
-			{
-				if (!_pages[i].CanRelocate)
+				var msg = LocalizationManager.GetString("EditTab.PageList.CantMoveXMatter",
+					"That change is not allowed. Front matter and back matter pages must remain where they are.");
+				//previously had a caption that didn't add value, just more translation work
+				if (movedPage.Book.LockedDown)
 				{
-					var msg = LocalizationManager.GetString("EditTab.PageList.CantMoveXMatter",
-						"That change is not allowed. Front matter and back matter pages must remain where they are.");
-					//previously had a caption that didn't add value, just more translation work
-					if (_pages[i].Book.LockedDown)
-					{
-						msg = LocalizationManager.GetString("PageList.CantMoveWhenTranslating",
-							"Pages can not be re-ordered when you are translating a book.");
-						msg = msg + System.Environment.NewLine+ EditingView.GetInstructionsForUnlockingBook();
-					}
-					MessageBox.Show(msg);
-					UpdateItems(_pages); // reset to old state
-					return;
+					msg = LocalizationManager.GetString("PageList.CantMoveWhenTranslating",
+						"Pages can not be re-ordered when you are translating a book.");
+					msg = msg + System.Environment.NewLine + EditingView.GetInstructionsForUnlockingBook();
 				}
-			}
-			// There are two possibilities: the user dragged the item that used to be at the start to the end,
-			// or the item that used to be the end to the start.
-			IPage movedPage;
-			int newPageIndex;
-			if (_pages[firstDiff] == newSeq[limDiff - 1])
-			{
-				// Move forward
-				movedPage = _pages[firstDiff];
-				newPageIndex = limDiff - 1;
-			}
-			else
-			{
-				Debug.Assert(_pages[limDiff - 1] == newSeq[firstDiff]); // moved last page forwards
-				movedPage = _pages[limDiff - 1];
-				newPageIndex = firstDiff;
+				MessageBox.Show(msg);
+				UpdateItems(_pages); // reset to old state
+				return;
 			}
 			var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
 			RelocatePageEvent.Raise(relocatePageInfo);
-			if (relocatePageInfo.Cancel)
-				UpdateItems(_pages);
-			else
-			{
-				_pages = newSeq;
-				UpdatePageNumbers();
-				// This is only needed if left and right pages are styled differently.
-				// Unfortunately gecko does not re-apply the styles when things are re-ordered!
-				UpdateItems(_pages);
-			}
+			UpdateItems(movedPage.Book.GetPages());
+			PageSelectedChanged(movedPage, new EventArgs());
 		}
 
-		private void UpdatePageNumbers()
-		{
-			int pageNumber = 0;
-			foreach (var page in _pages)
-			{
-				var node = page.GetDivNodeForThisPage();
-				if (node == null)
-					continue; // or crash? How can this happen?
-				var gridElt = _browser.WebBrowser.Document.GetElementById(GridId(page));
-				var titleElt = GetFirstChildWithClass(gridElt, "gridTitle") as GeckoElement;
-				string captioni18nId;
-				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber, out captioni18nId);
-				var desiredText = I18NApi.GetTranslationDefaultMayNotBeEnglish(captioni18nId, captionOrPageNumber);
-				if (titleElt == null || titleElt.TextContent == desiredText)
-					continue;
-				titleElt.TextContent = desiredText;
-			}
-		}
 
 		public void UpdateThumbnailAsync(IPage page)
 		{
-			if (page.Book.Storage.NormalBaseForRelativepaths != _baseForRelativePaths)
-			{
-				// book has been renamed! can't go on with old document that pretends to be in the wrong place.
-				// Regenerate completely.
-				UpdateItems(_pages);
-				return;
-			}
-			if (TroubleShooterDialog.MakeEmptyPageThumbnails)
-				return; // no new content needed.
-			var targetClass = "bloom-page";
-			var gridElt = GetGridElementForPage(page);
-			var pageContainerElt = GetFirstChildWithClass(gridElt, PageContainerClass) as GeckoElement;
-			if (pageContainerElt == null)
-			{
-				Debug.Fail("Can't update page...missing pageContainer element");
-				return; // for end user we just won't update the thumbnail.
-			}
-			var pageElt = GetFirstChildWithClass(pageContainerElt, targetClass);
-			if (pageElt == null)
-			{
-				Debug.Fail("Can't update page...missing page element");
-				return; // for end user we just won't update the thumbnail.
-			}
-			// Remove listeners so that garbage collection resulting from the Dispose has a better
-			// chance to work (without entanglements between javascript and mozilla's DOM memory).
-			RemoveThumbnailListeners();
-			var divNodeForThisPage = page.GetDivNodeForThisPage();
-			//clone so we can modify it for thumbnailing without messing up the version we will save
-			divNodeForThisPage = divNodeForThisPage.CloneNode(true) as XmlElement;
-			MarkImageNodesForThumbnail(divNodeForThisPage);
-			GeckoNode geckoNode = null;
-			for (int i = 0; i < 3; i++)
-			{
-				// As described in BL-4690, apparently some random event occasionally causes a failure
-				// deep inside Gecko when we go to do this.
-				// We don't need to bother the user if we just have a problem updating the thumbnail in
-				// the page list.
-				// So, we log it, and try again a couple of times in case it is a transient problem.
-				// If it keeps happening, just leave the old thumbnail in place.
-				try
-				{
-					geckoNode = MakeGeckoNodeFromXmlNode(_browser.WebBrowser.Document, divNodeForThisPage);
-					break;
-				}
-				catch (InvalidComObjectException e)
-				{
-					Logger.WriteError("BL-4690 InvalidComObjectException try " + i, e);
-				}
-			}
-			if (geckoNode != null)
-			{
-				pageContainerElt.ReplaceChild(geckoNode, pageElt);
-				pageElt.Dispose();
-			}
-			AddThumbnailListeners();
-		}
-
-		private GeckoElement GetGridElementForPage(IPage page)
-		{
-			return _browser.WebBrowser.Document.GetElementById(GridId(page));
-		}
-
-		private GeckoElement GetElementForMenuHolder()
-		{
-			return _browser.WebBrowser.Document.GetElementById("menuIconHolder");
-		}
-
-		private GeckoNode GetFirstChildWithClass(GeckoElement parentElement, string targetClass)
-		{
-			// Something here can be null when adding pages very quickly, possibly because something
-			// is incompletely constructed or in the course of being disposed? So be very careful.
-			if (parentElement == null || parentElement.ChildNodes == null)
-				return null;
-			var targetWithSpaces = " " + targetClass + " "; // search for this to avoid partial word matches
-			return parentElement.ChildNodes.FirstOrDefault(e =>
-			{
-				var ge = e as GeckoElement;
-				if (ge == null)
-					return false;
-				var attr = ge.Attributes["class"];
-				if (attr == null)
-					return false;
-				var content = " " + attr.TextContent + " "; // wrapping spaces allow us to find targetWithSpaces at start or end
-				if (content == null)
-					return false;
-				return content.Contains(targetWithSpaces);
-			});
-		}
-
-		private Gecko.GeckoNode MakeGeckoNodeFromXmlNode(Gecko.GeckoDocument doc, XmlNode xmlElement)
-		{
-			var result = doc.CreateElement(xmlElement.LocalName);
-			foreach (XmlAttribute attr in xmlElement.Attributes)
-				result.SetAttribute(attr.LocalName, attr.Value);
-			foreach (var child in xmlElement.ChildNodes)
-			{
-				if (child is XmlElement)
-					result.AppendChild(MakeGeckoNodeFromXmlNode(doc, (XmlElement)child));
-				else if (child is XmlText)
-					result.AppendChild(doc.CreateTextNode(((XmlText) child).InnerText));
-				else
-				{
-					result = result;
-				}
-			}
-			return result;
+			WebSocketServer.SendString("pageThumbnailList", "pageNeedsRefresh", page.Id);
 		}
 
 		public ControlKeyEvent ControlKeyEvent

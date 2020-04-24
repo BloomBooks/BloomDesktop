@@ -218,6 +218,43 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+		private bool bookHasClass(string className)
+		{
+			return _bookSelection.CurrentSelection?.OurHtmlDom.Body.GetAttribute("class").Contains(className) ?? false;
+		}
+
+		public bool IsBookLeveled => bookHasClass("leveled-reader");
+		public bool IsBookDecodable => bookHasClass("decodable-reader");
+
+		public void SetIsBookLeveled(bool leveled)
+		{
+			if (leveled && IsBookDecodable)
+				SetIsBookDecodable(false);
+			SetBookHasClass(leveled, "leveled-reader");
+		}
+		public void SetIsBookDecodable(bool decodable)
+		{
+			if (decodable && IsBookLeveled)
+				SetIsBookLeveled(false);
+			SetBookHasClass(decodable, "decodable-reader");
+		}
+
+		private void SetBookHasClass(bool shouldHaveClass, string className)
+		{
+			var body = _bookSelection.CurrentSelection?.OurHtmlDom.Body;
+			if (body == null)
+				return;
+			var classVal = body.GetAttribute("class");
+			if (shouldHaveClass && !classVal.Contains(className))
+			{
+				body.SetAttribute("class", (classVal + " " + className).Trim());
+				_bookSelection.CurrentSelection.Save();
+			} else if (!shouldHaveClass && classVal.Contains(className))
+			{
+				body.SetAttribute("class", classVal.Replace(className, "").Trim());
+				_bookSelection.CurrentSelection.Save();
+			}
+		}
 
 		/// <summary>
 		/// All we do at this point is make a file with a ".doc" extension and open it.

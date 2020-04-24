@@ -134,6 +134,7 @@ namespace Bloom
 							typeof(KeyboardingConfigApi),
 							typeof(ImageApi),
 							typeof(MusicApi),
+							typeof(PageListApi),
 							typeof(TalkingBookApi),
 							typeof(ToolboxApi),
 							typeof(CommonApi),
@@ -325,6 +326,7 @@ namespace Bloom
 			_scope.Resolve<ImageApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ReadersApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<MusicApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<PageListApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<TalkingBookApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ToolboxApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);

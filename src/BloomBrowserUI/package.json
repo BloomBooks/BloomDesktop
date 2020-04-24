@@ -62,6 +62,7 @@
         "@types/markdown-it": "^0.0.7",
         "@types/rc-slider": "^8.6.3",
         "@types/react": "^16.8.19",
+        "@types/react-lazyload": "^2.6.0",
         "@types/react-select": "^2.0.17",
         "@types/react-table": "^6.8.1",
         "@types/react-tabs": "^2.3.1",
@@ -88,6 +89,8 @@
         "react-desktop": "^0.3.9",
         "react-dom": "16.8.6",
         "react-dropdown-tree-select": "^1.19.0",
+        "react-grid-layout": "https://github.com/JohnThomson/react-grid-layout.git#includeTypes",
+        "react-lazyload": "^2.6.5",
         "react-select": "^2.4.3",
         "react-slick": "^0.24.0",
         "react-table": "^6.10.0",
@@ -172,5 +175,8 @@
         "hooks": {
             "pre-commit": "pretty-quick --staged"
         }
+    },
+    "comments": {
+        "react-grid-layout": "We use a github dependency to pull in some changes we made that haven't yet been accepted by the author. Hopefully we can get rid of this if the changes are accepted."
     }
 }

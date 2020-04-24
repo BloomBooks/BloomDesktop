@@ -199,8 +199,8 @@
     <Reference Include="NAudio">
       <HintPath>..\..\lib\dotnet\NAudio.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Core, Version=2.12.0.817, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\NuGet.Core.2.12.0\lib\net40-Client\NuGet.Core.dll</HintPath>
@@ -272,7 +272,7 @@
     <Reference Include="System.Management" Condition="'$(OS)'=='Windows_NT'" />
     <Reference Include="System.Printing" Condition="'$(OS)'=='Windows_NT'" />
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Numerics" Condition="'$(OS)'=='Windows_NT'" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
     </Reference>
@@ -303,9 +303,8 @@
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
     </Reference>
-    <Reference Include="YouTrackSharp, Version=2.0.30.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\dotnet\YouTrackSharp.dll</HintPath>
+    <Reference Include="YouTrackSharp, Version=2020.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\YouTrackSharp.2020.1.0\lib\netstandard2.0\YouTrackSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -319,6 +318,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Book\LicenseChecker.cs" />
+    <Compile Include="Book\PhashHelper.cs" />
     <Compile Include="FatalExceptionHandler.cs" />
     <Compile Include="MiscUI\BrowserDialog.cs">
       <SubType>Form</SubType>
@@ -671,6 +671,7 @@
     <Compile Include="web\IBloomWebSocketServer.cs" />
     <Compile Include="web\controllers\MusicApi.cs" />
     <Compile Include="web\controllers\ToolboxApi.cs" />
+    <Compile Include="web\PageListApi.cs" />
     <Compile Include="web\SimulatedPageFile.cs" />
     <Compile Include="web\I18NApi.cs" />
     <Compile Include="web\ReadersApi.cs" />

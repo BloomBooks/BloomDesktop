@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using Bloom.Api;
 using Bloom.Book;
+using Bloom.web;
+using Fleck;
 using L10NSharp;
 using SIL.Reporting;
 
@@ -17,16 +20,17 @@ namespace Bloom.Edit
 		private IPage _pageWeThinkShouldBeSelected;
 
 		public PageListView(PageSelection pageSelection, RelocatePageEvent relocatePageEvent, EditingModel model,
-			HtmlThumbNailer thumbnailProvider, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent)
+			HtmlThumbNailer thumbnailProvider, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent, PageListApi pageListApi, BloomWebSocketServer webSocketServer)
 		{
 			_pageSelection = pageSelection;
 			_model = model;
 			this.Font= SystemFonts.MessageBoxFont;
 			InitializeComponent();
+			_thumbNailList.PageListApi = pageListApi;
+			_thumbNailList.WebSocketServer = webSocketServer;
 			this.BackColor = Palette.SidePanelBackgroundColor;
 
 			_thumbNailList.Thumbnailer = thumbnailProvider;
-			_thumbNailList.PreferPageNumbers = true;
 			_thumbNailList.RelocatePageEvent = relocatePageEvent;
 			_thumbNailList.PageSelectedChanged+=new EventHandler(OnPageSelectedChanged);
 			_thumbNailList.ControlKeyEvent = controlKeyEvent;
@@ -130,7 +134,9 @@ namespace Bloom.Edit
 		{
 			Logger.WriteMinorEvent("Updating thumbnail for page");
 
-			//else, it just gives us the cached copy
+			// This might be redundant, we no longer use premade images of pages in this view.
+			// However, it's just possible that when the cover page is modified we need this
+			// to get an updated cover image in the Collections view.
 			_thumbNailList.Thumbnailer.PageChanged(page.Id);
 			_thumbNailList.UpdateThumbnailAsync(page);
 		}
@@ -157,13 +163,6 @@ namespace Bloom.Edit
 			{
 				_dontForwardSelectionEvent = false;
 			}
-
-			_thumbNailList.SetPageInsertionPoint(_model.DeterminePageWhichWouldPrecedeNextInsertion());
-		}
-
-		public void EmptyThumbnailCache()
-		{
-			_thumbNailList.EmptyThumbnailCache();
 		}
 
 		public new bool Enabled

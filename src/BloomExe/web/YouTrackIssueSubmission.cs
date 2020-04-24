@@ -1,14 +1,13 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Net;
+using System.IO;
 using Bloom.web;
 using SIL.Code;
 using SIL.IO;
 using SIL.Reporting;
-using YouTrackSharp.Infrastructure;
+using YouTrackSharp;
 using YouTrackSharp.Issues;
-
 
 namespace Bloom
 {
@@ -23,9 +22,10 @@ namespace Bloom
 		// protected in case someone figures out how to test this class (use 'AUT' for tests and 'BL' for production)
 		protected string _youTrackProjectKey;
 
-		private readonly Connection _youTrackConnection = new Connection(UrlLookup.LookupUrl(UrlType.IssueTrackingSystemBackend, false, true), 0 /* BL-5500 don't specify port */, true, "youtrack");
+		private readonly BearerTokenConnection _youTrackConnection;
 		private readonly List<string> _filesToAttach;
-		private IssueManagement _issueManagement;
+		private readonly IIssuesService _issuesService;
+		private const string TokenPiece1 = @"YXV0b19yZXBvcnRfY3JlYXRvcg==.NzQtMA==.V9k0yNUN7Df5eqo4QEk5N4BBKqmEHV";
 
 		/// <summary>
 		/// A new instance should be constructed for every issue.
@@ -34,7 +34,9 @@ namespace Bloom
 		{
 			_youTrackProjectKey = projectKey;
 			_filesToAttach = new List<string>();
-			_issueManagement = null;
+			var baseUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystemBackend, false, true);
+			_youTrackConnection = new BearerTokenConnection($"https://{baseUrl}/youtrack/", $"perm:{TokenPiece1}");
+			_issuesService = _youTrackConnection.CreateIssuesService();
 		}
 
 		/// <summary>
@@ -59,36 +61,34 @@ namespace Bloom
 		/// asking them for credentials, which is just not gonna happen). So we submit with an
 		/// account we created just for this purpose, "auto_report_creator".
 		/// </summary>
-		public string SubmitToYouTrack(string summary, string description)
+		public async System.Threading.Tasks.Task<string> SubmitToYouTrackAsync(string summary, string description)
 		{
 			string youTrackIssueId = "failed";
+
 			try
 			{
-				_youTrackConnection.Authenticate("auto_report_creator", "thisIsInOpenSourceCode");
-				_issueManagement = new IssueManagement(_youTrackConnection);
-				dynamic youTrackIssue = new Issue();
-				youTrackIssue.ProjectShortName = _youTrackProjectKey;
-				youTrackIssue.Type = "Awaiting Classification";
-				youTrackIssue.Summary = summary;
-				youTrackIssue.Description = description;
-				youTrackIssueId = _issueManagement.CreateIssue(youTrackIssue);
-
-				// Now that we have an issue Id, attach any files.
-				AttachFiles(youTrackIssueId);
+				var youTrackIssue = new Issue {Summary = summary, Description = description};
+				youTrackIssue.SetField("Type", "Awaiting Classification");
+				youTrackIssueId = await _issuesService.CreateIssue(_youTrackProjectKey, youTrackIssue);
+				// Now that we have an issue Id, attach any files that were added earlier.
+				await AttachFilesAsync(youTrackIssueId);
 			}
-			catch (WebException e)
+			catch (Exception e)
 			{
-				// Some sort of internet failure
+				// Probably some sort of internet failure
 				Console.WriteLine(e);
 			}
 			return youTrackIssueId;
 		}
 
-		private void AttachFiles(string youTrackIssueId)
+		private async System.Threading.Tasks.Task AttachFilesAsync(string youTrackIssueId)
 		{
 			foreach (var filename in _filesToAttach)
 			{
-				_issueManagement.AttachFileToIssue(youTrackIssueId, filename);
+				using (var stream = new FileStream(filename, FileMode.Open))
+				{
+					await _issuesService.AttachFileToIssue(youTrackIssueId, Path.GetFileName(filename), stream);
+				}
 			}
 		}
 
@@ -97,15 +97,54 @@ namespace Bloom
 		/// </summary>
 		/// <param name="youTrackIssueId"></param>
 		/// <param name="filePath"></param>
-		public void AttachFileToExistingIssue(string youTrackIssueId, string filePath)
+		public async System.Threading.Tasks.Task<bool> AttachFileToExistingIssueAsync(string youTrackIssueId, string filePath)
 		{
-			Guard.Against(_issueManagement == null, "_issueManagement should have been created by SubmitToYouTrack()");
+			Guard.Against(_issuesService == null, "_issuesService should have been created by YouTrackIssueSubmission()");
 			if (!RobustFile.Exists(filePath))
 			{
 				Logger.WriteEvent("YouTrack issue submitter failed to attach non-existent file: " + filePath);
-				return;
+				return false;
 			}
-			_issueManagement.AttachFileToIssue(youTrackIssueId, filePath);
+			using (var stream = new FileStream(filePath, FileMode.Open))
+			{
+				await _issuesService.AttachFileToIssue(youTrackIssueId, Path.GetFileName(filePath), stream);
+			}
+			return true;
 		}
+
+#region Unit test methods
+
+		/// <summary>
+		/// Delete an issue.  Only unit test issues can be deleted: other issues are silently left in place.
+		/// </summary>
+		public async System.Threading.Tasks.Task<bool> DeleteIssueAsync(string youTrackIssueId)
+		{
+			Guard.Against(_issuesService == null, "_issuesService should have been created by YouTrackIssueSubmission()");
+			if (!youTrackIssueId.StartsWith("AUT-"))
+			{
+				return false;
+			}
+			await _issuesService.DeleteIssue(youTrackIssueId);
+			return true;
+		}
+
+		/// <summary>
+		/// Get the names of the attachments for the given issue.  Only unit test issues can be queried: other issues return null.
+		/// </summary>
+		public async System.Threading.Tasks.Task<List<string>> GetAttachmentNamesForIssue(string issueId)
+		{
+			Guard.Against(_issuesService == null, "_issuesService should have been created by YouTrackIssueSubmission()");
+			if (!issueId.StartsWith("AUT-"))
+			{
+				return null;
+			}
+			var attachments = await _issuesService.GetAttachmentsForIssue(issueId);
+			var names = new List<string>();
+			foreach (var attach in attachments)
+				names.Add(attach.Name);
+			return names;
+		}
+
+#endregion
 	}
 }

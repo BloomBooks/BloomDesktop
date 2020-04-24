@@ -14,7 +14,6 @@ using System.Web;
 using System.Windows.Forms;
 using System.Xml;
 using Shipwreck.Phash;
-using Shipwreck.Phash.Bitmaps;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
@@ -811,25 +810,12 @@ namespace Bloom.Book
 #endif
 			try
 			{
-				// Precondition: Assumes that pages were written to the HTML in the order of their page number
-
-				// Find the first picture on a content page
-				// We use the numberedPage class to determine this now
-				// You could also try data-page-number, but it's not guaranteed to use numbers like "1", "2", "3"... the numbers may be written in the language of the book (BL-8346)
-				var firstContentImageElement = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page')][contains(@class, 'numberedPage')]//div[contains(@class,'bloom-imageContainer')]/img");
-				if (firstContentImageElement != null)
+				string src = GetBestPHashImageSource();
+				if (!String.IsNullOrEmpty(src))
 				{
-					var src = firstContentImageElement.GetAttribute("src");
 					return ComputePHashOfImageSrc(src);
 				}
 				
-				// No content page images found.  Try the cover page, then give up.
-				var coverImg = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page') and @data-xmatter-page='frontCover']//div[contains(@class,'bloom-imageContainer')]/img");
-				if (coverImg != null)
-				{
-					var src = coverImg.GetAttribute("src");
-					return ComputePHashOfImageSrc(src);
-				}
 				// no images found anywhere??
 				Console.Error.WriteLine("PHash: No images found.");
 				return null;
@@ -844,32 +830,73 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Finds the image to use when computing the perceptual hash of the 1st image
+		/// </summary>
+		/// <returns></returns>
+		internal string GetBestPHashImageSource()
+		{
+			// Precondition: Assumes that pages were written to the HTML in the order of their page number
+
+			// Find the first picture on a content page
+			// We use the numberedPage class to determine this now
+			// You could also try data-page-number, but it's not guaranteed to use numbers like "1", "2", "3"... the numbers may be written in the language of the book (BL-8346)
+			var firstContentImageElement = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page')][contains(@class, 'numberedPage')]//div[contains(@class,'bloom-imageContainer')]/img");
+			if (firstContentImageElement != null)
+			{
+				var src = firstContentImageElement.GetAttribute("src");
+				return src;
+			}
+
+			// No content page images found.  Try the cover page, then give up.
+			var coverImg = OurHtmlDom.SelectSingleNode($"//div[contains(@class,'bloom-page') and @data-xmatter-page='frontCover']//div[contains(@class,'bloom-imageContainer')]/img");
+			if (coverImg != null)
+			{
+				var src = coverImg.GetAttribute("src");
+				return src;
+			}
+
+			return null;
+		}
+
+		/// <summary>
 		/// Computes the perceptual hash of the specified image
 		/// </summary>
 		/// <param name="src">The source attribute of the image. This function will apply URL-decoding on the src paramater</param>
 		/// <returns>A hexadecimal string representing the digest, or null if the digest could not be computed</returns>
 		private string ComputePHashOfImageSrc(string src)
 		{
-			if (src == "placeholder.png")
+			string decodedSrc = HttpUtility.UrlDecode(src);
+			var path = Path.Combine(FolderPath, decodedSrc);
+			return ComputePHashOfImageFullPath(path);
+		}
+
+		internal static string ComputePHashOfImageFullPath(string path)
+		{
+			string fileName = Path.GetFileName(path);
+			if (fileName.ToLowerInvariant() == "placeholder.png")
 			{
-				Console.Error.WriteLine("PHash: placeholder.png found.");
+				Console.Error.WriteLine("PHash: placeHolder.png found.");
 				return null;
 			}
-
-			var path = Path.Combine(FolderPath, HttpUtility.UrlDecode(src));
 
 			// Note: path must be URL-decoded for .Exists() to return accurate results.
 			if (RobustFile.Exists(path))
 			{
+				Bitmap bitmap = null;
 				try
 				{
-					var bitmap = (Bitmap)Image.FromFile(path);
+					bitmap = (Bitmap)Image.FromFile(path);
 					var hash = ImagePhash.ComputeDigest(bitmap.ToLuminanceImage());
 					return hash.ToString();
-				} catch
+				}
+				catch (Exception ex)
 				{
-					Console.Error.WriteLine("PHash: Exception caught.");
+					Console.Error.WriteLine("PHash: Exception caught ({0}).", ex);
 					return null;
+				}
+				finally
+				{
+					bitmap?.Dispose();
 				}
 			}
 
@@ -1030,6 +1057,23 @@ namespace Bloom.Book
 			RemoveObsoleteSoundAttributes(bookDOM);
 			BringBookInfoUpToDate(oldMetaData);
 			FixErrorsEncounteredByUsers(bookDOM);
+			AddReaderBodyClass(bookDOM);
+		}
+
+		private void AddReaderBodyClass(HtmlDom bookDom){
+			// Bloom prior to late 4.7beta had decodable and leveled reader templates without body classes, which
+			// became necessary for an SIL LEAD "ABC+" xmatter. Here we add that if we can tell the book descended
+			// from those templates, then add the required classes if they are missing.
+			const string kDecodableParentGuid = "f0434a0b-791f-408e-b6e6-ee92f0f02f2d";
+			const string kLeveledParentGuid = "ea43ce61-a752-429d-ad1a-ec282db33328";
+			if(BookInfo.BookLineage != null && BookInfo.BookLineage.Contains(kDecodableParentGuid))
+			{
+				HtmlDom.AddClassIfMissing(bookDom.Body,"decodable-reader");
+			}
+			else if(BookInfo.BookLineage != null && BookInfo.BookLineage.Contains(kLeveledParentGuid))
+			{
+				HtmlDom.AddClassIfMissing(bookDom.Body,"leveled-reader");
+			}
 		}
 
 		// Some books got corrupted with CKE temp data, possibly before we prevented this happening when
@@ -1890,7 +1934,26 @@ namespace Bloom.Book
 			}
 			return result;
 		}
-		
+
+		/// Return all the languages we should currently offer to include when publishing this book.
+		public Dictionary<string, bool> AllPublishableLanguages(bool countXmatter = false)
+		{
+			var result = AllLanguages(countXmatter);
+			// For comical books, we only publish a single language. It's not currently feasible to
+			// allow the reader to switch language in a Comical book, because typically that requires
+			// adjusting the positions of the bubbles, and we don't yet support having more than one
+			// set of bubble locations in a single book. See BL-7912 for some ideas on how we might
+			// eventually improve this. In the meantime, switching language would have bad effects,
+			// and if you can't switch language, there's no point in the book containing more than one.
+			// Not including other languages neatly prevents switching and automatically saves the space.
+			if (OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
+			{
+				result.Clear();
+				result[CollectionSettings.Language1Iso639Code] = true;
+			}
+			return result;
+		}
+
 		private bool IsLanguageWanted(XmlElement parent, string lang)
 		{
 			var defaultLangs = parent.GetAttribute("data-default-languages");

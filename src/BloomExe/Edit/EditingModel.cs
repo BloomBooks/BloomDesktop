@@ -584,11 +584,11 @@ namespace Bloom.Edit
 				_inProcessOfLoading = true;
 				if (page != null)
 					_pageSelection.SelectPage(page);
-
 				if (_view != null)
 				{
 					_view.UpdatePageList(false);
 				}
+
 			}
 			finally
 			{

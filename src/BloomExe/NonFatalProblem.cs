@@ -81,7 +81,7 @@ namespace Bloom
 
 				//just convert from PassiveIf to ModalIf so that we don't have to duplicate code
 				var passive = (ModalIf)ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
-				var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
+				var formForSynchronizing = Application.OpenForms.Cast<Form>().LastOrDefault();
 				if (formForSynchronizing is ProgressDialog)
 				{
 					// Targetting ProgressDialog doesn't work so well for toasts, since the dialog tends
@@ -140,7 +140,9 @@ namespace Bloom
 
 		private static void ShowToast(string shortUserLevelMessage, Exception exception, string fullDetailedMessage, bool showSendReport = true)
 		{
-			var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
+			var formForSynchronizing = Application.OpenForms.Cast<Form>().LastOrDefault();
+			if (formForSynchronizing == null)
+				return; // can't safely show a toast, may be on wrong thread.
 			if (formForSynchronizing.InvokeRequired)
 			{
 				formForSynchronizing.BeginInvoke(new Action(() =>
