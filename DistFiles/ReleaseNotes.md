@@ -1,4 +1,4 @@
-# 4.7 (Currently in Beta-test)
+# 4.7
 
 ## Edit Tab
 
@@ -6,7 +6,7 @@
 
 ⭐Comic Tool ([Feature Request](https://community.software.sil.org/t/comic-book-feature/942)). Look out world, here come beautiful comics in minority languages!
 
-_Known limitation in this release: If you turn a comic book into a Talking Book, it will play back in the reverse of the order that the bubbles were created. We will be following up with way to change the order of bubbles._
+_Known limitation in this release: If you turn a comic book into a Talking Book, it will play back in the reverse of the order that the bubbles were created. This is fixed in Bloom 4.8._
 
 _Known limitation in this release: There is not yet a way to have an exclamation bubble with a tail._
 
