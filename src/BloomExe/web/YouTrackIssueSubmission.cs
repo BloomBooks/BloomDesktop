@@ -1,14 +1,14 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
-using Bloom.web;
-using SIL.Code;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SIL.IO;
 using SIL.Reporting;
-using YouTrackSharp.Infrastructure;
-using YouTrackSharp.Issues;
-
+using HttpClient = System.Net.Http.HttpClient;
 
 namespace Bloom
 {
@@ -18,14 +18,19 @@ namespace Bloom
 	/// Exception: We don't get an issue id until we submit, so we have a way to add an attachment after submitting
 	/// so that we can name our book zip file after the issue.
 	/// </summary>
+	/// <remarks>
+	/// This has been updated to use the REST API documented for version 2020.1 of YouTrack standalone.
+	/// Unfortunately, YouTrackSharp 2020.1 does not use the current REST API in its methods, and chokes
+	/// on the long description fields that we send for new issues.  So the code here uses raw HttpClient
+	/// accesses to implement the parts of the REST API that we need to use.
+	/// </remarks>
 	public class YouTrackIssueSubmitter
 	{
-		// protected in case someone figures out how to test this class (use 'AUT' for tests and 'BL' for production)
-		protected string _youTrackProjectKey;
+		private const string TokenPiece1 = @"YXV0b19yZXBvcnRfY3JlYXRvcg==.NzQtMA==.V9k0yNUN7Df5eqo4QEk5N4BBKqmEHV";
+		private static readonly HttpClient _client = new HttpClient();
 
-		private readonly Connection _youTrackConnection = new Connection(UrlLookup.LookupUrl(UrlType.IssueTrackingSystemBackend, false, true), 0 /* BL-5500 don't specify port */, true, "youtrack");
-		private readonly List<string> _filesToAttach;
-		private IssueManagement _issueManagement;
+		private readonly string _youTrackProjectKey;
+		private readonly List<string> _filesToAttach = new List<string>();
 
 		/// <summary>
 		/// A new instance should be constructed for every issue.
@@ -33,8 +38,6 @@ namespace Bloom
 		public YouTrackIssueSubmitter(string projectKey)
 		{
 			_youTrackProjectKey = projectKey;
-			_filesToAttach = new List<string>();
-			_issueManagement = null;
 		}
 
 		/// <summary>
@@ -57,24 +60,54 @@ namespace Bloom
 		/// Using YouTrackSharp here. We can't submit
 		/// the report as if it were from this person, even if they have an account (well, not without
 		/// asking them for credentials, which is just not gonna happen). So we submit with an
-		/// account we created just for this purpose, "auto_report_creator".
+		/// account we created just for this purpose, "auto_report_creator".  (This account is the owner
+		/// of the permission token that we now use for authentication.)
 		/// </summary>
+		/// <remarks>
+		/// https://www.jetbrains.com/help/youtrack/standalone/api-howto-create-issue.html
+		/// </remarks>
 		public string SubmitToYouTrack(string summary, string description)
 		{
 			string youTrackIssueId = "failed";
 			try
 			{
-				_youTrackConnection.Authenticate("auto_report_creator", "thisIsInOpenSourceCode");
-				_issueManagement = new IssueManagement(_youTrackConnection);
-				dynamic youTrackIssue = new Issue();
-				youTrackIssue.ProjectShortName = _youTrackProjectKey;
-				youTrackIssue.Type = "Awaiting Classification";
-				youTrackIssue.Summary = summary;
-				youTrackIssue.Description = description;
-				youTrackIssueId = _issueManagement.CreateIssue(youTrackIssue);
-
-				// Now that we have an issue Id, attach any files.
-				AttachFiles(youTrackIssueId);
+				// 1. Get the numeric id of the project whose key we've been given.  This is needed for
+				//    the JSON data used in creating the new issue.
+				_client.DefaultRequestHeaders.Add("Accept", "application/json");
+				_client.DefaultRequestHeaders.Add("Authorization", $"Bearer perm:{TokenPiece1}");
+				var projectInfoString = _client.GetStringAsync($"https://issues.bloomlibrary.org/youtrack/api/admin/projects/{_youTrackProjectKey}").Result;
+				dynamic projectInfo = JsonConvert.DeserializeObject(projectInfoString);
+				projectInfo.Remove("$type");
+				// 2. Create the dynamic object to send as JSON to youtrack.
+				dynamic youTrackIssue = new JObject();
+				youTrackIssue.project = projectInfo;
+				youTrackIssue.summary = summary;
+				youTrackIssue.description = description;
+				youTrackIssue.customFields = new JArray();
+				dynamic type = new JObject();
+				type.name = "Type";
+				type.value = new JObject();
+				type.value.name = "Awaiting Classification";
+				type.value["$type"] = "EnumBundleElement";
+				type["$type"] = "SingleEnumIssueCustomField";
+				youTrackIssue.customFields.Add(type);
+				// 3. Convert the dynamic JObject to a JSON string and send it to youtrack to create
+				//    the new issue.
+				var issueJson = JsonConvert.SerializeObject(youTrackIssue);
+				HttpContent content = new StringContent(issueJson);
+				content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+				var response = _client.PostAsync(@"https://issues.bloomlibrary.org/youtrack/api/issues?fields=idReadable,id", content).Result;
+				if (response.IsSuccessStatusCode)
+				{
+					var issueSettingString = response.Content.ReadAsStringAsync().Result;
+					dynamic issueSetting = JsonConvert.DeserializeObject(issueSettingString);
+					if (issueSetting.idReadable != null)
+					{
+						youTrackIssueId = issueSetting.idReadable;
+						// Now that we have an issue Id, attach any files.
+						AttachFiles(youTrackIssueId);
+					}
+				}
 			}
 			catch (WebException e)
 			{
@@ -88,24 +121,80 @@ namespace Bloom
 		{
 			foreach (var filename in _filesToAttach)
 			{
-				_issueManagement.AttachFileToIssue(youTrackIssueId, filename);
+				AttachFileToExistingIssue(youTrackIssueId, filename);
 			}
 		}
 
 		/// <summary>
 		/// This is the only way to add a zip file of the book's contents that is named after the issue.
 		/// </summary>
-		/// <param name="youTrackIssueId"></param>
-		/// <param name="filePath"></param>
-		public void AttachFileToExistingIssue(string youTrackIssueId, string filePath)
+		/// <remarks>
+		/// https://www.jetbrains.com/help/youtrack/standalone/api-usecase-attach-files.html
+		/// </remarks>
+		public bool AttachFileToExistingIssue(string youTrackIssueId, string filePath)
 		{
-			Guard.Against(_issueManagement == null, "_issueManagement should have been created by SubmitToYouTrack()");
 			if (!RobustFile.Exists(filePath))
 			{
 				Logger.WriteEvent("YouTrack issue submitter failed to attach non-existent file: " + filePath);
-				return;
+				return false;
 			}
-			_issueManagement.AttachFileToIssue(youTrackIssueId, filePath);
+			HttpContent content = new MultipartFormDataContent
+			{
+				{ new ByteArrayContent(File.ReadAllBytes(filePath)) , Path.GetFileName(filePath)}
+			};
+			var response = _client.PostAsync($"https://issues.bloomlibrary.org/youtrack/api/issues/{youTrackIssueId}/attachments?fields=id,name", content).Result;
+			return response.IsSuccessStatusCode;
 		}
+
+		#region Unit test methods
+
+		/// <summary>
+		/// Delete an issue.  Only unit test issues can be deleted: other issues are silently left in place.
+		/// </summary>
+		/// <remarks>
+		/// https://www.jetbrains.com/help/youtrack/standalone/operations-api-issues.html#delete-Issue-method
+		/// </remarks>
+		public bool DeleteIssue(string issueId)
+		{
+			if (!issueId.StartsWith("AUT-"))
+			{
+				return false;
+			}
+			var response = _client.DeleteAsync($"https://issues.bloomlibrary.org/youtrack/api/issues/{issueId}").Result;
+			return response.IsSuccessStatusCode;
+		}
+
+		/// <summary>
+		/// Get the names of the attachments for the given issue.  Only unit test issues can be queried: other issues return null.
+		/// </summary>
+		/// <remarks>
+		/// https://www.jetbrains.com/help/youtrack/standalone/operations-api-issues.html#get-Issue-method
+		/// https://www.jetbrains.com/help/youtrack/standalone/api-entity-IssueAttachment.html
+		/// </remarks>
+		public Dictionary<string,int> GetAttachmentDataForIssue(string issueId)
+		{
+			if (!issueId.StartsWith("AUT-"))
+			{
+				return null;
+			}
+			var response = _client
+				.GetAsync(
+					$"https://issues.bloomlibrary.org/youtrack/api/issues/{issueId}?fields=idReadable,attachments(id,name,size)")
+				.Result;
+			if (!response.IsSuccessStatusCode)
+				return null;
+			var resultString  = response.Content.ReadAsStringAsync().Result;
+			dynamic result = Newtonsoft.Json.JsonConvert.DeserializeObject(resultString);
+			var filesAndSizes = new Dictionary<string,int>();
+			foreach (dynamic attach in result.attachments)
+			{
+				string name = attach.name;
+				int size = attach.size;
+				filesAndSizes.Add(name, size);
+			}
+			return filesAndSizes;
+		}
+
+		#endregion
 	}
 }
