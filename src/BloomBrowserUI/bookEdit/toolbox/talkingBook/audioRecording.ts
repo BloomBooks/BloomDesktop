@@ -278,7 +278,7 @@ export default class AudioRecording {
         if (textBoxDiv) {
             // First, attempt to determine it from the text box's explicitly specified value if possible.
             const audioRecordingModeStr = textBoxDiv.getAttribute(
-                "data-audioRecordingMode"
+                "data-audiorecordingmode"
             );
 
             const recordingMode = AudioRecording.getAudioRecordingModeFromString(
@@ -290,14 +290,14 @@ export default class AudioRecording {
         }
 
         if (
-            this.getPageDocBodyJQuery().find("[data-audioRecordingMode]")
+            this.getPageDocBodyJQuery().find("[data-audiorecordingmode]")
                 .length > 0
         ) {
             // For a text box that doesn't already have mode specified, first fallback is to make it the same as another text box on the page that does have it
             const audioRecordingModeStr: string = this.getPageDocBodyJQuery()
-                .find("[data-audioRecordingMode]")
+                .find("[data-audiorecordingmode]")
                 .first()
-                .attr("data-audioRecordingMode");
+                .attr("data-audiorecordingmode");
 
             const recordingMode = AudioRecording.getAudioRecordingModeFromString(
                 audioRecordingModeStr
@@ -502,6 +502,10 @@ export default class AudioRecording {
         );
         const recordableDivs = editableDivs.filter(elt => {
             if (this.isNotVisible(elt)) {
+                return false;
+            }
+            const transgroup = elt.closest(".bloom-translationGroup");
+            if (transgroup && transgroup.classList.contains("box-header-off")) {
                 return false;
             }
             if (!includeCheckForText) {
@@ -1809,7 +1813,7 @@ export default class AudioRecording {
 
     public persistRecordingMode(element: Element) {
         element.setAttribute(
-            "data-audioRecordingMode",
+            "data-audiorecordingmode",
             this.audioRecordingMode
         );
 
@@ -2152,9 +2156,9 @@ export default class AudioRecording {
 
         // In addition to us processing currentTextBox, also add any unprocessed divs
         const recordableDivs = this.getRecordableDivs();
-        const unprocessedRecordables = recordableDivs.filter(div => {
-            div.getAttribute("data-audioRecordingMode") === null;
-        });
+        const unprocessedRecordables = recordableDivs.filter(
+            div => div.getAttribute("data-audiorecordingmode") === null
+        );
 
         let unionedElementsToProcess: JQuery;
         if (currentTextBox) {

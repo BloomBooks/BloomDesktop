@@ -3667,26 +3667,27 @@ namespace BloomTests.Book
 		// First test one of the submethods of the PHash code
 		// How do we decide which image to proces on?
 
-		[TestCase("1")] // usual
-		[TestCase("၁")] // The number one in lang="mnw"
-		[TestCase("一")] // The number one in Chinese
-		public void GetBestPHashImageSource_CustomLanguagePageNumbers_FirstImageIsDetected(string pageNumberOne)
+		[TestCase("1", true)] // usual
+		[TestCase("1", false)]	// book in old style
+		[TestCase("၁", true)] // The number one in lang="mnw"
+		[TestCase("一", true)] // The number one in Chinese
+		public void GetBestPHashImageSource_CustomLanguagePageNumbers_FirstImageIsDetected(string pageNumberOne, bool usesSrcAttribute)
 		{
+			// Setup
+			string coverImageHtml = GetImageHtml(usesSrcAttribute, "cover%20image.jpg", "data-book='coverImage'");
+			string contentImageHtml = GetImageHtml(usesSrcAttribute, "Page%201%20Picture.jpg");
+
 			string html =
 $@"<html><head></head>
 	<body>
 		<div class='bloom-page cover'>
 			<div class='marginBox'>
-				<div class='bloom-imageContainer'>
-					<img data-book='coverImage' src='cover%20image.jpg'></img>
-                </div>
+				{coverImageHtml}
 			</div>
 		</div>
-		<div class='bloom-page numberedPage customPage bloom-combinedPage side-left A5Portrait bloom-monolingual' id='936be2e9-c379-4f4b-a5e8-db2a60f2573c' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398382;44402071-677f-4f7e-b322-f6c9f465ee88;1a1e05e6-7435-4e9c-9a52-5ceccc0320e8' lang='' data-page-number='{pageNumberOne}' data-page=''>
+		<div class='bloom-page numberedPage customPage' data-page-number='{pageNumberOne}' data-page=''>
 			<div class='marginBox'><div class='split-pane-component position-top'>
-				<div class='bloom-imageContainer'>
-					<img src='Page%201%20Picture.jpg'></img>
-                </div>
+				{contentImageHtml}
 			</div></div>
 		</div>
 	</body>
@@ -3695,15 +3696,22 @@ $@"<html><head></head>
 			_bookDom = new HtmlDom(html);
 			var book = CreateBook();
 
+			// System under test
 			string imgSource = book.GetBestPHashImageSource();
 
+			// Verification
 			Assert.That(imgSource, Is.EqualTo("Page%201%20Picture.jpg"), "Should use the picture from the 1st page, not the cover image");
 		}
 
-		[TestCase(true)]
-		[TestCase(false)]
-		public void GetBestPHashImageSource_NoImagesOnContentPages_FallbackToCoverImage(bool isAnyContentPage)
+		[TestCase(true, true)]
+		[TestCase(true, false)]
+		[TestCase(false, true)]
+		[TestCase(false, false)]
+		public void GetBestPHashImageSource_NoImagesOnContentPages_FallbackToCoverImage(bool usesSrcAttribute, bool isAnyContentPage)
 		{
+			// Setup
+			string coverImageHtml = GetImageHtml(usesSrcAttribute, "cover%20image.jpg", "data-book='coverImage'");
+
 			string contentPageHtml = "";
 			if (isAnyContentPage)
 			{
@@ -3719,9 +3727,7 @@ $@"<html><head></head>
 	<body>
 		<div class='bloom-page cover' data-xmatter-page='frontCover'>
 			<div class='marginBox'>
-				<div class='bloom-imageContainer'>
-					<img data-book='coverImage' src='cover%20image.jpg'></img>
-                </div>
+				{coverImageHtml}
 			</div>
 		</div>
 		{contentPageHtml}
@@ -3731,9 +3737,21 @@ $@"<html><head></head>
 			_bookDom = new HtmlDom(html);
 			var book = CreateBook();
 
+			// System under test
 			string imgSource = book.GetBestPHashImageSource();
 
+			// Verification
 			Assert.That(imgSource, Is.EqualTo("cover%20image.jpg"));
+		}
+
+		private static string GetImageHtml(bool usesSrcAttribute, string encodedSrc, string additionalAttribtues = "")
+		{
+			if (usesSrcAttribute)
+				// Modern style - using src attribute
+				return $"<div class='bloom-imageContainer'><img src='{encodedSrc}' {additionalAttribtues}></img></div>";
+			else
+				// old style - using background-image url
+				return $"<div class='bloom-imageContainer bloom-backgroundImage' {additionalAttribtues} style=\"background-image:url('{encodedSrc}')\"></div>";
 		}
 		#endregion
 

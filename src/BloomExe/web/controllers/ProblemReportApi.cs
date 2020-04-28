@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -104,9 +103,7 @@ namespace Bloom.web.controllers
 					string issueId;
 					try
 					{
-						var task = Task.Run(async () =>
-							await issueSubmission.SubmitToYouTrackAsync(subject, diagnosticInfo));
-						issueId = task.Result;
+						issueId = issueSubmission.SubmitToYouTrack(subject, diagnosticInfo);
 					}
 					catch (Exception e)
 					{
@@ -136,12 +133,7 @@ namespace Bloom.web.controllers
 								}
 								AddCollectionSettings();
 								_bookZipFile.Save();
-								var task = Task.Run(async () => await issueSubmission.AttachFileToExistingIssueAsync(issueId, _bookZipFileTemp.Path));
-								var attached = task.Result;
-								if (!attached)
-								{
-									Debug.WriteLine("Error attaching the book zip file, but no exception thrown?");
-								}
+								issueSubmission.AttachFileToExistingIssue(issueId, _bookZipFileTemp.Path);
 							}
 							catch (Exception error)
 							{

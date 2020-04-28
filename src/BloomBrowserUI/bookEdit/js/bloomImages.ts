@@ -10,6 +10,9 @@ import { getToolboxFrameExports } from "../editViewFrame";
 
 declare function ResetRememberedSize(element: HTMLElement);
 
+const kPlaybackOrderContainerSelector: string =
+    ".bloom-playbackOrderControlsContainer";
+
 export function cleanupImages() {
     $(".bloom-imageContainer").css("opacity", ""); //comes in on img containers from an old version of myimgscale, and is a major problem if the image is missing
     $(".bloom-imageContainer").css("overflow", ""); //review: also comes form myimgscale; is it a problem?
@@ -90,16 +93,19 @@ export function GetButtonModifier(container) {
 
 //Bloom "imageContainer"s are <div>'s with wrap an <img>, and automatically proportionally resize
 //the img to fit the available space
-function SetupImageContainer(containerDiv) {
+function SetupImageContainer(containerDiv: any) {
     $(containerDiv)
         .mouseenter(function() {
-            var $this = $(this);
-            var img = $this.find("img");
+            const $this = $(this);
+            let img = $this.find("img");
             if (img.length === 0)
                 //TODO check for bloom-backgroundImage to make sure this isn't just a case of a missing <img>
                 img = containerDiv; //using a backgroundImage
 
-            var buttonModifier = GetButtonModifier($this);
+            if ($this.find(kPlaybackOrderContainerSelector).length > 0) {
+                return; // Playback order controls are active, deactivate image container stuff.
+            }
+            const buttonModifier = GetButtonModifier($this);
 
             $this.prepend(
                 '<button class="miniButton cutImageButton imageOverlayButton disabled ' +
@@ -181,7 +187,7 @@ function SetupImageContainer(containerDiv) {
             $this.addClass("hoverUp");
         })
         .mouseleave(function() {
-            var $this = $(this);
+            const $this = $(this);
             $this.removeClass("hoverUp");
             $this.find(".imageOverlayButton").each(function() {
                 // leave the problem indicator visible

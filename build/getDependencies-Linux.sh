@@ -78,83 +78,76 @@ cd -
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build/", "MSBuild.Community.Tasks.Targets"=>"build/"}
-# [1] build: YouTrackSharp (Bloom_YouTrackSharp)
-#     project: Bloom
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=Bloom_YouTrackSharp
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"bin/YouTrackSharp.dll*"=>"lib/dotnet", "bin/YouTrackSharp.pdb"=>"lib/dotnet"}
-#     VCS: https://github.com/BloomBooks/YouTrackSharp.git [LinuxCompatible]
-# [2] build: Bloom Help 4.8 (Bloom_Help_BloomHelp48)
+# [1] build: Bloom Help 4.8 (Bloom_Help_BloomHelp48)
 #     project: Help
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp48
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
-# [3] build: pdf.js (bt401)
+# [2] build: pdf.js (bt401)
 #     project: BuildTasks
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt401
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"pdfjs-viewer.zip!**"=>"DistFiles/pdf"}
 #     VCS: https://github.com/mozilla/pdf.js.git [gh-pages]
-# [4] build: GeckofxHtmlToPdf-xenial64-Geckofx60-continuous (GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64Geckofx60continuous)
+# [3] build: GeckofxHtmlToPdf-xenial64-Geckofx60-continuous (GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64Geckofx60continuous)
 #     project: GeckofxHtmlToPdf
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64Geckofx60continuous
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/geckofxHtmlToPdf [Geckofx60]
-# [5] build: L10NSharp master Mono continuous (L10NSharp_L10NSharpMasterMonoContinuous)
+# [4] build: L10NSharp master Mono continuous (L10NSharp_L10NSharpMasterMonoContinuous)
 #     project: L10NSharp
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=L10NSharp_L10NSharpMasterMonoContinuous
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"L10NSharp.dll*"=>"lib/dotnet/", "CheckOrFixXliff.exe*"=>"lib/dotnet/"}
 #     VCS: https://github.com/sillsdev/l10nsharp [refs/heads/master]
-# [6] build: icucil-linux64-Continuous (bt281)
+# [5] build: icucil-linux64-Continuous (bt281)
 #     project: Libraries
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt281
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"icu.net.*"=>"lib/dotnet/icu48"}
 #     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [7] build: icucil-linux64-icu55 Continuous (Icu55)
+# [6] build: icucil-linux64-icu55 Continuous (Icu55)
 #     project: Libraries
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=Icu55
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"icu.net.*"=>"lib/dotnet/icu55"}
 #     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [8] build: icucil-precise64-icu52 Continuous (bt413)
+# [7] build: icucil-precise64-icu52 Continuous (bt413)
 #     project: Archived
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt413
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"icu.net.*"=>"lib/dotnet/icu52"}
 #     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [9] build: PdfDroplet-Linux-Dev-Continuous (bt344)
+# [8] build: PdfDroplet-Linux-Dev-Continuous (bt344)
 #     project: PdfDroplet
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt344
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/pdfDroplet [master]
-# [10] build: TidyManaged-master-linux64-continuous (bt351)
+# [9] build: TidyManaged-master-linux64-continuous (bt351)
 #     project: TidyManaged
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt351
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"TidyManaged.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/TidyManaged.git [master]
-# [11] build: Linux master continuous (XliffForHtml_LinuxMasterContinuous)
+# [10] build: Linux master continuous (XliffForHtml_LinuxMasterContinuous)
 #     project: XliffForHtml
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=XliffForHtml_LinuxMasterContinuous
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"HtmlXliff.*"=>"lib/dotnet", "HtmlAgilityPack.*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/XliffForHtml [refs/heads/master]
-# [12] build: palaso-linux64-master Continuous (Libpalaso_PalasoLinux64masterContinuous)
+# [11] build: palaso-linux64-master Continuous (Libpalaso_PalasoLinux64masterContinuous)
 #     project: libpalaso
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=Libpalaso_PalasoLinux64masterContinuous
 #     clean: false
@@ -177,8 +170,6 @@ mkdir -p ../lib/dotnet/icu55
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
-copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.dll ../lib/dotnet/YouTrackSharp.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.pdb ../lib/dotnet/YouTrackSharp.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp48/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64Geckofx60continuous/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll

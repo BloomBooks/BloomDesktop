@@ -85,7 +85,7 @@ namespace BloomTests.Book
 		public void Save_BookHadNarrationAudioRecordedByWholeTextBox_AddsFeatureRequirementMetadata()
 		{
 			// Enhance: need an example in the future to test the result if two are generated. But right now this is the only feature that generates it.
-			GetInitialStorageWithCustomHtml("<html><head></head><body><div class='bloom-page'><div class='bloom-translationGroup'><div class='bloom-editable' data-audioRecordingMode='TextBox'></div></div></div></body></html>");
+			GetInitialStorageWithCustomHtml("<html><head></head><body><div class='bloom-page'><div class='bloom-translationGroup'><div class='bloom-editable' data-audiorecordingmode='TextBox'></div></div></div></body></html>");
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='FeatureRequirement']", 1);
 
 			// Note: No need to HTML-encode the XPath. The comparison will automatically figure that out (I guess by decoding the encoding version)
@@ -208,7 +208,7 @@ namespace BloomTests.Book
 							$"<p><span data-duration='2.300227' id='{usedAudioGuid}' " +
 							"class='audio-sentence' recordingmd5='undefined'>Who are you?</span></p>" +
 						"</div>" +
-						$"<div class='bloom-editable' data-audioRecordingMode='TextBox' id='{potentiallyUsefulAudioGuid}'>" +
+						$"<div class='bloom-editable' data-audiorecordingmode='TextBox' id='{potentiallyUsefulAudioGuid}'>" +
 							"<p>" +
 								$"<span id='{usedSpanGuid1}' class='audio-sentence'>Sentence 1</span>" +
 								$"<span id='{usedSpanGuid2}' class='audio-sentence'>Sentence 2</span>" +
