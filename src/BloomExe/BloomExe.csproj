@@ -260,6 +260,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" Condition="'$(OS)'=='Windows_NT'" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Printing" Condition="'$(OS)'=='Windows_NT'" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -289,10 +290,6 @@
     </Reference>
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
-    </Reference>
-    <Reference Include="YouTrackSharp, Version=2.0.30.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\dotnet\YouTrackSharp.dll</HintPath>
     </Reference>
     <Reference Include="DialogAdapters">
       <HintPath>..\..\packages\DialogAdapters.0.1.4.30000\lib\net45\DialogAdapters.dll</HintPath>
