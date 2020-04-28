@@ -1,3 +1,23 @@
+# 4.8 (Currently in Beta-test)
+
+## Edit Tab
+
+⭐**Talking Book Text Playback Order**. You can now control the playback order of all the text boxes on a page, including comic book bubbles.
+
+**Improved performance with very large books.** Some of you are creating terrific picture dictionaries with Bloom. These run into the hundreds of pages. However, the page thumbnail list gets very, very slow in these books. In 4.8, we've re-written that page thumbnail list from scratch, so that it is now much easier to edit these huge books.
+
+**Original Title**
+
+_(coming soon to the beta)_
+
+Bloom now has a way to declare the title of the original book upon which your translation is based, in the Credits page. It will automatically determine this if it can, otherwise you can type it in.
+
+⭐**Widget Activities** ([Feature Request](https://community.software.sil.org/t/bloom-widgets/2528/6))
+
+_(coming soon to the beta)_
+
+You can now embed little interactive activities in digital publications (web, Bloom Reader, RAB App). Many of these widgets already exist (they work with Apple's IBooks and the Kotobee book software). You may also be able to make your own or commission a programmer. If this approach gains popularity, we'll have a set of them to share within the Bloom community. To learn about "book widgets", please see [this blog](https://blog.kotobee.com/book-widgets-everything-you-need-to-know/).
+
 # 4.7
 
 ## Edit Tab
