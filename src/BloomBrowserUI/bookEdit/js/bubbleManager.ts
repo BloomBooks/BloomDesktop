@@ -11,6 +11,10 @@ import WebSocketManager from "../../utils/WebSocketManager";
 import { Bubble, BubbleSpec, BubbleSpecPattern, Comical } from "comicaljs";
 import { Point, PointScaling } from "./point";
 import { isLinux } from "../../utils/isLinux";
+import {
+    getNextTabindex,
+    sortOutTabindex
+} from "../toolbox/talkingBook/audioRecording";
 
 const kWebsocketContext = "textOverPicture";
 const kComicalGeneratedClass: string = "comical-generated";
@@ -1226,18 +1230,27 @@ export class BubbleManager {
             "<div class='" + editableDivClasses + "' ><p></p></div>";
         const transGroupDivClasses =
             "bloom-translationGroup bloom-leadingElement Bubble-style";
+        const nextTabindex = getNextTabindex(document.body, <HTMLDivElement>(
+            container[0]
+        ));
+        const tabindexString =
+            nextTabindex === 0
+                ? ""
+                : " tabindex='" + nextTabindex.toString() + "'";
         const transGroupHtml =
             "<div class='" +
             transGroupDivClasses +
-            "' data-default-languages='V'>" +
+            "' data-default-languages='V'" +
+            tabindexString +
+            ">" +
             editableDivHtml +
             "</div>";
 
         const wrapperHtml =
             "<div class='bloom-textOverPicture'>" + transGroupHtml + "</div>";
         // add textbox as first child of .bloom-imageContainer
-        const firstContainerChild = container.children().first();
-        const wrapperBox = $(wrapperHtml).insertBefore(firstContainerChild);
+        const lastContainerChild = container.children().last();
+        const wrapperBox = $(wrapperHtml).insertAfter(lastContainerChild);
         // initial mouseX, mouseY coordinates are relative to viewport
         const positionInViewport = new Point(
             mouseX,
@@ -1327,6 +1340,10 @@ export class BubbleManager {
             if (textElement == this.getActiveElement()) {
                 this.setActiveElement(undefined);
             }
+
+            // Since the number of comical bubbles on the page just changed, we need to sort out the
+            // tabindex values.
+            sortOutTabindex(document.body);
         }
     }
 
