@@ -1235,9 +1235,9 @@ export class BubbleManager {
 
         const wrapperHtml =
             "<div class='bloom-textOverPicture'>" + transGroupHtml + "</div>";
-        // add textbox as first child of .bloom-imageContainer
-        const firstContainerChild = container.children().first();
-        const wrapperBox = $(wrapperHtml).insertBefore(firstContainerChild);
+        // add textbox as last child of .bloom-imageContainer (BL-7883)
+        const lastContainerChild = container.children().last();
+        const wrapperBox = $(wrapperHtml).insertAfter(lastContainerChild);
         // initial mouseX, mouseY coordinates are relative to viewport
         const positionInViewport = new Point(
             mouseX,
