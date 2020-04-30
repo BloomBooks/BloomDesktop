@@ -67,11 +67,18 @@ var paths = {
         "!./**/node_modules/**/*.*"
     ],
     nodeFilesNeededInOutput: [
-        "./**/bloom-player/dist/bloomPlayer.min.js",
-        "./**/bloom-player/dist/simpleComprehensionQuiz.js",
+        // The * after bloomPlayer is there because BloomPlayer is now
+        // published with a hash as part of its name. This allows clients
+        // to publish all the BloomPlayer files except bloomplayer.htm with
+        // cache control headers permitting the browser to keep them as long
+        // as it wants. If we make changes, a newer bloomplayer.htm will
+        // reference the new and differently named assets and automatically
+        // get the new ones.
+        "./**/bloom-player/dist/bloomPlayer*.min.js",
+        // doesn't exist currently, may be needed again later, possibly with a hash.
+        //"./**/bloom-player/dist/simpleComprehensionQuiz.js",
         "./**/bloom-player/dist/bloomplayer.htm",
-        "./**/bloom-player/dist/*.mp3",
-        "./**/bloom-player/dist/*.css"
+        "./**/bloom-player/dist/*.mp3"
     ],
     // List all the HTML files created by markdown or pug earlier in this gulp process.
     htmlFiles: ["../../output/browser/**/*-en.htm*"],
