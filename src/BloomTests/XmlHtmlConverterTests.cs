@@ -155,9 +155,9 @@ namespace BloomTests
 		}
 
 		[Test]
-		public void SaveAsHTM_HasEmptyParagraphs_RetainsEmptyParagraphs()
+		public void SaveAsHTM_HasEmptyParagraphsAndCites_RetainsThem()
 		{
-			var pattern = "<p></p><p></p><p>a</p><p></p><p>b</p><p/>";
+			var pattern = "<p></p><p></p><p>a</p><p></p><p>b</p><p/><cite></cite><cite /><cite data-book='originalTitle'></cite><cite data-book='originalTitle'/>";
 			var dom = new XmlDocument();
 			dom.LoadXml("<!DOCTYPE html><html><body>" +
 				pattern +
@@ -169,8 +169,11 @@ namespace BloomTests
 				var text = File.ReadAllText(temp.Path);
 				var matches = r.Matches(text);
 				Assert.AreEqual(6, matches.Count,text);
+				Assert.AreEqual(4, new Regex("<cite").Matches(text).Count, text);
 				//this one also exercises XmlHtmlConverter.GetXmlDomFromHtmlFile, so we're not really testing anymore
-				AssertThatXmlIn.HtmlFile(temp.Path).HasSpecifiedNumberOfMatchesForXpath("//p", 6);
+				var assertHtmlFile = AssertThatXmlIn.HtmlFile(temp.Path);
+				assertHtmlFile.HasSpecifiedNumberOfMatchesForXpath("//p", 6);
+				assertHtmlFile.HasSpecifiedNumberOfMatchesForXpath("//cite", 4);
 			}
 		}
 

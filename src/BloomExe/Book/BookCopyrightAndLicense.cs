@@ -335,6 +335,21 @@ namespace Bloom.Book
 			var license = originalMetadata.License.GetMinimalFormForCredits(languagePriorityIds, out idOfLanguageUsed);
 			string originalLicenseSentence;
 			var preferredLanguageIds = new[] {collectionSettings.Language2Iso639Code, LocalizationManager.UILanguageId, "en"};
+			var originalTitle = dom.GetBookSetting("originalTitle")?.GetExactAlternative("*");
+			var originalTitleBeforePeriod = ", <cite data-book=\"originalTitle\">" + originalTitle + "</cite>";
+			var originalTitleAfterComma = "<cite data-book=\"originalTitle\">" + originalTitle + "</cite>, ";
+			if (string.IsNullOrEmpty(originalTitle))
+			{
+				//var clickToInsert = LocalizationManager.GetString("EditTab.FrontMatter.ClickToSetOriginalTitle",
+				//	"click to set original title");
+				// Here, the punctuation is all INSIDE the cite element. This allows us to cleanly hide everything
+				// in publications. Note, we do NOT put data-book on these, because we don't want the
+				// "click to insert" message to be saved AS an original title. Javascript adds it if the user edits.
+				//originalTitleBeforePeriod = "<cite class=\"missingOriginalTitle\">, " + clickToInsert + "</cite>";
+				//originalTitleAfterComma = "<cite class=\"missingOriginalTitle\">" + clickToInsert + ", </cite>";
+				originalTitleBeforePeriod = ", <cite data-book=\"originalTitle\" class=\"missingOriginalTitle\"></cite>";
+				originalTitleAfterComma = "<cite data-book=\"originalTitle\" class=\"missingOriginalTitle\"></cite>, ";
+			}
 			if (originalMetadata.License is CustomLicense)
 			{
 				// I can imagine being more fancy... something like "Licensed under custom license:", and get localizations
@@ -360,7 +375,10 @@ namespace Bloom.Book
 					"On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.",
 					preferredLanguageIds, out idOfLanguageUsed);
 
-				copyrightNotice = noCopyrightSentence + " " + originalLicenseSentence;
+					noCopyrightSentence = noCopyrightSentence.Substring(0, noCopyrightSentence.Length - 1) +
+					                      originalTitleBeforePeriod + ".";
+
+					copyrightNotice = noCopyrightSentence + " " + originalLicenseSentence;
 			}
 			else
 			{
@@ -368,7 +386,7 @@ namespace Bloom.Book
 					"Adapted from original, {0}.",
 					"On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.",
 					preferredLanguageIds, out idOfLanguageUsed);
-				copyrightNotice = String.Format(originalCopyrightSentence, originalMetadata.CopyrightNotice.Trim()) + " " +
+				copyrightNotice = String.Format(originalCopyrightSentence, originalTitleAfterComma + originalMetadata.CopyrightNotice.Trim()) + " " +
 				                  originalLicenseSentence;
 			}
 

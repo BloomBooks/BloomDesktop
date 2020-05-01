@@ -1449,6 +1449,18 @@
         <note>ID: EditTab.FrontMatter.CreditTranslator</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitleCaption" sil:dynamic="true">
+        <source xml:lang="en">Edit Original Title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitleCaption</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitleLabel" sil:dynamic="true">
+        <source xml:lang="en">Original Title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitleLabel</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitlePlaceholder" sil:dynamic="true">
+        <source xml:lang="en">click to edit original title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitlePlaceholder</note>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
         <note>ID: EditTab.FrontMatter.FundingAgenciesPrompt</note>

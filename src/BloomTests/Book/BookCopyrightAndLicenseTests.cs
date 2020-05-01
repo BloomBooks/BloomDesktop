@@ -331,7 +331,9 @@ namespace BloomTests.Book
 			var bookDom = new HtmlDom(html);
 
 			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", _collectionSettings, false);
-			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'Adapted from original, Copyright © 2007, Foo Publishers. Licensed under CC BY-NC 4.0. You can do anything you want if your name is Fred.')]", 2);
+			// This is an abbreviated version of the text we expect in originalCopyrightAndLicense. Now that we have an embedded <cite> element, matching the whole thing
+			// is difficult. We have other tests that deal with exactly what goes in this field; here we're just concerned with getting the right number of copies.
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'Adapted from original')]", 2);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='copyright' and @lang='*' and contains(text(),'Copyright © 2008, Bar Publishers')]", 2);
 
 			// Changing the useOriginalCopyright flag should empty out the data-derived='originalCopyrightAndLicense' divs.
@@ -367,7 +369,9 @@ namespace BloomTests.Book
 			var metadata = BookCopyrightAndLicense.GetMetadata(bookDom);
 			metadata.CopyrightNotice = "Copyright © 2019, Foo-Bar Publishers";
 			BookCopyrightAndLicense.SetMetadata(metadata, bookDom, "", _collectionSettings, false);
-			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'Adapted from original, Copyright © 2007, Foo Publishers. Licensed under CC BY-NC 4.0. You can do anything you want if your name is Fred.')]", 2);
+			// This is an abbreviated version of the text we expect in originalCopyrightAndLicense. Now that we have an embedded <cite> element, matching the whole thing
+			// is difficult. We have other tests that deal with exactly what goes in this field; here we're just concerned with generating it or not.
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'Adapted from original')]", 2);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='copyright' and @lang='*' and contains(text(),'Copyright © 2019, Foo-Bar Publishers')]", 2);
 
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='copyright' and contains(text(), 'Copyright © 2019, Foo-Bar Publishers')]", 1);
@@ -460,10 +464,38 @@ namespace BloomTests.Book
 				@" <div id='bloomDataDiv'>
 					<div data-book='bookTitle' lang='en'>A really really empty book</div>
 						<div data-book='copyright' lang='*'> Copyright © 2007, Some Old Publisher </div>
+						<div data-book='originalTitle' lang='*'> How to manage titles </div>
 					</div>");
 
 			Assert.That(GetEnglishOriginalCopyrightAndLicense(dom), Is.Null);
 		}
+
+		// Many other cases with original title are tested as part of the test of SetOriginalCopyrightAndLicense.
+		[Test]
+		public void GetOriginalCopyrightAndLicense_HasOriginalCopyrightAndLicense_NoOriginalTitle_InsertsCiteElementWithMissingClass()
+		{
+			var dom = new HtmlDom(
+				@" <div id='bloomDataDiv'>
+					<div data-book='copyright' lang='*'> Copyright © 2007, Foo Publishing </div>
+					<div data-book='licenseUrl' lang='*'> http://creativecommons.org/licenses/by-nc/3.0/ </div>
+					<div data-book='originalCopyright' lang='*'> Copyright © 2007, Foo Publishing </div>
+					<div data-book='originalLicenseUrl' lang='*'> http://creativecommons.org/licenses/by-nc/3.0/ </div>
+				</div>");
+			Assert.AreEqual("Adapted from original, <cite data-book=\"originalTitle\" class=\"missingOriginalTitle\"></cite>, Copyright © 2007, Foo Publishing. Licensed under CC BY-NC 3.0.", GetEnglishOriginalCopyrightAndLicense(dom));
+		}
+
+		[Test]
+		public void GetOriginalCopyrightAndLicense_HasOriginalLicense_NoOriginalVopyrightOrTitle_InsertsCiteElementWithMissingClass()
+		{
+			var dom = new HtmlDom(
+				@" <div id='bloomDataDiv'>
+					<div data-book='copyright' lang='*'> Copyright © 2007, Foo Publishing </div>
+					<div data-book='licenseUrl' lang='*'> http://creativecommons.org/licenses/by-nc/3.0/ </div>
+					<div data-book='originalLicenseUrl' lang='*'> http://creativecommons.org/licenses/by-nc/3.0/ </div>
+				</div>");
+			Assert.AreEqual("Adapted from original without a copyright notice, <cite data-book=\"originalTitle\" class=\"missingOriginalTitle\"></cite>. Licensed under CC BY-NC 3.0.", GetEnglishOriginalCopyrightAndLicense(dom));
+		}
+
 		private string GetEnglishOriginalCopyrightAndLicense(HtmlDom dom)
 		{
 			return BookCopyrightAndLicense.GetOriginalCopyrightAndLicenseNotice(_collectionSettings, dom);

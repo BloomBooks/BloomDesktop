@@ -163,6 +163,14 @@ namespace Bloom.Book
 			}
 		}
 
+		public string OriginalTitle
+		{
+			get { return MetaData.OriginalTitle; }
+			set
+			{
+				MetaData.OriginalTitle = value;
+			}
+		}
 		/// <summary>
 		/// A possibly-temporary expedient to get multilingual title data into the json, and thus into parse.com
 		/// This stores a Json string representing lang:title pairs, e.g.,
@@ -797,6 +805,7 @@ namespace Bloom.Book
 						experimental = IsExperimental,  // not yet used by BL (I think), potentially useful filter
 						title = Title,
 						allTitles = AllTitles, // created for BL to search, though it doesn't yet.
+						originalTitle=OriginalTitle,
 						baseUrl = BaseUrl, // how web site finds image and download
 						bookOrder = BookOrder, // maybe obsolete? Keep uploading until sure.
 						isbn = Isbn,
@@ -884,6 +893,9 @@ namespace Bloom.Book
 
 		[JsonProperty("allTitles")]
 		public string AllTitles { get; set; }
+
+		[JsonProperty("originalTitle")]
+		public string OriginalTitle { get; set; }
 
 		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
 		// containing the actual url where we can grab the thumbnails, pdfs, etc.

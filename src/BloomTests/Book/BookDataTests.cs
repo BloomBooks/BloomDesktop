@@ -135,9 +135,91 @@ namespace BloomTests.Book
 				</div>
 			 </body></html>");
 
-			data.SuckInDataFromEditedDom(editedPageDom);
+			var info = new BookInfo(_collectionSettings.FolderPath, true);
+
+			data.SuckInDataFromEditedDom(editedPageDom, info);
 
 			Assert.AreEqual("changed", data.GetVariableOrNull("bookTitle", "xyz"));
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalTitle' and text()='changed']", 1);
+			Assert.That(info.OriginalTitle, Is.EqualTo("changed"));
+		}
+
+		[Test]
+		public void SuckInDataFromEditedDom_NotDerivativeNoCurrent_SetsOriginalTitleToVernacular()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div class='bloom-page' id='guid2'>
+					<div lang='xyz' data-book='bookTitle'><p><span id='abcdefg' class='audio-sentence'>new title</span></p></div>
+				</div>
+			 </body></html>");
+			var data = new BookData(bookDom, _collectionSettings, null);
+			var info = new BookInfo(_collectionSettings.FolderPath, true);
+
+			data.SuckInDataFromEditedDom(bookDom, info);
+
+			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.EqualTo("new title"));
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalTitle' and text()='new title']",1);
+			Assert.That(info.OriginalTitle, Is.EqualTo("new title"));
+		}
+
+		[Test]
+		public void SuckInDataFromEditedDom_Derivative_NoOriginalTitle_LeavesOriginalTitleEmpty()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='originalCopyright' lang='*'>Copyright 2020 someone</div>
+				</div>
+				<div class='bloom-page' id='guid2'>
+					<div lang='xyz' data-book='bookTitle'>new title</div>
+				</div>
+			 </body></html>");
+			var data = new BookData(bookDom, _collectionSettings, null);
+
+			data.SuckInDataFromEditedDom(bookDom);
+
+			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.Null);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalTitle']");
+		}
+
+		[Test]
+		public void SuckInDataFromEditedDom_Derivative_OriginalTitle_CopiesToMetadata()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='originalCopyright' lang='*'>Copyright 2020 someone</div>
+					<div data-book='originalTitle' lang='*'>hand-edited title</div>
+				</div>
+				<div class='bloom-page' id='guid2'>
+					<div lang='xyz' data-book='bookTitle'>new title</div>
+				</div>
+			 </body></html>");
+			var data = new BookData(bookDom, _collectionSettings, null);
+			var info = new BookInfo(_collectionSettings.FolderPath, true);
+
+			data.SuckInDataFromEditedDom(bookDom, info);
+
+			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.EqualTo("hand-edited title"));
+			Assert.That(info.OriginalTitle, Is.EqualTo("hand-edited title"));
+		}
+
+		[Test]
+		public void SuckInDataFromEditedDom_NotDerivativeCurrent_SetsOriginalTitleToVernacular()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='originalTitle' lang='*'>original</div>
+				</div>
+				<div class='bloom-page' id='guid2'>
+					<div lang='en' data-book='bookTitle'>new title in English</div>
+					<div lang='xyz' data-book='bookTitle'>new title</div>
+					<div lang='fr' data-book='bookTitle'>new title in French</div>
+				</div>
+			 </body></html>");
+			var data = new BookData(bookDom, _collectionSettings, null);
+
+			data.SuckInDataFromEditedDom(bookDom);
+
+			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.EqualTo("new title"));
 		}
 
 		/// <summary>

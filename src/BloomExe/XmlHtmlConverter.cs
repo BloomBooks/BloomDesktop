@@ -17,9 +17,9 @@ namespace Bloom
 
 		private static readonly Regex _selfClosingRegex = new Regex(@"<([ubi]|em|strong|span)(\s+[^><]+\s*)/>");
 		private static readonly Regex _emptySelfClosingElementsToRemoveRegex = new Regex(@"<([ubi]|em|strong|span)\s*/>");
-		private static readonly Regex _emptyElementsWithAttributesRegex = new Regex(@"<([ubi]|em|strong|span)(\s+[^><]+\s*)>(\s*)</\1>");
-		private static readonly Regex _emptyElementsToPreserveRegex = new Regex(@"<(p)\s*>(\s*)</\1>");
-		private static readonly Regex _selfClosingElementsToPreserveRegex = new Regex(@"<(p)(\s+[^><]*\s*)/>");
+		private static readonly Regex _emptyElementsWithAttributesRegex = new Regex(@"<([ubi]|em|strong|span|cite)(\s+[^><]+\s*)>(\s*)</\1>");
+		private static readonly Regex _emptyElementsToPreserveRegex = new Regex(@"<(p|cite)\s*>(\s*)</\1>");
+		private static readonly Regex _selfClosingElementsToPreserveRegex = new Regex(@"<(p|cite)(\s+[^><]*\s*)/>");
 
 
 		public static XmlDocument GetXmlDomFromHtmlFile(string path, bool includeXmlDeclaration = false)
@@ -285,6 +285,14 @@ namespace Bloom
 			}
 
 			foreach (XmlElement node in dom.SafeSelectNodes("//span"))
+			{
+				if (!node.HasChildNodes)
+				{
+					node.AppendChild(node.OwnerDocument.CreateTextNode(""));
+				}
+			}
+
+			foreach (XmlElement node in dom.SafeSelectNodes("//cite"))
 			{
 				if (!node.HasChildNodes)
 				{

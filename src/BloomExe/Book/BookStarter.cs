@@ -199,6 +199,11 @@ namespace Bloom.Book
 
 			SetLineageAndId(storage, sourceFolderPath);
 
+			if (makingTranslation)
+			{
+				storage.EnsureOriginalTitle(); // Before SetBookTitle, so we definitely won't use this book's new empty title
+			}
+
 			SetBookTitle(storage, bookData, usingTemplate);
 
 			TransformCreditPageData(storage.Dom, bookData, _collectionSettings, storage, makingTranslation);
@@ -610,13 +615,8 @@ namespace Bloom.Book
 		/// </summary>
 		public static void SetOriginalCopyrightAndLicense(HtmlDom dom, BookData bookData, CollectionSettings collectionSettings)
 		{
-			// At least one of these should exist if the source was a derivative, since we don't allow a
-			// book to have no license, nor to be uploaded without copyright...unless of course it was derived
-			// before 3.9, when we started doing this. In that case the best we can do is record the earliest
-			// information we have for this and later adaptations.
-			if (bookData.GetMultiTextVariableOrEmpty("originalLicenseUrl").Count > 0
-			    || bookData.GetMultiTextVariableOrEmpty("originalLicenseNotes").Count > 0
-			    || bookData.GetMultiTextVariableOrEmpty("originalCopyright").Count > 0)
+			// If it already has some of this information, just keep it.
+			if (bookData.BookIsDerivative())
 			{
 				return; //leave the original there.
 			}

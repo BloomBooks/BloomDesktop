@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -1481,10 +1481,25 @@ namespace Bloom.Book
 			const string kBR = "LINEBREAKHERE";
 			var withBreaksHidden = form.Replace("<br />", kBR).Replace("<br/>", kBR);
 
+			var match = new Regex(".*(<cite[^>]*>).*</cite>.*").Match(withBreaksHidden);
+			const string kCiteBegin = "BEGINCITEHERE";
+			const string kCiteEnd = "ENDCITEHERE";
+			if (match.Success)
+			{
+				withBreaksHidden = withBreaksHidden.Replace(match.Groups[1].Value, kCiteBegin)
+					.Replace("</cite>", kCiteEnd);
+			}
+
 			//going to innertext means we treat everything literally, for better or worse (definitely safer)
 			node.InnerText = withBreaksHidden;
 			// finally, unhide the breaks
-			node.InnerXml = node.InnerXml.Replace(kBR, "<br/>");
+			var safeText = node.InnerXml; // anything XML-ish has been escaped
+			if (match.Success)
+			{
+				safeText = safeText.Replace(kCiteEnd, "</cite>").Replace(kCiteBegin, match.Groups[1].Value);
+			}
+			safeText = safeText.Replace(kBR, "<br/>");
+			node.InnerXml = safeText;
 		}
 
 		internal static void StripUnwantedTagsPreservingText(XmlDocument dom, XmlNode element, string[] tagsToPreserve)
