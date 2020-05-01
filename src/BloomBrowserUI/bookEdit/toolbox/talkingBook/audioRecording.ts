@@ -63,8 +63,9 @@ export enum AudioRecordingMode {
 const kWebsocketContext = "audio-recording";
 const kSegmentClass = "bloom-highlightSegment";
 const kAudioSentence = "audio-sentence"; // Even though these can now encompass more than strict sentences, we continue to use this class name for backwards compatability reasons
-const kAudioCurrent = "ui-audioCurrent";
 const kAudioSentenceClassSelector = "." + kAudioSentence;
+const kAudioCurrent = "ui-audioCurrent";
+const kAudioCurrentClassSelector = "." + kAudioCurrent;
 const kBloomEditableTextBoxClass = "bloom-editable";
 const kBloomEditableTextBoxSelector = "div.bloom-editable";
 const kBloomTranslationGroupClass = "bloom-translationGroup";
@@ -453,9 +454,15 @@ export default class AudioRecording {
     public removeRecordingSetup() {
         this.hiddenSourceBubbles.show();
         const page = this.getPageDocBodyJQuery();
-        page.find(".ui-audioCurrent")
-            .removeClass("ui-audioCurrent")
+        page.find(kAudioCurrentClassSelector)
+            .removeClass(kAudioCurrent)
             .removeClass("disableHighlight");
+        if (this.showPlaybackInput.checked) {
+            // We are removing the UI because we're changing tools or pages, but we want to leave
+            // the checkbox checked for the next time this tool is active, so it will turn on the
+            // playback order UI again. The 'true' param tells the method to leave the checkbox checked.
+            this.removePlaybackOrderUi(<HTMLElement>page[0], true);
+        }
     }
 
     public stopListeningForLevels() {
@@ -501,7 +508,7 @@ export default class AudioRecording {
             elem => <HTMLElement>elem
         );
         const recordableDivs = editableDivs.filter(elt => {
-            if (this.isNotVisible(elt)) {
+            if (!this.isVisible(elt)) {
                 return false;
             }
             const transgroup = elt.closest(".bloom-translationGroup");
@@ -523,7 +530,7 @@ export default class AudioRecording {
 
     // Param 'recordableDivs' is an array of bloom-editable divs. This function serves
     // to sort that by the containing translationGroup's tabindex attribute (if it exists).
-    // Divs inside of translationGroups that do NOT have a tabindex will be sorted to the top.
+    // Divs inside of translationGroups that do NOT have a tabindex will be sorted to the bottom.
     private sortByTabindex(recordableDivs: HTMLElement[]): HTMLElement[] {
         return recordableDivs.sort((a, b) => {
             return this.getContainerTabindex(a) - this.getContainerTabindex(b);
@@ -542,7 +549,7 @@ export default class AudioRecording {
         }
         const tabindexString = translationGroup.getAttribute("tabindex");
         if (!tabindexString) {
-            return 0;
+            return 999; // We want divs with no tabindex to sort to the bottom
         }
         return parseInt(tabindexString);
     }
@@ -564,7 +571,7 @@ export default class AudioRecording {
                 return false;
             }
 
-            if (this.isNotVisible(element)) {
+            if (!this.isVisible(element)) {
                 return false;
             }
 
@@ -576,9 +583,9 @@ export default class AudioRecording {
         }
     }
 
-    private isNotVisible(elem: Element) {
+    private isVisible(elem: Element) {
         const style = window.getComputedStyle(elem);
-        return style.display === "none";
+        return style.display !== "none";
     }
 
     private containsAnyAudioElements(): boolean {
@@ -706,7 +713,7 @@ export default class AudioRecording {
         const incrementAmount = isTraverseInReverseOn ? -1 : 1;
         const current = (<HTMLElement>(
             this.getPageDocBody()
-        )).getElementsByClassName("ui-audioCurrent");
+        )).getElementsByClassName(kAudioCurrent);
         if (!current || current.length === 0) {
             return null;
         }
@@ -785,14 +792,14 @@ export default class AudioRecording {
         // Note that HTMLCollectionOf's length can change if you change the number of elements matching the selector.
         const audioCurrentCollection: HTMLCollectionOf<
             Element
-        > = parentElement.getElementsByClassName("ui-audioCurrent");
+        > = parentElement.getElementsByClassName(kAudioCurrent);
 
         // Convert to an array whose length won't be changed
         const audioCurrentArray: Element[] = Array.from(audioCurrentCollection);
 
         for (let i = 0; i < audioCurrentArray.length; i++) {
             audioCurrentArray[i].classList.remove(
-                "ui-audioCurrent",
+                kAudioCurrent,
                 "disableHighlight"
             );
         }
@@ -847,7 +854,9 @@ export default class AudioRecording {
                 });
         }
 
-        newElement.classList.add("ui-audioCurrent");
+        if (!this.showPlaybackInput.checked) {
+            newElement.classList.add(kAudioCurrent);
+        }
     }
 
     // Given the specified element, updates the audio player's source and other necessary things in order to make the specified element's audio the next audio to play
@@ -962,7 +971,7 @@ export default class AudioRecording {
         let id: string | undefined = undefined;
         const pageDocBody = this.getPageDocBody();
         const audioCurrentElements = pageDocBody!.getElementsByClassName(
-            "ui-audioCurrent"
+            kAudioCurrent
         );
         let currentElement: Element | null = null;
         if (audioCurrentElements.length > 0) {
@@ -1531,21 +1540,14 @@ export default class AudioRecording {
             return;
         }
         if (this.showPlaybackInput.checked) {
-            this.showPlaybackInput.checked = false;
             this.removePlaybackOrderUi(docBody);
-            this.toggleToolDisablingOverlay(false);
-            this.toggleCheckedClass(false);
-            this.setCurrentAudioElementToFirstAudioElement();
         } else {
-            this.showPlaybackInput.checked = true;
-            this.removeAudioCurrent(docBody);
             this.showPlaybackOrderUi(docBody);
-            this.toggleToolDisablingOverlay(true);
-            this.toggleCheckedClass(true);
         }
     }
 
     private showPlaybackOrderUi(docBody: HTMLElement) {
+        this.removeAudioCurrent(docBody);
         this.playbackOrderCache = [];
         const translationGroups = this.getVisibleTranslationGroups(docBody);
         if (translationGroups.length < 1) {
@@ -1573,12 +1575,15 @@ export default class AudioRecording {
             this.playbackOrderCache.push({
                 containerDiv: containerDiv,
                 sourceTranslationGroup: currentTranslationGroup,
-                // Give any translationGroup that doesn't already have a tabindex, an index of 0.
-                myPosition: existingTabindex ? Number(existingTabindex) : 0
+                // Give any translationGroup that doesn't already have a tabindex, an index of 999.
+                myPosition: existingTabindex ? Number(existingTabindex) : 999
             });
         }
         this.sortOutTabindexValues();
         this.renderPlaybackControls();
+        this.toggleToolDisablingOverlay(true);
+        this.showPlaybackInput.checked = true;
+        this.togglePlaybackOrderCheckedClass(true);
     }
 
     private renderPlaybackControls() {
@@ -1594,15 +1599,10 @@ export default class AudioRecording {
         this.playbackOrderCache.sort((a, b) => {
             return a.myPosition - b.myPosition;
         });
-        if (
-            this.playbackOrderCache.length > 0 &&
-            this.playbackOrderCache[0].myPosition === 0
-        ) {
-            // Some of the translationGroups don't yet have a tabindex; reset all of them.
-            for (let i = 0; i < this.playbackOrderCache.length; i++) {
-                const playbackOrderInfo = this.playbackOrderCache[i];
-                this.setTabindexInCacheAndHtml(playbackOrderInfo, i + 1); // NOT zero-based
-            }
+        // Some of the translationGroups don't yet have a tabindex; reset all of them.
+        for (let i = 0; i < this.playbackOrderCache.length; i++) {
+            const playbackOrderInfo = this.playbackOrderCache[i];
+            this.setTabindexInCacheAndHtml(playbackOrderInfo, i + 1); // NOT zero-based
         }
     }
 
@@ -1670,13 +1670,22 @@ export default class AudioRecording {
         this.renderPlaybackControls();
     }
 
-    private removePlaybackOrderUi(docBody: HTMLElement) {
+    private removePlaybackOrderUi(
+        docBody: HTMLElement,
+        leaveChecked: boolean = false
+    ) {
         const elementsToRemove = docBody.getElementsByClassName(
             kPlaybackOrderContainerClass
         );
         Array.from(elementsToRemove).forEach(element => {
             element.parentElement!.removeChild(element);
         });
+        this.toggleToolDisablingOverlay(false);
+        if (!leaveChecked) {
+            this.togglePlaybackOrderCheckedClass(false);
+            this.showPlaybackInput.checked = false;
+        }
+        this.setCurrentAudioElementToFirstAudioElement();
     }
 
     private getVisibleTranslationGroups(
@@ -1688,12 +1697,12 @@ export default class AudioRecording {
         );
         for (let i = 0; i < transGroups.length; i++) {
             const currentTranslationGroup = <HTMLDivElement>transGroups.item(i);
-            if (this.isNotVisible(currentTranslationGroup)) {
+            if (!this.isVisible(currentTranslationGroup)) {
                 continue;
             }
             const visibleEditables = Array.from(
                 currentTranslationGroup.getElementsByClassName("bloom-editable")
-            ).filter(elem => !this.isNotVisible(elem));
+            ).filter(elem => this.isVisible(elem));
             if (visibleEditables.length > 0) {
                 result.push(currentTranslationGroup);
             }
@@ -1713,7 +1722,8 @@ export default class AudioRecording {
         }
     }
 
-    private toggleCheckedClass(addClass: boolean) {
+    // With css, the presence/absence of the checked class on the checkbox label determines its color.
+    private togglePlaybackOrderCheckedClass(addClass: boolean) {
         const checkedClass = "checked";
         const checkboxLabel = (<HTMLLabelElement>(
             document.getElementById(kPlaybackOrderClickHandler)
@@ -1923,7 +1933,7 @@ export default class AudioRecording {
             page = this.getPageDocBodyJQuery();
         }
 
-        const current = page.find(".ui-audioCurrent");
+        const current = page.find(kAudioCurrentClassSelector);
         if (current && current.length > 0) {
             return current.get(0);
         }
@@ -1986,7 +1996,7 @@ export default class AudioRecording {
     // This function will also attempt to set it in case no such Current Highlight exists (which is often an erroneous state arrived at by race condition)
     public getCurrentTextBox(): HTMLElement | null {
         const pageBody = this.getPageDocBody();
-        if (!pageBody) return pageBody;
+        if (!pageBody || this.showPlaybackInput.checked) return null;
 
         let audioCurrentElements = pageBody.getElementsByClassName(
             kAudioCurrent
@@ -2253,7 +2263,7 @@ export default class AudioRecording {
             return;
         }
         const audioCurrentList = pageDocBody.getElementsByClassName(
-            "ui-audioCurrent"
+            kAudioCurrent
         );
 
         if (isEarlyAbortEnabled && audioCurrentList.length >= 1) {
@@ -2282,7 +2292,7 @@ export default class AudioRecording {
         }
 
         const audioCurrentList = this.getPageDocBodyJQuery().find(
-            ".ui-audioCurrent"
+            kAudioCurrentClassSelector
         );
 
         if (isEarlyAbortEnabled && audioCurrentList.length >= 1) {
@@ -2330,7 +2340,12 @@ export default class AudioRecording {
             pageDocBody.getElementsByClassName(kAudioSentence),
             elem => <HTMLElement>elem
         );
-        const firstSentenceArray = this.sortByTabindex(audioSentenceElems);
+        const visibleAudioSentenceElems = audioSentenceElems.filter(elem => {
+            return this.isVisible(elem);
+        });
+        const firstSentenceArray = this.sortByTabindex(
+            visibleAudioSentenceElems
+        );
         if (firstSentenceArray.length === 0) {
             // no recordable sentence found.
             return null;
@@ -3009,7 +3024,8 @@ export default class AudioRecording {
 
         // Finding no audioCurrent is only unexpected if there are non-zero number of audio elements
         if (
-            this.getPageDocBodyJQuery().find(".ui-audioCurrent").length === 0 &&
+            this.getPageDocBodyJQuery().find(kAudioCurrentClassSelector)
+                .length === 0 &&
             this.containsAnyAudioElements()
         ) {
             // We have reached an unexpected state :(
