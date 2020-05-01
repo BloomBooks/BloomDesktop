@@ -1137,7 +1137,7 @@ export class BubbleManager {
         // I tried to do without this... it didn't work. This causes page changes to get saved and fills
         // things in for editing.
         // It causes EditingModel.RethinkPageAndReloadIt() to get run... which eventually causes
-        // makeTextOverPictureBoxDraggableClickableAndResizable to get called by bloomEditing.ts.
+        // makeTOPBoxesDraggableClickableAndResizable to get called by bloomEditing.ts.
         BloomApi.postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
     }
 
@@ -1340,22 +1340,37 @@ export class BubbleManager {
             const imagePos = imageContainer[0].getBoundingClientRect();
             const wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
 
-            // Add the dragHandles. The visible one has a zindex below the canvas. The transparent one is above.
+            // Add the dragHandles (if needed). The visible one has a zindex below the canvas. The transparent one is above.
             // The 'mouseover' event listener below will make sure the .ui-draggable-handle class
             // on the transparent one is set to the right state depending on whether the visible handle
             // is occluded or not.
-            thisTOPBox.append(
-                "<img class='bloom-ui bloom-dragHandle visible' src='/bloom/bookEdit/img/dragHandle.svg'/>"
-            );
-            thisTOPBox.append(
-                "<img class='bloom-ui bloom-dragHandle transparent' src='/bloom/bookEdit/img/dragHandle.svg'/>"
-            );
+            const visibleHandles = thisTOPBox.find(".bloom-dragHandle.visible");
+            if (visibleHandles.length == 0) {
+                // Not added yet. Let's create it
+                thisTOPBox.append(
+                    "<img class='bloom-ui bloom-dragHandle visible' src='/bloom/bookEdit/img/dragHandle.svg'/>"
+                );
+            }
 
             // Save the dragHandle that's above the canvas and setup the 'mouseover' event to determine if we
             // should be able to drag with it or not.
-            const transparentHandle = thisTOPBox.find(
+            let transparentHandle: HTMLElement;
+            const transparentHandles = thisTOPBox.find(
                 ".bloom-dragHandle.transparent"
-            )[0];
+            );
+            if (transparentHandles.length == 0) {
+                // Not added yet. Let's create it
+                thisTOPBox.append(
+                    "<img class='bloom-ui bloom-dragHandle transparent' src='/bloom/bookEdit/img/dragHandle.svg'/>"
+                );
+                transparentHandle = thisTOPBox.find(
+                    ".bloom-dragHandle.transparent"
+                )[0];
+            } else {
+                // No need to append it again. Just use the existing one.
+                transparentHandle = transparentHandles[0];
+            }
+
             transparentHandle.addEventListener("mouseover", event => {
                 this.setDraggableStateOnDragHandles(
                     imageContainer[0],
