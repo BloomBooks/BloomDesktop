@@ -90,13 +90,27 @@ export function GetButtonModifier(container) {
 
 //Bloom "imageContainer"s are <div>'s with wrap an <img>, and automatically proportionally resize
 //the img to fit the available space
+//Precondition: containerDiv must be just a single HTMLElement
 function SetupImageContainer(containerDiv) {
+    // Initialize the value of the hoverUp class.
+    // the hoverup class should be present whenever the mouse is over the containerDiv.
+    // This is usually achieved by mouseenter/mouseleave event handlers,
+    // but mouseenter won't trigger if the mouse starts off over the image container when the page is loaded
+    // That case is extremely commonplace when adding comic bubbles, because that needs to reload the page.
+    // (It is also possible to trigger even when opening up a new page, but probably less likely to happen accidentally)
+    if (containerDiv.matches(":hover")) {
+        containerDiv.classList.add("hoverUp");
+    } else {
+        containerDiv.classList.remove("hoverUp");
+    }
+
     $(containerDiv)
         .mouseenter(function() {
             var $this = $(this);
             var img = $this.find("img");
             if (img.length === 0)
                 //TODO check for bloom-backgroundImage to make sure this isn't just a case of a missing <img>
+                // TODO: Looks like assigning an HTMLElement to a JQuery. I'd rather we not do this, although I think we manage to $() wrap our way out of this mess later.
                 img = containerDiv; //using a backgroundImage
 
             var buttonModifier = GetButtonModifier($this);
