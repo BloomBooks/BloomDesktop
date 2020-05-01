@@ -1996,7 +1996,12 @@ export default class AudioRecording {
     // This function will also attempt to set it in case no such Current Highlight exists (which is often an erroneous state arrived at by race condition)
     public getCurrentTextBox(): HTMLElement | null {
         const pageBody = this.getPageDocBody();
-        if (!pageBody || this.showPlaybackInput.checked) return null;
+        if (
+            !pageBody ||
+            // Tests may not have a value for 'showPlaybackInput'.
+            (this.showPlaybackInput && this.showPlaybackInput.checked)
+        )
+            return null;
 
         let audioCurrentElements = pageBody.getElementsByClassName(
             kAudioCurrent
