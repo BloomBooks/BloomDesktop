@@ -538,24 +538,35 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void SetElementFromUserStringPreservingLineBreaks_Various()
+		public void SetElementFromUserStringSafely_Various()
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml("<div></div>");
 			var target = dom.FirstChild as XmlElement;
-			HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, "1<br />2");
+			HtmlDom.SetElementFromUserStringSafely(target, "1<br />2");
 			Assert.AreEqual("<div>1<br />2</div>", dom.InnerXml);
-			HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, "1<br/>2");
+			HtmlDom.SetElementFromUserStringSafely(target, "1<br/>2");
 			Assert.AreEqual("<div>1<br />2</div>",dom.InnerXml);
 
-			HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, "1<br/>2<br />3");
+			HtmlDom.SetElementFromUserStringSafely(target, "1<br/>2<br />3");
 			Assert.AreEqual("<div>1<br />2<br />3</div>", dom.InnerXml);
 
-			HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, "1 2 3");
+			HtmlDom.SetElementFromUserStringSafely(target, "1 2 3");
 			Assert.AreEqual("<div>1 2 3</div>", dom.InnerXml);
 
-			HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, "1 < 3 > 0");
+			HtmlDom.SetElementFromUserStringSafely(target, "1 < 3 > 0");
 			Assert.AreEqual("<div>1 &lt; 3 &gt; 0</div>", dom.InnerXml);
+
+			// The sort of thing I think we're really trying to prevent.
+			HtmlDom.SetElementFromUserStringSafely(target, "1 <input type=\"text\" id=\"lname\" name=\"lname\"> 0");
+			Assert.AreEqual("<div>1 &lt;input type=\"text\" id=\"lname\" name=\"lname\"&gt; 0</div>", dom.InnerXml);
+
+			// cite is another exception, for the sake of titles in originalCopyrightAndLicense
+			HtmlDom.SetElementFromUserStringSafely(target, "Hello <cite>world</cite> That was a citation");
+			Assert.AreEqual("<div>Hello <cite>world</cite> That was a citation</div>", dom.InnerXml);
+
+			HtmlDom.SetElementFromUserStringSafely(target, "Hello <cite class=\"myClass\">world</cite> That was a citation");
+			Assert.AreEqual("<div>Hello <cite class=\"myClass\">world</cite> That was a citation</div>", dom.InnerXml);
 		}
 
 		[Test]

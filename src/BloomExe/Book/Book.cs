@@ -1135,6 +1135,9 @@ namespace Bloom.Book
 
 			InjectStringListingActiveLanguagesOfBook();
 
+			if (_bookData.BookIsDerivative())
+				Storage.EnsureOriginalTitle();
+
 			//hack
 			if (bookDOM == OurHtmlDom) //we already have a data for this
 			{

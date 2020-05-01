@@ -32,6 +32,7 @@ import { getEditViewFrameExports } from "./bloomFrames";
 //promise.Promise.polyfill();
 import axios from "axios";
 import { BloomApi } from "../../utils/bloomApi";
+import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
 
 /**
  * Fires an event for C# to handle
@@ -398,6 +399,35 @@ export function SetupElements(container) {
         .each(function() {
             BloomField.ManageField(this);
         });
+
+    // set up a click action on originalTitle if present
+    const citations = container[0].getElementsByTagName("cite");
+    const originalTitleCitations = Array.from(citations).filter(
+        (c: HTMLElement) =>
+            c.parentElement!.getAttribute("data-derived") ===
+            "originalCopyrightAndLicense"
+    );
+    originalTitleCitations.forEach((titleElement: HTMLElement) => {
+        titleElement.onclick = () => {
+            showRequestStringDialog(
+                titleElement.innerText,
+                "EditTab.FrontMatter.EditOriginalTitleCaption",
+                "Edit Original Title",
+                "EditTab.FrontMatter.EditOriginalTitleLabel",
+                "Original Title",
+                newTitle => {
+                    titleElement.innerText = newTitle;
+                    if (newTitle) {
+                        titleElement.classList.remove("missingOriginalTitle");
+                    } else {
+                        titleElement.classList.add("missingOriginalTitle");
+                    }
+                }
+            );
+        };
+        SetupCustomMissingTitleStylesheet();
+    });
+    // set up a dynamic stylesheet that will show the "click to set original title"
 
     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
     $(container)
@@ -886,6 +916,40 @@ export function SetupElements(container) {
 
     AddXMatterLabelAfterPageLabel(container);
     ConstrainContentsOfPageLabel(container);
+}
+
+// This function sets up a rule to display a prompt following the placeholder we insert for a missing
+// "originalTitle" element. It is displayed using CSS :after so we don't have to modify the DOM to
+// make it appear, which would risk having it show up in published books. We insert the CSS dynamically
+// so we can localize the message. We don't have to worry about this stylesheet getting saved because
+// only the page element from editable pages gets saved. Note that we want this stylesheet to exist
+// whether or not the title is missing, since that can change with editing; but we only need it on
+// (typically the one) page that has the cite element for the originalTitle.
+function SetupCustomMissingTitleStylesheet() {
+    const missingTitleStyleSheet = document.getElementById(
+        "customMissingTitleStylesheet"
+    );
+    if (!missingTitleStyleSheet) {
+        theOneLocalizationManager
+            .asyncGetTextInLang(
+                "EditTab.FrontMatter.EditOriginalTitlePlaceholder",
+                "click to edit original title",
+                "UI",
+                ""
+            )
+            .done(result => {
+                if (result) {
+                    const newSheet = document.createElement("style");
+                    document.head.appendChild(newSheet);
+                    newSheet.setAttribute("id", "customMissingTitleStylesheet");
+                    newSheet.type = "text/css";
+                    newSheet.innerText =
+                        '[data-derived="originalCopyrightAndLicense"] cite.missingOriginalTitle::after {content: "' +
+                        result +
+                        '";}';
+                }
+            });
+    }
 }
 
 const pageLabelL18nPrefix = "TemplateBooks.PageLabel.";
