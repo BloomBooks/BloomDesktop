@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using Bloom;
@@ -7,6 +8,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
 using Moq;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.IO;
@@ -267,6 +269,83 @@ namespace BloomTests.Book
 				// For some reason Vaccinations specifies licenseUrl in three ways (no lang, lang="en", lang="*").
 				// We don't want any of them messed with.
 				assertThatBook.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='licenseUrl' and contains(text(), '/zero/1.0')]", 1);
+			}
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromShell_PublisherBecomesOriginalPublisherInDerivative()
+		{
+			var originalSource = Path.Combine(BloomFileLocator.SampleShellsDirectory, "The Moon and the Cap");
+			using (var tempFolder = new TemporaryFolder("MoonCapWithPub"))
+			using (var destFolder = new TemporaryFolder("MoonCap_Derivative"))
+			{
+				var source = Path.Combine(tempFolder.Path, "The Moon and the Cap");
+				if (Directory.Exists(source))
+					Directory.Delete(source, true);
+				DirectoryUtilities.CopyDirectory(originalSource, tempFolder.Path);
+				var metaDataPath = Path.Combine(source, "meta.json");
+				var content = RobustFile.ReadAllText(metaDataPath);
+				// Publisher (original) is Pratham Books
+				const string publisher = "Pratham Books";
+				var existingMetadata = BookMetaData.FromString(content);
+				Assert.AreEqual(publisher, existingMetadata.Publisher, "Moon & Cap Publisher should be 'Pratham Books'");
+				var derivativeMetaJsonPath = GetPathToMetaJson(_starter.CreateBookOnDiskFromTemplate(source, destFolder.Path));
+				var derivedMetaData = BookMetaData.FromString(RobustFile.ReadAllText(derivativeMetaJsonPath));
+				Assert.AreEqual(publisher, derivedMetaData.OriginalPublisher, "Derivation should move Publisher to OriginalPublisher");
+				Assert.AreEqual(string.Empty, derivedMetaData.Publisher, "Derivation should leave Publisher empty");
+			}
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromShell_PublisherDoesNotOverwriteOriginalPublisherInDerivative()
+		{
+			var originalSource = Path.Combine(BloomFileLocator.SampleShellsDirectory, "The Moon and the Cap");
+			using (var tempFolder = new TemporaryFolder("MoonCapWithOrigPub"))
+			using (var destFolder = new TemporaryFolder("MoonCap_Derivative"))
+			{
+				var source = Path.Combine(tempFolder.Path, "The Moon and the Cap");
+				if (Directory.Exists(source))
+					Directory.Delete(source, true);
+				DirectoryUtilities.CopyDirectory(originalSource, tempFolder.Path);
+				var metaDataPath = Path.Combine(source, "meta.json");
+				var content = RobustFile.ReadAllText(metaDataPath);
+				// OriginalPublisher is Pratham Books
+				const string origPublisher = "Pratham Books";
+				const string publisher = "Me, myself, and I";
+				var existingMetadata = BookMetaData.FromString(content);
+				existingMetadata.OriginalPublisher = origPublisher;
+				existingMetadata.Publisher = publisher;
+				Assert.AreEqual(origPublisher, existingMetadata.OriginalPublisher, "Initial Original Publisher is 'Pratham Books'");
+				Assert.AreEqual(publisher, existingMetadata.Publisher, "Initial Publisher is 'Me, myself, and I'");
+				var derivativeMetaJsonPath = GetPathToMetaJson(_starter.CreateBookOnDiskFromTemplate(source, destFolder.Path));
+				var derivedMetaData = BookMetaData.FromString(RobustFile.ReadAllText(derivativeMetaJsonPath));
+				Assert.AreEqual(origPublisher, derivedMetaData.OriginalPublisher, "Derivation should not overwrite OriginalPublisher");
+				Assert.AreEqual(string.Empty, derivedMetaData.Publisher, "Derivation should leave Publisher empty");
+			}
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromShell_MissingPublisher_DoesNotCauseProblemInDerivative()
+		{
+			var originalSource = Path.Combine(BloomFileLocator.SampleShellsDirectory, "The Moon and the Cap");
+			using (var tempFolder = new TemporaryFolder("MoonCapWithNoPub"))
+			using (var destFolder = new TemporaryFolder("MoonCap_Derivative"))
+			{
+				var source = Path.Combine(tempFolder.Path, "The Moon and the Cap");
+				if (Directory.Exists(source))
+					Directory.Delete(source, true);
+				DirectoryUtilities.CopyDirectory(originalSource, tempFolder.Path);
+				var metaDataPath = Path.Combine(source, "meta.json");
+				var content = RobustFile.ReadAllText(metaDataPath);
+				// Remove publisher
+				var metadataObject = BookMetaData.FromString(content);
+				metadataObject.Publisher = null;
+				var patched = JsonConvert.SerializeObject(metadataObject);
+				RobustFile.WriteAllText(metaDataPath, patched);
+				var derivativeMetaJsonPath = GetPathToMetaJson(_starter.CreateBookOnDiskFromTemplate(source, destFolder.Path));
+				var derivedMetaData = BookMetaData.FromString(RobustFile.ReadAllText(derivativeMetaJsonPath));
+				Assert.AreEqual(string.Empty, derivedMetaData.OriginalPublisher, "Derivation of book with no Publisher should leave this empty");
+				Assert.AreEqual(string.Empty, derivedMetaData.Publisher, "Derivation of book with no Publisher should leave this empty");
 			}
 		}
 
