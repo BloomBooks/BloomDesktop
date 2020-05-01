@@ -192,6 +192,9 @@ namespace Bloom.WebLibraryIntegration
 					Key = Path.GetFileName(pathToFile),
 					CannedACL = S3CannedACL.PublicRead // Allows any browser to download it.
 				};
+				// no-cache means "The response may be stored by any cache, even if the response is normally non-cacheable. However,
+				// the stored response MUST always go through validation with the origin server first before using it..."
+				request.Headers.CacheControl = "no-cache";
 				progress.WriteStatus("Uploading book to Bloom Support...");
 				transferUtility.Upload(request);
 				return "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(request.Key);
@@ -399,6 +402,9 @@ namespace Bloom.WebLibraryIntegration
 					// If you put setting the filename back in without such a workaround, be sure to test with a non-ascii book title.
 					if(Path.GetExtension(file).ToLowerInvariant() != ".pdf")
 						request.Headers.ContentDisposition = "attachment";
+					// no-cache means "The response may be stored by any cache, even if the response is normally non-cacheable. However,
+					// the stored response MUST always go through validation with the origin server first before using it..."
+					request.Headers.CacheControl = "no-cache";
 					request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
 
 					progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingStatus", "Uploading {0}"),
