@@ -193,7 +193,7 @@ namespace Bloom.Book
 				}
 				else
 				{
-					HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, val);
+					HtmlDom.SetElementFromUserStringSafely(target, val);
 					target.SetAttribute("lang", lang);
 				}
 			}
@@ -232,7 +232,7 @@ namespace Bloom.Book
 						// Note that HtmlDom.SetElementFromUserStringPreservingLineBreaks() handles embedded <br/> elements, but makes no
 						// effort to handle p or div elements.
 						var decoded = System.Web.HttpUtility.HtmlDecode(form.Form);
-						HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, decoded);
+						HtmlDom.SetElementFromUserStringSafely(target, decoded);
 						target.SetAttribute("lang", form.WritingSystemId); //this allows us to set the font to suit the language
 					}
 				}
@@ -335,6 +335,21 @@ namespace Bloom.Book
 			var license = originalMetadata.License.GetMinimalFormForCredits(languagePriorityIds, out idOfLanguageUsed);
 			string originalLicenseSentence;
 			var preferredLanguageIds = new[] {collectionSettings.Language2Iso639Code, LocalizationManager.UILanguageId, "en"};
+			// The originalTitle strategy used here is not ideal. We would prefer to have a placeholder specifically for it
+			// in both EditTab.FrontMatter.OriginalCopyrightSentence and EditTab.FrontMatter.OriginalHadNoCopyrightSentence.
+			// But we don't want to require a new set of translations if we can avoid it.
+			var originalTitle = dom.GetBookSetting("originalTitle")?.GetExactAlternative("*");
+			// Used when we insert into the no-copyright string, typically "Adapted from an original with no copyright"
+			var originalTitleBeforePeriod = ", <cite data-book=\"originalTitle\">" + originalTitle + "</cite>";
+			// Used when we insert into the usual string, typicall "Adapted from original, {0}" ahead of the copyright and license
+			// as part of the {0} replacement.
+			var originalTitleAfterComma = "<cite data-book=\"originalTitle\">" + originalTitle + "</cite>, ";
+			if (string.IsNullOrEmpty(originalTitle))
+			{
+				// We need to add the "missingOriginalTitle class.
+				originalTitleBeforePeriod = ", <cite data-book=\"originalTitle\" class=\"missingOriginalTitle\"></cite>";
+				originalTitleAfterComma = "<cite data-book=\"originalTitle\" class=\"missingOriginalTitle\"></cite>, ";
+			}
 			if (originalMetadata.License is CustomLicense)
 			{
 				// I can imagine being more fancy... something like "Licensed under custom license:", and get localizations
@@ -360,7 +375,10 @@ namespace Bloom.Book
 					"On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.",
 					preferredLanguageIds, out idOfLanguageUsed);
 
-				copyrightNotice = noCopyrightSentence + " " + originalLicenseSentence;
+					noCopyrightSentence = noCopyrightSentence.Substring(0, noCopyrightSentence.Length - 1) +
+					                      originalTitleBeforePeriod + ".";
+
+					copyrightNotice = noCopyrightSentence + " " + originalLicenseSentence;
 			}
 			else
 			{
@@ -368,7 +386,7 @@ namespace Bloom.Book
 					"Adapted from original, {0}.",
 					"On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.",
 					preferredLanguageIds, out idOfLanguageUsed);
-				copyrightNotice = String.Format(originalCopyrightSentence, originalMetadata.CopyrightNotice.Trim()) + " " +
+				copyrightNotice = String.Format(originalCopyrightSentence, originalTitleAfterComma + originalMetadata.CopyrightNotice.Trim()) + " " +
 				                  originalLicenseSentence;
 			}
 

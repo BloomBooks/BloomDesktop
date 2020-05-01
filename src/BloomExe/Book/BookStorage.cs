@@ -74,6 +74,7 @@ namespace Bloom.Book
 		string Duplicate();
 		IEnumerable<string> GetNarrationAudioFileNamesReferencedInBook(bool includeWav);
 		IEnumerable<string> GetBackgroundMusicFileNamesReferencedInBook();
+		void EnsureOriginalTitle();
 	}
 
 	public class BookStorage : IBookStorage
@@ -2228,6 +2229,37 @@ namespace Bloom.Book
 			}
 
 			return newName;
+		}
+
+		public void EnsureOriginalTitle()
+		{
+			var dataDiv = Dom.RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']").Cast<XmlElement>().FirstOrDefault();
+			if (dataDiv == null)
+				return;
+			var originalTitle = dataDiv.SafeSelectNodes(".//div[@data-book='originalTitle']");
+			if (originalTitle.Count > 0)
+				return;
+			var titles = Dom.RawDom.SafeSelectNodes("//div[@data-book='bookTitle']").Cast<XmlElement>().ToList();
+			if (titles.Count == 0)
+				return;
+			// If we want to use some other, non-English title, we could consider such an option here,
+			// e.g., any other language...except probably not the book's L1, especially when filling it in
+			// for an older book.
+			var useTitle = titles.FirstOrDefault(t => t.Attributes["lang"]?.Value == "en");
+			if (useTitle == null)
+				return;
+			var content = BookData.TextOfInnerHtml(useTitle.InnerText);
+			if (string.IsNullOrEmpty(content))
+				return;
+			var newElt = dataDiv.OwnerDocument.CreateElement("div");
+			newElt.InnerText = content;
+			newElt.SetAttribute("data-book", "originalTitle");
+			newElt.SetAttribute("lang", "*");
+			dataDiv.AppendChild(newElt);
+			if (BookInfo != null) // should only be null in unit tests
+			{
+				BookInfo.OriginalTitle = content;
+			}
 		}
 	}
 }

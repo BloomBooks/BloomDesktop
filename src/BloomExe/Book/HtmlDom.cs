@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -1464,16 +1464,16 @@ namespace Bloom.Book
 				node.SetAttribute("data-book", key);
 				node.SetAttribute("lang", writingSystemId);
 			}
-			SetElementFromUserStringPreservingLineBreaks(node, form);
+			SetElementFromUserStringSafely(node, form);
 			dataDiv.AppendChild(node);
 		}
 
-		public static void SetElementFromUserStringPreservingLineBreaks(XmlElement node, string form)
+		public static void SetElementFromUserStringSafely(XmlElement node, string form)
 		{
 			//Note: this method is a compromise... it replaces a couple instances where we were
 			//explicitly using innerText instead of innerXml, presumably on purpose. Of course that
 			//makes it impossible to have any html markup. My particular need right now (BL-3832) is to
-			//allow <br> to get through this filter. So that's all this does. A future alternative
+			//allow <br> to get through this filter. And later (BL-8221) to allow <cite> . A future alternative
 			//might be to remove the filter altogether and see if there's a better way to handle
 			//whatever scenarios the filtering was designed to prevent.
 
@@ -1481,10 +1481,25 @@ namespace Bloom.Book
 			const string kBR = "LINEBREAKHERE";
 			var withBreaksHidden = form.Replace("<br />", kBR).Replace("<br/>", kBR);
 
+			var match = new Regex(".*(<cite[^>]*>).*</cite>.*").Match(withBreaksHidden);
+			const string kCiteBegin = "BEGINCITEHERE";
+			const string kCiteEnd = "ENDCITEHERE";
+			if (match.Success)
+			{
+				withBreaksHidden = withBreaksHidden.Replace(match.Groups[1].Value, kCiteBegin)
+					.Replace("</cite>", kCiteEnd);
+			}
+
 			//going to innertext means we treat everything literally, for better or worse (definitely safer)
 			node.InnerText = withBreaksHidden;
-			// finally, unhide the breaks
-			node.InnerXml = node.InnerXml.Replace(kBR, "<br/>");
+			// finally, restore the breaks and <cite> markup
+			var safeText = node.InnerXml; // anything XML-ish has been escaped
+			if (match.Success)
+			{
+				safeText = safeText.Replace(kCiteEnd, "</cite>").Replace(kCiteBegin, match.Groups[1].Value);
+			}
+			safeText = safeText.Replace(kBR, "<br/>");
+			node.InnerXml = safeText;
 		}
 
 		internal static void StripUnwantedTagsPreservingText(XmlDocument dom, XmlNode element, string[] tagsToPreserve)
