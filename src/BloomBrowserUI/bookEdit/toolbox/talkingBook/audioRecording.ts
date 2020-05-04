@@ -1828,7 +1828,8 @@ export default class AudioRecording {
         // In addition to us processing currentTextBox, also add any unprocessed divs
         const recordableDivs = this.getRecordableDivs();
         const unprocessedRecordables = recordableDivs.filter(
-            ":not([data-audioRecordingMode])"
+            (idx, elem) =>
+                !this.isRecordableDivFullyInitialized(elem, audioPlaybackMode)
         );
 
         let unionedElementsToProcess: JQuery;
@@ -1898,8 +1899,35 @@ export default class AudioRecording {
         }
     }
 
-    private isFullyInitialized(): boolean {
-        return this.audioRecordingMode != AudioRecordingMode.Unknown;
+    // BL-8425 Some cases were found where 'data-audioRecordingMode' was present, but 'audio-sentence' class
+    // didn't occur at all in that div or its children. So here we want to make sure that things get processed
+    // if they might be in a bad state.
+    // The only case we know of that could slip through here incorrectly is if we have some spans that have
+    // audio-sentence and some spans that don't, but we haven't seen Bloom create that state yet.
+    private isRecordableDivFullyInitialized(
+        div: Element,
+        pageRecordingMode: AudioRecordingMode
+    ): boolean {
+        const modeAttribute = div.getAttribute("data-audioRecordingMode");
+        if (!modeAttribute) {
+            return false;
+        }
+        if (modeAttribute !== pageRecordingMode.toString()) {
+            return false;
+        }
+        if (
+            pageRecordingMode === AudioRecordingMode.Sentence &&
+            div.getElementsByClassName(kAudioSentence).length > 0
+        ) {
+            return true;
+        }
+        if (
+            pageRecordingMode === AudioRecordingMode.TextBox &&
+            div.classList.contains(kAudioSentence)
+        ) {
+            return true;
+        }
+        return false;
     }
 
     public setCurrentAudioElementBasedOnRecordingMode(
