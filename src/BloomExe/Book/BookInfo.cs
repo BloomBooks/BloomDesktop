@@ -91,6 +91,15 @@ namespace Bloom.Book
 			return Path.Combine(bookFolder, Path.GetFileName(bookFolder) + BookOrderExtension);
 		}
 
+		public void MovePublisherToOriginalPublisher()
+		{
+			if (string.IsNullOrEmpty(MetaData.OriginalPublisher))
+			{
+				MetaData.OriginalPublisher = string.IsNullOrEmpty(MetaData.Publisher) ? string.Empty : MetaData.Publisher;
+			}
+			MetaData.Publisher = string.Empty;
+		}
+
 		//there was a beta version that would introduce the .json files with the incorrect defaults
 		//we don't have a good way of differentiating when these defaults were set automatically
 		//vs. when someone actually set them to false. So this method is only used if a certain
@@ -831,7 +840,9 @@ namespace Bloom.Book
 						importedBookSourceUrl = ImportedBookSourceUrl,
 						phashOfFirstContentImage = PHashOfFirstContentImage,
 						updateSource = GetUpdateSource(),
-						lastUploaded = GetCurrentDate()
+						lastUploaded = GetCurrentDate(),
+						publisher = Publisher,
+						originalPublisher = OriginalPublisher
 						// Other fields are not needed by the web site and we don't expect they will be.
 					});
 			}
@@ -869,7 +880,7 @@ namespace Bloom.Book
 		public bool IsExperimental { get; set; }
 
 		[JsonProperty("brandingProjectName")]
-		public String BrandingProjectName { get; set; }
+		public string BrandingProjectName { get; set; }
 
 		/// <summary>
 		/// A "Folio" document is one that acts as a wrapper for a number of other books
@@ -964,7 +975,7 @@ namespace Bloom.Book
 
 		// This is set to true in situations where the materials that are not permissively licensed and the creator doesn't want derivative works being uploaded.
 		// Currently we don't need this property in Parse.com, so we don't upload it.
-		[JsonProperty("allowUploadingToBloomLibrary",DefaultValueHandling = DefaultValueHandling.Populate)]
+		[JsonProperty("allowUploadingToBloomLibrary", DefaultValueHandling = DefaultValueHandling.Populate)]
 		[DefaultValue(true)]
 		public bool AllowUploadingToBloomLibrary { get; set; }
 
@@ -1059,6 +1070,12 @@ namespace Bloom.Book
 
 		[JsonProperty("author")]
 		public string Author { get; set; }
+
+		[JsonProperty("publisher")]
+		public string Publisher { get; set; }
+
+		[JsonProperty("originalPublisher")]
+		public string OriginalPublisher { get; set; }
 
 		// tags from Thema (https://www.editeur.org/151/Thema/)
 		[JsonProperty("subjects")]
