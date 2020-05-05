@@ -12,6 +12,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
+using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -90,7 +91,7 @@ namespace Bloom.web.controllers
 					var userEmail = report.email as string;
 					if (report.includeScreenshot && _screenshotTempFile != null && RobustFile.Exists(_screenshotTempFile.Path))
 					{
-						issueSubmission.AddAttachmentWhenWeHaveAnIssue(_screenshotTempFile?.Path);
+						issueSubmission.AddAttachmentWhenWeHaveAnIssue(_screenshotTempFile.Path);
 					}
 					var diagnosticInfo = GetDiagnosticInfo(report.includeBook, userDesc, userEmail);
 					if (!string.IsNullOrWhiteSpace(userEmail))
@@ -108,14 +109,13 @@ namespace Bloom.web.controllers
 					catch (Exception e)
 					{
 						Debug.Fail("Submitting problem report to YouTrack failed with '" + e.Message + "'.");
-						DisposeOfZipRemnants(report.includeBook);
 						issueId = failureResult;
 					}
 					object linkToNewIssue;
 					if (issueId == failureResult)
 					{
-						linkToNewIssue = new {issueLink = failureResult + ":" + _bookZipFileTemp.Path};
-						_bookZipFileTemp.Detach(); // so it doesn't go away before the user can email it to us.
+						var zipPath = MakeEmailableReportFile(report.includeBook, report.includeScreenshot, userDesc, diagnosticInfo);
+						linkToNewIssue = new {issueLink = failureResult + ":" + zipPath};
 					}
 					else
 					{
@@ -124,28 +124,49 @@ namespace Bloom.web.controllers
 						{
 							try
 							{
-								_bookZipFileTemp = TempFile.WithFilenameInTempFolder(issueId + ".zip");
-								_bookZipFile = new BloomZipFile(_bookZipFileTemp.Path);
-								_bookZipFile.AddDirectory(_bookSelection.CurrentSelection.StoragePageFolder);
-								if (WantReaderInfo(true))
-								{
-									AddReaderInfo();
-								}
-								AddCollectionSettings();
-								_bookZipFile.Save();
-								issueSubmission.AttachFileToExistingIssue(issueId, _bookZipFileTemp.Path);
+								string zipPath = CreateBookZipFile(issueId, userDesc);
+								if (zipPath != null)
+									issueSubmission.AttachFileToExistingIssue(issueId, zipPath);
 							}
 							catch (Exception error)
 							{
-								var msg = "***Error as ProblemReportApi attempted to zip up the book: " + error.Message;
+								Debug.WriteLine($"Attaching book to new YouTrack issue failed with '{error.Message}'.");
+								var msg = "***Error as ProblemReportApi attempted to upload the zipped book: " + error.Message;
 								userDesc += Environment.NewLine + msg;
 								Logger.WriteEvent(userDesc);
-								DisposeOfZipRemnants(report.includeBook);
+								_bookZipFileTemp.Detach();
 							}
 						}
 					}
 					request.ReplyWithJson(linkToNewIssue);
 				}, true);
+		}
+
+		private string CreateBookZipFile(string basename, string userDesc)
+		{
+			try
+			{
+				if (_bookZipFileTemp != null)
+					_bookZipFileTemp.Dispose();	// delete any previous report's temp file
+				_bookZipFileTemp = TempFile.WithFilenameInTempFolder(basename + ".zip");
+				_bookZipFile = new BloomZipFile(_bookZipFileTemp.Path);
+				_bookZipFile.AddDirectory(_bookSelection.CurrentSelection.StoragePageFolder);
+				if (WantReaderInfo(true))
+				{
+					AddReaderInfo();
+				}
+				AddCollectionSettings();
+				_bookZipFile.Save();
+				return _bookZipFileTemp.Path;
+			}
+			catch (Exception error)
+			{
+				var msg = "***Error as ProblemReportApi attempted to zip up the book: " + error.Message;
+				userDesc += Environment.NewLine + msg;
+				Logger.WriteEvent(userDesc);
+				DisposeOfZipRemnants(true);
+				return null;
+			}
 		}
 
 		private void DisposeOfZipRemnants(bool includeBook)
@@ -174,6 +195,50 @@ namespace Bloom.web.controllers
 			foreach (var filePath in filePaths)
 			{
 				_bookZipFile.AddTopLevelFile(filePath);
+			}
+		}
+
+		private string MakeEmailableReportFile(bool includeBook, bool includeScreenshot, string userDesc, string diagnosticInfo)
+		{
+			try
+			{
+				var filename = ("Report " + DateTime.UtcNow.ToString("u") + ".zip").Replace(':', '.');
+				filename = filename.SanitizeFilename('#');
+				var emailZipPath = Path.Combine(Path.GetTempPath(), filename);
+				var emailZipper = new BloomZipFile(emailZipPath);
+				using (var file = TempFile.WithFilenameInTempFolder("report.txt"))
+				{
+					using (var stream = RobustFile.CreateText(file.Path))
+					{
+						stream.WriteLine(diagnosticInfo);
+						if (includeBook)
+						{
+							stream.WriteLine();
+							stream.WriteLine(
+								"REMEMBER: if the attached zip file appears empty, it may have non-ascii in the file names. Open with 7zip and you should see it.");
+						}
+					}
+					emailZipper.AddTopLevelFile(file.Path);
+				}
+				if (includeBook)
+				{
+					var bookZipPath = CreateBookZipFile("ProblemBook", userDesc);
+					if (bookZipPath != null)
+						emailZipper.AddTopLevelFile(bookZipPath);
+				}
+				if (includeScreenshot && _screenshotTempFile != null && RobustFile.Exists(_screenshotTempFile.Path))
+				{
+					emailZipper.AddTopLevelFile(_screenshotTempFile.Path);
+				}
+				emailZipper.Save();
+				return emailZipPath;
+			}
+			catch (Exception error)
+			{
+				var msg = "***Error as ProblemReportApi attempted to zip up error information to email: " + error.Message;
+				userDesc += Environment.NewLine + msg;
+				Logger.WriteEvent(userDesc);
+				return null;
 			}
 		}
 

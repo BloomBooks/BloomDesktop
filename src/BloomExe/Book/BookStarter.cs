@@ -11,7 +11,6 @@ using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
-using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
 
 namespace Bloom.Book
@@ -164,6 +163,11 @@ namespace Bloom.Book
 				{
 					initialPageDivs[0].ParentNode.RemoveChild(initialPageDivs[0]);
 				}
+			}
+			else
+			{
+				// When making a translation of an original move the 'publisher' (if there is one) to 'originalPublisher'.
+				storage.BookInfo.MovePublisherToOriginalPublisher();
 			}
 
 			XMatterHelper.RemoveExistingXMatter(storage.Dom);
