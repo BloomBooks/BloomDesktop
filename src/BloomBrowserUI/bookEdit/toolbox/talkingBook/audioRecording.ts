@@ -1828,7 +1828,7 @@ export default class AudioRecording {
         // In addition to us processing currentTextBox, also add any unprocessed divs
         const recordableDivs = this.getRecordableDivs();
         const unprocessedRecordables = recordableDivs.filter(
-            ":not([data-audioRecordingMode])"
+            (idx, elem) => !this.isRecordableDivFullyInitialized(elem)
         );
 
         let unionedElementsToProcess: JQuery;
@@ -1898,8 +1898,29 @@ export default class AudioRecording {
         }
     }
 
-    private isFullyInitialized(): boolean {
-        return this.audioRecordingMode != AudioRecordingMode.Unknown;
+    // BL-8425 Some cases were found where 'data-audioRecordingMode' was present, but 'audio-sentence' class
+    // didn't occur at all in that div or its children. So here we want to make sure that things get processed
+    // if they might be in a bad state.
+    private isRecordableDivFullyInitialized(div: Element): boolean {
+        const modeAttribute = div.getAttribute("data-audioRecordingMode");
+        if (!modeAttribute) {
+            return false;
+        }
+        if (
+            modeAttribute == AudioRecordingMode.TextBox &&
+            !div.classList.contains(kAudioSentence) &&
+            div.getElementsByClassName(kAudioSentence).length === 0
+        ) {
+            return false;
+        }
+        if (
+            modeAttribute == AudioRecordingMode.Sentence &&
+            !div.classList.contains(kAudioSentence) &&
+            div.getElementsByTagName("SPAN").length === 0
+        ) {
+            return false;
+        }
+        return true;
     }
 
     public setCurrentAudioElementBasedOnRecordingMode(
@@ -2328,7 +2349,8 @@ export default class AudioRecording {
     }
 
     // AudioRecordingMode=Sentence: We want to make out of each sentence in root a span which has a unique ID.
-    // AudioRecordingMode=TextBox: We want to turn the bloom-editable text box into the unit which will be recorded. (It needs a unique ID too). No spans will be created though
+    // AudioRecordingMode=TextBox: We want to turn the bloom-editable text box into the unit which will be
+    // recorded. (It needs a unique ID too). No spans will be created though.
     // If the text is already so marked up, we want to keep the existing ids
     // AND the recordingID checksum attribute (if any) that indicates what
     // version of the text was last recorded.
@@ -2439,7 +2461,8 @@ export default class AudioRecording {
     // current sentence, we want to preserve the association between that content and ID (and possibly recording).
     // Where there aren't exact matches, but there are existing audio-sentence spans, we keep the ids as far as possible,
     // just using the original order, since it is possible we have a match and only spelling or punctuation changed.
-    // We also attempt to use any sentence IDs specified by this.sentenceToIdListMap
+    // We also attempt to use any sentence IDs specified by this.sentenceToIdListMap.
+    // N.B. If Bloom comes in here with spans that have no audio-sentence class, we may end up wrapping spans in spans.
     private makeAudioSentenceElementsLeaf(elt: JQuery): void {
         // When all text is deleted, we get in a temporary state with no paragraph elements, so the root editable div
         // may be processed...and if this happens during editing the format button may be present. The body of this function
