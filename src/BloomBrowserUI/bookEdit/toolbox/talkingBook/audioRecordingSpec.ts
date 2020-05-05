@@ -1272,8 +1272,6 @@ describe("audio recording tests", () => {
                 "Could not find currentDiv. Possible test setup problem?"
             );
 
-            // Even though the function is named async, but most cases will actually happen synchronously.
-            // We'll only bother testing the synchronous cases.
             recording.initializeAudioRecordingMode();
 
             expect(recording.audioRecordingMode).toBe(
@@ -1300,8 +1298,6 @@ describe("audio recording tests", () => {
                 "Could not find currentDiv. Possible test setup problem?"
             );
 
-            // Even though the function is named async, but most cases will actually happen synchronously.
-            // We'll only bother testing the synchronous cases.
             recording.initializeAudioRecordingMode();
 
             expect(recording.audioRecordingMode).toBe(
@@ -1328,8 +1324,6 @@ describe("audio recording tests", () => {
                 "Could not find currentDiv. Possible test setup problem?"
             );
 
-            // Even though the function is named async, but most cases will actually happen synchronously.
-            // We'll only bother testing the synchronous cases.
             recording.initializeAudioRecordingMode();
 
             expect(recording.audioRecordingMode).toBe(
@@ -1358,8 +1352,6 @@ describe("audio recording tests", () => {
                 "Could not find currentDiv. Possible test setup problem?"
             );
 
-            // Even though the function is named async, but most cases will actually happen synchronously.
-            // We'll only bother testing the synchronous cases.
             recording.initializeAudioRecordingMode();
 
             expect(recording.audioRecordingMode).toBe(
@@ -1386,8 +1378,6 @@ describe("audio recording tests", () => {
                 "Could not find currentDiv. Possible test setup problem?"
             );
 
-            // Even though the function is named async, but most cases will actually happen synchronously.
-            // We'll only bother testing the synchronous cases.
             recording.initializeAudioRecordingMode();
 
             expect(recording.audioRecordingMode).toBe(
@@ -1397,6 +1387,50 @@ describe("audio recording tests", () => {
                 false,
                 "Checkbox state"
             );
+        });
+        // BL-8425 The Jonah SuperBible comic book was found with data-audioRecordingMode, but no audio-sentences.
+        // Not sure how that happened, but now the Talking Book Tool will repair this case.
+        it("updateMarkupForCurrentText repairs faulty setup, TextBox div has no audio-sentence class", () => {
+            SetupIFrameFromHtml(
+                "<div><div id='testId' data-audioRecordingMode='TextBox' class='bloom-editable' lang='en'><p>Sentence 1.</p></div></div>"
+            );
+
+            const recording = new AudioRecording();
+            recording.audioRecordingMode = AudioRecordingMode.TextBox;
+
+            const currentDiv = recording
+                .getPageDocBody()!
+                .ownerDocument!.getElementById("testId");
+
+            recording.updateMarkupForCurrentText(recording.audioRecordingMode);
+
+            expect(recording.audioRecordingMode).toBe(
+                AudioRecordingMode.TextBox
+            );
+            expect(
+                currentDiv!.classList.contains("audio-sentence")
+            ).toBeTruthy();
+        });
+        it("updateMarkupForCurrentText repairs faulty setup, Sentence div has no spans", () => {
+            SetupIFrameFromHtml(
+                "<div><div id='testId' data-audioRecordingMode='Sentence' class='bloom-editable' lang='en'><p>Sentence 1.</p></div></div>"
+            );
+
+            const recording = new AudioRecording();
+            recording.audioRecordingMode = AudioRecordingMode.Sentence;
+
+            const currentDiv = recording
+                .getPageDocBody()!
+                .ownerDocument!.getElementById("testId");
+
+            recording.updateMarkupForCurrentText(recording.audioRecordingMode);
+
+            expect(recording.audioRecordingMode).toBe(
+                AudioRecordingMode.Sentence
+            );
+            expect(
+                currentDiv!.querySelectorAll("span.audio-sentence").length
+            ).toBe(1);
         });
     });
 
