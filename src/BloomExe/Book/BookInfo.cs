@@ -91,6 +91,15 @@ namespace Bloom.Book
 			return Path.Combine(bookFolder, Path.GetFileName(bookFolder) + BookOrderExtension);
 		}
 
+		public void MovePublisherToOriginalPublisher()
+		{
+			if (string.IsNullOrEmpty(MetaData.OriginalPublisher))
+			{
+				MetaData.OriginalPublisher = string.IsNullOrEmpty(MetaData.Publisher) ? string.Empty : MetaData.Publisher;
+			}
+			MetaData.Publisher = string.Empty;
+		}
+
 		//there was a beta version that would introduce the .json files with the incorrect defaults
 		//we don't have a good way of differentiating when these defaults were set automatically
 		//vs. when someone actually set them to false. So this method is only used if a certain
@@ -163,6 +172,14 @@ namespace Bloom.Book
 			}
 		}
 
+		public string OriginalTitle
+		{
+			get { return MetaData.OriginalTitle; }
+			set
+			{
+				MetaData.OriginalTitle = value;
+			}
+		}
 		/// <summary>
 		/// A possibly-temporary expedient to get multilingual title data into the json, and thus into parse.com
 		/// This stores a Json string representing lang:title pairs, e.g.,
@@ -797,6 +814,7 @@ namespace Bloom.Book
 						experimental = IsExperimental,  // not yet used by BL (I think), potentially useful filter
 						title = Title,
 						allTitles = AllTitles, // created for BL to search, though it doesn't yet.
+						originalTitle=OriginalTitle,
 						baseUrl = BaseUrl, // how web site finds image and download
 						bookOrder = BookOrder, // maybe obsolete? Keep uploading until sure.
 						isbn = Isbn,
@@ -822,7 +840,9 @@ namespace Bloom.Book
 						importedBookSourceUrl = ImportedBookSourceUrl,
 						phashOfFirstContentImage = PHashOfFirstContentImage,
 						updateSource = GetUpdateSource(),
-						lastUploaded = GetCurrentDate()
+						lastUploaded = GetCurrentDate(),
+						publisher = Publisher,
+						originalPublisher = OriginalPublisher
 						// Other fields are not needed by the web site and we don't expect they will be.
 					});
 			}
@@ -860,7 +880,7 @@ namespace Bloom.Book
 		public bool IsExperimental { get; set; }
 
 		[JsonProperty("brandingProjectName")]
-		public String BrandingProjectName { get; set; }
+		public string BrandingProjectName { get; set; }
 
 		/// <summary>
 		/// A "Folio" document is one that acts as a wrapper for a number of other books
@@ -884,6 +904,9 @@ namespace Bloom.Book
 
 		[JsonProperty("allTitles")]
 		public string AllTitles { get; set; }
+
+		[JsonProperty("originalTitle")]
+		public string OriginalTitle { get; set; }
 
 		// This is filled in when we upload the json. It is not used locally, but becomes a field on parse.com
 		// containing the actual url where we can grab the thumbnails, pdfs, etc.
@@ -952,7 +975,7 @@ namespace Bloom.Book
 
 		// This is set to true in situations where the materials that are not permissively licensed and the creator doesn't want derivative works being uploaded.
 		// Currently we don't need this property in Parse.com, so we don't upload it.
-		[JsonProperty("allowUploadingToBloomLibrary",DefaultValueHandling = DefaultValueHandling.Populate)]
+		[JsonProperty("allowUploadingToBloomLibrary", DefaultValueHandling = DefaultValueHandling.Populate)]
 		[DefaultValue(true)]
 		public bool AllowUploadingToBloomLibrary { get; set; }
 
@@ -1047,6 +1070,12 @@ namespace Bloom.Book
 
 		[JsonProperty("author")]
 		public string Author { get; set; }
+
+		[JsonProperty("publisher")]
+		public string Publisher { get; set; }
+
+		[JsonProperty("originalPublisher")]
+		public string OriginalPublisher { get; set; }
 
 		// tags from Thema (https://www.editeur.org/151/Thema/)
 		[JsonProperty("subjects")]

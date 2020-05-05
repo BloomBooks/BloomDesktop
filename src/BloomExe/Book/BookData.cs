@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -18,6 +17,8 @@ using SIL.Extensions;
 using SIL.Linq;
 using SIL.Text;
 using SIL.Xml;
+using TagLib;
+using File = System.IO.File;
 
 namespace Bloom.Book
 {
@@ -1443,6 +1444,26 @@ namespace Bloom.Book
 					info.AllTitles = sb.ToString();
 				}
 			}
+
+			if (BookIsDerivative())
+			{
+				// We just need to make the info, if any, consistent wit the bookdata
+				if (info != null)
+				{
+					info.OriginalTitle = GetVariableOrNull("originalTitle","*");
+				}
+			} else
+			{
+				string originalTitle =
+					BookData.TextOfInnerHtml(title?.TextAlternatives.GetExactAlternative(_collectionSettings.Language1Iso639Code));
+
+				_dataset.UpdateGenericLanguageString("originalTitle", originalTitle, false);
+				UpdateSingleTextVariableInDataDiv("originalTitle", _dataset.TextVariables["originalTitle"].TextAlternatives);
+				if (info != null)
+				{
+					info.OriginalTitle = originalTitle;
+				}
+			}
 		}
 
 		/// <summary>
@@ -1454,6 +1475,8 @@ namespace Bloom.Book
 		/// <returns></returns>
 		internal static string TextOfInnerHtml(string input)
 		{
+			if (input == null)
+				return null;
 			// Parsing it as XML and then extracting the value removes any markup.  Internal
 			// spaces might disappear if we don't preserve whitespace during the parse.
 			var doc = XElement.Parse("<doc>" + input + "</doc>", LoadOptions.PreserveWhitespace);
@@ -1578,6 +1601,21 @@ namespace Bloom.Book
 					Set(item.DataBook, item.Content, item.Lang);
 				}
 			}
+		}
+
+		/// <summary>
+		/// At least one of these should exist if the book is a derivative, at least after the call to
+		/// BookStarter.SetOriginalCopyrightAndLicense() which initializes all of them, since we don't allow a
+		/// book to have no license, nor to be uploaded without copyright...unless of course it was derived
+		/// before 3.9, when we started doing this. In that case the best we can do is for SetOriginalCopyrightAndLicense
+		/// to record the best information we have from the source book. But for other purposes, we can regard
+		/// a book as a derivative if it has one of these fields.
+		/// </summary>
+		public bool BookIsDerivative()
+		{
+			return GetMultiTextVariableOrEmpty("originalLicenseUrl").Count > 0
+			       || GetMultiTextVariableOrEmpty("originalLicenseNotes").Count > 0
+			       || GetMultiTextVariableOrEmpty("originalCopyright").Count > 0;
 		}
 	}
 }

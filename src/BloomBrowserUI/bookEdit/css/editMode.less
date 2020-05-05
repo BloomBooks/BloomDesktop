@@ -70,6 +70,16 @@ div.bloom-imageContainer {
     top: calc(@PageLabelVerticalDisplacement - 48);
 }
 
+[data-derived="originalCopyrightAndLicense"] {
+    cite {
+        &.missingOriginalTitle,
+        &:hover {
+            color: red;
+            text-decoration: underline red;
+            cursor: pointer;
+        }
+    }
+}
 .bloom-page .pageLabel {
     text-align: left;
     color: @ControlColor;
