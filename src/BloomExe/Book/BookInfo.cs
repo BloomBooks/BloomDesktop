@@ -835,7 +835,6 @@ namespace Bloom.Book
 						province = ProvinceName,
 						district = DistrictName,
 						features = Features,
-						publisher = Publisher,
 						internetLimits = InternetLimits,
 						importedBookSourceUrl = ImportedBookSourceUrl,
 						phashOfFirstContentImage = PHashOfFirstContentImage,
@@ -1071,6 +1070,9 @@ namespace Bloom.Book
 		[JsonProperty("author")]
 		public string Author { get; set; }
 
+		/// <summary>
+		/// The publisher of the book.  For many books, this may be unset because the book is "self-published".
+		/// </summary>
 		[JsonProperty("publisher")]
 		public string Publisher { get; set; }
 
@@ -1244,12 +1246,6 @@ namespace Bloom.Book
 		/// </summary>
 		[JsonProperty("imported-book-source-url")]
 		public string ImportedBookSourceUrl { get; set; }
-
-		/// <summary>
-		/// The publisher of the book.  For many books, this may be unset because the book is "self-published".
-		/// </summary>
-		[JsonProperty("publisher")]
-		public string Publisher { get; set; }
 
 		/// <summary>
 		/// This is a "perceptual hash" (http://phash.org/) of the image in the first bloom-imageContainer
