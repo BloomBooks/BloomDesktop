@@ -43,7 +43,7 @@
         "storybook": "start-storybook -s ../../output/browser",
         "// I haven't figured out how to generalize this to all pug, but it's a helpful template for future xmatter work": "",
         "abcpug": "pug templates/xMatter/ABC-Reader-XMatter/ABC-Reader-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/ABC-Reader-XMatter --pretty",
-        "watch-abc": "npm-run-all --parallel abcpug watchTemplatesLess"
+        "watch-abc": "npm-run-all --parallel abcpug watchTemplatesLess watchBrandingFiles watchBrandingLess"
     },
     "repository": {
         "type": "git",
