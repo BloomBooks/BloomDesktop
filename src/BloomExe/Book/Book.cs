@@ -2473,6 +2473,18 @@ namespace Bloom.Book
 
 			CopyAndRenameAudioFiles(newPageDiv, templatePage.Book.FolderPath);
 			CopyAndRenameVideoFiles(newPageDiv, templatePage.Book.FolderPath);
+			// Why audio and video but not image or widget? The logic is that within Bloom
+			// someone can record over the audio or video, and it will replace the file,
+			// and it would be unexpected for this to alter the audio or video on another page,
+			// especially since in the case of the audio the text may have been edited on one
+			// page but not the other. On the other hand, if the user selects a new image,
+			// it will come with a unique file name and not affect any other page.
+			// And there's no way to edit an activity within Bloom, so no reason I can see
+			// not to share a possibly expensive resource. Of course, if someone edits the
+			// resource outside Bloom, they might be either annoyed or pleased to have it
+			// changed in both places. I don't have any reason to think one is more likely
+			// than the other, so I'm going with the option that is less costly, both in
+			// code to write and size of the resulting book.
 
 			OrderOrNumberOfPagesChanged();
 			BuildPageCache();
