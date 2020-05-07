@@ -2,16 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml;
-using Bloom.Api;
 using Bloom.Collection;
-using Bloom.ImageProcessing;
-using Bloom.Publish;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
-using SIL.Progress;
 using SIL.Reporting;
 using SIL.Xml;
 
@@ -33,9 +28,11 @@ namespace Bloom.Book
 		/// The name of the file should be (key)-XMatter.htm. The name and the location of the folder is not our problem...
 		/// we leave it to the supplied fileLocator to find it.
 		/// </summary>
+		/// <param name="bookDom">The book's DOM</param>
 		/// <param name="xmatterNameFromCollectionSettings">e.g. "Factory", "SILIndonesia".  This can be overridden inside the bookDom.</param>
 		/// <param name="fileLocator">The locator needs to be able tell us the path to an xmatter html file, given its name</param>
-		public XMatterHelper(HtmlDom bookDom, string xmatterNameFromCollectionSettings, IFileLocator fileLocator)
+		/// <param name="useDeviceVersionIfAvailable">If true, use a pack-specific device xmatter, or "Device" if none found. E.g. ABC => ABC-Device</param>
+		public XMatterHelper(HtmlDom bookDom, string xmatterNameFromCollectionSettings, IFileLocator fileLocator, bool useDeviceVersionIfAvailable = false)
 		{
 			string directoryPath = null;
 			_bookDom = bookDom;
@@ -44,6 +41,8 @@ namespace Bloom.Book
 			{
 				bookSpecificXMatterPack = MigrateXMatterName(bookSpecificXMatterPack);
 				_nameOfXMatterPack = bookSpecificXMatterPack;
+				if (useDeviceVersionIfAvailable)
+					_nameOfXMatterPack = GetBestDeviceXMatterAvailable(_nameOfXMatterPack, fileLocator);
 				var errorTemplate = LocalizationManager.GetString("Errors.XMatterSpecifiedByBookNotFound",
 					"This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.");
 				directoryPath = GetXMatterDirectory(_nameOfXMatterPack, fileLocator, String.Format(errorTemplate, bookSpecificXMatterPack), false);
@@ -56,6 +55,8 @@ namespace Bloom.Book
 			if (directoryPath == null)
 			{
 				_nameOfXMatterPack = xmatterNameFromCollectionSettings;
+				if (useDeviceVersionIfAvailable)
+					_nameOfXMatterPack = GetBestDeviceXMatterAvailable(_nameOfXMatterPack, fileLocator);
 				directoryPath = GetXMatterDirectory(_nameOfXMatterPack, fileLocator, "It should not be possible to get an error here, because the collection verifies its xmatter name in CheckAndFixDependencies()", true);
 			}
 			var htmName = _nameOfXMatterPack + "-XMatter.html";
@@ -79,7 +80,16 @@ namespace Bloom.Book
 			XMatterDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToXMatterHtml, false);
 		}
 
-		public static string GetXMatterDirectory(string nameOfXMatterPack, IFileLocator fileLocator, string errorMsg, bool throwIfError)
+		public static string GetBestDeviceXMatterAvailable(string xmatterName, IFileLocator fileLocator)
+		{
+			var deviceXmatterName = $"{xmatterName}-Device";
+			var directoryPath = GetXMatterDirectory(deviceXmatterName, fileLocator, null, false, true);
+
+			// if "{xmatterName}-Device" is unavailable, use the default Device xmatter which is just named "Device"
+			return directoryPath != null ? deviceXmatterName : "Device";
+		}
+
+		public static string GetXMatterDirectory(string nameOfXMatterPack, IFileLocator fileLocator, string errorMsg, bool throwIfError, bool silent = false)
 		{
 			try
 			{
@@ -88,6 +98,8 @@ namespace Bloom.Book
 			}
 			catch (ApplicationException error)
 			{
+				if (silent)
+					return null;
 				var frontBackMatterProblem = LocalizationManager.GetString("Errors.XMatterProblemLabel", "Front/Back Matter Problem", "This shows in the 'toast' that pops up to notify the user of a non-fatal problem.");
 				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, frontBackMatterProblem, errorMsg, error);
 				if (throwIfError)

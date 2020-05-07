@@ -1,9 +1,7 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Xml;
 using Bloom;
 using Bloom.Book;
-using BloomTemp;
 using NUnit.Framework;
 
 using SIL.IO;
@@ -15,6 +13,17 @@ namespace BloomTests.Book
 	{
 		private HtmlDom _dom;
 		private DataSet _dataSet;
+
+		private string _factoryXMatter;
+		private string _testXmatter;
+
+		[OneTimeSetUp]
+		public void OneTimeSetup()
+		{
+			_factoryXMatter = BloomFileLocator.GetInstalledXMatterDirectory();
+			var codeBaseDir = BloomFileLocator.GetCodeBaseFolder();
+			_testXmatter = $"{codeBaseDir}/../../src/BloomTests/xMatter";
+		}
 
 		[SetUp]
 		public void Setup()
@@ -30,8 +39,7 @@ namespace BloomTests.Book
 			if(xmatterName == "PaperSaver")
 				xmatterName = "Factory";
 
-			var factoryXMatter = BloomFileLocator.GetInstalledXMatterDirectory();
-			return new XMatterHelper(_dom, xmatterName, new FileLocator(new string[] { factoryXMatter }));
+			return new XMatterHelper(_dom, xmatterName, new FileLocator(new[] { _factoryXMatter }));
 		}
 
 		[Test]
@@ -70,10 +78,10 @@ namespace BloomTests.Book
 		public void InjectXMatter_AllDefaults_FirstPageHasNewIdInsteadOfCopying()
 		{
 			CreatePaperSaverHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
-			var id1 = ((XmlElement) _dom.SelectSingleNode("//div[contains(@class,'cover')]")).GetAttribute("id");
+			var id1 = _dom.SelectSingleNode("//div[contains(@class,'cover')]").GetAttribute("id");
 			Setup(); //reset for another round
 			CreatePaperSaverHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
-			var id2 = ((XmlElement)_dom.SelectSingleNode("//div[contains(@class,'cover')]")).GetAttribute("id");
+			var id2 = _dom.SelectSingleNode("//div[contains(@class,'cover')]").GetAttribute("id");
 
 			Assert.AreNotEqual(id1,id2);
 		}
@@ -165,16 +173,30 @@ namespace BloomTests.Book
 			helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
 		}
 
+		[TestCase("Factory", false, "Factory-XMatter.css")]
+		[TestCase("Factory", true, "Device-XMatter.css")]
+		[TestCase("Test", false, "Test-XMatter.css")]
+		[TestCase("Test", true, "Test-Device-XMatter.css")]
+		public void Constructor_CreateDeviceHelperIfRequested(string baseXmatterName, bool useDeviceVersionIfAvailable, string expected)
+		{
+			var fileLocator = new FileLocator(new[] { _factoryXMatter, _testXmatter });
+			var helper = new XMatterHelper(_dom, baseXmatterName, fileLocator, useDeviceVersionIfAvailable);
+
+			Assert.AreEqual(expected, helper.GetStyleSheetFileName());
+		}
+
 		[Test]
 		[TestCase("<meta name='xmatter' content='SuperPaperSaver'></meta>", "SuperPaperSaver-XMatter.css")]
 		[TestCase("<meta name='xmatter' content=''></meta>",                "Factory-XMatter.css")]
 		[TestCase("<meta name='xmatter' content=' \t '></meta>",            "Factory-XMatter.css")]
 		[TestCase("<meta name='xmatter' content='DoesNotExist'></meta>",    "Factory-XMatter.css")]
 		[TestCase("",                                                       "Factory-XMatter.css")]
-		public void TestBookSpecifiesXMatter(string xmatterBook, string expected)
+		[TestCase("<meta name='xmatter' content='Test'></meta>", "Test-XMatter.css")]
+		[TestCase("<meta name='xmatter' content='Test'></meta>", "Test-Device-XMatter.css", true)]
+		[TestCase("<meta name='xmatter' content='SuperPaperSaver'></meta>", "Device-XMatter.css", true)]
+		public void TestBookSpecifiesXMatter(string xmatterBook, string expected, bool useDeviceVersionIfAvailable = false)
 		{
-			var factoryXMatter = BloomFileLocator.GetInstalledXMatterDirectory();
-			var fileLocator = new FileLocator(new string[] { factoryXMatter });
+			var fileLocator = new FileLocator(new[] { _factoryXMatter, _testXmatter });
 
 			// Test that the XMatterHelper finds a required xmatter setting.
 			var dom1 = new HtmlDom("<html>" +
@@ -197,12 +219,12 @@ namespace BloomTests.Book
 			{
 				using (new NonFatalProblem.ExpectedByUnitTest())
 				{
-					helper1 = new XMatterHelper(dom1, "Factory", fileLocator);
+					helper1 = new XMatterHelper(dom1, "Factory", fileLocator, useDeviceVersionIfAvailable);
 				}
 			}
 			else
 			{
-				helper1 = new XMatterHelper(dom1, "Factory", fileLocator);
+				helper1 = new XMatterHelper(dom1, "Factory", fileLocator, useDeviceVersionIfAvailable);
 			}
 			if (xmatterBook.Contains("DoesNotExist") || string.IsNullOrEmpty(xmatterBook))
 			{
@@ -218,8 +240,8 @@ namespace BloomTests.Book
 			Assert.That(helper1.GetStyleSheetFileName(), Is.EqualTo(expected));
 		}
 
-		//		TODO: at the moment, we'd have to creat a whole xmatter folder
-		/// <summary>
+		//		TODO: at the moment, we'd have to create a whole xmatter folder
+		//		/// <summary>
 		//		/// NB: It's not clear what the behavior should eventually be... how do we know it isn't supposed to be in english?
 		//		/// But for now, this gives us the behavior we want on the title page
 		//		/// </summary>
