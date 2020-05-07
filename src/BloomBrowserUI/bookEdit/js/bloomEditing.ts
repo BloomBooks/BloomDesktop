@@ -8,6 +8,7 @@ import {
     SetupImagesInContainer
 } from "./bloomImages";
 import { SetupVideoEditing } from "./bloomVideo";
+import { SetupWidgetEditing } from "./bloomWidgets";
 import { setupOrigami, cleanupOrigami } from "./origami";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
@@ -381,9 +382,10 @@ window.onload = () => {
 // can add new elements (such as during layout mode) and call this on only newly added elements.
 // Now document.load calls this with $('body') as the container.
 // REVIEW: Some of these would be better off in OneTimeSetup, but too much risk to try to decide right now.
-export function SetupElements(container) {
+export function SetupElements(container: HTMLElement) {
     SetupImagesInContainer(container);
     SetupVideoEditing(container);
+    SetupWidgetEditing(container);
     initializeBubbleManager();
 
     //add a marginBox if it's missing. We introduced it early in the first beta
@@ -401,7 +403,7 @@ export function SetupElements(container) {
         });
 
     // set up a click action on originalTitle if present
-    const citations = container[0].getElementsByTagName("cite");
+    const citations = container.getElementsByTagName("cite");
     const originalTitleCitations = Array.from(citations).filter(
         (c: HTMLElement) =>
             c.parentElement!.getAttribute("data-derived") ===
@@ -1045,7 +1047,7 @@ export function bootstrap() {
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
 
-    SetupElements($("body"));
+    SetupElements(document.body);
     OneTimeSetup();
 
     // configure ckeditor

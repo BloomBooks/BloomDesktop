@@ -155,6 +155,12 @@ div.hoverUp {
         //buttons shrink as the image container shrinks, this will still work.
         background-size: 63%;
     }
+    &.chooseWidgetButton {
+        right: 0;
+        top: 0;
+        background-color: @ChangeImageButtonColor;
+        background-image: url("../img/browse.svg");
+    }
 
     &.pasteImageButton {
         right: 0;
@@ -241,7 +247,8 @@ div.hoverUp {
         background-image: url("/bloom/images/ImageDescriptionToolIcon.svg");
     }
 }
-.bloom-videoContainer {
+.bloom-videoContainer,
+.bloom-widgetContainer {
     &.bloom-selected {
         border: solid 2px @bloom-yellow;
     }

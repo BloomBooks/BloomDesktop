@@ -1355,6 +1355,19 @@ namespace Bloom.Book
 				destinationPageDiv.RemoveAttribute(musicVolumeName);
 			}
 
+			var dataActivityName = "data-activity";
+
+			// copy the data-activity attribute which may be set if the user adds an activity
+			var dataActivity = edittedPageDiv.Attributes[dataActivityName]?.Value;
+			if (dataActivity == null)
+			{
+				destinationPageDiv.RemoveAttribute(dataActivityName);
+			}
+			else
+			{
+				destinationPageDiv.SetAttribute(dataActivityName, dataActivity);
+			}
+
 			// Upon save, make sure we are not in layout mode.  Otherwise we show the sliders.
 			foreach (
 				var node in

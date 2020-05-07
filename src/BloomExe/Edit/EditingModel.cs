@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,9 +14,12 @@ using Bloom.Collection;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Api;
 using Bloom.MiscUI;
+using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using Gecko;
+using ICSharpCode.SharpZipLib.Zip;
 using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
@@ -570,7 +574,7 @@ namespace Bloom.Edit
 			_currentlyDisplayedBook = CurrentBook;
 
 			var errors = _currentlyDisplayedBook.CheckForErrors();
-			if (!string.IsNullOrEmpty(errors))
+			if (!String.IsNullOrEmpty(errors))
 			{
 				ErrorReport.NotifyUserOfProblem(errors);
 				return;
@@ -740,8 +744,8 @@ namespace Bloom.Edit
 				var outerDiv = InsertContainingScalingDiv(body, pageDiv);
 				// The HTML expects floating point values in the invariant culture, not the current culture.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5579.
-				var zoomString = pageZoom.ToString(System.Globalization.CultureInfo.InvariantCulture);
-				outerDiv.SetAttribute("style", string.Format("transform: scale({0}); transform-origin: left top;", zoomString));
+				var zoomString = pageZoom.ToString(CultureInfo.InvariantCulture);
+				outerDiv.SetAttribute("style", String.Format("transform: scale({0}); transform-origin: left top;", zoomString));
 			}
 			CheckForBL2634("set page zoom");
 		}
@@ -1088,7 +1092,7 @@ namespace Bloom.Edit
 						Logger.WriteEvent("Bl2634: failed to write XML of DOM and selection");
 					}
 					throw new ApplicationException(
-						string.Format(
+						String.Format(
 							"Bl-2634: at {2}, id of _domForCurrentPage ({0}) is not the same as ID of _pageSelection.CurrentSelection ({1})",
 							pageDivId, _pageSelection.CurrentSelection.Id, when));
 				}
@@ -1189,7 +1193,7 @@ namespace Bloom.Edit
 				if (!pages.Any())
 				{
 					var exception = new ApplicationException(
-						string.Format(
+						String.Format(
 							@"CurrentBook.GetPages() gave no pages (BL-262 repro).
 									  Book is '{0}'\r\nErrors known to book=[{1}]\r\n{2}\r\n{3}",
 							CurrentBook.TitleBestForUserDisplay,
@@ -1246,7 +1250,7 @@ namespace Bloom.Edit
 				var s = LocalizationManager.GetString("EditTab.FontMissing",
 														   "The current selected " +
 														   "font is '{0}', but it is not installed on this computer. Some other font will be used.");
-				return string.Format(s, _collectionSettings.Language1.FontName);
+				return String.Format(s, _collectionSettings.Language1.FontName);
 			}
 			return null;
 		}
@@ -1383,6 +1387,66 @@ namespace Bloom.Edit
 		public void RequestVideoPlaceHolder()
 		{
 			_bookSelection.CurrentSelection.Storage.Update("video-placeholder.svg");
+		}
+		public void RequestWidgetPlaceHolder()
+		{
+			_bookSelection.CurrentSelection.Storage.Update("widget-placeholder.svg");
+		}
+
+		public string MakeActivity(string fullWidgetPath)
+		{
+			return MakeActivity(CurrentBook.FolderPath, fullWidgetPath);
+		}
+
+		public static string MakeActivity(string bookFolderPath, string fullWidgetPath)
+		{
+			var widgetPath = fullWidgetPath.Replace("\\", "/");
+			var widgetName = Path.GetFileNameWithoutExtension(widgetPath);
+			var originalWidgetName = widgetName;
+			var widgetDestinationFolder = bookFolderPath + "/" + "activities" + "/" + widgetName;
+			var suffix = 1;
+			// If widget destination folder already exists, come up with modified name
+			while (Directory.Exists(widgetDestinationFolder))
+			{
+				suffix++;
+				widgetName = Path.GetFileNameWithoutExtension(widgetPath) + suffix;
+				widgetDestinationFolder = bookFolderPath + "/" + "activities" + "/" + widgetName;
+			}
+
+			ZipUtils.ExpandZip(fullWidgetPath, widgetDestinationFolder);
+			if (suffix > 1)
+			{
+				// might be duplicate widget
+				var originalWidgetFolderPath = bookFolderPath + "/" + "activities" + "/" + originalWidgetName;
+				if (DirectoryUtils.SameContent(widgetDestinationFolder,
+					originalWidgetFolderPath))
+				{
+					widgetName = originalWidgetName;
+					SIL.IO.RobustIO.DeleteDirectoryAndContents(widgetDestinationFolder);
+					widgetDestinationFolder = originalWidgetFolderPath;
+				}
+			}
+
+			var rootFileName = "index.html";
+			// Warning if unzipped folder does not contain index.html
+			// Enhance: possibly (following wdgt format at https://support.apple.com/en-us/HT204433),
+			// zip might contain Info.plist. Parsed as an XML file, this should have a root plist
+			// element containing a dict element containing a sequence of key/string pairs, including
+			// one like this:
+			// <key>MainHTML</key>
+			// <string>HelloWorld.html</string>
+			// where the string element following the MainHTML key contains the name of the root
+			// HTML file.
+			if (!File.Exists(Path.Combine(widgetDestinationFolder, rootFileName)))
+			{
+				rootFileName = "index.htm";
+				if (!File.Exists(Path.Combine(widgetDestinationFolder, rootFileName)))
+					// Review: worth localizing?
+					MessageBox.Show("Zip file contains no index.htm{l} file. It will not work as a Bloom book widget.",
+						"Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+			}
+
+			return "activities" + "/" + widgetName + "/" + rootFileName;
 		}
 	}
 }
