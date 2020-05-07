@@ -9,8 +9,6 @@ using Bloom.Collection;
 using Bloom.Edit;
 using L10NSharp;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
-using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.TestUtilities;
@@ -671,6 +669,24 @@ namespace BloomTests.Book
 		{
 			var dom = new HtmlDom(@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
+				</div>
+				<div class='bloom-page frontCover' id='guid2' data-xmatter-page='frontCover'>
+				</div>
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+			var info = GetLeveledDecodableInfo();
+			data.UpdateVariablesAndDataDivThroughDOM(info);
+
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath(
+				"//div[@id='bloomDataDiv']/div[@data-book='levelOrStageNumber']");
+		}
+
+		[Test]
+		public void UpdateVariablesAndDataDivThroughDOM_NotLeveledOrDecodable_EliminatesOutOfDateDataDivElement()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='levelOrStageNumber' lang='*'>4</div>
 				</div>
 				<div class='bloom-page frontCover' id='guid2' data-xmatter-page='frontCover'>
 				</div>
