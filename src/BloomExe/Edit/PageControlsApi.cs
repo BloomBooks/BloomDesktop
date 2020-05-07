@@ -106,6 +106,12 @@ namespace Bloom.Edit
 				_editingModel.RequestVideoPlaceHolder();
 				request.PostSucceeded();
 			}, true);
+
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "requestWidgetPlaceHolder", request =>
+			{
+				_editingModel.RequestWidgetPlaceHolder();
+				request.PostSucceeded();
+			}, true);
 		}
 		private void SendCleanupState()
 		{

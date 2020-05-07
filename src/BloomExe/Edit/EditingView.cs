@@ -27,6 +27,7 @@ using SIL.Windows.Forms.ImageToolbox.ImageGallery;
 using SIL.Windows.Forms.Widgets;
 using System.Globalization;
 using Bloom.web;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace Bloom.Edit
 {
@@ -626,6 +627,8 @@ namespace Bloom.Edit
 				OnCopyImage(ge);
 			if(target.ClassName.Contains("editMetadataButton"))
 				OnEditImageMetdata(ge);
+			if (target.ClassName.Contains("changeWidgetButton"))
+				OnChangeWidget(ge);
 
 			var anchor = target as GeckoAnchorElement;
 			if (anchor == null)
@@ -978,6 +981,34 @@ namespace Bloom.Edit
 			//	}
 			//}
 			return true;
+		}
+
+		private void OnChangeWidget(DomEventArgs ge)
+		{
+			if (!_model.CanChangeImages())
+			{
+				// Enhance: more widget-specific message?
+				MessageBox.Show(
+					LocalizationManager.GetString("EditTab.CantPasteImageLocked",
+						"Sorry, this book is locked down so that images cannot be changed."));
+				return;
+			}
+
+			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
+			var widgetContainer = target.Parent;
+
+			var fileType = ".wdgt";
+			var dlg = new DialogAdapters.OpenFileDialogAdapter
+			{
+				Multiselect = false,
+				CheckFileExists = true,
+				Filter = $"{fileType} files|*{fileType}"
+			};
+			var result = dlg.ShowDialog();
+			if (result != DialogResult.OK)
+				return;
+			var fullWidgetPath = dlg.FileName;
+			_model.MakeActivity(fullWidgetPath, new ElementProxy(widgetContainer));
 		}
 
 		private void OnChangeImage(DomEventArgs ge)
