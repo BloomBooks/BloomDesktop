@@ -1505,7 +1505,8 @@ namespace Bloom.Book
 
 		public void BringXmatterHtmlUpToDate(HtmlDom bookDOM)
 		{
-			var helper = new XMatterHelper(bookDOM, BookInfo.XMatterNameOverride ?? CollectionSettings.XMatterPackName, Storage.GetFileLocator());
+			var fileLocator = Storage.GetFileLocator();
+			var helper = new XMatterHelper(bookDOM, CollectionSettings.XMatterPackName, fileLocator, BookInfo.UseDeviceXMatter);
 			// If it's not the real book DOM we won't copy branding images into the real book folder, for fear
 			// of messing up the real book, if the temporary one is in a different orientation.
 			if (bookDOM != OurHtmlDom)
@@ -1515,11 +1516,11 @@ namespace Bloom.Book
 			//we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
 			// Per BL-3571, if it's using a layout we don't know (e.g., from a newer Bloom) we switch to A5Portrait.
 			// Various things, especially publication, don't work with unknown page sizes.
-			Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, Storage.GetFileLocator());
+			Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, fileLocator);
 			XMatterHelper.RemoveExistingXMatter(bookDOM);
 			// this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
 			// still requiring it to be a valid layout.
-			layout = Layout.FromDomAndChoices(bookDOM, layout, Storage.GetFileLocator());
+			layout = Layout.FromDomAndChoices(bookDOM, layout, fileLocator);
 			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout, CollectionSettings.BrandingProjectKey, Storage.FolderPath);
 
 			var dataBookLangs = bookDOM.GatherDataBookLanguages();

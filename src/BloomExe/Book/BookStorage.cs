@@ -1816,13 +1816,13 @@ namespace Bloom.Book
 		{
 			get
 			{
-				var nameOfCollectionXMatterPack = BookInfo.XMatterNameOverride ?? _collectionSettings.XMatterPackName;
+				var nameOfCollectionXMatterPack = _collectionSettings.XMatterPackName;
 
 				nameOfCollectionXMatterPack = HandleRetiredXMatterPacks(Dom, nameOfCollectionXMatterPack);
 
 				//Here the xmatter Helper may come back loaded with the xmatter from the collection settings, but if the book
 				//specifies a different one, it will come back with that (if it can be found).
-				return new XMatterHelper(Dom, nameOfCollectionXMatterPack, _fileLocator).PathToXMatterStylesheet;
+				return new XMatterHelper(Dom, nameOfCollectionXMatterPack, _fileLocator, BookInfo.UseDeviceXMatter).PathToXMatterStylesheet;
 			}
 		}
 
