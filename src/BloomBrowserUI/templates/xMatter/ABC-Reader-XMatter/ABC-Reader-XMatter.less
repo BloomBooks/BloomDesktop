@@ -21,6 +21,11 @@ body:not(.decodable-reader) {
     .decodableStageLettersRow {
         display: none !important; // for decodable only
     }
+    &:not(.leveled-reader) {
+        .numberCircle {
+            display: none !important;
+        }
+    }
 }
 
 body.leveled-reader {
@@ -119,8 +124,6 @@ body
         display: flex;
         flex-direction: row;
         justify-content: center;
-        .numberLabel {
-        }
     }
     .readerDescription {
         margin-top: auto; // push to bottom
