@@ -6,57 +6,36 @@
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
         <target xml:lang="mam" state="final">Jun <g id="genid-1" ctype="x-html-strong">U'jb'il in el qniky'</g> jun u'jb'il lu' nim in ok tnab'il tu'n tajb'en qe techtz'ib' ex qe' yol tu'ntzan jiqnx tz'el tniky' alkye kjawl tsch'in jun ak'aj ajsch'il. Noq alkyex jun twitz yol at tuj 5 a 10 <g id="genid-2" ctype="x-html-em">kol ma' tuj in el qniky'</g> tu'ntzan tlaj nchi el b'a'n qe' ajxnaq'tzanjtz.</target>
         <note>ID: decodable.definition</note>
-        <alt-trans>
-          <target xml:lang="mam">Jun <g id="genid-1" ctype="x-html-strong">U'jb'il n-nel qniky'</g> jun u'jb'il lu' nim no'k tnab'il tu'n tajb'en qe techl Tz'ib' ex qe yol tu'ntzan jiqnx tz'el tniky' alkye kjawl tsch'i'n jun ak'aj ajsch'il. Noq alkyex jun twitz yol at tuj 5 a 10 <g id="genid-2" ctype="x-html-em">kol ma' tuj n-nel qniky'</g> tu'ntzan tlaj nchel wen qe ajxnaq'tzanjtz.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.stages" approved="yes">
         <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
         <target xml:lang="mam" state="final">Bloom in onin ti'j tu'n t-xi' lapeya ti'j qe' <g id="genid-3" ctype="x-html-em">qe kol ma' tuj</g> tujtzan lu' nchik' qe ajsch'il. Qe' jun u'jb'il nkub' tb'incha'na qajb'ela tuj jun kol ma' tuj lu', ex Bloom qonil tu'n tqe' tk'u'ja qa at tu'jb'ila te <g id="genid-4" ctype="x-html-em"> in el qniky'</g> (ja'ku tz'el qniky') kyu'n ajxnaq'tzanjtz tuj atzan<g id="genid-5" ctype="x-html-em">kol ma' tuj</g>.</target>
         <note>ID: decodable.stages</note>
-        <alt-trans>
-          <target xml:lang="mam">Bloom n-onin ti'je tu'n txi' lapeya ti'j qe <g id="genid-3" ctype="x-html-em">qe koln ma' tuj</g> tujtzan jlu' nchik' qe ajsch'il. Qe ju'n u'jb'il nkub' tb'incha'na qajb'ela tujqe ju'n kol ma' tuj lu', ex Bloom qonil tu'n tqe' tk'u'ja qa a tu'jb'ila te <g id="genid-4" ctype="x-html-em"> n-nel qniky'</g> (jaku tz'el qniky') kyu'nqe ajxnaq'tzanjtz tuj atzan<g id="genid-5" ctype="x-html-em">kol ma' tuj</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
         <target xml:lang="mam" state="final">Ja'ka b'ant kub' tb'incha'na jun tnej te Bloom te <g id="genid-6" ctype="x-html-em">ttenb'il b'inchil u'jb'il</g> tu'n tajb'en kyu'n junxitl tu'ntzan b'a'nx tu'n kyb'ant u'jb'il te jun wiq kol ch'in tuj ex qe' kol ma' tuj, aqe tzan lu' ma' chi b'aj aq'net kyu'n el kyniky' ti'j xnaq'tzb'il kye tij xjal.</target>
         <note>ID: decodable.templates</note>
-        <alt-trans>
-          <target xml:lang="mam">Jaka b'ant kub' tb'incha'na jun tenej te Bloom te <g id="genid-6" ctype="x-html-em">ttenb'il b'inchil u'jb'il</g> tu'n tajb'en kyu'n junxitl tu'ntzan b'a'nx tu'n tb'ant qe u'jb'il te qe jun wiq kol ch'in tuj ex qe kol ma' tuj, aqetzan jlu' ma' chi b'aj aq'net kyu'nqe e'ln kyniky' ti'j xnaq'tzb'il kye tij xjal.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn" approved="yes">
         <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
         <target xml:lang="mam" state="final">Tu'n t-xnaq'tzet tza'n tu'n kyajb'en u'jb'il in el qniky' tuj Bloom, b'a'n:</target>
         <note>ID: decodable.learn</note>
-        <alt-trans>
-          <target xml:lang="mam">Tu'n qxnaq'tzet tza'n tu'n tajb'en qe u'jb'il n-nel qniky' tuj Bloom, b'a'n:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
         <target xml:lang="mam" state="final">Ka'yinxa <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">qe' kyb'il tib'aj aq'unb'il</g>.</target>
         <note>ID: decodable.learn.videos</note>
-        <alt-trans>
-          <target xml:lang="mam">Ka'yinxa <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">qe kyb'il tib'aj aq'unb'il</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
         <target xml:lang="mam" state="final">Txi'ya tuj k'ol te onb'il, sak'onktza 'Onb'il' ex jyonxa "U'jb'il in el qniky'" tuj txolb'ab'il tb'i nab'il.</target>
         <note>ID: decodable.learn.helpindex</note>
-        <alt-trans>
-          <target xml:lang="mam">Txi'ya tuj menú te onb'il, sak'onqtza 'Onb'il' ex jyonxa "U'jb'il n-nel qniky'" tuj txolb'ab'il tb'i nab'il.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
         <target xml:lang="mam" state="final">Txi'ya tuj k'ol te onb'il, sak'onqtza "B'inchama kytenb'il u'jb'il".</target>
         <note>ID: decodable.learn.helpmenu</note>
-        <alt-trans>
-          <target xml:lang="mam">Txi'ya tuj menú te onb'il, sak'onqtza "N-b'inchet qe ttenb'il u'jb'il b'ananmaj".</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

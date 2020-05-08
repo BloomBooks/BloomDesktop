@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="wall.calendar" approved="yes">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="tr" state="translated">Duvar Takvimi Şablonu Hakkında</target>
+        <target xml:lang="tr" state="final">Duvar Takvimi Şablonu Hakkında</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use">

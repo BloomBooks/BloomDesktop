@@ -8,10 +8,7 @@
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="zh-CN" state="translated">特殊的断句符号</target>
-        <alt-trans>
-          <target xml:lang="zh-CN">特殊的句尾标点</target>
-        </alt-trans>
+        <target xml:lang="zh-CN" state="final">特殊的断句符号</target>
       </trans-unit>
     </body>
   </file>

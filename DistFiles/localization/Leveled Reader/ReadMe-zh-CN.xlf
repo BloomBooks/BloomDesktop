@@ -4,28 +4,28 @@
     <body>
       <trans-unit id="leveled.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
-        <target xml:lang="zh-CN" state="translated">
+        <target xml:lang="zh-CN" state="final">
           <g id="genid-1" ctype="x-html-strong">分级读物</g>是专门为处于特定阅读发展等级的读者编写的。 等级决定了单词长度、句子长度等指标。 也决定了字体设置、词汇、配图和话题。</target>
         <note>ID: leveled.definition</note>
       </trans-unit>
       <trans-unit id="leveled.levels" approved="yes">
         <source xml:lang="en">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
-        <target xml:lang="zh-CN" state="translated">定义好成序列的<g id="genid-2" ctype="x-html-em">等级</g>之后，可以给该模板或“拼读读物模板”制作而成的书分配等级。 当您为该书输入文本时，Bloom会记住该书所属等级的设定并在您超出限制时给予提醒。</target>
+        <target xml:lang="zh-CN" state="final">定义好成序列的<g id="genid-2" ctype="x-html-em">等级</g>之后，可以给该模板或“拼读读物模板”制作而成的书分配等级。 当您为该书输入文本时，Bloom会记住该书所属等级的设定并在您超出限制时给予提醒。</target>
         <note>ID: leveled.levels</note>
       </trans-unit>
       <trans-unit id="leveled.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-3" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="zh-CN" state="translated">您还可以制作包含一系列<g id="genid-3" ctype="x-html-em">模板</g>的Bloom资料包，这样别人可以用这些由识字教育专家事先设定好的等级和细分层次快速创建书籍。</target>
+        <target xml:lang="zh-CN" state="final">您还可以制作包含一系列<g id="genid-3" ctype="x-html-em">模板</g>的Bloom资料包，这样别人可以用这些由识字教育专家事先设定好的等级和细分层次快速创建书籍。</target>
         <note>ID: leveled.templates</note>
       </trans-unit>
       <trans-unit id="leveled.learn" approved="yes">
         <source xml:lang="en">To learn about using Leveled Readers in Bloom, you can:</source>
-        <target xml:lang="zh-CN" state="translated">要了解在Bloom中如何使用“分级读物”，您可以：</target>
+        <target xml:lang="zh-CN" state="final">要了解在Bloom中如何使用“分级读物”，您可以：</target>
         <note>ID: leveled.learn</note>
       </trans-unit>
       <trans-unit id="leveled.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="zh-CN" state="translated">观看[这些教学视频] (<g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">http://tiny.cc/8vbwux</g>)。</target>
+        <target xml:lang="zh-CN" state="final">观看[这些教学视频] (<g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">http://tiny.cc/8vbwux</g>)。</target>
         <note>ID: leveled.learn.videos</note>
       </trans-unit>
       <trans-unit id="leveled.learn.helpindex">
@@ -35,27 +35,27 @@
       </trans-unit>
       <trans-unit id="leveled.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="zh-CN" state="translated">找到帮助菜单，选择：“创建读物模板”。</target>
+        <target xml:lang="zh-CN" state="final">找到帮助菜单，选择：“创建读物模板”。</target>
         <note>ID: leveled.learn.helpmenu</note>
       </trans-unit>
       <trans-unit id="leveled.vs.decodable" approved="yes">
         <source xml:lang="en">Relationship to Decodable Readers</source>
-        <target xml:lang="zh-CN" state="translated">和拼读读物的关系</target>
+        <target xml:lang="zh-CN" state="final">和拼读读物的关系</target>
         <note>ID: leveled.vs.decodable</note>
       </trans-unit>
       <trans-unit id="leveled.and.decodable" approved="yes">
         <source xml:lang="en">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</source>
-        <target xml:lang="zh-CN" state="translated">那么分级读物的<g id="genid-5" ctype="x-html-em">等级</g>和拼读读物的“细分阶段”怎么融合？ 这两个概念是互补的，Bloom允许您为正在编写的书既设置<g id="genid-6" ctype="x-html-em">拼读细分阶段</g>,也设置<g id="genid-7" ctype="x-html-em">分级读物等级</g>。 一般来说属于前两个等级的书，编写时需要考虑到<g id="genid-8" ctype="x-html-em">拼读细分阶段</g>。 第一级或第二级的书要注意做到<g id="genid-9" ctype="x-html-em">可拼读</g>（即用读者已经学过的字母）。 因此一个系列的书看起来可能会是这样：</target>
+        <target xml:lang="zh-CN" state="final">那么分级读物的<g id="genid-5" ctype="x-html-em">等级</g>和拼读读物的“细分阶段”怎么融合？ 这两个概念是互补的，Bloom允许您为正在编写的书既设置<g id="genid-6" ctype="x-html-em">拼读细分阶段</g>,也设置<g id="genid-7" ctype="x-html-em">分级读物等级</g>。 一般来说属于前两个等级的书，编写时需要考虑到<g id="genid-8" ctype="x-html-em">拼读细分阶段</g>。 第一级或第二级的书要注意做到<g id="genid-9" ctype="x-html-em">可拼读</g>（即用读者已经学过的字母）。 因此一个系列的书看起来可能会是这样：</target>
         <note>ID: leveled.and.decodable</note>
       </trans-unit>
       <trans-unit id="leveled.reader.level" approved="yes">
         <source xml:lang="en">Leveled Reader Level</source>
-        <target xml:lang="zh-CN" state="translated">分级读物等级</target>
+        <target xml:lang="zh-CN" state="final">分级读物等级</target>
         <note>ID: leveled.reader.level</note>
       </trans-unit>
       <trans-unit id="decodable.stage" approved="yes">
         <source xml:lang="en">Decodable Stage</source>
-        <target xml:lang="zh-CN" state="translated">拼读细分阶段</target>
+        <target xml:lang="zh-CN" state="final">拼读细分阶段</target>
         <note>ID: decodable.stage</note>
       </trans-unit>
     </body>

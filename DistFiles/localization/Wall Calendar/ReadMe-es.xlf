@@ -4,44 +4,32 @@
     <body>
       <trans-unit id="wall.calendar" approved="yes">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="es-ES" state="translated">Acerca de la Plantilla de Calendario</target>
+        <target xml:lang="es-ES" state="final">Acerca de la Plantilla de Calendario</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use" approved="yes">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="es-ES" state="translated">Con esta plantilla, puede crear un calendario de 12 meses de tamaño A5, con una imagen y una cita en la parte superior de cada página y los días del mes en la parte inferior. El calendario utilizará los nombres de los meses y días de su idioma.</target>
+        <target xml:lang="es-ES" state="final">Con esta plantilla, puede crear un calendario de 12 meses de tamaño A5, con una imagen y una cita en la parte superior de cada página y los días del mes en la parte inferior. El calendario utilizará los nombres de los meses y días de su idioma.</target>
         <note>ID: wall.calendar.use</note>
-        <alt-trans>
-          <target xml:lang="es-ES">Con esta plantilla, puede realizar un calendario de 12 meses de tamaño A5, con una imagen y una cita en la parte superior de cada página y los días del mes en la parte inferior. El calendario utilizará los nombres de los meses y días de su idioma.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Con esta plantilla, puede realizar un calendario de 12 meses de tamaño A5, con una imagen y una cita en la parte superior de cada página y los días del mes en la parte inferior. El calendario utilizará los nombres de meses y días de su idioma.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="wall.calendar.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="es-ES" state="translated">Limitaciones de esta versión</target>
+        <target xml:lang="es-ES" state="final">Limitaciones de esta versión</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells" approved="yes">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="es-ES" state="translated">Actualmente, no se puede crear un "calendario prediseñado" para ser usado en otros idiomas.</target>
+        <target xml:lang="es-ES" state="final">Actualmente, no se puede crear un "calendario prediseñado" para ser usado en otros idiomas.</target>
         <note>ID: wall.calendar.noshells</note>
-        <alt-trans>
-          <target xml:lang="es-ES">Actualmente, no se puede hacer un "calendario prediseñado" para ser usado por otros idiomas.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Actualmente, no se puede hacer un "calendario prediseñado" para ser usadao por otros idiomas.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="wall.calendar.credits" approved="yes">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="es-ES" state="translated">Créditos</target>
+        <target xml:lang="es-ES" state="final">Créditos</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks" approved="yes">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="es-ES" state="translated">Gracias a Bruce Cox (SIL Camerún) por iniciar esta plantilla.</target>
+        <target xml:lang="es-ES" state="final">Gracias a Bruce Cox (SIL Camerún) por iniciar esta plantilla.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>

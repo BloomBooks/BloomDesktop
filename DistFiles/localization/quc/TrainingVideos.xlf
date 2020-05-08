@@ -4,154 +4,106 @@
     <body>
       <trans-unit id="training.videos" approved="yes">
         <source xml:lang="en">Bloom Training Videos</source>
-        <target xml:lang="quc" state="translated">Silob'wachib'al rech uya'ik no'jib'al Bloom</target>
+        <target xml:lang="quc" state="final">Silob'wachib'al rech uya'ik no'jib'al Bloom</target>
         <note>ID: training.videos</note>
       </trans-unit>
       <trans-unit id="training.videos.watch" approved="yes">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
-        <target xml:lang="quc" state="translated">We ri akematz'ib' tiqital ruk' nimk'atz, katkowinik kawil silob'wachib'al ruk' le tzukunel:</target>
+        <target xml:lang="quc" state="final">We ri akematz'ib' tiqital ruk' nimk'atz, katkowinik kawil silob'wachib'al ruk' le tzukunel:</target>
         <note>ID: training.videos.watch</note>
-        <alt-trans>
-          <target xml:lang="quc">We ri akematz'ib' tiqital ruk' nimk'atz, katkowinik kawil silob'ilwachib'al ruk' le tzukunel:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="quc">We ri akematz'ib' t'iqitalik che nimk'atz, katkowinik kawil silob'il wachib'al rumal ri tzukunel:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.all" approved="yes">
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
-        <target xml:lang="quc" state="translated"><g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Ronojel ri silob'taq wachib'al</g></target>
+        <target xml:lang="quc" state="final"><g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Ronojel ri silob'taq wachib'al</g></target>
         <note>ID: training.videos.all</note>
-        <alt-trans>
-          <target xml:lang="quc"><g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Ronojel ri solob'il wachib'al</g></target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.intro" approved="yes">
         <source xml:lang="en">Introductory Videos</source>
-        <target xml:lang="quc" state="translated">Silob'taq wachib'al okib'al</target>
+        <target xml:lang="quc" state="final">Silob'taq wachib'al okib'al</target>
         <note>ID: training.videos.intro</note>
-        <alt-trans>
-          <target xml:lang="quc">Solob'il wachib'al okib'alib'</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.whofor" approved="yes">
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
-        <target xml:lang="quc" state="translated"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Jachin chech</g></target>
+        <target xml:lang="quc" state="final"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Jachin chech</g></target>
         <note>ID: training.videos.whofor</note>
-        <alt-trans>
-          <target xml:lang="quc"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Jachin rech</g></target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.templates" approved="yes">
         <source xml:lang="en">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
         </source>
-        <target xml:lang="quc" state="translated"><g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Katajin kch'ob'otaj ri taq Raqanib'al xuquje' ri taq No'jwuj Wokotal chik</g></target>
+        <target xml:lang="quc" state="final"><g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Katajin kch'ob'otaj ri taq Raqanib'al xuquje' ri taq No'jwuj Wokotal chik</g></target>
         <note>ID: training.videos.templates</note>
-        <alt-trans>
-          <target xml:lang="quc"><g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Tajan kch'ob'ataj ri k'i taq Raqanib'al xuquje' ri k'i taq No'jwuj B'anom chik uloq</g></target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.basicbook" approved="yes">
         <source xml:lang="en">
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Using the Basic Book template</g>
         </source>
-        <target xml:lang="quc" state="translated"><g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Ukojik ri raqanib'al rech Uxe' taq No'jwuj</g></target>
+        <target xml:lang="quc" state="final"><g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Ukojik ri raqanib'al rech Uxe' taq No'jwuj</g></target>
         <note>ID: training.videos.basicbook</note>
-        <alt-trans>
-          <target xml:lang="quc"><g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Ukojik ri raqanib'al rech Uxe' No'jwuj</g></target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.readers" approved="yes">
         <source xml:lang="en">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="quc" state="translated"><g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Ukojik ri taq raqanib'al ri No'jwuj Sik'tal uwach xuquje' No'jwuj Cholaxo'l uwach (k'i taq solob'ilb'wach)</g></target>
+        <target xml:lang="quc" state="final"><g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Ukojik ri taq raqanib'al ri No'jwuj Sik'tal uwach xuquje' No'jwuj Cholaxo'l uwach (k'i taq solob'ilb'wach)</g></target>
         <note>ID: training.videos.readers</note>
-        <alt-trans>
-          <target xml:lang="quc"><g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Ukojik ri k'i taq raqanib'al ri No'jwuj Sik'talik uwach xuquje' No'jwuj Cholaxo'l uwach (k'i taq solob'ilb'al uwach)</g></target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.advanced" approved="yes">
         <source xml:lang="en">Advanced Topics</source>
-        <target xml:lang="quc" state="translated">Nima'q taq ch'ob'oj</target>
+        <target xml:lang="quc" state="final">Nima'q taq ch'ob'oj</target>
         <note>ID: training.videos.advanced</note>
       </trans-unit>
       <trans-unit id="training.videos.formatting" approved="yes">
         <source xml:lang="en">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Changing the format of text</g>
         </source>
-        <target xml:lang="quc" state="translated"><g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Katajin kk'ex le q'in rech ri woktzij</g></target>
+        <target xml:lang="quc" state="final"><g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Katajin kk'ex le q'in rech ri woktzij</g></target>
         <note>ID: training.videos.formatting</note>
-        <alt-trans>
-          <target xml:lang="quc"><g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Tajan kk'ex ri q'in rech ri woktz'ib'</g></target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.custompage" approved="yes">
         <source xml:lang="en">
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
         </source>
-        <target xml:lang="quc" state="translated"><g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Ukojik le raqanib'al rech Uxaq wuj winaqirisam</g></target>
+        <target xml:lang="quc" state="final"><g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Ukojik le raqanib'al rech Uxaq wuj winaqirisam</g></target>
         <note>ID: training.videos.custompage</note>
-        <alt-trans>
-          <target xml:lang="quc"><g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Ukojik ri raqanib'al rech Uxaq Wuj Xrechb'exik</g></target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.specialcharacters" approved="yes">
         <source xml:lang="en">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Inserting special characters</g>
         </source>
-        <target xml:lang="quc" state="translated"><g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Rokisaxik retab'alil nima'q taq uq'ij</g></target>
+        <target xml:lang="quc" state="final"><g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Rokisaxik retab'alil nima'q taq uq'ij</g></target>
         <note>ID: training.videos.specialcharacters</note>
-        <alt-trans>
-          <target xml:lang="quc"><g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Rokik reta'b'alil nima'q taq uq'ij</g></target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.readertemplates" approved="yes">
         <source xml:lang="en">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="quc" state="translated"><g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Katajin uwokik jupuq raqanib'al chi kech taq le No'jwuj Sik'tal uwach xuquje' No'jwuj Cholaxo'l uwach (k'i taq silob'uwach)</g></target>
+        <target xml:lang="quc" state="final"><g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Katajin uwokik jupuq raqanib'al chi kech taq le No'jwuj Sik'tal uwach xuquje' No'jwuj Cholaxo'l uwach (k'i taq silob'uwach)</g></target>
         <note>ID: training.videos.readertemplates</note>
-        <alt-trans>
-          <target xml:lang="quc"><g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Tajan uwokik jun puq rech k'i taq raqanib'al chi kech ri No'jwuj Sik'talik uwach xuquje' No'jwuj Cholaxo'l uwach (k'i taq solob'ilb'al uwach)</g></target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.offline" approved="yes">
         <source xml:lang="en">Offline Viewing</source>
-        <target xml:lang="quc" state="translated">Uka'yexik chi rij ri juch'</target>
+        <target xml:lang="quc" state="final">Uka'yexik chi rij ri juch'</target>
         <note>ID: training.videos.offline</note>
       </trans-unit>
       <trans-unit id="training.videos.download" approved="yes">
         <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</source>
-        <target xml:lang="quc" state="translated">We kwqaj uqasaxik jun chi kech we silob'wachib'al chech uk'utik xuquje' ujachik chi rij tiqb'al tzij, kuya'o kqasaj pa ri akematz'ib':</target>
+        <target xml:lang="quc" state="final">We kwqaj uqasaxik jun chi kech we silob'wachib'al chech uk'utik xuquje' ujachik chi rij tiqb'al tzij, kuya'o kqasaj pa ri akematz'ib':</target>
         <note>ID: training.videos.download</note>
-        <alt-trans>
-          <target xml:lang="quc">We kariyij uqasaxik jun chi kech we solob'il wachib'al rech uk'utik xuquje' ujachik chi rij kemon tz'ib', chaqasaj pa ri akematz'ib':</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
-        <target xml:lang="quc" state="translated"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Nim Uq'alajilal </g> (Nima'q taq k'olchak)</target>
+        <target xml:lang="quc" state="final"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Nim Uq'alajilal </g> (Nima'q taq k'olchak)</target>
         <note>ID: training.videos.hires</note>
-        <alt-trans>
-          <target xml:lang="quc"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Nima'q taq k'olchak)</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="quc"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Nima'q taq k'ochak)</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.lores" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
-        <target xml:lang="quc" state="translated"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">alaj uq'alajilal </g> (Sib'alaj taq alaj k'olchak)</target>
+        <target xml:lang="quc" state="final"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">alaj uq'alajilal </g> (Sib'alaj taq alaj k'olchak)</target>
         <note>ID: training.videos.lores</note>
-        <alt-trans>
-          <target xml:lang="quc"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Baja Resolución</g> (Sib'alaj taq laj k'olchak)</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

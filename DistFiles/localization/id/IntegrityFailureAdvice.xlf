@@ -4,78 +4,78 @@
     <body>
       <trans-unit id="integrity.title" approved="yes">
         <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
-        <target xml:lang="id" state="translated">Bloom tidak dapat menemukan beberapa filenya sendiri, dan tidak dapat melanjutkan</target>
+        <target xml:lang="id" state="final">Bloom tidak dapat menemukan beberapa filenya sendiri, dan tidak dapat melanjutkan</target>
         <note>ID: integrity.title</note>
       </trans-unit>
       <trans-unit id="integrity.causes" approved="yes">
         <source xml:lang="en">Possible Causes</source>
-        <target xml:lang="id" state="translated">Kemungkinan Penyebab</target>
+        <target xml:lang="id" state="final">Kemungkinan Penyebab</target>
         <note>ID: integrity.causes</note>
       </trans-unit>
       <trans-unit id="integrity.causes.1" approved="yes">
         <source xml:lang="en">Your antivirus may have "quarantined" one or more Bloom files.</source>
-        <target xml:lang="id" state="translated">Antivirus Anda mungkin telah "mengkarantina" salah satu atau beberapa file Bloom.</target>
+        <target xml:lang="id" state="final">Antivirus Anda mungkin telah "mengkarantina" salah satu atau beberapa file Bloom.</target>
         <note>ID: integrity.causes.1</note>
       </trans-unit>
       <trans-unit id="integrity.causes.2" approved="yes">
         <source xml:lang="en">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </source>
-        <target xml:lang="id" state="translated">Administrator komputer Anda mungkin telah "mengunci" komputer Anda untuk mencegah hal-hal buruk, namun sedemikian rupa sehingga Bloom tidak dapat menempatkan berkas ini di tempat yang sesuai </target>
+        <target xml:lang="id" state="final">Administrator komputer Anda mungkin telah "mengunci" komputer Anda untuk mencegah hal-hal buruk, namun sedemikian rupa sehingga Bloom tidak dapat menempatkan berkas ini di tempat yang sesuai </target>
         <note>ID: integrity.causes.2</note>
       </trans-unit>
       <trans-unit id="integrity.todo" approved="yes">
         <source xml:lang="en">What To Do</source>
-        <target xml:lang="id" state="translated">Yang Harus Dilakukan</target>
+        <target xml:lang="id" state="final">Yang Harus Dilakukan</target>
         <note>ID: integrity.todo</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas" approved="yes">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
-        <target xml:lang="id" state="translated">Setelah Anda menyerahkan laporan ini, kami akan menghubungi Anda dan membantu Anda menyelesaikannya. Untuk sementara, ada beberapa ide:</target>
+        <target xml:lang="id" state="final">Setelah Anda menyerahkan laporan ini, kami akan menghubungi Anda dan membantu Anda menyelesaikannya. Untuk sementara, ada beberapa ide:</target>
         <note>ID: integrity.todo.ideas</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Reinstall" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
-        <target xml:lang="id" state="translated">Jalankan pemasang Bloom sekali lagi, dan periksa apakah kali ini pemasang bisa berjalan dengan baik.</target>
+        <target xml:lang="id" state="final">Jalankan pemasang Bloom sekali lagi, dan periksa apakah kali ini pemasang bisa berjalan dengan baik.</target>
         <note>ID: integrity.todo.ideas.Reinstall</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Antivirus" approved="yes">
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
-        <target xml:lang="id" state="translated">Jika hal itu tidak memperbaikinya, sebaiknya hubungi program antivirus Anda. Jika bagian "Berkas Tidak Ditemukan" di bawah menunjukkan berkas apa pun yang berakhir ".exe", pertimbangkan untuk "memasukkan dalam daftar putih" folder program Bloom, yang berada dalam <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
+        <target xml:lang="id" state="final">Jika hal itu tidak memperbaikinya, sebaiknya hubungi program antivirus Anda. Jika bagian "Berkas Tidak Ditemukan" di bawah menunjukkan berkas apa pun yang berakhir ".exe", pertimbangkan untuk "memasukkan dalam daftar putih" folder program Bloom, yang berada dalam <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVAST" approved="yes">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</source>
-        <target xml:lang="id" state="translated">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Petunjuk</g>.</target>
+        <target xml:lang="id" state="final">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Petunjuk</g>.</target>
         <note>ID: integrity.todo.ideas.AVAST</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Norton" approved="yes">
         <source xml:lang="en">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>.</source>
-        <target xml:lang="id" state="translated">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Petunjuk dari Symantec</g>.</target>
+        <target xml:lang="id" state="final">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Petunjuk dari Symantec</g>.</target>
         <note>ID: integrity.todo.ideas.Norton</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVG" approved="yes">
         <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
-        <target xml:lang="id" state="translated">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Petunjuk dari AVG</g>.</target>
+        <target xml:lang="id" state="final">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Petunjuk dari AVG</g>.</target>
         <note>ID: integrity.todo.ideas.AVG</note>
         <note>The former source text had an incorrect &amp;amp; following l=en_US in the href attribute value.</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Others" approved="yes">
         <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>
-        <target xml:lang="id" state="translated">Lain-lain: Lakukan pencarian di Google untuk istilah "mendaftar putih direktori nama-dari antivirus- Anda".</target>
+        <target xml:lang="id" state="final">Lain-lain: Lakukan pencarian di Google untuk istilah "mendaftar putih direktori nama-dari antivirus- Anda".</target>
         <note>ID: integrity.todo.ideas.Others</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Restart" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
-        <target xml:lang="id" state="translated">Jalankan pemasang Bloom sekali lagi, dan periksa apakah kali ini pemasang bisa berjalan dengan baik.</target>
+        <target xml:lang="id" state="final">Jalankan pemasang Bloom sekali lagi, dan periksa apakah kali ini pemasang bisa berjalan dengan baik.</target>
         <note>ID: integrity.todo.ideas.Restart</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Retrieve" approved="yes">
         <source xml:lang="en">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.</source>
-        <target xml:lang="id" state="translated">Anda juga dapat mencoba dan memperoleh kembali bagian dari Bloom yang diambil oleh program antivirus. Untuk AVG, Anda harus mencari menu "opsi" AVG, klik "kubah virus", klik berkas Bloom dalam kubah, dan klik "pulihkan". Untuk panduan visual, lihat <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">gambar ini</g>.</target>
+        <target xml:lang="id" state="final">Anda juga dapat mencoba dan memperoleh kembali bagian dari Bloom yang diambil oleh program antivirus. Untuk AVG, Anda harus mencari menu "opsi" AVG, klik "kubah virus", klik berkas Bloom dalam kubah, dan klik "pulihkan". Untuk panduan visual, lihat <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">gambar ini</g>.</target>
         <note>ID: integrity.todo.ideas.Retrieve</note>
       </trans-unit>
       <trans-unit id="integrity.missing" approved="yes">
         <source xml:lang="en">Missing Files</source>
-        <target xml:lang="id" state="translated">Berkas Tidak Ditemukan</target>
+        <target xml:lang="id" state="final">Berkas Tidak Ditemukan</target>
         <note>ID: integrity.missing</note>
       </trans-unit>
     </body>

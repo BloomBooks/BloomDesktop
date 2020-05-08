@@ -6,84 +6,36 @@
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
         <target xml:lang="fr" state="translated">Un <g id="genid-1" ctype="x-html-strong">livre déchiffrable</g> est un livre dont les lettres et les mots se limitent à ceux qu'un lecteur débutant sait lire. En général, les apprenants doivent passer, suivant les langues, par 5 à 10 <g id="genid-2" ctype="x-html-em">étapes de déchiffrage</g>.</target>
         <note>ID: decodable.definition</note>
-        <alt-trans>
-          <target xml:lang="fr">Un <g id="genid-1" ctype="x-html-strong">livre déchiffrable</g> est un livre dont les lettres et les mots se limitent à ceux qu'un lecteur débutant peut lire. En général, les apprenants doivent passer, suivant les langues, par 5 à 10 <g id="genid-2" ctype="x-html-em">étapes de déchiffrage</g>.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Un <g id="genid-1" ctype="x-html-strong">livre déchiffrable</g> est un livre dont les lettres et les mots se limitent à ceux qu'un lecteur débutant est capable de lire. En général, les apprenants doivent passer, suivant les langues, par 5 à 10 <g id="genid-2" ctype="x-html-em">niveaux de déchiffrage</g>.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Un <g id="genid-1" ctype="x-html-strong">livre déchiffrable</g> est un livre dont les lettres et les mots sont soigneusement choisis, de manière à garantir qu'il est adapté au lectorat cible de débutants. Le plus souvent, les langues comportent 5 à 10 <g id="genid-2" ctype="x-html-em">étapes de déchiffrage</g> par lesquelles les apprenants passent pour apprendre à lire.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.stages" approved="yes">
         <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
-        <target xml:lang="fr" state="translated">Bloom vous aide à définir la succession des <g id="genid-3" ctype="x-html-em">étapes</g>, par laquelle passent les lecteurs. Chaque fois que vous rédigez un livre, il visera l'une de ces étapes. Bloom vous aide à vous assurer que les lecteurs du <g id="genid-4" ctype="x-html-em">étape</g> concerné sauront <g id="genid-5" ctype="x-html-em">déchiffrer</g> (c'est-à-dire comprendre) votre livre.</target>
+        <target xml:lang="fr" state="final">Bloom vous aide à définir la succession des <g id="genid-3" ctype="x-html-em">étapes</g>, par laquelle passent les lecteurs. Chaque fois que vous rédigez un livre, il visera l'une de ces étapes. Bloom vous aide à vous assurer que les lecteurs du <g id="genid-4" ctype="x-html-em">étape</g> concerné sauront <g id="genid-5" ctype="x-html-em">déchiffrer</g> (c'est-à-dire comprendre) votre livre.</target>
         <note>ID: decodable.stages</note>
-        <alt-trans>
-          <target xml:lang="fr">Bloom vous aide à définir la succession des <g id="genid-3" ctype="x-html-em">niveaux</g>, par laquelle passent les lecteurs. Chaque fois que vous rédigez un livre, il visera l'un de ces niveaux. Bloom vous aide à vous assurer que les lecteurs du <g id="genid-5" ctype="x-html-em">niveau</g> concerné sauront <g id="genid-4" ctype="x-html-em">déchiffrer</g> (c'est-à-dire comprendre) votre livre.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Bloom vous aide à définir cette série d'<g id="genid-3" ctype="x-html-em">étapes</g>, par laquelle passent tous les lecteurs. Chaque livre que vous faites correspond à l'une de ces étapes, et Bloom vous aide à vous assurer que les lecteurs étant à cette étape d'apprentissage seront à même de <g id="genid-4" ctype="x-html-em">déchiffrer</g> (c'est à dire de comprendre) votre livre.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="fr" state="translated">Vous pouvez aussi créer un pack Bloom de <g id="genid-6" ctype="x-html-em">modèles</g> que d'autres utiliseront pour faire rapidement des livres adaptés aux niveaux et étapes définis par un spécialiste en alphabétisation.</target>
+        <target xml:lang="fr" state="final">Vous pouvez aussi créer un pack Bloom de <g id="genid-6" ctype="x-html-em">modèles</g> que d'autres utiliseront pour faire rapidement des livres adaptés aux niveaux et étapes définis par un spécialiste en alphabétisation.</target>
         <note>ID: decodable.templates</note>
-        <alt-trans>
-          <target xml:lang="fr">Vous pouvez aussi créer un pack Bloom de <g id="genid-5" ctype="x-html-em">modèles</g> utilisables par d'autres personnes pour créer rapidement des livres adaptés aux niveaux et étapes définis par un spécialiste en alphabétisation.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn" approved="yes">
         <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
-        <target xml:lang="fr" state="translated">Pour en savoir plus sur l'utilisation des livres déchiffrables dans Bloom, vous pouvez :</target>
+        <target xml:lang="fr" state="final">Pour en savoir plus sur l'utilisation des livres déchiffrables dans Bloom, vous pouvez :</target>
         <note>ID: decodable.learn</note>
-        <alt-trans>
-          <target xml:lang="fr">Pour en savoir plus sur l'utilisation des livres déchiffrables dans Bloom :</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="fr" state="translated">Regardez <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">ces tutoriels</g>.</target>
+        <target xml:lang="fr" state="final">Regardez <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">ces tutoriels</g>.</target>
         <note>ID: decodable.learn.videos</note>
-        <alt-trans>
-          <target xml:lang="fr">Regardez <g id="genid-6" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">ces vidéos d'instruction</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
-        <target xml:lang="fr" state="translated">Dans le menu Aide, sélectionnez "Documentation" et cherchez dans l'index sous "Livres Déchiffrables".</target>
+        <target xml:lang="fr" state="final">Dans le menu Aide, sélectionnez "Documentation" et cherchez dans l'index sous "Livres Déchiffrables".</target>
         <note>ID: decodable.learn.helpindex</note>
-        <alt-trans>
-          <target xml:lang="fr">Dans le menu Aide, sélectionnez "Aide" et cherchez dans l'index sous "livres déchiffrables".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Du menu Aide, sélectionnez "Aide" et cherchez dans l'index pour "livres déchiffrables".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Allez dans le menu Aide, sélectionnez "Aide" et cherchez dans l'index, "livres déchiffrables".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Rendez vous sur le menu Aide, sélectionnez "Aide" et cherchez "livres dçhiffrables" dans la liste.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="fr" state="translated">Aller dans le menu Aide et sélectionnez "Créer des modèles de livres".</target>
+        <target xml:lang="fr" state="final">Aller dans le menu Aide et sélectionnez "Créer des modèles de livres".</target>
         <note>ID: decodable.learn.helpmenu</note>
-        <alt-trans>
-          <target xml:lang="fr">Cliquez dans le menu Aide sur "Créer des modèles de livres".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Du menu Aide, sélectionnez "Créer des modèles de livres".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Allez dans le menu Aide et sélectionnez "Créer des modèles de livres".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="fr">Rendez vous sur le menu Aide et sélectionner "Créer des modèles de livres".</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>
