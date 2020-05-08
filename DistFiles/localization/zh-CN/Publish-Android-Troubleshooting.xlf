@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="android.publish.trouble.tips" approved="yes">
         <source xml:lang="en">Troubleshooting Tips for Android Publishing</source>
-        <target xml:lang="zh-CN" state="translated">针对安卓系统的故障排除技巧</target>
+        <target xml:lang="zh-CN" state="final">针对安卓系统的故障排除技巧</target>
         <note>ID: android.publish.trouble.tips</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi">
@@ -14,16 +14,13 @@
       </trans-unit>
       <trans-unit id="android.publish.wifi.unseen" approved="yes">
         <source xml:lang="en">Problem: Android Device is not seeing book advertisements</source>
-        <target xml:lang="zh-CN" state="translated">故障：安卓设备看不到同书推送</target>
+        <target xml:lang="zh-CN" state="final">故障：安卓设备看不到同书推送</target>
         <note>ID: android.publish.wifi.unseen</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive">
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
         <target xml:lang="zh-CN" state="translated">使用这个功能时，需要先运行Bloom阅读器，然后打开菜单选择“通过WiFi接受”</target>
         <note>ID: android.publish.wifi.run.receive</note>
-        <alt-trans>
-          <target xml:lang="zh-CN">使用这个功能时，需要先运行Bloom阅读器，然后打开菜单选择“通过WIFI接受”</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from">
         <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
@@ -37,17 +34,17 @@
       </trans-unit>
       <trans-unit id="android.publish.wifi.firewalls" approved="yes">
         <source xml:lang="en">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</source>
-        <target xml:lang="zh-CN" state="translated">确保电脑上的防火墙没有实施干扰。第一次推送图书时, windows 防火墙会询问您。如果选 "不", 它可能就不会再问了。如果您安装的是第三方的防火墙, 请禁用它们。Bloom在本地网络上通过端口5913的UDP发送, 而Bloom阅读器则通过端口5915请求图书。</target>
+        <target xml:lang="zh-CN" state="final">确保电脑上的防火墙没有实施干扰。第一次推送图书时, windows 防火墙会询问您。如果选 "不", 它可能就不会再问了。如果您安装的是第三方的防火墙, 请禁用它们。Bloom在本地网络上通过端口5913的UDP发送, 而Bloom阅读器则通过端口5915请求图书。</target>
         <note>ID: android.publish.wifi.firewalls</note>
       </trans-unit>
       <trans-unit id="android.publish.usb" approved="yes">
         <source xml:lang="en">Send Over USB Cable</source>
-        <target xml:lang="zh-CN" state="translated">通过USB数据线发送</target>
+        <target xml:lang="zh-CN" state="final">通过USB数据线发送</target>
         <note>ID: android.publish.usb</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.not.connect" approved="yes">
         <source xml:lang="en">Problem: Bloom is not connecting to my device</source>
-        <target xml:lang="zh-CN" state="translated">故障：Bloom没有连接到我的设备</target>
+        <target xml:lang="zh-CN" state="final">故障：Bloom没有连接到我的设备</target>
         <note>ID: android.publish.usb.not.connect</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.consider.wifi">
@@ -59,22 +56,22 @@
       </trans-unit>
       <trans-unit id="android.publish.usb.automatic" approved="yes">
         <source xml:lang="en">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
-        <target xml:lang="zh-CN" state="translated">使用这种方法时，不用打开任何接收书本的模式。只要运行Bloom阅读器就可以了，书本传输完成后会自动出现在设备上。</target>
+        <target xml:lang="zh-CN" state="final">使用这种方法时，不用打开任何接收书本的模式。只要运行Bloom阅读器就可以了，书本传输完成后会自动出现在设备上。</target>
         <note>ID: android.publish.usb.automatic</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.uses.mtp" approved="yes">
         <source xml:lang="en">Some Android devices have multiple modes they can be in when connected to a computer. Some will ask you as soon as you connect the cable to the computer. Bloom will be trying to talk to the device using a protocol called "MTP". If you're not sure that your device is connecting using MTP, try googling the name of your device + "MTP".</source>
-        <target xml:lang="zh-CN" state="translated">有些安卓设备在连接电脑时有多种模式。有些设备在刚连接到电脑时就会询问用哪种模式。Bloom会用“MTP”模式与设备连接。如果您不确定自己的设备是否通过MTP连接，可以搜索“设备名+MTP”。</target>
+        <target xml:lang="zh-CN" state="final">有些安卓设备在连接电脑时有多种模式。有些设备在刚连接到电脑时就会询问用哪种模式。Bloom会用“MTP”模式与设备连接。如果您不确定自己的设备是否通过MTP连接，可以搜索“设备名+MTP”。</target>
         <note>ID: android.publish.usb.uses.mtp</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.windows" approved="yes">
         <source xml:lang="en">The device should be showing up in Windows File Explorer (this feature is Windows-only)</source>
-        <target xml:lang="zh-CN" state="translated">设备应该出现在Windows文件资源管理器中（只适用于Windows系统）</target>
+        <target xml:lang="zh-CN" state="final">设备应该出现在Windows文件资源管理器中（只适用于Windows系统）</target>
         <note>ID: android.publish.usb.windows</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.cable.or.port" approved="yes">
         <source xml:lang="en">Try a different cable, or a different USB port.</source>
-        <target xml:lang="zh-CN" state="translated">换用其他的数据线或USB插口试一试</target>
+        <target xml:lang="zh-CN" state="final">换用其他的数据线或USB插口试一试</target>
         <note>ID: android.publish.usb.cable.or.port</note>
       </trans-unit>
     </body>

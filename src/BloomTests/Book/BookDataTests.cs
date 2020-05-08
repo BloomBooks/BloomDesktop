@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Web;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
@@ -118,7 +119,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void SuckInDataFromEditedDom_NoDataDIvTitleChanged_NewTitleInCache()
+		public void SuckInDataFromEditedDom_NoDataDivTitleChanged_NewTitleInCache()
 		{
 			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
 				<div class='bloom-page' id='guid2'>
@@ -144,12 +145,15 @@ namespace BloomTests.Book
 			Assert.That(info.OriginalTitle, Is.EqualTo("changed"));
 		}
 
-		[Test]
-		public void SuckInDataFromEditedDom_NotDerivativeNoCurrent_SetsOriginalTitleToVernacular()
+		[TestCase("new title")]
+		[TestCase("HTML Lesson 1: <strong> & <em> tags")]	// Test '&', '<', '>' chars
+		public void SuckInDataFromEditedDomNew_NotDerivativeNoCurrent_SetsOriginalTitleToVernacular(string unencodedTitle)
 		{
-			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+			string encodedTitle = HttpUtility.HtmlEncode(unencodedTitle);
+			string titleXml = $"<p><span id=\"abcdefg\" class=\"audio-sentence\">{encodedTitle}</span></p>";
+			HtmlDom bookDom = new HtmlDom($@"<html ><head></head><body>
 				<div class='bloom-page' id='guid2'>
-					<div lang='xyz' data-book='bookTitle'><p><span id='abcdefg' class='audio-sentence'>new title</span></p></div>
+					<div lang='xyz' data-book='bookTitle'>{titleXml}</div>
 				</div>
 			 </body></html>");
 			var data = new BookData(bookDom, _collectionSettings, null);
@@ -157,20 +161,22 @@ namespace BloomTests.Book
 
 			data.SuckInDataFromEditedDom(bookDom, info);
 
-			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.EqualTo("new title"));
-			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalTitle' and text()='new title']",1);
-			Assert.That(info.OriginalTitle, Is.EqualTo("new title"));
+			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.EqualTo(titleXml), "Data should return the InnerXML (NOT the InnerText) of the title");
+			Assert.That(bookDom.SelectSingleNode("//div[@id='bloomDataDiv']/div[@data-book='originalTitle']").InnerXml, Is.EqualTo(titleXml));
+			Assert.That(info.OriginalTitle, Is.EqualTo(unencodedTitle));
 		}
 
-		[Test]
-		public void SuckInDataFromEditedDom_Derivative_NoOriginalTitle_LeavesOriginalTitleEmpty()
+		[TestCase("new title")]
+		[TestCase("HTML Lesson 1: <strong> & <em> tags")]	// Test '&', '<', '>' chars
+		public void SuckInDataFromEditedDom_Derivative_NoOriginalTitle_LeavesOriginalTitleEmpty(string unencodedTitle)
 		{
-			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+			string encodedTitle = HttpUtility.HtmlEncode(unencodedTitle);
+			HtmlDom bookDom = new HtmlDom($@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
 					<div data-book='originalCopyright' lang='*'>Copyright 2020 someone</div>
 				</div>
 				<div class='bloom-page' id='guid2'>
-					<div lang='xyz' data-book='bookTitle'>new title</div>
+					<div lang='xyz' data-book='bookTitle'>{encodedTitle}</div>
 				</div>
 			 </body></html>");
 			var data = new BookData(bookDom, _collectionSettings, null);
@@ -181,13 +187,15 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalTitle']");
 		}
 
-		[Test]
-		public void SuckInDataFromEditedDom_Derivative_OriginalTitle_CopiesToMetadata()
+		[TestCase("hand-edited title")]
+		[TestCase("HTML Lesson 1: <strong> & <em> tags")]	// Test '&', '<', '>' chars
+		public void SuckInDataFromEditedDom_Derivative_OriginalTitle_CopiesToMetadata(string unencodedTitle)
 		{
-			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+			string encodedTitle = HttpUtility.HtmlEncode(unencodedTitle);
+			HtmlDom bookDom = new HtmlDom($@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
 					<div data-book='originalCopyright' lang='*'>Copyright 2020 someone</div>
-					<div data-book='originalTitle' lang='*'>hand-edited title</div>
+					<div data-book='originalTitle' lang='*'>{encodedTitle}</div>
 				</div>
 				<div class='bloom-page' id='guid2'>
 					<div lang='xyz' data-book='bookTitle'>new title</div>
@@ -198,20 +206,22 @@ namespace BloomTests.Book
 
 			data.SuckInDataFromEditedDom(bookDom, info);
 
-			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.EqualTo("hand-edited title"));
-			Assert.That(info.OriginalTitle, Is.EqualTo("hand-edited title"));
+			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.EqualTo(encodedTitle), "data should equal the encoded title");
+			Assert.That(info.OriginalTitle, Is.EqualTo(unencodedTitle), "Info.OriginalTitle should equal the decoded title");
 		}
 
-		[Test]
-		public void SuckInDataFromEditedDom_NotDerivativeCurrent_SetsOriginalTitleToVernacular()
+		[TestCase("new title")]
+		[TestCase("HTML Lesson 1: <strong> & <em> tags")]	// Test '&', '<', '>' chars
+		public void SuckInDataFromEditedDom_NotDerivativeCurrent_SetsOriginalTitleToVernacular(string unencodedTitle)
 		{
-			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+			string encodedTitle = HttpUtility.HtmlEncode(unencodedTitle);
+			HtmlDom bookDom = new HtmlDom($@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
 						<div data-book='originalTitle' lang='*'>original</div>
 				</div>
 				<div class='bloom-page' id='guid2'>
 					<div lang='en' data-book='bookTitle'>new title in English</div>
-					<div lang='xyz' data-book='bookTitle'>new title</div>
+					<div lang='xyz' data-book='bookTitle'>{encodedTitle}</div>
 					<div lang='fr' data-book='bookTitle'>new title in French</div>
 				</div>
 			 </body></html>");
@@ -219,7 +229,7 @@ namespace BloomTests.Book
 
 			data.SuckInDataFromEditedDom(bookDom);
 
-			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.EqualTo("new title"));
+			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.EqualTo(encodedTitle), "data should equal the encoded title");
 		}
 
 		/// <summary>

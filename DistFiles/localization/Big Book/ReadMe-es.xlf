@@ -4,58 +4,45 @@
     <body>
       <trans-unit id="bigbook.title" approved="yes">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="es-ES" state="translated">Acerca de los Libros Grandes</target>
+        <target xml:lang="es-ES" state="final">Acerca de los Libros Grandes</target>
         <note>ID: bigbook.title</note>
-        <alt-trans>
-          <target xml:lang="es-ES">Acerca de Libros Grandes</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="es-ES" state="translated">Los Libros Grandes están diseñados para que los profesores puedan mostrarlos y leerlos en frente de los estudiantes. Para obtener más información, lea este <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf"> PDF de Scholastic</g>.</target>
+        <target xml:lang="es-ES" state="final">Los Libros Grandes están diseñados para que los profesores puedan mostrarlos y leerlos en frente de los estudiantes. Para obtener más información, lea este <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf"> PDF de Scholastic</g>.</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
       <trans-unit id="bigbook.printing" approved="yes">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="es-ES" state="translated">Imprimiendo un Libro Grande</target>
+        <target xml:lang="es-ES" state="final">Imprimiendo un Libro Grande</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
       <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="es-ES" state="translated">Para hacer las cosas más manejables, esta plantilla usa el tamaño A4 Horizontal, con fuentes grandes. Fácilmente puede producir libros que son A3 (dos veces más grande).
+        <target xml:lang="es-ES" state="final">Para hacer las cosas más manejables, esta plantilla usa el tamaño A4 Horizontal, con fuentes grandes. Fácilmente puede producir libros que son A3 (dos veces más grande).
 Sólo lleve su PDF tamaño A4 a una imprenta y pida que lo agranden a uno de tamaño A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
-        <alt-trans>
-          <target xml:lang="es-ES">Para hacer las cosas más manejables, esta plantilla usa el tamaño A4 Horizontal, con fuentes grandes. Fácilmente puede producir libros que son A3 (dos veces más grande).
-Toma su PDF A4 a una imprenta y pide que lo agrande a A3.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="es-ES" state="translated">Limitaciones de esta versión</target>
+        <target xml:lang="es-ES" state="final">Limitaciones de esta versión</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="es-ES" state="translated">Si está utilizando una pantalla pequeña, puede ser difícil leer la página de créditos. Trate de hacer zoom usando control+/- de zoom en la esquina superior derecha de la pantalla para que lo pueda editar.</target>
+        <target xml:lang="es-ES" state="final">Si está utilizando una pantalla pequeña, puede ser difícil leer la página de créditos. Trate de hacer zoom usando control+/- de zoom en la esquina superior derecha de la pantalla para que lo pueda editar.</target>
         <note>ID: bigbook.limits.smallscreen</note>
-        <alt-trans>
-          <target xml:lang="es-ES">Si está utilizando una pantalla pequeña, puede ser difícil leer la página de créditos. Trate de hacer zoom usando el control+/- de zoom en la derecha superior de la pantalla para que lo puede editar.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="es-ES" state="translated">Esta versión incluye una página de "Instrucciones para Maestros" que ya está llenada en inglés.
+        <target xml:lang="es-ES" state="final">Esta versión incluye una página de "Instrucciones para Maestros" que ya está llenada en inglés.
  Si quisiera tener las instrucciones en un idioma diferente, puede borrar este texto e ingresar el texto traducido. 
 Si nos envía el texto traducido, podemos incluirlo en una futura versión de la plantilla.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
-        <alt-trans>
-          <target xml:lang="es-ES">Esta versión incluye una página "Instrucciones para maestros" que ya está rellenad en inglés. Si le gustaría tener las instrucciones en un idioma diferente, puede borrar este texto y ingresar texto traducido. Si nos envía el texto traducido, podemos incluirlo en una futura versión de la plantilla.</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

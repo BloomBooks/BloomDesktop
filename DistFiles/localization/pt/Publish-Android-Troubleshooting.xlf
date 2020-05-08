@@ -21,9 +21,6 @@
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
         <target xml:lang="pt-PT" state="translated">Ao usar este método, você precisa executar o LeitorBloom. Abra o menu e escolha "Receber do WiFi".</target>
         <note>ID: android.publish.wifi.run.receive</note>
-        <alt-trans>
-          <target xml:lang="pt-PT">Ao usar este método, você precisa executar o Bloom Reader. Abra o menu e escolha "Receber do WiFi".</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from">
         <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
@@ -39,9 +36,6 @@
         <source xml:lang="en">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</source>
         <target xml:lang="pt-PT" state="translated">Verifique se o seu computador não tem um firewall que esteja interferindo. O firewall do Windows será exibido quando você começar a compartilhar seu livro pela primeira vez. Se você disse "Não" para isso, você não pode pedir novamente. Se você tiver outros firewalls instalados, tente desativá-los. Bloom compartilha um livro transmitindo-o na rede local via UDP na porta 5913 e LeitorBloom pede um livro através da porta 5915.</target>
         <note>ID: android.publish.wifi.firewalls</note>
-        <alt-trans>
-          <target xml:lang="pt-PT">Verifique se o seu computador não tem um firewall que esteja interferindo. O firewall do Windows será exibido quando você começar a compartilhar seu livro pela primeira vez. Se você disse "Não" para isso, você não pode pedir novamente. Se você tiver outros firewalls instalados, tente desativá-los. Bloom compartilha um livro transmitindo-o na rede local via UDP na porta 5913 e Reader Bloom pede um livro através da porta 5915.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.usb">
         <source xml:lang="en">Send Over USB Cable</source>
