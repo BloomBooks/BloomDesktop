@@ -48,9 +48,9 @@ block insideFrontCoverContents
 	img.licenseImage(src="license.png" data-derived="licenseImage")
 	.licenseDetails
 		p This work is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0). To view a copy of this license, visit https://creativecommons.org/licenses/by-nc/4.0/. Under the Creative Commons Attribution-NonCommercial license, you are free to copy, distribute, transmit, and adapt this work but not for commercial purposes and under the following conditions:
-		p <b>Attribution</b>—If you copy and distribute this work in its entirety, without making significant changes to content or illustrations, please label the work as follows: Reproduced on the basis of an original work developed under the USAID ABC+: Advancing Basic Education in the Philippines project and licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
-		p <b>Translations</b>—If you create a translation of this work, please use the following label on your work: Translated from an original work developed under the USAID ABC+: Advancing Basic Education in the Philippines project and licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
-		p <b>Adaptations</b>—If you create an adaptation of this work, please use the following label on your work: This is an adaptation of an original work developed under the USAID ABC+: Advancing Basic Education in the Philippines project and licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
+		p <b>Attribution</b>—If you copy and distribute this work in its entirety, without making changes to content or illustrations, please label the work as follows: "Reproduced on the basis of an original work developed under the USAID ABC+: Advancing Basic Education in the Philippines project and licensed under the Creative Commons Attribution-NonCommercial 4.0 International License."
+		p <b>Translations</b>—If you create a translation of this work, please use the following label on your work: "Translated from an original work developed under the USAID ABC+: Advancing Basic Education in the Philippines project and licensed under the Creative Commons Attribution-NonCommercial 4.0 International License."
+		p <b>Adaptations</b>—If you create an adaptation of this work, please use the following label on your work: "This is an adaptation of an original work developed under the USAID ABC+: Advancing Basic Education in the Philippines project and licensed under the Creative Commons Attribution-NonCommercial 4.0 International License."
 
 //-------------- TITLE PAGE ---------------
 block titlePageContents
@@ -64,6 +64,8 @@ block titlePageContents
 	//- Also intentional (!) is that these same credits are on the cover, title page, and credits page.
 	+field-acknowledgments-originalVersion("V","The author and the illustrator in {lang}")
 
+	.smallFlexGap
+	+standard-originalContributions
 
 	//- e.g. "Stage 2 letters: a, g, l, k, m, n, o, s" <-- They would like this to be automated
 	//- the lang on the whole div makes us have the same font throughout the line
