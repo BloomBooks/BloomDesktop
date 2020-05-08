@@ -201,6 +201,17 @@ mixin standard-creditsPage-back-cover
 	+page-xmatter('Inside Back Cover').cover.coverColor.credits.bloom-backMatter(data-export='front-matter-credits-page', data-xmatter-page='credits')&attributes(attributes)#bbcd48aa-bbab-4a07-afd4-6a24d03983bb
 		+credits-contents
 
+mixin standard-originalContributions
+	block originalContributions
+		+field-prototypeDeclaredExplicity("N1")#originalContributions
+			block originalContributionsLabel
+				//- if you modify this next line, modify it also in the SIL PNG custom xmatter,
+				//- and probably the MXB custom Xmatter
+				label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
+					| The contributions made by writers, illustrators, editors, etc., in {lang}
+			+editable(kLanguageForPrototypeOnly).credits.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
+
+
 mixin title-page-contents
 	block titlePageContents
 		// TITLE PAGE
@@ -208,14 +219,7 @@ mixin title-page-contents
 			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style.bloom-padForOverflow(data-book='bookTitle')
 		div.largeFlexGap
-		block originalContributions
-			+field-prototypeDeclaredExplicity("N1")#originalContributions
-				block originalContributionsLabel
-					//- if you modify this next line, modify it also in the SIL PNG custom xmatter,
-					//- and probably the MXB custom Xmatter
-					label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
-						| The contributions made by writers, illustrators, editors, etc., in {lang}
-				+editable(kLanguageForPrototypeOnly).credits.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
+		+standard-originalContributions
 		div.smallFlexGap
 		+field-prototypeDeclaredExplicity("N1")#funding
 			label.bubble Use this to acknowledge any funding agencies.
