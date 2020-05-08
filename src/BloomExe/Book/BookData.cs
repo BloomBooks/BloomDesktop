@@ -1450,18 +1450,21 @@ namespace Bloom.Book
 				// We just need to make the info, if any, consistent wit the bookdata
 				if (info != null)
 				{
-					info.OriginalTitle = GetVariableOrNull("originalTitle","*");
+					string encodedTitle = GetVariableOrNull("originalTitle","*"); 
+					info.OriginalTitle = HttpUtility.HtmlDecode(encodedTitle);
 				}
 			} else
 			{
-				string originalTitle =
-					BookData.TextOfInnerHtml(title?.TextAlternatives.GetExactAlternative(_collectionSettings.Language1Iso639Code));
+				string encodedOriginalTitle = title?.TextAlternatives.GetExactAlternative(_collectionSettings.Language1Iso639Code);
+				string decodedOriginalTitle = BookData.TextOfInnerHtml(encodedOriginalTitle);
 
-				_dataset.UpdateGenericLanguageString("originalTitle", originalTitle, false);
+				// _dataset.TextVariables is expected to contain an ENCODED string!
+				// info.OriginalTitle is expected to contain a DECODED string
+				_dataset.UpdateGenericLanguageString("originalTitle", encodedOriginalTitle, false);
 				UpdateSingleTextVariableInDataDiv("originalTitle", _dataset.TextVariables["originalTitle"].TextAlternatives);
 				if (info != null)
 				{
-					info.OriginalTitle = originalTitle;
+					info.OriginalTitle = decodedOriginalTitle;
 				}
 			}
 		}
