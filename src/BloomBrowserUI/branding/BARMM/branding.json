@@ -3,7 +3,8 @@
         {
             "data-book": "licenseUrl",
             "lang": "*",
-            "content": "http://creativecommons.org/licenses/by-nc/4.0/"
+            "content": "http://creativecommons.org/licenses/by-nc/4.0/",
+            "condition": "always"
         },
         {
             "data-book": "cover-branding-bottom-html",
