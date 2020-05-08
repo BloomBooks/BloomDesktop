@@ -35,9 +35,6 @@
         <source xml:lang="en">Check for updates</source>
         <note>ID: Settings.Enterprise.CheckUpdates</note>
         <target xml:lang="prs" state="final">برای تجدید ها بررسی کنید</target>
-        <alt-trans>
-          <target xml:lang="prs">برای آپدید ها بررسی کنید</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expiration" approved="yes">
         <source xml:lang="en">Expires:</source>

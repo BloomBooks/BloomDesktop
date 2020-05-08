@@ -7,9 +7,6 @@
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
         <target xml:lang="prs" state="final">ساخته شده در ‎‏{0}</target>
-        <alt-trans>
-          <target xml:lang="prs">{0}% ترجمه شده است</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
@@ -42,20 +39,11 @@
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
         <target xml:lang="prs" state="final">کاپی دیگر ‎{0}‏ در حالت فعالیت است. اگر کاپی ‎{0}‏ را پیدا کرده نمیتوانید، کمپیوتر تانرا باز فعال نمائید.</target>
-        <alt-trans>
-          <target xml:lang="prs">کاپی دیگر {‎{0 در حالت فعالیت است. اگر کاپی {‎{0 را پیدا کرده نمیتوانید، کمپیوتر تانرا باز فعال نمائید.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">کاپی دیگر ‎{0} در حالت فعالیت است. اگر کاپی ‎{0} را پیدا کرده نمیتوانید، کمپیوتر تانرا باز فعال نمائید.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.General" approved="yes">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
         <target xml:lang="prs" state="final">هنګام باز نمودن درخواست اگر مشکل موجود بود شاید به باز فعال کردن کمپیوتر نیاز داشته باشد.</target>
-        <alt-trans>
-          <target xml:lang="prs">هنګام باز نمودن درخواست گر مشکل موجود بود شاید به باز فعال کردن کمپیوتر نیاز داشته باشد.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.Specific" approved="yes">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
@@ -73,12 +61,6 @@
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
         <target xml:lang="prs" state="final">انتظار کشیدن برای ‎{0}‏ دیگر تمام شود...</target>
-        <alt-trans>
-          <target xml:lang="prs">انتظار کشیدن برای {‎ {0دیگر تمام شود...</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">انتظار کشیدن برای‎ {0} دیگر تمام شود...</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.AbortButton" approved="yes">
         <source xml:lang="en">&amp;Abort</source>
@@ -136,9 +118,6 @@
         <note>ID: CustomIdentifierView.linkLabel1</note>
         <note>text used in the link to a webpage that describes the language identifiers</note>
         <target xml:lang="prs" state="final">درباره معین کننده هویت زبان در ویب بخوانید</target>
-        <alt-trans>
-          <target xml:lang="prs">درباره معین کننده هویت زبان در وب بخوانید</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -172,12 +151,6 @@
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
         <target xml:lang="prs" state="final">تصاویر ‎{0}‏ را با نامهای نزدیک به ‎{1}‏ پیدا کرد</target>
-        <alt-trans>
-          <target xml:lang="prs">تصاویر {‎{0 را با نامهای نزدیک به {‎{1‏ پیدا کرد</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">تصاویر ‎{0} را با نامهای نزدیک به ‎{1}‏ پیدا کرد</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.ArtOfReading" approved="yes">
         <source xml:lang="en">Art Of Reading</source>
@@ -204,9 +177,6 @@
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
         <target xml:lang="prs" state="final">دونلود نمودن نصب کننده یا فعال ساز مهارت خوانش</target>
-        <alt-trans>
-          <target xml:lang="prs">دونلود نمودن نصب کننده یا فعال سازی همهارت خوانش</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.EditMetadataLink" approved="yes">
         <source xml:lang="en">Edit...</source>
@@ -218,9 +188,6 @@
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
         <target xml:lang="prs" state="final">در خانه بالا، هر آنچیزیکه در جستجوی آن هستید بنویسید، بعداٌ ENTER را فشار دهید.</target>
-        <alt-trans>
-          <target xml:lang="prs">این گالری مهارت خوانش است. در خانه بالا، هر آنچیزیکه در جستجوی آن هستید بنویسید، بعداٌ ‏ENTER‏ را فشار دهید. شما میتوانید کلیمات را در انگلیسی و اندونیزیایی تایپ نمائید.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
@@ -273,18 +240,12 @@
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
         <target xml:lang="prs" state="final">تصاویر ‎{0}‏ یافت شد</target>
-        <alt-trans>
-          <target xml:lang="prs">تصاویر ‎{0}‏ یافت شد</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.NewMultilingual" approved="yes">
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space): Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</note>
         <target xml:lang="prs" state="final">آیا میدانستید که این نسخه جدید این مجموعه است که شما را اجازه میدهد در عربی، بنگالی، چینایی، انگلیسی، فرانسوی، اندونیزیایی، هندی، پرتگالی، هسپانوی، تایلندی، یا سواحلی جستجو کنید؟ این رایگان است و برای دونلود نمودن موجود است.</target>
-        <alt-trans>
-          <target xml:lang="prs">آیا میدانستید که نسخه جدید این مجموعه است که شما را اجازه میدهد در عربی، بنگالی، چینایی، انگلیسی، فرانسوی، اندونیزیایی، هندی، پرتگالی، هسپانوی، تایلندی، یا سواحلی جستجو کنید؟ این رایگان است و برای دونلود نمودن موجود است.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoArtOfReading" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
@@ -331,9 +292,6 @@
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
         <target xml:lang="prs" state="final">گالری مهارت خوانش را جستجو نمائید</target>
-        <alt-trans>
-          <target xml:lang="prs">گالری مهارت خوانش را چک نمائید</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchLanguage" approved="yes">
         <source xml:lang="en">The search box is currently set to {0}</source>
@@ -378,12 +336,6 @@
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
         <target xml:lang="prs" state="final">بخاطر کود های;‎639-3 Codes &amp;amp و چگونه برای جدید بکار برده شود</target>
-        <alt-trans>
-          <target xml:lang="prs">بخاطر کود های;‎639-3 Codes &amp;amp و چگونه برای جدید بکار برده شود</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">بخاطر کود های ‎639-3‏ و چگونه برای جدید بکار برده شود</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle" approved="yes">
         <source xml:lang="en">About The ISO Language Registry</source>
@@ -543,9 +495,6 @@
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
         <target xml:lang="prs" state="final">خلاق عام</target>
-        <alt-trans>
-          <target xml:lang="prs">عام خلاق</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental" approved="yes">
         <source xml:lang="en">Intergovernmental Version</source>
@@ -620,17 +569,11 @@
         <source xml:lang="en">Cancel</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton</note>
         <target xml:lang="prs" state="final">فسخ کردن</target>
-        <alt-trans>
-          <target xml:lang="prs">لغو کردن</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._okButton" approved="yes">
         <source xml:lang="en">OK</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._okButton</note>
         <target xml:lang="prs" state="final">درست است</target>
-        <alt-trans>
-          <target xml:lang="prs">خوب</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ScriptsAndVariantsDialog.ScriptsAndVariants" approved="yes">
         <source xml:lang="en">Script and Variant</source>
@@ -652,9 +595,6 @@
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
         <target xml:lang="prs" state="final">محافظت از تنظيمات...</target>
-        <alt-trans>
-          <target xml:lang="prs">تنظیمات...</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox" approved="yes">
         <source xml:lang="en">Hide the button that opens settings.</source>
@@ -686,30 +626,12 @@
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
         <target xml:lang="prs" state="final">رمز فابریکه برای این تنظیمات عبارت است از "{0}". اگر شما فراموش کردید، شما همیشه برای "{1}" در گوگل جستجو میتوانید.</target>
-        <alt-trans>
-          <target xml:lang="prs">رمز فابریکه برای این تنظیمات عبارت است از "{0}". اگر شما فراموش کردید، شما همیشه برای "{1}" و در گوگل جستجو میتوانید</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">رمز فابریکه برای این تنظیمات عبارت است از "{0}". اگر شما فراموش کردید، شما همیشه برای "{1}" و "{2}" در گوگل جستجو میتوانید</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">مز فابریکه برای این تنظیمات عبارت است از ‎"{0}"‏. اگر شما فراموش کردید، شما همیشه برای ‎"{1}"‏ و ‎"{2}"‏ در گوگل جستجو میتوانید</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">مز فابریکه برای این تنظیمات عبارت است از "{"{0. اگر شما فراموش کردید، شما همیشه برای "{"{1 و "{"{2 در گوگل جستجو میتوانید</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">رمز فابریکه برای این تنظیمات عبارت است از "{‎"{0‏. اگر شما فراموش کردید، شما همیشه برای "{‎"{1‏ و "{‎"{2‏ در گوگل جستجو میتوانید.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl" approved="yes">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
         <note>ID: SettingsProtection.PasswordNoticeWithSupportUrl</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNotice". Param 0: Factory password; Param 1: product name; Param 2: URL of support page</note>
         <target xml:lang="prs" state="final">رمز فابریکه برای این تنظیمات "{0}" است. اگر شما فراموش کردید، همیشه می توانید {1} به صفحه پشتیبانی مراجعه کنید: {2}</target>
-        <alt-trans>
-          <target xml:lang="prs">رمز فابریکه برای این تنظیمات عبارت است از "{0}". اگر شما فراموش کردید، شما همیشه متوانید "{1}" صفه حمایتی "{2}" را ببینید</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
@@ -746,9 +668,6 @@
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
         <target xml:lang="prs" state="final">این یک &amp;سیستم نوشتاری از راست به چپ است.</target>
-        <alt-trans>
-          <target xml:lang="prs">این سیستم نوشتاری از راست به چپ است.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
@@ -824,12 +743,6 @@
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
         <target xml:lang="prs" state="final">کیبورد را انتخاب نمائید &amp; که با آن متن ‎{0}‏  را تایپ کنید</target>
-        <alt-trans>
-          <target xml:lang="prs">کیبورد را انتخاب نمائید &amp; که با آن متن {‎ {0 را تایپ کنید</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="prs">کیبورد را انتخاب نمائید که با آن متن‎ {0} را تایپ کنید</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SetupKeyboards" approved="yes">
         <source xml:lang="en">Set up keyboards</source>

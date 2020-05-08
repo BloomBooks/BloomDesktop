@@ -39,12 +39,6 @@
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
         <target xml:lang="pbu" state="final">بله کاپي د ‎{0}‏ تیاره روانه ده. که تاسې ‎{0}‏ هغه کاپي نشئ پیدا کولی، خپل کمپیوټر بیا روښانه کړئ.</target>
-        <alt-trans>
-          <target xml:lang="pbu">بله کاپي د {‎{0 تیاره روانه ده. که تاسې {‎{0 هغه کاپي نشئ پیدا کولی، خپل کمپیوټر بیا روښانه کړئ.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">بله کاپي د ‎{0} تیاره روانه ده. که تاسې ‎{0} هغه کاپي نشئ پیدا کولی، خپل کمپیوټر بیا روښانه کړئ.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.General" approved="yes">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
@@ -56,9 +50,6 @@
         <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
         <target xml:lang="pbu" state="final">د {0}‏ په پيل کولو کې ستونزه وه چې ښایې ستاسې د کمپیوټر بیا روښانه کولو ته اړتیا وي.</target>
-        <alt-trans>
-          <target xml:lang="pbu">د ‎{0}‏ په پيل کولو کې ستونزه وه چې ښایې ستاسې د کمپیوټر بیا روښانه کولو ته اړتیا وي.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.General" approved="yes">
         <source xml:lang="en">Waiting for other application to finish...</source>
@@ -160,12 +151,6 @@
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
         <target xml:lang="pbu" state="final">دې ‎{1}‏ نوم ته نږدي د دې {0}‏ انځورونه پیدا شو</target>
-        <alt-trans>
-          <target xml:lang="pbu">دې {‎{1‏ نوم ته نږدي د دې {0}‏ انځورونه پیدا شو</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">دې ‎{1}‏ نوم ته نږدي د دې ‎{0}‏ انځورونه پیدا شو</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.ArtOfReading" approved="yes">
         <source xml:lang="en">Art Of Reading</source>
@@ -182,12 +167,6 @@
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
         <target xml:lang="pbu" state="final">د ‎{0}‏ استعمال</target>
-        <alt-trans>
-          <target xml:lang="pbu">د {‎0} استعمال</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">د ‎{0} استعمال</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop" approved="yes">
         <source xml:lang="en">Crop</source>
@@ -209,9 +188,6 @@
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
         <target xml:lang="pbu" state="final">په پورتني بکس کې، هغه څه ولیکئ چې پلټنه یې کوئ، بیا ENTER کیکاږئ.</target>
-        <alt-trans>
-          <target xml:lang="pbu">دا د ‎'لوستلو مهارت‎'‏ ګالري ده. په پورتني بکس کې، هغه څه ولیکئ چې پلټنه یې کوئ، بیا ‏ENTER‏ کیکاږئ. تاسو په اندونیزیايي او انګلیسی کلمې ټایپ کولی شئ.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
@@ -264,21 +240,12 @@
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
         <target xml:lang="pbu" state="final">د ‎{0}‏ انځورونه پیدا شو</target>
-        <alt-trans>
-          <target xml:lang="pbu">د {‎{0 انځورونه پیدا شو</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">د ‎{0} انځورونه پیدا شو</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.NewMultilingual" approved="yes">
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space): Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</note>
         <target xml:lang="pbu" state="final">آیا تاسې پوهیدی چې دا د ټولګې نوې نسخه ده چې تاسو ته اجازه درکوي په عربي، بنګالي، چينايي، انګلېسي، فرانسوي، اندونیزیایي، هندي، پرتګالي، هسپانوي، ټایلنډي، یا سواحلي کې پلټنه وکوئ؟ دا وړیا ده او د ښکته کولو لپاره شته.</target>
-        <alt-trans>
-          <target xml:lang="pbu">آیا تاسې پوهیدی چې دا د ټولګې نوې نسخه ده چې تاسو ته اجازه درکوي په عربي، بنګالي، چنایی، انګلیسي، فرانسوي، اندونیزیایي، هندي، پرتګالي، هسپانوي، تایلندي، یا سواحلي کی پلټنه وکوئ؟ دا وړیا ده او د ښکته کولو لپاره شته.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoArtOfReading" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
@@ -325,21 +292,12 @@
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
         <target xml:lang="pbu" state="final">د ګالري د لوستلو مهارت پلټنه وکړئ</target>
-        <alt-trans>
-          <target xml:lang="pbu">د ګالري د لوستنو مهارت پلټنه وکړئ</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchLanguage" approved="yes">
         <source xml:lang="en">The search box is currently set to {0}</source>
         <note>ID: ImageToolbox.SearchLanguage</note>
         <note>The {0} will be replaced by the name of the language used in the searches.</note>
         <target xml:lang="pbu" state="final">د پلټنې بکس اوس ‎{0}‏ ته تنظیمه شوې ده</target>
-        <alt-trans>
-          <target xml:lang="pbu">د پلټنې بکس اوس {‎0} ته تنظیمه شوې ده</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">د پلټنې بکس اوس ‎{0} ته تنظیمه شوې ده</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.SetUpMetadataLink" approved="yes">
         <source xml:lang="en">Set up metadata...</source>
@@ -434,9 +392,6 @@
         <source xml:lang="en">my script variant label</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLabel</note>
         <target xml:lang="pbu" state="final">زما د متن مختلف ډولونه</target>
-        <alt-trans>
-          <target xml:lang="pbu">زما د متن مختلف ډول</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLink" approved="yes">
         <source xml:lang="en">Script and Variant</source>
@@ -447,23 +402,11 @@
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
         <note>ID: MemoryWarning</note>
         <target xml:lang="pbu" state="final">له بده مرغه، ‎{0}‏ د حافظې له کمښت سره مخ کیږي او ښايي ژر ورو شي او یا نورو ستونزو سره مخ شي. مونږ وړاندیز کوو چې تاسو یې په مناسب وخت کې بند کړئ او بیا یې روښانه کړئ.</target>
-        <alt-trans>
-          <target xml:lang="pbu">له بده مرغه، {‎{0 د حافظې له کمښت سره مخ کیږي او ښايي ژر ورو شي او یا نورو ستونزو سره مخ شي. مونږ وړاندیز کوو چې تاسو یې په مناسب وخت کې بند کړئ او بیا یې روښانه کړئ.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">له بده مرغه، ‎{0} د حافظې له کمښت سره مخ کیږي او ښايي ژر ورو شي او یا نورو ستونزو سره مخ شي. مونږ وړاندیز کوو چې تاسو یې په مناسب وخت کې بند کړئ او بیا یې روښانه کړئ.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Creator" approved="yes">
         <source xml:lang="en">Creator: {0}</source>
         <note>ID: MetadataDisplay.Creator</note>
         <target xml:lang="pbu" state="final">جوړونکی: ‎{0}‏</target>
-        <alt-trans>
-          <target xml:lang="pbu">جوړونکی: {‎{0</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">جوړونکی: ‎{0}</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataDisplay.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
@@ -480,9 +423,6 @@
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
         <target xml:lang="pbu" state="final">تاسو باید د چاب حق او امتیازات د لیکونکو، انځورکرانو، او نورو ته وساتئ.</target>
-        <alt-trans>
-          <target xml:lang="pbu">تاسو باید د چاب حق او امتیازات د لیکونکو، لارښوونکو، او نورو ته وساتئ.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You are free to make commercial use of this work.</source>
@@ -649,18 +589,12 @@
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
         <target xml:lang="pbu" state="final">کله چې تاسې د ‏Ctrl‏ او ‏Shift‏ تڼي یو ځای کیکاږۍ تڼۍ به ښکاره شي.</target>
-        <alt-trans>
-          <target xml:lang="pbu">تڼۍ به ښکاره شي کله چې تاسې د ‏Ctrl‏ او ‏Shift‏ تڼي یو ځای کیکاږۍ.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.LauncherButtonLabel" approved="yes">
         <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
         <target xml:lang="pbu" state="final">د تنظيماتو ساتنه...</target>
-        <alt-trans>
-          <target xml:lang="pbu">تنظیمونه‏...</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox" approved="yes">
         <source xml:lang="en">Hide the button that opens settings.</source>
@@ -692,21 +626,6 @@
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
         <target xml:lang="pbu" state="final">د دې تنظیماتو لپاره د فابریکې پاسورډ "{0}" دی. که تاسو دا هیر کړئ ، نو تاسو تل د {1} ملاتړ پاڼې ته تلای شئ.</target>
-        <alt-trans>
-          <target xml:lang="pbu">دې تنظیمونو لپاره د فابریکې رمز {0} دی. که تاسو یې له یاده وباسئ تاسې هرکله د "{1}" او لپاره ګوګل کې لټون کولی شئ</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">دې تنظیمونو لپاره د فابریکې رمز {0} دی. که تاسو یې له یاده وباسئ تاسې هرکله د "{1}" او "{2}" لپاره ګوګل کې لټون کولی شئ</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">دې تنظیمونو لپاره د فابریکې رمز {0}‏ دی. که تاسو یې له یاده وباسئ تاسې هرکله د "‎{1}‏"‏ او "‎{2}‏"‏ لپاره ګوګل کی لټون کولی شئ.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">دې تنظیمونو لپاره د فابریکې رمز {0}‏ دی. که تاسو یې له یاده وباسئ تاسې هرکله د "{‎1}"‏ او "{‎2}"‏ لپاره ګوګل کی لټون کولی شئ.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">دې تنظیمونو لپاره د فابریکې رمز {0}‏ دی. که تاسو یې له یاده وباسئ تاسې هرکله د ‎"{1}"‏ او ‎"{2}"‏ لپاره ګوګل کی لټون کولی شئ.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl" approved="yes">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
@@ -759,9 +678,6 @@
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
         <target xml:lang="pbu" state="final">&amp;د ازمایښت ساحه:</target>
-        <alt-trans>
-          <target xml:lang="pbu">&amp;د ټسټ ساحه:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="WSIdentifierView.betterLabel4" approved="yes">
         <source xml:lang="en">Abbreviation</source>
@@ -827,12 +743,6 @@
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
         <target xml:lang="pbu" state="final">&amp;کیبورډ او کوم ډول ‎{0}‏ خط یې انتخاب کړئ</target>
-        <alt-trans>
-          <target xml:lang="pbu">&amp;کیبورډ او کوم ډول {‎0} خط یې انتخاب کړئ</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">&amp;کیبورډ او کوم ډول ‎{0} خط یې انتخاب کړئ</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SetupKeyboards" approved="yes">
         <source xml:lang="en">Set up keyboards</source>

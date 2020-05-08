@@ -4,78 +4,78 @@
     <body>
       <trans-unit id="integrity.title" approved="yes">
         <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
-        <target xml:lang="zh-CN" state="translated">Bloom找不到自身内部的一些文件，因此无法继续</target>
+        <target xml:lang="zh-CN" state="final">Bloom找不到自身内部的一些文件，因此无法继续</target>
         <note>ID: integrity.title</note>
       </trans-unit>
       <trans-unit id="integrity.causes" approved="yes">
         <source xml:lang="en">Possible Causes</source>
-        <target xml:lang="zh-CN" state="translated">可能的原因</target>
+        <target xml:lang="zh-CN" state="final">可能的原因</target>
         <note>ID: integrity.causes</note>
       </trans-unit>
       <trans-unit id="integrity.causes.1" approved="yes">
         <source xml:lang="en">Your antivirus may have "quarantined" one or more Bloom files.</source>
-        <target xml:lang="zh-CN" state="translated">1）您的防病毒软件可能把一个或多个Bloom文档“隔离”了。</target>
+        <target xml:lang="zh-CN" state="final">1）您的防病毒软件可能把一个或多个Bloom文档“隔离”了。</target>
         <note>ID: integrity.causes.1</note>
       </trans-unit>
       <trans-unit id="integrity.causes.2" approved="yes">
         <source xml:lang="en">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </source>
-        <target xml:lang="zh-CN" state="translated">2）您的计算机管理员可能为防止侵害的发生而“锁定”了计算机，导致Bloom不能把文档放在需要的地方。 </target>
+        <target xml:lang="zh-CN" state="final">2）您的计算机管理员可能为防止侵害的发生而“锁定”了计算机，导致Bloom不能把文档放在需要的地方。 </target>
         <note>ID: integrity.causes.2</note>
       </trans-unit>
       <trans-unit id="integrity.todo" approved="yes">
         <source xml:lang="en">What To Do</source>
-        <target xml:lang="zh-CN" state="translated">怎么办</target>
+        <target xml:lang="zh-CN" state="final">怎么办</target>
         <note>ID: integrity.todo</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas" approved="yes">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
-        <target xml:lang="zh-CN" state="translated">提交报告以后，我们将与您联系帮助您解决问题。 同时可以尝试以下方法：</target>
+        <target xml:lang="zh-CN" state="final">提交报告以后，我们将与您联系帮助您解决问题。 同时可以尝试以下方法：</target>
         <note>ID: integrity.todo.ideas</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Reinstall" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
-        <target xml:lang="zh-CN" state="translated">再次运行Bloom安装程序，看这次能否顺利启动。</target>
+        <target xml:lang="zh-CN" state="final">再次运行Bloom安装程序，看这次能否顺利启动。</target>
         <note>ID: integrity.todo.ideas.Reinstall</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Antivirus" approved="yes">
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
-        <target xml:lang="zh-CN" state="translated">如果还是不行，就要看一下您的防病毒软件了。 如果下面的“丢失文件”部分中有以“.exe”结尾的文档，可以尝试在**{{installFolder}}**中把Bloom程序文件夹列入“优良程序名单“。</target>
+        <target xml:lang="zh-CN" state="final">如果还是不行，就要看一下您的防病毒软件了。 如果下面的“丢失文件”部分中有以“.exe”结尾的文档，可以尝试在**{{installFolder}}**中把Bloom程序文件夹列入“优良程序名单“。</target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVAST" approved="yes">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</source>
-        <target xml:lang="zh-CN" state="translated">AVAST：<g id="genid-1" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">说明</g>.</target>
+        <target xml:lang="zh-CN" state="final">AVAST：<g id="genid-1" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">说明</g>.</target>
         <note>ID: integrity.todo.ideas.AVAST</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Norton" approved="yes">
         <source xml:lang="en">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>.</source>
-        <target xml:lang="zh-CN" state="translated">Norton Antivirus: <g id="genid-2" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">来自Symantec的说明</g>.</target>
+        <target xml:lang="zh-CN" state="final">Norton Antivirus: <g id="genid-2" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">来自Symantec的说明</g>.</target>
         <note>ID: integrity.todo.ideas.Norton</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVG" approved="yes">
         <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
-        <target xml:lang="zh-CN" state="translated">AVG: <g id="genid-3" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">来自AVG的说明</g>.</target>
+        <target xml:lang="zh-CN" state="final">AVG: <g id="genid-3" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">来自AVG的说明</g>.</target>
         <note>ID: integrity.todo.ideas.AVG</note>
         <note>The former source text had an incorrect &amp;amp; following l=en_US in the href attribute value.</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Others" approved="yes">
         <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>
-        <target xml:lang="zh-CN" state="translated">其他：在Google上搜索“ whitelist directory name-of-your-antivirus”</target>
+        <target xml:lang="zh-CN" state="final">其他：在Google上搜索“ whitelist directory name-of-your-antivirus”</target>
         <note>ID: integrity.todo.ideas.Others</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Restart" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
-        <target xml:lang="zh-CN" state="translated">再次运行Bloom安装程序，看这次能否顺利启动。</target>
+        <target xml:lang="zh-CN" state="final">再次运行Bloom安装程序，看这次能否顺利启动。</target>
         <note>ID: integrity.todo.ideas.Restart</note>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Retrieve" approved="yes">
         <source xml:lang="en">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.</source>
-        <target xml:lang="zh-CN" state="translated">您也可以尝试找回反病毒软件从Bloom中取走的部分。 对于AVG，您需要找到AVG“选项”菜单，点击“病毒库”，点击库中的Bloom文件并选择“还原”。 视图说明，参见<g id="genid-4" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">此图片</g>.</target>
+        <target xml:lang="zh-CN" state="final">您也可以尝试找回反病毒软件从Bloom中取走的部分。 对于AVG，您需要找到AVG“选项”菜单，点击“病毒库”，点击库中的Bloom文件并选择“还原”。 视图说明，参见<g id="genid-4" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">此图片</g>.</target>
         <note>ID: integrity.todo.ideas.Retrieve</note>
       </trans-unit>
       <trans-unit id="integrity.missing" approved="yes">
         <source xml:lang="en">Missing Files</source>
-        <target xml:lang="zh-CN" state="translated">丢失文件</target>
+        <target xml:lang="zh-CN" state="final">丢失文件</target>
         <note>ID: integrity.missing</note>
       </trans-unit>
     </body>
