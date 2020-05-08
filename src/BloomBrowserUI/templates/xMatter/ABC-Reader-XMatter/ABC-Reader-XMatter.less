@@ -2,58 +2,59 @@
 
 @XMatterPackName: "ABC Reader";
 
-// [data-book="smallCoverCredits"],
-// [data-book="funding"] {
-//     display: none !important;
-// }
-
 @circleDiameter: 80px;
 @creditsLineSpacing: 14px;
 
-body.leveled-reader .numberCircle {
-    background-color: #ba0c2f;
-}
-body.decodable-reader .numberCircle {
-    background-color: rgb(0, 47, 108);
-}
-
-body:not(.decodable-reader) {
-    .decodableStageLettersRow {
-        display: none !important; // for decodable only
-    }
-    &:not(.leveled-reader) {
+body {
+    &.leveled-reader {
+        .numberLabel::before {
+            content: "Level";
+        }
         .numberCircle {
-            display: none !important;
+            background-color: #ba0c2f;
+        }
+    }
+    &.decodable-reader {
+        .numberLabel::before {
+            content: "Stage";
+        }
+        .numberCircle {
+            background-color: rgb(0, 47, 108);
+        }
+    }
+    &:not(.decodable-reader) {
+        .decodableStageLettersRow {
+            display: none !important; // for decodable only
+        }
+        &:not(.leveled-reader) {
+            .numberCircle {
+                display: none !important;
+            }
         }
     }
 }
 
-body.leveled-reader {
-    .numberLabel::before {
-        content: "Level";
-    }
-}
-body.decodable-reader {
-    .numberLabel::before {
-        content: "Stage";
-    }
-}
-body
-// working very hard to get this one to win over any user attempts to change it.
-// might be a mistake, if they have a good reason to change it. But at the moment I don't know
-// of a way for the xmatter to supply a different default for .Title-On-Cover style, or to introduce
-// a new alternative style for this field.
-    .Title-On-Cover-style.bloom-content1.bloom-contentNational1.bloom-visibility-code-on {
-    font-size: 36pt !important;
-}
 .cover {
     .titleAndNumberCircle {
         display: flex;
         flex-direction: row;
-        flex: 0 0 auto; //this is normally on the title itself, but we're wrapping it
+        justify-content: space-between;
         .bookTitle {
-            //flex-grow: 1;
-            width: calc(100% - @circleDiameter);
+            flex: unset; // Unhelpful value inherited from Traditional xmatter
+            min-width: 75%;
+            .bloom-editable {
+                // Ideally the customer would like the title left-justified (as here) if there is a number
+                // circle display, but centered if there is no circle (neither Decodable or Leveled reader).
+                // Unfortunately, I haven't figured out how to change 'text-align' based on another element's
+                // css display value.
+                text-align: start;
+            }
+            // It took some doing to figure out the specificity to overrule Bloom "normal" 250% title rule
+            // and yet still allow the user-adjustable inline style to work. This should set titles
+            // to default to 36pt unless overridden by the user.
+            .Title-On-Cover-style[data-book="bookTitle"] {
+                font-size: 36pt;
+            }
         }
     }
 
@@ -62,9 +63,6 @@ body
         margin-top: -19px;
         width: @circleDiameter;
         height: @circleDiameter;
-        //margin-left: auto;
-        position: absolute;
-        right: 0;
 
         border-radius: 50%;
         color: white;
@@ -89,8 +87,7 @@ body
             margin-bottom: 0;
         }
     }
-    [data-book="readerDescription"] {
-        text-align: center;
+    .descriptionAndTopicRow {
         font-weight: bold;
     }
     .branding {
@@ -112,9 +109,6 @@ body
     [data-book="bookTitle"] {
         font-size: 28pt;
     }
-    [data-book="readerDescription"] {
-        text-align: center;
-    }
     .levelOrStageAndNumberRow {
         display: flex;
         flex-direction: row;
@@ -125,11 +119,28 @@ body
         flex-direction: row;
         justify-content: center;
     }
-    .readerDescription {
+    .descriptionAndTopicRow {
         margin-top: auto; // push to bottom
         margin-bottom: 1em;
     }
 }
+
+.descriptionAndTopicRow {
+    display: flex;
+    flex-direction: row;
+    flex: 0 0 auto;
+    justify-content: space-between;
+    .readerDescription {
+        min-width: 50%;
+        text-align: start;
+        margin-right: 20px; // in case we get really big descriptions and topics and they run into each other
+    }
+    .abcTopic {
+        min-width: 25%;
+        text-align: end;
+    }
+}
+
 #stageInformation {
     margin: 10px;
     border: solid thin black;
@@ -144,9 +155,6 @@ body
             display: flex;
             flex-direction: row;
             margin-bottom: @creditsLineSpacing;
-        }
-        [data-book="readerDescription"] {
-            text-align: left;
         }
         .bloom-translationGroup {
             margin-bottom: @creditsLineSpacing;
