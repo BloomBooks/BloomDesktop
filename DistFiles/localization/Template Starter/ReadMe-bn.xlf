@@ -18,12 +18,6 @@ There are two ways people can use your template. The first way is to start new b
         <target xml:lang="bn" state="final">মানুষ টেমপ্লেট ব্যবহার করতে পারার দ্বিতীয় উপায় হল তারা যেভাবেই বইটি শুরু করুক না কেন টেমপ্লেটকে নতুন পৃষ্ঠার উৎস হিসাবে বিবেচনা করতে হবে। উদাহরণ স্বরূপ, কিছু জায়গায়, সরকারের অনুমোদন প্রক্রিয়ার অংশ হিসাবে প্রতিটি বইয়ের একটি পৃষ্ঠা থাকা প্রয়োজন। আপনি সেই পৃষ্ঠাটি অন্তর্ভুক্ত করে একটি টেমপ্লেট তৈরি করতে পারেন এবং এটি আপনার দেশে অন্যদের দিতে পারেন। তারপর, যখন লোকেরা একটি শেলবুক অনুবাদ করে, তখন তারা বইটির শেষে যায় এবং "পৃষ্ঠা যুক্ত করুন" ক্লিক করে। আপনার তৈরি পৃষ্ঠা তাদের পছন্দ তালিকাতে প্রদর্শিত হবে। টেমপ্লেটগুলির জন্য অন্য কিছু ধারনা হল বর্ণমালার চার্ট, শব্দকোষ এবং শ্রেণীকক্ষে বইটি কীভাবে ব্যবহার করতে হয় তার নির্দেশাবলী। <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g>
 </target>
         <note>ID: template.starter.secondusage</note>
-        <alt-trans>
-          <target xml:lang="bn">মানুষ টেমপ্লেট ব্যবহার করতে পারার দ্বিতীয় উপায় হল তারা যেভাবেই বইটি শুরু করুক না কেন টেমপ্লেটকে নতুন পৃষ্ঠার উৎস হিসাবে বিবেচনা করতে হবে। উদাহরণ স্বরূপ, কিছু জায়গায়, সরকারের অনুমোদন প্রক্রিয়ার অংশ হিসাবে প্রতিটি বইয়ের একটি পৃষ্ঠা থাকা প্রয়োজন। আপনি সেই পৃষ্ঠাটি অন্তর্ভুক্ত করে একটি টেমপ্লেট তৈরি করতে পারেন এবং এটি আপনার দেশে অন্যদের দিতে পারেন। তারপর, যখন লোকেরা একটি শেলবুক অনুবাদ করে, তখন তারা বইটির শেষে যায় এবং "পৃষ্ঠা যুক্ত করুন" ক্লিক করে। আপনার তৈরি পৃষ্ঠা তাদের পছন্দ তালিকাতে প্রদর্শিত হবে। টেমপ্লেটগুলির জন্য অন্য কিছু ধারনা বর্ণমালার চার্ট, শব্দকোষ এবং শ্রেণীকক্ষে বইটি কীভাবে ব্যবহার করতে হয় তার নির্দেশাবলী।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">মানুষ টেমপ্লেট ব্যবহার করতে পারার দ্বিতীয় উপায় হল তারা যেভাবেই বইটি শুরু করুক না কেন টেমপ্লেটকে নতুন পৃষ্ঠার উৎস হিসাবে বিবেচনা করতে হবে। উদাহরণ স্বরূপ, কিছু জায়গায়, সরকারের অনুমোদন প্রক্রিয়ার অংশ হিসাবে প্রতিটি বইয়ের একটি পৃষ্ঠা থাকা প্রয়োজন। আপনি সেই পৃষ্ঠাটি অন্তর্ভুক্ত করে একটি টেমপ্লেট তৈরি করতে পারেন এবং এটি আপনার দেশে অন্যদের দিতে পারেন। তারপর, যখন লোকেরা একটি শেলবুক অনুবাদ করে, তখন তারা বইটির শেষে যায় এবং "পৃষ্ঠা যুক্ত করুন" ক্লিক করে। আপনার তৈরি পৃষ্ঠা তাদের পছন্দ তালিকাতে প্রদর্শিত হবে। টেমপ্লেটগুলির জন্য অন্য কিছু ধারনা বর্ণমালার চার্ট, শব্দকোষ এবং শ্রেণীকক্ষে বইটি কীভাবে ব্যবহার করতে হয় তার নির্দেশাবলী।<g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2"></g></g></target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.waystohelp" approved="yes">
         <source xml:lang="en">Making templates is just like making any other custom book; all the same controls are available for making and customizing pages. But since you will probably be sharing with other people, there are a number of things you can do to help users of your template:</source>
@@ -40,18 +34,6 @@ There are two ways people can use your template. The first way is to start new b
         <target xml:lang="bn" state="final">আপনি আপনার টেমপ্লেটে পৃষ্ঠা যুক্ত করার সময় প্রতিটিতে উপযোগী ছাপ লাগাতে ভুলবেন না<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3"/><g id="genid-7" ctype="x-html-a" html:href="#note4"/></g>:
 </target>
         <note>ID: template.starter.labeleachpage</note>
-        <alt-trans>
-          <target xml:lang="bn">আপনি আপনার টেমপ্লেটে পৃষ্ঠা যুক্ত করার সময় প্রতিটিতে উপযোগী ছাপ লাগাতে ভুলবেন না<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3"/><g id="genid-7" ctype="x-html-a" html:href="#note4"/></g>:
-</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">আপনি আপনার টেমপ্লেটে পৃষ্ঠা যুক্ত করার সময় প্রতিটিতে উপযোগী ছাপ লাগাতে ভুলবেন না<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3"/><g id="genid-7" ctype="x-html-a" html:href="#note4"/>
-</g>:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">আপনি আপনার টেমপ্লেটে পৃষ্ঠা যুক্ত করার সময় প্রতিটিতে উপযোগী ছাপ লাগাতে ভুলবেন না<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3"></g><g id="genid-7" ctype="x-html-a" html:href="#note4"></g>
-</g>:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails" approved="yes">
         <source xml:lang="en">Check Your Thumbnails</source>
@@ -67,9 +49,6 @@ There are two ways people can use your template. The first way is to start new b
         <source xml:lang="en">If you later make a change to the page, the thumbnail will be out of date. To fix that, click the "Add Page" button, and Bloom will regenerate those thumbnails. If the automatically generated thumbnail doesn't convey the purpose of the page, you can make your own. Just make sure to mark the file as "Read Only" so that Bloom doesn't overwrite it. You can also make your thumbnails as svgs, if you like (that's what we do for templates we ship with Bloom).  In any case, make sure to click "Add Page" at least once before distributing your template, so that all the thumbnails are already generated.</source>
         <target xml:lang="bn" state="final">আপনি পরবর্তি সময়ে পৃষ্ঠাটি পরিবর্তন করলে, থাম্বনেল সেকেলে হবে। তা ঠিক করতে, "পৃষ্ঠা যোগ করুন" বোতামে ক্লিক করুন এবং ব্লুম সেগুলি পুনরায় উৎপন্ন করবে। যদি স্বয়ংক্রিয়ভাবে তৈরি থাম্বনেল পৃষ্ঠাটির উদ্দেশ্য প্রকাশ না করে তাহলে আপনি আপনার নিজের থাম্বনেল তৈরী করতে পারেন। শুধু ফাইলটিকে "কেবলমাত্র পাঠ্য" হিসাবে চিহ্নিত করতে ভুলবেন না, যেন ব্লুম এর উপর না লেখে। যদি আপনি চান (আমাদের দ্বারা ব্লুমের সঙ্গে প্রেরিত টেমপ্লেটগুলির সাথে আমরা এমনই করে থাকি ) আপনি svgs হিসাবে আপনার থাম্বনেইল তৈরি করতে পারেন। যে কোনো ক্ষেত্রে, আপনার টেমপ্লেট বিতরণের আগে কমপক্ষে একবার "পৃষ্ঠা যুক্ত করুন"–এ ক্লিক করুন, যেন সমস্ত থাম্বনেল ইতিপূর্বে উত্পন্ন করা হয়।</target>
         <note>ID: template.starter.thumbnails.update</note>
-        <alt-trans>
-          <target xml:lang="bn">আপনি পরবর্তিতে পৃষ্ঠাটি পরিবর্তন করলে, থাম্বনেল সেকেলে হবে। তা ঠিক করতে, "পৃষ্ঠা যোগ করুন" বোতামে ক্লিক করুন এবং ব্লুম সেগুলি পুনরায় উৎপন্ন করবে। যদি স্বয়ংক্রিয়ভাবে তৈরি থাম্বনেল পৃষ্ঠাটির উদ্দেশ্য প্রকাশ না করে তাহলে আপনি আপনার নিজের থাম্বনেল তৈরী করতে পারেন। শুধু ফাইলটিকে "কেবলমাত্র পাঠ্য" হিসাবে চিহ্নিত করতে ভুলবেন না, যেন ব্লুম এর উপর না লেখে। যদি আপনি চান (আমাদের দ্বারা ব্লুমের সঙ্গে প্রেরিত টেমপ্লেটগুলির সাথে আমরা এমনই করে থাকি ) আপনি svgs হিসাবে আপনার থাম্বনেইল তৈরি করতে পারেন। যে কোনো ক্ষেত্রে, আপনার টেমপ্লেট বিতরণের আগে কমপক্ষে একবার "পৃষ্ঠা যুক্ত করুন"–এ ক্লিক করুন, যেন সমস্ত থাম্বনেল ইতিপূর্বে উত্পন্ন করা হয়।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.document" approved="yes">
         <source xml:lang="en">Document Your Template</source>
@@ -95,117 +74,37 @@ There are two ways people can use your template. The first way is to start new b
         <source xml:lang="en">Remember that Bloom is about planting seeds, about sharing. So plan to share your template on the BloomLibrary for people around the world to find. This takes just a few clicks in the Publish Tab.</source>
         <target xml:lang="bn" state="final">মনে রাখবেন ব্লুম হল বীজ রোপণ, শেয়ার করার জন্যই। তাই আপনার টেমপ্লেট ব্লুম লাইব্রেরিতে শেয়ার করার পরিকল্পনা করুন যেন সারা বিশ্বের মানুষেরা খুঁজে বের করতে পারে। এর জন্য প্রকাশ বোতামে মাত্র কয়েকটি ক্লিকই প্রয়োজন।</target>
         <note>ID: template.starter.share.publish</note>
-        <alt-trans>
-          <target xml:lang="bn">মনে রাখবেন ব্লুম হল বীজ রোপণ, শেয়ার করার জন্যই। তাই আপনার টেমপ্লেট ব্লুম লাইব্রেরিতে শেয়ার করার পরিকল্পনা করুন যেন সারা বিশ্বের মানুষের খুঁজে বের করতে পারে। এর জন্য প্রকাশ বোতামে মাত্র কয়েকটি ক্লিকই প্রয়োজন।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.share.bloompack" approved="yes">
         <source xml:lang="en">For local colleagues, an easy way to distribute your template is via a Bloom Pack. In the collections tab, right-click on your template's thumbnail. Choose 'Make Bloom Pack'. Save that somewhere, for example to a USB Key. Then take it to another computer, double click on the file you made, and your template will be added to the "Sources for New Books" on that computer.</source>
         <target xml:lang="bn" state="final">আপনার টেমপ্লেটটি স্থানীয় সহকর্মীদের বিতরণ করার জন্য একটি সহজ উপায় হল ব্লুম প্যাক মাধ্যম। সংগ্রহ ট্যাবে, আপনার টেমপ্লেট থাম্বনেইলের উপর ডান ক্লিক করুন। 'ব্লুম প্যাক তৈরী করুন' পছন্দ করুন। সেটি কোথাও সংরক্ষণ করুন, উদাহরণস্বরূপ একটি USB Key–এ। তারপর অন্য কম্পিউটারে এটি নিয়ে যান, আপনার তৈরি ফাইলে ডবল ক্লিক করুন, এবং আপনার টেমপ্লেটটি সেই কম্পিউটারে "নতুন বই উৎস"–য় যুক্ত করা হবে।</target>
         <note>ID: template.starter.share.bloompack</note>
-        <alt-trans>
-          <target xml:lang="bn">আপনার টেমপ্লেটটি স্থানীয় সহকর্মীদের বিতরণ করার জন্য একটি সহজ উপায় হল ব্লুম প্যাক মাধ্যম। সংগ্রহ ট্যাবে, আপনার টেমপ্লেট থাম্বনেইলের উপর ডান ক্লিক করুন। 'ব্লুম প্যাক তৈরী করুন' চয়ন করুন। সেটি কোথাও সংরক্ষণ করুন, উদাহরণস্বরূপ একটি USB Key–এ। তারপর অন্য কম্পিউটারে এটি নিয়ে যান, আপনার তৈরি ফাইলে ডবল ক্লিক করুন, এবং আপনার টেমপ্লেটটি সেই কম্পিউটারে "নতুন বই উৎস"–য় যুক্ত করা হবে।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.notes" approved="yes">
         <source xml:lang="en">Notes</source>
         <target xml:lang="bn" state="final">টীকাসমুহ</target>
         <note>ID: template.starter.notes</note>
-        <alt-trans>
-          <target xml:lang="bn">নোট্‌স </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.nothingautomatic" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
         <target xml:lang="bn" state="final"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: পরবর্তীকালে এই বইগুলি ফোলিও ফিচার বৈশিষ্ট্য ব্যবহার করে মিলিত করা হতে পারে। মনে রাখবেন যে ব্লুম আপনাকে এখনও এমন কোন ইঙ্গিত দেয় নি যা নির্দেশ দেয় যে কোন পৃষ্ঠা স্বয়ংক্রিয়ভাবে নতুন বইগুলিতে অন্তর্ভুক্ত হওয়া উচিত; লেখককে পৃষ্ঠা যুক্ত করুন ডায়ালগ থেকে প্রতিটি পৃষ্ঠা যোগ করতে হবে।</target>
         <note>ID: template.starter.nothingautomatic</note>
-        <alt-trans>
-          <target xml:lang="bn"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: পরবর্তীকালে এই বইগুলি ভাঁজ-করা কাগজ বৈশিষ্ট্য ব্যবহার করে মিলিত করা হতে পারে। মনে রাখবেন যে ব্লুম আপনাকে এখনও এমন কোন উপায় দেয় নি যা নির্দেশ দেয় যে কোন পৃষ্ঠা স্বয়ংক্রিয়ভাবে নতুন বইগুলিতে অন্তর্ভুক্ত হওয়া উচিত; লেখককে পৃষ্ঠা যুক্ত করুন ডায়ালগ থেকে প্রতিটি পৃষ্ঠা যোগ করতে হবে।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">
-          
-           
-                   <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: পরবর্তীকালে এই বইগুলি ভাঁজ-করা কাগজ বৈশিষ্ট্য ব্যবহার করে মিলিত করা হতে পারে। মনে রাখবেন যে ব্লুম আপনাকে এখনও এমন কোন উপায় দেয় নি যা নির্দেশ দেয় যে কোন পৃষ্ঠা স্বয়ংক্রিয়ভাবে নতুন বইগুলিতে অন্তর্ভুক্ত হওয়া উচিত; লেখককে পৃষ্ঠা যুক্ত করুন ডায়ালগ থেকে প্রতিটি পৃষ্ঠা যোগ করতে হবে।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">
-           
-                   <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: পরবর্তীকালে এই বইগুলি ভাঁজ-করা কাগজ বৈশিষ্ট্য ব্যবহার করে মিলিত করা হতে পারে। মনে রাখবেন যে ব্লুম আপনাকে এখনও এমন কোন উপায় দেয় নি যা নির্দেশ দেয় যে কোন পৃষ্ঠা স্বয়ংক্রিয়ভাবে নতুন বইগুলিতে অন্তর্ভুক্ত হওয়া উচিত; লেখককে পৃষ্ঠা যুক্ত ডায়ালগ থেকে প্রতিটি পৃষ্ঠা যোগ করতে হবে।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">
-           
-                   <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: পরবর্তীকালে এই বইগুলি ভাঁজ-করা কাগজ বৈশিষ্ট্য ব্যবহার করে মিলিত করা হতে পারে। মনে রাখবেন যে ব্লুম আপনাকে এখনও এমন কোন উপায় দেয় নি যা নির্দেশ দেয় যে কোন পৃষ্ঠা স্বয়ংক্রিয়ভাবে নতুন বইগুলিতে অন্তর্ভুক্ত হওয়া উচিত; লেখককে পৃষ্ঠা যুক্ত করুন ডায়ালগ থেকে প্রতিটি পৃষ্ঠা যোগ করতে হবে।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn"> 
-                   <g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: পরবর্তীকালে এই বইগুলি ভাঁজ-করা কাগজ বৈশিষ্ট্য ব্যবহার করে মিলিত করা হতে পারে। মনে রাখবেন যে ব্লুম আপনাকে এখনও এমন কোন উপায় দেয় নি যা নির্দেশ দেয় যে কোন পৃষ্ঠা স্বয়ংক্রিয়ভাবে নতুন বইগুলিতে অন্তর্ভুক্ত হওয়া উচিত; লেখককে পৃষ্ঠা যুক্ত করুন ডায়ালগ থেকে প্রতিটি পৃষ্ঠা যোগ করতে হবে।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
         <target xml:lang="bn" state="final"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: আপনি যদি আপনার টেমপ্লেটের পৃষ্ঠাগুলি 
 পৃষ্ঠা যুক্ত করুন ডায়ালগে দেখাতে না চান, তাহলে আপনি পৃষ্ঠাযুক্তকরারজন্যনয়.txt নামক বই এর টেমপ্লেট ফোল্ডারে একটি ফাইল তৈরি করে ব্লুমকে এই নির্দেশ করতে পারেন।</target>
         <note>ID: template.starter.nametonotaddpage</note>
-        <alt-trans>
-          <target xml:lang="bn">
-          
-          
-<g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: আপনি যদি আপনার টেমপ্লেটের পৃষ্ঠাগুলি 
-পৃষ্ঠা যুক্ত করুন ডায়ালগে দেখাতে না চান, তাহলে আপনি পৃষ্ঠাযুক্তকরারজন্যনয়.txt নামক বই এর টেমপ্লেট ফোল্ডারে একটি ফাইল তৈরি করে ব্লুমকে এই নির্দেশ করতে পারেন।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">
-          
-<g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: আপনি যদি আপনার টেমপ্লেটের পৃষ্ঠাগুলি 
-পৃষ্ঠা যুক্ত করুন ডায়ালগে দেখাতে না চান, তাহলে আপনি পৃষ্ঠাযুক্তকরারজন্যনয়.txt নামক বই এর টেমপ্লেট ফোল্ডারে একটি ফাইল তৈরি করে ব্লুমকে এই নির্দেশ করতে পারেন।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">
-<g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: আপনি যদি আপনার টেমপ্লেটের পৃষ্ঠাগুলি 
-পৃষ্ঠা যুক্ত করুন ডায়ালগে দেখাতে না চান, তাহলে আপনি পৃষ্ঠাযুক্তকরারজন্যনয়.txt নামক বই এর টেমপ্লেট ফোল্ডারে একটি ফাইল তৈরি করে ব্লুমকে এই নির্দেশ করতে পারেন।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
         <target xml:lang="bn" state="final"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: মানুষ আপনার লেবেল সমুহ এবং বর্ণনা অন্যান্য জাতীয় ভাষায় অনুবাদ করতে সমর্থ হবে না। এই সমস্যা হয়ে থাকলে, দয়া করে ব্লুম দলের সাথে যোগাযোগ করুন।</target>
         <note>ID: template.starter.labelsnottranslatable</note>
-        <alt-trans>
-          <target xml:lang="bn">
-          
-           
-         <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: মানুষ আপনার লেবেল সমুহ এবং বর্ণনা অন্যান্য জাতীয় ভাষায় অনুবাদ করতে সমর্থ হবে না। এই সমস্যা হয়ে থাকলে, দয়া করে ব্লুম দলের সাথে যোগাযোগ করুন।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">
-           
-         <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: মানুষ আপনার লেবেল সমুহ এবং বর্ণনা অন্যান্য জাতীয় ভাষায় অনুবাদ করতে সমর্থ হবে না। এই সমস্যা হয়ে থাকলে, দয়া করে ব্লুম দলের সাথে যোগাযোগ করুন।</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn"> 
-         <g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: মানুষ আপনার লেবেল সমুহ এবং বর্ণনা অন্যান্য জাতীয় ভাষায় অনুবাদ করতে সমর্থ হবে না। এই সমস্যা হয়ে থাকলে, দয়া করে ব্লুম দলের সাথে যোগাযোগ করুন।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.editrawhtml" approved="yes">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
         <target xml:lang="bn" state="final"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: যদি আপনি চান পৃষ্ঠা পাতা যুক্ত করুন বৈশিষ্ট্য, পৃষ্ঠাটির একটি সংক্ষিপ্ত বিবরণও প্রদান করুক, তাহলে আপনাকে ব্লুম বন্ধ করে দিতে হবে এবং নোটপ্যাডে টেমপ্লেট এর HTML সম্পাদনা করতে হবে, যেমন: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
-        <alt-trans>
-          <target xml:lang="bn"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: যদি আপনি চান পৃষ্ঠা পর্দা যুক্ত করুনও পৃষ্ঠার একটি সংক্ষিপ্ত বিবরণ প্রদান করুক, তাহলে আপনাকে ব্লুম বন্ধ করে দিতে হবে এবং নোটপ্যাডে টেমপ্লেট এর HTML সম্পাদনা করতে হবে, যেমন: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">
-          
-                    <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: যদি আপনি চান পৃষ্ঠা পর্দা যুক্ত করুনও পৃষ্ঠার একটি সংক্ষিপ্ত বিবরণ প্রদান করুক, তাহলে আপনাকে ব্লুম বন্ধ করে দিতে হবে এবং নোটপ্যাডে টেমপ্লেট এর HTML সম্পাদনা করতে হবে, যেমন: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">
-                    <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: যদি আপনি চান পৃষ্ঠা পর্দা যুক্ত করুনও পৃষ্ঠার একটি সংক্ষিপ্ত বিবরণ প্রদান করুক, তাহলে আপনাকে ব্লুম বন্ধ করে দিতে হবে এবং নোটপ্যাডে টেমপ্লেট এর HTML সম্পাদনা করতে হবে, যেমন: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="bn">          <g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: যদি আপনি চান পৃষ্ঠা পর্দা যুক্ত করুনও পৃষ্ঠার একটি সংক্ষিপ্ত বিবরণ প্রদান করুক, তাহলে আপনাকে ব্লুম বন্ধ করে দিতে হবে এবং নোটপ্যাডে টেমপ্লেট এর HTML সম্পাদনা করতে হবে, যেমন: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

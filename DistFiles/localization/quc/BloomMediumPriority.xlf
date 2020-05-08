@@ -8,10 +8,7 @@
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="quc" state="translated">Rajib’alil ch’akanem man junamam taj pa k’isb’al rech ri tz’aqat chomanik</target>
-        <alt-trans>
-          <target xml:lang="quc">Rajb’alil ch’akanem ma junamam taj pa k’isb’al rech ri tz’aqat chomanik</target>
-        </alt-trans>
+        <target xml:lang="quc" state="final">Rajib’alil ch’akanem man junamam taj pa k’isb’al rech ri tz’aqat chomanik</target>
       </trans-unit>
     </body>
   </file>

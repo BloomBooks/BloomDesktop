@@ -4,47 +4,38 @@
     <body>
       <trans-unit id="decodable.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
-        <target xml:lang="hi" state="translated"><g id="genid-1" ctype="x-html-strong">डिकोडेबल पुस्तक</g> एक ऐसी पुस्तक है जो अक्षरों और शब्दों के इस्तेमाल को ध्यानपूर्वक सीमित करती है ताकि जो नया पाठक पढ़ने के लिए तैयार है उसके लिए यह सही हो। सामान्यतः एक भाषा में 5 - 10 <g id="genid-2" ctype="x-html-em">डिकोडेबल चरण</g> हो सकते हैं जिसके माध्यम से शिक्षार्थियों की प्रगति होती है।</target>
+        <target xml:lang="hi" state="final"><g id="genid-1" ctype="x-html-strong">डिकोडेबल पुस्तक</g> एक ऐसी पुस्तक है जो अक्षरों और शब्दों के इस्तेमाल को ध्यानपूर्वक सीमित करती है ताकि जो नया पाठक पढ़ने के लिए तैयार है उसके लिए यह सही हो। सामान्यतः एक भाषा में 5 - 10 <g id="genid-2" ctype="x-html-em">डिकोडेबल चरण</g> हो सकते हैं जिसके माध्यम से शिक्षार्थियों की प्रगति होती है।</target>
         <note>ID: decodable.definition</note>
       </trans-unit>
       <trans-unit id="decodable.stages" approved="yes">
         <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
-        <target xml:lang="hi" state="translated">ब्लूम आपको <g id="genid-3" ctype="x-html-em">चरण</g> के अनुक्रम को परिभाषित करने में मदद करता है जिसके माध्यम से पाठक काम करते हैं। आपके द्वारा बनाई गई प्रत्येक पुस्तक को उन अवस्थाओं में से किसी एक पर लक्षित किया जाएगा, और ब्लूम आपको यह सुनिश्चित करने में मदद करता है कि आपकी पुस्तक शिक्षार्थियों द्वारा उस <g id="genid-5" ctype="x-html-em">चरण</g> पर <g id="genid-4" ctype="x-html-em">डिकोडेबल</g> (हल निकलने योग्य) है।</target>
+        <target xml:lang="hi" state="final">ब्लूम आपको <g id="genid-3" ctype="x-html-em">चरण</g> के अनुक्रम को परिभाषित करने में मदद करता है जिसके माध्यम से पाठक काम करते हैं। आपके द्वारा बनाई गई प्रत्येक पुस्तक को उन अवस्थाओं में से किसी एक पर लक्षित किया जाएगा, और ब्लूम आपको यह सुनिश्चित करने में मदद करता है कि आपकी पुस्तक शिक्षार्थियों द्वारा उस <g id="genid-5" ctype="x-html-em">चरण</g> पर <g id="genid-4" ctype="x-html-em">डिकोडेबल</g> (हल निकलने योग्य) है।</target>
         <note>ID: decodable.stages</note>
-        <alt-trans>
-          <target xml:lang="hi">ब्लूम आपको <g id="genid-3" ctype="x-html-em">स्तरों</g> के अनुक्रम को परिभाषित करने में मदद करता है जिसके माध्यम से पाठक काम करते हैं। आपके द्वारा बनाई गई प्रत्येक पुस्तक को उन अवस्थाओं में से किसी एक पर लक्षित किया जाएगा, और ब्लूम आपको यह सुनिश्चित करने में मदद करता है कि आपकी पुस्तक शिक्षार्थियों द्वारा उस <g id="genid-5" ctype="x-html-em">स्तर</g> पर <g id="genid-4" ctype="x-html-em">डिकोडेबल</g> (हल निकलने योग्य) है।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="hi" state="translated">आप <g id="genid-6" ctype="x-html-em">टेम्पलेट्स</g> का ब्लूम पैक भी बना सकते हैं जिसका एक साक्षरता विशेषज्ञ द्वारा तैयार किए गए पुस्तकों और चरणों के आधार पर दूसरे लोग जल्दी से पुस्तकें निर्माण करने में उपयोग कर सकते हैं।</target>
+        <target xml:lang="hi" state="final">आप <g id="genid-6" ctype="x-html-em">टेम्पलेट्स</g> का ब्लूम पैक भी बना सकते हैं जिसका एक साक्षरता विशेषज्ञ द्वारा तैयार किए गए पुस्तकों और चरणों के आधार पर दूसरे लोग जल्दी से पुस्तकें निर्माण करने में उपयोग कर सकते हैं।</target>
         <note>ID: decodable.templates</note>
       </trans-unit>
       <trans-unit id="decodable.learn" approved="yes">
         <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
-        <target xml:lang="hi" state="translated">ब्लूम में डिकोडेबल पुस्तकों का उपयोग करने के बारे में जानने के लिए, आप कर सकते हैं:</target>
+        <target xml:lang="hi" state="final">ब्लूम में डिकोडेबल पुस्तकों का उपयोग करने के बारे में जानने के लिए, आप कर सकते हैं:</target>
         <note>ID: decodable.learn</note>
       </trans-unit>
       <trans-unit id="decodable.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="hi" state="translated">देखें <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">इन प्रशिक्षण संबंधी वीडियोस को</g>.</target>
+        <target xml:lang="hi" state="final">देखें <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">इन प्रशिक्षण संबंधी वीडियोस को</g>.</target>
         <note>ID: decodable.learn.videos</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpindex">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
         <target xml:lang="hi" state="translated">सहायता मेनू पर जाएं, ' सहायता ' चुनें, और "डिकोडेबल पुस्तक" अंतर्गत अनुक्रमणिका में देखें।</target>
         <note>ID: decodable.learn.helpindex</note>
-        <alt-trans>
-          <target xml:lang="hi">मदद मेनू पर जाएं, ' मदद ' चुनें, और "डिकोडेबल पुस्तक" अंतर्गत अनुक्रमणिका में देखें।</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="hi" state="translated">सहायता मेनू पर जाएं और "पुस्तक टेम्पलेट निर्माण करना" चुनें।</target>
+        <target xml:lang="hi" state="final">सहायता मेनू पर जाएं और "पुस्तक टेम्पलेट निर्माण करना" चुनें।</target>
         <note>ID: decodable.learn.helpmenu</note>
-        <alt-trans>
-          <target xml:lang="hi">मदद मेनू पर जाएं और "पुस्तक टेम्पलेट निर्माण करना" चुनें।</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

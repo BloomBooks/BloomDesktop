@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="wall.calendar" approved="yes">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="ar" state="translated">معلومات عن نماذج تقويم الحائط</target>
+        <target xml:lang="ar" state="final">معلومات عن نماذج تقويم الحائط</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use" approved="yes">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="ar" state="translated">باستخدام هذا النموذج، يمكنك إعداد تقويم يحتوي 12 شهر بحجم A5، مع صورة واقتباس أعلى الصفحة، وأيام في الأسفل. سيستخدم التقويم أسماء الشهور والأيام بلغتك.</target>
+        <target xml:lang="ar" state="final">باستخدام هذا النموذج، يمكنك إعداد تقويم يحتوي 12 شهر بحجم A5، مع صورة واقتباس أعلى الصفحة، وأيام في الأسفل. سيستخدم التقويم أسماء الشهور والأيام بلغتك.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="ar" state="translated">القيود الخاصة بهذا الإصدار</target>
+        <target xml:lang="ar" state="final">القيود الخاصة بهذا الإصدار</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells" approved="yes">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="ar" state="translated">في الوقت الحالي، لا يمكنك إنشاء "هيكل" لاستخدامه في لغات أخرى.</target>
+        <target xml:lang="ar" state="final">في الوقت الحالي، لا يمكنك إنشاء "هيكل" لاستخدامه في لغات أخرى.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits" approved="yes">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="ar" state="translated">المساهمون في العمل</target>
+        <target xml:lang="ar" state="final">المساهمون في العمل</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks" approved="yes">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="ar" state="translated">نتوجه بالشكر إلى بروس كوكس (SIL كاميرون) الذي قام باتخاذ الخطوات الأولى لإنشاء هذا النموذج.</target>
+        <target xml:lang="ar" state="final">نتوجه بالشكر إلى بروس كوكس (SIL كاميرون) الذي قام باتخاذ الخطوات الأولى لإنشاء هذا النموذج.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>

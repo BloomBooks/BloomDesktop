@@ -4,59 +4,43 @@
     <body>
       <trans-unit id="bigbook.title" approved="yes">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="pbu" state="translated">د غټو کتابونو په اړه</target>
+        <target xml:lang="pbu" state="final">د غټو کتابونو په اړه</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
       <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="pbu" state="translated">غټ کتابونه د ښوونکو لپاره ډیزاین شوي دي او د ټولګي په مخ کې یې لولي. د لا ډېرو معلوماتو لپاره <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">د ښوونکو د روزنې له خوا دا ‏PDF‏ ولولئ</g>.</target>
+        <target xml:lang="pbu" state="final">غټ کتابونه د ښوونکو لپاره ډیزاین شوي دي او د ټولګي په مخ کې یې لولي. د لا ډېرو معلوماتو لپاره <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">د ښوونکو د روزنې له خوا دا ‏PDF‏ ولولئ</g>.</target>
         <note>ID: bigbook.use</note>
-        <alt-trans>
-          <target xml:lang="pbu">غټ کتابونه د ښوونکو لپاره ډیزاین شوي دي او د ټولګي په مخ کې یې لولي. د لا ډېرو معلوماتو لپاره <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">د ښوونکو د روزنې له خوا دا PDF ولولئ</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.printing" approved="yes">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="pbu" state="translated">د غټ کتاب چاپول</target>
+        <target xml:lang="pbu" state="final">د غټ کتاب چاپول</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
       <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="pbu" state="translated">د موادو/شیانو د ښه مدیریت لپاره دا نمونه د ‏A4‏ پاڼو په اوږدو کې په غټو حروفو چاپېږي.
+        <target xml:lang="pbu" state="final">د موادو/شیانو د ښه مدیریت لپاره دا نمونه د ‏A4‏ پاڼو په اوږدو کې په غټو حروفو چاپېږي.
 تاسو په آسانۍ سره د ‏A3‏ کتابونه چاپولی شئ (دوه چنده غټ).
 یواځې د خپل ‏A4‏ ‏PDF‏ یو چاپیندي (پرنټر) ته ویسئ او ورڅخه وغواړئ چې A3 ته یې غټ کړي.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
-        <alt-trans>
-          <target xml:lang="pbu">د موادو/شیانو د ښه مدیریت لپاره دا نمونه د ‏A4‏ پاڼو په اوږدو کې په غټو حروفو چاپېږي.
-تاسو په آسانۍ سره د ‏A3‏ کتابونه چاپولی شئ (دوه چنده غټ).
-یواځې د خپل ‏A4‏ ‏PDF‏ یو پرنټر ته ویسئ او ورڅخه وغواړئ چې A3 ته یې غټ کړي.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="pbu">د شیانو د ښه مدیریت لپاره دا ټیمپلیټ د ‏A4‏ پاڼو په اوږدو کې په غټو حروفو چاپېږي.
-تاسو په آسانۍ سره د ‏A3‏ کتابونه چاپولی شئ (دوه چنده غټ).
-یواځې د خپل ‏A4‏ ‏PDF‏ یو پرنټر ته ویسئ او ورڅخه وغواړئ چې A3 ته یې غټ کړي.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="pbu" state="translated">د دې نسخې محدودیتونه</target>
+        <target xml:lang="pbu" state="final">د دې نسخې محدودیتونه</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="pbu" state="translated">که تاسو وړوکی سکرین استعمالوی، د امتیازاتو پاڼې لوستل به ستونزمن وي. د ‏CTRL‏+ موز ټایر څخه په ګټه پورته کولو پاڼه غټه کړئ تر څو تاسو هغه ایډیټ کړای شی.</target>
+        <target xml:lang="pbu" state="final">که تاسو وړوکی سکرین استعمالوی، د امتیازاتو پاڼې لوستل به ستونزمن وي. د ‏CTRL‏+ موز ټایر څخه په ګټه پورته کولو پاڼه غټه کړئ تر څو تاسو هغه ایډیټ کړای شی.</target>
         <note>ID: bigbook.limits.smallscreen</note>
-        <alt-trans>
-          <target xml:lang="pbu">که تاسو وړوکی سکرین استعمالوی، د کریډیټ پاڼې لوستل به ستونزمن وي. د ‏CTRL‏+ موز ټایر څخه په ګټه پورته کولو پاڼه زوم کړئ تر څو تاسو هغه ایډیټ کړای شی.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="pbu" state="translated">دا نسخه د "ښوونکي لارښود" یوه پاڼه هم لري چې تیاره په انګلیسي ژبه ډکه ده.
+        <target xml:lang="pbu" state="final">دا نسخه د "ښوونکي لارښود" یوه پاڼه هم لري چې تیاره په انګلیسي ژبه ډکه ده.
 که تاسو غواړئ چې په کومه بله ژبه هم لارښود ولرئ، تاسو متن پاکولی شئ او خپله یې ټایپ کړئ.
 که تاسو مونږ ته هغه متن واستوئ، نو مونږ به یې په راتلونکي نمونه یي نسخه کې شامل کړو.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>

@@ -6,61 +6,61 @@
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
-        <target xml:lang="id" state="translated">Dibangun pada {0}</target>
+        <target xml:lang="id" state="final">Dibangun pada {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="id" state="translated">Tidak Ada Pembaruan</target>
+        <target xml:lang="id" state="final">Tidak Ada Pembaruan</target>
       </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle" approved="yes">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="id" state="translated">Tentang {0}</target>
+        <target xml:lang="id" state="final">Tentang {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="id" state="translated">Periksa Pembaruan</target>
+        <target xml:lang="id" state="final">Periksa Pembaruan</target>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="id" state="translated">Catatan Rilis</target>
+        <target xml:lang="id" state="final">Catatan Rilis</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General" approved="yes">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.General</note>
-        <target xml:lang="id" state="translated">Salinan aplikasi yang lain sudah berjalan.Jika Anda tidak menemukannya, mulai ulang komputer Anda.</target>
+        <target xml:lang="id" state="final">Salinan aplikasi yang lain sudah berjalan.Jika Anda tidak menemukannya, mulai ulang komputer Anda.</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.Specific" approved="yes">
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="id" state="translated">Salinan aplikasi {0} yang lain sudah berjalan.Jika Anda tidak menemukan salinan {0}, mulai ulang komputer Anda.</target>
+        <target xml:lang="id" state="final">Salinan aplikasi {0} yang lain sudah berjalan.Jika Anda tidak menemukan salinan {0}, mulai ulang komputer Anda.</target>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.General" approved="yes">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
-        <target xml:lang="id" state="translated">Ada masalah saat memulai aplikasi yang mungkin mengharuskan Anda untuk memulai ulang komputer.</target>
+        <target xml:lang="id" state="final">Ada masalah saat memulai aplikasi yang mungkin mengharuskan Anda untuk memulai ulang komputer.</target>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.Specific" approved="yes">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="id" state="translated">Ada masalah saat memulai {0} yang mungkin mengharuskan Anda untuk memulai ulang komputer.</target>
+        <target xml:lang="id" state="final">Ada masalah saat memulai {0} yang mungkin mengharuskan Anda untuk memulai ulang komputer.</target>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.General" approved="yes">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
-        <target xml:lang="id" state="translated">Menunggu aplikasi lain selesai...</target>
+        <target xml:lang="id" state="final">Menunggu aplikasi lain selesai...</target>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.Specific" approved="yes">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="id" state="translated">Menunggu {0} lain selesai...</target>
+        <target xml:lang="id" state="final">Menunggu {0} lain selesai...</target>
       </trans-unit>
       <trans-unit id="Common.AbortButton">
         <source xml:lang="en">&amp;Abort</source>
@@ -70,7 +70,7 @@
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="id" state="translated">&amp;Batalkan</target>
+        <target xml:lang="id" state="final">&amp;Batalkan</target>
       </trans-unit>
       <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
@@ -80,7 +80,7 @@
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="id" state="translated">Tidak</target>
+        <target xml:lang="id" state="final">Tidak</target>
       </trans-unit>
       <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
@@ -90,7 +90,7 @@
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="id" state="translated">&amp;Oke</target>
+        <target xml:lang="id" state="final">&amp;Oke</target>
       </trans-unit>
       <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
@@ -100,7 +100,7 @@
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
-        <target xml:lang="id" state="translated">Ya</target>
+        <target xml:lang="id" state="final">Ya</target>
       </trans-unit>
       <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
@@ -123,76 +123,76 @@
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
-        <target xml:lang="id" state="translated">{0} akan dipindahkan ke Keranjang Sampah.</target>
+        <target xml:lang="id" state="final">{0} akan dipindahkan ke Keranjang Sampah.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Param {0} is a file name</note>
-        <target xml:lang="id" state="translated">{0} akan dipindahkan ke Keranjang Sampah.</target>
+        <target xml:lang="id" state="final">{0} akan dipindahkan ke Keranjang Sampah.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Confirm Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
-        <target xml:lang="id" state="translated">Konfirmasikan Penghapusan</target>
+        <target xml:lang="id" state="final">Konfirmasikan Penghapusan</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="id" state="translated">&amp;Batalkan</target>
+        <target xml:lang="id" state="final">&amp;Batalkan</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn" approved="yes">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="id" state="translated">&amp;Hapus</target>
+        <target xml:lang="id" state="final">&amp;Hapus</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages" approved="yes">
         <source xml:lang="en">Found {0} images with names close to “{1}”</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
-        <target xml:lang="id" state="translated">Ditemukan {0} gambar yang namanya mirip dengan {1}</target>
+        <target xml:lang="id" state="final">Ditemukan {0} gambar yang namanya mirip dengan {1}</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ArtOfReading" approved="yes">
         <source xml:lang="en">Art Of Reading</source>
         <note>ID: ImageToolbox.ArtOfReading</note>
-        <target xml:lang="id" state="translated">Seni Membaca</target>
+        <target xml:lang="id" state="final">Seni Membaca</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Camera" approved="yes">
         <source xml:lang="en">Camera</source>
         <note>ID: ImageToolbox.Camera</note>
-        <target xml:lang="id" state="translated">Kamera</target>
+        <target xml:lang="id" state="final">Kamera</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.CopyExemplarMetadata" approved="yes">
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="id" state="translated">Gunakan {0}</target>
+        <target xml:lang="id" state="final">Gunakan {0}</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop" approved="yes">
         <source xml:lang="en">Crop</source>
         <note>ID: ImageToolbox.Crop</note>
-        <target xml:lang="id" state="translated">Pangkas</target>
+        <target xml:lang="id" state="final">Pangkas</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.DownloadArtOfReading" approved="yes">
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
-        <target xml:lang="id" state="translated">Unduh Pemasang Seni Membaca</target>
+        <target xml:lang="id" state="final">Unduh Pemasang Seni Membaca</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EditMetadataLink" approved="yes">
         <source xml:lang="en">Edit...</source>
         <note>ID: ImageToolbox.EditMetadataLink</note>
-        <target xml:lang="id" state="translated">Edit...</target>
+        <target xml:lang="id" state="final">Edit...</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms" approved="yes">
         <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
-        <target xml:lang="id" state="translated">Ini adalah galeri 'Seni Membaca'.Dalam kotak di atas, ketik yang Anda cari, lalu tekan ENTER. Anda dapat mengetik kata-kata dalam bahasa Inggris dan bahasa Indonesia.</target>
+        <target xml:lang="id" state="final">Ini adalah galeri 'Seni Membaca'.Dalam kotak di atas, ketik yang Anda cari, lalu tekan ENTER. Anda dapat mengetik kata-kata dalam bahasa Inggris dan bahasa Indonesia.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
-        <target xml:lang="id" state="translated">Berkas</target>
+        <target xml:lang="id" state="final">Berkas</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileChooserTitle">
         <source xml:lang="en">Choose Picture File</source>
@@ -208,17 +208,17 @@
       <trans-unit id="ImageToolbox.GenericGettingImageProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
         <note>ID: ImageToolbox.GenericGettingImageProblem</note>
-        <target xml:lang="id" state="translated">Maaf, ada masalah saat mengambil gambar.</target>
+        <target xml:lang="id" state="final">Maaf, ada masalah saat mengambil gambar.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
-        <target xml:lang="id" state="translated">Maaf, ada masalah dengan Kotak Alat Gambar</target>
+        <target xml:lang="id" state="final">Maaf, ada masalah dengan Kotak Alat Gambar</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GetPicture" approved="yes">
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
-        <target xml:lang="id" state="translated">Ambil Gambar</target>
+        <target xml:lang="id" state="final">Ambil Gambar</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageGalleries">
         <source xml:lang="en">Image Galleries</source>
@@ -228,29 +228,29 @@
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle" approved="yes">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="id" state="translated">Kotak Alat Gambar</target>
+        <target xml:lang="id" state="final">Kotak Alat Gambar</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.InstallArtOfReading" approved="yes">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
         <note>ID: ImageToolbox.InstallArtOfReading</note>
-        <target xml:lang="id" state="translated">Pasang paket Seni Membaca (ini mungkin akan butuh waktu)</target>
+        <target xml:lang="id" state="final">Pasang paket Seni Membaca (ini mungkin akan butuh waktu)</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.MatchingImages" approved="yes">
         <source xml:lang="en">Found {0} images</source>
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
-        <target xml:lang="id" state="translated">{0} gambar ditemukan</target>
+        <target xml:lang="id" state="final">{0} gambar ditemukan</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NewMultilingual" approved="yes">
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space): Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</note>
-        <target xml:lang="id" state="translated">Tahukah Anda bahwa ada versi terbaru untuk koleksi ini yang memungkinkan Anda mencari dalam bahasa Arab, Bengal, Mandarin, Inggris, Prancis, Indonesia, Hindi, Portugis, Spanyol, Thailand, atau Swahili? Koleksi ini gratis dan tersedia untuk diunduh.</target>
+        <target xml:lang="id" state="final">Tahukah Anda bahwa ada versi terbaru untuk koleksi ini yang memungkinkan Anda mencari dalam bahasa Arab, Bengal, Mandarin, Inggris, Prancis, Indonesia, Hindi, Portugis, Spanyol, Thailand, atau Swahili? Koleksi ini gratis dan tersedia untuk diunduh.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoArtOfReading" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
-        <target xml:lang="id" state="translated">Komputer ini tampaknya belum memasang galeri 'Seni Membaca'.</target>
+        <target xml:lang="id" state="final">Komputer ini tampaknya belum memasang galeri 'Seni Membaca'.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoGalleries">
         <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
@@ -260,49 +260,49 @@
       <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
         <note>ID: ImageToolbox.NoMatchingImages</note>
-        <target xml:lang="id" state="translated">Gambar yang cocok tidak ditemukan</target>
+        <target xml:lang="id" state="final">Gambar yang cocok tidak ditemukan</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PictureFiles" approved="yes">
         <source xml:lang="en">picture files</source>
         <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
-        <target xml:lang="id" state="translated">berkas gambar</target>
+        <target xml:lang="id" state="final">berkas gambar</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice" approved="yes">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="id" state="translated">Masalah Mengambil Gambar</target>
+        <target xml:lang="id" state="final">Masalah Mengambil Gambar</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemLoadingImage" approved="yes">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <note>ID: ImageToolbox.ProblemLoadingImage</note>
-        <target xml:lang="id" state="translated">Maaf, ada masalah saat mengambil gambar tersebut.</target>
+        <target xml:lang="id" state="final">Maaf, ada masalah saat mengambil gambar tersebut.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PromptForMissingMetadata" approved="yes">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
-        <target xml:lang="id" state="translated">Gambar ini tidak mengetahui:\n\nSiapa yang membuatnya?\nSiapa yang dapat menggunakannya?</target>
+        <target xml:lang="id" state="final">Gambar ini tidak mengetahui:\n\nSiapa yang membuatnya?\nSiapa yang dapat menggunakannya?</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Scanner" approved="yes">
         <source xml:lang="en">Scanner</source>
         <note>ID: ImageToolbox.Scanner</note>
-        <target xml:lang="id" state="translated">Pemindai</target>
+        <target xml:lang="id" state="final">Pemindai</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchArtOfReading" approved="yes">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
-        <target xml:lang="id" state="translated">Cari Galeri Seni Membaca</target>
+        <target xml:lang="id" state="final">Cari Galeri Seni Membaca</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchLanguage" approved="yes">
         <source xml:lang="en">The search box is currently set to {0}</source>
         <note>ID: ImageToolbox.SearchLanguage</note>
         <note>The {0} will be replaced by the name of the language used in the searches.</note>
-        <target xml:lang="id" state="translated">Kotak pencarian saat ini diatur ke {0}</target>
+        <target xml:lang="id" state="final">Kotak pencarian saat ini diatur ke {0}</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SetUpMetadataLink" approved="yes">
         <source xml:lang="en">Set up metadata...</source>
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
-        <target xml:lang="id" state="translated">Menyiapkan metadata...</target>
+        <target xml:lang="id" state="final">Menyiapkan metadata...</target>
       </trans-unit>
       <trans-unit id="IpaIdentifierView.betterLabel1">
         <source xml:lang="en">Purpose:</source>
@@ -319,74 +319,74 @@
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
-        <target xml:lang="id" state="translated">Nama Lain</target>
+        <target xml:lang="id" state="final">Nama Lain</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2" approved="yes">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
-        <target xml:lang="id" state="translated">Daftar ini harus menyertakan semua bahasa yang tercatat dalam ISO-639, termasuk semua nama alternatif yang dikenal oleh ethnologue.com.\n\nJika perlu, gunakan pilihan "Bahasa Tak Terdaftar", yang akan dipilih untuk Anda sekarang.</target>
+        <target xml:lang="id" state="final">Daftar ini harus menyertakan semua bahasa yang tercatat dalam ISO-639, termasuk semua nama alternatif yang dikenal oleh ethnologue.com.\n\nJika perlu, gunakan pilihan "Bahasa Tak Terdaftar", yang akan dipilih untuk Anda sekarang.</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue" approved="yes">
         <source xml:lang="en">Ethnologue.com</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
-        <target xml:lang="id" state="translated">Ethnologue.com</target>
+        <target xml:lang="id" state="final">Ethnologue.com</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="id" state="translated">Tentang Kode Bahasa 639-3 &amp; Cara Menerapkannya untuk Bahasa-bahasa yang Baru</target>
+        <target xml:lang="id" state="final">Tentang Kode Bahasa 639-3 &amp; Cara Menerapkannya untuk Bahasa-bahasa yang Baru</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle" approved="yes">
         <source xml:lang="en">About The ISO Language Registry</source>
         <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
-        <target xml:lang="id" state="translated">Tentang Pendaftaran Bahasa dengan Kode ISO</target>
+        <target xml:lang="id" state="final">Tentang Pendaftaran Bahasa dengan Kode ISO</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CodeHeader" approved="yes">
         <source xml:lang="en">Code</source>
         <note>ID: LanguageLookup.CodeHeader</note>
-        <target xml:lang="id" state="translated">Kode</target>
+        <target xml:lang="id" state="final">Kode</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryCount" approved="yes">
         <source xml:lang="en">{0} Countries</source>
         <note>ID: LanguageLookup.CountryCount</note>
         <note>Shown when there are multiple countries and it is just confusing to list them all. {0} is a count of countries.</note>
-        <target xml:lang="id" state="translated">{0} Negara-negara</target>
+        <target xml:lang="id" state="final">{0} Negara-negara</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryHeader" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: LanguageLookup.CountryHeader</note>
-        <target xml:lang="id" state="translated">Negara</target>
+        <target xml:lang="id" state="final">Negara</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel" approved="yes">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
         <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
-        <target xml:lang="id" state="translated">Anda dapat mengubah cara nama bahasa ditampilkan di sini:</target>
+        <target xml:lang="id" state="final">Anda dapat mengubah cara nama bahasa ditampilkan di sini:</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle" approved="yes">
         <source xml:lang="en">Lookup Language Code...</source>
         <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
-        <target xml:lang="id" state="translated">Mencari Kode Bahasa...</target>
+        <target xml:lang="id" state="final">Mencari Kode Bahasa...</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.PrimaryNameHeader" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: LanguageLookup.PrimaryNameHeader</note>
-        <target xml:lang="id" state="translated">Nama</target>
+        <target xml:lang="id" state="final">Nama</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel" approved="yes">
         <source xml:lang="en">Show regional dialects</source>
         <note>ID: LanguageLookup.ShowRegionalDialectsLabel</note>
-        <target xml:lang="id" state="translated">Tampilkan dialek regional</target>
+        <target xml:lang="id" state="final">Tampilkan dialek regional</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.UnlistedLanguage" approved="yes">
         <source xml:lang="en">Unlisted Language</source>
         <note>ID: LanguageLookup.UnlistedLanguage</note>
-        <target xml:lang="id" state="translated">Bahasa Tak Terdaftar</target>
+        <target xml:lang="id" state="final">Bahasa Tak Terdaftar</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._cannotFindLanguageLink" approved="yes">
         <source xml:lang="en">Can't find your language?</source>
         <note>ID: LanguageLookup._cannotFindLanguageLink</note>
-        <target xml:lang="id" state="translated">Tidak dapat menemukan bahasa Anda?</target>
+        <target xml:lang="id" state="final">Tidak dapat menemukan bahasa Anda?</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLabel">
         <source xml:lang="en">my script variant label</source>
@@ -401,58 +401,58 @@
       <trans-unit id="MemoryWarning" approved="yes">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
         <note>ID: MemoryWarning</note>
-        <target xml:lang="id" state="translated">Sayang sekali, {0} sedang kekurangan memori, dan sebentar lagi akan melambat atau mengalami masalah lain. Sebaiknya Anda keluar dari aplikasi dan mulai lagi pada waktu yang tepat.</target>
+        <target xml:lang="id" state="final">Sayang sekali, {0} sedang kekurangan memori, dan sebentar lagi akan melambat atau mengalami masalah lain. Sebaiknya Anda keluar dari aplikasi dan mulai lagi pada waktu yang tepat.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Creator" approved="yes">
         <source xml:lang="en">Creator: {0}</source>
         <note>ID: MetadataDisplay.Creator</note>
-        <target xml:lang="id" state="translated">Pembuat: {0}</target>
+        <target xml:lang="id" state="final">Pembuat: {0}</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataDisplay.CreatorLabel</note>
-        <target xml:lang="id" state="translated">Pembuat</target>
+        <target xml:lang="id" state="final">Pembuat</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.LicenseInfo" approved="yes">
         <source xml:lang="en">License Info</source>
         <note>ID: MetadataDisplay.LicenseInfo</note>
-        <target xml:lang="id" state="translated">Keterangan Lisensi</target>
+        <target xml:lang="id" state="final">Keterangan Lisensi</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="id" state="translated">Anda harus menghargai hak cipta dan pengakuan untuk para penulis, ilustrator, dsb.</target>
+        <target xml:lang="id" state="final">Anda harus menghargai hak cipta dan pengakuan untuk para penulis, ilustrator, dsb.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You are free to make commercial use of this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="id" state="translated">Anda bebas menggunakan karya ini untuk keperluan komersial.</target>
+        <target xml:lang="id" state="final">Anda bebas menggunakan karya ini untuk keperluan komersial.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="id" state="translated">Anda dapat menyesuaikan dan menambahkan ke karya ini.</target>
+        <target xml:lang="id" state="final">Anda dapat menyesuaikan dan menambahkan ke karya ini.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="id" state="translated">Anda dapat menyesuaikan dan menambahkan ke karya ini, namun Anda hanya dapat mendistribusikan hasil karya tersebut di bawah lisensi yang sama atau serupa dengan yang ini.</target>
+        <target xml:lang="id" state="final">Anda dapat menyesuaikan dan menambahkan ke karya ini, namun Anda hanya dapat mendistribusikan hasil karya tersebut di bawah lisensi yang sama atau serupa dengan yang ini.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="id" state="translated">Anda tidak boleh mengubah atau membuat di atas karya ini tanpa izin.</target>
+        <target xml:lang="id" state="final">Anda tidak boleh mengubah atau membuat di atas karya ini tanpa izin.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not use this work for commercial purposes.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="id" state="translated">Anda tidak boleh menggunakan karya ini untuk keperluan komersial.</target>
+        <target xml:lang="id" state="final">Anda tidak boleh menggunakan karya ini untuk keperluan komersial.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.PublicDomain" sil:dynamic="true">
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
@@ -464,27 +464,27 @@
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
         <note>ID: MetadataDisplay.Licenses.NullLicense</note>
         <note>This is used when all we have is a copyright, no other license.</note>
-        <target xml:lang="id" state="translated">Untuk memperoleh izin penggunaan kembali, hubungi pemegang hak cipta.</target>
+        <target xml:lang="id" state="final">Untuk memperoleh izin penggunaan kembali, hubungi pemegang hak cipta.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.NoLicense" approved="yes">
         <source xml:lang="en">No license specified</source>
         <note>ID: MetadataDisplay.NoLicense</note>
-        <target xml:lang="id" state="translated">Lisensi tidak ditetapkan</target>
+        <target xml:lang="id" state="final">Lisensi tidak ditetapkan</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse" approved="yes">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <note>ID: MetadataEditor.AllowCommercialUse</note>
-        <target xml:lang="id" state="translated">Boleh menggunakan karya Anda untuk keperluan komersial?</target>
+        <target xml:lang="id" state="final">Boleh menggunakan karya Anda untuk keperluan komersial?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowDerivatives" approved="yes">
         <source xml:lang="en">Allow modifications of your work?</source>
         <note>ID: MetadataEditor.AllowDerivatives</note>
-        <target xml:lang="id" state="translated">Boleh memodifikasi karya Anda?</target>
+        <target xml:lang="id" state="final">Boleh memodifikasi karya Anda?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightHolder" approved="yes">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: MetadataEditor.CopyrightHolder</note>
-        <target xml:lang="id" state="translated">Pemegang Hak Cipta</target>
+        <target xml:lang="id" state="final">Pemegang Hak Cipta</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightYear">
         <source xml:lang="en">Copyright Year</source>
@@ -494,22 +494,22 @@
       <trans-unit id="MetadataEditor.CreativeCommons" approved="yes">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
-        <target xml:lang="id" state="translated">Kesepakatan Umum dalam Pembuatan</target>
+        <target xml:lang="id" state="final">Kesepakatan Umum dalam Pembuatan</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental" approved="yes">
         <source xml:lang="en">Intergovernmental Version</source>
         <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
-        <target xml:lang="id" state="translated">Intergovernmental Versi</target>
+        <target xml:lang="id" state="final">Intergovernmental Versi</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataEditor.CreatorLabel</note>
-        <target xml:lang="id" state="translated">Pembuat</target>
+        <target xml:lang="id" state="final">Pembuat</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CustomLicense" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: MetadataEditor.CustomLicense</note>
-        <target xml:lang="id" state="translated">Khusus</target>
+        <target xml:lang="id" state="final">Khusus</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.License">
         <source xml:lang="en">License</source>
@@ -524,34 +524,34 @@
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
-        <target xml:lang="id" state="translated">Hak Cipta dan Lisensi</target>
+        <target xml:lang="id" state="final">Hak Cipta dan Lisensi</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleWithCredit" approved="yes">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="id" state="translated">Penghargaan, Hak Cipta, dan Lisensi</target>
+        <target xml:lang="id" state="final">Penghargaan, Hak Cipta, dan Lisensi</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.UnknownLicense" approved="yes">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense</note>
-        <target xml:lang="id" state="translated">Hubungi pemegang hak cipta untuk setiap izin</target>
+        <target xml:lang="id" state="final">Hubungi pemegang hak cipta untuk setiap izin</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.YesShareAlike" approved="yes">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
-        <target xml:lang="id" state="translated">Ya, asalkan orang lain berbagi hal yang sama</target>
+        <target xml:lang="id" state="final">Ya, asalkan orang lain berbagi hal yang sama</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.additionalRequestsLabel" approved="yes">
         <source xml:lang="en">Additional Requests</source>
         <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
-        <target xml:lang="id" state="translated">Permintaan Tambahan</target>
+        <target xml:lang="id" state="final">Permintaan Tambahan</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.betterLinkLabel1" approved="yes">
         <source xml:lang="en">more info</source>
         <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
-        <target xml:lang="id" state="translated">keterangan lebih lanjut</target>
+        <target xml:lang="id" state="final">keterangan lebih lanjut</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToPublicDomainCC0">
         <source xml:lang="en">about {0} Public Domain</source>
@@ -563,7 +563,7 @@
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
-        <target xml:lang="id" state="translated">Tidak Dapat Diterapkan</target>
+        <target xml:lang="id" state="final">Tidak Dapat Diterapkan</target>
       </trans-unit>
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton">
         <source xml:lang="en">Cancel</source>
@@ -583,52 +583,49 @@
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
-        <target xml:lang="id" state="translated">Ini juga akan menyembunyikan tombol lain yang tidak diperlukan oleh pengguna yang bukan tingkat mahir.</target>
+        <target xml:lang="id" state="final">Ini juga akan menyembunyikan tombol lain yang tidak diperlukan oleh pengguna yang bukan tingkat mahir.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.CtrlShiftHint" approved="yes">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
-        <target xml:lang="id" state="translated">Tombol ini akan tampil ketika Anda menekan tombol Ctrl dan Shift pada saat yang sama.</target>
+        <target xml:lang="id" state="final">Tombol ini akan tampil ketika Anda menekan tombol Ctrl dan Shift pada saat yang sama.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.LauncherButtonLabel" approved="yes">
         <source xml:lang="en">Settings Protection...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
         <note xml:lang="en">OLD TEXT (before 4.0): Settings...</note>
-        <target xml:lang="id" state="translated">Pengaturan...</target>
+        <target xml:lang="id" state="final">Pengaturan...</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox" approved="yes">
         <source xml:lang="en">Hide the button that opens settings.</source>
         <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
-        <target xml:lang="id" state="translated">Sembunyikan tombol yang membuka pengaturan.</target>
+        <target xml:lang="id" state="final">Sembunyikan tombol yang membuka pengaturan.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword" approved="yes">
         <source xml:lang="en">Factory Password</source>
         <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
-        <target xml:lang="id" state="translated">Kata Sandi default</target>
+        <target xml:lang="id" state="final">Kata Sandi default</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation" approved="yes">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
-        <target xml:lang="id" state="translated">Untuk mencegah perubahan yang tidak disengaja yang dapat membuat alat ini berhenti berfungsi untuk Anda, pengaturan ini telah dikunci.</target>
+        <target xml:lang="id" state="final">Untuk mencegah perubahan yang tidak disengaja yang dapat membuat alat ini berhenti berfungsi untuk Anda, pengaturan ini telah dikunci.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle" approved="yes">
         <source xml:lang="en">Settings Protection Password</source>
         <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
-        <target xml:lang="id" state="translated">Kata Sandi Perlindungan Pengaturan</target>
+        <target xml:lang="id" state="final">Kata Sandi Perlindungan Pengaturan</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox" approved="yes">
         <source xml:lang="en">Show Characters</source>
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
-        <target xml:lang="id" state="translated">Tampilkan Karakter</target>
+        <target xml:lang="id" state="final">Tampilkan Karakter</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page.</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNoticeWithSupportUrl". Param 0: Factory password; Param 1: product name</note>
         <target xml:lang="id" state="translated">Kata sandi perusahaan untuk pengaturan ini adalah "{0}". Jika Anda lupa kata sandi, Anda bisa mencarinya di Google "{1}" dan</target>
-        <alt-trans>
-          <target xml:lang="id">Kata sandi perusahaan untuk pengaturan ini adalah "{0}". Jika Anda lupa kata sandi, Anda bisa mencarinya di Google "{1}" dan "{2}"</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNoticeWithSupportUrl">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
@@ -639,17 +636,17 @@
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
-        <target xml:lang="id" state="translated">Wajibkan kata sandi default dimasukkan ke pengaturan.</target>
+        <target xml:lang="id" state="final">Wajibkan kata sandi default dimasukkan ke pengaturan.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle" approved="yes">
         <source xml:lang="en">Settings Protection</source>
         <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
-        <target xml:lang="id" state="translated">Perlindungan Pengaturan</target>
+        <target xml:lang="id" state="final">Perlindungan Pengaturan</target>
       </trans-unit>
       <trans-unit id="ShowReleaseNotesDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
-        <target xml:lang="id" state="translated">Catatan rilis</target>
+        <target xml:lang="id" state="final">Catatan rilis</target>
       </trans-unit>
       <trans-unit id="VoiceIdentifierView.betterLabel1">
         <source xml:lang="en">In applications which support this option, fields with this input system will be able to play and record voice.</source>
@@ -660,27 +657,27 @@
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="id" state="translated">&amp;Bentuk huruf:</target>
+        <target xml:lang="id" state="final">&amp;Bentuk huruf:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.FontNotAvailable" approved="yes">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="id" state="translated">(Bentuk huruf yang dipilih tidak tersedia pada mesin ini. Menggunakan default).</target>
+        <target xml:lang="id" state="final">(Bentuk huruf yang dipilih tidak tersedia pada mesin ini. Menggunakan default).</target>
       </trans-unit>
       <trans-unit id="WSFontControl.RightToLeftWS" approved="yes">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="id" state="translated">Ini adalah sistem penulisan kanan ke kiri.</target>
+        <target xml:lang="id" state="final">Ini adalah sistem penulisan kanan ke kiri.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
-        <target xml:lang="id" state="translated">&amp;Ukuran:</target>
+        <target xml:lang="id" state="final">&amp;Ukuran:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.TestArea" approved="yes">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="id" state="translated">&amp;Area Pengujian:</target>
+        <target xml:lang="id" state="final">&amp;Area Pengujian:</target>
       </trans-unit>
       <trans-unit id="WSIdentifierView.betterLabel4">
         <source xml:lang="en">Abbreviation</source>
@@ -715,37 +712,37 @@
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <note>ID: WSKeyboardControl.KeyboardNotListed</note>
-        <target xml:lang="id" state="translated">Jika keyboard yang Anda butuhkan tidak tercantum, klik tautan yang sesuai di bawah untuk mengaturnya</target>
+        <target xml:lang="id" state="final">Jika keyboard yang Anda butuhkan tidak tercantum, klik tautan yang sesuai di bawah untuk mengaturnya</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardSettingsLink" approved="yes">
         <source xml:lang="en">Windows keyboard settings</source>
         <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
-        <target xml:lang="id" state="translated">Pengaturan keyboard Windows</target>
+        <target xml:lang="id" state="final">Pengaturan keyboard Windows</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsAvailable" approved="yes">
         <source xml:lang="en">Available keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
-        <target xml:lang="id" state="translated">Keyboard yang tersedia</target>
+        <target xml:lang="id" state="final">Keyboard yang tersedia</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed" approved="yes">
         <source xml:lang="en">Previously used keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
-        <target xml:lang="id" state="translated">Keyboard yang sebelumnya dipakai</target>
+        <target xml:lang="id" state="final">Keyboard yang sebelumnya dipakai</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanConfigurationLink" approved="yes">
         <source xml:lang="en">Keyman Configuration</source>
         <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
-        <target xml:lang="id" state="translated">Konfigurasi Keyman</target>
+        <target xml:lang="id" state="final">Konfigurasi Keyman</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanNotInstalled" approved="yes">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="id" state="translated">Keyman 5.0 atau yang terbaru tidak dipasang.</target>
+        <target xml:lang="id" state="final">Keyman 5.0 atau yang terbaru tidak dipasang.</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel" approved="yes">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="id" state="translated">Pilih &amp;keyboard yang akan digunakan untuk mengetik teks {0}</target>
+        <target xml:lang="id" state="final">Pilih &amp;keyboard yang akan digunakan untuk mengetik teks {0}</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SetupKeyboards">
         <source xml:lang="en">Set up keyboards</source>
@@ -755,22 +752,22 @@
       <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="id" state="translated">&amp;Area Pengujian (Gunakan area ini untuk mengetik sesuatu untuk menguji keyboard Anda).</target>
+        <target xml:lang="id" state="final">&amp;Area Pengujian (Gunakan area ini untuk mengetik sesuatu untuk menguji keyboard Anda).</target>
       </trans-unit>
       <trans-unit id="Warning" approved="yes">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
-        <target xml:lang="id" state="translated">Peringatan</target>
+        <target xml:lang="id" state="final">Peringatan</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption" approved="yes">
         <source xml:lang="en">Unable to connect to SLDR</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
-        <target xml:lang="id" state="translated">Tidak dapat terhubung ke SLDR</target>
+        <target xml:lang="id" state="final">Tidak dapat terhubung ke SLDR</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText" approved="yes">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
-        <target xml:lang="id" state="translated">Aplikasi tidak dapat terhubung ke Penyimpanan Data Lokal SIL untuk mengambil informasi terbaru mengenai bahasa ini. Jika Anda membuat sistem penulisan ini, pengaturan default-nya mungkin salah atau sudah usang. Yakin ingin membuat sistem penulisan yang baru?</target>
+        <target xml:lang="id" state="final">Aplikasi tidak dapat terhubung ke Penyimpanan Data Lokal SIL untuk mengambil informasi terbaru mengenai bahasa ini. Jika Anda membuat sistem penulisan ini, pengaturan default-nya mungkin salah atau sudah usang. Yakin ingin membuat sistem penulisan yang baru?</target>
       </trans-unit>
       <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
         <source xml:lang="en">[Missing] {0} ({1})</source>

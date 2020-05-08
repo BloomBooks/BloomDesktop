@@ -6,25 +6,16 @@
         <source xml:lang="en">About Big Books</source>
         <target xml:lang="mam" state="final">Nab'il kyib'aj matij u'jb'il</target>
         <note>ID: bigbook.title</note>
-        <alt-trans>
-          <target xml:lang="mam">Nab'il tib'aj qe matij u'jb'il</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
         <target xml:lang="mam" state="final">Qe' matij u'jb'il b'inchanqe' tu'n kyajb'en kyu'n ajxnaq'tzal tu'n t-xi' kyyek'an ex tu'n tjaw sch'in kywitz ajxnaq'tzanjtz. Tu'n tkanet txqantl pakb'ab'il tib'aj lu', sch'i'n jawa lu' <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF te Scholastic</g>.</target>
         <note>ID: bigbook.use</note>
-        <alt-trans>
-          <target xml:lang="mam">Qe matij u'jb'il b'inchan maj tu'n tajb'en kyu'nqe ajxnaq'tzal tu'n t-xi' kyek'an ex tu'n tjaw sch'in kywitz qe ajxnaq'tzanjtz. Tu'n tkanet txqantl pakb'ab'il tib'aj jlu', sch'i'n jawa jlu' <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF te Scholastic</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.printing" approved="yes">
         <source xml:lang="en">Printing a Big Book</source>
         <target xml:lang="mam" state="final">In uk'se jun matij u'jb'il</target>
         <note>ID: bigbook.printing</note>
-        <alt-trans>
-          <target xml:lang="mam">Ne'tz q'it tilb'ilal jun matij u'jb'il</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
@@ -33,26 +24,16 @@ Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
         <target xml:lang="mam" state="final">Tu'n kyb'ant kyaq'nanjtz tichaq, aju txolb'ab'il aq'untl b'incha'nqe' lu' nchi ajb'en tu'n A4 twa'l Q'el tten, tuk' matij tloq'b'il. Ja'ka b'ant tzaj i'tz'j u'jb'il A3 (kab' maj ma' twitz).
 O'kx q'inxa PDF twa'l A4 tuj jun ja poq'salu'j ex q'amanxa kye tu'n tch'iy ch'intl tuj A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
-        <alt-trans>
-          <target xml:lang="mam">Tu'n tb'ant taq'nanjtz qe tichaq, aju txolb'ab'il aq'untl b'incha'nmaj lu' najb'en tu'n A4 twa'l Q'el tten, tuk' matij tiloq'b'il. Jaka b'ant tzaj i'tz'j qe u'jb'il A3 (kab'e maj ma' twitz).
-O'kx q'inxa tPDF a twa'l A4 tuj jun ja poq'salu'j ex q'amanxa kye tu'n tch'iy ch'intl tuj A3.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
         <target xml:lang="mam" state="final">Alkyeqe' nchi b'ajx toj aq'unb'il lu'</target>
         <note>ID: bigbook.limits</note>
-        <alt-trans>
-          <target xml:lang="mam">Alchaqkye qe nchi maqan ti'j aq'unb'il lu'</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
         <target xml:lang="mam" state="final">Qa in ajb'en jun tal b'o'tz kye'yb'itz, kuw tu'n tjaw sch'it kyxaq u'jb'il toklen. B'inchan kub'a zoom ex tu'n tajb'en control+/- te zoom tuj tb'utx' te jawn tuj tb'an q'ab'a te kye'yb'itz tib'lal tu'ntzan tb'inchet.</target>
         <note>ID: bigbook.limits.smallscreen</note>
-        <alt-trans>
-          <target xml:lang="mam">Qa n-najb'en jun kye'yb'itz ch'in twitz, kyw ti'j tu'n tjaw sch'it t-xaq te qe u'jb'il toklen. B'inchan kub'a zoom ex tu'n tajb'en control+/- te zoom tuj tb'utx' te jawn tuj tb'an q'ab'a te kye'yb'itz tib'lal tu'ntzan tb'inchet.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
@@ -60,9 +41,6 @@ If you would like to have instructions in a different language, you can delete t
 If you send us that text, we can include it in a future version of the template.</source>
         <target xml:lang="mam" state="final">Aju aq'nab'il lu' tok ti'j jun t-xaq u'j te "Chikb'ab'il kye Ajxnaq'tzal" o' ku'x nojset tuj inglés. Qa taja qe' chikb'ab'il tuj junxitl yol, q'uchinxa txolyol lu' ex q'o'n okxa txolyol meltz'u'n. Qa ma tzaj t-sama'na txolyol meltz'u'n, ja'ka tz'okx qq'o'ne tuj juntl ak'aj tumel te txolb'ab'il aq'untl b'incha'n.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>
-        <alt-trans>
-          <target xml:lang="mam">Aj aq'na'b'il lu' tok ti'j jun t-xaq u'j te "Chikb'ab'il kye qe Ajxnaq'tzal" o' kux nojset tuj inglés. Qa taja qe chikb'ab'il tuj ju'nxitl yol, q'uchinxa txolyol lu' ex q'o'n okxa txolyol meltz'u'nmaj. Qa ma tzaj t-sama'na txolyol meltz'u'nmaj, jaka tz'okx q-q'o'ne tuj juntl ak'aj tu'mel te txolb'ab'il aq'untl b'incha'nmaj.</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

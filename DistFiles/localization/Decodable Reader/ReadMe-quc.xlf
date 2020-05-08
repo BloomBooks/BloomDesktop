@@ -4,77 +4,38 @@
     <body>
       <trans-unit id="decodable.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
-        <target xml:lang="quc" state="translated">Jun <g id="genid-1" ctype="x-html-strong">Wuj sik’ital uwach</g> are jun wuj k’o ri kel wi chajim ukojijk ri uwach taq tz’ib’ xuquje’ k’i taq tzij rech qas are k’olik jeqalik ri jun k’ak’ sik’inel rech xutzirik chech usik’ixik uwach. Ronojel wi jun tzijob’al kk’oji’ ne job’ k’a pa lajuj <g id="genid-2" ctype="x-html-em">k’i uq’e’tal sik’ital uwach</g> rumal ri’ kepaqi’ ri tijoxelab’.</target>
+        <target xml:lang="quc" state="final">Jun <g id="genid-1" ctype="x-html-strong">Wuj sik’ital uwach</g> are jun wuj k’o ri kel wi chajim ukojijk ri uwach taq tz’ib’ xuquje’ k’i taq tzij rech qas are k’olik jeqalik ri jun k’ak’ sik’inel rech xutzirik chech usik’ixik uwach. Ronojel wi jun tzijob’al kk’oji’ ne job’ k’a pa lajuj <g id="genid-2" ctype="x-html-em">k’i uq’e’tal sik’ital uwach</g> rumal ri’ kepaqi’ ri tijoxelab’.</target>
         <note>ID: decodable.definition</note>
-        <alt-trans>
-          <target xml:lang="quc">Jun <g id="genid-1" ctype="x-html-strong">Wuj sik’talik uwach</g> are jun wuj  k’o ri ke’el wi  chijim ukojijk ri uwach taq tz’ib’ xuquje’ k’i taq tzij rech qas are k’olik jeqalik ri jun k’ak’ sik’inel rech xutzirik che  usik’ixik uwach. Ronojel wi jun tzijob’al kk’uji’ ne job’ k’pa lajuj <g id="genid-2" ctype="x-html-em">k’i uq’e’tal sik’talik uwach</g> rumal ri’ kepaqi’ ri tijoxelab’.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="quc">Jun <g id="genid-1" ctype="x-html-strong">Wuj sik’talik uwach</g> Are jun wuj b'anom rech ukojik k’o ri ke’el wi xuquje'  chijim ukojijk ri uwach taq tz’ib’ xuquje’ k’i taq tzij rech qas are' jeqtalik che jun k’ak’ sik’inel rech xutzirik rech  usik’ixik uwach. Ronojel wi,  jun tzijob’al kk’uji’ ne job’ k’pa lajuj <g id="genid-2" ctype="x-html-em">q’e’tal sik’talik uwach</g> rumal ri’ kepaqi’ ri tijoxelab’.
-
-</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="quc">Jun <g id="genid-1" ctype="x-html-strong">Wuj sik’talik uwach</g> Are jun wuj b'anom rech ukojik k’o ri ke’el wi xuquje'  chijim ukojijk ri uwach taq tz’ib’ xuquje’ k’i taq tzij rech qas are jeqalik che jun k’ak’ sik’inel rech xutzirik rech  usik’ixik uwach. Ronojel wi,  jun tzijob’al kk’uji’ ne job’ k’pa lajuj <g id="genid-2" ctype="x-html-em">q’e’tal sik’talik uwach</g> rumal ri’ kepaqi’ ri tijoxelab’.
-
-</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.stages" approved="yes">
         <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
-        <target xml:lang="quc" state="translated">Bloom ktuto’ chech rilik ri kematal wi che ri <g id="genid-3" ctype="x-html-em">etapas</g> rumal ri sik’inel taq rech keq’axik. Jujun taq wuj kb’an la kb’e chech jun chi kech ri uq’e’tal ya’talik xuquje’ Bloom qas ktob’anik chech rilik we are awuj <g id="genid-4" ctype="x-html-em"> wuj sik’talik uwach</g> (kb’an kowinem chech usik’ixik uwach) kumal ri tijoxelab’ chi upam rech <g id="genid-5" ctype="x-html-em"> etapa</g>.</target>
+        <target xml:lang="quc" state="final">Bloom ktuto’ chech rilik ri kematal wi che ri <g id="genid-3" ctype="x-html-em">etapas</g> rumal ri sik’inel taq rech keq’axik. Jujun taq wuj kb’an la kb’e chech jun chi kech ri uq’e’tal ya’talik xuquje’ Bloom qas ktob’anik chech rilik we are awuj <g id="genid-4" ctype="x-html-em"> wuj sik’talik uwach</g> (kb’an kowinem chech usik’ixik uwach) kumal ri tijoxelab’ chi upam rech <g id="genid-5" ctype="x-html-em"> etapa</g>.</target>
         <note>ID: decodable.stages</note>
-        <alt-trans>
-          <target xml:lang="quc">Bloom ktuto’ che rilik ri kematal wi che ri <g id="genid-3" ctype="x-html-em">etapas</g> rumal ri sik’inel taq rech keq’axik. Jujun taq wuj  kb’an la kb’e che jun chi kech ri uq’e’tal ya’talik, xuquje’  Bloom qas kto’b’anik  che rilik we are awuj <g id="genid-4" ctype="x-html-em"> wuj sik’talik uwach</g> (kb’an kowinem che usik’ixik uwach) kmal ri tijoxelab’ chi upam rech  <g id="genid-5" ctype="x-html-em"> etapa</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="quc" state="translated">Xuquje’ katkowinik kab’an jun Woktanaj rech Bloom rech <g id="genid-6" ctype="x-html-em">plantillas</g> rech nik’aj chik kekowinik kkikojo chech utikik k'ak' taq no'jwuj chi upam ri q’at xuquje’ q’e’tal ri kib'anom kumal ri nima'q taq kino'jib'al rech tijonik.</target>
+        <target xml:lang="quc" state="final">Xuquje’ katkowinik kab’an jun Woktanaj rech Bloom rech <g id="genid-6" ctype="x-html-em">plantillas</g> rech nik’aj chik kekowinik kkikojo chech utikik k'ak' taq no'jwuj chi upam ri q’at xuquje’ q’e’tal ri kib'anom kumal ri nima'q taq kino'jib'al rech tijonik.</target>
         <note>ID: decodable.templates</note>
-        <alt-trans>
-          <target xml:lang="quc">Xuquje’ katkowinik kab’an jun tanaj rech ri Bloom rech <g id="genid-6" ctype="x-html-em">plantillas</g> che nik’aj chik kekowinik kkojo rech utikik ma k’axta kkiraq che ub’anik wuj chupam ri q’at xuquje’ q’e’tal che xutzir rumal jun k’o ret’amab’al pa uwi’ ri tijonik.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn" approved="yes">
         <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
-        <target xml:lang="quc" state="translated">Chech reta’maxik jas ukojik Wuj Sik’ital uwach chi upam ri Bloom, katkowinik:</target>
+        <target xml:lang="quc" state="final">Chech reta’maxik jas ukojik Wuj Sik’ital uwach chi upam ri Bloom, katkowinik:</target>
         <note>ID: decodable.learn</note>
-        <alt-trans>
-          <target xml:lang="quc">Rech reta’maxik su ukojik Wuj Sik’talik uwach chi upam ri Bloom, katkowinik:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="quc" state="translated">Chwila' <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">we silob'wachib'al rech uya’ik no'jib'al</g>.</target>
+        <target xml:lang="quc" state="final">Chwila' <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">we silob'wachib'al rech uya’ik no'jib'al</g>.</target>
         <note>ID: decodable.learn.videos</note>
-        <alt-trans>
-          <target xml:lang="quc">Chwila' <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">we solob’ilb’al wachib’al rech uya’ik no'j</g>.
-
-</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.helpindex" approved="yes">
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
-        <target xml:lang="quc" state="translated">Jat pa le cholb’al chak rech Tob'anem, chacha’ ‘Uwujilal (inglés) xuquje’ chatzukuj "Ya'tal rilik Readers" pa le cholupam wuj.</target>
+        <target xml:lang="quc" state="final">Jat pa le cholb’al chak rech Tob'anem, chacha’ ‘Uwujilal (inglés) xuquje’ chatzukuj "Ya'tal rilik Readers" pa le cholupam wuj.</target>
         <note>ID: decodable.learn.helpindex</note>
-        <alt-trans>
-          <target xml:lang="quc">Jat pa cholb’al chak rech Tob'anem, chcha’ ‘Tob’anem’ xuquje’ chatzukuj "Wuj sik’ital uwach" pa le cholupam wuj.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="quc">Jat pa cholb’al chak To’ba’nem, cha’ ‘Tob’anem’  xuquje’ tzukuj "Wuj sik’talik uwach" chi upam ri cholno’j. </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="quc" state="translated">Jat pa ri Tob'cholb’al chak k'ate k'u ri' chacha’: “Uwokik taq raqanib’al rech sik’ib’al”.</target>
+        <target xml:lang="quc" state="final">Jat pa ri Tob'cholb’al chak k'ate k'u ri' chacha’: “Uwokik taq raqanib’al rech sik’ib’al”.</target>
         <note>ID: decodable.learn.helpmenu</note>
-        <alt-trans>
-          <target xml:lang="quc">Jat pa ri cholb’al chak to’b’anik xuquje’ cha’: “Uwokik taq raqanib’al rech sik’ib’al” Raqanib’al.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="quc"> Jat pa ri cholb’al chak to’b’anik xuquje’ cha’: “Uwokik taq raqanib’al rech sik’ib’al” Raqanib’al.   </target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>
