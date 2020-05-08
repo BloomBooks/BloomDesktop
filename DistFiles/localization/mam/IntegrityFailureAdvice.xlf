@@ -6,33 +6,21 @@
         <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
         <target xml:lang="mam" state="final">Nti' nchi kanet junjun aq'unb'il te Bloom ex mlay lajet taq'un</target>
         <note>ID: integrity.title</note>
-        <alt-trans>
-          <target xml:lang="mam">Nti' nkanet qe junchaq teklx nak'ub'il aq'unb'il te Bloom ex nlay lajet taq'un</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.causes" approved="yes">
         <source xml:lang="en">Possible Causes</source>
         <target xml:lang="mam" state="final">Qaj aqe lu' nchi b'inchan</target>
         <note>ID: integrity.causes</note>
-        <alt-trans>
-          <target xml:lang="mam">Alchaq kyeqa jaka tzaj tq'o'n</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.causes.1" approved="yes">
         <source xml:lang="en">Your antivirus may have "quarantined" one or more Bloom files.</source>
         <target xml:lang="mam" state="final">Qe' kalol ti'j qe yab' tuj paqanil ja'ka "kyaj kyq'o'n tuj kyawinaq" jun mo txqantl aq'unb'il te Bloom.</target>
         <note>ID: integrity.causes.1</note>
-        <alt-trans>
-          <target xml:lang="mam">Qe kalol ti'j qe yab' tuj chemaj xin jaka "kyaj kyq'o'n tuj kyawinaq" jun mo txqantl nak'ub'il aq'unb'il te Bloom.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.causes.2" approved="yes">
         <source xml:lang="en">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. </source>
         <target xml:lang="mam" state="final">B'ala qa aju ka'yil aq'unb'il te t-xk'utz'ib'a ma "maqon" Tu'ntzan mi'n tzaj tq'o'n qe mya' b'a'n, ma kub' tb'incha'n Bloom lu' tu'ntzan tlaj nti' ma tz'ok tq'o'n qe' aq'unb'il tuj tumelxix. </target>
         <note>ID: integrity.causes.2</note>
-        <alt-trans>
-          <target xml:lang="mam">B'ala a ajka'yil aq'unb'il xk'utz'ib' ma "maqon te-te" Tu'ntzan mi'n tzaj tq'o'n qe nya' b'a'n, ma kub' tb'incha'n Bloom jlu' tu'ntzan tlaj nti' ma tz'ok tq'o'n qe nak'ub'il aq'unb'il tuj tu'melxix. </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo" approved="yes">
         <source xml:lang="en">What To Do</source>
@@ -43,25 +31,16 @@
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:</source>
         <target xml:lang="mam" state="final">Aj t-xi' samet tqanil aq'untl lu', kxe'l qyolb'ina tu'n t-xi' onita. qu'n at tzalu' ate' junjun ximb'etz:</target>
         <note>ID: integrity.todo.ideas</note>
-        <alt-trans>
-          <target xml:lang="mam">Ok t-xi' samet tqanil aq'untl lu', jaka qoxq'ajte ti'je tu'n txi' qo'ne. At tzalu' ju'njun ximb'etz, tajlal n-naq'unane:</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Reinstall" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
         <target xml:lang="mam" state="final">B'incham jun majtla q'ob'il te Bloom, tu'n tok tka'yina qa ma' t-xi'qe tuj tumelxix.</target>
         <note>ID: integrity.todo.ideas.Reinstall</note>
-        <alt-trans>
-          <target xml:lang="mam">Q'o'n oka juntlmaj aj q'ob'il te Bloom, tu'n tok ka'yit qa ma' t-xi' qe' tuj tu'melxix.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Antivirus" approved="yes">
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
         <target xml:lang="mam" state="final">Qa nti'x ma b'ant ti'j, ma pon amb'il tu'n tku'x xpich'it toj ttxolil aq'unb'il xk'utz'ib' ti'jqe kalol yab' tuj paqanil.  Qatzun tujqe k'loj "Nuk'b'il aq'unb'il atx taj" ("Missig Files") ma tzaj tyek'an qe' nuk'b'il aq'unb'il nchi pon b'aj  ti'j "exe", ximinxa tu'n tok tq'ona tkub'il aq'unb'il xk'utz'ib' te Bloom tuj "kyb'i saq ka'yin" ("white list"), ta' tuj<g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
-        <alt-trans>
-          <target xml:lang="mam">Qa nti'x ma b'ant ti'j, ma pon tumlal tu'n tku'x xpich'it aj ttxolil aq'unb'il xk'utz'ib' ti'jqe kalol yab' tuj chemaj xin.  Qatzn tujqe k'loj "Nak'ub'il aq'unb'il atx taj" ("Missig Files") ma tzaj tyek'an qe nak'ub'il aq'unb'il nchi pon b'aj  ti'j "exe", ximinxa tu'n tok tq'ona tkub'il aq'unb'il xk'utz'ib' te Bloom tuj "kyb'i saq ka'yin" ("white list"), ta' tuj<g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVAST" approved="yes">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</source>
@@ -72,9 +51,6 @@
         <source xml:lang="en">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>.</source>
         <target xml:lang="mam" state="final">Qe kalol ti'j qe yab' tuj paqanil Norton: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Chaq'il te Symantec</g>.</target>
         <note>ID: integrity.todo.ideas.Norton</note>
-        <alt-trans>
-          <target xml:lang="mam">Qe kalol ti'j qe yab' tuj chemaj xin Norton: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Chaq'il te Symantec</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVG" approved="yes">
         <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.</source>
@@ -86,33 +62,21 @@
         <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>
         <target xml:lang="mam" state="final">Junjuntl: Jayonxa "whitelist directory name-of-your-antivirus" ("ttenb'il kyb'i aq'unb'il saq chi ka'yin-te-tkolb'il yab' tuj paqanil") tuj Google</target>
         <note>ID: integrity.todo.ideas.Others</note>
-        <alt-trans>
-          <target xml:lang="mam">Juntl qe: Jayonxa "whitelist directory name-of-your-antivirus" ("ttenb'il kyb'i aq'unb'il saq chi ka'yin-te-tkolb'il yab' tuj chemaj xin") tuj Google</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Restart" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
         <target xml:lang="mam" state="final">B'inchama jun majtl aju q'ob'il te Bloom, tu'n t-xi' tka'yina qa ma t-xi' qe tuj tumelxix.</target>
         <note>ID: integrity.todo.ideas.Restart</note>
-        <alt-trans>
-          <target xml:lang="mam">Q'on oka juntl maj q'ob'il te Bloom, tu'n tka'yina qa ma t-xi' qe' tuj tu'melxix.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Retrieve" approved="yes">
         <source xml:lang="en">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.</source>
         <target xml:lang="mam" state="final">Ex ja'ka b'ant tzaj tzyet juntl maj aq'unab'il te Bloom aj xyukẍ tu'n tlaj ttxolil aq'unb'il xk'utz'ib' ti'j kalol yab' tuj paqanil. Te AVG, ilti'j tu'n tkanet menú te "La' wiq tumel". B'inchanxa clic ti'j "Tenb'il kyi'jqe q'ol yab' tuj paqanil" b'inchanxa clic ti'j nuk'b'il aq'unb'il te Bloom ta' tuj ttenb'il ex q'onxa clic tib'aj "Nxi' tb'incha'n tib'". Tu'n tten jun yek'bitz te tilb'il, ka'yinxa <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">atzan tib'lal</g>.</target>
         <note>ID: integrity.todo.ideas.Retrieve</note>
-        <alt-trans>
-          <target xml:lang="mam">Ax ikyx jaka b'ant tzaj tzyet juntl maj aq'unab'il te Bloom aj xyukẍ tu'n tlaj ttxolil aq'unb'il xk'utz'ib' ti'j kalol yab' tuj chemajxin. Te AVG, ilx ti'j tu'n tkanet menú te "La' wiq tu'mel". B'inchanxa clic ti'j "Tenb'il kyi'jqe q'ol yab' tuj chemajxin" b'inchanxa clic ti'j nak'ub'il aq'unb'il te Bloom ta' tuj ttenb'il ex q'onxa clic tib'aj "Nxi' tb'inchan tib'". Tu'n tten jun yek'bitz te tilb'il, ka'yinxa <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">atzan tib'lal</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.missing" approved="yes">
         <source xml:lang="en">Missing Files</source>
         <target xml:lang="mam" state="final">Atex nuk'b'il aq'unb'il</target>
         <note>ID: integrity.missing</note>
-        <alt-trans>
-          <target xml:lang="mam">Atx taj qe nak'ub'il aq'unb'il</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

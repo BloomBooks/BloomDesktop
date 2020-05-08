@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="wall.calendar" approved="yes">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="sw" state="translated">Kuhusu Kielelezo cha Kalenda ya Ukuta</target>
+        <target xml:lang="sw" state="final">Kuhusu Kielelezo cha Kalenda ya Ukuta</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use" approved="yes">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="sw" state="translated">Kwa kutumia kielelezo hiki, unaweza kutengeneza kalenda ya miezi 12 ya A5, iliyo na picha na dondoo kwenye ukurasa wa juu, na siku upande wa chini. Kalenda hii itatumia majina ya miezi na siku katika lugha yako.</target>
+        <target xml:lang="sw" state="final">Kwa kutumia kielelezo hiki, unaweza kutengeneza kalenda ya miezi 12 ya A5, iliyo na picha na dondoo kwenye ukurasa wa juu, na siku upande wa chini. Kalenda hii itatumia majina ya miezi na siku katika lugha yako.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="sw" state="translated">Changamoto za toleo hili</target>
+        <target xml:lang="sw" state="final">Changamoto za toleo hili</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells" approved="yes">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="sw" state="translated">Kwa sasa, huwezi ukatengeneza "sheli" ili kutumika kwa lugha zingine.</target>
+        <target xml:lang="sw" state="final">Kwa sasa, huwezi ukatengeneza "sheli" ili kutumika kwa lugha zingine.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits" approved="yes">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="sw" state="translated">Sifa</target>
+        <target xml:lang="sw" state="final">Sifa</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks" approved="yes">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="sw" state="translated">Shukrani kwa Bruce Cox (SIL Cameroon) kwa kuanzisha kielelezo hiki.</target>
+        <target xml:lang="sw" state="final">Shukrani kwa Bruce Cox (SIL Cameroon) kwa kuanzisha kielelezo hiki.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>

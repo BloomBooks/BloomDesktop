@@ -8,7 +8,7 @@
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="pbu" state="translated">د ځانګړو جملو پای کی لیک نښې</target>
+        <target xml:lang="pbu" state="final">د ځانګړو جملو پای کی لیک نښې</target>
       </trans-unit>
     </body>
   </file>

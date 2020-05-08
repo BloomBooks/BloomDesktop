@@ -41,9 +41,6 @@
         <source xml:lang="en">Send Over USB Cable</source>
         <target xml:lang="prs" state="final">ارسال بواسطه کیبل USB</target>
         <note>ID: android.publish.usb</note>
-        <alt-trans>
-          <target xml:lang="prs">ارسال ازطریق کیبل USB</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.usb.not.connect" approved="yes">
         <source xml:lang="en">Problem: Bloom is not connecting to my device</source>

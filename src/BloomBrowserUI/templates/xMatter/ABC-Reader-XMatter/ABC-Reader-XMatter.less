@@ -17,12 +17,15 @@ body.decodable-reader .numberCircle {
     background-color: rgb(0, 47, 108);
 }
 
+body:not(.decodable-reader) {
+    .decodableStageLettersRow {
+        display: none !important; // for decodable only
+    }
+}
+
 body.leveled-reader {
     .numberLabel::before {
         content: "Level";
-    }
-    .decodableStageLettersRow {
-        display: none !important; // for decodable only
     }
 }
 body.decodable-reader {

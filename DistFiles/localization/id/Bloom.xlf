@@ -5,7 +5,7 @@
       <trans-unit id="AccessibilityCheck.AccessibilityChecker" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checker</source>
         <note>ID: AccessibilityCheck.AccessibilityChecker</note>
-        <target xml:lang="id" state="needs-translation">Accessibility Checker</target>
+        <target xml:lang="id" state="translated">Pemeriksa Aksesibilitas</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.ACEByDaisy" sil:dynamic="true">
         <source xml:lang="en">Ace by DAISY Automated Checks</source>
@@ -16,46 +16,46 @@
       <trans-unit id="AccessibilityCheck.audioForAllText" sil:dynamic="true">
         <source xml:lang="en">Audio for all text</source>
         <note>ID: AccessibilityCheck.audioForAllText</note>
-        <target xml:lang="id" state="needs-translation">Audio for all text</target>
+        <target xml:lang="id" state="translated">Audio untuk semua teks</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions" sil:dynamic="true">
         <source xml:lang="en">Audio for all image descriptions</source>
         <note>ID: AccessibilityCheck.audioForAllImageDescriptions</note>
-        <target xml:lang="id" state="needs-translation">Audio for all image descriptions</target>
+        <target xml:lang="id" state="translated">Audio untuk semua deskripsi gambar</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage">
         <source xml:lang="en">Some text is missing a recording for an image description on page {0}</source>
         <note>ID: AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="id" state="needs-translation">Some text is missing a recording for an image description on page {0}</target>
+        <target xml:lang="id" state="translated">Beberapa teks tidak ada rekaman untuk deskripsi gambar di halaman {0}</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AudioForAllText.MissingOnPage">
         <source xml:lang="en">Some text is missing a recording on page {0}</source>
         <note>ID: AccessibilityCheck.AudioForAllText.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="id" state="needs-translation">Some text is missing a recording on page {0}</target>
+        <target xml:lang="id" state="translated">Beberapa teks tidak ada rekaman di halaman {0}</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true">
         <source xml:lang="en">Bloom can automatically check these for you:</source>
         <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
-        <target xml:lang="id" state="needs-translation">Bloom can automatically check these for you:</target>
+        <target xml:lang="id" state="translated">Bloom dapat secara otomatis memeriksa ini untuk Anda:</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.Checklist" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checklist</source>
         <note>ID: AccessibilityCheck.Checklist</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="id" state="needs-translation">Accessibility Checklist</target>
+        <target xml:lang="id" state="translated">Daftar Periksa Aksesibilitas</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.descriptionsForAllImages" sil:dynamic="true">
         <source xml:lang="en">Descriptions for all images</source>
         <note>ID: AccessibilityCheck.descriptionsForAllImages</note>
-        <target xml:lang="id" state="needs-translation">Descriptions for all images</target>
+        <target xml:lang="id" state="translated">Deskripsi untuk semua gambar</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.DescriptionsForAllImages.MissingOnPage">
         <source xml:lang="en">Missing image description on page {0}</source>
         <note>ID: AccessibilityCheck.DescriptionsForAllImages.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="id" state="needs-translation">Missing image description on page {0}</target>
+        <target xml:lang="id" state="translated">Deskripsi gambar tidak ada pada halaman {0}</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.FindingAce" sil:dynamic="true">
         <source xml:lang="en">Finding Ace by DAISY on this computer...</source>
@@ -65,13 +65,13 @@
       <trans-unit id="AccessibilityCheck.FoundAce" sil:dynamic="true">
         <source xml:lang="en">Found.</source>
         <note>ID: AccessibilityCheck.FoundAce</note>
-        <target xml:lang="id" state="needs-translation">Found.</target>
+        <target xml:lang="id" state="translated">Ditemukan.</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true">
         <source xml:lang="en">Learn About Accessibility</source>
         <note>ID: AccessibilityCheck.LearnAbout</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="id" state="needs-translation">Learn About Accessibility</target>
+        <target xml:lang="id" state="translated">Pelajari Tentang Aksesibilitas</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout.AccessibleBookDefinition" sil:dynamic="true">
         <source xml:lang="en">"Accessible Books" are books that work well for people with impaired vision. With the ePUB format*, it is possible to make "Born Accessible" books that work well for everyone**, regardless of vision. Bloom has the following tools to help you create these books:</source>
@@ -97,7 +97,7 @@
       <trans-unit id="AccessibilityCheck.LearnAbout.EpubDefinition" sil:dynamic="true">
         <source xml:lang="en">definition of the ePUB format</source>
         <note>ID: AccessibilityCheck.LearnAbout.EpubDefinition</note>
-        <target xml:lang="id" state="needs-translation">definition of the ePUB format</target>
+        <target xml:lang="id" state="translated">definisi dari format ePUB</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout.Footnote" sil:dynamic="true">
         <source xml:lang="en">While the ideal is that a single book can serve everyone, the ePUB standard and ePUB readers do not actually support that. They currently only work for blind people who speak a language that is supported by "Text to Speech" (TTS) systems. At this time, TTS is only available for large or commercially interesting languages. Until the standard and accessible readers improve, it is necessary to make special versions of accessible books for minority language speakers. For blind readers to hear the image descriptions, we need to put something special on the page. In this version of Bloom, you do this by clicking the "Include image descriptions on page" checkbox in the Publish:ePUB screen. Future versions may have other options in this area.</source>
@@ -107,12 +107,12 @@
       <trans-unit id="AccessibilityCheck.ManualChecksHeading" sil:dynamic="true">
         <source xml:lang="en">You need to check these yourself:</source>
         <note>ID: AccessibilityCheck.ManualChecksHeading</note>
-        <target xml:lang="id" state="needs-translation">You need to check these yourself:</target>
+        <target xml:lang="id" state="translated">Anda perlu memeriksanya sendiri:</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true">
         <source xml:lang="en">No essential information by color</source>
         <note>ID: AccessibilityCheck.noEssentialInfoByColor</note>
-        <target xml:lang="id" state="needs-translation">No essential information by color</target>
+        <target xml:lang="id" state="translated">Tidak ada informasi penting berdasarkan warna</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.WindowTitle">
         <source xml:lang="en">Bloom Accessibility Checker</source>
@@ -231,23 +231,23 @@
       <trans-unit id="BookMetadata.a11yCertifier">
         <source xml:lang="en">Level certified by</source>
         <note>ID: BookMetadata.a11yCertifier</note>
-        <target xml:lang="id" state="needs-translation">Level certified by</target>
+        <target xml:lang="id" state="translated">Level disertifikasi oleh</target>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yFeatures">
         <source xml:lang="en">Accessibility features</source>
         <note>ID: BookMetadata.a11yFeatures</note>
-        <target xml:lang="id" state="needs-translation">Accessibility features</target>
+        <target xml:lang="id" state="translated">• Fitur Aksesibilitas</target>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevel">
         <source xml:lang="en">Accessibility level</source>
         <note>ID: BookMetadata.a11yLevel</note>
-        <target xml:lang="id" state="needs-translation">Accessibility level</target>
+        <target xml:lang="id" state="translated">Tingkat aksesibilitas</target>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevelNone" sil:dynamic="true">
         <source xml:lang="en">None</source>
         <note>ID: BookMetadata.a11yLevelNone</note>
         <note>indicates that no level of accessibility conformance is claimed</note>
-        <target xml:lang="id" state="needs-translation">None</target>
+        <target xml:lang="id" state="translated">Tidak ada</target>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevelA" sil:dynamic="true">
         <source xml:lang="en">Level A conformance</source>
@@ -267,83 +267,83 @@
       <trans-unit id="BookMetadata.alternativeText">
         <source xml:lang="en">Has Image Descriptions</source>
         <note>ID: BookMetadata.alternativeText</note>
-        <target xml:lang="id" state="needs-translation">Has Image Descriptions</target>
+        <target xml:lang="id" state="translated">Memiliki Deskripsi Gambar</target>
       </trans-unit>
       <trans-unit id="BookMetadata.author">
         <source xml:lang="en">Author</source>
         <note>ID: BookMetadata.author</note>
-        <target xml:lang="id" state="needs-translation">Author</target>
+        <target xml:lang="id" state="translated">Penulis</target>
       </trans-unit>
       <trans-unit id="BookMetadata.flashingHazard">
         <source xml:lang="en">Flashing Hazard</source>
         <note>ID: BookMetadata.flashingHazard</note>
-        <target xml:lang="id" state="needs-translation">Flashing Hazard</target>
+        <target xml:lang="id" state="translated">Peringatan Berkedip</target>
       </trans-unit>
       <trans-unit id="BookMetadata.hazards">
         <source xml:lang="en">Hazards</source>
         <note>ID: BookMetadata.hazards</note>
-        <target xml:lang="id" state="needs-translation">Hazards</target>
+        <target xml:lang="id" state="translated">Peringatan</target>
       </trans-unit>
       <trans-unit id="BookMetadata.inLanguage">
         <source xml:lang="en">Language</source>
         <note>ID: BookMetadata.inLanguage</note>
-        <target xml:lang="id" state="needs-translation">Language</target>
+        <target xml:lang="id" state="translated">Bahasa</target>
       </trans-unit>
       <trans-unit id="BookMetadata.level">
         <source xml:lang="en">Reading level</source>
         <note>ID: BookMetadata.level</note>
-        <target xml:lang="id" state="needs-translation">Reading level</target>
+        <target xml:lang="id" state="translated">Tingkat pembaca</target>
       </trans-unit>
       <trans-unit id="BookMetadata.License">
         <source xml:lang="en">License</source>
         <note>ID: BookMetadata.License</note>
-        <target xml:lang="id" state="needs-translation">License</target>
+        <target xml:lang="id" state="translated">Lisensi</target>
       </trans-unit>
       <trans-unit id="BookMetadata.metapicture">
         <source xml:lang="en">Picture</source>
         <note>ID: BookMetadata.metapicture</note>
-        <target xml:lang="id" state="needs-translation">Picture</target>
+        <target xml:lang="id" state="translated">Gambar</target>
       </trans-unit>
       <trans-unit id="BookMetadata.motionSimulationHazard">
         <source xml:lang="en">Motion Simulation Hazard</source>
         <note>ID: BookMetadata.motionSimulationHazard</note>
-        <target xml:lang="id" state="needs-translation">Motion Simulation Hazard</target>
+        <target xml:lang="id" state="translated">Peringatan Simulasi Gerakan</target>
       </trans-unit>
       <trans-unit id="BookMetadata.name">
         <source xml:lang="en">Name</source>
         <note>ID: BookMetadata.name</note>
-        <target xml:lang="id" state="needs-translation">Name</target>
+        <target xml:lang="id" state="translated">Nama</target>
       </trans-unit>
       <trans-unit id="BookMetadata.numberOfPages">
         <source xml:lang="en">Number of pages</source>
         <note>ID: BookMetadata.numberOfPages</note>
-        <target xml:lang="id" state="needs-translation">Number of pages</target>
+        <target xml:lang="id" state="translated">Jumlah halaman</target>
       </trans-unit>
       <trans-unit id="BookMetadata.signLanguage">
         <source xml:lang="en">Sign Language</source>
         <note>ID: BookMetadata.signLanguage</note>
-        <target xml:lang="id" state="needs-translation">Sign Language</target>
+        <target xml:lang="id" state="translated">Bahasa Isyarat</target>
       </trans-unit>
       <trans-unit id="BookMetadata.subjects">
         <source xml:lang="en">Subjects</source>
         <note>ID: BookMetadata.subjects</note>
-        <target xml:lang="id" state="needs-translation">Subjects</target>
+        <target xml:lang="id" state="translated">Subjek</target>
       </trans-unit>
       <trans-unit id="BookMetadata.typicalAgeRange">
         <source xml:lang="en">Typical age range</source>
         <note>ID: BookMetadata.typicalAgeRange</note>
-        <target xml:lang="id" state="needs-translation">Typical age range</target>
+        <target xml:lang="id" state="translated">Kisaran usia yang khas</target>
       </trans-unit>
       <trans-unit id="BookMetadata.WhatsThis" sil:dynamic="true">
         <source xml:lang="en">What's this?</source>
         <note>ID: BookMetadata.WhatsThis</note>
         <note>minimal question indicating a link to information</note>
-        <target xml:lang="id" state="needs-translation">What's this?</target>
+        <target xml:lang="id" state="translated">Apa ini?</target>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="id" state="needs-translation">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</target>
+        <target xml:lang="id" state="translated">Bloom punya masalah membaca buku ini dan pulih dengan mengembalikan cadangan baru-baru ini. Silakan periksa perubahan terbaru pada buku ini. Jika ini terjadi tanpa alasan yang jelas, silakan klik Detail di bawah ini dan laporkan kepada kami.</target>
       </trans-unit>
       <trans-unit id="BookStorage.FolderMoved" approved="yes">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
@@ -363,13 +363,13 @@
       <trans-unit id="Browser.ProblemSaving">
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
         <note>ID: Browser.ProblemSaving</note>
-        <target xml:lang="id" state="needs-translation">There was a problem while saving. Please return to the previous page and make sure it looks correct.</target>
+        <target xml:lang="id" state="translated">Terjadi masalah saat menyimpan. Harap kembali ke halaman sebelumnya dan pastikan itu terlihat benar.</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomEnterprise">
         <source xml:lang="en">About the Bloom Enterprise Service</source>
         <note>ID: CollectionSettingsDialog.AboutBloomEnterprise</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="id" state="needs-translation">About the Bloom Enterprise Service</target>
+        <target xml:lang="id" state="translated">Tentang Bloom Enterprise Service</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
         <source xml:lang="en">Advanced Program Settings</source>
@@ -412,12 +412,12 @@
         <source xml:lang="en">Branding</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
         <note xml:lang="en">Used in 3.9 and 4.0; not used in 4.1</note>
-        <target xml:lang="id" state="needs-translation">Branding</target>
+        <target xml:lang="id" state="translated">Merek</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
-        <target xml:lang="id" state="needs-translation">None</target>
+        <target xml:lang="id" state="translated">Tidak ada</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
         <source xml:lang="en">Default Font for {0}</source>
@@ -434,7 +434,7 @@
         <source xml:lang="en">Device</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device</note>
         <note>Name of a Front/Back Matter Pack used for Bloom Reader</note>
-        <target xml:lang="id" state="needs-translation">Device</target>
+        <target xml:lang="id" state="translated">Perangkat</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paper Saver</source>
@@ -446,13 +446,13 @@
         <source xml:lang="en">SIL-PNG</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG</note>
         <note>Name of a Front/Back Matter Pack that has SIL Papua New Guinea customizations</note>
-        <target xml:lang="id" state="needs-translation">SIL-PNG</target>
+        <target xml:lang="id" state="translated">SIL-PNG</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Super Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts title page on the inside of the front cover and credits on the inside of the back cover</note>
-        <target xml:lang="id" state="needs-translation">Super Paper Saver</target>
+        <target xml:lang="id" state="translated">Kertas Super Hemat</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Traditional</source>
@@ -464,42 +464,42 @@
         <source xml:lang="en">Video</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video</note>
         <note>Name of a Front/Back Matter Pack that is used for talking/animating experiences</note>
-        <target xml:lang="id" state="needs-translation">Video</target>
+        <target xml:lang="id" state="translated">Video</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" sil:dynamic="true">
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
-        <target xml:lang="id" state="needs-translation">Arabic-Indic</target>
+        <target xml:lang="id" state="translated">Arab-Hindi</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian" sil:dynamic="true">
         <source xml:lang="en">Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian</note>
-        <target xml:lang="id" state="needs-translation">Armenian</target>
+        <target xml:lang="id" state="translated">Armenia</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali" sil:dynamic="true">
         <source xml:lang="en">Bengali</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali</note>
-        <target xml:lang="id" state="needs-translation">Bengali</target>
+        <target xml:lang="id" state="translated">Benggala</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian" sil:dynamic="true">
         <source xml:lang="en">Cambodian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian</note>
-        <target xml:lang="id" state="needs-translation">Cambodian</target>
+        <target xml:lang="id" state="translated">Kamboja</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal" sil:dynamic="true">
         <source xml:lang="en">Cjk-Decimal</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal</note>
-        <target xml:lang="id" state="needs-translation">Cjk-Decimal</target>
+        <target xml:lang="id" state="translated">Cjk-Desimal</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal" sil:dynamic="true">
         <source xml:lang="en">Decimal</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal</note>
-        <target xml:lang="id" state="needs-translation">Decimal</target>
+        <target xml:lang="id" state="translated">Desimal</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari" sil:dynamic="true">
         <source xml:lang="en">Devanagari</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari</note>
-        <target xml:lang="id" state="needs-translation">Devanagari</target>
+        <target xml:lang="id" state="translated">Dewanagari</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian" sil:dynamic="true">
         <source xml:lang="en">Georgian</source>
@@ -509,92 +509,92 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati" sil:dynamic="true">
         <source xml:lang="en">Gujarati</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati</note>
-        <target xml:lang="id" state="needs-translation">Gujarati</target>
+        <target xml:lang="id" state="translated">Gujarat</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi" sil:dynamic="true">
         <source xml:lang="en">Gurmukhi</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi</note>
-        <target xml:lang="id" state="needs-translation">Gurmukhi</target>
+        <target xml:lang="id" state="translated">Gurmukhi</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew" sil:dynamic="true">
         <source xml:lang="en">Hebrew</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew</note>
-        <target xml:lang="id" state="needs-translation">Hebrew</target>
+        <target xml:lang="id" state="translated">Ibrani</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada" sil:dynamic="true">
         <source xml:lang="en">Kannada</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada</note>
-        <target xml:lang="id" state="needs-translation">Kannada</target>
+        <target xml:lang="id" state="translated">Kannada</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer" sil:dynamic="true">
         <source xml:lang="en">Khmer</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer</note>
-        <target xml:lang="id" state="needs-translation">Khmer</target>
+        <target xml:lang="id" state="translated">Khmer</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao" sil:dynamic="true">
         <source xml:lang="en">Lao</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao</note>
-        <target xml:lang="id" state="needs-translation">Lao</target>
+        <target xml:lang="id" state="translated">Laos</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian" sil:dynamic="true">
         <source xml:lang="en">Lower-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian</note>
-        <target xml:lang="id" state="needs-translation">Lower-Armenian</target>
+        <target xml:lang="id" state="translated">Armenia-Bawah</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam" sil:dynamic="true">
         <source xml:lang="en">Malayalam</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam</note>
-        <target xml:lang="id" state="needs-translation">Malayalam</target>
+        <target xml:lang="id" state="translated">Malayalam</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian" sil:dynamic="true">
         <source xml:lang="en">Mongolian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian</note>
-        <target xml:lang="id" state="needs-translation">Mongolian</target>
+        <target xml:lang="id" state="translated">Mongol</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar" sil:dynamic="true">
         <source xml:lang="en">Myanmar</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar</note>
-        <target xml:lang="id" state="needs-translation">Myanmar</target>
+        <target xml:lang="id" state="translated">Myanmar</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya" sil:dynamic="true">
         <source xml:lang="en">Oriya</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya</note>
-        <target xml:lang="id" state="needs-translation">Oriya</target>
+        <target xml:lang="id" state="translated">Oriya</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
         <source xml:lang="en">Page Numbering Style</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel</note>
-        <target xml:lang="id" state="needs-translation">Page Numbering Style</target>
+        <target xml:lang="id" state="translated">Gaya Penomoran Halaman</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian" sil:dynamic="true">
         <source xml:lang="en">Persian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian</note>
-        <target xml:lang="id" state="needs-translation">Persian</target>
+        <target xml:lang="id" state="translated">Persia</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil" sil:dynamic="true">
         <source xml:lang="en">Tamil</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil</note>
-        <target xml:lang="id" state="needs-translation">Tamil</target>
+        <target xml:lang="id" state="translated">Tamil</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu" sil:dynamic="true">
         <source xml:lang="en">Telugu</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu</note>
-        <target xml:lang="id" state="needs-translation">Telugu</target>
+        <target xml:lang="id" state="translated">Telugu</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai" sil:dynamic="true">
         <source xml:lang="en">Thai</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai</note>
-        <target xml:lang="id" state="needs-translation">Thai</target>
+        <target xml:lang="id" state="translated">Thailand</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan" sil:dynamic="true">
         <source xml:lang="en">Tibetan</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan</note>
-        <target xml:lang="id" state="needs-translation">Tibetan</target>
+        <target xml:lang="id" state="translated">Tibet</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian" sil:dynamic="true">
         <source xml:lang="en">Upper-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
-        <target xml:lang="id" state="needs-translation">Upper-Armenian</target>
+        <target xml:lang="id" state="translated">Armenia-Atas</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink" approved="yes">
         <source xml:lang="en">Special Script Settings</source>
@@ -664,7 +664,7 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
         <source xml:lang="en">Sign Language   (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
-        <target xml:lang="id" state="needs-translation">Sign Language   (Optional)</target>
+        <target xml:lang="id" state="translated">Bahasa Isyarat (Pilihan)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
@@ -675,7 +675,7 @@
         <source xml:lang="en">Bloom Enterprise Project</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomEnterpriseProject</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="id" state="needs-translation">Bloom Enterprise Project</target>
+        <target xml:lang="id" state="translated">Proyek Bloom Enterprise</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country" approved="yes">
         <source xml:lang="en">Country</source>
@@ -744,7 +744,7 @@
         <source xml:lang="en">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerification.Part2</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="id" state="needs-translation">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</target>
+        <target xml:lang="id" state="translated">Ketika Anda sudah membuat buku kerangka, Anda dapat mengunggahnya ke Bloom Library dari tab Terbitkan.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption" approved="yes">
         <source xml:lang="en">Source Collection</source>
@@ -780,7 +780,12 @@
       <trans-unit id="CollectionTab.BookMenu.MakeBloomPack">
         <source xml:lang="en">Make Bloom Pack...</source>
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
-        <target xml:lang="id" state="needs-translation">Make Bloom Pack...</target>
+        <target xml:lang="id" state="translated">Membuat Bloom Pack...</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
+        <source xml:lang="en">Save as single file (.bloom)...</source>
+        <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
+        <target xml:lang="id" state="translated">Simpan sebagai file tunggal (.bloom)...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip" approved="yes">
         <source xml:lang="en">Update Book</source>
@@ -870,7 +875,7 @@
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
-        <target xml:lang="id" state="needs-translation">Show translations which have not been approved yet</target>
+        <target xml:lang="id" state="translated">Tampilkan terjemahan yang belum disetujui</target>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
@@ -914,13 +919,13 @@
       <trans-unit id="CollectionTab.Progress">
         <source xml:lang="en">({0}% complete)</source>
         <note>ID: CollectionTab.Progress</note>
-        <target xml:lang="id" state="needs-translation">({0}% complete)</target>
+        <target xml:lang="id" state="translated">({0}% Lengkap)</target>
       </trans-unit>
       <trans-unit id="CollectionTab.RestartToUpdate">
         <source xml:lang="en">Restart Bloom to Update</source>
         <note>ID: CollectionTab.RestartToUpdate</note>
         <note>Restart the Bloom program, not Windows</note>
-        <target xml:lang="id" state="needs-translation">Restart Bloom to Update</target>
+        <target xml:lang="id" state="translated">Jalankan ulang Bloom untuk memperbarui</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample Shells</source>
@@ -962,13 +967,13 @@
         <source xml:lang="en">Help us translate Bloom (web)</source>
         <note>ID: CollectionTab.UILanguageMenu.HelpTranslate</note>
         <note>The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.</note>
-        <target xml:lang="id" state="needs-translation">Help us translate Bloom (web)</target>
+        <target xml:lang="id" state="translated">Bantu kami menterjemahkan Bloom (situs web)</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip">
         <source xml:lang="en">{0}% translated</source>
         <note>ID: CollectionTab.UILanguageMenu.ItemTooltip</note>
         <note>Shown when hovering over an item in the UI Language menu. The {0} marker is filled in by a number between 1 and 100.</note>
-        <target xml:lang="id" state="needs-translation">{0}% translated</target>
+        <target xml:lang="id" state="translated">{0}% sudah diterjemahkan</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UnableToCheckForUpdate" approved="yes">
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
@@ -1018,27 +1023,27 @@
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
         <note>Used in various places where something can be opened or linked to for advanced features. One use is an expandable area in Sign Language toolbox.</note>
-        <target xml:lang="id" state="needs-translation">Advanced</target>
+        <target xml:lang="id" state="translated">Lanjutan</target>
       </trans-unit>
       <trans-unit id="Common.Colors.Black">
         <source xml:lang="en">Black</source>
         <note>ID: Common.Colors.Black</note>
-        <target xml:lang="id" state="needs-translation">Black</target>
+        <target xml:lang="id" state="translated">Hitam</target>
       </trans-unit>
       <trans-unit id="Common.Colors.Crimson">
         <source xml:lang="en">Crimson</source>
         <note>ID: Common.Colors.Crimson</note>
-        <target xml:lang="id" state="needs-translation">Crimson</target>
+        <target xml:lang="id" state="translated">Merah tua</target>
       </trans-unit>
       <trans-unit id="Common.Colors.Yellow">
         <source xml:lang="en">Yellow</source>
         <note>ID: Common.Colors.Yellow</note>
-        <target xml:lang="id" state="needs-translation">Yellow</target>
+        <target xml:lang="id" state="translated">Kuning</target>
       </trans-unit>
       <trans-unit id="Common.Colors.White">
         <source xml:lang="en">White</source>
         <note>ID: Common.Colors.White</note>
-        <target xml:lang="id" state="needs-translation">White</target>
+        <target xml:lang="id" state="translated">Putih</target>
       </trans-unit>
       <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
@@ -1060,7 +1065,7 @@
         <source xml:lang="en">Error</source>
         <note>ID: Common.Error</note>
         <note>A heading shown above some messages.</note>
-        <target xml:lang="id" state="needs-translation">Error</target>
+        <target xml:lang="id" state="translated">Kesalahan</target>
       </trans-unit>
       <trans-unit id="Common.Finish" approved="yes">
         <source xml:lang="en">&amp;Finish</source>
@@ -1072,25 +1077,25 @@
         <source xml:lang="en">Info</source>
         <note>ID: Common.Info</note>
         <note>Used as a label for additional information, like duration etc in the Sign Language Tool</note>
-        <target xml:lang="id" state="needs-translation">Info</target>
+        <target xml:lang="id" state="translated">Informasi</target>
       </trans-unit>
       <trans-unit id="Common.Warning">
         <source xml:lang="en">Info</source>
         <note>ID: Common.Warning</note>
         <note>A heading shown above some messages.</note>
-        <target xml:lang="id" state="needs-translation">Info</target>
+        <target xml:lang="id" state="translated">Informasi</target>
       </trans-unit>
       <trans-unit id="Common.Note">
         <source xml:lang="en">Note</source>
         <note>ID: Common.Note</note>
         <note>A heading shown above some messages.</note>
-        <target xml:lang="id" state="needs-translation">Note</target>
+        <target xml:lang="id" state="translated">Catatan</target>
       </trans-unit>
       <trans-unit id="Common.Done">
         <source xml:lang="en">Done</source>
         <note>ID: Common.Done</note>
         <note>Shown in a list of messages when Bloom has completed a task.</note>
-        <target xml:lang="id" state="needs-translation">Done</target>
+        <target xml:lang="id" state="translated">Selesai</target>
       </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
@@ -1107,7 +1112,7 @@
         <note>ID: Common.LearnMore</note>
         <note>A link or button that leads to something that tells the user more about what they just read.</note>
         <note>This is the same as Settings.Enterprise.LearnMore</note>
-        <target xml:lang="id" state="needs-translation">Learn More</target>
+        <target xml:lang="id" state="translated">Pelajari Lebih Lanjut</target>
       </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Loading...</source>
@@ -1145,34 +1150,34 @@
       <trans-unit id="Common.Preview">
         <source xml:lang="en">Preview</source>
         <note>ID: Common.Preview</note>
-        <target xml:lang="id" state="needs-translation">Preview</target>
+        <target xml:lang="id" state="translated">Pratinjau</target>
       </trans-unit>
       <trans-unit id="Common.Progress">
         <source xml:lang="en">Progress</source>
         <note>ID: Common.Progress</note>
-        <target xml:lang="id" state="needs-translation">Progress</target>
+        <target xml:lang="id" state="translated">Kemajuan</target>
       </trans-unit>
       <trans-unit id="Common.Refresh">
         <source xml:lang="en">Refresh</source>
         <note>ID: Common.Refresh</note>
         <note>Sense of refreshing a web page.</note>
-        <target xml:lang="id" state="needs-translation">Refresh</target>
+        <target xml:lang="id" state="translated">Menyegarkan</target>
       </trans-unit>
       <trans-unit id="Common.Replace">
         <source xml:lang="en">Replace</source>
         <note>ID: Common.Replace</note>
-        <target xml:lang="id" state="needs-translation">Replace</target>
+        <target xml:lang="id" state="translated">Menggantikan</target>
       </trans-unit>
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
         <note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
-        <target xml:lang="id" state="needs-translation">See {0}.</target>
+        <target xml:lang="id" state="translated">Lihat {0}.</target>
       </trans-unit>
       <trans-unit id="Common.Settings">
         <source xml:lang="en">Settings</source>
         <note>ID: Common.Settings</note>
-        <target xml:lang="id" state="needs-translation">Settings</target>
+        <target xml:lang="id" state="translated">Pengaturan</target>
       </trans-unit>
       <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
@@ -1237,7 +1242,7 @@
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutConvertBookCheckbox" sil:dynamic="true">
         <source xml:lang="en">Change all similar pages in this book to this layout.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutConvertBookCheckbox</note>
-        <target xml:lang="id" state="needs-translation">Change all similar pages in this book to this layout.</target>
+        <target xml:lang="id" state="translated">Ubah semua halaman serupa di buku ini ke tata letak ini.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose Different Layout...</source>
@@ -1253,14 +1258,14 @@
       <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true">
         <source xml:lang="en">This kind of page will be included only in digital book outputs, not in PDF.</source>
         <note>ID: EditTab.AddPageDialog.DigitalPage</note>
-        <target xml:lang="id" state="needs-translation">This kind of page will be included only in digital book outputs, not in PDF.</target>
+        <target xml:lang="id" state="translated">Halaman semacam ini hanya akan disertakan dalam output buku digital, bukan dalam PDF.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
         <source xml:lang="en">Could not find {0}</source>
         <note>ID: EditTab.AddPageDialog.NoTemplate</note>
         <note>Seen when the book's main template page file is missing.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): (no template file found)</note>
-        <target xml:lang="id" state="needs-translation">Could not find {0}</target>
+        <target xml:lang="id" state="translated">Tidak dapat menemukan {0}</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Page...</source>
@@ -1272,7 +1277,7 @@
         <source xml:lang="en">Add Text Box To Image</source>
         <note>ID: EditTab.AddTextBoxToImage</note>
         <note>Obsolete for Bloom 4.7 and later</note>
-        <target xml:lang="id" state="needs-translation">Add Text Box To Image</target>
+        <target xml:lang="id" state="translated">Tambahkan Kotak Teks Ke Gambar</target>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
@@ -1340,7 +1345,7 @@
       <trans-unit id="EditTab.ContentLanguagesDropdown_ToolTip_">
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
         <note>ID: EditTab.ContentLanguagesDropdown_ToolTip_</note>
-        <target xml:lang="id" state="needs-translation">Choose language to make this a bilingual or trilingual book</target>
+        <target xml:lang="id" state="translated">Pilih bahasa untuk membuat ini menjadi buku dwibahasa atau tribahasa</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyButton" approved="yes">
         <source xml:lang="en">Copy</source>
@@ -1366,7 +1371,7 @@
       <trans-unit id="EditTab.CopyPage">
         <source xml:lang="en">Copy Page</source>
         <note>ID: EditTab.CopyPage</note>
-        <target xml:lang="id" state="needs-translation">Copy Page</target>
+        <target xml:lang="id" state="translated">Salin Halaman</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Layout</source>
@@ -1393,7 +1398,7 @@
       <trans-unit id="EditTab.CustomPage.Video" sil:dynamic="true">
         <source xml:lang="en">Video</source>
         <note>ID: EditTab.CustomPage.Video</note>
-        <target xml:lang="id" state="needs-translation">Video</target>
+        <target xml:lang="id" state="translated">Video</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Box</source>
@@ -1432,31 +1437,31 @@
         <source xml:lang="en">Delete Text Box From Image</source>
         <note>ID: EditTab.DeleteTextBoxFromImage</note>
         <note>Obsolete for Bloom 4.7 and later</note>
-        <target xml:lang="id" state="needs-translation">Delete Text Box From Image</target>
+        <target xml:lang="id" state="translated">Hapus Kotak Teks dari Gambar</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true">
         <source xml:lang="en">Bold</source>
         <note>ID: EditTab.DirectFormatting.Bold</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="id" state="needs-translation">Bold</target>
+        <target xml:lang="id" state="translated">Tebal</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Italic" sil:dynamic="true">
         <source xml:lang="en">Italic</source>
         <note>ID: EditTab.DirectFormatting.Italic</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="id" state="needs-translation">Italic</target>
+        <target xml:lang="id" state="translated">Miring</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Superscript" sil:dynamic="true">
         <source xml:lang="en">Superscript</source>
         <note>ID: EditTab.DirectFormatting.Superscript</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="id" state="needs-translation">Superscript</target>
+        <target xml:lang="id" state="translated">Tulisan di atas</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Underline" sil:dynamic="true">
         <source xml:lang="en">Underline</source>
         <note>ID: EditTab.DirectFormatting.Underline</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="id" state="needs-translation">Underline</target>
+        <target xml:lang="id" state="translated">Garis bawah</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton" approved="yes">
         <source xml:lang="en">Duplicate Page</source>
@@ -1505,7 +1510,7 @@
         <source xml:lang="en">Bloom Enterprise Settings</source>
         <note>ID: EditTab.EnterpriseSettingsButton</note>
         <note>Text of button that appears when Bloom Enterprise is needed for access to a feature.</note>
-        <target xml:lang="id" state="needs-translation">Bloom Enterprise Settings</target>
+        <target xml:lang="id" state="translated">Pengaturan Bloom Enterprise</target>
       </trans-unit>
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
@@ -1516,7 +1521,7 @@
         <source xml:lang="en">Video files</source>
         <note>ID: EditTab.FileDialogVideoFiles</note>
         <note>Used to identify the kind of files wanted in a file Open dialog</note>
-        <target xml:lang="id" state="needs-translation">Video files</target>
+        <target xml:lang="id" state="translated">Berkas video</target>
       </trans-unit>
       <trans-unit id="EditTab.FontMissing" approved="yes">
         <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
@@ -1526,7 +1531,7 @@
       <trans-unit id="EditTab.FormatDialog.Alignment" sil:dynamic="true">
         <source xml:lang="en">Alignment</source>
         <note>ID: EditTab.FormatDialog.Alignment</note>
-        <target xml:lang="id" state="needs-translation">Alignment</target>
+        <target xml:lang="id" state="translated">Rata</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.AlreadyExists" sil:dynamic="true" approved="yes">
         <source xml:lang="en">That style already exists. Please choose another name.</source>
@@ -1575,70 +1580,70 @@
         <source xml:lang="en">Credits Page</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Credits-Page-style</note>
         <note>Used on the Credits page of most Front/Back Matter packs</note>
-        <target xml:lang="id" state="needs-translation">Credits Page</target>
+        <target xml:lang="id" state="translated">Halaman Pengakuan</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.ImageDescriptionEdit-style" sil:dynamic="true">
         <source xml:lang="en">Image Description Edit</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.ImageDescriptionEdit-style</note>
         <note>Style appears when editing image descriptions. The trailing 'edit' indicates that it is just used for editing the description, not for publishing it.</note>
-        <target xml:lang="id" state="needs-translation">Image Description Edit</target>
+        <target xml:lang="id" state="translated">Sunting Deskripsi Gambar</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Equation-style" sil:dynamic="true">
         <source xml:lang="en">Equation</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Equation-style</note>
         <note>Used on the Arithmetic template</note>
-        <target xml:lang="id" state="needs-translation">Equation</target>
+        <target xml:lang="id" state="translated">Persamaan</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading1-style" sil:dynamic="true">
         <source xml:lang="en">Heading 1</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Heading1-style</note>
         <note>Used on the Arithmetic template</note>
-        <target xml:lang="id" state="needs-translation">Heading 1</target>
+        <target xml:lang="id" state="translated">Judul 1</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Heading2-style" sil:dynamic="true">
         <source xml:lang="en">Heading 2</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Heading2-style</note>
         <note>A default style</note>
-        <target xml:lang="id" state="needs-translation">Heading 2</target>
+        <target xml:lang="id" state="translated">Judul 2</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.normal-style" sil:dynamic="true">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.normal-style</note>
         <note>Appears in most templates</note>
-        <target xml:lang="id" state="needs-translation">Normal</target>
+        <target xml:lang="id" state="translated">Normal</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.quiz-style" sil:dynamic="true">
         <source xml:lang="en">Quiz</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.quiz-style</note>
         <note>Special template</note>
-        <target xml:lang="id" state="needs-translation">Quiz</target>
+        <target xml:lang="id" state="translated">Kuis</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizAnswer-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Answer</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizAnswer-style</note>
-        <target xml:lang="id" state="needs-translation">Quiz Answer</target>
+        <target xml:lang="id" state="translated">Jawaban Kuis</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizHeader-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Header</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizHeader-style</note>
-        <target xml:lang="id" state="needs-translation">Quiz Header</target>
+        <target xml:lang="id" state="translated">Judul Kuis</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizQuestion-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Question</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizQuestion-style</note>
-        <target xml:lang="id" state="needs-translation">Quiz Question</target>
+        <target xml:lang="id" state="translated">Pertanyaan Kuis</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style" sil:dynamic="true">
         <source xml:lang="en">Title On Cover</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Cover-style</note>
         <note>Used on the Front Cover page of most Front/Back Matter packs</note>
-        <target xml:lang="id" state="needs-translation">Title On Cover</target>
+        <target xml:lang="id" state="translated">Judul Sampul</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style" sil:dynamic="true">
         <source xml:lang="en">Title On Title Page</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style</note>
         <note>Used on the Title Page of most Front/Back Matter packs</note>
-        <target xml:lang="id" state="needs-translation">Title On Title Page</target>
+        <target xml:lang="id" state="translated">Judul pada Halaman Judul</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Don't see what you need?</source>
@@ -1678,7 +1683,7 @@
       <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true">
         <source xml:lang="en">Indent</source>
         <note>ID: EditTab.FormatDialog.Indent</note>
-        <target xml:lang="id" state="needs-translation">Indent</target>
+        <target xml:lang="id" state="translated">Indentasi</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.LineSpacingToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the spacing between lines of text</source>
@@ -1693,12 +1698,12 @@
       <trans-unit id="EditTab.FormatDialog.ParagraphSpacing" sil:dynamic="true">
         <source xml:lang="en">Space Between Paragraphs</source>
         <note>ID: EditTab.FormatDialog.ParagraphSpacing</note>
-        <target xml:lang="id" state="needs-translation">Space Between Paragraphs</target>
+        <target xml:lang="id" state="translated">Spasi antara paragraf</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.ParagraphTab" sil:dynamic="true">
         <source xml:lang="en">Paragraph</source>
         <note>ID: EditTab.FormatDialog.ParagraphTab</note>
-        <target xml:lang="id" state="needs-translation">Paragraph</target>
+        <target xml:lang="id" state="translated">Paragraf</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.PleaseUseAlpha" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Please use only alphabetical characters. Numbers at the end are ok, as in "part2".</source>
@@ -1760,7 +1765,7 @@
         <note>ID: EditTab.FrontMatter.BookSingleCredit</note>
         <note>Used on the Title page of a book when "Paste Image Credits" is clicked and all the images in the book are by one illustrator. Put {0} in the translation where the image credits should go. For example in English, 'Images by {0}.' comes out like 'Images by John Doe, Copyright John Doe 2017, CC-BY-NC.'</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="id" state="needs-translation">Images by {0}.</target>
+        <target xml:lang="id" state="translated">Gambar oleh {0}.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book title in {lang}</source>
@@ -1777,7 +1782,22 @@
         <source xml:lang="en">Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.</source>
         <note>ID: EditTab.FrontMatter.CreditTranslator</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
-        <target xml:lang="id" state="needs-translation">Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.</target>
+        <target xml:lang="id" state="translated">Ucapan terima kasih untuk versi ini, dalam {lang}. Misalnya, berikan penghargaan kepada penerjemah untuk versi ini.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitleCaption" sil:dynamic="true">
+        <source xml:lang="en">Edit Original Title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitleCaption</note>
+        <target xml:lang="id" state="needs-translation">Edit Original Title</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitleLabel" sil:dynamic="true">
+        <source xml:lang="en">Original Title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitleLabel</note>
+        <target xml:lang="id" state="needs-translation">Original Title</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.EditOriginalTitlePlaceholder" sil:dynamic="true">
+        <source xml:lang="en">click to edit original title</source>
+        <note>ID: EditTab.FrontMatter.EditOriginalTitlePlaceholder</note>
+        <target xml:lang="id" state="needs-translation">click to edit original title</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
@@ -1793,7 +1813,7 @@
         <source xml:lang="en"> {0} (page {1})</source>
         <note>ID: EditTab.FrontMatter.MissingCredit</note>
         <note>The {0} is replaced by the filename of an image.  The {1} is replaced by a reference to the first page in the book where that image occurs.</note>
-        <target xml:lang="id" state="needs-translation"> {0} (page {1})</target>
+        <target xml:lang="id" state="translated"> {0} (page {1})</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</source>
@@ -1804,17 +1824,17 @@
         <source xml:lang="en">, </source>
         <note>ID: EditTab.FrontMatter.ListSeparator</note>
         <note>This is used to separate items in a list, such as 'Province, District, Country' on the Title Page. For English, that means comma followed by a space. Don't forget the space if your script uses them.</note>
-        <target xml:lang="id" state="needs-translation">, </target>
+        <target xml:lang="id" state="translated">, </target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.MarkTheBookEnd" sil:dynamic="true">
         <source xml:lang="en">Something to tell the reader/viewer that this is the end of the book.</source>
         <note>ID: EditTab.FrontMatter.MarkTheBookEnd</note>
-        <target xml:lang="id" state="needs-translation">Something to tell the reader/viewer that this is the end of the book.</target>
+        <target xml:lang="id" state="translated">Sesuatu untuk memberitahu pembaca/penonton bahwa ini adalah akhir dari buku ini.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.MarkTheVideoEnd" sil:dynamic="true">
         <source xml:lang="en">Something to tell the reader/viewer that this is the end.</source>
         <note>ID: EditTab.FrontMatter.MarkTheVideoEnd</note>
-        <target xml:lang="id" state="needs-translation">Something to tell the reader/viewer that this is the end.</target>
+        <target xml:lang="id" state="translated">Sesuatu untuk memberitahu pembaca/penonton bahwa ini adalah akhir.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.MultipleImageCredit">
         <source xml:lang="en">Images on pages {0} by {1}.</source>
@@ -1822,7 +1842,7 @@
         <note>Used on the Title page of a book when "Paste Image Credits" is clicked. Put {0} in the translation where the list of page numbers should go and put {1} in the translation where the image credits should go. For example in English, 'Images on pages {0} by {1}.' comes out like 'Images on pages 1, 2, and 4 by John Doe, Copyright John Doe 2017, CC-BY-NC.'</note>
         <note xml:lang="en">OLD TEXT (early 4.1, remove quotation marks): "Images on pages {0} by {1}."</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="id" state="needs-translation">Images on pages {0} by {1}.</target>
+        <target xml:lang="id" state="translated">Gambar pada halaman {0} oleh {1}.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.NameofTranslatorPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Name of Translator, in {lang}</source>
@@ -1860,17 +1880,17 @@
       <trans-unit id="EditTab.FrontMatter.PasteImageCreditsLink" sil:dynamic="true">
         <source xml:lang="en">Paste Image Credits</source>
         <note>ID: EditTab.FrontMatter.PasteImageCreditsLink</note>
-        <target xml:lang="id" state="needs-translation">Paste Image Credits</target>
+        <target xml:lang="id" state="translated">Tempel Penghargaan Gambar</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.PasteMissingCredits">
         <source xml:lang="en">Missing credits:</source>
         <note>ID: EditTab.FrontMatter.PasteMissingCredits</note>
-        <target xml:lang="id" state="needs-translation">Missing credits:</target>
+        <target xml:lang="id" state="translated">Kesalahan penghargaan:</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true">
         <source xml:lang="en">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</source>
         <note>ID: EditTab.FrontMatter.SimpleLineDrawings</note>
-        <target xml:lang="id" state="needs-translation">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</target>
+        <target xml:lang="id" state="translated">Gambar garis sederhana terlihat terbaik. Alih-alih menggunakan halaman ini, Anda juga dapat membuat file thumbnail.png Anda sendiri dan mengaturnya menjadi Read-only sehingga Bloom tidak menulis di atasnya.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.SingleImageCredit">
         <source xml:lang="en">Image on page {0} by {1}.</source>
@@ -1878,7 +1898,7 @@
         <note>Used on the Title page of a book when "Paste Image Credits" is clicked. Put {0} in the translation where the page number of an image should go and put {1} in the translation where the image credits should go. For example in English, 'Image on page {0} by {1}.' comes out like 'Image on page 3 by John Doe, Copyright John Doe 2017, CC-BY-NC.'</note>
         <note xml:lang="en">OLD TEXT (early 4.1, remove quotation marks): "Image on page {0} by {1}."</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="id" state="needs-translation">Image on page {0} by {1}.</target>
+        <target xml:lang="id" state="translated">Gambar pada halaman {0} oleh {1}.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to choose topic</source>
@@ -2233,13 +2253,13 @@
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
-        <target xml:lang="id" state="needs-translation">None</target>
+        <target xml:lang="id" state="translated">Tidak ada</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style" sil:dynamic="true">
         <source xml:lang="en">Style</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
         <note>Refers to the STYLE of bubble used by the callout</note>
-        <target xml:lang="id" state="needs-translation">Style</target>
+        <target xml:lang="id" state="translated">Gaya</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Caption" sil:dynamic="true">
         <source xml:lang="en">Caption</source>
@@ -2267,14 +2287,14 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style.JustText</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style does not have any bubble at all.</note>
-        <target xml:lang="id" state="needs-translation">Just Text</target>
+        <target xml:lang="id" state="translated">Hanya Teks</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Speech" sil:dynamic="true">
         <source xml:lang="en">Speech</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Speech</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents standard speech/dialogue.</note>
-        <target xml:lang="id" state="needs-translation">Speech</target>
+        <target xml:lang="id" state="translated">Ucapan</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Thought" sil:dynamic="true">
         <source xml:lang="en">Thought</source>
@@ -2286,7 +2306,12 @@
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextColor" sil:dynamic="true">
         <source xml:lang="en">Text Color</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
-        <target xml:lang="id" state="needs-translation">Text Color</target>
+        <target xml:lang="id" state="translated">Warna Teks</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.TextBlock" sil:dynamic="true">
+        <source xml:lang="en">Text Block</source>
+        <note>ID: EditTab.Toolbox.ComicTool.TextBlock</note>
+        <target xml:lang="id" state="translated">Blok Teks</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
@@ -2296,86 +2321,86 @@
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.BlueYellow" sil:dynamic="true">
         <source xml:lang="en">Blue-Yellow</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.BlueYellow</note>
-        <target xml:lang="id" state="needs-translation">Blue-Yellow</target>
+        <target xml:lang="id" state="translated">Biru-Kuning</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Cataracts" sil:dynamic="true">
         <source xml:lang="en">Cataracts</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.Cataracts</note>
-        <target xml:lang="id" state="needs-translation">Cataracts</target>
+        <target xml:lang="id" state="translated">Katarak</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness" sil:dynamic="true">
         <source xml:lang="en">Color Blindness</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness</note>
-        <target xml:lang="id" state="needs-translation">Color Blindness</target>
+        <target xml:lang="id" state="translated">Buta Warna</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Complete" sil:dynamic="true">
         <source xml:lang="en">Complete</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.Complete</note>
-        <target xml:lang="id" state="needs-translation">Complete</target>
+        <target xml:lang="id" state="translated">Lengkap</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.Overview" sil:dynamic="true">
         <source xml:lang="en">You can use these check boxes to have Bloom simulate how your images would look with various visual impairments.</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.Overview</note>
-        <target xml:lang="id" state="needs-translation">You can use these check boxes to have Bloom simulate how your images would look with various visual impairments.</target>
+        <target xml:lang="id" state="translated">Anda dapat menggunakan kotak centang ini untuk membuat Bloom mensimulasikan bagaimana gambar Anda akan terlihat dengan berbagai gangguan penglihatan.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer.RedGreen" sil:dynamic="true">
         <source xml:lang="en">Red-Green</source>
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.RedGreen</note>
-        <target xml:lang="id" state="needs-translation">Red-Green</target>
+        <target xml:lang="id" state="translated">Merah-Hijau</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Intro" sil:dynamic="true">
         <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
         <note>ID: EditTab.Toolbox.Motion.Intro</note>
-        <target xml:lang="id" state="needs-translation">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</target>
+        <target xml:lang="id" state="translated">Buku Bergerak adalah buku Bloom Reader dengan dua mode. Biasanya, Buku Berbicara. Ketika Anda memutar telepon ke samping, gambar memenuhi layar. Pans dan zoom dari persegi panjang "1" ke persegi panjang "2".</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Preview" sil:dynamic="true">
         <source xml:lang="en">Preview</source>
         <note>ID: EditTab.Toolbox.Motion.Preview</note>
-        <target xml:lang="id" state="needs-translation">Preview</target>
+        <target xml:lang="id" state="translated">Pratinjau</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Preview.Motion" sil:dynamic="true">
         <source xml:lang="en">Motion</source>
         <note>ID: EditTab.Toolbox.Motion.Preview.Motion</note>
         <note>The label of a checkbox indicating whether motion is included in Preview (currently it always is, so the box is always checked)</note>
-        <target xml:lang="id" state="needs-translation">Motion</target>
+        <target xml:lang="id" state="translated">Gerak</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Preview.Music" sil:dynamic="true">
         <source xml:lang="en">Music</source>
         <note>ID: EditTab.Toolbox.Motion.Preview.Music</note>
         <note>The label of a checkbox indicating whether background music is played during Preview.</note>
-        <target xml:lang="id" state="needs-translation">Music</target>
+        <target xml:lang="id" state="translated">Musik</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Preview.Voice" sil:dynamic="true">
         <source xml:lang="en">Voice</source>
         <note>ID: EditTab.Toolbox.Motion.Preview.Voice</note>
         <note>The label of a checkbox controlling whether voice narration plays during Preview.</note>
-        <target xml:lang="id" state="needs-translation">Voice</target>
+        <target xml:lang="id" state="translated">Suara</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.ThisPage" sil:dynamic="true">
         <source xml:lang="en">Enable motion on this page</source>
         <note>ID: EditTab.Toolbox.Motion.ThisPage</note>
-        <target xml:lang="id" state="needs-translation">Enable motion on this page</target>
+        <target xml:lang="id" state="translated">Mengaktifkan gerak pada halaman ini</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.MotionTool" sil:dynamic="true">
         <source xml:lang="en">Motion Tool</source>
         <note>ID: EditTab.Toolbox.MotionTool</note>
         <note>Used as the overall title of the toolbox panel</note>
-        <target xml:lang="id" state="needs-translation">Motion Tool</target>
+        <target xml:lang="id" state="translated">Perkakas Gerak</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
         <note>ID: EditTab.Toolbox.Music.Choose</note>
-        <target xml:lang="id" state="needs-translation">Choose...</target>
+        <target xml:lang="id" state="translated">Pilih...</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.ContinueMusic" sil:dynamic="true">
         <source xml:lang="en">Continue music from previous page</source>
         <note>ID: EditTab.Toolbox.Music.ContinueMusic</note>
-        <target xml:lang="id" state="needs-translation">Continue music from previous page</target>
+        <target xml:lang="id" state="translated">Melanjutkan musik dari halaman sebelumnya</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.FileDialogSoundFiles">
         <source xml:lang="en">Sound files</source>
         <note>ID: EditTab.Toolbox.Music.FileDialogSoundFiles</note>
-        <target xml:lang="id" state="needs-translation">Sound files</target>
+        <target xml:lang="id" state="translated">Berkas suara</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.InvalidMp3File">
         <source xml:lang="en">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</source>
@@ -2387,27 +2412,27 @@
         <source xml:lang="en">Choose Another Sound File</source>
         <note>ID: EditTab.Toolbox.Music.InvalidMp3FileTitle</note>
         <note>Title for a message box</note>
-        <target xml:lang="id" state="needs-translation">Choose Another Sound File</target>
+        <target xml:lang="id" state="translated">Pilih Berkas Suara Lain</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Overview" sil:dynamic="true">
         <source xml:lang="en">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</source>
         <note>ID: EditTab.Toolbox.Music.Overview</note>
-        <target xml:lang="id" state="needs-translation">You can set up background music to play with this page when the book is viewed in the Bloom Reader app.</target>
+        <target xml:lang="id" state="translated">Anda dapat mengatur musik latar untuk diputar dengan halaman ini saat buku dilihat di aplikasi Bloom Reader.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.NewMusic" sil:dynamic="true">
         <source xml:lang="en">Start new music</source>
         <note>ID: EditTab.Toolbox.Music.NewMusic</note>
-        <target xml:lang="id" state="needs-translation">Start new music</target>
+        <target xml:lang="id" state="translated">Mulai musik baru</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.NoMusic" sil:dynamic="true">
         <source xml:lang="en">No Music</source>
         <note>ID: EditTab.Toolbox.Music.NoMusic</note>
-        <target xml:lang="id" state="needs-translation">No Music</target>
+        <target xml:lang="id" state="translated">Tidak ada musik</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.MusicTool" sil:dynamic="true">
         <source xml:lang="en">Music Tool</source>
         <note>ID: EditTab.Toolbox.MusicTool</note>
-        <target xml:lang="id" state="needs-translation">Music Tool</target>
+        <target xml:lang="id" state="translated">Perkakas Musik</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -2483,17 +2508,17 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortAlphabetically" sil:dynamic="true">
         <source xml:lang="en">Sort alphabetically</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SortAlphabetically</note>
-        <target xml:lang="id" state="needs-translation">Sort alphabetically</target>
+        <target xml:lang="id" state="translated">Urutkan sesuai abjad</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortByFrequency" sil:dynamic="true">
         <source xml:lang="en">Sort by frequency</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SortByFrequency</note>
-        <target xml:lang="id" state="needs-translation">Sort by frequency</target>
+        <target xml:lang="id" state="translated">Urutkan berdasarkan frekuensi</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortByWordLength" sil:dynamic="true">
         <source xml:lang="en">Sort by word length</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SortByWordLength</note>
-        <target xml:lang="id" state="needs-translation">Sort by word length</target>
+        <target xml:lang="id" state="translated">Urutkan berdasarkan panjang kata</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stage</source>
@@ -2508,12 +2533,12 @@
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
         <source xml:lang="en">Image Description Tool</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool</note>
-        <target xml:lang="id" state="needs-translation">Image Description Tool</target>
+        <target xml:lang="id" state="translated">Perkakas Deskripsi gambar</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.MoreInformation" sil:dynamic="true">
         <source xml:lang="en">For more information:</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.MoreInformation</note>
-        <target xml:lang="id" state="needs-translation">For more information:</target>
+        <target xml:lang="id" state="translated">Untuk informasi lebih lanjut:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.KeepInMind" sil:dynamic="true">
         <source xml:lang="en">Keep these things in mind:</source>
@@ -2564,7 +2589,7 @@
         <source xml:lang="en">Bloom training video</source>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.BloomTrainingVideo</note>
         <note>Obsolete for Bloom 4.5 and later</note>
-        <target xml:lang="id" state="needs-translation">Bloom training video</target>
+        <target xml:lang="id" state="translated">Video Pelatihan Bloom</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.CheckDescription" sil:dynamic="true">
         <source xml:lang="en">Check your image description against each of these reminders:</source>
@@ -2913,6 +2938,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
         <source xml:lang="en">Import Recording</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
         <target xml:lang="id" state="needs-translation">Import Recording</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true">
@@ -2937,6 +2963,11 @@
         <note>Please make it match EditTab.Toolbox.TalkingBookTool.LookAtSentence if possible, but without the number</note>
         <target xml:lang="id" state="translated">Lihat kalimat yang disorot</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneProblem" sil:dynamic="true">
+        <source xml:lang="en">Bloom is having problems connecting to your microphone. Please restart your computer and try again.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneProblem</note>
+        <target xml:lang="id" state="needs-translation">Bloom is having problems connecting to your microphone. Please restart your computer and try again.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true" approved="yes">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
@@ -2953,18 +2984,19 @@
         <source xml:lang="en">Record by sentences</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordBySentences</note>
         <note>Deprecated in Bloom Version 4.5</note>
-        <target xml:lang="id" state="needs-translation">Record by sentences</target>
+        <target xml:lang="id" state="translated">Rekam berdasarkan kalimat</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordByTextBox" sil:dynamic="true">
         <source xml:lang="en">Record by whole text box, then let Bloom split it into sentences later.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordByTextBox</note>
-        <target xml:lang="id" state="needs-translation">Record by whole text box, then let Bloom split it into sentences later.</target>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
+        <target xml:lang="id" state="translated">Rekam dengan seluruh kotak teks, lalu biarkan Bloom membaginya menjadi kalimat nanti.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings" sil:dynamic="true">
         <source xml:lang="en">Please clear all existing recordings on this page before changing modes.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
         <note>Shown if you open TalkingBookTool, make a recording, and then attempt to toggle the "Record by Sentences" input (without first clearing the audio recordings you are about to lose)</note>
-        <target xml:lang="id" state="needs-translation">Please clear all existing recordings on this page before changing modes.</target>
+        <target xml:lang="id" state="translated">Hapus semua rekaman yang ada di halaman ini sebelum mengubah mode.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true">
         <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
@@ -2972,13 +3004,19 @@
         <note>Shown if you open TalkingBookTool, enable "Record the whole text box...", make a recording, and then attempt to uncheck the "Record the whole text box..." input (without first clearing the audio recordings you are about to lose)</note>
         <note>For "split", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
         <note>For "clear", please use same terminology as in ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
-        <target xml:lang="id" state="needs-translation">Please split or clear the existing recording in this text box before changing modes.</target>
+        <target xml:lang="id" state="translated">Pisahkan atau hapus rekaman yang ada di kotak teks ini sebelum mengubah mode.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true">
         <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter</note>
         <note>Shown if you open TalkingBookTool and then attempt to toggle the "Record by Sentences" input on an XMatter page</note>
-        <target xml:lang="id" state="needs-translation">Sorry, front and back-matter pages must be recorded by sentences.</target>
+        <target xml:lang="id" state="translated">Maaf, halaman depan dan belakang harus direkam dengan kalimat.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder" sil:dynamic="true">
+        <source xml:lang="en">Show playback order buttons</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
+        <target xml:lang="id" state="needs-translation">Show playback order buttons</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true" approved="yes">
         <source xml:lang="en">3) Speak</source>
@@ -2996,13 +3034,13 @@
         <source xml:lang="en">Something went wrong while splitting the recording.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SplitError</note>
         <note>This text appears if an error occurs while perfoming automatic splitting of audio (an audio file corresponding to an entire text box will be split into multiple sections, one section per sentence).</note>
-        <target xml:lang="id" state="needs-translation">Something went wrong while splitting the recording.</target>
+        <target xml:lang="id" state="translated">Terjadi kesalahan saat membagi rekaman.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitLabel">
         <source xml:lang="en">Split</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SplitLabel</note>
         <note>This text appears on the button the user can press to trigger automatic splitting of audio. An audio file corresponding to an entire text box will be split into multiple audio files (one per sentence) instead. (Also known as "Forced Alignment" in technical terms)</note>
-        <target xml:lang="id" state="needs-translation">Split</target>
+        <target xml:lang="id" state="translated">Bagi</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
         <source xml:lang="en">Make an e-book that can play audio recordings while highlighting text.</source>
@@ -3034,7 +3072,7 @@
         <source xml:lang="en">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</source>
         <note>ID: EditTab.UnlockBook.ToolTip</note>
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
-        <target xml:lang="id" state="needs-translation">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</target>
+        <target xml:lang="id" state="translated">Buku ini dalam mode terjemahan. Jika Anda ingin membuat perubahan lain, klik ini untuk sementara membuka kunci buku.</target>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
@@ -3045,7 +3083,7 @@
         <source xml:lang="en">Cannot access {0}</source>
         <note>ID: Errors.CannotAccessFile</note>
         <note>displays as a "toast", {0} is the URL/filename</note>
-        <target xml:lang="id" state="needs-translation">Cannot access {0}</target>
+        <target xml:lang="id" state="translated">Tidak dapat mengakses {0}</target>
       </trans-unit>
       <trans-unit id="Errors.CannotConnectToBloomServer" approved="yes">
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
@@ -3056,19 +3094,19 @@
       <trans-unit id="Errors.CouldNotSavePage">
         <source xml:lang="en">Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>
         <note>ID: Errors.CouldNotSavePage</note>
-        <target xml:lang="id" state="needs-translation">Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</target>
+        <target xml:lang="id" state="translated">Bloom kesulitan menyimpan halaman. Silakan klik Detail di bawah ini dan laporkan ini kepada kami. Lalu keluar dari Bloom, jalankan lagi, dan periksa untuk melihat apakah halaman yang baru saja disunting tidak ada. Maaf!</target>
       </trans-unit>
       <trans-unit id="Errors.CurrentRunningVersion">
         <source xml:lang="en">You are running Bloom {0}</source>
         <note>ID: Errors.CurrentRunningVersion</note>
         <note>The placeholder {0} represents the current version of Bloom. For example, {0} might be replaced with "4.3"</note>
-        <target xml:lang="id" state="needs-translation">You are running Bloom {0}</target>
+        <target xml:lang="id" state="translated">Anda menjalankan Bloom {0}</target>
       </trans-unit>
       <trans-unit id="Errors.DefenderFolderProtection">
         <source xml:lang="en">This might be caused by Windows Defender "Controlled Folder Access" or some other virus protection.</source>
         <note>ID: Errors.DefenderFolderProtection</note>
         <note>After an October 2017 windows update, this appears when Bloom opens a collection and tries to write out the collection settings.</note>
-        <target xml:lang="id" state="needs-translation">This might be caused by Windows Defender "Controlled Folder Access" or some other virus protection.</target>
+        <target xml:lang="id" state="translated">Ini mungkin disebabkan oleh Windows Defender "Controlled Folder Access" atau perlindungan virus lainnya.</target>
       </trans-unit>
       <trans-unit id="Errors.DefenderFolderProtectionHeading">
         <source xml:lang="en">This program cannot write to the folder {0}.</source>

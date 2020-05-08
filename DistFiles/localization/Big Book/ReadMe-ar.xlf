@@ -4,43 +4,43 @@
     <body>
       <trans-unit id="bigbook.title" approved="yes">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="ar" state="translated">معلومات حول الكتب الكبيرة</target>
+        <target xml:lang="ar" state="final">معلومات حول الكتب الكبيرة</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
       <trans-unit id="bigbook.use" approved="yes">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="ar" state="translated">صُمِمَت الكتب الكبيرة ليتمكن المدرسون من حملها وقراءتها أمام فصل دراسي.للحصول على مزيد من المعلومات، يمكنك الاطلاع على ملف <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF من Scholastic</g>.</target>
+        <target xml:lang="ar" state="final">صُمِمَت الكتب الكبيرة ليتمكن المدرسون من حملها وقراءتها أمام فصل دراسي.للحصول على مزيد من المعلومات، يمكنك الاطلاع على ملف <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF من Scholastic</g>.</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
       <trans-unit id="bigbook.printing" approved="yes">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="ar" state="translated">طباعة كتاب كبير</target>
+        <target xml:lang="ar" state="final">طباعة كتاب كبير</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
       <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="ar" state="translated">للتمكين من إدارة الأمور على نحو أفضل، تم تعيين هذا النموذج على ورقة A4 أفقية وخطوط كبيرة.
+        <target xml:lang="ar" state="final">للتمكين من إدارة الأمور على نحو أفضل، تم تعيين هذا النموذج على ورقة A4 أفقية وخطوط كبيرة.
 يمكنك بسهولة تأليف كتب بحجم A3 (ضعف الحجم).
 لن يلزمك سوى إضافة A4 PDF إلى طابعة وطلب تكبيرها إلى A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
       </trans-unit>
       <trans-unit id="bigbook.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="ar" state="translated">القيود الخاصة بهذا الإصدار</target>
+        <target xml:lang="ar" state="final">القيود الخاصة بهذا الإصدار</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen" approved="yes">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="ar" state="translated">إذا كنت تستخدم شاشة صغيرة، فقد يصعب عليك قراءة صفحة المساهمون في العمل.جرِّب استخدام CTRL+بكرة الماوس لتكبير الصفحة حتى تتمكن من تعديلها.</target>
+        <target xml:lang="ar" state="final">إذا كنت تستخدم شاشة صغيرة، فقد يصعب عليك قراءة صفحة المساهمون في العمل.جرِّب استخدام CTRL+بكرة الماوس لتكبير الصفحة حتى تتمكن من تعديلها.</target>
         <note>ID: bigbook.limits.smallscreen</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate" approved="yes">
         <source xml:lang="en">This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.</source>
-        <target xml:lang="ar" state="translated">يتضمن هذا الإصدار صفحة "إرشادات للمدرسين" كاملة باللغة الإنجليزية.
+        <target xml:lang="ar" state="final">يتضمن هذا الإصدار صفحة "إرشادات للمدرسين" كاملة باللغة الإنجليزية.
 إذا كنت تريد الحصول على إرشادات بلغة أخرى، فيمكنك حذف النص وكتابته بلغتك.
 إذا أرسلت إلينا هذا النص، فيمكن أن نضمَّنه في إصدار مستقبلي من النموذج.</target>
         <note>ID: bigbook.limits.Englishtemplate</note>

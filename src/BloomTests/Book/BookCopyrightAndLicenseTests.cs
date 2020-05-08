@@ -485,7 +485,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void GetOriginalCopyrightAndLicense_HasOriginalLicense_NoOriginalVopyrightOrTitle_InsertsCiteElementWithMissingClass()
+		public void GetOriginalCopyrightAndLicense_HasOriginalLicense_NoOriginalCopyrightOrTitle_InsertsCiteElementWithMissingClass()
 		{
 			var dom = new HtmlDom(
 				@" <div id='bloomDataDiv'>
