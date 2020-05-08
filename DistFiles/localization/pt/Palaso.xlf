@@ -107,17 +107,17 @@
         <note>ID: Common.YesButton</note>
         <target xml:lang="pt-PT" state="translated">&amp;Sim</target>
       </trans-unit>
-      <trans-unit id="CustomIdentifierView.betterLabel1">
+      <trans-unit id="CustomIdentifierView.betterLabel1" approved="yes">
         <source xml:lang="en">RFC5646 code:</source>
         <note>ID: CustomIdentifierView.betterLabel1</note>
         <note>label describes the code for a custom identifier. Translate only 'code'</note>
-        <target xml:lang="pt-PT" state="needs-translation">RFC5646 code:</target>
+        <target xml:lang="pt-PT" state="final">Código RFC5646:</target>
       </trans-unit>
-      <trans-unit id="CustomIdentifierView.linkLabel1">
+      <trans-unit id="CustomIdentifierView.linkLabel1" approved="yes">
         <source xml:lang="en">Read about language identifiers on the web</source>
         <note>ID: CustomIdentifierView.linkLabel1</note>
         <note>text used in the link to a webpage that describes the language identifiers</note>
-        <target xml:lang="pt-PT" state="needs-translation">Read about language identifiers on the web</target>
+        <target xml:lang="pt-PT" state="final">Leia sobre identificadores de idioma na web</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -194,11 +194,11 @@
         <note>ID: ImageToolbox.FileButton</note>
         <target xml:lang="pt-PT" state="final">Arquivo</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.FileChooserTitle">
+      <trans-unit id="ImageToolbox.FileChooserTitle" approved="yes">
         <source xml:lang="en">Choose Picture File</source>
         <note>ID: ImageToolbox.FileChooserTitle</note>
         <note>Title shown for a file chooser dialog brought up by the ImageToolbox</note>
-        <target xml:lang="pt-PT" state="needs-translation">Choose Picture File</target>
+        <target xml:lang="pt-PT" state="final">Escolher arquivo de imagem</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Galleries">
         <source xml:lang="en">Galleries</source>
@@ -304,17 +304,17 @@
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
         <target xml:lang="pt-PT" state="translated">Defina metadados...</target>
       </trans-unit>
-      <trans-unit id="IpaIdentifierView.betterLabel1">
+      <trans-unit id="IpaIdentifierView.betterLabel1" approved="yes">
         <source xml:lang="en">Purpose:</source>
         <note>ID: IpaIdentifierView.betterLabel1</note>
         <note>In writing system setup when IPA special option is selected: Label for the purpose combo box</note>
-        <target xml:lang="pt-PT" state="needs-translation">Purpose:</target>
+        <target xml:lang="pt-PT" state="final">Objetivo:</target>
       </trans-unit>
-      <trans-unit id="IpaIdentifierView.linkLabel1">
+      <trans-unit id="IpaIdentifierView.linkLabel1" approved="yes">
         <source xml:lang="en">Read about IPA transcription on the web</source>
         <note>ID: IpaIdentifierView.linkLabel1</note>
         <note>In writing system setup when IPA special option is selected: text used in link to a webpage describing IPA transcription</note>
-        <target xml:lang="pt-PT" state="needs-translation">Read about IPA transcription on the web</target>
+        <target xml:lang="pt-PT" state="final">Leia sobre transcrição IPA na web</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
@@ -391,12 +391,12 @@
       <trans-unit id="LanguageLookup._scriptsAndVariantsLabel">
         <source xml:lang="en">my script variant label</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLabel</note>
-        <target xml:lang="pt-PT" state="needs-translation">my script variant label</target>
+        <target xml:lang="pt-PT" state="translated">minha etiqueta de variante de script</target>
       </trans-unit>
-      <trans-unit id="LanguageLookup._scriptsAndVariantsLink">
+      <trans-unit id="LanguageLookup._scriptsAndVariantsLink" approved="yes">
         <source xml:lang="en">Script and Variant</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLink</note>
-        <target xml:lang="pt-PT" state="needs-translation">Script and Variant</target>
+        <target xml:lang="pt-PT" state="final">Script e Variante</target>
       </trans-unit>
       <trans-unit id="MemoryWarning">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
@@ -519,7 +519,7 @@
       <trans-unit id="MetadataEditor.PublicDomain">
         <source xml:lang="en">The copyright holder waives all rights</source>
         <note>ID: MetadataEditor.PublicDomain</note>
-        <target xml:lang="pt-PT" state="needs-translation">The copyright holder waives all rights</target>
+        <target xml:lang="pt-PT" state="translated">O detentor dos direitos autorais renuncia a todos os direitos</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
@@ -553,11 +553,11 @@
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
         <target xml:lang="pt-PT" state="final">mais informação</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.linkToPublicDomainCC0">
+      <trans-unit id="MetadataEditor.linkToPublicDomainCC0" approved="yes">
         <source xml:lang="en">about {0} Public Domain</source>
         <note>ID: MetadataEditor.linkToPublicDomainCC0</note>
         <note>{0} is replaced by an untranslatable abbreviation functioning as an adjective ("CC0")</note>
-        <target xml:lang="pt-PT" state="needs-translation">about {0} Public Domain</target>
+        <target xml:lang="pt-PT" state="final">sobre {0} Domínio Público</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
         <source xml:lang="en">Not Enforceable</source>
@@ -565,20 +565,20 @@
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
         <target xml:lang="pt-PT" state="translated">Não pode ser imposto</target>
       </trans-unit>
-      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton">
+      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton" approved="yes">
         <source xml:lang="en">Cancel</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton</note>
-        <target xml:lang="pt-PT" state="needs-translation">Cancel</target>
+        <target xml:lang="pt-PT" state="final">Cancelar</target>
       </trans-unit>
-      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._okButton">
+      <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._okButton" approved="yes">
         <source xml:lang="en">OK</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._okButton</note>
-        <target xml:lang="pt-PT" state="needs-translation">OK</target>
+        <target xml:lang="pt-PT" state="final">OK</target>
       </trans-unit>
-      <trans-unit id="ScriptsAndVariantsDialog.ScriptsAndVariants">
+      <trans-unit id="ScriptsAndVariantsDialog.ScriptsAndVariants" approved="yes">
         <source xml:lang="en">Script and Variant</source>
         <note>ID: ScriptsAndVariantsDialog.ScriptsAndVariants</note>
-        <target xml:lang="pt-PT" state="needs-translation">Script and Variant</target>
+        <target xml:lang="pt-PT" state="final">Script e Variante</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
@@ -631,7 +631,7 @@
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
         <note>ID: SettingsProtection.PasswordNoticeWithSupportUrl</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNotice". Param 0: Factory password; Param 1: product name; Param 2: URL of support page</note>
-        <target xml:lang="pt-PT" state="needs-translation">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</target>
+        <target xml:lang="pt-PT" state="translated">A senha da fábrica para estas configurações é "{0}". Se você esquecê-la, você sempre pode visitar a {1} página de suporte: {2}</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox">
         <source xml:lang="en">Require the factory password to get into settings.</source>
@@ -652,7 +652,7 @@
         <source xml:lang="en">In applications which support this option, fields with this input system will be able to play and record voice.</source>
         <note>ID: VoiceIdentifierView.betterLabel1</note>
         <note>Displayed if a user selects the voice special option in writing system setup</note>
-        <target xml:lang="pt-PT" state="needs-translation">In applications which support this option, fields with this input system will be able to play and record voice.</target>
+        <target xml:lang="pt-PT" state="translated">Em aplicativos que suportam esta opção, campos com este sistema de entrada serão capazes de reproduzir e gravar voz.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
@@ -679,35 +679,35 @@
         <note>ID: WSFontControl.TestArea</note>
         <target xml:lang="pt-PT" state="translated">&amp;Área de teste:</target>
       </trans-unit>
-      <trans-unit id="WSIdentifierView.betterLabel4">
+      <trans-unit id="WSIdentifierView.betterLabel4" approved="yes">
         <source xml:lang="en">Abbreviation</source>
         <note>ID: WSIdentifierView.betterLabel4</note>
         <note>In writing system setup general tab: label before abbreviation text box</note>
-        <target xml:lang="pt-PT" state="needs-translation">Abbreviation</target>
+        <target xml:lang="pt-PT" state="final">Abreviação</target>
       </trans-unit>
-      <trans-unit id="WSIdentifierView.betterLabel5">
+      <trans-unit id="WSIdentifierView.betterLabel5" approved="yes">
         <source xml:lang="en">Special:</source>
         <note>ID: WSIdentifierView.betterLabel5</note>
         <note>In writing system setup general tab:  Label before combo box with 'Special' choices</note>
-        <target xml:lang="pt-PT" state="needs-translation">Special:</target>
+        <target xml:lang="pt-PT" state="final">Especial:</target>
       </trans-unit>
-      <trans-unit id="WSIdentifiers.IpaIdentifierView.Default">
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Default" approved="yes">
         <source xml:lang="en">Default</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Default</note>
         <note>Choice for most users</note>
-        <target xml:lang="pt-PT" state="needs-translation">Default</target>
+        <target xml:lang="pt-PT" state="final">Padrão</target>
       </trans-unit>
-      <trans-unit id="WSIdentifiers.IpaIdentifierView.Emic">
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Emic" approved="yes">
         <source xml:lang="en">Emic (uses phonology of the language)</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Emic</note>
         <note>Only translate text inside of the parentheses ()</note>
-        <target xml:lang="pt-PT" state="needs-translation">Emic (uses phonology of the language)</target>
+        <target xml:lang="pt-PT" state="final">Êmico (usar fonologia do idioma)</target>
       </trans-unit>
       <trans-unit id="WSIdentifiers.IpaIdentifierView.Etic">
         <source xml:lang="en">Etic (raw phonetic transcription)</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Etic</note>
         <note>Only translate text inside of the parentheses ()</note>
-        <target xml:lang="pt-PT" state="needs-translation">Etic (raw phonetic transcription)</target>
+        <target xml:lang="pt-PT" state="translated">Ético (transcrição fonética pura)</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
