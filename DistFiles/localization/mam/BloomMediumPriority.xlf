@@ -9,9 +9,6 @@
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
         <target xml:lang="mam" state="final">Tech ttz'ib'injtz aj tjapan b'aj txolyol</target>
-        <alt-trans>
-          <target xml:lang="mam">Chmob'il tajlal ok tjapan b'aj txolyol</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

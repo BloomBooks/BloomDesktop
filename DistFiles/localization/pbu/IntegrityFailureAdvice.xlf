@@ -41,9 +41,6 @@
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</source>
         <target xml:lang="pbu" state="final"> ‏".exe"‏ ختم شوی وي، د بلوم پروګرام پوښتی ‏"whitelisting" ‏ملاحظه کړئ، چې په ‏‏ <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
-        <alt-trans>
-          <target xml:lang="pbu">که دا کار ونه کړي، نو ستاسو ویروس پروګرام سره د کار کولو وخت دی. لاندې برخه کی د "ورک شوي فایلونه" کوم چې  ‏".exe"‏ کی ختم شوی وي ښکاره شي، د بلوم پروګرام پوښتی ‏"whitelisting" ‏ملاحظه کړئ، کوم چې په ‏‏ <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVAST" approved="yes">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.</source>
@@ -65,9 +62,6 @@
         <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus"</source>
         <target xml:lang="pbu" state="final">نور: د "خپل انټی-ویروس پوښتی-نوم ‏whitelist ‏" ته زیاد کړي</target>
         <note>ID: integrity.todo.ideas.Others</note>
-        <alt-trans>
-          <target xml:lang="pbu">نور: د "خپل انټی-ویروس-نوم سپین ‏whitelist ‏"</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Restart" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time.</source>
@@ -78,9 +72,6 @@
         <source xml:lang="en">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.</source>
         <target xml:lang="pbu" state="final">تاسو کوښښ کولی شي او بیرته د بلوم هغه برخه لاس ته راوړلی شئ چې ستاسې د انټی-ویروس پروګرام اخیستې وه. د ‏AVG‏ لپاره تاسو باید د ‏AVG‏ اختیارونه پیدا کړئ په مینیو کې، بیا به "virus vault"‏ کیکاږئ، په صندوق کې په بلوم فایل زور وکړئ، او په بیا اعاده کولو زور وکړئ. بصري لارښود لپاره، دا <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">انځور وګورئ</g>.</target>
         <note>ID: integrity.todo.ideas.Retrieve</note>
-        <alt-trans>
-          <target xml:lang="pbu">تاسو کوښښ کولی شي او بیرته د بلوم هغه برخه لاس ته راوړلی شئ چې ستاسې د انټی-ویروس پروګرام اخیستې وه. د ‏AVG‏ لپاره تاسو باید د ‏AVG‏ اختیارونه پیدا کړئ په مینیو کې، بیا په "virus vault"‏ کیکاږئ، په صندوق کې په بلوم فایل زور وکړئ، او په بیا اعاده کولو زور وکړئ. بصري لارښود لپاره، دا <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">انځور وګورئ</g>.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.missing" approved="yes">
         <source xml:lang="en">Missing Files</source>

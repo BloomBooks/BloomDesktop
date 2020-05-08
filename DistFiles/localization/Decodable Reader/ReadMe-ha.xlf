@@ -4,28 +4,28 @@
     <body>
       <trans-unit id="decodable.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
-        <target xml:lang="ha" state="translated">
+        <target xml:lang="ha" state="final">
           <g id="genid-1" ctype="x-html-strong">Mai Karɓar karatun</g> littafi ne da a hankali ya ƙayyade haruffa da kalmomin da aka yi amfani da su saboda su yi daidai da abinda sabon mai karatu zai karanta. Akasari, harshe zai iya samun <g id="genid-2" ctype="x-html-em">matakan karɓar karatun daga</g> 5-10 waɗanda a cikin su ne masu koyo za su gudnar da aikinsu.</target>
         <note>ID: decodable.definition</note>
       </trans-unit>
       <trans-unit id="decodable.stages" approved="yes">
         <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
-        <target xml:lang="ha" state="translated">Bloom zai taimaka maka wajen bin waɗannan <g id="genid-3" ctype="x-html-em">matakan</g> da mai karatu zai bi. Kowane littafin da ka yi zai bi ɗaya daga cikin waɗancan matakan, kuma Bloom zai taimaka maka wurin tabbatar da litttafinka <g id="genid-4" ctype="x-html-em">zai zama wanda za'a iya karantawa ne</g> a wurin masu koyon karatu a wancan <g id="genid-5" ctype="x-html-em">matakin</g> su kuma iya ganewa.</target>
+        <target xml:lang="ha" state="final">Bloom zai taimaka maka wajen bin waɗannan <g id="genid-3" ctype="x-html-em">matakan</g> da mai karatu zai bi. Kowane littafin da ka yi zai bi ɗaya daga cikin waɗancan matakan, kuma Bloom zai taimaka maka wurin tabbatar da litttafinka <g id="genid-4" ctype="x-html-em">zai zama wanda za'a iya karantawa ne</g> a wurin masu koyon karatu a wancan <g id="genid-5" ctype="x-html-em">matakin</g> su kuma iya ganewa.</target>
         <note>ID: decodable.stages</note>
       </trans-unit>
       <trans-unit id="decodable.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
-        <target xml:lang="ha" state="translated">Kuma kana iya shirya <g id="genid-6" ctype="x-html-em">muhallin</g> Bloom wanda wasu za su iya amfani da shi don rubuta litattafai cikin hanzari kan matakan da ƙwararren mai koyarwa ya shirya.</target>
+        <target xml:lang="ha" state="final">Kuma kana iya shirya <g id="genid-6" ctype="x-html-em">muhallin</g> Bloom wanda wasu za su iya amfani da shi don rubuta litattafai cikin hanzari kan matakan da ƙwararren mai koyarwa ya shirya.</target>
         <note>ID: decodable.templates</note>
       </trans-unit>
       <trans-unit id="decodable.learn" approved="yes">
         <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
-        <target xml:lang="ha" state="translated">Domin koyon yadda ake amfani da "Mai Iya Karatu" a Bloom, zaka ka iya:</target>
+        <target xml:lang="ha" state="final">Domin koyon yadda ake amfani da "Mai Iya Karatu" a Bloom, zaka ka iya:</target>
         <note>ID: decodable.learn</note>
       </trans-unit>
       <trans-unit id="decodable.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="ha" state="translated">Kallon <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc.8vbwux">waɗannan hotunan bidiyo na koyarwa</g>.</target>
+        <target xml:lang="ha" state="final">Kallon <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc.8vbwux">waɗannan hotunan bidiyo na koyarwa</g>.</target>
         <note>ID: decodable.learn.videos</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpindex">
@@ -35,7 +35,7 @@
       </trans-unit>
       <trans-unit id="decodable.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="ha" state="translated">Ka gefen neman Taimako ka zaɓi: "Shirya Muhallin Maikaratu".</target>
+        <target xml:lang="ha" state="final">Ka gefen neman Taimako ka zaɓi: "Shirya Muhallin Maikaratu".</target>
         <note>ID: decodable.learn.helpmenu</note>
       </trans-unit>
     </body>

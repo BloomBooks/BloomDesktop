@@ -4,135 +4,75 @@
     <body>
       <trans-unit id="android.publish.trouble.tips" approved="yes">
         <source xml:lang="en">Troubleshooting Tips for Android Publishing</source>
-        <target xml:lang="quc" state="translated">Pixab rech taq Usolik ri K'axk'olil rech Tzijob'exik pa Android</target>
+        <target xml:lang="quc" state="final">Pixab rech taq Usolik ri K'axk'olil rech Tzijob'exik pa Android</target>
         <note>ID: android.publish.trouble.tips</note>
-        <alt-trans>
-          <target xml:lang="quc">K'i taq Pixab rech usolik ri K'exk'olil rech Tzijob'exik rech Android</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi" approved="yes">
         <source xml:lang="en">Share over Wi-Fi</source>
-        <target xml:lang="quc" state="translated">Ujachik pa uk'atil WiFi</target>
+        <target xml:lang="quc" state="final">Ujachik pa uk'atil WiFi</target>
         <note>ID: android.publish.wifi</note>
-        <alt-trans>
-          <target xml:lang="quc">Ujachik pa k'at nek'ab'al maj k'a'm q'aq'(WiFi)</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.unseen" approved="yes">
         <source xml:lang="en">Problem: Android Device is not seeing book advertisements</source>
-        <target xml:lang="quc" state="translated">K'axk'olil: Le wiqkem chakub'al Android man katajin ta kuk'am ub'ixikil rech le no'jwuj</target>
+        <target xml:lang="quc" state="final">K'axk'olil: Le wiqkem chakub'al Android man katajin ta kuk'am ub'ixikil rech le no'jwuj</target>
         <note>ID: android.publish.wifi.unseen</note>
-        <alt-trans>
-          <target xml:lang="quc">K'axk'olil: Ri wiqkem chakub'al Android ma kuk'am ta jub'ixkil recj ri no'jwuj</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive" approved="yes">
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
-        <target xml:lang="quc" state="translated">Are taq kokisax we solno'jib'al ri', rajawaxik kab'an ukojik Bloom Reader. Chatoro' ri cholb'al chak k'ate' k'u ri' chacha' "Uk'amik pa WiFi.</target>
+        <target xml:lang="quc" state="final">Are taq kokisax we solno'jib'al ri', rajawaxik kab'an ukojik Bloom Reader. Chatoro' ri cholb'al chak k'ate' k'u ri' chacha' "Uk'amik pa WiFi.</target>
         <note>ID: android.publish.wifi.run.receive</note>
-        <alt-trans>
-          <target xml:lang="quc">Are taq kokisax we solib'al no'jib'al, rajawaxik uchakuxik Bloom Reader. Chatoro' ri cholb'al chak k'ate' k'u ri' cahcha' "Uk'amik WiFi.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="quc">Are chi' koksax we binib'al, rajawaxik uchakuxik Bloom Reader. Chtoro' ri Cholb'al chak xuquje' chcha' "Uk'amik rech jachnak' k'at" (WiFi).</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from" approved="yes">
         <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
-        <target xml:lang="quc" state="translated">Chawila' chi le wiqchakub'al k'o pa le kutb'al wach "Uk'amik rech WiFi"</target>
+        <target xml:lang="quc" state="final">Chawila' chi le wiqchakub'al k'o pa le kutb'al wach "Uk'amik rech WiFi"</target>
         <note>ID: android.publish.wifi.receive.from</note>
-        <alt-trans>
-          <target xml:lang="quc">Chwila' che ri jachnak' k'at k'o pa uwach kematz'ib' "Uk'amik rech jachnak' k'at" (WiFi)"</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="quc">Chwila' che ri jachnak' k'at k'o pa uwach kematz'ib' "Uk'amik rech jachnak' k'at" (WiFi)"
-</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.same.network" approved="yes">
         <source xml:lang="en">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
-        <target xml:lang="quc" state="translated">Chawila' chi le kematz'ib' xuquje' ri wiqkemchakub'al e k'o chi upam ri uk'atil WiFi. Jun kematz'ib' tiqital rumal ri t'iqk'a'm q'axeb'al WiFi k'o kraj na tiqital pa le uk'atil. Loq' na utiqoxik k'i taq uk'atil pa taq le uk'a'mal rech kakowinik kk'oji' chi upam ri uq'ab' uk'atil pacha' WiFi, xa k'ut ri e wokonolab' rech Bloom man kekowin taj kkiya to'b'anik chech usuk'umaxik we ri'.</target>
+        <target xml:lang="quc" state="final">Chawila' chi le kematz'ib' xuquje' ri wiqkemchakub'al e k'o chi upam ri uk'atil WiFi. Jun kematz'ib' tiqital rumal ri t'iqk'a'm q'axeb'al WiFi k'o kraj na tiqital pa le uk'atil. Loq' na utiqoxik k'i taq uk'atil pa taq le uk'a'mal rech kakowinik kk'oji' chi upam ri uq'ab' uk'atil pacha' WiFi, xa k'ut ri e wokonolab' rech Bloom man kekowin taj kkiya to'b'anik chech usuk'umaxik we ri'.</target>
         <note>ID: android.publish.wifi.same.network</note>
-        <alt-trans>
-          <target xml:lang="quc">Chawila chi le kematz'ib' xuquje' ri wiqkemchakub'al e k'o chi upam ri k'at WiFi. Jun kematz'ib' tiqital rumal ri t'iqk'a'm q'axeb'al WiFi k'o kraj na tiqital pa le uk'atil. Loq' na ut'iqoxik k'i taq uk'atil pa taq le uk'a'mal rech kakowinik kk'oji' chi upam ri uq'ab' uk'atil pacha' WiFi, xa k'ut ri e wokonolab' rech Bloom man kekowin taj kkiya to'b'anik chech usuk'umaxik we ri'.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="quc">Chawila che ri kematz'ib' xuquje' ri wiqkem chakub'al e k'o chi upam ri k'at WiFi. Jun kematz'ib' t'iqitalik rumal ri k'a'm che ri enrutador WiFi k'o na ri' pa ri uk'at. Are saq il che ut'iqoxik k'i taq k'at rumal ri k'a'm rech kakowinik kak'oji' chi upam ri k'at k'o chi uxe' waral pacha' WiFi, xa k'ut ri k'iyirisanem rech Bloom ma kekowin taj che uto'ik che usuk'umaxik we ri'.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.wifi.firewalls" approved="yes">
         <source xml:lang="en">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</source>
-        <target xml:lang="quc" state="translated">Chawila' chi ri akematz'ib' man k'o ta jun uk'ulel q'aq' (firewall) chi katajin kuq'atej uwach. Le uk'ulel q'aq' rech Windows kuk'ut na rib' are taq' k'ate kumaj ujachik le no'jwuj. We xab'ij "man loq' taj" chech are', kraj ne man kuta ta chik'. We k'o chi nik'aj uk'ulel q'aq' jeqeb'am chik, chab'ana' uchupik. Bloom kujach jun no'jwuj chi upam k'at rech upam rech UDP pa le q'axeb'al 5913 xuquje' Bloom Reader kuta jun no'jwuj pa le q'axeb'al 5915.</target>
+        <target xml:lang="quc" state="final">Chawila' chi ri akematz'ib' man k'o ta jun uk'ulel q'aq' (firewall) chi katajin kuq'atej uwach. Le uk'ulel q'aq' rech Windows kuk'ut na rib' are taq' k'ate kumaj ujachik le no'jwuj. We xab'ij "man loq' taj" chech are', kraj ne man kuta ta chik'. We k'o chi nik'aj uk'ulel q'aq' jeqeb'am chik, chab'ana' uchupik. Bloom kujach jun no'jwuj chi upam k'at rech upam rech UDP pa le q'axeb'al 5913 xuquje' Bloom Reader kuta jun no'jwuj pa le q'axeb'al 5915.</target>
         <note>ID: android.publish.wifi.firewalls</note>
-        <alt-trans>
-          <target xml:lang="quc">Chwila' che ri akematz'ib' ma k'o ta rech ri uk'ulel q'aq' (firewall) che tajan kuyojij. Ri uk'ulel q'aq' rech Windows kuk'ut na rib' are chi' k'ate kumaj ujachik uno'jwuj. We xab'ij "No" chech are', kaj ne ma kuk'ot ta chik achi'. We ne k'o chik nik'aj k'ulel q'aq' jeqb'am chik, chb'ana' pe uchupik. Bloom kujach jun no'jwuj chi upam ri  waral k'at rumal ri rech UDP chi upam ri q'axeb'al 5913 xuquje' Bloom Reader chta jun no'jwuj chi upam ri q'axeb'al 5915.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.usb" approved="yes">
         <source xml:lang="en">Send Over USB Cable</source>
-        <target xml:lang="quc" state="translated">Utaqik ruk' le uk'amalil USB</target>
+        <target xml:lang="quc" state="final">Utaqik ruk' le uk'amalil USB</target>
         <note>ID: android.publish.usb</note>
-        <alt-trans>
-          <target xml:lang="quc">Taqik chi upam ri k'amalil USB</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.usb.not.connect" approved="yes">
         <source xml:lang="en">Problem: Bloom is not connecting to my device</source>
-        <target xml:lang="quc" state="translated">K'axk'olil: Bloom man tiqital ta ruk' le wiqkemchakub'al</target>
+        <target xml:lang="quc" state="final">K'axk'olil: Bloom man tiqital ta ruk' le wiqkemchakub'al</target>
         <note>ID: android.publish.usb.not.connect</note>
-        <alt-trans>
-          <target xml:lang="quc">K'axk'olil: Bloom ma t'iqital taj ruk' nuwiqkem chakub'al</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.usb.consider.wifi" approved="yes">
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the Wi-Fi method even if you are only working with a single device.</g>
         </source>
-        <target xml:lang="quc" state="translated"><g id="genid-1" ctype="x-html-p">Xqilo chi le solno'jib'al are kaya'ow k'axk'olil chi kech taq wiqkemchakub'al. Rumal wa', chawila' chi le solb'al no'jib'al WiFi xuquje' we katajin kchakun xuwi wi ruk' jun wiqkemchakub'al.</g></target>
+        <target xml:lang="quc" state="final"><g id="genid-1" ctype="x-html-p">Xqilo chi le solno'jib'al are kaya'ow k'axk'olil chi kech taq wiqkemchakub'al. Rumal wa', chawila' chi le solb'al no'jib'al WiFi xuquje' we katajin kchakun xuwi wi ruk' jun wiqkemchakub'al.</g></target>
         <note>ID: android.publish.usb.consider.wifi</note>
-        <alt-trans>
-          <target xml:lang="quc"><g id="genid-1" ctype="x-html-p">Xqilo chi le solb'al no'jib'al are kaya'ow k'axk'olil chi kech taq wiqkemchakub'al. Rumal wa', chwila chi le solb'al no'jib'al WiFi xuquje' we katajin kchakun xuwi wi ruk' jun wiqkemchakub'al.</g></target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="quc"><g id="genid-1" ctype="x-html-p">Qaraqom che we ub'eyal are k'axk'olil kuya' chi kech k'i taq wiqkem chakub'al. Rumal wa', chwila pe' ri ub'eyal WiFi xuquje' we tajan kachakun xuw wi ruk' jun wiqkem chakub'al.</g></target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.usb.automatic" approved="yes">
         <source xml:lang="en">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
-        <target xml:lang="quc" state="translated">Are taq kakoj we solb'al no'jib'al, man rawaxik taj kcha le okib'al chech uk'ulaxik no'jwuj. Xuwi chakojo' Bloom Reader. Ri jalajoj taq no'jwuj kiltaj kiwach are taq keq'axexik.</target>
+        <target xml:lang="quc" state="final">Are taq kakoj we solb'al no'jib'al, man rawaxik taj kcha le okib'al chech uk'ulaxik no'jwuj. Xuwi chakojo' Bloom Reader. Ri jalajoj taq no'jwuj kiltaj kiwach are taq keq'axexik.</target>
         <note>ID: android.publish.usb.automatic</note>
-        <alt-trans>
-          <target xml:lang="quc">Are we kakoj we b'inib'al, ma kuya taj katokik pa jun chik chech uk'amik no'jwuj. Xuw chakuj Bloom Reader. Ri k'i taq wuj ke'el uloq kitukel wi are chi' keq'axexik.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="quc">
-
-Are we kakoj we b'inib'al, ma kuya taj katokik pa jun chik chech uk'amik no'jwuj. Xuw chakuj Bloom Reader. Ri k'i taq wuj ke'el uloq kitukel wi are chi' keq'axexik.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.usb.uses.mtp" approved="yes">
         <source xml:lang="en">Some Android devices have multiple modes they can be in when connected to a computer. Some will ask you as soon as you connect the cable to the computer. Bloom will be trying to talk to the device using a protocol called "MTP". If you're not sure that your device is connecting using MTP, try googling the name of your device + "MTP".</source>
-        <target xml:lang="quc" state="translated">K'o jujun taq wiqkemchakub'al Android kekowonik kek'oji' k'i taq ub'anik are taq e tiqital chech jun kematz'ib'. E K'o jujun kikto are taq ktiq le t'iqk'a'm q'axeb'al chech le kematz'ib'. Bloom kub'an uchuq'ab' kutiq rib' ruk' le wiqkemchakub'al ub'i' "MTP". We man saq taj chi tiqital le wiqkemchakub'al chi upam ri MTP, chatzukuj pa Google le ub'i' le wiqkemchakub'al xuquje' "MTP".</target>
+        <target xml:lang="quc" state="final">K'o jujun taq wiqkemchakub'al Android kekowonik kek'oji' k'i taq ub'anik are taq e tiqital chech jun kematz'ib'. E K'o jujun kikto are taq ktiq le t'iqk'a'm q'axeb'al chech le kematz'ib'. Bloom kub'an uchuq'ab' kutiq rib' ruk' le wiqkemchakub'al ub'i' "MTP". We man saq taj chi tiqital le wiqkemchakub'al chi upam ri MTP, chatzukuj pa Google le ub'i' le wiqkemchakub'al xuquje' "MTP".</target>
         <note>ID: android.publish.usb.uses.mtp</note>
-        <alt-trans>
-          <target xml:lang="quc">K'o jujun wiqkem chakub'al Android kekowonik kek'uji' k'itaq ub'anik are chi' e t'iqitalik che jun kematz'ib'. E K'o jujun kikta la' che la are chi' kt'iq la ri k'a'm che ri kematz'ib'. Bloom kuch'ab'ej ri wiqkem chakub'al chi upam jun cholk'utchak ub'i'am "MTP". We man saq taj che ri wiqkem chakub'al la t'iqital chi upam ri MTP, chtzukuj la jumul chik pa Google ri ub'i' ri wiqkem chakub'al la xuquje' "MTP".</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.usb.windows" approved="yes">
         <source xml:lang="en">The device should be showing up in Windows File Explorer (this feature is Windows-only)</source>
-        <target xml:lang="quc" state="translated">Le wiqkemchakub'al rajawaxik kuk'ut rib' chi upam ri Nik'ojnel rech K'olchak rech Windows (we ub'antajik ri' xuwi kriqitaj pa Windows)</target>
+        <target xml:lang="quc" state="final">Le wiqkemchakub'al rajawaxik kuk'ut rib' chi upam ri Nik'ojnel rech K'olchak rech Windows (we ub'antajik ri' xuwi kriqitaj pa Windows)</target>
         <note>ID: android.publish.usb.windows</note>
-        <alt-trans>
-          <target xml:lang="quc">Ri wiqkem chakub'al rajawaxik kuk'ut rib' chi upam ri nik'ojnel rech k'olchak rech Windows (we b'antajik ri' xuw kraqatajik pa Windows)</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="android.publish.usb.cable.or.port" approved="yes">
         <source xml:lang="en">Try a different cable, or a different USB port.</source>
-        <target xml:lang="quc" state="translated">Chakojo chi jun jalajoj k'a'mq'axb'al te'qne' pa jun jalajoj okib'al chik rech USB.</target>
+        <target xml:lang="quc" state="final">Chakojo chi jun jalajoj k'a'mq'axb'al te'qne' pa jun jalajoj okib'al chik rech USB.</target>
         <note>ID: android.publish.usb.cable.or.port</note>
-        <alt-trans>
-          <target xml:lang="quc">Uk'utub'al jun k'a'm jun wi chik o jun q'axeb'al USB k'exom wi.</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>

@@ -11,9 +11,6 @@
         <source xml:lang="en">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
         <target xml:lang="pbu" state="final">وروسته له هغه چې تاسو د <g id="genid-2" ctype="x-html-strong">سويه بنديو</g> ، سلسله تعریف کړه، تاسو یو کتاب سويه بندی کوئ چې تاسې جوړ کړی، په هم دې نمونه او یا د "تجزیه (هجي) کېدو وړنمونه یی کتاب " په وسیله. کله چې تاسې په کتاب کې ټایپ کوئ، بلوم به تاسې سره د سویه په پام نیولو کې مرسته وکړي او درته وبه وایې چې کله د کچی له محدودیت نه بهر شئ.</target>
         <note>ID: leveled.levels</note>
-        <alt-trans>
-          <target xml:lang="pbu">وروسته له هغه چې تاسو د <g id="genid-2" ctype="x-html-strong">سويه بنديو</g> ، سلسله تعریف کړه، تاسو یو کتاب سويه بندی کوئ چې تاسې جوړ کړی، په هم دې نمونه او یا د "تجزیه (هجي) کېدو وړنمونه یی کتاب " په وسیله. کله چې تاسې په کتاب کې ټایپ کوئ، بلوم به تاسې سره د سویه په پام نیولو کې مرسته وکړي او درته وبه وایې چې کله د کچی له محدودیته نه بهر شئ.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.templates" approved="yes">
         <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-3" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
@@ -34,9 +31,6 @@
         <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</source>
         <target xml:lang="pbu" state="final">د مرستې مینو ته لاړ شئ، 'اسناد' غوره کړئ، او د "زده کوونکو له سویې سره برابر کتابونو ته" لاندې شاخص کې وګورئ.</target>
         <note>ID: leveled.learn.helpindex</note>
-        <alt-trans>
-          <target xml:lang="pbu">د مرستې مینیو ته لاړ شئ، مرسته انتخاب کړئ، او لاندې "د زده کوونکو له سویې سره برابر کتابونو ته" وګورئ.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
@@ -62,9 +56,6 @@
         <source xml:lang="en">Decodable Stage</source>
         <target xml:lang="pbu" state="final">د تجزیه (هجي) مرحله</target>
         <note>ID: decodable.stage</note>
-        <alt-trans>
-          <target xml:lang="pbu">د تجزیه مرحله</target>
-        </alt-trans>
       </trans-unit>
     </body>
   </file>
