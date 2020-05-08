@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="publish.help.tips.tempWiFi.title">
         <source xml:lang="en">Ways to make a temporary Wi-Fi Network</source>
-        <target xml:lang="vi" state="needs-translation">Ways to make a temporary Wi-Fi Network</target>
+        <target xml:lang="vi" state="translated">Các cách tạo ra WiFi Network tạm thời</target>
         <note>ID: publish.help.tips.tempWiFi.title</note>
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hotspot">
         <source xml:lang="en">Start a phone hotspot</source>
-        <target xml:lang="vi" state="needs-translation">Start a phone hotspot</target>
+        <target xml:lang="vi" state="translated">Bắt đầu hotspot trên điện thoại</target>
         <note>ID: publish.help.tips.tempWiFi.hotspot</note>
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hostednetwork">
         <source xml:lang="en">Start a network using your laptop</source>
-        <target xml:lang="vi" state="needs-translation">Start a network using your laptop</target>
+        <target xml:lang="vi" state="translated">Bắt đầu network bằng laptop của bạn</target>
         <note>ID: publish.help.tips.tempWiFi.hostednetwork</note>
       </trans-unit>
     </body>
