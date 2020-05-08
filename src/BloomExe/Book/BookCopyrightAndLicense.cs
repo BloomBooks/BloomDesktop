@@ -4,6 +4,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Web;
 using System.Xml;
 using Bloom.Collection;
 using L10NSharp;
@@ -338,7 +339,9 @@ namespace Bloom.Book
 			// The originalTitle strategy used here is not ideal. We would prefer to have a placeholder specifically for it
 			// in both EditTab.FrontMatter.OriginalCopyrightSentence and EditTab.FrontMatter.OriginalHadNoCopyrightSentence.
 			// But we don't want to require a new set of translations if we can avoid it.
-			var originalTitle = dom.GetBookSetting("originalTitle")?.GetExactAlternative("*");
+			string encodedTitle = dom.GetBookSetting("originalTitle")?.GetExactAlternative("*");
+			string originalTitle = HttpUtility.HtmlDecode(encodedTitle);
+
 			// Used when we insert into the no-copyright string, typically "Adapted from an original with no copyright"
 			var originalTitleBeforePeriod = ", <cite data-book=\"originalTitle\">" + originalTitle + "</cite>";
 			// Used when we insert into the usual string, typicall "Adapted from original, {0}" ahead of the copyright and license
