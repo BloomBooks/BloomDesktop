@@ -206,7 +206,7 @@ namespace Bloom.Book
 
 			var itemsToDelete = new HashSet<Tuple<string, string>>();
 			DataSet incomingData = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom, itemsToDelete);
-			UpdateToolRelatedDataFromBookInfo(info, incomingData);
+			UpdateToolRelatedDataFromBookInfo(info, incomingData, itemsToDelete);
 			incomingData.UpdateGenericLanguageString("contentLanguage1", _collectionSettings.Language1Iso639Code, false);
 			incomingData.UpdateGenericLanguageString("contentLanguage2",
 											 String.IsNullOrEmpty(MultilingualContentLanguage2)
@@ -236,26 +236,38 @@ namespace Bloom.Book
 			UpdateCredits(info);
 		}
 
-		private void UpdateToolRelatedDataFromBookInfo(BookInfo info, DataSet incomingData)
+		private void UpdateToolRelatedDataFromBookInfo(BookInfo info, DataSet incomingData, HashSet<Tuple<string, string>> itemsToDelete)
 		{
 			if (info == null)
 				return; // only in tests
 			var tools = info.Tools;
 			var bookClass = _dom.Body.Attributes["class"]?.Value ?? "";
 
+			if (!bookClass.Contains("leveled-reader") && !bookClass.Contains("decodable-reader"))
+			{
+				incomingData.UpdateGenericLanguageString("levelOrStageNumber", "", false);
+				itemsToDelete.Add(new Tuple<string, string>("levelOrStageNumber", "*"));
+				return;
+			}
+
 			var levelTool = tools.FirstOrDefault(t => t.ToolId == "leveledReader");
 			if (levelTool != null && bookClass.Contains("leveled-reader"))
 			{
 				var level = levelTool.State;
 				incomingData.UpdateGenericLanguageString("levelOrStageNumber", level, false);
+				itemsToDelete.RemoveWhere(item => item.Item1 == "levelOrStageNumber");
 			}
 
 			var decodableTool = tools.FirstOrDefault(t => t.ToolId == "decodableReader");
 			if (decodableTool != null && bookClass.Contains("decodable-reader"))
 			{
-				var stageString = decodableTool.State.Split(';').FirstOrDefault()?.Split(':')?.Skip(1)?.FirstOrDefault();
+				var stageString = decodableTool.State.Split(';').FirstOrDefault()?.Split(':').Skip(1).FirstOrDefault();
 				if (!string.IsNullOrEmpty(stageString))
+				{
 					incomingData.UpdateGenericLanguageString("levelOrStageNumber", stageString, false);
+					itemsToDelete.RemoveWhere(item => item.Item1 == "levelOrStageNumber");
+				}
+
 				int stage;
 				if (int.TryParse(stageString, out stage) && _collectionSettings != null)
 				{
