@@ -1,11 +1,21 @@
 extends ../Traditional-XMatter/Traditional-XMatter.pug
 
+mixin nonStandardTopic
+	//- e.g. "Cooking", but in vernacular
+	+field-prototypeDeclaredExplicity("V").abcTopic
+		label.bubble Topic in {lang}
+		+editable(kLanguageForPrototypeOnly)(data-book='abcTopic')
 
 mixin readerDescription
 	//- e.g. "Foobar Leveled Reader", will be in English only
 	+field-prototypeDeclaredExplicity("N1").readerDescription
-			label.bubble Reader description in {lang}
-			+editable(kLanguageForPrototypeOnly)(data-book='readerDescription')
+		label.bubble Reader description in {lang}
+		+editable(kLanguageForPrototypeOnly)(data-book='readerDescription')
+
+mixin readerDescriptionAndNonStandardTopic
+	.descriptionAndTopicRow
+		+readerDescription
+		+nonStandardTopic
 
 mixin levelOrStageAndNumber
 	.levelOrStageAndNumberRow
@@ -26,7 +36,7 @@ block cover-title
 		.numberCircle
 			span.numberLabel
 			div(data-book="levelOrStageNumber" lang="*")
-	+readerDescription
+	+readerDescriptionAndNonStandardTopic
 
 	//- override is to change the data-hint for this project
 block cover-bottom-credits
@@ -76,7 +86,7 @@ block titlePageContents
 		div(data-book="decodableStageLetters" lang="V")
 
 	//- e.g. "Foobar Leveled Reader", will be in English only
-	+readerDescription
+	+readerDescriptionAndNonStandardTopic
 	.levelOrStageAndNumberRow
 		+levelOrStageAndNumber
 
@@ -84,7 +94,7 @@ block titlePageContents
 block creditsContent
 	+field-mono-meta("V", 'bookTitle')
 			label.bubble Book title in {lang}
-	+readerDescription
+	+readerDescriptionAndNonStandardTopic
 	+levelOrStageAndNumber
 	//- this is intentionally in English while the one on the Cover & Title Pages are intentionally in Vernacular
 	+field-acknowledgments-originalVersion("N1", "The author and the illustrator in {lang}")

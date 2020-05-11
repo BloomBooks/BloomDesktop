@@ -253,13 +253,12 @@ namespace Bloom.Book
 		public bool IsEditable { get; private set; }
 
 		/// <summary>
-		/// Normally, we get the xmatter from our collection. But this can be overridden here
+		/// If true, use a device-specific xmatter pack.
+		/// This will either be a pack associated with the collection's pack by adding "-Device",
+		/// e.g. ABC-Device for ABC,
+		/// or "Device" if no such pack exists.
 		/// </summary>
-		public string XMatterNameOverride
-		{
-			get { return MetaData.XMatterNameOverride; }
-			set { MetaData.XMatterNameOverride = value; }
-		}
+		public bool UseDeviceXMatter { get; set; }
 
 		/// <summary>
 		/// This one knows nothing of what language the user speaks... currently using that requires actually reading in the html, which is beyond what this class can do
@@ -1032,12 +1031,6 @@ namespace Bloom.Book
 
 		[JsonProperty("district")]
 		public string DistrictName { get; set; }
-
-		/// <summary>
-		/// Normally, we get the xmatter from our collection. But this can be overridden here
-		/// </summary>
-		[JsonProperty("xmatterName")]
-		public string XMatterNameOverride { get; set; }
 
 		public void SetUploader(string id)
 		{
