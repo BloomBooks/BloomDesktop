@@ -75,6 +75,8 @@ namespace Bloom.Book
 		IEnumerable<string> GetNarrationAudioFileNamesReferencedInBook(bool includeWav);
 		IEnumerable<string> GetBackgroundMusicFileNamesReferencedInBook();
 		void EnsureOriginalTitle();
+
+		IEnumerable<string> GetActivityFolderNamesReferencedInBook();
 	}
 
 	public class BookStorage : IBookStorage

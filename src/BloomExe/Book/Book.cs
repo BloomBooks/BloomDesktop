@@ -3594,6 +3594,7 @@ namespace Bloom.Book
 			UpdateQuizFeature();
 			UpdateMotionFeature();
 			UpdateComicFeature();
+			UpdateActivityFeature();
 		}
 
 		/// <summary>
@@ -3678,6 +3679,14 @@ namespace Bloom.Book
 			// If we wanted to, it is also possible to compute it as a language-specific feature.
 			// (That is, check if the languages in the book have non-empty text for part of the quiz section)
 			BookInfo.MetaData.Feature_Quiz = CollectionSettings.HaveEnterpriseFeatures && HasQuizPages;
+		}
+
+		/// <summary>
+		/// Updates the feature in bookInfo.metadata to indicate whether the book contains activities
+		/// </summary>
+		private void UpdateActivityFeature()
+		{
+			BookInfo.MetaData.Feature_Activity = Storage.GetActivityFolderNamesReferencedInBook().Any();
 		}
 
 		/// <summary>
