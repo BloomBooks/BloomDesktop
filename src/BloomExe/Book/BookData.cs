@@ -1467,8 +1467,13 @@ namespace Bloom.Book
 				}
 			} else
 			{
-				string encodedOriginalTitle = title?.TextAlternatives.GetExactAlternative(_collectionSettings.Language1Iso639Code);
-				string decodedOriginalTitle = BookData.TextOfInnerHtml(encodedOriginalTitle);
+				string innerHtml = title?.TextAlternatives.GetExactAlternative(_collectionSettings.Language1Iso639Code);
+				string unecodedOriginalTitle = BookData.TextOfInnerHtml(innerHtml);
+
+				// Note: Even though encodedOriginalTitle and innerHtml are both encoded,
+				// they are NOT equivalent. InnerHtml could contain nested markup (like paragraph tags),
+				// but we don't want surrounding paragraph tags/etc. in our encodedOriginalTitle.
+				string encodedOriginalTitle = HttpUtility.HtmlEncode(unecodedOriginalTitle);
 
 				// _dataset.TextVariables is expected to contain an ENCODED string!
 				// info.OriginalTitle is expected to contain a DECODED string
@@ -1476,7 +1481,7 @@ namespace Bloom.Book
 				UpdateSingleTextVariableInDataDiv("originalTitle", _dataset.TextVariables["originalTitle"].TextAlternatives);
 				if (info != null)
 				{
-					info.OriginalTitle = decodedOriginalTitle;
+					info.OriginalTitle = unecodedOriginalTitle;
 				}
 			}
 		}
