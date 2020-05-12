@@ -2611,6 +2611,49 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void UpdateMetadataFeatures_ActivityMissing_ActivityFeatureFalse()
+		{
+			var html = @"<html>
+					<body>
+<div class='bloom-page simple-comprehension-quiz bloom-interactive-page'>
+	<div class='marginBox'>
+		
+	</div>
+</div>
+</body></html>";
+
+			var book = CreateBookWithPhysicalFile(html);
+			book.BookInfo.MetaData.Feature_Activity = true; // spurious, see if it gets cleaned up
+
+			book.UpdateMetadataFeatures(false, false, false, null);
+
+			Assert.AreEqual(false, book.BookInfo.MetaData.Feature_Activity, "Activity");
+			CollectionAssert.AreEquivalent(new string[0], book.BookInfo.MetaData.Features, "Features");
+		}
+
+		[Test]
+		public void UpdateMetadataFeatures_ActivityAdded_ActivityFeatureTrue()
+		{
+			var html = @"<html>
+					<body>
+<div class='bloom-page simple-comprehension-quiz bloom-interactive-page'>
+	<div class='marginBox'>
+		<div class='bloom-widgetContainer'>
+			<iframe src='something'></iframe>
+		</div>
+	</div>
+</div>
+</body></html>";
+
+			var book = CreateBookWithPhysicalFile(html);
+
+			book.UpdateMetadataFeatures(false, false, false, null);
+
+			Assert.AreEqual(true, book.BookInfo.MetaData.Feature_Activity, "Activity");
+			CollectionAssert.AreEquivalent(new string[] { "activity" }, book.BookInfo.MetaData.Features, "Features");
+		}
+
+		[Test]
 		public void UpdateMetadataFeatures_ComicMissing_ComicFeatureFalse()
 		{
 			// Setup

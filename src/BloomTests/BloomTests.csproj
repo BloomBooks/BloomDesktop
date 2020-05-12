@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -168,6 +168,7 @@
     <Compile Include="Book\DataSetTests.cs" />
     <Compile Include="Book\BookStorage_ReplacePageTests.cs" />
     <Compile Include="Book\LicenseCheckerTests.cs" />
+    <Compile Include="Edit\MakeActivityTests.cs" />
     <Compile Include="TestDoubles\Book\FakeBookServer.cs" />
     <Compile Include="CollectionTab\LibraryListViewTests.cs" />
     <Compile Include="Publish\BloomReaderPublishTests.cs" />
@@ -226,6 +227,7 @@
     <Compile Include="UpdateVersionTableTests.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="Utils\TextUtilsTests.cs" />
+    <Compile Include="Utils\ZipUtils.cs" />
     <Compile Include="WebLibraryIntegration\BloomLinkArgsTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomParseClientTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3ClientTests.cs" />

@@ -1116,6 +1116,7 @@ namespace Bloom.Book
 				if (Feature_Motion) features.Add("motion");
 				if (Feature_Quiz) features.Add("quiz");
 				if (Feature_Comic) features.Add("comic");
+				if (Feature_Activity) features.Add("activity");
 
 				return features.ToArray();
 			}
@@ -1124,6 +1125,7 @@ namespace Bloom.Book
 				Feature_Motion = value.Contains("motion");
 				Feature_Quiz = value.Contains("quiz");
 				Feature_Comic = value.Contains("comic");
+				Feature_Activity = value.Contains("activity");
 
 				Feature_Blind_LangCodes = new HashSet<string>();
 				Feature_TalkingBook_LangCodes = new HashSet<string>();
@@ -1199,6 +1201,9 @@ namespace Bloom.Book
 		// The element might be "", which means that the SL language code was not set in the collection settings.
 		[JsonIgnore]
 		public IEnumerable<string> Feature_SignLanguage_LangCodes { get; set; }
+
+		[JsonIgnore]
+		public bool Feature_Activity { get; set; }
 
 		[JsonIgnore]
 		public bool Feature_Blind { get { return Feature_Blind_LangCodes?.Any() == true; } }

@@ -159,8 +159,8 @@ namespace BloomTests.Book
 
 			data.SuckInDataFromEditedDom(bookDom, info);
 
-			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.EqualTo(titleXml), "Data should return the InnerXML (NOT the InnerText) of the title");
-			Assert.That(bookDom.SelectSingleNode("//div[@id='bloomDataDiv']/div[@data-book='originalTitle']").InnerXml, Is.EqualTo(titleXml));
+			Assert.That(data.GetVariableOrNull("originalTitle", "*"), Is.EqualTo(encodedTitle), "Data should return the InnerXML (NOT the InnerText) of the title");
+			Assert.That(bookDom.SelectSingleNode("//div[@id='bloomDataDiv']/div[@data-book='originalTitle']").InnerXml, Is.EqualTo(encodedTitle));
 			Assert.That(info.OriginalTitle, Is.EqualTo(unencodedTitle));
 		}
 

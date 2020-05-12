@@ -403,6 +403,7 @@
     <Compile Include="Book\DataSet.cs" />
     <Compile Include="Book\StyleSheetLinkSorter.cs" />
     <Compile Include="Book\TranslationGroupManager.cs" />
+    <Compile Include="ToPalaso\DirectoryUtils.cs" />
     <Compile Include="ToPalaso\SafeInvoke.cs" />
     <Compile Include="ToPalaso\XmlExtensions.cs" />
     <Compile Include="UrlPathString.cs" />
@@ -635,6 +636,7 @@
     <Compile Include="ApplicationUpdateSupport.cs" />
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="Utils\TextUtils.cs" />
+    <Compile Include="Utils\ZipUtils.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
     <Compile Include="WebLibraryIntegration\IProgressDialog.cs" />
     <Compile Include="web\controllers\AudioSegmentationApi.cs" />
