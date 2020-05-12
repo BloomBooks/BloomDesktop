@@ -514,6 +514,30 @@ h2 {
             max-width: 100%;
         }
     }
+    .bloom-widgetContainer {
+        box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+        &.bloom-noWidgetSelected {
+            background: url("widget-placeholder.svg") no-repeat center;
+            // enhance: video placeholder looks good using contain. That's better in
+            // principle, because it will fit however awkward the container shape;
+            // but it looks too big. Possibly we should edit the svg and give the image
+            // a border there? But then I think it will be smaller than we want in
+            // the page thumbnail list. May need two versions?
+            background-size: 50%;
+        }
+        iframe {
+            // The iframe containing the widget should fill the widget container.
+            height: 100%;
+            width: 100%;
+            box-sizing: border-box; // currently redundant, but anything with 100% dimensions should have this
+            border: none; // leave everything up to the content.
+        }
+
+        // above so buttons show
+        z-index: @imageContainerZIndex;
+    }
     .bloom-editable {
         overflow-y: hidden;
     }

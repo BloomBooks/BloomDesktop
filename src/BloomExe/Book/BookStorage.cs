@@ -161,7 +161,7 @@ namespace Bloom.Book
 				// We reference PathToExistingHtml about 3 times per book when doing ExpensiveInitialization.
 				// Let's make it not quite so expensive.
 				// But let's at least make sure that "existing html" actually does (the user could have manually renamed it)
-				if (!string.IsNullOrEmpty(_cachedFolderPath) && FolderPath == _cachedFolderPath && RobustFile.Exists(_cachedPathToHtml))
+				if (!String.IsNullOrEmpty(_cachedFolderPath) && FolderPath == _cachedFolderPath && RobustFile.Exists(_cachedPathToHtml))
 				{
 					return _cachedPathToHtml;
 				}
@@ -226,18 +226,18 @@ namespace Bloom.Book
 		public static string GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(HtmlDom dom, string path)
 		{
 			var versionString = dom.GetMetaValue("BloomFormatVersion", "").Trim();
-			if (string.IsNullOrEmpty(versionString))
+			if (String.IsNullOrEmpty(versionString))
 				return "";// "This file lacks the following required element: <meta name='BloomFormatVersion' content='x.y'>";
 
 			float versionFloat = 0;
-			if (!float.TryParse(versionString, NumberStyles.Float, CultureInfo.InvariantCulture, out versionFloat))
+			if (!Single.TryParse(versionString, NumberStyles.Float, CultureInfo.InvariantCulture, out versionFloat))
 				return "This file claims a version number that isn't really a number: " + versionString;
 
-			if (versionFloat > float.Parse(kMaxBloomFormatVersionToRead, CultureInfo.InvariantCulture))
+			if (versionFloat > Single.Parse(kMaxBloomFormatVersionToRead, CultureInfo.InvariantCulture))
 			{
 				var msg = LocalizationManager.GetString("Errors.NeedNewerVersion",
 					"{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}", "{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.");
-				msg = string.Format(msg, path, $"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite)}'>BloomLibrary.org</a>");
+				msg = String.Format(msg, path, $"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite)}'>BloomLibrary.org</a>");
 				msg += $". (Format {versionString} vs. {kMaxBloomFormatVersionToRead})";
 				return msg;
 			}
@@ -333,7 +333,7 @@ namespace Bloom.Book
 			BookInfo.FormatVersion = formatVersion;
 
 			var requiredVersions = GetRequiredVersionsString(Dom);
-			if (!string.IsNullOrEmpty(requiredVersions))
+			if (!String.IsNullOrEmpty(requiredVersions))
 			{
 				Dom.UpdateMetaElement("FeatureRequirement", requiredVersions);
 			}
@@ -363,7 +363,7 @@ namespace Bloom.Book
 			watch.Stop();
 			TroubleShooterDialog.Report($"Validating book took {watch.ElapsedMilliseconds} milliseconds");
 
-			if (!string.IsNullOrEmpty(errors))
+			if (!String.IsNullOrEmpty(errors))
 			{
 				Logger.WriteEvent("Errors saving book {0}: {1}", PathToExistingHtml, errors);
 				var badFilePath = PathToExistingHtml + ".bad";
@@ -371,11 +371,11 @@ namespace Bloom.Book
 				// delete the temporary file since we've made a copy of it.
 				RobustFile.Delete(tempPath);
 				//hack so we can package this for palaso reporting
-				errors += string.Format("{0}{0}{0}Contents:{0}{0}{1}", Environment.NewLine,
+				errors += String.Format("{0}{0}{0}Contents:{0}{0}{1}", Environment.NewLine,
 					RobustFile.ReadAllText(badFilePath));
 				var ex = new XmlSyntaxException(errors);
 
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(ex,
+				ErrorReport.NotifyUserOfProblem(ex,
 					"Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " +
 					badFilePath +
 					".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
@@ -384,7 +384,7 @@ namespace Bloom.Book
 			else
 			{
 				Logger.WriteMinorEvent("ReplaceFileWithUserInteractionIfNeeded({0},{1})", tempPath, PathToExistingHtml);
-				if (!string.IsNullOrEmpty(tempPath))
+				if (!String.IsNullOrEmpty(tempPath))
 					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, GetBackupFilePath());
 			}
 		}
@@ -422,9 +422,9 @@ namespace Bloom.Book
 		private static string GetBloomFormatVersionToWrite(string existingVersion)
 		{
 			float existingVersionFloat;
-			if (!float.TryParse(existingVersion, out existingVersionFloat))
+			if (!Single.TryParse(existingVersion, out existingVersionFloat))
 				return kBloomFormatVersionToWrite;
-			if (existingVersionFloat > float.Parse(kBloomFormatVersionToWrite))
+			if (existingVersionFloat > Single.Parse(kBloomFormatVersionToWrite))
 				return existingVersion;
 			return kBloomFormatVersionToWrite;
 		}
@@ -799,7 +799,7 @@ namespace Bloom.Book
 			//Collect up all the image files in our book's directory
 			var imageFiles = new List<string>();
 			var imageExtentions = new HashSet<string>(new []{ ".jpg", ".png", ".svg" });
-			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "placeholder", "license", "video-placeholder", "coverImage200" });
+			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "placeholder", "license", "video-placeholder", "coverImage200", "widget-placeholder" });
 			foreach (var path in Directory.EnumerateFiles(FolderPath).Where(
 				s => imageExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
 			{
@@ -931,6 +931,22 @@ namespace Bloom.Book
 			}
 		}
 
+		public void CleanupUnusedActivities()
+		{
+			var activityFolderPath = GetActivityFolderPath(FolderPath);
+			if (!Directory.Exists(activityFolderPath))
+				return;
+			var activityFolders = Directory.GetDirectories(activityFolderPath);
+			var wantedFolders = new HashSet<string>(GetActivityFolderNamesReferencedInBook());
+
+			foreach (var folder in activityFolders)
+			{
+				if (wantedFolders.Contains(Path.GetFileName(folder)))
+					continue;
+				SIL.IO.RobustIO.DeleteDirectoryAndContents(folder);
+			}
+		}
+
 		/// <summary>
 		/// Returns all possible file names for audio narration which are referenced in the DOM.
 		/// This should include items from the data div.
@@ -961,6 +977,16 @@ namespace Bloom.Book
 				foreach (var extension in extensionsToInclude)
 					// Should be a simple append, but previous code had ChangeExtension, so being defensive
 					yield return GetNormalizedPathForOS(Path.ChangeExtension(narrationId, extension));
+		}
+
+		public IEnumerable<string> GetActivityFolderNamesReferencedInBook()
+		{
+			var widgetElements = Dom.SafeSelectNodes("//*[contains(@class, 'bloom-widgetContainer')]/iframe");
+			foreach (XmlElement elt in widgetElements)
+			{
+				var src = elt.GetAttribute("src");
+				yield return Path.GetFileName(Path.GetDirectoryName(src));
+			}
 		}
 
 		/// <summary>
@@ -1078,7 +1104,7 @@ namespace Bloom.Book
 		{
 			return (from XmlElement videoContainerElements in HtmlDom.SelectChildVideoElements(element)
 				select HtmlDom.GetVideoElementUrl(new ElementProxy(videoContainerElements as XmlElement)).PathOnly.NotEncoded)
-				.Where(path => !string.IsNullOrEmpty(path)).Distinct().ToList();
+				.Where(path => !String.IsNullOrEmpty(path)).Distinct().ToList();
 		}
 
 		#endregion Video Files
@@ -1666,6 +1692,7 @@ namespace Bloom.Book
 					CleanupUnusedImageFiles();
 					CleanupUnusedAudioFiles(isForPublish: false);
 					CleanupUnusedVideoFiles();
+					CleanupUnusedActivities();
 				}
 			}
 		}
@@ -1675,7 +1702,7 @@ namespace Bloom.Book
 			var backupPath = GetBackupFilePath();
 			string corruptFilePath = GetUniqueFileName(FolderPath, PrefixForCorruptHtmFiles, "htm");
 			// BL-6099 it could be missing altogether if we had a bad crash or someone's anti-virus is acting up.
-			if (string.IsNullOrEmpty(pathToExistingHtml))
+			if (String.IsNullOrEmpty(pathToExistingHtml))
 			{
 				RobustFile.Copy(backupPath, GetHtmCandidate(Path.GetDirectoryName(backupPath)));
 			}
@@ -1788,7 +1815,7 @@ namespace Bloom.Book
 				// a template preview or a sample shell preview, which seems rather unimportant.
 				if (FolderPath.StartsWith(BloomFileLocator.FactoryCollectionsDirectory, StringComparison.Ordinal))
 					return;
-				if (!string.IsNullOrEmpty(_collectionSettings.BrandingProjectKey))
+				if (!String.IsNullOrEmpty(_collectionSettings.BrandingProjectKey))
 				{
 					var brandingFolder = BloomFileLocator.GetBrandingFolder(_collectionSettings.BrandingProjectKey);
 
@@ -2036,7 +2063,7 @@ namespace Bloom.Book
 
 			// only add brandingCSS is there is one for the current branding
 			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", _collectionSettings.BrandingProjectKey, "branding.css");
-			if (!string.IsNullOrEmpty(brandingCssPath))
+			if (!String.IsNullOrEmpty(brandingCssPath))
 			{
 				dom.AddStyleSheet("branding.css");
 			}
@@ -2260,6 +2287,11 @@ namespace Bloom.Book
 			{
 				BookInfo.OriginalTitle = content;
 			}
+		}
+
+		internal static string GetActivityFolderPath(string bookFolderPath)
+		{
+			return Path.Combine(bookFolderPath, "activities");
 		}
 	}
 }

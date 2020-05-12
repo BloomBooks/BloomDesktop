@@ -368,6 +368,10 @@ function createTypeSelectors() {
     );
     videoLink.click(makeVideoFieldClickHandler);
     var orDiv = $("<div data-i18n='EditTab.CustomPage.Or'>or</div>");
+    var htmlWidgetLink = $(
+        "<a href='' data-i18n='EditTab.CustomPage.HtmlWidget'>HTML Widget</a>"
+    );
+    htmlWidgetLink.click(makeHtmlWidgetFieldClickHandler);
     links
         .append(pictureLink)
         .append(",")
@@ -375,9 +379,12 @@ function createTypeSelectors() {
         .append(videoLink)
         .append(",")
         .append(space)
+        .append(textLink)
+        .append(",")
+        .append(space)
         .append(orDiv)
         .append(space)
-        .append(textLink);
+        .append(htmlWidgetLink);
     return $(
         "<div class='container-selector-links bloom-ui origami-ui'></div>"
     ).append(links);
@@ -448,6 +455,24 @@ function makeVideoFieldClickHandler(e) {
     // everywhere, this one is only meant to be around when needed. This call asks the server to make
     // sure it is present in the book folder.
     BloomApi.post("edit/pageControls/requestVideoPlaceHolder");
+    $(this)
+        .closest(".selector-links")
+        .remove();
+}
+
+function makeHtmlWidgetFieldClickHandler(e) {
+    e.preventDefault();
+    var container = $(this).closest(".split-pane-component-inner");
+    addUndoPoint();
+    var widgetContainer = $(
+        "<div class='bloom-widgetContainer bloom-leadingElement bloom-noWidgetSelected'></div>"
+    );
+    container.append(widgetContainer);
+    // For the book to look right when simply opened in an editor without the help of our local server,
+    // the image needs to be in the book folder. Unlike the regular placeholder, which we copy
+    // everywhere, this one is only meant to be around when needed. This call asks the server to make
+    // sure it is present in the book folder.
+    BloomApi.post("edit/pageControls/requestWidgetPlaceHolder");
     $(this)
         .closest(".selector-links")
         .remove();
