@@ -16,27 +16,31 @@ $(() => {
 });
 
 export function setupOrigami(isBookLocked: boolean) {
-    $(".customPage").append(
-        getOrigamiControl()
-            .append(createTypeSelectors())
-            .append(createTextBoxIdentifier())
-    );
+    BloomApi.get("featurecontrol/showAdvancedFeatures", result => {
+        $(".customPage").append(
+            getOrigamiControl()
+                .append(createTypeSelectors(result.data))
+                .append(createTextBoxIdentifier())
+        );
+        // I'm not clear why the rest of this needs to wait until we have
+        // result, but none of the controls shows up if we leave it all
+        // outside the result function.
+        if (isBookLocked) {
+            //$(".origami-toggle").attr("title", "localized tooltip");
+            $("#myonoffswitch").attr("disabled", "true");
+        } else {
+            $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
+        }
 
-    if (isBookLocked) {
-        //$(".origami-toggle").attr("title", "localized tooltip");
-        $("#myonoffswitch").attr("disabled", "true");
-    } else {
-        $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
-    }
+        if ($(".customPage .marginBox.origami-layout-mode").length) {
+            setupLayoutMode();
+            $("#myonoffswitch").prop("checked", true);
+        }
 
-    if ($(".customPage .marginBox.origami-layout-mode").length) {
-        setupLayoutMode();
-        $("#myonoffswitch").prop("checked", true);
-    }
-
-    $(".customPage")
-        .find("*[data-i18n]")
-        .localize();
+        $(".customPage")
+            .find("*[data-i18n]")
+            .localize();
+    });
 }
 
 export function cleanupOrigami() {
@@ -354,7 +358,7 @@ function getCloseButton() {
     closeButton.click(closeClickHandler);
     return closeButton;
 }
-function createTypeSelectors() {
+function createTypeSelectors(includeWidget: boolean) {
     var space = " ";
     var links = $("<div class='selector-links bloom-ui origami-ui'></div>");
     var pictureLink = $(
@@ -368,16 +372,31 @@ function createTypeSelectors() {
     );
     videoLink.click(makeVideoFieldClickHandler);
     var orDiv = $("<div data-i18n='EditTab.CustomPage.Or'>or</div>");
+    var htmlWidgetLink = $(
+        "<a href='' data-i18n='EditTab.CustomPage.HtmlWidget'>HTML Widget</a>"
+    );
+    htmlWidgetLink.click(makeHtmlWidgetFieldClickHandler);
     links
         .append(pictureLink)
         .append(",")
         .append(space)
         .append(videoLink)
         .append(",")
-        .append(space)
-        .append(orDiv)
-        .append(space)
-        .append(textLink);
+        .append(space);
+    if (includeWidget) {
+        links
+            .append(textLink)
+            .append(",")
+            .append(space)
+            .append(orDiv)
+            .append(space)
+            .append(htmlWidgetLink);
+    } else {
+        links
+            .append(orDiv)
+            .append(space)
+            .append(textLink);
+    }
     return $(
         "<div class='container-selector-links bloom-ui origami-ui'></div>"
     ).append(links);
@@ -448,6 +467,24 @@ function makeVideoFieldClickHandler(e) {
     // everywhere, this one is only meant to be around when needed. This call asks the server to make
     // sure it is present in the book folder.
     BloomApi.post("edit/pageControls/requestVideoPlaceHolder");
+    $(this)
+        .closest(".selector-links")
+        .remove();
+}
+
+function makeHtmlWidgetFieldClickHandler(e) {
+    e.preventDefault();
+    var container = $(this).closest(".split-pane-component-inner");
+    addUndoPoint();
+    var widgetContainer = $(
+        "<div class='bloom-widgetContainer bloom-leadingElement bloom-noWidgetSelected'></div>"
+    );
+    container.append(widgetContainer);
+    // For the book to look right when simply opened in an editor without the help of our local server,
+    // the image needs to be in the book folder. Unlike the regular placeholder, which we copy
+    // everywhere, this one is only meant to be around when needed. This call asks the server to make
+    // sure it is present in the book folder.
+    BloomApi.post("edit/pageControls/requestWidgetPlaceHolder");
     $(this)
         .closest(".selector-links")
         .remove();

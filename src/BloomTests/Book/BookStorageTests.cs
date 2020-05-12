@@ -378,6 +378,52 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void CleanupUnusedActivities_BookHadUnusedActivities_UnusedOnesRemoved()
+		{
+			var activityPath = BookStorage.GetActivityFolderPath(_folder.Path);
+			Directory.CreateDirectory(activityPath);
+
+			var ballActivityPath = Path.Combine(activityPath, "ball");
+			var ballIndexPath = Path.Combine(ballActivityPath, "index.htm");
+			Directory.CreateDirectory(ballActivityPath);
+			File.WriteAllText(ballIndexPath, @"nonsense for testing");
+			var ballCssPath = Path.Combine(ballActivityPath, "rubbish.css");
+			File.WriteAllText(ballCssPath, "rubbish css");
+
+			var unusedActivityPath = Path.Combine(activityPath, "unused");
+			var unusedIndexPath = Path.Combine(unusedActivityPath, "index.htm");
+			Directory.CreateDirectory(unusedActivityPath);
+			File.WriteAllText(unusedIndexPath, @"nonsense for testing");
+			var unusedCssPath = Path.Combine(unusedActivityPath, "rubbish.css");
+			File.WriteAllText(unusedCssPath, "rubbish css");
+
+			// Verify setup
+			Assert.IsTrue(File.Exists(ballIndexPath));
+			Assert.IsTrue(File.Exists(ballCssPath));
+			Assert.IsTrue(File.Exists(unusedIndexPath));
+			Assert.IsTrue(File.Exists(unusedCssPath));
+
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					$"<html><body><div class='bloom-page'><div class='bloom-widgetContainer'>" +
+					"    <iframe src='activities/ball/index.htm'/>" +
+					$"</div></div>" +
+					"</body></html>");
+
+			// I make this call here as a reminder that it's the function the test is about,
+			// and so the test will survive if we should happen to remove the call to it
+			// during GetInitialStorageWithCustomHtml(). But actually the redundant files
+			// have already been removed.
+			storage.CleanupUnusedActivities();
+
+
+			Assert.IsTrue(File.Exists(ballIndexPath), "ballIndex");
+			Assert.IsTrue(File.Exists(ballCssPath), "ball CSS");
+			Assert.IsFalse(File.Exists(unusedIndexPath), "Unused activity file");
+			Assert.IsFalse(File.Exists(unusedCssPath), "Unused aux file");
+		}
+
+		[Test]
 		public  void CleanupUnusedImageFiles_BookHadUnusedImages_ImagesRemoved()
 		{
 			var storage =

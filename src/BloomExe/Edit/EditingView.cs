@@ -28,6 +28,7 @@ using SIL.Windows.Forms.ImageToolbox.ImageGallery;
 using SIL.Windows.Forms.Widgets;
 using System.Globalization;
 using Bloom.web;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace Bloom.Edit
 {
@@ -174,6 +175,8 @@ namespace Bloom.Edit
 			_ignoreNextAppFocusChange = true;
 		}
 #endif
+
+		public EditingModel Model => _model;
 
 		/// <summary>
 		/// Might add a menu item to the Gecko context menu.
@@ -637,6 +640,7 @@ namespace Bloom.Edit
 				OnCopyImage(ge);
 			if(target.ClassName.Contains("editMetadataButton"))
 				OnEditImageMetdata(ge);
+			// (similar changeWidgetButton handled in modern way in javascript)
 
 			var anchor = target as GeckoAnchorElement;
 			if (anchor == null)

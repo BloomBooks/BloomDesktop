@@ -46,6 +46,21 @@ body {
                 display: none;
             }
         }
+        .bloom-widgetContainer {
+            background: center no-repeat
+                url("../../images/widget-placeholder.svg");
+            // we want this pretty conspicuous, it may be taking the place of a bright game.
+            // So make it as big as will fit. Visually, this is a bit bigger than we make
+            // the missing-widget icon on the main page, but note that this remains even
+            // once a widget is selected.
+            background-size: contain;
+            // Trying to display the widget itself in a page thumbnail seems likely to cause
+            // memory problems at the least; so if there's an actual iframe, typically holding
+            // a widget, we just hide it.
+            iframe {
+                display: none;
+            }
+        }
     }
 }
 
