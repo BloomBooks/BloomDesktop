@@ -3116,10 +3116,10 @@ blob@0.0.5:
   resolved "https://registry.yarnpkg.com/blob/-/blob-0.0.5.tgz#d680eeef25f8cd91ad533f5b01eed48e64caf683"
   integrity sha512-gaqbzQPqOoamawKg0LGVd7SzLgXS+JH61oWprSLH+P+abTczqJbhTR8CmJ2u9/bUYNmHTGJx/UEmn6doAvvuig==
 
-bloom-player@1.1.65:
-  version "1.1.65"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-1.1.65.tgz#1ec2197285f0e3c1e2d0498ba8450782b93a56be"
-  integrity sha512-q3DQUsAxBlf3rjrHtuYNec4APosOsF7oRvZ9UHNXSoMqeJ9+J8gyzyVURKa3u43LCzVuUMxuMQ3txwpcY8BNPw==
+bloom-player@1.1.68:
+  version "1.1.68"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-1.1.68.tgz#d997b38d2fc94386dd8a2c873df2ade139299899"
+  integrity sha512-z2cO2Sk5YP6kPYJ3hr9TI2T096V084dKJEAEHqT/rbJSier9TK3VeXuST61NLaamaiGFRM5ehotnWaptTT2mOA==
   dependencies:
     dynamic-import-polyfill "^0.1.1"
 
