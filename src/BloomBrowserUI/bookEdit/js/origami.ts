@@ -16,27 +16,31 @@ $(() => {
 });
 
 export function setupOrigami(isBookLocked: boolean) {
-    $(".customPage").append(
-        getOrigamiControl()
-            .append(createTypeSelectors())
-            .append(createTextBoxIdentifier())
-    );
+    BloomApi.get("featurecontrol/showAdvancedFeatures", result => {
+        $(".customPage").append(
+            getOrigamiControl()
+                .append(createTypeSelectors(result.data))
+                .append(createTextBoxIdentifier())
+        );
+        // I'm not clear why the rest of this needs to wait until we have
+        // result, but none of the controls shows up if we leave it all
+        // outside the result function.
+        if (isBookLocked) {
+            //$(".origami-toggle").attr("title", "localized tooltip");
+            $("#myonoffswitch").attr("disabled", "true");
+        } else {
+            $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
+        }
 
-    if (isBookLocked) {
-        //$(".origami-toggle").attr("title", "localized tooltip");
-        $("#myonoffswitch").attr("disabled", "true");
-    } else {
-        $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
-    }
+        if ($(".customPage .marginBox.origami-layout-mode").length) {
+            setupLayoutMode();
+            $("#myonoffswitch").prop("checked", true);
+        }
 
-    if ($(".customPage .marginBox.origami-layout-mode").length) {
-        setupLayoutMode();
-        $("#myonoffswitch").prop("checked", true);
-    }
-
-    $(".customPage")
-        .find("*[data-i18n]")
-        .localize();
+        $(".customPage")
+            .find("*[data-i18n]")
+            .localize();
+    });
 }
 
 export function cleanupOrigami() {
@@ -354,7 +358,7 @@ function getCloseButton() {
     closeButton.click(closeClickHandler);
     return closeButton;
 }
-function createTypeSelectors() {
+function createTypeSelectors(includeWidget: boolean) {
     var space = " ";
     var links = $("<div class='selector-links bloom-ui origami-ui'></div>");
     var pictureLink = $(
@@ -378,13 +382,21 @@ function createTypeSelectors() {
         .append(space)
         .append(videoLink)
         .append(",")
-        .append(space)
-        .append(textLink)
-        .append(",")
-        .append(space)
-        .append(orDiv)
-        .append(space)
-        .append(htmlWidgetLink);
+        .append(space);
+    if (includeWidget) {
+        links
+            .append(textLink)
+            .append(",")
+            .append(space)
+            .append(orDiv)
+            .append(space)
+            .append(htmlWidgetLink);
+    } else {
+        links
+            .append(orDiv)
+            .append(space)
+            .append(textLink);
+    }
     return $(
         "<div class='container-selector-links bloom-ui origami-ui'></div>"
     ).append(links);
