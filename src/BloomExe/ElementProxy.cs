@@ -209,6 +209,24 @@ namespace Bloom
 			return ((IList) elementClassName.Split(' ')).Contains(className);
 		}
 
+		public void AddClass(string className) => AddOrRemoveClass(className, true);
+		public void RemoveClass(string className) => AddOrRemoveClass(className, false);
+
+		public void AddOrRemoveClass(string className, bool wanted)
+		{
+			var classes = GetAttribute("class").Split(' ').ToList();
+			if (wanted)
+			{
+				if (!classes.Contains(className))
+					classes.Add(className);
+			}
+			else
+			{
+				classes.Remove(className);
+			}
+			SetAttribute("class", string.Join(" ", classes));
+		}
+
 		public bool SelfOrAncestorHasClass(string className)
 		{
 			if (HasClass(this, className))
@@ -224,6 +242,16 @@ namespace Bloom
 				parent = parent.Parent;
 			}
 			return false;
+		}
+
+		public ElementProxy SelfOrAncestorWithClass(string className)
+		{
+			for (var test = this; test != null; test = test.Parent)
+			{
+				if (HasClass(test,className))
+					return test;
+			}
+			return null;
 		}
 	}
 }
