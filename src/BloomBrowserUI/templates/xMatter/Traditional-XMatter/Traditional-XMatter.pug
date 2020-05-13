@@ -6,7 +6,9 @@ html
 		meta(charset='UTF-8')
 		meta(name='BloomFormatVersion', content='2.0')
 		title Traditional Front & Back Matter
-		+stylesheets('Traditional-XMatter.css')
+		//- Make the stylesheets section available to extending .pug files.
+		block stylesheets
+			+stylesheets('Traditional-XMatter.css')
 	body
 		+factoryStandard-outsideFrontCover
 		+factory-insideFrontCover
