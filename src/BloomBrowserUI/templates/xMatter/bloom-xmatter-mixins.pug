@@ -95,8 +95,8 @@ mixin standard-cover-contents
 	//- enhance: could we 1) adjust stylesheet and 2) preserve bookTitle value to simplify this to
 	//- 	+field-matter('bookTitle').Title-On-Cover-style
 	//- 		label.bubble Book title in {lang}
-	//- This current pattern is born of pre-jade days when it didn't matter much, but now in the
-	//- light of jade it is overly complicated.
+	//- This current pattern is born of pre-pug days when it didn't matter much, but now in the
+	//- light of pug it is overly complicated.
 
 	block cover-above-title
 		//- normally nothing here
@@ -128,10 +128,10 @@ mixin standard-cover-contents
 
 
 
-// Standard cover image has a (normally hidden) image description field.
-// The usual code for creating image description on demand is not satisfactory,
-// because the cover image description needs to have a data-book attribute
-// so that the contents will survive changes to xmatter (and updates in bringBookUpToDate)
+//- Standard cover image has a (normally hidden) image description field.
+//- The usual code for creating image description on demand is not satisfactory,
+//- because the cover image description needs to have a data-book attribute
+//- so that the contents will survive changes to xmatter (and updates in bringBookUpToDate)
 mixin standard-cover-image
 	.bloom-imageContainer
 		img(data-book="coverImage", src="placeHolder.png")
