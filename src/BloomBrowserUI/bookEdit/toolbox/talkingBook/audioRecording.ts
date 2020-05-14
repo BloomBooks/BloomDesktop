@@ -1684,6 +1684,7 @@ export default class AudioRecording {
         if (!leaveChecked) {
             this.togglePlaybackOrderCheckedClass(false);
             this.showPlaybackInput.checked = false;
+            this.updateButtonStateAsync("check");
         }
         this.setCurrentAudioElementToFirstAudioElement();
     }
