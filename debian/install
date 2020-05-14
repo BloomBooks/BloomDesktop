@@ -1,7 +1,7 @@
-lib/dotnet/SIL.Core.pdb usr/lib/bloom-desktop-alpha/
-lib/dotnet/SIL.Media.pdb usr/lib/bloom-desktop-alpha/
-lib/dotnet/SIL.Windows.Forms.pdb usr/lib/bloom-desktop-alpha/
-lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.pdb usr/lib/bloom-desktop-alpha/
-lib/dotnet/SIL.Windows.Forms.Keyboarding.pdb usr/lib/bloom-desktop-alpha/
-lib/dotnet/SIL.Windows.Forms.WritingSystems.pdb usr/lib/bloom-desktop-alpha/
-lib/dotnet/SIL.WritingSystems.pdb usr/lib/bloom-desktop-alpha/
+lib/dotnet/SIL.Core.pdb usr/lib/bloom-desktop-beta/
+lib/dotnet/SIL.Media.pdb usr/lib/bloom-desktop-beta/
+lib/dotnet/SIL.Windows.Forms.pdb usr/lib/bloom-desktop-beta/
+lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.pdb usr/lib/bloom-desktop-beta/
+lib/dotnet/SIL.Windows.Forms.Keyboarding.pdb usr/lib/bloom-desktop-beta/
+lib/dotnet/SIL.Windows.Forms.WritingSystems.pdb usr/lib/bloom-desktop-beta/
+lib/dotnet/SIL.WritingSystems.pdb usr/lib/bloom-desktop-beta/
