@@ -1,13 +1,13 @@
-Source: bloom-desktop-alpha
+Source: bloom-desktop-beta
 Section: x11
-Priority: extra
+Priority: optional
 Maintainer: Stephen McConnel <stephen_mcconnel@sil.org>
 Homepage: http://bloomlibrary.org/
 Vcs-Git: git://github.com/BloomBooks/BloomDesktop.git
 Vcs-Browser: https://github.com/BloomBooks/BloomDesktop
 Standards-Version: 3.9.7
 Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
- wget, unzip, desktop-file-utils, curl,
+ wget, unzip, desktop-file-utils, curl, git,
  optipng, libsndfile1,
  mono5-sil, libgdiplus5-sil,
  libgtk-3-0,
@@ -17,7 +17,7 @@ Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
  libgtk2.0-cil, libgtk2.0-dev,
  icu-devtools | libicu-dev (<< 52)
 
-Package: bloom-desktop-alpha
+Package: bloom-desktop-beta
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
  mono5-sil, libgdiplus5-sil, gtk-sharp5-sil, gtklp,
@@ -30,7 +30,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  ffmpeg,
  python3-aeneas | python-aeneas
 Suggests: art-of-reading3
-Replaces: bloom-desktop, bloom-desktop-beta, bloom-desktop-betainternal
+Replaces: bloom-desktop, bloom-desktop-alpha, bloom-desktop-betainternal
 Conflicts: bloom-desktop-unstable
 Description: Literacy materials development for language communities
  Bloom Desktop is an application that dramatically "lowers the bar" for
