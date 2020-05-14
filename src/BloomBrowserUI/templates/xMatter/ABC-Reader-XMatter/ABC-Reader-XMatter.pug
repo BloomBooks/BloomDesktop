@@ -1,0 +1,79 @@
+extends ../Traditional-XMatter/Traditional-XMatter.pug
+
+include ./ABC-Reader-common.pug
+
+mixin nonStandardTopic
+	//- e.g. "Cooking", but in vernacular
+	+field-prototypeDeclaredExplicity("V").abcTopic
+		label.bubble Topic in {lang}
+		+editable(kLanguageForPrototypeOnly)(data-book='abcTopic')
+
+mixin readerDescription
+	//- e.g. "Foobar Leveled Reader", will be in English only
+	+field-prototypeDeclaredExplicity("N1").readerDescription
+		label.bubble Reader description in {lang}
+		+editable(kLanguageForPrototypeOnly)(data-book='readerDescription')
+
+mixin readerDescriptionAndNonStandardTopic
+	.descriptionAndTopicRow
+		+readerDescription
+		+nonStandardTopic
+
+block append stylesheets
+	+stylesheets('ABC-Reader-XMatter.css')
+
+//-------------- COVER PAGE ---------------
+
+block cover-title
+	.titleAndNumberCircle
+		//- show title in Vernacular only
+		+field-prototypeDeclaredExplicity("V").bookTitle
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
+			block cover-title
+
+		+numberCircle
+	+readerDescriptionAndNonStandardTopic
+
+//- override is to change the data-hint for this project
+block cover-bottom-credits
+	//- this is intentionally in Vernacular while the one on the Credits Page is intentionally in English
+	//- Also intentional (!) is that these same credits are on the cover, title page, and credits page.
+	.creditsRow
+		//- Assuming everything in this project is an original +field-acknowledgments-localizedVersion("V","special instructions")
+		+field-acknowledgments-originalVersion("V","The author and the illustrator in {lang}")
+
+//-------------- TITLE PAGE ---------------
+
+block titlePageContents
+	// TITLE PAGE
+	+field-prototypeDeclaredExplicity("V")#titlePageTitleBlock
+		label.bubble Book title in {lang}
+		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style.bloom-padForOverflow(data-book='bookTitle')
+	.largeFlexGap
+
+	//- this is intentionally in Vernacular while the one on the Credits Page is intentionally in English
+	//- Also intentional (!) is that these same credits are on the cover, title page, and credits page.
+	+field-acknowledgments-originalVersion("V","The author and the illustrator in {lang}")
+
+	.smallFlexGap
+	+standard-originalContributions
+
+	+decodableStageLettersRow
+
+	//- e.g. "Foobar Leveled Reader", will be in English only
+	+readerDescriptionAndNonStandardTopic
+	.levelOrStageAndNumberRow
+		+levelOrStageAndNumber
+
+//-------------- CREDITS PAGE ---------------
+
+block creditsContent
+	+field-mono-meta("V", 'bookTitle')
+			label.bubble Book title in {lang}
+	+readerDescriptionAndNonStandardTopic
+	+levelOrStageAndNumber
+	//- this is intentionally in English while the one on the Cover & Title Pages are intentionally in Vernacular
+	+field-acknowledgments-originalVersion("N1", "The author and the illustrator in {lang}")
+
+	+creditsBrandingAndLicenseImage
