@@ -56,10 +56,12 @@ namespace BloomTests.Book
 			return storage;
 		}
 
+		protected virtual string GetTestFolderName() => "BookTests";
+
 		[SetUp]
 		public virtual void Setup()
 		{
-			_testFolder = new TemporaryFolder("BookTests");
+			_testFolder = new TemporaryFolder(GetTestFolderName());
 			_tempFolder = new TemporaryFolder(_testFolder, "book");
 
 			_bookDom = new HtmlDom(GetThreePageDom()); // a default, many tests replace this
@@ -183,9 +185,9 @@ namespace BloomTests.Book
 			});
 		}
 
-		protected void MakeSamplePngImageWithMetadata(string path)
+		protected void MakeSamplePngImageWithMetadata(string path, int width = 10, int height = 10)
 		{
-			var x = new Bitmap(10, 10);
+			var x = new Bitmap(width, height);
 			RobustImageIO.SaveImage(x, path, ImageFormat.Png);
 			x.Dispose();
 			using (var img = PalasoImage.FromFileRobustly(path))
