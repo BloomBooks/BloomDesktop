@@ -1,3 +1,4 @@
+//#define MEMORYCHECK
 // Copyright (c) 2014-2018 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
@@ -356,11 +357,6 @@ namespace Bloom.Api
 			if (ApiHandler.IsInvalidApiCall(localPath))
 				return false;
 
-#if MEMORYCHECK
-			// Check memory for the benefit of developers.  (Also see all requests as a side benefit.)
-			var debugMsg = String.Format("BloomServer.ProcessRequest(\"{0}\"", info.RawUrl);
-			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, debugMsg, false);
-#endif
 			// process request for directory index
 			if (info.RawUrl.EndsWith("/") && (Directory.Exists(localPath)))
 			{
@@ -1207,6 +1203,11 @@ namespace Bloom.Api
 					ReportMissingFile(info);
 				info.WriteError(404);	// Informing the caller is always needed.
 			}
+#if MEMORYCHECK
+			// Check memory for the benefit of developers.  (Also see all requests as a side benefit.)
+			var debugMsg = String.Format("after BloomServer.ProcessRequest(\"{0}\")", info.RawUrl);
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, debugMsg, false);
+#endif
 		}
 
 		private void ReportMissingFile(IRequestInfo info)

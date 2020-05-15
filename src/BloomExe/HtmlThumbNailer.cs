@@ -487,12 +487,12 @@ namespace Bloom
 					_syncControl.Invoke((Action) (() =>
 					{
 						Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
-						var div = browser.Document.ActiveElement.EvaluateXPath("//div[contains(@class, 'bloom-imageContainer')]").GetNodes().FirstOrDefault() as GeckoElement;
+						var div = browser.Document.ActiveElement.EvaluateXPath("//div[contains(@class, 'bloom-imageContainer')]").GetNodes().FirstOrDefault() as GeckoHtmlElement;
 						if (div != null)
 						{
-							var rect = div.GetBoundingClientRect();
-							topOfCoverImage = rect.Top;
-							bottomOfCoverImage = rect.Bottom;
+							// Note that div.GetBoundingClientRect() returns nothing useful in Geckofx60: these values appear to work okay.
+							topOfCoverImage = div.OffsetTop;
+							bottomOfCoverImage = topOfCoverImage + div.OffsetHeight;
 						}
 					}));
 

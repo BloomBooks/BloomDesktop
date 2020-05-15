@@ -1,3 +1,4 @@
+//#define MEMORYCHECK
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -488,12 +489,12 @@ namespace Bloom.Edit
 				return;
 			}
 
+#if MEMORYCHECK
+			// Check memory for the benefit of developers.
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - about to update the displayed page", false);
+#endif
 			if(_model.HaveCurrentEditableBook)
 			{
-#if MEMORYCHECK
-	// Check memory for the benefit of developers.
-				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "EditingView - about to change the page", false);
-#endif
 				_pageListView.SelectThumbnailWithoutSendingEvent(page);
 				_pageListView.UpdateThumbnailAsync(page);
 				_model.SetupServerWithCurrentPageIframeContents();
@@ -545,7 +546,15 @@ namespace Bloom.Edit
 				_browser1.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 #endif
 			}
+#if MEMORYCHECK
+			// Check memory for the benefit of developers.
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - UpdateSingleDisplayedPage() about to call UpdateDisplay()", false);
+#endif
 			UpdateDisplay();
+#if MEMORYCHECK
+			// Check memory for the benefit of developers.
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - UpdateSingleDisplayedPage() finished", false);
+#endif
 		}
 
 #if __MonoCS__
@@ -569,10 +578,12 @@ namespace Bloom.Edit
 			ChangingPages = false;
 			_model.DocumentCompleted();
 			_browser1.Focus(); //fix BL-3078 No Initial Insertion Point when any page shown
-
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			MemoryService.MinimizeHeap(true);
 #if MEMORYCHECK
-	// Check memory for the benefit of developers.
-			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "EditingView - page change completed", false);
+			// Check memory for the benefit of developers.
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - display page updated", false);
 #endif
 		}
 
@@ -1033,8 +1044,10 @@ namespace Bloom.Edit
 				}
 			}
 			Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
+#if MEMORYCHECK
 			// Check memory for the benefit of developers.  The user won't see anything.
-			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to choose picture", false);
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "about to choose picture", false);
+#endif
 			// Deep in the ImageToolboxDialog, when the user asks to see images from the ArtOfReading,
 			// We need to use the Gecko version of the thumbnail viewer, since the original ListView
 			// one has a sticky scroll bar in applications that are using Gecko.
@@ -1061,14 +1074,18 @@ namespace Bloom.Edit
 
 				dlg.SearchLanguage = searchLanguage;
 				var result = dlg.ShowDialog();
+#if MEMORYCHECK
 				// Check memory for the benefit of developers.  The user won't see anything.
-				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen or canceled", false);
+				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "picture chosen or canceled", false);
+#endif
 				if(DialogResult.OK == result && dlg.ImageInfo != null)
 				{
 					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 					SaveChangedImage(imageElement, dlg.ImageInfo, "Bloom had a problem including that image");
+#if MEMORYCHECK
 					// Warn the user if we're starting to use too much memory.
-					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen and saved", true);
+					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "picture chosen and saved", true);
+#endif
 				}
 
 				// If the user changed the search language for art of reading, remember their change. But if they didn't

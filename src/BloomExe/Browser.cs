@@ -152,6 +152,17 @@ namespace Bloom
 			// which we have no way to do, so it otherwise just fails.
 			GeckoPreferences.User["media.navigator.enabled"] = true;
 			GeckoPreferences.User["media.navigator.permission.disabled"] = true;
+
+			// (In Geckofx60) Video is being rendered with a different thread to the main page.
+			// However for some paint operations, the main thread temporary changes the ImageFactory on the container
+			// (shared by both threads) to a BasicImageFactory, which is incompatible with the video decoding.
+			// So if BasicImageFactory is set while a video image is being decoded, the decoding fails, resulting in
+			// an unhelpful "Out of Memory" error.  If HW composing is on, then the main thread doesn't switch to the
+			// BasicImageFactory, as composing is cheap (since FF is now using LAYERS_OPENGL on Linux instead of
+			// LAYERS_BASIC).  [analysis courtesy of Tom Hindle]
+			// This setting is needed only on Linux as far as we can tell.
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+				GeckoPreferences.User["layers.acceleration.force-enabled"] = true;
 		}
 
 		public Browser()
@@ -1200,8 +1211,9 @@ namespace Bloom
 			GeckoDocument doc = WebBrowser.Document;
 			var head = doc.GetElementsByTagName("head").First();
 			GeckoScriptElement script = doc.CreateElement("script") as GeckoScriptElement;
-			script.Type = "text/javascript";
-			script.Src = filename;
+			// Geckofx60 doesn't implement the GeckoScriptElement .Type and .Src properties
+			script.SetAttribute("type", "text/javascript");
+			script.SetAttribute("src", filename);
 			head.AppendChild(script);
 		}
 
@@ -1211,8 +1223,9 @@ namespace Bloom
 			GeckoDocument doc = WebBrowser.Document;
 			var head = doc.GetElementsByTagName("head").First();
 			GeckoScriptElement script = doc.CreateElement("script") as GeckoScriptElement;
-			script.Type = "text/javascript";
-			script.Text = content;
+			// Geckofx60 doesn't implement the GeckoScriptElement .Type and .Text properties
+			script.SetAttribute("type", "text/javascript");
+			script.TextContent = content;
 			head.AppendChild(script);
 		}
 
@@ -1231,15 +1244,14 @@ namespace Bloom
 				{
 					using (var context = new AutoJSContext(geckoWebBrowser.Window))
 					{
-						var result = context.EvaluateScript(script, (nsISupports)geckoWebBrowser.Window.DomWindow,
+						var jsValue = context.EvaluateScript(script, (nsISupports)geckoWebBrowser.Window.DomWindow,
 							(nsISupports)geckoWebBrowser.Document.DomObject);
-						if (!result.IsString)
+						if (!jsValue.IsString)
 							return null;
-						// This bit of magic was borrowed from GeckoFx's AutoJsContext.ConvertValueToString.
-						// Unfortuately the more convenient version of EvaluateScript which returns a string also eats exceptions
+						// This bit of magic was borrowed from GeckoFx's AutoJsContext.ConvertValueToString (which changed in Geckofx60).
+						// Unfortunately the more convenient version of EvaluateScript which returns a string also eats exceptions
 						// (though it does return a boolean...we want the stack trace, though.)
-						var v = Xpcom.XPConnect.Instance.JSValToVariant(context.ContextPointer, ref result);
-						return nsString.Get(v.GetAsAString);
+						return SpiderMonkey.JsValToString(context.ContextPointer, jsValue);
 					}
 				}
 				catch (GeckoJavaScriptException ex)

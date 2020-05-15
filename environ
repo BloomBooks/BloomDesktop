@@ -14,7 +14,8 @@ BASE="$(pwd)"
 # Also determine the location of the geckofx assemblies and shared object libraries.
 . ./environ-xulrunner
 
-GDK_SHARP=/usr/lib/cli/gdk-sharp-2.0
+#GDK_SHARP=/usr/lib/cli/gdk-sharp-2.0
+GDK_SHARP=/usr/lib/cli/glib-sharp-3.0/:/usr/lib/cli/gtk-sharp-3.0/:/usr/lib/cli/gdk-sharp-3.0/:/usr/lib/cli/atk-sharp-3.0/:/usr/lib/cli/gio-sharp-3.0/
 
 MONO_PATH="${GDK_SHARP}:${GECKOFX}"
 MONO_DEBUG=explicit-null-checks

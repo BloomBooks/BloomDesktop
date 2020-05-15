@@ -311,7 +311,7 @@ namespace Bloom.Publish.PDF
 		{
 			var browser = ((GeckoWebBrowser)_pdfViewerControl);
 			using (AutoJSContext context = new AutoJSContext (browser.Window)) {
-				nsIDOMWindow domWindow = browser.Window.DomWindow;
+				nsISupports domWindow = browser.Window.DomWindow;
 				nsIWebBrowserPrint print = Xpcom.QueryInterface<nsIWebBrowserPrint> (domWindow);
 
 				try {

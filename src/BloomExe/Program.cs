@@ -299,7 +299,8 @@ namespace Bloom
 						Browser.SetUpXulRunner();
 						Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 #if DEBUG
-						StartDebugServer();
+						if (SIL.PlatformUtilities.Platform.IsWindows)
+							StartDebugServer();
 #endif
 
 						if (!BloomIntegrityDialog.CheckIntegrity())
@@ -322,6 +323,9 @@ namespace Bloom
 						// it will have been installed already as part of the allUsers install.
 						if (!InstallerSupport.SharedByAllUsers() && FontInstaller.InstallFont("AndikaNewBasic"))
 							return 1;
+
+						// This has served its purpose on Linux, and with Geckofx60 it interferes with CommandLineRunner.
+						Environment.SetEnvironmentVariable("LD_PRELOAD", null);
 
 						Run();
 					}
@@ -894,9 +898,9 @@ namespace Bloom
 			}
 		}
 
-		static nsILocalFile toNsFile(string file)
+		static Gecko.nsILocalFileWin toNsFile(string file)
 		{
-			var nsfile = Xpcom.CreateInstance<nsILocalFile>("@mozilla.org/file/local;1");
+			var nsfile = Xpcom.CreateInstance<nsILocalFileWin>("@mozilla.org/file/local;1");
 			nsfile.InitWithPath(new nsAString(file));
 			return nsfile;
 		}
