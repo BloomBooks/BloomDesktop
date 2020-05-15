@@ -1,6 +1,7 @@
 @import "../../../bloomUI.less";
 
 @SideMargin: 6px;
+@ControlVerticalSpacing: 10px;
 
 .ui-accordion h3[data-toolId="comicTool"] {
     span.ui-accordion-header-icon {
@@ -131,13 +132,44 @@
             //    we need to create that manually.
             margin-top: 4px;
         }
+        // The goal here is to get all the controls spaced vertically the same distance apart
+        & + .MuiFormControl-root,
+        & + button {
+            margin-top: @ControlVerticalSpacing;
+        }
+        .showTailCheckbox {
+            .MuiFormControlLabel-root {
+                padding-top: @ControlVerticalSpacing;
+                .MuiCheckbox-root {
+                    padding-bottom: 0;
+                }
+            }
+            span {
+                padding-top: 1px;
+            }
+            .MuiSvgIcon-root {
+                font-size: 1.3rem; // reduce size of checkbox a bit
+            }
+        }
     }
 
     .MuiFormLabel-root,
     .MuiSelect-icon,
-    .bubbleOptionDropdown {
+    .bubbleOptionDropdown,
+    .MuiFormControlLabel-root,
+    .MuiCheckbox-root {
         color: @bloom-toolboxWhite;
     }
+
+    .MuiFormControlLabel-root,
+    .MuiFormControlLabel-label,
+    .MuiCheckbox-root {
+        &.Mui-disabled {
+            opacity: 0.4;
+            color: @bloom-toolboxWhite !important;
+        }
+    }
+
     .MuiInput-underline::after {
         // Normally there is a 2px border when the dropdown menu is open. I like it better without it, because
         // the removal of the effect seems a little off because the border persists until after you select AND THEN after you click somewhere else.
@@ -153,10 +185,6 @@
 
     .MuiSelect-icon {
         padding-right: 10px;
-    }
-
-    .MuiInput-root {
-        margin-bottom: 10px;
     }
 
     .MuiButton-root {
