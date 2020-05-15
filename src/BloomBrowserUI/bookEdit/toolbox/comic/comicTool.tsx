@@ -16,16 +16,18 @@ import * as toastr from "toastr";
 import { default as TrashIcon } from "@material-ui/icons/Delete";
 import { BloomApi } from "../../../utils/bloomApi";
 import { isLinux } from "../../../utils/isLinux";
+import { MuiCheckbox } from "../../../react_components/muiCheckBox";
 
 const ComicToolControls: React.FunctionComponent = () => {
+    const tailSuffix = "-withTail";
     // Declare all the hooks
     const [style, setStyle] = useState("none");
-    const [textColor, setTextColor] = useState("black");
     const [backgroundColor, setBackgroundColor] = useState("white");
     const [outlineColor, setOutlineColor] = useState<string | undefined>(
         undefined
     );
     const [bubbleActive, setBubbleActive] = useState(false);
+    const [showTailChecked, setShowTailChecked] = useState(false);
 
     const [isXmatter, setIsXmatter] = useState(true);
 
@@ -70,7 +72,7 @@ const ComicToolControls: React.FunctionComponent = () => {
     };
     useEffect(() => {
         if (currentBubbleSpec) {
-            setStyle(currentBubbleSpec.style);
+            setStyleAndTailControls(currentBubbleSpec.style);
             setOutlineColor(currentBubbleSpec.outerBorderColor);
             setBubbleActive(true);
             setBackgroundColor(getBackgroundColorValue(currentBubbleSpec));
@@ -78,6 +80,20 @@ const ComicToolControls: React.FunctionComponent = () => {
             setBubbleActive(false);
         }
     }, [currentBubbleSpec]);
+
+    const setStyleAndTailControls = (style: string) => {
+        let currentStyle = style;
+        if (currentStyle.endsWith(tailSuffix)) {
+            setShowTailChecked(true);
+            currentStyle = currentStyle.substr(
+                0,
+                currentStyle.length - tailSuffix.length
+            );
+        } else {
+            setShowTailChecked(false);
+        }
+        setStyle(currentStyle);
+    };
 
     // Callback for style changed
     const handleStyleChanged = event => {
@@ -87,23 +103,23 @@ const ComicToolControls: React.FunctionComponent = () => {
         setStyle(newStyle);
 
         // Update the Comical canvas on the page frame
+        // If updating to Caption and show tail box was previously checked, then show tail.
         ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
-            style: newStyle
+            style: getCompoundStyleString(newStyle)
         });
     };
 
-    // Callback for text changed
-    const handleTextColorChanged = event => {
-        const newTextColor = event.target.value;
+    // Callback for show tail checkbox changed
+    // Can only be called (presently), if style is Caption.
+    const handleShowTailChanged = (value: boolean) => {
+        setShowTailChecked(value);
 
-        // Update the toolbox controls
-        setTextColor(newTextColor);
+        const newStyle = value ? style + tailSuffix : style;
 
-        // TODO: IMPLEMENT ME in Comical
-        // // Update the Comical canvas on the page frame
-        // ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
-        //     textColor: newTextColor
-        // });
+        // Update the Comical canvas on the page frame
+        ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
+            style: newStyle
+        });
     };
 
     const specialColors = [
@@ -202,16 +218,24 @@ const ComicToolControls: React.FunctionComponent = () => {
         );
     };
 
-    const ondragstart = (ev, style) => {
+    const getCompoundStyleString = (style: string) => {
+        let compoundStyle = style;
+        if (styleSupportsShowTail(style) && showTailChecked) {
+            compoundStyle += tailSuffix;
+        }
+        return compoundStyle;
+    };
+
+    const ondragstart = (ev: React.DragEvent<HTMLElement>, style: string) => {
         // Here "bloomBubble" is a unique, private data type recognised
         // by ondragover and ondragdrop methods that BubbleManager
         // attaches to bloom image containers. It doesn't make sense to
         // drag these objects anywhere else, so they don't need any of
         // the common data types.
-        ev.dataTransfer.setData("bloomBubble", style);
+        ev.dataTransfer.setData("bloomBubble", getCompoundStyleString(style));
     };
 
-    const ondragend = (ev, style) => {
+    const ondragend = (ev: React.DragEvent<HTMLElement>, style: string) => {
         // The Linux/Mono/Geckofx environment does not produce the dragenter, dragover,
         // and drop events for the targeted element.  It does produce the dragend event
         // for the source element with screen coordinates of where the mouse was released.
@@ -222,7 +246,7 @@ const ComicToolControls: React.FunctionComponent = () => {
             ComicTool.bubbleManager().addFloatingTOPBoxWithScreenCoords(
                 ev.screenX,
                 ev.screenY,
-                style
+                getCompoundStyleString(style)
             )
         ) {
             BloomApi.postThatMightNavigate(
@@ -236,6 +260,15 @@ const ComicToolControls: React.FunctionComponent = () => {
         const active = bubbleManager.getActiveElement();
         if (active) {
             bubbleManager.deleteTOPBox(active);
+        }
+    };
+
+    const styleSupportsShowTail = (style: string) => {
+        switch (style) {
+            case "caption":
+                return true;
+            default:
+                return false;
         }
     };
 
@@ -340,38 +373,18 @@ const ComicToolControls: React.FunctionComponent = () => {
                                 </Div>
                             </MenuItem>
                         </Select>
+                        <div className="showTailCheckbox">
+                            <MuiCheckbox
+                                label="Show Tail"
+                                l10nKey="EditTab.Toolbox.ComicTool.Options.Style.ShowTail"
+                                disabled={!styleSupportsShowTail(style)}
+                                checked={showTailChecked}
+                                onCheckChanged={v => {
+                                    handleShowTailChanged(v as boolean);
+                                }}
+                            />
+                        </div>
                     </FormControl>
-                    <br />
-                    {/*
-                    <FormControl>
-                        <InputLabel htmlFor="bubble-textColor-dropdown">
-                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextColor">
-                                Text Color
-                            </Span>
-                        </InputLabel>
-                        <Select
-                            value={textColor}
-                            className="bubbleOptionDropdown"
-                            inputProps={{
-                                name: "textColor",
-                                id: "bubble-textColor-dropdown"
-                            }}
-                            MenuProps={{
-                                className: "bubble-options-dropdown-menu"
-                            }}
-                            onChange={event => {
-                                handleTextColorChanged(event);
-                            }}
-                        >
-                            <MenuItem value="white">
-                                <Div l10nKey="Common.Colors.White">White</Div>
-                            </MenuItem>
-                            <MenuItem value="black">
-                                <Div l10nKey="Common.Colors.Black">Black</Div>
-                            </MenuItem>
-                        </Select>
-                    </FormControl>
-                        <br /> */}
                     <FormControl>
                         <InputLabel htmlFor="bubble-backgroundColor-dropdown">
                             <Span l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor">
@@ -420,7 +433,6 @@ const ComicToolControls: React.FunctionComponent = () => {
                             </MenuItem>
                         </Select>
                     </FormControl>
-                    <br />
                     <FormControl>
                         <InputLabel htmlFor="bubble-outlineColor-dropdown">
                             <Span l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor">
