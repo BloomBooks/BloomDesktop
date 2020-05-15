@@ -9,8 +9,7 @@
         {
             "data-book": "title-page-branding-bottom-html",
             "lang": "*",
-            "content":
-                "<div class='titlePageBrandingNotice'>Program ini didukung oleh INOVASI bekerjasama dengan SULUH INSAN LESTARI</div>",
+            "content": "<div class='titlePageBrandingNotice'>Program ini didukung oleh INOVASI bekerjasama dengan SULUH INSAN LESTARI</div>",
             "condition": "always"
         },
         {

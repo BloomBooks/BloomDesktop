@@ -72,6 +72,7 @@
                 0
             ); // a starting point for a transition that animates as it is clicked
         }
+
         // We make the box of the check box as a before element on the div.
         // (NOT on the placeToPutVariableCircle, though it's tempting to put
         // all the magic on the extra element, because its before: and after:
@@ -89,6 +90,7 @@
             width: 18px;
             height: 18px;
         }
+
         /* Checkmark is done as a rotated half-bordered box that is the :before of the div */
         & > input + div::after {
             content: "";
@@ -103,28 +105,33 @@
             border-top: none;
             transform: translate(3px, 4px) rotate(-45deg);
         }
+
         // When the check box is checked, the starting point for coloring the circle
         // is the red. This changes the effect of all the opacities that might be
         // used in hover, focus, active.
         & > input:checked ~ .placeToPutVariableCircle {
             background-color: rgb(var(--pure-material-primary-rgb));
         }
+
         // When checked, the box (and its border) take on this color.
         & > input:checked + div::before {
             border-color: rgb(var(--pure-material-primary-rgb));
             background-color: rgb(var(--pure-material-primary-rgb));
         }
+
         // When checked, the check mark goes from transparent to the appropriate color
         // for stuff like text on the primary color
         > input:checked + div::after {
             border-color: rgb(var(--pure-material-onprimary-rgb));
         }
+
         // This makes the circle faintly visible when hovered over.
         // However, it would interfere with the growing-circle effect
         // when the button is then clicked.
         // &:hover > input ~ .placeToPutVariableCircle {
         //     opacity: 0.04;
         // }
+
         // These rules can be used to make the circle indicate a focused control.
         // Current material design guidelines don't do this in general,
         // though at least one site has an animated pulsing circle iff the user
@@ -133,9 +140,11 @@
         // input:focus ~ .placeToPutVariableCircle {
         //     opacity: 0.12;
         // }
+
         // &:hover input:focus ~ .placeToPutVariableCircle {
         //     opacity: 0.16;
         // }
+
         // As we click on the input, the variable circle goes from full brightness
         // to a fainter outline, and grows to its full size, a circle around the box.
         // This is done with the short transition indicated here.
@@ -151,6 +160,7 @@
         }
     }
 }
+
 // The quiz page is formatted with just enough space for each question/answer, so a format button in
 // the usual place on the left overlaps the text annoyingly. So for these pages we move it to the
 // right. (Not sure why that wouldn't always be better.)
@@ -158,6 +168,7 @@
     left: unset;
     right: 0;
 }
+
 // overrides a rule in EditMode.less to push the language label over and make room for cog on right.
 .bloom-editable.QuizHeader-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
 .bloom-editable.QuizAnswer-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
@@ -169,6 +180,7 @@
 .bloom-editable.QuizQuestion-style:not(.cke_focus)[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
     content: "";
 }
+
 // In edit mode, the check boxes are checked if marked correct.
 body.editMode
     .bloom-page.simple-comprehension-quiz
@@ -181,6 +193,7 @@ body.editMode
         display: flex;
     }
 }
+
 .bloom-page.simple-comprehension-quiz {
     .checkbox-and-textbox-choice {
         &.empty {
