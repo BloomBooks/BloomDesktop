@@ -1606,10 +1606,14 @@ if (
                                 s > 1 && f(p),
                                 s > 1 &&
                                     c(
-                                        e.slice(0, s - 1).concat({
-                                            value:
-                                                " " === e[s - 2].type ? "*" : ""
-                                        })
+                                        e
+                                            .slice(0, s - 1)
+                                            .concat({
+                                                value:
+                                                    " " === e[s - 2].type
+                                                        ? "*"
+                                                        : ""
+                                            })
                                     ).replace(oe, "$1"),
                                 n,
                                 s < r && g(e.slice(s, r)),
@@ -2898,7 +2902,8 @@ if (
                           ((this.selector = e.selector),
                           (this.context = e.context)),
                       ie.makeArray(e, this));
-        }).prototype = ie.fn),
+        }).prototype =
+            ie.fn),
             (me = ie(K));
         var ve = /^(?:parents|prev(?:Until|All))/,
             be = { children: !0, contents: !0, next: !0, prev: !0 };
@@ -15303,13 +15308,15 @@ if (
                                             s > 1 && p(c),
                                             s > 1 &&
                                                 d(
-                                                    e.slice(0, s - 1).concat({
-                                                        value:
-                                                            " " ===
-                                                            e[s - 2].type
-                                                                ? "*"
-                                                                : ""
-                                                    })
+                                                    e
+                                                        .slice(0, s - 1)
+                                                        .concat({
+                                                            value:
+                                                                " " ===
+                                                                e[s - 2].type
+                                                                    ? "*"
+                                                                    : ""
+                                                        })
                                                 ).replace(oe, "$1"),
                                             n,
                                             s < r && v(e.slice(s, r)),
@@ -16402,7 +16409,8 @@ if (
                                                                 )),
                                                                     (e[r] = !(t[
                                                                         r
-                                                                    ] = i[a]));
+                                                                    ] =
+                                                                        i[a]));
                                                         })
                                                       : function(e) {
                                                             return o(e, 0, i);
@@ -16936,7 +16944,8 @@ if (
                                     ? n.ready(e)
                                     : e(we)
                                 : we.makeArray(e, this);
-                    }).prototype = we.fn),
+                    }).prototype =
+                        we.fn),
                         (Ie = we(ae));
                     var Oe = /^(?:parents|prev(?:Until|All))/,
                         Ae = { children: !0, contents: !0, next: !0, prev: !0 };
