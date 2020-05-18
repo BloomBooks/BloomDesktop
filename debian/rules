@@ -26,23 +26,18 @@ override_dh_auto_build:
 	# This seems to be the only reliable way to get the version of nodejs/npm that we need.
 	# Note that Node dropped 32-bit support in version 10, so downloads would fail, killing the build.
 	if [ "`uname -m`" != "x_86_64" ]; then exit 0; fi
-	if [ "`uname -m`" = "x86_64" ]; then \
-	    wget https://nodejs.org/dist/v12.14.0/node-v12.14.0-linux-x64.tar.xz && \
-	    tar xf node-v12.14.0-linux-x64.tar.xz && \
-	    export PATH="`pwd`/node-v12.14.0-linux-x64/bin:$$PATH"; \
-	else \
-	    wget https://nodejs.org/dist/v12.14.0/node-v12.14.0-linux-x86.tar.xz && \
-	    tar xf node-v12.14.0-linux-x86.tar.xz && \
-	    export PATH="`pwd`/node-v12.14.0-linux-x86/bin:$$PATH"; \
-	fi && \
+	wget https://nodejs.org/dist/v12.14.0/node-v12.14.0-linux-x64.tar.xz && \
+	tar xf node-v12.14.0-linux-x64.tar.xz && \
+	export PATH="`pwd`/node-v12.14.0-linux-x64/bin:$$PATH" && \
+	export NODE_OPTIONS=--max-old-space-size=1024 && \
 	export HOME=/tmp && \
 	npm install --no-save yarn && \
-	export PATH="`pwd`/node_modules/.bin:$$PATH"; \
+	export PATH="`pwd`/node_modules/.bin:$$PATH" && \
 	. ./environ && \
-		xbuild /t:RestoreBuildTasks build/Bloom.proj && \
-		xbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$(FULL_BUILD_NUMBER) build/Bloom.proj && \
-		xbuild /p:Configuration=$(BUILD) "Bloom.sln" && \
-		xbuild /p:Configuration=$(BUILD) src/LinuxBloomLauncher/LinuxBloomLauncher.cproj
+	xbuild /t:RestoreBuildTasks build/Bloom.proj && \
+	xbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$(FULL_BUILD_NUMBER) build/Bloom.proj && \
+	xbuild /p:Configuration=$(BUILD) "Bloom.sln" && \
+	xbuild /p:Configuration=$(BUILD) src/LinuxBloomLauncher/LinuxBloomLauncher.cproj
 
 override_dh_auto_test:
 
