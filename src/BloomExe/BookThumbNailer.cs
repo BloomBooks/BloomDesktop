@@ -106,6 +106,49 @@ namespace Bloom
 		}
 
 		/// <summary>
+		/// Generates the cover image for a book, e.g. the thumbnail used on Bloom Library
+		/// </summary>
+		/// <param name="book"></param>
+		/// <param name="requestedSize">The maximum size of either dimension</param>
+		public static string GenerateCoverImageOfRequestedMaxSize(Book.Book book, int requestedSize)
+		{
+			HtmlThumbNailer.ThumbnailOptions thumbnailOptions = BookThumbNailer.GetCoverThumbnailOptions(requestedSize, new Guid());
+			BookThumbNailer.CreateThumbnailOfCoverImage(book, thumbnailOptions, null);
+
+			string thumbnailDestination = Path.Combine(book.FolderPath, thumbnailOptions.FileName);
+			return thumbnailDestination;
+		}
+
+		/// <summary>
+		/// Generates a thumbnail suitable for sharing on Facebook
+		/// </summary>
+		/// <param name="book"></param>
+		/// <returns></returns>
+		public static string GenerateSocialMediaSharingThumbnail(Book.Book book)
+		{
+			// 300 x 300 is picked so that FB will consistently generate a thumbnail that is:
+			// * to the left of the link
+			// * a fixed aspect ratio (happens to be square)
+			// * has enough pixels to work with high res screens with devicePixelRatio up to 4. (FB Mobile App was showing it as 75 CSS pixels)
+			// See BL-8406
+			int size = 300;
+			var options = new HtmlThumbNailer.ThumbnailOptions
+			{
+				CenterImageUsingTransparentPadding = true,
+				RequestId = new Guid(),
+				Height = size,
+				Width = size,
+			};
+
+			options.FileName = $"thumbnail-{options.Width}x{options.Height}.png";
+
+			BookThumbNailer.CreateThumbnailOfCoverImage(book, options, null);
+
+			string thumbnailDestination = Path.Combine(book.FolderPath, options.FileName);
+			return thumbnailDestination;
+		}
+		
+		/// <summary>
 		/// Creates a thumbnail of just the cover image (no title, language name, etc.)
 		/// </summary>
 		/// <returns>Returns true if successful; false otherwise. </returns>
