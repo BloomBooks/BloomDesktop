@@ -2174,10 +2174,30 @@ namespace Bloom.Publish.Epub
 			// file name it is necessary to use just the right decoding process. Some clients may do this
 			// right but if we substitute them we can be sure things are fine.
 			// I'm deliberately not using UrlPathString here because it doesn't correctly encode a lot of Ascii characters like =$&<>
-			// which are technically not valid in hrefs
+			// which are technically not valid in hrefs.
+			// First we munge characters that are invalid in one or more filesystems that we know about.
 			var revisedFileName = Regex.Replace(originalFileName, "[ +%&<>]", "_");
-			var encodedFileName = HttpUtility.UrlEncode(revisedFileName);
-			encodedFileName = encodedFileName.Replace("%2f","/");	// we don't want to encode directory separators!
+			// Now we either copy a character verbatim if we know it's safe (problematic characters are all
+			// in the ASCII range <= 127), or UrlEncode it if we aren't sure.  The encoded value may well
+			// be the same as the original character for some characters, but that doesn't matter.
+			// Blindly UrlEncoding all the characters in the filename can explode the length of the filename
+			// for nonRoman filenames, and cause the full path length to greatly exceed Windows 10's archaic
+			// limit of 260 characters.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8505.
+			var bldr = new StringBuilder();
+			var validChars = new char[] {'/', '_', '-', '.'};
+			foreach (char ch in revisedFileName)
+			{
+				if (Char.IsLetterOrDigit(ch) || validChars.Contains(ch) || ch > 128)
+				{
+					bldr.Append(ch);
+				}
+				else
+				{
+					var encodedChar = HttpUtility.UrlEncode(ch.ToString());
+					bldr.Append(encodedChar);
+				}
+			}
+			var encodedFileName = bldr.ToString();
 			// If a filename is encoded, epub readers don't seem to decode it very well in requesting
 			// the file.  Since we've protected ourselves against problematic characters, now we can
 			// protect against decoding issues by fixing encoded characters to effectively stay that
