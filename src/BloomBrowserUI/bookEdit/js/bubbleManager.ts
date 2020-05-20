@@ -8,7 +8,13 @@
 import { EditableDivUtils } from "./editableDivUtils";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager from "../../utils/WebSocketManager";
-import { Bubble, BubbleSpec, BubbleSpecPattern, Comical } from "comicaljs";
+import {
+    Bubble,
+    BubbleSpec,
+    BubbleSpecPattern,
+    Comical,
+    TailSpec
+} from "comicaljs";
 import { Point, PointScaling } from "./point";
 import { isLinux } from "../../utils/isLinux";
 
@@ -1118,14 +1124,15 @@ export class BubbleManager {
 
     public updateSelectedItemBubbleSpec(
         newBubbleProps: BubbleSpecPattern
-    ): void {
+    ): BubbleSpec | undefined {
         if (!this.activeElement) {
-            return;
+            return undefined;
         }
 
         const activeBubble = new Bubble(this.activeElement);
         activeBubble.mergeWithNewBubbleProps(newBubbleProps);
         Comical.update(this.activeElement.parentElement!);
+        return activeBubble.getBubbleSpec() as BubbleSpec;
     }
 
     // Note: After reloading the page, you can't have any of your other code execute safely
@@ -1770,6 +1777,15 @@ export class BubbleManager {
     // The imageContainer will define the dragging boundaries for the textbox.
     private getImageContainer(wrapperBox: JQuery): JQuery {
         return wrapperBox.parent(".bloom-imageContainer").first();
+    }
+
+    // When showing a tail for a bubble style that doesn't have one by default, we get one here.
+    public getDefaultTailSpec(): TailSpec | undefined {
+        const activeElement = this.getActiveElement();
+        if (activeElement) {
+            return Bubble.makeDefaultTail(activeElement);
+        }
+        return undefined;
     }
 }
 
