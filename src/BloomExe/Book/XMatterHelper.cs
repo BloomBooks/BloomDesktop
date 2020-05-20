@@ -82,6 +82,9 @@ namespace Bloom.Book
 
 		public static string GetBestDeviceXMatterAvailable(string xmatterName, IFileLocator fileLocator)
 		{
+			if (xmatterName.EndsWith("Device"))
+				return xmatterName;
+
 			var deviceXmatterName = $"{xmatterName}-Device";
 			var directoryPath = GetXMatterDirectory(deviceXmatterName, fileLocator, null, false, true);
 
