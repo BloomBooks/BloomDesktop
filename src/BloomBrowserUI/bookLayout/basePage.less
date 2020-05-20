@@ -473,8 +473,8 @@ h1 {
 h2 {
     font-size: 1.2em;
 }
-/* we will have UI that switches this .box-header-on if th user wants it*/
-/* If this is not important, it can be overridden by display:flex in langVisibility.css (BL-3555, BL-3711) */
+/* box-header is an idea we never implemented. We don't use it any more, but older
+books may contain divs with box-header-off, so we need a rule to hide them.*/
 .box-header-off {
     display: none !important;
 }
