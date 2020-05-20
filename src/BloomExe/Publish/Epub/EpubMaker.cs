@@ -2187,7 +2187,7 @@ namespace Bloom.Publish.Epub
 			var validChars = new char[] {'/', '_', '-', '.'};
 			foreach (char ch in revisedFileName)
 			{
-				if (Char.IsLetterOrDigit(ch) || validChars.Contains(ch) || ch > 128)
+				if (Char.IsLetterOrDigit(ch) || validChars.Contains(ch) || ch >= 128)
 				{
 					bldr.Append(ch);
 				}
