@@ -36,6 +36,7 @@ namespace Bloom.Edit
 		private Bloom.Browser _browser;
 		internal EditingModel Model;
 		private static string _thumbnailInterval;
+		private string _baseForRelativePaths;
 
 		// Store this so we don't have to reload the thing from disk everytime we refresh the screen.
 		private readonly string _baseHtml;
@@ -269,6 +270,7 @@ namespace Bloom.Edit
 
 			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 
+			_baseForRelativePaths = pageListDom.BaseForRelativePaths;
 			_browser.Navigate(pageListDom, source:BloomServer.SimulatedPageFileSource.Pagelist);
 			return result.ToList();
 		}
@@ -401,6 +403,13 @@ namespace Bloom.Edit
 
 		public void UpdateThumbnailAsync(IPage page)
 		{
+			if (page.Book.Storage.NormalBaseForRelativepaths != _baseForRelativePaths)
+			{
+				// book has been renamed! can't go on with old document that pretends to be in the wrong place.
+				// Regenerate completely.
+				UpdateItems(_pages);
+				return;
+			}
 			WebSocketServer.SendString("pageThumbnailList", "pageNeedsRefresh", page.Id);
 		}
 
