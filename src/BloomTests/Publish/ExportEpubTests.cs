@@ -59,15 +59,13 @@ namespace BloomTests.Publish
 		[Test]
 		public void HandlesNonRomanFileNames()
 		{
-			// This mysterious string is the filename that will be actually used in the ePUB.
-			// It comes from UrlEncoding the original name and then replacing % with _ so the reader
-			// doesn't have to be smart about decoding the href.
-			string outputImageName = "_e0_b8_9b_e0_b8_b9_e0_b8_81_e0_b8_b1_e0_b8_9a_e0_b8_a1_e0_b8_94";
-			var book = SetupBook("This is some text", "en", "ปูกับมด", "my%20image");
-			MakeImageFiles(book, "ปูกับมด", "my image");
-			MakeEpub("ปูกับมด", "HandlesNonRomanFileNames", book);
-			CheckBasicsInManifest(outputImageName, "my_image");
-			CheckBasicsInPage(outputImageName, "my_image");
+			// NonRoman filenames should not be changed.
+			string nonRomanName = "ปูกับมด";
+			var book = SetupBook("This is some text", "en", nonRomanName, "my%20image");
+			MakeImageFiles(book, nonRomanName, "my image");
+			MakeEpub(nonRomanName, "HandlesNonRomanFileNames", book);
+			CheckBasicsInManifest(nonRomanName, "my_image");
+			CheckBasicsInPage(nonRomanName, "my_image");
 			CheckPageBreakMarker(_page1Data);
 			CheckEpubTypeAttributes(_page1Data, null);
 			CheckNavPage();
