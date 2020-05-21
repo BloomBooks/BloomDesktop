@@ -155,6 +155,13 @@ namespace Bloom.Edit
 		}
 
 		public RelocatePageEvent RelocatePageEvent { get; set; }
+		public void EmptyThumbnailCache()
+		{
+			// Prevents UpdateItemsInternal() from being able to enter into the early abort (optimization) condition.
+			// Forces a full rebuild instead.
+			_pages = null;
+		}
+
 
 		public void SelectPage(IPage page)
 		{
