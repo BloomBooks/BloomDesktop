@@ -316,9 +316,22 @@ function onDragStop(
     element: HTMLElement
 ) {
     const movedPageId = newItem.i;
+
     // do nothing if it didn't move (this seems to get fired on any click,
     // even just closing a popup menu)
-    if (oldItem.y == newItem.y && oldItem.x == newItem.x) return;
+    if (oldItem.y == newItem.y && oldItem.x == newItem.x) {
+        // It didn't move. But of course the user did click on it, and perhaps the drag
+        // was tiny and unintentional. In any case it seems appropriate to consider
+        // the page clicked. (Note however that this seems to get fired on any click,
+        // even just closing a popup menu, so it's possible that we might get more
+        // click events than we really want.)
+        BloomApi.postJson(
+            "pageList/pageClicked",
+            { pageId: movedPageId },
+            () => {}
+        );
+        return;
+    }
     // Needs more smarts if we ever do other than two columns.
     const newIndex = newItem.y * 2 + newItem.x;
 
