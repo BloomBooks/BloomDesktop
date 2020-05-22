@@ -599,6 +599,10 @@ namespace Bloom.Edit
 
 		public void UpdatePageList(bool emptyThumbnailCache)
 		{
+			if (emptyThumbnailCache)
+			{
+				_pageListView.EmptyThumbnailCache();
+			}
 			_pageListApi.ClearPagesCache();
 			_pageListView.SetBook(_model.CurrentBook);
 		}

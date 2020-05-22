@@ -167,9 +167,9 @@ export class BubbleManager {
         const imageContainers: HTMLElement[] = Array.from(
             document.getElementsByClassName("bloom-imageContainer") as any
         );
-        // todo: select the right one...in particular, currently we just select the first one.
+        // todo: select the right one...in particular, currently we just select the last one.
         // This is reasonable when just coming to the page, and when we add a new TOP,
-        // we make the new one the first in its parent, so with only one image container
+        // we make the new one the last in its parent, so with only one image container
         // the new one gets selected after we refresh. However, once we have more than one
         // image container, I don't think the new TOP box will get selected if it's not on
         // the first image.
@@ -178,8 +178,10 @@ export class BubbleManager {
             document.getElementsByClassName("bloom-textOverPicture") as any
         );
         if (textOverPictureElems.length > 0) {
-            this.activeElement = textOverPictureElems[0] as HTMLElement;
-            const editable = textOverPictureElems[0].getElementsByClassName(
+            this.activeElement = textOverPictureElems[
+                textOverPictureElems.length - 1
+            ] as HTMLElement;
+            const editable = this.activeElement.getElementsByClassName(
                 "bloom-editable bloom-visibility-code-on"
             )[0] as HTMLElement;
             // This focus call doesn't seem to work, at least in a lasting fashion.
