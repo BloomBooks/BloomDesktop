@@ -31,7 +31,7 @@ namespace BloomTests
 						</div>
 					</div>");
 			var book = CreateBook();
-			var imagePath = book.FolderPath.CombineForPath("coverImage.png");
+			var imagePath = book.FolderPath.CombineForPath(coverImageFilename);
 			MakeSamplePngImageWithMetadata(imagePath, coverImageWidth, coverImageHeight);
 			book.BringBookUpToDate(new NullProgress());
 
@@ -190,10 +190,41 @@ namespace BloomTests
 			RunSocialMediaSharingThumbnailTest(thumbnailSize, originalWidth, originalHeight, opaquePoints, transparentPoints);
 		}
 
-		private void RunSocialMediaSharingThumbnailTest(int thumbnailSize, int inputWidth, int inputHeight, IEnumerable<(int, int)> expectedOpaquePoints, IEnumerable<(int, int)> expectedTransparentPoints)
+		[Test]
+		public void GenerateSocialMediaSharingThumbnail_PlaceholderImageOnCover_ThumbnailStillGenerated()
+		{
+			int originalWidth = 341;
+			int originalHeight = 335;
+			var book = SetupBook("placeHolder.png", originalWidth, originalHeight);
+
+			int thumbnailSize = 300;
+			int thumbnailCenter = thumbnailSize / 2;
+
+			// Define some basic expectations
+			// The main test is that the filename exists at all.
+			var opaquePoints = new List<(int, int)>() { (thumbnailCenter, thumbnailCenter) };
+
+			var transparentPoints = new List<(int, int)>()
+			{
+				// Test for left
+				(0, 0),
+				// Test for right
+				(0, thumbnailSize - 1),
+				// Test for top
+				(thumbnailSize - 1, 0),
+				// Test for bottom
+				(thumbnailSize - 1, thumbnailSize-1)
+			};
+
+			// Run the test helper
+			RunSocialMediaSharingThumbnailTest(thumbnailSize, originalWidth, originalHeight, opaquePoints, transparentPoints, book);
+		}
+
+		private void RunSocialMediaSharingThumbnailTest(int thumbnailSize, int inputWidth, int inputHeight, IEnumerable<(int, int)> expectedOpaquePoints, IEnumerable<(int, int)> expectedTransparentPoints, Bloom.Book.Book book = null)
 		{
 			// Setup
-			var book = SetupBook("coverImage.png", inputWidth, inputHeight);
+			if (book == null)
+				book = SetupBook("coverImage.png", inputWidth, inputHeight);
 
 			// System under test
 			string thumbnailFilename = BookThumbNailer.GenerateSocialMediaSharingThumbnail(book);
@@ -223,6 +254,36 @@ namespace BloomTests
 					Assert.That(alphaOpacity, Is.EqualTo(0), $"Alpha at point ({x}, {y}) should be transparent.");
 				}
 			}
+		}
+
+		[TestCase("thumbnail.png")]
+		[TestCase("thumbnail-70.png")]
+		[TestCase("thumbnail-256.png")]
+		[TestCase("thumbnail-75x75.png")]
+		[TestCase("thumbnail-1027x768.png")]
+		public void IsCoverImageSrcValid_PlaceholderImageButScenarioAllowsIt_Valid(string newThumbnailFileName)
+		{
+			var options = new HtmlThumbNailer.ThumbnailOptions { FileName = newThumbnailFileName };
+
+			bool isValid = BookThumbNailer.IsCoverImageSrcValid("placeHolder.png", options);
+
+			Assert.That(isValid, Is.True);
+		}
+
+		[TestCase("coverImage200.jpg")]
+		[TestCase("coverImage-200.png")]
+		[TestCase("coverImage-300x300.png")]
+		[TestCase("thumbnail.jpg")]
+		[TestCase("thumbnailAsdf.png")]
+		[TestCase("thumbnail-70Asdf.png")]
+		[TestCase("thumbnail-300x300Asdf.png")]
+		public void IsCoverImageSrcValid_PlaceholderImageButScenarioDisallowsIt_NotValid(string newThumbnailFileName)
+		{
+			var options = new HtmlThumbNailer.ThumbnailOptions { FileName = newThumbnailFileName };
+
+			bool isValid = BookThumbNailer.IsCoverImageSrcValid("placeHolder.png", options);
+
+			Assert.That(isValid, Is.False);
 		}
 	}
 }
