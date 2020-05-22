@@ -147,7 +147,30 @@ namespace Bloom
 			string thumbnailDestination = Path.Combine(book.FolderPath, options.FileName);
 			return thumbnailDestination;
 		}
-		
+
+		/// <summary>
+		/// Check if the cover image is valid
+		/// </summary>
+		/// <returns>True if it's valid. It may be invalid if imageSrc is missing. In certain scenarios, if the imageSrc is "placeHolder.png", that's not valid either.</returns>
+		internal static bool IsCoverImageSrcValid(string imageSrc, HtmlThumbNailer.ThumbnailOptions options)
+		{
+			if (string.IsNullOrEmpty(imageSrc))
+				return false;
+			else if (Path.GetFileName(imageSrc) == "placeHolder.png")
+			{
+				// Valid examples:
+				// thumbnail.png
+				// thumbnail-256.png
+				// thumbnail-300x300.png
+				if (Regex.IsMatch(options.FileName, "thumbnail(-[0-9]+(x[0-9]+)?)?\\.png"))
+					return true;
+				else
+					return false;
+			}
+			else
+				return true;
+		}
+
 		/// <summary>
 		/// Creates a thumbnail of just the cover image (no title, language name, etc.)
 		/// </summary>
@@ -155,7 +178,7 @@ namespace Bloom
 		internal static bool CreateThumbnailOfCoverImage(Book.Book book, HtmlThumbNailer.ThumbnailOptions options, Action<Image> callback = null)
 		{
 			var imageSrc = book.GetCoverImagePath();
-			if (string.IsNullOrEmpty(imageSrc) || (Path.GetFileName(imageSrc) == "placeHolder.png" && !Regex.IsMatch(options.FileName, "thumbnail(-[0-9]+)?\\.png")))
+			if (!IsCoverImageSrcValid(imageSrc, options))
 			{
 				Debug.WriteLine(book.StoragePageFolder + " does not have a cover image.");
 				return false;
