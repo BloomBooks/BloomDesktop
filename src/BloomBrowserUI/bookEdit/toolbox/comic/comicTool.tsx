@@ -5,7 +5,7 @@ import * as ReactDOM from "react-dom";
 import "./comic.less";
 import { getPageFrameExports } from "../../js/bloomFrames";
 import { BubbleManager } from "../../js/bubbleManager";
-import { BubbleSpec } from "comicaljs";
+import { BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
@@ -19,7 +19,6 @@ import { isLinux } from "../../../utils/isLinux";
 import { MuiCheckbox } from "../../../react_components/muiCheckBox";
 
 const ComicToolControls: React.FunctionComponent = () => {
-    const tailSuffix = "-withTail";
     // Declare all the hooks
     const [style, setStyle] = useState("none");
     const [backgroundColor, setBackgroundColor] = useState("white");
@@ -70,9 +69,14 @@ const ComicToolControls: React.FunctionComponent = () => {
         bubbleSpecInitialization();
         setIsXmatter(ToolboxToolReactAdaptor.isXmatter());
     };
+
+    // Reset UI when current bubble spec changes (e.g. user clicked on a bubble).
     useEffect(() => {
         if (currentBubbleSpec) {
-            setStyleAndTailControls(currentBubbleSpec.style);
+            setStyle(currentBubbleSpec.style);
+            setShowTailChecked(
+                currentBubbleSpec.tails && currentBubbleSpec.tails.length > 0
+            );
             setOutlineColor(currentBubbleSpec.outerBorderColor);
             setBubbleActive(true);
             setBackgroundColor(getBackgroundColorValue(currentBubbleSpec));
@@ -80,20 +84,6 @@ const ComicToolControls: React.FunctionComponent = () => {
             setBubbleActive(false);
         }
     }, [currentBubbleSpec]);
-
-    const setStyleAndTailControls = (style: string) => {
-        let currentStyle = style;
-        if (currentStyle.endsWith(tailSuffix)) {
-            setShowTailChecked(true);
-            currentStyle = currentStyle.substr(
-                0,
-                currentStyle.length - tailSuffix.length
-            );
-        } else {
-            setShowTailChecked(false);
-        }
-        setStyle(currentStyle);
-    };
 
     // Callback for style changed
     const handleStyleChanged = event => {
@@ -103,22 +93,22 @@ const ComicToolControls: React.FunctionComponent = () => {
         setStyle(newStyle);
 
         // Update the Comical canvas on the page frame
-        // If updating to Caption and show tail box was previously checked, then show tail.
-        ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
-            style: getCompoundStyleString(newStyle)
+        const newSpec = ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
+            style: newStyle
         });
+        setCurrentBubbleSpec(newSpec); // we do this because the new style's spec may affect Show Tail too
     };
 
     // Callback for show tail checkbox changed
-    // Can only be called (presently), if style is Caption.
+    // Presently, only disabled if style is "none".
     const handleShowTailChanged = (value: boolean) => {
         setShowTailChecked(value);
 
-        const newStyle = value ? style + tailSuffix : style;
-
         // Update the Comical canvas on the page frame
         ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
-            style: newStyle
+            tails: value
+                ? [ComicTool.bubbleManager().getDefaultTailSpec() as TailSpec]
+                : []
         });
     };
 
@@ -218,21 +208,13 @@ const ComicToolControls: React.FunctionComponent = () => {
         );
     };
 
-    const getCompoundStyleString = (style: string) => {
-        let compoundStyle = style;
-        if (styleSupportsShowTail(style) && showTailChecked) {
-            compoundStyle += tailSuffix;
-        }
-        return compoundStyle;
-    };
-
     const ondragstart = (ev: React.DragEvent<HTMLElement>, style: string) => {
         // Here "bloomBubble" is a unique, private data type recognised
         // by ondragover and ondragdrop methods that BubbleManager
         // attaches to bloom image containers. It doesn't make sense to
         // drag these objects anywhere else, so they don't need any of
         // the common data types.
-        ev.dataTransfer.setData("bloomBubble", getCompoundStyleString(style));
+        ev.dataTransfer.setData("bloomBubble", style);
     };
 
     const ondragend = (ev: React.DragEvent<HTMLElement>, style: string) => {
@@ -246,7 +228,7 @@ const ComicToolControls: React.FunctionComponent = () => {
             ComicTool.bubbleManager().addFloatingTOPBoxWithScreenCoords(
                 ev.screenX,
                 ev.screenY,
-                getCompoundStyleString(style)
+                style
             )
         ) {
             BloomApi.postThatMightNavigate(
@@ -265,10 +247,11 @@ const ComicToolControls: React.FunctionComponent = () => {
 
     const styleSupportsShowTail = (style: string) => {
         switch (style) {
-            case "caption":
-                return true;
-            default:
+            case "none":
+            case "":
                 return false;
+            default:
+                return true;
         }
     };
 
