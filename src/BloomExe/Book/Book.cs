@@ -3470,9 +3470,24 @@ namespace Bloom.Book
 					continue;
 				if (PageHasVideo(page))
 					continue;
+				if (IsPageProtectedFromRemoval(page))
+					continue;
 				page.ParentNode.RemoveChild(page);
 			}
 			OrderOrNumberOfPagesChanged();
+		}
+
+		private bool IsPageProtectedFromRemoval(XmlElement pageElement)
+		{
+			// One final check to see if we have explicitly disallowed this page from being removed.
+			// As of May 2020, this is used to protect the Afghan xmatters from having these pages removed:
+			// 1) The national anthem page
+			//      The only thing on this page is an image which is added by css, so PageHasImages() doesn't see it.
+			// 2) The message page
+			//      The only thing on this page is language-neutral text.
+			//      It has to be language-neutral to make sure we don't strip it out if the language isn't part of the book.
+			//      However, then PageHasTextInLanguage() won't return true.
+			return HtmlDom.HasClass(pageElement, "bloom-force-publish");
 		}
 
 		private bool PageHasVisibleText(XmlElement page)

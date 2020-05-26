@@ -11,6 +11,4 @@ In order to release a new Custom XMatter pack:
 4. Send the BloomPack to the user via Dropbox or GoogleDrive (or attach it to a YouTrack issue and 'at' mention
    the user).
 
-[Steve McC. is writing up an issue (BL-4681) to simplify this by having an Advanced feature UI somewhere
- in the Bloom settings that allows the user to use custom XMatter packs that are stored in this section of
- Bloom's repo.]
+A possible enhancement to Bloom would be some Easter egg or check box which would make these custom xmatter packs available directly.
