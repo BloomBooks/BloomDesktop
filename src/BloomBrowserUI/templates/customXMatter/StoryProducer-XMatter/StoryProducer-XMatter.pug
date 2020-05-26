@@ -1,0 +1,42 @@
+extends ../../xMatter/Device-XMatter/Device-XMatter.pug
+
+mixin label-and-field
+	.sp-config
+		block
+		+field-language1&attributes(attributes)
+
+mixin field-language1
+	.bloom-translationGroup(data-default-languages='V')
+		+editable(kLanguageForProtoTypeOnly)&attributes(attributes)
+
+mixin label-and-field-languageNeutral
+	.sp-config
+		block
+		+field-languageNeutral&attributes(attributes)
+
+mixin field-languageNeutral
+	.bloom-translationGroup(data-default-languages='*')
+		+editable("*")&attributes(attributes)
+
+block append stylesheets
+	+stylesheets('StoryProducer-XMatter.css')
+
+block optionalAddition
+	+page-xmatter("Story Producer Configuration").spConfigurationPage.bloom-frontMatter(data-xmatter-page='spConfigurationPage')&attributes(attributes)#c2b5a77b-1536-49d5-8ccf-c348fff32fa3
+		.heading Content for the Title Slide (slide #0) in the Story Producer App
+		+label-and-field-languageNeutral(data-book='spGraphic')
+			p Either "gray-background" or "front-cover-picture", to indicate your choice for the title slide image:
+		+label-and-field(data-book='spReference')
+			p Scripture reference or a subtitle for your story, in the LWC:
+		+label-and-field(data-book='spTitleIdeasHeading')
+			p Something like "Ideas for the story title:", in the LWC:
+		+label-and-field(data-book='spTitleIdea1')
+			p A sample title in the LWC (Required):
+		+label-and-field(data-book='spTitleIdea2')
+			p Another sample title in the LWC (Optional):
+		+label-and-field(data-book='spTitleIdea3')
+			p Another sample title in the LWC (Optional):
+		+label-and-field(data-book='spTitleIdea4')
+			p Another sample title in the LWC (Optional):
+		+label-and-field(data-book='spTitleIdea5')
+			p Another sample title in the LWC (Optional):
