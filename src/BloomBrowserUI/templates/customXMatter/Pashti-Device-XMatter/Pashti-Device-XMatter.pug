@@ -1,17 +1,15 @@
-include Pashti-XMatter-mixins.pug
+include ../Pashti-Xmatter/Pashti-XMatter-mixins.pug
 
 doctype html
 html
 	head
 		+metadata-standard
-		title Pashti Front &amp; Back Matter
+		title Pashti Device Front &amp; Back Matter
 		//- NB: this has no effect on books using this stylesheet; it only does anything if you're viewing the xmatter html by itself
-		+stylesheets('Pashti-XMatter.css')
+		+stylesheets('Pashti-Device-XMatter.css')
 	body
 		+pashti-outsideFrontCover
-		+afg-nationalAnthem
 		+pashti-titlePage
-		+pashti-credits.bloom-frontMatter
 		+pashti-messagePage
-		+factoryStandard-insideBackCover
-		+factoryStandard-outsideBackCover
+		+pashti-credits.bloom-backMatter
+		+afg-nationalAnthem-device

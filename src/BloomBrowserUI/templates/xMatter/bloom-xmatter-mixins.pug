@@ -27,18 +27,18 @@ mixin chooser-topic
 	.coverBottomBookTopic.bloom-userCannotModifyStyles.bloom-alwaysShowBubble.Cover-Default-style(data-derived="topic", data-functionOnHintClick="ShowTopicChooser()", data-hint = "Click to choose topic")
 
 mixin field-ISBN
-	.ISBNContainer(data-hint="International Standard Book Number. Leave blank if you don't have one of these.")
+	.ISBNContainer(data-hint="International Standard Book Number. Leave blank if you don't have one of these.")&attributes(attributes)
 		span.bloom-doNotPublishIfParentOtherwiseEmpty.Credits-Page-style
 			| ISBN
 		div.bloom-translationGroup.bloom-recording-optional(data-default-languages="*")
 			div.bloom-editable(data-book="ISBN", lang="*").Credits-Page-style
 
 mixin field-acknowledgments-localizedVersion(lang="N1", hint="Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.")
-	// readOnlyInAuthorMode: we want to leave this blank for if/when someone takes this doc and is translating it.
+	//- readOnlyInAuthorMode: we want to leave this blank for if/when someone takes this doc and is translating it.
 	//- Why both versionAcknowledgments && inside-cover-version-Credits-Page-style?
 	//-   versionAcknowledgments governs placement on the page, inside-cover-version-Credits-Page-style is a
 	//-   holding place for user style adjustments (like font-size)
-	// removed .bloom-readOnlyInAuthorMode because when you're putting together a shell book, you often have to put in the name of the translator
+	//- removed .bloom-readOnlyInAuthorMode because when you're putting together a shell book, you often have to put in the name of the translator
 	+field-prototypeDeclaredExplicity(lang).versionAcknowledgments
 		//- TODO: I want to change this to "Credit people involved in this translation, in {lang}", but many localizations
 		//- will then not be used at all, even their old versions which are better than nothing. How to upgrade the English

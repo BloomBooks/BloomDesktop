@@ -3470,9 +3470,22 @@ namespace Bloom.Book
 					continue;
 				if (PageHasVideo(page))
 					continue;
+				if (IsPageProtectedFromRemoval(page))
+					continue;
 				page.ParentNode.RemoveChild(page);
 			}
 			OrderOrNumberOfPagesChanged();
+		}
+
+		private bool IsPageProtectedFromRemoval(XmlElement pageElement)
+		{
+			// One final check to see if we have explicitly disallowed this page from being removed.
+			// As of May 2020, this is used to protect the Afghan xmatters from having the national anthem page removed.
+			var classes = pageElement.GetAttribute("class");
+			// I'd say it's impossible for this to be empty or null, but...
+			Debug.Assert(!string.IsNullOrEmpty(classes), "How did we get a page with no classes!?");
+
+			return classes.Contains("bloom-page-not-blank");
 		}
 
 		private bool PageHasVisibleText(XmlElement page)

@@ -1,0 +1,36 @@
+include ../Afghanistan-XMatter-mixins.pug
+
+- const kPashtiLanguageCode = 'ps';
+
+mixin pashti-outsideFrontCover
+	+afg-outsideFrontCover(kPashtiLanguageCode)
+
+mixin pashti-titlePage
+	+afg-titlePage(kPashtiLanguageCode)
+
+mixin pashti-credits
+	+afg-credits(kPashtiLanguageCode)&attributes(attributes)
+
+mixin pashti-text
+	//- Ideally, we would set the language code here so this text can pick up things like font settings, etc.
+	//- But if we do so, the text and thus the page gets stripped out if the language settings for the book
+	//- don't include language "ps". So for now, I'm taking the branding text approach and setting lang="*".
+	//-.text(lang=kPashtiLanguageCode, dir="rtl")&attributes(attributes)
+	.text(lang="*", dir="rtl")&attributes(attributes)
+		block
+
+mixin pashti-messagePage
+	+afg-messagePage
+		+pashti-text
+			p ګرانو شاګردانو
+			p نجونو هلکانو
+			p ګل ګل ماشومانو
+			p ښکلو بلبلانو
+			p ولولئ او ولولئ
+			p ولیکئ او ولیکئ
+			p ولولئ کتاب کتاب
+			p شي به مو هر سوال ځواب
+			p کړي به مو پوره ارمان
+			p ژوند به مو وي ښه روان
+			p کړئ افغانستان ودان
+			p ځان ودان جهان ودان
