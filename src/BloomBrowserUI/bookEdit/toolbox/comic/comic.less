@@ -2,6 +2,7 @@
 
 @SideMargin: 6px;
 @ControlVerticalSpacing: 10px;
+@NecessaryZIndex: 30000;
 
 .ui-accordion h3[data-toolId="comicTool"] {
     span.ui-accordion-header-icon {
@@ -222,5 +223,50 @@
 .bubble-options-dropdown-menu {
     // Getting overwritten by the inline styles... :(
     // TODO: Experiment with whether you can pass in a style through Material UI instead of using !important to bypass the inline style.
-    z-index: 999999 !important; // Note: 18,000 was experimentally determined to be the minimum required z-index, but seems safer to go up a bit from the minimum
+    z-index: @NecessaryZIndex !important; // Note: 18,000 was experimentally determined to be the minimum required z-index, but seems safer to go up a bit from the minimum
+    .MuiMenu-paper {
+        min-width: 165px !important;
+    }
+    ul {
+        display: flex;
+        flex-direction: column;
+        .colorSwatch {
+            width: 100%;
+            height: 80%;
+            display: flex;
+            justify-content: center; // horizontal centering for optional text
+            &.newItem {
+                justify-content: start;
+            }
+            .MuiTypography-root {
+                align-self: center; // vertical centering for optional text
+            }
+        }
+    }
+}
+
+.bubbleOptionDropdown .MuiSelect-root {
+    padding-right: 40px; // separate color band from dropdown arrow
+}
+
+.colorSwatch {
+    min-height: 25px; // otherwise a swatch with no text has no height
+}
+
+.backgroundPicker,
+.textPicker {
+    position: absolute;
+    z-index: @NecessaryZIndex + 2 !important;
+    width: 187px !important;
+    background-color: white;
+    margin-top: 16px; // puts the color chooser just under the select label
+
+    .backgroundPickerCover,
+    .textPickerCover {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+    }
 }

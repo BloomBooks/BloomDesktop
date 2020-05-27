@@ -1808,6 +1808,16 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor</note>
         <note>Refers to the Background Color of the bubble used by the callout</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.PartialTransparent" sil:dynamic="true">
+        <source xml:lang="en">33% Transparent</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.PartialTransparent</note>
+        <note>A gray background color with 66% opacity.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.New" sil:dynamic="true">
+        <source xml:lang="en">New...</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.New</note>
+        <note>A background color selection that enables a color picker.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace" sil:dynamic="true">
         <source xml:lang="en">Old Lace</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>

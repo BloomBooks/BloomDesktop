@@ -17,11 +17,89 @@ import { default as TrashIcon } from "@material-ui/icons/Delete";
 import { BloomApi } from "../../../utils/bloomApi";
 import { isLinux } from "../../../utils/isLinux";
 import { MuiCheckbox } from "../../../react_components/muiCheckBox";
+import { MenuColorBar } from "./menuColorBar";
+import { ColorChangeHandler } from "react-color";
+import CustomColorPicker from "../../../react_components/customColorPicker";
+
+export interface IMenuItem {
+    name: string;
+    colors?: string[];
+    opacity?: number;
+    l10nKey?: string; // if present, there should be default text in the (below) 'text' property to display
+    text?: string;
+}
 
 const ComicToolControls: React.FunctionComponent = () => {
+    // const l10nPrefix1 = "Common.Colors.";
+    const l10nPrefix2 = "EditTab.Toolbox.ComicTool.Options.BackgroundColor.";
+    const specialColors: IMenuItem[] = [
+        // #DFB28B is the color Comical has been using as the default for captions.
+        // It's fairly close to the "Calico" color defined at https://www.htmlcsscolor.com/hex/D5B185 (#D5B185)
+        // so I decided it was the best choice for keeping that option.
+        {
+            name: "whiteToCalico",
+            colors: ["white", "#DFB28B"]
+            //l10nKey: l10nPrefix2 + "WhiteToCalico"
+            //text: "White to Calico"
+        },
+        // https://www.htmlcsscolor.com/hex/ACCCDD
+        {
+            name: "whiteToFrenchPass",
+            colors: ["white", "#ACCCDD"]
+            //l10nKey: l10nPrefix2 + "WhiteToFrenchPass"
+            //text: "White to French Pass"
+        },
+        // https://encycolorpedia.com/7b8eb8
+        {
+            name: "whiteToPortafino",
+            colors: ["white", "#7b8eb8"]
+            //l10nKey: l10nPrefix2 + "WhiteToPortafino"
+            //text: "White to Portafino"
+        }
+    ];
+
+    const defaultBackgroundColors: IMenuItem[] = [
+        {
+            name: "black",
+            //l10nKey: l10nPrefix1 + "Black",
+            //text: "Black",
+            colors: ["black"]
+        },
+        { name: "white" },
+        {
+            name: "partialTransparent",
+            colors: ["#575757"], // bloom-gray
+            opacity: 0.66,
+            l10nKey: l10nPrefix2 + "PartialTransparent",
+            text: "33% Transparent"
+        },
+        ...specialColors,
+        {
+            name: "oldLace",
+            //l10nKey: l10nPrefix2 + "OldLace",
+            //text: "Old Lace"
+            colors: ["OldLace"]
+        },
+        { name: "new", l10nKey: l10nPrefix2 + "New", text: "New..." }
+    ];
+
+    const defaultTextColors: IMenuItem[] = [
+        {
+            name: "black",
+            colors: ["black"]
+        },
+        { name: "white" },
+        {
+            name: "red",
+            colors: ["red"]
+        },
+        { name: "new", l10nKey: l10nPrefix2 + "New", text: "New..." }
+    ];
+
     // Declare all the hooks
     const [style, setStyle] = useState("none");
     const [backgroundColor, setBackgroundColor] = useState("white");
+    const [textColor, setTextColor] = useState("black");
     const [outlineColor, setOutlineColor] = useState<string | undefined>(
         undefined
     );
@@ -29,6 +107,14 @@ const ComicToolControls: React.FunctionComponent = () => {
     const [showTailChecked, setShowTailChecked] = useState(false);
 
     const [isXmatter, setIsXmatter] = useState(true);
+    const [backgroundColorMenuItems, setBackgroundColorMenuItems] = useState(
+        defaultBackgroundColors
+    );
+    const [textColorMenuItems, settextColorMenuItems] = useState(
+        defaultTextColors
+    );
+    const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
+    const [showTextPicker, setShowTextPicker] = useState(false);
 
     // if bubbleActive is true, corresponds to the active bubble. Otherwise, corresponds to the most recently active bubble.
     const [currentBubbleSpec, setCurrentBubbleSpec] = useState(undefined as (
@@ -112,31 +198,18 @@ const ComicToolControls: React.FunctionComponent = () => {
         });
     };
 
-    const specialColors = [
-        // #DFB28B is the color Comical has been using as the default for captions.
-        // It's fairly close to the "Calico" color defined at https://www.htmlcsscolor.com/hex/D5B185 (#D5B185)
-        // so I decided it was the best choice for keeping that option.
-        { name: "whiteToCalico", colors: ["white", "#DFB28B"] },
-        // https://www.htmlcsscolor.com/hex/ACCCDD
-        { name: "whiteToFrenchPass", colors: ["white", "#ACCCDD"] },
-        // https://encycolorpedia.com/7b8eb8
-        { name: "whiteToPortafino", colors: ["white", "#7b8eb8"] }
-    ];
-
     const getBackgroundColorValue = (spec: BubbleSpec) => {
-        if (!spec.backgroundColors || spec.backgroundColors.length == 0) {
+        if (!spec.backgroundColors || spec.backgroundColors.length === 0) {
             return "white";
         }
-        if (spec.backgroundColors.length == 1) {
+        if (spec.backgroundColors.length === 1) {
             return spec.backgroundColors[0];
         }
-        // love to use forEach, but we want to return from this function if we match.
-        for (let i = 0; i < specialColors.length; i++) {
-            const combo = specialColors[i];
-            // For the special colors we currently have, checking the second item is enough.
-            if (combo.colors[1] === spec.backgroundColors![1]) {
-                return combo.name;
-            }
+        const specialFound = specialColors.find(
+            elem => elem.colors![1] === spec.backgroundColors![1]
+        );
+        if (specialFound) {
+            return specialFound.name;
         }
         // maybe from a later version of Bloom? All we can do.
         return "white";
@@ -144,24 +217,66 @@ const ComicToolControls: React.FunctionComponent = () => {
 
     // Callback when background color of the bubble is changed
     const handleBackgroundColorChanged = event => {
-        const newValue = event.target.value;
+        const newValue = event.target.value as string;
 
+        if (newValue === "new") {
+            // get color from color chooser
+            setShowBackgroundPicker(true);
+            return;
+        }
+
+        updateBackgroundColor(newValue);
+    };
+
+    const updateBackgroundColor = (newColorValue: string) => {
         // Update the toolbox controls
-        setBackgroundColor(newValue);
+        setBackgroundColor(newColorValue);
 
         // Update the Comical canvas on the page frame
-        let backgroundColors = [newValue];
-        // love to use forEach, but we want to return from this function if we match.
-        for (let i = 0; i < specialColors.length; i++) {
-            const combo = specialColors[i];
-            if (combo.name === newValue) {
-                backgroundColors = combo.colors;
-                break;
-            }
-        }
+        const backgroundColors = translateNewValueToComicalColors(
+            newColorValue
+        );
         ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
             backgroundColors: backgroundColors
         });
+    };
+
+    // Callback when the color of the bubble text is changed.
+    const handleTextColorChanged = event => {
+        const newValue = event.target.value as string;
+
+        if (newValue === "new") {
+            // get color from color chooser
+            setShowTextPicker(true);
+            return;
+        }
+
+        updateTextColor(newValue);
+    };
+
+    const updateTextColor = (newColorValue: string) => {
+        // Update the toolbox controls
+        setTextColor(newColorValue);
+
+        // Update the Comical canvas on the page frame
+        const textColors = translateNewValueToComicalColors(newColorValue);
+        // TODO: update comical to handle text color
+        // ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
+        //     textColors: textColors
+        // });
+    };
+
+    const translateNewValueToComicalColors = (
+        newColorValue: string
+    ): string[] => {
+        let backgroundColors = [newColorValue];
+        const specialFound = specialColors.find(
+            elem => elem.name === newColorValue
+        );
+        if (specialFound) {
+            backgroundColors = specialFound.colors as string[];
+        }
+        return backgroundColors;
     };
 
     // Callback when outline color of the bubble is changed
@@ -253,6 +368,70 @@ const ComicToolControls: React.FunctionComponent = () => {
             default:
                 return true;
         }
+    };
+
+    const getBackgroundColorMenu = () => (
+        <Select
+            value={backgroundColor}
+            className="bubbleOptionDropdown"
+            inputProps={{
+                name: "backgroundColor",
+                id: "bubble-backgroundColor-dropdown"
+            }}
+            MenuProps={{
+                className: "bubble-options-dropdown-menu"
+            }}
+            onChange={event => {
+                handleBackgroundColorChanged(event);
+            }}
+        >
+            {backgroundColorMenuItems.map((item: IMenuItem, i: number) => (
+                <MenuItem value={item.name} key={i}>
+                    <MenuColorBar {...item} key={i} />
+                    {/* Not sure why we need key at this level, but it makes the selection show correctly. */}
+                </MenuItem>
+            ))}
+        </Select>
+    );
+
+    const handleBackgroundPickerChange: ColorChangeHandler = (color, event) => {
+        updateBackgroundColor(color.hex);
+    };
+
+    const handleBackgroundPickerClose = (event: React.MouseEvent) => {
+        setShowBackgroundPicker(false);
+    };
+
+    const getTextColorMenu = () => (
+        <Select
+            value={textColor}
+            className="bubbleOptionDropdown"
+            inputProps={{
+                name: "textColor",
+                id: "bubble-textColor-dropdown"
+            }}
+            MenuProps={{
+                className: "bubble-options-dropdown-menu"
+            }}
+            onChange={event => {
+                handleTextColorChanged(event);
+            }}
+        >
+            {textColorMenuItems.map((item: IMenuItem, i: number) => (
+                <MenuItem value={item.name} key={i}>
+                    <MenuColorBar {...item} key={i} />
+                    {/* Not sure why we need key at this level, but it makes the selection show correctly. */}
+                </MenuItem>
+            ))}
+        </Select>
+    );
+
+    const handleTextPickerChange: ColorChangeHandler = (color, event) => {
+        updateTextColor(color.hex);
+    };
+
+    const handleTextPickerClose = (event: React.MouseEvent) => {
+        setShowTextPicker(false);
     };
 
     return (
@@ -369,52 +548,54 @@ const ComicToolControls: React.FunctionComponent = () => {
                         </div>
                     </FormControl>
                     <FormControl>
+                        <InputLabel htmlFor="bubble-textColor-dropdown">
+                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextColor">
+                                Text Color
+                            </Span>
+                        </InputLabel>
+                        {getTextColorMenu()}
+                        {showTextPicker && (
+                            <div className="textPicker">
+                                <div
+                                    className="textPickerCover"
+                                    onClick={handleTextPickerClose}
+                                />
+                                <CustomColorPicker
+                                    color={"#000000"}
+                                    swatchColors={[
+                                        { r: 255, g: 255, b: 255, a: 1 },
+                                        { r: 0, g: 0, b: 0, a: 1 }
+                                    ]}
+                                    onChange={() => handleTextPickerChange}
+                                />
+                            </div>
+                        )}
+                    </FormControl>
+                    <FormControl>
                         <InputLabel htmlFor="bubble-backgroundColor-dropdown">
                             <Span l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor">
                                 Background Color
                             </Span>
                         </InputLabel>
-                        <Select
-                            value={backgroundColor}
-                            className="bubbleOptionDropdown"
-                            inputProps={{
-                                name: "backgroundColor",
-                                id: "bubble-backgroundColor-dropdown"
-                            }}
-                            MenuProps={{
-                                className: "bubble-options-dropdown-menu"
-                            }}
-                            onChange={event => {
-                                handleBackgroundColorChanged(event);
-                            }}
-                        >
-                            <MenuItem value="white">
-                                <Div l10nKey="Common.Colors.White">White</Div>
-                            </MenuItem>
-                            <MenuItem value="black">
-                                <Div l10nKey="Common.Colors.Black">Black</Div>
-                            </MenuItem>
-                            <MenuItem value="oldLace">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace">
-                                    Old Lace
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="whiteToCalico">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico">
-                                    White to Calico
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="whiteToFrenchPass">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass">
-                                    White to French Pass
-                                </Div>
-                            </MenuItem>
-                            <MenuItem value="whiteToPortafino">
-                                <Div l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino">
-                                    White to Portafino
-                                </Div>
-                            </MenuItem>
-                        </Select>
+                        {getBackgroundColorMenu()}
+                        {showBackgroundPicker && (
+                            <div className="backgroundPicker">
+                                <div
+                                    className="backgroundPickerCover"
+                                    onClick={handleBackgroundPickerClose}
+                                />
+                                <CustomColorPicker
+                                    color={{ r: 90, g: 20, b: 90, a: 1 }}
+                                    swatchColors={[
+                                        { r: 90, g: 20, b: 90, a: 1 },
+                                        { r: 20, g: 90, b: 20, a: 1 }
+                                    ]}
+                                    onChange={() =>
+                                        handleBackgroundPickerChange
+                                    }
+                                />
+                            </div>
+                        )}
                     </FormControl>
                     <FormControl>
                         <InputLabel htmlFor="bubble-outlineColor-dropdown">

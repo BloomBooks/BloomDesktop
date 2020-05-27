@@ -1,0 +1,67 @@
+.custom-color-picker {
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    .saturation-block {
+        flex: 5;
+        position: relative;
+    }
+    .check-hue-alpha-row {
+        display: flex;
+        flex: 2;
+        flex-direction: row;
+        .check-section {
+            display: flex;
+            align-self: center;
+            flex: 1;
+            flex-direction: column;
+            height: 22px;
+            .checkboard-block {
+                width: 18px;
+                border: 2px currentColor solid;
+                border-radius: 11px;
+                flex: 1;
+                position: relative;
+                align-self: center;
+            }
+        }
+        .hue-alpha-section {
+            display: flex;
+            flex-direction: column;
+            flex: 3;
+            justify-content: space-evenly;
+            .hue-row,
+            .alpha-row {
+                position: relative;
+                height: 16px;
+                margin: 0 20px 0 5px;
+            }
+        }
+    }
+    .edit-input {
+        flex: 2;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        input {
+            position: relative;
+            text-align: center;
+        }
+        span {
+            display: block;
+            text-transform: uppercase;
+            text-align: center;
+        }
+    }
+    .swatch-row {
+        display: flex;
+        flex: 2;
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin: 0 0 0 10px;
+        .color-swatch + .color-swatch {
+            margin-left: 7px;
+        }
+    }
+}
