@@ -581,6 +581,7 @@ namespace Bloom.Edit
 
 		private void GridReordered(string s)
 		{
+			Model.SaveNow();
 			var newSeq = new List<IPage>();
 			var keys = s.Split(new [] {','}, StringSplitOptions.RemoveEmptyEntries);
 			foreach (var key in keys)
