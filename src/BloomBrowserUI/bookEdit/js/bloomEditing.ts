@@ -803,19 +803,33 @@ export function SetupElements(container: HTMLElement) {
             // BloomApi.postDebugMessage(
             //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - no active element: try to set focus"
             // );
-            const firstEditable = $("body")
-                .find("textarea:visible, div.bloom-editable:visible")
-                .first();
-            if (firstEditable.length) {
-                // BloomApi.postDebugMessage(
-                //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - setting focus on " +
-                //         firstEditable.get(0).outerHTML
-                // );
-                firstEditable.focus();
-            } else {
-                // BloomApi.postDebugMessage(
-                //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - nothing to focus??"
-                // );
+            // nothing is focused. If there are TOP boxes on the page, it's possible we've just reloaded
+            // the page after adding a TOP box. New TOP boxes are added last, so focusing the last one
+            // is helpful to make sure the user can immediately type into the new TOP box. (BL-8502).
+            // It's not obvious this is the most desirable focus when we're NOT doing comics, but it's still
+            // probably as good a guess as anything.
+            // The one case where it's definitely wrong is if we just added a TOP box to an image that isn't
+            // the last image on the page. Then we will pick the wrong one. Getting that right is going to take
+            // a pretty tricky solution, which I don't think we should attempt while stabilizing a beta, and
+            // may not be worth it at all.
+            // Note that there is code in bubbleManager.turnOnBubbleEditing() which tries to focus the last
+            // TOP bubble. We have not figured out why it doesn't work. Until we do, the two should probably
+            // be kept matching.
+            if (!focusLastEditableTopBox()) {
+                const firstEditable = $("body")
+                    .find("textarea:visible, div.bloom-editable:visible")
+                    .first();
+                if (firstEditable.length) {
+                    // BloomApi.postDebugMessage(
+                    //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - setting focus on " +
+                    //         firstEditable.get(0).outerHTML
+                    // );
+                    firstEditable.focus();
+                } else {
+                    // BloomApi.postDebugMessage(
+                    //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - nothing to focus??"
+                    // );
+                }
             }
         }
     }, bloomQtipUtils.horizontalOverlappingBubblesDelay);
@@ -918,6 +932,22 @@ export function SetupElements(container: HTMLElement) {
 
     AddXMatterLabelAfterPageLabel(container);
     ConstrainContentsOfPageLabel(container);
+}
+
+function focusLastEditableTopBox(): boolean {
+    const topBoxes = document.getElementsByClassName("bloom-textOverPicture");
+    if (topBoxes.length == 0) return false;
+    const lastTop = topBoxes[topBoxes.length - 1];
+    const visibleEditBoxesInLastTop = Array.from(
+        lastTop.getElementsByClassName("bloom-editable")
+    ).filter(
+        // this is a crude check for visibility, but according to stack overflow
+        // equivalent to the :visible check we were previously doing in jquery
+        s => window.getComputedStyle(s).getPropertyValue("display") != "none"
+    );
+    if (visibleEditBoxesInLastTop.length === 0) return false; // unexpected
+    (visibleEditBoxesInLastTop[0] as HTMLElement).focus();
+    return true;
 }
 
 // This function sets up a rule to display a prompt following the placeholder we insert for a missing
