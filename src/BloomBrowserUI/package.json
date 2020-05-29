@@ -42,9 +42,18 @@
         "tslint": "tslint --project tsconfig.json",
         "// use output/browser as the root of the storybook-provided server": "",
         "storybook": "start-storybook -s ../../output/browser",
+        "// xmatter development": "",
         "// I haven't figured out how to generalize this to all pug, but it's a helpful template for future xmatter work": "",
         "abcpug": "pug templates/xMatter/ABC-Reader-XMatter/ABC-Reader-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/ABC-Reader-XMatter --pretty",
-        "watch-abc": "npm-run-all --parallel abcpug watchTemplatesLess watchBrandingFiles watchBrandingLess"
+        "abcdevicepug": "pug templates/xMatter/ABC-Reader-Device-XMatter/ABC-Reader-Device-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/ABC-Reader-Device-XMatter --pretty",
+        "watch-abc": "npm-run-all --parallel abcpug abcdevicepug watchTemplatesLess",
+        "// Afghan xmatter development": "",
+        "afghanpug": "pug templates/customXMatter/ --pretty --watch -o ../../output/browser/templates/customXMatter --pretty",
+        "daripug": "pug templates/customXMatter/Dari-XMatter/ --pretty --watch -o ../../output/browser/templates/customXMatter/Dari-XMatter --pretty",
+        "daridevicepug": "pug templates/customXMatter/Dari-Device-XMatter/ --pretty --watch -o ../../output/browser/templates/customXMatter/Dari-Device-XMatter --pretty",
+        "pashtipug": "pug templates/customXMatter/Pashti-XMatter/ --pretty --watch -o ../../output/browser/templates/customXMatter/Pashti-XMatter --pretty",
+        "pashtidevicepug": "pug templates/customXMatter/Pashti-Device-XMatter/ --pretty --watch -o ../../output/browser/templates/customXMatter/Pashti-Device-XMatter --pretty",
+        "watch-afghan": "npm-run-all --parallel afghanpug daripug daridevicepug pashtipug pashtidevicepug watchTemplatesLess"
     },
     "repository": {
         "type": "git",
