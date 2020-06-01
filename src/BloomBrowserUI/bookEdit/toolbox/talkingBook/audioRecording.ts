@@ -2158,6 +2158,8 @@ export default class AudioRecording {
                 this.initializeAudioRecordingMode();
                 audioPlaybackMode = this.getCurrentPlaybackMode();
                 // and then we can carry on with the markup of the new current box.
+
+                currentTextBox = selectedTextBox as HTMLElement;
             }
         }
 
