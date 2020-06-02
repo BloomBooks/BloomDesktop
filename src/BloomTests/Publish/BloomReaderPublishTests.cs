@@ -265,7 +265,7 @@ namespace BloomTests.Publish
                                     <p></p>
                                 </div>
 
-                                <div data-languagetipcontent='español' style='' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-contentNational1' contenteditable='true' lang='es'>
+                                <div data-languagetipcontent='espaÃ±ol' style='' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-contentNational1' contenteditable='true' lang='es'>
                                     <p></p>
                                 </div>
                             </div>
@@ -286,7 +286,7 @@ namespace BloomTests.Publish
                                 <p></p>
                             </div>
 
-                            <div data-languagetipcontent='español' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable normal-style bloom-contentNational1' contenteditable='true' lang='es'>
+                            <div data-languagetipcontent='espaÃ±ol' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable normal-style bloom-contentNational1' contenteditable='true' lang='es'>
                                 <p></p>
                             </div>
 
