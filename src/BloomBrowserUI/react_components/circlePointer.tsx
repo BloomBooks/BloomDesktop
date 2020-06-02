@@ -3,15 +3,16 @@ import { CSSProperties } from "@material-ui/styles";
 
 interface IPointerProps {
     filled?: boolean;
-    color?: string; // let's just use a hex color string; defaults to white
     translateX?: string; // different usages require different adjustments here
+    translateY?: string;
 }
 
 export const CirclePointer: React.FunctionComponent<IPointerProps> = props => {
-    const pointerColor = props.color ? props.color : "#fff";
+    const pointerColor = "white";
     const fillColorString = props.filled ? pointerColor : "";
-    const translateXAdjustment = props.translateX ? props.translateX : "-6px";
-    const translation = `translate(${translateXAdjustment})`;
+    const translateXAdjustment = props.translateX ? props.translateX : "-8px";
+    const translateYAdjustment = props.translateY ? props.translateY : "-8px";
+    const translation = `translate(${translateXAdjustment}, ${translateYAdjustment})`;
 
     const styleObject: CSSProperties = {
         cursor: "pointer",
@@ -30,7 +31,7 @@ export const CirclePointer: React.FunctionComponent<IPointerProps> = props => {
 };
 
 export const SolidCircleSlider = () => (
-    <CirclePointer filled={true} translateX="-2px" />
+    <CirclePointer filled={true} translateX="-6px" translateY="0" />
 );
 
 export default CirclePointer;
