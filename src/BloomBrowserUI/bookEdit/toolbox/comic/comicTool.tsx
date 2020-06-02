@@ -18,13 +18,12 @@ import { BloomApi } from "../../../utils/bloomApi";
 import { isLinux } from "../../../utils/isLinux";
 import { MuiCheckbox } from "../../../react_components/muiCheckBox";
 import { MenuColorBar } from "./menuColorBar";
-import { ColorChangeHandler } from "react-color";
-import CustomColorPicker from "../../../react_components/customColorPicker";
+import { ColorResult } from "react-color";
+import CustomColorPicker, {
+    ISwatchDefn
+} from "../../../react_components/customColorPicker";
 
-export interface IMenuItem {
-    name: string;
-    colors?: string[];
-    opacity?: number;
+export interface IMenuItem extends ISwatchDefn {
     l10nKey?: string; // if present, there should be default text in the (below) 'text' property to display
     text?: string;
 }
@@ -58,6 +57,28 @@ const ComicToolControls: React.FunctionComponent = () => {
         }
     ];
 
+    const newMenuItem: IMenuItem = {
+        name: "new",
+        l10nKey: l10nPrefix2 + "New",
+        text: "New..."
+    };
+
+    const defaultTextColors: IMenuItem[] = [
+        {
+            name: "black",
+            colors: ["black"]
+        },
+        {
+            name: "gray",
+            colors: ["gray"] // #808080
+        },
+        {
+            name: "lightgray",
+            colors: ["lightgray"] // #D3D3D3
+        },
+        { name: "white", colors: ["white"] }
+    ];
+
     const defaultBackgroundColors: IMenuItem[] = [
         {
             name: "black",
@@ -65,7 +86,7 @@ const ComicToolControls: React.FunctionComponent = () => {
             //text: "Black",
             colors: ["black"]
         },
-        { name: "white" },
+        { name: "white", colors: ["white"] },
         {
             name: "partialTransparent",
             colors: ["#575757"], // bloom-gray
@@ -73,33 +94,16 @@ const ComicToolControls: React.FunctionComponent = () => {
             l10nKey: l10nPrefix2 + "PartialTransparent",
             text: "33% Transparent"
         },
-        ...specialColors,
         {
             name: "oldLace",
             //l10nKey: l10nPrefix2 + "OldLace",
             //text: "Old Lace"
             colors: ["OldLace"]
-        },
-        { name: "new", l10nKey: l10nPrefix2 + "New", text: "New..." }
-    ];
-
-    const defaultTextColors: IMenuItem[] = [
-        {
-            name: "black",
-            colors: ["black"]
-        },
-        { name: "white" },
-        {
-            name: "red",
-            colors: ["red"]
-        },
-        { name: "new", l10nKey: l10nPrefix2 + "New", text: "New..." }
+        }
     ];
 
     // Declare all the hooks
     const [style, setStyle] = useState("none");
-    const [backgroundColor, setBackgroundColor] = useState("white");
-    const [textColor, setTextColor] = useState("black");
     const [outlineColor, setOutlineColor] = useState<string | undefined>(
         undefined
     );
@@ -107,14 +111,32 @@ const ComicToolControls: React.FunctionComponent = () => {
     const [showTailChecked, setShowTailChecked] = useState(false);
 
     const [isXmatter, setIsXmatter] = useState(true);
-    const [backgroundColorMenuItems, setBackgroundColorMenuItems] = useState(
-        defaultBackgroundColors
-    );
+
+    // Text color menu and chooser
+    const [textColor, setTextColor] = useState("black");
     const [textColorMenuItems, settextColorMenuItems] = useState(
+        defaultTextColors.concat(newMenuItem)
+    );
+    const [textChooserSwatches, setTextChooserSwatches] = useState(
         defaultTextColors
     );
-    const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
     const [showTextPicker, setShowTextPicker] = useState(false);
+
+    // Background color menu and chooser
+    const [backgroundColor, setBackgroundColor] = useState("white");
+    const [backgroundChooserSwatches, setBackgroundChooserSwatches] = useState(
+        defaultBackgroundColors
+    );
+    // We need a separate copy here because we will modify the menu items array with
+    // items that we don't want to appear in the swatches (specifically the gradients).
+    const defaultBackgroundMenuItems = defaultBackgroundColors.slice();
+    // We insert the Super Bible gradients after our partial transparency menu item,
+    // but before 'oldlace' and New...
+    defaultBackgroundMenuItems.splice(3, 0, ...specialColors);
+    const [backgroundColorMenuItems, setBackgroundColorMenuItems] = useState(
+        defaultBackgroundMenuItems.concat(newMenuItem)
+    );
+    const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
 
     // if bubbleActive is true, corresponds to the active bubble. Otherwise, corresponds to the most recently active bubble.
     const [currentBubbleSpec, setCurrentBubbleSpec] = useState(undefined as (
@@ -170,6 +192,54 @@ const ComicToolControls: React.FunctionComponent = () => {
             setBubbleActive(false);
         }
     }, [currentBubbleSpec]);
+
+    // When color choosers are visible, Enter or Esc should close them
+    useEffect(() => {
+        if (showBackgroundPicker) {
+            setKeyListener();
+        } else {
+            // If no bubble is active, we are probably still getting setup, so we'll skip this "change".
+            if (bubbleActive) {
+                resetKeyListener();
+                // TODO: The real onChangeComplete goes here
+                console.log("New Background color finalized.");
+            }
+        }
+    }, [showBackgroundPicker]);
+    useEffect(() => {
+        if (showTextPicker) {
+            setKeyListener();
+        } else {
+            // If no bubble is active, we are probably still getting setup, so we'll skip this "change".
+            if (bubbleActive) {
+                resetKeyListener();
+                // TODO: The real onChangeComplete goes here
+                console.log("New Text color finalized.");
+            }
+        }
+    }, [showTextPicker]);
+
+    const setKeyListener = () => {
+        document.addEventListener("keydown", handleKeyPress, false);
+    };
+
+    const resetKeyListener = () => {
+        document.removeEventListener("keydown", handleKeyPress, false);
+    };
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+        if (e.defaultPrevented) {
+            return;
+        }
+        if (e.key === "Escape" || e.key === "Enter") {
+            if (showBackgroundPicker) {
+                handleBackgroundPickerClose(undefined);
+            }
+            if (showTextPicker) {
+                handleTextPickerClose(undefined);
+            }
+        }
+    };
 
     // Callback for style changed
     const handleStyleChanged = event => {
@@ -394,11 +464,31 @@ const ComicToolControls: React.FunctionComponent = () => {
         </Select>
     );
 
-    const handleBackgroundPickerChange: ColorChangeHandler = (color, event) => {
+    const reportColorResult = (color: ColorResult) => {
+        console.log("Color Result:");
+        if (color.hex) {
+            console.log(`  Hex: ${color.hex ? color.hex : "undefined"}`);
+        }
+        if (color.rgb) {
+            console.log(
+                `  RGB: R${color.rgb.r} G${color.rgb.g} B${color.rgb.b}`
+            );
+        }
+        if (color.hsl) {
+            console.log(
+                `  HSL: H${color.hsl.h} S${color.hsl.s} L${color.hsl.l}`
+            );
+        }
+    };
+
+    const handleBackgroundPickerChange = (color: ColorResult) => {
+        reportColorResult(color);
         updateBackgroundColor(color.hex);
     };
 
-    const handleBackgroundPickerClose = (event: React.MouseEvent) => {
+    const handleBackgroundPickerClose = (
+        event: React.MouseEvent | undefined
+    ) => {
         setShowBackgroundPicker(false);
     };
 
@@ -426,11 +516,11 @@ const ComicToolControls: React.FunctionComponent = () => {
         </Select>
     );
 
-    const handleTextPickerChange: ColorChangeHandler = (color, event) => {
+    const handleTextPickerChange = (color: ColorResult) => {
         updateTextColor(color.hex);
     };
 
-    const handleTextPickerClose = (event: React.MouseEvent) => {
+    const handleTextPickerClose = (event: React.MouseEvent | undefined) => {
         setShowTextPicker(false);
     };
 
@@ -561,12 +651,12 @@ const ComicToolControls: React.FunctionComponent = () => {
                                     onClick={handleTextPickerClose}
                                 />
                                 <CustomColorPicker
-                                    color={"#000000"}
-                                    swatchColors={[
-                                        { r: 255, g: 255, b: 255, a: 1 },
-                                        { r: 0, g: 0, b: 0, a: 1 }
-                                    ]}
-                                    onChange={() => handleTextPickerChange}
+                                    noAlphaSlider={true}
+                                    color={textColor}
+                                    swatchColors={textChooserSwatches}
+                                    onChange={(color: ColorResult) =>
+                                        handleTextPickerChange(color)
+                                    }
                                 />
                             </div>
                         )}
@@ -585,13 +675,10 @@ const ComicToolControls: React.FunctionComponent = () => {
                                     onClick={handleBackgroundPickerClose}
                                 />
                                 <CustomColorPicker
-                                    color={{ r: 90, g: 20, b: 90, a: 1 }}
-                                    swatchColors={[
-                                        { r: 90, g: 20, b: 90, a: 1 },
-                                        { r: 20, g: 90, b: 20, a: 1 }
-                                    ]}
-                                    onChange={() =>
-                                        handleBackgroundPickerChange
+                                    color={backgroundColor}
+                                    swatchColors={backgroundChooserSwatches}
+                                    onChange={(color: ColorResult) =>
+                                        handleBackgroundPickerChange(color)
                                     }
                                 />
                             </div>

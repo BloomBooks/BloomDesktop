@@ -23,6 +23,14 @@
                 flex: 1;
                 position: relative;
                 align-self: center;
+                overflow: hidden;
+                .current-color-spot {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    right: 0;
+                }
             }
         }
         .hue-alpha-section {
@@ -59,8 +67,8 @@
         flex: 2;
         flex-direction: row;
         flex-wrap: wrap;
-        margin: 0 0 0 10px;
-        .color-swatch + .color-swatch {
+        margin: 0 0 0 8px;
+        .color-swatch {
             margin-left: 7px;
         }
     }
