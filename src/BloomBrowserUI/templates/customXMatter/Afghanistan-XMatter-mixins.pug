@@ -1,0 +1,145 @@
+include ../xMatter/bloom-xmatter-mixins.pug
+
+mixin hint-bubble(langForBubbles, dari, pashti, english)
+	//- We weren't willing to pollute our l10n system
+	//- with these strings, so each xmatter simply gets
+	//- the strings for that language.
+	if langForBubbles === 'prs'
+		label.bubble= dari
+	else if langForBubbles === 'ps'
+		label.bubble= pashti
+	else
+		//- Currently, the English will never get used,
+		//- but I wanted to keep them around for documentation of what these strings
+		//- are supposed to be translations of.
+		label.bubble= english
+
+mixin afg-field-author(langForBubbles)
+	+field-prototypeDeclaredExplicity("N1").author
+		+hint-bubble(langForBubbles,'نویسنده/مؤلف','لیکوال/مؤلف','Name of the Author(s), in {lang}')
+		+editable("N1").author.Credits-Page-style(data-book="author")
+
+mixin afg-field-translator(langForBubbles)
+	//- Reuse the versionAcknowledgements field which often gets translator info
+	- var hintText
+	if langForBubbles === 'prs'
+		- hintText = 'مترجم'
+	else if langForBubbles === 'ps'
+		- hintText = 'ژباړن'
+	else
+		- hintText = 'Name of the Translator(s), in {lang}'
+	+field-acknowledgments-localizedVersion("N1", hintText)
+
+mixin afg-field-editor(langForBubbles)
+	+field-prototypeDeclaredExplicity("N1").editor
+		+hint-bubble(langForBubbles,'مترجم','ژباړن','Name of the Editorial Committee, in {lang}')
+		+editable("N1").editor.Credits-Page-style(data-book="editor")
+
+mixin afg-field-illustrator(langForBubbles)
+	+field-prototypeDeclaredExplicity("N1").illustrator
+		+hint-bubble(langForBubbles,'رسام/نقاش','انځورگر','Name of the Illustrator(s), in {lang}')
+		+editable("N1").illustrator.Credits-Page-style(data-book="illustrator")
+
+mixin afg-field-department(langForBubbles)
+	+field-prototypeDeclaredExplicity("N1").department
+		+hint-bubble(langForBubbles,'دیپارتمنت انکشاف دهنده','انکشاف ورکوونکي څانګه','Name of Responsible Department, in {lang}')
+		+editable("N1").department.Credits-Page-style(data-book="department")
+
+mixin afg-field-publisher(langForBubbles)
+	+field-prototypeDeclaredExplicity("N1").publisher
+		+hint-bubble(langForBubbles,'ناشر','خپرونکی','Name of Publisher, in {lang}')
+		+editable("N1").publisher.Credits-Page-style(data-book="publisher")
+
+mixin afg-field-year(langForBubbles)
+	div.bloom-translationGroup.bloom-recording-optional(data-default-languages="*", dir="rtl")
+		+hint-bubble(langForBubbles,'سال تبغ یا انتشار','د چاپ کال','Year of Publication')
+		div.bloom-editable(data-book="year", lang="*").Credits-Page-style
+
+mixin afg-field-location(langForBubbles)
+	+field-prototypeDeclaredExplicity("N1").location
+		+hint-bubble(langForBubbles,'محل تبع و نشر','د چاپ ځای','Location of the Publisher, in {lang}')
+		+editable("N1").location.Credits-Page-style(data-book="location")
+
+mixin afg-field-printing-company(langForBubbles)
+	+field-prototypeDeclaredExplicity("N1").printing-company
+		+hint-bubble(langForBubbles,'نام مطبعه','چاپ خونه','Name of Printing Company, in {lang}')
+		+editable("N1").printing-company.Credits-Page-style(data-book="printInfo")
+
+mixin afg-field-email(langForBubbles)
+	div.bloom-translationGroup.bloom-recording-optional(data-default-languages="*", dir="rtl")
+		+hint-bubble(langForBubbles,'آدرس الیکترونیکی - ایمیل','پریښنالیک پته','Contact Email Address')
+		div.bloom-editable(data-book="email", lang="*").Credits-Page-style
+
+mixin afg-outsideFrontCover(langForBubbles)
+	// FRONT COVER
+	+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
+		.logo
+		+field-prototypeDeclaredExplicity("V").bookTitle.right-of-logo
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style(data-book='bookTitle')
+		.levelInfoRow.right-of-logo
+			+field-prototypeDeclaredExplicity("V").levelInfo
+				+hint-bubble(langForBubbles,'معلومات صنف، سمستر و سویه','د ټولگی، سمستر او سویي معلومات','Grade, Semester, and Level Information, in {lang}')
+				+editable(kLanguageForPrototypeOnly).Cover-Default-style(data-book='levelInformation')
+
+		.bloom-imageContainer.bloom-backgroundImage(data-book='coverImage', style="background-image:url('placeHolder.png')")
+
+		// 2 columns: first for an optional logo, then text content
+		.bottomBlock
+			+cover-branding-bottom-left.bottom-left-branding
+			.bottomTextContent
+				.typeRow
+					+field-prototypeDeclaredExplicity("V")
+						+hint-bubble(langForBubbles,'نوعیت مواد درسی','د درسی موادو بڼه یا ډول','Type of material, in {lang}')
+						+editable(kLanguageForPrototypeOnly).Cover-Default-style(data-book='typeOfMaterial')
+				.bottomRow
+					.coverBottomLangName.Cover-Default-style(data-derived='languagesOfBook')
+					+chooser-topic.coverBottomBookTopic
+
+mixin afg-nationalAnthem
+	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter.bloom-force-publish(data-export='front-matter-inside-front-cover', data-xmatter-page='insideFrontCover')#BA00DE13-734C-4036-9901-7040275B9000
+		.nationalAnthem
+
+mixin afg-nationalAnthem-device
+	//- Though it doesn't really matter in this case because there are no data values to sync,
+	//- keeping the references here to "inside front cover" is correct.
+	+page-cover('Anthem').cover.coverColor.insideFrontCover.bloom-backMatter.bloom-force-publish(data-export='front-matter-inside-front-cover', data-xmatter-page='insideFrontCover')#1935e543-0311-4e90-8151-3eb0b9ff746a
+		.nationalAnthem
+
+mixin afg-titlePage(langForBubbles)
+	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#5db161c1-bfc0-4d4e-aeb6-c415a1ab6da2
+		// TITLE PAGE
+		.logo
+		.bishmallah
+			+image-xmatter('bishmallah').right-of-logo
+		+field-prototypeDeclaredExplicity("V")#titlePageTitleBlock
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
+		#titlePageLevelBlock
+			+field-prototypeDeclaredExplicity("V")
+				+hint-bubble(langForBubbles,'معلومات صنف، سویه و هفته','د ټولگي، اونۍ او سويه معلومات','Grade and Week level information, in {lang}')
+				+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Levelinfo-On-Title-Page-style(data-book='levelInformationByGradeAndWeek')
+		+title-page-branding-bottom
+
+mixin afg-credits(langForBubbles)
+	+page-xmatter('Credits').credits(data-export='front-matter-credits', data-xmatter-page='credits')&attributes(attributes)#7fbc9510-3749-4f29-88ff-2614950d5fe4
+		+afg-field-author(langForBubbles)
+		+afg-field-translator(langForBubbles)
+		+afg-field-illustrator(langForBubbles)
+		+afg-field-editor(langForBubbles)
+		+field-acknowledgments-originalVersion
+		+afg-field-department(langForBubbles)
+		+afg-field-publisher(langForBubbles)
+		+afg-field-year(langForBubbles)
+		+field-ISBN(dir='rtl')
+		+afg-field-location(langForBubbles)
+		+afg-field-printing-company(langForBubbles)
+		+afg-field-email(langForBubbles)
+		+block-licenseAndCopyright
+		+field-prototypeDeclaredExplicity("N1")#funding
+			label.bubble Use this to acknowledge any funding agencies.
+			+editable(kLanguageForPrototypeOnly).funding.Content-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+
+mixin afg-messagePage
+	+page-xmatter('Message').message.bloom-frontMatter.bloom-force-publish(data-export='front-matter-message', data-xmatter-page='message')&attributes(attributes)#875d1eee-3509-4d12-9e6f-b4423b8786c0
+		block

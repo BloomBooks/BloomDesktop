@@ -1627,7 +1627,7 @@ function StripAudioCurrent(html) {
 
 // bodyContentHtml should not contain HTML or Body tags. It should be the innerHtml of the body
 // It might look something like this: <div class='ui-audioCurrent'>Hello world</div>
-function SetupIFrameFromHtml(
+export function SetupIFrameFromHtml(
     bodyContentHtml,
     id = "page",
     shouldClearFirst = true
@@ -1679,11 +1679,11 @@ function CleanupIframe(id = "page") {
 }
 
 // Just sets up some dummy elements so that they're non-null.
-function SetupTalkingBookUIElements() {
+export function SetupTalkingBookUIElements() {
     document.body.appendChild(document.createElement("div")); // Ensures there is always an element.
 
     const html =
-        '<button id="audio-record" /><button id="audio-play" /><div id="audio-split-wrapper"><button id="audio-split"></div><button id="audio-next" /><button id="audio-prev" /><button id="audio-clear" /><input id="audio-recordingModeControl" /><input id="audio-playbackOrderControl" /><audio id="player" />';
+        '<button id="audio-record" /><button id="audio-play" /><div id="audio-split-wrapper"><button id="audio-split"></div><button id="audio-next" /><button id="audio-prev" /><button id="audio-clear" /><input id="audio-recordingModeControl" /><div id="audio-playbackOrderControl" /><audio id="player" />';
     document.body.firstElementChild!.insertAdjacentHTML("afterend", html);
 }
 
