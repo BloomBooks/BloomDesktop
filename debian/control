@@ -27,7 +27,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  fonts-sil-andika-new-basic | fonts-sil-andikanewbasic,
  optipng, libsndfile1,
  wmctrl, lame, ghostscript,
- ffmpeg,
+ ffmpeg, graphicsmagick,
  python3-aeneas | python-aeneas
 Suggests: art-of-reading3
 Replaces: bloom-desktop, bloom-desktop-beta, bloom-desktop-betainternal
