@@ -1,0 +1,38 @@
+include ../Afghanistan-XMatter-mixins.pug
+
+- const kDariLanguageCode = 'prs';
+
+mixin dari-outsideFrontCover
+	+afg-outsideFrontCover(kDariLanguageCode)
+
+mixin dari-titlePage
+	+afg-titlePage(kDariLanguageCode)
+
+mixin dari-credits
+	+afg-credits(kDariLanguageCode)&attributes(attributes)
+
+mixin dari-text
+	//- Ideally, we would set the language code here so this text can pick up things like font settings, etc.
+	//- But if we do so, the text and thus the page gets stripped out if the language settings for the book
+	//- don't include language "prs". So for now, I'm taking the branding text approach and setting lang="*".
+	//- .text(lang=kDariLanguageCode, dir="rtl")&attributes(attributes)
+	.text(lang="*", dir="rtl")&attributes(attributes)
+		block
+
+mixin dari-messagePage
+	+afg-messagePage
+		+dari-text
+			p ﻣـﺎ ﮐـــﻮدﮐـﺎن ﻣﯿــﻬﻦ
+			p ﻣـﺎ ﺑﻠﺒـــﻼن ﮔﻠـــﺸﻦ
+			p ﻣﯽﺧﻮاﻧﯿﻢ درس و ﺳﺒﻖ
+			p ﻣﯽزﻧـــــﯿﻢ ورق ورق
+			p ﻣﯽﺧــﻮاﻧـﯿﻢ داﻧـﻪ داﻧﻪ
+			p ﻫﻢ ﺷــﻌﺮ و ﻫﻢ ﺗــﺮاﻧﻪ
+			p ﻣﯽﮐﻨﯿﻢ ﻣﺸﻖ و ﺗﻤﺮﯾﻦ
+			p ﺑـﺎ ﻗــﻠﻢﻫـﺎي رﻧﮕـﯿﻦ
+			p ﻣـﯽﺧﻮاﻧـــﯿﻢ درس اﻧﺎر
+			p ﻗـﻮ ﻗـﻮ ﻗـﻮ ﺑـﺮگِ ﭼﻨﺎر
+			p ﻣـﯽﻧﻮﯾﺴـــﯿﻢ ﻣﺤـﺒﺖ
+			p درس زﯾــــﺒﺎي ﻣﮑﺘـﺐ
+			p ﻣﯽﮔﻮﯾــﯿﻢ اﻓﻐﺎﻧــﺴﺘﺎن
+			p ﭘـﺎﯾــــﻨﺪه و ﺟــﺎودان
