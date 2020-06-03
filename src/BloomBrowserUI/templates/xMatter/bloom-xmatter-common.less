@@ -177,8 +177,8 @@
         //branding will often be empty, if there is no front cover logo
         .branding {
             order: 0; // first (left) in the flex list
-            margin: 0; //unlike a long of logo placements, we're not trying to center this one with left/right auto margins
-            margin-right: 10px; // this only has an effect if the image is there, beecause in the html, we set display:none if the image isn't found
+            margin: 0; //unlike a lot of logo placements, we're not trying to center this one with left/right auto margins
+            margin-right: 10px; // this only has an effect if the image is there, because in the html, we set display:none if the image isn't found
         }
 
         // this contains the smallCoverCredits text box row, followed by the row that has the language names and topic
@@ -254,6 +254,38 @@
                     }
                 }
             }
+        }
+    }
+}
+
+.frontCover,
+.titlePage {
+    .topBlock {
+        flex: 0 0 auto;
+        order: 0;
+
+        // we want two columns: the first is for the optional branding logo, the second is for everything else
+        display: flex;
+        flex-direction: row;
+
+        //branding will often be empty, if there is no front cover logo
+        .branding {
+            order: 0; // first (left) in the flex list
+            margin: 0; //unlike a lot of logo placements, we're not trying to center this one with left/right auto margins
+            margin-right: 10px; // this only has an effect if the image is there, because in the html, we set display:none if the image isn't found
+        }
+
+        .topContent {
+            flex: 1 1 100%; // this element is happy to take up space relative to its parent, topBlock
+            order: 1; // after the optional branding logo
+
+            //this block is flex box of 2 rows
+            display: flex;
+            flex-direction: column;
+
+            margin-left: 0;
+            margin-right: 0;
+            width: auto;
         }
     }
 }
