@@ -41,6 +41,12 @@
             "lang": "*",
             "content": "<img class='branding' src='logo.png'/>",
             "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<!--override default-->",
+            "condition": "always"
         }
     ]
 }
