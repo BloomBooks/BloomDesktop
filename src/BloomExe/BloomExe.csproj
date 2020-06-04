@@ -291,8 +291,11 @@
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
     </Reference>
-    <Reference Include="DialogAdapters">
+    <Reference Include="DialogAdapters" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\packages\DialogAdapters.0.1.4.30000\lib\net45\DialogAdapters.dll</HintPath>
+    </Reference>
+    <Reference Include="DialogAdapters" Condition="'$(OS)'!='Windows_NT'">
+      <HintPath>..\..\packages\DialogAdapters.Gtk2.0.1.10\lib\net461\DialogAdapters.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
