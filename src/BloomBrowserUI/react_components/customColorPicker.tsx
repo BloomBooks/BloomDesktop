@@ -38,7 +38,7 @@ export interface ISwatchDefn {
     // hex color; only the first element of the array is used here, but it's easier to maintain
     // the array than make a different single string property that can't be shared
     // between the two interfaces.
-    colors?: string[];
+    colors: string[];
     opacity?: number;
 }
 
@@ -56,13 +56,8 @@ export const CustomColorPicker: React.FunctionComponent<
     const handleColorChange: ColorChangeHandler = (color, event) =>
         props.onChange(color);
 
-    let nextCustomCounter = 1;
-    const getToolTip = (rgb: RGBColor): string => {
-        const color = tinycolor(rgb);
-        const keyword = color.toName();
-        return keyword
-            ? keyword.toLocaleUpperCase()
-            : `Custom${nextCustomCounter++}`;
+    const getToolTip = (index: number): string => {
+        return props.swatchColors[index].name.toLocaleUpperCase();
     };
     const getSwatchColors = () => (
         <>
@@ -71,7 +66,7 @@ export const CustomColorPicker: React.FunctionComponent<
                     color={rgb}
                     key={i}
                     index={i}
-                    tooltip={getToolTip(rgb)}
+                    tooltip={getToolTip(i)}
                     onClick={handleColorChange}
                 />
             ))}

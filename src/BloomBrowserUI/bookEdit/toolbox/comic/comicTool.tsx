@@ -22,6 +22,7 @@ import { ColorResult } from "react-color";
 import CustomColorPicker, {
     ISwatchDefn
 } from "../../../react_components/customColorPicker";
+import * as tinycolor from "tinycolor2";
 
 export interface IMenuItem extends ISwatchDefn {
     l10nKey?: string; // if present, there should be default text in the (below) 'text' property to display
@@ -29,8 +30,11 @@ export interface IMenuItem extends ISwatchDefn {
 }
 
 const ComicToolControls: React.FunctionComponent = () => {
-    // const l10nPrefix1 = "Common.Colors.";
-    const l10nPrefix2 = "EditTab.Toolbox.ComicTool.Options.BackgroundColor.";
+    const maxChooserSwatches = 12;
+    const maxMenuItems = 10;
+    // In both cases these insertion indices reflect the size of the non-customized menu, less the "New..."
+    const backgroundMenuCustomInsertionIndex = 6;
+    const textMenuCustomInsertionIndex = 4;
     const specialColors: IMenuItem[] = [
         // #DFB28B is the color Comical has been using as the default for captions.
         // It's fairly close to the "Calico" color defined at https://www.htmlcsscolor.com/hex/D5B185 (#D5B185)
@@ -57,9 +61,12 @@ const ComicToolControls: React.FunctionComponent = () => {
         }
     ];
 
+    // const l10nPrefix1 = "Common.Colors.";
+    const l10nPrefix2 = "EditTab.Toolbox.ComicTool.Options.BackgroundColor.";
     const newMenuItem: IMenuItem = {
         name: "new",
         l10nKey: l10nPrefix2 + "New",
+        colors: ["white"],
         text: "New..."
     };
 
@@ -93,12 +100,6 @@ const ComicToolControls: React.FunctionComponent = () => {
             opacity: 0.66,
             l10nKey: l10nPrefix2 + "PartialTransparent",
             text: "33% Transparent"
-        },
-        {
-            name: "oldLace",
-            //l10nKey: l10nPrefix2 + "OldLace",
-            //text: "Old Lace"
-            colors: ["OldLace"]
         }
     ];
 
@@ -114,27 +115,37 @@ const ComicToolControls: React.FunctionComponent = () => {
 
     // Text color menu and chooser
     const [textColor, setTextColor] = useState("black");
-    const [textColorMenuItems, settextColorMenuItems] = useState(
+    const [nextCustomText, setNextCustomText] = useState(1);
+    const [textColorMenuItems, setTextColorMenuItems] = useState(
         defaultTextColors.concat(newMenuItem)
     );
     const [textChooserSwatches, setTextChooserSwatches] = useState(
         defaultTextColors
     );
+    // defaults to "black" text color
+    const [textColorMenuItem, setTextColorMenuItem] = useState("black");
     const [showTextPicker, setShowTextPicker] = useState(false);
 
     // Background color menu and chooser
     const [backgroundColor, setBackgroundColor] = useState("white");
+    const [nextCustomBackground, setNextCustomBackground] = useState(1);
+    const [backgroundOpacity, setBackgroundOpacity] = useState(1);
     const [backgroundChooserSwatches, setBackgroundChooserSwatches] = useState(
         defaultBackgroundColors
     );
-    // We need a separate copy here because we will modify the menu items array with
+    // We need a separate copy of the array here because we will modify the menu items array with
     // items that we don't want to appear in the swatches (specifically the gradients).
-    const defaultBackgroundMenuItems = defaultBackgroundColors.slice();
+    let defaultBackgroundMenuItems = defaultBackgroundColors.slice();
     // We insert the Super Bible gradients after our partial transparency menu item,
-    // but before 'oldlace' and New...
-    defaultBackgroundMenuItems.splice(3, 0, ...specialColors);
+    // but before New...
+    defaultBackgroundMenuItems = defaultBackgroundMenuItems.concat(
+        specialColors
+    );
     const [backgroundColorMenuItems, setBackgroundColorMenuItems] = useState(
         defaultBackgroundMenuItems.concat(newMenuItem)
+    );
+    const [backgroundColorMenuItem, setBackgroundColorMenuItem] = useState(
+        "white"
     );
     const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
 
@@ -187,11 +198,62 @@ const ComicToolControls: React.FunctionComponent = () => {
             );
             setOutlineColor(currentBubbleSpec.outerBorderColor);
             setBubbleActive(true);
-            setBackgroundColor(getBackgroundColorValue(currentBubbleSpec));
+            // Enhance: When the bubble spec has opacity, update it here
+            //setBackgroundOpacity(currentBubbleSpec.opacity ? currentBubbleSpec.opacity : 1);
+            // N.B. Don't forget to add spec opacity to call to 'getSwatchFromHex' (and maybe rename the method).
+            const backColor = getBackgroundColorValue(currentBubbleSpec);
+            if (!isSpecialColorName(backColor)) {
+                const newSwatch = getSwatchFromHex(
+                    backColor,
+                    getNewCustomBackgroundName()
+                );
+                // Add it to the menu, if it's not already there.
+                const newBackgroundMenu = getNewMenuArrayWithSwatch(
+                    backgroundColorMenuItems,
+                    newSwatch,
+                    backgroundMenuCustomInsertionIndex
+                );
+                if (newBackgroundMenu) {
+                    setBackgroundColorMenuItems(newBackgroundMenu);
+                    // Since it's not one of our standard backgrounds, also add it to the chooser swatches
+                    const newSwatchArray = getNewSwatchArrayForChooser(
+                        backgroundChooserSwatches,
+                        newSwatch
+                    );
+                    if (newSwatchArray) {
+                        setBackgroundChooserSwatches(newSwatchArray);
+                    }
+                    setBackgroundColorMenuItem(newSwatch.name);
+                }
+            }
+            // This didn't work for the case where we're just adding a new menu item; but it'll catch
+            // all the other cases.
+            const menuItem = getBackgroundMenuItemFromColorName(backColor);
+            if (menuItem) {
+                setBackgroundColorMenuItem(menuItem.name);
+            }
+            setBackgroundColor(backColor);
+            // Enhance: When the bubble spec has textColor, update it here
+            //setTextColor(currentBubbleSpec.textColor);
+            //setTextColorMenuItem();
         } else {
             setBubbleActive(false);
         }
     }, [currentBubbleSpec]);
+
+    useEffect(() => {
+        if (showTextPicker) {
+            setKeyListener();
+        } else {
+            // If no bubble is active, we are probably still getting setup, so we'll skip this "change".
+            if (bubbleActive) {
+                resetKeyListener();
+                // TODO: The real onChangeComplete goes here
+                console.log("New Text color finalized.");
+                handleNewTextColorChooserValue();
+            }
+        }
+    }, [showTextPicker]);
 
     // When color choosers are visible, Enter or Esc should close them
     useEffect(() => {
@@ -203,21 +265,73 @@ const ComicToolControls: React.FunctionComponent = () => {
                 resetKeyListener();
                 // TODO: The real onChangeComplete goes here
                 console.log("New Background color finalized.");
+                handleNewBackgroundColorChooserValue();
             }
         }
     }, [showBackgroundPicker]);
-    useEffect(() => {
-        if (showTextPicker) {
-            setKeyListener();
-        } else {
-            // If no bubble is active, we are probably still getting setup, so we'll skip this "change".
-            if (bubbleActive) {
-                resetKeyListener();
-                // TODO: The real onChangeComplete goes here
-                console.log("New Text color finalized.");
-            }
+
+    const getBackgroundMenuItemFromColorName = (
+        backColorName: string
+    ): IMenuItem | undefined => {
+        return backgroundColorMenuItems.find(
+            item => item.name === backColorName
+        );
+    };
+
+    const getTextMenuItemFromColorName = (
+        textColorName: string
+    ): IMenuItem | undefined => {
+        return textColorMenuItems.find(item => item.name === textColorName);
+    };
+
+    const isSwatchInMenuArray = (
+        array: IMenuItem[],
+        swatch: ISwatchDefn
+    ): boolean => !!array.find(swatchCompareFunc(swatch));
+
+    // Function for comparing a swatch with an array of IMenuItems to see if the swatch is already
+    // in the array. We pass this function to .find().
+    const swatchCompareFunc = (swatch: ISwatchDefn) => (
+        item: IMenuItem
+    ): boolean => {
+        if (item.colors.length > 1 || item.name === "new") {
+            return false;
         }
-    }, [showTextPicker]);
+        const itemOpacity = item.opacity ? item.opacity : 1;
+        const swatchColor = tinycolor(swatch.colors[0]);
+        const itemColor = tinycolor(item.colors[0]);
+        return (
+            swatchColor.toHex() === itemColor.toHex() &&
+            swatch.opacity === itemOpacity
+        );
+    };
+
+    const isSpecialColorName = (colorName: string): boolean =>
+        !!specialColors.find(item => item.name === colorName);
+
+    const getSwatchFromHex = (
+        hexColor: string,
+        customName: string,
+        opacity?: number
+    ): ISwatchDefn => {
+        return {
+            name: customName,
+            colors: [hexColor],
+            opacity: opacity ? opacity : 1
+        };
+    };
+
+    const getNewCustomTextName = (): string => {
+        const nextNumber = nextCustomText;
+        setNextCustomText(nextNumber + 1);
+        return `Custom${nextNumber}`;
+    };
+
+    const getNewCustomBackgroundName = (): string => {
+        const nextNumber = nextCustomBackground;
+        setNextCustomBackground(nextNumber + 1);
+        return `Custom${nextNumber}`;
+    };
 
     const setKeyListener = () => {
         document.addEventListener("keydown", handleKeyPress, false);
@@ -285,7 +399,120 @@ const ComicToolControls: React.FunctionComponent = () => {
         return "white";
     };
 
-    // Callback when background color of the bubble is changed
+    // Callback when we complete a bubble text color change via the new color chooser.
+    // We add a new (unique) color to the list of swatches for the chooser AND to the list of menu options.
+    // After our list of swatches grows past 12, we start bumping old values.
+    // Our list of default menu options is already fairly long, so we start bumping them immediately.
+    const handleNewTextColorChooserValue = () => {
+        const newSwatchColor: ISwatchDefn = getSwatchFromHex(
+            textColor,
+            getNewCustomTextName()
+        );
+        const newSwatchArray = getNewSwatchArrayForChooser(
+            textChooserSwatches,
+            newSwatchColor
+        );
+        if (newSwatchArray) {
+            setTextChooserSwatches(newSwatchArray);
+        }
+
+        const newMenuArray = getNewMenuArrayWithSwatch(
+            textColorMenuItems,
+            newSwatchColor,
+            textMenuCustomInsertionIndex
+        );
+        if (newMenuArray) {
+            setTextColorMenuItems(newMenuArray);
+            setTextColorMenuItem(newSwatchColor.name);
+        } else {
+            setTextColorMenuItem(
+                getTextColorMenuItemBySwatch(newSwatchColor).name
+            );
+        }
+    };
+
+    // Callback when we complete a bubble background color change via the new color chooser.
+    // We add a new (unique) color to the list of swatches for the chooser AND to the list of menu options.
+    // After our list of swatches grows past 12, we start bumping older custom values.
+    // After out list of menu options grows past 8, we start bumping older custom values.
+    const handleNewBackgroundColorChooserValue = () => {
+        const newSwatchColor: ISwatchDefn = getSwatchFromHex(
+            backgroundColor,
+            getNewCustomBackgroundName(),
+            backgroundOpacity
+        );
+        const newSwatchArray = getNewSwatchArrayForChooser(
+            backgroundChooserSwatches,
+            newSwatchColor
+        );
+        if (newSwatchArray) {
+            setBackgroundChooserSwatches(newSwatchArray);
+        }
+
+        const newMenuArray = getNewMenuArrayWithSwatch(
+            backgroundColorMenuItems,
+            newSwatchColor,
+            backgroundMenuCustomInsertionIndex
+        );
+        if (newMenuArray) {
+            setBackgroundColorMenuItems(newMenuArray);
+            setBackgroundColorMenuItem(newSwatchColor.name);
+        } else {
+            setBackgroundColorMenuItem(
+                getBackgroundColorMenuItemBySwatch(newSwatchColor).name
+            );
+        }
+    };
+
+    const getBackgroundColorMenuItemBySwatch = (
+        swatch: ISwatchDefn
+    ): IMenuItem => {
+        return backgroundColorMenuItems.find(
+            swatchCompareFunc(swatch)
+        ) as IMenuItem;
+    };
+
+    const getTextColorMenuItemBySwatch = (swatch: ISwatchDefn): IMenuItem => {
+        return textColorMenuItems.find(swatchCompareFunc(swatch)) as IMenuItem;
+    };
+
+    const getNewSwatchArrayForChooser = (
+        chooserSwatchArray: IMenuItem[],
+        swatch: ISwatchDefn
+    ): IMenuItem[] | undefined => {
+        if (isSwatchInMenuArray(chooserSwatchArray, swatch)) {
+            // this one is in the list already
+            return undefined;
+        }
+        const newSwatchArray = chooserSwatchArray.slice();
+        newSwatchArray.splice(0, 0, swatch);
+        if (newSwatchArray.length > maxChooserSwatches) {
+            newSwatchArray.splice(newSwatchArray.length - 4, 1); // Delete the oldest custom value
+        }
+        return newSwatchArray;
+    };
+
+    // Given an array of IMenuItem and an ISwatchDefn (and insertion index), returns a new menu array
+    // or undefined, if the Swatch is already in the menu.
+    const getNewMenuArrayWithSwatch = (
+        menuArray: IMenuItem[],
+        swatch: ISwatchDefn,
+        insertionIndex: number
+    ): IMenuItem[] | undefined => {
+        if (isSwatchInMenuArray(menuArray, swatch)) {
+            // this one is in the Array already
+            return undefined;
+        }
+        const newMenuArray = menuArray.slice();
+        newMenuArray.splice(insertionIndex, 0, swatch); // insert new item
+        if (newMenuArray.length > maxMenuItems) {
+            newMenuArray.splice(newMenuArray.length - 2, 1); // delete the menu item just before "New..."
+        }
+        return newMenuArray;
+    };
+
+    // Callback when a new bubble background color menu item is chosen.
+    // Enhance: event.target must somehow include opacity!
     const handleBackgroundColorChanged = event => {
         const newValue = event.target.value as string;
 
@@ -295,58 +522,60 @@ const ComicToolControls: React.FunctionComponent = () => {
             return;
         }
 
-        updateBackgroundColor(newValue);
+        const menuItem = getBackgroundMenuItemFromColorName(newValue);
+        if (menuItem) {
+            updateBackgroundColor(menuItem);
+        }
     };
 
-    const updateBackgroundColor = (newColorValue: string) => {
+    // We come into this from 2 places: just above from changing the Select combo and from chooser change
+    const updateBackgroundColor = (newColorSwatch: ISwatchDefn) => {
         // Update the toolbox controls
-        setBackgroundColor(newColorValue);
+        if (getBackgroundMenuItemFromColorName(newColorSwatch.name)) {
+            setBackgroundColorMenuItem(newColorSwatch.name);
+        }
+        setBackgroundColor(newColorSwatch.colors[0]);
+        const opacity = newColorSwatch.opacity ? newColorSwatch.opacity : 1;
+        setBackgroundOpacity(opacity);
 
         // Update the Comical canvas on the page frame
-        const backgroundColors = translateNewValueToComicalColors(
-            newColorValue
-        );
+        const backgroundColors = newColorSwatch.colors;
         ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
             backgroundColors: backgroundColors
+            // opacity: newColorSwatch.opacity?!
         });
     };
 
     // Callback when the color of the bubble text is changed.
     const handleTextColorChanged = event => {
-        const newValue = event.target.value as string;
+        const newTextColor = event.target.value as string;
 
-        if (newValue === "new") {
+        if (newTextColor === "new") {
             // get color from color chooser
             setShowTextPicker(true);
             return;
         }
 
-        updateTextColor(newValue);
+        const menuItem = getTextMenuItemFromColorName(newTextColor);
+        if (menuItem) {
+            updateTextColor(menuItem);
+        }
     };
 
-    const updateTextColor = (newColorValue: string) => {
+    // We come into this from 2 places: just above from changing the Select combo and from chooser change
+    const updateTextColor = (newColorSwatch: IMenuItem) => {
+        const color = newColorSwatch.colors[0]; // text color is always monochrome
         // Update the toolbox controls
-        setTextColor(newColorValue);
+        if (getTextMenuItemFromColorName(newColorSwatch.name)) {
+            setTextColorMenuItem(newColorSwatch.name);
+        }
+        setTextColor(color);
 
         // Update the Comical canvas on the page frame
-        const textColors = translateNewValueToComicalColors(newColorValue);
         // TODO: update comical to handle text color
         // ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
-        //     textColors: textColors
+        //     textColor: color
         // });
-    };
-
-    const translateNewValueToComicalColors = (
-        newColorValue: string
-    ): string[] => {
-        let backgroundColors = [newColorValue];
-        const specialFound = specialColors.find(
-            elem => elem.name === newColorValue
-        );
-        if (specialFound) {
-            backgroundColors = specialFound.colors as string[];
-        }
-        return backgroundColors;
     };
 
     // Callback when outline color of the bubble is changed
@@ -442,10 +671,10 @@ const ComicToolControls: React.FunctionComponent = () => {
 
     const getBackgroundColorMenu = () => (
         <Select
-            value={backgroundColor}
+            value={backgroundColorMenuItem}
             className="bubbleOptionDropdown"
             inputProps={{
-                name: "backgroundColor",
+                name: "backgroundColorMenuItem",
                 id: "bubble-backgroundColor-dropdown"
             }}
             MenuProps={{
@@ -471,19 +700,29 @@ const ComicToolControls: React.FunctionComponent = () => {
         }
         if (color.rgb) {
             console.log(
-                `  RGB: R${color.rgb.r} G${color.rgb.g} B${color.rgb.b}`
+                `  RGB: R${color.rgb.r} G${color.rgb.g} B${color.rgb.b} A${
+                    color.rgb.a
+                }`
             );
         }
         if (color.hsl) {
             console.log(
-                `  HSL: H${color.hsl.h} S${color.hsl.s} L${color.hsl.l}`
+                `  HSL: H${color.hsl.h} S${color.hsl.s} L${color.hsl.l} A${
+                    color.hsl.a
+                }`
             );
         }
     };
 
     const handleBackgroundPickerChange = (color: ColorResult) => {
         reportColorResult(color);
-        updateBackgroundColor(color.hex);
+        updateBackgroundColor(
+            getSwatchFromHex(
+                color.hex,
+                getNewCustomBackgroundName(),
+                color.rgb.a
+            )
+        );
     };
 
     const handleBackgroundPickerClose = (
@@ -494,10 +733,10 @@ const ComicToolControls: React.FunctionComponent = () => {
 
     const getTextColorMenu = () => (
         <Select
-            value={textColor}
+            value={textColorMenuItem}
             className="bubbleOptionDropdown"
             inputProps={{
-                name: "textColor",
+                name: "textColorMenuItem",
                 id: "bubble-textColor-dropdown"
             }}
             MenuProps={{
@@ -517,7 +756,8 @@ const ComicToolControls: React.FunctionComponent = () => {
     );
 
     const handleTextPickerChange = (color: ColorResult) => {
-        updateTextColor(color.hex);
+        reportColorResult(color);
+        updateTextColor(getSwatchFromHex(color.hex, getNewCustomTextName()));
     };
 
     const handleTextPickerClose = (event: React.MouseEvent | undefined) => {
