@@ -12,10 +12,6 @@ DESTDIR = debian/$(PACKAGE)
 LIB     = usr/lib/$(PACKAGE)
 SHARE   = usr/share/$(PACKAGE)
 
-# NOTE: make the third (and fourth?) number match changelog if you are
-# building the package manually.
-FULL_BUILD_NUMBER ?= 0.0.0.0
-
 %:
 	dh $@ --with=cli --parallel
 
@@ -34,10 +30,11 @@ override_dh_auto_build:
 	npm install --no-save yarn && \
 	export PATH="`pwd`/node_modules/.bin:$$PATH" && \
 	. ./environ && \
-	xbuild /t:RestoreBuildTasks build/Bloom.proj && \
-	xbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$(FULL_BUILD_NUMBER) build/Bloom.proj && \
-	xbuild /p:Configuration=$(BUILD) "Bloom.sln" && \
-	xbuild /p:Configuration=$(BUILD) src/LinuxBloomLauncher/LinuxBloomLauncher.cproj
+	. ./build_number.env && \
+	xbuild /t:RestoreBuildTasks /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER build/Bloom.proj && \
+	xbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER build/Bloom.proj && \
+	xbuild /p:Configuration=$(BUILD) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER "Bloom.sln" && \
+	xbuild /p:Configuration=$(BUILD) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER src/LinuxBloomLauncher/LinuxBloomLauncher.cproj
 
 override_dh_auto_test:
 
