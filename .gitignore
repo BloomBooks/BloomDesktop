@@ -63,6 +63,7 @@ WebSite/
 lib/dotnet/Palaso*.*
 lib/dotnet/Chorus*.*
 lib/lame/*
+lib/gm/*
 DistFiles/exiftool.exe
 Copy*.bat
 !CopyLocalSquirrelToLocalBloom.bat
