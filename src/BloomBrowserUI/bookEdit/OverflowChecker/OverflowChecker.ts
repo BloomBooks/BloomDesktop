@@ -253,7 +253,9 @@ export default class OverflowChecker {
         OverflowChecker.RemoveOverflowQtip($box);
         $box.parents().removeClass("childOverflowingThis");
 
-        if (box.classList.contains("bloom-padForOverflow")) {
+        const preventOverflowY = box.classList.contains("bloom-padForOverflow");
+
+        if (preventOverflowY) {
             box.style.paddingBottom = "0";
             const measurements = MeasureText.getDescentMeasurementsOfBox(box);
             const excessDescent =
@@ -273,6 +275,17 @@ export default class OverflowChecker {
         if (BubbleManager.growOverflowingBox(box, overflowY)) {
             overflowY = 0;
             box.scrollTop = 0; // now it should all fit, so no need to be scrolled down
+        }
+        if (preventOverflowY) {
+            // The usual fairly crude calculation may indicate it's overflowing, but
+            // above we did a much more precise calculation and gave it just enough padding
+            // to prevent it (if necessary).
+            // It's likely that the calls above to getSelfOverflowAmounts and growOverflowingBox above are
+            // redundant in this case. The latter only applies to TOP boxes, which are unlikely
+            // to be bloom-padForOverflow. However, I can't guarantee that a bloom-padForOverflow box
+            // can't overflow horizontally. It seemed safest to leave the existing code alone and just
+            // prevent the spurious overflow markup.
+            overflowY = 0;
         }
         if (overflowY > 0 || overflowX > 0) {
             $box.addClass("overflow");
