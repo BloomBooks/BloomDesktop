@@ -10,14 +10,14 @@ export const MenuColorBar: React.FunctionComponent<IMenuItem> = props => {
     const localizedText = props.l10nKey
         ? useL10n(props.text as string, props.l10nKey)
         : "";
-    const baseColor = props.colors ? props.colors : ["white"]; // An array of strings representing colors
+    const baseColor = props.colors; // An array of strings representing colors
 
-    // 'initialColorString' will be transparent if props.color represents a gradient (2 colors).
+    // 'initialColorString' will be 'gradient' if props.color represents a gradient (2 colors).
     // Otherwise, it could be a name of a color (OldLace) or a hex value starting with '#'
     const initialColorString =
-        baseColor.length === 1 ? baseColor[0] : "transparent";
+        baseColor.length === 1 ? baseColor[0] : "gradient";
     const opacity = props.opacity ? props.opacity : 1.0;
-    // 'backgroundColorString' will end up being a named color (including 'transparent' for gradients),
+    // 'backgroundColorString' will end up being a named color, a linear-gradient string,
     // or an rgba string (with possible opacity values).
     let backgroundColorString: string = initialColorString;
     if (initialColorString.startsWith("#")) {
@@ -26,44 +26,32 @@ export const MenuColorBar: React.FunctionComponent<IMenuItem> = props => {
             rgbArray[2]
         }, ${opacity})`;
     }
-    const gradientString =
-        baseColor.length > 1
-            ? "linear-gradient(to bottom, " +
-              baseColor[0] +
-              ", " +
-              baseColor[1] +
-              ")"
-            : "none";
-    const styleObject: React.CSSProperties = {
-        backgroundColor: backgroundColorString,
-        backgroundImage: gradientString
-    };
+    if (initialColorString === "gradient") {
+        backgroundColorString =
+            "linear-gradient(" + baseColor[0] + ", " + baseColor[1] + ")";
+    }
 
     const isDark = (colorString: string): boolean => {
         const color = tinycolor(colorString); // handles named colors, rgba() and hex strings!!!
         return color.isDark();
     };
 
-    let textColor = "";
-    if (gradientString === "none") {
-        if (isDark(backgroundColorString)) {
+    let textColor = "black";
+    if (initialColorString === "gradient") {
+        if (isDark(baseColor[0]) || isDark(baseColor[1])) {
             textColor = "white";
         }
     } else {
-        if (isDark(baseColor[0]) || isDark(baseColor[1])) {
+        if (isDark(backgroundColorString)) {
             textColor = "white";
         }
     }
 
-    const textStyleObject: React.CSSProperties = {
-        color: textColor
-    };
-
     const classes = "colorSwatch" + (props.name === "new" ? " newItem" : "");
 
     return (
-        <div className={classes} style={styleObject}>
-            <Typography color="textPrimary" style={textStyleObject}>
+        <div className={classes} style={{ background: backgroundColorString }}>
+            <Typography color="textPrimary" style={{ color: textColor }}>
                 {localizedText}
             </Typography>
         </div>
