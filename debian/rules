@@ -30,7 +30,7 @@ override_dh_auto_build:
 	npm install --no-save yarn && \
 	export PATH="`pwd`/node_modules/.bin:$$PATH" && \
 	. ./environ && \
-	. ./build_number.env && \
+	if [ -f ./build_number.env ]; then . ./build_number.env; else FULL_BUILD_NUMBER=0.0.0.0; fi && \
 	xbuild /t:RestoreBuildTasks /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER build/Bloom.proj && \
 	xbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER build/Bloom.proj && \
 	xbuild /p:Configuration=$(BUILD) /p:BUILD_NUMBER=$$FULL_BUILD_NUMBER "Bloom.sln" && \
