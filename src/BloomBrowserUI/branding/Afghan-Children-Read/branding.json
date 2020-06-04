@@ -1,0 +1,46 @@
+{
+    "presets": [
+        {
+            "data-book": "copyright",
+            "lang": "ps",
+            "content": "د لوست دا مرستندوی  کتاب په پوهنې وزارت پورې اړه لري.",
+            "condition": "always"
+        },
+        {
+            "data-book": "copyright",
+            "lang": "prs",
+            "content": "این کتاب کمکی خوانش متعلق به وزارت معارف است.",
+            "condition": "always"
+        },
+        {
+            "data-book": "funding",
+            "lang": "ps",
+            "content": "د لوست دا مرستندوی  کتاب د افغان ماشومان یي لولي پروژې په تخنیکي مرسته تألیف شوی دی.",
+            "condition": "always"
+        },
+        {
+            "data-book": "funding",
+            "lang": "prs",
+            "content": "این کتاب کمکی خوانش به حمایت پروژۀ\"اطفال افغان می خوانند\"تدوین گردیده.",
+            "condition": "always"
+        },
+        {
+            "data-book": "inside-front-cover-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding' src='nationalAnthem.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "cover-branding-top-left-html",
+            "lang": "*",
+            "content": "<img class='branding' src='logo.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "title-page-branding-top-left-html",
+            "lang": "*",
+            "content": "<img class='branding' src='logo.png'/>",
+            "condition": "always"
+        }
+    ]
+}

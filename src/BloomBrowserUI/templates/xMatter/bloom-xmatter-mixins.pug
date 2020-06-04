@@ -46,13 +46,13 @@ mixin field-acknowledgments-localizedVersion(lang="N1", hint="Acknowledgments fo
 		block versionAcknowledgmentsLabel
 			label.bubble
 				| #{hint}
-		+editable(lang).versionAcknowledgments.Credits-Page-style(data-book="versionAcknowledgments")
+		+editable(lang).versionAcknowledgments.Credits-Page-style(data-book="versionAcknowledgments")&attributes(attributes)
 
 mixin field-acknowledgments-originalVersion(lang="N1", hint="Original (or Shell) Acknowledgments in {lang}")
 	+field-prototypeDeclaredExplicity(lang).originalAcknowledgments
 		label.bubble
 			| #{hint}
-		+editable(kLanguageForPrototypeOnly).bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalAcknowledgments')
+		+editable(kLanguageForPrototypeOnly).bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalAcknowledgments')&attributes(attributes)
 			| {Original Acknowledgments}
 
 
