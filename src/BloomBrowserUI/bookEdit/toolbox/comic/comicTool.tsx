@@ -233,9 +233,32 @@ const ComicToolControls: React.FunctionComponent = () => {
                 setBackgroundColorMenuItem(menuItem.name);
             }
             setBackgroundColor(backColor);
-            // Enhance: When the bubble spec has textColor, update it here
-            //setTextColor(currentBubbleSpec.textColor);
-            //setTextColorMenuItem();
+
+            // Get the current bubble's textColor and set it
+            const bubbleTextColor = ComicTool.bubbleManager().getTextColor();
+            const newSwatch = getSwatchFromHex(
+                bubbleTextColor,
+                getNewCustomTextName()
+            );
+            // Add it to the menu, if it's not already there.
+            const newTextMenu = getNewMenuArrayWithSwatch(
+                textColorMenuItems,
+                newSwatch,
+                textMenuCustomInsertionIndex
+            );
+            if (newTextMenu) {
+                setTextColorMenuItems(newTextMenu);
+                // Since it's not one of our standard text colors, also add it to the chooser swatches
+                const newSwatchArray = getNewSwatchArrayForChooser(
+                    textChooserSwatches,
+                    newSwatch
+                );
+                if (newSwatchArray) {
+                    setTextChooserSwatches(newSwatchArray);
+                }
+                setTextColorMenuItem(newSwatch.name);
+            }
+            setTextColor(bubbleTextColor);
         } else {
             setBubbleActive(false);
         }
@@ -248,7 +271,6 @@ const ComicToolControls: React.FunctionComponent = () => {
             // If no bubble is active, we are probably still getting setup, so we'll skip this "change".
             if (bubbleActive) {
                 resetKeyListener();
-                // TODO: The real onChangeComplete goes here
                 console.log("New Text color finalized.");
                 handleNewTextColorChooserValue();
             }
@@ -404,6 +426,7 @@ const ComicToolControls: React.FunctionComponent = () => {
     // After our list of swatches grows past 12, we start bumping old values.
     // Our list of default menu options is already fairly long, so we start bumping them immediately.
     const handleNewTextColorChooserValue = () => {
+        ComicTool.bubbleManager().setTextColor(textColor);
         const newSwatchColor: ISwatchDefn = getSwatchFromHex(
             textColor,
             getNewCustomTextName()
@@ -571,11 +594,7 @@ const ComicToolControls: React.FunctionComponent = () => {
         }
         setTextColor(color);
 
-        // Update the Comical canvas on the page frame
-        // TODO: update comical to handle text color
-        // ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
-        //     textColor: color
-        // });
+        ComicTool.bubbleManager().setTextColor(color);
     };
 
     // Callback when outline color of the bubble is changed

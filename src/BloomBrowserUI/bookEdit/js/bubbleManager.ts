@@ -20,6 +20,8 @@ import { isLinux } from "../../utils/isLinux";
 
 const kWebsocketContext = "textOverPicture";
 const kComicalGeneratedClass: string = "comical-generated";
+const kTopClass = "bloom-textOverPicture";
+const kTopSelector = ".bloom-textOverPicture";
 
 // references to "TOP" in the code refer to the actual TextOverPicture box (what "Bubble"s were originally called) installed in the Bloom page.
 export class BubbleManager {
@@ -72,7 +74,7 @@ export class BubbleManager {
         box: HTMLElement,
         overflowY: number
     ): boolean {
-        const wrapperBox = box.closest(".bloom-textOverPicture") as HTMLElement;
+        const wrapperBox = box.closest(kTopSelector) as HTMLElement;
         if (!wrapperBox) {
             return false; // we can't fix it
         }
@@ -175,7 +177,7 @@ export class BubbleManager {
         // the first image.
         // todo: make sure comical is turned on for the right parent, in case there's more than one image on the page?
         const textOverPictureElems: HTMLElement[] = Array.from(
-            document.getElementsByClassName("bloom-textOverPicture") as any
+            document.getElementsByClassName(kTopClass) as any
         );
         if (textOverPictureElems.length > 0) {
             this.activeElement = textOverPictureElems[
@@ -354,9 +356,7 @@ export class BubbleManager {
             // hurt to make sure.
             initializeBubbleManager();
 
-            const bubbleElement = focusedElement.closest(
-                ".bloom-textOverPicture"
-            );
+            const bubbleElement = focusedElement.closest(kTopSelector);
             if (bubbleElement) {
                 theOneBubbleManager.setActiveElement(
                     bubbleElement as HTMLElement
@@ -396,6 +396,26 @@ export class BubbleManager {
             this.notifyBubbleChange(this.getSelectedItemBubbleSpec());
         }
         Comical.activateElement(this.activeElement);
+    }
+
+    // Set the color of the active TOP box text
+    public setTextColor(hexColor: string) {
+        const activeEl = theOneBubbleManager.getActiveElement();
+        if (activeEl) {
+            const topBox = activeEl.closest(kTopSelector) as HTMLDivElement;
+            topBox.style.color = hexColor;
+        }
+    }
+
+    public getTextColor(): string {
+        const activeEl = theOneBubbleManager.getActiveElement();
+        let textColor = "";
+        if (activeEl) {
+            const topBox = activeEl.closest(kTopSelector) as HTMLDivElement;
+            const style = topBox.style;
+            textColor = style && style.color ? style.color : "";
+        }
+        return textColor;
     }
 
     // drag-and-drop support for bubbles from comical toolbox
@@ -450,7 +470,7 @@ export class BubbleManager {
             // and shrinks to one line, messing up the whole layout.
             if (!event.target || !(event.target as Element).closest) return;
             const topBox = (event.target as Element).closest(
-                ".bloom-textOverPicture"
+                kTopSelector
             ) as HTMLElement;
             if (!topBox) return;
             topBox.classList.remove("bloom-allowAutoShrink");
@@ -1243,7 +1263,7 @@ export class BubbleManager {
             "</div>";
 
         const wrapperHtml =
-            "<div class='bloom-textOverPicture'>" + transGroupHtml + "</div>";
+            "<div class='" + kTopClass + "'>" + transGroupHtml + "</div>";
         // add textbox as last child of .bloom-imageContainer (BL-7883)
         const lastContainerChild = container.children().last();
         const wrapperBox = $(wrapperHtml).insertAfter(lastContainerChild);
@@ -1311,9 +1331,7 @@ export class BubbleManager {
     public deleteFloatingTOPBox(mouseX: number, mouseY: number) {
         const clickedElement = document.elementFromPoint(mouseX, mouseY);
         if (clickedElement) {
-            const textElement = clickedElement.closest(
-                ".bloom-textOverPicture"
-            );
+            const textElement = clickedElement.closest(kTopSelector);
             this.deleteTOPBox(textElement);
         }
     }
@@ -1534,7 +1552,7 @@ export class BubbleManager {
     }
 
     public cleanupTOPBoxes() {
-        const allTOPBoxes = $("body").find(".bloom-textOverPicture");
+        const allTOPBoxes = $("body").find(kTopSelector);
         allTOPBoxes.each((index, element) => {
             const thisTOPBox = $(element);
 
@@ -1547,7 +1565,7 @@ export class BubbleManager {
     // Called by bloomEditing.ts.
     public makeTOPBoxesDraggableClickableAndResizable() {
         // get all textOverPicture elements
-        const textOverPictureElems = $("body").find(".bloom-textOverPicture");
+        const textOverPictureElems = $("body").find(kTopSelector);
         if (textOverPictureElems.length === 0) {
             return; // if there aren't any, quit before we hurt ourselves!
         }
