@@ -7,7 +7,11 @@ interface IPointerProps {
     translateY?: string;
 }
 
-export const CirclePointer: React.FunctionComponent<IPointerProps> = props => {
+// CirclePointer is used in CustomColorPicker's Saturation block as the white circle pointer.
+// See below for SolidCircleSlider, an specific type of CirclePointer used elsewhere.
+export const CirclePointer: React.FunctionComponent<IPointerProps> = (
+    props: IPointerProps
+) => {
     const pointerColor = "white";
     const fillColorString = props.filled ? pointerColor : "";
     const translateXAdjustment = props.translateX ? props.translateX : "-8px";
@@ -30,6 +34,7 @@ export const CirclePointer: React.FunctionComponent<IPointerProps> = props => {
     return <div style={styleObject} />;
 };
 
+// SolidCircleSlider is used in CustomColorPicker's Hue and Alpha sliders as the solid white slider control.
 export const SolidCircleSlider = () => (
     <CirclePointer filled={true} translateX="-6px" translateY="0" />
 );

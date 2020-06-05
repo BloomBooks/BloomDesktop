@@ -73,3 +73,21 @@
         }
     }
 }
+
+@NecessaryZIndex: 30000; // "Necessary" for when it's in the toolbox, as a separate dialog, perhaps not.
+
+.pickerWrapper {
+    position: absolute;
+    z-index: @NecessaryZIndex + 2 !important;
+    width: 187px !important;
+    background-color: white;
+    margin-top: 16px; // puts the color chooser just under the select label
+
+    .pickerCover {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+    }
+}

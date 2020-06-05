@@ -26,6 +26,7 @@ import * as tinycolor from "tinycolor2";
 
 export interface IMenuItem extends ISwatchDefn {
     l10nKey?: string; // if present, there should be default text in the (below) 'text' property to display
+    l10nParam?: string;
     text?: string;
 }
 
@@ -42,30 +43,23 @@ const ComicToolControls: React.FunctionComponent = () => {
         {
             name: "whiteToCalico",
             colors: ["white", "#DFB28B"]
-            //l10nKey: l10nPrefix2 + "WhiteToCalico"
-            //text: "White to Calico"
         },
         // https://www.htmlcsscolor.com/hex/ACCCDD
         {
             name: "whiteToFrenchPass",
             colors: ["white", "#ACCCDD"]
-            //l10nKey: l10nPrefix2 + "WhiteToFrenchPass"
-            //text: "White to French Pass"
         },
         // https://encycolorpedia.com/7b8eb8
         {
             name: "whiteToPortafino",
             colors: ["white", "#7b8eb8"]
-            //l10nKey: l10nPrefix2 + "WhiteToPortafino"
-            //text: "White to Portafino"
         }
     ];
 
-    // const l10nPrefix1 = "Common.Colors.";
-    const l10nPrefix2 = "EditTab.Toolbox.ComicTool.Options.BackgroundColor.";
+    const l10nPrefix = "ColorPicker.";
     const newMenuItem: IMenuItem = {
         name: "new",
-        l10nKey: l10nPrefix2 + "New",
+        l10nKey: l10nPrefix + "New",
         colors: ["white"],
         text: "New..."
     };
@@ -89,8 +83,6 @@ const ComicToolControls: React.FunctionComponent = () => {
     const defaultBackgroundColors: IMenuItem[] = [
         {
             name: "black",
-            //l10nKey: l10nPrefix1 + "Black",
-            //text: "Black",
             colors: ["black"]
         },
         { name: "white", colors: ["white"] },
@@ -98,8 +90,9 @@ const ComicToolControls: React.FunctionComponent = () => {
             name: "partialTransparent",
             colors: ["#575757"], // bloom-gray
             opacity: 0.66,
-            l10nKey: l10nPrefix2 + "PartialTransparent",
-            text: "33% Transparent"
+            l10nKey: l10nPrefix + "PercentTransparent",
+            l10nParam: "33",
+            text: "PercentTransparent"
         }
     ];
 
@@ -233,14 +226,38 @@ const ComicToolControls: React.FunctionComponent = () => {
                 setBackgroundColorMenuItem(menuItem.name);
             }
             setBackgroundColor(backColor);
-            // Enhance: When the bubble spec has textColor, update it here
-            //setTextColor(currentBubbleSpec.textColor);
-            //setTextColorMenuItem();
+
+            // Get the current bubble's textColor and set it
+            const bubbleTextColor = ComicTool.bubbleManager().getTextColor();
+            const newSwatch = getSwatchFromHex(
+                bubbleTextColor,
+                getNewCustomTextName()
+            );
+            // Add it to the menu, if it's not already there.
+            const newTextMenu = getNewMenuArrayWithSwatch(
+                textColorMenuItems,
+                newSwatch,
+                textMenuCustomInsertionIndex
+            );
+            if (newTextMenu) {
+                setTextColorMenuItems(newTextMenu);
+                // Since it's not one of our standard text colors, also add it to the chooser swatches
+                const newSwatchArray = getNewSwatchArrayForChooser(
+                    textChooserSwatches,
+                    newSwatch
+                );
+                if (newSwatchArray) {
+                    setTextChooserSwatches(newSwatchArray);
+                }
+                setTextColorMenuItem(newSwatch.name);
+            }
+            setTextColor(bubbleTextColor);
         } else {
             setBubbleActive(false);
         }
     }, [currentBubbleSpec]);
 
+    // Set/Reset listeners for Esc/Enter to close chooser when open
     useEffect(() => {
         if (showTextPicker) {
             setKeyListener();
@@ -248,14 +265,12 @@ const ComicToolControls: React.FunctionComponent = () => {
             // If no bubble is active, we are probably still getting setup, so we'll skip this "change".
             if (bubbleActive) {
                 resetKeyListener();
-                // TODO: The real onChangeComplete goes here
-                console.log("New Text color finalized.");
                 handleNewTextColorChooserValue();
             }
         }
     }, [showTextPicker]);
 
-    // When color choosers are visible, Enter or Esc should close them
+    // Set/Reset listeners for Esc/Enter to close chooser when open
     useEffect(() => {
         if (showBackgroundPicker) {
             setKeyListener();
@@ -263,8 +278,6 @@ const ComicToolControls: React.FunctionComponent = () => {
             // If no bubble is active, we are probably still getting setup, so we'll skip this "change".
             if (bubbleActive) {
                 resetKeyListener();
-                // TODO: The real onChangeComplete goes here
-                console.log("New Background color finalized.");
                 handleNewBackgroundColorChooserValue();
             }
         }
@@ -341,6 +354,7 @@ const ComicToolControls: React.FunctionComponent = () => {
         document.removeEventListener("keydown", handleKeyPress, false);
     };
 
+    // When color choosers are visible, Enter or Esc should close them
     const handleKeyPress = (e: KeyboardEvent) => {
         if (e.defaultPrevented) {
             return;
@@ -401,9 +415,10 @@ const ComicToolControls: React.FunctionComponent = () => {
 
     // Callback when we complete a bubble text color change via the new color chooser.
     // We add a new (unique) color to the list of swatches for the chooser AND to the list of menu options.
-    // After our list of swatches grows past 12, we start bumping old values.
-    // Our list of default menu options is already fairly long, so we start bumping them immediately.
+    // After our list of swatches grows past 12, we start bumping old custom values.
+    // The combo dropdown menus can grow to around 7 options before we start bumping custom values.
     const handleNewTextColorChooserValue = () => {
+        ComicTool.bubbleManager().setTextColor(textColor);
         const newSwatchColor: ISwatchDefn = getSwatchFromHex(
             textColor,
             getNewCustomTextName()
@@ -433,8 +448,8 @@ const ComicToolControls: React.FunctionComponent = () => {
 
     // Callback when we complete a bubble background color change via the new color chooser.
     // We add a new (unique) color to the list of swatches for the chooser AND to the list of menu options.
-    // After our list of swatches grows past 12, we start bumping older custom values.
-    // After out list of menu options grows past 8, we start bumping older custom values.
+    // After our list of swatches grows past 12, we start bumping old custom values.
+    // The combo dropdown menus can grow to around 7 options before we start bumping custom values.
     const handleNewBackgroundColorChooserValue = () => {
         const newSwatchColor: ISwatchDefn = getSwatchFromHex(
             backgroundColor,
@@ -571,11 +586,7 @@ const ComicToolControls: React.FunctionComponent = () => {
         }
         setTextColor(color);
 
-        // Update the Comical canvas on the page frame
-        // TODO: update comical to handle text color
-        // ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
-        //     textColor: color
-        // });
+        ComicTool.bubbleManager().setTextColor(color);
     };
 
     // Callback when outline color of the bubble is changed
@@ -694,24 +705,25 @@ const ComicToolControls: React.FunctionComponent = () => {
     );
 
     const reportColorResult = (color: ColorResult) => {
-        console.log("Color Result:");
-        if (color.hex) {
-            console.log(`  Hex: ${color.hex ? color.hex : "undefined"}`);
-        }
-        if (color.rgb) {
-            console.log(
-                `  RGB: R${color.rgb.r} G${color.rgb.g} B${color.rgb.b} A${
-                    color.rgb.a
-                }`
-            );
-        }
-        if (color.hsl) {
-            console.log(
-                `  HSL: H${color.hsl.h} S${color.hsl.s} L${color.hsl.l} A${
-                    color.hsl.a
-                }`
-            );
-        }
+        // Uncomment the code below to get a complete report on the color returned from the chooser.
+        // console.log("Color Result:");
+        // if (color.hex) {
+        //     console.log(`  Hex: ${color.hex ? color.hex : "undefined"}`);
+        // }
+        // if (color.rgb) {
+        //     console.log(
+        //         `  RGB: R${color.rgb.r} G${color.rgb.g} B${color.rgb.b} A${
+        //             color.rgb.a
+        //         }`
+        //     );
+        // }
+        // if (color.hsl) {
+        //     console.log(
+        //         `  HSL: H${color.hsl.h} S${color.hsl.s} L${color.hsl.l} A${
+        //             color.hsl.a
+        //         }`
+        //     );
+        // }
     };
 
     const handleBackgroundPickerChange = (color: ColorResult) => {
@@ -885,9 +897,9 @@ const ComicToolControls: React.FunctionComponent = () => {
                         </InputLabel>
                         {getTextColorMenu()}
                         {showTextPicker && (
-                            <div className="textPicker">
+                            <div className="pickerWrapper">
                                 <div
-                                    className="textPickerCover"
+                                    className="pickerCover"
                                     onClick={handleTextPickerClose}
                                 />
                                 <CustomColorPicker
@@ -909,9 +921,9 @@ const ComicToolControls: React.FunctionComponent = () => {
                         </InputLabel>
                         {getBackgroundColorMenu()}
                         {showBackgroundPicker && (
-                            <div className="backgroundPicker">
+                            <div className="pickerWrapper">
                                 <div
-                                    className="backgroundPickerCover"
+                                    className="pickerCover"
                                     onClick={handleBackgroundPickerClose}
                                 />
                                 <CustomColorPicker

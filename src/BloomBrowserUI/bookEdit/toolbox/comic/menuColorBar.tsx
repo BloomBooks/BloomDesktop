@@ -2,13 +2,14 @@ import * as React from "react";
 import Typography from "@material-ui/core/Typography";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { IMenuItem } from "./comicTool";
-import { hex } from "color-convert";
 import * as tinycolor from "tinycolor2";
 
 // Displays a color bar menu item with optional localizable text.
-export const MenuColorBar: React.FunctionComponent<IMenuItem> = props => {
+export const MenuColorBar: React.FunctionComponent<IMenuItem> = (
+    props: IMenuItem
+) => {
     const localizedText = props.l10nKey
-        ? useL10n(props.text as string, props.l10nKey)
+        ? useL10n(props.text as string, props.l10nKey, "", props.l10nParam)
         : "";
     const baseColor = props.colors; // An array of strings representing colors
 
@@ -21,9 +22,9 @@ export const MenuColorBar: React.FunctionComponent<IMenuItem> = props => {
     // or an rgba string (with possible opacity values).
     let backgroundColorString: string = initialColorString;
     if (initialColorString.startsWith("#")) {
-        const rgbArray = hex.rgb(initialColorString);
-        backgroundColorString = `rgba(${rgbArray[0]}, ${rgbArray[1]}, ${
-            rgbArray[2]
+        const rgb = tinycolor(initialColorString).toRgb();
+        backgroundColorString = `rgba(${rgb.r}, ${rgb.g}, ${
+            rgb.b
         }, ${opacity})`;
     }
     if (initialColorString === "gradient") {
@@ -47,10 +48,13 @@ export const MenuColorBar: React.FunctionComponent<IMenuItem> = props => {
         }
     }
 
-    const classes = "colorSwatch" + (props.name === "new" ? " newItem" : "");
+    const classes = "menuColorBar" + (props.name === "new" ? " newItem" : "");
 
     return (
-        <div className={classes} style={{ background: backgroundColorString }}>
+        <div
+            className={classes}
+            style={{ minHeight: 25, background: backgroundColorString }}
+        >
             <Typography color="textPrimary" style={{ color: textColor }}>
                 {localizedText}
             </Typography>

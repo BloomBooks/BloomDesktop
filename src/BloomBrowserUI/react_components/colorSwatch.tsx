@@ -41,7 +41,7 @@ export const ColorSwatch: React.FunctionComponent<IColorSwatch> = props => {
 
     return (
         <div
-            className={`color-swatch ${props.index}`}
+            className="color-swatch"
             style={styleObject}
             title={props.tooltip}
             onClick={swatchClick}
