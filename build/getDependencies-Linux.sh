@@ -91,13 +91,13 @@ cd -
 #     revision: bloom-4.8.tcbuildtag
 #     paths: {"pdfjs-viewer.zip!**"=>"DistFiles/pdf"}
 #     VCS: https://github.com/mozilla/pdf.js.git [gh-pages]
-# [3] build: GeckofxHtmlToPdf-xenial64-Geckofx60-continuous (GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64Geckofx60continuous)
+# [3] build: GeckofxHtmlToPdf-xenial64-continuous (GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous)
 #     project: GeckofxHtmlToPdf
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64Geckofx60continuous
+#     URL: https://build.palaso.org/viewType.html?buildTypeId=GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous
 #     clean: false
 #     revision: bloom-4.8.tcbuildtag
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
-#     VCS: https://github.com/BloomBooks/geckofxHtmlToPdf [Geckofx60]
+#     VCS: https://github.com/BloomBooks/geckofxHtmlToPdf [refs/heads/master]
 # [4] build: L10NSharp master Mono continuous (L10NSharp_L10NSharpMasterMonoContinuous)
 #     project: L10NSharp
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=L10NSharp_L10NSharpMasterMonoContinuous
@@ -105,49 +105,28 @@ cd -
 #     revision: bloom-4.8.tcbuildtag
 #     paths: {"L10NSharp.dll*"=>"lib/dotnet/", "CheckOrFixXliff.exe*"=>"lib/dotnet/"}
 #     VCS: https://github.com/sillsdev/l10nsharp [refs/heads/master]
-# [5] build: icucil-linux64-Continuous (bt281)
-#     project: Libraries
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=bt281
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"icu.net.*"=>"lib/dotnet/icu48"}
-#     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [6] build: icucil-linux64-icu55 Continuous (Icu55)
-#     project: Libraries
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=Icu55
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"icu.net.*"=>"lib/dotnet/icu55"}
-#     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [7] build: icucil-precise64-icu52 Continuous (bt413)
-#     project: Archived
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=bt413
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"icu.net.*"=>"lib/dotnet/icu52"}
-#     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [8] build: PdfDroplet-Linux-Dev-Continuous (bt344)
+# [5] build: PdfDroplet-Linux-Dev-Continuous (bt344)
 #     project: PdfDroplet
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt344
 #     clean: false
 #     revision: bloom-4.8.tcbuildtag
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/pdfDroplet [master]
-# [9] build: TidyManaged-master-linux64-continuous (bt351)
+# [6] build: TidyManaged-master-linux64-continuous (bt351)
 #     project: TidyManaged
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt351
 #     clean: false
 #     revision: bloom-4.8.tcbuildtag
 #     paths: {"TidyManaged.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/TidyManaged.git [master]
-# [10] build: Linux master continuous (XliffForHtml_LinuxMasterContinuous)
+# [7] build: Linux master continuous (XliffForHtml_LinuxMasterContinuous)
 #     project: XliffForHtml
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=XliffForHtml_LinuxMasterContinuous
 #     clean: false
 #     revision: bloom-4.8.tcbuildtag
 #     paths: {"HtmlXliff.*"=>"lib/dotnet", "HtmlAgilityPack.*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/XliffForHtml [refs/heads/master]
-# [11] build: palaso-linux64-master Continuous (Libpalaso_PalasoLinux64masterContinuous)
+# [8] build: palaso-linux64-master Continuous (Libpalaso_PalasoLinux64masterContinuous)
 #     project: libpalaso
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=Libpalaso_PalasoLinux64masterContinuous
 #     clean: false
@@ -162,9 +141,6 @@ mkdir -p ../Downloads
 mkdir -p ../build/
 mkdir -p ../lib/dotnet
 mkdir -p ../lib/dotnet/
-mkdir -p ../lib/dotnet/icu48
-mkdir -p ../lib/dotnet/icu52
-mkdir -p ../lib/dotnet/icu55
 
 # download artifact dependencies
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-4.8.tcbuildtag/connections.dll ../DistFiles/connections.dll
