@@ -26,10 +26,12 @@ export class BloomApi {
     // if the server unexpectedly returns a failure result
     // (or an exception is thrown in the .then code)
     // You can also pass a get, post, etc. call without a .then().
-    public static wrapAxios(
+    //
+    // Returns a modified promise (the same promise you passed in, but with an error reporting catch included)
+    public static async wrapAxios(
         call: Promise<void | AxiosResponse>,
         report: boolean = true
-    ) {
+    ): Promise<void | AxiosResponse<any>> {
         // Save the place where the original axios call was made.
         // The stack in the error passed to catch is usually not very
         // useful, containing just a few levels from the axios code
@@ -43,7 +45,7 @@ export class BloomApi {
         // But fortunately, axios calls tend not to be used for very
         // performance-critical calls.
         const axiosCallState = new Error("dummy");
-        call.catch(error => {
+        return call.catch(error => {
             if (!report) {
                 return;
             }
@@ -131,6 +133,12 @@ export class BloomApi {
         BloomApi.get(urlSuffix, result => {
             successCallback(result.data);
         });
+    }
+
+    public static getWithPromise(
+        urlSuffix: string
+    ): Promise<void | AxiosResponse<any>> {
+        return BloomApi.wrapAxios(axios.get(this.kBloomApiPrefix + urlSuffix));
     }
 
     // This method is used to get a result from Bloom.

@@ -163,7 +163,7 @@ export default class AudioRecording {
 
     // Class method called by exported function of the same name.
     // Only called the first time the Toolbox is opened for this book during this Editing session.
-    public initializeTalkingBookTool(callback: () => void) {
+    public async initializeTalkingBookToolAsync(): Promise<void> {
         // I've sometimes observed events like click being handled repeatedly for a single click.
         // Adding these .off calls seems to help...it's as if something causes this show event to happen
         // more than once so the event handlers were being added repeatedly, but I haven't caught
@@ -233,19 +233,31 @@ export default class AudioRecording {
         toastr.options.timeOut = 10000;
         toastr.options.preventDuplicates = true;
 
-        this.pullDefaultRecordingModeAsync(callback);
+        return this.pullDefaultRecordingModeAsync().catch(() => {
+            // The Bloom API call might not succeed... especially in the unit tests.
+            // If so, just fallback to some reasonable default instead. Instead of propagating an error.
+            this.cachedCollectionDefaultRecordingMode =
+                AudioRecordingMode.Sentence;
+        });
     }
 
     // Updates our cached version of the default recording mode with the version from the Bloom API Server.
-    // If specified, the doneCallback parameter will be called after the result is returned from the server.
-    public pullDefaultRecordingModeAsync(doneCallback: () => void = () => {}) {
-        BloomApi.get("talkingBook/defaultAudioRecordingMode", result => {
-            this.cachedCollectionDefaultRecordingMode = AudioRecording.getAudioRecordingModeWithDefaultFromString(
-                result.data
-            );
+    // Returns a promise, which you can attach callbacks to that will run after this function updates the cached version
+    public async pullDefaultRecordingModeAsync(): Promise<void> {
+        const result: void | AxiosResponse<any> = await BloomApi.getWithPromise(
+            "talkingBook/defaultAudioRecordingMode"
+        );
 
-            doneCallback();
-        });
+        if (!result) {
+            // It returned void, which means an error, but BloomApi.getWithPromise already handles reporting any errors
+            // Just let anything that is awaiting our completion proceed (don't create a rejected promise)
+            return;
+        }
+
+        const axiosResponse = result as AxiosResponse<any>;
+        this.cachedCollectionDefaultRecordingMode = AudioRecording.getAudioRecordingModeWithDefaultFromString(
+            axiosResponse.data
+        );
     }
 
     public playingAudio(): boolean {
@@ -416,7 +428,7 @@ export default class AudioRecording {
     }
 
     // Called by TalkingBookModel.showTool() when a different tool is added/chosen or when the toolbox is re-opened, but not when a new page is added
-    public setupForRecording(): void {
+    public setupForRecordingAsync() {
         this.updateInputDeviceDisplay();
         this.disablingOverlay = document.getElementById(
             "disablingOverlay"
@@ -2228,19 +2240,23 @@ export default class AudioRecording {
         //   Parallel timeouts (20, 100, 500): 0/30 failure rate.  Sometimes (probably 30%) single on-off-on flash of the highlight.
         //   Parallel timeouts (20, exponential back-offs starting from 100): 0/30 failure rate. Flash still problematic.
 
-        // TODO: Is this repeated setting still necessary? By the end of version 4.5 it doesn't seem necessary anymore but hard to say for sure because it only triggers non-deterministically
-        let delayInMilliseconds = 20;
-        while (delayInMilliseconds < 1000) {
-            // Keep setting the current highlight for an additional roughly 1 second
-            setTimeout(() => {
-                if (currentTextBox) {
-                    this.setCurrentAudioElementBasedOnRecordingMode(
-                        currentTextBox
-                    );
-                }
-            }, delayInMilliseconds);
+        // We don't want this stuff to run in unit tests, because it adds async behavior onto this function
+        // and messes up any asynchronous test code.
+        if (!(window as any).__karma__) {
+            // TODO: Is this repeated setting still necessary? By the end of version 4.5 it doesn't seem necessary anymore but hard to say for sure because it only triggers non-deterministically
+            let delayInMilliseconds = 20;
+            while (delayInMilliseconds < 1000) {
+                // Keep setting the current highlight for an additional roughly 1 second
+                setTimeout(() => {
+                    if (currentTextBox) {
+                        this.setCurrentAudioElementBasedOnRecordingMode(
+                            currentTextBox
+                        );
+                    }
+                }, delayInMilliseconds);
 
-            delayInMilliseconds *= 2;
+                delayInMilliseconds *= 2;
+            }
         }
     }
 
@@ -3263,6 +3279,7 @@ export default class AudioRecording {
         // Note: Listen (Listen to whole page) button is not included here. Call it separately.
     }
 
+    // TODO: Make this return a promise
     private updateListenButtonStateAsync() {
         // Set listen button based on whether we have an audio at all for this page
 
@@ -3897,15 +3914,11 @@ export class AudioTextFragment {
 export let theOneAudioRecorder: AudioRecording;
 
 // Used by talkingBook when initially showing the tool.
-export function initializeTalkingBookTool(): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-        if (!theOneAudioRecorder) {
-            theOneAudioRecorder = new AudioRecording();
-            theOneAudioRecorder.initializeTalkingBookTool(() => resolve());
-        } else {
-            resolve();
-        }
-    });
+export async function initializeTalkingBookToolAsync(): Promise<void> {
+    if (!theOneAudioRecorder) {
+        theOneAudioRecorder = new AudioRecording();
+        await theOneAudioRecorder.initializeTalkingBookToolAsync();
+    }
 }
 
 export function bumpUp(whichPositionToBump: number) {
