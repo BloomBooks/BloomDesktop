@@ -10,6 +10,10 @@
 
 Bloom now has a way to declare the title of the original book upon which your translation is based, in the Credits page. It will automatically determine this if it can, otherwise you can type it in.
 
+**Added a new "longpress" character for showing diacritics in alphabet books**
+
+If you hold down "o", the menu of special characters that pops up now offers ◌. This is useful in showing diacritics without arbitrarily showing a base character to show it with.
+
 ⭐**Widget Activities** ([Feature Request](https://community.software.sil.org/t/bloom-widgets/2528/6))
 
 You can now embed little interactive activities in digital publications (web, Bloom Reader, RAB App). Many of these widgets already exist (they work with Apple's IBooks and the Kotobee book software). You may also be able to make your own or commission a programmer. If this approach gains popularity, we'll have a set of them to share within the Bloom community. To learn about "book widgets", please see [this blog](https://blog.kotobee.com/book-widgets-everything-you-need-to-know/). To enable this feature, you need to go to Collection Tab/Settings/Advanced Program Settings and tick "Show Experimental Features".
