@@ -1,15 +1,25 @@
 import TalkingBookTool from "./talkingBook";
-import { theOneAudioRecorder } from "./audioRecording";
+import {
+    theOneAudioRecorder,
+    initializeTalkingBookToolAsync
+} from "./audioRecording";
 import {
     SetupTalkingBookUIElements,
+    SetupIFrameAsync,
     SetupIFrameFromHtml
 } from "./audioRecordingSpec";
 
 describe("talking book tests", () => {
+    beforeAll(async (done: () => void) => {
+        SetupTalkingBookUIElements();
+        await SetupIFrameAsync();
+        await initializeTalkingBookToolAsync();
+        done();
+    });
+
     describe(", updateMarkup()", () => {
-        it("moves highlight after focus changes", () => {
+        it("moves highlight after focus changes", async done => {
             // Setup Initial HTML
-            SetupTalkingBookUIElements();
             const textBox1 =
                 '<div class="bloom-editable" id="div1"><p><span id="1.1" class="audio-sentence ui-audioCurrent">1.1</span></p></div>';
             const textBox2 =
@@ -18,7 +28,7 @@ describe("talking book tests", () => {
 
             // Setup talking book tool
             const tbTool = new TalkingBookTool();
-            tbTool.showTool();
+            await tbTool.showTool();
 
             // Simulate a keypress on a different div
             const div2Element = theOneAudioRecorder
@@ -34,6 +44,7 @@ describe("talking book tests", () => {
             const currentTextBox = theOneAudioRecorder.getCurrentTextBox()!;
             const currentId = currentTextBox.getAttribute("id");
             expect(currentId).toBe("div2");
+            done();
         });
     });
 });

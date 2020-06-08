@@ -163,7 +163,7 @@ export default class AudioRecording {
 
     // Class method called by exported function of the same name.
     // Only called the first time the Toolbox is opened for this book during this Editing session.
-    public initializeTalkingBookTool(callback: () => void) {
+    public async initializeTalkingBookToolAsync(): Promise<void> {
         // I've sometimes observed events like click being handled repeatedly for a single click.
         // Adding these .off calls seems to help...it's as if something causes this show event to happen
         // more than once so the event handlers were being added repeatedly, but I haven't caught
@@ -233,18 +233,23 @@ export default class AudioRecording {
         toastr.options.timeOut = 10000;
         toastr.options.preventDuplicates = true;
 
-        this.pullDefaultRecordingModeAsync(callback);
+        return this.pullDefaultRecordingModeAsync().catch(() => {
+            // The Bloom API call might not succeed... especially in the unit tests.
+            // If so, just fallback to some reasonable default instead. Instead of propagating an error.
+            this.cachedCollectionDefaultRecordingMode =
+                AudioRecordingMode.Sentence;
+        });
     }
 
     // Updates our cached version of the default recording mode with the version from the Bloom API Server.
     // If specified, the doneCallback parameter will be called after the result is returned from the server.
-    public pullDefaultRecordingModeAsync(doneCallback: () => void = () => {}) {
-        BloomApi.get("talkingBook/defaultAudioRecordingMode", result => {
+    public pullDefaultRecordingModeAsync(): Promise<void> {
+        return BloomApi.getWithPromise(
+            "talkingBook/defaultAudioRecordingMode"
+        ).then((result: AxiosResponse<any>) => {
             this.cachedCollectionDefaultRecordingMode = AudioRecording.getAudioRecordingModeWithDefaultFromString(
                 result.data
             );
-
-            doneCallback();
         });
     }
 
@@ -3897,15 +3902,13 @@ export class AudioTextFragment {
 export let theOneAudioRecorder: AudioRecording;
 
 // Used by talkingBook when initially showing the tool.
-export function initializeTalkingBookTool(): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-        if (!theOneAudioRecorder) {
-            theOneAudioRecorder = new AudioRecording();
-            theOneAudioRecorder.initializeTalkingBookTool(() => resolve());
-        } else {
-            resolve();
-        }
-    });
+export function initializeTalkingBookToolAsync(): Promise<void> {
+    if (!theOneAudioRecorder) {
+        theOneAudioRecorder = new AudioRecording();
+        return theOneAudioRecorder.initializeTalkingBookToolAsync();
+    } else {
+        return Promise.resolve();
+    }
 }
 
 export function bumpUp(whichPositionToBump: number) {

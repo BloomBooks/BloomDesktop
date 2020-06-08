@@ -23,11 +23,11 @@ export default class TalkingBookTool implements ITool {
 
     public configureElements(container: HTMLElement) {}
 
-    public showTool() {
+    public async showTool() {
         // BL-7588 There used to be a enterprise callback that delayed image descriptions and setup until
         // the initialize function had completed, now that it isn't there we need to treat the initialize
         // as the asynchronous method it is.
-        AudioRecorder.initializeTalkingBookTool().then(() => {
+        AudioRecorder.initializeTalkingBookToolAsync().then(() => {
             this.showImageDescriptionsIfAny();
             AudioRecorder.theOneAudioRecorder.setupForRecording();
         });
