@@ -161,9 +161,11 @@ namespace Bloom
 				Logger.WriteEvent("YouTrack issue submitter failed to attach non-existent file: " + filePath);
 				return false;
 			}
+
+			var fileName = Path.GetFileName(filePath);
 			HttpContent content = new MultipartFormDataContent
 			{
-				{ new ByteArrayContent(File.ReadAllBytes(filePath)) , Path.GetFileName(filePath)}
+				{new ByteArrayContent(File.ReadAllBytes(filePath)), fileName, fileName}
 			};
 			var response = _client.PostAsync($"https://{_youTrackBaseSite}/youtrack/api/issues/{youTrackIssueId}/attachments?fields=id,name", content).Result;
 			return response.IsSuccessStatusCode;
