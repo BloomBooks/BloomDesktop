@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Progress;
@@ -329,7 +330,7 @@ namespace Bloom.ImageProcessing
 					var size = GetDesiredImageSize(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight);
 					if (size.Width != tagFile.Properties.PhotoWidth || size.Height != tagFile.Properties.PhotoHeight)
 					{
-						if (ReplacePngFileWithSmallerOpaqueCopy(path, size, tagFile))
+						if (ReplacePngFileWithSmallerOpaqueCopy(path, size, tagFile, progress))
 						{
 							++completed;
 							continue;
@@ -354,8 +355,9 @@ namespace Bloom.ImageProcessing
 		/// Use GraphicsMagick to replace a PNG file with one of the given size having an opaque background.
 		/// </summary>
 		/// <returns>true if successful, false if GraphicsMagick doesn't exist or didn't work</returns>
-		private static bool ReplacePngFileWithSmallerOpaqueCopy(string path, Size size, TagLib.File oldMetaData)
+		private static bool ReplacePngFileWithSmallerOpaqueCopy(string path, Size size, TagLib.File oldMetaData, IProgress progress)
 		{
+			progress.WriteStatus("Shrinking and removing transparency from image: " + Path.GetFileName(path));
 			var exeGraphicsMagick = GetGraphicsMagickPath();
 			if (!RobustFile.Exists(exeGraphicsMagick))
 				return false;
@@ -371,6 +373,7 @@ namespace Bloom.ImageProcessing
 					var newMeta = TagLib.File.Create(path);
 					CopyTags(oldMetaData, newMeta);
 					newMeta.Save();
+					Application.DoEvents();	// allow progress report to work
 					return true;
 				}
 				else
