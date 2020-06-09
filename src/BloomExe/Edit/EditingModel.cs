@@ -556,7 +556,7 @@ namespace Bloom.Edit
 
 		public void ViewVisibleNowDoSlowStuff()
 		{
-			if(_currentlyDisplayedBook != CurrentBook)
+			if (_currentlyDisplayedBook != CurrentBook)
 			{
 				if (_contentLanguages.Count == 0)
 				{
@@ -570,6 +570,9 @@ namespace Bloom.Edit
 				GetMultilingualContentLanguages(out lang2iso, out lang3iso);
 				CurrentBook.SetMultilingualContentLanguages(lang2iso, lang3iso);
 				CurrentBook.PrepareForEditing();
+				// Probably not needed, but in case users have older books with overlarge images or other problems
+				// we can fix with the current version of Bloom.
+				CurrentBook.Storage.CheckMaintenanceLevel();
 			}
 
 			_currentlyDisplayedBook = CurrentBook;

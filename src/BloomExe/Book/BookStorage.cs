@@ -16,6 +16,7 @@ using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.MiscUI;
 using Bloom.Publish.Android;
+using Bloom.ToPalaso;
 using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
@@ -46,7 +47,7 @@ namespace Bloom.Book
 		string ErrorMessagesHtml { get; }
 		string GetBrokenBookRecommendationHtml();
 
-		// REQUIRE INTIALIZATION (AVOID UNLESS USER IS WORKING WITH THIS BOOK SPECIFICALLY)
+		// REQUIRE INITIALIZATION (AVOID UNLESS USER IS WORKING WITH THIS BOOK SPECIFICALLY)
 		bool GetLooksOk();
 		HtmlDom Dom { get; }
 		void Save();
@@ -77,6 +78,7 @@ namespace Bloom.Book
 		void EnsureOriginalTitle();
 
 		IEnumerable<string> GetActivityFolderNamesReferencedInBook();
+		void CheckMaintenanceLevel();
 	}
 
 	public class BookStorage : IBookStorage
@@ -106,6 +108,12 @@ namespace Bloom.Book
 		/// </summary>
 		internal const string kBloomFormatVersionToWrite = "2.1";
 		internal const string kMaxBloomFormatVersionToRead = "2.1";
+
+		/// <summary>
+		/// History of this number:
+		///   Bloom 4.9: 1 = Ensure that all images are opaque and no larger than our desired maximum size
+		/// </summary>
+		public const int kMaintenanceLevel = 1;
 
 		public const string PrefixForCorruptHtmFiles = "_broken_";
 		private IChangeableFileLocator _fileLocator;
@@ -2294,6 +2302,37 @@ namespace Bloom.Book
 		internal static string GetActivityFolderPath(string bookFolderPath)
 		{
 			return Path.Combine(bookFolderPath, "activities");
+		}
+
+		/// <summary>
+		/// Perform expensive updates that new versions of Bloom can perform on older books that don't
+		/// involve actual book format changes.
+		/// </summary>
+		public void CheckMaintenanceLevel()
+		{
+			var levelString = Dom.GetMetaValue("maintenanceLevel", "0");
+			if (!int.TryParse(levelString, out int level))
+				level = 0;
+			if (level < kMaintenanceLevel)
+			{
+				if (level < 1)
+				{
+					// Bloom 4.9 and later limit images used by Bloom books to be no larger than 3500x2550 in
+					// order to avoid out of memory errors that can happen with really large images.  Some older
+					// books have images larger than this that can cause these out of memory problems.  This
+					// method is used to fix these overlarge images before the user starts to edit or publish
+					// the book.  The method also ensures that the images are all opaque since some old versions
+					// of Bloom made all images transparent, which turned out to be a bad idea.
+					// This update can be very slow, so encourage the user that something is happening.
+					using (var dlg = new ProgressDialogBackground())
+					{
+						dlg.Text = "Updating Image Files";
+						dlg.ShowAndDoWork((progress, args)=>ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, progress));
+					}
+				}
+				// future additional levels will add additional "if (level < N)" blocks.
+				Dom.UpdateMetaElement("maintenanceLevel", kMaintenanceLevel.ToString(CultureInfo.InvariantCulture));
+			}
 		}
 	}
 }
