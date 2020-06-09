@@ -475,6 +475,18 @@ namespace Bloom.Publish.Android
 				progress.Message("CompressingAudio", "Compressing audio files");
 				AudioProcessor.TryCompressingAudioAsNeeded(book.FolderPath, book.RawDom);
 			}
+			// If the book contains overlarge images, we want to fix those before trying to publish the BloomD
+			// book because overlarge images cause the publishing process to fail.  (Preview would succeed, but
+			// creating the .bloomd file would fail.)  This is a one-time fix that can permanently change the
+			// images in the original book folder.  If any images must be shrunk, then a progress dialog pops
+			// up because that can be a very slow process.  If nothing needs to be done, nothing will appear
+			// on the screen, and it usually takes a small fraction of a second to determine this.  (almost
+			// no time if the maintenanceLevel has been set for this book)
+			// Note that the BringBookUpToDate called by PublishHelper.MakeDeviceXmatterTempBook called by
+			// BloomReaderFileMaker.PrepareBookForBloomReader applies to a copy of the book and is done in
+			// a way that explicitly avoids updating images.
+			book.Storage.ShrinkImagesIfNecessary();
+
 			// We don't use the folder found here, but this method does some checks we want done.
 			BookStorage.FindBookHtmlInFolder(book.FolderPath);
 			_stagingFolder = new TemporaryFolder(StagingFolder);

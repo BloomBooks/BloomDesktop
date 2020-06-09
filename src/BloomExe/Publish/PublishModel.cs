@@ -114,6 +114,8 @@ namespace Bloom.Publish
 			{
 				_currentlyLoadedBook = BookSelection.CurrentSelection;
 				// In case we have any new settings since the last time we were in the Edit tab (BL-3881)
+				// Note that this will (quietly) permanently shrink any overlarge images in the book, which
+				// will prolong the initial "Creating PDF" state of the overall progress dialog.
 				_currentlyLoadedBook.BringBookUpToDate(new NullProgress());
 			}
 			return _currentlyLoadedBook;
