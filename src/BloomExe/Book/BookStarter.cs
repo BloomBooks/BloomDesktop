@@ -229,6 +229,7 @@ namespace Bloom.Book
 			ClearAwayDraftText(storage.Dom.RawDom);
 
 			storage.UpdateSupportFiles();	// Copy branding files etc.
+			storage.PerformNecessaryMaintenanceOnBook();	// Fix image files as needed etc.
 			storage.Save();
 
 			//REVIEW this actually undoes the setting of the initial files name:

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Progress;
@@ -81,7 +82,7 @@ namespace Bloom.ImageProcessing
 				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
 				if (!isEncodedAsJpeg)
 				{
-					// As explained in the comments for RemoveTransparencyOfImagesInFolder(), some PDF viewers don't
+					// As explained in the comments for FixSizeAndTransparencyOfImagesInFolder(), some PDF viewers don't
 					// handle transparent images very well, so if we aren't sure this image is opaque, replace it with
 					// one that is opaque.  Also replace it if it's larger than our maximum allowed size.
 					if (size.Width != imageInfo.Image.Width || size.Height != imageInfo.Image.Height || !IsIndexedAndOpaque(imageInfo.Image))
@@ -300,22 +301,94 @@ namespace Bloom.ImageProcessing
 			}
 		}
 
+		/// <summary>
+		/// Check whether any images are too big and need to be reduced in size.
+		/// </summary>
+		public static bool NeedToShrinkImages(string folderPath)
+		{
+			var startTime = DateTime.Now;
+			try
+			{
+				var filePaths = Directory.GetFiles(folderPath, "*.*");
+				var pngFiles = filePaths.Where(path => path.ToLowerInvariant().EndsWith(".png")).ToArray();
+				var jpgFiles = filePaths.Where(path =>
+					path.ToLowerInvariant().EndsWith(".jpg") || path.ToLowerInvariant().EndsWith(".jpeg")).ToArray();
+				foreach (string path in pngFiles)
+				{
+					if (Path.GetFileName(path)?.ToLowerInvariant() == "placeholder.png")
+						continue;
+					// Very large PNG files can cause "out of memory" errors here, while making thumbnails,
+					// and when creating ePUBs or BloomPub books.  So, we check for sizes bigger than our
+					// maximum and return true if any are found.
+					var tagFile = TagLib.File.Create(path);
+					if (tagFile.Properties != null && tagFile.Properties.Description.Contains("PNG"))
+					{
+						if (IsImageSizeTooBig(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight))
+							return true;
+					}
+				}
+				foreach (string path in jpgFiles)
+				{
+					// Very large JPG files can cause "out of memory" errors while making thumbnails and
+					// when creating ePUBs or BloomPub books.  So, we check for sizes bigger than our
+					// maximum and return true if any are found.
+					var tagFile = TagLib.File.Create(path);
+					if (tagFile.Properties != null && tagFile.Properties.Description.Contains("JFIF"))
+					{
+						if (IsImageSizeTooBig(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight))
+							return true;
+					}
+				}
+				return false;
+			}
+			finally
+			{
+				var endTime = DateTime.Now;
+				Debug.WriteLine($"DEBUG: ImageUtils.NeedToShrinkImages({folderPath}) took {endTime - startTime}");
+			}
+		}
+
+		private static bool IsImageSizeTooBig(int width, int height)
+		{
+			if (height > width)	// portrait orientation
+			{
+				return (height > MaxLength || width > MaxBreadth);
+			}
+			else if (width > height)	// landscape orientation
+			{
+				return (height > MaxBreadth || width > MaxLength);
+			}
+			else	// square picture
+			{
+				return (width > MaxBreadth);
+			}
+		}
+
 		//Up through Bloom 3.0, we would make white areas transparent when importing images, in order to make them
 		//look good against the colored background of a book cover.
 		//This caused problems with some PDF viewers, so in Bloom 3.1, we switched to only making them transparent at runtime.
 		//This method allows us to undo that transparency-making.
-		// This method also allows to shrink enormous PNG files to our desired maximum size (but not converting them to
-		// JPEG as can sometimes happen when initially setting the image files from the Image Chooser dialog).
-		// Some books have acquired large images that cause frequent "out of memory" errors, some of which are
-		// hidden from the user.
-		public static void RemoveTransparencyOfImagesInFolder(string folderPath, IProgress progress)
+		// This method also allows to shrink enormous PNG and JPEG files to our desired maximum size (but not
+		// converting PNG files to JPEG as can sometimes happen when initially setting the image files from the
+		// Image Chooser dialog).  Some books have acquired large images that cause frequent "out of memory"
+		// errors, some of which are hidden from the user.
+		public static void FixSizeAndTransparencyOfImagesInFolder(string folderPath, IProgress progress)
 		{
-			var imageFiles = Directory.GetFiles(folderPath, "*.png");
+			// On Windows, "*.png" and "*.jp?g" would work to collect the desired image files using the
+			// Directory.GetFiles method.  These fail on Linux for two reasons: case sensitivity and the ?
+			// wildcard character represents a single character on Linux instead of an optional character.
+			// So we collect a larger set of file paths and extract the ones we want to the separate lists
+			// in a system independent way.
+			var filePaths = Directory.GetFiles(folderPath, "*.*");
+			var pngFiles = filePaths.Where(path => path.ToLowerInvariant().EndsWith(".png")).ToArray();
+			var jpgFiles = filePaths.Where(path =>
+				path.ToLowerInvariant().EndsWith(".jpg") || path.ToLowerInvariant().EndsWith(".jpeg")).ToArray();
 			int completed = 0;
-			foreach (string path in imageFiles)
+			int totalFileCount = pngFiles.Length + jpgFiles.Length;
+			foreach (string path in pngFiles)
 			{
-				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)imageFiles.Length);
-				if (Path.GetFileName(path).ToLowerInvariant() == "placeholder.png")
+				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)totalFileCount);
+				if (Path.GetFileName(path)?.ToLowerInvariant() == "placeholder.png")
 				{
 					++completed;
 					continue;
@@ -329,18 +402,18 @@ namespace Bloom.ImageProcessing
 					var size = GetDesiredImageSize(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight);
 					if (size.Width != tagFile.Properties.PhotoWidth || size.Height != tagFile.Properties.PhotoHeight)
 					{
-						if (ReplacePngFileWithSmallerOpaqueCopy(path, size, tagFile))
+						if (ReplaceImageFileWithSmallerOpaqueCopy(path, size, true, tagFile, progress))
 						{
 							++completed;
 							continue;
 						}
 					}
 				}
-				using(var pi = PalasoImage.FromFileRobustly(path))
+				using (var pi = PalasoImage.FromFileRobustly(path))
 				{
-					// If the image isn't jpeg, and we can't be sure it's already opaque, change the
-					// image to be opaque.  As explained above, some PDF viewers don't handle transparent
-					// images very well.
+					// If the image isn't jpeg (which it shouldn't be), and we can't be sure it's already
+					// opaque, change the image to be opaque.  As explained above, some PDF viewers don't
+					// handle transparent images very well.
 					if (!AppearsToBeJpeg(pi) && !IsIndexedAndOpaque(pi.Image))
 					{
 						RemoveTransparency(pi, path, progress);
@@ -348,14 +421,35 @@ namespace Bloom.ImageProcessing
 				}
 				completed++;
 			}
+			foreach (string path in jpgFiles)
+			{
+				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)totalFileCount);
+				// Very large JPG files can cause "out of memory" errors while making thumbnails and
+				// when creating ePUBs or BloomPub books.  So, we check for sizes bigger than our
+				// maximum and reduce the image here if needed.
+				var tagFile = TagLib.File.Create(path);
+				if (tagFile.Properties != null && tagFile.Properties.Description.Contains("JFIF"))
+				{
+					var size = GetDesiredImageSize(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight);
+					if (size.Width != tagFile.Properties.PhotoWidth || size.Height != tagFile.Properties.PhotoHeight)
+					{
+						ReplaceImageFileWithSmallerOpaqueCopy(path, size, false, tagFile, progress);
+					}
+				}
+				++completed;
+			}
 		}
 
 		/// <summary>
-		/// Use GraphicsMagick to replace a PNG file with one of the given size having an opaque background.
+		/// Use GraphicsMagick to replace a PNG (or JPEG) file with one of the given size optionally
+		/// having an opaque background.
 		/// </summary>
 		/// <returns>true if successful, false if GraphicsMagick doesn't exist or didn't work</returns>
-		private static bool ReplacePngFileWithSmallerOpaqueCopy(string path, Size size, TagLib.File oldMetaData)
+		private static bool ReplaceImageFileWithSmallerOpaqueCopy(string path, Size size, bool makeOpaque, TagLib.File oldMetaData, IProgress progress)
 		{
+			var msgFmt = L10NSharp.LocalizationManager.GetString("ImageUtils.PreparingImage", "Preparing image: {0}", "{0} is a placeholder for the image file name");
+			var msg = string.Format(msgFmt, Path.GetFileName(path));
+			progress.WriteStatus(msg);
 			var exeGraphicsMagick = GetGraphicsMagickPath();
 			if (!RobustFile.Exists(exeGraphicsMagick))
 				return false;
@@ -363,7 +457,7 @@ namespace Bloom.ImageProcessing
 				Path.GetExtension(path));
 			try
 			{
-				var proc = RunGraphicsMagick(exeGraphicsMagick, path, tempCopy, size, true);
+				var proc = RunGraphicsMagick(exeGraphicsMagick, path, tempCopy, size, makeOpaque);
 				if (proc.ExitCode == 0)
 				{
 					RobustFile.Copy(tempCopy, path, true);
@@ -371,6 +465,7 @@ namespace Bloom.ImageProcessing
 					var newMeta = TagLib.File.Create(path);
 					CopyTags(oldMetaData, newMeta);
 					newMeta.Save();
+					Application.DoEvents();	// allow progress report to work
 					return true;
 				}
 				else

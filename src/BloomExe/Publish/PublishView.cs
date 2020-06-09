@@ -20,6 +20,7 @@ using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
+using SIL.Progress;
 
 namespace Bloom.Publish
 {
@@ -901,7 +902,7 @@ namespace Bloom.Publish
 		/// <summary>
 		/// Make the preview required for publishing the book.
 		/// </summary>
-		internal void MakePublishPreview()
+		internal void MakePublishPreview(IProgress progress)
 		{
 			if (IsMakingPdf)
 			{
@@ -918,6 +919,10 @@ namespace Bloom.Publish
 				MessageBox.Show(message, LocalizationManager.GetString("Common.Warning", "Warning"));
 				return;
 			}
+
+			_previewProgress = progress;
+			_makePdfBackgroundWorker.ProgressChanged += UpdatePreviewProgress;
+
 			// Usually these will have been set by SetModelFromButtons, but the publish button might already be showing when we go to this page.
 			_model.ShowCropMarks = false; // don't want in online preview
 			_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet; // has all the pages and cover in form suitable for online use
@@ -928,6 +933,24 @@ namespace Bloom.Publish
 				Thread.Sleep(100);
 				Application.DoEvents(); // Wish we didn't need this, but without it bulk upload freezes making 'preview' which is really the PDF to upload.
 			}
+			_makePdfBackgroundWorker.ProgressChanged -= UpdatePreviewProgress;
+			_previewProgress = null;
+			_previousStatus = null;
+		}
+
+		IProgress _previewProgress;
+		string _previousStatus;
+		private void UpdatePreviewProgress(object sender, ProgressChangedEventArgs e)
+		{
+			if (_previewProgress == null)
+				return;
+			if (_previewProgress.ProgressIndicator != null)
+				_previewProgress.ProgressIndicator.PercentCompleted = e.ProgressPercentage;
+			var status = e.UserState as string;
+			// Don't repeat a status message, even if modified by trailing spaces or periods or ellipses.
+			if (status != null && status != _previousStatus && status.Trim(new[] {' ', '.', '\u2026'}) != _previousStatus)
+				_previewProgress.WriteStatus(status);
+			_previousStatus = status;
 		}
 
 		private void ExportAudioFiles1PerPageToolStripMenuItem_Click(object sender, EventArgs e)

@@ -2725,6 +2725,11 @@
         <source xml:lang="en">Training Videos</source>
         <note>ID: HelpMenu.trainingVideos</note>
       </trans-unit>
+      <trans-unit id="ImageUtils.PreparingImage">
+        <source xml:lang="en">Preparing image: {0}</source>
+        <note>ID: ImageUtils.PreparingImage</note>
+        <note>{0} is a placeholder for the image filename</note>
+      </trans-unit>
       <trans-unit id="InstallProblem.BloomPdfMaker">
         <source xml:lang="en">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</source>
         <note>ID: InstallProblem.BloomPdfMaker</note>
