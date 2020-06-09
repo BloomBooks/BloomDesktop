@@ -239,6 +239,14 @@ namespace Bloom.Publish.Epub
 				return;
 			}
 
+			// If the book contains overlarge images, we want to fix those before trying to publish the epub
+			// because overlarge images cause the epub publishing process to fail.  This is a one-time fix that
+			// can permanently change the images in the original book folder.  If any images must be shrunk,
+			// then a progress dialog pops up because that can be a very slow process.  If nothing needs to be
+			// done, nothing will appear on the screen, and it usually takes a small fraction of a second to
+			// determine this.  (almost no time if the maintenanceLevel has been set for this book)
+			Storage.ShrinkImagesIfNecessary();
+
 			progress.Message("BuildingEPub", comment: "Shown in a progress box when Bloom is starting to create an ePUB",
 				message: "Building ePUB");
 			if (String.IsNullOrEmpty(Book.CollectionSettings.Language3Iso639Code))
