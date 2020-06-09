@@ -8,7 +8,6 @@ namespace BloomTests.web
 	public class YouTrackIssueSubmitterTests
 	{
 		[Test]
-		[Category("SkipOnTeamCity")] //I don't know why this is blocked, probably we need a firewall opening
 		public void CanSubmitToYouTrack()
 		{
 			var tempfile1 = Path.GetTempFileName();
@@ -62,7 +61,6 @@ namespace BloomTests.web
 		}
 
 		[Test]
-		[Category("SkipOnTeamCity")] //I don't know why this is blocked, probably we need a firewall opening
 		public void CanSubmitToYouTrackASecondTime()
 		{
 			// This test is much simpler: we just want to verify that the static HttpClient works for the
