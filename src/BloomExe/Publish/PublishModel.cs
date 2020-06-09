@@ -20,6 +20,7 @@ using DesktopAnalytics;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Xml;
+using Bloom.ToPalaso;
 
 namespace Bloom.Publish
 {
@@ -108,22 +109,36 @@ namespace Bloom.Publish
 			}
 		}
 
-		public Book.Book LoadBookIfNeeded()
+		public Book.Book LoadBookIfNeeded(IProgress progress)
 		{
 			if(_currentlyLoadedBook != BookSelection.CurrentSelection)
 			{
 				_currentlyLoadedBook = BookSelection.CurrentSelection;
 				// In case we have any new settings since the last time we were in the Edit tab (BL-3881)
-				_currentlyLoadedBook.BringBookUpToDate(new NullProgress());
+				// Note that this will (quietly) permanently shrink any overlarge images in the book, which
+				// will prolong the initial "Creating PDF" state of the overall progress dialog.
+				_currentlyLoadedBook.BringBookUpToDate(progress);
 			}
 			return _currentlyLoadedBook;
+		}
+
+		internal static string GetPreparingImageFilter()
+		{
+			var msgFmt = L10NSharp.LocalizationManager.GetString("ImageUtils.PreparingImage", "Preparing image: {0}", "{0} is a placeholder for the image file name");
+			var idx = msgFmt.IndexOf("{0}");
+			if (idx >= 0)
+				return msgFmt.Substring(0,idx);
+			else
+				return msgFmt;	// translated string is missing the filename placeholder?
 		}
 
 		public void LoadBook(BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
 		{
 			try
 			{
-				LoadBookIfNeeded();
+				var workerProgress = new BackgroundWorkerProgressAdapter(worker);
+				workerProgress.AddFilter(GetPreparingImageFilter());
+				LoadBookIfNeeded(workerProgress);
 
 				using (var tempHtml = MakeFinalHtmlForPdfMaker())
 				{
@@ -139,7 +154,7 @@ namespace Bloom.Publish
 					// Check memory for the benefit of developers.  The user won't see anything.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
 					_pdfMaker.MakePdf(tempHtml.Key, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName,
-						PageLayout.SizeAndOrientation.IsLandScape, LoadBookIfNeeded().UserPrefs.ReducePdfMemoryUse,
+						PageLayout.SizeAndOrientation.IsLandScape, LoadBookIfNeeded(new NullProgress()).UserPrefs.ReducePdfMemoryUse,
 						LayoutPagesForRightToLeft, layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
 					// Warn the user if we're starting to use too much memory.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);

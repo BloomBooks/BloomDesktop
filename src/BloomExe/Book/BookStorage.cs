@@ -16,6 +16,7 @@ using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.MiscUI;
 using Bloom.Publish.Android;
+using Bloom.ToPalaso;
 using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
@@ -46,7 +47,7 @@ namespace Bloom.Book
 		string ErrorMessagesHtml { get; }
 		string GetBrokenBookRecommendationHtml();
 
-		// REQUIRE INTIALIZATION (AVOID UNLESS USER IS WORKING WITH THIS BOOK SPECIFICALLY)
+		// REQUIRE INITIALIZATION (AVOID UNLESS USER IS WORKING WITH THIS BOOK SPECIFICALLY)
 		bool GetLooksOk();
 		HtmlDom Dom { get; }
 		void Save();
@@ -77,6 +78,7 @@ namespace Bloom.Book
 		void EnsureOriginalTitle();
 
 		IEnumerable<string> GetActivityFolderNamesReferencedInBook();
+		void ShrinkImagesIfNecessary();
 	}
 
 	public class BookStorage : IBookStorage
@@ -106,6 +108,12 @@ namespace Bloom.Book
 		/// </summary>
 		internal const string kBloomFormatVersionToWrite = "2.1";
 		internal const string kMaxBloomFormatVersionToRead = "2.1";
+
+		/// <summary>
+		/// History of this number:
+		///   Bloom 4.9: 1 = Ensure that all images are opaque and no larger than our desired maximum size
+		/// </summary>
+		public const int kMaintenanceLevel = 1;
 
 		public const string PrefixForCorruptHtmFiles = "_broken_";
 		private IChangeableFileLocator _fileLocator;
@@ -2294,6 +2302,69 @@ namespace Bloom.Book
 		internal static string GetActivityFolderPath(string bookFolderPath)
 		{
 			return Path.Combine(bookFolderPath, "activities");
+		}
+
+		/// <summary>
+		/// Check whether any images in the book are too large for Bloom to reliably handle.  If any such
+		/// images are found, then reduce them to the maximum size allowed by Bloom.
+		/// </summary>
+		/// <remarks>
+		/// Bloom did not check for overlarge images until Version 4.9 and maintenance level 1.
+		/// </remarks>
+		public void ShrinkImagesIfNecessary()
+		{
+			if (NeedToShrinkImages())
+				PerformNecessaryMaintenanceOnBook();
+		}
+
+		/// <summary>
+		/// Books created before "maintenanceLevel 1" may have images that are too large for Bloom
+		/// to handle properly.  If this book is still at maintenance level 0, check through its
+		/// images to see if any of them exceed our size limit.
+		/// </summary>
+		/// <returns>
+		/// true if one or more images need to be reduced in size, false if all images are small
+		/// enough already (or the maintenanceLevel has been set to 1 or greater already)
+		/// </returns>
+		internal bool NeedToShrinkImages()
+		{
+			var levelString = Dom.GetMetaValue("maintenanceLevel", "0");
+			if (!int.TryParse(levelString, out int level))
+				level = 0;
+			if (level < 1)
+				return ImageUtils.NeedToShrinkImages(FolderPath);
+			return false;
+		}
+
+		/// <summary>
+		/// Perform expensive updates that new versions of Bloom can perform on older books that don't
+		/// involve actual book format changes.
+		/// </summary>
+		public void PerformNecessaryMaintenanceOnBook()
+		{
+			var levelString = Dom.GetMetaValue("maintenanceLevel", "0");
+			if (!int.TryParse(levelString, out int level))
+				level = 0;
+			if (level < kMaintenanceLevel)
+			{
+				if (level < 1)
+				{
+					// Bloom 4.9 and later limit images used by Bloom books to be no larger than 3500x2550 in
+					// order to avoid out of memory errors that can happen with really large images.  Some older
+					// books have images larger than this that can cause these out of memory problems.  This
+					// method is used to fix these overlarge images before the user starts to edit or publish
+					// the book.  The method also ensures that the images are all opaque since some old versions
+					// of Bloom made all images transparent, which turned out to be a bad idea.
+					// This update can be very slow, so encourage the user that something is happening.
+					using (var dlg = new ProgressDialogBackground())
+					{
+						dlg.Text = "Updating Image Files";
+						dlg.ShowAndDoWork((progress, args)=>ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, progress));
+					}
+				}
+				// future additional levels will add additional "if (level < N)" blocks.
+				Dom.UpdateMetaElement("maintenanceLevel", kMaintenanceLevel.ToString(CultureInfo.InvariantCulture));
+			}
 		}
 	}
 }
