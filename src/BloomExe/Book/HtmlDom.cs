@@ -2332,8 +2332,7 @@ namespace Bloom.Book
 			if (langs == null || string.IsNullOrEmpty(label))
 				return label;
 			var id = "TemplateBooks.PageLabel." + label;
-			string dummyId;
-			return L10NSharp.LocalizationManager.GetString(id, label, "", langs, out dummyId);
+			return L10NSharp.LocalizationManager.GetString(id, label, "", langs, out _);
 		}
 
 		public static bool IsBackMatterPage(XmlElement pageElement)
