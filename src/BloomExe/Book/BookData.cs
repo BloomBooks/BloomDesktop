@@ -766,11 +766,9 @@ namespace Bloom.Book
 				data.UpdateGenericLanguageString("province", collectionSettings.Province, true);
 				data.UpdateGenericLanguageString("district", collectionSettings.District, true);
 				string location = "";
-				var preferredLanguageIds = new[] { collectionSettings.Language2Iso639Code, LocalizationManager.UILanguageId, "en" };
-				string languageIdUsed;
 				var separator = LocalizationManager.GetString("EditTab.FrontMatter.ListSeparator", ", ",
 					"This is used to separate items in a list, such as 'Province, District, Country' on the Title Page. For English, that means comma followed by a space. Don't forget the space if your script uses them.",
-					preferredLanguageIds, out languageIdUsed);
+					collectionSettings.GetLanguagePrioritiesForTranslatedTextOnPage(false), out _);
 				if (!String.IsNullOrEmpty(collectionSettings.District))
 					location += collectionSettings.District + separator;
 				if (!String.IsNullOrEmpty(collectionSettings.Province))

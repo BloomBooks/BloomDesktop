@@ -10,7 +10,6 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
-//using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Api;
 using Bloom.MiscUI;
@@ -19,7 +18,6 @@ using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using Gecko;
-using ICSharpCode.SharpZipLib.Zip;
 using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
@@ -518,11 +516,6 @@ namespace Bloom.Edit
 		{
 			get { return CurrentBook.CanChangeLicense; }
 
-		}
-
-		public IEnumerable<string> LicenseDescriptionLanguagePriorities
-		{
-			get { return _collectionSettings.LicenseDescriptionLanguagePriorities; }
 		}
 
 		public class ContentLanguage
