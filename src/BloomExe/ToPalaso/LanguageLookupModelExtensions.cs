@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SIL.Windows.Forms.WritingSystems;
 using SIL.WritingSystems;
 
@@ -165,7 +162,8 @@ namespace Bloom.ToPalaso
 				string englishNameSuffix = String.Empty;
 				var ci = CultureInfo.GetCultureInfo(generalCode);	// this may throw or produce worthless empty object
 				if (NeedEnglishSuffixForLanguageName(ci))
-					englishNameSuffix = " (" + ci.EnglishName + ")";
+					englishNameSuffix = $" ({GetManuallyOverriddenEnglishNameIfNeeded(code, ()=>ci.EnglishName)})";
+
 				nativeName = FixBotchedNativeName(ci.NativeName);
 				if (String.IsNullOrWhiteSpace(nativeName))
 					nativeName = code;
@@ -206,7 +204,7 @@ namespace Bloom.ToPalaso
 			// helpfully told us it is for an unknown language (instead of throwing).
 			// Handle a few languages that we do know the English and native names for,
 			// and that are being localized for Bloom.
-			var englishName = GetEnglishNameIfKnown(isoModel, generalCode);
+			var englishName = GetManuallyOverriddenEnglishNameIfNeeded(code, () => GetEnglishNameIfKnown(isoModel, generalCode));
 			nativeName = GetNativeNameIfKnown(generalCode);
 			if (String.IsNullOrWhiteSpace(nativeName) && String.IsNullOrWhiteSpace(englishName))
 			{
@@ -233,6 +231,16 @@ namespace Bloom.ToPalaso
 			}
 			_mapIsoCodeToSubtitledLanguageName.Add(code, langName);
 			return langName;
+		}
+
+		public static string GetManuallyOverriddenEnglishNameIfNeeded(string code, Func<string> defaultOtherwise)
+		{
+			// We used pbu in Crowdin for some reason which is "Northern Pashto,"
+			// but we want this label to just be the generic macrolanguage "Pashto."
+			if (code == "pbu")
+				return "Pashto";
+
+			return defaultOtherwise();
 		}
 
 		/// <summary>
@@ -277,7 +285,7 @@ namespace Bloom.ToPalaso
 			{
 				switch (code)
 				{
-				case "pbu":  englishName = "Northern Pashto";  break;
+				case "pbu":  englishName = "Pashto";  break;
 				case "prs":  englishName = "Dari";             break;
 				case "tpi":  englishName = "New Guinea Pidgin English"; break;
 				default:     englishName = null;               break;
