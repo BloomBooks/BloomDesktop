@@ -1,9 +1,27 @@
 import AudioRecording, {
     AudioRecordingMode,
-    AudioTextFragment
+    AudioTextFragment,
+    initializeTalkingBookToolAsync
 } from "./audioRecording";
 
+// Notes:
+// For any async tests:
+//   Either async/await or promises work fine.
+//        I think async/await with try/catch/finally is more readable than promises. (Less nesting and more consistent levels of nesting). But either works
+//   Ideally, for either paradigm, you should have try/catch/finally
+//        Catch can call fail(error).  Finally calls done();
+//        This will report a failure explicitly, although the stack trace is not ideal - it'll show the line where you called fail();
+//        The logs may include an actual stack trace for exceptions.
+//   For less work, it is fine to just have await with a done at the end. Or a .then() that calls done() at the end of the then callback.
+//        The error message will only say that a Timeout error occurred, which is very much not ideal
 describe("audio recording tests", () => {
+    beforeAll(async (done: () => void) => {
+        SetupTalkingBookUIElements();
+        await SetupIFrameAsync();
+        await initializeTalkingBookToolAsync();
+        done();
+    });
+
     describe(", Next()", () => {
         it("Record=Sentence, last sentence returns disabled for Next button", () => {
             SetupIFrameFromHtml(
@@ -210,7 +228,6 @@ describe("audio recording tests", () => {
 
     describe(", PlayingMultipleAudio()", () => {
         it("returns true while in listen to whole page with multiple text boxes", () => {
-            SetupTalkingBookUIElements();
             SetupIFrameFromHtml(
                 "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div>"
             );
@@ -220,7 +237,6 @@ describe("audio recording tests", () => {
         });
 
         it("returns true while in listen to whole page with only one box", () => {
-            SetupTalkingBookUIElements();
             SetupIFrameFromHtml(
                 "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div></div>"
             );
@@ -230,7 +246,6 @@ describe("audio recording tests", () => {
         });
 
         it("returns false while preloading", () => {
-            SetupTalkingBookUIElements();
             SetupIFrameFromHtml(
                 "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div>"
             );
@@ -882,8 +897,6 @@ describe("audio recording tests", () => {
         });
 
         it("converts by-text-box into by-sentence (bloom-editable includes format button)", () => {
-            SetupTalkingBookUIElements();
-
             // This tests real input from Bloom that has been marked up in by-text-box mode (e.g., clicking the checkbox from not-by-sentence into by-sentence)
             const textBoxDivHtml =
                 '<div id="ee41e518-7855-472a-b8ce-a0c6caa68341" aria-label="false" role="textbox" spellcheck="true" tabindex="0" style="min-height: 24px;" class="bloom-editable cke_editable cke_editable_inline cke_contents_ltr bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style audio-sentence" data-languagetipcontent="English" data-audiorecordingmode="TextBox" lang="en" contenteditable="true">';
@@ -1074,10 +1087,6 @@ describe("audio recording tests", () => {
     });
 
     describe(", updateRecordingMode()", () => {
-        beforeEach(() => {
-            SetupTalkingBookUIElements();
-        });
-
         it("URM(): converts from RecordSentence/PlaySentence to RecordTextBox/PlaySentence", () => {
             const textBoxDivHtml =
                 '<div id="textBox1" class="bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style cke_editable cke_editable_inline cke_contents_ltr" data-languagetipcontent="English" data-audiorecordingmode="Sentence" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" lang="en" contenteditable="true">';
@@ -1198,7 +1207,6 @@ describe("audio recording tests", () => {
                 '<div id="formatButton" class="bloom-ui" style="bottom: 0px;" contenteditable="false"><img data-cke-saved-src="/bloom/bookEdit/img/cogGrey.svg" contenteditable="false"></div>';
             const originalHtml = `<div id="numberedPage">${textBoxDivHtml}${paragraphHtml}${formatButtonHtml}</div>`;
             SetupIFrameFromHtml(originalHtml);
-            SetupTalkingBookUIElements();
 
             const player = <HTMLMediaElement>document.getElementById("player")!;
             player.src = "textBox1.mp3";
@@ -1253,10 +1261,6 @@ describe("audio recording tests", () => {
     });
 
     describe("initializeAudioRecordingMode()", () => {
-        beforeEach(() => {
-            SetupTalkingBookUIElements();
-        });
-
         it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Text Box)", () => {
             SetupIFrameFromHtml(
                 "<div class='bloom-editable' lang='en' data-audiorecordingmode='Sentence'>Sentence 1. Sentence 2.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audiorecordingmode='TextBox'>Paragraph 2.</div>"
@@ -1625,57 +1629,62 @@ function StripAudioCurrent(html) {
         .replace(/ class="ui-audioCurrent"/g, "");
 }
 
-// bodyContentHtml should not contain HTML or Body tags. It should be the innerHtml of the body
-// It might look something like this: <div class='ui-audioCurrent'>Hello world</div>
-export function SetupIFrameFromHtml(
-    bodyContentHtml,
-    id = "page",
-    shouldClearFirst = true
-) {
-    if (shouldClearFirst) {
-        // Wipe out their contents first
-        CleanupIframe(id);
-    }
-
-    const dummyDiv = parent.window.document.body.appendChild(
-        document.createElement("div")
-    );
-    dummyDiv.insertAdjacentHTML(
-        "afterend",
-        `<iframe id='${id}'><html><body>${bodyContentHtml}</body></html></iframe>`
-    );
-    dummyDiv.remove();
-
-    // Dunno how contentWindow.document.body is supposed to get initialized, but inserting stuff into parent.window.document.body does not do it.
-    // So insert the same thing again here.
-    //
-    // (audioRecording references both page.window.document.body and parent.contentWindow.document.body so need to setup both)
-    const pageElement = <HTMLIFrameElement>(
-        parent.window.document.getElementById(id)
-    );
-    if (pageElement && pageElement.contentWindow) {
-        const dummyDiv2 = pageElement.contentWindow.document.body.appendChild(
-            document.createElement("div")
-        );
-        dummyDiv2.insertAdjacentHTML("afterend", bodyContentHtml);
-        dummyDiv2.remove();
-    }
-}
-
-function CleanupIframe(id = "page") {
-    const elem = <HTMLIFrameElement>parent.window.document.getElementById(id);
-    if (elem) {
-        if (elem.contentWindow) {
-            const elem2 = <HTMLIFrameElement>(
-                elem.contentWindow.document.getElementById(id)
+// Adds the iframe into the parent window.
+// Returns a Promise which resolves when the iframe is finished loading and its contentDocument is safe to use.
+export async function SetupIFrameAsync(
+    id = "page"
+): Promise<HTMLIFrameElement> {
+    let iframe: HTMLIFrameElement;
+    const element = parent.window.document.getElementById(id);
+    if (element) {
+        if (element.tagName.toLowerCase() !== "iframe") {
+            throw new Error(
+                `An element with the id ${id} already exists, but it is a ${
+                    element.tagName
+                } not an iframe.`
             );
-            if (elem2) {
-                elem2.remove();
+        } else {
+            iframe = element as HTMLIFrameElement;
+            if (iframe.contentDocument!.readyState == "complete") {
+                console.log("Resolving to existing iframe.");
+                return iframe;
+            } else {
+                throw new Error(
+                    "Not implemented exception: An iframe with that id already exists, but is loading."
+                );
+                // Enhance: I guess you could do setTimeouts and wait until the readyState is complete.
+                // If so, then you resolve the promise.
+                // If not, then you recycle the setTimeout
             }
         }
-
-        elem.remove();
     }
+
+    iframe = parent.window.document.createElement("iframe");
+    parent.window.document.body.appendChild(iframe);
+    iframe.id = id;
+    iframe.name = id;
+
+    // It needs to be asynchronous because an iframe may not be valid to use until its onload is called.
+    // Notably, it's contentDocument will be re-written during the loading process... changes made before onload() finishes (asynchronously)
+    // can get wiped out.
+    return new Promise<HTMLIFrameElement>(resolve => {
+        iframe.onload = () => {
+            resolve(iframe);
+        };
+    });
+}
+
+// bodyContentHtml should not contain HTML or Body tags. It should be the innerHtml of the body
+// It might look something like this: <div class='ui-audioCurrent'>Hello world</div>
+export function SetupIFrameFromHtml(bodyContentHtml: string, id = "page") {
+    const iframe = <HTMLIFrameElement>parent.window.document.getElementById(id);
+
+    if (iframe.contentDocument!.readyState !== "complete") {
+        throw new Error(
+            "Possible setup error: IFrame's readyState is not complete. The content document might change under you asynchronously!!!"
+        );
+    }
+    iframe.contentDocument!.body.innerHTML = bodyContentHtml;
 }
 
 // Just sets up some dummy elements so that they're non-null.
@@ -1683,7 +1692,7 @@ export function SetupTalkingBookUIElements() {
     document.body.appendChild(document.createElement("div")); // Ensures there is always an element.
 
     const html =
-        '<button id="audio-record" /><button id="audio-play" /><div id="audio-split-wrapper"><button id="audio-split"></div><button id="audio-next" /><button id="audio-prev" /><button id="audio-clear" /><input id="audio-recordingModeControl" /><div id="audio-playbackOrderControl" /><audio id="player" />';
+        '<button id="audio-record" ></button><button id="audio-play"></button><div id="audio-split-wrapper"><button id="audio-split"></button></div><button id="audio-next"></button><button id="audio-prev"></button><button id="audio-clear"></button><input id="audio-recordingModeControl"></input><div id="audio-playbackOrderControl"></div><audio id="player" ></audio>';
     document.body.firstElementChild!.insertAdjacentHTML("afterend", html);
 }
 
