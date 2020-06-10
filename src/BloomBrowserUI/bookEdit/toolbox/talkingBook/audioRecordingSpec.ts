@@ -22,7 +22,7 @@ describe("audio recording tests", () => {
         done();
     });
 
-    describe(", Next()", () => {
+    describe("- Next()", () => {
         it("Record=Sentence, last sentence returns disabled for Next button", () => {
             SetupIFrameFromHtml(
                 "<div id='page1'><div class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='id1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div></div>"
@@ -124,7 +124,7 @@ describe("audio recording tests", () => {
         });
     });
 
-    describe(", Prev()", () => {
+    describe("- Prev()", () => {
         it("Record=Sentence, first sentence returns disabled for Back button", () => {
             SetupIFrameFromHtml(
                 "<div id='page1'><div class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='id1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div></div>"
@@ -226,7 +226,7 @@ describe("audio recording tests", () => {
         });
     });
 
-    describe(", PlayingMultipleAudio()", () => {
+    describe("- PlayingMultipleAudio()", () => {
         it("returns true while in listen to whole page with multiple text boxes", () => {
             SetupIFrameFromHtml(
                 "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div>"
@@ -262,7 +262,7 @@ describe("audio recording tests", () => {
         });
     });
 
-    describe(", MakeAudioSentenceElements()", () => {
+    describe("- MakeAudioSentenceElements()", () => {
         it("inserts sentence spans with ids and class when none exist", () => {
             const div = $("<div>This is a sentence. This is another</div>");
             const recording = new AudioRecording();
@@ -1086,7 +1086,7 @@ describe("audio recording tests", () => {
         });
     });
 
-    describe(", updateRecordingMode()", () => {
+    describe("- updateRecordingMode()", () => {
         it("URM(): converts from RecordSentence/PlaySentence to RecordTextBox/PlaySentence", () => {
             const textBoxDivHtml =
                 '<div id="textBox1" class="bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style cke_editable cke_editable_inline cke_contents_ltr" data-languagetipcontent="English" data-audiorecordingmode="Sentence" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" lang="en" contenteditable="true">';
@@ -1260,7 +1260,7 @@ describe("audio recording tests", () => {
         });
     });
 
-    describe("initializeAudioRecordingMode()", () => {
+    describe("- initializeAudioRecordingMode()", () => {
         it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Text Box)", () => {
             SetupIFrameFromHtml(
                 "<div class='bloom-editable' lang='en' data-audiorecordingmode='Sentence'>Sentence 1. Sentence 2.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audiorecordingmode='TextBox'>Paragraph 2.</div>"
@@ -1392,30 +1392,49 @@ describe("audio recording tests", () => {
                 "Checkbox state"
             );
         });
+
         // BL-8425 The Jonah SuperBible comic book was found with data-audioRecordingMode, but no audio-sentences.
         // Not sure how that happened, but now the Talking Book Tool will repair this case.
-        it("updateMarkupForCurrentText repairs faulty setup, TextBox div has no audio-sentence class", () => {
-            SetupIFrameFromHtml(
-                "<div><div id='testId' data-audioRecordingMode='TextBox' class='bloom-editable' lang='en'><p>Sentence 1.</p></div></div>"
-            );
+        it("moveCurrentAndUpdate() repairs faulty setup, TextBox div has no audio-sentence class", async done => {
+            const textBox1 =
+                "<div id='testId1' data-audioRecordingMode='TextBox' class='bloom-editable' lang='en' tabindex='-1'><p>Sentence 1.</p></div>";
+            const textBox2 =
+                "<div id='testId2' data-audioRecordingMode='TextBox' class='bloom-editable' lang='en' tabindex='-1'><p>Sentence 2.</p></div>";
+            SetupIFrameFromHtml(`<div>${textBox1}${textBox2}</div>`);
 
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
 
             const currentDiv = recording
                 .getPageDocBody()!
-                .ownerDocument!.getElementById("testId");
+                .ownerDocument!.getElementById("testId1")!;
 
-            recording.updateMarkupForCurrentText(recording.audioRecordingMode);
+            // Make div1 active
+            currentDiv.focus();
 
+            // System under test
+            await recording.moveCurrentAndUpdateMarkupAsync();
+
+            // Verification
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.TextBox
             );
-            expect(
-                currentDiv!.classList.contains("audio-sentence")
-            ).toBeTruthy();
+
+            // Verify that both the active and inactive divs are updated.
+            const idsToCheck = ["testId1", "testId2"];
+
+            idsToCheck.forEach((id: string) => {
+                const div = recording
+                    .getPageDocBody()!
+                    .ownerDocument!.getElementById(id)!;
+
+                expect(div).toHaveClass("audio-sentence");
+            });
+
+            done();
         });
-        it("updateMarkupForCurrentText repairs faulty setup, Sentence div has no spans", () => {
+
+        it("moveCurrentAndUpdate() repairs faulty setup, Sentence div has no spans", async done => {
             SetupIFrameFromHtml(
                 "<div><div id='testId' data-audioRecordingMode='Sentence' class='bloom-editable' lang='en'><p>Sentence 1.</p></div></div>"
             );
@@ -1427,7 +1446,7 @@ describe("audio recording tests", () => {
                 .getPageDocBody()!
                 .ownerDocument!.getElementById("testId");
 
-            recording.updateMarkupForCurrentText(recording.audioRecordingMode);
+            await recording.moveCurrentAndUpdateMarkupAsync();
 
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence
@@ -1435,6 +1454,8 @@ describe("audio recording tests", () => {
             expect(
                 currentDiv!.querySelectorAll("span.audio-sentence").length
             ).toBe(1);
+
+            done();
         });
     });
 
@@ -1646,7 +1667,6 @@ export async function SetupIFrameAsync(
         } else {
             iframe = element as HTMLIFrameElement;
             if (iframe.contentDocument!.readyState == "complete") {
-                console.log("Resolving to existing iframe.");
                 return iframe;
             } else {
                 throw new Error(

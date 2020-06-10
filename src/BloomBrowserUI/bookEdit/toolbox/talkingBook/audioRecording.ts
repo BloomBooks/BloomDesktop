@@ -44,6 +44,7 @@ import {
 import ImportIcon from "../../../react_components/icons/ImportIcon";
 import { getEditViewFrameExports } from "../../js/bloomFrames";
 import PlaybackOrderControls from "../../../react_components/playbackOrderControls";
+import Recordable from "./recordable";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -148,16 +149,17 @@ export default class AudioRecording {
         this.audioRecordingMode = AudioRecordingMode.Unknown;
 
         this.recordingModeInput = <HTMLInputElement>(
-            document.getElementById(kRecordingModeControl)
+            document.getElementById(kRecordingModeControl)!
         );
-        if (this.recordingModeInput != null) {
-            // Only expected to be null in the unit tests.
-            // Initial state should be disabled so that enableRecordingMode will recognize it needs
-            // to initialize things on startup.
-            this.recordingModeInput.disabled = true;
-        }
+        // Initial state should be disabled so that enableRecordingMode will recognize it needs
+        // to initialize things on startup.
+        this.recordingModeInput.disabled = true;
+
         this.showPlaybackInput = <HTMLInputElement>(
-            document.getElementById(kPlaybackOrderControl)
+            document.getElementById(kPlaybackOrderControl)!
+        );
+        this.levelCanvas = <HTMLCanvasElement>(
+            document.getElementById("audio-meter")!
         );
     }
 
@@ -428,7 +430,7 @@ export default class AudioRecording {
     }
 
     // Called by TalkingBookModel.showTool() when a different tool is added/chosen or when the toolbox is re-opened, but not when a new page is added
-    public setupForRecordingAsync() {
+    public async setupForRecordingAsync(): Promise<void> {
         this.updateInputDeviceDisplay();
         this.disablingOverlay = document.getElementById(
             "disablingOverlay"
@@ -445,9 +447,7 @@ export default class AudioRecording {
             return;
         }
 
-        this.updateMarkupForCurrentText(this.getCurrentPlaybackMode());
-
-        this.changeStateAndSetExpectedAsync("record");
+        await this.moveCurrentAndUpdateMarkupAsync();
 
         this.addAudioLevelListener();
         this.addAudioRecordStartListener();
@@ -849,6 +849,9 @@ export default class AudioRecording {
         // Get rid of all the audio-currents just to be sure.
         this.removeAudioCurrentFromPageDocBody();
 
+        // TODO: Technically there is async stuff here too, but it's not causing major problems yet.
+        // I guess it'd still be good to rename the function to mark as async and allow callers to await it.
+        // I guess in most cases, it'll return quickly.
         if (disableHighlightIfNoAudio) {
             newElement.classList.add("disableHighlight"); // prevents highlight showing at once
             axios
@@ -1028,11 +1031,7 @@ export default class AudioRecording {
     private finishNewRecordingOrImport() {
         if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
             // When ending a recording for a whole text box, we enter the state for Recording=TextBox,Playback=TextBox.
-            const allowUpdateOfCurrent = false; // Doesn't make sense to allow switching the current while ending a recording.
-            this.updateMarkupForCurrentText(
-                AudioRecordingMode.TextBox,
-                allowUpdateOfCurrent
-            );
+            this.updateMarkupForCurrentText(AudioRecordingMode.TextBox);
 
             // Reset the audioRecordingTimings too.
             const currentTextBox = this.getCurrentTextBox();
@@ -1080,21 +1079,22 @@ export default class AudioRecording {
     }
 
     public getCurrentPlaybackMode(): AudioRecordingMode {
-        let playbackMode = AudioRecordingMode.Sentence; // For any strange/unexpected things that happen, default back to the legacy mode (Sentence)
-
         const currentTextBox = this.getCurrentTextBox();
         if (!currentTextBox) {
-            return playbackMode;
+            return AudioRecordingMode.Sentence;
         }
 
+        return this.getPlaybackMode(currentTextBox);
+    }
+    private getPlaybackMode(textBox: Element): AudioRecordingMode {
         let divAudioSentenceCount = 0;
         let spanAudioSentenceCount = 0;
 
-        if (currentTextBox.classList.contains(kAudioSentence)) {
+        if (textBox.classList.contains(kAudioSentence)) {
             ++divAudioSentenceCount;
         }
 
-        const audioSentenceCollection = currentTextBox.getElementsByClassName(
+        const audioSentenceCollection = textBox.getElementsByClassName(
             kAudioSentence
         );
 
@@ -1114,11 +1114,16 @@ export default class AudioRecording {
             !(divAudioSentenceCount > 0 && spanAudioSentenceCount > 0)
         );
         if (divAudioSentenceCount > spanAudioSentenceCount) {
-            playbackMode = AudioRecordingMode.TextBox;
+            return AudioRecordingMode.TextBox;
+        } else if (divAudioSentenceCount < spanAudioSentenceCount) {
+            return AudioRecordingMode.Sentence;
+        } else {
+            // Yuck. They're equal (possibly both 0)
+            // Just default to same as recording mode.
+            return this.getRecordingModeOfTextBox(textBox);
         }
-
-        return playbackMode;
     }
+
     private playCurrent(): void {
         toastr.clear();
 
@@ -1794,11 +1799,7 @@ export default class AudioRecording {
 
             // We can't allowUpdateOfCurrent = true at this point (while updating the playback mode) because moving the highlight while certain other operations are ongoing leads to really unintuitive and confusing end results
             // So just force the operation to apply to whatever the Current Highlight points at right now.
-            const allowUpdateOfCurrent = false;
-            this.updateMarkupForCurrentText(
-                AudioRecordingMode.Sentence,
-                allowUpdateOfCurrent
-            );
+            this.updateMarkupForCurrentText(AudioRecordingMode.Sentence);
 
             // Enhance: Maybe could be Play if the current sentence already has text available?
             // Enhance: Maybe this function could have a Fallback optional parameter. And it would try to set Play, but switch to Record if not available.
@@ -1918,14 +1919,18 @@ export default class AudioRecording {
     }
 
     public getPageFrame(): HTMLIFrameElement {
-        return <HTMLIFrameElement>parent.window.document.getElementById("page");
+        // Precondition: We assume that the page is always there. So far, hasn't seem like it's caused trouble yet.
+        return <HTMLIFrameElement>(
+            parent.window.document.getElementById("page")!
+        );
     }
 
     // The body of the editable page, a root for searching for document content.
-    public getPageDocBody(): HTMLElement | null {
+    public getPageDocBody(): HTMLElement {
+        // ENHANCE: On 2020-06-08, the return type was changed from HTMLElement to HTML.
+        // If this proves not problematic, then you simplify its callers to not bother checking for null.
         const page = this.getPageFrame();
-        if (!page || !page.contentWindow) return null;
-        return page.contentWindow.document.body;
+        return page.contentWindow!.document.body;
     }
 
     // The body of the editable page, a root for searching for document content.
@@ -2056,7 +2061,7 @@ export default class AudioRecording {
 
     // Determines which element should receive the Current Highlight
     //   (Notably, checks to see if we should move from the existing Current Highlight (determined via CSS classes) to the actively focused element instead.)
-    private getWhichTextBoxShouldReceiveHighlight() {
+    private getWhichTextBoxShouldReceiveHighlight(): HTMLElement | null {
         const pageFrame = this.getPageFrame();
 
         // Determine which element should receive the current highlight
@@ -2068,7 +2073,7 @@ export default class AudioRecording {
         ) {
             // FYI: The active element is the one that has "focus."  It may be a lot of other elements on the page, so definitely make sure to check that it is valid first (e.g. check IsRecordableDiv())
             // If the cursor is within a span within a div, it is the div that is the activeElement.  This is both a good thing (when we want to know what div the user is in) and a bad thing (in by sentence mode, we'd really prefer to know what span they're in but this is not trivial)
-            return pageFrame.contentDocument.activeElement;
+            return pageFrame.contentDocument.activeElement as HTMLElement;
         } else {
             const currentTextBox = this.getCurrentTextBox();
 
@@ -2124,6 +2129,104 @@ export default class AudioRecording {
         this.audioRecordingMode = AudioRecordingMode.Unknown;
     }
 
+    // Entry point for TalkingBookTool's updateMarkup() function.
+    public async moveCurrentAndUpdateMarkupAsync(): Promise<void> {
+        // TODO: Maybe you should consider doing the unprocessed recordables first.
+        // Then moveCurrent is more likely to have something to move to.
+        this.moveCurrentTextboxIfNeeded();
+
+        const numUnprocessedUpdated = this.updateMarkupForUnprocessedRecordables();
+
+        const playbackMode = this.getCurrentPlaybackMode();
+        const numCurrentTextBoxUpdated = await this.tryUpdateMarkupForCurrentTextAsync(
+            playbackMode
+        );
+        const numTotalUpdated =
+            numUnprocessedUpdated + numCurrentTextBoxUpdated;
+        if (numTotalUpdated > 0) {
+            await this.changeStateAndSetExpectedAsync("record");
+        } else {
+            await this.changeStateAndSetExpectedAsync("");
+        }
+    }
+
+    // Note: This may temporarily put things into a funny state. We ask to move the highlight to the whole div regardless of what the recording mode is.
+    // We have a bit of a chicken and egg problem here. The new recording mode still needs to be determined, and the audio-sentence markup is not applied yet either,
+    // but it's easier to determine the recording mode and apply the audio-sentence markup if we move the current highlight first than vice-versa.
+    // Calling InitializeForMarkup (called by updateMarkupForCurrentText) and updateMarkupForCurrentText should get us back into a 100% valid state.
+    private moveCurrentTextboxIfNeeded(): void {
+        const currentTextBox = this.getCurrentTextBox();
+        const selectedTextBox = this.getWhichTextBoxShouldReceiveHighlight();
+
+        // Enhance: it would be nice/significantly more intuitive if this (or a stripped-down version that just moves the highlight/audio recording mode) could run when the mouse focus changes.
+        if (currentTextBox != selectedTextBox) {
+            this.moveCurrentHighlightToTextBox(selectedTextBox);
+            // We need to redo initialization
+            this.initializeAudioRecordingMode();
+            // and then we can carry on with the markup of the new current box.
+        }
+    }
+
+    // In addition to us processing currentTextBox, also add any unprocessed divs
+    // The current text box will specifically be EXCLUDED from being processed
+    private updateMarkupForUnprocessedRecordables(): number {
+        const currentTextBox = this.getCurrentTextBox();
+        const recordableDivs = this.getRecordableDivs();
+        const unprocessedRecordables = recordableDivs.filter(
+            div =>
+                !this.isRecordableDivFullyInitialized(div) &&
+                div != currentTextBox
+        );
+
+        unprocessedRecordables.forEach(unprocessedRecordable => {
+            const playbackMode = this.getPlaybackMode(unprocessedRecordable);
+
+            this.makeAudioSentenceElements(
+                $(unprocessedRecordable),
+                playbackMode
+            );
+        });
+
+        const numUpdated = unprocessedRecordables.length;
+        return numUpdated;
+    }
+
+    // Asychronously updates the markup on the current text box, but only if the operation is currently allowed.
+    // Returns the number of text boxes which were updated (either 0 or 1).
+    private async tryUpdateMarkupForCurrentTextAsync(
+        audioPlaybackMode
+    ): Promise<number> {
+        const currentTextBox = this.getCurrentTextBox();
+
+        if (!currentTextBox) {
+            // This could be reached if you create a new page with the talking book tool open.
+            // It's fine. Don't bother doing anything.
+            return Promise.resolve(0);
+        }
+
+        const recordable = new Recordable(currentTextBox);
+
+        try {
+            const isPresent = await recordable.areRecordingsPresentAsync();
+
+            if (isPresent) {
+                toastr.warning("Editing is not allowed right now.");
+                return Promise.resolve(0);
+            } else {
+                toastr.info("Calling updateMarkupForCurrentText()");
+                this.updateMarkupForCurrentText(audioPlaybackMode);
+                return Promise.resolve(1);
+            }
+        } catch (error) {
+            // TODO: Verify if this catch is necessary / good
+            // Probably necessary. Otherwise, I suspect this promise is never fulfilled on errors.
+            toastr.warning(
+                "In a catch handler of tryUpdateMarkupForCurrentTextAsync()."
+            );
+            return Promise.reject(error);
+        }
+    }
+
     // Called on initial setup and on toolbox updateMarkup(), including when a new page is created with Talking Book tab open
     // The 'playback' mode here is needed to distinguish how the markup elements are arranged
     // to store any current recording, as opposed to the recording mode which indicates how
@@ -2142,10 +2245,7 @@ export default class AudioRecording {
     // getRecordingModeOfTextBox(currentTextBox) when it finds no existing audio markup?
     // This would save switching when we actually go to make the recording; howver, this code
     // is very complex and we are hesitant to make changes which are not strictly necessary.
-    public updateMarkupForCurrentText(
-        audioPlaybackMode,
-        allowUpdateOfCurrent: boolean = true
-    ): void {
+    public updateMarkupForCurrentText(audioPlaybackMode): number {
         // Basic outline:
         // * This function gets called when the user types something, and upon initialization of the talking book tool too if there is a non-empty recordable text box
         // * First, see if we should update the Current Highlight to the element with the active focus instead.
@@ -2156,25 +2256,6 @@ export default class AudioRecording {
 
         let currentTextBox = this.getCurrentTextBox();
 
-        // Enhance: it would be nice/significantly more intuitive if this (or a stripped-down version that just moves the highlight/audio recording mode) could run when the mouse focus changes.
-        if (allowUpdateOfCurrent) {
-            const selectedTextBox = this.getWhichTextBoxShouldReceiveHighlight();
-
-            if (currentTextBox != selectedTextBox) {
-                // Note: This may temporarily put things into a funny state. We ask to move the highlight to the whole div regardless of what the recording mode is.
-                // We have a bit of a chicken and egg problem here. The new recording mode still needs to be determined, and the audio-sentence markup is not applied yet either,
-                // but it's easier to determine the recording mode and apply the audio-sentence markup if we move the current highlight first than vice-versa.
-                // Calling InitializeForMarkup (called by updateMarkupForCurrentText) and updateMarkupForCurrentText should get us back into a 100% valid state.
-                this.moveCurrentHighlightToTextBox(selectedTextBox);
-                // We need to redo initialization
-                this.initializeAudioRecordingMode();
-                audioPlaybackMode = this.getCurrentPlaybackMode();
-                // and then we can carry on with the markup of the new current box.
-
-                currentTextBox = selectedTextBox as HTMLElement;
-            }
-        }
-
         this.isShowing = true;
 
         // getCurrentPlaybackMode() never returns unknown, and all callers of this method pass
@@ -2184,35 +2265,14 @@ export default class AudioRecording {
             "updateMarkupForCurrentText should not be passed mode unknown"
         );
 
-        // In addition to us processing currentTextBox, also add any unprocessed divs
-        const recordableDivs = this.getRecordableDivs();
-        const unprocessedRecordables = recordableDivs.filter(
-            div => !this.isRecordableDivFullyInitialized(div)
-        );
-
-        let unionedElementsToProcess: JQuery;
+        let numUpdated = 0;
         if (currentTextBox) {
-            unionedElementsToProcess = $(currentTextBox).add(
-                $(unprocessedRecordables)
+            this.makeAudioSentenceElements(
+                $(currentTextBox),
+                audioPlaybackMode
             );
-        } else {
-            unionedElementsToProcess = $(unprocessedRecordables);
+            numUpdated = 1;
         }
-
-        if (unionedElementsToProcess.length === 0) {
-            // no editable text on this page.
-            this.changeStateAndSetExpectedAsync("");
-            return;
-        }
-
-        this.makeAudioSentenceElements(
-            unionedElementsToProcess,
-            audioPlaybackMode
-        );
-
-        this.levelCanvas = <HTMLCanvasElement>(
-            document.getElementById("audio-meter")
-        );
 
         if (!currentTextBox) {
             currentTextBox = this.setCurrentAudioElementToFirstAudioElement();
@@ -2258,31 +2318,18 @@ export default class AudioRecording {
                 delayInMilliseconds *= 2;
             }
         }
+
+        return numUpdated;
     }
 
     // BL-8425 Some cases were found where 'data-audioRecordingMode' was present, but 'audio-sentence' class
     // didn't occur at all in that div or its children. So here we want to make sure that things get processed
     // if they might be in a bad state.
     private isRecordableDivFullyInitialized(div: Element): boolean {
-        const modeAttribute = div.getAttribute("data-audioRecordingMode");
-        if (!modeAttribute) {
-            return false;
-        }
-        if (
-            modeAttribute == AudioRecordingMode.TextBox &&
-            !div.classList.contains(kAudioSentence) &&
-            div.getElementsByClassName(kAudioSentence).length === 0
-        ) {
-            return false;
-        }
-        if (
-            modeAttribute == AudioRecordingMode.Sentence &&
-            !div.classList.contains(kAudioSentence) &&
-            div.getElementsByTagName("SPAN").length === 0
-        ) {
-            return false;
-        }
-        return true;
+        // TODO: If you refactor its callers to work with Recordables directly, then you won't even need me.
+        return new Recordable(
+            div as HTMLDivElement
+        ).isRecordableDivFullyInitialized();
     }
 
     public setCurrentAudioElementBasedOnRecordingMode(
@@ -2406,7 +2453,7 @@ export default class AudioRecording {
         if (
             this.audioRecordingMode == AudioRecordingMode.TextBox &&
             this.getCurrentPlaybackMode() == AudioRecordingMode.TextBox &&
-            this.getAudioFilePresent()
+            AudioRecording.getAudioFilePresent()
         ) {
             this.disableRecordingModeControl();
         } else {
@@ -3045,7 +3092,7 @@ export default class AudioRecording {
         expectedVerb: string,
         numRetriesRemaining: number = 1
     ) {
-        console.log("changeState(" + expectedVerb + ")");
+        // console.log("changeState(" + expectedVerb + ")");
 
         // Call with "" verb if there's nothing specific to highlight, just need to check if these controls should be disabled.
         // (e.g. when we have found that the current page has no divs with recording content, and we may possible want to disable
@@ -3445,8 +3492,8 @@ export default class AudioRecording {
         }
     }
 
-    public getAudioFilePresent(): boolean {
-        const playElement = document.getElementById("#audio-play");
+    public static getAudioFilePresent(): boolean {
+        const playElement = document.getElementById("audio-play");
         if (playElement && playElement.classList.contains("enabled")) {
             return true;
         }
@@ -3686,11 +3733,7 @@ export default class AudioRecording {
             }
 
             // Note that this will want to use the sentenceToIdListMap member variable to inform it to re-use the IDs used to create the split audio files
-            const allowUpdateOfCurrent = false;
-            this.updateMarkupForCurrentText(
-                AudioRecordingMode.Sentence,
-                allowUpdateOfCurrent
-            );
+            this.updateMarkupForCurrentText(AudioRecordingMode.Sentence);
 
             this.updatePlaybackModeToTextBox();
 

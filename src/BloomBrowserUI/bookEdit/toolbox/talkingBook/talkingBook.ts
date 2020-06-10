@@ -29,7 +29,7 @@ export default class TalkingBookTool implements ITool {
         // as the asynchronous method it is.
         await AudioRecorder.initializeTalkingBookToolAsync();
         this.showImageDescriptionsIfAny();
-        AudioRecorder.theOneAudioRecorder.setupForRecordingAsync();
+        await AudioRecorder.theOneAudioRecorder.setupForRecordingAsync();
     }
 
     // Called when a new page is loaded.
@@ -57,16 +57,9 @@ export default class TalkingBookTool implements ITool {
     }
 
     // Called whenever the user edits text.
-    public updateMarkup() {
+    public async updateMarkup(): Promise<void> {
         this.showImageDescriptionsIfAny();
-        const playbackMode = AudioRecorder.theOneAudioRecorder.getCurrentPlaybackMode();
-        AudioRecorder.theOneAudioRecorder.updateMarkupForCurrentText(
-            playbackMode,
-            true
-        );
-        AudioRecorder.theOneAudioRecorder.changeStateAndSetExpectedAsync(
-            "record"
-        );
+        await AudioRecorder.theOneAudioRecorder.moveCurrentAndUpdateMarkupAsync();
     }
 
     private showImageDescriptionsIfAny() {

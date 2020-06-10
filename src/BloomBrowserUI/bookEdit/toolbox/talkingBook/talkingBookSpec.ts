@@ -17,7 +17,7 @@ describe("talking book tests", () => {
         done();
     });
 
-    describe(", updateMarkup()", () => {
+    describe("- updateMarkup()", () => {
         it("moves highlight after focus changes", async done => {
             // Setup Initial HTML
             const textBox1 =
