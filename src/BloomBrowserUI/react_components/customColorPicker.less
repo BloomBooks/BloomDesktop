@@ -1,0 +1,37 @@
+.custom-color-picker {
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 2px, rgba(0, 0, 0, 0.3) 0px 4px 8px;
+    .chrome-picker {
+        box-shadow: none !important;
+    }
+    .swatch-row {
+        display: flex;
+        flex: 2;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 10px 0 0 8px;
+        .color-swatch {
+            margin-left: 7px;
+        }
+    }
+}
+
+@NecessaryZIndex: 30000; // "Necessary" for when it's in the toolbox, as a separate dialog, perhaps not.
+
+.pickerWrapper {
+    position: absolute;
+    z-index: @NecessaryZIndex + 2 !important;
+    width: 187px !important;
+    background-color: white;
+    margin-top: 16px; // puts the color chooser just under the select label
+
+    .pickerCover {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+    }
+}
