@@ -644,34 +644,53 @@ namespace Bloom.Collection
 		}
 
 		/// <summary>
-		/// Given a choice, what language should we use to describe the license on the page (not in the UI, which is controlled by the UI Language)
+		/// Given a choice, what language should we use to display text on the page (not in the UI, which is controlled by the UI Language)
 		/// </summary>
-		public IEnumerable<string> LicenseDescriptionLanguagePriorities
+		/// <returns>A prioritized enumerable of language codes</returns>
+		public IEnumerable<string> GetLanguagePrioritiesForTranslatedTextOnPage(bool includeLang1 = true)
 		{
-			get
+			List<string> langCodes = new List<string>{ Language2Iso639Code, Language3Iso639Code, "en" };
+			if (includeLang1)
+				langCodes.Insert(0, Language1Iso639Code);
+			langCodes = langCodes.Where(lc => !string.IsNullOrWhiteSpace(lc)).ToList();
+
+			// reverse-order loop so that given e.g. zh-Hans followed by zh-Hant we insert zh-CN after the second one.
+			// That is, we'll prefer either of the explicit variants to the fall-back.
+			// The part before the hyphen (if there is one) is the main language.
+			var count = langCodes.Count;
+			for (int i = count - 1; i >= 0; i--)
 			{
-				var result = new[] { Language1Iso639Code, Language2Iso639Code, Language3Iso639Code, "en" };
-				// reverse-order loop so that given e.g. zh-Hans followed by zh-Hant we insert zh-CN after the second one.
-				// That is, we'll prefer either of the explicit variants to the fall-back.
-				// The part before the hyphen (if there is one) is the main language.
-				for (int i = result.Length - 1; i >= 0; i--)
+				var fullLangTag = langCodes[i];
+				if (fullLangTag == null)
+					continue;
+				var language = fullLangTag.Split('-')[0]; // Generally insert corresponding language for longer culture
+				if (language == "zh")
 				{
-					var fullLangTag = result[i];
-					if (fullLangTag == null)
-						continue;
-					var language = fullLangTag.Split('-')[0]; // Generally insert corresponding language for longer culture
-					if (language == "zh")
-					{
-						language = "zh-CN"; // Insert this instead for Chinese
-					}
-					if (result.IndexOf(language) >= 0)
-						continue;
-					var temp = result.ToList();
-					temp.Insert(i + 1, language);
-					result = temp.ToArray();
+					language = "zh-CN"; // Insert this instead for Chinese
 				}
-				return result;
+
+				if (langCodes.IndexOf(language) >= 0)
+					continue;
+				langCodes.Insert(i + 1, language);
 			}
+
+			var pashtoLanguages = new[] {"ps", "pus", "pbu", "pst", "pbt"};
+			// As of Jun 2020, we have Crowdin translation for pbu,
+			// but that seems like a mistake. Some day, we should change it
+			// to the macrolanguage which is ps (2-letter) or pus (3-letter).
+			// So, when we have any of the Pashto codes above, look for a
+			// translation in one of the codes below.
+			var tryTheseLanguageCodes = new[] {"pbu", "ps", "pus"};
+			for (int i = 0; i < langCodes.Count; i++)
+			{
+				if (pashtoLanguages.Contains(langCodes[i]))
+				{
+					langCodes.InsertRange(i + 1, tryTheseLanguageCodes.Where(lc => !lc.Equals(langCodes[i])));
+					break;
+				}
+			}
+
+			return langCodes;
 		}
 
 		/// <summary>

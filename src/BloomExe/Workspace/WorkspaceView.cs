@@ -467,7 +467,7 @@ namespace Bloom.Workspace
 			// Get the language name in its own language if at all possible.
 			// Add an English name suffix if it's not in a Latin script.
 			var menuText = _lookupIsoCode.GetNativeLanguageNameWithEnglishSubtitle(code);
-			var englishName = _lookupIsoCode.GetLocalizedLanguageName(code, "en");
+			var englishName = LanguageLookupModelExtensions.GetManuallyOverriddenEnglishNameIfNeeded(code,()=>_lookupIsoCode.GetLocalizedLanguageName(code, "en"));
 			return new LanguageItem { EnglishName = englishName, IsoCode = code, MenuText = menuText,
 				FractionApproved = FractionApproved(code), FractionTranslated = FractionTranslated(code) };
 		}
