@@ -11,4 +11,12 @@ In order to release a new Custom XMatter pack:
 4. Send the BloomPack to the user via Dropbox or GoogleDrive (or attach it to a YouTrack issue and 'at' mention
    the user).
 
+However, note the following for the Afghan xmatters (Dari and Pashti):
+I (AP) tried to give SIL LEAD updated packs following the above in May 2020.
+They said they ended up with two packs installed because the previous version had been
+given to them with the customXMatter subfolder included at the top level.
+So I'm now delivering it the same way.
+(i.e. I make a copy of customXMatter, clean out irrelevant files, right-click customXMatter, "Send to" -> "compressed (zipped) folder".)
+It does have the advantage of allowing for only one BloomPack file needed to distribute all 4 Afghan packs.
+
 A possible enhancement to Bloom would be some Easter egg or check box which would make these custom xmatter packs available directly.
