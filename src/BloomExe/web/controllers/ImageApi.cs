@@ -80,7 +80,7 @@ namespace Bloom.web.controllers
 			var currentSelectionFolderPath = _bookSelection.CurrentSelection.FolderPath;
 			IEnumerable<string> langs;
 			if (request.CurrentCollectionSettings != null)
-				langs = request.CurrentCollectionSettings.LicenseDescriptionLanguagePriorities;
+				langs = request.CurrentCollectionSettings.GetLanguagePrioritiesForTranslatedTextOnPage();
 			else
 				langs = new List<string> { "en" };		// emergency fall back -- probably never used.
 			var imageNameToPages = GetFilteredImageNameToPagesDictionary(domBody, langs);

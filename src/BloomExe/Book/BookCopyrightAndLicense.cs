@@ -133,7 +133,7 @@ namespace Bloom.Book
 			//could instead just be generated when we update the page. However, for backwards compatibility (prior to 3.6),
 			//we localize it and place it in the datadiv.
 			dom.RemoveBookSetting("licenseDescription");
-			var description = metadata.License.GetDescription(collectionSettings.LicenseDescriptionLanguagePriorities, out languageUsedForDescription);
+			var description = metadata.License.GetDescription(collectionSettings.GetLanguagePrioritiesForTranslatedTextOnPage(), out languageUsedForDescription);
 			dom.SetBookSetting("licenseDescription", languageUsedForDescription, ConvertNewLinesToHtmlBreaks(description));
 
 			// Book may have old licenseNotes, typically in 'en'. This can certainly show up again if licenseNotes in '*' is removed,
@@ -169,7 +169,7 @@ namespace Bloom.Book
 		{
 			CopyItemToFieldsInPages(dom, "copyright");
 			CopyItemToFieldsInPages(dom, "licenseUrl");
-			CopyItemToFieldsInPages(dom, "licenseDescription", languagePreferences:collectionSettings.LicenseDescriptionLanguagePriorities.ToArray());
+			CopyItemToFieldsInPages(dom, "licenseDescription", languagePreferences:collectionSettings.GetLanguagePrioritiesForTranslatedTextOnPage().ToArray());
 			CopyItemToFieldsInPages(dom, "licenseNotes");
 			CopyItemToFieldsInPages(dom, "licenseImage", valueAttribute:"src");
 			// If we're using the original copyright, we don't need to show it separately.
@@ -330,12 +330,11 @@ namespace Bloom.Book
 			if (!IsDerivative(originalMetadata))
 				return null;
 
-			string idOfLanguageUsed;
-			var languagePriorityIds = collectionSettings.LicenseDescriptionLanguagePriorities;
+			var languagePriorityIds = collectionSettings.GetLanguagePrioritiesForTranslatedTextOnPage(true);
 
-			var license = originalMetadata.License.GetMinimalFormForCredits(languagePriorityIds, out idOfLanguageUsed);
+			var license = originalMetadata.License.GetMinimalFormForCredits(languagePriorityIds, out _);
 			string originalLicenseSentence;
-			var preferredLanguageIds = new[] {collectionSettings.Language2Iso639Code, LocalizationManager.UILanguageId, "en"};
+			languagePriorityIds = collectionSettings.GetLanguagePrioritiesForTranslatedTextOnPage(false);
 			// The originalTitle strategy used here is not ideal. We would prefer to have a placeholder specifically for it
 			// in both EditTab.FrontMatter.OriginalCopyrightSentence and EditTab.FrontMatter.OriginalHadNoCopyrightSentence.
 			// But we don't want to require a new set of translations if we can avoid it.
@@ -365,7 +364,7 @@ namespace Bloom.Book
 				var licenseSentenceTemplate = LocalizationManager.GetString("EditTab.FrontMatter.OriginalLicenseSentence",
 					"Licensed under {0}.",
 					"On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.",
-					preferredLanguageIds, out idOfLanguageUsed);
+					languagePriorityIds, out _);
 				originalLicenseSentence = string.IsNullOrWhiteSpace(license) ? "" : string.Format(licenseSentenceTemplate, license);
 				originalLicenseSentence = originalLicenseSentence.Replace("..", "."); // in case had notes which also had a period.
 			}
@@ -376,7 +375,7 @@ namespace Bloom.Book
 				var noCopyrightSentence = LocalizationManager.GetString("EditTab.FrontMatter.OriginalHadNoCopyrightSentence",
 					"Adapted from original without a copyright notice.",
 					"On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.",
-					preferredLanguageIds, out idOfLanguageUsed);
+					languagePriorityIds, out _);
 
 					noCopyrightSentence = noCopyrightSentence.Substring(0, noCopyrightSentence.Length - 1) +
 					                      originalTitleBeforePeriod + ".";
@@ -388,7 +387,7 @@ namespace Bloom.Book
 				var originalCopyrightSentence = LocalizationManager.GetString("EditTab.FrontMatter.OriginalCopyrightSentence",
 					"Adapted from original, {0}.",
 					"On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.",
-					preferredLanguageIds, out idOfLanguageUsed);
+					languagePriorityIds, out _);
 				copyrightNotice = String.Format(originalCopyrightSentence, originalTitleAfterComma + originalMetadata.CopyrightNotice.Trim()) + " " +
 				                  originalLicenseSentence;
 			}
