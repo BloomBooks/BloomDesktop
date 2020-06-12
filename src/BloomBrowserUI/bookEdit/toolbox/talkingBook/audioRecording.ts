@@ -2210,6 +2210,7 @@ export default class AudioRecording {
             const isPresent = await recordable.areRecordingsPresentAsync();
 
             if (isPresent) {
+                // TODO: What do you actually do in this case?
                 toastr.warning("Editing is not allowed right now.");
                 return Promise.resolve(0);
             } else {
@@ -2302,22 +2303,22 @@ export default class AudioRecording {
 
         // We don't want this stuff to run in unit tests, because it adds async behavior onto this function
         // and messes up any asynchronous test code.
-        if (!(window as any).__karma__) {
-            // TODO: Is this repeated setting still necessary? By the end of version 4.5 it doesn't seem necessary anymore but hard to say for sure because it only triggers non-deterministically
-            let delayInMilliseconds = 20;
-            while (delayInMilliseconds < 1000) {
-                // Keep setting the current highlight for an additional roughly 1 second
-                setTimeout(() => {
-                    if (currentTextBox) {
-                        this.setCurrentAudioElementBasedOnRecordingMode(
-                            currentTextBox
-                        );
-                    }
-                }, delayInMilliseconds);
+        // if (!(window as any).__karma__) {
+        //     // TODO: Is this repeated setting still necessary? By the end of version 4.5 it doesn't seem necessary anymore but hard to say for sure because it only triggers non-deterministically
+        //     let delayInMilliseconds = 20;
+        //     while (delayInMilliseconds < 1000) {
+        //         // Keep setting the current highlight for an additional roughly 1 second
+        //         setTimeout(() => {
+        //             if (currentTextBox) {
+        //                 this.setCurrentAudioElementBasedOnRecordingMode(
+        //                     currentTextBox
+        //                 );
+        //             }
+        //         }, delayInMilliseconds);
 
-                delayInMilliseconds *= 2;
-            }
-        }
+        //         delayInMilliseconds *= 2;
+        //     }
+        // }
 
         return numUpdated;
     }
@@ -2794,6 +2795,7 @@ export default class AudioRecording {
                     root.classList.remove(kAudioSentence);
                 }
             } else if (audioPlaybackMode == AudioRecordingMode.TextBox) {
+                // Note: Includes cases where you are in Soft Split mode. (You will return without running makeAudioSentenceElementsLeaf()
                 if (this.isRootRecordableDiv(root)) {
                     // Save the RECORDING (not the playback) setting  used, so we can load it properly later
                     this.persistRecordingMode(root);

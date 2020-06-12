@@ -1392,7 +1392,9 @@ describe("audio recording tests", () => {
                 "Checkbox state"
             );
         });
+    });
 
+    describe("- moveCurrentAndUpdate()", () => {
         // BL-8425 The Jonah SuperBible comic book was found with data-audioRecordingMode, but no audio-sentences.
         // Not sure how that happened, but now the Talking Book Tool will repair this case.
         it("moveCurrentAndUpdate() repairs faulty setup, TextBox div has no audio-sentence class", async done => {
