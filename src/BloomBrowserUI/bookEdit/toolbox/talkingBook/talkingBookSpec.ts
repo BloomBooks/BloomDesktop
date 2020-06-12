@@ -123,6 +123,7 @@ describe("talking book tests", () => {
                 });
                 expect(texts).toEqual(["1.1၊", "1.2"]);
 
+                verifyRecordButtonEnabled();
                 done();
             } catch (error) {
                 fail(error);
@@ -372,6 +373,10 @@ function getParagraphsOfTextBox(divId: string): HTMLParagraphElement[] {
             return elem;
         }
     );
+}
+
+function verifyRecordButtonEnabled() {
+    expect(document.getElementById("audio-record")).not.toHaveClass("disabled");
 }
 
 function getFrameElementById(

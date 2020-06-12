@@ -2144,9 +2144,9 @@ export default class AudioRecording {
         const numTotalUpdated =
             numUnprocessedUpdated + numCurrentTextBoxUpdated;
         if (numTotalUpdated > 0) {
-            this.changeStateAndSetExpectedAsync("record");
+            await this.changeStateAndSetExpectedAsync("record");
         } else {
-            this.changeStateAndSetExpectedAsync("");
+            await this.changeStateAndSetExpectedAsync("");
         }
     }
 
@@ -2192,7 +2192,7 @@ export default class AudioRecording {
     }
 
     // Asychronously updates the markup on the current text box, but only if the operation is currently allowed.
-    // Returns the number of text boxes which were updated (either 0 or 1).
+    // Returns the number of text boxes processed (either 0 or 1).
     private async tryUpdateMarkupForCurrentTextAsync(
         audioPlaybackMode
     ): Promise<number> {
@@ -2206,28 +2206,23 @@ export default class AudioRecording {
 
         const recordable = new Recordable(currentTextBox);
 
-        try {
-            const isPresent = await recordable.areRecordingsPresentAsync();
+        // ENHANCE: You could refactor so that this check is only done when the current text box is changed.
+        // And then you save the result somewhere.
+        // That way, you don't have to make a BloomAPI call plus await it whenever you type in text
+        const isPresent = await recordable.areRecordingsPresentAsync();
 
-            if (isPresent) {
-                // TODO: What do you actually do in this case?
-                toastr.warning("Editing is not allowed right now.");
-                return 0;
-            } else {
-                toastr.info("Calling updateMarkupForCurrentText()");
-                const numUpdated = this.updateMarkupForCurrentText(
-                    audioPlaybackMode
-                );
-                return numUpdated;
-            }
-        } catch (error) {
-            // TODO: Verify if this catch is necessary / good
-            // Probably necessary. Otherwise, I suspect this promise is never fulfilled on errors.
-            toastr.warning(
-                "In a catch handler of tryUpdateMarkupForCurrentTextAsync()."
+        if (isPresent) {
+            // TODO: What do you actually do in this case?
+            toastr.warning("Editing is not allowed right now.");
+        } else {
+            toastr.info("Calling updateMarkupForCurrentText()");
+            const numUpdated = this.updateMarkupForCurrentText(
+                audioPlaybackMode
             );
-            return Promise.reject(error);
         }
+
+        // We want to return 1 as long as current text box exists, even if we didn't update the markup on it.
+        return 1;
     }
 
     // Called on initial setup and on toolbox updateMarkup(), including when a new page is created with Talking Book tab open
