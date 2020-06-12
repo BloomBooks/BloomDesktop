@@ -64,6 +64,9 @@ export class BookSettings implements ITool {
     public showTool() {}
     public hideTool() {}
     public updateMarkup() {}
+    public isUpdateMarkupAsync(): boolean {
+        return false;
+    }
     public newPageReady() {}
     public detachFromPage() {}
     public finishToolLocalization(pane: HTMLElement) {}

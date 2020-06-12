@@ -2144,9 +2144,9 @@ export default class AudioRecording {
         const numTotalUpdated =
             numUnprocessedUpdated + numCurrentTextBoxUpdated;
         if (numTotalUpdated > 0) {
-            await this.changeStateAndSetExpectedAsync("record");
+            this.changeStateAndSetExpectedAsync("record");
         } else {
-            await this.changeStateAndSetExpectedAsync("");
+            this.changeStateAndSetExpectedAsync("");
         }
     }
 
@@ -2201,7 +2201,7 @@ export default class AudioRecording {
         if (!currentTextBox) {
             // This could be reached if you create a new page with the talking book tool open.
             // It's fine. Don't bother doing anything.
-            return Promise.resolve(0);
+            return 0;
         }
 
         const recordable = new Recordable(currentTextBox);
@@ -2212,11 +2212,13 @@ export default class AudioRecording {
             if (isPresent) {
                 // TODO: What do you actually do in this case?
                 toastr.warning("Editing is not allowed right now.");
-                return Promise.resolve(0);
+                return 0;
             } else {
                 toastr.info("Calling updateMarkupForCurrentText()");
-                this.updateMarkupForCurrentText(audioPlaybackMode);
-                return Promise.resolve(1);
+                const numUpdated = this.updateMarkupForCurrentText(
+                    audioPlaybackMode
+                );
+                return numUpdated;
             }
         } catch (error) {
             // TODO: Verify if this catch is necessary / good

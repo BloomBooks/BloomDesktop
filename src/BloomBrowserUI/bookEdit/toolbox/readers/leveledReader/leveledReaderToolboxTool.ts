@@ -63,6 +63,10 @@ export class LeveledReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().doMarkup();
     }
 
+    public isUpdateMarkupAsync(): boolean {
+        return false;
+    }
+
     public id() {
         return "leveledReader";
     }
