@@ -823,7 +823,7 @@ export default class AudioRecording {
         currentElement: Element | null | undefined = undefined // Optional. Provides some minor optimization if set.
     ): void {
         // Note: setHighlightTo() should be run first so that ui-audioCurrent points to the correct element when setSoundFrom() is run.
-        this.setHighlightTo(
+        this.setHighlightToAsync(
             elementToChangeTo,
             disableHighlightIfNoAudio,
             currentElement
@@ -832,11 +832,11 @@ export default class AudioRecording {
     }
 
     // Changes the visually highlighted element (i.e, the element corresponding to .ui-audioCurrent) to the specified element.
-    public setHighlightTo(
+    public async setHighlightToAsync(
         newElement: Element,
         disableHighlightIfNoAudio?: boolean,
         oldElement: Element | null | undefined = undefined // Optional. Provides some minor optimization if set.
-    ): void {
+    ): Promise<void> {
         if (!oldElement) {
             oldElement = this.getCurrentHighlight();
         }
@@ -849,24 +849,22 @@ export default class AudioRecording {
         // Get rid of all the audio-currents just to be sure.
         this.removeAudioCurrentFromPageDocBody();
 
-        // TODO: Technically there is async stuff here too, but it's not causing major problems yet.
-        // I guess it'd still be good to rename the function to mark as async and allow callers to await it.
-        // I guess in most cases, it'll return quickly.
         if (disableHighlightIfNoAudio) {
             newElement.classList.add("disableHighlight"); // prevents highlight showing at once
-            axios
-                .get("/bloom/api/audio/checkForSegment?id=" + newElement.id)
-                .then(response => {
-                    if (response.data === "exists") {
-                        newElement.classList.remove("disableHighlight");
-                    }
-                })
-                .catch(error => {
-                    toastr.error(
-                        "Error checking on audio file " + error.statusText
-                    );
-                    //server couldn't find it, so just leave it unhighlighted
-                });
+            try {
+                const response: AxiosResponse<any> = await axios.get(
+                    "/bloom/api/audio/checkForSegment?id=" + newElement.id
+                );
+
+                if (response.data === "exists") {
+                    newElement.classList.remove("disableHighlight");
+                }
+            } catch (error) {
+                //server couldn't find it, so just leave it unhighlighted
+                toastr.error(
+                    "Error checking on audio file " + error.statusText
+                );
+            }
         }
 
         if (!this.showPlaybackInput.checked) {
@@ -1086,6 +1084,7 @@ export default class AudioRecording {
 
         return this.getPlaybackMode(currentTextBox);
     }
+
     private getPlaybackMode(textBox: Element): AudioRecordingMode {
         let divAudioSentenceCount = 0;
         let spanAudioSentenceCount = 0;
@@ -1230,7 +1229,7 @@ export default class AudioRecording {
         const element = topTuple[0];
         const endTimeInSecs: number = topTuple[1];
 
-        this.setHighlightTo(
+        this.setHighlightToAsync(
             element,
             false // disableHighlightIfNoAudio: Should be false when playing sub-elements, because the highlighted sub-element doesn't have audio. The audio belongs to parent.
         );
@@ -2131,8 +2130,7 @@ export default class AudioRecording {
 
     // Entry point for TalkingBookTool's updateMarkup() function.
     public async moveCurrentAndUpdateMarkupAsync(): Promise<void> {
-        // TODO: Maybe you should consider doing the unprocessed recordables first.
-        // Then moveCurrent is more likely to have something to move to.
+        // Enhance: Consider doing the unprocessed recordables first. Then moveCurrent is more likely to have something to move to.
         this.moveCurrentTextboxIfNeeded();
 
         const numUnprocessedUpdated = this.updateMarkupForUnprocessedRecordables();
@@ -2172,11 +2170,13 @@ export default class AudioRecording {
     private updateMarkupForUnprocessedRecordables(): number {
         const currentTextBox = this.getCurrentTextBox();
         const recordableDivs = this.getRecordableDivs();
-        const unprocessedRecordables = recordableDivs.filter(
-            div =>
-                !this.isRecordableDivFullyInitialized(div) &&
+        const unprocessedRecordables = recordableDivs.filter(div => {
+            const recordable = new Recordable(div);
+            return (
+                !recordable.isRecordableDivFullyInitialized() &&
                 div != currentTextBox
-        );
+            );
+        });
 
         unprocessedRecordables.forEach(unprocessedRecordable => {
             const playbackMode = this.getPlaybackMode(unprocessedRecordable);
@@ -2211,14 +2211,12 @@ export default class AudioRecording {
         // That way, you don't have to make a BloomAPI call plus await it whenever you type in text
         const isPresent = await recordable.areRecordingsPresentAsync();
 
-        if (isPresent) {
-            // TODO: What do you actually do in this case?
-            toastr.warning("Editing is not allowed right now.");
+        if (!isPresent) {
+            this.updateMarkupForCurrentText(audioPlaybackMode);
         } else {
-            toastr.info("Calling updateMarkupForCurrentText()");
-            const numUpdated = this.updateMarkupForCurrentText(
-                audioPlaybackMode
-            );
+            // Just keep the code from changing the splits.
+            // No notification right now, which I think in many cases would be fine
+            // But if you want to add some notification UI, it can go here.
         }
 
         // We want to return 1 as long as current text box exists, even if we didn't update the markup on it.
@@ -2300,34 +2298,25 @@ export default class AudioRecording {
 
         // We don't want this stuff to run in unit tests, because it adds async behavior onto this function
         // and messes up any asynchronous test code.
-        // if (!(window as any).__karma__) {
-        //     // TODO: Is this repeated setting still necessary? By the end of version 4.5 it doesn't seem necessary anymore but hard to say for sure because it only triggers non-deterministically
-        //     let delayInMilliseconds = 20;
-        //     while (delayInMilliseconds < 1000) {
-        //         // Keep setting the current highlight for an additional roughly 1 second
-        //         setTimeout(() => {
-        //             if (currentTextBox) {
-        //                 this.setCurrentAudioElementBasedOnRecordingMode(
-        //                     currentTextBox
-        //                 );
-        //             }
-        //         }, delayInMilliseconds);
+        if (!(window as any).__karma__) {
+            // TODO: Is this repeated setting still necessary? By the end of version 4.5 it doesn't seem necessary anymore but hard to say for sure because it only triggers non-deterministically
+            // Version 4.9 development: still wasn't observed to be necessary.
+            let delayInMilliseconds = 20;
+            while (delayInMilliseconds < 1000) {
+                // Keep setting the current highlight for an additional roughly 1 second
+                setTimeout(() => {
+                    if (currentTextBox) {
+                        this.setCurrentAudioElementBasedOnRecordingMode(
+                            currentTextBox
+                        );
+                    }
+                }, delayInMilliseconds);
 
-        //         delayInMilliseconds *= 2;
-        //     }
-        // }
+                delayInMilliseconds *= 2;
+            }
+        }
 
         return numUpdated;
-    }
-
-    // BL-8425 Some cases were found where 'data-audioRecordingMode' was present, but 'audio-sentence' class
-    // didn't occur at all in that div or its children. So here we want to make sure that things get processed
-    // if they might be in a bad state.
-    private isRecordableDivFullyInitialized(div: Element): boolean {
-        // TODO: If you refactor its callers to work with Recordables directly, then you won't even need me.
-        return new Recordable(
-            div as HTMLDivElement
-        ).isRecordableDivFullyInitialized();
     }
 
     public setCurrentAudioElementBasedOnRecordingMode(

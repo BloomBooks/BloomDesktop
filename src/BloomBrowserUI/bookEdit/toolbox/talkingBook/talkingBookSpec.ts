@@ -180,9 +180,6 @@ describe("talking book tests", () => {
                 await tbTool.showTool();
 
                 // Verification
-                // const div = getFrameElementById("page", "div1")!;
-                // const expectedHtml = `${divStartHtml}<p>1.1၊ 1.2</p></div>`;
-                // expect(div.outerHTML).toBe(expectedHtml);
                 const paragraphs = getParagraphsOfTextBox("div1");
                 const innerHTMLs = paragraphs.map(p => p.innerHTML);
                 expect(innerHTMLs).toEqual(["1.1၊ 1.2"]);
