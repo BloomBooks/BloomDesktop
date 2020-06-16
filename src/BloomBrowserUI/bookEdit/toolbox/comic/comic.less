@@ -93,8 +93,6 @@
 #comicToolControlOptionsRegion {
     padding: @SideMargin @SideMargin 0 @SideMargin;
 
-    color: @bloom-toolboxWhite;
-
     // This corresponds to the wrapper div generated for each control within the form
     // It is also the parent flex container for each option
     .MuiFormControl-root {
@@ -230,24 +228,4 @@
     .MuiMenu-paper {
         min-width: calc(@toolboxWidth - 2 * @dropdownLeftMargin) !important;
     }
-    ul {
-        display: flex;
-        flex-direction: column;
-        .menuColorBar {
-            width: 100%;
-            height: 80%;
-            display: flex;
-            justify-content: center; // horizontal centering for optional text
-            &.newItem {
-                justify-content: start;
-            }
-            .MuiTypography-root {
-                align-self: center; // vertical centering for optional text
-            }
-        }
-    }
-}
-
-.bubbleOptionDropdown .MuiSelect-root {
-    padding-right: 40px; // separate color band from dropdown arrow
 }

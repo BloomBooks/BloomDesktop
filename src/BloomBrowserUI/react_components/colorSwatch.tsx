@@ -5,15 +5,14 @@ import * as tinycolor from "tinycolor2";
 
 // External definition of a color swatch
 export interface ISwatchDefn {
-    name: string;
     // Hex colors; We use an array here, so we can support gradients (top to bottom).
     colors: string[];
+    name: string;
     opacity?: number;
 }
 
 // More complete definition we need to pass in for handling swatch display.
 export interface IColorSwatch extends ISwatchDefn {
-    //index: number;
     tooltip: string;
     onClick: React.MouseEventHandler<IColorSwatch>;
 }
