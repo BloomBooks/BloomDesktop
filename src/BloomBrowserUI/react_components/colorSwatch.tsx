@@ -5,16 +5,14 @@ import * as tinycolor from "tinycolor2";
 
 // External definition of a color swatch
 export interface ISwatchDefn {
-    name: string;
     // Hex colors; We use an array here, so we can support gradients (top to bottom).
     colors: string[];
+    name?: string;
     opacity?: number;
 }
 
 // More complete definition we need to pass in for handling swatch display.
 export interface IColorSwatch extends ISwatchDefn {
-    //index: number;
-    tooltip: string;
     onClick: React.MouseEventHandler<IColorSwatch>;
 }
 
@@ -32,7 +30,6 @@ export const ColorSwatch: React.FunctionComponent<IColorSwatch> = (
     const swatchStyle: CSSProperties = {
         background: getBackgroundFromSwatch(props),
         boxShadow: "rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset",
-        zIndex: 1, // Necessary to get the tooltip to show on hover.
         position: "absolute",
         width: 20,
         height: 20
@@ -47,11 +44,7 @@ export const ColorSwatch: React.FunctionComponent<IColorSwatch> = (
     return (
         <div style={wrapperStyle} className="color-swatch">
             <Checkboard grey="#aaa" />
-            <div
-                style={swatchStyle}
-                title={props.tooltip}
-                onClick={handleSwatchClick}
-            />
+            <div style={swatchStyle} onClick={handleSwatchClick} />
         </div>
     );
 };

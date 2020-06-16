@@ -2,6 +2,10 @@ import {
     IConfirmDialogProps,
     showConfirmDialog as doShowConfirmDialog
 } from "../react_components/confirmDialog";
+import {
+    IColorPickerDialogProps,
+    showColorPickerDialog as doShowColorPickerDialog
+} from "../react_components/colorPickerDialog";
 import "jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 
 export function SayHello() {
@@ -147,10 +151,15 @@ export function canUndo(): string {
 // method called from EditingModel.cs
 // for "templatesJSON", see property EditingModel.GetJsonTemplatePageObject
 
-export function getConfirmDialogContainer(): HTMLElement | null {
-    return document.getElementById("confirm-dialog-container");
+// Only one modal dialog can be open at a time, so we'll just make space for one.
+export function getModalDialogContainer(): HTMLElement | null {
+    return document.getElementById("modal-dialog-container");
 }
 
 export function showConfirmDialog(props: IConfirmDialogProps): void {
     doShowConfirmDialog(props);
+}
+
+export function showColorPickerDialog(props: IColorPickerDialogProps): void {
+    doShowColorPickerDialog(props);
 }

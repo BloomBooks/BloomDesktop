@@ -86,6 +86,6 @@ export const showConfirmDialog = (
 const doRender = (props: IConfirmDialogProps, container?: Element | null) => {
     let modalContainer;
     if (container) modalContainer = container;
-    else modalContainer = getEditViewFrameExports().getConfirmDialogContainer();
+    else modalContainer = getEditViewFrameExports().getModalDialogContainer();
     ReactDOM.render(<ConfirmDialog {...props} />, modalContainer);
 };
