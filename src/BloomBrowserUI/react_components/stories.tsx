@@ -12,6 +12,10 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import PlaybackOrderControls from "./playbackOrderControls";
 import CustomColorPicker from "./customColorPicker";
 import { ISwatchDefn, getBackgroundFromSwatch } from "./colorSwatch";
+import {
+    showColorPickerDialog,
+    IColorPickerDialogProps
+} from "./colorPickerDialog";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -167,6 +171,7 @@ const confirmDialogProps: IConfirmDialogProps = {
         alert(dialogResult);
     }
 };
+
 storiesOf("Misc", module).add("ConfirmDialog", () =>
     React.createElement(() => (
         <div>
@@ -266,118 +271,178 @@ const chooserStyles: React.CSSProperties = {
     alignContent: "center"
 };
 
-storiesOf("Custom Color Chooser", module).add("Background/text color", () =>
-    React.createElement(() => {
-        const [chooserShowing, setChooserShowing] = useState(false);
-        const [backgroundChooser, setBackgroundChooser] = useState(true); // false is text chooser
+const initialOverDivStyles: React.CSSProperties = {
+    position: "absolute",
+    top: 10,
+    left: 15,
+    width: 120,
+    height: 70,
+    border: "1px solid red",
+    zIndex: 2,
+    background: "#fff"
+};
 
-        const initialOverDivStyles: React.CSSProperties = {
-            position: "absolute",
-            top: 10,
-            left: 15,
-            width: 120,
-            height: 70,
-            border: "1px solid red",
-            zIndex: 2,
-            background: "#fff"
-        };
-        const [overDivStyles, setOverDivStyles] = useState(
-            initialOverDivStyles
-        );
+const defaultSwatches: ISwatchDefn[] = [
+    { name: "white", colors: ["#ffffff"] },
+    { name: "grey", colors: ["#777777"] },
+    { name: "black", colors: ["#000000"] },
+    { name: "whiteToCalico", colors: ["white", "#DFB28B"] },
+    { name: "50%Portafino", colors: ["#7b8eb8"], opacity: 0.5 }
+];
 
-        const defaultSwatches: ISwatchDefn[] = [
-            { name: "white", colors: ["#ffffff"] },
-            { name: "grey", colors: ["#777777"] },
-            { name: "black", colors: ["#000000"] },
-            { name: "whiteToCalico", colors: ["white", "#DFB28B"] },
-            { name: "50%Portafino", colors: ["#7b8eb8"], opacity: 0.5 }
-        ];
-        const [
-            chooserCurrentBackgroundColor,
-            setChooserCurrentBackgroundColor
-        ] = useState(defaultSwatches[0]);
-        const [chooserCurrentTextColor, setChooserCurrentTextColor] = useState(
-            defaultSwatches[2]
-        );
-        const handleColorChange = (
-            color: ISwatchDefn,
-            colorIsBackground: boolean
-        ) => {
-            if (colorIsBackground) {
+storiesOf("Custom Color Chooser", module)
+    .add("Background/text color", () =>
+        React.createElement(() => {
+            const [chooserShowing, setChooserShowing] = useState(false);
+            const [backgroundChooser, setBackgroundChooser] = useState(true); // false is text chooser
+            const [overDivStyles, setOverDivStyles] = useState(
+                initialOverDivStyles
+            );
+            const [
+                chooserCurrentBackgroundColor,
+                setChooserCurrentBackgroundColor
+            ] = useState(defaultSwatches[0]);
+            const [
+                chooserCurrentTextColor,
+                setChooserCurrentTextColor
+            ] = useState(defaultSwatches[2]);
+            const handleColorChange = (
+                color: ISwatchDefn,
+                colorIsBackground: boolean
+            ) => {
+                if (colorIsBackground) {
+                    // set background color
+                    setOverDivStyles({
+                        ...overDivStyles,
+                        background: getBackgroundFromSwatch(color)
+                    });
+                    setChooserCurrentBackgroundColor(color);
+                } else {
+                    const textColor = color.colors[0]; // don't need gradients or opacity for text color
+                    // set text color
+                    setOverDivStyles({
+                        ...overDivStyles,
+                        color: textColor
+                    });
+                    setChooserCurrentTextColor(color);
+                }
+            };
+
+            return (
+                <div style={mainBlockStyles}>
+                    <div id="background-image" style={backDivStyles}>
+                        I am a background "image" with lots of text so we can
+                        test transparency.
+                    </div>
+                    <div id="set-my-background" style={overDivStyles}>
+                        Set my text and background colors with the buttons
+                    </div>
+                    <div
+                        style={{
+                            flexDirection: "row",
+                            display: "inline-flex",
+                            justifyContent: "space-around"
+                        }}
+                    >
+                        <BloomButton
+                            onClick={() => {
+                                setBackgroundChooser(true);
+                                setChooserShowing(!chooserShowing);
+                            }}
+                            enabled={true}
+                            hasText={true}
+                            l10nKey={"dummyKey"}
+                        >
+                            Background
+                        </BloomButton>
+                        <BloomButton
+                            onClick={() => {
+                                setBackgroundChooser(false);
+                                setChooserShowing(!chooserShowing);
+                            }}
+                            enabled={true}
+                            hasText={true}
+                            l10nKey={"dummyKey"}
+                        >
+                            Text
+                        </BloomButton>
+                    </div>
+                    {chooserShowing && (
+                        <div style={chooserStyles}>
+                            <CustomColorPicker
+                                onChange={color =>
+                                    handleColorChange(color, backgroundChooser)
+                                }
+                                currentColor={
+                                    backgroundChooser
+                                        ? chooserCurrentBackgroundColor
+                                        : chooserCurrentTextColor
+                                }
+                                swatchColors={defaultSwatches}
+                                noAlphaSlider={!backgroundChooser}
+                                noGradientSwatches={!backgroundChooser}
+                            />
+                        </div>
+                    )}
+                </div>
+            );
+        })
+    )
+    .add("Color Picker Dialog", () =>
+        React.createElement(() => {
+            const [overDivStyles, setOverDivStyles] = useState(
+                initialOverDivStyles
+            );
+            const [
+                chooserCurrentBackgroundColor,
+                setChooserCurrentBackgroundColor
+            ] = useState(defaultSwatches[0]);
+            const handleColorChange = (color: ISwatchDefn) => {
+                console.log("Color change:");
+                console.log(
+                    `  ${color.name}: ${color.colors[0]}, ${color.colors[1]}, ${
+                        color.opacity
+                    }`
+                );
                 // set background color
                 setOverDivStyles({
                     ...overDivStyles,
                     background: getBackgroundFromSwatch(color)
                 });
                 setChooserCurrentBackgroundColor(color);
-            } else {
-                const textColor = color.colors[0]; // don't need gradients or opacity for text color
-                // set text color
-                setOverDivStyles({
-                    ...overDivStyles,
-                    color: textColor
-                });
-                setChooserCurrentTextColor(color);
-            }
-        };
+            };
 
-        return (
-            <div style={mainBlockStyles}>
-                <div id="background-image" style={backDivStyles}>
-                    I am a background "image" with lots of text so we can test
-                    transparency.
-                </div>
-                <div id="set-my-background" style={overDivStyles}>
-                    Set my text and background colors with the buttons
-                </div>
-                <div
-                    style={{
-                        flexDirection: "row",
-                        display: "inline-flex",
-                        justifyContent: "space-around"
-                    }}
-                >
-                    <BloomButton
-                        onClick={() => {
-                            setBackgroundChooser(true);
-                            setChooserShowing(!chooserShowing);
-                        }}
-                        enabled={true}
-                        hasText={true}
-                        l10nKey={"dummyKey"}
-                    >
-                        Background
-                    </BloomButton>
-                    <BloomButton
-                        onClick={() => {
-                            setBackgroundChooser(false);
-                            setChooserShowing(!chooserShowing);
-                        }}
-                        enabled={true}
-                        hasText={true}
-                        l10nKey={"dummyKey"}
-                    >
-                        Text
-                    </BloomButton>
-                </div>
-                {chooserShowing && (
-                    <div style={chooserStyles}>
-                        <CustomColorPicker
-                            onChange={color =>
-                                handleColorChange(color, backgroundChooser)
-                            }
-                            currentColor={
-                                backgroundChooser
-                                    ? chooserCurrentBackgroundColor
-                                    : chooserCurrentTextColor
-                            }
-                            swatchColors={defaultSwatches}
-                            noAlphaSlider={!backgroundChooser}
-                            noGradientSwatches={!backgroundChooser}
-                        />
+            const colorPickerDialogProps: IColorPickerDialogProps = {
+                localizedTitle: "Custom Color Picker",
+                initialColor: chooserCurrentBackgroundColor,
+                defaultSwatchColors: defaultSwatches,
+                onChange: color => handleColorChange(color)
+            };
+
+            return (
+                <div style={mainBlockStyles}>
+                    <div id="background-image" style={backDivStyles}>
+                        I am a background "image" with lots of text so we can
+                        test transparency.
                     </div>
-                )}
-            </div>
-        );
-    })
-);
+                    <div id="set-my-background" style={overDivStyles}>
+                        Set my text and background colors with the button
+                    </div>
+                    <div id="modal-container" />
+                    <BloomButton
+                        onClick={() =>
+                            showColorPickerDialog(
+                                colorPickerDialogProps,
+                                document.getElementById("modal-container")
+                            )
+                        }
+                        enabled={true}
+                        hasText={true}
+                        l10nKey={"dummyKey"}
+                    >
+                        Open Color Picker Dialog
+                    </BloomButton>
+                </div>
+            );
+        })
+    );
