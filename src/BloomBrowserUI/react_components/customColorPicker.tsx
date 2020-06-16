@@ -25,7 +25,6 @@ export const CustomColorPicker: React.FunctionComponent<
     ICustomPicker
 > = props => {
     const [colorChoice, setColorChoice] = useState(props.currentColor);
-    const [nextCustomSwatchNumber, setNextCustomSwatchNumber] = useState(1);
 
     // Handler for when the user picks a color by manipulating the ChromePicker.
     // This handler may be 'hit' many times as sliders are manipulated, etc.
@@ -37,28 +36,9 @@ export const CustomColorPicker: React.FunctionComponent<
     };
 
     // Handler for when the user clicks on a swatch at the bottom of the picker.
-    const handleSwatchClick = (index: number) => (e: any) => {
-        const swatch = props.swatchColors[index];
+    const handleSwatchClick = (swatch: ISwatchDefn) => (e: any) => {
         setColorChoice(swatch);
         props.onChange(swatch);
-    };
-
-    const getNewCustomSwatchName = (): string => {
-        const nextNumber = nextCustomSwatchNumber;
-        setNextCustomSwatchNumber(nextNumber + 1);
-        return `Custom${nextNumber}`;
-    };
-
-    // Caller should keep track of whether the color picker is open or closed.
-    // When it is closing, caller should use this method to ask for the new final color,
-    // as this guarantees a "CustomN" name for the new Swatch.
-    // The new swatch should then find its way back into the props.swatchColors array for the next time.
-    const getFinalColorChosen = (): ISwatchDefn => {
-        const swatch = colorChoice;
-        if (swatch.name === "") {
-            swatch.name = getNewCustomSwatchName();
-        }
-        return swatch;
     };
 
     const getSwatchDefnFromColorResult = (
@@ -97,7 +77,7 @@ export const CustomColorPicker: React.FunctionComponent<
                         name={swatchDefn.name}
                         key={i}
                         tooltip={getToolTip(swatchDefn.name)}
-                        onClick={handleSwatchClick(i)}
+                        onClick={handleSwatchClick(swatchDefn)}
                         opacity={swatchDefn.opacity}
                     />
                 ))}
@@ -105,7 +85,7 @@ export const CustomColorPicker: React.FunctionComponent<
     );
 
     const getRgbOfCurrentSwatch = (): RGBColor => {
-        const currentSwatch = props.currentColor;
+        const currentSwatch = colorChoice;
         const rgbColor = tinycolor(currentSwatch.colors[0]).toRgb();
         rgbColor.a = currentSwatch.opacity ? currentSwatch.opacity : 1;
         return rgbColor;
@@ -122,18 +102,6 @@ export const CustomColorPicker: React.FunctionComponent<
             <div className="swatch-row">{getSwatchColors()}</div>
         </div>
     );
-};
-
-export const getSwatchFromHex = (
-    hexColor: string,
-    customName: string,
-    opacity?: number
-): ISwatchDefn => {
-    return {
-        name: customName,
-        colors: [hexColor],
-        opacity: opacity ? opacity : 1
-    };
 };
 
 export default CustomColorPicker;

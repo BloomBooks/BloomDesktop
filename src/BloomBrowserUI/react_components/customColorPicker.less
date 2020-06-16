@@ -1,6 +1,11 @@
+@chrome-picker-width: 225px;
+@swatch-margin: 8px;
+@swatch-row-left-pad: @swatch-margin;
+
 .custom-color-picker {
     height: 300px;
     display: flex;
+    width: max-content;
     flex-direction: column;
     box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 2px, rgba(0, 0, 0, 0.3) 0px 4px 8px;
     .chrome-picker {
@@ -11,10 +16,13 @@
         flex: 2;
         flex-direction: row;
         flex-wrap: wrap;
-        padding: 10px 0 0 8px;
+        padding: 0 0 0 @swatch-row-left-pad;
         .color-swatch {
-            margin-left: 7px;
+            margin: 0 0 @swatch-margin @swatch-margin;
         }
+        max-width: calc(
+            @chrome-picker-width - @swatch-row-left-pad - @swatch-margin
+        );
     }
 }
 
@@ -34,4 +42,9 @@
         bottom: 0;
         right: 0;
     }
+}
+
+.MuiDialogContent-root {
+    display: flex;
+    justify-content: center;
 }
