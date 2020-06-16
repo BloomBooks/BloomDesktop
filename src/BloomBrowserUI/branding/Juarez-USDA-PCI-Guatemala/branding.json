@@ -1,0 +1,11 @@
+{
+    "presets": [
+        {
+            "data-book": "credits-page-branding-top-html",
+            "lang": "*",
+            // note: we want the text to adopt the same styling as the other Spanish on the credits page, so we give this the right style and @lang attribute:
+            "content": "<img class='branding' src='Juarez-USDA-PCI-Guatemala.png'/><div class='Credits-Page-style' lang='es'><p>Este material fue elaborado gracias al apoyo financiero del Departamento de Agricultura de los Estados Unidos –USDA-, bajo convenio de cooperación número FFE-520-2016/008-00. Sin embargo, no refleja necesariamente las opiniones o políticas del Departamento de Agricultura de los Estados Unidos, tampoco supone la aprobación del Gobierno de los Estados Unidos a las referencias a marcas, productos comerciales u organizaciones.</p></div>",
+            "condition": "always"
+        }
+    ]
+}
