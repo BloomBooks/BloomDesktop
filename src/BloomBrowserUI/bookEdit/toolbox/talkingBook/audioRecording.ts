@@ -1799,6 +1799,7 @@ export default class AudioRecording {
             // We can't allowUpdateOfCurrent = true at this point (while updating the playback mode) because moving the highlight while certain other operations are ongoing leads to really unintuitive and confusing end results
             // So just force the operation to apply to whatever the Current Highlight points at right now.
             this.updateMarkupForCurrentText(AudioRecordingMode.Sentence);
+            this.resetCurrentAudioElement();
 
             // Enhance: Maybe could be Play if the current sentence already has text available?
             // Enhance: Maybe this function could have a Fallback optional parameter. And it would try to set Play, but switch to Record if not available.
@@ -2219,6 +2220,12 @@ export default class AudioRecording {
             // But if you want to add some notification UI, it can go here.
         }
 
+        // Regardless of whether it's present, we always need to set the current audio element
+        // Obviously, when we update current markup, we normally set the current audio element afterward too.
+        // The tricky case is when opening a hard split (version 4.5) book that has existing audio.
+        // updateMarkupForCurrentText() does not run, but we still need it to move the current audio element.
+        this.resetCurrentAudioElement(currentTextBox);
+
         // We want to return 1 as long as current text box exists, even if we didn't update the markup on it.
         return 1;
     }
@@ -2250,7 +2257,7 @@ export default class AudioRecording {
         // * Adjust the Current Highlight appropriately.
         // * (keep adjusting the current highlight to) fight with timing issues
 
-        let currentTextBox = this.getCurrentTextBox();
+        const currentTextBox = this.getCurrentTextBox();
 
         this.isShowing = true;
 
@@ -2270,14 +2277,28 @@ export default class AudioRecording {
             numUpdated = 1;
         }
 
-        if (!currentTextBox) {
-            currentTextBox = this.setCurrentAudioElementToFirstAudioElement();
+        return numUpdated;
+    }
+
+    private resetCurrentAudioElement(
+        currentTextBox?: HTMLElement | null
+    ): void {
+        if (currentTextBox === undefined) {
+            currentTextBox = this.getCurrentTextBox();
         }
 
-        if (currentTextBox) {
+        if (!currentTextBox) {
+            currentTextBox = this.setCurrentAudioElementToFirstAudioElement();
+        } else {
             // This synchronous call probably makes the flashing problem even more likely compared to delaying it but I think it is helpful if the state is being rapidly modified.
             this.setCurrentAudioElementBasedOnRecordingMode(currentTextBox); // TODO: Probably not actually necessary to re-apply every time. Refactor it elsewhere.
         }
+
+        // The below section of code is believed to be no longer necessary
+        // * By the end of version 4.5 it doesn't seem necessary anymore but hard to say for sure because it only triggers non-deterministically
+        // * Version 4.9 development: still wasn't observed to be necessary.
+        // * Another version 4.9 test: 60 times in a row with no problem and no flash without this code.
+        // TODO: Maybe we can try deleting this code in Version 4.10
 
         // Note: Marking up the Current Element needs to happen after CKEditor's onload() fully finishes.  (onload sets the HTML of the bloom-editable to its original value, so it can wipe out any changes made to the original value).
         //   There is a race condition as to which one finishes first.  We need to  finish AFTER Ckeditor's onload()
@@ -2298,25 +2319,21 @@ export default class AudioRecording {
 
         // We don't want this stuff to run in unit tests, because it adds async behavior onto this function
         // and messes up any asynchronous test code.
-        if (!(window as any).__karma__) {
-            // TODO: Is this repeated setting still necessary? By the end of version 4.5 it doesn't seem necessary anymore but hard to say for sure because it only triggers non-deterministically
-            // Version 4.9 development: still wasn't observed to be necessary.
-            let delayInMilliseconds = 20;
-            while (delayInMilliseconds < 1000) {
-                // Keep setting the current highlight for an additional roughly 1 second
-                setTimeout(() => {
-                    if (currentTextBox) {
-                        this.setCurrentAudioElementBasedOnRecordingMode(
-                            currentTextBox
-                        );
-                    }
-                }, delayInMilliseconds);
+        // if (!(window as any).__karma__) {
+        //     let delayInMilliseconds = 20;
+        //     while (delayInMilliseconds < 1000) {
+        //         // Keep setting the current highlight for an additional roughly 1 second
+        //         setTimeout(() => {
+        //             if (currentTextBox) {
+        //                 this.setCurrentAudioElementBasedOnRecordingMode(
+        //                     currentTextBox
+        //                 );
+        //             }
+        //         }, delayInMilliseconds);
 
-                delayInMilliseconds *= 2;
-            }
-        }
-
-        return numUpdated;
+        //         delayInMilliseconds *= 2;
+        //     }
+        // }
     }
 
     public setCurrentAudioElementBasedOnRecordingMode(
@@ -2431,7 +2448,19 @@ export default class AudioRecording {
         }
 
         const firstSentence = firstSentenceArray[0];
-        this.setSoundAndHighlight(firstSentence);
+
+        // If in Hard Split mode, should actually set it to the Text Box, not the Sentence.
+        let nextHighlight: Element = firstSentence;
+        const textBoxOfFirst = this.getTextBoxOfElement(firstSentence);
+        if (textBoxOfFirst) {
+            const textBoxRecordingMode = this.getRecordingModeOfTextBox(
+                textBoxOfFirst
+            );
+            if (textBoxRecordingMode === AudioRecordingMode.TextBox) {
+                nextHighlight = textBoxOfFirst;
+            }
+        }
+        this.setSoundAndHighlight(nextHighlight);
 
         // In Sentence/Sentence mode: OK to move.
         // Text/Sentence mode: Ok to swap.

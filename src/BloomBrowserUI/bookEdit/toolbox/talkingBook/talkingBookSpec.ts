@@ -227,7 +227,7 @@ describe("talking book tests", () => {
         it("[TextBox/Sentence Hard Split] showTool() should NOT update sentence splits if recordings do exist", async done => {
             try {
                 const divStartHtml =
-                    '<div class="bloom-editable ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox">';
+                    '<div class="bloom-editable" id="div1" data-audiorecordingmode="TextBox">';
                 const divInnerHtml =
                     '<p><span class="audio-sentence">1.1၊</span> <span class="audio-sentence">1.2</span></p>';
                 const divHtml = `${divStartHtml}${divInnerHtml}</div>`;
@@ -247,6 +247,11 @@ describe("talking book tests", () => {
                     return elem.innerText;
                 });
                 expect(texts).toEqual(["1.1၊", "1.2"]);
+
+                const div = getFrameElementById("page", "div1");
+                expect(div).toHaveClass("ui-audioCurrent");
+                expect(spans[0]).not.toHaveClass("ui-audioCurrent");
+
                 done();
             } catch (error) {
                 fail(error);
