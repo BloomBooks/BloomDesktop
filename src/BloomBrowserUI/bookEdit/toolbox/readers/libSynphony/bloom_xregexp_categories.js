@@ -28,7 +28,6 @@ export function setSentenceEndingPunctuationForBloom() {
      * \u0702 = Syriac Sublinear Full Stop
      * \u0964 = Devanagari Danda
      * \u0965 = Devanagari Double Danda
-     * \u104A = Myanmar Sign Little Section
      * \u104B = Myanmar Sign Section
      * \u1362 = Ethiopic Full Stop
      * \u1367 = Ethiopic Question Mark
@@ -62,7 +61,7 @@ export function setSentenceEndingPunctuationForBloom() {
             name: "SEP",
             alias: "Sentence_Ending_Punctuation",
             bmp:
-                "\u0021\u002e\u003f\u055c\u055e\u0589\u061f\u06d4\u0700\u0701\u0702\u0964\u0965\u104a\u104b\u1362\u1367\u1368\u166e\u1803\u1809\u1944\u1945\u203c\u203d\u2047\u2048\u2049\u3002\ufe52\ufe56\ufe57\uff01\uff0e\uff1f\uff61\u00a7"
+                "\u0021\u002e\u003f\u055c\u055e\u0589\u061f\u06d4\u0700\u0701\u0702\u0964\u0965\u104b\u1362\u1367\u1368\u166e\u1803\u1809\u1944\u1945\u203c\u203d\u2047\u2048\u2049\u3002\ufe52\ufe56\ufe57\uff01\uff0e\uff1f\uff61\u00a7"
         }
     ]);
 }
