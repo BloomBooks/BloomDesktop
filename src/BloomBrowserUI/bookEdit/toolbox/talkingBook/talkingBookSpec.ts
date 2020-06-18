@@ -42,7 +42,7 @@ describe("talking book tests", () => {
             div2Element.focus();
 
             // System under test - TalkingBook.updateMarkup() is called after typing
-            tbTool.updateMarkup();
+            await tbTool.updateMarkup();
 
             // Verification
             const currentTextBox = theOneAudioRecorder.getCurrentTextBox()!;

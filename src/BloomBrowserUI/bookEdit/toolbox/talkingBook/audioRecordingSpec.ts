@@ -227,22 +227,24 @@ describe("audio recording tests", () => {
     });
 
     describe("- PlayingMultipleAudio()", () => {
-        it("returns true while in listen to whole page with multiple text boxes", () => {
+        it("returns true while in listen to whole page with multiple text boxes", async done => {
             SetupIFrameFromHtml(
                 "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div>"
             );
             const recording = new AudioRecording();
-            recording.listen();
+            await recording.listenAsync();
             expect(recording.playingAudio()).toBe(true);
+            done();
         });
 
-        it("returns true while in listen to whole page with only one box", () => {
+        it("returns true while in listen to whole page with only one box", async done => {
             SetupIFrameFromHtml(
                 "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div></div>"
             );
             const recording = new AudioRecording();
-            recording.listen();
+            await recording.listenAsync();
             expect(recording.playingAudio()).toBe(true);
+            done();
         });
 
         it("returns false while preloading", () => {
@@ -1087,7 +1089,7 @@ describe("audio recording tests", () => {
     });
 
     describe("- updateRecordingMode()", () => {
-        it("URM(): converts from RecordSentence/PlaySentence to RecordTextBox/PlaySentence", () => {
+        it("URM(): converts from RecordSentence/PlaySentence to RecordTextBox/PlaySentence", async done => {
             const textBoxDivHtml =
                 '<div id="textBox1" class="bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style cke_editable cke_editable_inline cke_contents_ltr" data-languagetipcontent="English" data-audiorecordingmode="Sentence" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" lang="en" contenteditable="true">';
             const paragraphsMarkedBySentenceHtml =
@@ -1102,7 +1104,13 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, updateRecordingMode() will flip the state
-            recording.updateRecordingMode();
+            try {
+                await recording.updateRecordingModeAsync();
+            } catch (error) {
+                fail(error);
+                done();
+                return;
+            }
 
             // Tests of the state
             expect(recording.audioRecordingMode).toBe(
@@ -1141,9 +1149,11 @@ describe("audio recording tests", () => {
                     .find(".ui-audioCurrent")
                     .text()
             ).toBe("Sentence 1. Sentence 2.", "Current text box text");
+
+            done();
         });
 
-        it("URM(): converts from RecordTextBox/PlaySentence to RecordSentence/PlaySentence", () => {
+        it("URM(): converts from RecordTextBox/PlaySentence to RecordSentence/PlaySentence", async done => {
             const textBoxDivHtml =
                 '<div id="textBox1" class="bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style cke_editable cke_editable_inline cke_contents_ltr ui-audioCurrent" data-languagetipcontent="English" data-audiorecordingmode="TextBox" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" lang="en" contenteditable="true">';
             const paragraphsMarkedBySentenceHtml =
@@ -1158,7 +1168,13 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox; // Should be the old state, updateRecordingMode() will flip the state
-            recording.updateRecordingMode();
+            try {
+                await recording.updateRecordingModeAsync();
+            } catch (error) {
+                fail(error);
+                done();
+                return;
+            }
 
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence
@@ -1197,9 +1213,11 @@ describe("audio recording tests", () => {
                     .find(".ui-audioCurrent")
                     .text()
             ).toBe("Sentence 1.", "Current sentence text");
+
+            done();
         });
 
-        it("URM(): converts from RecordTextBox/PlayTextBox to RecordSentence/PlaySentence", () => {
+        it("URM(): converts from RecordTextBox/PlayTextBox to RecordSentence/PlaySentence", async done => {
             const textBoxDivHtml =
                 '<div id="textBox1" class="audio-sentence ui-audioCurrent bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style cke_editable cke_editable_inline cke_contents_ltr ui-audioCurrent" data-languagetipcontent="English" data-audiorecordingmode="TextBox" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" lang="en" contenteditable="true">';
             const paragraphHtml = "<p>Sentence 1. Sentence 2.<br></p>";
@@ -1213,7 +1231,13 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox; // Should be the old state, updateRecordingMode() will flip the state
-            recording.updateRecordingMode();
+            try {
+                await recording.updateRecordingModeAsync();
+            } catch (error) {
+                fail(error);
+                done();
+                return;
+            }
 
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence
@@ -1257,6 +1281,8 @@ describe("audio recording tests", () => {
                     .find(".ui-audioCurrent")
                     .text()
             ).toBe("Sentence 1.", "Current sentence text");
+
+            done();
         });
     });
 

@@ -175,7 +175,7 @@ export default class AudioRecording {
             .click(e => this.moveToNextAudioElement());
         $("#audio-prev")
             .off()
-            .click(e => this.moveToPrevAudioElement());
+            .click(e => this.moveToPrevAudioElementAsync());
         $("#audio-record")
             .off()
             .mousedown(e => this.startRecordCurrent())
@@ -185,7 +185,7 @@ export default class AudioRecording {
             .click(e => {
                 if (!e.ctrlKey) {
                     // Normal case
-                    this.playCurrent();
+                    this.playCurrentAsync();
                 } else {
                     // Control + Click case: Special debug mode
                     this.playESpeakPreview();
@@ -198,7 +198,7 @@ export default class AudioRecording {
 
         $("#audio-listen")
             .off()
-            .click(e => this.listen());
+            .click(e => this.listenAsync());
         $("#audio-clear")
             .off()
             .click(e => this.clearRecording());
@@ -213,7 +213,7 @@ export default class AudioRecording {
         $("#player").bind("error", e => {
             if (this.playingAudio()) {
                 // during a "listen", we walk through each segment, but some (or all) may not have audio
-                this.playEnded(); //move to the next one
+                this.playEndedAsync(); //move to the next one
             } else if (this.awaitingNewRecording) {
                 // file may not have been created yet. Try again.
                 this.updatePlayerStatus();
@@ -225,7 +225,7 @@ export default class AudioRecording {
             // but it seems very unlikely.
         });
 
-        $("#player").bind("ended", e => this.playEnded());
+        $("#player").bind("ended", e => this.playEndedAsync());
         $("#player").bind("durationchange", e => this.durationChanged());
         $("#audio-input-dev")
             .off()
@@ -422,10 +422,10 @@ export default class AudioRecording {
     }
 
     public setupForListen() {
-        $("#player").bind("ended", e => this.playEnded());
+        $("#player").bind("ended", e => this.playEndedAsync());
         $("#player").bind("error", e => {
             // during a "listen", we walk through each segment, but some (or all) may not have audio
-            this.playEnded(); //move to the next one
+            this.playEndedAsync(); //move to the next one
         });
     }
 
@@ -631,21 +631,23 @@ export default class AudioRecording {
         );
     }
 
-    private moveToNextAudioElement(): void {
+    private async moveToNextAudioElement(): Promise<void> {
         toastr.clear();
 
         const next = this.getNextAudioElement();
         if (!next) return;
-        this.setSoundAndHighlight(next);
-        this.changeStateAndSetExpectedAsync("record");
+
+        await this.setSoundAndHighlightAsync(next);
+        return this.changeStateAndSetExpectedAsync("record");
     }
 
-    private moveToPrevAudioElement(): void {
+    private async moveToPrevAudioElementAsync(): Promise<void> {
         toastr.clear();
         const prev = this.getPreviousAudioElement();
         if (prev == null) return;
-        this.setSoundAndHighlight(prev);
-        this.changeStateAndSetExpectedAsync("record"); // Enhance: I think it'd actually be better to dynamically assign Expected based on what audio is available etc., instead of based on state transitions. Especially when doing Prev.
+
+        await this.setSoundAndHighlightAsync(prev);
+        return this.changeStateAndSetExpectedAsync("record"); // Enhance: I think it'd actually be better to dynamically assign Expected based on what audio is available etc., instead of based on state transitions. Especially when doing Prev.
     }
 
     // Gets the next audio element to be recorded
@@ -817,13 +819,13 @@ export default class AudioRecording {
         }
     }
 
-    public setSoundAndHighlight(
+    public async setSoundAndHighlightAsync(
         elementToChangeTo: Element,
         disableHighlightIfNoAudio?: boolean,
         currentElement: Element | null | undefined = undefined // Optional. Provides some minor optimization if set.
-    ): void {
+    ): Promise<void> {
         // Note: setHighlightTo() should be run first so that ui-audioCurrent points to the correct element when setSoundFrom() is run.
-        this.setHighlightToAsync(
+        await this.setHighlightToAsync(
             elementToChangeTo,
             disableHighlightIfNoAudio,
             currentElement
@@ -849,6 +851,10 @@ export default class AudioRecording {
         // Get rid of all the audio-currents just to be sure.
         this.removeAudioCurrentFromPageDocBody();
 
+        if (!this.showPlaybackInput.checked) {
+            newElement.classList.add(kAudioCurrent);
+        }
+
         if (disableHighlightIfNoAudio) {
             newElement.classList.add("disableHighlight"); // prevents highlight showing at once
             try {
@@ -865,10 +871,6 @@ export default class AudioRecording {
                     "Error checking on audio file " + error.statusText
                 );
             }
-        }
-
-        if (!this.showPlaybackInput.checked) {
-            newElement.classList.add(kAudioCurrent);
         }
     }
 
@@ -904,7 +906,8 @@ export default class AudioRecording {
     }
 
     private urlPrefix(): string {
-        const bookSrc = this.getPageFrame().src;
+        const pageFrame = this.getPageFrame()!; // Note: Just fail fast if it's null.
+        const bookSrc = pageFrame.src;
         const index = bookSrc.lastIndexOf("/");
         const bookFolderUrl = bookSrc.substring(0, index + 1);
         return "/bloom/api/audio/wavFile?id=" + bookFolderUrl + "audio/";
@@ -1123,7 +1126,7 @@ export default class AudioRecording {
         }
     }
 
-    private playCurrent(): void {
+    private async playCurrentAsync(): Promise<void> {
         toastr.clear();
 
         if (!this.isEnabledOrExpected("play")) {
@@ -1157,7 +1160,7 @@ export default class AudioRecording {
             }
         }
 
-        this.setSoundAndHighlight(
+        await this.setSoundAndHighlightAsync(
             this.elementsToPlayConsecutivelyStack[
                 this.elementsToPlayConsecutivelyStack.length - 1
             ],
@@ -1165,16 +1168,16 @@ export default class AudioRecording {
         );
         this.removeExpectedStatusFromAll();
         this.setStatus("play", Status.Active);
-        this.playCurrentInternal();
+        return this.playCurrentInternalAsync();
     }
 
-    private playCurrentInternal() {
+    private async playCurrentInternalAsync(): Promise<void> {
         const mediaPlayer = <HTMLMediaElement>document.getElementById("player");
         if (mediaPlayer.error) {
             // We can no longer rely on the error event occurring after play() is called.
             // If we pre-load audio, the error event occurs on load (which will be before play).
             // So, we check the .error property to see if an error already occurred and if so, skip past the play straight to the playEnded() which is supposed to be called on error.
-            this.playEnded(); // Will also start playing the next audio to play.
+            return this.playEndedAsync(); // Will also start playing the next audio to play.
         } else {
             const currentTextBox = this.getCurrentTextBox();
             if (!currentTextBox) {
@@ -1299,7 +1302,8 @@ export default class AudioRecording {
     }
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
-    public listen(): void {
+    // Returns a promise that is fulfilled when the play has been STARTED (not completed).
+    public async listenAsync(): Promise<void> {
         this.elementsToPlayConsecutivelyStack = jQuery
             .makeArray(this.sortByTabindex(this.getAudioElements()))
             .reverse();
@@ -1312,9 +1316,9 @@ export default class AudioRecording {
             stackSize - 1
         ]; // Remember to pop it when you're done playing it. (i.e., in playEnded)
 
-        this.setSoundAndHighlight(firstElementToPlay, true);
+        await this.setSoundAndHighlightAsync(firstElementToPlay, true);
         this.setStatus("listen", Status.Active);
-        this.playCurrentInternal();
+        return this.playCurrentInternalAsync();
     }
 
     // This is currently used in Motion, which removes all the current
@@ -1324,7 +1328,7 @@ export default class AudioRecording {
         (<HTMLMediaElement>document.getElementById("player")).pause();
     }
 
-    private playEnded(): void {
+    private async playEndedAsync(): Promise<void> {
         if (
             this.elementsToPlayConsecutivelyStack &&
             this.elementsToPlayConsecutivelyStack.length > 0
@@ -1336,9 +1340,12 @@ export default class AudioRecording {
                 const nextElement = this.elementsToPlayConsecutivelyStack[
                     newStackCount - 1
                 ];
-                this.setSoundAndHighlight(nextElement, true, currentElement);
-                this.playCurrentInternal();
-                return;
+                await this.setSoundAndHighlightAsync(
+                    nextElement,
+                    true,
+                    currentElement
+                );
+                return this.playCurrentInternalAsync();
             } else {
                 // Nothing left to play
                 this.elementsToPlayConsecutivelyStack = [];
@@ -1353,7 +1360,7 @@ export default class AudioRecording {
                         "CurrentTextBox not expected to be null"
                     );
                     if (currentTextBox) {
-                        this.setCurrentAudioElementBasedOnRecordingMode(
+                        await this.setCurrentAudioElementBasedOnRecordingModeAsync(
                             currentTextBox,
                             false
                         );
@@ -1369,7 +1376,7 @@ export default class AudioRecording {
         // Change state to "Split" if possible but fallback to Next if not.
         // TODO: Maybe we should fallback to Listen to Whole Page if Next is not available (A.k.a. you just checked the last thing)
         //  What if you reached here by listening to the whole page? Does it matter that we'll push them toward listening to it again?
-        this.changeStateAndSetExpectedAsync("split");
+        return this.changeStateAndSetExpectedAsync("split");
     }
 
     private selectInputDevice(): void {
@@ -1686,6 +1693,7 @@ export default class AudioRecording {
         this.renderPlaybackControls();
     }
 
+    // NOTE: This function kicks off some async work, but doesn't await them. (yet?)
     private removePlaybackOrderUi(
         docBody: HTMLElement,
         leaveChecked: boolean = false
@@ -1702,7 +1710,7 @@ export default class AudioRecording {
             this.showPlaybackInput.checked = false;
             this.updateButtonStateAsync("check");
         }
-        this.setCurrentAudioElementToFirstAudioElement();
+        this.setCurrentAudioElementToFirstAudioElementAsync();
     }
 
     private getVisibleTranslationGroups(
@@ -1755,7 +1763,7 @@ export default class AudioRecording {
     }
 
     // Update the input element (e.g. checkbox) which visually represents the recording mode and updates the textbox markup to reflect the new mode.
-    public updateRecordingMode(forceOverwrite: boolean = false) {
+    public async updateRecordingModeAsync(forceOverwrite: boolean = false) {
         // Check if there are any audio recordings present.
         //   If so, these would become invalidated (and deleted down the road when the book's unnecessary files gets cleaned up)
         //   Warn the user if this deletion could happen
@@ -1784,6 +1792,7 @@ export default class AudioRecording {
         }
 
         // Update the collection's default recording span mode to the new value
+        // Note: We don't actually await the completion of this work.
         BloomApi.postJson(
             "talkingBook/defaultAudioRecordingMode",
             this.audioRecordingMode
@@ -1801,11 +1810,11 @@ export default class AudioRecording {
             this.updateMarkupForCurrentText(AudioRecordingMode.Sentence);
             this.resetCurrentAudioElement();
 
+            this.clearAudioSplit();
+
             // Enhance: Maybe could be Play if the current sentence already has text available?
             // Enhance: Maybe this function could have a Fallback optional parameter. And it would try to set Play, but switch to Record if not available.
-            this.changeStateAndSetExpectedAsync("record");
-
-            this.clearAudioSplit();
+            return this.changeStateAndSetExpectedAsync("record");
         } else {
             // From Sentence -> TextBox, we don't convert the playback mode.
             // (since until/unless the user actually makes a new whole-text-box recording, we actually still have by-sentence recordings we can play)
@@ -1813,8 +1822,10 @@ export default class AudioRecording {
             const currentTextBox = this.getCurrentTextBox();
             if (currentTextBox) {
                 this.persistRecordingMode(currentTextBox);
-                this.setCurrentAudioElementBasedOnRecordingMode(currentTextBox);
-                this.changeStateAndSetExpectedAsync("record");
+                await this.setCurrentAudioElementBasedOnRecordingModeAsync(
+                    currentTextBox
+                );
+                return this.changeStateAndSetExpectedAsync("record");
             }
         }
     }
@@ -1863,7 +1874,7 @@ export default class AudioRecording {
             // Note: In the future, if the click handler is no longer used, just assign the same onClick function() to the checkbox itself.
             $("#" + kRecordingModeClickHandler)
                 .off()
-                .click(e => this.updateRecordingMode());
+                .click(e => this.updateRecordingModeAsync());
         }
     }
 
@@ -1918,19 +1929,21 @@ export default class AudioRecording {
             });
     }
 
-    public getPageFrame(): HTMLIFrameElement {
-        // Precondition: We assume that the page is always there. So far, hasn't seem like it's caused trouble yet.
-        return <HTMLIFrameElement>(
-            parent.window.document.getElementById("page")!
+    // Gets the "page" iframe. May return null is the iframe doesn't exist.
+    public getPageFrame(): HTMLIFrameElement | null {
+        // Enhance: Maybe should just use the version in bloomFrames.ts instead?
+        //   (we could add an async version there that would return a promise which is fulfilled when the frame becomes available AND loaded.)
+        return <HTMLIFrameElement | null>(
+            parent.window.document.getElementById("page")
         );
     }
 
     // The body of the editable page, a root for searching for document content.
-    public getPageDocBody(): HTMLElement {
-        // ENHANCE: On 2020-06-08, the return type was changed from HTMLElement to HTML.
-        // If this proves not problematic, then you simplify its callers to not bother checking for null.
+    public getPageDocBody(): HTMLElement | null {
+        // ENHANCE: What if the iFrame is there but hasn't finished loading yet? (Which will wipe contentWindow.document)
         const page = this.getPageFrame();
-        return page.contentWindow!.document.body;
+        if (!page || !page.contentWindow) return null;
+        return page.contentWindow.document.body;
     }
 
     // The body of the editable page, a root for searching for document content.
@@ -1945,9 +1958,10 @@ export default class AudioRecording {
     public getCurrentHighlight(): HTMLElement | null {
         let page = this.getPageDocBodyJQuery();
 
+        // ENHANCE: I don't think this really needs to be here?
         if (page.length <= 0) {
             // The first one is probably the right one when this case is triggered, but even if not, it's better than nothing.
-            this.setCurrentAudioElementToFirstAudioElement();
+            this.setCurrentAudioElementToFirstAudioElementAsync();
             page = this.getPageDocBodyJQuery();
         }
 
@@ -2027,7 +2041,7 @@ export default class AudioRecording {
 
         if (audioCurrentElements.length === 0) {
             // Oops, ui-audioCurrent not set on anything. Just going to have to stick it onto the first element.
-            this.setCurrentAudioElementToFirstAudioElement();
+            this.setCurrentAudioElementToFirstAudioElementAsync();
             audioCurrentElements = pageBody.getElementsByClassName(
                 kAudioCurrent
             );
@@ -2061,7 +2075,7 @@ export default class AudioRecording {
 
     // Determines which element should receive the Current Highlight
     //   (Notably, checks to see if we should move from the existing Current Highlight (determined via CSS classes) to the actively focused element instead.)
-    private getWhichTextBoxShouldReceiveHighlight(): HTMLElement | null {
+    private async getWhichTextBoxShouldReceiveHighlightAsync(): Promise<HTMLElement | null> {
         const pageFrame = this.getPageFrame();
 
         // Determine which element should receive the current highlight
@@ -2080,7 +2094,7 @@ export default class AudioRecording {
             if (currentTextBox) {
                 return currentTextBox;
             } else {
-                return this.setCurrentAudioElementToFirstAudioElement();
+                return await this.setCurrentAudioElementToFirstAudioElementAsync();
             }
         }
     }
@@ -2090,7 +2104,7 @@ export default class AudioRecording {
     // This happens even if audioRecordingMode=Sentence. It is caller's responsibility to either ensure that this operation is valid,
     // or to be able to handle the resulting state (possibly in Sentence mode but a div is selected), for example by calling updateMarkupForCurrentText() to re-update the state.
     private moveCurrentHighlightToTextBox(newSelectedTextBox): void {
-        this.setSoundAndHighlight(newSelectedTextBox);
+        this.setSoundAndHighlightAsync(newSelectedTextBox);
     }
 
     public newPageReady() {
@@ -2132,7 +2146,7 @@ export default class AudioRecording {
     // Entry point for TalkingBookTool's updateMarkup() function.
     public async moveCurrentAndUpdateMarkupAsync(): Promise<void> {
         // Enhance: Consider doing the unprocessed recordables first. Then moveCurrent is more likely to have something to move to.
-        this.moveCurrentTextboxIfNeeded();
+        await this.moveCurrentTextboxIfNeededAsync();
 
         const numUnprocessedUpdated = this.updateMarkupForUnprocessedRecordables();
 
@@ -2153,9 +2167,9 @@ export default class AudioRecording {
     // We have a bit of a chicken and egg problem here. The new recording mode still needs to be determined, and the audio-sentence markup is not applied yet either,
     // but it's easier to determine the recording mode and apply the audio-sentence markup if we move the current highlight first than vice-versa.
     // Calling InitializeForMarkup (called by updateMarkupForCurrentText) and updateMarkupForCurrentText should get us back into a 100% valid state.
-    private moveCurrentTextboxIfNeeded(): void {
+    private async moveCurrentTextboxIfNeededAsync(): Promise<void> {
         const currentTextBox = this.getCurrentTextBox();
-        const selectedTextBox = this.getWhichTextBoxShouldReceiveHighlight();
+        const selectedTextBox = await this.getWhichTextBoxShouldReceiveHighlightAsync();
 
         // Enhance: it would be nice/significantly more intuitive if this (or a stripped-down version that just moves the highlight/audio recording mode) could run when the mouse focus changes.
         if (currentTextBox != selectedTextBox) {
@@ -2280,18 +2294,20 @@ export default class AudioRecording {
         return numUpdated;
     }
 
-    private resetCurrentAudioElement(
+    private async resetCurrentAudioElement(
         currentTextBox?: HTMLElement | null
-    ): void {
+    ): Promise<void> {
         if (currentTextBox === undefined) {
             currentTextBox = this.getCurrentTextBox();
         }
 
         if (!currentTextBox) {
-            currentTextBox = this.setCurrentAudioElementToFirstAudioElement();
+            currentTextBox = await this.setCurrentAudioElementToFirstAudioElementAsync();
         } else {
             // This synchronous call probably makes the flashing problem even more likely compared to delaying it but I think it is helpful if the state is being rapidly modified.
-            this.setCurrentAudioElementBasedOnRecordingMode(currentTextBox); // TODO: Probably not actually necessary to re-apply every time. Refactor it elsewhere.
+            return this.setCurrentAudioElementBasedOnRecordingModeAsync(
+                currentTextBox
+            ); // TODO: Probably not actually necessary to re-apply every time. Refactor it elsewhere.
         }
 
         // The below section of code is believed to be no longer necessary
@@ -2336,10 +2352,10 @@ export default class AudioRecording {
         // }
     }
 
-    public setCurrentAudioElementBasedOnRecordingMode(
+    public async setCurrentAudioElementBasedOnRecordingModeAsync(
         element: Element,
         isEarlyAbortEnabled: boolean = false
-    ) {
+    ): Promise<void> {
         if (isEarlyAbortEnabled && !this.isShowing) {
             // e.g., the tool was closed during the timeout interval. We must not apply any markup
             return;
@@ -2374,7 +2390,11 @@ export default class AudioRecording {
         }
         const changeTo = this.getTextBoxOfElement(element);
         if (changeTo) {
-            this.setSoundAndHighlight(changeTo, undefined, audioCurrent);
+            return this.setSoundAndHighlightAsync(
+                changeTo,
+                undefined,
+                audioCurrent
+            );
         }
     }
 
@@ -2423,11 +2443,12 @@ export default class AudioRecording {
         }
 
         if (changeTo) {
-            this.setSoundAndHighlight(changeTo);
+            // ENHANCE: Maybe async/await this
+            this.setSoundAndHighlightAsync(changeTo);
         }
     }
 
-    public setCurrentAudioElementToFirstAudioElement(): HTMLElement | null {
+    public async setCurrentAudioElementToFirstAudioElementAsync(): Promise<HTMLElement | null> {
         const pageDocBody = this.getPageDocBody();
         if (!pageDocBody) {
             return null;
@@ -2460,7 +2481,7 @@ export default class AudioRecording {
                 nextHighlight = textBoxOfFirst;
             }
         }
-        this.setSoundAndHighlight(nextHighlight);
+        await this.setSoundAndHighlightAsync(nextHighlight);
 
         // In Sentence/Sentence mode: OK to move.
         // Text/Sentence mode: Ok to swap.
@@ -3108,7 +3129,7 @@ export default class AudioRecording {
     public async changeStateAndSetExpectedAsync(
         expectedVerb: string,
         numRetriesRemaining: number = 1
-    ) {
+    ): Promise<void> {
         // console.log("changeState(" + expectedVerb + ")");
 
         // Call with "" verb if there's nothing specific to highlight, just need to check if these controls should be disabled.
@@ -3150,12 +3171,11 @@ export default class AudioRecording {
                 // loading which will be on the first element. Even if the first element is
                 // "wrong"... the alternative is it points to nothing and you are stuck.
                 // IMO pointing to the first element is less wrong than disabling the whole toolbox.
-                this.setCurrentAudioElementToFirstAudioElement();
-                this.changeStateAndSetExpectedAsync(
+                await this.setCurrentAudioElementToFirstAudioElementAsync();
+                return this.changeStateAndSetExpectedAsync(
                     expectedVerb,
                     numRetriesRemaining - 1
                 );
-                return;
             } else {
                 // We have reached an error state and attempts to self-correct it haven't
                 // succeeded either. :(
@@ -3164,10 +3184,10 @@ export default class AudioRecording {
             }
         }
 
-        await this.updateButtonStateAsync(expectedVerb);
+        return this.updateButtonStateAsync(expectedVerb);
     }
 
-    private async updateButtonStateAsync(expectedVerb: string) {
+    private async updateButtonStateAsync(expectedVerb: string): Promise<void> {
         this.setEnabledOrExpecting("record", expectedVerb);
 
         const promisesToAwait: Promise<void>[] = [];
@@ -3245,7 +3265,7 @@ export default class AudioRecording {
             );
         }
 
-        return Promise.all(promisesToAwait);
+        await Promise.all(promisesToAwait);
     }
 
     // Given a response (from "/bloom/api/audio/checkForAnyRecording?ids=..."), determines whether the response indicates that narration audio exists for any of the specified IDs
