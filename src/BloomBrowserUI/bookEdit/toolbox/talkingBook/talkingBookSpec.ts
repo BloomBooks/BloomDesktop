@@ -74,8 +74,12 @@ describe("talking book tests", () => {
         it("[Sentence/Sentence] showTool() should update sentence splits if no recordings exist", async done => {
             try {
                 const textBox1 =
-                    '<div class="bloom-editable" id="div1"><p><span id="1.1" class="audio-sentence ui-audioCurrent">1.1၊</span> <span id="1.2" class="audio-sentence">1.2</span></p></div>';
-                SetupIFrameFromHtml(`<div id='page1'>${textBox1}</div>`);
+                    '<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent">1.1၊</span> <span id="1.2" class="audio-sentence">1.2</span></p></div>';
+                const textBox2 =
+                    '<div class="bloom-editable" id="div2" data-audioRecordingMode="Sentence"><p><span id="2.1" class="audio-sentence ui-audioCurrent">2.1၊</span> <span id="2.2" class="audio-sentence">2.2</span></p></div>';
+                SetupIFrameFromHtml(
+                    `<div id='page1'>${textBox1}${textBox2}</div>`
+                );
                 theOneAudioRecorder.audioRecordingMode =
                     AudioRecordingMode.Sentence;
                 // Mark not exists
@@ -88,11 +92,16 @@ describe("talking book tests", () => {
                 await tbTool.showTool();
 
                 // Verification
-                const spans = getAudioSentenceSpans("div1");
-                const texts = spans.map(elem => {
-                    return elem.innerText;
-                });
-                expect(texts).toEqual(["1.1၊ 1.2"]);
+                for (let i = 1; i <= 2; ++i) {
+                    const spans = getAudioSentenceSpans(`div${i}`);
+                    const texts = spans.map(elem => {
+                        return elem.innerText;
+                    });
+                    expect(texts).toEqual(
+                        [`${i}.1၊ ${i}.2`],
+                        `Failure for div${i}`
+                    );
+                }
                 done();
             } catch (error) {
                 fail(error);

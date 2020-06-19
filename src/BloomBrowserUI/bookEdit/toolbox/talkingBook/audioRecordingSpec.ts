@@ -1420,10 +1420,10 @@ describe("audio recording tests", () => {
         });
     });
 
-    describe("- moveCurrentAndUpdate()", () => {
+    describe("- setupAndUpdateMarkupAsync()", () => {
         // BL-8425 The Jonah SuperBible comic book was found with data-audioRecordingMode, but no audio-sentences.
         // Not sure how that happened, but now the Talking Book Tool will repair this case.
-        it("moveCurrentAndUpdate() repairs faulty setup, TextBox div has no audio-sentence class", async done => {
+        it("setupAndUpdateMarkupAsync() repairs faulty setup, TextBox div has no audio-sentence class", async done => {
             const textBox1 =
                 "<div id='testId1' data-audioRecordingMode='TextBox' class='bloom-editable' lang='en' tabindex='-1'><p>Sentence 1.</p></div>";
             const textBox2 =
@@ -1441,7 +1441,7 @@ describe("audio recording tests", () => {
             currentDiv.focus();
 
             // System under test
-            await recording.moveCurrentAndUpdateMarkupAsync();
+            await recording.setupAndUpdateMarkupAsync();
 
             // Verification
             expect(recording.audioRecordingMode).toBe(
@@ -1462,7 +1462,7 @@ describe("audio recording tests", () => {
             done();
         });
 
-        it("moveCurrentAndUpdate() repairs faulty setup, Sentence div has no spans", async done => {
+        it("setupAndUpdateMarkupAsync() repairs faulty setup, Sentence div has no spans", async done => {
             SetupIFrameFromHtml(
                 "<div><div id='testId' data-audioRecordingMode='Sentence' class='bloom-editable' lang='en'><p>Sentence 1.</p></div></div>"
             );
@@ -1474,7 +1474,7 @@ describe("audio recording tests", () => {
                 .getPageDocBody()!
                 .ownerDocument!.getElementById("testId");
 
-            await recording.moveCurrentAndUpdateMarkupAsync();
+            await recording.setupAndUpdateMarkupAsync();
 
             expect(recording.audioRecordingMode).toBe(
                 AudioRecordingMode.Sentence

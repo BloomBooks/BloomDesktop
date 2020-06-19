@@ -23,6 +23,17 @@ export default class TalkingBookTool implements ITool {
 
     public configureElements(container: HTMLElement) {}
 
+    // When are showTool, newPageReady, and updateMarkup called?
+    // Some scenarios:
+    // * Open the toolbox and Talking Book shows up  - showTool, newPageReady
+    // * Open a book and Talking Book tool automatically opens - showTool, newPageReady
+    // * Creating a new page while tool is open - newPageReady, updateMarkup, newPageReady (again), updateMarkup (again)
+    // * Changing to an existing page while tool is open - same as above.
+    // * Typing in a text box while tool is open - updateMarkup
+    // * Close the toolbox: hideTool()
+    // * hit the Toolbox's "More" switcher: hideTool()
+    // * Switching from a different tool to Talking Book Tool - showTool, newPageReady
+    // * Add a new text box using Origami ("Change Layout"), then turn off the Origami Editor: newPageReady, updateMarkup
     public async showTool(): Promise<void> {
         // BL-7588 There used to be a enterprise callback that delayed image descriptions and setup until
         // the initialize function had completed, now that it isn't there we need to treat the initialize
@@ -59,7 +70,7 @@ export default class TalkingBookTool implements ITool {
     // Called whenever the user edits text.
     public async updateMarkup(): Promise<void> {
         this.showImageDescriptionsIfAny();
-        return AudioRecorder.theOneAudioRecorder.moveCurrentAndUpdateMarkupAsync();
+        return AudioRecorder.theOneAudioRecorder.updateMarkup();
     }
 
     public isUpdateMarkupAsync(): boolean {

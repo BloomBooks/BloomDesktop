@@ -25,6 +25,9 @@ export default class Recordable {
     // didn't occur at all in that div or its children. So here we want to make sure that things get processed
     // if they might be in a bad state.
     public isRecordableDivFullyInitialized(): boolean {
+        // ENHANCE: As of version 4.9, this function (nor its predecesor in AudioRecording.ts) is no longer called.
+        // Consider removing in version 4.10 or sooner if it is indeed no longer needed
+
         const modeAttribute = this.textBox.getAttribute(
             "data-audioRecordingMode"
         );

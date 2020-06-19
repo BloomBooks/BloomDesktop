@@ -437,6 +437,8 @@ export default class AudioRecording {
 
     // Called by TalkingBookModel.showTool() when a different tool is added/chosen or when the toolbox is re-opened, but not when a new page is added
     public async setupForRecordingAsync(): Promise<void> {
+        this.isShowing = true;
+
         this.updateInputDeviceDisplay();
         this.disablingOverlay = document.getElementById(
             "disablingOverlay"
@@ -457,11 +459,10 @@ export default class AudioRecording {
         const editable = this.getRecordableDivs(true, false);
         if (editable.length === 0) {
             // no editable text on this page.
-            this.changeStateAndSetExpectedAsync("");
-            return;
+            return this.changeStateAndSetExpectedAsync("");
         }
 
-        await this.moveCurrentAndUpdateMarkupAsync();
+        return this.setupAndUpdateMarkupAsync();
     }
 
     // Called when a new page is loaded and (above) when the Talking Book Tool is chosen.
@@ -1785,7 +1786,9 @@ export default class AudioRecording {
     }
 
     // Update the input element (e.g. checkbox) which visually represents the recording mode and updates the textbox markup to reflect the new mode.
-    public async updateRecordingModeAsync(forceOverwrite: boolean = false) {
+    public async updateRecordingModeAsync(
+        forceOverwrite: boolean = false
+    ): Promise<void> {
         // Check if there are any audio recordings present.
         //   If so, these would become invalidated (and deleted down the road when the book's unnecessary files gets cleaned up)
         //   Warn the user if this deletion could happen
@@ -1827,7 +1830,13 @@ export default class AudioRecording {
             // Enhance: Maybe don't bother if the current playback mode is already sentence?
             // Enhance: Maybe it means that you should be less aggressively trying to convert Markup into Playback=TextBox. Or that Clear should be more aggressively attempting ton convert into Playback=Sentence.
 
-            this.updateMarkupForCurrentText(AudioRecordingMode.Sentence);
+            const currentTextBox = this.getCurrentTextBox();
+            if (currentTextBox) {
+                this.updateMarkupForTextBox(
+                    currentTextBox,
+                    AudioRecordingMode.Sentence
+                );
+            }
             this.resetCurrentAudioElement();
 
             this.clearAudioSplit();
@@ -2163,40 +2172,59 @@ export default class AudioRecording {
         this.audioRecordingMode = AudioRecordingMode.Unknown;
     }
 
-    // Entry point for TalkingBookTool's showTool() and updateMarkup() functions.
-    public async moveCurrentAndUpdateMarkupAsync(): Promise<void> {
-        // Basic outline:
-        // * This function gets called when the user types something, and upon initialization of the talking book tool too if there is a non-empty recordable text box
-        // * First, see if we should update the Current Highlight to the element with the active focus instead.
-        // * Then, ensure all the state is initialized.
-        // * Now that we're finally ready, change the HTML markup with the audio-sentence classes, ids, etc.
-        // * Adjust the Current Highlight appropriately.
+    // Entry point for TalkingBookTool's showTool(). Calls updateMarkup
+    public async setupAndUpdateMarkupAsync(): Promise<void> {
+        const recordables = this.getRecordableDivs();
 
+        const asyncTasks: Promise<void>[] = recordables.map(elem => {
+            const playbackMode = this.getPlaybackMode(elem);
+            return this.tryUpdateMarkupForTextBoxAsync(elem, playbackMode);
+        });
+        await Promise.all(asyncTasks);
+
+        return this.changeStateAndSetExpectedAsync("record");
+    }
+
+    // Entry point for TalkingBookTool's updateMarkup() function. Does less work.
+    public async updateMarkup(): Promise<void> {
+        // Basic outline:
+        // * This function gets called when the user types something, and sometimes after talkingBooKTool's newPageReady() too
+        // * First, see if we should update the Current Highlight to the element with the active focus instead.
+        // * Then, change the HTML markup with the audio-sentence classes, ids, etc.
+        // * Adjust the Current Highlight appropriately.
         const editables = this.getRecordableDivs(true, false);
         if (editables.length === 0) {
             // no editable text on this page.
-            this.changeStateAndSetExpectedAsync("");
+            return this.changeStateAndSetExpectedAsync("");
+        }
 
+        // First, see if we should update the Current Highlight to the element with the active focus instead.
+        await this.moveCurrentTextboxIfNeededAsync();
+        const currentTextBox = this.getCurrentTextBox();
+        if (!currentTextBox) {
+            // This could be reached if you create a new page with the talking book tool open.
+            // It's fine. Don't bother doing anything.
             return;
         }
 
-        // Enhance: Consider doing the unprocessed recordables first. Then moveCurrent is more likely to have something to move to.
-        await this.moveCurrentTextboxIfNeededAsync();
-
-        // All recordable divs should try to be updated.
-        // Also handle any unprocessed text boxes. Putting the audio-sentence classes on them will allow Next-ing to them proerply.
-        this.updateMarkupForUnprocessedRecordables();
-
-        // Now we can carry on with the markup of the potentially new current box.
+        // Now we can carry on with changing the HTML markup with the audio-sentence classes, ids, etc.
         const playbackMode = this.getCurrentPlaybackMode();
-        await this.tryUpdateMarkupForCurrentTextAsync(playbackMode);
-        await this.changeStateAndSetExpectedAsync("record");
+        await this.tryUpdateMarkupForTextBoxAsync(currentTextBox, playbackMode);
+
+        // Adjust the current highlight appropriately
+        // Regardless of whether it's present, we always need to set the current audio element
+        // Obviously, when we update current markup, we normally set the current audio element afterward too.
+        // The tricky case is when opening a hard split (version 4.5) book that has existing audio.
+        // updateMarkupForCurrentText() does not run, but we still need it to move the current audio element.
+        this.resetCurrentAudioElement(currentTextBox);
+
+        return this.changeStateAndSetExpectedAsync("record");
     }
 
     // Note: This may temporarily put things into a funny state. We ask to move the highlight to the whole div regardless of what the recording mode is.
     // We have a bit of a chicken and egg problem here. The new recording mode still needs to be determined, and the audio-sentence markup is not applied yet either,
     // but it's easier to determine the recording mode and apply the audio-sentence markup if we move the current highlight first than vice-versa.
-    // Calling InitializeForMarkup (called by updateMarkupForCurrentText) and updateMarkupForCurrentText should get us back into a 100% valid state.
+    // Calling resetCurrentAudioelement() should get us back into a 100% valid state.
     //
     // Returns true if the current text box was moved, false otherwise.
     private async moveCurrentTextboxIfNeededAsync(): Promise<boolean> {
@@ -2220,61 +2248,25 @@ export default class AudioRecording {
         return false;
     }
 
-    // Update markup for any unprocessed divs
-    // The current text box will specifically be EXCLUDED from being processed, even if it is currently unprocessed.
-    private updateMarkupForUnprocessedRecordables(): void {
-        const currentTextBox = this.getCurrentTextBox();
-        const recordableDivs = this.getRecordableDivs();
-        const unprocessedRecordables = recordableDivs.filter(div => {
-            const recordable = new Recordable(div);
-            return (
-                !recordable.isRecordableDivFullyInitialized() &&
-                div != currentTextBox
-            );
-        });
-
-        unprocessedRecordables.forEach(unprocessedRecordable => {
-            const playbackMode = this.getPlaybackMode(unprocessedRecordable);
-
-            this.makeAudioSentenceElements(
-                $(unprocessedRecordable),
-                playbackMode
-            );
-        });
-    }
-
-    // Asychronously updates the markup on the current text box, but only if the operation is currently allowed.
-    private async tryUpdateMarkupForCurrentTextAsync(
+    // Asychronously updates the markup on the specified text box, but only if the operation is currently allowed.
+    private async tryUpdateMarkupForTextBoxAsync(
+        textBox: HTMLElement,
         audioPlaybackMode
     ): Promise<void> {
-        const currentTextBox = this.getCurrentTextBox();
+        const recordable = new Recordable(textBox);
 
-        if (!currentTextBox) {
-            // This could be reached if you create a new page with the talking book tool open.
-            // It's fine. Don't bother doing anything.
-            return;
-        }
-
-        const recordable = new Recordable(currentTextBox);
-
-        // ENHANCE: You could refactor so that this check is only done when the current text box is changed.
+        // ENHANCE: You could refactor so that this check is only done when a new page is readied
         // And then you save the result somewhere.
         // That way, you don't have to make a BloomAPI call plus await it whenever you type in text
         const isPresent = await recordable.areRecordingsPresentAsync();
 
         if (!isPresent) {
-            this.updateMarkupForCurrentText(audioPlaybackMode);
+            this.updateMarkupForTextBox(textBox, audioPlaybackMode);
         } else {
             // Just keep the code from changing the splits.
             // No notification right now, which I think in many cases would be fine
             // But if you want to add some notification UI, it can go here.
         }
-
-        // Regardless of whether it's present, we always need to set the current audio element
-        // Obviously, when we update current markup, we normally set the current audio element afterward too.
-        // The tricky case is when opening a hard split (version 4.5) book that has existing audio.
-        // updateMarkupForCurrentText() does not run, but we still need it to move the current audio element.
-        this.resetCurrentAudioElement(currentTextBox);
     }
 
     // Called on initial setup and on toolbox updateMarkup(), including when a new page is created with Talking Book tab open
@@ -2286,26 +2278,11 @@ export default class AudioRecording {
     // so that markup/playback were done as sentence mode, while a new recording would
     // be made at the textbox level.
     // Review: possibly 'audioMarkupMode' would be a better name than 'audioPlaybackMode'?
-    public updateMarkupForCurrentText(audioPlaybackMode): number {
-        const currentTextBox = this.getCurrentTextBox();
-
-        this.isShowing = true;
-
-        console.assert(
-            audioPlaybackMode != AudioRecordingMode.Unknown,
-            "updateMarkupForCurrentText should not be passed mode unknown"
-        );
-
-        let numUpdated = 0;
-        if (currentTextBox) {
-            this.makeAudioSentenceElements(
-                $(currentTextBox),
-                audioPlaybackMode
-            );
-            numUpdated = 1;
-        }
-
-        return numUpdated;
+    private updateMarkupForTextBox(
+        textBox: HTMLElement,
+        audioPlaybackMode: AudioRecordingMode
+    ): void {
+        this.makeAudioSentenceElements($(textBox), audioPlaybackMode);
     }
 
     private async resetCurrentAudioElement(
@@ -2318,10 +2295,9 @@ export default class AudioRecording {
         if (!currentTextBox) {
             currentTextBox = await this.setCurrentAudioElementToFirstAudioElementAsync();
         } else {
-            // This synchronous call probably makes the flashing problem even more likely compared to delaying it but I think it is helpful if the state is being rapidly modified.
-            return this.setCurrentAudioElementBasedOnRecordingModeAsync(
+            await this.setCurrentAudioElementBasedOnRecordingModeAsync(
                 currentTextBox
-            ); // TODO: Probably not actually necessary to re-apply every time. Refactor it elsewhere.
+            );
         }
 
         // The below section of code is believed to be no longer necessary
@@ -2835,6 +2811,10 @@ export default class AudioRecording {
         // Preconditions:
         //   bloom-editable ids are not currently used / will be robustly handled in the future / are agnostic to the specific value and format
         //   The first node(s) underneath a bloom-editable should always be <p> elements
+        console.assert(
+            audioPlaybackMode != AudioRecordingMode.Unknown,
+            "updateMarkupForTextBox() should not be passed mode unknown"
+        );
 
         rootElementList.each((index: number, root: Element) => {
             if (audioPlaybackMode == AudioRecordingMode.Sentence) {
@@ -3788,10 +3768,13 @@ export default class AudioRecording {
                     kEndTimeAttributeName,
                     allEndTimesString
                 );
-            }
 
-            // Note that this will want to use the sentenceToIdListMap member variable to inform it to re-use the IDs used to create the split audio files
-            this.updateMarkupForCurrentText(AudioRecordingMode.Sentence);
+                // Note that this will want to use the sentenceToIdListMap member variable to inform it to re-use the IDs used to create the split audio files
+                this.updateMarkupForTextBox(
+                    currentTextBox,
+                    AudioRecordingMode.Sentence
+                );
+            }
 
             this.updatePlaybackModeToTextBox();
 
