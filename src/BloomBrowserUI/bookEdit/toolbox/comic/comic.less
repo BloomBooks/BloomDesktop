@@ -2,6 +2,7 @@
 
 @SideMargin: 6px;
 @ControlVerticalSpacing: 10px;
+@NecessaryZIndex: 30000;
 
 .ui-accordion h3[data-toolId="comicTool"] {
     span.ui-accordion-header-icon {
@@ -91,8 +92,6 @@
 
 #comicToolControlOptionsRegion {
     padding: @SideMargin @SideMargin 0 @SideMargin;
-
-    color: @bloom-toolboxWhite;
 
     // This corresponds to the wrapper div generated for each control within the form
     // It is also the parent flex container for each option
@@ -219,8 +218,14 @@
     margin-top: 10px;
 }
 
+// This is built into Material UI, but we need to access it to set the width of dropdown menus.
+@dropdownLeftMargin: 16px;
+
 .bubble-options-dropdown-menu {
     // Getting overwritten by the inline styles... :(
     // TODO: Experiment with whether you can pass in a style through Material UI instead of using !important to bypass the inline style.
-    z-index: 999999 !important; // Note: 18,000 was experimentally determined to be the minimum required z-index, but seems safer to go up a bit from the minimum
+    z-index: @NecessaryZIndex !important; // Note: 18,000 was experimentally determined to be the minimum required z-index, but seems safer to go up a bit from the minimum
+    .MuiMenu-paper {
+        min-width: calc(@toolboxWidth - 2 * @dropdownLeftMargin) !important;
+    }
 }

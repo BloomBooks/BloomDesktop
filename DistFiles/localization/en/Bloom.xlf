@@ -825,6 +825,16 @@
         <note>ID: CollectionTab.Updating</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Downloading update to {0} ({1}kb).</note>
       </trans-unit>
+      <trans-unit id="ColorPicker.PercentTransparent" sil:dynamic="true">
+        <source xml:lang="en">{0}% Transparent</source>
+        <note>ID: ColorPicker.PercentTransparent</note>
+        <note>This color has a particular percentage of transparency.</note>
+      </trans-unit>
+      <trans-unit id="ColorPicker.New" sil:dynamic="true">
+        <source xml:lang="en">New...</source>
+        <note>ID: ColorPicker.New</note>
+        <note>A background color selection that enables a color picker.</note>
+      </trans-unit>
       <trans-unit id="Common.Advanced">
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
@@ -1817,16 +1827,19 @@
         <source xml:lang="en">White to Calico</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico</note>
         <note>A background color that is a gradient starting with white blending into calico color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
         <source xml:lang="en">White to French Pass</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass</note>
         <note>A background color that is a gradient starting with white blending into the "French pass" color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true">
         <source xml:lang="en">White to Portafino</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino</note>
         <note>A background color that is a gradient starting with white blending into the "Portafino" color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true">
         <source xml:lang="en">Outer Outline Color</source>
