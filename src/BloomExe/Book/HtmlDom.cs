@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
 using System.Xml.Xsl;
+using Bloom.Api;
 using Bloom.Publish.Epub;
 using Bloom.web.controllers;
 using DesktopAnalytics;
@@ -800,6 +801,138 @@ namespace Bloom.Book
 					continue;
 
 				GetTranslationGroupsInternal(childElement, ref result);
+			}
+		}
+
+		/// <summary>
+		/// Returns a JSON string of colors used in the current book.
+		/// </summary>
+		/// <returns></returns>
+		public string GetColorsUsedInBook()
+		{
+			var result = new StringBuilder();
+			result.Append("[");
+			var prefix = string.Empty;
+			var textOverPictureElements = GetTextOverPictureElements(Body);
+			foreach (var node in textOverPictureElements)
+			{
+				var styleAttr = node.GetOptionalStringAttribute("style", "");
+				if (!string.IsNullOrEmpty(styleAttr))
+				{
+					// Possible bubble text color
+					var textColorValue = GetColorValueFromStyle(styleAttr);
+					if (!string.IsNullOrEmpty(textColorValue))
+					{
+						var textColorString = DynamicJson.Serialize(new
+						{
+							colors = new [] { textColorValue }
+						});
+						prefix = result.Length < 2 ? "" : ",";
+						result.Append(prefix + textColorString);
+						
+					}
+				}
+				var dataBubbleAttr = node.GetOptionalStringAttribute("data-bubble", "");
+				if (string.IsNullOrEmpty(dataBubbleAttr))
+					continue;
+
+				// Possible bubble background color
+				// Looking for something like "`backgroundColors`:[`color1`,(`color2`)],".
+				var backgroundColorValue = GetValueFromDataBubble(dataBubbleAttr, "backgroundColors").Replace("[", "").Replace("]", "").Replace("`", "");
+				// Opacity doesn't yet exist in data-bubble, but it will when we do BL-8537.
+				var opacityValue = GetValueFromDataBubble(dataBubbleAttr, "opacity");
+				if (string.IsNullOrEmpty(backgroundColorValue))
+					continue;
+
+				string backgroundColorString;
+				// This is a bit clunky, but I couldn't figure out how to not have an opacity value
+				// without doing it this way.
+				var colorArray = backgroundColorValue.Split(',');
+				if (string.IsNullOrEmpty(opacityValue))
+				{
+					backgroundColorString = DynamicJson.Serialize(new
+					{
+						colors = colorArray
+					});
+				}
+				else
+				{
+					backgroundColorString = DynamicJson.Serialize(new
+					{
+						colors = colorArray,
+						opacity = opacityValue
+					});
+				}
+
+				prefix = result.Length < 2 ? "" : ",";
+				result.Append(prefix + backgroundColorString);
+			}
+			result.Append("]");
+			return result.ToString();
+		}
+
+		private static string GetColorValueFromStyle(string styleAttrVal)
+		{
+			// Looking for something like "; color: rgb(x,y,z);" or "; color: #aaaaaa;"
+			// or just possibly the string starts with "color: ".
+			int indexOfColor;
+			if (styleAttrVal.StartsWith("color: "))
+			{
+				indexOfColor = 7;
+			}
+			else
+			{
+				var idx = styleAttrVal.IndexOf("; color: ");
+				indexOfColor = idx > 0 ? idx + 9 : -1;
+			}
+			if (indexOfColor <= 0)
+				return string.Empty;
+			var restOfString = styleAttrVal.Substring(indexOfColor);
+			var endIndex = restOfString.IndexOf(";"); // assured ending
+			return restOfString.Substring(0, endIndex);
+		}
+
+		// Returns the section of the data-bubble attribute value pertaining to the searchOn string.
+		private static string GetValueFromDataBubble(string dataBubbleVal, string searchOn)
+		{
+			var indexOfColorArray = dataBubbleVal.IndexOf("`" + searchOn + "`:");
+			if (indexOfColorArray < 0)
+				return string.Empty;
+			var restOfString = dataBubbleVal.Substring(indexOfColorArray + searchOn.Length + 3);
+			var commaIndex = restOfString.IndexOf("],");
+			var endIndex = commaIndex > 0 ? commaIndex : restOfString.IndexOf("]}"); // might be the last thing
+			return restOfString.Substring(0, endIndex + 1);
+		}
+
+		private List<XmlElement> GetTextOverPictureElements(XmlElement bookBodyElement)
+		{
+			var result = new List<XmlElement>();
+			GetTextOverPicturesInternal(bookBodyElement, ref result);
+
+			return result;
+		}
+
+		// Finds all the divs with class 'bloom-textOverPicture'.
+		private void GetTextOverPicturesInternal(XmlElement currentElement, ref List<XmlElement> result)
+		{
+			if (currentElement.HasAttribute("class"))
+			{
+				var classes = currentElement.Attributes["class"].Value;
+				if (classes.Contains("bloom-textOverPicture"))
+				{
+					result.Add(currentElement);
+				}
+			}
+
+			if (!currentElement.HasChildNodes)
+				return;
+			foreach (XmlNode childNode in currentElement.ChildNodes)
+			{
+				var childElement = childNode as XmlElement;
+				if (childElement == null) // if the node is not castable to XmlElement
+					continue;
+
+				GetTextOverPicturesInternal(childElement, ref result);
 			}
 		}
 
