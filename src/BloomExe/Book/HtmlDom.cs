@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
 using System.Xml.Xsl;
+using Bloom.Api; // for DynamicJson
 using Bloom.Publish.Epub;
 using Bloom.web.controllers;
 using DesktopAnalytics;
@@ -128,14 +129,14 @@ namespace Bloom.Book
 			foreach (XmlElement node in _dom.SafeSelectNodes("/html/body/div[contains(concat(' ', normalize-space(@class), ' '),' bloom-page ') and contains(concat(' ', normalize-space(@class), ' '),' customPage ')and @data-page='']"))
 			{
 				node.SetAttribute("data-page", "extra");
-				foreach (XmlElement label in node.SafeSelectNodes("div[contains(concat(' ', normalize-space(@class), ' '), ' pageLabel ')]"))
+				foreach (XmlElement label in GetAllDivsWithClass(node, "pageLabel"))
 				{
 					label.RemoveAttribute("data-i18n");
 					break;
 				}
-				foreach (XmlElement description in node.SafeSelectNodes("div[contains(concat(' ', normalize-space(@class), ' '), ' pageDescription ')]"))
+				foreach (XmlElement description in GetAllDivsWithClass(node, "pageDescription"))
 				{
-					description.InnerText = String.Empty;
+					description.InnerText = string.Empty;
 					break;
 				}
 			}
@@ -688,17 +689,15 @@ namespace Bloom.Book
 		/// <param name="didChange"></param>
 		internal string MigrateEditableData(XmlElement page, XmlElement template, string lineage, bool allowDataLoss, out bool didChange)
 		{
-			const string imageXpath = ".//div[contains(concat(' ', @class, ' '), ' bloom-imageContainer ')]";
-			const string videoXpath = ".//div[contains(concat(' ', @class, ' '), ' bloom-videoContainer ')]";
 			if (!allowDataLoss)
 			{
 				// See comment on GetTranslationGroupsInternal() below.
 				var oldTextCount = GetTranslationGroupCount(page);
 				var newTextCount = GetTranslationGroupCount(template);
-				var oldImageCount = page.SafeSelectNodes(imageXpath).Count;
-				var newImageCount = template.SafeSelectNodes(imageXpath).Count;
-				var oldVideoCount = page.SafeSelectNodes(videoXpath).Count;
-				var newVideoCount = template.SafeSelectNodes(videoXpath).Count;
+				var oldImageCount = GetAllDivsWithClass(page, "bloom-imageContainer").Count;
+				var newImageCount = GetAllDivsWithClass(template, "bloom-imageContainer").Count;
+				var oldVideoCount = GetAllDivsWithClass(page, "bloom-videoContainer").Count;
+				var newVideoCount = GetAllDivsWithClass(template, "bloom-videoContainer").Count;
 				if (newTextCount < oldTextCount || newImageCount < oldImageCount || newVideoCount < oldVideoCount)
 				{
 					didChange = false;
@@ -741,9 +740,9 @@ namespace Bloom.Book
 			// that currently hides them.
 			MigrateChildren(GetTranslationGroups(page), GetTranslationGroups(newPage));
 			// migrate images
-			MigrateChildrenWithCommonXpath(page, imageXpath, newPage);
+			MigrateChildrenWithCommonClass(page, "bloom-imageContainer", newPage);
 			// migrate videos
-			MigrateChildrenWithCommonXpath(page, videoXpath, newPage);
+			MigrateChildrenWithCommonClass(page, "bloom-videoContainer", newPage);
 			RemovePlaceholderVideoClass(newPage);
 			didChange = true;
 			return oldLineage;
@@ -801,6 +800,94 @@ namespace Bloom.Book
 
 				GetTranslationGroupsInternal(childElement, ref result);
 			}
+		}
+
+		/// <summary>
+		/// Gets a JSON string of colors used in the current book.
+		/// </summary>
+		public string GetColorsUsedInBookBubbleElements()
+		{
+			var colorElementList = new List<string>();
+			var textOverPictureElements = GetTextOverPictureElements(Body);
+			foreach (var node in textOverPictureElements)
+			{
+				var styleAttr = node.GetOptionalStringAttribute("style", "");
+				if (!string.IsNullOrEmpty(styleAttr))
+				{
+					// Possible bubble text color
+					var textColorValue = GetColorValueFromStyle(styleAttr);
+					if (!string.IsNullOrEmpty(textColorValue))
+					{
+						var textColorString = DynamicJson.Serialize(new
+						{
+							colors = new [] { textColorValue }
+						});
+						colorElementList.Add(textColorString);
+					}
+				}
+				var dataBubbleAttr = node.GetOptionalStringAttribute("data-bubble", "");
+				if (string.IsNullOrEmpty(dataBubbleAttr))
+					continue;
+
+				var dataBubbleNoTicks = dataBubbleAttr.Replace("`", "");
+				// Possible bubble background color
+				var backgroundColorValue = GetBackgroundColorsFromDataBubble(dataBubbleNoTicks);
+				if (string.IsNullOrEmpty(backgroundColorValue))
+					continue;
+
+				// Review: opacity doesn't yet exist in data-bubble, but it will when we do BL-8537.
+				// float.Parse() here keeps the opacity from being in quotes (and therefore a string)
+				// This is important for matching swatch opacity on the js end.
+				var opacityValue = float.Parse(GetOpacityFromDataBubble(dataBubbleNoTicks));
+				var colorArray = backgroundColorValue.Split(',');
+				var backgroundColorString = DynamicJson.Serialize(new
+				{
+					colors = colorArray,
+					opacity = opacityValue
+				});
+
+				colorElementList.Add(backgroundColorString);
+			}
+
+			return "[" + string.Join(",", colorElementList) + "]";
+		}
+
+		private static string GetColorValueFromStyle(string styleAttrVal)
+		{
+			// Looking for something like "color: rgb(x,y,z);" or "color: #aaaaaa;"
+			var styleRegex = new Regex(@"\s*color\s*:\s*(.+)\s*;");
+			var match = styleRegex.Match(styleAttrVal);
+			// If successful, group 1 should be everything between "color: " and ";"
+			return match.Success ? match.Groups[1].Value : string.Empty;
+		}
+
+		private static string GetBackgroundColorsFromDataBubble(string dataBubbleAttrVal)
+		{
+			// Looking for something like "backgroundColors:[white,#7b8eb8]" or "backgroundColors:[oldLace]".
+			// Returns (in these 2 examples respectively): "white,#7b8eb8", "oldLace".
+			var backColorRegex = new Regex(@"\s*backgroundColors\s*:\s*\[\s*([\w,#]+)\s*\]");
+			var match = backColorRegex.Match(dataBubbleAttrVal);
+			return match.Success ? match.Groups[1].Value : string.Empty;
+		}
+
+		private static string GetOpacityFromDataBubble(string dataBubbleAttrVal)
+		{
+			// Looking for something like "opacity:0.66". Should return just the "0.66", or "1" if not found.
+			var opacityRegex = new Regex(@"\s*opacity\s*:\s*([\d\.]+)\s*(?:,|})");
+			var match = opacityRegex.Match(dataBubbleAttrVal);
+			return match.Success ? match.Groups[1].Value : "1";
+		}
+
+		private static XmlNodeList GetAllDivsWithClass(XmlNode containerElement, string className)
+		{
+			const string xpath = ".//div[contains(concat(' ', normalize-space(@class), ' '), ' {0} ')]";
+			var classPath = xpath.Replace("{0}", className);
+			return containerElement.SafeSelectNodes(classPath);
+		}
+
+		private static IEnumerable<XmlElement> GetTextOverPictureElements(XmlNode bookBodyElement)
+		{
+			return GetAllDivsWithClass(bookBodyElement, "bloom-textOverPicture").Cast<XmlElement>();
 		}
 
 		/// <summary>
@@ -880,12 +967,12 @@ namespace Bloom.Book
 		/// For translation groups, also updates the bloom-editable divs to have the expected class.
 		/// </summary>
 		/// <param name="page"></param>
-		/// <param name="xpath"></param>
+		/// <param name="className"></param>
 		/// <param name="newPage"></param>
-		private static void MigrateChildrenWithCommonXpath(XmlElement page, string xpath, XmlElement newPage)
+		private static void MigrateChildrenWithCommonClass(XmlElement page, string className, XmlElement newPage)
 		{
-			var oldParents = new List<XmlElement>(page.SafeSelectNodes(xpath).Cast<XmlElement>());
-			var newParents = new List<XmlElement>(newPage.SafeSelectNodes(xpath).Cast<XmlElement>());
+			var oldParents = new List<XmlElement>(GetAllDivsWithClass(page, className).Cast<XmlElement>());
+			var newParents = new List<XmlElement>(GetAllDivsWithClass(newPage, className).Cast<XmlElement>());
 			MigrateChildren(oldParents, newParents);
 		}
 
@@ -1083,8 +1170,7 @@ namespace Bloom.Book
 			foreach (var keyPair in keyDict)
 			{
 				var style = GetStyleNameFromRuleSelector(keyPair.Key);
-				var searchResult = domForInsertedPage.SafeSelectNodes(
-					"//div[contains(concat(' ', @class, ' '), ' " + style + " ')]");
+				var searchResult = GetAllDivsWithClass(domForInsertedPage.Body, style);
 				if (searchResult.Count > 0)
 					keysUsedOnPage.Add(keyPair.Key, keyPair.Value);
 			}

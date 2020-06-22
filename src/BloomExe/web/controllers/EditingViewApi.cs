@@ -1,7 +1,6 @@
 ﻿using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Edit;
-using Gecko;
 using L10NSharp;
 
 namespace Bloom.web.controllers
@@ -17,6 +16,7 @@ namespace Bloom.web.controllers
 		{
 			apiHandler.RegisterEndpointHandler("editView/setModalState", HandleSetModalState, true);
 			apiHandler.RegisterEndpointHandler("editView/chooseWidget", HandleChooseWidget, true);
+			apiHandler.RegisterEndpointHandler("editView/getBookColors", HandleGetColors, true);
 		}
 
 		public void HandleSetModalState(ApiRequest request)
@@ -58,6 +58,23 @@ namespace Bloom.web.controllers
 			string activityName = View.Model.MakeActivity(fullWidgetPath);
 			var url = UrlPathString.CreateFromUnencodedString(activityName);
 			request.ReplyWithText(url.UrlEncodedForHttpPath);
+		}
+
+		private void HandleGetColors(ApiRequest request)
+		{
+			var model = View.Model;
+			if (!model.HaveCurrentEditableBook)
+			{
+				request.ReplyWithText("");
+				return;
+			}
+			var currentBook = View.Model.CurrentBook;
+			// Enhance: Two ideas. (1) Get colors from the current page first, in case the book has too many
+			// colors to fit in our dialog's swatch array. (2) Order the list returned by frequency, so the most
+			// frequently used colors are at the front of the resultant swatch array.
+			var currentBookDom = currentBook.OurHtmlDom;
+			var colors = currentBookDom.GetColorsUsedInBookBubbleElements();
+			request.ReplyWithText(colors);
 		}
 	}
 }
