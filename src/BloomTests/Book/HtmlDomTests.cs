@@ -1548,5 +1548,76 @@ p {
 			// Verification
 			Assert.AreEqual(expectedLangCode, langCode);
 		}
+
+		[Test]
+		[TestCase(" color : rgb(98, 19, 45);", ",`backgroundColors `: [`white`,`#7b8eb8`] ", "",
+				"", "",
+				"", "", 0)]
+		[TestCase("", "", "",
+			"color: #000000;", ",`backgroundColors`:[`oldLace`]",
+			"", "", 1)]
+		[TestCase("", ",`backgroundColors`:[`gray`]", ", `opacity` : `0.66`",
+			"", "",
+			"color: #000000;", ",`backgroundColors`:[`purple`]", 2)]
+		public void GetColorsUsedInBook_works(
+			string textColorLoc1, string backColorLoc1, string opacityLoc1,
+			string textColorLoc2, string backColorLoc2,
+			string textColorLoc3, string backColorLoc3, int responseIndex)
+		{
+			var jsonResponses = new[] {
+				"[{\"colors\":[\"rgb(98, 19, 45)\"]},{\"colors\":[\"white\",\"#7b8eb8\"],\"opacity\":\"1\"}]",
+				"[{\"colors\":[\"#000000\"]},{\"colors\":[\"oldLace\"],\"opacity\":\"1\"}]",
+				"[{\"colors\":[\"gray\"],\"opacity\":\"0.66\"},{\"colors\":[\"#000000\"]},{\"colors\":[\"purple\"],\"opacity\":\"1\"}]"
+			};
+			var bookDom = new HtmlDom(@"<html><head></head><body>
+				<div class='bloom-page' id='pageGuid'>
+					<div class='split-pane-component-inner'>
+						<div class='bloom-translationGroup'>
+							<div class='bloom-editable'>First text contents</div>
+						</div>
+						<div class='bloom-imageContainer'>
+							<div class='bloom-textOverPicture' style='left: 8.50603%; " + textColorLoc1 + @"'
+								data-bubble='{`version`:`1.0`" + backColorLoc1 + opacityLoc1 + @"}'>
+								<div class='bloom-translationGroup'>
+									<div class='bloom-editable'>
+										<p>Text over picture text</p>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class='bloom-imageContainer'>
+							<div class='bloom-textOverPicture' style='left: 8.50603%; " + textColorLoc2 + @"'
+								data-bubble='{`version`:`1.0`" + backColorLoc2 + @"}'>
+								<div class='bloom-translationGroup'>
+									<div class='bloom-editable'>
+										<p>Text over picture text</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class='bloom-page' id='pageGuid2'>
+					<div class='split-pane-component-inner'>
+						<div class='bloom-imageContainer'>
+							<div class='bloom-textOverPicture' style='left: 8.50603%; " + textColorLoc3 + @"'
+								data-bubble='{`version`:`1.0`" + backColorLoc3 + @"}'>
+								<div class='bloom-translationGroup'>
+									<div class='bloom-editable'>
+										<p>Text over picture text</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				</body></html>");
+
+			// SUT
+			var jsonString = bookDom.GetColorsUsedInBookBubbleElements();
+
+			// Verification
+			Assert.That(jsonString, Is.EqualTo(jsonResponses[responseIndex]));
+		}
 	}
 }
