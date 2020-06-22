@@ -55,7 +55,7 @@ enum Status {
 }
 
 // TODO: What's a better name so that it can apply to both RecordingMode and PlaybackMode?
-// Or maybe you want to make a duplicate num for playbakc mode.
+// Or maybe you want to make a duplicate enum for playback mode.
 // Or maybe your playback mode enum would have a different set of states... TextBox, Sentence, SentenceHardSplit, SentenceSoftSplit
 // Or, maybe you should list out in an enum the valid combinations (PureSentence, PureText, TextHardSplit, TextSoftSplit)
 // Or you could try to do same as above but using discriminated unions?
@@ -65,6 +65,14 @@ export enum AudioRecordingMode {
     Unknown = "Unknown",
     Sentence = "Sentence",
     TextBox = "TextBox"
+}
+
+// TODO: Replace AudioRecordingMode with this?
+export enum AudioMode {
+    PureSentence, // Record by Sentence, Play by Sentence
+    PureTextBox, // Record by TextBox, Play by TextBox
+    HardSplitTextBox, // Version 4.5 only. Record by TextBox, then split into sentences. (Each sentence has own audio file)
+    SoftSplitTextBox // Version 4.6+. Record by TextBox, then split into sentences. (The entire text box only has 1 audio file. The timings for where each sentence starts is annotated).
 }
 
 const kWebsocketContext = "audio-recording";

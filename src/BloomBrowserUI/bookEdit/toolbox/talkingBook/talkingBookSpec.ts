@@ -2,7 +2,8 @@ import TalkingBookTool from "./talkingBook";
 import {
     theOneAudioRecorder,
     initializeTalkingBookToolAsync,
-    AudioRecordingMode
+    AudioRecordingMode,
+    AudioMode
 } from "./audioRecording";
 import {
     SetupTalkingBookUIElements,
@@ -71,27 +72,143 @@ describe("talking book tests", () => {
             setSentenceEndingPunctuationForBloom();
         });
 
-        it("[Sentence/Sentence] showTool() should update sentence splits if no recordings exist", async done => {
-            try {
-                const textBox1 =
-                    '<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent">1.1၊</span> <span id="1.2" class="audio-sentence">1.2</span></p></div>';
-                const textBox2 =
-                    '<div class="bloom-editable" id="div2" data-audioRecordingMode="Sentence"><p><span id="2.1" class="audio-sentence ui-audioCurrent">2.1၊</span> <span id="2.2" class="audio-sentence">2.2</span></p></div>';
-                SetupIFrameFromHtml(
-                    `<div id='page1'>${textBox1}${textBox2}</div>`
-                );
+        function setAudioFilesDontExist() {
+            // Mark that the recording doesn't exist.
+            // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
+            spyOn(axios, "get").and.returnValue(
+                Promise.reject(new Error("Fake 404 Error"))
+            );
+        }
+
+        function setAudioFilesPresent() {
+            // Mark that the recording exists.
+            // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
+            spyOn(axios, "get").and.returnValue(Promise.resolve());
+        }
+
+        function setupPureSentenceModeHtml(): string {
+            const div1Html =
+                '<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent">1.1၊</span> <span id="1.2" class="audio-sentence">1.2</span></p></div>';
+            const div2Html =
+                '<div class="bloom-editable" id="div2" data-audioRecordingMode="Sentence"><p><span id="2.1" class="audio-sentence ui-audioCurrent">2.1၊</span> <span id="2.2" class="audio-sentence">2.2</span></p></div>';
+            return `${div1Html}${div2Html}`;
+        }
+
+        function setupPureTextBoxModeHtml(): string {
+            const div1Html =
+                '<div class="bloom-editable audio-sentence ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox"><p>1.1၊ 1.2</p></div>';
+            const div2Html =
+                '<div class="bloom-editable audio-sentence" id="div2" data-audiorecordingmode="TextBox"><p>2.1၊ 2.2</p></div>';
+            return `${div1Html}${div2Html}`;
+        }
+
+        function setupTextBoxHardSplitHtml(): string {
+            let html = "";
+            for (let i = 1; i <= 2; ++i) {
+                const divStartHtml = `<div class="bloom-editable${
+                    i === 1 ? " ui-audioCurrent" : ""
+                }" id="div${i}" data-audiorecordingmode="TextBox">`;
+                const divInnerHtml = `<p><span class="audio-sentence">${i}.1၊</span> <span class="audio-sentence">${i}.2</span></p>`;
+                const divHtml = `${divStartHtml}${divInnerHtml}</div>`;
+                html += divHtml;
+            }
+            return html;
+        }
+        function setupTextBoxSoftSplitHtml(): string {
+            let html = "";
+            for (let i = 1; i <= 2; ++i) {
+                const divStartHtml = `<div class="bloom-editable audio-sentence${
+                    i === 1 ? " ui-audioCurrent" : ""
+                }" id="div${i}" data-audiorecordingmode="TextBox" data-audiorecordingendtimes="1.0 2.0">`;
+                const divInnerHtml = `<p><span id="${i}.1" class="bloom-highlightSegment">${i}.1၊</span> <span id="${i}.2" class="bloom-highlightSegment">${i}.2</span></p>`;
+
+                const divHtml = `${divStartHtml}${divInnerHtml}</div>`;
+                html += divHtml;
+            }
+            return html;
+        }
+
+        async function runSentenceSplittingTestsAsync(
+            scenario: AudioMode,
+            areRecordingsPresent: boolean
+        ) {
+            let pageInnerHtml: string = "";
+            switch (scenario) {
+                case AudioMode.PureSentence: {
+                    pageInnerHtml = setupPureSentenceModeHtml();
+                    break;
+                }
+                case AudioMode.PureTextBox: {
+                    pageInnerHtml = setupPureTextBoxModeHtml();
+                    break;
+                }
+                case AudioMode.HardSplitTextBox: {
+                    pageInnerHtml = setupTextBoxHardSplitHtml();
+                    break;
+                }
+                case AudioMode.SoftSplitTextBox: {
+                    pageInnerHtml = setupTextBoxSoftSplitHtml();
+                    break;
+                }
+                default: {
+                    throw new Error("Unknown scenario: " + scenario);
+                }
+            }
+
+            SetupIFrameFromHtml(`<div id="page1">${pageInnerHtml}</div>`);
+
+            if (scenario === AudioMode.PureSentence) {
                 theOneAudioRecorder.audioRecordingMode =
                     AudioRecordingMode.Sentence;
-                // Mark not exists
-                spyOn(axios, "get").and.returnValue(
-                    Promise.reject(new Error("Fake 404 Error"))
-                );
+            } else {
+                theOneAudioRecorder.audioRecordingMode =
+                    AudioRecordingMode.TextBox;
+            }
 
-                // System under test
-                const tbTool = new TalkingBookTool();
-                await tbTool.showTool();
+            const originalHtml = getFrameElementById("page", "page1")!
+                .innerHTML;
 
-                // Verification
+            if (areRecordingsPresent) {
+                setAudioFilesPresent();
+            } else {
+                setAudioFilesDontExist();
+            }
+
+            // System under test
+            const tbTool = new TalkingBookTool();
+            await tbTool.showTool();
+
+            // Verification
+            verifyHtmlStructure(scenario, areRecordingsPresent, originalHtml);
+            verifyCurrentHighlight(scenario);
+        }
+
+        function verifyHtmlStructure(
+            scenario: AudioMode,
+            areRecordingsPresent: boolean,
+            originalHtml: string
+        ) {
+            if (
+                areRecordingsPresent ||
+                scenario === AudioMode.SoftSplitTextBox
+            ) {
+                // NOTE: SoftSplit test doesn't have very intuitive results.
+                // Even if recordings aren't present, it actually preserves the original splits, even though normally, no recordings present means we should update them.
+                // Prior to this check-if-recordings-present feature, it was actually the case that upon Soft Split, it never updated the markup.
+                // (That's because the playback mode was identified as text box, and in that case, it never actually runs makeAudioSentenceElementsLeaf())
+                // I'm not sure if that was entirely intentional, but it does seem very problematic to risk increasing/decreasing the number of splits while an audio is aligned to it.
+                // Now that we do check if recordings present...
+                // If they're somehow missing, we COULD now update the markup, but it doesn't seem worth the time, complexity, or risk to add that functionality.
+                // I guess it's more like if there's no recordings present, then we do whatever the old behavior was... which in this case, is to not do anything.
+
+                // Verify unchanged.
+                const currentHtml = getFrameElementById("page", "page1")!
+                    .innerHTML;
+                expect(currentHtml).toBe(originalHtml);
+            } else if (
+                scenario === AudioMode.PureSentence ||
+                scenario === AudioMode.HardSplitTextBox
+            ) {
                 for (let i = 1; i <= 2; ++i) {
                     const spans = getAudioSentenceSpans(`div${i}`);
                     const texts = spans.map(elem => {
@@ -102,6 +219,58 @@ describe("talking book tests", () => {
                         `Failure for div${i}`
                     );
                 }
+            } else if (scenario === AudioMode.PureTextBox) {
+                for (let i = 1; i <= 2; ++i) {
+                    const paragraphs = getParagraphsOfTextBox(`div${i}`);
+                    const innerHTMLs = paragraphs.map(p => p.innerHTML);
+                    expect(innerHTMLs).toEqual(
+                        [`${i}.1၊ ${i}.2`],
+                        `Failure for div${i}`
+                    );
+                }
+            } else {
+                throw new Error("Unrecognized scenario: " + scenario);
+            }
+        }
+
+        function verifyCurrentHighlight(scenario: AudioMode) {
+            const div = getFrameElementById("page", "div1");
+            if (!div) {
+                expect(div).not.toBeNull("div1 is null");
+                return;
+            }
+
+            switch (scenario) {
+                case AudioMode.PureSentence: {
+                    const firstSpan = div.querySelector("span.audio-sentence");
+                    expect(firstSpan).toHaveClass("ui-audioCurrent");
+                    break;
+                }
+
+                case AudioMode.PureTextBox:
+                case AudioMode.HardSplitTextBox:
+                case AudioMode.SoftSplitTextBox: {
+                    expect(div).toHaveClass("ui-audioCurrent");
+
+                    const currentSpan = div!.querySelector(
+                        "span.ui-audiocurrent"
+                    );
+                    expect(currentSpan).toBeNull();
+                    break;
+                }
+
+                default: {
+                    throw new Error("Unrecognized scenario: " + scenario);
+                }
+            }
+        }
+
+        it("[Sentence/Sentence] showTool() should update sentence splits if no recordings exist", async done => {
+            try {
+                await runSentenceSplittingTestsAsync(
+                    AudioMode.PureSentence,
+                    false
+                );
                 done();
             } catch (error) {
                 fail(error);
@@ -112,27 +281,10 @@ describe("talking book tests", () => {
 
         it("[Sentence/Sentence] showTool() should not update sentence splits if recordings do exist", async done => {
             try {
-                const textBox1 =
-                    '<div class="bloom-editable" id="div1"><p><span id="1.1" class="audio-sentence ui-audioCurrent">1.1၊</span> <span id="1.2" class="audio-sentence">1.2</span></p></div>';
-                SetupIFrameFromHtml(`<div id='page1'>${textBox1}</div>`);
-                theOneAudioRecorder.audioRecordingMode =
-                    AudioRecordingMode.Sentence;
-                // Mark that the recording exists.
-                // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
-                spyOn(axios, "get").and.returnValue(Promise.resolve());
-
-                // System under test
-                const tbTool = new TalkingBookTool();
-                await tbTool.showTool();
-
-                // Verification
-                const spans = getAudioSentenceSpans("div1");
-                const texts = spans.map(elem => {
-                    return elem.innerText;
-                });
-                expect(texts).toEqual(["1.1၊", "1.2"]);
-
-                verifyRecordButtonEnabled();
+                await runSentenceSplittingTestsAsync(
+                    AudioMode.PureSentence,
+                    true
+                );
                 done();
             } catch (error) {
                 fail(error);
@@ -143,26 +295,10 @@ describe("talking book tests", () => {
 
         it("[Text Box/Text Box] showTool() should update sentence splits if no recordings exist", async done => {
             try {
-                const divStartHtml =
-                    '<div class="bloom-editable audio-sentence ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox">';
-                const divInnerHtml = "<p>1.1၊ 1.2</p>";
-                const divHtml = `${divStartHtml}${divInnerHtml}</div>`;
-                SetupIFrameFromHtml(`<div id='page1'>${divHtml}</div>`);
-                theOneAudioRecorder.audioRecordingMode =
-                    AudioRecordingMode.TextBox;
-                // Mark not exists
-                spyOn(axios, "get").and.returnValue(
-                    Promise.reject(new Error("Fake 404 Error"))
+                await runSentenceSplittingTestsAsync(
+                    AudioMode.PureTextBox,
+                    false
                 );
-
-                // System under test
-                const tbTool = new TalkingBookTool();
-                await tbTool.showTool();
-
-                // Verification
-                const paragraphs = getParagraphsOfTextBox("div1");
-                const innerHTMLs = paragraphs.map(p => p.innerHTML);
-                expect(innerHTMLs).toEqual(["1.1၊ 1.2"]);
                 done();
             } catch (error) {
                 fail(error);
@@ -174,24 +310,10 @@ describe("talking book tests", () => {
         // This returns the same result as above.
         it("[Text Box/Text Box] showTool() should NOT update sentence splits if recordings do exist", async done => {
             try {
-                const divStartHtml =
-                    '<div class="bloom-editable audio-sentence ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox">';
-                const divInnerHtml = "<p>1.1၊ 1.2</p>";
-                const divHtml = `${divStartHtml}${divInnerHtml}</div>`;
-                SetupIFrameFromHtml(`<div id='page1'>${divHtml}</div>`);
-                theOneAudioRecorder.audioRecordingMode =
-                    AudioRecordingMode.TextBox;
-                // Mark exists
-                spyOn(axios, "get").and.returnValue(Promise.resolve());
-
-                // System under test
-                const tbTool = new TalkingBookTool();
-                await tbTool.showTool();
-
-                // Verification
-                const paragraphs = getParagraphsOfTextBox("div1");
-                const innerHTMLs = paragraphs.map(p => p.innerHTML);
-                expect(innerHTMLs).toEqual(["1.1၊ 1.2"]);
+                await runSentenceSplittingTestsAsync(
+                    AudioMode.PureTextBox,
+                    true
+                );
                 done();
             } catch (error) {
                 fail(error);
@@ -202,29 +324,10 @@ describe("talking book tests", () => {
 
         it("[TextBox/Sentence Hard Split] showTool() should update sentence splits if no recordings exist", async done => {
             try {
-                const divStartHtml =
-                    '<div class="bloom-editable ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox">';
-                const divInnerHtml =
-                    '<p><span class="audio-sentence">1.1၊</span> <span class="audio-sentence">1.2</span></p>';
-                const divHtml = `${divStartHtml}${divInnerHtml}</div>`;
-                SetupIFrameFromHtml(`<div id='page1'>${divHtml}</div>`);
-                theOneAudioRecorder.audioRecordingMode =
-                    AudioRecordingMode.TextBox;
-                // Mark not exists
-                spyOn(axios, "get").and.returnValue(
-                    Promise.reject(new Error("Fake 404 Error"))
+                await runSentenceSplittingTestsAsync(
+                    AudioMode.HardSplitTextBox,
+                    false
                 );
-
-                // System under test
-                const tbTool = new TalkingBookTool();
-                await tbTool.showTool();
-
-                // Verification
-                const spans = getAudioSentenceSpans("div1");
-                const texts = spans.map(elem => {
-                    return elem.innerText;
-                });
-                expect(texts).toEqual(["1.1၊ 1.2"]);
                 done();
             } catch (error) {
                 fail(error);
@@ -235,31 +338,10 @@ describe("talking book tests", () => {
 
         it("[TextBox/Sentence Hard Split] showTool() should NOT update sentence splits if recordings do exist", async done => {
             try {
-                const divStartHtml =
-                    '<div class="bloom-editable" id="div1" data-audiorecordingmode="TextBox">';
-                const divInnerHtml =
-                    '<p><span class="audio-sentence">1.1၊</span> <span class="audio-sentence">1.2</span></p>';
-                const divHtml = `${divStartHtml}${divInnerHtml}</div>`;
-                SetupIFrameFromHtml(`<div id='page1'>${divHtml}</div>`);
-                theOneAudioRecorder.audioRecordingMode =
-                    AudioRecordingMode.TextBox;
-                // mark exists
-                spyOn(axios, "get").and.returnValue(Promise.resolve());
-
-                // System under test
-                const tbTool = new TalkingBookTool();
-                await tbTool.showTool();
-
-                // Verification
-                const spans = getAudioSentenceSpans("div1");
-                const texts = spans.map(elem => {
-                    return elem.innerText;
-                });
-                expect(texts).toEqual(["1.1၊", "1.2"]);
-
-                const div = getFrameElementById("page", "div1");
-                expect(div).toHaveClass("ui-audioCurrent");
-                expect(spans[0]).not.toHaveClass("ui-audioCurrent");
+                await runSentenceSplittingTestsAsync(
+                    AudioMode.HardSplitTextBox,
+                    true
+                );
 
                 done();
             } catch (error) {
@@ -271,39 +353,10 @@ describe("talking book tests", () => {
 
         it("[TextBox/Sentence Soft Split] showTool() DOESN'T update sentence splits even if no recordings exist", async done => {
             try {
-                const divStartHtml =
-                    '<div class="bloom-editable ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox" data-audiorecordingendtimes="1.0 2.0">';
-                const divInnerHtml =
-                    '<p><span id="1.1" class="bloom-highlightSegment">1.1၊</span> <span id="1.2" class="bloom-highlightSegment">1.2</span></p>';
-
-                const divHtml = `${divStartHtml}${divInnerHtml}</div>`;
-                SetupIFrameFromHtml(`<div id='page1'>${divHtml}</div>`);
-                theOneAudioRecorder.audioRecordingMode =
-                    AudioRecordingMode.TextBox;
-                // Mark not exists
-                spyOn(axios, "get").and.returnValue(
-                    Promise.reject(new Error("Fake 404 Error"))
+                await runSentenceSplittingTestsAsync(
+                    AudioMode.SoftSplitTextBox,
+                    false
                 );
-
-                // System under test
-                const tbTool = new TalkingBookTool();
-                await tbTool.showTool();
-
-                // Verification
-                const spans = getHighlightSegments("div1");
-                const texts = spans.map(elem => {
-                    return elem.innerText;
-                });
-
-                // NOTE: This test doesn't have very intuitive results.
-                // It actually preserves the original splits, even though normally, no recordings present means we should update them.
-                // Prior to this check-if-recordings-present feature, it was actually the case that upon Soft Split, it never updated the markup.
-                // (That's because the playback mode was identified as text box, and in that case, it never actually runs makeAudioSentenceElementsLeaf())
-                // I'm not sure if that was entirely intentional, but it does seem very problematic to risk increasing/decreasing the number of splits while an audio is aligned to it.
-                // Now that we do check if recordings present...
-                // If they're somehow missing, we COULD now update the markup, but it doesn't seem worth the time, complexity, or risk to add that functionality.
-                // I guess it's more like if there's no recordings present, then we do whatever the old behavior was... which in this case, is to not do anything.
-                expect(texts).toEqual(["1.1၊", "1.2"]);
                 done();
             } catch (error) {
                 fail(error);
@@ -314,27 +367,10 @@ describe("talking book tests", () => {
 
         it("[TextBox/Sentence Soft Split] showTool() should NOT update sentence splits if recordings do exist", async done => {
             try {
-                const divStartHtml =
-                    '<div class="bloom-editable ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox" data-audiorecordingendtimes="1.0 2.0">';
-                const divInnerHtml =
-                    '<p><span id="1.1" class="bloom-highlightSegment">1.1၊</span> <span id="1.2" class="bloom-highlightSegment">1.2</span></p>';
-                const divHtml = `${divStartHtml}${divInnerHtml}</div>`;
-                SetupIFrameFromHtml(`<div id='page1'>${divHtml}</div>`);
-                theOneAudioRecorder.audioRecordingMode =
-                    AudioRecordingMode.TextBox;
-                // mark exists
-                spyOn(axios, "get").and.returnValue(Promise.resolve());
-
-                // System under test
-                const tbTool = new TalkingBookTool();
-                await tbTool.showTool();
-
-                // Verification
-                const spans = getHighlightSegments("div1");
-                const texts = spans.map(elem => {
-                    return elem.innerText;
-                });
-                expect(texts).toEqual(["1.1၊", "1.2"]);
+                await runSentenceSplittingTestsAsync(
+                    AudioMode.SoftSplitTextBox,
+                    true
+                );
                 done();
             } catch (error) {
                 fail(error);
