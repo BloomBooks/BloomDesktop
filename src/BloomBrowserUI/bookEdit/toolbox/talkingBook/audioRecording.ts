@@ -872,11 +872,16 @@ export default class AudioRecording {
         this.removeAudioCurrentFromPageDocBody();
 
         if (!this.showPlaybackInput.checked) {
+            // It's good for this to happen before awaiting the subsequent async behavior,
+            // especially if the caller doesn't await this function.
+            // This allows us to generally represent the correct current element immediately.
             newElement.classList.add(kAudioCurrent);
         }
 
         if (disableHighlightIfNoAudio) {
-            newElement.classList.add("disableHighlight"); // prevents highlight showing at once
+            // prevents highlight showing at once
+            // FYI: Because of how JS works, no rendering should happen between setting audioCurrent above and setting disableHighlight here.
+            newElement.classList.add("disableHighlight");
             try {
                 const response: AxiosResponse<any> = await axios.get(
                     "/bloom/api/audio/checkForSegment?id=" + newElement.id
@@ -1794,7 +1799,7 @@ export default class AudioRecording {
     }
 
     // Update the input element (e.g. checkbox) which visually represents the recording mode and updates the textbox markup to reflect the new mode.
-    public async updateRecordingModeAsync(
+    public async toggleRecordingModeAsync(
         forceOverwrite: boolean = false
     ): Promise<void> {
         // Check if there are any audio recordings present.
@@ -1911,7 +1916,7 @@ export default class AudioRecording {
             // Note: In the future, if the click handler is no longer used, just assign the same onClick function() to the checkbox itself.
             $("#" + kRecordingModeClickHandler)
                 .off()
-                .click(e => this.updateRecordingModeAsync());
+                .click(e => this.toggleRecordingModeAsync());
         }
     }
 
@@ -2312,7 +2317,7 @@ export default class AudioRecording {
         // * By the end of version 4.5 it doesn't seem necessary anymore but hard to say for sure because it only triggers non-deterministically
         // * Version 4.9 development: still wasn't observed to be necessary.
         // * Another version 4.9 test: 60 times in a row with no problem and no flash without this code.
-        // TODO: Maybe we can try deleting this code in Version 4.10
+        // TODO: Maybe we can try deleting the commented-out code in Version 4.10
 
         // Note: Marking up the Current Element needs to happen after CKEditor's onload() fully finishes.  (onload sets the HTML of the bloom-editable to its original value, so it can wipe out any changes made to the original value).
         //   There is a race condition as to which one finishes first.  We need to  finish AFTER Ckeditor's onload()

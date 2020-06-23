@@ -1088,7 +1088,7 @@ describe("audio recording tests", () => {
         });
     });
 
-    describe("- updateRecordingMode()", () => {
+    describe("- toggleRecordingMode()", () => {
         it("URM(): converts from RecordSentence/PlaySentence to RecordTextBox/PlaySentence", async done => {
             const textBoxDivHtml =
                 '<div id="textBox1" class="bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style cke_editable cke_editable_inline cke_contents_ltr" data-languagetipcontent="English" data-audiorecordingmode="Sentence" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" lang="en" contenteditable="true">';
@@ -1103,9 +1103,9 @@ describe("audio recording tests", () => {
             player.src = "sentence1.mp3";
 
             const recording = new AudioRecording();
-            recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, updateRecordingMode() will flip the state
+            recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, toggleRecordingMode() will flip the state
             try {
-                await recording.updateRecordingModeAsync();
+                await recording.toggleRecordingModeAsync();
             } catch (error) {
                 fail(error);
                 done();
@@ -1167,9 +1167,9 @@ describe("audio recording tests", () => {
             player.src = "sentence1.mp3";
 
             const recording = new AudioRecording();
-            recording.audioRecordingMode = AudioRecordingMode.TextBox; // Should be the old state, updateRecordingMode() will flip the state
+            recording.audioRecordingMode = AudioRecordingMode.TextBox; // Should be the old state, toggleRecordingMode() will flip the state
             try {
-                await recording.updateRecordingModeAsync();
+                await recording.toggleRecordingModeAsync();
             } catch (error) {
                 fail(error);
                 done();
@@ -1230,9 +1230,9 @@ describe("audio recording tests", () => {
             player.src = "textBox1.mp3";
 
             const recording = new AudioRecording();
-            recording.audioRecordingMode = AudioRecordingMode.TextBox; // Should be the old state, updateRecordingMode() will flip the state
+            recording.audioRecordingMode = AudioRecordingMode.TextBox; // Should be the old state, toggleRecordingMode() will flip the state
             try {
-                await recording.updateRecordingModeAsync();
+                await recording.toggleRecordingModeAsync();
             } catch (error) {
                 fail(error);
                 done();

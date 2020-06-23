@@ -90,7 +90,7 @@ describe("talking book tests", () => {
             const div1Html =
                 '<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent">1.1၊</span> <span id="1.2" class="audio-sentence">1.2</span></p></div>';
             const div2Html =
-                '<div class="bloom-editable" id="div2" data-audioRecordingMode="Sentence"><p><span id="2.1" class="audio-sentence ui-audioCurrent">2.1၊</span> <span id="2.2" class="audio-sentence">2.2</span></p></div>';
+                '<div class="bloom-editable" id="div2" data-audioRecordingMode="Sentence"><p><span id="2.1" class="audio-sentence">2.1၊</span> <span id="2.2" class="audio-sentence">2.2</span></p></div>';
             return `${div1Html}${div2Html}`;
         }
 
@@ -181,6 +181,7 @@ describe("talking book tests", () => {
             // Verification
             verifyHtmlStructure(scenario, areRecordingsPresent, originalHtml);
             verifyCurrentHighlight(scenario);
+            verifyRecordButtonEnabled(); // Make sure we didn't accidentally disable all the toolbox buttons
         }
 
         function verifyHtmlStructure(
@@ -240,6 +241,14 @@ describe("talking book tests", () => {
                 return;
             }
 
+            const page1 = getFrameElementById("page", "page1")!;
+            const numCurrents = page1.querySelectorAll(".ui-audioCurrent")
+                .length;
+            expect(numCurrents).toBe(
+                1,
+                "Only 1 item is allowed to be the current: " + page1.innerHTML
+            );
+
             switch (scenario) {
                 case AudioMode.PureSentence: {
                     const firstSpan = div.querySelector("span.audio-sentence");
@@ -251,11 +260,6 @@ describe("talking book tests", () => {
                 case AudioMode.HardSplitTextBox:
                 case AudioMode.SoftSplitTextBox: {
                     expect(div).toHaveClass("ui-audioCurrent");
-
-                    const currentSpan = div!.querySelector(
-                        "span.ui-audiocurrent"
-                    );
-                    expect(currentSpan).toBeNull();
                     break;
                 }
 
@@ -388,9 +392,7 @@ function getAudioSentenceSpans(divId: string): HTMLSpanElement[] {
 
     const htmlElement = element! as HTMLElement;
     const collection = htmlElement.querySelectorAll("span.audio-sentence");
-    return Array.prototype.map.call(collection, (elem: HTMLSpanElement) => {
-        return elem;
-    });
+    return Array.from(collection) as HTMLSpanElement[];
 }
 
 function getHighlightSegments(divId: string): HTMLSpanElement[] {
@@ -402,9 +404,7 @@ function getHighlightSegments(divId: string): HTMLSpanElement[] {
     const collection = htmlElement.querySelectorAll(
         "span.bloom-highlightSegment"
     );
-    return Array.prototype.map.call(collection, (elem: HTMLSpanElement) => {
-        return elem;
-    });
+    return Array.from(collection) as HTMLSpanElement[];
 }
 
 function getParagraphsOfTextBox(divId: string): HTMLParagraphElement[] {
