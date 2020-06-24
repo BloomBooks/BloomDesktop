@@ -883,9 +883,20 @@ export class BubbleManager {
         const padding = BubbleManager.getLeftAndTopPaddings(element);
         const borderAndPadding = border.add(padding);
 
+        // If the text overflows, then scrollTop is probably some positive value.
+        // We want to add it in because the number we return represents the distance of the text box
+        // from the start of the element, not from where the visible edge of the element is.
+        const scroll = new Point(
+            element.scrollLeft,
+            element.scrollTop,
+            PointScaling.Unscaled,
+            "Element ScrollLeft/Top (Unscaled)"
+        );
+
         const transposedPoint = pointRelativeToViewport
             .subtract(origin)
-            .subtract(borderAndPadding);
+            .subtract(borderAndPadding)
+            .add(scroll);
         return transposedPoint;
     }
 
