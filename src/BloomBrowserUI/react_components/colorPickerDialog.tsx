@@ -50,16 +50,17 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
 
     React.useEffect(() => {
         if (open) {
-            // TODO: BL-8604 Create an api call to get colors used in a book
-            // BloomApi.getWithPromise("editView/getBookColors").then();
-            // Temporary testing: add 3 swatches as "already in use in this book"
-            // What if book has already used more than MAX_SWATCHES?
-            const alreadyUsedSwatches: ISwatchDefn[] = [
-                { colors: ["#2266aa"], name: "" },
-                { colors: ["#ffffff", "#DFB28B"], name: "whiteToCalico" },
-                { colors: ["#575757"], name: "", opacity: 0.66 }
-            ];
-            addNewSwatchesToArrayIfNecessary(alreadyUsedSwatches);
+            BloomApi.get("editView/getBookColors", result => {
+                const jsonString = result.data;
+                if (!jsonString.map) {
+                    return; // this means the conversion string -> JSON didn't work. Bad JSON?
+                }
+                // Maybe we first used this for text colors and now we're using it for background colors or vice versa.
+                // Add this usage's default colors, in case they weren't already there.
+                addNewSwatchesToArrayIfNecessary(
+                    props.defaultSwatchColors.concat(jsonString)
+                );
+            });
             setCurrentColor(props.initialColor);
         }
     }, [open]);
@@ -87,6 +88,9 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
             if (isSwatchInCurrentSwatchArray(newSwatch)) {
                 return; // This one is already in our array of swatches
             }
+            if (isSwatchInThisArray(newSwatch, newSwatchesAdded)) {
+                return; // We don't need to add the same swatch more than once!
+            }
             if (lengthBefore + newSwatchesAdded.length + 1 > MAX_SWATCHES) {
                 numberToDelete++;
             }
@@ -105,9 +109,14 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         setSwatchArray(newSwatchesAdded.concat(newSwatchArray));
     };
 
-    // Use a compare function to see if the swatch in question is already in our list of swatches or not.
     const isSwatchInCurrentSwatchArray = (swatch: ISwatchDefn): boolean =>
-        !!swatchArray.find(swatchCompareFunc(swatch));
+        isSwatchInThisArray(swatch, swatchArray);
+
+    // Use a compare function to see if the swatch in question matches on already in this list or not.
+    const isSwatchInThisArray = (
+        swatch: ISwatchDefn,
+        arrayOfSwatches: ISwatchDefn[]
+    ): boolean => !!arrayOfSwatches.find(swatchCompareFunc(swatch));
 
     // Function for comparing a swatch with an array of swatches to see if the swatch is already
     // in the array. We pass this function to .find().
