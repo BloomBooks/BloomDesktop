@@ -224,7 +224,7 @@ namespace Bloom.Publish.Epub
 			// "api/publish/epub/updatePreview".  Rather than confuse the user, we catch such
 			// exceptions here and retry a limited number of times.
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6763.
-			string exception = null;
+			Exception exception = null;
 			for (int i = 0; i < 3; ++i)
 			{
 				try
@@ -235,12 +235,12 @@ namespace Bloom.Publish.Epub
 				}
 				catch (Exception e)
 				{
-					exception = e.Message;
+					exception = e;	// the original stack trace is rather important for post mortem debugging!
 				}
 			}
 			// Notify the user gently that updating the ePUB preview failed.
 			NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Something went wrong while making the ePUB preview.",
-				"Updating the ePUB preview failed: " + exception);
+				"Updating the ePUB preview failed: " + exception.Message, exception);
 		}
 
 		public void ReportAnalytics(string eventName)
