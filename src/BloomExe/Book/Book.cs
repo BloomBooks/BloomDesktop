@@ -17,6 +17,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
+using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
@@ -1816,6 +1817,9 @@ namespace Bloom.Book
 		/// 
 		/// For determining which Text Languages to display in Publish -> Android and which pages to delete
 		/// from a .bloomd file, we pass the true parameter. Then the "(non-x-matter)" above doesn't apply.
+		/// 
+		/// In setting the boolean value, we don't count xmatter elements, so an empty xmatter field will never
+		/// cause a language to be an "incomplete translation". BL-8527
 		/// </summary>
 		/// <remarks>The logic here is used to determine which language checkboxes to show in the web upload.
 		/// Nearly identical logic is used in bloom-player to determine which languages to show on the Language Menu,
@@ -1856,10 +1860,13 @@ namespace Bloom.Book
 				}
 			}
 			// Second pass: for each parent, if it lacks a non-empty child for one of the languages, set value for that lang to false.
+			// OTOH, if the parent is in XMatter, don't set the value.
 			foreach (var lang in result.Keys.ToList()) // ToList so we can modify original collection as we go
 			{
 				foreach (var parent in parents)
 				{
+					if (ElementIsInXMatter(parent))
+						continue;
 					if (IsLanguageWanted(parent, lang) && !HasContentInLang(parent, lang))
 					{
 						result[lang] = false; // not complete
@@ -1868,6 +1875,21 @@ namespace Bloom.Book
 				}
 			}
 			return result;
+		}
+
+		private static bool ElementIsInXMatter(XmlElement element)
+		{
+			if (element == null)
+				return false;
+			while (element.ParentNode.Name != "body")
+			{
+				if (element.ParentWithClass("bloom-frontMatter") != null ||
+				    element.ParentWithClass("bloom-backMatter") != null)
+					return true;
+				element = element.ParentNode as XmlElement;
+			}
+
+			return false;
 		}
 
 		/// Return all the languages we should currently offer to include when publishing this book.
