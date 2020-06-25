@@ -23,7 +23,8 @@ namespace Bloom.MiscUI
 		public BrowserDialog(string url)
 		{
 			InitializeComponent();
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow; // draggable
+			this.Text = ""; // don't show the title, we do that in the html
 
 			// The Size setting is needed on Linux to keep the browser from coming up as a small
 			// rectangle in the upper left corner...

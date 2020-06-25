@@ -237,10 +237,11 @@ export const ProblemDialog: React.FunctionComponent<{
                     Close icon inside of the title's Typography element, where we don't have control over its CSS. */}
                 <DialogTitle className="dialog-title" disableTypography={true}>
                     <Typography variant="h6">{localizedDlgTitle}</Typography>
-                    <Close
+                    {/* We moved the X up to the winforms dialog so that it is draggable
+                         <Close
                         className="close-in-title"
                         onClick={() => BloomApi.post("dialog/close")}
-                    />
+                    /> */}
                 </DialogTitle>
                 <DialogContent className="content">
                     {(() => {
