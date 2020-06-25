@@ -17,6 +17,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
+using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
@@ -1808,25 +1809,32 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languages
-		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful?
-		/// Based on BL-2017, we now return a Dictionary of booleans indicating whether a language should be uploaded by default.
-		/// The dictionary contains an entry for every language where the book contains (non-x-matter) text.
-		/// The value is true if every (non-x-matter) field which contains text in any language contains text in this.
-		/// 
+		/// All the languages in a book is a difficult concept to define.
+		/// So much so that the result isn't simply a list, but a dictionary: the keys indicate the languages
+		/// that are present, and the (boolean) values are true if the book is considered to be "complete"
+		/// in that language, which in some contexts (such as publishing to bloom library) governs whether
+		/// the language is published by default.
+		/// It also makes a difference whether an interesting element occurs in xmatter or not.
+		/// A language is never considered an "incomplete translation" because it is missing in an xmatter element,
+		/// mainly because it's so common for elements there to be in just a national language (BL-8527).
+		/// For some purposes, a language that occurs ONLY in xmatter doesn't count at all... it won't even be
+		/// a key in the dictionary unless includeLangsOccurringOnlyInXmatter is true.
+		///  
 		/// For determining which Text Languages to display in Publish -> Android and which pages to delete
-		/// from a .bloomd file, we pass the true parameter. Then the "(non-x-matter)" above doesn't apply.
+		/// from a .bloomd file, we pass the parameter as true. I (gjm) am unclear as to why historically
+		/// we did it this way, but BL-7967 might be part of the problem
+		/// (where xmatter pages only in L2 were erroneously deleted).
 		/// </summary>
 		/// <remarks>The logic here is used to determine which language checkboxes to show in the web upload.
 		/// Nearly identical logic is used in bloom-player to determine which languages to show on the Language Menu,
 		/// so changes here may need to be reflected there and vice versa.</remarks>
-		public Dictionary<string, bool> AllLanguages(bool countXmatter = false)
+		public Dictionary<string, bool> AllLanguages(bool includeLangsOccurringOnlyInXmatter = false)
 		{
 			var result = new Dictionary<string, bool>();
 			var parents = new HashSet<XmlElement>(); // of interesting non-empty children
 			const string pageXpathFront = "//div[contains(@class, 'bloom-page')";
 			const string xpathEnd = "]//div[@class and @lang]";
-			var xmatterXpath = countXmatter ? "" : " and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))";
+			var xmatterXpath = includeLangsOccurringOnlyInXmatter ? "" : " and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))";
 			// editable divs that are in non-x-matter pages and have a potentially interesting language.
 			var langDivs = OurHtmlDom.SafeSelectNodes(pageXpathFront + xmatterXpath + xpathEnd).Cast<XmlElement>()
 				// BL-8228. Don't proceed if this is a text without normal parentage, e.g. boilerplate text from a Branding pack.
@@ -1856,10 +1864,13 @@ namespace Bloom.Book
 				}
 			}
 			// Second pass: for each parent, if it lacks a non-empty child for one of the languages, set value for that lang to false.
+			// OTOH, if the parent is in XMatter, don't set the value.
 			foreach (var lang in result.Keys.ToList()) // ToList so we can modify original collection as we go
 			{
 				foreach (var parent in parents)
 				{
+					if (ElementIsInXMatter(parent))
+						continue;
 					if (IsLanguageWanted(parent, lang) && !HasContentInLang(parent, lang))
 					{
 						result[lang] = false; // not complete
@@ -1870,10 +1881,25 @@ namespace Bloom.Book
 			return result;
 		}
 
-		/// Return all the languages we should currently offer to include when publishing this book.
-		public Dictionary<string, bool> AllPublishableLanguages(bool countXmatter = false)
+		private static bool ElementIsInXMatter(XmlElement element)
 		{
-			var result = AllLanguages(countXmatter);
+			if (element == null)
+				return false;
+			while (element.ParentNode.Name != "body")
+			{
+				if (element.ParentWithClass("bloom-frontMatter") != null ||
+				    element.ParentWithClass("bloom-backMatter") != null)
+					return true;
+				element = element.ParentNode as XmlElement;
+			}
+
+			return false;
+		}
+
+		/// Return all the languages we should currently offer to include when publishing this book.
+		public Dictionary<string, bool> AllPublishableLanguages(bool includeLangsOccurringOnlyInXmatter = false)
+		{
+			var result = AllLanguages(includeLangsOccurringOnlyInXmatter);
 			// For comical books, we only publish a single language. It's not currently feasible to
 			// allow the reader to switch language in a Comical book, because typically that requires
 			// adjusting the positions of the bubbles, and we don't yet support having more than one

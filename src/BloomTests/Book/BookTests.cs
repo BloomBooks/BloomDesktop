@@ -1762,7 +1762,7 @@ namespace BloomTests.Book
 		[Test]
 		[TestCase(false)]
 		[TestCase(true)]
-		public void AllLanguages_FindsBloomEditableElements(bool countXmatter)
+		public void AllLanguages_FindsBloomEditableElements(bool includeLangsOccurringOnlyInXmatter)
 		{
 			_bookDom = new HtmlDom(
 				@"<html>
@@ -1837,10 +1837,10 @@ namespace BloomTests.Book
 				</body></html>");
 
 			var book = CreateBook();
-			var allLanguages = book.AllLanguages(countXmatter);
+			var allLanguages = book.AllLanguages(includeLangsOccurringOnlyInXmatter);
 			// In the case where 'countXmatter' is true, the stored bool will be true for thai, which occurs
 			// on all pages. For all the others, it will be false, since there is no text in the xmatter pages.
-			if (countXmatter)
+			if (includeLangsOccurringOnlyInXmatter)
 			{
 				Assert.That(allLanguages["en"], Is.False);
 				Assert.That(allLanguages["de"], Is.False);
