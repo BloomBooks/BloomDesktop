@@ -3,14 +3,17 @@ import * as ReactDOM from "react-dom";
 import { useState } from "react";
 import Dialog from "@material-ui/core/Dialog";
 import {
+    Button,
     DialogTitle,
     DialogActions,
     DialogContent,
     Paper
 } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
-import BloomButton from "./bloomButton";
 import { getEditViewFrameExports } from "../bookEdit/js/bloomFrames";
+import { useL10n } from "./l10nHooks";
+import { ThemeProvider } from "@material-ui/styles";
+import theme from "../bloomMaterialUITheme";
 import { BloomApi } from "../utils/bloomApi";
 import CustomColorPicker from "./customColorPicker";
 import * as tinycolor from "tinycolor2";
@@ -149,49 +152,52 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         props.onChange(color);
     };
 
+    const OkText = useL10n("OK", "Common.OK");
+    const CancelText = useL10n("Cancel", "Common.Cancel");
+
     return (
-        <CloseOnEscape onEscape={() => onClose(DialogResult.Cancel)}>
-            <Dialog
-                className="bloomModalDialog color-picker-dialog"
-                open={open}
-                PaperComponent={PaperComponent}
-            >
-                <DialogTitle
-                    id="draggable-color-picker-title"
-                    style={{ cursor: "move" }}
+        <ThemeProvider theme={theme}>
+            <CloseOnEscape onEscape={() => onClose(DialogResult.Cancel)}>
+                <Dialog
+                    className="bloomModalDialog color-picker-dialog"
+                    open={open}
+                    PaperComponent={PaperComponent}
                 >
-                    {props.localizedTitle}
-                </DialogTitle>
-                <DialogContent>
-                    <CustomColorPicker
-                        onChange={handleOnChange}
-                        currentColor={currentColor}
-                        swatchColors={swatchArray}
-                        noAlphaSlider={props.noAlphaSlider}
-                        noGradientSwatches={props.noGradientSwatches}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <BloomButton
-                        l10nKey="Common.OK"
-                        enabled={true}
-                        onClick={() => onClose(DialogResult.OK)}
-                        hasText={true}
+                    <DialogTitle
+                        id="draggable-color-picker-title"
+                        style={{ cursor: "move" }}
                     >
-                        OK
-                    </BloomButton>
-                    <BloomButton
-                        l10nKey="Common.Cancel"
-                        enabled={true}
-                        onClick={() => onClose(DialogResult.Cancel)}
-                        hasText={true}
-                        variant="outlined"
-                    >
-                        Cancel
-                    </BloomButton>
-                </DialogActions>
-            </Dialog>
-        </CloseOnEscape>
+                        {props.localizedTitle}
+                    </DialogTitle>
+                    <DialogContent>
+                        <CustomColorPicker
+                            onChange={handleOnChange}
+                            currentColor={currentColor}
+                            swatchColors={swatchArray}
+                            // Temporary: When comical does alpha, chg to 'props.noAlphaSlider'.
+                            // Unfortunately, with an alpha slider, the hex input will automatically switch to rgb
+                            // the moment the user sets alpha to anything but max opacity.
+                            noAlphaSlider={true}
+                            noGradientSwatches={props.noGradientSwatches}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button
+                            onClick={() => onClose(DialogResult.OK)}
+                            color="primary"
+                        >
+                            {OkText}
+                        </Button>
+                        <Button
+                            onClick={() => onClose(DialogResult.Cancel)}
+                            color="primary"
+                        >
+                            {CancelText}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            </CloseOnEscape>
+        </ThemeProvider>
     );
 };
 

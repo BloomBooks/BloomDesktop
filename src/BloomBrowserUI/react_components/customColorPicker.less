@@ -3,13 +3,20 @@
 @swatch-row-left-pad: @swatch-margin;
 
 .custom-color-picker {
-    height: 300px;
     display: flex;
     width: max-content;
     flex-direction: column;
-    box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 2px, rgba(0, 0, 0, 0.3) 0px 4px 8px;
     .chrome-picker {
         box-shadow: none !important;
+        // here follows some customization of the react-color chrome-picker to remove bits we don't want
+        > div:nth-child(2) > div:nth-child(2) {
+            > div div div span {
+                display: none !important; // Hide "HEX" label
+            }
+            > div:nth-child(2) {
+                display: none; // Hide control that switches to RGBA or HSLA input
+            }
+        }
     }
     .swatch-row {
         display: flex;
