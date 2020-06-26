@@ -133,7 +133,11 @@ namespace Bloom
 
 		private static void ShowToast(string shortUserLevelMessage, Exception exception, string fullDetailedMessage, bool showSendReport = true)
 		{
-			var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
+			// The form is used for the screen shot as well as for synchronizing, so get the shell if possible.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-8348.
+			var formForSynchronizing = Application.OpenForms.Cast<Form>().Where(x => x is Bloom.Shell).FirstOrDefault();
+			if (formForSynchronizing == null)
+				formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
 			if (formForSynchronizing.InvokeRequired)
 			{
 				formForSynchronizing.BeginInvoke(new Action(() =>
