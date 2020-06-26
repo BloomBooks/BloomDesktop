@@ -265,7 +265,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
         // Play the audio during animation
         this.narrationPlayer = new AudioRecording();
         this.narrationPlayer.setupForListen();
-        this.narrationPlayer.listen();
+        this.narrationPlayer.listenAsync();
         setPlayState(true);
     }
 

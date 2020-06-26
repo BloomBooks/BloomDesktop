@@ -23,13 +23,24 @@ export default class TalkingBookTool implements ITool {
 
     public configureElements(container: HTMLElement) {}
 
+    // When are showTool, newPageReady, and updateMarkup called?
+    // Some scenarios:
+    // * Open the toolbox and Talking Book shows up  - showTool, newPageReady
+    // * Open a book and Talking Book tool automatically opens - showTool, newPageReady
+    // * Creating a new page while tool is open - newPageReady, updateMarkup, newPageReady (again), updateMarkup (again)
+    // * Changing to an existing page while tool is open - same as above.
+    // * Typing in a text box while tool is open - updateMarkup
+    // * Close the toolbox: hideTool()
+    // * hit the Toolbox's "More" switcher: hideTool()
+    // * Switching from a different tool to Talking Book Tool - showTool, newPageReady
+    // * Add a new text box using Origami ("Change Layout"), then turn off the Origami Editor: newPageReady, updateMarkup
     public async showTool(): Promise<void> {
         // BL-7588 There used to be a enterprise callback that delayed image descriptions and setup until
         // the initialize function had completed, now that it isn't there we need to treat the initialize
         // as the asynchronous method it is.
         await AudioRecorder.initializeTalkingBookToolAsync();
         this.showImageDescriptionsIfAny();
-        AudioRecorder.theOneAudioRecorder.setupForRecordingAsync();
+        await AudioRecorder.theOneAudioRecorder.setupForRecordingAsync();
     }
 
     // Called when a new page is loaded.
@@ -57,16 +68,13 @@ export default class TalkingBookTool implements ITool {
     }
 
     // Called whenever the user edits text.
-    public updateMarkup() {
+    public async updateMarkup(): Promise<void> {
         this.showImageDescriptionsIfAny();
-        const playbackMode = AudioRecorder.theOneAudioRecorder.getCurrentPlaybackMode();
-        AudioRecorder.theOneAudioRecorder.updateMarkupForCurrentText(
-            playbackMode,
-            true
-        );
-        AudioRecorder.theOneAudioRecorder.changeStateAndSetExpectedAsync(
-            "record"
-        );
+        return AudioRecorder.theOneAudioRecorder.updateMarkup();
+    }
+
+    public isUpdateMarkupAsync(): boolean {
+        return true;
     }
 
     private showImageDescriptionsIfAny() {

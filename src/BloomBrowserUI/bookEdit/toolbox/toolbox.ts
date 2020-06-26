@@ -32,6 +32,7 @@ export interface ITool {
     showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
     hideTool(); // called when changing tools or hiding the toolbox.
     updateMarkup(); // called on every keypress AND after newPageReady
+    isUpdateMarkupAsync(): boolean; // should return true if updateMarkup does any async work that we should wait for.
     newPageReady(); // called when a new page is displayed AND after showTool
     detachFromPage(); // called when a page is going away AND before hideTool
     id(): string; // without trailing "Tool"!
@@ -848,7 +849,7 @@ function handleKeyboardInput(): void {
     //  this.keypressTimer.clearTimeout();
     //}
     if (keypressTimer) clearTimeout(keypressTimer);
-    keypressTimer = setTimeout(() => {
+    keypressTimer = setTimeout(async () => {
         // This happens 500ms after the user stops typing.
         const page: HTMLIFrameElement = <HTMLIFrameElement>(
             parent.window.document.getElementById("page")
@@ -908,13 +909,13 @@ function handleKeyboardInput(): void {
             // it's not true vernacular text and doesn't need markup. So all the code below is skipped
             // if we don't have one.
             if (ckeditorOfThisBox) {
-                const ckeditorSelection = ckeditorOfThisBox.getSelection();
+                let ckeditorSelection = ckeditorOfThisBox.getSelection();
 
                 // there is also createBookmarks2(), which avoids actually inserting anything. That has the
                 // advantage that changing a character in the middle of a word will allow the entire word to
                 // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
                 // actually go back to where it was: it gets shifted to the right.
-                const bookmarks = ckeditorSelection.createBookmarks(true);
+                let bookmarks = ckeditorSelection.createBookmarks(true);
 
                 // For some reason, we have cases, mostly (always?) on paste, where
                 // ckeditor is inserting tons of comments which are messing with our parsing
@@ -923,7 +924,24 @@ function handleKeyboardInput(): void {
 
                 // If there's no tool active, we don't need to update the markup.
                 if (currentTool && toolbox.toolboxIsShowing()) {
-                    currentTool.updateMarkup();
+                    if (currentTool.isUpdateMarkupAsync()) {
+                        // Set the selection now before starting off asynchronous work
+                        // Since we've possibly already modified the DOM, CKEditor's selection will be reset back to the beginning.
+                        // If you wait for async work to finish before resetting the selection, then there will be a brief flash
+                        // as the selection moves to the front (when the async work is kicked off) and then back to the final destination
+                        // (after the async work is finished).
+                        // To counteract that minor annoyance, we set the selection before async works gets kicked off.
+                        // (and then the code below sets it again after the async work finishes)
+                        ckeditorOfThisBox
+                            .getSelection()
+                            .selectBookmarks(bookmarks);
+                        ckeditorSelection = ckeditorOfThisBox.getSelection();
+                        bookmarks = ckeditorSelection.createBookmarks(true);
+
+                        await currentTool.updateMarkup();
+                    } else {
+                        currentTool.updateMarkup();
+                    }
                 }
 
                 //set the selection to wherever our bookmark node ended up

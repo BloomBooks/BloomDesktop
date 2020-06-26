@@ -176,6 +176,10 @@ export class DecodableReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().doMarkup();
     }
 
+    public isUpdateMarkupAsync(): boolean {
+        return false;
+    }
+
     public id() {
         return "decodableReader";
     }
