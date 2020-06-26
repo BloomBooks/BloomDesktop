@@ -274,7 +274,6 @@ export default class OverflowChecker {
         );
         if (BubbleManager.growOverflowingBox(box, overflowY)) {
             overflowY = 0;
-            box.scrollTop = 0; // now it should all fit, so no need to be scrolled down
         }
         if (preventOverflowY) {
             // The usual fairly crude calculation may indicate it's overflowing, but
