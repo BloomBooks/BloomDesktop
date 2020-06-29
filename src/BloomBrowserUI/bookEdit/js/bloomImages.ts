@@ -373,12 +373,13 @@ function SetAlternateTextOnImages(element) {
         const englishText =
             "This picture, {0}, is missing or was loading too slowly."; // Also update HtmlDom.cs::IsPlaceholderImageAltText
         const nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
+        const decodedName = decodeURI(nameWithoutQueryString);
         theOneLocalizationManager
             .asyncGetText(
                 "EditTab.Image.AltMsg",
                 englishText,
                 "message displayed when the picture image cannot be displayed",
-                nameWithoutQueryString
+                decodedName
             )
             .done(translation => {
                 $(element).attr("alt", translation);
@@ -387,7 +388,7 @@ function SetAlternateTextOnImages(element) {
                 $(element).attr(
                     "alt",
                     theOneLocalizationManager.simpleDotNetFormat(englishText, [
-                        nameWithoutQueryString
+                        decodedName
                     ])
                 );
             });
