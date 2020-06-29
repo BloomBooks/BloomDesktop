@@ -1816,7 +1816,7 @@ namespace BloomTests.Book
 		[Test]
 		[TestCase(false)]
 		[TestCase(true)]
-		public void AllLanguages_FindsBloomEditableElements(bool countXmatter)
+		public void AllLanguages_FindsBloomEditableElements(bool includeLangsOccurringOnlyInXmatter)
 		{
 			_bookDom = new HtmlDom(
 				@"<html>
@@ -1843,14 +1843,9 @@ namespace BloomTests.Book
 							<div class='bloom-editable' contenteditable='true' lang='en'>
 								Bloom is a program for creating collections of books. It is an aid to literacy.
 							</div>
-							<div class='bloom-editable' contenteditable='true' lang='fr'>
-								Whatever.
-							</div>
 							<div class='bloom-editable' contenteditable='true' lang='es'>
 							</div>
-							<div class='bloom-editable' contenteditable='true' lang='tr'>
-								Thai whatever.
-							</div>
+							<div class='bloom-editable' contenteditable='true' lang='tr'></div>
 						</div>
 					</div>
 					<div class='bloom-page' id='guid3'>
@@ -1860,9 +1855,6 @@ namespace BloomTests.Book
 							</div>
 							<div class='bloom-editable' contenteditable='true' lang='en'>
 								Some English.
-							</div>
-							<div class='bloom-editable' contenteditable='true' lang='fr'>
-								Some French.
 							</div>
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='es'>
 								Something or other.
@@ -1877,7 +1869,6 @@ namespace BloomTests.Book
 								We use z for some special purpose, seems to occur in every book, don't want it.
 							</div>
 							<div class='bloom-editable' contenteditable='true' lang='tr'>
-								Some Thai.
 							</div>
 						</div>
 					</div>
@@ -1886,33 +1877,33 @@ namespace BloomTests.Book
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='tr'>
 								Some Thai in back matter. Should not count at all, except for testcase true.
 							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='en'>
+								Some English in back matter.
+							</div>
 						</div>
 					</div>
 				</body></html>");
 
 			var book = CreateBook();
-			var allLanguages = book.AllLanguages(countXmatter);
-			// In the case where 'countXmatter' is true, the stored bool will be true for thai, which occurs
-			// on all pages. For all the others, it will be false, since there is no text in the xmatter pages.
-			if (countXmatter)
+			var allLanguages = book.AllLanguages(includeLangsOccurringOnlyInXmatter);
+			// In the case where 'includeLangsOccurringOnlyInXmatter' is true, thai will be included in the list,
+			// since there is no thai text on any non-xmatter pages. The boolean value will be true for all languages
+			// that have text on each non-xmatter page (English/German) and false for all the others.
+			Assert.That(allLanguages["en"], Is.True);
+			Assert.That(allLanguages["de"], Is.True);
+			Assert.That(allLanguages["es"], Is.False); // in first group this is empty
+			Assert.That(allLanguages["xkal"], Is.False); // not in first group at all
+			if (includeLangsOccurringOnlyInXmatter)
 			{
-				Assert.That(allLanguages["en"], Is.False);
-				Assert.That(allLanguages["de"], Is.False);
-				Assert.That(allLanguages["fr"], Is.False);
-				Assert.That(allLanguages["es"], Is.False); // in first group this is empty
-				Assert.That(allLanguages["xkal"], Is.False); // not in first group at all
-				Assert.That(allLanguages["tr"], Is.True);
+				Assert.That(allLanguages["tr"], Is.False); // only exists in xmatter (therefore 'incomplete')
+				Assert.That(allLanguages.Count, Is.EqualTo(5)); // no * or z
 			}
 			else
 			{
-				Assert.That(allLanguages["en"], Is.True);
-				Assert.That(allLanguages["de"], Is.True);
-				Assert.That(allLanguages["fr"], Is.True);
-				Assert.That(allLanguages["es"], Is.False); // in first group this is empty
-				Assert.That(allLanguages["xkal"], Is.False); // not in first group at all
-				Assert.That(allLanguages["tr"], Is.True);
+				bool dummy;
+				Assert.That(allLanguages.TryGetValue("tr", out dummy), Is.False); // only exists in xmatter
+				Assert.That(allLanguages.Count, Is.EqualTo(4)); // no * or z or thai
 			}
-			Assert.That(allLanguages.Count, Is.EqualTo(6)); // no * or z
 		}
 
 		[Test]

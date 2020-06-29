@@ -336,7 +336,7 @@ namespace Bloom.Publish.Android
 		{
 			lock (_lockForLanguages)
 			{
-				_allLanguages = request.CurrentBook.AllPublishableLanguages(countXmatter: true);
+				_allLanguages = request.CurrentBook.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
 				if (_bookForLanguagesToPublish != request.CurrentBook)
 				{
 					// reinitialize our list of which languages to publish, defaulting to the ones
