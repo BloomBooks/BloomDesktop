@@ -305,8 +305,12 @@ const ComicToolControls: React.FunctionComponent = () => {
         getEditViewFrameExports().showColorPickerDialog(colorPickerDialogProps);
     };
 
+    // We have temporarily disabled the alpha slider for the background color chooser.
+    // Unfortunately, with an alpha slider, the hex input will automatically switch to rgb
+    // the moment the user sets alpha to anything but max opacity.
     const launchBackgroundColorChooser = () => {
         const colorPickerDialogProps: IColorPickerDialogProps = {
+            noAlphaSlider: true, // Temporary, when BL-8537 is in testing, remove this line.
             localizedTitle: backgroundColorTitle,
             initialColor: backgroundColorSwatch,
             defaultSwatchColors: defaultBackgroundColors,

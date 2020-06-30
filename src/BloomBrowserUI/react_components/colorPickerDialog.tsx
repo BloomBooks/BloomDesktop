@@ -87,6 +87,10 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         const newSwatchesAdded: ISwatchDefn[] = [];
         const lengthBefore = swatchArray.length;
         let numberToDelete = 0;
+        // CustomColorPicker is going to filter these swatches out anyway.
+        let numberToSkip = swatchArray.filter(swatch =>
+            willSwatchBeFilteredOut(swatch)
+        ).length;
         newSwatches.forEach(newSwatch => {
             if (isSwatchInCurrentSwatchArray(newSwatch)) {
                 return; // This one is already in our array of swatches
@@ -94,7 +98,15 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
             if (isSwatchInThisArray(newSwatch, newSwatchesAdded)) {
                 return; // We don't need to add the same swatch more than once!
             }
-            if (lengthBefore + newSwatchesAdded.length + 1 > MAX_SWATCHES) {
+            // At first I wanted to do this filtering outside the loop, but some of them might be pre-filtered
+            // by the above two conditions.
+            if (willSwatchBeFilteredOut(newSwatch)) {
+                numberToSkip++;
+            }
+            if (
+                lengthBefore + newSwatchesAdded.length + 1 >
+                MAX_SWATCHES + numberToSkip
+            ) {
                 numberToDelete++;
             }
             newSwatchesAdded.unshift(newSwatch); // add newSwatch to the beginning of the array.
@@ -104,9 +116,16 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
             // Remove 'numberToDelete' swatches from oldest custom swatches
             const defaultNumber = props.defaultSwatchColors.length;
             const indexToRemove =
-                MAX_SWATCHES - defaultNumber - newSwatchesAdded.length;
-            if (indexToRemove > 0) {
+                swatchArray.length - defaultNumber - numberToDelete;
+            if (indexToRemove >= 0) {
                 newSwatchArray.splice(indexToRemove, numberToDelete);
+            } else {
+                const excess = indexToRemove * -1; // index went negative; excess is absolute value
+                newSwatchArray.splice(0, numberToDelete - excess);
+                newSwatchesAdded.splice(
+                    newSwatchesAdded.length - excess,
+                    excess
+                );
             }
         }
         setSwatchArray(newSwatchesAdded.concat(newSwatchArray));
@@ -114,6 +133,16 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
 
     const isSwatchInCurrentSwatchArray = (swatch: ISwatchDefn): boolean =>
         isSwatchInThisArray(swatch, swatchArray);
+
+    const willSwatchBeFilteredOut = (swatch: ISwatchDefn): boolean => {
+        if (props.noAlphaSlider && swatch.opacity && swatch.opacity !== 1) {
+            return true;
+        }
+        if (props.noGradientSwatches && swatch.colors.length > 1) {
+            return true;
+        }
+        return false;
+    };
 
     // Use a compare function to see if the swatch in question matches on already in this list or not.
     const isSwatchInThisArray = (
@@ -174,10 +203,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                             onChange={handleOnChange}
                             currentColor={currentColor}
                             swatchColors={swatchArray}
-                            // Temporary: When comical does alpha, chg to 'props.noAlphaSlider'.
-                            // Unfortunately, with an alpha slider, the hex input will automatically switch to rgb
-                            // the moment the user sets alpha to anything but max opacity.
-                            noAlphaSlider={true}
+                            noAlphaSlider={props.noAlphaSlider}
                             noGradientSwatches={props.noGradientSwatches}
                         />
                     </DialogContent>
