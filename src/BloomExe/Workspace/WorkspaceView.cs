@@ -619,6 +619,11 @@ namespace Bloom.Workspace
 
 		private void SelectPage(Control view)
 		{
+			// Already on the desired page: nothing to do.  And possible problems if we do do something.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-8382.
+			if (view == _previouslySelectedControl)
+				return;
+
 			CurrentTabView = view as IBloomTabArea;
 			// Warn the user if we're starting to use too much memory.
 			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "switched page in workspace", true);
