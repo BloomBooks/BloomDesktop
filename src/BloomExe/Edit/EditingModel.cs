@@ -549,7 +549,7 @@ namespace Bloom.Edit
 
 		public void ViewVisibleNowDoSlowStuff()
 		{
-			if(_currentlyDisplayedBook != CurrentBook)
+			if (_currentlyDisplayedBook != CurrentBook)
 			{
 				if (_contentLanguages.Count == 0)
 				{
@@ -563,6 +563,13 @@ namespace Bloom.Edit
 				GetMultilingualContentLanguages(out lang2iso, out lang3iso);
 				CurrentBook.SetMultilingualContentLanguages(lang2iso, lang3iso);
 				CurrentBook.PrepareForEditing();
+				// If the book contains overlarge images, we want to fix those before editing because this can lead
+				// to thumbnails not being created properly and other bad behavior.  This is a one-time fix that can
+				// permanently change the images in the original book folder.  If any images must be shrunk, then a
+				// progress dialog pops up because that can be a very slow process.  If nothing needs to be done,
+				// nothing will appear on the screen, and it usually takes a small fraction of a second to determine
+				// this.  (almost no time if the maintenanceLevel has been set for this book)
+				CurrentBook.Storage.ShrinkImagesIfNecessary();
 			}
 
 			_currentlyDisplayedBook = CurrentBook;

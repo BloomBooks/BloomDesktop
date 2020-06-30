@@ -475,6 +475,14 @@ namespace Bloom.Publish.Android
 				progress.Message("CompressingAudio", "Compressing audio files");
 				AudioProcessor.TryCompressingAudioAsNeeded(book.FolderPath, book.RawDom);
 			}
+			// Note that the BringBookUpToDate() called by PublishHelper.MakeDeviceXmatterTempBook()
+			// called by BloomReaderFileMaker.PrepareBookForBloomReader() applies to a copy of the book
+			// and is done in a way that explicitly avoids updating images.  This call, like the one
+			// in PublishModel.LoadBookIfNeeded(), updates the images if needed as a permanent fix.
+			var updateProgress = new WebProgressAdapter(progress);
+			updateProgress.AddFilter(PublishModel.GetPreparingImageFilter());	// the only slow operation that we really need progress for
+			book.BringBookUpToDate(updateProgress);
+
 			// We don't use the folder found here, but this method does some checks we want done.
 			BookStorage.FindBookHtmlInFolder(book.FolderPath);
 			_stagingFolder = new TemporaryFolder(StagingFolder);

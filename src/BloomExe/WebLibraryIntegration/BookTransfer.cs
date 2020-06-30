@@ -920,7 +920,7 @@ namespace Bloom.WebLibraryIntegration
 			if (!FileHelper.IsLocked(uploadPdfPath))
 			{
 				progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview..."));
-				publishView.MakePublishPreview();
+				publishView.MakePublishPreview(progressBox);
 				if (RobustFile.Exists(publishView.PdfPreviewPath))
 				{
 					RobustFile.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
