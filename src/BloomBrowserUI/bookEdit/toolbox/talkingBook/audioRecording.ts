@@ -1054,25 +1054,20 @@ export default class AudioRecording {
             });
     }
 
+    // Note: Kicks off some minor asynchronous work
     private finishNewRecordingOrImport() {
         if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
-            // Note: Don't think this call to updateMarkup() is necessary anymore.
-            // Previosuly, the box was considered in Record=TextBox/Play=Sentence all the way until you finish recording a text box, which is the moment it switches.
-            //     (Well, I guess one reason for this is because Text/Text is not considered a desirable end state... we want to be playing in Sentence mode as much as possible.
-            //      But since it shoudln't be possible to play at all before recording, I think that doesn't matter?)
-            // In 4.9, getCurrentPlaybackMode defaults to returning the text box's recording mode if it can't otherwise determine it.
-            // This should mean that when you type in a new text box, the state is Record=TextBox, Play=TextBox.
-            // Thus, there ought to be no need to switch the playback mode here.
-            // Thus, I tried removing this call in 4.9 (2020-06-18)
-            // No ill impact was observed.
-            // TODO: Remove in 4.10 or earlier if no ill impact observed.
-            //
-            // When ending a recording for a whole text box, we enter the state for Recording=TextBox,Playback=TextBox.
-            //this.updateMarkupForCurrentText(AudioRecordingMode.TextBox);
-
             // Reset the audioRecordingTimings.
             const currentTextBox = this.getCurrentTextBox();
             if (currentTextBox) {
+                // When ending a recording for a whole text box, we enter the state for Recording=TextBox,Playback=TextBox.
+                // (Previously, it was in Record=TextBox,Play=Sentence.
+                // Being in this intermediate state allows the user to easily switch between Sentence and TextBox without losing their existing sentence recordings.
+                this.updateMarkupForTextBox(
+                    currentTextBox,
+                    AudioRecordingMode.TextBox
+                );
+
                 currentTextBox.removeAttribute(kEndTimeAttributeName);
             }
         }
@@ -1860,6 +1855,10 @@ export default class AudioRecording {
         } else {
             // From Sentence -> TextBox, we don't convert the playback mode.
             // (since until/unless the user actually makes a new whole-text-box recording, we actually still have by-sentence recordings we can play)
+            // Note: Calling updateMarkup to switch to TextBox and then calling it again to switch back to Sentence will generate different ID's
+            // which means that existing audio will be purged soon and lost.
+            // So, we delay actually changing the markup until the user actually records something
+            // (Alternatively, I guess you can change here but you need to add UI to prevent the user from accidentally losing their recordings).
 
             const currentTextBox = this.getCurrentTextBox();
             if (currentTextBox) {
