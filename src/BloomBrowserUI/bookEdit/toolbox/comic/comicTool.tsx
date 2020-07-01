@@ -170,13 +170,13 @@ const ComicToolControls: React.FunctionComponent = () => {
     };
 
     const getBackgroundColorValue = (spec: BubbleSpec) => {
-        if (!spec.backgroundColors || spec.backgroundColors.length === 0) {
-            return "white";
+        const backgroundColorArray = ComicTool.bubbleManager().getBackgroundColorArray(
+            spec
+        );
+        if (backgroundColorArray.length === 1) {
+            return backgroundColorArray[0];
         }
-        if (spec.backgroundColors.length === 1) {
-            return spec.backgroundColors[0];
-        }
-        const specialName = getSpecialColorName(spec.backgroundColors);
+        const specialName = getSpecialColorName(backgroundColorArray);
         return specialName ? specialName : "white"; // maybe from a later version of Bloom? All we can do.
     };
 
@@ -196,10 +196,7 @@ const ComicToolControls: React.FunctionComponent = () => {
 
         // Update the Comical canvas on the page frame
         const backgroundColors = newColorSwatch.colors;
-        ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
-            backgroundColors: backgroundColors
-            // opacity: newColorSwatch.opacity?!
-        });
+        ComicTool.bubbleManager().setBackgroundColor(backgroundColors);
     };
 
     // Callback when outline color of the bubble is changed
