@@ -301,7 +301,9 @@ namespace BloomTests.Publish
 				<link rel='stylesheet' href='defaultLangStyles.css'/>
 				<link rel='stylesheet' href='basePage.css' type='text/css'/>
 				<link rel='stylesheet' href='langVisibility.css' type='text/css'/>
-				<link rel='stylesheet' href='customCollectionStyles.css'/>
+				<link rel='stylesheet' href='customCollectionStyles.css' type='text/css'/>
+				<link rel='stylesheet' href='Basic Book.css' type='text/css'></link>
+				<link rel='stylesheet' href='Device-XMatter.css' type='text/css'></link>
 				<link rel='stylesheet' href='customBookStyles.css'/>" + extraHeadContent;
 			if (createPhysicalFile)
 			{
@@ -317,6 +319,8 @@ namespace BloomTests.Publish
 
 			// Set up the visibility classes correctly
 			book.UpdateEditableAreasOfElement(book.OurHtmlDom);
+
+			book.CollectionSettings.XMatterPackName = "Device";	// give us predictable xmatter with content on page 2
 
 			return book;
 		}
@@ -356,24 +360,30 @@ namespace BloomTests.Publish
 			return book;
 		}
 
-		protected void CheckBasicsInPage(params string[] images)
+		protected void CheckBasicsInGivenPage(int pageNumber, params string[] images)
 		{
-			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@aria-describedby and not(@id)]");
+			var pageData = pageNumber == 1 ? _page1Data : GetPageNData(pageNumber);
+			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//*[@aria-describedby and not(@id)]");
 			// Not sure why we sometimes have these, but validator doesn't like them.
-			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@lang='']");
-			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:script", _ns);
-			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@lang='*']");
-			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:div[@contenteditable]", _ns);
+			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//*[@lang='']");
+			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//xhtml:script", _ns);
+			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//*[@lang='*']");
+			AssertThatXmlIn.String(pageData).HasNoMatchForXpath("//xhtml:div[@contenteditable]", _ns);
 
 			foreach (var image in images)
-				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//img[@src='"+kImagesSlash + image + ".png']");
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"defaultLangStyles.css']", _ns);
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"customCollectionStyles.css']", _ns);
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"customBookStyles.css']", _ns);
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"fonts.css']", _ns);
+				AssertThatXmlIn.String(pageData).HasAtLeastOneMatchForXpath("//img[@src='"+kImagesSlash + image + ".png']");
+			AssertThatXmlIn.String(pageData).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"defaultLangStyles.css']", _ns);
+			AssertThatXmlIn.String(pageData).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"customCollectionStyles.css']", _ns);
+			AssertThatXmlIn.String(pageData).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"customBookStyles.css']", _ns);
+			AssertThatXmlIn.String(pageData).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='"+kCssSlash+"fonts.css']", _ns);
 
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:body/*[@role]", _ns);
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:body/*[@aria-label]", _ns);
+			AssertThatXmlIn.String(pageData).HasAtLeastOneMatchForXpath("//xhtml:body/*[@role]", _ns);
+			AssertThatXmlIn.String(pageData).HasAtLeastOneMatchForXpath("//xhtml:body/*[@aria-label]", _ns);
+		}
+
+		protected void CheckBasicsInPage(params string[] images)
+		{
+			CheckBasicsInGivenPage(1, images);
 		}
 
 		protected void CheckBasicsInManifest(params string[] imageFiles)
