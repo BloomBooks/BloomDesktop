@@ -113,6 +113,11 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateDirectory("BigBook-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("BigBook-XMatter"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("BigBook-XMatter".CombineForPath("BigBook-XMatter.htm"))).Returns(xMatter.CombineForPath("BigBook-XMatter", "BigBook-XMatter.htm"));
 
+			_fileLocator.Setup(x => x.LocateDirectory("Device-XMatter")).Returns(xMatter.CombineForPath("Device-XMatter"));
+			_fileLocator.Setup(x => x.LocateDirectoryWithThrow("Device-XMatter")).Returns(xMatter.CombineForPath("Device-XMatter"));
+			_fileLocator.Setup(x => x.LocateDirectory("Device-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("Device-XMatter"));
+			_fileLocator.Setup(x => x.LocateFileWithThrow("Device-XMatter".CombineForPath("Device-XMatter.htm"))).Returns(xMatter.CombineForPath("Device-XMatter", "Device-XMatter.htm"));
+
 			//warning: we're neutering part of what the code under test is trying to do here:
 			_fileLocator.Setup(x => x.CloneAndCustomize(It.IsAny<IEnumerable<string>>())).Returns(_fileLocator.Object);
 
