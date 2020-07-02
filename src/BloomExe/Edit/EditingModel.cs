@@ -1320,7 +1320,7 @@ namespace Bloom.Edit
 			RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let's redraw everything
 		}
 
-#if __MonoCS__
+//#if __MonoCS__	// See https://issues.bloomlibrary.org/youtrack/issue/BL-8619 for why we need these for Version4.8 on Windows.
 		/// <summary>
 		/// Flag that a page selection is currently under way.
 		/// </summary>
@@ -1336,7 +1336,7 @@ namespace Bloom.Edit
 		{
 			_pageSelection.ChangingPageFinished();
 		}
-#endif
+//#endif
 
 		public bool GetClipboardHasPage()
 		{
