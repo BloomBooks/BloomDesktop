@@ -294,6 +294,7 @@ namespace Bloom.Edit
 		void WebBrowser_DocumentCompleted(object sender, Gecko.Events.GeckoDocumentCompletedEventArgs e)
 		{
 			SelectPage(PageListApi?.SelectedPage);
+			_browser.WebBrowser.DocumentCompleted -= WebBrowser_DocumentCompleted;	// need to do this only once
 		}
 
 		internal void PageClicked(IPage page)
