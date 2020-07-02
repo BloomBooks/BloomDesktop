@@ -23,13 +23,21 @@ namespace BloomTests.Publish
 			base.Setup(); // since this class represents just one test, we can do it here.
 
 			var book = SetupBookLong("This is some text", "xyz", " bloom-frontMatter frontCover' data-page='required singleton",
-				extraContentOutsideTranslationGroup: @"
-<div class='bloom-imageContainer'>
-	<img data-book='coverImage' src='DevilsSlide.png' data-copyright='Copyright © 2015, Stephen McConnel' data-creator='Stephen McConnel' data-license='cc-by-sa'></img>
-	<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement normal-style' data-default-languages='auto' data-book='coverImageDescription'>
-		<div data-languagetipcontent='Xyzzy' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 64.01px;' class='bloom-editable cke_editable cke_editable_inline cke_contents_ltr thisOverflowingParent bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='xyz' contenteditable='true'>
-			<p>Photograph of a rock formation with two parallel spines coming down a hill</p>
-		</div>
+				optionalDataDiv: @"
+<div id='bloomDataDiv'>
+	<div data-book='contentLanguage1' lang='*'>xyz</div>
+	<div data-book='contentLanguage2' lang='*'>en</div>
+	<div data-book='coverImage' lang='*' src='DevilsSlide.png' data-copyright='Copyright © 2015, Stephen McConnel' data-creator='Stephen McConnel' data-license='cc-by-sa'>DevilsSlide.png</div>
+	<div data-book='coverImageDescription' lang='xyz'><p>Photograph of a rock formation with two parallel spines coming down a hill</p></div>
+	<div data-book='bookTitle' lang='xyz'><p>New Book</p></div>
+	<div data-book='originalContributions' lang='en'>
+		<p>words <em>carefully</em> chosen by Stephen McConnel</p>
+		<p>Image on page Front Cover by Stephen McConnel, © 2012 Stephen McConnel. CC-BY-SA 4.0.</p>
+	</div>
+	<div data-book='copyright' lang='*'>Copyright © 2020, Dr. Steve Himself</div>
+	<div data-book='licenseUrl' lang='*'>http://creativecommons.org/licenses/by/4.0/</div>
+	<div data-book='licenseDescription' lang='xyz'>
+		http://creativecommons.org/licenses/by/4.0/<br />You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.
 	</div>
 </div>
 ",
@@ -308,8 +316,17 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckPageWithNeitherVideoNorText()
 		{
-			// This page should not exist.
-			VerifyThatPageNDoesNotExist(6);
+			// This page should not exist.  There should be a title page in its spot.
+			var pageData = GetPageNData(6);
+			var doc = new XmlDocument();
+			doc.LoadXml(pageData);
+			var list = doc.SafeSelectNodes("//div[contains(@class,'bloom-page') and contains(@class,'titlePage') and contains(@class,'bloom-backMatter')]").Cast<XmlElement>();
+			Assert.AreEqual(1, list.Count());
+			Assert.AreEqual("Title Page", list.First().GetAttribute("aria-label"));
+			Assert.AreEqual("contentinfo", list.First().GetAttribute("role"));
+
+			var list2 = doc.SafeSelectNodes("//div[contains(@class, 'numberedPage')]").Cast<XmlElement>();
+			Assert.AreEqual(0, list2.Count());
 		}
 	}
 }
