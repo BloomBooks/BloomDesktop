@@ -1430,6 +1430,26 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		[TestCase("nsk-Latn", "Naskapi-Latn (Naskapi)")]
+		[TestCase("nsk-Latn-easy", "Naskapi-Latn-easy (Naskapi)")]
+		[TestCase("nsk-Latn-easy-AB", "Naskapi-Latn-easy-AB (Naskapi)")]
+		[TestCase("nsk-", "Naskapi")]
+		public void PrettyPrintLanguage_ShowsScriptVariantDistinctions(string lg3Code, string expectedResult)
+		{
+			var htmlDom = new HtmlDom();
+			var settings = CreateCollection(
+				Language1Iso639Code: "nsk",
+				Language1Name: "Naskapi",
+				Language2Iso639Code: "en",
+				Language3Iso639Code: lg3Code
+			);
+			var data = new BookData(htmlDom, settings, null);
+			Assert.That(data.PrettyPrintLanguage("nsk"), Is.EqualTo("Naskapi"));
+			Assert.That(data.PrettyPrintLanguage("en"), Is.EqualTo("English"));
+			Assert.That(data.PrettyPrintLanguage(lg3Code), Is.EqualTo(expectedResult));
+		}
+
+		[Test]
 		public void MigrateData_TopicInTokPisinButNotEnglish_ChangesLangeToEnglish()
 		{
 			var bookDom = new HtmlDom(@"<html ><head></head><body>

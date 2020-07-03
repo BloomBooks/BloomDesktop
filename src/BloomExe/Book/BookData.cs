@@ -801,16 +801,27 @@ namespace Bloom.Book
 		/// If the user hasn't set a name for the given language, this will find a fairly readable name
 		/// for the languages Palaso knows about (probably the autonym) and fall back to the code itself
 		/// if it can't find a name.
+		/// BL-8174 But in case the code includes Script/Region/Variant codes, we should show them somewhere too.
 		/// </summary>
 		public string PrettyPrintLanguage(string code)
 		{
 			if (code == _collectionSettings.Language1Iso639Code && !string.IsNullOrWhiteSpace(_collectionSettings.Language1.Name))
-				return _collectionSettings.Language1.Name;
+				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language1.Name);
 			if (code == _collectionSettings.Language2Iso639Code)
-				return _collectionSettings.Language2.Name;
+				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language2.Name);
 			if (code == _collectionSettings.Language3Iso639Code)
-				return _collectionSettings.Language3.Name;
+				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language3.Name);
 			return _collectionSettings.GetLanguageName(code, _collectionSettings.Language2Iso639Code);
+		}
+
+		private static string GetLanguageNameWithScriptVariants(string completeIsoCode, string baseLanguageName)
+		{
+			var hyphenIndex = completeIsoCode.IndexOf('-');
+			var srvCodes = hyphenIndex > -1 && completeIsoCode.Length > hyphenIndex + 1 ?
+				completeIsoCode.Substring(hyphenIndex + 1) : string.Empty;
+			if (string.IsNullOrEmpty(srvCodes))
+				return baseLanguageName;
+			return baseLanguageName + "-" + srvCodes + " (" + baseLanguageName + ")";
 		}
 
 		/// <summary>
