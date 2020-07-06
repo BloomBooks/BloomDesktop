@@ -1812,8 +1812,13 @@ namespace Bloom.Publish.Epub
 		{
 			progress.Message("Saving", comment:"Shown in a progress box when Bloom is saving an epub", message:"Saving");
 			var zip = new BloomZipFile (destinationEpubPath);
-			foreach (var file in Directory.GetFiles (BookInStagingFolder))
-				zip.AddTopLevelFile (file);
+			var mimetypeFile = Path.Combine(BookInStagingFolder, "mimetype");
+			zip.AddTopLevelFile(mimetypeFile, compress: false);
+			foreach (var file in Directory.GetFiles(BookInStagingFolder))
+			{
+				if (file != mimetypeFile)
+					zip.AddTopLevelFile (file);
+			}
 			foreach (var dir in Directory.GetDirectories (BookInStagingFolder))
 				zip.AddDirectory (dir);
 			zip.Save ();
