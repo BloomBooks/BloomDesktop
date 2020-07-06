@@ -2061,7 +2061,7 @@ namespace Bloom.Publish.Epub
 				if (xel.Name.StartsWith("inkscape:") ||
 					xel.Name.StartsWith("sodipodi:") ||
 					xel.Name.StartsWith("rdf:") ||
-					xel.Name == "flowRoot")	// epubcheck objects to this: must be from a newer version of SVG?
+					xel.Name == "flowRoot")	// epubcheck objects to this: must be from an obsolete version of SVG?
 				{
 					// Some of the unwanted elements may be children of this element, and
 					// deleting this element at this point could disrupt the enumerator and
@@ -2076,7 +2076,8 @@ namespace Bloom.Publish.Epub
 						var attr = xel.Attributes[i];
 						if (attr.Name.StartsWith("inkscape:") ||
 							attr.Name.StartsWith("sodipodi:") ||
-							attr.Name.StartsWith("rdf:"))
+							attr.Name.StartsWith("rdf:") ||
+							attr.Name == "overflow")	// epubcheck for epub 3.2 reports error: SVG version 2 doesn't have this attribute
 						{
 							xel.RemoveAttributeAt(i);
 							++unwantedAttrsCount;
@@ -2273,6 +2274,7 @@ namespace Bloom.Publish.Epub
 <html xmlns='http://www.w3.org/1999/xhtml' xmlns:epub='http://www.idpf.org/2007/ops'>
 	<head>
 		<meta charset='utf-8' />
+		<title>"+ HttpUtility.HtmlEncode(Book.Title) + @"</title>
 	</head>
 	<body>
 		<nav epub:type='toc' id='toc'>
