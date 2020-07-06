@@ -941,7 +941,7 @@ namespace Bloom.Publish.Epub
 			_directionSettings.Clear();
 			// REVIEW: is BODY always ltr, or should it be the same as Language1?  Having BODY be ltr for a book in Arabic or Hebrew
 			// seems counterintuitive even if all the div elements are marked correctly.
-			_directionSettings.Add("body", "ltr");
+			_directionSettings.Add("body", this.Book.CollectionSettings.Language1.IsRightToLeft ? "rtl" : "ltr");
 			_directionSettings.Add(this.Book.CollectionSettings.Language1Iso639Code, this.Book.CollectionSettings.Language1.IsRightToLeft ? "rtl" : "ltr");
 			if (!_directionSettings.ContainsKey(this.Book.CollectionSettings.Language2Iso639Code))
 				_directionSettings.Add(this.Book.CollectionSettings.Language2Iso639Code, this.Book.CollectionSettings.Language2.IsRightToLeft ? "rtl" : "ltr");
@@ -2233,6 +2233,14 @@ namespace Bloom.Publish.Epub
 			{
 				var imageBytes = BookCompressor.GetImageBytesForElectronicPub(srcPath, needTransparentBackground);
 				RobustFile.WriteAllBytes(dstPath, imageBytes);
+				return;
+			}
+			if (dstPath.Contains(kCssFolder) && dstPath.EndsWith(".css"))
+			{
+				// ePUB 3.2 does not support direction: settings in CSS files.  We mark direction explicitly elsewhere in the .xhtml files.
+				var cssText = RobustFile.ReadAllText(srcPath);
+				var outputText = Regex.Replace(cssText, "\\s*direction\\s*:\\s*(rtl|ltr)\\s*;", "", RegexOptions.CultureInvariant|RegexOptions.IgnoreCase);
+				RobustFile.WriteAllText(dstPath, outputText);
 				return;
 			}
 			RobustFile.Copy(srcPath, dstPath);
