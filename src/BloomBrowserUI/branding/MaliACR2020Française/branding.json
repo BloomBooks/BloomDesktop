@@ -1,0 +1,23 @@
+{
+    "presets": [
+        {
+            "data-book": "licenseUrl",
+            "lang": "*",
+            "content": "http://creativecommons.org/licenses/by/4.0/",
+            "condition": "always"
+        },
+
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='MaliACR2020-back.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<div class='Credits-Page-style' lang='fr'>Ce produit est rendu possible grâce au soutien des partenaires financiers de l'association All Children Reading: A Grand Challenge for Development (ACR GCD), l'Agence des États-Unis pour le développement international [USAID], Vision Mondial et le gouvernement australien en collaboration avec la \"Global Book Alliance\". Il a été élaboré par SIL LEAD, Inc. et ne reflète pas nécessairement les vues des partenaires financiers de l'ACR GCD ou de la Global Book Alliance. Toute adaptation ou traduction de cet ouvrage ne doit pas être considérée comme une traduction officielle d'ACR GCD, et ACR GCD ne peut être tenu responsable du contenu ou des erreurs de cette traduction.</div><img style='margin-top:1em' class='branding' src='MaliACR2020-credits.png'/>",
+            "condition": "always"
+        }
+    ]
+}
