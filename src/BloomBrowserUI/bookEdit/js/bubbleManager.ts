@@ -400,15 +400,26 @@ export class BubbleManager {
         Comical.activateElement(this.activeElement);
     }
 
-    // Set the color of the active TOP box text
+    // Set the color of the text in all of the active bubble family's TextOverPicture boxes.
     public setTextColor(hexColor: string) {
         const activeEl = theOneBubbleManager.getActiveElement();
         if (activeEl) {
-            const topBox = activeEl.closest(
-                kTextOverPictureSelector
-            ) as HTMLDivElement;
-            topBox.style.color = hexColor;
+            // First, see if this bubble is in parent/child relationship with any others.
+            // We need to set text color on the whole 'family' at once.
+            const bubble = new Bubble(activeEl);
+            const relatives = Comical.findRelatives(bubble);
+            relatives.push(bubble);
+            relatives.forEach(bubble =>
+                this.setTextColorInternal(hexColor, bubble.content)
+            );
         }
+    }
+
+    private setTextColorInternal(hexColor: string, element: HTMLElement) {
+        const topBox = element.closest(
+            kTextOverPictureSelector
+        ) as HTMLDivElement;
+        topBox.style.color = hexColor;
     }
 
     public getTextColor(): string {
@@ -422,6 +433,54 @@ export class BubbleManager {
             textColor = style && style.color ? style.color : "";
         }
         return textColor;
+    }
+
+    public getParentBubbleOfActiveElement(): Bubble | undefined {
+        if (!this.activeElement) {
+            return undefined;
+        }
+        const tempBubble = new Bubble(this.activeElement);
+        return Comical.findParent(tempBubble);
+    }
+
+    public getSpecsOfParentBubble(): BubbleSpec | undefined {
+        const tempBubble = this.getParentBubbleOfActiveElement();
+        return tempBubble ? tempBubble.getBubbleSpec() : undefined;
+    }
+
+    // Set the color of the background in all of the active bubble family's TextOverPicture boxes.
+    // Enhance: BL-8537 Change opacity the same way (and probably update the method name).
+    public setBackgroundColor(colors: string[]) {
+        if (!this.activeElement) {
+            return;
+        }
+        const originalActiveElement = this.activeElement;
+        const parentBubble = this.getParentBubbleOfActiveElement();
+        if (parentBubble) {
+            this.setActiveElement(parentBubble.content);
+        }
+        this.updateSelectedItemBubbleSpec({
+            backgroundColors: colors
+            // opacity: newColorSwatch.opacity?!
+        });
+        // reset active element
+        this.setActiveElement(originalActiveElement);
+    }
+
+    public getBackgroundColorArray(spec: BubbleSpec): string[] {
+        let newSpec = spec;
+        // First, check to see if this is a child bubble, if so, get the parent's specs.
+        const parentBubbleSpec = this.getSpecsOfParentBubble();
+        if (parentBubbleSpec) {
+            newSpec = parentBubbleSpec;
+        }
+        if (
+            !newSpec.backgroundColors ||
+            newSpec.backgroundColors.length === 0
+        ) {
+            return ["white"];
+        }
+        return newSpec.backgroundColors;
     }
 
     // drag-and-drop support for bubbles from comical toolbox
