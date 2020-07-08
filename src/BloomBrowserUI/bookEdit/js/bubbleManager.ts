@@ -401,7 +401,7 @@ export class BubbleManager {
     }
 
     // Set the color of the text in all of the active bubble family's TextOverPicture boxes.
-    public setTextColor(hexColor: string) {
+    public setTextColor(hexOrRgbColor: string) {
         const activeEl = theOneBubbleManager.getActiveElement();
         if (activeEl) {
             // First, see if this bubble is in parent/child relationship with any others.
@@ -410,16 +410,16 @@ export class BubbleManager {
             const relatives = Comical.findRelatives(bubble);
             relatives.push(bubble);
             relatives.forEach(bubble =>
-                this.setTextColorInternal(hexColor, bubble.content)
+                this.setTextColorInternal(hexOrRgbColor, bubble.content)
             );
         }
     }
 
-    private setTextColorInternal(hexColor: string, element: HTMLElement) {
+    private setTextColorInternal(hexOrRgbColor: string, element: HTMLElement) {
         const topBox = element.closest(
             kTextOverPictureSelector
         ) as HTMLDivElement;
-        topBox.style.color = hexColor;
+        topBox.style.color = hexOrRgbColor;
     }
 
     public getTextColor(): string {
@@ -1296,6 +1296,13 @@ export class BubbleManager {
         if (!childElement) {
             toastr.info("Failed to place a new child bubble.");
             return;
+        }
+
+        // Make sure that the child inherits any non-default text color from the parent bubble
+        // (which must be the active element).
+        const parentTextColor = this.getTextColor();
+        if (parentTextColor !== "") {
+            this.setTextColorInternal(parentTextColor, childElement);
         }
 
         Comical.initializeChild(childElement, parentElement);
