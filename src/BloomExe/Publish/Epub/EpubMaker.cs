@@ -468,6 +468,10 @@ namespace Bloom.Publish.Epub
 				metadataElt.Add(new XElement(opf + "meta",
 					new XAttribute("property", "dcterms:educationLevel"), bookMetaData.ReadingLevelDescription));
 			AddAccessibilityMetadata(metadataElt, opf, bookMetaData);
+			// Add epub 2.0 metadata for the cover image for the sake of WorldReader (see https://issues.bloomlibrary.org/youtrack/issue/BL-8639.)
+			var coverImage = Path.GetFileNameWithoutExtension(coverPageImageFile);
+			if (!string.IsNullOrEmpty(coverImage))
+				metadataElt.Add(new XElement("meta", new XAttribute("name", "cover"), new XAttribute("content", coverImage)));
 			rootElt.Add(metadataElt);
 
 			var manifestElt = new XElement(opf + "manifest");
@@ -902,8 +906,16 @@ namespace Bloom.Publish.Epub
 					itemElt.SetAttributeValue("linear", "no");
 
 			}
-			using(var writer = XmlWriter.Create(manifestPath))
+
+			var sb = new StringBuilder();
+			var xws = new XmlWriterSettings();
+			xws.Indent = true;	// much easier to read if humans ever look at it, not that much more disk space.
+			using (XmlWriter writer = XmlWriter.Create(sb, xws))
 				rootElt.WriteTo(writer);
+			// We need to remove the empty xmlns="" that gets stuck on the bare meta element added for the epub 2.0 cover image metadata.
+			// We also need to change the encoding from utf-16 to utf-8 for the xml document.
+			// (Setting xws.Encoding might or might not work on Windows, but doesn't on Linux.)
+			RobustFile.WriteAllText(manifestPath, sb.ToString().Replace(" xmlns=\"\"","").Replace(" encoding=\"utf-16\"?>"," encoding=\"utf-8\"?>"), Encoding.UTF8);
 		}
 
 		Dictionary<string, string> _directionSettings = new Dictionary<string, string>();
