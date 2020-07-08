@@ -461,6 +461,10 @@ namespace Bloom.Publish.Epub
 				metadataElt.Add(new XElement(opf + "meta",
 					new XAttribute("property", "dcterms:educationLevel"), bookMetaData.ReadingLevelDescription));
 			AddAccessibilityMetadata(metadataElt, opf, bookMetaData);
+			// Add epub 2.0 metadata for the cover image for the sake of WorldReader (see https://issues.bloomlibrary.org/youtrack/issue/BL-8639.)
+			var coverImage = Path.GetFileNameWithoutExtension(coverPageImageFile);
+			if (!string.IsNullOrEmpty(coverImage))
+				metadataElt.Add(new XElement("meta", new XAttribute("name", "cover"), new XAttribute("content", coverImage)));
 			rootElt.Add(metadataElt);
 
 			var manifestElt = new XElement(opf + "manifest");
@@ -895,8 +899,16 @@ namespace Bloom.Publish.Epub
 					itemElt.SetAttributeValue("linear", "no");
 
 			}
-			using(var writer = XmlWriter.Create(manifestPath))
+
+			var sb = new StringBuilder();
+			var xws = new XmlWriterSettings();
+			xws.Indent = true;	// much easier to read if humans ever look at it, not that much more disk space.
+			using (XmlWriter writer = XmlWriter.Create(sb, xws))
 				rootElt.WriteTo(writer);
+			// We need to remove the empty xmlns="" that gets stuck on the bare meta element added for the epub 2.0 cover image metadata.
+			// We also need to change the encoding from utf-16 to utf-8 for the xml document.
+			// (Setting xws.Encoding might or might not work on Windows, but doesn't on Linux.)
+			RobustFile.WriteAllText(manifestPath, sb.ToString().Replace(" xmlns=\"\"","").Replace(" encoding=\"utf-16\"?>"," encoding=\"utf-8\"?>"), Encoding.UTF8);
 		}
 
 		Dictionary<string, string> _directionSettings = new Dictionary<string, string>();
@@ -941,7 +953,7 @@ namespace Bloom.Publish.Epub
 			_directionSettings.Clear();
 			// REVIEW: is BODY always ltr, or should it be the same as Language1?  Having BODY be ltr for a book in Arabic or Hebrew
 			// seems counterintuitive even if all the div elements are marked correctly.
-			_directionSettings.Add("body", "ltr");
+			_directionSettings.Add("body", this.Book.CollectionSettings.Language1.IsRightToLeft ? "rtl" : "ltr");
 			_directionSettings.Add(this.Book.CollectionSettings.Language1Iso639Code, this.Book.CollectionSettings.Language1.IsRightToLeft ? "rtl" : "ltr");
 			if (!_directionSettings.ContainsKey(this.Book.CollectionSettings.Language2Iso639Code))
 				_directionSettings.Add(this.Book.CollectionSettings.Language2Iso639Code, this.Book.CollectionSettings.Language2.IsRightToLeft ? "rtl" : "ltr");
@@ -1812,8 +1824,13 @@ namespace Bloom.Publish.Epub
 		{
 			progress.Message("Saving", comment:"Shown in a progress box when Bloom is saving an epub", message:"Saving");
 			var zip = new BloomZipFile (destinationEpubPath);
-			foreach (var file in Directory.GetFiles (BookInStagingFolder))
-				zip.AddTopLevelFile (file);
+			var mimetypeFile = Path.Combine(BookInStagingFolder, "mimetype");
+			zip.AddTopLevelFile(mimetypeFile, compress: false);
+			foreach (var file in Directory.GetFiles(BookInStagingFolder))
+			{
+				if (file != mimetypeFile)
+					zip.AddTopLevelFile (file);
+			}
 			foreach (var dir in Directory.GetDirectories (BookInStagingFolder))
 				zip.AddDirectory (dir);
 			zip.Save ();
@@ -2056,7 +2073,7 @@ namespace Bloom.Publish.Epub
 				if (xel.Name.StartsWith("inkscape:") ||
 					xel.Name.StartsWith("sodipodi:") ||
 					xel.Name.StartsWith("rdf:") ||
-					xel.Name == "flowRoot")	// epubcheck objects to this: must be from a newer version of SVG?
+					xel.Name == "flowRoot")	// epubcheck objects to this: must be from an obsolete version of SVG?
 				{
 					// Some of the unwanted elements may be children of this element, and
 					// deleting this element at this point could disrupt the enumerator and
@@ -2071,7 +2088,8 @@ namespace Bloom.Publish.Epub
 						var attr = xel.Attributes[i];
 						if (attr.Name.StartsWith("inkscape:") ||
 							attr.Name.StartsWith("sodipodi:") ||
-							attr.Name.StartsWith("rdf:"))
+							attr.Name.StartsWith("rdf:") ||
+							attr.Name == "overflow")	// epubcheck for epub 3.2 reports error: SVG version 2 doesn't have this attribute
 						{
 							xel.RemoveAttributeAt(i);
 							++unwantedAttrsCount;
@@ -2235,6 +2253,14 @@ namespace Bloom.Publish.Epub
 				RobustFile.WriteAllBytes(dstPath, imageBytes);
 				return;
 			}
+			if (dstPath.Contains(kCssFolder) && dstPath.EndsWith(".css"))
+			{
+				// ePUB 3.2 does not support direction: settings in CSS files.  We mark direction explicitly elsewhere in the .xhtml files.
+				var cssText = RobustFile.ReadAllText(srcPath);
+				var outputText = Regex.Replace(cssText, "\\s*direction\\s*:\\s*(rtl|ltr)\\s*;", "", RegexOptions.CultureInvariant|RegexOptions.IgnoreCase);
+				RobustFile.WriteAllText(dstPath, outputText);
+				return;
+			}
 			RobustFile.Copy(srcPath, dstPath);
 		}
 
@@ -2260,6 +2286,7 @@ namespace Bloom.Publish.Epub
 <html xmlns='http://www.w3.org/1999/xhtml' xmlns:epub='http://www.idpf.org/2007/ops'>
 	<head>
 		<meta charset='utf-8' />
+		<title>"+ HttpUtility.HtmlEncode(Book.Title) + @"</title>
 	</head>
 	<body>
 		<nav epub:type='toc' id='toc'>

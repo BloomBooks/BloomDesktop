@@ -27,15 +27,16 @@ namespace Bloom
 			_zipStream.Close();
 		}
 
-		public void AddTopLevelFile(string path)
+		public void AddTopLevelFile(string path, bool compress=true)
 		{
-			AddFile(path, Path.GetFileName(path));
+			AddFile(path, Path.GetFileName(path), compress);
 		}
 
-		private void AddFile(string path, string entryName)
+		private void AddFile(string path, string entryName, bool compress=true)
 		{
 			var fi = new FileInfo(path);
-			var newEntry = new ZipEntry(entryName) {DateTime = fi.LastWriteTime, Size = fi.Length, IsUnicodeText = true};
+			var newEntry = new ZipEntry(entryName) {DateTime = fi.LastWriteTime, Size = fi.Length, IsUnicodeText = true,
+				CompressionMethod=compress?CompressionMethod.Deflated:CompressionMethod.Stored};
 
 			_zipStream.PutNextEntry(newEntry);
 
