@@ -2356,10 +2356,19 @@ namespace Bloom.Book
 					// the book.  The method also ensures that the images are all opaque since some old versions
 					// of Bloom made all images transparent, which turned out to be a bad idea.
 					// This update can be very slow, so encourage the user that something is happening.
-					using (var dlg = new ProgressDialogBackground())
+					if (Program.RunningUnitTests)
 					{
-						dlg.Text = "Updating Image Files";
-						dlg.ShowAndDoWork((progress, args)=>ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, progress));
+						// TeamCity enforces not showing modal dialogs during unit tests on Windows 10.
+						ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, new NullProgress());
+					}
+					else
+					{
+						using (var dlg = new ProgressDialogBackground())
+						{
+							dlg.Text = "Updating Image Files";
+							dlg.ShowAndDoWork((progress, args) =>
+								ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, progress));
+						}
 					}
 				}
 				// future additional levels will add additional "if (level < N)" blocks.
