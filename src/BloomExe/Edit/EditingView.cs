@@ -1024,6 +1024,7 @@ namespace Bloom.Edit
 
 			var imageInfo = new PalasoImage();
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
+			string newImagePath = null;
 
 			//don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
 			if(!currentPath.ToLowerInvariant().Contains("placeholder") && RobustFile.Exists(existingImagePath))
@@ -1036,7 +1037,7 @@ namespace Bloom.Edit
 					// later when the book is reopened for editing.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3689.
 					var folder = Path.GetDirectoryName(existingImagePath);
 					var newFilename = ImageUtils.GetUnusedFilename(folder, Path.GetFileNameWithoutExtension(existingImagePath), Path.GetExtension(existingImagePath));
-					var newImagePath = Path.Combine(folder, newFilename);
+					newImagePath = Path.Combine(folder, newFilename);
 					RobustFile.Copy(existingImagePath, newImagePath);
 					Debug.WriteLine("Created image copy: " + newImagePath);
 					Logger.WriteEvent("Created image copy: " + newImagePath);
@@ -1082,9 +1083,13 @@ namespace Bloom.Edit
 				// Check memory for the benefit of developers.  The user won't see anything.
 				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "picture chosen or canceled", false);
 #endif
-				if(DialogResult.OK == result && dlg.ImageInfo != null)
+				if (DialogResult.OK == result && dlg.ImageInfo != null)
 				{
-					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
+					// Save the possibly modified (by cropping) image to the file.
+					// The code for ensuring non-transparency uses GraphicsMagick on the file content if possible, so the
+					// file must be in sync with the imageInfo.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8638.
+					if (newImagePath != null && imageInfo.OriginalFilePath == newImagePath)
+						imageInfo.Save(newImagePath);
 					SaveChangedImage(imageElement, dlg.ImageInfo, "Bloom had a problem including that image");
 #if MEMORYCHECK
 					// Warn the user if we're starting to use too much memory.
