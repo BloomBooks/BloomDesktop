@@ -68,6 +68,21 @@ namespace BloomTemp
 			//now insert the non-xml-ish <!doctype html>
 			return string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine, xhtml);
 		}
+
+		/// <summary>
+		/// Return a temporary path (that does not yet exist) using standard methods that should yield safe
+		/// filenames regardless of the current codepage.  The caller is responsible to delete the temporary
+		/// file after creating it and using it.
+		/// </summary>
+		public static string GetTempFilepathWithExtension(string extension)
+		{
+			// The Dispose call caused by the using block ensures that the returned file path
+			// is not for an existing file.
+			using (var temp = TempFile.WithExtension(extension))
+			{
+				return temp.Path;
+			}
+		}
 	}
 
 	// ENHANCE: Replace with TemporaryFolder implemented in Palaso. However, that means
