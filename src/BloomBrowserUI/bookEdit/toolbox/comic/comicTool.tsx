@@ -228,7 +228,8 @@ const ComicToolControls: React.FunctionComponent = () => {
             return;
         }
 
-        // Enhance: Is there a cleaner way to keep activeBubbleSpec up to date? Comical would need to call the notifier a lot more often like when the tail moves.
+        // Enhance: Is there a cleaner way to keep activeBubbleSpec up to date?
+        // Comical would need to call the notifier a lot more often like when the tail moves.
 
         // Retrieve the latest bubbleSpec
         const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
