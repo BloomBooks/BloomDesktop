@@ -1088,8 +1088,8 @@ namespace Bloom.Edit
 					// Save the possibly modified (by cropping) image to the file.
 					// The code for ensuring non-transparency uses GraphicsMagick on the file content if possible, so the
 					// file must be in sync with the imageInfo.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8638.
-					if (newImagePath != null && imageInfo.OriginalFilePath == newImagePath)
-						imageInfo.Save(newImagePath);
+					if (newImagePath != null && dlg.ImageInfo.OriginalFilePath == newImagePath)
+						dlg.ImageInfo.Save(newImagePath);
 					SaveChangedImage(imageElement, dlg.ImageInfo, "Bloom had a problem including that image");
 #if MEMORYCHECK
 					// Warn the user if we're starting to use too much memory.
