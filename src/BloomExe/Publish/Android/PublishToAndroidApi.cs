@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
@@ -429,7 +430,7 @@ namespace Bloom.Publish.Android
 				progress.Message("CompressingAudio", "Compressing audio files");
 				AudioProcessor.TryCompressingAudioAsNeeded(book.FolderPath, book.RawDom);
 			}
-			var publishedFileName = bookTitle + BookCompressor.ExtensionForDeviceBloomBook;
+			var publishedFileName = Path.GetFileName(book.FolderPath) + BookCompressor.ExtensionForDeviceBloomBook;
 			if (startingMessageFunction != null)
 				progress.MessageWithoutLocalizing(startingMessageFunction(publishedFileName, bookTitle));
 			if (destFileName == null)
