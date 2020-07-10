@@ -806,22 +806,25 @@ namespace Bloom.Book
 		public string PrettyPrintLanguage(string code)
 		{
 			if (code == _collectionSettings.Language1Iso639Code && !string.IsNullOrWhiteSpace(_collectionSettings.Language1.Name))
-				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language1.Name);
+				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language1.Name, _collectionSettings.Language1.IsCustomName);
 			if (code == _collectionSettings.Language2Iso639Code)
-				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language2.Name);
+				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language2.Name, _collectionSettings.Language2.IsCustomName);
 			if (code == _collectionSettings.Language3Iso639Code)
-				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language3.Name);
+				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language3.Name, _collectionSettings.Language3.IsCustomName);
 			return _collectionSettings.GetLanguageName(code, _collectionSettings.Language2Iso639Code);
 		}
 
-		private static string GetLanguageNameWithScriptVariants(string completeIsoCode, string baseLanguageName)
+		private string GetLanguageNameWithScriptVariants(string completeIsoCode, string baseLanguageName, bool nameIsCustom)
 		{
 			var hyphenIndex = completeIsoCode.IndexOf('-');
 			var srvCodes = hyphenIndex > -1 && completeIsoCode.Length > hyphenIndex + 1 ?
 				completeIsoCode.Substring(hyphenIndex + 1) : string.Empty;
 			if (string.IsNullOrEmpty(srvCodes))
 				return baseLanguageName;
-			return baseLanguageName + "-" + srvCodes + " (" + baseLanguageName + ")";
+			var baseIsoCode = completeIsoCode.Substring(0, hyphenIndex);
+			return nameIsCustom ?
+				baseLanguageName + " (" + _collectionSettings.GetLanguageName(baseIsoCode, _collectionSettings.Language2Iso639Code) + ")"
+				: baseLanguageName + "-" + srvCodes + " (" + baseLanguageName + ")";
 		}
 
 		/// <summary>
