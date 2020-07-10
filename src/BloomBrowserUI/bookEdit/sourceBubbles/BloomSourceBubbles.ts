@@ -165,6 +165,8 @@ export default class BloomSourceBubbles {
                         localizedLanguageName +
                         "</a></li>"
                 );
+                // BL-8174: Add a tooltip with the iso code to the item
+                $(this).attr("title", iso);
             }
         });
 
