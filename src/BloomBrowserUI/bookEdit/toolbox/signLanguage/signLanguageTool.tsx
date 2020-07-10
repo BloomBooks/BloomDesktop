@@ -753,6 +753,13 @@ export class SignLanguageToolControls extends React.Component<
             this.videoStream as MediaStream,
             options
         );
+        // if (this.videoStream) {
+        //     const track = this.videoStream.getVideoTracks()[0];
+        //     const settings = track.getSettings();
+        //     BloomApi.postDebugMessage(
+        //         "Video Stream/Track settings = " + JSON.stringify(settings)
+        //     );
+        // }
         this.mediaRecorder.ondataavailable = e => {
             // called periodically during recording and once more with the rest of the data
             // when recording stops. So all the chunks which make up the recording come here.
