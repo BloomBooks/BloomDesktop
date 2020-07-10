@@ -78,6 +78,11 @@ namespace Bloom.CollectionTab
 
 		}
 
+		internal CollectionSettings CollectionSettings
+		{
+			get { return _collectionSettings; }
+		}
+
 		public string LanguageName
 		{
 			get { return _collectionSettings.Language1.Name; }

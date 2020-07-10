@@ -460,24 +460,8 @@ namespace Bloom.CollectionTab
 
 			var button = buttonRefreshInfo.Button;
 			var bookInfo = GetBookInfoFromButton(button);
-			Book.Book book;
-			try
-			{
-				book = _model.GetBookFromBookInfo(bookInfo);
-			}
-			catch (Exception error)
-			{
-				//skip over the dependency injection layer
-				if (error.Source == "Autofac" && error.InnerException != null)
-					error = error.InnerException;
-				Logger.WriteEvent("There was a problem with the book at " + bookInfo.FolderPath + ". " + error.Message);
-				if (!_alreadyReportedErrorDuringImproveAndRefreshBookButtons)
-				{
-					_alreadyReportedErrorDuringImproveAndRefreshBookButtons = true;
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at {0}. \r\n\r\nClick the 'Details' button for more information.\r\n\r\nThis error may effect other books, but this is the only notice you will receive.\r\n\r\nSee 'Help:Show Event Log' for any further errors.", bookInfo.FolderPath);
-				}
-				return;
-			}
+			if (bookInfo == null)
+				return;	// without a valid BookInfo, there's nothing we can do: we can't even report an error for the book.
 
 			//Only go looking for a better title if the book hasn't already been localized when we first showed it.
 			//The idea is, if we already have a localization mapping for this name, then
@@ -486,7 +470,7 @@ namespace Bloom.CollectionTab
 			// Note: currently (August 2014) the books that will have been localized are are those in the main "templates" section: Basic Book, Calendar, etc.
 			if (button.Text == ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay, button))
 			{
-				var bestTitle = book.TitleBestForUserDisplay;
+				var bestTitle = bookInfo.GetBestTitleForUserDisplay(_model.CollectionSettings);
 				var titleBestForUserDisplay = ShortenTitleIfNeeded(bestTitle, button);
 				if (titleBestForUserDisplay != button.Text)
 				{
@@ -495,8 +479,27 @@ namespace Bloom.CollectionTab
 					toolTip1.SetToolTip(button, bestTitle);
 				}
 			}
-			if (buttonRefreshInfo.ThumbnailRefreshNeeded)//!bookInfo.TryGetPremadeThumbnail(out unusedImage))
-				ScheduleRefreshOfOneThumbnail(book);
+			if (buttonRefreshInfo.ThumbnailRefreshNeeded)
+			{
+				// This is relatively rare, so we'll risk the really slow loading of the book.
+				try
+				{
+					var book = _model.GetBookFromBookInfo(bookInfo);
+					ScheduleRefreshOfOneThumbnail(book);
+				}
+				catch (Exception error)
+				{
+					//skip over the dependency injection layer
+					if (error.Source == "Autofac" && error.InnerException != null)
+						error = error.InnerException;
+					Logger.WriteEvent("There was a problem with the book at " + bookInfo.FolderPath + ". " + error.Message);
+					if (!_alreadyReportedErrorDuringImproveAndRefreshBookButtons)
+					{
+						_alreadyReportedErrorDuringImproveAndRefreshBookButtons = true;
+						SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at {0}. \r\n\r\nClick the 'Details' button for more information.\r\n\r\nThis error may effect other books, but this is the only notice you will receive.\r\n\r\nSee 'Help:Show Event Log' for any further errors.", bookInfo.FolderPath);
+					}
+				}
+			}
 		}
 
 		void OnBloomLibrary_Click(object sender, EventArgs e)
