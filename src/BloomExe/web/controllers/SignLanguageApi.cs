@@ -100,9 +100,13 @@ namespace Bloom.web.controllers
 		/// If ffmpeg is not available, then the file is stored exactly as it comes from the api call.
 		/// </summary>
 		/// <remarks>
-		/// Inserting keyframes, and possibly any ffmeg processing, may not be needed if we use ffmpeg to
-		/// trim the output later.  But the smaller size of the h264 format may be attractive if the
-		/// quality is still good enough to work from.
+		/// Explicitly setting the frame rate to 30 fps is needed for Geckofx60.  The raw file that comes
+		/// directly from the javascript objects claims to be at 1000fps.  This is perhaps due to the high
+		/// speed video cameras that claim up to that frame rate.  I can't figure out how to change the frame
+		/// rate in javascript.  The video track already claims to be at 30 fps even though the raw file
+		/// claims to be at 1000fps.  Interestingly, setting the frame rate explicitly speeds up ffmpeg
+		/// processing to what it was with Geckofx45 instead of being much slower.
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7934.
 		/// </remarks>
 		private static void SaveVideoFile(string path, string rawVideoPath)
 		{
@@ -114,8 +118,9 @@ namespace Bloom.web.controllers
 				// -y = always overwrite output file
 				// -v 16 = verbosity level reports only errors, including ones that can be recovered from
 				// -i <path> = specify input file
+				// -r 30 = set frame rate to 30 fps
 				// -force_key_frames "expr:gte(t,n_forced*0.5)" = insert keyframe every 0.5 seconds in the output file
-				var parameters = $"-hide_banner -y -v 16 -i \"{rawVideoPath}\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{path}\"";
+				var parameters = $"-hide_banner -y -v 16 -i \"{rawVideoPath}\" -r 30 -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{path}\"";
 				// On slowish machines, this compression seems to take about 1/5 as long as the video took to record.
 				// Allowing for some possibly being slower still, we're basing the timeout on half the length of the video,
 				// plus a minute to be sure.
