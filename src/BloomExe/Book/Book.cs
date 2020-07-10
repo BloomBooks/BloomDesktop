@@ -197,55 +197,60 @@ namespace Bloom.Book
 		{
 			get
 			{
-				var title = _bookData.GetMultiTextVariableOrEmpty("bookTitle");
-				var display = title.GetExactAlternative(CollectionSettings.Language1Iso639Code);
+				return GetBestTitleForDisplay(_bookData.GetMultiTextVariableOrEmpty("bookTitle"), CollectionSettings, IsEditable);
+			}
+		}
 
-				if (string.IsNullOrEmpty(display))
+		public static string GetBestTitleForDisplay(MultiTextBase title, CollectionSettings settings, bool isEditable)
+		{
+			if (title.Count == 0)
+				return "";
+			var display = title.GetExactAlternative(settings.Language1Iso639Code);
+			if (string.IsNullOrEmpty(display))
+			{
+				//the SIL-LEAD project, SHRP (around 2012-2016) had books that just had an English name, before we changed Bloom
+				//to not show English names. But the order was also critical. So we want those old books to go ahead and use their
+				//English names.
+				var englishTitle = title.GetExactAlternative("en").ToLowerInvariant();
+				var SHRPMatches = new[] { "p1", "p2", "p3", "p4", "SHRP" };
+				var couldBeOldStyleUgandaSHRPBook = SHRPMatches.Any(m => englishTitle.Contains(m.ToLowerInvariant()));
+
+				//if this book is one of the ones we're editing in our collection, it really
+				//needs a title in our main language, it would be confusing to show a title from some other langauge
+				if (!couldBeOldStyleUgandaSHRPBook && (isEditable || title.Empty))
 				{
-					//the SIL-LEAD project, SHRP (around 2012-2016) had books that just had an English name, before we changed Bloom
-					//to not show English names. But the order was also critical. So we want those old books to go ahead and use their
-					//English names.
-					var englishTitle = title.GetExactAlternative("en").ToLowerInvariant();
-					var SHRPMatches = new[] { "p1", "p2", "p3", "p4", "SHRP" };
-					var couldBeOldStyleUgandaSHRPBook = SHRPMatches.Any(m => englishTitle.Contains(m.ToLowerInvariant()));
+					display = LocalizationManager.GetString("CollectionTab.TitleMissing", "Title Missing",
+						"Shown as the thumbnail caption when the book doesn't have a title.");
+				}
+				//but if this book is just in our list of sources, well then let's look through the names
+				//and try to get one that is likely to be helpful
+				else
+				{
+					var orderedPreferences = new List<string>();
+					orderedPreferences.Add(LocalizationManager.UILanguageId);
 
-					//if this book is one of the ones we're editing in our collection, it really
-					//needs a title in our main language, it would be confusing to show a title from some other langauge
-					if (!couldBeOldStyleUgandaSHRPBook && (IsEditable || title.Empty))
+					//already checked for this, previously. orderedPreferences.Add(_collectionSettings.Language1Iso639Code);
+					if (settings.Language2Iso639Code != null)
+						orderedPreferences.Add(settings.Language2Iso639Code);
+					if (settings.Language3Iso639Code != null)
+						orderedPreferences.Add(settings.Language3Iso639Code);
+
+					orderedPreferences.Add("en");
+					orderedPreferences.Add("fr");
+					orderedPreferences.Add("es");
+					display = title.GetBestAlternativeString(orderedPreferences);
+					if (string.IsNullOrWhiteSpace(display))
 					{
-						display = LocalizationManager.GetString("CollectionTab.TitleMissing", "Title Missing",
-							"Shown as the thumbnail caption when the book doesn't have a title.");
-					}
-					//but if this book is just in our list of sources, well then let's look through the names
-					//and try to get one that is likely to be helpful
-					else
-					{
-						var orderedPreferences = new List<string>();
-						orderedPreferences.Add(LocalizationManager.UILanguageId);
-
-						//already checked for this, previsouly. orderedPreferences.Add(_collectionSettings.Language1Iso639Code);
-						if (CollectionSettings.Language2Iso639Code != null)
-							orderedPreferences.Add(CollectionSettings.Language2Iso639Code);
-						if (CollectionSettings.Language3Iso639Code != null)
-							orderedPreferences.Add(CollectionSettings.Language3Iso639Code);
-
-						orderedPreferences.Add("en");
-						orderedPreferences.Add("fr");
-						orderedPreferences.Add("es");
-						display = title.GetBestAlternativeString(orderedPreferences);
-						if (string.IsNullOrWhiteSpace(display))
-						{
-							display = title.GetFirstAlternative();
-							Debug.Assert(!string.IsNullOrEmpty(display), "by our logic, this shouldn't possible");
-						}
+						display = title.GetFirstAlternative();
+						Debug.Assert(!string.IsNullOrEmpty(display), "by our logic, this shouldn't possible");
 					}
 				}
-				// Handle both Windows and Linux line endings in case a file copied between the two
-				// ends up with the wrong one.
-				display = display.Replace("<br />", " ").Replace("\r\n", " ").Replace("\n", " ").Replace("  ", " ");
-				display = RemoveXmlMarkup(display).Trim();
-				return display;
 			}
+			// Handle both Windows and Linux line endings in case a file copied between the two
+			// ends up with the wrong one.
+			display = display.Replace("<br />", " ").Replace("\r\n", " ").Replace("\n", " ").Replace("  ", " ");
+			display = RemoveXmlMarkup(display).Trim();
+			return display;
 		}
 
 		public static string RemoveXmlMarkup(string input)
