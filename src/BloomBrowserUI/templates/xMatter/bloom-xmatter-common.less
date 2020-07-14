@@ -94,6 +94,9 @@
             @QuarterLetterLandscape-Width
         );
     }
+    .Cm13Square& {
+        .SetMarginBoxCover(@Cm13Square-Height, @Cm13Square-Width);
+    }
 }
 
 .insideFrontCover {
@@ -312,7 +315,8 @@
     &.A6Landscape,
     &.A6Portrait,
     &.QuarterLetterLandscape,
-    &.QuarterLetterPortrait {
+    &.QuarterLetterPortrait,
+    &.Cm13Square {
         .licenseImage {
             width: 65px;
         }

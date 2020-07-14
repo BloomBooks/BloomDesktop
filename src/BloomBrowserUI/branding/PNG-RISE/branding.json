@@ -16,8 +16,8 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            // only one of these will be visible
-            "content": "<img class='portraitOnly branding' src='backPortrait.svg'/><img class='landscapeOnly branding' src='backLandscape.svg'/>",
+            "//note": "only one of these will be visible",
+            "content": "<img class='portraitOnly squareOnly branding' src='backPortrait.svg'/><img class='landscapeOnly branding' src='backLandscape.svg'/>",
             "condition": "always"
         }
     ]

@@ -37,7 +37,7 @@ namespace Bloom.Publish.PDF
 		/// <param name="inputHtmlPath"></param>
 		/// <param name="outputPdfPath"></param>
 		/// <param name="paperSizeName">A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,B0,B1,B10,B2,B3,B4,B5,B6,B7,B8,B9,C5E,Comm10E,DLE,Executive,Folio,Ledger,Legal,Letter,Tabloid</param>
-		/// <param name="landscape">true if landscape orientation, false if portrait orientation</param>
+		/// <param name="orientation">Portrait, Landscape, or Square</param>
 		/// <param name="saveMemoryMode">true if PDF file is to be produced using less memory (but more time)</param>
 		/// <param name="layoutPagesForRightToLeft">true if RTL, false if LTR layout</param>
 		/// <param name="booketLayoutMethod">NoBooklet,SideFold,CutAndStack,Calendar</param>
@@ -45,7 +45,7 @@ namespace Bloom.Publish.PDF
 		/// <param name="worker">If not null, the Background worker which is running this task, and may be queried to determine whether a cancel is being attempted</param>
 		/// <param name="doWorkEventArgs">The event passed to the worker when it was started. If a cancel is successful, it's Cancel property should be set true.</param>
 		/// <param name="owner">A control which can be used to invoke parts of the work which must be done on the ui thread.</param>
-		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, bool saveMemoryMode, bool layoutPagesForRightToLeft,
+		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, Book.Orientation orientation, bool saveMemoryMode, bool layoutPagesForRightToLeft,
 			PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, Control owner)
 		{
 			// Try up to 4 times. This is a last-resort attempt to handle BL-361.
@@ -53,7 +53,7 @@ namespace Bloom.Publish.PDF
 			// but as it was an intermittent problem and we're not sure that was the cause, this might help.
 			for (int i = 0; i < 4; i++)
 			{
-				new MakePdfUsingGeckofxHtmlToPdfProgram().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape, saveMemoryMode,
+				new MakePdfUsingGeckofxHtmlToPdfProgram().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, orientation, saveMemoryMode,
 					owner, worker, doWorkEventArgs);
 
 				if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))

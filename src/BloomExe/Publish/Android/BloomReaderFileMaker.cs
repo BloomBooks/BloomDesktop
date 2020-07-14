@@ -12,6 +12,7 @@ using Bloom.web;
 using BloomTemp;
 using SIL.IO;
 using SIL.Xml;
+using Orientation = Bloom.Book.Orientation;
 
 namespace Bloom.Publish.Android
 {
@@ -302,11 +303,11 @@ namespace Bloom.Publish.Android
 		/// <remarks>
 		/// This code is temporary for Version4.5.  Version4.6 extensively refactors the
 		/// electronic publishing code to combine ePUB and BloomReader preparation as much
-		/// as possible.
+		/// as possible.  [REVIEW: So why is this code still in Version4.9?]
 		/// </remarks>
 		private static void RemoveInvisibleImageElements(Bloom.Book.Book book)
 		{
-			var isLandscape = book.GetLayout().SizeAndOrientation.IsLandScape;
+			var orientation = book.GetLayout().SizeAndOrientation.Orientation;
 			foreach (var img in book.RawDom.SafeSelectNodes("//img").Cast<XmlElement>().ToArray())
 			{
 				var src = img.Attributes["src"]?.Value;
@@ -315,8 +316,9 @@ namespace Bloom.Publish.Android
 				var classes = img.Attributes["class"]?.Value;
 				if (string.IsNullOrEmpty(classes))
 					continue;
-				if (isLandscape && classes.Contains("portraitOnly") ||
-					!isLandscape && classes.Contains("landscapeOnly"))
+				if (orientation != Orientation.Portrait && classes.Contains("portraitOnly") ||
+					orientation != Orientation.Landscape && classes.Contains("landscapeOnly") ||
+					orientation != Orientation.Square && classes.Contains("squareOnly"))
 				{
 					// Remove this img element since it shouldn't be displayed.
 					img.ParentNode.RemoveChild(img);

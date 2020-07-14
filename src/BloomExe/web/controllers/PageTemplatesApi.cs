@@ -62,7 +62,7 @@ namespace Bloom.web.controllers
 		{
 			dynamic addPageSettings = new ExpandoObject();
 			addPageSettings.defaultPageToSelect = _templateInsertionCommand.MostRecentInsertedTemplatePage == null ? "" : _templateInsertionCommand.MostRecentInsertedTemplatePage.Id;
-			addPageSettings.orientation = _bookSelection.CurrentSelection.GetLayout().SizeAndOrientation.IsLandScape ? "landscape" : "portrait";
+			addPageSettings.orientation = _bookSelection.CurrentSelection.GetLayout().SizeAndOrientation.OrientationName.ToLowerInvariant();
 
 			addPageSettings.groups = GetBookTemplatePaths(GetPathToCurrentTemplateHtml(), GetCurrentAndSourceBookPaths())
 				.Select(bookTemplatePath => GetPageGroup(bookTemplatePath));
@@ -147,12 +147,21 @@ namespace Bloom.web.controllers
 			var bookPath = Path.GetDirectoryName(templatesDirectoryInTemplateBook);
 			var templateBook = _bookFactory(new BookInfo(bookPath,false), _storageFactory(bookPath));
 
+			var orientation = Orientation.Portrait;
 			//note: the caption is used here as a key to find the template page.
 			var caption = Path.GetFileNameWithoutExtension(expectedPathOfThumbnailImage).Trim();
 			var isLandscape = caption.EndsWith("-landscape"); // matches string in page-chooser.ts
 			if (isLandscape)
+			{
 				caption = caption.Substring(0, caption.Length - "-landscape".Length);
-
+				orientation = Orientation.Landscape;
+			}
+			var isSquare = caption.EndsWith("-square");
+			if (isSquare)
+			{
+				caption = caption.Substring(0, caption.Length - "-square".Length);
+				orientation = Orientation.Square;
+			}
 			// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
 			// The Trim is needed because template may now be created by users editing the pageLabel div, and those
 			// labels typically include a trailing newline.
@@ -160,7 +169,7 @@ namespace Bloom.web.controllers
 			if (templatePage == null)
 				templatePage = templateBook.GetPages().FirstOrDefault(); // may get something useful?? or throw??
 
-			Image thumbnail = _thumbNailer.GetThumbnailForPage(templateBook, templatePage, isLandscape, mustRegenerate);
+			Image thumbnail = _thumbNailer.GetThumbnailForPage(templateBook, templatePage, orientation, mustRegenerate);
 
 			// lock to avoid BL-3781 where we got a "Object is currently in use elsewhere" while doing the Clone() below.
 			// Note: it would appear that the clone isn't even needed, since it was added in the past to overcome this

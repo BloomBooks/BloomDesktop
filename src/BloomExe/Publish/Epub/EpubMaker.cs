@@ -578,7 +578,7 @@ namespace Bloom.Publish.Epub
 					return "urn:isbn:" + isbn;
 			}
 			var layout = Book.GetLayout();
-			var pageSize = layout.SizeAndOrientation.PageSizeName + (layout.SizeAndOrientation.IsLandScape ? " Landscape" : " Portrait");
+			var pageSize = layout.SizeAndOrientation.PageSizeName + " " + layout.SizeAndOrientation.OrientationName;
 			var date = DateTime.Now.ToString("yyyy-MM-dd");
 			return String.Format("created from Bloom book on {0} with page size {1}", date, pageSize);
 		}

@@ -18,7 +18,7 @@ namespace BloomTests.Book
 			var x = Layout.GetConfigurationsFromConfigurationOptionsString("{'layouts': ['A4Landscape']}");
 			Assert.AreEqual(1, x.Count());
 			Assert.AreEqual("A4", x.First().SizeAndOrientation.PageSizeName);
-			Assert.IsTrue(x.First().SizeAndOrientation.IsLandScape);
+			Assert.IsTrue(x.First().SizeAndOrientation.Orientation == Orientation.Landscape);
 		}
 
 		[Test]
@@ -31,17 +31,17 @@ namespace BloomTests.Book
 			var x = Layout.GetConfigurationsFromConfigurationOptionsString(json);
 			Assert.AreEqual(3, x.Count());
 			Assert.AreEqual("A5", x.First().SizeAndOrientation.PageSizeName);
-			Assert.IsFalse(x.First().SizeAndOrientation.IsLandScape);
+			Assert.IsTrue(x.First().SizeAndOrientation.Orientation == Orientation.Portrait);
 			Assert.That(x.First().Style, Is.Null.Or.Empty);
 
 			Layout a4landscapeDefault = x.ToArray()[1];
 			Assert.AreEqual("A4", a4landscapeDefault.SizeAndOrientation.PageSizeName);
-			Assert.IsTrue(a4landscapeDefault.SizeAndOrientation.IsLandScape);
+			Assert.IsTrue(a4landscapeDefault.SizeAndOrientation.Orientation == Orientation.Landscape);
 			Assert.AreEqual("Default", a4landscapeDefault.Style);
 
 			Layout a4landscapeSideBySide = x.ToArray()[2];
 			Assert.AreEqual("A4", a4landscapeSideBySide.SizeAndOrientation.PageSizeName);
-			Assert.IsTrue(a4landscapeSideBySide.SizeAndOrientation.IsLandScape);
+			Assert.IsTrue(a4landscapeSideBySide.SizeAndOrientation.Orientation == Orientation.Landscape);
 			Assert.AreEqual("SideBySide", a4landscapeSideBySide.Style);
 		}
 
@@ -67,14 +67,14 @@ namespace BloomTests.Book
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(@"<html ><body><div id='foo'></div><div class='blah bloom-page a5Portrait'></div></body></html>");
-			Assert.IsFalse(SizeAndOrientation.GetSizeAndOrientation(dom, "A5Portrait").IsLandScape);
+			Assert.IsTrue(SizeAndOrientation.GetSizeAndOrientation(dom, "A5Portrait").Orientation == Orientation.Portrait);
 		}
 		[Test]
 		public void IsLandscape_landscapeCSS_true()
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(@"<html ><body><div id='foo'></div><div class='blah bloom-page A5Landscape'></div></body></html>");
-			Assert.IsTrue(SizeAndOrientation.GetSizeAndOrientation(dom, "A5Portrait").IsLandScape);
+			Assert.IsTrue(SizeAndOrientation.GetSizeAndOrientation(dom, "A5Portrait").Orientation == Orientation.Landscape);
 		}
 	}
 }

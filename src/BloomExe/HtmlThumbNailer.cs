@@ -312,7 +312,7 @@ namespace Bloom
 						if (div == null)
 						{
 				var order = (ThumbnailOrder)browser.Tag;
-				Logger.WriteEvent("HtmlThumNailer ({1}):  found no div with a class of bloom-Page ({0})", order.ThumbNailFilePath,
+				Logger.WriteEvent("HtmlThumbNailer ({1}):  found no div with a class of bloom-Page ({0})", order.ThumbNailFilePath,
 					Thread.CurrentThread.ManagedThreadId);
 							throw new ApplicationException("thumbnails found no div with a class of bloom-Page");
 						}
@@ -618,7 +618,7 @@ namespace Bloom
 			//order.ResultingThumbnail = pendingThumbnail;
 			if (_disposed)
 				return;
-			Logger.WriteMinorEvent("HtmlThumNailer ({1}): finished work on thumbnail ({0})", order.ThumbNailFilePath,
+			Logger.WriteMinorEvent("HtmlThumbNailer ({1}): finished work on thumbnail ({0})", order.ThumbNailFilePath,
 				Thread.CurrentThread.ManagedThreadId);
 			order.Callback(pendingThumbnail);
 		}
@@ -706,8 +706,8 @@ namespace Bloom
 				}
 				else //square page
 				{
-					contentWidth = options.Width;
-					contentHeight = options.Height;
+					contentWidth = options.Width - 10;
+					contentHeight = options.Height - 10;
 				}
 #if !__MonoCS__
 				horizontalOffset = (options.Width / 2) - (contentWidth / 2);

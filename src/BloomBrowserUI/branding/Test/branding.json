@@ -9,13 +9,13 @@
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "*",
-            "content": "<div  class='standout'>This should show at the bottom of the credits page. The image below should be a caterpillar in a5landscape, but butterfly in a5portrait, switched by styles in branding.css</div><img class='portrait branding' src='butterfly.png'/><img class='landscape branding' src='caterpillar.png'/>",
+            "content": "<div  class='standout'>This should show at the bottom of the credits page. The image below should be a caterpillar in a5landscape, but butterfly in a5portrait, switched by styles in branding.css</div><img class='portrait square branding' src='butterfly.png'/><img class='landscape branding' src='caterpillar.png'/>",
             "condition": "always"
         },
         {
             "data-book": "title-page-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='butterfly.png'/><div class='standout'>This should show at the bottom of the title page, underneath a butterfly. This is a hyperlink but it should not be underlined: <a href='https://bloomlibrary.org'>https://bloomlibrary.org</a></div>",
+            "content": "<img class='branding portraitOnly squareOnly' src='butterfly.png'/><div class='standout'>This should show at the bottom of the title page, <span class='branding portraitOnly squareOnly'>underneath</span><span class='branding landscapeOnly'>above</span> a butterfly. This is a hyperlink but it should not be underlined: <a href='https://bloomlibrary.org'>https://bloomlibrary.org</a></div><img class='branding landscapeOnly' src='butterfly.png'/>",
             "condition": "always"
         },
 

@@ -29,7 +29,8 @@ Rules that format the branding go in branding-base.less, or in the branding.less
 
 /*  these rules allow different branding insertions depending on orientation */
 .portraitOnly,
-.landscapeOnly {
+.landscapeOnly,
+.squareOnly {
     display: none;
 }
 .Device16x9Portrait,
@@ -54,6 +55,11 @@ Rules that format the branding go in branding-base.less, or in the branding.less
 .A5Landscape,
 .A6Landscape {
     .landscapeOnly {
+        display: unset;
+    }
+}
+.Cm13Square {
+    .squareOnly {
         display: unset;
     }
 }

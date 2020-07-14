@@ -154,7 +154,7 @@ namespace Bloom.Publish
 					// Check memory for the benefit of developers.  The user won't see anything.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
 					_pdfMaker.MakePdf(tempHtml.Key, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName,
-						PageLayout.SizeAndOrientation.IsLandScape, LoadBookIfNeeded(new NullProgress()).UserPrefs.ReducePdfMemoryUse,
+						PageLayout.SizeAndOrientation.Orientation, LoadBookIfNeeded(new NullProgress()).UserPrefs.ReducePdfMemoryUse,
 						LayoutPagesForRightToLeft, layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
 					// Warn the user if we're starting to use too much memory.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
@@ -180,8 +180,8 @@ namespace Bloom.Publish
 		{
 			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
-			var orientationChanging = BookSelection.CurrentSelection.GetLayout().SizeAndOrientation.IsLandScape !=
-			                          PageLayout.SizeAndOrientation.IsLandScape;
+			var orientationChanging = BookSelection.CurrentSelection.GetLayout().SizeAndOrientation.Orientation !=
+											PageLayout.SizeAndOrientation.Orientation;
 			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection,
 				_bookServer, orientationChanging, PageLayout);
 
@@ -303,7 +303,7 @@ namespace Bloom.Publish
 				// Large page sizes can't make booklets.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4155.
 				var size = PageLayout.SizeAndOrientation.PageSizeName;
 				return AllowPdf && BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate &&
-					(size != "A4" && size != "A3" && size != "B5" && size != "Letter" && size != "Device16x9");
+					(size != "A4" && size != "A3" && size != "B5" && size != "Letter" && size != "Device16x9" && size != "Cm13");
 			}
 		}
 

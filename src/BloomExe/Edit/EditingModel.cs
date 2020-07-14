@@ -442,8 +442,8 @@ namespace Bloom.Edit
 		public void SetLayout(Layout layout)
 		{
 			SaveNow();
-			var changedOrientation = CurrentBook.GetLayout().SizeAndOrientation.IsLandScape !=
-			                         layout.SizeAndOrientation.IsLandScape;
+			var changedOrientation = CurrentBook.GetLayout().SizeAndOrientation.Orientation !=
+											layout.SizeAndOrientation.Orientation;
 			CurrentBook.SetLayout(layout);
 			if (changedOrientation)
 			{
