@@ -22,6 +22,8 @@ require("./jquery.mousewheel.js");
             instructions: ""
         };
 
+    const whiteSmallSquare = "\u25AB";
+
     var characterSets = splitCharacterSetsByGrapheme({
         // extended latin (and african latin)
         // upper
@@ -102,7 +104,8 @@ require("./jquery.mousewheel.js");
         "<": "«≤‹",
         ">": "»≥›",
         "=": "≈≠≡",
-        "/": "÷"
+        "/": "÷",
+        "\u0020": whiteSmallSquare // Space; See comment in replacePreviousLetterWithNewLetter
     });
     // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
     // 8  backspace
@@ -412,6 +415,13 @@ require("./jquery.mousewheel.js");
 
     // See notes on BL-3900 in toolbox.ts for important regression information.
     function replacePreviousLetterWithNewLetter(newLetter) {
+        // Special case where we need to insert a character which has no visible representation (non-breaking space),
+        // so we use a different character for the display (white small square)
+        if (newLetter === whiteSmallSquare) {
+            const nonBreakingSpace = "\u00A0";
+            newLetter = nonBreakingSpace;
+        }
+
         if (isTextArea()) {
             var pos = getTextAreaCaretPosition(activeElement);
             var arVal = $(activeElement)

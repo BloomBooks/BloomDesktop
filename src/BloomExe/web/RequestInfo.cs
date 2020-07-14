@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web;
@@ -270,7 +271,8 @@ namespace Bloom.Api
 		public void WriteError(int errorCode, string errorDescription)
 		{
 			_actualContext.Response.StatusCode = errorCode;
-			_actualContext.Response.StatusDescription = errorDescription;
+			// This is an area where HTTP is stuck in pre-Unicode ASCII days.
+			_actualContext.Response.StatusDescription = SanitizeForAscii(errorDescription);
 			// The firefox javascript engine apparently considers empty json data to be xml
 			// and tries to parse it as such if we don't specify that it is actually json.
 			// This happens before we even see the data in the axios.get().then().catch() code!
@@ -279,6 +281,22 @@ namespace Bloom.Api
 				_actualContext.Response.ContentType = "application/json";
 			_actualContext.Response.Close();
 			HaveOutput = true;
+		}
+
+		private string SanitizeForAscii(string errorDescription)
+		{
+			// Tab ("\t") is okay, but no other ASCII control characters.  Non-ASCII Unicode characters will be trashed
+			// anyway (by discarding the high byte I think) if they don't cause problems, so trash them deterministically.
+			// If the description is non-Roman, it will turn into all question marks, but that's life.
+			var bldr = new StringBuilder();
+			foreach (var ch in errorDescription.ToCharArray())
+			{
+				if ((ushort)ch < 32 && ch != '\t' || (ushort)ch >= 127)
+					bldr.Append("?");
+				else
+					bldr.Append(ch);
+			}
+			return bldr.ToString();
 		}
 
 		public void WriteError(int errorCode)

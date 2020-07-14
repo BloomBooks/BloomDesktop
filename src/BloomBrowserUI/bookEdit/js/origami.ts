@@ -64,20 +64,15 @@ function setupLayoutMode() {
             $this.find(".split-pane").unwrap();
             return true; // continue .each()
         }
-        if (
-            !$this.find(
-                ".bloom-imageContainer, .bloom-translationGroup:not(.box-header-off)"
-            ).length
-        )
+        if (isSplitPaneComponentInnerEmpty($this))
             $this.append(getTypeSelectors());
 
         $this.append(getButtons());
-        const contents = $this.find(
-            ".bloom-translationGroup:not(.box-header-off) > .bloom-editable"
-        );
-        // don't put text box identifier in image container or where we just put the "Picture or Text"" selector links
-        if ($this.find(".bloom-imageContainer, .selector-links").length)
+
+        if (!doesSplitPaneComponentNeedTextBoxIdentifier($this)) {
             return true; // continue .each()
+        }
+
         $this.append(getTextBoxIdentifier());
 
         return true; // continue .each(); though this is the end of the loop, it is needed for tsconfig's 'noImplicitReturns'
@@ -102,16 +97,35 @@ function setupLayoutMode() {
     (<any>window).ElementQueries.init();
 }
 
+// N.B. If you add/remove a container class, you'll likely need to modify 'createTypeSelectors()' too.
+const bloomContainerClasses =
+    ".bloom-imageContainer, .bloom-widgetContainer, .bloom-videoContainer,";
+
+function isSplitPaneComponentInnerEmpty(spci: JQuery) {
+    return !spci.find(
+        `${bloomContainerClasses} .bloom-translationGroup:not(.box-header-off)`
+    ).length;
+}
+
+function doesSplitPaneComponentNeedTextBoxIdentifier(spci: JQuery) {
+    // don't put the text box identifier in:
+    //   image container
+    //   video container
+    //   widget container,
+    // or where we just put the "Picture, Video, Widget or Text" selector links
+    return !spci.find(`${bloomContainerClasses} .selector-links`).length;
+}
+
 function layoutToggleClickHandler() {
-    var marginBox = $(".marginBox");
+    const marginBox = $(".marginBox");
     if (!marginBox.hasClass("origami-layout-mode")) {
         marginBox.addClass("origami-layout-mode");
         setupLayoutMode();
         // Remove any left over formatButton from normal edit mode
         marginBox.find("#formatButton").remove();
         // Hook up TextBoxProperties dialog to each text box (via its origami overlay)
-        var dialog = GetTextBoxPropertiesDialog();
-        var overlays = marginBox.find(".textBox-identifier");
+        const dialog = GetTextBoxPropertiesDialog();
+        const overlays = marginBox.find(".textBox-identifier");
         overlays.each(function() {
             dialog.AttachToBox(this); // put the gear button in each text box identifier div
         });
@@ -355,6 +369,8 @@ function getCloseButton() {
     closeButton.click(closeClickHandler);
     return closeButton;
 }
+
+// N.B. If we ever add a new type, make sure you also modify 'bloomContainerClasses'.
 function createTypeSelectors(includeWidget: boolean) {
     var space = " ";
     var links = $("<div class='selector-links bloom-ui origami-ui'></div>");
