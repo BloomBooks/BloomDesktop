@@ -3102,7 +3102,7 @@ namespace Bloom.Book
 				return PublishModel.BookletLayoutMethod.Calendar;
 			else
 			{
-				if (layout.SizeAndOrientation.IsLandScape && layout.SizeAndOrientation.PageSizeName == "A5")
+				if (layout.SizeAndOrientation.Orientation == Orientation.Landscape && layout.SizeAndOrientation.PageSizeName == "A5")
 					return PublishModel.BookletLayoutMethod.CutAndStack;
 				return PublishModel.BookletLayoutMethod.SideFold;
 			}

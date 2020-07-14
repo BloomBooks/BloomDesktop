@@ -345,11 +345,10 @@ export class PageChooser {
             );
         }
 
-        if (this._orientation === "landscape") {
+        if (this._orientation !== "portrait") {
             const mainContainer = document.getElementById("mainContainer");
             if (mainContainer) {
-                // just to satisfy compiler
-                mainContainer.classList.add("landscape");
+                mainContainer.classList.add(this._orientation);
             }
         }
     } // loadPageGroups
@@ -711,7 +710,11 @@ export class PageChooser {
             templateBookFolderUrl +
             "/template/" +
             label +
-            (this._orientation === "landscape" ? "-landscape" : "") +
+            (this._orientation === "landscape"
+                ? "-landscape"
+                : this._orientation === "square"
+                ? "-square"
+                : "") +
             ".svg?generateThumbnaiIfNecessary=true"
         );
     }

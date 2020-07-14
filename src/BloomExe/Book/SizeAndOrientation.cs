@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Newtonsoft.Json;
 using SIL.Extensions;
@@ -10,104 +11,53 @@ using SIL.Xml;
 
 namespace Bloom.Book
 {
+	public enum Orientation
+	{
+		Portrait,
+		Landscape,
+		Square
+	}
+
 	/// <summary>
 	/// NB: html class names are case sensitive! In this code, we want to accept stuff regardless of case, but always generate Capitalized paper size and orientation names
 	/// </summary>
 	public class SizeAndOrientation
 	{
 		public string PageSizeName;
-		//public Dictionary<string /*option label*/, List<string>/*choices for that option*/> Options { get; set; }
-		public bool IsLandScape { get; set; }
+		public Orientation Orientation;
 
 		public SizeAndOrientation()
 		{
-			//Options = new Dictionary<string, List<string>>();
 		}
+
 		public string OrientationName
 		{
-			get { return IsLandScape ? "Landscape" : "Portrait"; }
-
+			get { return Orientation.ToString(); }
 		}
-//
-//		public static SizeAndOrientation FromDom(XmlDocument dom)
-//		{
-//			var soa = new SizeAndOrientation();
-//
-//			var css = GetPaperStyleSheetName(dom);
-//			int i = css.ToLower().IndexOf("portrait");
-//			if (i > 0)
-//			{
-//				soa.IsLandScape = false;
-//				soa.PageSizeName = css.Substring(0, i).ToUpperFirstLetter();
-//				return soa;
-//			}
-//			i = css.ToLower().IndexOf("landscape");
-//			if (i > 0)
-//			{
-//				soa.IsLandScape = true;
-//				soa.PageSizeName = css.Substring(0, i).ToUpperFirstLetter();
-//				return soa;
-//			}
-//			throw new ApplicationException(
-//				"Bloom could not determine the paper size because it could not find a stylesheet in the document which contained the words 'portrait' or 'landscape'");
-//		}
-
-//		/// <summary>
-//		/// looks for the css which sets the paper size/orientation
-//		/// </summary>
-//		/// <param name="dom"></param>
-//		private static string GetPaperStyleSheetName(XmlDocument dom)
-//		{
-//			foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
-//			{
-//				var href = linkNode.GetAttribute("href");
-//				if (href == null)
-//				{
-//					continue;
-//				}
-//
-//				var fileName = Path.GetFileName(href);
-//				if (fileName.ToLower().Contains("portrait") || fileName.ToLower().Contains("landscape"))
-//				{
-//					return fileName;
-//				}
-//			}
-//			return String.Empty;
-//		}
 
 		public override string ToString()
 		{
 			return PageSizeName + OrientationName;
 		}
 
-		/// <summary>
-		/// THe normal descriptors are things like "a5portrait". This would turn that in "A5 Portrait" (in the current UI lang, eventually)
-		/// </summary>
-		/// <param name="sizeAndOrientationDescriptor"></param>
-		/// <returns></returns>
-		public static string GetDisplayName(string sizeAndOrientationDescriptor)
-		{
-			var so = FromString(sizeAndOrientationDescriptor);
-			return so.PageSizeName.ToUpperFirstLetter() + " " + so.OrientationName.ToUpperFirstLetter();
-		}
-
 		public static SizeAndOrientation FromString(string name)
 		{
 			var nameLower = name.ToLowerInvariant();
-			var startOfOrientationName = Math.Max(nameLower.IndexOf("landscape"), nameLower.IndexOf("portrait"));
+			var startOfOrientationName = Math.Max(Math.Max(nameLower.IndexOf("landscape"), nameLower.IndexOf("portrait")), nameLower.IndexOf("square"));
 			if(startOfOrientationName == -1)
 			{
 				Debug.Fail("No orientation name found in '"+nameLower+"'");
 				return new SizeAndOrientation()
 					{
-						IsLandScape=false,
+						Orientation = Orientation.Portrait,
 						PageSizeName = "A5"
 					};
 			}
 
 			return new SizeAndOrientation()
 					{
-						IsLandScape = nameLower.Contains("landscape"),
+						Orientation = nameLower.Contains("landscape") ? Orientation.Landscape :
+							(nameLower.Contains("square") ? Orientation.Square : Orientation.Portrait),
 						PageSizeName = ExtractPageSizeName(name, startOfOrientationName),
 					};
 		}
@@ -204,6 +154,7 @@ namespace Bloom.Book
 			yield return new Layout { SizeAndOrientation = FromString("QuarterLetterLandscape") };
 			yield return new Layout { SizeAndOrientation = FromString("Device16x9Portrait") };
 			yield return new Layout { SizeAndOrientation = FromString("Device16x9Landscape") };
+			yield return new Layout { SizeAndOrientation = FromString("Cm13Square") };
 		}
 
 
@@ -215,7 +166,7 @@ namespace Bloom.Book
 			string sao = defaultIfMissing;
 			foreach (var part in firstPage.GetStringAttribute("class").SplitTrimmed(' '))
 			{
-				if (part.ToLowerInvariant().Contains("portrait") || part.ToLowerInvariant().Contains("landscape"))
+				if (part.ToLowerInvariant().Contains("portrait") || part.ToLowerInvariant().Contains("landscape") || part.ToLowerInvariant().Contains("square"))
 				{
 					sao = part;
 					break;
@@ -231,6 +182,7 @@ namespace Bloom.Book
 				RemoveClassesContaining(pageDiv, "layout-");
 				RemoveClassesContaining(pageDiv, "Landscape");
 				RemoveClassesContaining(pageDiv, "Portrait");
+				RemoveClassesContaining(pageDiv, "Square");
 
 				foreach (var cssClassName in layout.ClassNames)
 				{
@@ -241,7 +193,7 @@ namespace Bloom.Book
 
 		public string ClassName
 		{
-			get { return PageSizeName + (IsLandScape ? "Landscape" : "Portrait"); }
+			get { return PageSizeName + OrientationName; }
 
 		}
 

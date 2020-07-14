@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Newtonsoft.Json;
 using SIL.Extensions;
@@ -90,6 +92,32 @@ namespace Bloom.Book
 			return (SizeAndOrientation.ToString() + " " + s).Trim();
 		}
 
+		public string DisplayName
+		{
+			get
+			{
+				var pageSizeName = SizeAndOrientation.PageSizeName;
+				var orientationName = SizeAndOrientation.OrientationName;
+				string englishName;
+				var match = Regex.Match(pageSizeName, @"^(cm|in)(\d+)$",
+					RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+				if (match.Success)
+					englishName = match.Groups[2].Value + match.Groups[1].Value.ToLowerInvariant() + " " +
+									orientationName.ToUpperFirstLetter();
+				else
+					englishName = pageSizeName.ToUpperFirstLetter() + " " + orientationName.ToUpperFirstLetter();
+				var id = "LayoutChoices." + SizeAndOrientation.ClassName;
+				if (!String.IsNullOrEmpty(Style) && Style.ToLowerInvariant() != "default")
+				{
+					id = id + " " + Style;
+					var splitStyle = Regex.Replace(Style, @"([a-z])([A-Z])", @"$1 $2", RegexOptions.CultureInvariant);
+					englishName = englishName + " (" + splitStyle + ")";
+				}
+				var displayName = L10NSharp.LocalizationManager.GetDynamicString("Bloom", id, englishName);
+				return displayName;
+			}
+		}
+
 		public static Layout FromDom(HtmlDom dom, Layout defaultIfMissing)
 		{
 			var firstPage = dom.SelectSingleNode("descendant-or-self::div[contains(@class,'bloom-page')]");
@@ -105,7 +133,7 @@ namespace Bloom.Book
 		{
 			foreach (var part in page.GetStringAttribute("class").SplitTrimmed(' '))
 			{
-				if (part.ToLowerInvariant().Contains("portrait") || part.ToLowerInvariant().Contains("landscape"))
+				if (part.ToLowerInvariant().Contains("portrait") || part.ToLowerInvariant().Contains("landscape") || part.ToLowerInvariant().Contains("square"))
 				{
 					layout.SizeAndOrientation = SizeAndOrientation.FromString(part);
 				}

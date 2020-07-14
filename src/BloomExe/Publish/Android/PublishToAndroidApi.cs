@@ -273,7 +273,7 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "defaultLandscape",
 				request =>
 				{
-					return request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape;
+					return request.CurrentBook.GetLayout().SizeAndOrientation.Orientation == Orientation.Landscape;
 				},
 				null, // no write action
 				false,

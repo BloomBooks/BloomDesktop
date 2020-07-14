@@ -40,20 +40,18 @@ namespace Bloom.Api
 		/// </remarks>
 		public static string FindBrandingImageFileIfPossible(string branding, string filename, Layout layout)
 		{
-			string path;
-			if (layout.SizeAndOrientation.IsLandScape)
-			{
-				// we will first try to find a landscape-specific image
-				var ext = Path.GetExtension(filename);
-				var filenameNoExt = Path.ChangeExtension(filename, null);
-				var landscapeFileName = Path.ChangeExtension(filenameNoExt + "-landscape", ext);
-				path = BloomFileLocator.GetOptionalBrandingFile(branding, landscapeFileName);
-				if (!string.IsNullOrEmpty(path))
-					return path;
-				path = BloomFileLocator.GetOptionalBrandingFile(branding, Path.ChangeExtension(landscapeFileName, "png"));
-				if (!string.IsNullOrEmpty(path))
-					return path;
-			}
+			// First look for an orientation-specific image.
+			var orientationName = layout.SizeAndOrientation.OrientationName.ToLowerInvariant();
+			var ext = Path.GetExtension(filename);
+			var filenameNoExt = Path.ChangeExtension(filename, null);
+			var orientedFileName = Path.ChangeExtension(filenameNoExt + "-" + orientationName, ext);
+			var path = BloomFileLocator.GetOptionalBrandingFile(branding, orientedFileName);
+			if (!string.IsNullOrEmpty(path))
+				return path;
+			path = BloomFileLocator.GetOptionalBrandingFile(branding, Path.ChangeExtension(orientedFileName, "png"));
+			if (!string.IsNullOrEmpty(path))
+				return path;
+			// OK, no orientation-specific image exists, look for the given image file as specified.
 			// Note: in Bloom 3.7, our Firefox, when making PDFs, would render svg's as blurry. This was fixed in Bloom 3.8 with
 			// a new Firefox. So SVGs are requested by the html...
 			path = BloomFileLocator.GetOptionalBrandingFile(branding, filename);

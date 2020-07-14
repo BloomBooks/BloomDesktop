@@ -280,7 +280,7 @@ namespace Bloom
 		/// <param name="isLandscape"></param>
 		/// <param name="mustRegenerate"></param>
 		/// <returns></returns>
-		public Image GetThumbnailForPage(Book.Book book, IPage page, bool isLandscape, bool mustRegenerate = false)
+		public Image GetThumbnailForPage(Book.Book book, IPage page, Orientation orientation, bool mustRegenerate = false)
 		{
 			var pageDom = book.GetThumbnailXmlDocumentForPage(page);
 			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
@@ -290,28 +290,38 @@ namespace Bloom
 				CenterImageUsingTransparentPadding = true,
 				MustRegenerate = mustRegenerate
 			};
+			string idSuffix = "";
 			var pageDiv = pageDom.RawDom.SafeSelectNodes("descendant-or-self::div[contains(@class,'bloom-page')]").Cast<XmlElement>().FirstOrDefault();
 			// The actual page size is rather arbitrary, but we want the right ratio for A4.
 			// Using the actual A4 sizes in mm makes a big enough image to look good in the larger
 			// preview box on the right as well as giving exactly the ratio we want.
 			// We need to make the image the right shape to avoid some sort of shadow/box effects
 			// that I can't otherwise find a way to get rid of.
-			if (isLandscape)
+			if (orientation == Orientation.Landscape)
 			{
 				thumbnailOptions.Width = 297;
 				thumbnailOptions.Height = 210;
 				pageDiv.SetAttribute("class", pageDiv.Attributes["class"].Value.Replace("Portrait", "Landscape"));
+				idSuffix = "L";
 			}
-			else
+			else if (orientation == Orientation.Portrait)
 			{
 				thumbnailOptions.Width = 210;
 				thumbnailOptions.Height = 297;
 				// On the offchance someone makes a template with by-default-landscape pages...
 				pageDiv.SetAttribute("class", pageDiv.Attributes["class"].Value.Replace("Landscape", "Portrait"));
 			}
+			else
+			{
+				thumbnailOptions.Width = 210;
+				thumbnailOptions.Height = 210;
+				var classes = Regex.Replace(pageDiv.Attributes["class"].Value, @"[A-Za-z0-9]+(Landscape|Portrait)", "Cm13Square");
+				pageDiv.SetAttribute("class", classes);
+				idSuffix = "S";
+			}
 			// In different books (or even the same one) in the same session we may have portrait and landscape
 			// versions of the same template page. So we must use different IDs.
-			return _thumbnailProvider.GetThumbnail(page.Id + (isLandscape ? "L" : ""), pageDom, thumbnailOptions);
+			return _thumbnailProvider.GetThumbnail(page.Id + idSuffix, pageDom, thumbnailOptions);
 		}
 
 		/// <summary>

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using L10NSharp;
 using SIL.CommandLineProcessing;
@@ -36,7 +37,7 @@ namespace Bloom.Publish.PDF
 		private BackgroundWorker _worker;
 
 		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName,
-			bool landscape, bool saveMemoryMode, Control owner, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
+			Book.Orientation orientation, bool saveMemoryMode, Control owner, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
 		{
 			_worker = worker;
 #if !__MonoCS__
@@ -126,7 +127,7 @@ namespace Bloom.Publish.PDF
 			{
 				exePath = filePath;
 			}
-			SetArguments(bldr, inputHtmlPath, outputPdfPath, paperSizeName, landscape, saveMemoryMode);
+			SetArguments(bldr, inputHtmlPath, outputPdfPath, paperSizeName, orientation, saveMemoryMode);
 			var arguments = bldr.ToString();
 			var progress = new NullProgress();
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGeckofxReporting);
@@ -168,19 +169,42 @@ namespace Bloom.Publish.PDF
 		//LeftMarginInMillimeters = 0,
 		//RightMarginInMillimeters = 0,
 		//EnableGraphite = true,
-		//Landscape = landscape,
+		//Landscape = orientation == Book.Orientation.Landscape,
 		//InputHtmlPath = inputHtmlPath,
 		//OutputPdfPath = tempOutput.Path,
 		//PageSizeName = paperSizeName
+		//
 		void SetArguments(StringBuilder bldr, string inputHtmlPath, string outputPdfPath,
-			string paperSizeName, bool landscape, bool saveMemoryMode)
+			string paperSizeName, Book.Orientation orientation, bool saveMemoryMode)
 		{
 			bldr.AppendFormat("\"{0}\" \"{1}\"", inputHtmlPath, outputPdfPath);
 			bldr.Append(" --quiet");	// turn off its progress dialog (BL-3721)
-			bldr.AppendFormat(" -B 0 -T 0 -L 0 -R 0 -s {0}", paperSizeName);
+			bldr.Append(" -B 0 -T 0 -L 0 -R 0");
+			if (orientation != Book.Orientation.Square)
+			{
+				bldr.AppendFormat(" -s {0}", paperSizeName);
+				if (orientation == Book.Orientation.Landscape)
+					bldr.Append(" -Landscape");
+			}
+			else
+			{
+				Match match = Regex.Match(paperSizeName, @"^(cm|in)(\d+)$", RegexOptions.IgnoreCase|RegexOptions.CultureInvariant);
+				if (match.Success)
+				{
+					var size = Int32.Parse(match.Groups[2].Value);
+					if (match.Groups[1].Value == "in")
+						size = (int)(size * 25.4);	// convert from inches to millimeters
+					else
+						size = size * 10;	// convert from cm to mm
+					bldr.AppendFormat(" -h {0} -w {0}", size);
+				}
+				else
+				{
+					// Shouldn't ever get here, but set a default rather than crashing.
+					bldr.Append(" -h 130 -w 130");
+				}
+			}
 			bldr.Append(" --graphite");
-			if (landscape)
-				bldr.Append(" -Landscape");
 			if (saveMemoryMode)
 				bldr.Append(" --reduce-memory-use");
 		}
