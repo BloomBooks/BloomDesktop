@@ -3,6 +3,7 @@ import AudioRecording, {
     AudioTextFragment,
     initializeTalkingBookToolAsync
 } from "./audioRecording";
+import axios from "axios";
 
 // Notes:
 // For any async tests:
@@ -1089,7 +1090,64 @@ describe("audio recording tests", () => {
     });
 
     describe("- toggleRecordingMode()", () => {
-        it("URM(): converts from RecordSentence/PlaySentence to RecordTextBox/PlaySentence", async done => {
+        function setupMockRecording() {
+            // Make all the startRecord and endRecord post calls "succeed".
+            spyOn(axios, "post").and.returnValue(Promise.resolve());
+        }
+
+        it("toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlayTextBox upon recording", async done => {
+            // Setup
+            const div1Html =
+                '<div class="bloom-editable" id="div1" data-audiorecordingmode="Sentence"><p><span id="1.1" class="audio-sentence" recordingmd5="undefined">This text box should be unchanged.</span> <span id="1.2" class="audio-sentence" recordingmd5="undefined">That is, in sentence mode.</span></p></div>';
+            const div2Html =
+                '<div class="bloom-editable" id="div2" data-audiorecordingmode="Sentence"><p><span id="2.1" class="audio-sentence">Sentence 2.1.</span> <span id="2.2" class="audio-sentence">Sentence 2.2.</span></p></div>';
+            SetupIFrameFromHtml(`<div id='page1'>${div1Html}${div2Html}</div>`);
+
+            const player = <HTMLMediaElement>document.getElementById("player")!;
+            player.src = "sentence1.mp3";
+
+            const recording = new AudioRecording();
+            recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, toggleRecordingMode() will flip the state
+
+            const div2 = getFrameElementById("page", "div2")!;
+            recording.moveCurrentHighlightToTextBox(div2);
+
+            // System under test
+            try {
+                await recording.toggleRecordingModeAsync();
+
+                // Simulate the user recording audio
+                setupMockRecording();
+                await recording.startRecordCurrentAsync();
+                await recording.endRecordCurrentAsync();
+            } catch (error) {
+                fail(error);
+                done();
+                return;
+            }
+
+            // Verification
+            const div1 = getFrameElementById("page", "div1");
+            expect(div1!.outerHTML).toBe(
+                div1Html,
+                "Div1 HTML should not change."
+            );
+
+            const expectedDiv2Result =
+                '<div class="bloom-editable ui-audioCurrent audio-sentence" id="div2" data-audiorecordingmode="TextBox"><p>Sentence 2.1. Sentence 2.2.</p></div>';
+            expect(div2.outerHTML).toBe(
+                expectedDiv2Result,
+                "Div2 HTML should switch to textbox mode"
+            );
+
+            expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
+                "http://localhost:9876/bloom/api/audio/wavFile?id=audio/div2.wav"
+            );
+
+            done();
+        });
+
+        it("toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlaySentence", async done => {
             const textBoxDivHtml =
                 '<div id="textBox1" class="bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style cke_editable cke_editable_inline cke_contents_ltr" data-languagetipcontent="English" data-audiorecordingmode="Sentence" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" lang="en" contenteditable="true">';
             const paragraphsMarkedBySentenceHtml =
@@ -1153,9 +1211,9 @@ describe("audio recording tests", () => {
             done();
         });
 
-        it("URM(): converts from RecordTextBox/PlaySentence to RecordSentence/PlaySentence", async done => {
+        it("toggleRecordingMode(): converts from RecordTextBox/PlaySentence to RecordSentence/PlaySentence", async done => {
             const textBoxDivHtml =
-                '<div id="textBox1" class="bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style cke_editable cke_editable_inline cke_contents_ltr ui-audioCurrent" data-languagetipcontent="English" data-audiorecordingmode="TextBox" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" lang="en" contenteditable="true">';
+                '<div id="textBox1" class="bloom-editable ui-audioCurrent" data-audiorecordingmode="TextBox">';
             const paragraphsMarkedBySentenceHtml =
                 '<p><span id="sentence1" class="audio-sentence">Sentence 1.</span> <span id="sentence2" class="audio-sentence">Sentence 2.</span><br></p>';
             const formatButtonHtml =
@@ -1217,9 +1275,57 @@ describe("audio recording tests", () => {
             done();
         });
 
-        it("URM(): converts from RecordTextBox/PlayTextBox to RecordSentence/PlaySentence", async done => {
+        it("toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlayTextBox and back, if not recorded", async done => {
+            // Setup
+            const div1Html =
+                '<div class="bloom-editable" id="div1" data-audiorecordingmode="Sentence"><p><span id="1.1" class="audio-sentence" recordingmd5="undefined">This text box should be unchanged.</span> <span id="1.2" class="audio-sentence" recordingmd5="undefined">That is, in sentence mode.</span></p></div>';
+            const div2Html =
+                '<div class="bloom-editable" id="div2" data-audiorecordingmode="Sentence"><p><span id="2.1" class="audio-sentence">Sentence 2.1.</span> <span id="2.2" class="audio-sentence">Sentence 2.2.</span></p></div>';
+            SetupIFrameFromHtml(`<div id='page1'>${div1Html}${div2Html}</div>`);
+
+            const player = <HTMLMediaElement>document.getElementById("player")!;
+            player.src = "sentence1.mp3";
+
+            const recording = new AudioRecording();
+            recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, toggleRecordingMode() will flip the state
+
+            const div2 = getFrameElementById("page", "div2")!;
+            recording.moveCurrentHighlightToTextBox(div2);
+
+            // System under test
+            try {
+                await recording.toggleRecordingModeAsync();
+                await recording.toggleRecordingModeAsync();
+            } catch (error) {
+                fail(error);
+                done();
+                return;
+            }
+
+            // Verification
+            const div1 = getFrameElementById("page", "div1");
+            expect(div1!.outerHTML).toBe(
+                div1Html,
+                "Div1 HTML should not change."
+            );
+
+            const expectedDiv2Result =
+                '<div class="bloom-editable" id="div2" data-audiorecordingmode="Sentence"><p><span id="2.1" class="audio-sentence ui-audioCurrent" recordingmd5="undefined">Sentence 2.1.</span> <span id="2.2" class="audio-sentence" recordingmd5="undefined">Sentence 2.2.</span></p></div>';
+            expect(div2.outerHTML).toBe(
+                expectedDiv2Result,
+                "Div2 HTML should switch back to sentence mode"
+            );
+
+            expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
+                "http://localhost:9876/bloom/api/audio/wavFile?id=audio/2.1.wav"
+            );
+
+            done();
+        });
+
+        it("toggleRecordingMode(): converts from RecordTextBox/PlayTextBox to RecordSentence/PlaySentence", async done => {
             const textBoxDivHtml =
-                '<div id="textBox1" class="audio-sentence ui-audioCurrent bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on normal-style cke_editable cke_editable_inline cke_contents_ltr ui-audioCurrent" data-languagetipcontent="English" data-audiorecordingmode="TextBox" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" lang="en" contenteditable="true">';
+                '<div id="textBox1" class="audio-sentence ui-audioCurrent bloom-editable data-audiorecordingmode="TextBox">';
             const paragraphHtml = "<p>Sentence 1. Sentence 2.<br></p>";
             const formatButtonHtml =
                 '<div id="formatButton" class="bloom-ui" style="bottom: 0px;" contenteditable="false"><img data-cke-saved-src="/bloom/bookEdit/img/cogGrey.svg" contenteditable="false"></div>';
@@ -1662,7 +1768,7 @@ function StripAllIds(html) {
     return html.replace(/ id="[^"]*"/g, "").replace(/ id=""/g, "");
 }
 
-function StripAllGuidIds(html) {
+export function StripAllGuidIds(html) {
     // Note: add the "g" (global) flag to the end of the search setting if you want to replace all instead.
     return html
         .replace(
@@ -1740,7 +1846,7 @@ export function SetupTalkingBookUIElements() {
     document.body.appendChild(document.createElement("div")); // Ensures there is always an element.
 
     const html =
-        '<button id="audio-record" ></button><button id="audio-play"></button><div id="audio-split-wrapper"><button id="audio-split"></button></div><button id="audio-next"></button><button id="audio-prev"></button><button id="audio-clear"></button><input id="audio-recordingModeControl"></input><div id="audio-playbackOrderControl"></div><audio id="player" ></audio>';
+        '<button id="audio-record" ></button><button id="audio-play"></button><div id="audio-split-wrapper"><button id="audio-split"></button></div><button id="audio-next"></button><button id="audio-prev"></button><button id="audio-clear"></button><input id="audio-recordingModeControl"><div id="audio-recordingModeControl-clickHandler" /></input><div id="audio-playbackOrderControl"></div><audio id="player" ></audio>';
     document.body.firstElementChild!.insertAdjacentHTML("afterend", html);
 }
 
@@ -1751,4 +1857,18 @@ function StripPlayerSrcNoCacheSuffix(url: string): string {
     }
 
     return url.substring(0, index);
+}
+
+export function getFrameElementById(
+    frameId: string,
+    elementId: string
+): HTMLElement | null {
+    const frame = parent.window.document.getElementById(frameId);
+    if (!frame) {
+        return null;
+    }
+
+    return (frame as HTMLIFrameElement).contentDocument!.getElementById(
+        elementId
+    );
 }
