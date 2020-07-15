@@ -24,6 +24,9 @@
 
     position: relative; /* without this, we've got 'static' and shortcut letters can't be posititioned*/
 }
+.long-press-popup li.small-text {
+    font-size: 16pt;
+}
 .long-press-popup li::before {
     content: attr(data-shortcut);
     position: absolute;
