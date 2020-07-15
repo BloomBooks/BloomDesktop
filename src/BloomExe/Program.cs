@@ -526,6 +526,7 @@ namespace Bloom
 			_projectContext = projectContext;
 		}
 
+		[HandleProcessCorruptedStateExceptions]
 		private static void Run()
 		{
 			_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
@@ -538,6 +539,14 @@ namespace Bloom
 			try
 			{
 				Application.Run();
+			}
+			catch (System.Reflection.TargetInvocationException bad)
+			{
+				if (bad.InnerException is System.AccessViolationException)
+					Logger.ShowUserATextFileRelatedToCatastrophicError(bad.InnerException);
+				else
+					Logger.ShowUserATextFileRelatedToCatastrophicError(bad);
+				System.Environment.FailFast("TargetInvocationException");
 			}
 			catch (System.AccessViolationException nasty)
 			{

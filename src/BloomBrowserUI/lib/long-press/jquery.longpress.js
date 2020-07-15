@@ -22,7 +22,7 @@ require("./jquery.mousewheel.js");
             instructions: ""
         };
 
-    const whiteSmallSquare = "\u25AB";
+    const nonBreakingSpace = "\u00A0";
 
     var characterSets = splitCharacterSetsByGrapheme({
         // extended latin (and african latin)
@@ -105,7 +105,7 @@ require("./jquery.mousewheel.js");
         ">": "»≥›",
         "=": "≈≠≡",
         "/": "÷",
-        "\u0020": whiteSmallSquare // Space; See comment in replacePreviousLetterWithNewLetter
+        "\u0020": nonBreakingSpace // Spacebar
     });
     // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
     // 8  backspace
@@ -289,21 +289,35 @@ require("./jquery.mousewheel.js");
             hidePopup();
         }
     }
+    const charactersRepresentedByAlternativeText = {
+        [nonBreakingSpace]: "non-breaking space / espace insécable"
+    };
+    function createOneButton(replacementText, shortcutText) {
+        let cssClass = "long-press-letter";
+        let buttonText = replacementText;
+
+        if (
+            Object.keys(charactersRepresentedByAlternativeText).includes(
+                replacementText
+            )
+        ) {
+            cssClass += " small-text";
+            buttonText =
+                charactersRepresentedByAlternativeText[replacementText];
+        }
+
+        const letter = $(
+            `<li class="${cssClass}" data-value=${replacementText} data-shortcut="${shortcutText}">${buttonText}</li>`
+        );
+        letter.mouseenter(activateLetter);
+        letter.click(onPopupLetterClick);
+        popup.find("ul").append(letter);
+    }
     function showPopup(chars) {
         lengthOfPreviouslyInsertedCharacter = 1; //the key they are holding down will be a single character
         popup.find("ul").empty();
-        var letter;
         for (var i = 0; i < chars.length; i++) {
-            letter = $(
-                '<li class=long-press-letter data-shortcut="' +
-                    shortcuts[i] +
-                    '">' +
-                    chars[i] +
-                    "</li>"
-            );
-            letter.mouseenter(activateLetter);
-            letter.click(onPopupLetterClick);
-            popup.find("ul").append(letter);
+            createOneButton(chars[i], shortcuts[i]);
         }
 
         //When the parent body is scaled, we don't want our popup to scale
@@ -369,7 +383,7 @@ require("./jquery.mousewheel.js");
     }
 
     function updateChar() {
-        var newChar = $(".long-press-letter.selected").text();
+        var newChar = $(".long-press-letter.selected").attr("data-value");
         replacePreviousLetterWithNewLetter(newChar);
     }
 
@@ -415,13 +429,6 @@ require("./jquery.mousewheel.js");
 
     // See notes on BL-3900 in toolbox.ts for important regression information.
     function replacePreviousLetterWithNewLetter(newLetter) {
-        // Special case where we need to insert a character which has no visible representation (non-breaking space),
-        // so we use a different character for the display (white small square)
-        if (newLetter === whiteSmallSquare) {
-            const nonBreakingSpace = "\u00A0";
-            newLetter = nonBreakingSpace;
-        }
-
         if (isTextArea()) {
             var pos = getTextAreaCaretPosition(activeElement);
             var arVal = $(activeElement)
