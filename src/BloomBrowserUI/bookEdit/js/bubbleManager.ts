@@ -17,6 +17,7 @@ import {
 } from "comicaljs";
 import { Point, PointScaling } from "./point";
 import { isLinux } from "../../utils/isLinux";
+import { reportError } from "../../lib/errorHandler";
 
 const kWebsocketContext = "textOverPicture";
 const kComicalGeneratedClass: string = "comical-generated";
@@ -117,16 +118,22 @@ export class BubbleManager {
             newHeight = Math.max(maxContentBottom + box.scrollTop + 4, 27);
         }
 
+        // If a lot of text is pasted, the container will scroll down.
+        //    (This can happen even if the text doesn't necessarily go out the bottom of the image container).
+        // The children of the container (e.g. img and canvas elements) will be offset above the image container.
+        // This is an annoying situation, both visually for the image and in terms of computing the correct position for JQuery draggables.
+        // So instead, we force the container to scroll back to the top.
+        container.scrollTop = 0;
+
+        // Check if required height exceeds available height
         if (newHeight + wrapperBox.offsetTop > container.clientHeight) {
-            // The box goes out the bottom of the container :(
-            // Force the container to scroll back to the top
-            // Otherwise, the image's top will be invisible above the top level of the image container
-            container.scrollTop = 0;
+            // ENHANCE: Would be nice if this set the height up to the max
+            //          But it probably requires some changes to what the return value represents and how the caller should deal.
+            //          Maybe we should return an adjusted overflowY instead of a boolean.
             return false;
         }
 
         wrapperBox.style.height = newHeight + "px"; // next line will change to percent
-
         BubbleManager.convertTextboxPositionToPercentage(wrapperBox, container);
         return true;
     }
@@ -942,20 +949,20 @@ export class BubbleManager {
         const padding = BubbleManager.getLeftAndTopPaddings(element);
         const borderAndPadding = border.add(padding);
 
-        // If the text overflows, then scrollTop is probably some positive value.
-        // We want to add it in because the number we return represents the distance of the text box
-        // from the start of the element, not from where the visible edge of the element is.
-        const scroll = new Point(
-            element.scrollLeft,
-            element.scrollTop,
-            PointScaling.Unscaled,
-            "Element ScrollLeft/Top (Unscaled)"
-        );
+        // Try not to be scrolled. It's not easy to figure out how to adjust the calculations
+        // properly across all zoom levels if the box is scrolled.
+        const scroll = BubbleManager.getScrollAmount(element);
+        if (scroll.length() > 0.001) {
+            const error = new Error(
+                `Assert failed. container.scroll expected to be (0, 0), but it was: (${scroll.getScaledX()}, ${scroll.getScaledY()})`
+            );
+            // Reports a non-fatal passive if on Alpha
+            reportError(error.message, error.stack || "");
+        }
 
         const transposedPoint = pointRelativeToViewport
             .subtract(origin)
-            .subtract(borderAndPadding)
-            .add(scroll);
+            .subtract(borderAndPadding);
         return transposedPoint;
     }
 
@@ -1088,6 +1095,16 @@ export class BubbleManager {
         const borders = this.getCombinedBorderWidths(element);
         const paddings = this.getCombinedPaddings(element, styleInfo);
         return borders.add(paddings);
+    }
+
+    // Returns the amount the element has been scrolled, as a Point
+    private static getScrollAmount(element: Element): Point {
+        return new Point(
+            element.scrollLeft,
+            element.scrollTop,
+            PointScaling.Unscaled, // I think that imageContainer returns an unscaled amount, but not 100% sure.
+            "Element ScrollLeft/Top (Unscaled)"
+        );
     }
 
     // Removes the units from a string like "10px"
@@ -1453,7 +1470,7 @@ export class BubbleManager {
         thisTOPBoxes.each((index, element) => {
             const thisTOPBox = $(element);
             const imageContainer = this.getImageContainer(thisTOPBox);
-            const imagePos = imageContainer[0].getBoundingClientRect();
+            const containerPos = imageContainer[0].getBoundingClientRect();
             const wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
 
             // Add the dragHandles (if needed). The visible one has a zindex below the canvas. The transparent one is above.
@@ -1500,10 +1517,14 @@ export class BubbleManager {
             thisTOPBox.draggable({
                 // Adjust containment by scaling
                 containment: [
-                    imagePos.left,
-                    imagePos.top,
-                    imagePos.left + imagePos.width - wrapperBoxRectangle.width,
-                    imagePos.top + imagePos.height - wrapperBoxRectangle.height
+                    containerPos.left,
+                    containerPos.top,
+                    containerPos.left +
+                        containerPos.width -
+                        wrapperBoxRectangle.width,
+                    containerPos.top +
+                        containerPos.height -
+                        wrapperBoxRectangle.height
                 ],
                 // Don't allow dragging with occluded dragHandle
                 cancel:
@@ -1512,8 +1533,30 @@ export class BubbleManager {
                 handle: ".bloom-dragHandle.transparent",
                 drag: (event, ui) => {
                     ui.helper.children(".bloom-editable").blur();
-                    ui.position.top = ui.position.top / scale;
-                    ui.position.left = ui.position.left / scale;
+                    const position = new Point(
+                        ui.position.left,
+                        ui.position.top,
+                        PointScaling.Scaled,
+                        "ui.position"
+                    );
+
+                    // Try to unscroll earlier. Dealing with scroll here is tough.
+                    // Scrolled draggables give JQuery draggables a hard time.
+                    // I'm having too hard of a time figuring out how to adjust it properly across all zoom factors.
+                    // Neither unadjusted, container.scrollTop, nor delta between container and canvas are right.
+                    const scroll = BubbleManager.getScrollAmount(
+                        imageContainer[0]
+                    );
+                    console.assert(
+                        scroll.length() <= 0.0001,
+                        `Scroll expected to be [0, 0] but was [${scroll.getScaledX()}, ${scroll.getScaledY()}].`
+                    );
+
+                    // Adjusts the positioning for scale.
+                    // (Doesn't accurately adjust for the amount of scroll)
+                    ui.position.left = position.getUnscaledX();
+                    ui.position.top = position.getUnscaledY();
+
                     thisTOPBox.find(".bloom-dragHandle").addClass("grabbing");
                 },
                 stop: event => {
