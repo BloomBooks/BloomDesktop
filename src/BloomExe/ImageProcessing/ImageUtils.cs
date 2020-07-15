@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using BloomTemp;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Progress;
@@ -453,8 +454,7 @@ namespace Bloom.ImageProcessing
 			var exeGraphicsMagick = GetGraphicsMagickPath();
 			if (!RobustFile.Exists(exeGraphicsMagick))
 				return false;
-			var tempCopy = GetUnusedFilename(Path.GetTempPath(), Path.GetFileNameWithoutExtension(path),
-				Path.GetExtension(path));
+			var tempCopy = TempFileUtils.GetTempFilepathWithExtension(Path.GetExtension(path));
 			try
 			{
 				var proc = RunGraphicsMagick(exeGraphicsMagick, path, tempCopy, size, makeOpaque);
@@ -603,7 +603,7 @@ namespace Bloom.ImageProcessing
 						imageInfo.Image.Save(sourcePath, ImageFormat.Png);
 					}
 				}
-				var destPath = GetFileNameToUseForSavingImage(Path.GetTempPath(), imageInfo, isJpegImage);
+				var destPath = TempFileUtils.GetTempFilepathWithExtension(isJpegImage ? ".jpg" : ".png");
 				try
 				{
 					var proc = RunGraphicsMagick(graphicsMagickPath, sourcePath, destPath, size, makeOpaque);
@@ -668,27 +668,69 @@ namespace Bloom.ImageProcessing
 		private static Process RunGraphicsMagick(string graphicsMagickPath, string sourcePath, string destPath, Size size,
 			bool makeOpaque)
 		{
-			var argsBldr = new StringBuilder();
-			argsBldr.AppendFormat("convert \"{0}\"", sourcePath);
-			if (makeOpaque)
-				argsBldr.Append(" -background white -extent 0x0 +matte");
-			argsBldr.AppendFormat(" -scale {0}x{1} \"{2}\"", size.Width, size.Height, destPath);
-			var arguments = argsBldr.ToString();
-			var proc = new Process
+			// We have no idea what the input (and output) file names are, and whether they can be safely represented
+			// in the user's codepage.  We also have no idea what the user's codepage is.  This has a major impact
+			// on whether the spawned GraphicsMagick process will succeed in reading/writing the files.  We can
+			// assume that ASCII file paths are safe regardless of the user's default codepage.
+			var safeSourcePath = sourcePath;
+			if (!IsAsciiFilepath(sourcePath))
 			{
-				StartInfo =
+				safeSourcePath = TempFileUtils.GetTempFilepathWithExtension(Path.GetExtension(sourcePath));
+				RobustFile.Copy(sourcePath, safeSourcePath);
+			}
+			var safeDestPath = destPath;
+			if (!IsAsciiFilepath(destPath))
+				safeDestPath = TempFileUtils.GetTempFilepathWithExtension(Path.GetExtension(destPath));
+			try
+			{
+				var argsBldr = new StringBuilder();
+				argsBldr.AppendFormat("convert \"{0}\"", safeSourcePath);
+				if (makeOpaque)
+					argsBldr.Append(" -background white -extent 0x0 +matte");
+				argsBldr.AppendFormat(" -scale {0}x{1} \"{2}\"", size.Width, size.Height, safeDestPath);
+				var arguments = argsBldr.ToString();
+				var proc = new Process
 				{
-					FileName = graphicsMagickPath,
-					Arguments = arguments,
-					UseShellExecute = false, // enables CreateNoWindow
-					CreateNoWindow = true, // don't need a DOS box
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-				}
-			};
-			proc.Start();
-			proc.WaitForExit();
-			return proc;
+					StartInfo =
+					{
+						FileName = graphicsMagickPath,
+						Arguments = arguments,
+						UseShellExecute = false, // enables CreateNoWindow
+						CreateNoWindow = true, // don't need a DOS box
+						RedirectStandardOutput = true,
+						RedirectStandardError = true,
+					}
+				};
+				proc.Start();
+				proc.WaitForExit();
+				if (destPath != safeDestPath)
+					RobustFile.Copy(safeDestPath, destPath, true);
+				return proc;
+			}
+			finally
+			{
+				// remove unneeded copies
+				if (sourcePath != safeSourcePath)
+					RobustFile.Delete(safeSourcePath);
+				if (destPath != safeDestPath)
+					RobustFile.Delete(safeDestPath);
+			}
+		}
+
+		/// <summary>
+		/// Check whether the give file path contains any non-ASCII characters.  We don't know what
+		/// the user's default codepage is, and when we spawn a process to run an external program,
+		/// the filename characters may not be representable in that codepage.  We have to assume
+		/// that ASCII is a subset of every codepage.  (Too much would break if that weren't true!)
+		/// </summary>
+		private static bool IsAsciiFilepath(string path)
+		{
+			for (int i = 0; i < path.Length; ++i)
+			{
+				if (path[i] < 0x20 || path[i] > 0x7E)
+					return false;
+			}
+			return true;
 		}
 
 		private static string GetGraphicsMagickPath()
