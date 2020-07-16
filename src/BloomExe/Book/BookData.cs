@@ -806,22 +806,32 @@ namespace Bloom.Book
 		public string PrettyPrintLanguage(string code)
 		{
 			if (code == _collectionSettings.Language1Iso639Code && !string.IsNullOrWhiteSpace(_collectionSettings.Language1.Name))
-				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language1.Name);
+				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language1.Name, _collectionSettings.Language1.IsCustomName);
 			if (code == _collectionSettings.Language2Iso639Code)
-				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language2.Name);
+				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language2.Name, _collectionSettings.Language2.IsCustomName);
 			if (code == _collectionSettings.Language3Iso639Code)
-				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language3.Name);
+				return GetLanguageNameWithScriptVariants(code, _collectionSettings.Language3.Name, _collectionSettings.Language3.IsCustomName);
 			return _collectionSettings.GetLanguageName(code, _collectionSettings.Language2Iso639Code);
 		}
 
-		private static string GetLanguageNameWithScriptVariants(string completeIsoCode, string baseLanguageName)
+		// We always want to use a name the user deliberately gave (hence the use of 'nameIsCustom').
+		// We also want to include Script/Region/Variant codes if those will be helpful.
+		// OTOH, the custom name, if present may well include the sense of any srv codes, so (e.g.) if we
+		// have a custom name 'Naskapi Roman', it seems like overkill to also include 'Naskapi-Latn'.
+		private string GetLanguageNameWithScriptVariants(string completeIsoCode, string collectionSettingsLanguageName, bool nameIsCustom)
 		{
 			var hyphenIndex = completeIsoCode.IndexOf('-');
 			var srvCodes = hyphenIndex > -1 && completeIsoCode.Length > hyphenIndex + 1 ?
 				completeIsoCode.Substring(hyphenIndex + 1) : string.Empty;
+			// Special case for 'zh-CN': this one needs to be treated as if it had no srv codes
+			if (completeIsoCode == "zh-CN")
+				srvCodes = string.Empty;
 			if (string.IsNullOrEmpty(srvCodes))
-				return baseLanguageName;
-			return baseLanguageName + "-" + srvCodes + " (" + baseLanguageName + ")";
+				return collectionSettingsLanguageName;
+			var baseIsoCode = completeIsoCode.Substring(0, hyphenIndex);
+			return nameIsCustom ?
+				collectionSettingsLanguageName + " (" + _collectionSettings.GetLanguageName(baseIsoCode, _collectionSettings.Language2Iso639Code) + ")"
+				: collectionSettingsLanguageName + "-" + srvCodes + " (" + collectionSettingsLanguageName + ")";
 		}
 
 		/// <summary>
