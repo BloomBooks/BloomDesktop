@@ -8,7 +8,8 @@ import {
 import {
     SetupTalkingBookUIElements,
     SetupIFrameAsync,
-    SetupIFrameFromHtml
+    SetupIFrameFromHtml,
+    getFrameElementById
 } from "./audioRecordingSpec";
 import * as XRegExp from "xregexp"; // Not sure why, but import * as XRegExp works better. import XRegExp causes "xregexp_1.default is undefined" error
 import { setSentenceEndingPunctuationForBloom } from "../readers/libSynphony/bloom_xregexp_categories";
@@ -53,7 +54,7 @@ describe("talking book tests", () => {
         });
     });
 
-    describe("- tests for sentence splitting()", () => {
+    describe("- tests for sentence splitting", () => {
         // For these tests, we simulate text that was split with \u104A ("၊") as a separator,
         // but now the code has changed so that \u104A is no longer a separator. Only \u104B.
         // We ensure this is the case by setting the SentenceEndingPunctuation again for each test
@@ -424,18 +425,4 @@ function getParagraphsOfTextBox(divId: string): HTMLParagraphElement[] {
 
 function verifyRecordButtonEnabled() {
     expect(document.getElementById("audio-record")).not.toHaveClass("disabled");
-}
-
-function getFrameElementById(
-    frameId: string,
-    elementId: string
-): HTMLElement | null {
-    const frame = parent.window.document.getElementById(frameId);
-    if (!frame) {
-        return null;
-    }
-
-    return (frame as HTMLIFrameElement).contentDocument!.getElementById(
-        elementId
-    );
 }

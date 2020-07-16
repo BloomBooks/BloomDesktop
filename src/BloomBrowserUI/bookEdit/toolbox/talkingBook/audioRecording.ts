@@ -192,8 +192,8 @@ export default class AudioRecording {
             .click(e => this.moveToPrevAudioElementAsync());
         $("#audio-record")
             .off()
-            .mousedown(e => this.startRecordCurrent())
-            .mouseup(e => this.endRecordCurrent());
+            .mousedown(e => this.startRecordCurrentAsync())
+            .mouseup(e => this.endRecordCurrentAsync());
         $("#audio-play")
             .off()
             .click(e => {
@@ -230,6 +230,7 @@ export default class AudioRecording {
                 this.playEndedAsync(); //move to the next one
             } else if (this.awaitingNewRecording) {
                 // file may not have been created yet. Try again.
+                // ENHANCE: Maybe it shouldn't try it an infinte number of times.
                 this.updatePlayerStatus();
             }
             // A previous version did a toast here. However, the auto-preload which we set up to help
@@ -249,31 +250,35 @@ export default class AudioRecording {
         toastr.options.timeOut = 10000;
         toastr.options.preventDuplicates = true;
 
-        return this.pullDefaultRecordingModeAsync().catch(() => {
-            // The Bloom API call might not succeed... especially in the unit tests.
-            // If so, just fallback to some reasonable default instead. Instead of propagating an error.
-            this.cachedCollectionDefaultRecordingMode =
-                AudioRecordingMode.Sentence;
-        });
+        return this.pullDefaultRecordingModeAsync();
     }
 
     // Updates our cached version of the default recording mode with the version from the Bloom API Server.
     // Returns a promise, which you can attach callbacks to that will run after this function updates the cached version
     public async pullDefaultRecordingModeAsync(): Promise<void> {
-        const result: void | AxiosResponse<any> = await BloomApi.getWithPromise(
-            "talkingBook/defaultAudioRecordingMode"
-        );
+        try {
+            const result: void | AxiosResponse<
+                any
+            > = await BloomApi.getWithPromise(
+                "talkingBook/defaultAudioRecordingMode"
+            );
 
-        if (!result) {
-            // It returned void, which means an error, but BloomApi.getWithPromise already handles reporting any errors
-            // Just let anything that is awaiting our completion proceed (don't create a rejected promise)
-            return;
+            if (!result) {
+                // It returned void, which means an error
+                this.cachedCollectionDefaultRecordingMode =
+                    AudioRecordingMode.Sentence;
+            }
+
+            const axiosResponse = result as AxiosResponse<any>;
+            this.cachedCollectionDefaultRecordingMode = AudioRecording.getAudioRecordingModeWithDefaultFromString(
+                axiosResponse.data
+            );
+        } catch {
+            // The Bloom API call might not succeed... especially in the unit tests.
+            // If so, just fallback to some reasonable default instead. Instead of propagating an error.
+            this.cachedCollectionDefaultRecordingMode =
+                AudioRecordingMode.Sentence;
         }
-
-        const axiosResponse = result as AxiosResponse<any>;
-        this.cachedCollectionDefaultRecordingMode = AudioRecording.getAudioRecordingModeWithDefaultFromString(
-            axiosResponse.data
-        );
     }
 
     public playingAudio(): boolean {
@@ -981,7 +986,7 @@ export default class AudioRecording {
         });
     }
 
-    private startRecordCurrent(): void {
+    public async startRecordCurrentAsync(): Promise<void> {
         if (!this.isEnabledOrExpected("record")) {
             return;
         }
@@ -994,7 +999,7 @@ export default class AudioRecording {
 
         this.clearAudioSplit();
 
-        axios
+        return axios
             .post("/bloom/api/audio/startRecord?id=" + id)
             .then(result => {
                 this.setStatus("record", Status.Active);
@@ -1029,7 +1034,7 @@ export default class AudioRecording {
         return id;
     }
 
-    private endRecordCurrent(): void {
+    public async endRecordCurrentAsync(): Promise<void> {
         if (!this.recording) {
             // will trigger if the button wasn't enabled, so the recording never started
             return;
@@ -1038,46 +1043,42 @@ export default class AudioRecording {
         this.recording = false;
         this.awaitingNewRecording = true;
 
-        axios
-            .post("/bloom/api/audio/endRecord")
-            .then(this.finishNewRecordingOrImport.bind(this))
-            .catch(error => {
-                this.changeStateAndSetExpectedAsync("record"); //record failed, so we expect them to try again
-                if (error.response) {
-                    toastr.error(error.response.statusText);
-                    console.log(error.response.statusText);
-                } else {
-                    toastr.error(error);
-                    console.log(error);
-                }
-                this.updatePlayerStatus();
-            });
+        try {
+            await axios
+                .post("/bloom/api/audio/endRecord")
+                .then(this.finishNewRecordingOrImportAsync.bind(this));
+        } catch (error) {
+            await this.changeStateAndSetExpectedAsync("record"); //record failed, so we expect them to try again
+            if (error.response) {
+                toastr.error(error.response.statusText);
+                console.log(error.response.statusText);
+            } else {
+                toastr.error(error);
+                console.log(error);
+            }
+            this.updatePlayerStatus();
+        }
     }
 
-    private finishNewRecordingOrImport() {
+    private async finishNewRecordingOrImportAsync(): Promise<void> {
         if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
-            // Note: Don't think this call to updateMarkup() is necessary anymore.
-            // Previosuly, the box was considered in Record=TextBox/Play=Sentence all the way until you finish recording a text box, which is the moment it switches.
-            //     (Well, I guess one reason for this is because Text/Text is not considered a desirable end state... we want to be playing in Sentence mode as much as possible.
-            //      But since it shoudln't be possible to play at all before recording, I think that doesn't matter?)
-            // In 4.9, getCurrentPlaybackMode defaults to returning the text box's recording mode if it can't otherwise determine it.
-            // This should mean that when you type in a new text box, the state is Record=TextBox, Play=TextBox.
-            // Thus, there ought to be no need to switch the playback mode here.
-            // Thus, I tried removing this call in 4.9 (2020-06-18)
-            // No ill impact was observed.
-            // TODO: Remove in 4.10 or earlier if no ill impact observed.
-            //
-            // When ending a recording for a whole text box, we enter the state for Recording=TextBox,Playback=TextBox.
-            //this.updateMarkupForCurrentText(AudioRecordingMode.TextBox);
-
             // Reset the audioRecordingTimings.
             const currentTextBox = this.getCurrentTextBox();
             if (currentTextBox) {
+                // When ending a recording for a whole text box, we enter the state for Recording=TextBox,Playback=TextBox.
+                // (Previously, it was in Record=TextBox,Play=Sentence.
+                // Being in this intermediate state allows the user to easily switch between Sentence and TextBox without losing their existing sentence recordings.
+                this.updateMarkupForTextBox(
+                    currentTextBox,
+                    AudioRecordingMode.TextBox
+                );
+                await this.resetCurrentAudioElementAsync(currentTextBox);
+
                 currentTextBox.removeAttribute(kEndTimeAttributeName);
             }
         }
         this.updatePlayerStatus();
-        this.changeStateAndSetExpectedAsync("play");
+        return this.changeStateAndSetExpectedAsync("play");
     }
 
     // Called when we get a duration for a current audio element. Mainly we want it after recording a new one.
@@ -1850,7 +1851,7 @@ export default class AudioRecording {
                     AudioRecordingMode.Sentence
                 );
             }
-            this.resetCurrentAudioElement();
+            await this.resetCurrentAudioElementAsync();
 
             this.clearAudioSplit();
 
@@ -1860,6 +1861,10 @@ export default class AudioRecording {
         } else {
             // From Sentence -> TextBox, we don't convert the playback mode.
             // (since until/unless the user actually makes a new whole-text-box recording, we actually still have by-sentence recordings we can play)
+            // Note: Calling updateMarkup to switch to TextBox and then calling it again to switch back to Sentence will generate different ID's
+            // which means that existing audio will be purged soon and lost.
+            // So, we delay actually changing the markup until the user actually records something
+            // (Alternatively, I guess you can change here but you need to add UI to prevent the user from accidentally losing their recordings).
 
             const currentTextBox = this.getCurrentTextBox();
             if (currentTextBox) {
@@ -1889,6 +1894,10 @@ export default class AudioRecording {
     }
 
     public persistRecordingMode(element: Element) {
+        console.assert(
+            this.audioRecordingMode !== AudioRecordingMode.Unknown,
+            "AudioRecordingMode should not be set to Unknown"
+        );
         element.setAttribute(
             "data-audiorecordingmode",
             this.audioRecordingMode
@@ -1916,7 +1925,9 @@ export default class AudioRecording {
             // Note: In the future, if the click handler is no longer used, just assign the same onClick function() to the checkbox itself.
             $("#" + kRecordingModeClickHandler)
                 .off()
-                .click(e => this.toggleRecordingModeAsync());
+                .click(() => {
+                    this.toggleRecordingModeAsync();
+                });
         }
     }
 
@@ -2145,7 +2156,7 @@ export default class AudioRecording {
     // Note: as name promises, this moves it to a text box (a div) not an element (either an audio-sentence div or audio-sentence span).
     // This happens even if audioRecordingMode=Sentence. It is caller's responsibility to either ensure that this operation is valid,
     // or to be able to handle the resulting state (possibly in Sentence mode but a div is selected), for example by calling updateMarkupForCurrentText() to re-update the state.
-    private moveCurrentHighlightToTextBox(newSelectedTextBox): void {
+    public moveCurrentHighlightToTextBox(newSelectedTextBox): void {
         this.setSoundAndHighlightAsync(newSelectedTextBox);
     }
 
@@ -2229,7 +2240,7 @@ export default class AudioRecording {
         // Obviously, when we update current markup, we normally set the current audio element afterward too.
         // The tricky case is when opening a hard split (version 4.5) book that has existing audio.
         // updateMarkupForCurrentText() does not run, but we still need it to move the current audio element.
-        this.resetCurrentAudioElement(currentTextBox);
+        await this.resetCurrentAudioElementAsync(currentTextBox);
 
         return this.changeStateAndSetExpectedAsync("record");
     }
@@ -2298,7 +2309,7 @@ export default class AudioRecording {
         this.makeAudioSentenceElements($(textBox), audioPlaybackMode);
     }
 
-    private async resetCurrentAudioElement(
+    private async resetCurrentAudioElementAsync(
         currentTextBox?: HTMLElement | null
     ): Promise<void> {
         if (currentTextBox === undefined) {
@@ -3994,7 +4005,7 @@ export default class AudioRecording {
                             from: importPath,
                             to: targetPath
                         },
-                        this.finishNewRecordingOrImport.bind(this)
+                        this.finishNewRecordingOrImportAsync.bind(this)
                     );
                 }
             );
