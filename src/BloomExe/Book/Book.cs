@@ -203,8 +203,6 @@ namespace Bloom.Book
 
 		public static string GetBestTitleForDisplay(MultiTextBase title, CollectionSettings settings, bool isEditable)
 		{
-			if (title.Count == 0)
-				return "";
 			var display = title.GetExactAlternative(settings.Language1Iso639Code);
 			if (string.IsNullOrEmpty(display))
 			{
