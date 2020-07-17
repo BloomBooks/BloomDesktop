@@ -46,6 +46,10 @@ else
 	PATH="${BASE}/output/${BUILD}:${PATH}"
 	LD_LIBRARY_PATH="${BASE}/output/${BUILD}:${LD_LIBRARY_PATH}"
 	MONO_PATH="${BASE}/output/${BUILD}:${MONO_PATH}"
+	# if Bloom has been started from inside monodevelop, use Xephyr if it is available
+	if [ -e ${BASE}/Bloom.sln ] && (ps -q $PPID -o cmd= | grep monodevelop) && (ps -C Xephyr -o cmd= | grep 'Xephyr :2'); then
+	   export DISPLAY=:2
+	fi
 fi
 
 ################################################################################################
