@@ -327,7 +327,7 @@ namespace BloomTests.Publish
 			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='f3' and @properties='svg']");
 			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@properties='svg']", 1);
 
-			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='thumbnail-256' and @properties='cover-image']");
+			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='epub-thumbnail' and @properties='cover-image']");
 			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@properties='cover-image']", 1);
 
 			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='nav' and @properties='nav']");
