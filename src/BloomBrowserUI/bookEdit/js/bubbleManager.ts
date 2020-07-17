@@ -1,13 +1,10 @@
 // This class makes it possible to add and delete textboxes that float over images. These floating
 // textboxes are intended for use in making comic books, but could also be useful in the case of
 // any book that uses a picture where there is space for text within the bounds of the picture.
-// In order to be accessible via a right-click context menu that c# generates, it listens on a websocket
-// that the Bloom C# uses (in Browser.cs).
 ///<reference path="../../typings/jquery/jquery.d.ts"/>
 
 import { EditableDivUtils } from "./editableDivUtils";
 import { BloomApi } from "../../utils/bloomApi";
-import WebSocketManager from "../../utils/WebSocketManager";
 import {
     Bubble,
     BubbleSpec,
@@ -19,7 +16,6 @@ import { Point, PointScaling } from "./point";
 import { isLinux } from "../../utils/isLinux";
 import { reportError } from "../../lib/errorHandler";
 
-const kWebsocketContext = "textOverPicture";
 const kComicalGeneratedClass: string = "comical-generated";
 const kTextOverPictureClass = "bloom-textOverPicture";
 const kTextOverPictureSelector = `.${kTextOverPictureClass}`;
@@ -442,16 +438,19 @@ export class BubbleManager {
         return textColor;
     }
 
-    public getParentBubbleOfActiveElement(): Bubble | undefined {
+    // This gives us the patriarch (farthest ancestor) bubble of a family of bubbles.
+    // If the active element IS the parent of our family, this returns the active element's bubble.
+    public getPatriarchBubbleOfActiveElement(): Bubble | undefined {
         if (!this.activeElement) {
             return undefined;
         }
         const tempBubble = new Bubble(this.activeElement);
-        return Comical.findParent(tempBubble);
+        const ancestors = Comical.findAncestors(tempBubble);
+        return ancestors.length > 0 ? ancestors[0] : tempBubble;
     }
 
-    public getSpecsOfParentBubble(): BubbleSpec | undefined {
-        const tempBubble = this.getParentBubbleOfActiveElement();
+    public getSpecsOfPatriarchBubble(): BubbleSpec | undefined {
+        const tempBubble = this.getPatriarchBubbleOfActiveElement();
         return tempBubble ? tempBubble.getBubbleSpec() : undefined;
     }
 
@@ -462,7 +461,7 @@ export class BubbleManager {
             return;
         }
         const originalActiveElement = this.activeElement;
-        const parentBubble = this.getParentBubbleOfActiveElement();
+        const parentBubble = this.getPatriarchBubbleOfActiveElement();
         if (parentBubble) {
             this.setActiveElement(parentBubble.content);
         }
@@ -477,7 +476,7 @@ export class BubbleManager {
     public getBackgroundColorArray(spec: BubbleSpec): string[] {
         let newSpec = spec;
         // First, check to see if this is a child bubble, if so, get the parent's specs.
-        const parentBubbleSpec = this.getSpecsOfParentBubble();
+        const parentBubbleSpec = this.getSpecsOfPatriarchBubble();
         if (parentBubbleSpec) {
             newSpec = parentBubbleSpec;
         }
@@ -1217,7 +1216,7 @@ export class BubbleManager {
     }
 
     public cleanUp(): void {
-        WebSocketManager.closeSocket(kWebsocketContext);
+        // We used to close a WebSocket here; saving the hook in case we need it someday.
     }
 
     public getSelectedItemBubbleSpec(): BubbleSpec | undefined {
@@ -1274,45 +1273,37 @@ export class BubbleManager {
         offsetX: number,
         offsetY: number
     ): void {
-        const parentBoundingRect = parentElement.getBoundingClientRect();
-        let newX = parentBoundingRect.left + offsetX;
-        let newY = parentBoundingRect.top + offsetY;
-
-        // // Ensure newX and newY is within the bounds of the container.
-        const container = parentElement.closest(".bloom-imageContainer");
-        if (!container) {
-            toastr.warning("Failed to create child element.");
+        if (!this.addChildInternal(parentElement, offsetX, offsetY)) {
             return;
         }
-        const containerBoundingRect = container.getBoundingClientRect();
 
-        const bufferPixels = 15;
-        if (newX < containerBoundingRect.left) {
-            newX = containerBoundingRect.left + bufferPixels;
-        } else if (
-            newX + parentElement.clientWidth >
-            containerBoundingRect.right
-        ) {
-            // ENHANCE: parentElement.clientWidth is just an estimate of the size of the child's width.
-            //          It would be better if we could actually plug in the real value of the child's width
-            newX = containerBoundingRect.right - parentElement.clientWidth;
+        // Need to reload the page to get it editable/draggable/etc,
+        // and to get the Comical bubbles consistent with the new bubble specs
+        BloomApi.postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+    }
+
+    private addChildInternal(
+        parentElement: HTMLElement,
+        offsetX: number,
+        offsetY: number
+    ): HTMLElement | undefined {
+        const newPoint = this.findBestLocationForNewBubble(
+            parentElement,
+            offsetX,
+            offsetY
+        );
+        if (!newPoint) {
+            //toastr.info("Failed to place a new child bubble.");
+            return undefined;
         }
 
-        if (newY < containerBoundingRect.top) {
-            newY = containerBoundingRect.top + bufferPixels;
-        } else if (
-            newY + parentElement.clientHeight >
-            containerBoundingRect.bottom
-        ) {
-            // ENHANCE: parentElement.clientHeight is just an estimate of the size of the child's height.
-            //          It would be better if we could actually plug in the real value of the child's height
-            newY = containerBoundingRect.bottom - parentElement.clientHeight;
-        }
-
-        const childElement = this.addFloatingTOPBox(newX, newY);
+        const childElement = this.addFloatingTOPBox(
+            newPoint.getScaledX(),
+            newPoint.getScaledY()
+        );
         if (!childElement) {
-            toastr.info("Failed to place a new child bubble.");
-            return;
+            //toastr.info("Failed to place a new child bubble.");
+            return undefined;
         }
 
         // Make sure that the child inherits any non-default text color from the parent bubble
@@ -1323,10 +1314,55 @@ export class BubbleManager {
         }
 
         Comical.initializeChild(childElement, parentElement);
+        return childElement;
+    }
 
-        // Need to reload the page to get it editable/draggable/etc,
-        // and to get the Comical bubbles consistent with the new bubble specs
-        BloomApi.postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+    // The 'new bubble' is either going to be a child of the 'parentElement', or a duplicate of it.
+    private findBestLocationForNewBubble(
+        parentElement: HTMLElement,
+        proposedOffsetX: number,
+        proposedOffsetY: number
+    ): Point | undefined {
+        const parentBoundingRect = parentElement.getBoundingClientRect();
+        let newX = parentBoundingRect.left + proposedOffsetX;
+        let newY = parentBoundingRect.top + proposedOffsetY;
+
+        // // Ensure newX and newY is within the bounds of the container.
+        const container = parentElement.closest(".bloom-imageContainer");
+        if (!container) {
+            //toastr.warning("Failed to create child or duplicate element.");
+            return undefined;
+        }
+        const containerBoundingRect = container.getBoundingClientRect();
+
+        const bufferPixels = 15;
+        if (newX < containerBoundingRect.left) {
+            newX = containerBoundingRect.left + bufferPixels;
+        } else if (
+            newX + parentElement.clientWidth >
+            containerBoundingRect.right
+        ) {
+            // ENHANCE: parentElement.clientWidth is just an estimate of the size of the new bubble's width.
+            //          It would be better if we could actually plug in the real value of the new bubble's width
+            newX = containerBoundingRect.right - parentElement.clientWidth;
+        }
+
+        if (newY < containerBoundingRect.top) {
+            newY = containerBoundingRect.top + bufferPixels;
+        } else if (
+            newY + parentElement.clientHeight >
+            containerBoundingRect.bottom
+        ) {
+            // ENHANCE: parentElement.clientHeight is just an estimate of the size of the new bubble's height.
+            //          It would be better if we could actually plug in the real value of the new bubble's height
+            newY = containerBoundingRect.bottom - parentElement.clientHeight;
+        }
+        return new Point(
+            newX,
+            newY,
+            PointScaling.Scaled,
+            "Scaled viewport coordinates"
+        );
     }
 
     public addFloatingTOPBoxWithScreenCoords(
@@ -1339,6 +1375,29 @@ export class BubbleManager {
         return this.addFloatingTOPBox(clientX, clientY, style);
     }
 
+    private addFloatingTOPBoxFromOriginal(
+        offsetX: number,
+        offsetY: number,
+        originalElement: HTMLElement,
+        style?: string
+    ): HTMLElement | undefined {
+        const imageContainer = originalElement.closest(".bloom-imageContainer");
+        if (!imageContainer) {
+            return undefined;
+        }
+        const positionInViewport = new Point(
+            offsetX,
+            offsetY,
+            PointScaling.Scaled,
+            "Scaled Viewport coordinates"
+        );
+        return this.addTOPBoxInternal(
+            positionInViewport,
+            $(imageContainer),
+            style
+        );
+    }
+
     public addFloatingTOPBox(
         mouseX: number,
         mouseY: number,
@@ -1348,6 +1407,21 @@ export class BubbleManager {
         if (!container || container.length === 0) {
             return undefined; // don't add a TOP box if we can't find the containing imageContainer
         }
+        // initial mouseX, mouseY coordinates are relative to viewport
+        const positionInViewport = new Point(
+            mouseX,
+            mouseY,
+            PointScaling.Scaled,
+            "Scaled Viewport coordinates"
+        );
+        return this.addTOPBoxInternal(positionInViewport, container, style);
+    }
+
+    private addTOPBoxInternal(
+        location: Point,
+        imageContainer: JQuery,
+        style?: string
+    ): HTMLElement {
         // add a draggable text bubble to the html dom of the current page
         const editableDivClasses =
             "bloom-editable bloom-content1 bloom-visibility-code-on Bubble-style";
@@ -1369,16 +1443,9 @@ export class BubbleManager {
             transGroupHtml +
             "</div>";
         // add textbox as last child of .bloom-imageContainer (BL-7883)
-        const lastContainerChild = container.children().last();
+        const lastContainerChild = imageContainer.children().last();
         const wrapperBox = $(wrapperHtml).insertAfter(lastContainerChild);
-        // initial mouseX, mouseY coordinates are relative to viewport
-        const positionInViewport = new Point(
-            mouseX,
-            mouseY,
-            PointScaling.Scaled,
-            "Scaled Viewport coordinates"
-        );
-        this.placeElementAtPosition(wrapperBox, container, positionInViewport);
+        this.placeElementAtPosition(wrapperBox, imageContainer, location);
 
         const contentElement = wrapperBox.get(0);
         const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
@@ -1461,6 +1528,197 @@ export class BubbleManager {
                 this.setActiveElement(undefined);
             }
         }
+    }
+
+    public duplicateTOPBox(textElement: Element) {
+        if (this.getActiveElement() !== textElement) {
+            // something strange going on!
+            //toastr.info("Failed to duplicate bubble.");
+            return;
+        }
+        const parent = textElement.parentElement;
+        if (parent) {
+            // Make sure comical is up-to-date before we clone things.
+            if (
+                parent.getElementsByClassName(kComicalGeneratedClass).length > 0
+            ) {
+                Comical.update(parent);
+            }
+            // Get the patriarch bubble of this comical family. Can only be undefined if no active element.
+            const patriarchBubble = this.getPatriarchBubbleOfActiveElement();
+            if (patriarchBubble) {
+                if (textElement !== patriarchBubble.content) {
+                    this.setActiveElement(patriarchBubble.content);
+                }
+                const bubbleSpecToDuplicate = this.getSelectedItemBubbleSpec();
+                if (!bubbleSpecToDuplicate) {
+                    // Oddness! Bail!
+                    // reset active element to what it was
+                    this.setActiveElement(textElement as HTMLElement);
+                    //toastr.info("Failed to duplicate bubble.");
+                    return;
+                }
+
+                this.duplicateBubbleFamily(
+                    patriarchBubble,
+                    bubbleSpecToDuplicate
+                );
+            }
+
+            BloomApi.postThatMightNavigate(
+                "common/saveChangesAndRethinkPageEvent"
+            );
+        }
+    }
+
+    // Should duplicate all bubbles and their size and relative placement and color, etc.,
+    // and the actual text in the bubbles.
+    // The 'patriarchSourceBubble' is the head of a family of bubbles to duplicate,
+    // although this one bubble may be all there is.
+    // The content of 'patriarchSourceBubble' is now the active element.
+    //
+    // When we finish this method, we plan to call 'saveChangesAndRethinkPageEvent' in any case.
+    private duplicateBubbleFamily(
+        patriarchSourceBubble: Bubble,
+        bubbleSpecToDuplicate: BubbleSpec
+    ) {
+        const sourceElement = patriarchSourceBubble.content;
+        const proposedOffset = 15;
+        const newPoint = this.findBestLocationForNewBubble(
+            sourceElement,
+            proposedOffset + sourceElement.clientWidth, // try to not overlap too much
+            proposedOffset
+        );
+        if (!newPoint) {
+            //toastr.info("Failed to duplicate bubble.");
+            return;
+        }
+        const patriarchDuplicateElement = this.addFloatingTOPBoxFromOriginal(
+            newPoint.getScaledX(),
+            newPoint.getScaledY(),
+            sourceElement,
+            bubbleSpecToDuplicate.style
+        );
+        if (!patriarchDuplicateElement) {
+            //toastr.info("Failed to add duplicate bubble.");
+            return;
+        }
+        patriarchDuplicateElement.style.color = sourceElement.style.color; // preserve text color
+        patriarchDuplicateElement.innerHTML = this.safelyCloneHtmlStructure(
+            sourceElement
+        );
+        this.setActiveElement(patriarchDuplicateElement);
+        this.matchWidthOfSource(sourceElement, patriarchDuplicateElement);
+        this.updateSelectedItemBubbleSpec({
+            backgroundColors: bubbleSpecToDuplicate.backgroundColors,
+            borderStyle: bubbleSpecToDuplicate.borderStyle,
+            outerBorderColor: bubbleSpecToDuplicate.outerBorderColor,
+            shadowOffset: bubbleSpecToDuplicate.shadowOffset,
+            tails: bubbleSpecToDuplicate.tails
+        });
+        const container = patriarchDuplicateElement.closest(
+            ".bloom-imageContainer"
+        );
+        if (!container) {
+            return; // highly unlikely!
+        }
+        const childBubbles = Comical.findRelatives(patriarchSourceBubble);
+        childBubbles.forEach(childBubble => {
+            const childOffsetFromPatriarch = this.getOffsetFrom(
+                sourceElement,
+                childBubble.content
+            );
+            this.duplicateOneChildBubble(
+                childOffsetFromPatriarch,
+                patriarchDuplicateElement,
+                childBubble
+            );
+            // Make sure comical knows about each child as it's created, otherwise it gets the order wrong.
+            Comical.convertBubbleJsonToCanvas(container as HTMLElement);
+        });
+    }
+
+    private matchWidthOfSource(
+        sourceElement: HTMLElement,
+        destElement: HTMLElement
+    ) {
+        destElement.style.width = sourceElement.clientWidth.toFixed(0) + "px";
+    }
+
+    private getOffsetFrom(
+        sourceElement: HTMLElement,
+        destElement: HTMLElement
+    ): Point {
+        return new Point(
+            destElement.offsetLeft - sourceElement.offsetLeft,
+            destElement.offsetTop - sourceElement.offsetTop,
+            PointScaling.Scaled,
+            "Destination scaled offset from Source"
+        );
+    }
+
+    private duplicateOneChildBubble(
+        offsetFromPatriarch: Point,
+        parentElement: HTMLElement,
+        childSourceBubble: Bubble
+    ) {
+        const newChildElement = this.addChildInternal(
+            parentElement,
+            offsetFromPatriarch.getScaledX(),
+            offsetFromPatriarch.getScaledY()
+        );
+        if (!newChildElement) {
+            return;
+        }
+        const sourceElement = childSourceBubble.content;
+        newChildElement.innerHTML = this.safelyCloneHtmlStructure(
+            sourceElement
+        );
+        this.matchWidthOfSource(sourceElement, newChildElement);
+    }
+
+    private safelyCloneHtmlStructure(elementToClone: HTMLElement): string {
+        // eliminate .bloom-ui and ?
+        const clonedElement = elementToClone.cloneNode(true) as HTMLElement;
+        this.cleanClonedNode(clonedElement);
+        return clonedElement.innerHTML;
+    }
+
+    private cleanClonedNode(element: Element) {
+        if (this.clonedNodeNeedsDeleting(element)) {
+            element.parentElement!.removeChild(element);
+            return;
+        }
+        if (element.nodeName == "#text") {
+            return;
+        }
+
+        // Cleanup this node
+        this.safelyRemoveAttribute(element, "id");
+        this.safelyRemoveAttribute(element, "tabindex");
+        this.safelyRemoveAttribute(element, "data-duration");
+        this.safelyRemoveAttribute(element, "data-audiorecordingendtimes");
+
+        // Clean children
+        const childArray = Array.from(element.childNodes);
+        childArray.forEach(element => {
+            this.cleanClonedNode(element as Element);
+        });
+    }
+
+    private safelyRemoveAttribute(element: Element, attrName: string) {
+        if (element.hasAttribute(attrName)) {
+            element.attributes.removeNamedItem(attrName);
+        }
+    }
+
+    private clonedNodeNeedsDeleting(element: Element): boolean {
+        const htmlElement = element as HTMLElement;
+        return (
+            !htmlElement ||
+            (htmlElement.classList &&
+                htmlElement.classList.contains("bloom-ui"))
+        );
     }
 
     private makeTOPBoxesDraggableAndClickable(
