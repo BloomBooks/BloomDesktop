@@ -353,9 +353,10 @@ namespace Bloom.Publish.Epub
 			}
 
 			var epubThumbnailImagePath = Path.Combine(Book.FolderPath, "epub-thumbnail.png");
-			// If we don't have an epub thumbnail, or we have one that's not readonly, create a nice large thumbnail of
-			// the cover image.
-			if (!RobustFile.Exists(epubThumbnailImagePath) || !(new FileInfo(epubThumbnailImagePath)).IsReadOnly)
+			// If we don't have an epub thumbnail, create a nice large thumbnail of the cover image
+			// with the desired name.  This is a temporary file stored only in the staged book folder
+			// before being added to the epub.
+			if (!RobustFile.Exists(epubThumbnailImagePath))
 			{
 				string coverPageImageFile = "thumbnail-256.png";	// name created by _thumbNailer
 				ApplicationException thumbNailException = null;
