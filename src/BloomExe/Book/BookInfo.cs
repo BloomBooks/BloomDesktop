@@ -1249,7 +1249,8 @@ namespace Bloom.Book
 		/// This is a "perceptual hash" (http://phash.org/) of the image in the first bloom-imageContainer
 		/// we find on the first page after any xmatter pages. We use this to suggest which books are
 		/// probably related to each other. This allows us to link, for example, books that are translations
-		/// of each other.  (https://www.nuget.org/packages/Shipwreck.Phash/ is used to calculate the phash.)
+		/// of each other.  (bloom-harvester uses https://www.nuget.org/packages/CoenM.ImageSharp.ImageHash
+		/// to calculate the phash.)
 		/// </summary>
 		[JsonProperty("phashOfFirstContentImage")]
 		public string PHashOfFirstContentImage { get; set; }
