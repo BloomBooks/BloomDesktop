@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
@@ -303,7 +304,10 @@ namespace Bloom.Publish
 				// Large page sizes can't make booklets.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4155.
 				var size = PageLayout.SizeAndOrientation.PageSizeName;
 				return AllowPdf && BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate &&
-					(size != "A4" && size != "A3" && size != "B5" && size != "Letter" && size != "Device16x9");
+					(size != "A4" && size != "A3" && size != "B5" && size != "Letter" && size != "Device16x9" &&
+					 // If we want Bloom to produce booklets from these square pages, then more work is needed, especially in
+					 // PdfDroplet.
+					 !Regex.IsMatch(size, @"^(cm|in)\d+$", RegexOptions.CultureInvariant|RegexOptions.IgnoreCase));
 			}
 		}
 

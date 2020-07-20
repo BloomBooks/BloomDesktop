@@ -62,7 +62,8 @@ namespace Bloom.web.controllers
 		{
 			dynamic addPageSettings = new ExpandoObject();
 			addPageSettings.defaultPageToSelect = _templateInsertionCommand.MostRecentInsertedTemplatePage == null ? "" : _templateInsertionCommand.MostRecentInsertedTemplatePage.Id;
-			addPageSettings.orientation = _bookSelection.CurrentSelection.GetLayout().SizeAndOrientation.IsLandScape ? "landscape" : "portrait";
+			var sizeAndOrientation = _bookSelection.CurrentSelection.GetLayout().SizeAndOrientation;
+			addPageSettings.orientation = sizeAndOrientation.IsSquare ? "square" : sizeAndOrientation.IsLandScape ? "landscape" : "portrait";
 
 			addPageSettings.groups = GetBookTemplatePaths(GetPathToCurrentTemplateHtml(), GetCurrentAndSourceBookPaths())
 				.Select(bookTemplatePath => GetPageGroup(bookTemplatePath));
@@ -152,6 +153,9 @@ namespace Bloom.web.controllers
 			var isLandscape = caption.EndsWith("-landscape"); // matches string in page-chooser.ts
 			if (isLandscape)
 				caption = caption.Substring(0, caption.Length - "-landscape".Length);
+			var isSquare = caption.EndsWith("-square");
+			if (isSquare)
+				caption = caption.Substring(0, caption.Length - "-square".Length);
 
 			// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
 			// The Trim is needed because template may now be created by users editing the pageLabel div, and those
@@ -160,7 +164,7 @@ namespace Bloom.web.controllers
 			if (templatePage == null)
 				templatePage = templateBook.GetPages().FirstOrDefault(); // may get something useful?? or throw??
 
-			Image thumbnail = _thumbNailer.GetThumbnailForPage(templateBook, templatePage, isLandscape, mustRegenerate);
+			Image thumbnail = _thumbNailer.GetThumbnailForPage(templateBook, templatePage, isLandscape, isSquare, mustRegenerate);
 
 			// lock to avoid BL-3781 where we got a "Object is currently in use elsewhere" while doing the Clone() below.
 			// Note: it would appear that the clone isn't even needed, since it was added in the past to overcome this

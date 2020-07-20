@@ -1,3 +1,11 @@
+# 4.9 (Currently in Alpha-test)
+
+## Edit Tab
+
+**13cm Square** page size. ([Feature Request](https://community.software.sil.org/t/square-books-a5-5-square/3543))
+
+The list of page sizes now includes *13cm Square* as one of the possibilities.  This is not yet supported for producing PDF booklets inside Bloom.  You can produce simple PDF pages with this page size, but creating booklets would have to be done manually outside of Bloom at this point.
+
 # 4.8 (Currently in Beta-test)
 
 ## Edit Tab
