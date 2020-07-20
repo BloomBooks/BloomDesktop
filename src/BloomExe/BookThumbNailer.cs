@@ -275,12 +275,7 @@ namespace Bloom
 		///
 		///   The result is cached for possible future use so the caller should not dispose of it.
 		///   </summary>
-		/// <param name="book"></param>
-		/// <param name="page"></param>
-		/// <param name="isLandscape"></param>
-		/// <param name="mustRegenerate"></param>
-		/// <returns></returns>
-		public Image GetThumbnailForPage(Book.Book book, IPage page, bool isLandscape, bool mustRegenerate = false)
+		public Image GetThumbnailForPage(Book.Book book, IPage page, bool isLandscape, bool isSquare, bool mustRegenerate = false)
 		{
 			var pageDom = book.GetThumbnailXmlDocumentForPage(page);
 			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
@@ -296,7 +291,13 @@ namespace Bloom
 			// preview box on the right as well as giving exactly the ratio we want.
 			// We need to make the image the right shape to avoid some sort of shadow/box effects
 			// that I can't otherwise find a way to get rid of.
-			if (isLandscape)
+			if (isSquare)
+			{
+				thumbnailOptions.Width = 210;	// Image is square, but otherwise displayed similarly to Landscape
+				thumbnailOptions.Height = 210;
+				pageDiv.SetAttribute("class", pageDiv.Attributes["class"].Value.Replace("Portrait", "Landscape"));
+			}
+			else if (isLandscape)
 			{
 				thumbnailOptions.Width = 297;
 				thumbnailOptions.Height = 210;
