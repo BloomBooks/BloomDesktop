@@ -711,7 +711,11 @@ export class PageChooser {
             templateBookFolderUrl +
             "/template/" +
             label +
-            (this._orientation === "landscape" ? "-landscape" : "") +
+            (this._orientation === "landscape"
+                ? "-landscape"
+                : this._orientation === "square"
+                ? "-square"
+                : "") +
             ".svg?generateThumbnaiIfNecessary=true"
         );
     }

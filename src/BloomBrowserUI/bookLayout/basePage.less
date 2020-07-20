@@ -324,6 +324,12 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
         min-height: @LegalLandscape-Height;
         max-height: @LegalLandscape-Height;
     }
+    &.Cm13Landscape {
+        min-width: @Cm13Square-Side;
+        max-width: @Cm13Square-Side;
+        min-height: @Cm13Square-Side;
+        max-height: @Cm13Square-Side;
+    }
 }
 /*Margins*/
 .textWholePage .marginBox {
@@ -408,6 +414,9 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
     }
     .LegalLandscape & {
         .SetMarginBox(@LegalLandscape-Width, @LegalLandscape-Height);
+    }
+    .Cm13Landscape & {
+        .SetMarginBox(@Cm13Square-Side, @Cm13Square-Side);
     }
 }
 

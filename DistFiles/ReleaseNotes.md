@@ -1,3 +1,11 @@
+# 4.9 (Currently in Alpha-test)
+
+## Edit Tab
+
+**13cm Square** page size. ([Feature Request](https://community.software.sil.org/t/square-books-a5-5-square/3543))
+
+The list of page sizes now includes *13cm Square* as one of the possibilities.  This requires printing with A3 paper if you wish to produces booklets using this new page size.  (Each printing would create 3 copies of the booklet.)
+
 # 4.8 (Currently in Beta-test)
 
 ## Edit Tab
