@@ -59,6 +59,11 @@ export class LeveledReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().doMarkup();
     }
 
+    public initializeMarkup() {
+        // This function is the same as updateMarkup()
+        this.updateMarkup();
+    }
+
     public updateMarkup() {
         getTheOneReaderToolsModel().doMarkup();
     }

@@ -31,7 +31,8 @@ export interface ITool {
     configureElements(container: HTMLElement);
     showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
     hideTool(); // called when changing tools or hiding the toolbox.
-    updateMarkup(); // called on every keypress AND after newPageReady
+    initializeMarkup(): void; // called after newPageReady
+    updateMarkup(); // called on every keypress
     isUpdateMarkupAsync(): boolean; // should return true if updateMarkup does any async work that we should wait for.
     newPageReady(); // called when a new page is displayed AND after showTool
     detachFromPage(); // called when a page is going away AND before hideTool
@@ -492,7 +493,12 @@ export function applyToolboxStateToUpdatedPage() {
         doWhenPageReady(() => {
             if (currentTool) {
                 currentTool.newPageReady();
-                currentTool.updateMarkup();
+                // NOTE: Seems strange that in some cases (activateTool) newPageReady is not followed by initializeMarkup/updateMarkup,
+                // but in the case of an updatePage it is. Seems like the worst of both worlds?
+                // newPageReady needs to ensure it's already initialized because it can't guarantee initializeMarkup/updateMarkup will follow it,
+                // but initializeMarkup/updateMarkup need to handle being called under a wider variety of cases, not merely upon keypresses.
+                // So I call a different function name, initializeMarkup, so that it can distinguish which state it's in.
+                currentTool.initializeMarkup();
             }
         });
     }

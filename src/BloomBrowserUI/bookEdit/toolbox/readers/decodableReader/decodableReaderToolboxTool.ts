@@ -172,6 +172,11 @@ export class DecodableReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().setMarkupType(0);
     }
 
+    public initializeMarkup() {
+        // This function is the same as updateMarkup()
+        this.updateMarkup();
+    }
+
     public updateMarkup() {
         getTheOneReaderToolsModel().doMarkup();
     }

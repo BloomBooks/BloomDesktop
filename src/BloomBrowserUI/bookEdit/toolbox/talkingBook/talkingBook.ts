@@ -67,6 +67,11 @@ export default class TalkingBookTool implements ITool {
         }
     }
 
+    public initializeMarkup() {
+        // This doesn't really need to do anything.
+        // showTool() / newPageReady() already take care of all that's needed.
+    }
+
     // Called whenever the user edits text.
     public async updateMarkup(): Promise<void> {
         this.showImageDescriptionsIfAny();

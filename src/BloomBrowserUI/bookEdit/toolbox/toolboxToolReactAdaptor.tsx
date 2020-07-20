@@ -35,6 +35,7 @@ export default abstract class ToolboxToolReactAdaptor
     }
     public showTool() {}
     public hideTool() {}
+    public initializeMarkup() {}
     public updateMarkup() {}
     public isUpdateMarkupAsync(): boolean {
         return false;

@@ -70,6 +70,7 @@ export enum AudioRecordingMode {
 // TODO: Replace AudioRecordingMode with this?
 export enum AudioMode {
     PureSentence, // Record by Sentence, Play by Sentence
+    PreTextBox, // Record by TextBox, Play by Sentence. An intermediate stage when transitioning from PureSentence -> PureTextBox
     PureTextBox, // Record by TextBox, Play by TextBox
     HardSplitTextBox, // Version 4.5 only. Record by TextBox, then split into sentences. (Each sentence has own audio file)
     SoftSplitTextBox // Version 4.6+. Record by TextBox, then split into sentences. (The entire text box only has 1 audio file. The timings for where each sentence starts is annotated).
@@ -120,8 +121,6 @@ interface IPlaybackOrderInfo {
 export default class AudioRecording {
     private recording: boolean;
     private levelCanvas: HTMLCanvasElement;
-    private levelCanvasWidth: number = 15;
-    private levelCanvasHeight: number = 80;
     private hiddenSourceBubbles: JQuery;
     private currentAudioId: string;
     private elementsToPlayConsecutivelyStack: Element[] = []; // When we are playing audio, this holds the segments we haven't yet finished playing, including the one currently playing. Thus, when it's empty we are not playing audio at all
@@ -149,7 +148,6 @@ export default class AudioRecording {
     private sentenceToIdListMap: object = {};
     public __testonly__sentenceToIdListMap = this.sentenceToIdListMap; // Exposing it for unit tests. Not meant for public use.
 
-    private stringToSentencesCache: object = {};
     private playbackOrderCache: IPlaybackOrderInfo[] = [];
     private disablingOverlay: HTMLDivElement;
 
@@ -2202,7 +2200,12 @@ export default class AudioRecording {
 
         const asyncTasks: Promise<void>[] = recordables.map(elem => {
             const playbackMode = this.getPlaybackMode(elem);
-            return this.tryUpdateMarkupForTextBoxAsync(elem, playbackMode);
+            const preserveExistingSplits = true;
+            return this.tryUpdateMarkupForTextBoxAsync(
+                elem,
+                playbackMode,
+                preserveExistingSplits
+            );
         });
         await Promise.all(asyncTasks);
 
@@ -2212,7 +2215,7 @@ export default class AudioRecording {
     // Entry point for TalkingBookTool's updateMarkup() function. Does less work.
     public async updateMarkup(): Promise<void> {
         // Basic outline:
-        // * This function gets called when the user types something, and sometimes after talkingBooKTool's newPageReady() too
+        // * This function gets called when the user types something
         // * First, see if we should update the Current Highlight to the element with the active focus instead.
         // * Then, change the HTML markup with the audio-sentence classes, ids, etc.
         // * Adjust the Current Highlight appropriately.
@@ -2233,7 +2236,12 @@ export default class AudioRecording {
 
         // Now we can carry on with changing the HTML markup with the audio-sentence classes, ids, etc.
         const playbackMode = this.getCurrentPlaybackMode();
-        await this.tryUpdateMarkupForTextBoxAsync(currentTextBox, playbackMode);
+        const isPreserveExistingSplitsOn = false;
+        await this.tryUpdateMarkupForTextBoxAsync(
+            currentTextBox,
+            playbackMode,
+            isPreserveExistingSplitsOn
+        );
 
         // Adjust the current highlight appropriately
         // Regardless of whether it's present, we always need to set the current audio element
@@ -2275,16 +2283,16 @@ export default class AudioRecording {
     // Asychronously updates the markup on the specified text box, but only if the operation is currently allowed.
     private async tryUpdateMarkupForTextBoxAsync(
         textBox: HTMLElement,
-        audioPlaybackMode
+        audioPlaybackMode,
+        preserveSplitsIfRecorded: boolean
     ): Promise<void> {
         const recordable = new Recordable(textBox);
 
-        // ENHANCE: You could refactor so that this check is only done when a new page is readied
-        // And then you save the result somewhere.
-        // That way, you don't have to make a BloomAPI call plus await it whenever you type in text
-        const isPresent = await recordable.areRecordingsPresentAsync();
+        const shouldSkipUpdate =
+            preserveSplitsIfRecorded &&
+            (await recordable.areRecordingsPresentAsync());
 
-        if (!isPresent) {
+        if (!shouldSkipUpdate) {
             this.updateMarkupForTextBox(textBox, audioPlaybackMode);
         } else {
             // Just keep the code from changing the splits.
@@ -3706,15 +3714,13 @@ export default class AudioRecording {
         return fragmentObjects;
     }
 
-    // I add a cached version so that it is more verifiable that two calls with the same inputs will definitely return the same outputs.
     public stringToSentences(text: string): TextFragment[] {
-        if (text in this.stringToSentencesCache) {
-            return this.stringToSentencesCache[text];
-        } else {
-            const retVal = theOneLibSynphony.stringToSentences(text);
-            this.stringToSentencesCache[text] = retVal;
-            return retVal;
-        }
+        // Used to have a caching layer. Now we just always call it directly.
+        // The cache was added to ensure that the same input returns the same ouput (at least for the same run),
+        // but the underlying library has been pretty deterministic, so no real concern about different results there.
+        //
+        // The caching feature, if returned, should ideally only be live when you are running AutoSegment.
+        return theOneLibSynphony.stringToSentences(text);
     }
 
     public getAutoSegmentLanguageCode(): string {
@@ -3792,6 +3798,9 @@ export default class AudioRecording {
                     kEndTimeAttributeName,
                     allEndTimesString
                 );
+
+                // Precondition: Assumes that re-running stringToSentences on the same input will give the same result
+                // as when we ran it before the BloomAPI result came bck.
 
                 // Note that this will want to use the sentenceToIdListMap member variable to inform it to re-use the IDs used to create the split audio files
                 this.updateMarkupForTextBox(
