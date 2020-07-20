@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using L10NSharp;
 using SIL.CommandLineProcessing;
@@ -177,10 +178,25 @@ namespace Bloom.Publish.PDF
 		{
 			bldr.AppendFormat("\"{0}\" \"{1}\"", inputHtmlPath, outputPdfPath);
 			bldr.Append(" --quiet");	// turn off its progress dialog (BL-3721)
-			bldr.AppendFormat(" -B 0 -T 0 -L 0 -R 0 -s {0}", paperSizeName);
+			bldr.Append(" -B 0 -T 0 -L 0 -R 0");
+			var match = Regex.Match(paperSizeName, @"^(cm|in)(\d+)$", RegexOptions.IgnoreCase|RegexOptions.CultureInvariant);
+			if (match.Success)
+			{
+				// Irregular (square) paper size
+				var size = int.Parse(match.Groups[2].Value);
+				if (match.Groups[1].Value == "in")
+					size = (int)(size * 25.4);	// convert from inches to millimeters
+				else
+					size = size * 10;	// convert from cm to mm
+				bldr.AppendFormat(" -h {0} -w {0}", size);
+			}
+			else
+			{
+				bldr.AppendFormat(" -s {0}", paperSizeName);
+				if (landscape)
+					bldr.Append(" -Landscape");
+			}
 			bldr.Append(" --graphite");
-			if (landscape)
-				bldr.Append(" -Landscape");
 			if (saveMemoryMode)
 				bldr.Append(" --reduce-memory-use");
 		}
