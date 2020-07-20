@@ -31,9 +31,9 @@ export interface ITool {
     configureElements(container: HTMLElement);
     showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
     hideTool(); // called when changing tools or hiding the toolbox.
-    updateMarkup(); // called on every keypress AND after newPageReady
+    updateMarkup(); // called on most keypresses (but notably, not on arrow navigation, also not Ctrl+C). It is called on typing letters (obviously), Ctrl+X, Ctrl+V, Ctrl+Z, Ctrl+Y etc... or even just pressing and releasing Ctrl or Shift.
     isUpdateMarkupAsync(): boolean; // should return true if updateMarkup does any async work that we should wait for.
-    newPageReady(); // called when a new page is displayed AND after showTool
+    newPageReady(); // called when a new page is displayed or tool is activated (called after showTool)
     detachFromPage(); // called when a page is going away AND before hideTool
     id(): string; // without trailing "Tool"!
     hasRestoredSettings: boolean;
@@ -492,7 +492,9 @@ export function applyToolboxStateToUpdatedPage() {
         doWhenPageReady(() => {
             if (currentTool) {
                 currentTool.newPageReady();
-                currentTool.updateMarkup();
+                // We used to call updateMarkup() here
+                // Now we don't because it would mess up the Talking Book Tool
+                // if you really need it, add call to updateMarkup to currentTool's implementation of newPageReady.
             }
         });
     }

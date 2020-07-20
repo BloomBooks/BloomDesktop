@@ -1850,7 +1850,7 @@ export function SetupTalkingBookUIElements() {
     document.body.firstElementChild!.insertAdjacentHTML("afterend", html);
 }
 
-function StripPlayerSrcNoCacheSuffix(url: string): string {
+export function StripPlayerSrcNoCacheSuffix(url: string): string {
     const index = url.lastIndexOf("&");
     if (index < 0) {
         return url;
