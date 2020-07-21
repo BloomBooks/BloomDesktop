@@ -1826,7 +1826,8 @@ namespace Bloom.Publish.Epub
 			if(string.IsNullOrEmpty (BookInStagingFolder)) {
 				StageEpub(progress);
 			}
-			ZipAndSaveEpub (destinationEpubPath, progress);
+			if (!AbortRequested)
+				ZipAndSaveEpub (destinationEpubPath, progress);
 		}
 
 		/// <summary>
