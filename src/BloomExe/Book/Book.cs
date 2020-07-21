@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
 using System.Xml;
-using Shipwreck.Phash;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
@@ -797,131 +796,6 @@ namespace Bloom.Book
 			BookInfo.CountryName = CollectionSettings.Country;
 			BookInfo.ProvinceName = CollectionSettings.Province;
 			BookInfo.DistrictName = CollectionSettings.District;
-		}
-
-		/// <summary>
-		/// Find the first content image on a content page (or the cover image if no content images) and
-		/// compute its "perceptual hash".
-		/// </summary>
-		/// <remarks>
-		/// This can be rather slow, as much as a second or more per image.  DO NOT ADD THIS TO BringBookUpToDate!
-		/// It may be called only by an external program such as Harvester.
-		/// </remarks>
-		public string ComputePHashOfFirstContentImage()
-		{
-#if DEBUG
-			var startTime = DateTime.UtcNow;
-#endif
-			try
-			{
-				string src = GetBestPHashImageSource();
-				if (!String.IsNullOrEmpty(src))
-				{
-					return ComputePHashOfImageSrc(src);
-				}
-				
-				// no images found anywhere??
-				Console.Error.WriteLine("PHash: No images found.");
-				return null;
-			}
-			finally
-			{
-#if DEBUG
-				var endTime = DateTime.UtcNow;
-				Console.WriteLine("Computing PHash for {0} took {1}", this.Title, endTime - startTime);
-#endif
-			}
-		}
-
-		/// <summary>
-		/// Finds the image to use when computing the perceptual hash of the 1st image
-		/// </summary>
-		/// <returns>The source (no decoding is applied yet)</returns>
-		internal string GetBestPHashImageSource()
-		{
-			// Precondition: Assumes that pages were written to the HTML in the order of their page number
-
-			// Find the first picture on a content page
-			// We use the numberedPage class to determine this now
-			// You could also try data-page-number, but it's not guaranteed to use numbers like "1", "2", "3"... the numbers may be written in the language of the book (BL-8346)
-			var firstContentImageContainerPath = "//div[contains(@class,'bloom-page')][contains(@class, 'numberedPage')]//div[contains(@class,'bloom-imageContainer')]";
-			var firstContentImageElement = OurHtmlDom.SelectSingleNode($"{firstContentImageContainerPath}/img");
-			if (firstContentImageElement != null)
-			{
-				var src = firstContentImageElement.GetAttribute("src");
-				return src;
-			}
-			var fallbackFirstContentImage = OurHtmlDom.SelectSingleNode(firstContentImageContainerPath);
-			if (fallbackFirstContentImage != null)
-			{
-				var src = HtmlDom.GetImageElementUrl(fallbackFirstContentImage).UrlEncoded;
-				return src;
-			}
-
-			// No content page images found.  Try the cover page
-			var coverImageContainerPath = "//div[contains(@class,'bloom-page') and @data-xmatter-page='frontCover']//div[contains(@class,'bloom-imageContainer')]";
-			var coverImg = OurHtmlDom.SelectSingleNode($"{coverImageContainerPath}/img");
-			if (coverImg != null)
-			{
-				var src = coverImg.GetAttribute("src");
-				return src;
-			}
-
-			var fallbackCoverImg = OurHtmlDom.SelectSingleNode(coverImageContainerPath);
-			if (fallbackCoverImg != null)
-			{
-				var src = HtmlDom.GetImageElementUrl(fallbackCoverImg).UrlEncoded;
-				return src;
-			}
-
-			// Nothing on the cover page either. Give up.
-			return null;
-		}
-
-		/// <summary>
-		/// Computes the perceptual hash of the specified image
-		/// </summary>
-		/// <param name="src">The source attribute of the image. This function will apply URL-decoding on the src paramater</param>
-		/// <returns>A hexadecimal string representing the digest, or null if the digest could not be computed</returns>
-		private string ComputePHashOfImageSrc(string src)
-		{
-			string decodedSrc = HttpUtility.UrlDecode(src);
-			var path = Path.Combine(FolderPath, decodedSrc);
-			return ComputePHashOfImageFullPath(path);
-		}
-
-		internal static string ComputePHashOfImageFullPath(string path)
-		{
-			string fileName = Path.GetFileName(path);
-			if (fileName.ToLowerInvariant() == "placeholder.png")
-			{
-				Console.Error.WriteLine("PHash: placeHolder.png found.");
-				return null;
-			}
-
-			// Note: path must be URL-decoded for .Exists() to return accurate results.
-			if (RobustFile.Exists(path))
-			{
-				Bitmap bitmap = null;
-				try
-				{
-					bitmap = (Bitmap)Image.FromFile(path);
-					var hash = ImagePhash.ComputeDigest(bitmap.ToLuminanceImage());
-					return hash.ToString();
-				}
-				catch (Exception ex)
-				{
-					Console.Error.WriteLine("PHash: Exception caught ({0}).", ex);
-					return null;
-				}
-				finally
-				{
-					bitmap?.Dispose();
-				}
-			}
-
-			Console.Error.WriteLine("PHash: File does not exist.");
-			return null;
 		}
 
 		/// <summary>

@@ -138,8 +138,6 @@ namespace Bloom.CLI
 
 			CreateThumbnailArtifact(parameters);
 
-			CreatePHashArtifact(parameters);
-
 			return exitCode;
 		}
 
@@ -286,37 +284,6 @@ namespace Bloom.CLI
 				}
 			}
 		}
-
-		private static void AppendPathIfExists(string path, IList<string> listToAppendTo)
-		{
-			if (RobustFile.Exists(path))
-			{
-				listToAppendTo.Add(path);
-			}
-		}
-
-		/// <summary>
-		/// Calculates the perceptual hash of the first content image of the book and writes it to a file
-		/// The perceptual hash may very well take on the value null. If so, the file will contain the literal string "null" (without the quotes) in it.
-		/// </summary>
-		/// <param name="parameters">parameters.PHashOutputInfoPath should contain the file path to which the create/write the PHash</param>
-		public static void CreatePHashArtifact(CreateArtifactsParameters parameters)
-		{
-			if (String.IsNullOrWhiteSpace(parameters.PHashOutputInfoPath))
-			{
-				return;
-			}
-
-			// This could take a second or more.
-			string pHash = _book.ComputePHashOfFirstContentImage();
-
-			using (var writer = new StreamWriter(parameters.PHashOutputInfoPath, append: false))
-			{
-				// Do note that the pHash may be null and it is expected that some books will legitimately have a null pHash
-				// so we write this value explicitly so that consumers can explicitly detect this.
-				writer.WriteLine(pHash ?? "null");
-			}
-		}
 	}
 
 	[Verb("createArtifacts", HelpText = "Create artifacts for a book such as .bloomd, unzipped bloom digital, ePub, etc.")]
@@ -339,9 +306,6 @@ namespace Bloom.CLI
 
 		[Option("thumbnailOutputInfoPath", HelpText = "Output destination path for a text file which contains path information for generated thumbnail files", Required = false)]
 		public string ThumbnailOutputInfoPath { get; set; }
-
-		[Option("pHashOutputInfoPath", HelpText = "Output destination path for a text file which contains perceptual hash information for the first content image", Required = false)]
-		public string PHashOutputInfoPath { get; set; }
 
 		[Option("creator", Required = false, Default = "harvester", HelpText = "The value of the \"creator\" meta tag passed along when creating the bloomdigital.")]
 		public string Creator{ get; set; }
