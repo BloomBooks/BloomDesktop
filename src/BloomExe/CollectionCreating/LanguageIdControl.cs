@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Forms;
 using Bloom.Collection;
 
@@ -28,9 +29,11 @@ namespace Bloom.CollectionCreating
 
 			if (_lookupISOControl.SelectedLanguage != null)
 			{
-				_collectionInfo.Language1.Iso639Code = _lookupISOControl.SelectedLanguage.LanguageTag;
-				_collectionInfo.Language1.SetName(_lookupISOControl.SelectedLanguage.DesiredName, false);
-				_collectionInfo.Country = _lookupISOControl.SelectedLanguage.PrimaryCountry ?? string.Empty;
+				var selectedLanguageInfo = _lookupISOControl.SelectedLanguage;
+				_collectionInfo.Language1.Iso639Code = selectedLanguageInfo.LanguageTag;
+				_collectionInfo.Language1.SetName(selectedLanguageInfo.DesiredName,
+					selectedLanguageInfo.DesiredName != selectedLanguageInfo.Names.FirstOrDefault());
+				_collectionInfo.Country = selectedLanguageInfo.PrimaryCountry ?? string.Empty;
 
 				//If there are multiple countries, just leave it blank so they can type something in
 				if (_collectionInfo.Country.Contains(","))
