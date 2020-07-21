@@ -12,7 +12,7 @@ import { BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
-import { MenuItem, Button } from "@material-ui/core";
+import { Button, MenuItem } from "@material-ui/core";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { Div, Span } from "../../../react_components/l10nComponents";
 import InputLabel from "@material-ui/core/InputLabel";
@@ -134,9 +134,12 @@ const ComicToolControls: React.FunctionComponent = () => {
             }
 
             // Get the current bubble's textColor and set it
-            const bubbleTextColor = ComicTool.bubbleManager().getTextColor();
-            const newSwatch = getSwatchFromHex(bubbleTextColor);
-            setTextColorSwatch(newSwatch);
+            const bubbleMgr = ComicTool.bubbleManager();
+            if (bubbleMgr) {
+                const bubbleTextColor = bubbleMgr.getTextColor();
+                const newSwatch = getSwatchFromHex(bubbleTextColor);
+                setTextColorSwatch(newSwatch);
+            }
         } else {
             setBubbleActive(false);
         }
@@ -150,10 +153,13 @@ const ComicToolControls: React.FunctionComponent = () => {
         setStyle(newStyle);
 
         // Update the Comical canvas on the page frame
-        const newSpec = ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
-            style: newStyle
-        });
-        setCurrentBubbleSpec(newSpec); // we do this because the new style's spec may affect Show Tail too
+        const bubbleMgr = ComicTool.bubbleManager();
+        if (bubbleMgr) {
+            const newSpec = bubbleMgr.updateSelectedItemBubbleSpec({
+                style: newStyle
+            });
+            setCurrentBubbleSpec(newSpec); // we do this because the new style's spec may affect Show Tail too
+        }
     };
 
     // Callback for show tail checkbox changed
@@ -162,41 +168,53 @@ const ComicToolControls: React.FunctionComponent = () => {
         setShowTailChecked(value);
 
         // Update the Comical canvas on the page frame
-        ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
-            tails: value
-                ? [ComicTool.bubbleManager().getDefaultTailSpec() as TailSpec]
-                : []
-        });
+        const bubbleMgr = ComicTool.bubbleManager();
+        if (bubbleMgr) {
+            bubbleMgr.updateSelectedItemBubbleSpec({
+                tails: value ? [bubbleMgr.getDefaultTailSpec() as TailSpec] : []
+            });
+        }
     };
 
     const getBackgroundColorValue = (spec: BubbleSpec) => {
-        const backgroundColorArray = ComicTool.bubbleManager().getBackgroundColorArray(
-            spec
-        );
-        if (backgroundColorArray.length === 1) {
-            return backgroundColorArray[0];
+        const bubbleMgr = ComicTool.bubbleManager();
+        if (bubbleMgr) {
+            const backgroundColorArray = bubbleMgr.getBackgroundColorArray(
+                spec
+            );
+            if (backgroundColorArray.length === 1) {
+                return backgroundColorArray[0];
+            }
+            const specialName = getSpecialColorName(backgroundColorArray);
+            return specialName ? specialName : "white"; // maybe from a later version of Bloom? All we can do.
+        } else {
+            return "white";
         }
-        const specialName = getSpecialColorName(backgroundColorArray);
-        return specialName ? specialName : "white"; // maybe from a later version of Bloom? All we can do.
     };
 
     // We come into this from chooser change
     const updateTextColor = (newColorSwatch: ISwatchDefn) => {
         const color = newColorSwatch.colors[0]; // text color is always monochrome
-        // Update the toolbox controls
-        setTextColorSwatch(newColorSwatch);
+        const bubbleMgr = ComicTool.bubbleManager();
+        if (bubbleMgr) {
+            // Update the toolbox controls
+            setTextColorSwatch(newColorSwatch);
 
-        ComicTool.bubbleManager().setTextColor(color);
+            bubbleMgr.setTextColor(color);
+        }
     };
 
     // We come into this from chooser change
     const updateBackgroundColor = (newColorSwatch: ISwatchDefn) => {
-        // Update the toolbox controls
-        setBackgroundColorSwatch(newColorSwatch);
+        const bubbleMgr = ComicTool.bubbleManager();
+        if (bubbleMgr) {
+            // Update the toolbox controls
+            setBackgroundColorSwatch(newColorSwatch);
 
-        // Update the Comical canvas on the page frame
-        const backgroundColors = newColorSwatch.colors;
-        ComicTool.bubbleManager().setBackgroundColor(backgroundColors);
+            // Update the Comical canvas on the page frame
+            const backgroundColors = newColorSwatch.colors;
+            bubbleMgr.setBackgroundColor(backgroundColors);
+        }
     };
 
     // Callback when outline color of the bubble is changed
@@ -207,41 +225,49 @@ const ComicToolControls: React.FunctionComponent = () => {
             newValue = undefined;
         }
 
-        // Update the toolbox controls
-        setOutlineColor(newValue);
+        const bubbleMgr = ComicTool.bubbleManager();
+        if (bubbleMgr) {
+            // Update the toolbox controls
+            setOutlineColor(newValue);
 
-        // TODO: May need to massage the values before passing them to Comical
-        // Update the Comical canvas on the page frame
-        ComicTool.bubbleManager().updateSelectedItemBubbleSpec({
-            outerBorderColor: newValue
-        });
+            // TODO: May need to massage the values before passing them to Comical
+            // Update the Comical canvas on the page frame
+            bubbleMgr.updateSelectedItemBubbleSpec({
+                outerBorderColor: newValue
+            });
+        }
     };
 
     const handleChildBubbleLinkClick = event => {
         const bubbleManager = ComicTool.bubbleManager();
 
-        const parentElement = bubbleManager.getActiveElement();
+        if (bubbleManager) {
+            const parentElement = bubbleManager.getActiveElement();
 
-        if (!parentElement) {
-            // No parent to attach to
-            toastr.info("No element is currently active.");
-            return;
+            if (!parentElement) {
+                // No parent to attach to
+                toastr.info("No element is currently active.");
+                return;
+            }
+
+            // Enhance: Is there a cleaner way to keep activeBubbleSpec up to date?
+            // Comical would need to call the notifier a lot more often like when the tail moves.
+
+            // Retrieve the latest bubbleSpec
+            const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
+            const [
+                offsetX,
+                offsetY
+            ] = ComicTool.GetChildPositionFromParentBubble(
+                parentElement,
+                bubbleSpec
+            );
+            bubbleManager.addChildTOPBoxAndReloadPage(
+                parentElement,
+                offsetX,
+                offsetY
+            );
         }
-
-        // Enhance: Is there a cleaner way to keep activeBubbleSpec up to date?
-        // Comical would need to call the notifier a lot more often like when the tail moves.
-
-        // Retrieve the latest bubbleSpec
-        const bubbleSpec = bubbleManager.getSelectedItemBubbleSpec();
-        const [offsetX, offsetY] = ComicTool.GetChildPositionFromParentBubble(
-            parentElement,
-            bubbleSpec
-        );
-        bubbleManager.addChildTOPBoxAndReloadPage(
-            parentElement,
-            offsetX,
-            offsetY
-        );
     };
 
     const ondragstart = (ev: React.DragEvent<HTMLElement>, style: string) => {
@@ -254,6 +280,7 @@ const ComicToolControls: React.FunctionComponent = () => {
     };
 
     const ondragend = (ev: React.DragEvent<HTMLElement>, style: string) => {
+        const bubbleManager = ComicTool.bubbleManager();
         // The Linux/Mono/Geckofx environment does not produce the dragenter, dragover,
         // and drop events for the targeted element.  It does produce the dragend event
         // for the source element with screen coordinates of where the mouse was released.
@@ -261,7 +288,8 @@ const ComicToolControls: React.FunctionComponent = () => {
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-7958.
         if (
             isLinux() &&
-            ComicTool.bubbleManager().addFloatingTOPBoxWithScreenCoords(
+            bubbleManager &&
+            bubbleManager.addFloatingTOPBoxWithScreenCoords(
                 ev.screenX,
                 ev.screenY,
                 style
@@ -275,9 +303,21 @@ const ComicToolControls: React.FunctionComponent = () => {
 
     const deleteBubble = () => {
         const bubbleManager = ComicTool.bubbleManager();
-        const active = bubbleManager.getActiveElement();
-        if (active) {
-            bubbleManager.deleteTOPBox(active);
+        if (bubbleManager) {
+            const active = bubbleManager.getActiveElement();
+            if (active) {
+                bubbleManager.deleteTOPBox(active);
+            }
+        }
+    };
+
+    const duplicateBubble = () => {
+        const bubbleManager = ComicTool.bubbleManager();
+        if (bubbleManager) {
+            const active = bubbleManager.getActiveElement();
+            if (active) {
+                bubbleManager.duplicateTOPBox(active);
+            }
         }
     };
 
@@ -341,6 +381,14 @@ const ComicToolControls: React.FunctionComponent = () => {
         );
         return percent === "0" ? undefined : transparencyString;
     };
+
+    const deleteTooltip = useL10n("Delete", "Common.Delete");
+
+    const duplicateTooltip = useL10n(
+        "Duplicate",
+        "EditTab.Toolbox.ComicTool.Options.Duplicate"
+    );
+
     return (
         <div id="comicToolControls">
             <div
@@ -526,11 +574,22 @@ const ComicToolControls: React.FunctionComponent = () => {
                             Add Child Bubble
                         </Div>
                     </Button>
-                    <TrashIcon
-                        id="trashIcon"
-                        color="primary"
-                        onClick={() => deleteBubble()}
-                    />
+                    <div className="option-button-row">
+                        <div title={deleteTooltip}>
+                            <TrashIcon
+                                id="trashIcon"
+                                color="primary"
+                                onClick={() => deleteBubble()}
+                            />
+                        </div>
+                        <div title={duplicateTooltip}>
+                            <img
+                                className="duplicate-bubble-icon"
+                                src="duplicate-bubble.svg"
+                                onClick={() => duplicateBubble()}
+                            />
+                        </div>
+                    </div>
                 </form>
             </div>
             <div id="comicToolControlFillerRegion" />
@@ -612,8 +671,9 @@ export class ComicTool extends ToolboxToolReactAdaptor {
         }
     }
 
-    public static bubbleManager(): BubbleManager {
-        return getPageFrameExports().getTheOneBubbleManager();
+    public static bubbleManager(): BubbleManager | undefined {
+        const exports = getPageFrameExports();
+        return exports ? exports.getTheOneBubbleManager() : undefined;
     }
 
     // Returns a 2-tuple containing the desired x and y offsets of the child bubble from the parent bubble
