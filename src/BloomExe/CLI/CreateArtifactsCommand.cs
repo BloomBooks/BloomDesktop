@@ -284,6 +284,14 @@ namespace Bloom.CLI
 				}
 			}
 		}
+
+		private static void AppendPathIfExists(string path, IList<string> listToAppendTo)
+		{
+			if (RobustFile.Exists(path))
+			{
+				listToAppendTo.Add(path);
+			}
+		}
 	}
 
 	[Verb("createArtifacts", HelpText = "Create artifacts for a book such as .bloomd, unzipped bloom digital, ePub, etc.")]
