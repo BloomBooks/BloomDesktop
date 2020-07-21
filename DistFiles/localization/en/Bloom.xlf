@@ -865,6 +865,10 @@
         <source xml:lang="en">Cancel</source>
         <note>ID: Common.Cancel</note>
       </trans-unit>
+      <trans-unit id="Common.Delete">
+        <source xml:lang="en">Delete</source>
+        <note>ID: Common.Delete</note>
+      </trans-unit>
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
@@ -1840,6 +1844,11 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino</note>
         <note>A background color that is a gradient starting with white blending into the "Portafino" color</note>
         <note>Obsolete for Bloom 4.9 and later</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
+        <source xml:lang="en">Duplicate</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
+        <note>Tooltip for the bubble Duplicate icon</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true">
         <source xml:lang="en">Outer Outline Color</source>
