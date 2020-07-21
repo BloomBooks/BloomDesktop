@@ -22,7 +22,10 @@ require("./jquery.mousewheel.js");
             instructions: ""
         };
 
-    const nonBreakingSpace = "\u00A0";
+    // See https://issues.bloomlibrary.org/youtrack/issue/BL-8683.
+    // We originally set out to include the normal no-break space (\u00A0),
+    // but browsers consistently convert this into a space if you type anything before or after them.
+    const narrowNoBreakSpace = "\u202F";
 
     var characterSets = splitCharacterSetsByGrapheme({
         // extended latin (and african latin)
@@ -105,7 +108,7 @@ require("./jquery.mousewheel.js");
         ">": "»≥›",
         "=": "≈≠≡",
         "/": "÷",
-        "\u0020": nonBreakingSpace // Spacebar
+        "\u0020": narrowNoBreakSpace // Spacebar; see comment on narrowNoBreakSpace above
     });
     // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
     // 8  backspace
@@ -290,7 +293,7 @@ require("./jquery.mousewheel.js");
         }
     }
     const charactersRepresentedByAlternativeText = {
-        [nonBreakingSpace]: "non-breaking space / espace insécable"
+        [narrowNoBreakSpace]: "non-breaking space / espace insécable"
     };
     function createOneButton(replacementText, shortcutText) {
         let cssClass = "long-press-letter";
