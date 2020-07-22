@@ -187,7 +187,7 @@ export default class BloomField {
 
                     //The other thing going on is that Firefox doesn't like to see multiple empty <p></p>'s. It won't let us insert
                     //two or more of these in a row. So we stick in a zero-width-non-joiner element to pacify it.
-                    //This has the downside that it takes to presses of "DEL" to remove the line; a future enhancement could fix
+                    //This has the downside that it takes two presses of "DEL" to remove the line; a future enhancement could fix
                     //that.
                     document.execCommand("insertHTML", false, "<p>&zwnj;</p>");
                 }
