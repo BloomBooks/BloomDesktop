@@ -202,6 +202,14 @@
         margin-left: -5px; // hack to left-align the icon itself, which is framed by a larger SVG
         display: block;
     }
+    .option-button-row {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        .duplicate-bubble-icon {
+            margin-top: 18px; // to match material-ui icon on same row
+        }
+    }
 }
 
 // Empty region that does all the growing and shrinking.
