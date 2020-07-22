@@ -3,6 +3,11 @@
 .credits {
     .originalAcknowledgments .bloom-editable {
         // Override
-        margin-bottom: 1em;
+        margin-bottom: 1em !important;
     }
+}
+[data-book="outside-back-cover-branding-bottom-html"] img {
+    // we don't want these logos to get bigger than the funder logos on the credits page
+    max-width: unset !important;
+    width: 45%; // can be bigger in A5 than Device because the Credits Page logos are bigger
 }
