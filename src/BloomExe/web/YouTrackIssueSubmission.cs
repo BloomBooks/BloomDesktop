@@ -167,8 +167,67 @@ namespace Bloom
 			{
 				{new ByteArrayContent(File.ReadAllBytes(filePath)), fileName, fileName}
 			};
-			var response = _client.PostAsync($"https://{_youTrackBaseSite}/youtrack/api/issues/{youTrackIssueId}/attachments?fields=id,name", content).Result;
-			return response.IsSuccessStatusCode;
+			HttpResponseMessage response = null;
+			string problem = null;
+			try
+			{
+				response = _client
+					.PostAsync(
+						$"https://{_youTrackBaseSite}/youtrack/api/issues/{youTrackIssueId}/attachments?fields=id,name",
+						content).Result;
+				if (!response.IsSuccessStatusCode)
+				{
+					problem = response.ReasonPhrase;
+				}
+			}
+			catch (Exception e)
+			{
+				problem = e.Message;
+			}
+
+			if (!string.IsNullOrEmpty(problem))
+			{
+				var msg = "***Error as ProblemReportApi attempted to upload the file: " + filePath
+					+ Environment.NewLine + problem;
+				Logger.WriteEvent(msg);
+			}
+
+			return string.IsNullOrEmpty(problem);
+		}
+
+		public bool UpdateSummaryAndDescription(string youTrackIssueId, string summary, string description)
+		{
+			HttpResponseMessage response = null;
+			string problem = null;
+			try
+			{
+				dynamic data = new JObject();
+				data.summary = summary;
+				data.description = description;
+				var dataJson = JsonConvert.SerializeObject(data);
+				HttpContent content = new StringContent(dataJson);
+				content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+				response = _client
+					.PostAsync(
+						$"https://{_youTrackBaseSite}/youtrack/api/issues/{youTrackIssueId}?fields=summary,description",
+						content).Result;
+				if (!response.IsSuccessStatusCode)
+				{
+					problem = response.ReasonPhrase;
+				}
+			}
+			catch (Exception e)
+			{
+				problem = e.Message;
+			}
+
+			if (!string.IsNullOrEmpty(problem))
+			{
+				var msg = "***Error as ProblemReportApi attempted to update summary and description: " + problem;
+				Logger.WriteEvent(msg);
+			}
+
+			return string.IsNullOrEmpty(problem);
 		}
 
 		#region Unit test methods
