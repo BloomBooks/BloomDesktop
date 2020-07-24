@@ -946,7 +946,13 @@ function focusLastEditableTopBox(): boolean {
         s => window.getComputedStyle(s).getPropertyValue("display") != "none"
     );
     if (visibleEditBoxesInLastTop.length === 0) return false; // unexpected
-    (visibleEditBoxesInLastTop[0] as HTMLElement).focus();
+    // This doesn't work reliably if we just use the Element.focus(), so we use the JQuery version that
+    // we set the eventhandler with in BloomSourceBubbles.SetupTooltips(). We've tried adding a "focusin"
+    // eventhandler to the div, instead of the JQuery one, but it still didn't work when we used
+    // the raw HTML focus() here, even if we changed the eventhandler to use currentTarget instead of target.
+    // It may have something to do with the fact that JQuery calls trigger() on the event, rather than
+    // calling the focus method. (BL-8726)
+    $(visibleEditBoxesInLastTop[0] as HTMLElement).focus();
     return true;
 }
 
