@@ -171,6 +171,15 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
         });
     }, [reloadValue]);
 
+    // Ensure that the thumbnail of the selected page is scrolled into view when a book
+    // is opened for editing.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8701.
+    useEffect(() => {
+        if (selectedPageId) {
+            const pageElement = window.document.getElementById(selectedPageId);
+            if (pageElement) pageElement.scrollIntoView();
+        }
+    }, [realPageList]);
+
     // We insert a dummy invisible page to make the outside cover a 'right' page
     // and all the others correctly paired. (Probably should remove if we ever fully
     // support single-column.)
