@@ -233,6 +233,10 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                 </div>
             );
         });
+        if (selectedPageId) {
+            const pageElement = window.document.getElementById(selectedPageId);
+            if (pageElement) pageElement.scrollIntoView();
+        }
         return pages1;
     }, [pageList]);
     // Set up some objects and functions we need as params for our main element.
