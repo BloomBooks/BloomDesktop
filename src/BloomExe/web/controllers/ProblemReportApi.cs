@@ -12,8 +12,10 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
+using Bloom.WebLibraryIntegration;
 using SIL.Extensions;
 using SIL.IO;
+using SIL.Progress;
 using SIL.Reporting;
 
 namespace Bloom.web.controllers
@@ -93,7 +95,7 @@ namespace Bloom.web.controllers
 					{
 						issueSubmission.AddAttachmentWhenWeHaveAnIssue(_screenshotTempFile.Path);
 					}
-					var diagnosticInfo = GetDiagnosticInfo(report.includeBook, userDesc, userEmail);
+					string diagnosticInfo = GetDiagnosticInfo(report.includeBook, userDesc, userEmail);
 					if (!string.IsNullOrWhiteSpace(userEmail))
 					{
 						// remember their email
@@ -126,14 +128,31 @@ namespace Bloom.web.controllers
 							{
 								string zipPath = CreateBookZipFile(issueId, userDesc);
 								if (zipPath != null)
-									issueSubmission.AttachFileToExistingIssue(issueId, zipPath);
+								{
+									// This could be used provided the file is not too large (about 10M as of July 2020),
+									// but it seems simpler to do the same thing every time.
+									//issueSubmission.AttachFileToExistingIssue(issueId, zipPath);
+									var uploadUrl = ProblemBookUploader.UploadBook(
+										BloomS3Client.ProblemBookUploadsBucketName, zipPath,
+										new NullProgress());
+									diagnosticInfo += Environment.NewLine + "Problem book uploaded to " + uploadUrl;
+									// We don't want to change the summary, but currently the YouTrack API requires us to set both together.
+									issueSubmission.UpdateSummaryAndDescription(issueId, subject, diagnosticInfo);
+								}
 							}
 							catch (Exception error)
 							{
 								Debug.WriteLine($"Attaching book to new YouTrack issue failed with '{error.Message}'.");
-								var msg = "***Error as ProblemReportApi attempted to upload the zipped book: " + error.Message;
+								var msg = "***Error as ProblemReportApi attempted to upload the zipped book: " +
+								          error.Message;
 								userDesc += Environment.NewLine + msg;
 								Logger.WriteEvent(userDesc);
+								diagnosticInfo += Environment.NewLine + "Uploading the problem book failed with exception " + error.Message;
+								// We don't want to change the summary, but currently the YouTrack API requires us to set both together.
+								issueSubmission.UpdateSummaryAndDescription(issueId, subject, diagnosticInfo);
+							}
+
+							finally {
 								_bookZipFileTemp.Detach();
 							}
 						}
