@@ -3574,6 +3574,26 @@
         <source xml:lang="en">Notice</source>
         <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.Failed">
+        <source xml:lang="en">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</source>
+        <note>ID: PublishTab.PDF.Error.Failed</note>
+        <note>Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.PrinterError">
+        <source xml:lang="en">Bloom requires access to a printer in order to make a PDF, even though you are not printing.  Windows gave this error when Bloom tried to access the default printer: {0}</source>
+        <note>ID: PublishTab.PDF.Error.PrinterError</note>
+        <note>Error message displayed in a message dialog box.  {0} is replaced by a Windows error message at runtime</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.NoPrinter">
+        <source xml:lang="en">Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you might not have a printer set as the default.  Please go to Devices and Printers and select a printer as a default. If you don't have a real printer attached, just select the Microsoft XPS or PDF printers.</source>
+        <note>ID: PublishTab.PDF.Error.NoPrinter</note>
+        <note>Error message displayed in a message dialog box.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.TrySinglePage">
+        <source xml:lang="en">The book's images might have exceeded the amount of RAM memory available. Please turn on the "Use Less Memory" option which is slower but uses less memory.</source>
+        <note>ID: PublishTab.PDF.Error.TrySinglePage</note>
+        <note>Error message displayed in a message dialog box.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.BadPdf">
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
         <note>ID: PublishTab.PdfMaker.BadPdf</note>
