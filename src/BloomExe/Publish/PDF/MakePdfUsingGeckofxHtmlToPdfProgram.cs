@@ -140,10 +140,14 @@ namespace Bloom.Publish.PDF
 
 				// This message string is intentionally separate because it was added after the previous string had already been localized in most languages.
 				var msg2 = L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.TrySinglePage",
-					"The book's images might have exceeded the amount of RAM memory available. Please turn on the \"Use Less Memory\" option which is slower but uses less memory.",
+					"Possibility: The book's images might have exceeded the amount of RAM memory available. Please turn on the \"Use Less Memory\" option which is slower but uses less memory.",
+					@"Error message displayed in a message dialog box");
+				// This message string is intentionally separate because it was added after the previous string had already been localized in most languages.
+				var msg3 = L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.CheckPrinterSettings",
+					"Possibility: You computer does not have a valid printer chosen. Check your computer's printer settings. Yes, this can be the cause even though you were not trying to print.",
 					@"Error message displayed in a message dialog box");
 
-				var fullMsg = String.Format(msg, outputPdfPath, Environment.NewLine) + Environment.NewLine + msg2 + Environment.NewLine + res.StandardOutput;
+				var fullMsg = String.Format(msg, outputPdfPath, Environment.NewLine) + Environment.NewLine + msg2 + Environment.NewLine + msg3 + Environment.NewLine +  res.StandardOutput;
 
 				var except = new ApplicationException(fullMsg);
 				// Note that if we're being run by a BackgroundWorker, it will catch the exception.
