@@ -117,6 +117,18 @@ export default class BloomField {
                 event.data.dataValue
             );
 
+            // Deal with sources that still use <b> and <i> instead of <strong> and <em>.
+            // Check if any of these markers are present, and if so, fix all of them.
+            // See https://issues.bloomlibrary.org/youtrack/issue/BL-8711.
+            if (/<\/?[bi]>/i.test(event.data.dataValue)) {
+                const fixBold = event.data.dataValue.replace(
+                    /<(\/?)b>/gi,
+                    "<$1strong>"
+                );
+                const fixItalic = fixBold.replace(/<(\/?)i>/gi, "<$1em>");
+                event.data.dataValue = fixItalic;
+            }
+
             const paras = event.data.dataValue.match(/<p>/g);
             if (!paras) {
                 // Enhance: should we remove the probable <span> and just leave the text?

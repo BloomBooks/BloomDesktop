@@ -1062,6 +1062,8 @@ namespace Bloom.Book
 
 			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
 
+			UpdateCharacterStyleMarkup(bookDOM);
+
 			bookDOM.SetImageAltAttrsFromDescriptions(CollectionSettings.Language1Iso639Code);
 
 			//we've removed and possible added pages, so our page cache is invalid
@@ -1424,6 +1426,36 @@ namespace Bloom.Book
 						s += "<p>" + chunk + "</p>";
 				}
 				text.InnerXml = s;
+			}
+		}
+
+		/// <summary>
+		/// Convert old &lt;b&gt; and &lt;i&gt; to &lt;strong&gt; and &lt;em&gt; respectively.
+		/// Also remove instances like &lt;/b&gt;&lt;b&gt; altogether since such markup is redundant.
+		/// </summary>
+		public void UpdateCharacterStyleMarkup(HtmlDom bookDOM)
+		{
+			var preserve = bookDOM.RawDom.PreserveWhitespace;
+			bookDOM.RawDom.PreserveWhitespace = true;
+			var paragraphs = bookDOM.SafeSelectNodes("//div[contains(@class,'bloom-editable')]/p");
+			foreach (XmlElement para in paragraphs)
+			{
+				string inner = para.InnerXml;
+				if (String.IsNullOrEmpty(inner) || !inner.Contains("<"))
+					continue;
+				inner = Regex.Replace(inner, @"</b>(\p{Z}*)<b>", "$1",
+					RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+				inner = Regex.Replace(inner, @"</i>(\p{Z}*)<i>", "$1",	// we've handled "</i></b> <b><i>"
+					RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+				inner = Regex.Replace(inner, @"</b>(\p{Z}*)<b>", "$1",	// repeat in case "</b></i> <i><b>" happens
+					RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+				// Note that .*? is the non-greedy match for any number of any characters.
+				inner = Regex.Replace(inner, @"<b>(.*?)</b>", "<strong>$1</strong>",
+					RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+				inner = Regex.Replace(inner, @"<i>(.*?)</i>", "<em>$1</em>",
+					RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+				if (inner != para.InnerXml)
+					para.InnerXml = inner;
 			}
 		}
 
