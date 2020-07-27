@@ -13,16 +13,19 @@ import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
 require("./jquery.mousewheel.js");
 
-(function($, window, undefined) {
+(function ($, window, undefined) {
     var lengthOfPreviouslyInsertedCharacter = 1; //when we convert to Typescript, this is a member variable
 
     var pluginName = "longPress",
         document = window.document,
         defaults = {
-            instructions: ""
+            instructions: "",
         };
 
-    const nonBreakingSpace = "\u00A0";
+    // See https://issues.bloomlibrary.org/youtrack/issue/BL-8683.
+    // We originally set out to include the normal no-break space (\u00A0),
+    // but browsers consistently convert this into a space if you type anything before or after them.
+    const narrowNoBreakSpace = "\u202F";
 
     var characterSets = splitCharacterSetsByGrapheme({
         // extended latin (and african latin)
@@ -105,7 +108,7 @@ require("./jquery.mousewheel.js");
         ">": "»≥›",
         "=": "≈≠≡",
         "/": "÷",
-        "\u0020": nonBreakingSpace // Spacebar
+        "\u0020": narrowNoBreakSpace, // Spacebar; see comment on narrowNoBreakSpace above
     });
     // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
     // 8  backspace
@@ -144,7 +147,7 @@ require("./jquery.mousewheel.js");
         39,
         40,
         45,
-        46
+        46,
     ];
     var ignoredKeyUpKeys = [
         8,
@@ -162,7 +165,7 @@ require("./jquery.mousewheel.js");
         39,
         40,
         45,
-        46
+        46,
     ];
 
     var selectedCharIndex;
@@ -192,7 +195,7 @@ require("./jquery.mousewheel.js");
     //     'a': [ā, a_, ɑ]  (the underline there represents the "combining macron below" (U+0331))
     function splitCharacterSetsByGrapheme(sets) {
         var output = {};
-        Object.keys(sets).forEach(key => {
+        Object.keys(sets).forEach((key) => {
             output[key] = splitIntoGraphemes(sets[key]);
         });
         return output;
@@ -275,12 +278,12 @@ require("./jquery.mousewheel.js");
     }
     function onTimer() {
         var typedChar = isTextArea()
-            ? $(activeElement)
-                  .val()
-                  .split("")[getTextAreaCaretPosition(activeElement) - 1]
-            : $(activeElement)
-                  .text()
-                  .split("")[getCaretPositionOffset(activeElement) - 1];
+            ? $(activeElement).val().split("")[
+                  getTextAreaCaretPosition(activeElement) - 1
+              ]
+            : $(activeElement).text().split("")[
+                  getCaretPositionOffset(activeElement) - 1
+              ];
 
         if (characterSets[typedChar]) {
             storeCaretPosition();
@@ -290,7 +293,7 @@ require("./jquery.mousewheel.js");
         }
     }
     const charactersRepresentedByAlternativeText = {
-        [nonBreakingSpace]: "non-breaking space / espace insécable"
+        [narrowNoBreakSpace]: "non-breaking space / espace insécable",
     };
     function createOneButton(replacementText, shortcutText) {
         let cssClass = "long-press-letter";
@@ -375,9 +378,7 @@ require("./jquery.mousewheel.js");
     }
     function selectCharIndex(i) {
         $(".long-press-letter.selected").removeClass("selected");
-        $(".long-press-letter")
-            .eq(i)
-            .addClass("selected");
+        $(".long-press-letter").eq(i).addClass("selected");
         selectedCharIndex = i;
         updateChar();
     }
@@ -420,7 +421,7 @@ require("./jquery.mousewheel.js");
     }
 
     function setFocusDelayed() {
-        window.setTimeout(function() {
+        window.setTimeout(function () {
             if (activeElement && typeof activeElement.focus != "undefined") {
                 activeElement.focus();
             }
@@ -431,9 +432,7 @@ require("./jquery.mousewheel.js");
     function replacePreviousLetterWithNewLetter(newLetter) {
         if (isTextArea()) {
             var pos = getTextAreaCaretPosition(activeElement);
-            var arVal = $(activeElement)
-                .val()
-                .split("");
+            var arVal = $(activeElement).val().split("");
             arVal[pos - 1] = newLetter;
             $(activeElement).val(arVal.join(""));
             setTextAreaCaretPosition(activeElement, pos);
@@ -453,8 +452,10 @@ require("./jquery.mousewheel.js");
                     //That code has been changed, so this should not happen, but if it does, this will save
                     //some debugging time.
                     if (insertPointRange.startContainer.nodeName != "#text") {
-                        throw "longpress: aborting becuase deleteContents() would have deleted all contents of a " +
-                            insertPointRange.startContainer.nodeName;
+                        throw (
+                            "longpress: aborting becuase deleteContents() would have deleted all contents of a " +
+                            insertPointRange.startContainer.nodeName
+                        );
                     }
 
                     //remove the character they typed to open this tool
@@ -562,14 +563,14 @@ require("./jquery.mousewheel.js");
     }
 
     LongPress.prototype = {
-        init: function() {
+        init: function () {
             $(this.element).keydown(onKeyDown);
             $(this.element).keyup(onKeyUp);
-        }
+        },
     };
 
-    $.fn[pluginName] = function(options) {
-        return this.each(function() {
+    $.fn[pluginName] = function (options) {
+        return this.each(function () {
             if (!$.data(this, "plugin_" + pluginName)) {
                 $.data(
                     this,

@@ -63,14 +63,14 @@ export interface IReactTool {
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
 export class ToolBox {
     public toolboxIsShowing() {
-        return (<HTMLInputElement>$(parent.window.document)
-            .find("#pure-toggle-right")
-            .get(0)).checked;
+        return (<HTMLInputElement>(
+            $(parent.window.document).find("#pure-toggle-right").get(0)
+        )).checked;
     }
     public toggleToolbox() {
-        (<HTMLInputElement>$(parent.window.document)
-            .find("#pure-toggle-right")
-            .get(0)).click();
+        (<HTMLInputElement>(
+            $(parent.window.document).find("#pure-toggle-right").get(0)
+        )).click();
     }
     public configureElementsForTools(container: HTMLElement) {
         for (let i = 0; i < masterToolList.length; i++) {
@@ -119,17 +119,17 @@ export class ToolBox {
 
             $(container)
                 .find(".bloom-editable")
-                .keydown(event => {
+                .keydown((event) => {
                     //don't do markup on cursor keys
                     if (event.keyCode >= 37 && event.keyCode <= 40) {
                         // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
                         // if all they did was move the cursor, we don't need to look at markup.
-                        console.log("skipping markup on arrow key");
+                        //console.log("skipping markup on arrow key");
                         return;
                     }
                     handleKeyboardInput();
                 })
-                .on("compositionend", argument => {
+                .on("compositionend", (argument) => {
                     // Keyman (and other IME's?) don't send keydown events, but do send compositionend events
                     // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5440.
                     handleKeyboardInput();
@@ -192,7 +192,7 @@ export class ToolBox {
         const event = new MessageEvent(eventName, {
             bubbles: true,
             cancelable: true,
-            data: eventData
+            data: eventData,
         });
         top.document.dispatchEvent(event);
     }
@@ -222,7 +222,7 @@ export class ToolBox {
         $(parent.window.document).ready(() => {
             $(parent.window.document)
                 .find("#pure-toggle-right")
-                .change(function() {
+                .change(function () {
                     showToolboxChanged(!this.checked);
                 });
         });
@@ -253,7 +253,7 @@ export class ToolBox {
                         for (let i = toolsToLoad.length - 1; i >= 0; i--) {
                             if (
                                 !masterToolList.some(
-                                    mod => mod.id() === toolsToLoad[i]
+                                    (mod) => mod.id() === toolsToLoad[i]
                                 )
                             ) {
                                 toolsToLoad.splice(i, 1);
@@ -275,13 +275,11 @@ export class ToolBox {
                         const loadNextTool = () => {
                             if (toolsToLoad.length === 0) {
                                 $("#toolbox").accordion({
-                                    heightStyle: "fill"
+                                    heightStyle: "fill",
                                 });
-                                $("body")
-                                    .find("*[data-i18n]")
-                                    .localize(); // run localization
+                                $("body").find("*[data-i18n]").localize(); // run localization
 
-                                BloomApi.get("currentUiLanguage", result => {
+                                BloomApi.get("currentUiLanguage", (result) => {
                                     const langName = result.data;
 
                                     const nodeList = document.querySelectorAll(
@@ -313,7 +311,7 @@ export class ToolBox {
                                                     langName,
                                                     ""
                                                 )
-                                                .done(result => {
+                                                .done((result) => {
                                                     if (result) {
                                                         node.setAttribute(
                                                             "lang",
@@ -364,7 +362,7 @@ export class ToolBox {
     // Adds "lang" attributes into the DOM for toolbox elements which have internationalization. (AKA, have data-i18n)
     // TODO: This only works with non-React toolbox components. For now, we only need it for talking book tool though.
     public static insertLangAttributesIntoToolboxElements() {
-        BloomApi.get("currentUiLanguage", result => {
+        BloomApi.get("currentUiLanguage", (result) => {
             const langName = result.data;
 
             const nodeList = document.querySelectorAll(':not([data-i18n=""])');
@@ -384,7 +382,7 @@ export class ToolBox {
                     // Double-check that it's actually in this language and not just using an English fallback
                     theOneLocalizationManager
                         .asyncGetTextInLang(i18nId, "", langName, "")
-                        .done(result => {
+                        .done((result) => {
                             if (result) {
                                 node.setAttribute("lang", langName);
                             } else {
@@ -462,7 +460,7 @@ export function showOrHideTool_click(chkbox) {
             "active\t" + chkbox.id + "\t0"
         );
         $("*[data-toolId]")
-            .filter(function() {
+            .filter(function () {
                 return $(this).attr("data-toolId") === tool;
             })
             .remove();
@@ -472,13 +470,13 @@ export function showOrHideTool_click(chkbox) {
 }
 
 export function restoreToolboxSettings() {
-    BloomApi.get("toolbox/settings", result => {
+    BloomApi.get("toolbox/settings", (result) => {
         savedSettings = result.data;
         const pageFrame = ToolBox.getPageFrame();
         const contentWin = pageFrame.contentWindow;
         if (contentWin && contentWin.document.readyState === "loading") {
             // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
-            $(contentWin.document).ready(e =>
+            $(contentWin.document).ready((e) =>
                 restoreToolboxSettingsWhenPageReady(result.data)
             );
             return;
@@ -504,7 +502,7 @@ function doWhenPageReady(action: () => void) {
         // Somehow, despite firing this function when the document is supposedly ready,
         // it may not really be ready when this is first called. If it doesn't even have a body yet,
         // we need to try again later.
-        setTimeout(e => doWhenPageReady(action), 100);
+        setTimeout((e) => doWhenPageReady(action), 100);
         return;
     }
     doWhenCkEditorReady(action);
@@ -519,7 +517,7 @@ function doWhenCkEditorReady(action: () => void) {
     doWhenCkEditorReadyCore({
         removers: removers,
         done: false,
-        action: action
+        action: action,
     });
 }
 
@@ -545,7 +543,7 @@ function doWhenCkEditorReadyCore(arg: {
                     arg.removers.push(
                         (<any>ToolBox.getPageFrame().contentWindow).CKEDITOR.on(
                             "instanceReady",
-                            e => {
+                            (e) => {
                                 doWhenCkEditorReadyCore(arg);
                             }
                         )
@@ -556,7 +554,7 @@ function doWhenCkEditorReadyCore(arg: {
             }
             if (!instance.instanceReady) {
                 arg.removers.push(
-                    instance.on("instanceReady", e => {
+                    instance.on("instanceReady", (e) => {
                         doWhenCkEditorReadyCore(arg);
                     })
                 );
@@ -568,7 +566,7 @@ function doWhenCkEditorReadyCore(arg: {
     if (!arg.done) {
         // We are the first call-back to find all ready! Any other editors invoking this should be ignored.
         arg.done = true; // ensures action only done once
-        arg.removers.map(r => r.removeListener()); // try to prevent future callbacks for this action
+        arg.removers.map((r) => r.removeListener()); // try to prevent future callbacks for this action
         arg.action();
     }
 }
@@ -658,7 +656,7 @@ function getToolElement(tool: ITool): HTMLElement | null {
         const toolName = ToolBox.addStringTool(tool.id());
         $("#toolbox")
             .find("> h3")
-            .each(function() {
+            .each(function () {
                 if ($(this).attr("data-toolId") === toolName) {
                     toolElement = this;
                     return false; // break from the each() loop
@@ -685,7 +683,7 @@ function setCurrentTool(toolID: string) {
     if (toolID) {
         let foundTool = false;
         // find the index of the tool whose "data-toolId" attribute equals the value of "currentTool"
-        accordionHeaders.each(function() {
+        accordionHeaders.each(function () {
             if ($(this).attr("data-toolId") === toolID) {
                 foundTool = true;
                 // break from the each() loop
@@ -701,10 +699,7 @@ function setCurrentTool(toolID: string) {
     }
     if (!toolID) {
         // Leave idx at 0, and update currentTool to the corresponding ID.
-        toolID = toolbox
-            .find("> h3")
-            .first()
-            .attr("data-toolId");
+        toolID = toolbox.find("> h3").first().attr("data-toolId");
     }
     if (idx >= accordionHeaders.length - 1) {
         // don't pick the More... tool, pick whatever happens to be first.
@@ -748,7 +743,7 @@ function getITool(toolId: string): ITool {
         toolId.indexOf("Tool") > -1
             ? toolId.substring(0, toolId.length - 4)
             : toolId; // strip off "Tool"
-    return (<any>masterToolList).find(tool => tool.id() === reactToolId);
+    return (<any>masterToolList).find((tool) => tool.id() === reactToolId);
 }
 
 /**
@@ -778,7 +773,7 @@ function beginAddTool(
         bookSettingsTool: "bookSettings/bookSettingsToolboxTool.html",
         toolboxSettingsTool:
             "toolboxSettingsTool/toolboxSettingsToolboxTool.html",
-        settingsTool: "settings/Settings.html"
+        settingsTool: "settings/Settings.html",
         // none for music: done in React
     };
     const subPathToPremadeHtml = subpath[toolId];
@@ -789,7 +784,7 @@ function beginAddTool(
         BloomApi.wrapAxios(
             axios
                 .get("/bloom/bookEdit/toolbox/" + subPathToPremadeHtml)
-                .then(result => {
+                .then((result) => {
                     loadToolboxToolText(result.data, toolId, openTool);
                     if (whenLoaded) {
                         whenLoaded();
@@ -858,9 +853,9 @@ function handleKeyboardInput(): void {
 
         const selection: Selection | null = page.contentWindow.getSelection();
         const anchor: Node | null = selection ? selection.anchorNode : null;
-        const active = anchor ? <HTMLDivElement>$(anchor)
-                  .closest("div")
-                  .get(0) : null;
+        const active = anchor
+            ? <HTMLDivElement>$(anchor).closest("div").get(0)
+            : null;
         if (
             !active ||
             (selection &&
@@ -1023,7 +1018,7 @@ function loadToolboxTool(
         let insertBefore = toolboxElt
             .children() // children() includes both the headers and the contents of the tools
             .filter(".ui-accordion-header") // we only want to sort this into the headers...
-            .filter(function() {
+            .filter(function () {
                 // Note that we aren't (as of 4.4) setting the "locale" of the browser to match the
                 // UI language. In my tests, it's stuck at "en-US" (navigator.language). But if we ever do
                 // set this, then this will do a better job of ordering. Meanwhile, no worse.
