@@ -1597,6 +1597,54 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void BringBookUpToDate_FixesOldCharacterStyleMarkup()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+<head>
+	<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+</head>
+<body>
+	<div class='bloom-page'>
+		<div class='bloom-page' id='guid2'>
+			<div class='marginBox'>
+				<div class='split-pane-component position-top' style='height: 100%'>
+					<div class='split-pane-component-inner'>
+						<div class='bloom-translationGroup bloom-trailingElement' data-default-languages='auto'>
+							<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+								<p><b><i>This is </i></b><b><i>a test!</i></b></p>
+								<p><b>Do you like green eggs and ham?</b>"+"\u00A0"+@" <b>I do not like them, Sam-I-am."+"\u00A0"+@"</b><b> I do not like green eggs and ham.</b></p>
+							</div>
+							<div style='' class='bloom-editable normal-style' contenteditable='true' lang='z'>
+								<p></p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>");
+
+			var book = CreateBook();
+			// Verify initial conditions.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-editable')]/p/b", 5);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-editable')]/p/b/i", 2);
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[contains(@class,'bloom-editable')]/p/strong");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[contains(@class,'bloom-editable')]/p/strong/em");
+
+			book.BringBookUpToDate(new NullProgress());
+			// Check that the problem reported in BL-8711 has been fixed.
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[contains(@class,'bloom-editable')]/p/b");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[contains(@class,'bloom-editable')]/p/b/i");
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-editable')]/p/strong", 2);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-editable')]/p/strong/em", 1);
+			Assert.That(book.RawDom.InnerXml, Does.Contain("<p><strong><em>This is a test!</em></strong></p>"), "new markup imposed preserving spaces");
+			Assert.That(book.RawDom.InnerXml, Does.Contain("<p><strong>Do you like green eggs and ham?\u00A0 I do not like them, Sam-I-am.\u00A0 I do not like green eggs and ham.</strong></p>"), "new markup imposed preserving sentence spacing");
+		}
+
+		[Test]
 		public void FixBookIdAndLineageIfNeeded_WithPageTemplateSourceBasicBook_SetsMissingLineageToBasicBook()
 		{
 			_bookDom = new HtmlDom(
