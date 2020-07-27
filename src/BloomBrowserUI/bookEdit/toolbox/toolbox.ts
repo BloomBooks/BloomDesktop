@@ -123,7 +123,7 @@ export class ToolBox {
                     if (event.keyCode >= 37 && event.keyCode <= 40) {
                         // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
                         // if all they did was move the cursor, we don't need to look at markup.
-                        console.log("skipping markup on arrow key");
+                        //console.log("skipping markup on arrow key");
                         return;
                     }
                     handleKeyboardInput();
