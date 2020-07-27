@@ -694,6 +694,12 @@ namespace Bloom.Api
 				// On developer machines, we can lose part of path earlier.  Try one more thing.
 				path = info.LocalPathWithoutQuery.Substring("/bloom/".Length);
 			}
+			// We no longer copy this file to the book folder.  For Bloom Desktop, we get it from browser/templates/...
+			// For Bloom Reader, bloom-player has its own copy.
+			if (!RobustFile.Exists(path) && Path.GetFileName(path) == PublishHelper.kSimpleComprehensionQuizJs)
+			{
+				path = Path.Combine(BloomFileLocator.FactoryTemplateBookDirectory, "Activity", PublishHelper.kSimpleComprehensionQuizJs);
+			}
 			if (!RobustFile.Exists(path))
 			{
 				if (ShouldReportFailedRequest(info, CurrentBook?.FolderPath))
