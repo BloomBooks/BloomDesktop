@@ -1,4 +1,4 @@
-﻿import { ITool } from "../toolbox";
+import { ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";
 import * as AudioRecorder from "./audioRecording";
 
