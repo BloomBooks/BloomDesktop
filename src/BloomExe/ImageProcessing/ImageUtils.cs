@@ -415,7 +415,11 @@ namespace Bloom.ImageProcessing
 					// If the image isn't jpeg (which it shouldn't be), and we can't be sure it's already
 					// opaque, change the image to be opaque.  As explained above, some PDF viewers don't
 					// handle transparent images very well.
-					if (!AppearsToBeJpeg(pi) && !IsIndexedAndOpaque(pi.Image))
+					// But the PDF should not be displaying the thumbnail or placeholder images, so leave
+					// them alone.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8700.
+					if (!AppearsToBeJpeg(pi) && !IsIndexedAndOpaque(pi.Image) &&
+						Path.GetFileName(path).ToLowerInvariant() != "thumbnail.png" &&
+						Path.GetFileName(path).ToLowerInvariant() != "placeholder.png")
 					{
 						RemoveTransparency(pi, path, progress);
 					}
