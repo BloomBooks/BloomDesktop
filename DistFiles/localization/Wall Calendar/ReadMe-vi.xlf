@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="wall.calendar">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="vi" state="needs-translation">About the Wall Calendar Template</target>
+        <target xml:lang="vi" state="translated">Về Template Lịch treo tường</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="vi" state="needs-translation">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</target>
+        <target xml:lang="vi" state="translated">Sử dụng template này, bạn có thể tạo ra Lịch 12 tháng khổ A5, với hình ảnh và câu trích dẫn ở đầu trang, ngày ở cuối trang. Lịch sẽ sử dụng tên tháng và ngày trong ngôn ngữ của bạn.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="vi" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="vi" state="translated">Hạn chế của phiên bản này</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="vi" state="needs-translation">Currently, you cannot make a "shell" for other languages to use.</target>
+        <target xml:lang="vi" state="translated">Hiện tại, bạn không thể tạo ra "shell" để ngôn ngữ khác sử dụng.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="vi" state="needs-translation">Credits</target>
+        <target xml:lang="vi" state="translated">Những người đóng góp</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="vi" state="needs-translation">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</target>
+        <target xml:lang="vi" state="translated">Cảm ơn Bruce Cox (SIL Cameroon) vì đã triển khai template này.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>

@@ -1019,6 +1019,18 @@
         <note xml:lang="en">OLD TEXT (before 3.9): Downloading update to {0} ({1}kb).</note>
         <target xml:lang="fr" state="final">Téléchargement en cours de la mise à jour vers {0} ({1}Ko)</target>
       </trans-unit>
+      <trans-unit id="ColorPicker.PercentTransparent" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">{0}% Transparent</source>
+        <note>ID: ColorPicker.PercentTransparent</note>
+        <note>This color has a particular percentage of transparency.</note>
+        <target xml:lang="fr" state="final">{0} % Transparent</target>
+      </trans-unit>
+      <trans-unit id="ColorPicker.New" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">New...</source>
+        <note>ID: ColorPicker.New</note>
+        <note>A background color selection that enables a color picker.</note>
+        <target xml:lang="fr" state="final">Nouveau...</target>
+      </trans-unit>
       <trans-unit id="Common.Advanced" approved="yes">
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
@@ -1055,6 +1067,11 @@
         <source xml:lang="en">Cancel</source>
         <note>ID: Common.Cancel</note>
         <target xml:lang="fr" state="final">Annuler</target>
+      </trans-unit>
+      <trans-unit id="Common.Delete">
+        <source xml:lang="en">Delete</source>
+        <note>ID: Common.Delete</note>
+        <target xml:lang="fr" state="translated">Supprimer</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
@@ -1377,6 +1394,12 @@
         <source xml:lang="en">Change Layout</source>
         <note>ID: EditTab.CustomPage.ChangeLayout</note>
         <target xml:lang="fr" state="final">Modifier la mise en page</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.HtmlWidget" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">HTML Widget</source>
+        <note>ID: EditTab.CustomPage.HtmlWidget</note>
+        <note>Describes where the user can select an interactive HTML page to insert into a book page (alternative to text, picture, or video)</note>
+        <target xml:lang="fr" state="final">Widget HTML</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true" approved="yes">
         <source xml:lang="en">or</source>
@@ -2230,19 +2253,28 @@
         <source xml:lang="en">White to Calico</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico</note>
         <note>A background color that is a gradient starting with white blending into calico color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
         <target xml:lang="fr" state="final">Blanc à Calico</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
         <source xml:lang="en">White to French Pass</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass</note>
         <note>A background color that is a gradient starting with white blending into the "French pass" color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
         <target xml:lang="fr" state="needs-translation">White to French Pass</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true" approved="yes">
         <source xml:lang="en">White to Portafino</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino</note>
         <note>A background color that is a gradient starting with white blending into the "Portafino" color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
         <target xml:lang="fr" state="final">Blanc à Portofino</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
+        <source xml:lang="en">Duplicate</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
+        <note>Tooltip for the bubble Duplicate icon</note>
+        <target xml:lang="fr" state="needs-translation">Duplicate</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Outer Outline Color</source>
@@ -2288,6 +2320,13 @@
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style does not have any bubble at all.</note>
         <target xml:lang="fr" state="translated">Texte Seulement</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.ShowTail" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Show Tail</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.ShowTail</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This checkbox indicates if a line tail should be shown or not.</note>
+        <target xml:lang="fr" state="final">Afficher la queue</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Speech" sil:dynamic="true">
         <source xml:lang="en">Speech</source>
@@ -2949,7 +2988,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true">
         <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
-        <target xml:lang="fr" state="needs-translation">If you import this recording, it will replace all the audio for this text box.</target>
+        <target xml:lang="fr" state="translated">Si vous importez cet enregistrement, il remplacera tout le son de cette zone de texte.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true" approved="yes">
         <source xml:lang="en">2) Look at the highlighted text</source>
@@ -3073,6 +3112,12 @@
         <note>ID: EditTab.UnlockBook.ToolTip</note>
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
         <target xml:lang="fr" state="final">Ce livre se présente en mode traduction uniquement. Si vous souhaitez apporter d’autres modifications, cliquez ici pour le déverrouiller temporairement.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Widget.ChooseWidget" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Choose Widget</source>
+        <note>ID: EditTab.Widget.ChooseWidget</note>
+        <note>User is supposed to choose a file containing HTML that can be embedded in an element of the book.</note>
+        <target xml:lang="fr" state="final">Choisir un Widget</target>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
@@ -3312,6 +3357,12 @@
         <source xml:lang="en">Training Videos</source>
         <note>ID: HelpMenu.trainingVideos</note>
         <target xml:lang="fr" state="final">Vidéos de formation</target>
+      </trans-unit>
+      <trans-unit id="ImageUtils.PreparingImage" approved="yes">
+        <source xml:lang="en">Preparing image: {0}</source>
+        <note>ID: ImageUtils.PreparingImage</note>
+        <note>{0} is a placeholder for the image filename</note>
+        <target xml:lang="fr" state="final">Préparation de l'image : {0}</target>
       </trans-unit>
       <trans-unit id="InstallProblem.BloomPdfMaker" approved="yes">
         <source xml:lang="en">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</source>
@@ -3732,19 +3783,19 @@
       <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">Sharing .bloomd Files</source>
         <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
-        <note />
+        <note/>
         <target xml:lang="fr" state="translated">Partage des fichiers .bloomd</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
         <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
         <note>ID: PublishTab.Android.BloomD.Hint</note>
-        <note />
+        <note/>
         <target xml:lang="fr" state="translated">Vous pouvez utiliser les applications de partage comme les e-mails, Dropbox et WhatsApp pour envoyer ton fichier .bloomd sur un appareil.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en"> USB is Difficult</source>
         <note>ID: PublishTab.Android.USB.Hint.Heading</note>
-        <note />
+        <note/>
         <target xml:lang="fr" state="translated"> Envoyer par USB est difficile</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
@@ -3752,22 +3803,22 @@
                             cable, install phone drivers on your computer, or
                             modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
-        <note />
-        <target xml:lang="fr" state="needs-translation">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</target>
+        <note/>
+        <target xml:lang="fr" state="translated">Pour envoyer via USB, vous aurez besoin d'un câble
+                            correct, installer des pilotes de téléphone sur votre ordinateur, et 
+                            modifier les paramètres sur votre téléphone.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">No Wi-Fi Network?</source>
         <note>ID: PublishTab.Android.WiFi.Hint.Heading</note>
-        <note />
+        <note/>
         <target xml:lang="fr" state="translated">Aucun réseau Wi-Fi ?</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
         <source xml:lang="en">There are several ways to start a temporary one.</source>
         <note>ID: </note>
         <note>This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network.</note>
-        <target xml:lang="fr" state="needs-translation">There are several ways to start a temporary one.</target>
+        <target xml:lang="fr" state="translated">Il y a plusieurs façons de démarrer un réseau temporaire.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About Motion Books</source>
@@ -4214,7 +4265,7 @@
         <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.</source>
         <note>ID: PublishTab.Epub.NoComicSupport</note>
         <note>The {0} will be replaced with the page number (or name of page). For example, it might be replaced by "1" or "Front Cover"</note>
-        <target xml:lang="fr" state="needs-translation">Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.</target>
+        <target xml:lang="fr" state="translated">Désolé, Bloom ne peut pas produire d'ePUB s'il y a des bulles de BD. La première bulle de BD est à la page {0}.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.OmittedPages">
         <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
@@ -4340,6 +4391,30 @@
         <source xml:lang="en">Notice</source>
         <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
         <target xml:lang="fr" state="final">Note</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.Failed">
+        <source xml:lang="en">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</source>
+        <note>ID: PublishTab.PDF.Error.Failed</note>
+        <note>Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character.</note>
+        <target xml:lang="fr" state="translated">Bloom n'a pas pu créer le fichier PDF ({0}).{1}{1}Détails : BloomPdfMaker (ligne de commande) n'a pas produit le document attendu.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.PrinterError">
+        <source xml:lang="en">Bloom requires access to a printer in order to make a PDF, even though you are not printing.  Windows gave this error when Bloom tried to access the default printer: {0}</source>
+        <note>ID: PublishTab.PDF.Error.PrinterError</note>
+        <note>Error message displayed in a message dialog box.  {0} is replaced by a Windows error message at runtime</note>
+        <target xml:lang="fr" state="translated">Bloom doit accéder à une imprimante pour faire un PDF, même si vous ne l'imprimez pas. Windows a signalé cette erreur lorsque Bloom a essayé d'accéder à l'imprimante par défaut : {0}</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.NoPrinter">
+        <source xml:lang="en">Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you might not have a printer set as the default.  Please go to Devices and Printers and select a printer as a default. If you don't have a real printer attached, just select the Microsoft XPS or PDF printers.</source>
+        <note>ID: PublishTab.PDF.Error.NoPrinter</note>
+        <note>Error message displayed in a message dialog box.</note>
+        <target xml:lang="fr" state="translated">Avec Bloom il faut avoir une imprimante sélectionnée sur cet ordinateur avant de pouvoir créer un PDF, même si vous ne l'imprimez pas. Il semble que vous n'ayez pas défini l'imprimante par défaut. Veuillez vous rendre sur Périphériques et Imprimantes et sélectionner une imprimante par défaut. Si vous n'avez pas d'imprimante réelle connectée, sélectionnez simplement l'imprimante Microsoft XPS ou PDF.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.TrySinglePage">
+        <source xml:lang="en">The book's images might have exceeded the amount of RAM memory available. Please turn on the "Use Less Memory" option which is slower but uses less memory.</source>
+        <note>ID: PublishTab.PDF.Error.TrySinglePage</note>
+        <note>Error message displayed in a message dialog box.</note>
+        <target xml:lang="fr" state="translated">Les images du livre ont peut-être dépassé la quantité de mémoire RAM disponible. Veuillez activer l'option "Utiliser moins de mémoire" qui est plus lente mais qui utilise moins de mémoire.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.BadPdf" approved="yes">
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
@@ -4742,7 +4817,7 @@
       <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
         <source xml:lang="en">Set Sign Language...</source>
         <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
-        <target xml:lang="fr" state="needs-translation">Set Sign Language...</target>
+        <target xml:lang="fr" state="translated">Définir la langue des signes...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
@@ -5278,7 +5353,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Bloom encountered an error and needs to quit</source>
         <note>ID: ReportProblemDialog.FatalTitle</note>
         <note>The title of the dialog after a Fatal error will cause Bloom to close.</note>
-        <target xml:lang="fr" state="needs-translation">Bloom encountered an error and needs to quit</target>
+        <target xml:lang="fr" state="translated">Bloom a rencontré une erreur et a besoin de quitter</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.FirstTime" approved="yes">
         <source xml:lang="en">First Time</source>
@@ -5290,7 +5365,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">How much has this happened?</source>
         <note>ID: ReportProblemDialog.HowMuch</note>
         <note>The label above the frequency slider.</note>
-        <target xml:lang="fr" state="needs-translation">How much has this happened?</target>
+        <target xml:lang="fr" state="translated">Combien de fois cela s'est passé ?</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.IncludeBookButton" approved="yes">
         <source xml:lang="en">Include Book '{0}'</source>
@@ -5339,7 +5414,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReportProblemDialog.PrivacyNotice">
         <source xml:lang="en">Bloom will include diagnostic information with your report. Your report will not be private.</source>
         <note>ID: ReportProblemDialog.PrivacyNotice</note>
-        <target xml:lang="fr" state="needs-translation">Bloom will include diagnostic information with your report. Your report will not be private.</target>
+        <target xml:lang="fr" state="translated">Bloom inclura des informations de diagnostic avec votre rapport. Votre rapport ne sera pas privé.</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.Quit">
         <source xml:lang="en">Quit</source>
@@ -5572,7 +5647,7 @@ Do you want to go ahead?</note>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
         <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
-        <target xml:lang="fr" state="needs-translation">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</target>
+        <target xml:lang="fr" state="translated">Une page interactive avec une question et quelques réponses. Fonctionne sur le web et avec Bloom Reader. Lorsqu'il est utilisé avec Bloom Reader, le tableau de bord de votre projet peut afficher des notes de compréhension agrégées.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Translation Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>

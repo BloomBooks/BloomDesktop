@@ -1019,6 +1019,18 @@
         <note xml:lang="en">OLD TEXT (before 3.9): Downloading update to {0} ({1}kb).</note>
         <target xml:lang="km" state="needs-translation">Downloading update to {0} ({1}K)</target>
       </trans-unit>
+      <trans-unit id="ColorPicker.PercentTransparent" sil:dynamic="true">
+        <source xml:lang="en">{0}% Transparent</source>
+        <note>ID: ColorPicker.PercentTransparent</note>
+        <note>This color has a particular percentage of transparency.</note>
+        <target xml:lang="km" state="needs-translation">{0}% Transparent</target>
+      </trans-unit>
+      <trans-unit id="ColorPicker.New" sil:dynamic="true">
+        <source xml:lang="en">New...</source>
+        <note>ID: ColorPicker.New</note>
+        <note>A background color selection that enables a color picker.</note>
+        <target xml:lang="km" state="needs-translation">New...</target>
+      </trans-unit>
       <trans-unit id="Common.Advanced">
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
@@ -1055,6 +1067,11 @@
         <source xml:lang="en">Cancel</source>
         <note>ID: Common.Cancel</note>
         <target xml:lang="km" state="final">លុបចោល</target>
+      </trans-unit>
+      <trans-unit id="Common.Delete">
+        <source xml:lang="en">Delete</source>
+        <note>ID: Common.Delete</note>
+        <target xml:lang="km" state="needs-translation">Delete</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
@@ -1377,6 +1394,12 @@
         <source xml:lang="en">Change Layout</source>
         <note>ID: EditTab.CustomPage.ChangeLayout</note>
         <target xml:lang="km" state="needs-translation">Change Layout</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.HtmlWidget" sil:dynamic="true">
+        <source xml:lang="en">HTML Widget</source>
+        <note>ID: EditTab.CustomPage.HtmlWidget</note>
+        <note>Describes where the user can select an interactive HTML page to insert into a book page (alternative to text, picture, or video)</note>
+        <target xml:lang="km" state="needs-translation">HTML Widget</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true">
         <source xml:lang="en">or</source>
@@ -2230,19 +2253,28 @@
         <source xml:lang="en">White to Calico</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico</note>
         <note>A background color that is a gradient starting with white blending into calico color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
         <target xml:lang="km" state="needs-translation">White to Calico</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
         <source xml:lang="en">White to French Pass</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass</note>
         <note>A background color that is a gradient starting with white blending into the "French pass" color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
         <target xml:lang="km" state="needs-translation">White to French Pass</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true">
         <source xml:lang="en">White to Portafino</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino</note>
         <note>A background color that is a gradient starting with white blending into the "Portafino" color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
         <target xml:lang="km" state="needs-translation">White to Portafino</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
+        <source xml:lang="en">Duplicate</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
+        <note>Tooltip for the bubble Duplicate icon</note>
+        <target xml:lang="km" state="needs-translation">Duplicate</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true">
         <source xml:lang="en">Outer Outline Color</source>
@@ -2288,6 +2320,13 @@
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style does not have any bubble at all.</note>
         <target xml:lang="km" state="needs-translation">Just Text</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.ShowTail" sil:dynamic="true">
+        <source xml:lang="en">Show Tail</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.ShowTail</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This checkbox indicates if a line tail should be shown or not.</note>
+        <target xml:lang="km" state="needs-translation">Show Tail</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Speech" sil:dynamic="true">
         <source xml:lang="en">Speech</source>
@@ -3074,6 +3113,12 @@
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
         <target xml:lang="km" state="needs-translation">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</target>
       </trans-unit>
+      <trans-unit id="EditTab.Widget.ChooseWidget" sil:dynamic="true">
+        <source xml:lang="en">Choose Widget</source>
+        <note>ID: EditTab.Widget.ChooseWidget</note>
+        <note>User is supposed to choose a file containing HTML that can be embedded in an element of the book.</note>
+        <target xml:lang="km" state="needs-translation">Choose Widget</target>
+      </trans-unit>
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
         <note>ID: Errors.BookProblem</note>
@@ -3312,6 +3357,12 @@
         <source xml:lang="en">Training Videos</source>
         <note>ID: HelpMenu.trainingVideos</note>
         <target xml:lang="km" state="needs-translation">Training Videos</target>
+      </trans-unit>
+      <trans-unit id="ImageUtils.PreparingImage">
+        <source xml:lang="en">Preparing image: {0}</source>
+        <note>ID: ImageUtils.PreparingImage</note>
+        <note>{0} is a placeholder for the image filename</note>
+        <target xml:lang="km" state="needs-translation">Preparing image: {0}</target>
       </trans-unit>
       <trans-unit id="InstallProblem.BloomPdfMaker">
         <source xml:lang="en">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</source>
@@ -4340,6 +4391,30 @@
         <source xml:lang="en">Notice</source>
         <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
         <target xml:lang="km" state="needs-translation">Notice</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.Failed">
+        <source xml:lang="en">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</source>
+        <note>ID: PublishTab.PDF.Error.Failed</note>
+        <note>Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character.</note>
+        <target xml:lang="km" state="needs-translation">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.PrinterError">
+        <source xml:lang="en">Bloom requires access to a printer in order to make a PDF, even though you are not printing.  Windows gave this error when Bloom tried to access the default printer: {0}</source>
+        <note>ID: PublishTab.PDF.Error.PrinterError</note>
+        <note>Error message displayed in a message dialog box.  {0} is replaced by a Windows error message at runtime</note>
+        <target xml:lang="km" state="needs-translation">Bloom requires access to a printer in order to make a PDF, even though you are not printing.  Windows gave this error when Bloom tried to access the default printer: {0}</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.NoPrinter">
+        <source xml:lang="en">Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you might not have a printer set as the default.  Please go to Devices and Printers and select a printer as a default. If you don't have a real printer attached, just select the Microsoft XPS or PDF printers.</source>
+        <note>ID: PublishTab.PDF.Error.NoPrinter</note>
+        <note>Error message displayed in a message dialog box.</note>
+        <target xml:lang="km" state="needs-translation">Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you might not have a printer set as the default.  Please go to Devices and Printers and select a printer as a default. If you don't have a real printer attached, just select the Microsoft XPS or PDF printers.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.TrySinglePage">
+        <source xml:lang="en">The book's images might have exceeded the amount of RAM memory available. Please turn on the "Use Less Memory" option which is slower but uses less memory.</source>
+        <note>ID: PublishTab.PDF.Error.TrySinglePage</note>
+        <note>Error message displayed in a message dialog box.</note>
+        <target xml:lang="km" state="needs-translation">The book's images might have exceeded the amount of RAM memory available. Please turn on the "Use Less Memory" option which is slower but uses less memory.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.BadPdf">
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
