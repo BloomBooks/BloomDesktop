@@ -27,18 +27,18 @@
         <source xml:lang="en">Some text is missing a recording for an image description on page {0}</source>
         <note>ID: AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="vi" state="needs-translation">Some text is missing a recording for an image description on page {0}</target>
+        <target xml:lang="vi" state="translated">Một số doạn văn thiếu phần ghi âm mô tả hình ảnh ở trang {0}</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AudioForAllText.MissingOnPage">
         <source xml:lang="en">Some text is missing a recording on page {0}</source>
         <note>ID: AccessibilityCheck.AudioForAllText.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="vi" state="needs-translation">Some text is missing a recording on page {0}</target>
+        <target xml:lang="vi" state="translated">Một số đoạn văn thiếu phần ghi âm ở trang {0}</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true">
         <source xml:lang="en">Bloom can automatically check these for you:</source>
         <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
-        <target xml:lang="vi" state="needs-translation">Bloom can automatically check these for you:</target>
+        <target xml:lang="vi" state="translated">Bloom có thể tự động kiểm tra những việc này giúp bạn:</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.Checklist" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checklist</source>
@@ -55,17 +55,17 @@
         <source xml:lang="en">Missing image description on page {0}</source>
         <note>ID: AccessibilityCheck.DescriptionsForAllImages.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="vi" state="needs-translation">Missing image description on page {0}</target>
+        <target xml:lang="vi" state="translated">Thiếu phần mô tả hình ảnh ở trang {0}</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.FindingAce" sil:dynamic="true">
         <source xml:lang="en">Finding Ace by DAISY on this computer...</source>
         <note>ID: AccessibilityCheck.FindingAce</note>
-        <target xml:lang="vi" state="needs-translation">Finding Ace by DAISY on this computer...</target>
+        <target xml:lang="vi" state="translated">Đang tìm kiếm Ace bởi DAISY trên máy tính này...</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.FoundAce" sil:dynamic="true">
         <source xml:lang="en">Found.</source>
         <note>ID: AccessibilityCheck.FoundAce</note>
-        <target xml:lang="vi" state="needs-translation">Found.</target>
+        <target xml:lang="vi" state="translated">Tìm thấy.</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true">
         <source xml:lang="en">Learn About Accessibility</source>
@@ -107,7 +107,7 @@
       <trans-unit id="AccessibilityCheck.ManualChecksHeading" sil:dynamic="true">
         <source xml:lang="en">You need to check these yourself:</source>
         <note>ID: AccessibilityCheck.ManualChecksHeading</note>
-        <target xml:lang="vi" state="translated">Bạn cần phải tự mình kiểm tra:</target>
+        <target xml:lang="vi" state="translated">Bạn cần phải tự kiểm tra:</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true">
         <source xml:lang="en">No essential information by color</source>
@@ -226,7 +226,7 @@
       <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true">
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
         <note>ID: BookEditor.FormattingDisabled</note>
-        <target xml:lang="vi" state="needs-translation">Sorry, Reader Templates do not allow changes to formatting.</target>
+        <target xml:lang="vi" state="translated">Xin lỗi, Reader Templates không cho phép thay đổi định dạng.</target>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yCertifier">
         <source xml:lang="en">Level certified by</source>
@@ -297,12 +297,12 @@
       <trans-unit id="BookMetadata.License">
         <source xml:lang="en">License</source>
         <note>ID: BookMetadata.License</note>
-        <target xml:lang="vi" state="needs-translation">License</target>
+        <target xml:lang="vi" state="translated">Bản quyền</target>
       </trans-unit>
       <trans-unit id="BookMetadata.metapicture">
         <source xml:lang="en">Picture</source>
         <note>ID: BookMetadata.metapicture</note>
-        <target xml:lang="vi" state="needs-translation">Picture</target>
+        <target xml:lang="vi" state="translated">Hình ảnh</target>
       </trans-unit>
       <trans-unit id="BookMetadata.motionSimulationHazard">
         <source xml:lang="en">Motion Simulation Hazard</source>
@@ -312,48 +312,48 @@
       <trans-unit id="BookMetadata.name">
         <source xml:lang="en">Name</source>
         <note>ID: BookMetadata.name</note>
-        <target xml:lang="vi" state="needs-translation">Name</target>
+        <target xml:lang="vi" state="translated">Tên</target>
       </trans-unit>
       <trans-unit id="BookMetadata.numberOfPages">
         <source xml:lang="en">Number of pages</source>
         <note>ID: BookMetadata.numberOfPages</note>
-        <target xml:lang="vi" state="needs-translation">Number of pages</target>
+        <target xml:lang="vi" state="translated">Số trang</target>
       </trans-unit>
       <trans-unit id="BookMetadata.signLanguage">
         <source xml:lang="en">Sign Language</source>
         <note>ID: BookMetadata.signLanguage</note>
-        <target xml:lang="vi" state="needs-translation">Sign Language</target>
+        <target xml:lang="vi" state="translated">Ngôn ngữ Ký hiệu</target>
       </trans-unit>
       <trans-unit id="BookMetadata.subjects">
         <source xml:lang="en">Subjects</source>
         <note>ID: BookMetadata.subjects</note>
-        <target xml:lang="vi" state="needs-translation">Subjects</target>
+        <target xml:lang="vi" state="translated">Chủ đề</target>
       </trans-unit>
       <trans-unit id="BookMetadata.typicalAgeRange">
         <source xml:lang="en">Typical age range</source>
         <note>ID: BookMetadata.typicalAgeRange</note>
-        <target xml:lang="vi" state="needs-translation">Typical age range</target>
+        <target xml:lang="vi" state="translated">Độ tuổi đặc trưng</target>
       </trans-unit>
       <trans-unit id="BookMetadata.WhatsThis" sil:dynamic="true">
         <source xml:lang="en">What's this?</source>
         <note>ID: BookMetadata.WhatsThis</note>
         <note>minimal question indicating a link to information</note>
-        <target xml:lang="vi" state="needs-translation">What's this?</target>
+        <target xml:lang="vi" state="translated">Đây là gì?</target>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="vi" state="needs-translation">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</target>
+        <target xml:lang="vi" state="translated">Bloom gặp vấn đề khi 'đọc' quyển sách này và đang phục hồi một ổ sao lưu dữ liệu gần nhất. Vui lòng kiểm tra lại những thay đổi trong quyển sách này. Nếu vấn đề này xảy ra mà không có lý do rõ ràng, vui lòng click vào chỗ Chi tiết bên dưới để báo cho chúng tôi biết.</target>
       </trans-unit>
       <trans-unit id="BookStorage.FolderMoved">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
         <note>ID: BookStorage.FolderMoved</note>
-        <target xml:lang="vi" state="needs-translation">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</target>
+        <target xml:lang="vi" state="translated">Có vẻ như phần nào đó trong đường dẫn đến ổ thư mục của quyển sách này đã bị di chuyển hay đổi tên. Vì vậy, Bloom không thể lưu lại những thay đổi của bạn vào trang này, và bây giờ cần phải thoát ra. Nếu bạn không đổi tên hay di chuyển, vui lòng click vào chỗ Chi tiết bên dưới và báo vấn đề này cho chuyên viên phần mềm.</target>
       </trans-unit>
       <trans-unit id="Browser.CopyTroubleshootingInfo">
         <source xml:lang="en">Copy Troubleshooting Information</source>
         <note>ID: Browser.CopyTroubleshootingInfo</note>
-        <target xml:lang="vi" state="needs-translation">Copy Troubleshooting Information</target>
+        <target xml:lang="vi" state="translated">Sao chép Thông tin để Xử lý vấn đề</target>
       </trans-unit>
       <trans-unit id="Browser.OpenPageInFirefox">
         <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
@@ -369,61 +369,61 @@
         <source xml:lang="en">About the Bloom Enterprise Service</source>
         <note>ID: CollectionSettingsDialog.AboutBloomEnterprise</note>
         <note>New string in Bloom 4.1</note>
-        <target xml:lang="vi" state="needs-translation">About the Bloom Enterprise Service</target>
+        <target xml:lang="vi" state="translated">Về Dịch vụ Bloom Doanh nghiệp</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
         <source xml:lang="en">Advanced Program Settings</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel</note>
-        <target xml:lang="vi" state="needs-translation">Advanced Program Settings</target>
+        <target xml:lang="vi" state="translated">Thiết lập Chương trình Cao cấp</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
         <source xml:lang="en">Automatically update Bloom</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate</note>
-        <target xml:lang="vi" state="needs-translation">Automatically update Bloom</target>
+        <target xml:lang="vi" state="translated">Tự động Cập nhật Bloom</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
         <source xml:lang="en">Show Experimental Features</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
         <note xml:lang="en">OLD TEXT (before 4.3): Show Experimental Commands</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Show Experimental Commands (e.g. Export XML for InDesign)</note>
-        <target xml:lang="vi" state="needs-translation">Show Experimental Features</target>
+        <target xml:lang="vi" state="translated">Bật Tính năng Thử nghiệm</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
         <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates</note>
-        <target xml:lang="vi" state="needs-translation">Show Experimental Templates (e.g. Picture Dictionary)</target>
+        <target xml:lang="vi" state="translated">Bật Template Thử nghiệm (ví dụ Từ điển Hình ảnh)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate1</note>
-        <target xml:lang="vi" state="needs-translation">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</target>
+        <target xml:lang="vi" state="translated">Bloom đang chuyển phông chữ mặc định cho {0} thành phông "Andika New Basic" mới.</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true">
         <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate2</note>
-        <target xml:lang="vi" state="needs-translation">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</target>
+        <target xml:lang="vi" state="translated">Nó sẽ cải thiện sản phẩm in cho hầu hết các ngôn ngữ. Nếu ngôn ngữ của bạn là một trong số ít cần "Andika", bạn có thể chuyển nó lại ở Thiết lập : Làm Sách.</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
-        <target xml:lang="vi" state="needs-translation">Book Making</target>
+        <target xml:lang="vi" state="translated">Làm Sách</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding">
         <source xml:lang="en">Branding</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
         <note xml:lang="en">Used in 3.9 and 4.0; not used in 4.1</note>
-        <target xml:lang="vi" state="needs-translation">Branding</target>
+        <target xml:lang="vi" state="translated">Đóng dấu Thương hiệu</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
-        <target xml:lang="vi" state="needs-translation">None</target>
+        <target xml:lang="vi" state="translated">Không có</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
         <note>{0} is a language name.</note>
-        <target xml:lang="vi" state="needs-translation">Default Font for {0}</target>
+        <target xml:lang="vi" state="translated">Phông chữ mặc định cho {0}</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
         <source xml:lang="en">Front/Back Matter Pack</source>
@@ -434,57 +434,57 @@
         <source xml:lang="en">Device</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device</note>
         <note>Name of a Front/Back Matter Pack used for Bloom Reader</note>
-        <target xml:lang="vi" state="needs-translation">Device</target>
+        <target xml:lang="vi" state="translated">Thiết bị</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
-        <target xml:lang="vi" state="needs-translation">Paper Saver</target>
+        <target xml:lang="vi" state="translated">Tiết kiệm giấy</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG" sil:dynamic="true">
         <source xml:lang="en">SIL-PNG</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.SIL-PNG</note>
         <note>Name of a Front/Back Matter Pack that has SIL Papua New Guinea customizations</note>
-        <target xml:lang="vi" state="needs-translation">SIL-PNG</target>
+        <target xml:lang="vi" state="translated">SIL-PNG</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Super Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Super Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts title page on the inside of the front cover and credits on the inside of the back cover</note>
-        <target xml:lang="vi" state="needs-translation">Super Paper Saver</target>
+        <target xml:lang="vi" state="translated">Siêu tiết kiệm giấy</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true">
         <source xml:lang="en">Traditional</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional</note>
         <note>Name of the default Front/Back Matter Pack</note>
-        <target xml:lang="vi" state="needs-translation">Traditional</target>
+        <target xml:lang="vi" state="translated">Truyền thống</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video" sil:dynamic="true">
         <source xml:lang="en">Video</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video</note>
         <note>Name of a Front/Back Matter Pack that is used for talking/animating experiences</note>
-        <target xml:lang="vi" state="needs-translation">Video</target>
+        <target xml:lang="vi" state="translated">Video</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" sil:dynamic="true">
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
-        <target xml:lang="vi" state="needs-translation">Arabic-Indic</target>
+        <target xml:lang="vi" state="translated">Ả Rập - Ấn Độ</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian" sil:dynamic="true">
         <source xml:lang="en">Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian</note>
-        <target xml:lang="vi" state="needs-translation">Armenian</target>
+        <target xml:lang="vi" state="translated">Tiếng Ác-mê-ni</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali" sil:dynamic="true">
         <source xml:lang="en">Bengali</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali</note>
-        <target xml:lang="vi" state="needs-translation">Bengali</target>
+        <target xml:lang="vi" state="translated">Tiếng Bengali</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian" sil:dynamic="true">
         <source xml:lang="en">Cambodian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian</note>
-        <target xml:lang="vi" state="needs-translation">Cambodian</target>
+        <target xml:lang="vi" state="translated">Tiếng Cam-pu-chia</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal" sil:dynamic="true">
         <source xml:lang="en">Cjk-Decimal</source>
@@ -1019,6 +1019,18 @@
         <note xml:lang="en">OLD TEXT (before 3.9): Downloading update to {0} ({1}kb).</note>
         <target xml:lang="vi" state="needs-translation">Downloading update to {0} ({1}K)</target>
       </trans-unit>
+      <trans-unit id="ColorPicker.PercentTransparent" sil:dynamic="true">
+        <source xml:lang="en">{0}% Transparent</source>
+        <note>ID: ColorPicker.PercentTransparent</note>
+        <note>This color has a particular percentage of transparency.</note>
+        <target xml:lang="vi" state="translated">{0}% Trong suốt</target>
+      </trans-unit>
+      <trans-unit id="ColorPicker.New" sil:dynamic="true">
+        <source xml:lang="en">New...</source>
+        <note>ID: ColorPicker.New</note>
+        <note>A background color selection that enables a color picker.</note>
+        <target xml:lang="vi" state="translated">Mới...</target>
+      </trans-unit>
       <trans-unit id="Common.Advanced">
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
@@ -1055,6 +1067,11 @@
         <source xml:lang="en">Cancel</source>
         <note>ID: Common.Cancel</note>
         <target xml:lang="vi" state="needs-translation">Cancel</target>
+      </trans-unit>
+      <trans-unit id="Common.Delete">
+        <source xml:lang="en">Delete</source>
+        <note>ID: Common.Delete</note>
+        <target xml:lang="vi" state="needs-translation">Delete</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
@@ -1377,6 +1394,12 @@
         <source xml:lang="en">Change Layout</source>
         <note>ID: EditTab.CustomPage.ChangeLayout</note>
         <target xml:lang="vi" state="needs-translation">Change Layout</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.HtmlWidget" sil:dynamic="true">
+        <source xml:lang="en">HTML Widget</source>
+        <note>ID: EditTab.CustomPage.HtmlWidget</note>
+        <note>Describes where the user can select an interactive HTML page to insert into a book page (alternative to text, picture, or video)</note>
+        <target xml:lang="vi" state="needs-translation">HTML Widget</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true">
         <source xml:lang="en">or</source>
@@ -1787,17 +1810,17 @@
       <trans-unit id="EditTab.FrontMatter.EditOriginalTitleCaption" sil:dynamic="true">
         <source xml:lang="en">Edit Original Title</source>
         <note>ID: EditTab.FrontMatter.EditOriginalTitleCaption</note>
-        <target xml:lang="vi" state="needs-translation">Edit Original Title</target>
+        <target xml:lang="vi" state="translated">Sửa tên gốc</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.EditOriginalTitleLabel" sil:dynamic="true">
         <source xml:lang="en">Original Title</source>
         <note>ID: EditTab.FrontMatter.EditOriginalTitleLabel</note>
-        <target xml:lang="vi" state="needs-translation">Original Title</target>
+        <target xml:lang="vi" state="translated">Tên gốc</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.EditOriginalTitlePlaceholder" sil:dynamic="true">
         <source xml:lang="en">click to edit original title</source>
         <note>ID: EditTab.FrontMatter.EditOriginalTitlePlaceholder</note>
-        <target xml:lang="vi" state="needs-translation">click to edit original title</target>
+        <target xml:lang="vi" state="translated">click để sửa tên gốc</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
@@ -2230,19 +2253,28 @@
         <source xml:lang="en">White to Calico</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico</note>
         <note>A background color that is a gradient starting with white blending into calico color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
         <target xml:lang="vi" state="needs-translation">White to Calico</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
         <source xml:lang="en">White to French Pass</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass</note>
         <note>A background color that is a gradient starting with white blending into the "French pass" color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
         <target xml:lang="vi" state="needs-translation">White to French Pass</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true">
         <source xml:lang="en">White to Portafino</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino</note>
         <note>A background color that is a gradient starting with white blending into the "Portafino" color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
         <target xml:lang="vi" state="needs-translation">White to Portafino</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
+        <source xml:lang="en">Duplicate</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
+        <note>Tooltip for the bubble Duplicate icon</note>
+        <target xml:lang="vi" state="needs-translation">Duplicate</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true">
         <source xml:lang="en">Outer Outline Color</source>
@@ -2288,6 +2320,13 @@
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style does not have any bubble at all.</note>
         <target xml:lang="vi" state="needs-translation">Just Text</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.ShowTail" sil:dynamic="true">
+        <source xml:lang="en">Show Tail</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.ShowTail</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This checkbox indicates if a line tail should be shown or not.</note>
+        <target xml:lang="vi" state="needs-translation">Show Tail</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Speech" sil:dynamic="true">
         <source xml:lang="en">Speech</source>
@@ -3074,6 +3113,12 @@
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
         <target xml:lang="vi" state="needs-translation">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</target>
       </trans-unit>
+      <trans-unit id="EditTab.Widget.ChooseWidget" sil:dynamic="true">
+        <source xml:lang="en">Choose Widget</source>
+        <note>ID: EditTab.Widget.ChooseWidget</note>
+        <note>User is supposed to choose a file containing HTML that can be embedded in an element of the book.</note>
+        <target xml:lang="vi" state="needs-translation">Choose Widget</target>
+      </trans-unit>
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
         <note>ID: Errors.BookProblem</note>
@@ -3312,6 +3357,12 @@
         <source xml:lang="en">Training Videos</source>
         <note>ID: HelpMenu.trainingVideos</note>
         <target xml:lang="vi" state="needs-translation">Training Videos</target>
+      </trans-unit>
+      <trans-unit id="ImageUtils.PreparingImage">
+        <source xml:lang="en">Preparing image: {0}</source>
+        <note>ID: ImageUtils.PreparingImage</note>
+        <note>{0} is a placeholder for the image filename</note>
+        <target xml:lang="vi" state="needs-translation">Preparing image: {0}</target>
       </trans-unit>
       <trans-unit id="InstallProblem.BloomPdfMaker">
         <source xml:lang="en">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</source>
@@ -4340,6 +4391,30 @@
         <source xml:lang="en">Notice</source>
         <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
         <target xml:lang="vi" state="needs-translation">Notice</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.Failed">
+        <source xml:lang="en">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</source>
+        <note>ID: PublishTab.PDF.Error.Failed</note>
+        <note>Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character.</note>
+        <target xml:lang="vi" state="needs-translation">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.PrinterError">
+        <source xml:lang="en">Bloom requires access to a printer in order to make a PDF, even though you are not printing.  Windows gave this error when Bloom tried to access the default printer: {0}</source>
+        <note>ID: PublishTab.PDF.Error.PrinterError</note>
+        <note>Error message displayed in a message dialog box.  {0} is replaced by a Windows error message at runtime</note>
+        <target xml:lang="vi" state="needs-translation">Bloom requires access to a printer in order to make a PDF, even though you are not printing.  Windows gave this error when Bloom tried to access the default printer: {0}</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.NoPrinter">
+        <source xml:lang="en">Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you might not have a printer set as the default.  Please go to Devices and Printers and select a printer as a default. If you don't have a real printer attached, just select the Microsoft XPS or PDF printers.</source>
+        <note>ID: PublishTab.PDF.Error.NoPrinter</note>
+        <note>Error message displayed in a message dialog box.</note>
+        <target xml:lang="vi" state="needs-translation">Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you might not have a printer set as the default.  Please go to Devices and Printers and select a printer as a default. If you don't have a real printer attached, just select the Microsoft XPS or PDF printers.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.TrySinglePage">
+        <source xml:lang="en">The book's images might have exceeded the amount of RAM memory available. Please turn on the "Use Less Memory" option which is slower but uses less memory.</source>
+        <note>ID: PublishTab.PDF.Error.TrySinglePage</note>
+        <note>Error message displayed in a message dialog box.</note>
+        <target xml:lang="vi" state="needs-translation">The book's images might have exceeded the amount of RAM memory available. Please turn on the "Use Less Memory" option which is slower but uses less memory.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.BadPdf">
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>

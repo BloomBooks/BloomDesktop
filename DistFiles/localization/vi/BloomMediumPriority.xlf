@@ -8,7 +8,7 @@
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="vi" state="needs-translation">Special Sentence-Ending Punctuation</target>
+        <target xml:lang="vi" state="translated">Câu đặc biệt - Dấu câu</target>
       </trans-unit>
     </body>
   </file>
