@@ -5,7 +5,7 @@
       <trans-unit id="AccessibilityCheck.AccessibilityChecker" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checker</source>
         <note>ID: AccessibilityCheck.AccessibilityChecker</note>
-        <target xml:lang="pt-PT" state="needs-translation">Accessibility Checker</target>
+        <target xml:lang="pt-PT" state="translated">Verificador de acessibilidade</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.ACEByDaisy" sil:dynamic="true">
         <source xml:lang="en">Ace by DAISY Automated Checks</source>
@@ -13,49 +13,49 @@
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
         <target xml:lang="pt-PT" state="needs-translation">Ace by DAISY Automated Checks</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.audioForAllText" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.audioForAllText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Audio for all text</source>
         <note>ID: AccessibilityCheck.audioForAllText</note>
-        <target xml:lang="pt-PT" state="needs-translation">Audio for all text</target>
+        <target xml:lang="pt-PT" state="final">Áudio para todo o texto</target>
       </trans-unit>
-      <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions" sil:dynamic="true">
+      <trans-unit id="AccessibilityCheck.audioForAllImageDescriptions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Audio for all image descriptions</source>
         <note>ID: AccessibilityCheck.audioForAllImageDescriptions</note>
-        <target xml:lang="pt-PT" state="needs-translation">Audio for all image descriptions</target>
+        <target xml:lang="pt-PT" state="final">Áudio para todas as descrições de imagem</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage">
         <source xml:lang="en">Some text is missing a recording for an image description on page {0}</source>
         <note>ID: AccessibilityCheck.AudioForAllImageDescriptions.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Some text is missing a recording for an image description on page {0}</target>
+        <target xml:lang="pt-PT" state="translated">Algum texto está faltando na gravação de uma descrição dE imagem na página {0}</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AudioForAllText.MissingOnPage">
         <source xml:lang="en">Some text is missing a recording on page {0}</source>
         <note>ID: AccessibilityCheck.AudioForAllText.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Some text is missing a recording on page {0}</target>
+        <target xml:lang="pt-PT" state="translated">Algum texto está faltando uma gravação na página {0}</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.AutomaticChecksHeading" sil:dynamic="true">
         <source xml:lang="en">Bloom can automatically check these for you:</source>
         <note>ID: AccessibilityCheck.AutomaticChecksHeading</note>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom can automatically check these for you:</target>
+        <target xml:lang="pt-PT" state="translated">Bloom pode verificar isso automaticamente para você:</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.Checklist" sil:dynamic="true">
         <source xml:lang="en">Accessibility Checklist</source>
         <note>ID: AccessibilityCheck.Checklist</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Accessibility Checklist</target>
+        <target xml:lang="pt-PT" state="translated">Verificador de acessibilidade</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.descriptionsForAllImages" sil:dynamic="true">
         <source xml:lang="en">Descriptions for all images</source>
         <note>ID: AccessibilityCheck.descriptionsForAllImages</note>
-        <target xml:lang="pt-PT" state="needs-translation">Descriptions for all images</target>
+        <target xml:lang="pt-PT" state="translated">Descrições para todas as imagens</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.DescriptionsForAllImages.MissingOnPage">
         <source xml:lang="en">Missing image description on page {0}</source>
         <note>ID: AccessibilityCheck.DescriptionsForAllImages.MissingOnPage</note>
         <note>The {0} is where the page number will be inserted.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Missing image description on page {0}</target>
+        <target xml:lang="pt-PT" state="translated">Faltando descrição da imagem na página {0}</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.FindingAce" sil:dynamic="true">
         <source xml:lang="en">Finding Ace by DAISY on this computer...</source>
@@ -65,13 +65,13 @@
       <trans-unit id="AccessibilityCheck.FoundAce" sil:dynamic="true">
         <source xml:lang="en">Found.</source>
         <note>ID: AccessibilityCheck.FoundAce</note>
-        <target xml:lang="pt-PT" state="needs-translation">Found.</target>
+        <target xml:lang="pt-PT" state="translated">Encontrado.</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout" sil:dynamic="true">
         <source xml:lang="en">Learn About Accessibility</source>
         <note>ID: AccessibilityCheck.LearnAbout</note>
         <note>Used as the name on a tab of the Accessibility Checks screen.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Learn About Accessibility</target>
+        <target xml:lang="pt-PT" state="translated">Saiba mais sobre acessibilidade</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout.AccessibleBookDefinition" sil:dynamic="true">
         <source xml:lang="en">"Accessible Books" are books that work well for people with impaired vision. With the ePUB format*, it is possible to make "Born Accessible" books that work well for everyone**, regardless of vision. Bloom has the following tools to help you create these books:</source>
@@ -82,7 +82,7 @@
       <trans-unit id="AccessibilityCheck.LearnAbout.CheckerHas" sil:dynamic="true">
         <source xml:lang="en">This tool, the Accessibility Checker, has:</source>
         <note>ID: AccessibilityCheck.LearnAbout.CheckerHas</note>
-        <target xml:lang="pt-PT" state="needs-translation">This tool, the Accessibility Checker, has:</target>
+        <target xml:lang="pt-PT" state="translated">Esta ferramenta, o Verificador de Acessibilidade, tem:</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout.AccessibilityCheckList" sil:dynamic="true">
         <source xml:lang="en">The "Accessibility Checklist" which is where Bloom checks over your book and points you to anything that needs attention, especially for speakers of minority languages.</source>
@@ -97,7 +97,7 @@
       <trans-unit id="AccessibilityCheck.LearnAbout.EpubDefinition" sil:dynamic="true">
         <source xml:lang="en">definition of the ePUB format</source>
         <note>ID: AccessibilityCheck.LearnAbout.EpubDefinition</note>
-        <target xml:lang="pt-PT" state="needs-translation">definition of the ePUB format</target>
+        <target xml:lang="pt-PT" state="translated">definição do formato ePUB</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout.Footnote" sil:dynamic="true">
         <source xml:lang="en">While the ideal is that a single book can serve everyone, the ePUB standard and ePUB readers do not actually support that. They currently only work for blind people who speak a language that is supported by "Text to Speech" (TTS) systems. At this time, TTS is only available for large or commercially interesting languages. Until the standard and accessible readers improve, it is necessary to make special versions of accessible books for minority language speakers. For blind readers to hear the image descriptions, we need to put something special on the page. In this version of Bloom, you do this by clicking the "Include image descriptions on page" checkbox in the Publish:ePUB screen. Future versions may have other options in this area.</source>
@@ -107,12 +107,12 @@
       <trans-unit id="AccessibilityCheck.ManualChecksHeading" sil:dynamic="true">
         <source xml:lang="en">You need to check these yourself:</source>
         <note>ID: AccessibilityCheck.ManualChecksHeading</note>
-        <target xml:lang="pt-PT" state="needs-translation">You need to check these yourself:</target>
+        <target xml:lang="pt-PT" state="translated">Você mesmo precisa verificá-los:</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.noEssentialInfoByColor" sil:dynamic="true">
         <source xml:lang="en">No essential information by color</source>
         <note>ID: AccessibilityCheck.noEssentialInfoByColor</note>
-        <target xml:lang="pt-PT" state="needs-translation">No essential information by color</target>
+        <target xml:lang="pt-PT" state="translated">Nenhuma informação essencial por cor</target>
       </trans-unit>
       <trans-unit id="AccessibilityCheck.WindowTitle">
         <source xml:lang="en">Bloom Accessibility Checker</source>
@@ -241,28 +241,28 @@
       <trans-unit id="BookMetadata.a11yLevel">
         <source xml:lang="en">Accessibility level</source>
         <note>ID: BookMetadata.a11yLevel</note>
-        <target xml:lang="pt-PT" state="needs-translation">Accessibility level</target>
+        <target xml:lang="pt-PT" state="translated">Nível de acessibilidade</target>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevelNone" sil:dynamic="true">
         <source xml:lang="en">None</source>
         <note>ID: BookMetadata.a11yLevelNone</note>
         <note>indicates that no level of accessibility conformance is claimed</note>
-        <target xml:lang="pt-PT" state="needs-translation">None</target>
+        <target xml:lang="pt-PT" state="translated">Nenhum</target>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevelA" sil:dynamic="true">
         <source xml:lang="en">Level A conformance</source>
         <note>ID: BookMetadata.a11yLevelA</note>
-        <target xml:lang="pt-PT" state="needs-translation">Level A conformance</target>
+        <target xml:lang="pt-PT" state="translated">Conformidade Nível A</target>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevelAA" sil:dynamic="true">
         <source xml:lang="en">Level AA conformance</source>
         <note>ID: BookMetadata.a11yLevelAA</note>
-        <target xml:lang="pt-PT" state="needs-translation">Level AA conformance</target>
+        <target xml:lang="pt-PT" state="translated">Conformidade Nível AA</target>
       </trans-unit>
       <trans-unit id="BookMetadata.a11yLevelAAA" sil:dynamic="true">
         <source xml:lang="en">Level AAA conformance</source>
         <note>ID: BookMetadata.a11yLevelAAA</note>
-        <target xml:lang="pt-PT" state="needs-translation">Level AAA conformance</target>
+        <target xml:lang="pt-PT" state="translated">Conformidade Nível AAA</target>
       </trans-unit>
       <trans-unit id="BookMetadata.alternativeText">
         <source xml:lang="en">Has Image Descriptions</source>
@@ -272,7 +272,7 @@
       <trans-unit id="BookMetadata.author">
         <source xml:lang="en">Author</source>
         <note>ID: BookMetadata.author</note>
-        <target xml:lang="pt-PT" state="needs-translation">Author</target>
+        <target xml:lang="pt-PT" state="translated">Autor</target>
       </trans-unit>
       <trans-unit id="BookMetadata.flashingHazard">
         <source xml:lang="en">Flashing Hazard</source>
@@ -287,7 +287,7 @@
       <trans-unit id="BookMetadata.inLanguage">
         <source xml:lang="en">Language</source>
         <note>ID: BookMetadata.inLanguage</note>
-        <target xml:lang="pt-PT" state="needs-translation">Language</target>
+        <target xml:lang="pt-PT" state="translated">Idioma</target>
       </trans-unit>
       <trans-unit id="BookMetadata.level">
         <source xml:lang="en">Reading level</source>
@@ -297,12 +297,12 @@
       <trans-unit id="BookMetadata.License">
         <source xml:lang="en">License</source>
         <note>ID: BookMetadata.License</note>
-        <target xml:lang="pt-PT" state="needs-translation">License</target>
+        <target xml:lang="pt-PT" state="translated">Licença</target>
       </trans-unit>
       <trans-unit id="BookMetadata.metapicture">
         <source xml:lang="en">Picture</source>
         <note>ID: BookMetadata.metapicture</note>
-        <target xml:lang="pt-PT" state="needs-translation">Picture</target>
+        <target xml:lang="pt-PT" state="translated">Imagem</target>
       </trans-unit>
       <trans-unit id="BookMetadata.motionSimulationHazard">
         <source xml:lang="en">Motion Simulation Hazard</source>
@@ -312,33 +312,33 @@
       <trans-unit id="BookMetadata.name">
         <source xml:lang="en">Name</source>
         <note>ID: BookMetadata.name</note>
-        <target xml:lang="pt-PT" state="needs-translation">Name</target>
+        <target xml:lang="pt-PT" state="translated">Nome</target>
       </trans-unit>
       <trans-unit id="BookMetadata.numberOfPages">
         <source xml:lang="en">Number of pages</source>
         <note>ID: BookMetadata.numberOfPages</note>
-        <target xml:lang="pt-PT" state="needs-translation">Number of pages</target>
+        <target xml:lang="pt-PT" state="translated">Número de páginas</target>
       </trans-unit>
       <trans-unit id="BookMetadata.signLanguage">
         <source xml:lang="en">Sign Language</source>
         <note>ID: BookMetadata.signLanguage</note>
-        <target xml:lang="pt-PT" state="needs-translation">Sign Language</target>
+        <target xml:lang="pt-PT" state="translated">Língua de Sinais</target>
       </trans-unit>
       <trans-unit id="BookMetadata.subjects">
         <source xml:lang="en">Subjects</source>
         <note>ID: BookMetadata.subjects</note>
-        <target xml:lang="pt-PT" state="needs-translation">Subjects</target>
+        <target xml:lang="pt-PT" state="translated">Assuntos</target>
       </trans-unit>
       <trans-unit id="BookMetadata.typicalAgeRange">
         <source xml:lang="en">Typical age range</source>
         <note>ID: BookMetadata.typicalAgeRange</note>
-        <target xml:lang="pt-PT" state="needs-translation">Typical age range</target>
+        <target xml:lang="pt-PT" state="translated">Faixa etária típica</target>
       </trans-unit>
       <trans-unit id="BookMetadata.WhatsThis" sil:dynamic="true">
         <source xml:lang="en">What's this?</source>
         <note>ID: BookMetadata.WhatsThis</note>
         <note>minimal question indicating a link to information</note>
-        <target xml:lang="pt-PT" state="needs-translation">What's this?</target>
+        <target xml:lang="pt-PT" state="translated">O que é isto?</target>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook" approved="yes">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
@@ -664,7 +664,7 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SignLanguageOptional">
         <source xml:lang="en">Sign Language   (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SignLanguageOptional</note>
-        <target xml:lang="pt-PT" state="needs-translation">Sign Language   (Optional)</target>
+        <target xml:lang="pt-PT" state="translated">Língua de Sinais (opcional)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
@@ -785,7 +785,7 @@
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
         <source xml:lang="en">Save as single file (.bloom)...</source>
         <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
-        <target xml:lang="pt-PT" state="needs-translation">Save as single file (.bloom)...</target>
+        <target xml:lang="pt-PT" state="translated">Salvar como arquivo único (.bloom)...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip" approved="yes">
         <source xml:lang="en">Update Book</source>
@@ -1019,6 +1019,18 @@
         <note xml:lang="en">OLD TEXT (before 3.9): Downloading update to {0} ({1}kb).</note>
         <target xml:lang="pt-PT" state="translated">Baixando atualização para {0} ({1}kb).</target>
       </trans-unit>
+      <trans-unit id="ColorPicker.PercentTransparent" sil:dynamic="true">
+        <source xml:lang="en">{0}% Transparent</source>
+        <note>ID: ColorPicker.PercentTransparent</note>
+        <note>This color has a particular percentage of transparency.</note>
+        <target xml:lang="pt-PT" state="translated">{0}% Transparente</target>
+      </trans-unit>
+      <trans-unit id="ColorPicker.New" sil:dynamic="true">
+        <source xml:lang="en">New...</source>
+        <note>ID: ColorPicker.New</note>
+        <note>A background color selection that enables a color picker.</note>
+        <target xml:lang="pt-PT" state="needs-translation">New...</target>
+      </trans-unit>
       <trans-unit id="Common.Advanced">
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
@@ -1055,6 +1067,11 @@
         <source xml:lang="en">Cancel</source>
         <note>ID: Common.Cancel</note>
         <target xml:lang="pt-PT" state="final">Cancelar</target>
+      </trans-unit>
+      <trans-unit id="Common.Delete">
+        <source xml:lang="en">Delete</source>
+        <note>ID: Common.Delete</note>
+        <target xml:lang="pt-PT" state="needs-translation">Delete</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
@@ -1377,6 +1394,12 @@
         <source xml:lang="en">Change Layout</source>
         <note>ID: EditTab.CustomPage.ChangeLayout</note>
         <target xml:lang="pt-PT" state="final">Alterar Cofiguração (layout)</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.HtmlWidget" sil:dynamic="true">
+        <source xml:lang="en">HTML Widget</source>
+        <note>ID: EditTab.CustomPage.HtmlWidget</note>
+        <note>Describes where the user can select an interactive HTML page to insert into a book page (alternative to text, picture, or video)</note>
+        <target xml:lang="pt-PT" state="needs-translation">HTML Widget</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true">
         <source xml:lang="en">or</source>
@@ -2230,19 +2253,28 @@
         <source xml:lang="en">White to Calico</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToCalico</note>
         <note>A background color that is a gradient starting with white blending into calico color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
         <target xml:lang="pt-PT" state="needs-translation">White to Calico</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass" sil:dynamic="true">
         <source xml:lang="en">White to French Pass</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToFrenchPass</note>
         <note>A background color that is a gradient starting with white blending into the "French pass" color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
         <target xml:lang="pt-PT" state="needs-translation">White to French Pass</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino" sil:dynamic="true">
         <source xml:lang="en">White to Portafino</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.WhiteToPortafino</note>
         <note>A background color that is a gradient starting with white blending into the "Portafino" color</note>
+        <note>Obsolete for Bloom 4.9 and later</note>
         <target xml:lang="pt-PT" state="needs-translation">White to Portafino</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
+        <source xml:lang="en">Duplicate</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
+        <note>Tooltip for the bubble Duplicate icon</note>
+        <target xml:lang="pt-PT" state="needs-translation">Duplicate</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true">
         <source xml:lang="en">Outer Outline Color</source>
@@ -2259,7 +2291,7 @@
         <source xml:lang="en">Style</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
         <note>Refers to the STYLE of bubble used by the callout</note>
-        <target xml:lang="pt-PT" state="needs-translation">Style</target>
+        <target xml:lang="pt-PT" state="translated">Estilo</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Caption" sil:dynamic="true">
         <source xml:lang="en">Caption</source>
@@ -2273,21 +2305,28 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Ellipse</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a round bubble shaped like an ellipse.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Ellipse</target>
+        <target xml:lang="pt-PT" state="translated">Elipse</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Exclamation" sil:dynamic="true">
         <source xml:lang="en">Exclamation</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Exclamation</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style represents a shout or exclamatory statement. Like this: "Watch out!"</note>
-        <target xml:lang="pt-PT" state="needs-translation">Exclamation</target>
+        <target xml:lang="pt-PT" state="translated">Exclamação</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.JustText" sil:dynamic="true">
         <source xml:lang="en">Just Text</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style.JustText</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style does not have any bubble at all.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Just Text</target>
+        <target xml:lang="pt-PT" state="translated">Somente Texto</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.ShowTail" sil:dynamic="true">
+        <source xml:lang="en">Show Tail</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.ShowTail</note>
+        <note>Refers to the style of bubble used by the callout</note>
+        <note>This checkbox indicates if a line tail should be shown or not.</note>
+        <target xml:lang="pt-PT" state="needs-translation">Show Tail</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Speech" sil:dynamic="true">
         <source xml:lang="en">Speech</source>
@@ -2306,12 +2345,12 @@
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextColor" sil:dynamic="true">
         <source xml:lang="en">Text Color</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
-        <target xml:lang="pt-PT" state="needs-translation">Text Color</target>
+        <target xml:lang="pt-PT" state="translated">Cor do Texto</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.TextBlock" sil:dynamic="true">
         <source xml:lang="en">Text Block</source>
         <note>ID: EditTab.Toolbox.ComicTool.TextBlock</note>
-        <target xml:lang="pt-PT" state="needs-translation">Text Block</target>
+        <target xml:lang="pt-PT" state="translated">Bloco de Texto</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImpairmentVisualizer" sil:dynamic="true">
         <source xml:lang="en">Impairment Visualizer</source>
@@ -2368,7 +2407,7 @@
         <source xml:lang="en">Music</source>
         <note>ID: EditTab.Toolbox.Motion.Preview.Music</note>
         <note>The label of a checkbox indicating whether background music is played during Preview.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Music</target>
+        <target xml:lang="pt-PT" state="translated">Música</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Preview.Voice" sil:dynamic="true">
         <source xml:lang="en">Voice</source>
@@ -2400,7 +2439,7 @@
       <trans-unit id="EditTab.Toolbox.Music.FileDialogSoundFiles">
         <source xml:lang="en">Sound files</source>
         <note>ID: EditTab.Toolbox.Music.FileDialogSoundFiles</note>
-        <target xml:lang="pt-PT" state="needs-translation">Sound files</target>
+        <target xml:lang="pt-PT" state="translated">Arquivos de som</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.InvalidMp3File">
         <source xml:lang="en">The selected sound file "{0}" cannot be played by Bloom.  Please choose another sound file.</source>
@@ -2432,7 +2471,7 @@
       <trans-unit id="EditTab.Toolbox.MusicTool" sil:dynamic="true">
         <source xml:lang="en">Music Tool</source>
         <note>ID: EditTab.Toolbox.MusicTool</note>
-        <target xml:lang="pt-PT" state="needs-translation">Music Tool</target>
+        <target xml:lang="pt-PT" state="translated">Ferramenta de música</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -3074,6 +3113,12 @@
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
         <target xml:lang="pt-PT" state="translated">Este livro está protegido e só pode ser traduzido. Se quiser fazer outras alterações, clique aqui para desbloqueá-lo temporariamente.</target>
       </trans-unit>
+      <trans-unit id="EditTab.Widget.ChooseWidget" sil:dynamic="true">
+        <source xml:lang="en">Choose Widget</source>
+        <note>ID: EditTab.Widget.ChooseWidget</note>
+        <note>User is supposed to choose a file containing HTML that can be embedded in an element of the book.</note>
+        <target xml:lang="pt-PT" state="needs-translation">Choose Widget</target>
+      </trans-unit>
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
         <note>ID: Errors.BookProblem</note>
@@ -3312,6 +3357,12 @@
         <source xml:lang="en">Training Videos</source>
         <note>ID: HelpMenu.trainingVideos</note>
         <target xml:lang="pt-PT" state="translated">Vídeos de Treinamento</target>
+      </trans-unit>
+      <trans-unit id="ImageUtils.PreparingImage">
+        <source xml:lang="en">Preparing image: {0}</source>
+        <note>ID: ImageUtils.PreparingImage</note>
+        <note>{0} is a placeholder for the image filename</note>
+        <target xml:lang="pt-PT" state="needs-translation">Preparing image: {0}</target>
       </trans-unit>
       <trans-unit id="InstallProblem.BloomPdfMaker">
         <source xml:lang="en">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</source>
@@ -4340,6 +4391,30 @@
         <source xml:lang="en">Notice</source>
         <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
         <target xml:lang="pt-PT" state="translated">Aviso</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.Failed">
+        <source xml:lang="en">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</source>
+        <note>ID: PublishTab.PDF.Error.Failed</note>
+        <note>Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character.</note>
+        <target xml:lang="pt-PT" state="needs-translation">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.PrinterError">
+        <source xml:lang="en">Bloom requires access to a printer in order to make a PDF, even though you are not printing.  Windows gave this error when Bloom tried to access the default printer: {0}</source>
+        <note>ID: PublishTab.PDF.Error.PrinterError</note>
+        <note>Error message displayed in a message dialog box.  {0} is replaced by a Windows error message at runtime</note>
+        <target xml:lang="pt-PT" state="needs-translation">Bloom requires access to a printer in order to make a PDF, even though you are not printing.  Windows gave this error when Bloom tried to access the default printer: {0}</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.NoPrinter">
+        <source xml:lang="en">Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you might not have a printer set as the default.  Please go to Devices and Printers and select a printer as a default. If you don't have a real printer attached, just select the Microsoft XPS or PDF printers.</source>
+        <note>ID: PublishTab.PDF.Error.NoPrinter</note>
+        <note>Error message displayed in a message dialog box.</note>
+        <target xml:lang="pt-PT" state="needs-translation">Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you might not have a printer set as the default.  Please go to Devices and Printers and select a printer as a default. If you don't have a real printer attached, just select the Microsoft XPS or PDF printers.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Error.TrySinglePage">
+        <source xml:lang="en">The book's images might have exceeded the amount of RAM memory available. Please turn on the "Use Less Memory" option which is slower but uses less memory.</source>
+        <note>ID: PublishTab.PDF.Error.TrySinglePage</note>
+        <note>Error message displayed in a message dialog box.</note>
+        <target xml:lang="pt-PT" state="needs-translation">The book's images might have exceeded the amount of RAM memory available. Please turn on the "Use Less Memory" option which is slower but uses less memory.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.BadPdf">
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>

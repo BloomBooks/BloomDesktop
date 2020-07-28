@@ -6,579 +6,579 @@
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
-        <target xml:lang="vi" state="needs-translation">Built on {0}</target>
+        <target xml:lang="vi" state="translated">Tạo ra vào {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="vi" state="needs-translation">No Updates</target>
+        <target xml:lang="vi" state="translated">Không có cập nhật mới</target>
       </trans-unit>
       <trans-unit id="AboutDialog.WindowTitle">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="vi" state="needs-translation">About {0}</target>
+        <target xml:lang="vi" state="translated">Về chúng tôi{0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="vi" state="needs-translation">Check For Updates</target>
+        <target xml:lang="vi" state="translated">Kiểm tra cập nhật mới</target>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="vi" state="needs-translation">Release Notes</target>
+        <target xml:lang="vi" state="translated">Ghi chú Phát hành</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.General</note>
-        <target xml:lang="vi" state="needs-translation">Another copy of the application is already running. If you cannot find it, restart your computer.</target>
+        <target xml:lang="vi" state="translated">Một bản Bloom khác đang chạy. Nếu bạn không tìm thấy nó ở đâu, hãy khởi động lại máy tính.</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.Specific">
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="vi" state="needs-translation">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</target>
+        <target xml:lang="vi" state="translated">Một bản {0} khác đang chạy. Nếu bạn không tìm thấy {0} ở đâu, hãy khởi động lại máy tính.</target>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.General">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
-        <target xml:lang="vi" state="needs-translation">There was a problem starting the application which might require that you restart your computer.</target>
+        <target xml:lang="vi" state="translated">Xảy ra lỗi khi khởi động phần mềm nên có thể bạn cần phải khởi động lại máy tính.</target>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.Specific">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="vi" state="needs-translation">There was a problem starting {0} which might require that you restart your computer.</target>
+        <target xml:lang="vi" state="translated">Xảy ra lỗi khi khởi động phần mềm {0} nên có thể bạn cần phải khởi động lại máy tính.</target>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.General">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
-        <target xml:lang="vi" state="needs-translation">Waiting for other application to finish...</target>
+        <target xml:lang="vi" state="translated">Đang đợi phần mềm khác hoàn tất...</target>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.Specific">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="vi" state="needs-translation">Waiting for other {0} to finish...</target>
+        <target xml:lang="vi" state="translated">Đang đợi {0} hoàn tất...</target>
       </trans-unit>
       <trans-unit id="Common.AbortButton">
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
-        <target xml:lang="vi" state="needs-translation">&amp;Abort</target>
+        <target xml:lang="vi" state="translated">&amp;Hủy</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="vi" state="needs-translation">&amp;Cancel</target>
+        <target xml:lang="vi" state="translated">&amp;Hủy bỏ</target>
       </trans-unit>
       <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="vi" state="needs-translation">&amp;Ignore</target>
+        <target xml:lang="vi" state="translated">&amp;Bỏ qua</target>
       </trans-unit>
       <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="vi" state="needs-translation">No</target>
+        <target xml:lang="vi" state="translated">Không</target>
       </trans-unit>
       <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
-        <target xml:lang="vi" state="needs-translation">&amp;No</target>
+        <target xml:lang="vi" state="translated">&amp;Không</target>
       </trans-unit>
       <trans-unit id="Common.OKButton">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="vi" state="needs-translation">&amp;OK</target>
+        <target xml:lang="vi" state="translated">&amp;OK</target>
       </trans-unit>
       <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
-        <target xml:lang="vi" state="needs-translation">&amp;Retry</target>
+        <target xml:lang="vi" state="translated">&amp;Thử lại</target>
       </trans-unit>
       <trans-unit id="Common.Yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
-        <target xml:lang="vi" state="needs-translation">Yes</target>
+        <target xml:lang="vi" state="translated">Đồng ý</target>
       </trans-unit>
       <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="vi" state="needs-translation">&amp;Yes</target>
+        <target xml:lang="vi" state="translated">&amp;Có</target>
       </trans-unit>
       <trans-unit id="CustomIdentifierView.betterLabel1">
         <source xml:lang="en">RFC5646 code:</source>
         <note>ID: CustomIdentifierView.betterLabel1</note>
         <note>label describes the code for a custom identifier. Translate only 'code'</note>
-        <target xml:lang="vi" state="needs-translation">RFC5646 code:</target>
+        <target xml:lang="vi" state="translated">Mã RFC5646:</target>
       </trans-unit>
       <trans-unit id="CustomIdentifierView.linkLabel1">
         <source xml:lang="en">Read about language identifiers on the web</source>
         <note>ID: CustomIdentifierView.linkLabel1</note>
         <note>text used in the link to a webpage that describes the language identifiers</note>
-        <target xml:lang="vi" state="needs-translation">Read about language identifiers on the web</target>
+        <target xml:lang="vi" state="translated">Hãy đọc về mã nhận dạng ngôn ngữ trên trang web</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Param {0} is a description of the things being deleted (e.g., "The selected files")</note>
-        <target xml:lang="vi" state="needs-translation">{0} will be moved to the Recycle Bin.</target>
+        <target xml:lang="vi" state="translated">{0} đã bị di chuyển vào Thùng Rác.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Param {0} is a file name</note>
-        <target xml:lang="vi" state="needs-translation">{0} will be moved to the Recycle Bin.</target>
+        <target xml:lang="vi" state="translated">{0} đã bị di chuyển vào Thùng Rác.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle">
         <source xml:lang="en">Confirm Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
-        <target xml:lang="vi" state="needs-translation">Confirm Delete</target>
+        <target xml:lang="vi" state="translated">Xác Nhận Xoá</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="vi" state="needs-translation">&amp;Cancel</target>
+        <target xml:lang="vi" state="translated">&amp;Hủy bỏ</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="vi" state="needs-translation">&amp;Delete</target>
+        <target xml:lang="vi" state="translated">&amp;Xóa</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
         <source xml:lang="en">Found {0} images with names close to “{1}”</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
-        <target xml:lang="vi" state="needs-translation">Found {0} images with names close to “{1}”</target>
+        <target xml:lang="vi" state="translated">Tìm thấy hình ảnh {0} có tên gần giống với “{1}”</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ArtOfReading">
         <source xml:lang="en">Art Of Reading</source>
         <note>ID: ImageToolbox.ArtOfReading</note>
-        <target xml:lang="vi" state="needs-translation">Art Of Reading</target>
+        <target xml:lang="vi" state="translated">Nghệ Thuật Đọc</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Camera">
         <source xml:lang="en">Camera</source>
         <note>ID: ImageToolbox.Camera</note>
-        <target xml:lang="vi" state="needs-translation">Camera</target>
+        <target xml:lang="vi" state="translated">Máy ảnh</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.CopyExemplarMetadata">
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="vi" state="needs-translation">Use {0}</target>
+        <target xml:lang="vi" state="translated">Dùng {0}</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop">
         <source xml:lang="en">Crop</source>
         <note>ID: ImageToolbox.Crop</note>
-        <target xml:lang="vi" state="needs-translation">Crop</target>
+        <target xml:lang="vi" state="translated">Cắt bớt</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.DownloadArtOfReading">
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
-        <target xml:lang="vi" state="needs-translation">Download Art Of Reading Installer</target>
+        <target xml:lang="vi" state="translated">Tải cài đặt Nghệ Thuật Đọc</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EditMetadataLink">
         <source xml:lang="en">Edit...</source>
         <note>ID: ImageToolbox.EditMetadataLink</note>
-        <target xml:lang="vi" state="needs-translation">Edit...</target>
+        <target xml:lang="vi" state="translated">Chỉnh sửa...</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms">
         <source xml:lang="en">In the box above, type what you are searching for, then press ENTER.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <note xml:lang="en">OLD TEXT (before 4.1.000.0): This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</note>
-        <target xml:lang="vi" state="needs-translation">In the box above, type what you are searching for, then press ENTER.</target>
+        <target xml:lang="vi" state="translated">Trong hộp trên, hãy gõ tên thứ bạn đang tìm kiếm, rồi nhấn ENTER.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
-        <target xml:lang="vi" state="needs-translation">File</target>
+        <target xml:lang="vi" state="translated">Tập tin</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileChooserTitle">
         <source xml:lang="en">Choose Picture File</source>
         <note>ID: ImageToolbox.FileChooserTitle</note>
         <note>Title shown for a file chooser dialog brought up by the ImageToolbox</note>
-        <target xml:lang="vi" state="needs-translation">Choose Picture File</target>
+        <target xml:lang="vi" state="translated">Chọn ảnh</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Galleries">
         <source xml:lang="en">Galleries</source>
         <note>ID: ImageToolbox.Galleries</note>
-        <target xml:lang="vi" state="needs-translation">Galleries</target>
+        <target xml:lang="vi" state="translated">Thư viện ảnh</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericGettingImageProblem">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
         <note>ID: ImageToolbox.GenericGettingImageProblem</note>
-        <target xml:lang="vi" state="needs-translation">Sorry, something went wrong while getting the image.</target>
+        <target xml:lang="vi" state="translated">Rất tiếc, đã xảy ra lỗi khi tìm kiếm hình ảnh.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericProblem">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
-        <target xml:lang="vi" state="needs-translation">Sorry, something went wrong with the ImageToolbox</target>
+        <target xml:lang="vi" state="translated">Rất tiếc, đã xảy ra lỗi với ImageToolbox</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GetPicture">
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
-        <target xml:lang="vi" state="needs-translation">Get Picture</target>
+        <target xml:lang="vi" state="translated">Lấy hình ảnh</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageGalleries">
         <source xml:lang="en">Image Galleries</source>
         <note>ID: ImageToolbox.ImageGalleries</note>
-        <target xml:lang="vi" state="needs-translation">Image Galleries</target>
+        <target xml:lang="vi" state="translated">Bộ sưu tập hình ảnh</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="vi" state="needs-translation">Image Toolbox</target>
+        <target xml:lang="vi" state="translated">Hộp công cụ Hình ảnh</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.InstallArtOfReading">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
         <note>ID: ImageToolbox.InstallArtOfReading</note>
-        <target xml:lang="vi" state="needs-translation">Install the Art Of Reading package (this may be very slow)</target>
+        <target xml:lang="vi" state="translated">Cài đặt bộ Nghệ thuật Đọc (có thể rất chậm)</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.MatchingImages">
         <source xml:lang="en">Found {0} images</source>
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
-        <target xml:lang="vi" state="needs-translation">Found {0} images</target>
+        <target xml:lang="vi" state="translated">Đã tìm thấy {0} hình ảnh</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NewMultilingual">
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
         <note xml:lang="en">OLD TEXT (before 4.0, added space): Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</note>
-        <target xml:lang="vi" state="needs-translation">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</target>
+        <target xml:lang="vi" state="translated">Bạn có biết có phiên bản mới cho bộ sưu tập này - nó cho phép bạn tìm kiếm bằng tiếng Arabic, Bengali, Trung Quốc, Anh, Pháp, Indonesia, Hindi, Bồ Đào Nha, Tây Ban Nha, Thái hay Swahili không? Miễn phí và sẵn sàng để tải xuống.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoArtOfReading">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
-        <target xml:lang="vi" state="needs-translation">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</target>
+        <target xml:lang="vi" state="translated">Có vẻ máy tính này chưa cài đặt thư viện "Nghệ thuật Đọc".</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoGalleries">
         <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
         <note>ID: ImageToolbox.NoGalleries</note>
-        <target xml:lang="vi" state="needs-translation">This computer doesn't appear to have any galleries installed yet.</target>
+        <target xml:lang="vi" state="translated">Có vẻ máy tính này chưa cài đặt thư viện nào cả.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages">
         <source xml:lang="en">Found no matching images</source>
         <note>ID: ImageToolbox.NoMatchingImages</note>
-        <target xml:lang="vi" state="needs-translation">Found no matching images</target>
+        <target xml:lang="vi" state="translated">Không tìm thấy hình ảnh phù hợp</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PictureFiles">
         <source xml:lang="en">picture files</source>
         <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
-        <target xml:lang="vi" state="needs-translation">picture files</target>
+        <target xml:lang="vi" state="translated">tập tin ảnh</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="vi" state="needs-translation">Problem Getting Image</target>
+        <target xml:lang="vi" state="translated">Gặp vấn đề lấy hình ảnh</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemLoadingImage">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <note>ID: ImageToolbox.ProblemLoadingImage</note>
-        <target xml:lang="vi" state="needs-translation">Sorry, there was a problem loading that image.</target>
+        <target xml:lang="vi" state="translated">Rất tiếc, đã xảy ra lỗi khi tải hình ảnh lên.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.PromptForMissingMetadata">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
-        <target xml:lang="vi" state="needs-translation">This image does not know:\n\nWho created it?\nWho can use it?</target>
+        <target xml:lang="vi" state="translated">Hình ảnh này không biết:\n\nAi tạo ra?\nAi có thể sử dụng?</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Scanner">
         <source xml:lang="en">Scanner</source>
         <note>ID: ImageToolbox.Scanner</note>
-        <target xml:lang="vi" state="needs-translation">Scanner</target>
+        <target xml:lang="vi" state="translated">Máy quét</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchArtOfReading">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
-        <target xml:lang="vi" state="needs-translation">Search the Art of Reading Gallery</target>
+        <target xml:lang="vi" state="translated">Tìm kiếm Thư viện Nghệ thuật Đọc</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchLanguage">
         <source xml:lang="en">The search box is currently set to {0}</source>
         <note>ID: ImageToolbox.SearchLanguage</note>
         <note>The {0} will be replaced by the name of the language used in the searches.</note>
-        <target xml:lang="vi" state="needs-translation">The search box is currently set to {0}</target>
+        <target xml:lang="vi" state="translated">Hộp tìm kiếm hiện được cài đặt ở {0}</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SetUpMetadataLink">
         <source xml:lang="en">Set up metadata...</source>
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
-        <target xml:lang="vi" state="needs-translation">Set up metadata...</target>
+        <target xml:lang="vi" state="translated">Cài đặt siêu dữ liệu...</target>
       </trans-unit>
       <trans-unit id="IpaIdentifierView.betterLabel1">
         <source xml:lang="en">Purpose:</source>
         <note>ID: IpaIdentifierView.betterLabel1</note>
         <note>In writing system setup when IPA special option is selected: Label for the purpose combo box</note>
-        <target xml:lang="vi" state="needs-translation">Purpose:</target>
+        <target xml:lang="vi" state="translated">Mục đích:</target>
       </trans-unit>
       <trans-unit id="IpaIdentifierView.linkLabel1">
         <source xml:lang="en">Read about IPA transcription on the web</source>
         <note>ID: IpaIdentifierView.linkLabel1</note>
         <note>In writing system setup when IPA special option is selected: text used in link to a webpage describing IPA transcription</note>
-        <target xml:lang="vi" state="needs-translation">Read about IPA transcription on the web</target>
+        <target xml:lang="vi" state="translated">Đọc về phiên âm IPA trên trang web</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
-        <target xml:lang="vi" state="needs-translation">Other Names</target>
+        <target xml:lang="vi" state="translated">Tên khác</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
-        <target xml:lang="vi" state="needs-translation">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</target>
+        <target xml:lang="vi" state="translated">Danh sách này bao gồm tất cả các ngôn ngữ ISO-639, gồm tất cả các tên gọi khác được biết đến trên ethnologue.com.\n\nNếu cần thiết, hãy sử dụng tùy chọn "Ngôn ngữ chưa nhận dạng", sẽ được chọn cho bạn ngay bây giờ.</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue">
         <source xml:lang="en">Ethnologue.com</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
-        <target xml:lang="vi" state="needs-translation">Ethnologue.com</target>
+        <target xml:lang="vi" state="translated">Ethnologue.com</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="vi" state="needs-translation">About Language 639-3 Codes &amp; How To Apply For New Ones</target>
+        <target xml:lang="vi" state="translated">Về Mã ngôn ngữ 639-3 &amp; Cách yêu cầu mã mới</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle">
         <source xml:lang="en">About The ISO Language Registry</source>
         <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
-        <target xml:lang="vi" state="needs-translation">About The ISO Language Registry</target>
+        <target xml:lang="vi" state="translated">Về Registry Ngôn ngữ ISO</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CodeHeader">
         <source xml:lang="en">Code</source>
         <note>ID: LanguageLookup.CodeHeader</note>
-        <target xml:lang="vi" state="needs-translation">Code</target>
+        <target xml:lang="vi" state="translated">Mã</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryCount">
         <source xml:lang="en">{0} Countries</source>
         <note>ID: LanguageLookup.CountryCount</note>
         <note>Shown when there are multiple countries and it is just confusing to list them all. {0} is a count of countries.</note>
-        <target xml:lang="vi" state="needs-translation">{0} Countries</target>
+        <target xml:lang="vi" state="translated">{0} Quốc gia</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryHeader">
         <source xml:lang="en">Country</source>
         <note>ID: LanguageLookup.CountryHeader</note>
-        <target xml:lang="vi" state="needs-translation">Country</target>
+        <target xml:lang="vi" state="translated">Quốc gia</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
         <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
-        <target xml:lang="vi" state="needs-translation">You can change how the language name will be displayed here:</target>
+        <target xml:lang="vi" state="translated">Bạn có thể thay đổi cách tên ngôn ngữ xuất hiện ở đây:</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle">
         <source xml:lang="en">Lookup Language Code...</source>
         <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
-        <target xml:lang="vi" state="needs-translation">Lookup Language Code...</target>
+        <target xml:lang="vi" state="translated">Mã tìm kiếm ngôn ngữ...</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.PrimaryNameHeader">
         <source xml:lang="en">Name</source>
         <note>ID: LanguageLookup.PrimaryNameHeader</note>
-        <target xml:lang="vi" state="needs-translation">Name</target>
+        <target xml:lang="vi" state="translated">Tên</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel">
         <source xml:lang="en">Show regional dialects</source>
         <note>ID: LanguageLookup.ShowRegionalDialectsLabel</note>
-        <target xml:lang="vi" state="needs-translation">Show regional dialects</target>
+        <target xml:lang="vi" state="translated">Chi tiết các phương ngữ vùng miền</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.UnlistedLanguage">
         <source xml:lang="en">Unlisted Language</source>
         <note>ID: LanguageLookup.UnlistedLanguage</note>
-        <target xml:lang="vi" state="needs-translation">Unlisted Language</target>
+        <target xml:lang="vi" state="translated">Ngôn ngữ chưa niêm yết</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._cannotFindLanguageLink">
         <source xml:lang="en">Can't find your language?</source>
         <note>ID: LanguageLookup._cannotFindLanguageLink</note>
-        <target xml:lang="vi" state="needs-translation">Can't find your language?</target>
+        <target xml:lang="vi" state="translated">Không tìm thấy ngôn ngữ của mình?</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLabel">
         <source xml:lang="en">my script variant label</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLabel</note>
-        <target xml:lang="vi" state="needs-translation">my script variant label</target>
+        <target xml:lang="vi" state="translated">nhãn tên khác của chữ viết của tôi</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLink">
         <source xml:lang="en">Script and Variant</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLink</note>
-        <target xml:lang="vi" state="needs-translation">Script and Variant</target>
+        <target xml:lang="vi" state="translated">Chữ viết và Tên gọi khác</target>
       </trans-unit>
       <trans-unit id="MemoryWarning">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
         <note>ID: MemoryWarning</note>
-        <target xml:lang="vi" state="needs-translation">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</target>
+        <target xml:lang="vi" state="translated">Đáng tiếc, {0} bắt đầu thiếu bộ nhớ, và sẽ hoạt động chậm chạp hay gặp các vấn đề khác. Chúng tôi khuyên bạn nên tắt máy và khởi động lại khi nào thuận tiện.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Creator">
         <source xml:lang="en">Creator: {0}</source>
         <note>ID: MetadataDisplay.Creator</note>
-        <target xml:lang="vi" state="needs-translation">Creator: {0}</target>
+        <target xml:lang="vi" state="translated">Người tạo: {0}</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.CreatorLabel">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataDisplay.CreatorLabel</note>
-        <target xml:lang="vi" state="needs-translation">Creator</target>
+        <target xml:lang="vi" state="translated">Người tạo</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.LicenseInfo">
         <source xml:lang="en">License Info</source>
         <note>ID: MetadataDisplay.LicenseInfo</note>
-        <target xml:lang="vi" state="needs-translation">License Info</target>
+        <target xml:lang="vi" state="translated">Thông tin giấy phép</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true">
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="vi" state="needs-translation">You must keep the copyright and credits for authors, illustrators, etc.</target>
+        <target xml:lang="vi" state="translated">Bạn bắt buộc phải tôn trọng luật bản quyền và thông tin về tác giả, họa sĩ minh họa, etc.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true">
         <source xml:lang="en">You are free to make commercial use of this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="vi" state="needs-translation">You are free to make commercial use of this work.</target>
+        <target xml:lang="vi" state="translated">Bạn được tự do sử dụng sản phẩm này vì mục đích thương mại.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true">
         <source xml:lang="en">You may adapt and add to this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="vi" state="needs-translation">You may adapt and add to this work.</target>
+        <target xml:lang="vi" state="translated">Bạn có thể thay đổi và thêm bớt vào sản phẩm này.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="vi" state="needs-translation">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</target>
+        <target xml:lang="vi" state="translated">Bạn có thể thay đổi và thêm bớt vào sản phẩm này, nhưng chỉ có thể chia sẻ sản phẩm cuối cùng với cùng một giấy phép giống như giấy phép cho sản phẩm này.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true">
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="vi" state="needs-translation">You may not make changes or build upon this work without permission.</target>
+        <target xml:lang="vi" state="translated">Bạn không thể thay đổi hay thêm bớt vào sản phẩm này khi chưa được cho phép.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true">
         <source xml:lang="en">You may not use this work for commercial purposes.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="vi" state="needs-translation">You may not use this work for commercial purposes.</target>
+        <target xml:lang="vi" state="translated">Bạn không thể sử dụng sản phẩm này vì mục đích thương mại.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.PublicDomain" sil:dynamic="true">
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="vi" state="needs-translation">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</target>
+        <target xml:lang="vi" state="translated">Bạn có thể sao chép, thay đổi, và chia sẻ sản phẩm này, kể cả vì mục đích thương mại, mà không cần xin phép.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
         <note>ID: MetadataDisplay.Licenses.NullLicense</note>
         <note>This is used when all we have is a copyright, no other license.</note>
-        <target xml:lang="vi" state="needs-translation">For permission to reuse, contact the copyright holder.</target>
+        <target xml:lang="vi" state="translated">Để xin phép sử dụng, hãy liên lạc với người giữ bản quyền.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.NoLicense">
         <source xml:lang="en">No license specified</source>
         <note>ID: MetadataDisplay.NoLicense</note>
-        <target xml:lang="vi" state="needs-translation">No license specified</target>
+        <target xml:lang="vi" state="translated">Không quy định giấy phép nào</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <note>ID: MetadataEditor.AllowCommercialUse</note>
-        <target xml:lang="vi" state="needs-translation">Allow commercial uses of your work?</target>
+        <target xml:lang="vi" state="translated">Cho phép sử dụng sản phẩm của bạn vì mục đích thương mại hay không?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowDerivatives">
         <source xml:lang="en">Allow modifications of your work?</source>
         <note>ID: MetadataEditor.AllowDerivatives</note>
-        <target xml:lang="vi" state="needs-translation">Allow modifications of your work?</target>
+        <target xml:lang="vi" state="translated">Cho phép thay đổi sản phẩm của bạn hay không?</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightHolder">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: MetadataEditor.CopyrightHolder</note>
-        <target xml:lang="vi" state="needs-translation">Copyright Holder</target>
+        <target xml:lang="vi" state="translated">Người giữ bản quyền</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightYear">
         <source xml:lang="en">Copyright Year</source>
         <note>ID: MetadataEditor.CopyrightYear</note>
-        <target xml:lang="vi" state="needs-translation">Copyright Year</target>
+        <target xml:lang="vi" state="translated">Năm bản quyền</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
-        <target xml:lang="vi" state="needs-translation">Creative Commons</target>
+        <target xml:lang="vi" state="translated">Creative Commons</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental">
         <source xml:lang="en">Intergovernmental Version</source>
         <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
-        <target xml:lang="vi" state="needs-translation">Intergovernmental Version</target>
+        <target xml:lang="vi" state="translated">Bản liên nhà nước</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreatorLabel">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataEditor.CreatorLabel</note>
-        <target xml:lang="vi" state="needs-translation">Creator</target>
+        <target xml:lang="vi" state="translated">Người tạo</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CustomLicense">
         <source xml:lang="en">Custom</source>
         <note>ID: MetadataEditor.CustomLicense</note>
-        <target xml:lang="vi" state="needs-translation">Custom</target>
+        <target xml:lang="vi" state="translated">Tùy biến</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.License">
         <source xml:lang="en">License</source>
         <note>ID: MetadataEditor.License</note>
-        <target xml:lang="vi" state="needs-translation">License</target>
+        <target xml:lang="vi" state="translated">Giấy phép</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.PublicDomain">
         <source xml:lang="en">The copyright holder waives all rights</source>
         <note>ID: MetadataEditor.PublicDomain</note>
-        <target xml:lang="vi" state="needs-translation">The copyright holder waives all rights</target>
+        <target xml:lang="vi" state="translated">Người giữ bản quyền có tất cả quyền hạn</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
-        <target xml:lang="vi" state="needs-translation">Copyright and License</target>
+        <target xml:lang="vi" state="translated">Bản quyền và Giấy phép</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleWithCredit">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="vi" state="needs-translation">Credit, Copyright, and License</target>
+        <target xml:lang="vi" state="translated">Danh đề, Bản quyền và Giấy phép</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.UnknownLicense">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense</note>
-        <target xml:lang="vi" state="needs-translation">Contact the copyright holder for any permissions</target>
+        <target xml:lang="vi" state="translated">Hãy liên lạc với người giữ bản quyền để xin phép</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.YesShareAlike">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
-        <target xml:lang="vi" state="needs-translation">Yes, as long as others share alike</target>
+        <target xml:lang="vi" state="translated">Đồng ý, khi nào người khác chia sẻ giống như vậy</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.additionalRequestsLabel">
         <source xml:lang="en">Additional Requests</source>
         <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
-        <target xml:lang="vi" state="needs-translation">Additional Requests</target>
+        <target xml:lang="vi" state="translated">Yêu cầu khác</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.betterLinkLabel1">
         <source xml:lang="en">more info</source>
         <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
-        <target xml:lang="vi" state="needs-translation">more info</target>
+        <target xml:lang="vi" state="translated">thông tin thêm</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToPublicDomainCC0">
         <source xml:lang="en">about {0} Public Domain</source>
         <note>ID: MetadataEditor.linkToPublicDomainCC0</note>
         <note>{0} is replaced by an untranslatable abbreviation functioning as an adjective ("CC0")</note>
-        <target xml:lang="vi" state="needs-translation">about {0} Public Domain</target>
+        <target xml:lang="vi" state="translated">về {0} Public Domain</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
-        <target xml:lang="vi" state="needs-translation">Not Enforceable</target>
+        <target xml:lang="vi" state="translated">Không thể áp đặt</target>
       </trans-unit>
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton">
         <source xml:lang="en">Cancel</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton</note>
-        <target xml:lang="vi" state="needs-translation">Cancel</target>
+        <target xml:lang="vi" state="translated">Huỷ</target>
       </trans-unit>
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._okButton">
         <source xml:lang="en">OK</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._okButton</note>
-        <target xml:lang="vi" state="needs-translation">OK</target>
+        <target xml:lang="vi" state="translated">OK</target>
       </trans-unit>
       <trans-unit id="ScriptsAndVariantsDialog.ScriptsAndVariants">
         <source xml:lang="en">Script and Variant</source>
         <note>ID: ScriptsAndVariantsDialog.ScriptsAndVariants</note>
-        <target xml:lang="vi" state="needs-translation">Script and Variant</target>
+        <target xml:lang="vi" state="translated">Chữ viết và Tên gọi khác</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>

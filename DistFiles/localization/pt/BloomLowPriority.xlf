@@ -6,55 +6,55 @@
         <source xml:lang="en">Conversion file used:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
         <note>After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specificies a mapping which is used to convert the script for one language into the script for another.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Conversion file used:</target>
+        <target xml:lang="pt-PT" state="translated">Arquivo de conversão usado:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
         <source xml:lang="en">eSpeak failed.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
         <note>This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
-        <target xml:lang="pt-PT" state="needs-translation">eSpeak failed.</target>
+        <target xml:lang="pt-PT" state="translated">eSpeak falhou.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed">
         <source xml:lang="en">eSpeak language:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed</note>
         <note>After this text, the program will display the language code of the language settings that eSpeak used. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
-        <target xml:lang="pt-PT" state="needs-translation">eSpeak language:</target>
+        <target xml:lang="pt-PT" state="translated">Idioma do eSpeak:</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion">
         <source xml:lang="en">Result of orthography conversion:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
         <note>After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Result of orthography conversion:</target>
+        <target xml:lang="pt-PT" state="translated">Resultado da conversão da ortografia:</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Community">
         <source xml:lang="en">Funded by the local community only</source>
         <note>ID: Settings.Enterprise.Community</note>
-        <target xml:lang="pt-PT" state="needs-translation">Funded by the local community only</target>
+        <target xml:lang="pt-PT" state="translated">Financiado apenas pela comunidade local</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.CheckUpdates">
         <source xml:lang="en">Check for updates</source>
         <note>ID: Settings.Enterprise.CheckUpdates</note>
-        <target xml:lang="pt-PT" state="needs-translation">Check for updates</target>
+        <target xml:lang="pt-PT" state="translated">Verificar se há atualizações</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expiration">
         <source xml:lang="en">Expires:</source>
         <note>ID: Settings.Enterprise.Expiration</note>
-        <target xml:lang="pt-PT" state="needs-translation">Expires:</target>
+        <target xml:lang="pt-PT" state="translated">Expira em</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expired">
         <source xml:lang="en">That code has expired.</source>
         <note>ID: Settings.Enterprise.Expired</note>
-        <target xml:lang="pt-PT" state="needs-translation">That code has expired.</target>
+        <target xml:lang="pt-PT" state="translated">Esse código expirou.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Incomplete">
         <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
         <note>ID: Settings.Enterprise.Incomplete</note>
-        <target xml:lang="pt-PT" state="needs-translation"> The code should look like SOMENAME-123456-7890</target>
+        <target xml:lang="pt-PT" state="translated"> O código deve se parecer com SOMENAME-123456-7890</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.LearnMore">
         <source xml:lang="en">Learn More</source>
         <note>ID: Settings.Enterprise.LearnMore</note>
-        <target xml:lang="pt-PT" state="needs-translation">Learn More</target>
+        <target xml:lang="pt-PT" state="translated">Saiba mais</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Overview">
         <source xml:lang="en">
@@ -99,13 +99,13 @@
       <trans-unit id="Settings.Enterprise.UnknownCode">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
         <note>ID: Settings.Enterprise.UnknownCode</note>
-        <target xml:lang="pt-PT" state="needs-translation">This version of Bloom does not have the artwork that goes with that subscription.</target>
+        <target xml:lang="pt-PT" state="translated">Esta versão do Bloom não tem as artes que estão relacionadas com essa assinatura.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.WhatsThis">
         <source xml:lang="en">What's This?</source>
         <note>ID: Settings.Enterprise.WhatsThis</note>
         <note>A link offering more information about the Funded Local Community Only option</note>
-        <target xml:lang="pt-PT" state="needs-translation">What's This?</target>
+        <target xml:lang="pt-PT" state="translated">O que é Isto?</target>
       </trans-unit>
     </body>
   </file>
