@@ -80,7 +80,7 @@ namespace Bloom.Publish.PDF
 					catch(Exception error) // System.Printing.PrintQueueException isn't in our System.Printing assembly, so... using Exception
 					{
 						defaultPrinter = null;
-						errorMessage = L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.PrinterError",
+						errorMessage = L10NSharp.LocalizationManager.GetString(@"PublishTab.PDF.Error.PrinterError",
 							"Bloom requires access to a printer in order to make a PDF, even though you are not printing.  Windows gave this error when Bloom tried to access the default printer: {0}",
 							@"Error message displayed in a message dialog box");
 						errorMessage = string.Format(errorMessage, error.Message);
@@ -134,12 +134,12 @@ namespace Bloom.Publish.PDF
 			{
 				Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardOutput = "+res.StandardOutput);
 
-				var msg = L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.Failed",
+				var msg = L10NSharp.LocalizationManager.GetString(@"PublishTab.PDF.Error.Failed",
 					"Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.",
 					@"Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character.");
 
 				// This message string is intentionally separate because it was added after the previous string had already been localized in most languages.
-				var msg2 = L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.TrySinglePage",
+				var msg2 = L10NSharp.LocalizationManager.GetString(@"PublishTab.PDF.Error.TrySinglePage",
 					"The book's images might have exceeded the amount of RAM memory available. Please turn on the \"Use Less Memory\" option which is slower but uses less memory.",
 					@"Error message displayed in a message dialog box");
 
@@ -158,7 +158,7 @@ namespace Bloom.Publish.PDF
 
 		private static string GetNoDefaultPrinterErrorMessage()
 		{
-			return L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.NoPrinter",
+			return L10NSharp.LocalizationManager.GetString(@"PublishTab.PDF.Error.NoPrinter",
 				"Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you might not have a printer set as the default.  Please go to Devices and Printers and select a printer as a default. If you don't have a real printer attached, just select the Microsoft XPS or PDF printers.",
 				@"Error message displayed in a message dialog box");
 		}
