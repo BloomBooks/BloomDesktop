@@ -949,6 +949,14 @@ namespace Bloom.Book
 			BringBookInfoUpToDate(oldMetaData);
 			FixErrorsEncounteredByUsers(bookDOM);
 			AddReaderBodyClass(bookDOM);
+			AddLanguageAttributesToBody(bookDOM);
+		}
+
+		private void AddLanguageAttributesToBody(HtmlDom bookDom)
+		{
+			bookDom.Body.SetAttribute("data-L1", this.CollectionSettings.Language1Iso639Code);
+			bookDom.Body.SetAttribute("data-L2", this.CollectionSettings.Language2Iso639Code);
+			bookDom.Body.SetAttribute("data-L3", this.CollectionSettings.Language3Iso639Code );
 		}
 
 		private void AddReaderBodyClass(HtmlDom bookDom){
