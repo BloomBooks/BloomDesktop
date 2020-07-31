@@ -14,6 +14,7 @@ using Bloom.Publish.Epub;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using Gecko;
+using Microsoft.CSharp.RuntimeBinder;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.Reporting;
@@ -829,16 +830,18 @@ namespace Bloom.Book
 				if (string.IsNullOrEmpty(dataBubbleAttr))
 					continue;
 
-				var dataBubbleNoTicks = dataBubbleAttr.Replace("`", "");
 				// Possible bubble background color
-				var backgroundColorValue = GetBackgroundColorsFromDataBubble(dataBubbleNoTicks);
+				var jsonObject = GetJsonObjectFromDataBubble(dataBubbleAttr);
+				if (jsonObject == null)
+					continue; // only happens if it fails to parse the "json"
+				string backgroundColorValue = GetBackgroundColorsFromDataBubbleJsonObj(jsonObject);
 				if (string.IsNullOrEmpty(backgroundColorValue))
 					continue;
 
 				// Review: opacity doesn't yet exist in data-bubble, but it will when we do BL-8537.
 				// float.Parse() here keeps the opacity from being in quotes (and therefore a string)
 				// This is important for matching swatch opacity on the js end.
-				var opacityValue = float.Parse(GetOpacityFromDataBubble(dataBubbleNoTicks));
+				var opacityValue = GetOpacityFromDataBubbleJsonObj(jsonObject);
 				var colorArray = backgroundColorValue.Split(',');
 				var backgroundColorString = DynamicJson.Serialize(new
 				{
@@ -861,21 +864,61 @@ namespace Bloom.Book
 			return match.Success ? match.Groups[1].Value : string.Empty;
 		}
 
-		private static string GetBackgroundColorsFromDataBubble(string dataBubbleAttrVal)
+		internal static dynamic GetJsonObjectFromDataBubble(string dataBubbleAttrVal)
 		{
-			// Looking for something like "backgroundColors:[white,#7b8eb8]" or "backgroundColors:[oldLace]".
-			// Returns (in these 2 examples respectively): "white,#7b8eb8", "oldLace".
-			var backColorRegex = new Regex(@"\s*backgroundColors\s*:\s*\[\s*([\w,#]+)\s*\]");
-			var match = backColorRegex.Match(dataBubbleAttrVal);
-			return match.Success ? match.Groups[1].Value : string.Empty;
+			dynamic result;
+			try
+			{
+				result = DynamicJson.Parse(dataBubbleAttrVal.Replace("`", "\""));
+			}
+			catch (Exception)
+			{
+				Logger.WriteEvent("HtmlDom.GetJsonObjectFromDataBubble() failed to parse data-bubble: " + dataBubbleAttrVal);
+				result = null;
+			}
+			return result;
 		}
 
-		private static string GetOpacityFromDataBubble(string dataBubbleAttrVal)
+		private static string GetBackgroundColorsFromDataBubbleJsonObj(dynamic jsonObject)
 		{
-			// Looking for something like "opacity:0.66". Should return just the "0.66", or "1" if not found.
-			var opacityRegex = new Regex(@"\s*opacity\s*:\s*([\d\.]+)\s*(?:,|})");
-			var match = opacityRegex.Match(dataBubbleAttrVal);
-			return match.Success ? match.Groups[1].Value : "1";
+			if (jsonObject == null)
+				return null;
+			try
+			{
+				return jsonObject.backgroundColors.ToString().Replace("\"", "").Replace("[", "").Replace("]", "");
+			}
+			catch (RuntimeBinderException)
+			{
+				return null;
+			}
+		}
+
+		private static float GetOpacityFromDataBubbleJsonObj(dynamic jsonObject)
+		{
+			if (jsonObject == null)
+				return 1F;
+			try
+			{
+				return float.Parse(jsonObject.opacity);
+			}
+			catch (RuntimeBinderException)
+			{
+				return 1F;
+			}
+		}
+
+		internal static string GetStyleFromDataBubbleJsonObj(dynamic jsonObject)
+		{
+			if (jsonObject == null)
+				return "none";
+			try
+			{
+				return jsonObject.style;
+			}
+			catch (RuntimeBinderException)
+			{
+				return "none";
+			}
 		}
 
 		private static XmlNodeList GetAllDivsWithClass(XmlNode containerElement, string className)

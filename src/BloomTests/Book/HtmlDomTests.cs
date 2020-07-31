@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
@@ -1550,7 +1550,7 @@ p {
 		}
 
 		[Test]
-		[TestCase(" color : rgb(98, 19, 45);", ",`backgroundColors `: [`white`,`#7b8eb8`] ", "",
+		[TestCase(" color : rgb(98, 19, 45);", ",`backgroundColors`: [`white`,`#7b8eb8`] ", "",
 				"", "",
 				"", "", 0)]
 		[TestCase("", "", "",
@@ -1618,6 +1618,20 @@ p {
 
 			// Verification
 			Assert.That(jsonString, Is.EqualTo(jsonResponses[responseIndex]));
+		}
+
+		[Test]
+		[TestCase("{`version`:`1.0`,`backgroundColors`:[`white`,`#7b8eb8`],`style`:`none`}", "none")]
+		[TestCase("{`style`:`caption`,`version`:`1.0`,`backgroundColors`:[`white`,`#7b8eb8`],`opacity`:`0.66`}", "caption")]
+		[TestCase("{`version`:`1.0`,`backgroundColors`:[`white`,`#7b8eb8`]}", "none")]
+		[TestCase("{`version`:`1.0`,`backgroundColors`:[`white`,`#7b8eb8`],`style`:`exclamation`}", "exclamation")]
+		public void GetStyleFromDataBubble_Works(string dataBubbleAttrVal, string result)
+		{
+			// SUT
+			var obj = HtmlDom.GetJsonObjectFromDataBubble(dataBubbleAttrVal);
+			var jsonString = HtmlDom.GetStyleFromDataBubbleJsonObj(obj);
+
+			Assert.That(jsonString, Is.EqualTo(result));
 		}
 
 		[Test]

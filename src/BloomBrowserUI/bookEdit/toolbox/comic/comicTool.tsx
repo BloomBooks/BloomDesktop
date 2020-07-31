@@ -322,6 +322,7 @@ const ComicToolControls: React.FunctionComponent = () => {
     };
 
     const styleSupportsShowTail = (style: string) => {
+        // Enhance: When tails only show outside of content rectangle, we can just return 'true' here always.
         switch (style) {
             case "none":
             case "":

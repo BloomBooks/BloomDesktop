@@ -1966,9 +1966,11 @@ namespace BloomTests.Book
 					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
 				</head>
 				<body>
-					<div id='comicalItem' class='bloom-textOverPicture' data-bubble='`style`:`speech`'>my bubble</div>
 					<div class='bloom-page' id='guid3'>
-					   <div class='bloom-translationGroup bloom-trailingElement'>
+						<div class='bloom-imageContainer'>
+							<svg id='comicalItem' class='comical-generated' />
+						</div>
+						<div class='bloom-translationGroup bloom-trailingElement'>
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='de'>
 								Some German.
 							</div>
@@ -1996,7 +1998,7 @@ namespace BloomTests.Book
 			Assert.That(allLanguages["xyz"], Is.True);
 			Assert.That(allLanguages, Has.Count.EqualTo(1));
 
-			var comicalItem = book.OurHtmlDom.RawDom.SelectSingleNode("//div[@id='comicalItem']"); // GetElementById("comicalItem");
+			var comicalItem = book.OurHtmlDom.RawDom.SelectSingleNode("//svg[@id='comicalItem']"); // GetElementById("comicalItem");
 			comicalItem.ParentNode.RemoveChild(comicalItem);
 
 			allLanguages = book.AllPublishableLanguages(true);
@@ -2727,9 +2729,9 @@ namespace BloomTests.Book
 	<body>
 		<div class='bloom-page'>
 			<div class='bloom-imageContainer'>
-				<div class='bloom-textOverPicture' data-bubble='{`style`:`caption`'>
+				<svg class='comical-generated'>
 					<!-- Stuff goes here -->
-				</div>
+				</svg>
 			</div>
 		</div>
 	</body>
