@@ -878,6 +878,15 @@ namespace Bloom.Book
 			return match.Success ? match.Groups[1].Value : "1";
 		}
 
+		internal static string GetStyleFromDataBubble(string dataBubbleAttrVal)
+		{
+			// Looking for something like "style:none" or "style:speech".
+			// Should just return the "none" or "speech", if found. Or "none" if not found.
+			var styleRegex = new Regex(@"\s*style\s*:\s*(\w*)\s*(?:,|})");
+			var match = styleRegex.Match(dataBubbleAttrVal);
+			return match.Success ? match.Groups[1].Value : "none";
+		}
+
 		private static XmlNodeList GetAllDivsWithClass(XmlNode containerElement, string className)
 		{
 			const string xpath = ".//div[contains(concat(' ', normalize-space(@class), ' '), ' {0} ')]";
