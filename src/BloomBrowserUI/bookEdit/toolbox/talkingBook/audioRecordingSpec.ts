@@ -1,8 +1,11 @@
 import AudioRecording, {
     AudioRecordingMode,
     AudioTextFragment,
-    initializeTalkingBookToolAsync
+    initializeTalkingBookToolAsync,
+    AudioMode,
+    getAllAudioModes
 } from "./audioRecording";
+import { runAsyncTest } from "../../test/testUtil";
 import axios from "axios";
 
 // Notes:
@@ -22,6 +25,24 @@ describe("audio recording tests", () => {
         await initializeTalkingBookToolAsync();
         done();
     });
+
+    // Returns the HTML for a single text box for a variety of recording modes
+    function getTextBoxHtmlSimple1(scenario: AudioMode) {
+        if (scenario === AudioMode.PureSentence) {
+            return `<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div>`;
+        } else if (scenario === AudioMode.PreTextBox) {
+            return `<div class="bloom-editable ui-audioCurrent" id="div1" data-audioRecordingMode="TextBox"><p><span id="1.1" class="audio-sentence">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div>`;
+        } else if (scenario === AudioMode.PureTextBox) {
+            return `<div class="bloom-editable audio-sentence ui-audioCurrent" id="div1" data-audioRecordingMode="TextBox"><p>Sentence 1.1. Sentence 1.2</p></div>`;
+        } else if (scenario === AudioMode.HardSplitTextBox) {
+            // FYI: Yes, it is confirmed that in hardSplit, ui-audioCurrent goes on the div, not the span.
+            return `<div class="bloom-editable ui-audioCurrent bloom-postAudioSplit" id="div1" data-audioRecordingMode="TextBox"><p><span id="1.1" class="audio-sentence">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div>`;
+        } else if (scenario === AudioMode.SoftSplitTextBox) {
+            return `<div class="bloom-editable audio-sentence ui-audioCurrent bloom-postAudioSplit" id="div1" data-audioRecordingMode="TextBox" data-audiorecordingendtimes="1.0 2.0"><p><span id="1.1" class="bloom-highlightSegment">Sentence 1.1.</span> <span id="1.2" class="bloom-highlightSegment">Sentence 1.2</span></p></div>`;
+        } else {
+            throw new Error("Unknown scenario: " + AudioMode[scenario]);
+        }
+    }
 
     describe("- Next()", () => {
         it("Record=Sentence, last sentence returns disabled for Next button", () => {
@@ -269,7 +290,10 @@ describe("audio recording tests", () => {
         it("inserts sentence spans with ids and class when none exist", () => {
             const div = $("<div>This is a sentence. This is another</div>");
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.Sentence
+            );
             const spans = div.find("span");
             expect(spans.length).toBe(2);
             expect(spans[0].innerHTML).toBe("This is a sentence.");
@@ -289,7 +313,10 @@ describe("audio recording tests", () => {
                 '<div><p><span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> This is another</p></div>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.Sentence
+            );
             const spans = div.find("span");
             expect(spans.length).toBe(2);
             expect(spans[0].innerHTML).toBe("This is a sentence.");
@@ -313,7 +340,10 @@ describe("audio recording tests", () => {
                 '<div><p><span id="abc" class="audio-sentence">This <b>is</b> a sentence.</span> This <i>is</i> another</p></div>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.Sentence
+            );
             const spans = div.find("span");
             expect(spans.length).toBe(2);
             expect(spans[0].innerHTML).toBe("This <b>is</b> a sentence.");
@@ -324,7 +354,10 @@ describe("audio recording tests", () => {
                 '<div><p>This is a new sentence. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span></p></div>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.Sentence
+            );
             const spans = div.find("span");
             expect(spans.length).toBe(2);
             expect(spans[0].innerHTML).toBe("This is a new sentence.");
@@ -358,7 +391,10 @@ describe("audio recording tests", () => {
                 '<div><p><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first sentence.</span> This is inserted. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> Inserted after.</p></div>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.Sentence
+            );
             const spans = div.find("span");
             expect(spans.length).toBe(4);
             expect(spans[0].innerHTML).toBe("This is the first sentence.");
@@ -433,7 +469,10 @@ describe("audio recording tests", () => {
                 '<div><p>This is the first sentence.<span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C"> </span></p></div>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.Sentence
+            );
             const spans = div.find("span");
             expect(spans.length).toBe(2);
             expect(spans[0].innerHTML).toBe("This is the first sentence.");
@@ -448,7 +487,7 @@ describe("audio recording tests", () => {
                 '<p><span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C">&nbsp;</span><br></p>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(p);
+            recording.makeAudioSentenceElements(p, AudioRecordingMode.Sentence);
             const spans = p.find("span");
             expect(spans.length).toBe(1);
             expect(spans[0].innerHTML).toBe("&nbsp;");
@@ -460,7 +499,7 @@ describe("audio recording tests", () => {
                 '<p><span id="efgh" recordingmd5="xyz" class="audio-sentence"><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first.</span> <span id="abde" recordingmd5="qef" class="audio-sentence">This is the second.</span> This is the third.</span></p>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(p);
+            recording.makeAudioSentenceElements(p, AudioRecordingMode.Sentence);
             const spans = p.find("span");
             // Should have removed the outer span and left the two inner ones and added a third one.
             expect(spans.length).toBe(3);
@@ -497,7 +536,7 @@ describe("audio recording tests", () => {
             );
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.Sentence;
-            recording.makeAudioSentenceElements(p);
+            recording.makeAudioSentenceElements(p, AudioRecordingMode.Sentence);
             const spans = p.find("span");
             // Should have removed the outer span and left the two inner ones and added a third one.
             expect(spans.length).toBe(3); // If regresses, it would probably show twice as many (i.e. 6) instead of 3.
@@ -509,7 +548,7 @@ describe("audio recording tests", () => {
                 '<p>Random text <strong><span data-duration="9.400227" id="abcd" class="audio-sentence" recordingmd5="undefined"><u>underlined</u></span></strong> finish the sentence. Another sentence <u><strong>boldunderlined</strong></u> finish the second.</p>'
             );
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(p);
+            recording.makeAudioSentenceElements(p, AudioRecordingMode.Sentence);
             const spans = p.find("span");
             // Should have expanded the first span and created one for the second sentence.
             expect(spans.length).toBe(2);
@@ -536,7 +575,10 @@ describe("audio recording tests", () => {
             const sentence3 = "Click them.";
             const div = $(`<div>${sentence1} ${sentence2} ${sentence3}</div>`);
             const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.Sentence
+            );
             const spans = div.find("span");
             expect(spans.length).toBe(3);
             expect(spans[0].innerHTML).toBe(sentence1); // Make sure the anchor is not lost in the HTML
@@ -570,7 +612,10 @@ describe("audio recording tests", () => {
             const div = $(originalHtml);
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.TextBox
+            );
 
             expect(div.text()).toBe(
                 "Paragraph 1 Sentence 1. Paragraph 1, Sentence 2. Paragraph 2, Sentence 1. Paragraph 2, Sentence 2.",
@@ -643,7 +688,10 @@ describe("audio recording tests", () => {
             );
 
             recording.audioRecordingMode = AudioRecordingMode.Sentence;
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.Sentence
+            );
             expect(div.text).toBe($(originalHtml).text, "Swap back test");
             // Note: It is not expected that going to by-sentence to here will lead back the original HTML structure. (Because we started with unmarked text, not by-sentence)
         });
@@ -662,7 +710,10 @@ describe("audio recording tests", () => {
             const div = $(originalHtml);
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.TextBox
+            );
 
             expect(div.text()).toBe("Hello world", "div text");
 
@@ -718,7 +769,10 @@ describe("audio recording tests", () => {
             );
 
             recording.audioRecordingMode = AudioRecordingMode.Sentence;
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.Sentence
+            );
             expect(div.text).toBe($(originalHtml).text, "Swap back test");
             // Note: It is not expected that going to by-sentence to here will lead back the original HTML structure. (Because we started with unmarked text, not by-sentence)
         });
@@ -737,7 +791,10 @@ describe("audio recording tests", () => {
             const div = $(originalHtml);
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.TextBox
+            );
 
             expect(div.text()).toBe("Hello world", "div text");
 
@@ -785,7 +842,10 @@ describe("audio recording tests", () => {
             );
 
             recording.audioRecordingMode = AudioRecordingMode.Sentence;
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.Sentence
+            );
             expect(div.text).toBe($(originalHtml).text, "Swap back test");
             // Note: It is not expected that going to by-sentence to here will lead back the original HTML structure. (Because we started with unmarked text, not by-sentence)
         });
@@ -796,7 +856,10 @@ describe("audio recording tests", () => {
             const div = $(originalHtml);
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the new mode
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.Sentence
+            );
 
             const parent = $("<div>")
                 .append(div)
@@ -831,7 +894,10 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.TextBox
+            );
 
             let parent = $("<div>")
                 .append(div)
@@ -887,7 +953,10 @@ describe("audio recording tests", () => {
             );
 
             recording.audioRecordingMode = AudioRecordingMode.Sentence;
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.Sentence
+            );
             parent = $("<div>")
                 .append(div)
                 .clone();
@@ -917,7 +986,10 @@ describe("audio recording tests", () => {
 
             let recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.Sentence;
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.Sentence
+            );
 
             expect(div.text()).toBe(
                 "Sentence 1. Sentence 2. Sentence 3.Paragraph 2.",
@@ -980,7 +1052,10 @@ describe("audio recording tests", () => {
             // Test that you can switch back and recover more-or-less the original
             recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.TextBox
+            );
             parentDiv = $("<div>")
                 .append(div)
                 .clone();
@@ -1008,7 +1083,10 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.TextBox
+            );
 
             const parent = $("<div>")
                 .append(div)
@@ -1028,7 +1106,10 @@ describe("audio recording tests", () => {
             const div = $(originalHtml);
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.TextBox
+            );
 
             expect(div.text()).toBe(
                 "Paragraph 1A. Paragraph 1B.Paragraph 2A. Paragraph 2B.",
@@ -1066,7 +1147,10 @@ describe("audio recording tests", () => {
             const div = $(originalHtml);
             const recording = new AudioRecording();
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
-            recording.makeAudioSentenceElements(div);
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.TextBox
+            );
 
             const parent = $("<div>")
                 .append(div)
@@ -1135,7 +1219,7 @@ describe("audio recording tests", () => {
 
             const expectedDiv2Result =
                 '<div class="bloom-editable ui-audioCurrent audio-sentence" id="div2" data-audiorecordingmode="TextBox"><p>Sentence 2.1. Sentence 2.2.</p></div>';
-            expect(div2.outerHTML).toBe(
+            expect(StripRecordingMd5(div2.outerHTML)).toBe(
                 expectedDiv2Result,
                 "Div2 HTML should switch to textbox mode"
             );
@@ -1390,6 +1474,253 @@ describe("audio recording tests", () => {
 
             done();
         });
+    });
+
+    describe("endRecordCurrentAsync", () => {
+        function setupMockRecording() {
+            // Make all the startRecord and endRecord post calls "succeed".
+            spyOn(axios, "post").and.returnValue(Promise.resolve());
+        }
+
+        function setupTest(checksumSetting: string, scenario: AudioMode) {
+            const divHtml = getTextBoxHtmlSimple1(scenario);
+            SetupIFrameFromHtml(`<div id="page1">${divHtml}</div>`);
+
+            if (checksumSetting === "missing") {
+                // No need to do anything
+                //
+                // But let's double-check that the test is setup correctly.
+                const spans = [
+                    getFrameElementById("page", "1.1"),
+                    getFrameElementById("page", "1.2")
+                ];
+
+                spans.forEach(span => {
+                    // Span may be null in PureTextBox scenario
+                    if (span) {
+                        const md5 = span.getAttribute("recordingmd5");
+                        expect(!md5 || md5 === "undefined").toBe(
+                            true,
+                            "Test setup failure: recordingmd5 is not missing."
+                        );
+                    }
+                });
+            } else if (checksumSetting === "outOfDate") {
+                const div = getFrameElementById("page", "div1")!;
+                div.setAttribute("recordingmd5", "wrongMD5");
+            } else {
+                throw new Error(
+                    "Unrecognized checksumSetting: " + checksumSetting
+                );
+            }
+        }
+
+        async function runEndRecordSetsMd5TestsAsync(
+            md5Setting: string,
+            scenario: AudioMode
+        ) {
+            // Setup
+            setupTest(md5Setting, scenario);
+            setupMockRecording();
+
+            // StartRecording doesn't do anything unless Record button is enabled.
+            // So set it up into enabled state.
+            const recording = new AudioRecording();
+            if (scenario === AudioMode.PureSentence) {
+                recording.audioRecordingMode = AudioRecordingMode.Sentence;
+            } else {
+                recording.audioRecordingMode = AudioRecordingMode.TextBox;
+            }
+
+            recording.setEnabledOrExpecting("record", "record");
+
+            // Need to start recording because endRecord() doesn't do anything if a recording hasn't been started.
+            await recording.startRecordCurrentAsync();
+
+            // System under test
+            await recording.endRecordCurrentAsync();
+
+            // Verification
+            if (scenario === AudioMode.PureSentence) {
+                // Only PureSentence should set a sentence-level MD5.
+                // All the other ones shoudl set a text-box level MD5.
+                const span1 = getFrameElementById("page", "1.1") as HTMLElement;
+                // This md5 is for "Sentence 1.1."
+                expect(span1).toHaveAttr(
+                    "recordingmd5",
+                    "7b07751111f5c613158db809b20a1aad"
+                );
+
+                // Only the current one should've been updated. span2's should stay its original value
+                const span2 = getFrameElementById("page", "1.2") as HTMLElement;
+                expect(span2).not.toHaveAttr("recordingmd5");
+            } else {
+                const div = getFrameElementById("page", "div1") as HTMLElement;
+
+                // This md5 is for "Sentence 1.1. Sentence 1.2"
+                expect(div).toHaveAttr(
+                    "recordingmd5",
+                    "134edfa2be336e3ff596f013b0cbe16b"
+                );
+            }
+        }
+
+        const md5Settings = ["missing", "outOfDate"];
+        md5Settings.forEach(md5Setting => {
+            getAllAudioModes().forEach(scenario => {
+                const scenarioName = AudioMode[scenario];
+                it(`recording updates the md5 (md5=${md5Setting}, scenario=${scenarioName})`, async () => {
+                    await runEndRecordSetsMd5TestsAsync(md5Setting, scenario);
+                });
+            });
+        });
+    });
+
+    describe("clearRecording", () => {
+        function setupClearRecordingTest(
+            scenario: AudioMode = AudioMode.PureSentence
+        ) {
+            const divHtml = getTextBoxHtmlSimple1(scenario);
+            SetupIFrameFromHtml(`<div id="page1">${divHtml}</div>`);
+
+            addRecordingChecksums(scenario);
+
+            const clearButton = document.getElementById("audio-clear")!;
+            clearButton.classList.add("enabled");
+        }
+
+        function addRecordingChecksums(scenario: AudioMode) {
+            const audioSentenceIds =
+                scenario === AudioMode.PureTextBox ||
+                scenario === AudioMode.SoftSplitTextBox
+                    ? ["div1"]
+                    : ["1.1", "1.2"];
+
+            audioSentenceIds.forEach(id => {
+                const elem = getFrameElementById("page", id)!;
+                elem.setAttribute("recordingmd5", "fakeMd5");
+            });
+        }
+
+        const runClearRecordingAsync = async scenario => {
+            const recording = new AudioRecording();
+            if (scenario === AudioMode.PureSentence) {
+                recording.audioRecordingMode = AudioRecordingMode.Sentence;
+            } else {
+                recording.audioRecordingMode = AudioRecordingMode.TextBox;
+            }
+            await recording.clearRecordingAsync();
+        };
+
+        getAllAudioModes().forEach(scenario => {
+            const scenarioName = AudioMode[scenario];
+            it(`clearRecording() removes recordingmd5 (scenario=${scenarioName}`, async () => {
+                await runClearRecordingMd5TestAsync(scenario);
+            });
+        });
+
+        async function runClearRecordingMd5TestAsync(scenario: AudioMode) {
+            setupClearRecordingTest(scenario);
+            await runClearRecordingAsync(scenario);
+
+            // Verification
+            if (scenario === AudioMode.PureSentence) {
+                // Deleted
+                const span1 = getFrameElementById("page", "1.1");
+                expect(span1).not.toHaveAttr("recordingmd5");
+
+                // The other spans aren't deleted though.
+                const span2 = getFrameElementById("page", "1.2");
+                expect(span2).toHaveAttr("recordingmd5", "fakeMd5");
+            } else if (
+                scenario === AudioMode.PreTextBox ||
+                scenario === AudioMode.HardSplitTextBox
+            ) {
+                // All recordings within the text box should be cleared out
+                const spanIds = ["1.1", "1.2"];
+                spanIds.forEach(id => {
+                    const span = getFrameElementById("page", id);
+                    expect(span).not.toHaveAttr("recordingmd5");
+                });
+            } else {
+                const div = getFrameElementById("page", "div1");
+                expect(div).not.toHaveAttr("recordingmd5");
+            }
+        }
+
+        it("clearRecording() disables button", async done => {
+            const run = async () => {
+                return runClearRecordingAsync(AudioMode.PureSentence);
+            };
+            const verify = () => {
+                const clearButton = document.getElementById("audio-clear")!;
+                expect(clearButton).not.toHaveClass("enabled");
+                expect(clearButton).toHaveClass("disabled");
+            };
+
+            runAsyncTest(done, setupClearRecordingTest, run, verify);
+        });
+
+        getAllAudioModes().forEach(scenario => {
+            const scenarioName = AudioMode[scenario];
+            it(`clearRecording() deletes recordings (${scenarioName})`, async () => {
+                runClearRecordingDeleteTest(scenario);
+            });
+        });
+
+        async function runClearRecordingDeleteTest(scenario: AudioMode) {
+            spyOn(axios, "post").and.callFake((url: string) => {
+                if (url.includes("/bloom/api/audio/deleteSegment?id")) {
+                    // Helps it test a more realistic scenario, instead of always testing the 404s
+                    return Promise.resolve();
+                } else {
+                    return Promise.reject("Fake 404 error.");
+                }
+            });
+
+            const setup = () => {
+                setupClearRecordingTest(scenario);
+            };
+
+            const run = async () => {
+                return runClearRecordingAsync(scenario);
+            };
+
+            const verify = () => {
+                let ids: string[] = [];
+                switch (scenario) {
+                    case AudioMode.PureSentence: {
+                        ids = ["1.1"]; // , "1.2"];
+                        break;
+                    }
+                    case AudioMode.PreTextBox:
+                    case AudioMode.HardSplitTextBox: {
+                        ids = ["1.1", "1.2"];
+                        break;
+                    }
+                    case AudioMode.PureTextBox:
+                    case AudioMode.SoftSplitTextBox: {
+                        ids = ["div1"];
+                        break;
+                    }
+                    default:
+                        throw new Error(
+                            "Unrecognized scenario: " + AudioMode[scenario]
+                        );
+                }
+
+                ids.forEach(id => {
+                    const path = "/bloom/api/audio/deleteSegment?id=" + id;
+                    expect(axios.post).toHaveBeenCalledWith(path);
+                });
+
+                expect(axios.post).toHaveBeenCalledTimes(ids.length);
+            };
+
+            setup();
+            await run();
+            verify();
+        }
     });
 
     describe("- initializeAudioRecordingMode()", () => {
@@ -1784,6 +2115,10 @@ function StripAudioCurrent(html) {
         .replace(/ class="ui-audioCurrent"/g, "");
 }
 
+export function StripRecordingMd5(html: string): string {
+    return html.replace(/ recordingmd5="[0-9A-Za-z]*"/g, "");
+}
+
 // Adds the iframe into the parent window.
 // Returns a Promise which resolves when the iframe is finished loading and its contentDocument is safe to use.
 export async function SetupIFrameAsync(
@@ -1850,7 +2185,7 @@ export function SetupTalkingBookUIElements() {
     document.body.firstElementChild!.insertAdjacentHTML("afterend", html);
 }
 
-function StripPlayerSrcNoCacheSuffix(url: string): string {
+export function StripPlayerSrcNoCacheSuffix(url: string): string {
     const index = url.lastIndexOf("&");
     if (index < 0) {
         return url;

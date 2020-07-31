@@ -45,6 +45,7 @@ import ImportIcon from "../../../react_components/icons/ImportIcon";
 import { getEditViewFrameExports } from "../../js/bloomFrames";
 import PlaybackOrderControls from "../../../react_components/playbackOrderControls";
 import Recordable from "./recordable";
+import { getMd5 } from "./md5Util";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -67,12 +68,23 @@ export enum AudioRecordingMode {
     TextBox = "TextBox"
 }
 
-// TODO: Replace AudioRecordingMode with this?
+// ENHANCE: Replace AudioRecordingMode with this?
 export enum AudioMode {
     PureSentence, // Record by Sentence, Play by Sentence
+    PreTextBox, // Record by TextBox, Play by Sentence. An intermediate stage when transitioning from PureSentence -> PureTextBox
     PureTextBox, // Record by TextBox, Play by TextBox
     HardSplitTextBox, // Version 4.5 only. Record by TextBox, then split into sentences. (Each sentence has own audio file)
     SoftSplitTextBox // Version 4.6+. Record by TextBox, then split into sentences. (The entire text box only has 1 audio file. The timings for where each sentence starts is annotated).
+}
+
+export function getAllAudioModes(): AudioMode[] {
+    return [
+        AudioMode.PureSentence,
+        AudioMode.PreTextBox,
+        AudioMode.PureTextBox,
+        AudioMode.HardSplitTextBox,
+        AudioMode.SoftSplitTextBox
+    ];
 }
 
 const kWebsocketContext = "audio-recording";
@@ -120,8 +132,6 @@ interface IPlaybackOrderInfo {
 export default class AudioRecording {
     private recording: boolean;
     private levelCanvas: HTMLCanvasElement;
-    private levelCanvasWidth: number = 15;
-    private levelCanvasHeight: number = 80;
     private hiddenSourceBubbles: JQuery;
     private currentAudioId: string;
     private elementsToPlayConsecutivelyStack: Element[] = []; // When we are playing audio, this holds the segments we haven't yet finished playing, including the one currently playing. Thus, when it's empty we are not playing audio at all
@@ -149,7 +159,6 @@ export default class AudioRecording {
     private sentenceToIdListMap: object = {};
     public __testonly__sentenceToIdListMap = this.sentenceToIdListMap; // Exposing it for unit tests. Not meant for public use.
 
-    private stringToSentencesCache: object = {};
     private playbackOrderCache: IPlaybackOrderInfo[] = [];
     private disablingOverlay: HTMLDivElement;
 
@@ -215,7 +224,7 @@ export default class AudioRecording {
             .click(e => this.listenAsync());
         $("#audio-clear")
             .off()
-            .click(e => this.clearRecording());
+            .click(e => this.clearRecordingAsync());
 
         $("#" + kPlaybackOrderClickHandler)
             .off()
@@ -323,30 +332,30 @@ export default class AudioRecording {
             }
         }
 
-        if (
-            this.getPageDocBodyJQuery().find("[data-audiorecordingmode]")
-                .length > 0
-        ) {
-            // For a text box that doesn't already have mode specified, first fallback is to make it the same as another text box on the page that does have it
-            const audioRecordingModeStr: string = this.getPageDocBodyJQuery()
-                .find("[data-audiorecordingmode]")
-                .first()
-                .attr("data-audiorecordingmode");
-
-            const recordingMode = AudioRecording.getAudioRecordingModeFromString(
-                audioRecordingModeStr
+        const pageDocBody = this.getPageDocBody();
+        if (pageDocBody) {
+            const firstWithRecordingMode = pageDocBody.querySelector(
+                "[data-audiorecordingmode]"
             );
-            if (recordingMode != AudioRecordingMode.Unknown) {
-                return recordingMode;
-            }
-        }
+            if (firstWithRecordingMode) {
+                // For a text box that doesn't already have mode specified, first fallback is to make it the same as another text box on the page that does have it
+                const audioRecordingModeStr = firstWithRecordingMode.getAttribute(
+                    "data-audiorecordingmode"
+                );
 
-        if (
-            this.getPageDocBodyJQuery().find("span.audio-sentence").length > 0
-        ) {
-            // This may happen when loading books from 4.3 or earlier that already have text recorded,
-            // and is especially important if the collection default is set to anything other than Sentence.
-            return AudioRecordingMode.Sentence;
+                const recordingMode = AudioRecording.getAudioRecordingModeFromString(
+                    audioRecordingModeStr
+                );
+                if (recordingMode != AudioRecordingMode.Unknown) {
+                    return recordingMode;
+                }
+            }
+
+            if (pageDocBody.querySelector("span.audio-sentence")) {
+                // This may happen when loading books from 4.3 or earlier that already have text recorded,
+                // and is especially important if the collection default is set to anything other than Sentence.
+                return AudioRecordingMode.Sentence;
+            }
         }
 
         // We are not sure what it should be.
@@ -849,7 +858,7 @@ export default class AudioRecording {
         disableHighlightIfNoAudio?: boolean,
         currentElement: Element | null | undefined = undefined // Optional. Provides some minor optimization if set.
     ): Promise<void> {
-        // Note: setHighlightTo() should be run first so that ui-audioCurrent points to the correct element when setSoundFrom() is run.
+        // Note: setHighlightToAsync() should be run first so that ui-audioCurrent points to the correct element when setSoundFrom() is run.
         await this.setHighlightToAsync(
             elementToChangeTo,
             disableHighlightIfNoAudio,
@@ -1061,22 +1070,28 @@ export default class AudioRecording {
     }
 
     private async finishNewRecordingOrImportAsync(): Promise<void> {
-        if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
-            // Reset the audioRecordingTimings.
-            const currentTextBox = this.getCurrentTextBox();
-            if (currentTextBox) {
+        const currentTextBox = this.getCurrentTextBoxSync();
+        if (currentTextBox) {
+            if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
+                // Reset the audioRecordingTimings.
+                //
                 // When ending a recording for a whole text box, we enter the state for Recording=TextBox,Playback=TextBox.
-                // (Previously, it was in Record=TextBox,Play=Sentence.
-                // Being in this intermediate state allows the user to easily switch between Sentence and TextBox without losing their existing sentence recordings.
+                // (Previously, it may have been in Record=TextBox,Play=Sentence if switching from Record by Sentence to Record By Text Box
+                // Being in that intermediate state allows the user to easily switch between Sentence and TextBox without losing their existing sentence recordings.)
                 this.updateMarkupForTextBox(
                     currentTextBox,
+                    AudioRecordingMode.TextBox,
                     AudioRecordingMode.TextBox
                 );
                 await this.resetCurrentAudioElementAsync(currentTextBox);
 
                 currentTextBox.removeAttribute(kEndTimeAttributeName);
             }
+
+            const recordable = new Recordable(currentTextBox);
+            recordable.setChecksum();
         }
+
         this.updatePlayerStatus();
         return this.changeStateAndSetExpectedAsync("play");
     }
@@ -1535,7 +1550,7 @@ export default class AudioRecording {
     }
 
     // Clear the recording for this sentence
-    private clearRecording(): void {
+    public async clearRecordingAsync(): Promise<void> {
         toastr.clear();
 
         if (!this.isEnabledOrExpected("clear")) {
@@ -1558,10 +1573,11 @@ export default class AudioRecording {
         }
 
         // Now go about sending out the API calls to actually delete them.
+        const promisesToAwait: Promise<void>[] = [];
         for (let i = 0; i < elementIdsToDelete.length; ++i) {
             const idToDelete = elementIdsToDelete[i];
 
-            axios
+            const request = axios
                 .post("/bloom/api/audio/deleteSegment?id=" + idToDelete)
                 .then(result => {
                     // data-duration needs to be deleted when the file is deleted.
@@ -1569,7 +1585,7 @@ export default class AudioRecording {
                     // Note: this is not foolproof because the durationchange handler is
                     // being called asynchronously with stale data and sometimes restoring
                     // the deleted attribute.
-                    var current = this.getPageDocBodyJQuery().find(
+                    const current = this.getPageDocBodyJQuery().find(
                         "#" + idToDelete
                     );
                     if (current.length !== 0) {
@@ -1579,11 +1595,22 @@ export default class AudioRecording {
                 .catch(error => {
                     toastr.error(error.statusText);
                 });
+            promisesToAwait.push(request);
         }
 
-        this.clearAudioSplit();
+        // Remove the recording md5(s)
+        const current = this.getCurrentTextBoxSync();
+        if (current) {
+            const recordable = new Recordable(current);
+            recordable.unsetChecksum();
+
+            this.clearAudioSplit();
+        }
+
         this.updatePlayerStatus();
-        this.changeStateAndSetExpectedAsync("record");
+
+        await Promise.all(promisesToAwait);
+        return this.changeStateAndSetExpectedAsync("record");
     }
 
     private doesRecordingExistForCurrentSelection(): boolean {
@@ -1848,6 +1875,7 @@ export default class AudioRecording {
             if (currentTextBox) {
                 this.updateMarkupForTextBox(
                     currentTextBox,
+                    this.audioRecordingMode,
                     AudioRecordingMode.Sentence
                 );
             }
@@ -1868,7 +1896,10 @@ export default class AudioRecording {
 
             const currentTextBox = this.getCurrentTextBox();
             if (currentTextBox) {
-                this.persistRecordingMode(currentTextBox);
+                this.persistRecordingMode(
+                    currentTextBox,
+                    this.audioRecordingMode
+                );
                 await this.setCurrentAudioElementBasedOnRecordingModeAsync(
                     currentTextBox
                 );
@@ -1893,15 +1924,15 @@ export default class AudioRecording {
         }
     }
 
-    public persistRecordingMode(element: Element) {
+    public persistRecordingMode(
+        element: Element,
+        recordingMode: AudioRecordingMode = this.audioRecordingMode
+    ) {
         console.assert(
-            this.audioRecordingMode !== AudioRecordingMode.Unknown,
+            recordingMode !== AudioRecordingMode.Unknown,
             "AudioRecordingMode should not be set to Unknown"
         );
-        element.setAttribute(
-            "data-audiorecordingmode",
-            this.audioRecordingMode
-        );
+        element.setAttribute("data-audiorecordingmode", recordingMode);
 
         // This only set the RECORDING mode. Don't touch the audio-sentence markup, which represents the PLAYBACK mode.
     }
@@ -2085,8 +2116,9 @@ export default class AudioRecording {
             !pageBody ||
             // Tests may not have a value for 'showPlaybackInput'.
             (this.showPlaybackInput && this.showPlaybackInput.checked)
-        )
+        ) {
             return null;
+        }
 
         let audioCurrentElements = pageBody.getElementsByClassName(
             kAudioCurrent
@@ -2094,6 +2126,16 @@ export default class AudioRecording {
 
         if (audioCurrentElements.length === 0) {
             // Oops, ui-audioCurrent not set on anything. Just going to have to stick it onto the first element.
+
+            // ENHANCE: Theoretically, we should await this. (Or at least, the end of the function should await this promise
+            // That means all the callers should be async'ify'd, which is like... everything. :(
+            // But the only asynchronous work done is if you try to fallback by setting the current audio element
+            // Luckily for us, setCurrentAudioElementToFirstAudioElementAsync() does enough work synchronously to allow
+            // the rest of this function to complete without bothering to await the asynchronous work.
+            //
+            // So, I've made two versions of this function.
+            // 1) This original version (that includes the asynchronous fallback)
+            // 2) Also a synchronous (but no fallback) version of this function called getCurrentTextBoxSync()
             this.setCurrentAudioElementToFirstAudioElementAsync();
             audioCurrentElements = pageBody.getElementsByClassName(
                 kAudioCurrent
@@ -2109,6 +2151,34 @@ export default class AudioRecording {
         return <HTMLElement | null>(
             this.getTextBoxOfElement(audioCurrentElements.item(0))
         );
+    }
+
+    // Gets the current text box. If none exists, immediately returns null.
+    public getCurrentTextBoxSync(): HTMLElement | null {
+        // TODO: Refactor the old getCurrentTextBox to something like: getCurrentTextBoxWithFallbackAsync
+        // After that, you can rename this function to getCurrentTextBox
+
+        const pageBody = this.getPageDocBody();
+        if (
+            !pageBody ||
+            // Tests may not have a value for 'showPlaybackInput'.
+            (this.showPlaybackInput && this.showPlaybackInput.checked)
+        ) {
+            return null;
+        }
+
+        const audioCurrentElements = pageBody.getElementsByClassName(
+            kAudioCurrent
+        );
+
+        if (audioCurrentElements.length === 0) {
+            // Oops, ui-audioCurrent not set on anything. Just give up.
+            return null;
+        }
+
+        const currentTextBox = audioCurrentElements.item(0);
+        console.assert(currentTextBox, "CurrentTextBox should not be null");
+        return <HTMLElement>currentTextBox;
     }
 
     // Returns the text box corresponding to this element.
@@ -2200,19 +2270,24 @@ export default class AudioRecording {
     public async setupAndUpdateMarkupAsync(): Promise<void> {
         const recordables = this.getRecordableDivs();
 
-        const asyncTasks: Promise<void>[] = recordables.map(elem => {
-            const playbackMode = this.getPlaybackMode(elem);
-            return this.tryUpdateMarkupForTextBoxAsync(elem, playbackMode);
+        const asyncTasks: Promise<void>[] = recordables.map(async elem => {
+            await new Recordable(elem).setMd5IfMissingAsync();
+            return this.tryUpdateMarkupForTextBoxAsync(elem);
         });
         await Promise.all(asyncTasks);
+
+        // seting the current audio element right now is optional - we could also just wait around
+        // for the first thing that calls getCurrentTextbox.
+        // But let's just do it explicitly instead.
+        await this.resetCurrentAudioElementAsync();
 
         return this.changeStateAndSetExpectedAsync("record");
     }
 
-    // Entry point for TalkingBookTool's updateMarkup() function. Does less work.
+    // Entry point for TalkingBookTool's updateMarkup() function. Does similar but less work than setupAndUpdateMarkupAsync.
     public async updateMarkup(): Promise<void> {
         // Basic outline:
-        // * This function gets called when the user types something, and sometimes after talkingBooKTool's newPageReady() too
+        // * This function gets called when the user types something
         // * First, see if we should update the Current Highlight to the element with the active focus instead.
         // * Then, change the HTML markup with the audio-sentence classes, ids, etc.
         // * Adjust the Current Highlight appropriately.
@@ -2232,8 +2307,10 @@ export default class AudioRecording {
         }
 
         // Now we can carry on with changing the HTML markup with the audio-sentence classes, ids, etc.
-        const playbackMode = this.getCurrentPlaybackMode();
-        await this.tryUpdateMarkupForTextBoxAsync(currentTextBox, playbackMode);
+        // Because the user has edited the document, any existing recordings are suspect.
+        // Although some might still be useful, and some may survive, we think at this point it is more important
+        // that the markup is consistent with the current text in preparation for updating the recordings to match.
+        await this.tryUpdateMarkupForTextBoxAsync(currentTextBox);
 
         // Adjust the current highlight appropriately
         // Regardless of whether it's present, we always need to set the current audio element
@@ -2274,18 +2351,16 @@ export default class AudioRecording {
 
     // Asychronously updates the markup on the specified text box, but only if the operation is currently allowed.
     private async tryUpdateMarkupForTextBoxAsync(
-        textBox: HTMLElement,
-        audioPlaybackMode
+        textBox: HTMLElement
     ): Promise<void> {
         const recordable = new Recordable(textBox);
 
-        // ENHANCE: You could refactor so that this check is only done when a new page is readied
-        // And then you save the result somewhere.
-        // That way, you don't have to make a BloomAPI call plus await it whenever you type in text
-        const isPresent = await recordable.areRecordingsPresentAsync();
+        const shouldUpdateMarkup = await recordable.shouldUpdateMarkupAsync();
 
-        if (!isPresent) {
-            this.updateMarkupForTextBox(textBox, audioPlaybackMode);
+        if (shouldUpdateMarkup) {
+            const recordingMode = this.getRecordingModeOfTextBox(textBox);
+            const playbackMode = this.getPlaybackMode(textBox);
+            this.updateMarkupForTextBox(textBox, recordingMode, playbackMode);
         } else {
             // Just keep the code from changing the splits.
             // No notification right now, which I think in many cases would be fine
@@ -2304,9 +2379,14 @@ export default class AudioRecording {
     // Review: possibly 'audioMarkupMode' would be a better name than 'audioPlaybackMode'?
     private updateMarkupForTextBox(
         textBox: HTMLElement,
-        audioPlaybackMode: AudioRecordingMode
+        audioRecordingMode: AudioRecordingMode,
+        audioPlaybackMode
     ): void {
-        this.makeAudioSentenceElements($(textBox), audioPlaybackMode);
+        this.makeAudioSentenceElements(
+            $(textBox),
+            audioRecordingMode,
+            audioPlaybackMode
+        );
     }
 
     private async resetCurrentAudioElementAsync(
@@ -2376,11 +2456,10 @@ export default class AudioRecording {
         }
 
         if (this.audioRecordingMode == AudioRecordingMode.Sentence) {
-            this.setCurrentAudioElementToFirstAudioSentenceWithinElement(
+            return this.setCurrentAudioElementToFirstAudioSentenceWithinElementAsync(
                 element,
                 isEarlyAbortEnabled
             );
-            return;
         }
         console.assert(this.audioRecordingMode == AudioRecordingMode.TextBox);
 
@@ -2412,7 +2491,7 @@ export default class AudioRecording {
         }
     }
 
-    public setCurrentAudioElementToFirstAudioSentenceWithinElement(
+    public async setCurrentAudioElementToFirstAudioSentenceWithinElementAsync(
         element: Element,
         isEarlyAbortEnabled: boolean = false
     ) {
@@ -2457,8 +2536,7 @@ export default class AudioRecording {
         }
 
         if (changeTo) {
-            // ENHANCE: Maybe async/await this
-            this.setSoundAndHighlightAsync(changeTo);
+            await this.setSoundAndHighlightAsync(changeTo);
         }
     }
 
@@ -2565,260 +2643,6 @@ export default class AudioRecording {
         return uuid;
     }
 
-    private md5(message): string {
-        var HEX_CHARS = "0123456789abcdef".split("");
-        var EXTRA = [128, 32768, 8388608, -2147483648];
-        var blocks: number[] = [];
-
-        var h0,
-            h1,
-            h2,
-            h3,
-            a,
-            b,
-            c,
-            d,
-            bc,
-            da,
-            code,
-            first = true,
-            end = false,
-            index = 0,
-            i,
-            start = 0,
-            bytes = 0,
-            length = message.length;
-        blocks[16] = 0;
-        var SHIFT = [0, 8, 16, 24];
-
-        do {
-            blocks[0] = blocks[16];
-            blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
-            for (i = start; index < length && i < 64; ++index) {
-                code = message.charCodeAt(index);
-                if (code < 0x80) {
-                    blocks[i >> 2] |= code << SHIFT[i++ & 3];
-                } else if (code < 0x800) {
-                    blocks[i >> 2] |= (0xc0 | (code >> 6)) << SHIFT[i++ & 3];
-                    blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
-                } else if (code < 0xd800 || code >= 0xe000) {
-                    blocks[i >> 2] |= (0xe0 | (code >> 12)) << SHIFT[i++ & 3];
-                    blocks[i >> 2] |=
-                        (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
-                    blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
-                } else {
-                    code =
-                        0x10000 +
-                        (((code & 0x3ff) << 10) |
-                            (message.charCodeAt(++index) & 0x3ff));
-                    blocks[i >> 2] |= (0xf0 | (code >> 18)) << SHIFT[i++ & 3];
-                    blocks[i >> 2] |=
-                        (0x80 | ((code >> 12) & 0x3f)) << SHIFT[i++ & 3];
-                    blocks[i >> 2] |=
-                        (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
-                    blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
-                }
-            }
-            bytes += i - start;
-            start = i - 64;
-            if (index == length) {
-                blocks[i >> 2] |= EXTRA[i & 3];
-                ++index;
-            }
-            if (index > length && i < 56) {
-                blocks[14] = bytes << 3;
-                end = true;
-            }
-
-            if (first) {
-                a = blocks[0] - 680876937;
-                a = (((a << 7) | (a >>> 25)) - 271733879) << 0;
-                d = (-1732584194 ^ (a & 2004318071)) + blocks[1] - 117830708;
-                d = (((d << 12) | (d >>> 20)) + a) << 0;
-                c =
-                    (-271733879 ^ (d & (a ^ -271733879))) +
-                    blocks[2] -
-                    1126478375;
-                c = (((c << 17) | (c >>> 15)) + d) << 0;
-                b = (a ^ (c & (d ^ a))) + blocks[3] - 1316259209;
-                b = (((b << 22) | (b >>> 10)) + c) << 0;
-            } else {
-                a = h0;
-                b = h1;
-                c = h2;
-                d = h3;
-                a += (d ^ (b & (c ^ d))) + blocks[0] - 680876936;
-                a = (((a << 7) | (a >>> 25)) + b) << 0;
-                d += (c ^ (a & (b ^ c))) + blocks[1] - 389564586;
-                d = (((d << 12) | (d >>> 20)) + a) << 0;
-                c += (b ^ (d & (a ^ b))) + blocks[2] + 606105819;
-                c = (((c << 17) | (c >>> 15)) + d) << 0;
-                b += (a ^ (c & (d ^ a))) + blocks[3] - 1044525330;
-                b = (((b << 22) | (b >>> 10)) + c) << 0;
-            }
-
-            a += (d ^ (b & (c ^ d))) + blocks[4] - 176418897;
-            a = (((a << 7) | (a >>> 25)) + b) << 0;
-            d += (c ^ (a & (b ^ c))) + blocks[5] + 1200080426;
-            d = (((d << 12) | (d >>> 20)) + a) << 0;
-            c += (b ^ (d & (a ^ b))) + blocks[6] - 1473231341;
-            c = (((c << 17) | (c >>> 15)) + d) << 0;
-            b += (a ^ (c & (d ^ a))) + blocks[7] - 45705983;
-            b = (((b << 22) | (b >>> 10)) + c) << 0;
-            a += (d ^ (b & (c ^ d))) + blocks[8] + 1770035416;
-            a = (((a << 7) | (a >>> 25)) + b) << 0;
-            d += (c ^ (a & (b ^ c))) + blocks[9] - 1958414417;
-            d = (((d << 12) | (d >>> 20)) + a) << 0;
-            c += (b ^ (d & (a ^ b))) + blocks[10] - 42063;
-            c = (((c << 17) | (c >>> 15)) + d) << 0;
-            b += (a ^ (c & (d ^ a))) + blocks[11] - 1990404162;
-            b = (((b << 22) | (b >>> 10)) + c) << 0;
-            a += (d ^ (b & (c ^ d))) + blocks[12] + 1804603682;
-            a = (((a << 7) | (a >>> 25)) + b) << 0;
-            d += (c ^ (a & (b ^ c))) + blocks[13] - 40341101;
-            d = (((d << 12) | (d >>> 20)) + a) << 0;
-            c += (b ^ (d & (a ^ b))) + blocks[14] - 1502002290;
-            c = (((c << 17) | (c >>> 15)) + d) << 0;
-            b += (a ^ (c & (d ^ a))) + blocks[15] + 1236535329;
-            b = (((b << 22) | (b >>> 10)) + c) << 0;
-            a += (c ^ (d & (b ^ c))) + blocks[1] - 165796510;
-            a = (((a << 5) | (a >>> 27)) + b) << 0;
-            d += (b ^ (c & (a ^ b))) + blocks[6] - 1069501632;
-            d = (((d << 9) | (d >>> 23)) + a) << 0;
-            c += (a ^ (b & (d ^ a))) + blocks[11] + 643717713;
-            c = (((c << 14) | (c >>> 18)) + d) << 0;
-            b += (d ^ (a & (c ^ d))) + blocks[0] - 373897302;
-            b = (((b << 20) | (b >>> 12)) + c) << 0;
-            a += (c ^ (d & (b ^ c))) + blocks[5] - 701558691;
-            a = (((a << 5) | (a >>> 27)) + b) << 0;
-            d += (b ^ (c & (a ^ b))) + blocks[10] + 38016083;
-            d = (((d << 9) | (d >>> 23)) + a) << 0;
-            c += (a ^ (b & (d ^ a))) + blocks[15] - 660478335;
-            c = (((c << 14) | (c >>> 18)) + d) << 0;
-            b += (d ^ (a & (c ^ d))) + blocks[4] - 405537848;
-            b = (((b << 20) | (b >>> 12)) + c) << 0;
-            a += (c ^ (d & (b ^ c))) + blocks[9] + 568446438;
-            a = (((a << 5) | (a >>> 27)) + b) << 0;
-            d += (b ^ (c & (a ^ b))) + blocks[14] - 1019803690;
-            d = (((d << 9) | (d >>> 23)) + a) << 0;
-            c += (a ^ (b & (d ^ a))) + blocks[3] - 187363961;
-            c = (((c << 14) | (c >>> 18)) + d) << 0;
-            b += (d ^ (a & (c ^ d))) + blocks[8] + 1163531501;
-            b = (((b << 20) | (b >>> 12)) + c) << 0;
-            a += (c ^ (d & (b ^ c))) + blocks[13] - 1444681467;
-            a = (((a << 5) | (a >>> 27)) + b) << 0;
-            d += (b ^ (c & (a ^ b))) + blocks[2] - 51403784;
-            d = (((d << 9) | (d >>> 23)) + a) << 0;
-            c += (a ^ (b & (d ^ a))) + blocks[7] + 1735328473;
-            c = (((c << 14) | (c >>> 18)) + d) << 0;
-            b += (d ^ (a & (c ^ d))) + blocks[12] - 1926607734;
-            b = (((b << 20) | (b >>> 12)) + c) << 0;
-            bc = b ^ c;
-            a += (bc ^ d) + blocks[5] - 378558;
-            a = (((a << 4) | (a >>> 28)) + b) << 0;
-            d += (bc ^ a) + blocks[8] - 2022574463;
-            d = (((d << 11) | (d >>> 21)) + a) << 0;
-            da = d ^ a;
-            c += (da ^ b) + blocks[11] + 1839030562;
-            c = (((c << 16) | (c >>> 16)) + d) << 0;
-            b += (da ^ c) + blocks[14] - 35309556;
-            b = (((b << 23) | (b >>> 9)) + c) << 0;
-            bc = b ^ c;
-            a += (bc ^ d) + blocks[1] - 1530992060;
-            a = (((a << 4) | (a >>> 28)) + b) << 0;
-            d += (bc ^ a) + blocks[4] + 1272893353;
-            d = (((d << 11) | (d >>> 21)) + a) << 0;
-            da = d ^ a;
-            c += (da ^ b) + blocks[7] - 155497632;
-            c = (((c << 16) | (c >>> 16)) + d) << 0;
-            b += (da ^ c) + blocks[10] - 1094730640;
-            b = (((b << 23) | (b >>> 9)) + c) << 0;
-            bc = b ^ c;
-            a += (bc ^ d) + blocks[13] + 681279174;
-            a = (((a << 4) | (a >>> 28)) + b) << 0;
-            d += (bc ^ a) + blocks[0] - 358537222;
-            d = (((d << 11) | (d >>> 21)) + a) << 0;
-            da = d ^ a;
-            c += (da ^ b) + blocks[3] - 722521979;
-            c = (((c << 16) | (c >>> 16)) + d) << 0;
-            b += (da ^ c) + blocks[6] + 76029189;
-            b = (((b << 23) | (b >>> 9)) + c) << 0;
-            bc = b ^ c;
-            a += (bc ^ d) + blocks[9] - 640364487;
-            a = (((a << 4) | (a >>> 28)) + b) << 0;
-            d += (bc ^ a) + blocks[12] - 421815835;
-            d = (((d << 11) | (d >>> 21)) + a) << 0;
-            da = d ^ a;
-            c += (da ^ b) + blocks[15] + 530742520;
-            c = (((c << 16) | (c >>> 16)) + d) << 0;
-            b += (da ^ c) + blocks[2] - 995338651;
-            b = (((b << 23) | (b >>> 9)) + c) << 0;
-            a += (c ^ (b | ~d)) + blocks[0] - 198630844;
-            a = (((a << 6) | (a >>> 26)) + b) << 0;
-            d += (b ^ (a | ~c)) + blocks[7] + 1126891415;
-            d = (((d << 10) | (d >>> 22)) + a) << 0;
-            c += (a ^ (d | ~b)) + blocks[14] - 1416354905;
-            c = (((c << 15) | (c >>> 17)) + d) << 0;
-            b += (d ^ (c | ~a)) + blocks[5] - 57434055;
-            b = (((b << 21) | (b >>> 11)) + c) << 0;
-            a += (c ^ (b | ~d)) + blocks[12] + 1700485571;
-            a = (((a << 6) | (a >>> 26)) + b) << 0;
-            d += (b ^ (a | ~c)) + blocks[3] - 1894986606;
-            d = (((d << 10) | (d >>> 22)) + a) << 0;
-            c += (a ^ (d | ~b)) + blocks[10] - 1051523;
-            c = (((c << 15) | (c >>> 17)) + d) << 0;
-            b += (d ^ (c | ~a)) + blocks[1] - 2054922799;
-            b = (((b << 21) | (b >>> 11)) + c) << 0;
-            a += (c ^ (b | ~d)) + blocks[8] + 1873313359;
-            a = (((a << 6) | (a >>> 26)) + b) << 0;
-            d += (b ^ (a | ~c)) + blocks[15] - 30611744;
-            d = (((d << 10) | (d >>> 22)) + a) << 0;
-            c += (a ^ (d | ~b)) + blocks[6] - 1560198380;
-            c = (((c << 15) | (c >>> 17)) + d) << 0;
-            b += (d ^ (c | ~a)) + blocks[13] + 1309151649;
-            b = (((b << 21) | (b >>> 11)) + c) << 0;
-            a += (c ^ (b | ~d)) + blocks[4] - 145523070;
-            a = (((a << 6) | (a >>> 26)) + b) << 0;
-            d += (b ^ (a | ~c)) + blocks[11] - 1120210379;
-            d = (((d << 10) | (d >>> 22)) + a) << 0;
-            c += (a ^ (d | ~b)) + blocks[2] + 718787259;
-            c = (((c << 15) | (c >>> 17)) + d) << 0;
-            b += (d ^ (c | ~a)) + blocks[9] - 343485551;
-            b = (((b << 21) | (b >>> 11)) + c) << 0;
-
-            if (first) {
-                h0 = (a + 1732584193) << 0;
-                h1 = (b - 271733879) << 0;
-                h2 = (c - 1732584194) << 0;
-                h3 = (d + 271733878) << 0;
-                first = false;
-            } else {
-                h0 = (h0 + a) << 0;
-                h1 = (h1 + b) << 0;
-                h2 = (h2 + c) << 0;
-                h3 = (h3 + d) << 0;
-            }
-        } while (!end);
-
-        var hex = HEX_CHARS[(h0 >> 4) & 0x0f] + HEX_CHARS[h0 & 0x0f];
-        hex += HEX_CHARS[(h0 >> 12) & 0x0f] + HEX_CHARS[(h0 >> 8) & 0x0f];
-        hex += HEX_CHARS[(h0 >> 20) & 0x0f] + HEX_CHARS[(h0 >> 16) & 0x0f];
-        hex += HEX_CHARS[(h0 >> 28) & 0x0f] + HEX_CHARS[(h0 >> 24) & 0x0f];
-        hex += HEX_CHARS[(h1 >> 4) & 0x0f] + HEX_CHARS[h1 & 0x0f];
-        hex += HEX_CHARS[(h1 >> 12) & 0x0f] + HEX_CHARS[(h1 >> 8) & 0x0f];
-        hex += HEX_CHARS[(h1 >> 20) & 0x0f] + HEX_CHARS[(h1 >> 16) & 0x0f];
-        hex += HEX_CHARS[(h1 >> 28) & 0x0f] + HEX_CHARS[(h1 >> 24) & 0x0f];
-        hex += HEX_CHARS[(h2 >> 4) & 0x0f] + HEX_CHARS[h2 & 0x0f];
-        hex += HEX_CHARS[(h2 >> 12) & 0x0f] + HEX_CHARS[(h2 >> 8) & 0x0f];
-        hex += HEX_CHARS[(h2 >> 20) & 0x0f] + HEX_CHARS[(h2 >> 16) & 0x0f];
-        hex += HEX_CHARS[(h2 >> 28) & 0x0f] + HEX_CHARS[(h2 >> 24) & 0x0f];
-        hex += HEX_CHARS[(h3 >> 4) & 0x0f] + HEX_CHARS[h3 & 0x0f];
-        hex += HEX_CHARS[(h3 >> 12) & 0x0f] + HEX_CHARS[(h3 >> 8) & 0x0f];
-        hex += HEX_CHARS[(h3 >> 20) & 0x0f] + HEX_CHARS[(h3 >> 16) & 0x0f];
-        hex += HEX_CHARS[(h3 >> 28) & 0x0f] + HEX_CHARS[(h3 >> 24) & 0x0f];
-        return hex;
-    }
-
     // AudioRecordingMode=Sentence: We want to make out of each sentence in root a span which has a unique ID.
     // AudioRecordingMode=TextBox: We want to turn the bloom-editable text box into the unit which will be
     // recorded. (It needs a unique ID too). No spans will be created though.
@@ -2830,6 +2654,7 @@ export default class AudioRecording {
     // in a root (possibly the root itself, if it has no children).
     public makeAudioSentenceElements(
         rootElementList: JQuery,
+        audioRecordingMode: AudioRecordingMode,
         audioPlaybackMode: AudioRecordingMode = this.audioRecordingMode
     ): void {
         // Preconditions:
@@ -2843,7 +2668,7 @@ export default class AudioRecording {
         rootElementList.each((index: number, root: Element) => {
             if (audioPlaybackMode == AudioRecordingMode.Sentence) {
                 if (this.isRootRecordableDiv(root)) {
-                    this.persistRecordingMode(root);
+                    this.persistRecordingMode(root, audioRecordingMode);
 
                     // Cleanup markup from AudioRecordingMode=TextBox
                     root.classList.remove(kAudioSentence);
@@ -2852,7 +2677,7 @@ export default class AudioRecording {
                 // Note: Includes cases where you are in Soft Split mode. (You will return without running makeAudioSentenceElementsLeaf()
                 if (this.isRootRecordableDiv(root)) {
                     // Save the RECORDING (not the playback) setting  used, so we can load it properly later
-                    this.persistRecordingMode(root);
+                    this.persistRecordingMode(root, audioRecordingMode);
 
                     // Cleanup markup from AudioRecordingMode=Sentence
                     $(root)
@@ -2900,6 +2725,7 @@ export default class AudioRecording {
                     $(child).replaceWith($(child).html()); // clean up.
                     this.makeAudioSentenceElements(
                         rootElementList,
+                        audioRecordingMode,
                         audioPlaybackMode
                     ); // start over.
                     return;
@@ -2921,7 +2747,11 @@ export default class AudioRecording {
                     $(child).attr("id") !== "formatButton"
                 ) {
                     processedChild = true;
-                    this.makeAudioSentenceElements($(child), audioPlaybackMode);
+                    this.makeAudioSentenceElements(
+                        $(child),
+                        audioRecordingMode,
+                        audioPlaybackMode
+                    );
                 }
             }
 
@@ -2988,7 +2818,7 @@ export default class AudioRecording {
         for (let i = 0; i < htmlFragments.length; i++) {
             const fragment = htmlFragments[i];
             if (this.isRecordable(fragment)) {
-                const currentMd5 = this.md5(fragment.text);
+                const currentMd5 = getMd5(fragment.text);
                 for (let j = 0; j < reuse.length; j++) {
                     if (currentMd5 === reuse[j].md5) {
                         // It's convenient here (very locally) to add a field to fragment which is not part
@@ -3454,7 +3284,7 @@ export default class AudioRecording {
         }
     }
 
-    private setEnabledOrExpecting(verb: string, expectedVerb: string) {
+    public setEnabledOrExpecting(verb: string, expectedVerb: string) {
         if (expectedVerb == verb) this.setStatus(verb, Status.Expected);
         else this.setStatus(verb, Status.Enabled);
     }
@@ -3706,15 +3536,13 @@ export default class AudioRecording {
         return fragmentObjects;
     }
 
-    // I add a cached version so that it is more verifiable that two calls with the same inputs will definitely return the same outputs.
     public stringToSentences(text: string): TextFragment[] {
-        if (text in this.stringToSentencesCache) {
-            return this.stringToSentencesCache[text];
-        } else {
-            const retVal = theOneLibSynphony.stringToSentences(text);
-            this.stringToSentencesCache[text] = retVal;
-            return retVal;
-        }
+        // Used to have a caching layer. Now we just always call it directly.
+        // The cache was added to ensure that the same input returns the same ouput (at least for the same run),
+        // but the underlying library has been pretty deterministic, so no real concern about different results there.
+        //
+        // The caching feature, if returned, should ideally only be live when you are running AutoSegment.
+        return theOneLibSynphony.stringToSentences(text);
     }
 
     public getAutoSegmentLanguageCode(): string {
@@ -3784,7 +3612,7 @@ export default class AudioRecording {
         const isSuccess = result && result.data;
 
         if (isSuccess) {
-            // Now that we know the Auto Segmentation succeeded, finally convert into by-sentence mode.
+            // Now that we know the Auto Segmentation succeeded, finally update the markup
             const allEndTimesString: string = result.data;
             const currentTextBox = this.getCurrentTextBox();
             if (currentTextBox) {
@@ -3793,9 +3621,13 @@ export default class AudioRecording {
                     allEndTimesString
                 );
 
+                // Precondition: Assumes that re-running stringToSentences on the same input will give the same result
+                // as when we ran it before the BloomAPI result came bck.
+
                 // Note that this will want to use the sentenceToIdListMap member variable to inform it to re-use the IDs used to create the split audio files
                 this.updateMarkupForTextBox(
                     currentTextBox,
+                    this.audioRecordingMode,
                     AudioRecordingMode.Sentence
                 );
             }
@@ -3854,6 +3686,7 @@ export default class AudioRecording {
         const currentTextBox = this.getCurrentTextBox();
         if (currentTextBox) {
             currentTextBox.classList.remove("bloom-postAudioSplit");
+            currentTextBox.removeAttribute("data-audioRecordingEndTimes");
         }
     }
 

@@ -1,8 +1,14 @@
 import { AudioRecordingMode } from "./audioRecording";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
+import { getMd5 } from "./md5Util";
 
 const kAudioSentence = "audio-sentence";
 
+enum RecordingStatus {
+    None,
+    Partial,
+    Full
+}
 // It represents a recordable text box that has elements we can make audio recordings of.
 // This class is a work in progress. We can migrate functions from audioRecording.ts into here
 // that solely operate on a text box without caring about the talking book tool.
@@ -87,7 +93,7 @@ export default class Recordable {
     }
 
     // Returns true (asynchronously) if this text box contains any recordings.
-    public async areRecordingsPresentAsync(): Promise<boolean> {
+    public async areAnyRecordingsPresentAsync(): Promise<boolean> {
         const idsToCheck: string[] = this.getAudioSentenceIds();
         if (idsToCheck.length === 0) {
             return false;
@@ -102,5 +108,155 @@ export default class Recordable {
             // If the recording is not there, it will return a 404 error aka it goes into the catch.
             return false;
         }
+    }
+
+    // Returns true (asynchronously) if every audio-sentence within this text box is recorded.
+    public async isFullyRecordedAsync(): Promise<boolean> {
+        const idsToCheck: string[] = this.getAudioSentenceIds();
+        if (idsToCheck.length === 0) {
+            return false;
+        }
+
+        let result: AxiosResponse<any>;
+        try {
+            const url = `/bloom/api/audio/checkForAllRecording?ids=${idsToCheck}`;
+            result = await axios.get(url);
+        } catch {
+            // Just swallow 404 errors and return false instead
+            // (Unit tests may return 404's if not configured to return fake values for these calls)
+            return false;
+        }
+        const isAllPresent = result.data as boolean;
+        return isAllPresent;
+    }
+
+    public static async isSentenceRecordedAsync(
+        sentence: Element
+    ): Promise<boolean> {
+        if (!sentence.id) {
+            return Promise.reject(
+                new Error("id was falsy on sentence: " + sentence.outerHTML)
+            );
+        }
+
+        try {
+            await axios.get(
+                `/bloom/api/audio/checkForAnyRecording?ids=${sentence.id}`
+            );
+        } catch {
+            // Well, currently missing is coded up as returning a 404 error.
+            return Promise.resolve(false);
+        }
+
+        return Promise.resolve(true);
+    }
+
+    // Sets the md5 of the text box to that of its current contents
+    public setChecksum(): void {
+        const sentences = this.getAudioSentences();
+        sentences.forEach(sentence => {
+            const md5 = getMd5(sentence.innerText);
+            sentence.setAttribute("recordingmd5", md5);
+        });
+    }
+
+    public unsetChecksum(): void {
+        const sentences = this.getAudioSentences();
+        sentences.forEach(sentence => {
+            sentence.removeAttribute("recordingmd5");
+        });
+    }
+
+    public async setMd5IfMissingAsync(): Promise<void> {
+        const sentences = this.getAudioSentences();
+        const asyncUpdates = sentences.map(elem => {
+            return this.setMd5OnSentenceIfMissingAsync(elem);
+        });
+        await Promise.all(asyncUpdates);
+    }
+
+    private async setMd5OnSentenceIfMissingAsync(
+        sentence: HTMLElement
+    ): Promise<void> {
+        if (this.isMissingRecordingChecksum(sentence)) {
+            // We only want to update ones that have a recording associated with them.
+            if (await Recordable.isSentenceRecordedAsync(sentence)) {
+                const md5 = getMd5(sentence.innerText);
+                sentence.setAttribute("recordingmd5", md5);
+            }
+        }
+    }
+
+    private isMissingRecordingChecksum(element: HTMLElement) {
+        const checksum = element.getAttribute("recordingmd5");
+        return !checksum || checksum === "undefined";
+    }
+
+    public async shouldUpdateMarkupAsync(): Promise<boolean> {
+        if (this.areAnyRecordingsOutOfDate()) {
+            // Should be updated
+            return true;
+        } else {
+            const recordingStatus = await this.getRecordingStatusAsync();
+            if (recordingStatus === RecordingStatus.Full) {
+                // Should not be updated. Don't mess up their fully recorded book
+                return false;
+            } else if (recordingStatus === RecordingStatus.Partial) {
+                // Not fully recorded. We're expecting them to make another recording.
+                // We'll go ahead and update the markup so that if/when they do record it, it'll be in the right state
+                // Also eliminates some tricky cases like if it's partially recorded and user edits the unrecorded span.
+                return true;
+            } else {
+                // No recordings: Safe to update if we want (no risk of audio loss). Might as well (make sure parsed with latest algo/settings).
+                return true;
+            }
+        }
+    }
+
+    // Determines whether the text box is fully, partially, or not recorded all in one go,
+    // without multiple sequential awaits.
+    private async getRecordingStatusAsync(): Promise<RecordingStatus> {
+        const asyncTasks = [
+            this.isFullyRecordedAsync(),
+            this.areAnyRecordingsPresentAsync()
+        ];
+
+        const [isFullyRecorded, isPartiallyRecorded] = await Promise.all(
+            asyncTasks
+        );
+        if (isFullyRecorded) {
+            return RecordingStatus.Full;
+        } else if (isPartiallyRecorded) {
+            return RecordingStatus.Partial;
+        } else {
+            return RecordingStatus.None;
+        }
+    }
+
+    private areAnyRecordingsOutOfDate(): boolean {
+        return this.getOutOfDateRecordings().length > 0;
+    }
+
+    // Returns true if any of the checksums for the audio-sentences within this recordable don't match (or don't eixist)
+    private getOutOfDateRecordings(): HTMLElement[] {
+        // These are the elements that physically correspond to the audio recording
+        const sentences = this.getAudioSentences();
+
+        const outOfDateSentences = sentences.filter(sentence =>
+            this.isSentenceOutOfDate(sentence)
+        );
+
+        return outOfDateSentences;
+    }
+
+    // Returns true is the sentence does not match its checksum. (A missing checksum does not count as out of date).
+    private isSentenceOutOfDate(sentence: HTMLElement): boolean {
+        if (this.isMissingRecordingChecksum(sentence)) {
+            return false;
+        }
+
+        const previousChecksum = sentence.getAttribute("recordingmd5");
+        const currentChecksum = getMd5(sentence.innerText);
+        return previousChecksum !== currentChecksum;
     }
 }

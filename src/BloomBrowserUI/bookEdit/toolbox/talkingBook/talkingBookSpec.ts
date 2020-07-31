@@ -3,13 +3,16 @@ import {
     theOneAudioRecorder,
     initializeTalkingBookToolAsync,
     AudioRecordingMode,
-    AudioMode
+    AudioMode,
+    getAllAudioModes
 } from "./audioRecording";
 import {
     SetupTalkingBookUIElements,
     SetupIFrameAsync,
     SetupIFrameFromHtml,
-    getFrameElementById
+    getFrameElementById,
+    StripPlayerSrcNoCacheSuffix,
+    StripRecordingMd5
 } from "./audioRecordingSpec";
 import * as XRegExp from "xregexp"; // Not sure why, but import * as XRegExp works better. import XRegExp causes "xregexp_1.default is undefined" error
 import { setSentenceEndingPunctuationForBloom } from "../readers/libSynphony/bloom_xregexp_categories";
@@ -24,7 +27,7 @@ describe("talking book tests", () => {
     });
 
     describe("- updateMarkup()", () => {
-        it("moves highlight after focus changes", async done => {
+        it("moves highlight after focus changes", async () => {
             // Setup Initial HTML
             const textBox1 =
                 '<div class="bloom-editable" id="div1"><p><span id="1.1" class="audio-sentence ui-audioCurrent">1.1</span></p></div>';
@@ -50,7 +53,6 @@ describe("talking book tests", () => {
             const currentTextBox = theOneAudioRecorder.getCurrentTextBox()!;
             const currentId = currentTextBox.getAttribute("id");
             expect(currentId).toBe("div2");
-            done();
         });
     });
 
@@ -76,52 +78,184 @@ describe("talking book tests", () => {
         function setAudioFilesDontExist() {
             // Mark that the recording doesn't exist.
             // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
-            spyOn(axios, "get").and.returnValue(
-                Promise.reject(new Error("Fake 404 Error"))
-            );
+            spyOn(axios, "get").and.callFake((url: string) => {
+                if (
+                    url.includes("/bloom/api/audio/checkForAllRecording?ids=")
+                ) {
+                    return Promise.resolve({ data: false });
+                } else {
+                    return Promise.reject(new Error("Fake 404 Error"));
+                }
+            });
         }
 
         function setAudioFilesPresent() {
             // Mark that the recording exists.
             // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
-            spyOn(axios, "get").and.returnValue(Promise.resolve());
+            spyOn(axios, "get").and.callFake((url: string) => {
+                if (
+                    url.includes("/bloom/api/audio/checkForAllRecording?ids=")
+                ) {
+                    // ENHANCE: This test would be more realisitic if only specific ids for checkAllRecording returned true.
+                    return Promise.resolve({ data: true });
+                } else {
+                    return Promise.resolve();
+                }
+            });
         }
 
-        function setupPureSentenceModeHtml(): string {
-            const div1Html =
-                '<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent">1.1၊</span> <span id="1.2" class="audio-sentence">1.2</span></p></div>';
-            const div2Html =
-                '<div class="bloom-editable" id="div2" data-audioRecordingMode="Sentence"><p><span id="2.1" class="audio-sentence">2.1၊</span> <span id="2.2" class="audio-sentence">2.2</span></p></div>';
+        function setAudioFilesPartiallyPresent(scenario: AudioMode) {
+            // Mark that the recording exists.
+            // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
+            let anyPresent: string[] = [];
+            let allPresent: string[] = [];
+            switch (scenario) {
+                case AudioMode.PureSentence:
+                case AudioMode.PreTextBox:
+                case AudioMode.HardSplitTextBox: {
+                    anyPresent = [
+                        "ids=1.2",
+                        "ids=2.2",
+                        "ids=1.1,1.2",
+                        "ids=2.1,2.2"
+                    ];
+                    allPresent = ["ids=1.2", "ids=2.2"];
+                    break;
+                }
+                case AudioMode.PureTextBox:
+                case AudioMode.SoftSplitTextBox: {
+                    throw new Error(`invalid scenario: ${AudioMode[scenario]}`);
+                }
+                default: {
+                    throw new Error(
+                        `Unhandled scenario: ${scenario} (${
+                            AudioMode[scenario]
+                        })`
+                    );
+                }
+            }
+
+            const urlToResponse = {};
+            anyPresent.forEach(params => {
+                const url = "/bloom/api/audio/checkForAnyRecording?" + params;
+                urlToResponse[url] = Promise.resolve();
+            });
+            allPresent.forEach(params => {
+                const url = "/bloom/api/audio/checkForAllRecording?" + params;
+                urlToResponse[url] = Promise.resolve({ data: true });
+            });
+            spyOn(axios, "get").and.callFake((url: string) => {
+                const response = urlToResponse[url];
+                if (response) {
+                    return response;
+                } else {
+                    return Promise.reject("Fake 404 error.");
+                }
+            });
+        }
+
+        function getTestMd5s(
+            md5ValueSetting: string,
+            scenario: AudioMode
+        ): string[] {
+            if (md5ValueSetting === "missing") {
+                return ["undefined", "undefined", "undefined", "undefined"];
+            } else if (md5ValueSetting === "differs") {
+                return ["001", "002", "003", "004"];
+            } else if (md5ValueSetting === "same") {
+                switch (scenario) {
+                    case AudioMode.PureSentence:
+                    case AudioMode.PreTextBox:
+                    case AudioMode.HardSplitTextBox: {
+                        return [
+                            "28e9f104eacb2cf2afe90c7074733103",
+                            "4aaf751627dd525fb2a5ebb7928ff353",
+                            "3de477f0b8b44a793a313b344d6687d6",
+                            "b82352b9566d3bf74be60fb2d1a81a7b"
+                        ];
+                    }
+                    case AudioMode.PureTextBox:
+                    case AudioMode.SoftSplitTextBox: {
+                        return [
+                            "b65fad901ce36fb8251f21f9aca8e2d0",
+                            "ad15831c388fb93285cbb18306a4b734"
+                        ];
+                    }
+                    default: {
+                        throw new Error("Unknown scenario: " + scenario);
+                    }
+                }
+            } else {
+                throw new Error("Unknown checksum setting: " + md5ValueSetting);
+            }
+        }
+
+        function setupPureSentenceModeHtml(checksums: string[]): string {
+            const div1Html = `<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent" recordingmd5="${
+                checksums[0]
+            }">Sentence 1.1၊</span> <span id="1.2" class="audio-sentence" recordingmd5="${
+                checksums[1]
+            }">Sentence 1.2</span></p></div>`;
+            const div2Html = `<div class="bloom-editable" id="div2" data-audioRecordingMode="Sentence" recordingmd5=""><p><span id="2.1" class="audio-sentence" recordingmd5="${
+                checksums[2]
+            }">Sentence 2.1၊</span> <span id="2.2" class="audio-sentence" recordingmd5="${
+                checksums[3]
+            }">Sentence 2.2</span></p></div>`;
             return `${div1Html}${div2Html}`;
         }
 
-        function setupPureTextBoxModeHtml(): string {
-            const div1Html =
-                '<div class="bloom-editable audio-sentence ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox"><p>1.1၊ 1.2</p></div>';
-            const div2Html =
-                '<div class="bloom-editable audio-sentence" id="div2" data-audiorecordingmode="TextBox"><p>2.1၊ 2.2</p></div>';
+        function setupPreTextBoxModeHtml(checksums: string[]): string {
+            const div1Html = `<div class="bloom-editable ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox"><p><span id="1.1" class="audio-sentence" recordingmd5="${
+                checksums[0]
+            }">Sentence 1.1၊</span> <span id="1.2" class="audio-sentence" recordingmd5="${
+                checksums[1]
+            }">Sentence 1.2</span></p></div>`;
+            const div2Html = `<div class="bloom-editable" id="div2" data-audiorecordingmode="TextBox"><p><span id="2.1" class="audio-sentence" recordingmd5="${
+                checksums[2]
+            }">Sentence 2.1၊</span> <span id="2.2" class="audio-sentence" recordingmd5="${
+                checksums[3]
+            }">Sentence 2.2</span></p></div>`;
             return `${div1Html}${div2Html}`;
         }
 
-        function setupTextBoxHardSplitHtml(): string {
+        function setupPureTextBoxModeHtml(checksums: string[]): string {
+            const div1Html = `<div class="bloom-editable audio-sentence ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox" recordingmd5="${
+                checksums[0]
+            }"><p>Sentence 1.1၊ Sentence 1.2</p></div>`;
+            const div2Html = `<div class="bloom-editable audio-sentence" id="div2" data-audiorecordingmode="TextBox" recordingmd5="${
+                checksums[1]
+            }"><p>Sentence 2.1၊ Sentence 2.2</p></div>`;
+            return `${div1Html}${div2Html}`;
+        }
+
+        function setupTextBoxHardSplitHtml(checksums: string[]): string {
             let html = "";
+            let checksumIndex = 0;
             for (let i = 1; i <= 2; ++i) {
+                // FYI: Yes, it is confirmed that in hardSplit, ui-audioCurrent goes on the div, not the span.
                 const divStartHtml = `<div class="bloom-editable${
                     i === 1 ? " ui-audioCurrent" : ""
                 }" id="div${i}" data-audiorecordingmode="TextBox">`;
-                const divInnerHtml = `<p><span class="audio-sentence">${i}.1၊</span> <span class="audio-sentence">${i}.2</span></p>`;
+                const divInnerHtml = `<p><span id="${i}.1" class="audio-sentence" recordingmd5="${
+                    checksums[checksumIndex++]
+                }">Sentence ${i}.1၊</span> <span id="${i}.2" class="audio-sentence" recordingmd5="${
+                    checksums[checksumIndex++]
+                }">Sentence ${i}.2</span></p>`;
                 const divHtml = `${divStartHtml}${divInnerHtml}</div>`;
                 html += divHtml;
             }
             return html;
         }
-        function setupTextBoxSoftSplitHtml(): string {
+
+        function setupTextBoxSoftSplitHtml(checksums: string[]): string {
             let html = "";
             for (let i = 1; i <= 2; ++i) {
                 const divStartHtml = `<div class="bloom-editable audio-sentence${
                     i === 1 ? " ui-audioCurrent" : ""
-                }" id="div${i}" data-audiorecordingmode="TextBox" data-audiorecordingendtimes="1.0 2.0">`;
-                const divInnerHtml = `<p><span id="${i}.1" class="bloom-highlightSegment">${i}.1၊</span> <span id="${i}.2" class="bloom-highlightSegment">${i}.2</span></p>`;
+                }" id="div${i}" data-audiorecordingmode="TextBox" recordingmd5="${
+                    checksums[i - 1]
+                }" data-audiorecordingendtimes="1.0 2.0">`;
+                const divInnerHtml = `<p><span id="${i}.1" class="bloom-highlightSegment">Sentence ${i}.1၊</span> <span id="${i}.2" class="bloom-highlightSegment">Sentence ${i}.2</span></p>`;
 
                 const divHtml = `${divStartHtml}${divInnerHtml}</div>`;
                 html += divHtml;
@@ -129,30 +263,44 @@ describe("talking book tests", () => {
             return html;
         }
 
-        async function runSentenceSplittingTestsAsync(
+        let originalDiv1Html = "";
+        let originalDiv2Html = "";
+
+        function setupSentenceSplitTest(
             scenario: AudioMode,
-            areRecordingsPresent: boolean
-        ) {
+            checksumSetting: string,
+            areRecordingsPresent: string
+        ): void {
+            const checksums = getTestMd5s(checksumSetting, scenario);
+
             let pageInnerHtml: string = "";
             switch (scenario) {
                 case AudioMode.PureSentence: {
-                    pageInnerHtml = setupPureSentenceModeHtml();
+                    pageInnerHtml = setupPureSentenceModeHtml(checksums);
+                    break;
+                }
+                case AudioMode.PreTextBox: {
+                    pageInnerHtml = setupPreTextBoxModeHtml(checksums);
                     break;
                 }
                 case AudioMode.PureTextBox: {
-                    pageInnerHtml = setupPureTextBoxModeHtml();
+                    pageInnerHtml = setupPureTextBoxModeHtml(checksums);
                     break;
                 }
                 case AudioMode.HardSplitTextBox: {
-                    pageInnerHtml = setupTextBoxHardSplitHtml();
+                    pageInnerHtml = setupTextBoxHardSplitHtml(checksums);
                     break;
                 }
                 case AudioMode.SoftSplitTextBox: {
-                    pageInnerHtml = setupTextBoxSoftSplitHtml();
+                    pageInnerHtml = setupTextBoxSoftSplitHtml(checksums);
                     break;
                 }
                 default: {
-                    throw new Error("Unknown scenario: " + scenario);
+                    throw new Error(
+                        `Unhandled scenario: ${scenario} (${
+                            AudioMode[scenario]
+                        })`
+                    );
                 }
             }
 
@@ -166,72 +314,107 @@ describe("talking book tests", () => {
                     AudioRecordingMode.TextBox;
             }
 
-            const originalHtml = getFrameElementById("page", "page1")!
-                .innerHTML;
+            originalDiv1Html = getFrameElementById("page", "div1")!.outerHTML;
+            originalDiv2Html = getFrameElementById("page", "div2")!.outerHTML;
 
-            if (areRecordingsPresent) {
+            if (areRecordingsPresent === "present") {
                 setAudioFilesPresent();
-            } else {
+            } else if (areRecordingsPresent === "partiallyPresent") {
+                setAudioFilesPartiallyPresent(scenario);
+            } else if (areRecordingsPresent === "missing") {
                 setAudioFilesDontExist();
+            } else {
+                throw new Error(
+                    "Unhandled value of areRecordingsPresent: " +
+                        areRecordingsPresent
+                );
             }
-
-            // System under test
-            const tbTool = new TalkingBookTool();
-            await tbTool.showTool();
-
-            // Verification
-            verifyHtmlStructure(scenario, areRecordingsPresent, originalHtml);
-            verifyCurrentHighlight(scenario);
-            verifyRecordButtonEnabled(); // Make sure we didn't accidentally disable all the toolbox buttons
         }
 
-        function verifyHtmlStructure(
-            scenario: AudioMode,
-            areRecordingsPresent: boolean,
-            originalHtml: string
-        ) {
-            if (
-                areRecordingsPresent ||
-                scenario === AudioMode.SoftSplitTextBox
-            ) {
-                // NOTE: SoftSplit test doesn't have very intuitive results.
-                // Even if recordings aren't present, it actually preserves the original splits, even though normally, no recordings present means we should update them.
-                // Prior to this check-if-recordings-present feature, it was actually the case that upon Soft Split, it never updated the markup.
-                // (That's because the playback mode was identified as text box, and in that case, it never actually runs makeAudioSentenceElementsLeaf())
-                // I'm not sure if that was entirely intentional, but it does seem very problematic to risk increasing/decreasing the number of splits while an audio is aligned to it.
-                // Now that we do check if recordings present...
-                // If they're somehow missing, we COULD now update the markup, but it doesn't seem worth the time, complexity, or risk to add that functionality.
-                // I guess it's more like if there's no recordings present, then we do whatever the old behavior was... which in this case, is to not do anything.
+        async function runShowToolAsync(): Promise<void> {
+            const tbTool = new TalkingBookTool();
+            await tbTool.showTool();
+        }
 
-                // Verify unchanged.
-                const currentHtml = getFrameElementById("page", "page1")!
-                    .innerHTML;
-                expect(currentHtml).toBe(originalHtml);
-            } else if (
+        function verifyCommonAspects(scenario: AudioMode) {
+            verifyCurrentHighlight(scenario);
+            verifySoundForShowToolTests(scenario);
+            verifyRecordButtonEnabled(); // Check that we didn't accidentally disable all the toolbox buttons.
+        }
+
+        function verifySplitsUpdated(scenario: AudioMode) {
+            verifyHtmlUpdated(scenario);
+            verifyCommonAspects(scenario);
+        }
+
+        function verifySplitsPreserved(scenario: AudioMode) {
+            verifyHtmlPreserved(scenario);
+            verifyCommonAspects(scenario);
+        }
+
+        function verifyHtmlUpdated(scenario: AudioMode) {
+            if (
                 scenario === AudioMode.PureSentence ||
+                scenario === AudioMode.PreTextBox ||
                 scenario === AudioMode.HardSplitTextBox
             ) {
                 for (let i = 1; i <= 2; ++i) {
                     const spans = getAudioSentenceSpans(`div${i}`);
-                    const texts = spans.map(elem => {
-                        return elem.innerText;
-                    });
-                    expect(texts).toEqual(
-                        [`${i}.1၊ ${i}.2`],
-                        `Failure for div${i}`
+
+                    expect(spans).toHaveLength(1);
+                    expect(spans[0]).toHaveText(
+                        `Sentence ${i}.1၊ Sentence ${i}.2`
                     );
                 }
             } else if (scenario === AudioMode.PureTextBox) {
-                for (let i = 1; i <= 2; ++i) {
-                    const paragraphs = getParagraphsOfTextBox(`div${i}`);
-                    const innerHTMLs = paragraphs.map(p => p.innerHTML);
-                    expect(innerHTMLs).toEqual(
-                        [`${i}.1၊ ${i}.2`],
-                        `Failure for div${i}`
-                    );
-                }
+                // There's actually nothing that needs to be updated if it's in TextBox mode.
+                // So you should actually get the same result as when you preserve it.
+                verifyHtmlPreserved(scenario);
+            } else if (scenario === AudioMode.SoftSplitTextBox) {
+                // TODO: Maybe now is the time to try changing it.
+                //
+                // SoftSplit test doesn't have very intuitive results.
+                // Historically, it was actually the case that upon Soft Split, it never updated the markup.
+                // (That's because the playback mode was identified as text box, and in that case, it never actually runs makeAudioSentenceElementsLeaf())
+                // I'm not sure if that was entirely intentional, but it does seem very problematic to risk increasing/decreasing the number of splits while an audio is aligned to it.
+                // Now that we do check if it's safe..
+                // I guesss now we COULD now update the markup, but it doesn't seem worth the time, complexity, or risk to add that functionality.
+                // I guess it's more like if it's not safe, then we do whatever the old behavior was... which in this case, is to not do anything.
+                verifyHtmlPreserved(scenario);
             } else {
-                throw new Error("Unrecognized scenario: " + scenario);
+                throw new Error(
+                    `Unhandled scenario: ${scenario} (${AudioMode[scenario]})`
+                );
+            }
+        }
+
+        function verifyHtmlPreserved(scenario: AudioMode) {
+            const currentHtml1 = getFrameElementById("page", "div1")!.outerHTML;
+            expect(StripRecordingMd5(currentHtml1)).toBe(
+                StripRecordingMd5(originalDiv1Html)
+            );
+            const currentHtml2 = getFrameElementById("page", "div2")!.outerHTML;
+            expect(StripRecordingMd5(currentHtml2)).toBe(
+                StripRecordingMd5(originalDiv2Html)
+            );
+        }
+
+        function expectMd5(id, expectedMd5) {
+            const elem = getFrameElementById("page", id);
+            expect(elem).not.toBeNull(`Could not find element "${id}"`);
+            if (elem) {
+                const md5 = elem.getAttribute("recordingmd5");
+
+                if (md5 === null && expectedMd5 === "undefined") {
+                    // Not having recordingmd5 is considered an acceptable result for this expectation.
+                    // Just return without performing any more expectations
+                    return;
+                }
+
+                expect(md5).toBe(
+                    expectedMd5,
+                    `recordingmd5 does not match for element: ${elem.outerHTML}`
+                );
             }
         }
 
@@ -257,6 +440,7 @@ describe("talking book tests", () => {
                     break;
                 }
 
+                case AudioMode.PreTextBox:
                 case AudioMode.PureTextBox:
                 case AudioMode.HardSplitTextBox:
                 case AudioMode.SoftSplitTextBox: {
@@ -265,123 +449,283 @@ describe("talking book tests", () => {
                 }
 
                 default: {
-                    throw new Error("Unrecognized scenario: " + scenario);
+                    throw new Error(
+                        `Unhandled scenario: ${scenario} (${
+                            AudioMode[scenario]
+                        })`
+                    );
                 }
             }
         }
 
-        it("[Sentence/Sentence] showTool() should update sentence splits if no recordings exist", async done => {
-            try {
-                await runSentenceSplittingTestsAsync(
-                    AudioMode.PureSentence,
-                    false
-                );
-                done();
-            } catch (error) {
-                fail(error);
-                done();
-                throw error;
+        function verifySoundForShowToolTests(scenario: AudioMode): void {
+            verifySound(scenario, "div1", "1.1");
+        }
+
+        // Checks that the audio player's src corresponds to the ID of either the first div or the first span (depending on the scenario)
+        function verifySound(
+            scenario: AudioMode,
+            firstDivId: string,
+            firstSpanId: string
+        ): void {
+            const player = document.getElementById(
+                "player"
+            ) as HTMLMediaElement | null;
+            if (!player) {
+                expect(player).not.toBeNull("player is null");
+                return;
             }
+
+            let expectedSrc: string = "";
+            switch (scenario) {
+                case AudioMode.PureSentence:
+                case AudioMode.PreTextBox:
+                case AudioMode.HardSplitTextBox: {
+                    expectedSrc = firstSpanId;
+                    break;
+                }
+
+                case AudioMode.PureTextBox:
+                case AudioMode.SoftSplitTextBox: {
+                    expectedSrc = firstDivId;
+                    break;
+                }
+
+                default: {
+                    throw new Error("Unhandled scenario: " + scenario);
+                }
+            }
+
+            expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
+                `http://localhost:9876/bloom/api/audio/wavFile?id=audio/${expectedSrc}.wav`
+            );
+        }
+
+        function verifyChecksumsUpToDate(
+            scenario: AudioMode,
+            splitUpdateSetting: string
+        ) {
+            const expectedMd5s = getTestMd5s("same", scenario);
+            if (
+                scenario === AudioMode.PureSentence ||
+                scenario == AudioMode.PreTextBox ||
+                scenario === AudioMode.HardSplitTextBox
+            ) {
+                expectMd5("1.1", expectedMd5s[0]);
+                expectMd5("2.1", expectedMd5s[2]);
+
+                if (splitUpdateSetting !== "updated") {
+                    // If the splits are updated in this test scenario,
+                    // then it will be down to just one sentence each.
+                    // These two won't exist. And that's not worrisome.
+                    expectMd5("1.2", expectedMd5s[1]);
+                    expectMd5("2.2", expectedMd5s[3]);
+                }
+            } else {
+                expectMd5("div1", expectedMd5s[0]);
+                expectMd5("div2", expectedMd5s[1]);
+            }
+        }
+
+        function verifyChecksumsNotUpdated(
+            scenario: AudioMode,
+            splitUpdateSetting: string
+        ) {
+            if (
+                scenario === AudioMode.PureSentence ||
+                scenario == AudioMode.PreTextBox ||
+                scenario === AudioMode.HardSplitTextBox
+            ) {
+                expectMd5("1.1", "undefined");
+                expectMd5("2.1", "undefined");
+
+                if (splitUpdateSetting === "preserved") {
+                    expectMd5("1.2", "undefined");
+                    expectMd5("2.2", "undefined");
+                } else if (splitUpdateSetting === "updated") {
+                    // Don't need to check 1.2 and 2.2 in this case,
+                    // because it's been updated down to just 1 span.
+                } else {
+                    throw new Error(
+                        "Unhandled splitUpdateSetting: " + splitUpdateSetting
+                    );
+                }
+            } else {
+                expectMd5("div1", "undefined");
+                expectMd5("div2", "undefined");
+            }
+        }
+
+        function verifyCheckumsStillDiffers(scenario: AudioMode) {
+            // Verify that it matches the original value and hasn't been updated
+            const expectedMd5s = getTestMd5s("differs", scenario);
+            if (
+                scenario === AudioMode.PureSentence ||
+                scenario == AudioMode.PreTextBox ||
+                scenario === AudioMode.HardSplitTextBox
+            ) {
+                // Expecting differs -> update, which means that there will only be one sentence left. Only need to check the 1st one.
+                expectMd5("1.1", expectedMd5s[0]);
+                expectMd5("2.1", expectedMd5s[2]);
+            } else {
+                expectMd5("div1", expectedMd5s[0]);
+                expectMd5("div2", expectedMd5s[1]);
+            }
+        }
+
+        describe("showTool(checksum=missing, audio=missing, scenario=*) => UPDATE", () => {
+            getAllAudioModes().forEach(scenario => {
+                const scenarioName = AudioMode[scenario];
+                it(`showTool(checksum=missing, audio=missing, scenario=${scenarioName}) => UPDATE`, async () => {
+                    return runNoChecksumNoAudioTestAsync(scenario);
+                });
+            });
+
+            const runNoChecksumNoAudioTestAsync = async (
+                scenario: AudioMode
+            ) => {
+                // Setup
+                const checksumSetting = "missing";
+                const audioPresent = "missing";
+                setupSentenceSplitTest(scenario, checksumSetting, audioPresent);
+
+                // System under test
+                await runShowToolAsync();
+
+                // Verify
+                verifySplitsUpdated(scenario);
+                verifyChecksumsNotUpdated(scenario, "updated");
+            };
         });
 
-        it("[Sentence/Sentence] showTool() should not update sentence splits if recordings do exist", async done => {
-            try {
-                await runSentenceSplittingTestsAsync(
-                    AudioMode.PureSentence,
-                    true
-                );
-                done();
-            } catch (error) {
-                fail(error);
-                done();
-                throw error;
-            }
+        describe("showTool(checksum=missing, audio=present, scenario=*) => SKIP UPDATE", () => {
+            getAllAudioModes().forEach(scenario => {
+                const scenarioName = AudioMode[scenario];
+                it(`showTool(checksum=missing, audio=present, scenario=${scenarioName}) => SKIP UPDATE`, async () => {
+                    return runNoChecksumYesAudioTestAsync(scenario);
+                });
+            });
+
+            const runNoChecksumYesAudioTestAsync = async (
+                scenario: AudioMode
+            ) => {
+                // Setup
+                const checksumSetting = "missing";
+                const audioPresent = "present";
+                setupSentenceSplitTest(scenario, checksumSetting, audioPresent);
+
+                // System Under Test
+                await runShowToolAsync();
+
+                // Verify
+                verifySplitsPreserved(scenario);
+                verifyChecksumsUpToDate(scenario, "preserved");
+            };
         });
 
-        it("[Text Box/Text Box] showTool() should update sentence splits if no recordings exist", async done => {
-            try {
-                await runSentenceSplittingTestsAsync(
-                    AudioMode.PureTextBox,
-                    false
-                );
-                done();
-            } catch (error) {
-                fail(error);
-                done();
-                throw error;
-            }
+        describe("showTool(checksum=same, audio=missing, scenario=*) => UPDATE", () => {
+            getAllAudioModes().forEach(scenario => {
+                const scenarioName = AudioMode[scenario];
+                it(`showTool(checksum=same, audio=missing, scenario=${scenarioName}) => UPDATE`, async () => {
+                    return runSameChecksumNoAudioTestAsync(scenario);
+                });
+            });
+
+            const runSameChecksumNoAudioTestAsync = async (
+                scenario: AudioMode
+            ) => {
+                // Setup
+                const checksumSetting = "same";
+                const audioPresent = "missing";
+                setupSentenceSplitTest(scenario, checksumSetting, audioPresent);
+
+                // System under test
+                await runShowToolAsync();
+
+                // Verify
+                verifySplitsUpdated(scenario);
+                verifyChecksumsUpToDate(scenario, "updated"); // Not really necessary, but make sure it's not messed up
+            };
         });
 
-        // This returns the same result as above.
-        it("[Text Box/Text Box] showTool() should NOT update sentence splits if recordings do exist", async done => {
-            try {
-                await runSentenceSplittingTestsAsync(
-                    AudioMode.PureTextBox,
-                    true
-                );
-                done();
-            } catch (error) {
-                fail(error);
-                done();
-                throw error;
-            }
+        describe("showTool(checksum=same, audio=partial, scenario=*) => UPDATE", () => {
+            // PureTextBox and SoftSplit not applicable, because there's only 1 recording per text box.
+            // Can't be partially recorded.
+            const scenarios = [
+                AudioMode.PureSentence,
+                AudioMode.PreTextBox,
+                AudioMode.HardSplitTextBox
+            ];
+            scenarios.forEach(scenario => {
+                const scenarioName = AudioMode[scenario];
+                it(`showTool(checksum=same, audio=partial, scenario=${scenarioName}) => UPDATE`, async () => {
+                    return runSameChecksumPartialAudioTestAsync(scenario);
+                });
+            });
+
+            const runSameChecksumPartialAudioTestAsync = async (
+                scenario: AudioMode
+            ) => {
+                // Setup
+                const checksumSetting = "same";
+                const audioPresent = "partiallyPresent";
+                setupSentenceSplitTest(scenario, checksumSetting, audioPresent);
+
+                // System under test
+                await runShowToolAsync();
+
+                // Verify
+                verifySplitsUpdated(scenario);
+            };
         });
 
-        it("[TextBox/Sentence Hard Split] showTool() should update sentence splits if no recordings exist", async done => {
-            try {
-                await runSentenceSplittingTestsAsync(
-                    AudioMode.HardSplitTextBox,
-                    false
-                );
-                done();
-            } catch (error) {
-                fail(error);
-                done();
-                throw error;
-            }
+        describe("showTool(checksum=same, audio=present, scenario=*) => SKIP UPDATE", () => {
+            getAllAudioModes().forEach(scenario => {
+                const scenarioName = AudioMode[scenario];
+                it(`showTool(checksum=same, audio=present, scenario=${scenarioName}) => SKIP UPDATE`, async () => {
+                    return runSameChecksumYesAudioTestAsync(scenario);
+                });
+            });
+
+            const runSameChecksumYesAudioTestAsync = async (
+                scenario: AudioMode
+            ) => {
+                const checksumSetting = "same";
+                const audioPresent = "present";
+                setupSentenceSplitTest(scenario, checksumSetting, audioPresent);
+
+                // System under test
+                await runShowToolAsync();
+
+                // Verify
+                verifySplitsPreserved(scenario);
+                verifyChecksumsUpToDate(scenario, "updated");
+            };
         });
 
-        it("[TextBox/Sentence Hard Split] showTool() should NOT update sentence splits if recordings do exist", async done => {
-            try {
-                await runSentenceSplittingTestsAsync(
-                    AudioMode.HardSplitTextBox,
-                    true
-                );
+        describe("showTool(checksum=differs, recording=*, scenario=*) => UPDATE", () => {
+            getAllAudioModes().forEach(scenario => {
+                const scenarioName = AudioMode[scenario];
+                it(`showTool(checksum=differs, recording=*, scenario=${scenarioName}) => UPDATE`, async () => {
+                    return runDifferentChecksumTestAsync(scenario);
+                });
+            });
 
-                done();
-            } catch (error) {
-                fail(error);
-                done();
-                throw error;
-            }
-        });
+            const runDifferentChecksumTestAsync = async (
+                scenario: AudioMode
+            ) => {
+                // Setup
+                const checksumSetting = "differs";
+                const audioPresent = "present"; // Value doesn't really matter, but pick the "harder" input.
+                setupSentenceSplitTest(scenario, checksumSetting, audioPresent);
 
-        it("[TextBox/Sentence Soft Split] showTool() DOESN'T update sentence splits even if no recordings exist", async done => {
-            try {
-                await runSentenceSplittingTestsAsync(
-                    AudioMode.SoftSplitTextBox,
-                    false
-                );
-                done();
-            } catch (error) {
-                fail(error);
-                done();
-                throw error;
-            }
-        });
+                // System under test
+                await runShowToolAsync();
 
-        it("[TextBox/Sentence Soft Split] showTool() should NOT update sentence splits if recordings do exist", async done => {
-            try {
-                await runSentenceSplittingTestsAsync(
-                    AudioMode.SoftSplitTextBox,
-                    true
-                );
-                done();
-            } catch (error) {
-                fail(error);
-                done();
-                throw error;
-            }
+                // Verify
+                verifySplitsUpdated(scenario);
+                verifyCheckumsStillDiffers(scenario);
+            };
         });
     });
 });
