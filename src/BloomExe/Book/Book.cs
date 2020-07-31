@@ -765,7 +765,7 @@ namespace Bloom.Book
 				// This is only needed for updating from old Bloom versions. No need if we're copying the current
 				// edit book, on which it's already been done, to make an epub or similar.
 				if (!forCopyOfUpToDateBook)
-					ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, progress);
+					Storage.PerformNecessaryMaintenanceOnBook();
 				Save();
 			}
 
