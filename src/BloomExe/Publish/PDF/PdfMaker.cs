@@ -36,7 +36,7 @@ namespace Bloom.Publish.PDF
 		///  </summary>
 		/// <param name="inputHtmlPath"></param>
 		/// <param name="outputPdfPath"></param>
-		/// <param name="paperSizeName">A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,B0,B1,B10,B2,B3,B4,B5,B6,B7,B8,B9,C5E,Comm10E,DLE,Executive,Folio,Ledger,Legal,Letter,Tabloid</param>
+		/// <param name="paperSizeName">A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,B0,B1,B10,B2,B3,B4,B5,B6,B7,B8,B9,C5E,Comm10E,DLE,Executive,Folio,Ledger,Legal,Letter,Tabloid,Cm13</param>
 		/// <param name="landscape">true if landscape orientation, false if portrait orientation</param>
 		/// <param name="saveMemoryMode">true if PDF file is to be produced using less memory (but more time)</param>
 		/// <param name="layoutPagesForRightToLeft">true if RTL, false if LTR layout</param>
@@ -228,6 +228,9 @@ namespace Bloom.Publish.PDF
 				case "HalfLegal":
 					pageSize = PageSize.Legal;
 					break;
+				case "Cm13":
+					pageSize = PageSize.A3;
+					break;
 				default:
 					throw new ApplicationException("PdfMaker.MakeBooklet() does not contain a map from " + incomingPaperSize + " to a PdfSharp paper size.");
 			}
@@ -258,6 +261,10 @@ namespace Bloom.Publish.PDF
 						{
 							method = new SideFold4UpBookletLayouter();
 							pageSize = PageSize.Letter;
+						}
+						else if (incomingPaperSize == "Cm13")
+						{
+							method = new Square6UpBookletLayouter();
 						}
 						else
 						{

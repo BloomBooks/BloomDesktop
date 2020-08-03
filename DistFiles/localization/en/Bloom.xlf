@@ -2768,76 +2768,80 @@
         <note>ID: LanguageFontDetails.TallerLinesCheck</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A3Landscape" sil:dynamic="true">
-        <source xml:lang="en">A3Landscape</source>
+        <source xml:lang="en">A3 Landscape</source>
         <note>ID: LayoutChoices.A3Landscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Landscape" sil:dynamic="true">
-        <source xml:lang="en">A4Landscape</source>
+        <source xml:lang="en">A4 Landscape</source>
         <note>ID: LayoutChoices.A4Landscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true">
-        <source xml:lang="en">A4Landscape SideBySide</source>
+        <source xml:lang="en">A4 Landscape (Side By Side)</source>
         <note>ID: LayoutChoices.A4Landscape SideBySide</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true">
-        <source xml:lang="en">A4Landscape SplitAcrossPages</source>
+        <source xml:lang="en">A4 Landscape (Split Across Pages)</source>
         <note>ID: LayoutChoices.A4Landscape SplitAcrossPages</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true">
-        <source xml:lang="en">A4Portrait</source>
+        <source xml:lang="en">A4 Portrait</source>
         <note>ID: LayoutChoices.A4Portrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A5Landscape" sil:dynamic="true">
-        <source xml:lang="en">A5Landscape</source>
+        <source xml:lang="en">A5 Landscape</source>
         <note>ID: LayoutChoices.A5Landscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A5Portrait" sil:dynamic="true">
-        <source xml:lang="en">A5Portrait</source>
+        <source xml:lang="en">A5 Portrait</source>
         <note>ID: LayoutChoices.A5Portrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A6Landscape" sil:dynamic="true">
-        <source xml:lang="en">A6Landscape</source>
+        <source xml:lang="en">A6 Landscape</source>
         <note>ID: LayoutChoices.A6Landscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A6Portrait" sil:dynamic="true">
-        <source xml:lang="en">A6Portrait</source>
+        <source xml:lang="en">A6 Portrait</source>
         <note>ID: LayoutChoices.A6Portrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true">
-        <source xml:lang="en">B5Portrait</source>
+        <source xml:lang="en">B5 Portrait</source>
         <note>ID: LayoutChoices.B5Portrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true">
-        <source xml:lang="en">Device16x9Landscape</source>
+        <source xml:lang="en">Device16x9 Landscape</source>
         <note>ID: LayoutChoices.Device16x9Landscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.Device16x9Portrait" sil:dynamic="true">
-        <source xml:lang="en">Device16x9Portrait</source>
+        <source xml:lang="en">Device16x9 Portrait</source>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterLandscape" sil:dynamic="true">
-        <source xml:lang="en">HalfLetterLandscape</source>
+        <source xml:lang="en">HalfLetter Landscape</source>
         <note>ID: LayoutChoices.HalfLetterLandscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterPortrait" sil:dynamic="true">
-        <source xml:lang="en">HalfLetterPortrait</source>
+        <source xml:lang="en">HalfLetter Portrait</source>
         <note>ID: LayoutChoices.HalfLetterPortrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.LetterLandscape" sil:dynamic="true">
-        <source xml:lang="en">LetterLandscape</source>
+        <source xml:lang="en">Letter Landscape</source>
         <note>ID: LayoutChoices.LetterLandscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.LetterPortrait" sil:dynamic="true">
-        <source xml:lang="en">LetterPortrait</source>
+        <source xml:lang="en">Letter Portrait</source>
         <note>ID: LayoutChoices.LetterPortrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.QuarterLetterLandscape" sil:dynamic="true">
-        <source xml:lang="en">QuarterLetterLandscape</source>
+        <source xml:lang="en">QuarterLetter Landscape</source>
         <note>ID: LayoutChoices.QuarterLetterLandscape</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.QuarterLetterPortrait" sil:dynamic="true">
-        <source xml:lang="en">QuarterLetterPortrait</source>
+        <source xml:lang="en">QuarterLetter Portrait</source>
         <note>ID: LayoutChoices.QuarterLetterPortrait</note>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.Cm13Landscape" sil:dynamic="true">
+        <source xml:lang="en">13cm Square</source>
+        <note>ID: LayoutChoices.Cm13Landscape</note>
       </trans-unit>
       <trans-unit id="LicenseDialog.WindowTitle">
         <source xml:lang="en">Bloom {0}</source>

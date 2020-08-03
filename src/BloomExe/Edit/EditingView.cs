@@ -1273,7 +1273,7 @@ namespace Bloom.Edit
 				var layoutChoices = _model.GetLayoutChoices();
 				foreach(var l in layoutChoices)
 				{
-					var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + l.ToString(), l.ToString());
+					var text = l.DisplayName;
 					var item = AddDropdownItemSafely(_layoutChoices, text);
 					item.Tag = l;
 					//we don't allow the split options here
@@ -1297,7 +1297,7 @@ namespace Bloom.Edit
 					item.Enabled = false;
 				}
 
-				_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
+				_layoutChoices.Text = layout.DisplayName;
 
 				switch(_model.NumberOfDisplayedLanguages)
 				{
