@@ -1,6 +1,5 @@
-import { AudioRecordingMode } from "./audioRecording";
+import AudioRecording, { AudioRecordingMode } from "./audioRecording";
 import axios, { AxiosResponse } from "axios";
-import { getMd5 } from "./md5Util";
 
 const kAudioSentence = "audio-sentence";
 
@@ -155,7 +154,7 @@ export default class Recordable {
     public setChecksum(): void {
         const sentences = this.getAudioSentences();
         sentences.forEach(sentence => {
-            const md5 = getMd5(sentence.innerText);
+            const md5 = AudioRecording.getChecksum(sentence.innerText);
             sentence.setAttribute("recordingmd5", md5);
         });
     }
@@ -181,7 +180,7 @@ export default class Recordable {
         if (this.isMissingRecordingChecksum(sentence)) {
             // We only want to update ones that have a recording associated with them.
             if (await Recordable.isSentenceRecordedAsync(sentence)) {
-                const md5 = getMd5(sentence.innerText);
+                const md5 = AudioRecording.getChecksum(sentence.innerText);
                 sentence.setAttribute("recordingmd5", md5);
             }
         }
@@ -256,7 +255,7 @@ export default class Recordable {
         }
 
         const previousChecksum = sentence.getAttribute("recordingmd5");
-        const currentChecksum = getMd5(sentence.innerText);
+        const currentChecksum = AudioRecording.getChecksum(sentence.innerText);
         return previousChecksum !== currentChecksum;
     }
 }
