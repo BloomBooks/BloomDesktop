@@ -1621,6 +1621,7 @@ describe("audio recording tests", () => {
             } else {
                 recording.audioRecordingMode = AudioRecordingMode.TextBox;
             }
+            recording.setSoundFrom(getFrameElementById("page", "div1")!);
             await recording.clearRecordingAsync();
         };
 
@@ -1676,7 +1677,7 @@ describe("audio recording tests", () => {
         getAllAudioModes().forEach(scenario => {
             const scenarioName = AudioMode[scenario];
             it(`clearRecording() deletes recordings (${scenarioName})`, async () => {
-                runClearRecordingDeleteTest(scenario);
+                await runClearRecordingDeleteTest(scenario);
             });
         });
 
