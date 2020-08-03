@@ -2643,6 +2643,20 @@ export default class AudioRecording {
         return uuid;
     }
 
+    public static getChecksum(message: string): string {
+        // Vertical line character ("|") acts as a phrase delimiter in Talking Books.
+        // To perform phrase-level recording, the user can insert a temporary "|" character where he wants a phrase split to happen.
+        // This is now recognized in the list of sentence delimiters, so it will be broken up as an audio-sentence.
+        // Then the user records the audio.
+        // Then the user deletes the vertical line characters.
+        // Now the text should be the desired final state, and audio recordings are possible at a sub-sentence level.
+        // However, we don't want the sentence markup to be updated because the checksums differ (since a character was deleted).
+        //
+        // Thus, our checksum function needs to ignore the vertical line character when computing the checksum.
+        const adjustedMessage = message.replace("|", "");
+        return getMd5(adjustedMessage);
+    }
+
     // AudioRecordingMode=Sentence: We want to make out of each sentence in root a span which has a unique ID.
     // AudioRecordingMode=TextBox: We want to turn the bloom-editable text box into the unit which will be
     // recorded. (It needs a unique ID too). No spans will be created though.
@@ -2818,7 +2832,7 @@ export default class AudioRecording {
         for (let i = 0; i < htmlFragments.length; i++) {
             const fragment = htmlFragments[i];
             if (this.isRecordable(fragment)) {
-                const currentMd5 = getMd5(fragment.text);
+                const currentMd5 = AudioRecording.getChecksum(fragment.text);
                 for (let j = 0; j < reuse.length; j++) {
                     if (currentMd5 === reuse[j].md5) {
                         // It's convenient here (very locally) to add a field to fragment which is not part
