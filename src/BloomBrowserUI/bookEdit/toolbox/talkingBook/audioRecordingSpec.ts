@@ -1676,7 +1676,7 @@ describe("audio recording tests", () => {
         getAllAudioModes().forEach(scenario => {
             const scenarioName = AudioMode[scenario];
             it(`clearRecording() deletes recordings (${scenarioName})`, async () => {
-                runClearRecordingDeleteTest(scenario);
+                await runClearRecordingDeleteTest(scenario);
             });
         });
 
