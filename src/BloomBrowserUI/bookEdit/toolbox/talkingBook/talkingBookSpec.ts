@@ -89,21 +89,6 @@ describe("talking book tests", () => {
             });
         }
 
-        function setAudioFilesPresent() {
-            // Mark that the recording exists.
-            // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
-            spyOn(axios, "get").and.callFake((url: string) => {
-                if (
-                    url.includes("/bloom/api/audio/checkForAllRecording?ids=")
-                ) {
-                    // ENHANCE: This test would be more realisitic if only specific ids for checkAllRecording returned true.
-                    return Promise.resolve({ data: true });
-                } else {
-                    return Promise.resolve();
-                }
-            });
-        }
-
         function setAudioFilesPartiallyPresent(scenario: AudioMode) {
             // Mark that the recording exists.
             // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
@@ -318,7 +303,7 @@ describe("talking book tests", () => {
             originalDiv2Html = getFrameElementById("page", "div2")!.outerHTML;
 
             if (areRecordingsPresent === "present") {
-                setAudioFilesPresent();
+                setAllAudioFilesPresent();
             } else if (areRecordingsPresent === "partiallyPresent") {
                 setAudioFilesPartiallyPresent(scenario);
             } else if (areRecordingsPresent === "missing") {
@@ -728,6 +713,41 @@ describe("talking book tests", () => {
             };
         });
     });
+
+    describe("phrase level highlighting", () => {
+        // This helps power users perform phrase-level highlighting
+        // Repro:
+        // * Insert | as a delimiter for the phrases. (Note: this is the vertical bar on a standard keyboard, not \u104A)
+        // * Record all audio.
+        // * Remove the | delimiters.
+        it("vertical bar delimits phrases without changing checksum (given fully recorded)", async () => {
+            // Setup
+            const checksums = [
+                "ec04d9efb823169732254a756f9fa641",
+                "99070d1ff8cd1dbe8f6273089fce9176"
+            ];
+            const divHtml = `<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent" recordingmd5="${
+                checksums[0]
+            }">Phrase 1|</span> <span id="1.2" class="audio-sentence" recordingmd5="${
+                checksums[1]
+            }">Phrase 2.</span></p></div>`;
+            SetupIFrameFromHtml(divHtml);
+
+            setAllAudioFilesPresent();
+
+            // System under test
+            // Simulate user deleting the vertical bar character
+            getFrameElementById("page", "1.1")!.innerText = "Phrase 1";
+            const tbTool = new TalkingBookTool();
+            await tbTool.updateMarkup();
+
+            // Verify - That splits were unchanged.
+            const spans = getAudioSentenceSpans("div1");
+            expect(spans).toHaveLength(2); // Should preserve the phrase splits instead of converting to sentence splits
+            expect(spans[0]).toHaveAttr("recordingmd5", checksums[0]);
+            expect(spans[1]).toHaveAttr("recordingmd5", checksums[1]);
+        });
+    });
 });
 
 function getAudioSentenceSpans(divId: string): HTMLSpanElement[] {
@@ -769,4 +789,18 @@ function getParagraphsOfTextBox(divId: string): HTMLParagraphElement[] {
 
 function verifyRecordButtonEnabled() {
     expect(document.getElementById("audio-record")).not.toHaveClass("disabled");
+}
+
+function setAllAudioFilesPresent() {
+    // Mark that the recording exists.
+    // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
+    spyOn(axios, "get").and.callFake((url: string) => {
+        if (url.includes("/bloom/api/audio/checkForAllRecording?ids=")) {
+            return Promise.resolve({ data: true });
+        } else if (url.includes("/bloom/api/audio/checkForAnyRecording?ids=")) {
+            return Promise.resolve();
+        } else {
+            return Promise.reject("Fake 404 error");
+        }
+    });
 }

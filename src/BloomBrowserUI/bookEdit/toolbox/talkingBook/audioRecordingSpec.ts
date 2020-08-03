@@ -349,6 +349,18 @@ describe("audio recording tests", () => {
             expect(spans[0].innerHTML).toBe("This <b>is</b> a sentence.");
             expect(spans[1].innerHTML).toBe("This <i>is</i> another");
         });
+        it("treats vertical bar as a delimiter", () => {
+            const div = $("<div><p>Phrase 1| Phrase 2.</p></div>");
+            const recording = new AudioRecording();
+            recording.makeAudioSentenceElements(
+                div,
+                AudioRecordingMode.Sentence
+            );
+            const spans = div.find("span");
+            expect(spans.length).toBe(2);
+            expect(spans[0].innerText).toBe("Phrase 1|");
+            expect(spans[1].innerText).toBe("Phrase 2.");
+        });
         it("keeps id with unchanged recorded sentence when new inserted before", () => {
             const div = $(
                 '<div><p>This is a new sentence. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span></p></div>'
