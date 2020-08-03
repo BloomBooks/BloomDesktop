@@ -1621,6 +1621,7 @@ describe("audio recording tests", () => {
             } else {
                 recording.audioRecordingMode = AudioRecordingMode.TextBox;
             }
+            recording.setSoundFrom(getFrameElementById("page", "div1")!);
             await recording.clearRecordingAsync();
         };
 
