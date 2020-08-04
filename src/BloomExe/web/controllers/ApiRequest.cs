@@ -144,8 +144,9 @@ namespace Bloom.Api
 				}
 				else
 				{
-					var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
-					if (endpointRegistration.HandleOnUIThread && formForSynchronizing.InvokeRequired)
+					// Note: If the user is still interacting with the application, openForms could change and become empty
+					var formForSynchronizing = Application.OpenForms.Cast<Form>().LastOrDefault();
+					if (endpointRegistration.HandleOnUIThread && formForSynchronizing != null && formForSynchronizing.InvokeRequired)
 					{
 						InvokeWithErrorHandling(endpointRegistration, formForSynchronizing, request);
 					}
