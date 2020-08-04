@@ -319,6 +319,7 @@ describe("talking book tests", () => {
         async function runShowToolAsync(): Promise<void> {
             const tbTool = new TalkingBookTool();
             await tbTool.showTool();
+            await tbTool.newPageReady();
         }
 
         function verifyCommonAspects(scenario: AudioMode) {

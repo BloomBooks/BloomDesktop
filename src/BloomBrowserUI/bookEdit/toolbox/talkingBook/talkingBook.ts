@@ -1,4 +1,4 @@
-import { ITool } from "../toolbox";
+﻿import { ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";
 import * as AudioRecorder from "./audioRecording";
 
@@ -44,9 +44,9 @@ export default class TalkingBookTool implements ITool {
     }
 
     // Called when a new page is loaded.
-    public newPageReady() {
+    public async newPageReady(): Promise<void> {
         // if this class eventually extends our React Adaptor, this can be removed.
-        AudioRecorder.theOneAudioRecorder.newPageReady();
+        return AudioRecorder.theOneAudioRecorder.newPageReady();
     }
 
     public hideTool() {
