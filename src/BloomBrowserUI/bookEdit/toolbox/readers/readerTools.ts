@@ -449,17 +449,23 @@ export function resizeWordList(startTimeout: boolean = true): void {
     const currentHeight: number = div.height();
     const currentWidth: number = wordList.width();
 
+    const readerToolsModel = getTheOneReaderToolsModel();
+    if (!readerToolsModel) {
+        // FYI, this prevents setting future timeouts as well.
+        return;
+    }
+
     // resize the word list if the size of the pane changed
     if (
-        getTheOneReaderToolsModel().previousHeight !== currentHeight ||
-        getTheOneReaderToolsModel().previousWidth !== currentWidth
+        readerToolsModel.previousHeight !== currentHeight ||
+        readerToolsModel.previousWidth !== currentWidth
     ) {
-        getTheOneReaderToolsModel().previousHeight = currentHeight;
-        getTheOneReaderToolsModel().previousWidth = currentWidth;
+        readerToolsModel.previousHeight = currentHeight;
+        readerToolsModel.previousWidth = currentWidth;
 
         const top = wordList.parent().position().top;
 
-        const synphony = getTheOneReaderToolsModel().synphony;
+        const synphony = readerToolsModel.synphony;
         if (synphony.source) {
             let ht = currentHeight - top;
             if (synphony.source.useAllowedWords === 1) {

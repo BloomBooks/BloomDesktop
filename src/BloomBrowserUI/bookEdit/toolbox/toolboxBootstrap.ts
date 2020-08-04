@@ -41,14 +41,20 @@ export { handleBookSettingCheckboxClick };
 export { getTheOneToolbox };
 
 export function canUndo(): boolean {
+    const readerToolsModel = getTheOneReaderToolsModel();
+
     return (
-        getTheOneReaderToolsModel().shouldHandleUndo() &&
-        getTheOneReaderToolsModel().canUndo()
+        readerToolsModel &&
+        readerToolsModel.shouldHandleUndo() &&
+        readerToolsModel.canUndo()
     );
 }
 
 export function undo() {
-    getTheOneReaderToolsModel().undo();
+    const readerToolsModel = getTheOneReaderToolsModel();
+    if (readerToolsModel) {
+        readerToolsModel.undo();
+    }
 }
 
 export function applyToolboxStateToPage() {
