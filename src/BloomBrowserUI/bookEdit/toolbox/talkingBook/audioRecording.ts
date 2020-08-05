@@ -458,6 +458,8 @@ export default class AudioRecording {
     }
 
     // Called by TalkingBookModel.showTool() when a different tool is added/chosen or when the toolbox is re-opened, but not when a new page is added
+    // This function should contain only work that needs to be done when the tool is created
+    // Initialization that happens for a new page should happen in newPageReady instead.
     public async setupForRecordingAsync(): Promise<void> {
         this.isShowing = true;
 
@@ -466,28 +468,15 @@ export default class AudioRecording {
             "disablingOverlay"
         ) as HTMLDivElement;
 
-        this.hiddenSourceBubbles = this.getPageDocBodyJQuery().find(
-            ".uibloomSourceTextsBubble"
-        );
-        this.hiddenSourceBubbles.hide();
-
         // Add these listeners even if there's currently no editables.
         // It's possible that your page starts with no editables, then you open the Talking Book Tool (and this method runs),
         // then the user changes the layout to add a text box, and then...
         // you'll want your listeners to have been set up already.
         this.addAudioLevelListener();
         this.addAudioRecordStartListener();
-
-        const editable = this.getRecordableDivs(true, false);
-        if (editable.length === 0) {
-            // no editable text on this page.
-            return this.changeStateAndSetExpectedAsync("");
-        }
-
-        return this.setupAndUpdateMarkupAsync();
     }
 
-    // Called when a new page is loaded and (above) when the Talking Book Tool is chosen.
+    // Called when the Talking Book Tool is chosen.
     public addAudioLevelListener(): void {
         WebSocketManager.addListener(kWebsocketContext, e => {
             if (e.id == "peakAudioLevel")
@@ -2230,31 +2219,34 @@ export default class AudioRecording {
         this.setSoundAndHighlightAsync(newSelectedTextBox);
     }
 
-    public newPageReady() {
+    public async newPageReady(): Promise<void> {
+        // ENHANCE: Optimization? I think the pageDocBody could be safely cached upon newPageReady and placed in a member variable.
+        //          Then we wouldn't need to find the body element so many times
+        this.hiddenSourceBubbles = this.getPageDocBodyJQuery().find(
+            ".uibloomSourceTextsBubble"
+        );
+        this.hiddenSourceBubbles.hide();
+
         // FYI, it is possible for newPageReady to be called without updateMarkup() being called
         // (e.g. when opening the toolbox with an empty text box).
         this.initializeAudioRecordingMode();
 
-        // This check needs to be before the check for recordable divs below, because sometimes
+        // This check needs to be before the check for recordable divs below (which may return immediately), because sometimes
         // we may have empty textboxes that should nevertheless show the playback order UI.
         if (this.showPlaybackInput.checked) {
             const docBody = this.getPageDocBody();
-            if (!docBody) {
-                return;
+            if (docBody) {
+                this.showPlaybackOrderUi(docBody);
             }
-            this.showPlaybackOrderUi(docBody);
         }
 
-        // BL-7588 We were getting a timing problem where this method was overwriting the proper state to empty
-        // string, when we had already arrived at the proper "record" state in setupForRecording().
-        // We just need to make sure that there is editable text and set the state accordingly.
         const editable = this.getRecordableDivs(true, false);
         if (editable.length === 0) {
             // no editable text on this page.
-            this.changeStateAndSetExpectedAsync("");
-            return;
+            return this.changeStateAndSetExpectedAsync("");
+        } else {
+            return this.setupAndUpdateMarkupAsync();
         }
-        this.changeStateAndSetExpectedAsync("record");
     }
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
