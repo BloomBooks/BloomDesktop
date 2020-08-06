@@ -1,11 +1,11 @@
 @import "../branding-base.less";
 
-.credits {
-    .originalAcknowledgments .bloom-editable {
-        // Override
-        margin-bottom: 1em;
-    }
-}
+// .credits {
+//     .originalAcknowledgments .bloom-editable {
+//         // Override
+//         margin-bottom: 1em;
+//     }
+// }
 .titlePage [data-book*="title-page-branding-bottom-html"] {
     min-height: 190px;
     flex: unset !important;
@@ -14,5 +14,13 @@
         height: 110px !important;
     }
 }
-.outside-back-cover-branding-bottom-html img {
+
+[data-book*="outside-back-cover-branding-bottom-html"] {
+    font-weight: bold;
+    p {
+        margin-bottom: 1em;
+    }
+    img {
+        max-height: 20mm; // helps with device landscape, since there is boilerplate text above and the logo image at the bottom gets pushed off the page.
+    }
 }
