@@ -249,7 +249,7 @@ namespace Bloom.ImageProcessing
 		//look good against the colored background of a book cover.
 		//This caused problems with some PDF viewers, so in Bloom 3.1, we switched to only making them transparent at runtime.
 		//This method allows us to undo that transparency-making.
-		public static void RemoveTransparencyOfImagesInFolder(string folderPath, IProgress progress)
+		public static void RemoveTransparencyOfImagesInFolder(string folderPath, Book.HtmlDom dom, IProgress progress)
 		{
 			var imageFiles = Directory.GetFiles(folderPath, "*.png");
 			int completed = 0;
@@ -257,7 +257,11 @@ namespace Bloom.ImageProcessing
 			{
 
 				if (Path.GetFileName(path).ToLowerInvariant() == "placeholder.png")
-					return;
+					continue;
+				// Don't remove transparency from cover images.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8819.
+				// This is largely for the benefit of branding images, but also affects the front cover image.
+				if (IsOnCoverPage(Path.GetFileName(path), dom))
+					continue;
 
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)imageFiles.Length);
 				using(var pi = PalasoImage.FromFileRobustly(path))
@@ -272,6 +276,22 @@ namespace Bloom.ImageProcessing
 				}
 				completed++;
 			}
+		}
+
+		private static bool IsOnCoverPage(string filename, Book.HtmlDom dom)
+		{
+			var imgList = dom.SafeSelectNodes($"//img[@src='{filename}']").Cast<System.Xml.XmlElement>().ToList();
+			foreach (var img in imgList)
+			{
+				var page = img.SelectSingleNode("ancestor::div[contains(@class,'bloom-page')]") as System.Xml.XmlElement;
+				if (page != null)
+				{
+					var classes = page.GetAttribute("class");
+					if (classes.Contains("cover coverColor"))
+						return true;
+				}
+			}
+			return false;
 		}
 
 		private static void RemoveTransparency(PalasoImage original, string path, IProgress progress)
