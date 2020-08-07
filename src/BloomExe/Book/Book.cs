@@ -762,7 +762,10 @@ namespace Bloom.Book
 				// This is only needed for updating from old Bloom versions. No need if we're copying the current
 				// edit book, on which it's already been done, to make an epub or similar.
 				if (!forCopyOfUpToDateBook)
-					ImageUtils.RemoveTransparencyOfImagesInFolder(FolderPath, progress);
+				{
+					// Only content images have transparency removed.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8819.
+					ImageUtils.RemoveTransparencyOfImagesInFolder(FolderPath, FindContentImageFilenames(), progress);
+				}
 				Save();
 			}
 
@@ -775,6 +778,21 @@ namespace Bloom.Book
 
 			Save();
 			_bookRefreshEvent?.Raise(this);
+		}
+
+		protected HashSet<string> FindContentImageFilenames()
+		{
+			var contentImages = new HashSet<string>();
+			foreach (XmlElement page in OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(@data-xmatter-page)]"))
+			{
+				foreach (XmlElement divOrImg in page.SafeSelectNodes("(.//img|.//div[contains(@style,'background-image')])"))
+				{
+					var url = HtmlDom.GetImageElementUrl(divOrImg);
+					if (!String.IsNullOrEmpty(url.NotEncoded))
+						contentImages.Add(url.NotEncoded);
+				}
+			}
+			return contentImages;
 		}
 
 		private void VerifyLayout(HtmlDom dom)
