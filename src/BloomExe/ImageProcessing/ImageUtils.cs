@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -249,7 +250,7 @@ namespace Bloom.ImageProcessing
 		//look good against the colored background of a book cover.
 		//This caused problems with some PDF viewers, so in Bloom 3.1, we switched to only making them transparent at runtime.
 		//This method allows us to undo that transparency-making.
-		public static void RemoveTransparencyOfImagesInFolder(string folderPath, IProgress progress)
+		public static void RemoveTransparencyOfImagesInFolder(string folderPath, IEnumerable<string> namesOfFilesToFix, IProgress progress)
 		{
 			var imageFiles = Directory.GetFiles(folderPath, "*.png");
 			int completed = 0;
@@ -257,7 +258,11 @@ namespace Bloom.ImageProcessing
 			{
 
 				if (Path.GetFileName(path).ToLowerInvariant() == "placeholder.png")
-					return;
+					continue;
+				// Remove transparency only from images the caller wants to be fixed.
+				// (This is largely for the benefit of not changing branding images.  See BL-8819.)
+				if (!namesOfFilesToFix.Contains(Path.GetFileName(path)))
+					continue;
 
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)imageFiles.Length);
 				using(var pi = PalasoImage.FromFileRobustly(path))
