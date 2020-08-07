@@ -9,13 +9,7 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='ChetanaTrust-back.png'/>",
-            "condition": "always"
-        },
-        {
-            "data-book": "credits-page-branding-bottom-html",
-            "lang": "*",
-            "content": "<div class='Credits-Page-style' lang='en'><p>Chetana Charitable Trust develops locally relevant solutions to issues in child development, disability, health and education.</p><br/><p>Chetana's accessible library encourages children with print disabilities to learn to access information for themselves, broadens their horizons and gives them a chance to develop a leisure activity.<br/><a href='https://www.chetana.org.in'>www.chetana.org.in</a></p></div>",
+            "content": "<div lang='en'><p>Chetana Charitable Trust develops locally relevant solutions to issues in child development, disability, health and education.</p><p>Chetana's accessible library encourages children with print disabilities to learn to access information for themselves, broadens their horizons and gives them a chance to develop a leisure activity.</p><p><a href='https://www.chetana.org.in'>www.chetana.org.in</a></p><p>The Chetana ARM Library is hosted by Kaivalya Tech</p></div><img class='branding' src='ChetanaTrust-back.png'/>",
 
             "condition": "always"
         }
