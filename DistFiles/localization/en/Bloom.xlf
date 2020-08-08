@@ -3744,6 +3744,10 @@
         <source xml:lang="en">Upload was cancelled</source>
         <note>ID: PublishTab.Upload.Cancelled</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.CheckEmail">
+        <source xml:lang="en">Please check your email and click on the link there, then log in again.</source>
+        <note>ID: PublishTab.Upload.CheckEmail</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.CcLink">
         <source xml:lang="en">CC-BY-NC</source>
         <note>ID: PublishTab.Upload.CcLink</note>
@@ -3872,10 +3876,6 @@
         <source xml:lang="en">We are sending an email to {0} with instructions for how to reset your password.</source>
         <note>ID: PublishTab.Upload.Login.SendingResetPassword</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.Signup">
-        <source xml:lang="en">Sign up for Bloom Library.</source>
-        <note>ID: PublishTab.Upload.Login.Signup</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.UnknownUser">
         <source xml:lang="en">Unknown user</source>
         <note>ID: PublishTab.Upload.Login.UnknownUser</note>
@@ -3885,8 +3885,9 @@
         <note>ID: PublishTab.Upload.LoginFailure</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.LoginLink">
-        <source xml:lang="en">Log in to BloomLibrary.org</source>
+        <source xml:lang="en">Sign up or log in to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.LoginLink</note>
+        <note>An earlier version of this message did not include "sign up". Translations may need updating.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Logout">
         <source xml:lang="en">Log out of BloomLibrary.org</source>
@@ -3929,9 +3930,13 @@
         <source xml:lang="en">Sign Language</source>
         <note>ID: PublishTab.Upload.SignLanguage</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SignupLink">
-        <source xml:lang="en">Sign up for BloomLibrary.org</source>
-        <note>ID: PublishTab.Upload.SignupLink</note>
+      <trans-unit id="PublishTab.Upload.SignInSignUp">
+        <source xml:lang="en">Sign In / Sign Up</source>
+        <note>ID: PublishTab.Upload.SignUpLogin</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SomethingWrong">
+        <source xml:lang="en">Oops, something went wrong when trying to log you into our database.</source>
+        <note>ID: PublishTab.Upload.SomethingWrong</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Step1">
         <source xml:lang="en">Step 1: Confirm Metadata</source>

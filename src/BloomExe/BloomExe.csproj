@@ -364,6 +364,7 @@
     <Compile Include="Publish\Epub\EpubPublishUiSettings.cs" />
     <Compile Include="Publish\Epub\PublishEpubApi.cs" />
     <Compile Include="ToPalaso\BackgroundWorkerProgressAdapter.cs" />
+    <Compile Include="WebLibraryIntegration\FirebaseLoginDialog.cs" />
     <Compile Include="web\WebProgressAdapter.cs" />
     <Compile Include="Publish\HtmlPublishPanel.cs">
       <SubType>UserControl</SubType>
@@ -687,12 +688,6 @@
     <Compile Include="WebLibraryIntegration\BookDownloadedEventArgs.cs" />
     <Compile Include="WebLibraryIntegration\BookTransfer.cs" />
     <Compile Include="WebLibraryIntegration\AccessKeys.cs" />
-    <Compile Include="WebLibraryIntegration\LoginDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WebLibraryIntegration\LoginDialog.Designer.cs">
-      <DependentUpon>LoginDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -935,9 +930,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionCreating\NewCollectionWizard.resx">
       <DependentUpon>NewCollectionWizard.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="WebLibraryIntegration\LoginDialog.resx">
-      <DependentUpon>LoginDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WebLibraryIntegration\OverwriteWarningDialog.resx">
       <DependentUpon>OverwriteWarningDialog.cs</DependentUpon>

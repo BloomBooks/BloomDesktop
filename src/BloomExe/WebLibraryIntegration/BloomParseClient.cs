@@ -26,6 +26,13 @@ namespace Bloom.WebLibraryIntegration
 			ApplicationId = keys.ParseApplicationKey;
 		}
 
+		public void SetLoginData(string account, string userId, string sessionToken)
+		{
+			Account = account;
+			_userId = userId;
+			_sessionToken = sessionToken;
+		}
+
 		protected BloomParseClient(RestClient client)
 		{
 			_client = client;
@@ -154,7 +161,11 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 
-		public bool LogIn(string account, string password)
+		// Log in directly to parse server with name and password. This strategy is largely no longer used,
+		// but some unit tests need it, since we haven't been able to get the new firebase login to work
+		// except when Bloom is actually running. For the same reason, this is still used for command-line
+		// uploads.
+		public bool LegacyLogIn(string account, string password)
 		{
 			_sessionToken = String.Empty;
 			Account = string.Empty;
@@ -191,6 +202,7 @@ namespace Bloom.WebLibraryIntegration
 			_sessionToken = null;
 			Account = "";
 			_userId = "";
+			FirebaseLoginDialog.FirebaseLogout();
 		}
 
 		public IRestResponse CreateBookRecord(string metadataJson)
@@ -251,29 +263,6 @@ namespace Bloom.WebLibraryIntegration
 			var response = Client.Execute(request);
 			if (response.StatusCode != HttpStatusCode.OK)
 				throw new ApplicationException(response.StatusDescription + " " + response.Content);
-		}
-
-		public void CreateUser(string account, string password)
-		{
-			var request = MakePostRequest("users");
-			var metadataJson =
-				"{\"username\":\"" + account.ToLowerInvariant() + "\",\"password\":\"" + password + "\",\"email\":\"" + account + "\"}";
-			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
-			var response = Client.Execute(request);
-			if (response.StatusCode != HttpStatusCode.Created)
-				throw new ApplicationException(response.StatusDescription + " " + response.Content);
-		}
-
-		public void DeleteCurrentUser()
-		{
-			if (!LoggedIn)
-				throw new ApplicationException("Must be logged in to delete current user");
-			var request = MakeDeleteRequest("users/" + _userId);
-			var response = Client.Execute(request);
-			if (response.StatusCode != HttpStatusCode.OK)
-				throw new ApplicationException(response.StatusDescription + " " + response.Content);
-			_sessionToken = null;
-			_userId = null;
 		}
 
 		public void DeleteLanguages()

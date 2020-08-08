@@ -10,7 +10,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("dialog/close",
 				(ApiRequest request) =>
 				{
-					BrowserDialog.CurrentDialog?.Close();
+					BrowserDialog.CloseDialog();
 					request.PostSucceeded();
 				}, true);
 		}

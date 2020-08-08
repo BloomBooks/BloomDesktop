@@ -1,28 +1,78 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
+using SIL.Reporting;
 
 namespace Bloom.MiscUI
 {
 	public partial class BrowserDialog : Form
 	{
 		private Browser _browser;
+		private Boolean _hidden;
+
+		// This applies only to cases where the dialog is shown hidden to execute some Javascript.
+		// When the javascript sends the close notification, this action gets executed.
+		private Action _whenClosed;
 
 		// called by BrowserDialogApi.Close()
 		public static void CloseDialog()
 		{
 			if (CurrentDialog !=null)
 			{
-				CurrentDialog.Close();
-				// caller will dispose
+				if (CurrentDialog._hidden)
+				{
+					CurrentDialog._whenClosed?.Invoke();
+					CurrentDialog._browser.Dispose();
+					CurrentDialog.Dispose();
+				}
+				else
+				{
+					//try
+					//{
+					//	// This was one of the things I tried to prevent a weird GeckoFx crash while
+					//	// closing the FirebaseLoginDialog. By itself it didn't help,
+					//	CurrentDialog.Controls.Remove(CurrentDialog._browser);
+					//	CurrentDialog._browser.Dispose();
+					//}
+					//catch (Exception ex)
+					//{
+					//	Logger.WriteError(ex);
+					//}
+
+					try
+					{
+						CurrentDialog.Close();
+					}
+					catch (Exception ex)
+					{
+						Logger.WriteError(ex);
+					}
+
+					// caller will dispose of the dialog itself.
+				}
+
 				CurrentDialog = null;
 			}
 		}
 
-		public static Form CurrentDialog;
+		public static BrowserDialog CurrentDialog;
 
-		public BrowserDialog(string url)
+		/// <summary>
+		/// Create a dialog whose entire content is a GeckoFx control displaying the specified URL.
+		/// Once the browser has navigated to that URL, add it to the window's Controls.
+		/// Typically the caller will call ShowDialog, and dispose when it gets closed.
+		/// If "hidden" is set to true, the dialog is NOT shown. This is useful when we need to
+		/// do something in a browser without any UI, like implement the Logout command in the
+		/// BloomLibraryUploadControl.
+		/// In the normal case where the dialog is shown, it is up to the caller to dispose of it when it is closed.
+		/// When hidden, it gets disposed in the CloseDialog code (since the caller would typically have
+		/// no way to know when whatever we wanted to happen in the browser is finished).
+		/// </summary>
+		public BrowserDialog(string url, bool hidden = false, Action whenClosed = null)
 		{
 			InitializeComponent();
+			_hidden = hidden;
+			_whenClosed = whenClosed;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow; // draggable
 			this.Text = ""; // don't show the title, we do that in the html
 
@@ -34,10 +84,13 @@ namespace Bloom.MiscUI
 			var dummy = _browser.Handle; // gets the WebBrowser created
 			_browser.WebBrowser.DocumentCompleted += (sender, args) =>
 			{
-				// If the control gets added to the tab before it has navigated somewhere,
-				// it shows as solid black, despite setting the BackColor to white.
-				// So just don't show it at all until it contains what we want to see.
-				this.Controls.Add(_browser);
+				if (!hidden)
+				{
+					// If the control gets added to the tab before it has navigated somewhere,
+					// it shows as solid black, despite setting the BackColor to white.
+					// So just don't show it at all until it contains what we want to see.
+					this.Controls.Add(_browser);
+				}
 			};
 			_browser.Navigate(url, false);
 			_browser.Focus();

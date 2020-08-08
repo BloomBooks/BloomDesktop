@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.web;
+using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
@@ -21,7 +22,6 @@ namespace Bloom.Publish.BloomLibrary
 	public partial class BloomLibraryUploadControl : UserControl
 	{
 		private readonly PublishView _parentView;
-		private readonly LoginDialog _loginDialog;
 		private readonly string _originalLoginText;
 		private bool _okToUpload;
 		private readonly bool _okToUploadDependsOnLangsChecked;
@@ -37,11 +37,10 @@ namespace Bloom.Publish.BloomLibrary
 
 		private readonly string _pleaseSetThis = LocalizationManager.GetString("PublishTab.Upload.PleaseSetThis",
 			"Please set this from the edit tab", "This shows next to the license, if the license has not yet been set.");
-		public BloomLibraryUploadControl(PublishView parentView, BloomLibraryPublishModel model, LoginDialog dialog)
+		public BloomLibraryUploadControl(PublishView parentView, BloomLibraryPublishModel model)
 		{
 			_model = model;
 			_parentView = parentView;
-			_loginDialog = dialog;
 			InitializeComponent();
 			_originalLoginText = _loginLink.Text; // Before anything might modify it (but after InitializeComponent creates it).
 			_titleLabel.Text = _model.Title;
@@ -61,6 +60,11 @@ namespace Bloom.Publish.BloomLibrary
 			{
 				LogAndInformButDontReportFailureToConnectToServer(e);
 			}
+			CommonApi.NotifyLogin(() =>
+			{
+				this.Invoke((Action)(UpdateDisplay));
+				;
+			});
 
 			switch (_model.LicenseType)
 			{
@@ -211,7 +215,7 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			var msg = LocalizationManager.GetString("PublishTab.Upload.LoginFailure",
 				"Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.");
-			MessageBox.Show(this, msg, LoginDialog.LoginFailureString, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			MessageBox.Show(this, msg, FirebaseLoginDialog.LoginFailureString, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			Logger.WriteEvent("Failure connecting to parse server " + exc.Message);
 		}
 
@@ -285,7 +289,6 @@ namespace Bloom.Publish.BloomLibrary
 				}
 			}
 			_loginLink.Text = _model.LoggedIn ? LocalizationManager.GetString("PublishTab.Upload.Logout", "Log out of BloomLibrary.org") : _originalLoginText;
-			_signUpLink.Visible = !_model.LoggedIn;
 			if (_model.LoggedIn)
 			{
 				_userId.Text = _model.WebUserId;
@@ -308,7 +311,7 @@ namespace Bloom.Publish.BloomLibrary
 			{
 				// The dialog is configured by Autofac to interact with the single instance of BloomParseClient,
 				// which it will update with all the relevant information if login is successful.
-				_loginDialog.ShowDialog(this);
+				FirebaseLoginDialog.ShowFirebaseLoginDialog();
 			}
 			UpdateDisplay();
 		}
@@ -316,12 +319,6 @@ namespace Bloom.Publish.BloomLibrary
 		private void _termsLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			SIL.Program.Process.SafeStart(BloomLibraryUrlPrefix + "/terms");
-		}
-
-		private void _signUpLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-		{
-			_loginDialog.SignUp(this);
-			UpdateDisplay();
 		}
 
 		private void SetStateOfNonUploadControls(bool enable)

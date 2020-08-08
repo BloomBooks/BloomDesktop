@@ -33,46 +33,6 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.Greater(_client.GetBookCount(), initialCount);
 		}
 
-		/// <summary>
-		/// This test tries out the complete create/logon/delete cycle. Not sure how to make separate tests
-		/// and leave things in the state we started. In case the test gets aborted part way, we check first
-		/// that the user we want to create does not exist.
-		/// </summary>
-		[Test]
-		public void CreateDeleteAndLogin()
-		{
-			var accountInstanceId = Guid.NewGuid().ToString();
-			var account = string.Format("mytest-{0}@example.com", accountInstanceId);
-			var titleCaseAccount = string.Format("Mytest-{0}@example.com", accountInstanceId);
-			var titleCaseDomain = string.Format("Mytest-{0}@Example.com", accountInstanceId);;
-
-			if (_client.LogIn(account, "nonsense"))
-				_client.DeleteCurrentUser();
-			Assert.That(_client.LogIn(account, "nonsense"), Is.False);
-			Assert.That(_client.UserExists(account), Is.False);
-
-			_client.CreateUser(account, "nonsense");
-			Assert.That(_client.LogIn(account, "nonsense"), Is.True);
-			Assert.That(_client.LogIn(titleCaseAccount, "nonsense"), Is.True, "login is not case-independent");
-			Assert.That(_client.UserExists(account), Is.True);
-			Assert.That(_client.UserExists(titleCaseAccount), Is.True, "UserExists is not case-independent");
-
-			_client.DeleteCurrentUser();
-			Assert.That(_client.LoggedIn, Is.False);
-			Assert.That(_client.UserExists(account), Is.False);
-			Assert.That(_client.LogIn(account, "nonsense"), Is.False);
-
-			_client.CreateUser(titleCaseDomain, "nonsense");
-			Assert.That(_client.LogIn(titleCaseAccount, "nonsense"), Is.True, "CreateUser is not case-independent");
-			Assert.That(_client.LogIn(account, "nonsense"), Is.True, "CreateUser is not case-independent");
-			Assert.That(_client.UserExists(titleCaseDomain), Is.True);
-			Assert.That(_client.UserExists(titleCaseAccount), Is.True, "UserExists is not case-independent");
-
-			_client.DeleteCurrentUser();
-			Assert.That(_client.LoggedIn, Is.False);
-			Assert.That(_client.LogIn(account, "nonsense"), Is.False);
-		}
-
 		[Test]
 		public void LoggedIn_Initially_IsFalse()
 		{
@@ -86,12 +46,15 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.IsTrue(_client.LoggedIn);
 		}
 
+		// It would be nice to have some tests for the new FirebaseLogin code, too, but so far
+		// we have not been able to get that code to run except after starting Bloom fully.
+
 		private void Login()
 		{
 			// This line can be uncommented for a single run of one test as an easy way to re-create the record that we assume
 			// always exists on parse.com.
 			//_client.CreateUser("unittest@example.com", "unittest");
-			Assert.IsTrue(_client.LogIn("unittest@example.com", "unittest"),
+			Assert.IsTrue(_client.LegacyLogIn("unittest@example.com", "unittest"),
 				"Could not log in using the unittest@example.com account");
 		}
 
@@ -99,7 +62,7 @@ namespace BloomTests.WebLibraryIntegration
 		public void LogIn_BadCredentials_ReturnsFalse()
 		{
 			Assert.IsFalse(_client.LoggedIn);
-			Assert.IsFalse(_client.LogIn("bogus@example.com", "abc"));
+			Assert.IsFalse(_client.LegacyLogIn("bogus@example.com", "abc"));
 			Assert.IsFalse(_client.LoggedIn);
 		}
 
@@ -136,7 +99,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.IsNull(_client.GetSingleBookRecord(new Guid().ToString()));
 
 			// Can't match if logged in as different user
-			_client.LogIn("someotheruser@example.com", "unittest2");
+			_client.LegacyLogIn("someotheruser@example.com", "unittest2");
 			Assert.IsNull(_client.GetSingleBookRecord(id));
 
 		}
