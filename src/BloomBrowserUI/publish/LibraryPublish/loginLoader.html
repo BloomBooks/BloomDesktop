@@ -1,0 +1,15 @@
+<!-- We need this loader because the LoginDialog is currently loaded into its own geckfox browser.
+This is the root document for that browser. It must have an element with id LoginDialog,
+which becomes the React root for the dialog. -->
+<!DOCTYPE html>
+<html class="publishTabScreen" lang="en">
+    <head>
+        <meta charset="UTF-8" />
+    </head>
+
+    <body>
+        <div id="LoginDialog"></div>
+        <script src="../../commonBundle.js"></script>
+        <script src="../../publishUIBundle.js"></script>
+    </body>
+</html>

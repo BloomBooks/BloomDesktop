@@ -65,6 +65,15 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         </>
     );
 };
+// Todo:
+// Progress of upload
+// Real preview data
+// warn if copyright not set
+// Choose languages to upload
+// Really hook up login/signup
+// Disable Upload until all done
+// Upload button should say "to sandbox" if appropriate
+// Features
 
 const AgreementCheckbox: React.FunctionComponent = props => {
     const [checked, setChecked] = useState(true);

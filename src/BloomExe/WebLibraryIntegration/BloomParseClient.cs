@@ -26,6 +26,13 @@ namespace Bloom.WebLibraryIntegration
 			ApplicationId = keys.ParseApplicationKey;
 		}
 
+		public void SetLoginData(string account, string userId, string sessionToken)
+		{
+			Account = account;
+			_userId = userId;
+			_sessionToken = sessionToken;
+		}
+
 		protected BloomParseClient(RestClient client)
 		{
 			_client = client;
@@ -191,6 +198,7 @@ namespace Bloom.WebLibraryIntegration
 			_sessionToken = null;
 			Account = "";
 			_userId = "";
+			FirebaseLoginDialog.FirebaseLogout();
 		}
 
 		public IRestResponse CreateBookRecord(string metadataJson)

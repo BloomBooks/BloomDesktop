@@ -168,9 +168,7 @@ namespace Bloom.Publish.BloomLibrary
 		/// <returns></returns>
 		internal void LogIn()
 		{
-			if (string.IsNullOrEmpty(WebUserId))
-				return;
-			_transferrer.LogIn(WebUserId, StoredWebPassword);
+			FirebaseLoginDialog.FirebaseUpdateToken();
 		}
 
 		internal void Logout()

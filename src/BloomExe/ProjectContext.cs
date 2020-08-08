@@ -248,7 +248,6 @@ namespace Bloom
 					// Enhance: may need some way to test a release build in the sandbox.
 					builder.Register(c => CreateBloomS3Client()).AsSelf().SingleInstance();
 					builder.RegisterType<BookTransfer>().AsSelf().SingleInstance();
-					builder.RegisterType<LoginDialog>().AsSelf();
 
 					//TODO: this gave a stackoverflow exception
 //				builder.Register<WorkspaceModel>(c => c.Resolve<WorkspaceModel.Factory>()(rootDirectoryPath)).InstancePerLifetimeScope();

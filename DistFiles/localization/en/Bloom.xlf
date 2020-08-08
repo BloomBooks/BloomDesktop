@@ -3872,10 +3872,6 @@
         <source xml:lang="en">We are sending an email to {0} with instructions for how to reset your password.</source>
         <note>ID: PublishTab.Upload.Login.SendingResetPassword</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.Signup">
-        <source xml:lang="en">Sign up for Bloom Library.</source>
-        <note>ID: PublishTab.Upload.Login.Signup</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.UnknownUser">
         <source xml:lang="en">Unknown user</source>
         <note>ID: PublishTab.Upload.Login.UnknownUser</note>
@@ -3885,8 +3881,9 @@
         <note>ID: PublishTab.Upload.LoginFailure</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.LoginLink">
-        <source xml:lang="en">Log in to BloomLibrary.org</source>
+        <source xml:lang="en">Sign up or log in to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.LoginLink</note>
+        <note>An earlier version of this message did not include "sign up". Translations may need updating.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Logout">
         <source xml:lang="en">Log out of BloomLibrary.org</source>
