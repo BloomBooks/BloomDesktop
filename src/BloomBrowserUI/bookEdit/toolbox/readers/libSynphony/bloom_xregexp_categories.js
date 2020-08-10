@@ -18,7 +18,6 @@ export function setSentenceEndingPunctuationForBloom() {
      * \u0021 = Exclamation Mark
      * \u002E = Full Stop
      * \u003F = Question Mark
-     * \u007C = Vertical Line - Serves as a pseudo-sentence delimiter in order to support phrase-level splitting for Talking Book tool
      * \u055C = Armenian Exclamation Mark
      * \u055E = Armenian Question Mark
      * \u0589 = Armenian Full Stop
@@ -62,7 +61,7 @@ export function setSentenceEndingPunctuationForBloom() {
             name: "SEP",
             alias: "Sentence_Ending_Punctuation",
             bmp:
-                "\u0021\u002e\u003f\u007c\u055c\u055e\u0589\u061f\u06d4\u0700\u0701\u0702\u0964\u0965\u104b\u1362\u1367\u1368\u166e\u1803\u1809\u1944\u1945\u203c\u203d\u2047\u2048\u2049\u3002\ufe52\ufe56\ufe57\uff01\uff0e\uff1f\uff61\u00a7"
+                "\u0021\u002e\u003f\u055c\u055e\u0589\u061f\u06d4\u0700\u0701\u0702\u0964\u0965\u104b\u1362\u1367\u1368\u166e\u1803\u1809\u1944\u1945\u203c\u203d\u2047\u2048\u2049\u3002\ufe52\ufe56\ufe57\uff01\uff0e\uff1f\uff61\u00a7"
         }
     ]);
 }

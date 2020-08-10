@@ -3,12 +3,7 @@
  */
 import XRegExp from "xregexp";
 require("./bloom_xregexp_categories.js"); // reviewslog should add PEP to XRegExp, but it's not working
-import {
-    theOneLibSynphony,
-    theOneLanguageDataInstance,
-    LanguageData,
-    LibSynphony
-} from "./synphony_lib";
+import { theOneLibSynphony, LanguageData, LibSynphony } from "./synphony_lib";
 import * as _ from "underscore";
 
 export function clearWordCache() {
@@ -116,7 +111,7 @@ LibSynphony.prototype.setExtraSentencePunctuation = function(extra) {
             alias: "Sentence_Ending_Punctuation",
             bmp:
                 extraRe +
-                "\u0021\u002e\u003f\u007c\u055c\u055e\u0589\u061f\u06d4\u0700\u0701\u0702\u0964\u0965\u104b\u1362\u1367\u1368\u166e\u1803\u1809\u1944\u1945\u203c\u203d\u2047\u2048\u2049\u3002\ufe52\ufe56\ufe57\uff01\uff0e\uff1f\uff61\u00a7"
+                "\u0021\u002e\u003f\u055c\u055e\u0589\u061f\u06d4\u0700\u0701\u0702\u0964\u0965\u104b\u1362\u1367\u1368\u166e\u1803\u1809\u1944\u1945\u203c\u203d\u2047\u2048\u2049\u3002\ufe52\ufe56\ufe57\uff01\uff0e\uff1f\uff61\u00a7"
         }
     ]);
 };
@@ -195,7 +190,7 @@ LibSynphony.prototype.stringToSentences = function(textHTML) {
         intersentenceSpace +
         "([\\u0005]*)" + // closing tag between sentences
         "(?![^\\p{L}]*" + // may be followed by non-letter chars
-            "[\\p{Ll}\\p{SCP}]+)", // first letter following is not lower case
+            "[\\p{Ll}\\p{SCP}]+)", // first letter following is not lower case. (This works by consuming all the lowercase letters/etc. up until the first uppercase letter/etc)
         "g"
     );
 
@@ -207,6 +202,16 @@ LibSynphony.prototype.stringToSentences = function(textHTML) {
             regex,
             "$1" + delimiter + nonSentence + "$2" + "$3" + "$4" + delimiter
         );
+
+        // Phrase Delimiting
+        // It's possible to use a fancy regex-based approach too (akin to sentence splitting regex)
+        // But that's not so intuitive nor easy to obtain/verify correctness
+        // due to many corner cases... need to consider sentence continuing punctuation, etc
+        // Instead, let's start with a simple, easy to understand approach:
+        //    "|" character is a phrase delimiter. Context doesn't matter.
+        //    (But collapse empty entries created from having multiple "|" character in a row)
+        // It should be easier for us to implement, test, and communicate, and easier for the user to understand.
+        paragraph = XRegExp.replace(paragraph, /(\|+)/g, "$1" + delimiter);
 
         // restore line breaks
         paragraph = paragraph.replace(/\u0001/g, "<br />");

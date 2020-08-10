@@ -349,17 +349,33 @@ describe("audio recording tests", () => {
             expect(spans[0].innerHTML).toBe("This <b>is</b> a sentence.");
             expect(spans[1].innerHTML).toBe("This <i>is</i> another");
         });
-        it("treats vertical bar as a delimiter", () => {
-            const div = $("<div><p>Phrase 1| Phrase 2.</p></div>");
-            const recording = new AudioRecording();
-            recording.makeAudioSentenceElements(
-                div,
-                AudioRecordingMode.Sentence
-            );
-            const spans = div.find("span");
-            expect(spans.length).toBe(2);
-            expect(spans[0].innerText).toBe("Phrase 1|");
-            expect(spans[1].innerText).toBe("Phrase 2.");
+        [
+            "Phrase 1| Phrase 2.",
+            "phrase 1| phrase 2.",
+            "1 | 2",
+            "1 ||| 2" // collapse multiple
+        ].forEach(testInput => {
+            it(`treats vertical bar as a phrase delimiter (Input=${testInput})`, () => {
+                const div = $(`<div><p>${testInput}</p></div>`);
+                const recording = new AudioRecording();
+                recording.makeAudioSentenceElements(
+                    div,
+                    AudioRecordingMode.Sentence
+                );
+                const spans = div.find("span");
+                expect(spans.length).toBe(
+                    2,
+                    `Input "${testInput}" should be split into 2 phrase.`
+                );
+                expect(spans[0].innerText.endsWith("|")).toBe(
+                    true,
+                    `${spans[0].innerText} should end with "|"`
+                );
+                expect(div[0].innerText).toBe(
+                    testInput,
+                    "InnerText no longer matches"
+                );
+            });
         });
         it("keeps id with unchanged recorded sentence when new inserted before", () => {
             const div = $(
