@@ -373,7 +373,9 @@ namespace Bloom.ImageProcessing
 		// converting PNG files to JPEG as can sometimes happen when initially setting the image files from the
 		// Image Chooser dialog).  Some books have acquired large images that cause frequent "out of memory"
 		// errors, some of which are hidden from the user.
-		public static void FixSizeAndTransparencyOfImagesInFolder(string folderPath, IProgress progress)
+		// Transparency is removed only from images the caller wants to be fixed. (BL-8819)
+		public static void FixSizeAndTransparencyOfImagesInFolder(string folderPath, IEnumerable<string> namesOfFilesToFixTransparency,
+			IProgress progress)
 		{
 			// On Windows, "*.png" and "*.jp?g" would work to collect the desired image files using the
 			// Directory.GetFiles method.  These fail on Linux for two reasons: case sensitivity and the ?
@@ -403,12 +405,20 @@ namespace Bloom.ImageProcessing
 					var size = GetDesiredImageSize(tagFile.Properties.PhotoWidth, tagFile.Properties.PhotoHeight);
 					if (size.Width != tagFile.Properties.PhotoWidth || size.Height != tagFile.Properties.PhotoHeight)
 					{
-						if (ReplaceImageFileWithSmallerOpaqueCopy(path, size, true, tagFile, progress))
+						var makeOpaque = namesOfFilesToFixTransparency.Contains(Path.GetFileName(path));
+						if (ReplaceImageFileWithSmallerOpaqueCopy(path, size, makeOpaque, tagFile, progress))
 						{
 							++completed;
 							continue;
 						}
 					}
+				}
+				// Remove transparency only from images the caller wants to be fixed.
+				// (This is largely for the benefit of not changing branding images.  See BL-8819.)
+				if (!namesOfFilesToFixTransparency.Contains(Path.GetFileName(path)))
+				{
+					++completed;
+					continue;
 				}
 				using (var pi = PalasoImage.FromFileRobustly(path))
 				{
