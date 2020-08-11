@@ -1119,7 +1119,9 @@ namespace BloomTests.Book
 			var storage = GetInitialStorageWithCustomHtml(@"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
 				<div data-audiorecordingmode='TextBox'/>
-				<div class='bloom-textOverPicture' data-bubble='`style`:`speech`'/>
+				<div class='bloom-imageContainer'>
+					<svg class='comical-generated' />
+				</div>
 			</div></body></html>");
 			var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
@@ -1136,12 +1138,16 @@ namespace BloomTests.Book
 			Assert.That(requiredVersions[0].BloomReaderMinVersion, Is.EqualTo("1.0"));
 		}
 
+		private const string MinimalDataBubbleValue = "{`version`:`1.0`,`level`:1,`style`:`none`,`tails`:[]}";
+
 		[Test]
-		public void GetRequiredVersions_ComicStyleNone_ReturnsNone()
+		public void GetRequiredVersions_ComicStyleNoSvg_ReturnsNone()
 		{
 			var storage = GetInitialStorageWithCustomHtml(@"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
-				<div class='bloom-textOverPicture' data-bubble='`style`:`none`'/>
+				<div class='bloom-imageContainer'>
+					<div class='bloom-textOverPicture' data-bubble='" + MinimalDataBubbleValue + @"'/>
+				</div>
 			</div></body></html>");
 			var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
@@ -1153,8 +1159,11 @@ namespace BloomTests.Book
 		{
 			var storage = GetInitialStorageWithCustomHtml(@"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
-				<div class='bloom-textOverPicture' data-bubble='`style`:`none`'/>
-				<div class='bloom-textOverPicture' data-bubble='`style`:`ellipse`'/>
+				<div class='bloom-imageContainer'>
+					<div class='bloom-textOverPicture' data-bubble='" + MinimalDataBubbleValue + @"'/>
+					<svg class='comical-generated' />
+					<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`level`:1,`style`:`ellipse`,`tails`:[]}'/>
+				</div>
 			</div></body></html>");
 			var requiredVersions = BookStorage.GetRequiredVersions(storage.Dom).ToArray();
 
@@ -1164,6 +1173,117 @@ namespace BloomTests.Book
 			Assert.That(requiredVersions[0].FeaturePhrase, Is.EqualTo("Support for Comics"));
 			Assert.That(requiredVersions[0].BloomDesktopMinVersion, Is.EqualTo("4.7"));
 			Assert.That(requiredVersions[0].BloomReaderMinVersion, Is.EqualTo("1.0"));
+		}
+
+		[Test]
+		public void PerformNecessaryMaintenanceOnBook_DeletesSVGIfOnlyNoneStyle()
+		{
+			var storage = GetInitialStorageWithCustomHtml(@"
+<html><head>
+	<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+	<meta name='maintenanceLevel' content='1'></meta>
+</head>
+<body>
+	<div class='bloom-page'>
+		<div class='bloom-imageContainer'>
+			<div class='bloom-textOverPicture' data-bubble='" + MinimalDataBubbleValue + @"'/>
+			<svg class='comical-generated' />
+		</div>
+	</div>
+</body></html>");
+
+			//SUT
+			storage.PerformNecessaryMaintenanceOnBook();
+
+			//Verification
+			var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+			Assert.That(maintLevel, Is.GreaterThanOrEqualTo("2"));
+			Assert.That(storage.Dom.SafeSelectNodes("//*[@class='comical-generated']").Count, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void PerformNecessaryMaintenanceOnBook_DoesNotDeleteSVGIfOtherStylePresent()
+		{
+			var storage = GetInitialStorageWithCustomHtml(@"
+<html><head>
+	<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+	<meta name='maintenanceLevel' content='1'></meta>
+</head>
+<body>
+	<div class='bloom-page'>
+		<div class='bloom-imageContainer'>
+			<div class='bloom-textOverPicture' data-bubble='" + MinimalDataBubbleValue + @"'/>
+			<svg class='comical-generated'/>
+			<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
+		</div>
+	</div>
+</body></html>");
+
+			//SUT
+			storage.PerformNecessaryMaintenanceOnBook();
+
+			//Verification
+			var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+			Assert.That(maintLevel, Is.GreaterThanOrEqualTo("2"));
+			Assert.That(storage.Dom.SafeSelectNodes("//*[@class='comical-generated']").Count, Is.EqualTo(1));
+		}
+
+		[Test]
+		public void PerformNecessaryMaintenanceOnBook_HandlesMultipleSVGs()
+		{
+			var storage = GetInitialStorageWithCustomHtml(@"
+<html><head>
+	<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+	<meta name='maintenanceLevel' content='1'></meta>
+</head>
+<body>
+	<div class='bloom-page'>
+		<div class='bloom-imageContainer'>
+			<div class='bloom-textOverPicture' data-bubble='" + MinimalDataBubbleValue + @"'/>
+			<svg class='comical-generated'/>
+			<div class='bloom-textOverPicture' data-bubble='" + MinimalDataBubbleValue + @"'/>
+		</div>
+		<div class='bloom-imageContainer'>
+			<svg class='comical-generated'/>
+			<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
+			<div class='bloom-textOverPicture' data-bubble='" + MinimalDataBubbleValue + @"'/>
+		</div>
+	</div>
+</body></html>");
+
+			//SUT
+			storage.PerformNecessaryMaintenanceOnBook();
+
+			//Verification
+			var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+			Assert.That(maintLevel, Is.GreaterThanOrEqualTo("2"));
+			Assert.That(storage.Dom.SafeSelectNodes("//*[@class='comical-generated']").Count, Is.EqualTo(1));
+		}
+
+		[Test]
+		public void PerformNecessaryMaintenanceOnBook_DoesNothingIfAlreadyProcessed()
+		{
+			var storage = GetInitialStorageWithCustomHtml(@"
+<html><head>
+	<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+	<meta name='maintenanceLevel' content='2'></meta>
+</head>
+<body>
+	<div class='bloom-page'>
+		<div class='bloom-imageContainer'>
+			<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`level`:1,`style`:`none`,`backgroundColors`:[`#e09494`],`tails`:[]}'/>
+			<svg class='comical-generated' />
+		</div>
+	</div>
+</body></html>");
+
+			//SUT
+			storage.PerformNecessaryMaintenanceOnBook();
+
+			//Verification
+			var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+			Assert.That(maintLevel, Is.GreaterThanOrEqualTo("2"));
+			Assert.That(storage.Dom.SafeSelectNodes("//*[@class='comical-generated']").Count, Is.EqualTo(1));
 		}
 	}
 }

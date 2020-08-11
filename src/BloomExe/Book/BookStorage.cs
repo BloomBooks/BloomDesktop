@@ -78,7 +78,7 @@ namespace Bloom.Book
 		void EnsureOriginalTitle();
 
 		IEnumerable<string> GetActivityFolderNamesReferencedInBook();
-		void ShrinkImagesIfNecessary();
+		void PerformNecessaryMaintenanceOnBook();
 	}
 
 	public class BookStorage : IBookStorage
@@ -111,9 +111,10 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// History of this number:
-		///   Bloom 4.9: 1 = Ensure that all images are opaque and no larger than our desired maximum size
+		///   Bloom 4.9: 1 = Ensure that all images are opaque and no larger than our desired maximum size.
+		///              2 = Remove any 'comical-generated' svgs that are transparent.
 		/// </summary>
-		public const int kMaintenanceLevel = 1;
+		public const int kMaintenanceLevel = 2;
 
 		public const string PrefixForCorruptHtmFiles = "_broken_";
 		private IChangeableFileLocator _fileLocator;
@@ -683,7 +684,7 @@ namespace Bloom.Book
 		}
 
 		public static string ComicalXpath =
-			"//*[contains(@class, 'bloom-textOverPicture') and contains(@data-bubble, '`style`:') and not(contains(@data-bubble, '`style`:`none`'))]";
+			"//*[@class='comical-generated']";
 
 		static Feature[] _features =
 		{
@@ -705,9 +706,8 @@ namespace Bloom.Book
 				FeaturePhrase = "Support for Comics",
 				BloomDesktopMinVersion = "4.7",
 				BloomReaderMinVersion = "1.0",
-				// We're looking for a text-over-picture box with non-trivial data-bubble,
-				// but as a special case ones with style none are OK, as these can continue to work
-				// as old-style TOP boxes, with the data-bubble ignored.
+				// We've updated Bloom to only store SVGs in the file if they are non-transparent. So now a
+				// Bloom book is considered 'comical' for Publishing, etc. if it has a comical-generated SVG.
 				XPath = ComicalXpath
 			}
 		};
@@ -2306,38 +2306,6 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Check whether any images in the book are too large for Bloom to reliably handle.  If any such
-		/// images are found, then reduce them to the maximum size allowed by Bloom.
-		/// </summary>
-		/// <remarks>
-		/// Bloom did not check for overlarge images until Version 4.9 and maintenance level 1.
-		/// </remarks>
-		public void ShrinkImagesIfNecessary()
-		{
-			if (NeedToShrinkImages())
-				PerformNecessaryMaintenanceOnBook();
-		}
-
-		/// <summary>
-		/// Books created before "maintenanceLevel 1" may have images that are too large for Bloom
-		/// to handle properly.  If this book is still at maintenance level 0, check through its
-		/// images to see if any of them exceed our size limit.
-		/// </summary>
-		/// <returns>
-		/// true if one or more images need to be reduced in size, false if all images are small
-		/// enough already (or the maintenanceLevel has been set to 1 or greater already)
-		/// </returns>
-		internal bool NeedToShrinkImages()
-		{
-			var levelString = Dom.GetMetaValue("maintenanceLevel", "0");
-			if (!int.TryParse(levelString, out int level))
-				level = 0;
-			if (level < 1)
-				return ImageUtils.NeedToShrinkImages(FolderPath);
-			return false;
-		}
-
-		/// <summary>
 		/// Perform expensive updates that new versions of Bloom can perform on older books that don't
 		/// involve actual book format changes.
 		/// </summary>
@@ -2346,35 +2314,86 @@ namespace Bloom.Book
 			var levelString = Dom.GetMetaValue("maintenanceLevel", "0");
 			if (!int.TryParse(levelString, out int level))
 				level = 0;
-			if (level < kMaintenanceLevel)
+			if (level >= kMaintenanceLevel)
+				return;
+			if (level < 1 && ImageUtils.NeedToShrinkImages(FolderPath))
 			{
-				if (level < 1)
+				// If the book contains overlarge images, we want to fix those before editing because this can lead
+				// to thumbnails not being created properly and other bad behavior.  This is a one-time fix that can
+				// permanently change the images in the original book folder.  If any images must be shrunk, then a
+				// progress dialog pops up because that can be a very slow process.  If nothing needs to be done,
+				// nothing will appear on the screen, and it usually takes a small fraction of a second to determine
+				// this.
+
+				// Bloom 4.9 and later limit images used by Bloom books to be no larger than 3500x2550 in
+				// order to avoid out of memory errors that can happen with really large images.  Some older
+				// books have images larger than this that can cause these out of memory problems.  This
+				// method is used to fix these overlarge images before the user starts to edit or publish
+				// the book.  The method also ensures that the images are all opaque since some old versions
+				// of Bloom made all images transparent, which turned out to be a bad idea.
+				// This update can be very slow, so encourage the user that something is happening.
+				if (Program.RunningUnitTests)
 				{
-					// Bloom 4.9 and later limit images used by Bloom books to be no larger than 3500x2550 in
-					// order to avoid out of memory errors that can happen with really large images.  Some older
-					// books have images larger than this that can cause these out of memory problems.  This
-					// method is used to fix these overlarge images before the user starts to edit or publish
-					// the book.  The method also ensures that the images are all opaque since some old versions
-					// of Bloom made all images transparent, which turned out to be a bad idea.
-					// This update can be very slow, so encourage the user that something is happening.
-					if (Program.RunningUnitTests)
+					// TeamCity enforces not showing modal dialogs during unit tests on Windows 10.
+					ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, new NullProgress());
+				}
+				else
+				{
+					using (var dlg = new ProgressDialogBackground())
 					{
-						// TeamCity enforces not showing modal dialogs during unit tests on Windows 10.
-						ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, new NullProgress());
-					}
-					else
-					{
-						using (var dlg = new ProgressDialogBackground())
-						{
-							dlg.Text = "Updating Image Files";
-							dlg.ShowAndDoWork((progress, args) =>
-								ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, progress));
-						}
+						dlg.Text = "Updating Image Files";
+						dlg.ShowAndDoWork((progress, args) =>
+							ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, progress));
 					}
 				}
-				// future additional levels will add additional "if (level < N)" blocks.
-				Dom.UpdateMetaElement("maintenanceLevel", kMaintenanceLevel.ToString(CultureInfo.InvariantCulture));
 			}
+
+			if (level < 2)
+			{
+				// Bloom 4.9 and later (a bit later than the above 4.9 and therefore a separate maintenance
+				// level) will only put comical-generated svgs in Bloom imageContainers if they are
+				// non-transparent. Since our test for whether a book is Comical for Publishing restrictions
+				// will now be a simple scan for these svgs, we here remove legacy svgs whose bubble style
+				// was "none", implying transparency.
+				var comicalSvgs = Dom.SafeSelectNodes(ComicalXpath).Cast<XmlElement>();
+				var elementsToSave = new HashSet<XmlElement>();
+				foreach (var svgElement in comicalSvgs)
+				{
+					var container = svgElement.ParentNode; // bloom-imageContainer div (not gonna be null)
+					var textOverPictureDivs = container.SelectNodes("div[contains(@class, 'bloom-textOverPicture')]");
+					if (textOverPictureDivs == null) // unlikely, but maybe possible
+						continue;
+
+					foreach (XmlElement textOverPictureDiv in textOverPictureDivs)
+					{
+						var bubbleData = textOverPictureDiv.GetAttribute("data-bubble");
+						if (string.IsNullOrEmpty(bubbleData))
+							continue;
+						var jsonObject = HtmlDom.GetJsonObjectFromDataBubble(bubbleData);
+						if (jsonObject == null)
+							continue; // only happens if it fails to parse the "json"
+						var style = HtmlDom.GetStyleFromDataBubbleJsonObj(jsonObject);
+						if (style == "none")
+							continue;
+						elementsToSave.Add(svgElement);
+						break;
+					}
+				}
+				// Now delete the SVGs that only have bubbles of style 'none'.
+				var dirty = false;
+				foreach (var svgElement in comicalSvgs.ToArray())
+				{
+					if (!elementsToSave.Contains(svgElement))
+					{
+						svgElement.ParentNode.RemoveChild(svgElement);
+						dirty = true;
+					}
+				}
+				if (dirty)
+					Save();
+			}
+			// future additional levels will add additional "if (level < N)" blocks.
+			Dom.UpdateMetaElement("maintenanceLevel", kMaintenanceLevel.ToString(CultureInfo.InvariantCulture));
 		}
 	}
 }
