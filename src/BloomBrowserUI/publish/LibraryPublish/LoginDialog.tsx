@@ -1,7 +1,7 @@
 import * as React from "react";
 import ReactDOM = require("react-dom");
 import { ThemeProvider } from "@material-ui/styles";
-import theme from "../../bloomMaterialUITheme";
+import { makeTheme } from "../../problemDialog/theme";
 
 import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
 // these two firebase imports are strange, but not an error. See https://github.com/firebase/firebase-js-sdk/issues/1832
@@ -12,6 +12,11 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { H2 } from "../../react_components/l10nComponents";
+import WebSocketManager from "../../utils/WebSocketManager";
+import { DialogTitle, Typography, Dialog } from "@material-ui/core";
+import "./LoginDialog.less";
+import { useL10n } from "../../react_components/l10nHooks";
+import { ProblemKind } from "../../problemDialog/ProblemDialog";
 
 // This component supports logging in using Firebase. In addition to support
 // for showing the dialog, it supports being loaded into a browser (but not
@@ -19,8 +24,17 @@ import { H2 } from "../../react_components/l10nComponents";
 // restarting the main app.
 export const LoginDialog: React.FunctionComponent<{}> = props => {
     const [done, setDone] = useState(false);
+    const dialogTitle = useL10n(
+        "Sign In / Sign Up to BloomLibrary.org",
+        "PublishTab.Upload.SignInSignUp"
+    );
     // Configuration params for FirebaseUI.
     const uiConfig = {
+        // Tried without this. Result: the google signup stuff appears in a full browser tab.
+        // This is startling but nice in some ways: you can resize it, the controls in the
+        // footer work. However, when you complete the sign in, the results are not returned
+        // to Bloom. The Browser opens yet another tab showing the contents of this dialog.
+        // There may be some way around this but I doubt it.
         signInFlow: "popup",
         // signInSuccessUrl: "/",
         credentialHelper: "none", // don't show some weird "Account Chooser" thing with email login
@@ -78,20 +92,21 @@ export const LoginDialog: React.FunctionComponent<{}> = props => {
                 // get token from parse, return to desktop
                 const bucketName = getBucketName();
                 authResult.user.getIdToken().then(async (idToken: string) => {
-                    await connectParseServer(
-                        idToken,
-                        authResult.user.email!,
-                        bucketName
-                    )
+                    try {
+                        await connectParseServer(
+                            idToken,
+                            authResult.user.email!,
+                            bucketName
+                        );
                         // .then(result =>
                         //     console.log("ConnectParseServer resolved with " + result)
                         // )
-                        .catch(err => {
-                            console.log(
-                                "*** Signing out of firebase because of an error connecting to ParseServer"
-                            );
-                            firebase.auth().signOut();
-                        });
+                    } catch (err) {
+                        console.log(
+                            "*** Signing out of firebase because of an error connecting to ParseServer"
+                        );
+                        firebase.auth().signOut();
+                    }
                     // We want to wait for another render and some cleanup before actually
                     // closing the dialog...see comments below.
                     setDone(true);
@@ -104,9 +119,30 @@ export const LoginDialog: React.FunctionComponent<{}> = props => {
                 console.error("!!!!!!!!!!! signInFailure");
                 alert("signInFailure");
                 return new Promise((r, x) => {});
-            }
+            },
+            // The API supports these, but I haven't found them to do anything.
+            // Terms of service url.
+            tosUrl: "https://next.bloomlibrary.org/page/termsOfUse",
+            // Privacy policy url.
+            privacyPolicyUrl: "https://next.bloomlibrary.org/page/privacyNotice"
         }
     };
+    useEffect(() => {
+        const kWebsocketContext = "dialog"; // matches constant in BloomBrowserDialog
+        WebSocketManager.addListener(kWebsocketContext, e => {
+            // allows C# to request close (e.g., when user clicks the close box),
+            // allowing the tricks in the following useEffect to be done so we don't
+            // crash.
+            if (e.id == "close") {
+                setDone(true);
+            }
+        });
+        BloomApi.get("i18n/uilang", result => {
+            // disapointingly, this doesn't seem to have any effect.
+            // It should tell firebase to localize to the appropriate UI language.
+            firebase.auth().languageCode = result.data;
+        });
+    }, []);
     useEffect(() => {
         if (done) {
             // This is a workaround to prevent a weird crash in GeckoFx when disposing of the browser.
@@ -123,15 +159,30 @@ export const LoginDialog: React.FunctionComponent<{}> = props => {
         // somewhere in the StyledFirebaseAuth. Hiding overflow is the only way
         // I've found to get rid of the scroll bar.
         <div style={{ overflow: "hidden" }}>
-            <H2 l10nKey="PublishTab.Upload.SignInSignUp">Sign In / Sign Up</H2>
-            <div>
-                {done || (
-                    <StyledFirebaseAuth
-                        uiConfig={uiConfig as any}
-                        firebaseAuth={firebase.auth()}
-                    />
-                )}
-            </div>
+            {done || (
+                <Dialog
+                    className="login-dialog"
+                    open={true}
+                    // the behavior of fullWidth/maxWidth is very strange
+                    //fullWidth={true}
+                    maxWidth={"md"}
+                    fullScreen={true}
+                    onClose={() => setDone(true)}
+                >
+                    <DialogTitle className="dialog-title">
+                        <Typography variant="h6">{dialogTitle}</Typography>
+                    </DialogTitle>
+
+                    <div>
+                        {done || (
+                            <StyledFirebaseAuth
+                                uiConfig={uiConfig as any}
+                                firebaseAuth={firebase.auth()}
+                            />
+                        )}
+                    </div>
+                </Dialog>
+            )}
         </div>
     );
 };
@@ -176,8 +227,7 @@ async function connectParseServer(
         );
     } catch (err) {
         console.log("The `Bloom Link` call failed:" + JSON.stringify(err));
-        failedToLoginInToParseServer();
-        return;
+        failedToLoginInToParseServer(err);
     }
     // Now we can log in (or create a new parse server user if needed)
     try {
@@ -214,16 +264,21 @@ async function connectParseServer(
                 userId: usersResult.data.objectId
             });
         } else {
-            failedToLoginInToParseServer();
+            failedToLoginInToParseServer(
+                new Error(
+                    "Posting login to parse server returned no sessionToken"
+                )
+            );
         }
-        closeDialog();
     } catch (err) {
-        failedToLoginInToParseServer();
-        closeDialog();
+        failedToLoginInToParseServer(err);
     }
 }
 
-function failedToLoginInToParseServer() {
+// This function always  ends by throwing the error passed.
+// It does some reporting and cleanup first.
+// It is designed to abort its caller up to some level where it is caught.
+function failedToLoginInToParseServer(err: Error) {
     // Sentry.captureException(
     //     new Error(
     //         "Login to parse server failed after successful firebase login"
@@ -239,6 +294,7 @@ function failedToLoginInToParseServer() {
         .done(translation => {
             alert(translation);
         });
+    throw err || new Error("Login failed");
 }
 
 // An instance of this object tracks the parse server information that depends on whether
@@ -351,6 +407,13 @@ if (mode === "logout") {
     // get any not-in-a-class code called, including ours. But it only makes sense to get wired up
     // if that html has the root page we need.
     firebase.initializeApp(firebaseConfig);
+    // We want to borrow the appearance of the ProblemDialog in User mode,
+    // which eventually will be a default dialog style.
+    // This needs drastic refactoring to allow this theme, and the makeTheme code
+    // generally, to be more widely shared. Components of the LoginDialog.less
+    // (some taken from ProblemDialog.less) should be moved somewhere shareable
+    // too. But this PR is complicated enough already.
+    const theme = makeTheme(ProblemKind.User);
 
     ReactDOM.render(
         <ThemeProvider theme={theme}>

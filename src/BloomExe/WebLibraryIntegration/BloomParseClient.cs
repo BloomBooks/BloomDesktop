@@ -29,6 +29,8 @@ namespace Bloom.WebLibraryIntegration
 		public void SetLoginData(string account, string userId, string sessionToken)
 		{
 			Account = account;
+			Settings.Default.WebUserId = account;
+			Settings.Default.Save();
 			_userId = userId;
 			_sessionToken = sessionToken;
 		}
@@ -198,7 +200,6 @@ namespace Bloom.WebLibraryIntegration
 		public void Logout()
 		{
 			Settings.Default.WebUserId = ""; // Should not be able to log in again just by restarting
-			Settings.Default.WebPassword = "";
 			_sessionToken = null;
 			Account = "";
 			_userId = "";

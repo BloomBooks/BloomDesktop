@@ -300,7 +300,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._loginLink.Size = new System.Drawing.Size(129, 13);
 			this._loginLink.TabIndex = 18;
 			this._loginLink.TabStop = true;
-			this._loginLink.Text = "Sign up or Log in to BloomLibrary.org";
+			this._loginLink.Text = "Sign up or Sign in to BloomLibrary.org";
 			this._loginLink.TextAlign = System.Drawing.ContentAlignment.TopRight;
 			this._loginLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._loginLink_LinkClicked);
 			// 

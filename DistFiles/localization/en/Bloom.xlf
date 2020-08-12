@@ -2880,7 +2880,7 @@
         <note>ID: LoginDialog.ShowTerms</note>
       </trans-unit>
       <trans-unit id="LoginDialog.WindowTitle">
-        <source xml:lang="en">Log in to BloomLibrary.org</source>
+        <source xml:lang="en">Sign in to BloomLibrary.org</source>
         <note>ID: LoginDialog.WindowTitle</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName">
@@ -3745,7 +3745,7 @@
         <note>ID: PublishTab.Upload.Cancelled</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmail">
-        <source xml:lang="en">Please check your email and click on the link there, then log in again.</source>
+        <source xml:lang="en">Please check your email and click on the link there, then sign in again.</source>
         <note>ID: PublishTab.Upload.CheckEmail</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CcLink">
@@ -3820,9 +3820,10 @@
         <note>ID: PublishTab.Upload.Login.AccountAlreadyExists</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount">
-        <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</source>
+        <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address.  Would you like to sign in instead?</source>
         <note>ID: PublishTab.Upload.Login.AlreadyHaveAccount</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added space): We cannot sign you up with that address, because we already have an account with that address. Would you like to log in instead?</note>
+        <note xml:lang="en">OLD TEXT (before 4.9, changed log in to sign in): We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.LoginConnectFailed">
         <source xml:lang="en">Bloom could not connect to the server to verify your login. Please check your network connection.</source>
@@ -3881,16 +3882,18 @@
         <note>ID: PublishTab.Upload.Login.UnknownUser</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.LoginFailure">
-        <source xml:lang="en">Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.</source>
+        <source xml:lang="en">Bloom could not sign in to BloomLibrary.org using your saved credentials. Please check your network connection.</source>
         <note>ID: PublishTab.Upload.LoginFailure</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.LoginLink">
-        <source xml:lang="en">Sign up or log in to BloomLibrary.org</source>
+        <source xml:lang="en">Sign up or sign in to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.LoginLink</note>
-        <note>An earlier version of this message did not include "sign up". Translations may need updating.</note>
+        <note xml:lang="en">OLD TEXT (before 4.9, added "sign in" and changed "log in" to "sign in"): Log in to BloomLibrary.org</note>
+        <note>We have kept the old message ID since a translation of that will be better than nothing. The terminology should ideally match the buttons in the dialog,
+          which we don't control, such as "Sign in with Google", but so far we haven't been able to get those localized.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Logout">
-        <source xml:lang="en">Log out of BloomLibrary.org</source>
+        <source xml:lang="en">Sign out of BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.Logout</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.MakingPdf">
@@ -3914,7 +3917,7 @@
         <note>ID: PublishTab.Upload.OldVersion</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.PleaseLogIn">
-        <source xml:lang="en">Please log in to BloomLibrary.org (or sign up) before uploading</source>
+        <source xml:lang="en">Please sign in to BloomLibrary.org (or sign up) before uploading</source>
         <note>ID: PublishTab.Upload.PleaseLogIn</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.PleaseSetThis">
@@ -3931,11 +3934,11 @@
         <note>ID: PublishTab.Upload.SignLanguage</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignInSignUp">
-        <source xml:lang="en">Sign In / Sign Up</source>
+        <source xml:lang="en">Sign In / Sign Up to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.SignUpLogin</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SomethingWrong">
-        <source xml:lang="en">Oops, something went wrong when trying to log you into our database.</source>
+        <source xml:lang="en">Oops, something went wrong when trying to sign you into our database.</source>
         <note>ID: PublishTab.Upload.SomethingWrong</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Step1">

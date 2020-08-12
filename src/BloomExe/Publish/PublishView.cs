@@ -580,7 +580,7 @@ namespace Bloom.Publish
 			}
 
 			var libaryPublishModel = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
-			_uploadControl = new BloomLibraryUploadControl(this, libaryPublishModel);
+			_uploadControl = new BloomLibraryUploadControl(this, libaryPublishModel, _webSocketServer);
 			_uploadControl.Dock = DockStyle.Fill;
 			var saveBackColor = _uploadControl.BackColor;
 			Controls.Add(_uploadControl); // somehow this changes the backcolor

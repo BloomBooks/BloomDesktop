@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Bloom.Api;
+using Bloom.web;
 using SIL.Reporting;
 
 namespace Bloom.MiscUI
@@ -10,15 +12,21 @@ namespace Bloom.MiscUI
 		private Browser _browser;
 		private Boolean _hidden;
 
-		// This applies only to cases where the dialog is shown hidden to execute some Javascript.
+		// This applies only to cases where the dialog is created but not shown (hidden is true)
+		// to execute some Javascript.
 		// When the javascript sends the close notification, this action gets executed.
 		private Action _whenClosed;
+
+		public static BrowserDialog CurrentDialog;
+		public IBloomWebSocketServer WebSocketServer { get; set; }
+		private const string kWebsocketContext = "dialog";
 
 		// called by BrowserDialogApi.Close()
 		public static void CloseDialog()
 		{
 			if (CurrentDialog !=null)
 			{
+				CurrentDialog.CloseMessage = null; // close is coming from JS, don't need to notify it, and must avoid loop
 				if (CurrentDialog._hidden)
 				{
 					CurrentDialog._whenClosed?.Invoke();
@@ -55,7 +63,11 @@ namespace Bloom.MiscUI
 			}
 		}
 
-		public static BrowserDialog CurrentDialog;
+		// If this has a value, user attempts to close the dialog will send this message
+		// to Javascript instead. This is useful when there is essential cleanup to do
+		// in the JS world (for example, Bloom will crash completely if we omit some
+		// cleanup in the Login dialog).
+		public string CloseMessage { get; set; }
 
 		/// <summary>
 		/// Create a dialog whose entire content is a GeckoFx control displaying the specified URL.
@@ -71,6 +83,7 @@ namespace Bloom.MiscUI
 		public BrowserDialog(string url, bool hidden = false, Action whenClosed = null)
 		{
 			InitializeComponent();
+			FormClosing += BrowserDialog_FormClosing;
 			_hidden = hidden;
 			_whenClosed = whenClosed;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow; // draggable
@@ -95,6 +108,15 @@ namespace Bloom.MiscUI
 			_browser.Navigate(url, false);
 			_browser.Focus();
 			CurrentDialog = this;
+		}
+
+		private void BrowserDialog_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			if (CloseMessage != null)
+			{
+				e.Cancel = true;
+				WebSocketServer.SendString(kWebsocketContext, "close", CloseMessage);
+			}
 		}
 	}
 }

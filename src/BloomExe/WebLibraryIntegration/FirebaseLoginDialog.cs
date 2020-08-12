@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Bloom.MiscUI;
+using Bloom.web;
 using L10NSharp;
 using SIL.Reporting;
 
@@ -13,7 +14,7 @@ namespace Bloom.WebLibraryIntegration
 	{
 		// Firebase version of the login dialog. Uses BrowserDialog, since Firebase login is only supported in browsers.
 
-		public static void ShowFirebaseLoginDialog()
+		public static void ShowFirebaseLoginDialog(IBloomWebSocketServer webSocketServer)
 		{
 			try
 			{
@@ -22,7 +23,9 @@ namespace Bloom.WebLibraryIntegration
 				// Precondition: we must be on the UI thread for Gecko to work.
 				using (var dlg = new BrowserDialog(url))
 				{
-					dlg.Width = 300;
+					dlg.WebSocketServer = webSocketServer;
+					dlg.CloseMessage = "close";
+					dlg.Width = 400;
 					// This is more than we usually need. But it saves scrolling when doing an email sign-up.
 					dlg.Height = 510;
 					dlg.ShowDialog();

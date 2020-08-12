@@ -106,6 +106,9 @@ namespace Bloom.Api
 						request.ReplyWithJson(new {text = englishText, success = idFound });
 					}
 					break;
+				case "uilang":
+					request.ReplyWithText(LocalizationManager.UILanguageId);
+					break;
 				default:
 					request.Failed();
 					break;
