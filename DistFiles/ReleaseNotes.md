@@ -1,10 +1,18 @@
-# 4.9 (Currently in Alpha-test)
+# 4.9 (Currently in Alpha)
 
 ## Edit Tab
 
+⭐**Talking Book Segmentation**. You can now type a vertical bar (|) to break up the recording long sentences. This also works for splitting audio that you import. After recording or splitting, you will need to remove these vertical bars so that they don't show when you publish the book.
+
+The Talking Book tool no longer treats "Myanmar signed little section" (U+104A) as a sentence-ending character.
+
 **13cm Square** page size. ([Feature Request](https://community.software.sil.org/t/square-books-a5-5-square/3543))
 
-The list of page sizes now includes *13cm Square* as one of the possibilities.  This requires printing with A3 paper if you wish to produces booklets using this new page size.  (Each printing would create 3 copies of the booklet.)
+The list of page sizes now includes _13cm Square_ as one of the possibilities. This requires printing with A3 paper if you wish to produces booklets using this new page size. (Each printing would create 3 copies of the booklet.)
+
+## Publish Tab
+
+Login to BloomLibrary is now through next.bloomlibrary.org, which allows you to just click the Google button to use your Google identity (include sil.org accounts, for those of you who have that).
 
 # 4.8 (Currently in Beta-test)
 
