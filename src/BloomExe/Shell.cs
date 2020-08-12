@@ -78,6 +78,8 @@ namespace Bloom
 				ContextMenuStrip = null;
 			}
 #endif
+			_contextMenu.Opening += _contextMenu_Opening;
+
 			_workspaceView = projectViewFactory();
 			_workspaceView.CloseCurrentProject += ((x, y) =>
 													{
@@ -195,6 +197,26 @@ namespace Bloom
 		private void Shell_Deactivate(object sender, EventArgs e)
 		{
 			Debug.WriteLine("Shell Deactivated");
+		}
+
+		/// <summary>
+		/// Prevent the window sizes text/debug context menu from displaying anywhere but along the
+		/// top tab strip of the workspace window.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-8668.  I never figured out why this
+		/// menu started appearing more and more aggressively in the Edit tab where it wasn't wanted,
+		/// but not in the other tabs.  After close to a day spent on this issue, I decided that this
+		/// fix is good enough.
+		/// </remarks>
+		private void _contextMenu_Opening(object sender, CancelEventArgs e)
+		{
+			// In some ways, it would make more sense to have this context menu be attached
+			// to the TabStrip object, but since all of the menu actions affect the Shell
+			// object, it's just as easy to check its location before actually displaying
+			// the menu.
+			if (!_workspaceView.IsInTabStrip(this.PointToClient(_contextMenu.Location)))
+				e.Cancel = true;
 		}
 
 		private void On800x600Click(object sender, EventArgs e)
