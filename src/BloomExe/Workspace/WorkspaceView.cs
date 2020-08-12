@@ -528,6 +528,11 @@ namespace Bloom.Workspace
 
 		public bool InEditMode => _tabStrip.SelectedTab == _editTab;
 
+		internal bool IsInTabStrip(Point pt)
+		{
+			return _tabStrip != null && _tabStrip.DisplayRectangle.Contains(pt);
+		}
+
 		private void Application_Idle(object sender, EventArgs e)
 		{
 			Application.Idle -= Application_Idle;
