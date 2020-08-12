@@ -3526,20 +3526,37 @@ export default class AudioRecording {
                 // In order to reconcile the two, just normalize the text immediately.
                 fragment.text = AudioRecording.normalizeText(fragment.text);
 
-                fragmentObjects.push(
-                    new AudioTextFragment(fragment.text, newId)
-                );
-
                 let idList: string[] = [];
                 if (fragment.text in this.sentenceToIdListMap) {
                     idList = this.sentenceToIdListMap[fragment.text];
                 }
                 idList.push(newId); // This is saved so MakeSentenceAudioElementsLeaf can recover it
                 this.sentenceToIdListMap[fragment.text] = idList;
+
+                // NOTE: sentenceToIdListMap above doesn't want the prettify-ing of this text.
+                // It needs to match the normalizing algorithm that makeAudioSentenceElementsLeaf() uses.
+                const textForAeneas = this.prepareTextForAeneas(fragment.text);
+
+                fragmentObjects.push(
+                    new AudioTextFragment(textForAeneas, newId)
+                );
             }
         }
 
         return fragmentObjects;
+    }
+
+    // Beautify the fragments sent to Aeneas.
+    // It was observed that punctuation can sometimes make a difference in the timing splits
+    // Note: SOMETIMES, not always.
+    // So, we remove the "|" delimiters (phrase delimiters)
+    private prepareTextForAeneas(text: string): string {
+        let textForAeneas = text;
+        textForAeneas = textForAeneas.replace(/\|+$/, ""); // Delete trailing pipes (phrase delimiters)
+        textForAeneas = textForAeneas.replace(/\s+$/, ""); // Delete trailing whitespace
+        textForAeneas = textForAeneas.replace(/^\s+/, ""); // Delete leading whitespace
+
+        return textForAeneas;
     }
 
     public stringToSentences(text: string): TextFragment[] {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -40,7 +40,14 @@ namespace Bloom.web.controllers
 		public const string kApiUrlPart = "audioSegmentation/";
 		private const string kWorkingDirectory = "%HOMEDRIVE%\\%HOMEPATH%";	// Linux will use "/tmp" when the working directory doesn't matter
 		private const string kTimingsOutputFormat = "tsv";
-		private const float maxAudioHeadDurationSec = 0;	// maximum potentially allowable length in seconds of the non-useful "head" part of the audio which Aeneas will attempt to identify (if it exists) and then exclude from the timings
+
+		// 0 could be a useful value for this if you hard-split. (on the rationale that you won't accidentally cut off anything useful).
+		// For soft splits, you might as well set this to something useful.
+		// Allowing a head period improves identification of when the 1st fragment's audio begins,
+		// which seems to improve identification of when the that fragment ENDS.
+		// For soft splits, there's not really a huge cost to if the head period is a little too long
+		// because the 1st fragment is highlighted even during the head period
+		private const float maxAudioHeadDurationSec = 5;	// maximum potentially allowable length in seconds of the non-useful "head" part of the audio which Aeneas will attempt to identify (if it exists) and then exclude from the timings
 
 		BookSelection _bookSelection;
 		public AudioSegmentationApi(BookSelection bookSelection)
