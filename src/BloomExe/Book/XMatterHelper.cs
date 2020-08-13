@@ -162,6 +162,9 @@ namespace Bloom.Book
 			//makes it easy to drop into a css editor and fix it up with the content we're looking at.
 			//TODO:But then later, we want to save it so that these are found in the same dir as the book.
 			_bookDom.AddStyleSheet(PathToXMatterStylesheet.ToLocalhost());
+			// Get the xMatter stylesheet link in the proper place rather than at the end.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-8845.
+			_bookDom.SortStyleSheetLinks();
 
 			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
 			//REVIEW: I think all stylesheets now get sorted once they are all added: see HtmlDoc.SortStyleSheetLinks()
