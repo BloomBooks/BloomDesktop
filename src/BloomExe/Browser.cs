@@ -905,7 +905,10 @@ namespace Bloom
 			_browser.NavigationError += (sender, e) => done = true;
 			// var oldUrl = _browser.Url; // goes with commented out code below
 			Navigate(htmlDom, source: SimulatedPageFileSource.Epub);
-			while (!done && navTimer.ElapsedMilliseconds < timeLimit)
+			// If done is set (by NavigationError?) prematurely, we still need to wait while IsBusy
+			// is true to give the loaded document time to become available for the checks later.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-8741.
+			while ((!done || _browser.IsBusy) && navTimer.ElapsedMilliseconds < timeLimit)
 			{
 				Application.DoEvents(); // NOTE: this has bad consequences all down the line. See BL-6122.
 				Application.RaiseIdle(new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
@@ -922,7 +925,6 @@ namespace Bloom
 				//	throw new ApplicationException("Browser isn't even trying to navigate");
 				//}
 			}
-
 			navTimer.Stop();
 
 			if (!done)
