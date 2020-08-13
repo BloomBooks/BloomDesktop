@@ -2016,6 +2016,7 @@ namespace Bloom.Book
 				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
 			else
 				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
+			dom.SortStyleSheetLinks();
 		}
 
 		public string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack)
