@@ -31,7 +31,6 @@ namespace Bloom.Publish
 		private bool _activated;
 		private BloomLibraryUploadControl _uploadControl;
 		private BookTransfer _bookTransferrer;
-		private LoginDialog _loginDialog;
 		private PictureBox _previewBox;
 		private HtmlPublishPanel _htmlControl;
 		private NavigationIsolator _isolator;
@@ -43,11 +42,10 @@ namespace Bloom.Publish
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator,
+			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, NavigationIsolator isolator,
 			PublishToAndroidApi publishApi, PublishEpubApi publishEpubApi, BloomWebSocketServer webSocketServer)
 		{
 			_bookTransferrer = bookTransferrer;
-			_loginDialog = login;
 			_isolator = isolator;
 			_publishApi = publishApi;
 			_publishEpubApi = publishEpubApi;
@@ -582,7 +580,7 @@ namespace Bloom.Publish
 			}
 
 			var libaryPublishModel = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
-			_uploadControl = new BloomLibraryUploadControl(this, libaryPublishModel, _loginDialog);
+			_uploadControl = new BloomLibraryUploadControl(this, libaryPublishModel, _webSocketServer);
 			_uploadControl.Dock = DockStyle.Fill;
 			var saveBackColor = _uploadControl.BackColor;
 			Controls.Add(_uploadControl); // somehow this changes the backcolor

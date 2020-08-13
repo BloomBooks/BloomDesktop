@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -27,6 +28,7 @@ namespace Bloom.web.controllers
 	{
 		private readonly CollectionSettings _settings;
 		private readonly BookSelection _bookSelection;
+		private BloomParseClient _parseClient;
 		public static bool AuthorMode { get; set; }
 		public EditingModel Model { get; set; }
 
@@ -35,10 +37,11 @@ namespace Bloom.web.controllers
 		public static WorkspaceView WorkspaceView { get; set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public CommonApi(CollectionSettings settings, BookSelection bookSelection)
+		public CommonApi(CollectionSettings settings, BookSelection bookSelection, BloomParseClient parseClient)
 		{
 			_settings = settings;
 			_bookSelection = bookSelection;
+			_parseClient = parseClient;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -99,6 +102,26 @@ namespace Bloom.web.controllers
 					Debug.WriteLine("FROM JS: " + message);
 					request.PostSucceeded();
 				}, false);
+
+			apiHandler.RegisterEndpointHandler("common/loginData",
+				request =>
+				{
+					var requestData = DynamicJson.Parse(request.RequiredPostJson());
+					string token = requestData.sessionToken;
+					string email = requestData.email;
+					string userId = requestData.userId;
+					//Debug.WriteLine("Got login data " + email + " with token " + token + " and id " + userId);
+					_parseClient.SetLoginData(email, userId, token);
+					_doWhenLoggedIn?.Invoke();
+					request.PostSucceeded();
+				}, false);
+		}
+
+		private static Action _doWhenLoggedIn;
+
+		public static void NotifyLogin(Action doWhenLoggedIn)
+		{
+			_doWhenLoggedIn = doWhenLoggedIn;
 		}
 
 		// Request from javascript to open the folder containing the specified file,

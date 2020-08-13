@@ -1286,6 +1286,13 @@ namespace Bloom
 				Logger.WriteError(ex);
 				return;
 			}
+			// This one occurs somewhere in the depths of Google's login code, possibly a consequence of
+			// running unexpectedly in an embedded browser. Doesn't seem to be anything we can do about it.
+			if (ex.Message.Contains("Component returned failure code: 0x80004002") && ex.Message.Contains("@https://accounts.google.com/ServiceLogin"))
+			{
+				Logger.WriteError(ex);
+				return;
+			}
 
 			var longMsg = ex.Message;
 			if (script != null)

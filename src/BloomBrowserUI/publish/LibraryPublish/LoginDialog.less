@@ -1,0 +1,34 @@
+@import "../../bloomUI.less";
+
+.login-dialog {
+    // copied from ProblemDialog.less...enhance: make a common place for dialog styles?
+    // I think most of this is designed to position a close box on the far right...
+    // but we decided in the end to leave the standard windows.forms close box outside
+    // the HTML. So probably most or all the dialog-title settings aren't needed.
+    // However, we might want them again if we decide to go back to a close box
+    // inside the HTML.
+    .dialog-title {
+        flex-direction: row;
+        display: flex;
+        justify-content: space-between; // right-justifies close X
+        .close-in-title {
+            padding-top: 4px;
+        }
+    }
+
+    // There ought to be a way to do this using the theme, but I can't find it.
+    // I think these elements should use the primary theme color, but that's set
+    // to bloom-blue and that isn't enough.
+
+    // background of default button
+    .mdl-button--raised.mdl-button--colored,
+    // underline of input field
+    .firebaseui-textfield.mdl-textfield .firebaseui-label::after {
+        background-color: @bloom-blue;
+    }
+
+    // less prominent buttons have colored text
+    .mdl-button--primary.mdl-button--primary {
+        color: @bloom-blue;
+    }
+}
