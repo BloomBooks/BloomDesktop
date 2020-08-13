@@ -365,15 +365,23 @@ namespace Bloom.ImageProcessing
 			}
 		}
 
-		//Up through Bloom 3.0, we would make white areas transparent when importing images, in order to make them
-		//look good against the colored background of a book cover.
-		//This caused problems with some PDF viewers, so in Bloom 3.1, we switched to only making them transparent at runtime.
-		//This method allows us to undo that transparency-making.
-		// This method also allows to shrink enormous PNG and JPEG files to our desired maximum size (but not
-		// converting PNG files to JPEG as can sometimes happen when initially setting the image files from the
-		// Image Chooser dialog).  Some books have acquired large images that cause frequent "out of memory"
-		// errors, some of which are hidden from the user.
-		// Transparency is removed only from images the caller wants to be fixed. (BL-8819)
+		/// <summary>
+		/// Shrink any images in the folder that are bigger than our maximum reasonable size (3500x2550)
+		/// to fit within that size.
+		/// Also remove transparency on desired images (which there usually won't be any).
+		/// </summary>
+		/// <remarks>
+		/// Up through Bloom 3.0, we would make white areas transparent when importing images, in order to make them
+		/// look good against the colored background of a book cover.  This caused problems with some PDF viewers, so
+		/// in Bloom 3.1, we switched to only making them transparent at runtime.  This method allows us to undo that
+		/// transparency-making.
+		/// This method also allows to shrink enormous PNG and JPEG files to our desired maximum size (but not
+		/// converting PNG files to JPEG as can sometimes happen when initially setting the image files from the
+		/// Image Chooser dialog).  Some books have acquired large images that cause frequent "out of memory"
+		/// errors, some of which are hidden from the user.
+		/// Transparency is removed only from images the caller wants to be fixed. (BL-8819)
+		/// None of the current callers will want transparency to be removed. (BL-8846)
+		/// </remarks>
 		public static void FixSizeAndTransparencyOfImagesInFolder(string folderPath, IEnumerable<string> namesOfFilesToFixTransparency,
 			IProgress progress)
 		{

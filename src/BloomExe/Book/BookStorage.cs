@@ -2333,12 +2333,12 @@ namespace Bloom.Book
 				// the book.  The method also ensures that the images are all opaque since some old versions
 				// of Bloom made all images transparent, which turned out to be a bad idea.
 				// This update can be very slow, so encourage the user that something is happening.
-				// Only content images have transparency removed.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8819.
+				// NO images should have transparency removed.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8846.
 
 				if (Program.RunningUnitTests)
 				{
 					// TeamCity enforces not showing modal dialogs during unit tests on Windows 10.
-					ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, FindContentImageFilenames(),  new NullProgress());
+					ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, new List<string>(),  new NullProgress());
 				}
 				else
 				{
@@ -2346,7 +2346,7 @@ namespace Bloom.Book
 					{
 						dlg.Text = "Updating Image Files";
 						dlg.ShowAndDoWork((progress, args) =>
-							ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, FindContentImageFilenames(), progress));
+							ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, new List<string>(), progress));
 					}
 				}
 			}
@@ -2397,21 +2397,6 @@ namespace Bloom.Book
 			}
 			// future additional levels will add additional "if (level < N)" blocks.
 			Dom.UpdateMetaElement("maintenanceLevel", kMaintenanceLevel.ToString(CultureInfo.InvariantCulture));
-		}
-
-		protected HashSet<string> FindContentImageFilenames()
-		{
-			var contentImages = new HashSet<string>();
-			foreach (XmlElement page in Dom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(@data-xmatter-page)]"))
-			{
-				foreach (XmlElement divOrImg in page.SafeSelectNodes("(.//img|.//div[contains(@style,'background-image')])"))
-				{
-					var url = HtmlDom.GetImageElementUrl(divOrImg);
-					if (!String.IsNullOrEmpty(url.NotEncoded))
-						contentImages.Add(url.NotEncoded);
-				}
-			}
-			return contentImages;
 		}
 	}
 }
