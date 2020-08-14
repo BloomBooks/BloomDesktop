@@ -33,4 +33,133 @@ describe("BloomField", () => {
         WireUp();
         expect($("div p").length).toBeGreaterThan(0);
     });
+
+    describe("backspacePreventionTests", () => {
+        it("backspace prevented at start of paragraph", () => {
+            const shouldBeCanceled = true;
+
+            const paragraphInnerHtml = "Sentence 1. Sentence 2";
+
+            const setCursor = () => {
+                setCursorTo("p1", 0);
+            };
+
+            runBackspacePreventionTest(
+                paragraphInnerHtml,
+                setCursor,
+                shouldBeCanceled
+            );
+        });
+
+        it("backspace prevented at start of 1st child", () => {
+            const shouldBeCanceled = true;
+
+            const paragraphInnerHtml =
+                '<span id="s1">Sentence 1. </span><span id="s2">Sentence 2</span>';
+
+            const setCursor = () => {
+                setCursorTo("s1", 0);
+            };
+
+            runBackspacePreventionTest(
+                paragraphInnerHtml,
+                setCursor,
+                shouldBeCanceled
+            );
+        });
+
+        it("backspace NOT prevented at 2nd character of paragraph", () => {
+            const shouldBeCanceled = false;
+
+            const paragraphInnerHtml = "Sentence 1. Sentence 2";
+
+            const setCursor = () => {
+                setCursorTo("p1", 1); // 0-indexed
+            };
+
+            runBackspacePreventionTest(
+                paragraphInnerHtml,
+                setCursor,
+                shouldBeCanceled
+            );
+        });
+
+        it("backspace NOT prevented at 1st child element if text node precedes it.", () => {
+            const shouldBeCanceled = false;
+
+            const paragraphInnerHtml =
+                'Sentence 0. <span id="s1">Sentence 1. </span><span id="s2">Sentence 2</span>';
+
+            const setCursor = () => {
+                setCursorTo("s1", 0);
+            };
+
+            runBackspacePreventionTest(
+                paragraphInnerHtml,
+                setCursor,
+                shouldBeCanceled
+            );
+        });
+
+        it("backspace NOT prevented at start of 2nd child", () => {
+            const shouldBeCanceled = false;
+
+            const paragraphInnerHtml =
+                '<span id="s1">Sentence 1. </span><span id="s2">Sentence 2</span>';
+
+            const setCursor = () => {
+                setCursorTo("s2", 0);
+            };
+
+            runBackspacePreventionTest(
+                paragraphInnerHtml,
+                setCursor,
+                shouldBeCanceled
+            );
+        });
+
+        function runBackspacePreventionTest(
+            paragraphInnerHtml: string,
+            setSelectionCallback: () => void,
+            isCancellationExpected: boolean
+        ) {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = `<p id="p1">${paragraphInnerHtml}</p>`;
+
+            WireUp();
+
+            // Set the cursor to a specific spot
+            setSelectionCallback();
+
+            // Now fake a backspace
+            //
+            // Our code still checks which, but nowadays it's deprecated in favor of key,
+            // so KeyboardEventInit doesn't officially recognize it in the type definition,
+            // but we need it anyway, so just force the types to work.
+            const keyEventInit = ({
+                // 8 is ASCII code for backspace
+                which: 8,
+                cancelable: true // preventDefault only works on cancellable events.
+            } as unknown) as KeyboardEventInit;
+
+            // FYI: This simulated backspace event doesn't actually modify the text,
+            // but you can still check if the event was cancelled.
+            const keyboardEvent = new KeyboardEvent("keydown", keyEventInit);
+            const wasCanceled = !editable.dispatchEvent(keyboardEvent);
+
+            // Verification
+            const testFailureMessage = isCancellationExpected
+                ? "preventDefault() should be called, but was not"
+                : "preventDefault() should not be called, but it was";
+            expect(wasCanceled).toBe(
+                isCancellationExpected,
+                testFailureMessage
+            );
+        }
+    });
+
+    function setCursorTo(elementId: string, offset: number) {
+        const selection = window.getSelection()!;
+        selection.collapse(document.getElementById(elementId)!, offset);
+    }
 });
