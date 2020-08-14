@@ -7,9 +7,26 @@
             "condition": "always"
         },
         {
+            "data-book": "trimbox",
+            "content": "{top:'3',bottom:'3',inside:'0',outside:'3'}",
+            "condition": "always"
+        },
+        {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
+            "content": "<div/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-bottom-html",
+            "lang": "*",
             "content": "<img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "back-cover-boilerplate",
+            "lang": "*",
+            "content": "<p>Director of the publishing house B. Dzhaparova</p><p>Creative Director A. Dzhaparova</p><p>Art editor A. Tugulbaeva</p><p>Illustrator N. Dzhumakaliev</p><p>Computer layout K. Abdyzhaparov</p><p>Signed for printing 06.04.2020.</p><p>Format 60x84 1/8</p><p>Volume conv. print l. 1.5.</p><p>Offset printing. Circulation 4000 copies.</p><p>Publishing house “Kutaalam”.</p><p>Bishkek, st. Gorky, 1.</p><p>www.kutaalam.kg, e-mail .: kutaalam2012@gmail.kg</p><p>Tel .: 0 (312) 53 48 63, + 996 559 999 902, + 996 553 903 903</p>",
             "condition": "always"
         }
     ]

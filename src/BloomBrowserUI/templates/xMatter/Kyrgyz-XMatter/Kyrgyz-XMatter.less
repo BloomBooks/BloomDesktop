@@ -1,0 +1,108 @@
+@import "../../xMatter/bloom-xmatter-common.less";
+
+@XMatterPackName: "Kyrgyz";
+
+div.bloom-page.outsideFrontCover,
+div.bloom-page.outsideBackCover {
+    background-color: #193970 !important;
+}
+
+.outsideFrontCover .marginBox {
+    top: 0;
+    left: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+.outsideBackCover .marginBox {
+    top: 0;
+    height: calc(100% - 15mm) !important;
+    width: calc(100% - 15mm) !important;
+
+    [data-book="outside-back-cover-branding-bottom-html"] {
+        display: none;
+    }
+}
+
+.frontCover .placeholder,
+.frontCover .bloom-imageContainer {
+    margin-left: 1cm;
+
+    margin-right: 1cm;
+    display: flex;
+}
+
+.outsideFrontCover .marginBox img,
+.outsideBackCover .marginBox img {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.frontCover .bottomBlock {
+    margin-left: 1cm;
+    margin-right: 1cm;
+    margin-bottom: 1cm;
+}
+
+.frontCover
+    .bloom-translationGroup.bookTitle
+    .bloom-editable.bloom-contentNational1 {
+    /* font-size: 120%; */
+    font-size: 226%;
+    display: none;
+}
+
+.frontCover .bloom-translationGroup.bookTitle {
+    color: black;
+    background-color: white;
+    height: 3.5cm;
+    /*flex-basis: content;*/
+    flex-direction: unset;
+    align-items: center;
+}
+
+/* basePage.css | http://localhost:8089/bloom/C%3A/Users/hatto/Documents/Bloom/Kyrgyz%20Branding%20Test/Book/basePage.css */
+
+.marginBox {
+    /* top: 15mm; */
+    top: 0;
+}
+
+.bloom-imageContainer img {
+    /* width: 100%; */
+    /* height: 100%; */
+}
+
+/* Inline #1 | http://localhost:8089/bloom/C%3A/Users/hatto/Documents/Bloom/Kyrgyz%20Branding%20Test/Book/8444a5b9-4b6a-476a-90da-cc003fbc1fea-memsim-Preview.html */
+
+div.bloom-page.coverColor {
+    color: white;
+}
+
+/* Element | http://localhost:8089/bloom/C%3A/Users/hatto/Documents/Bloom/Kyrgyz%20Branding%20Test/Book/8444a5b9-4b6a-476a-90da-cc003fbc1fea-memsim-Preview.html */
+
+div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
+    /* width: 446px; */
+    /* height: 367px; */
+    /* margin-left: 0px; */
+    /* margin-top: 84px; */
+    object-fit: contain;
+
+    /* white border that fits the image, not its container*/
+    filter: drop-shadow(0 -3px 0 white) drop-shadow(0 3px 0 white)
+        drop-shadow(-3px 0 0 white) drop-shadow(3px 0 0 white);
+}
+
+[data-book="outside-back-cover-branding-top-html"] {
+    background-color: white;
+    margin-left: -15mm;
+}
+
+[data-book="back-cover-boilerplate"] {
+    margin-top: 10mm;
+}
+[data-book="level-image"] {
+    margin-top: auto;
+    margin-right: auto;
+    height: 8cm;
+    border: none !important;
+}

@@ -251,8 +251,11 @@ mixin factoryStandard-outsideBackCover
 	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-matter-back-cover', data-xmatter-page='outsideBackCover')&attributes(attributes)#6AB1D898-9E35-498E-99D4-132B46FAFDA4
 		+outside-back-cover-branding-top
 		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
-		+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style
-			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.
+		block outsideBackCoverContentsTop
+			+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style
+				label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.
+		//- this isn't used, normally, but the block is here so you can insert something
+		block outsideBackCoverContentsBottom
 		+outside-back-cover-branding-bottom
 
 mixin standard-ISOLanguageCode
