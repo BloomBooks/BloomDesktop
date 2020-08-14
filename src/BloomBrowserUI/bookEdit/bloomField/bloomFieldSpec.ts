@@ -101,7 +101,7 @@ describe("BloomField", () => {
             );
         });
 
-        it("backspace NOT prevented at start of 2nd child", () => {
+        it("backspace NOT prevented at start of 2nd child (element)", () => {
             const shouldBeCanceled = false;
 
             const paragraphInnerHtml =
@@ -109,6 +109,31 @@ describe("BloomField", () => {
 
             const setCursor = () => {
                 setCursorTo("s2", 0);
+            };
+
+            runBackspacePreventionTest(
+                paragraphInnerHtml,
+                setCursor,
+                shouldBeCanceled
+            );
+        });
+
+        it("backspace NOT prevented at start of 2nd child's text node", () => {
+            const shouldBeCanceled = false;
+
+            const paragraphInnerHtml =
+                '<span id="s1">Sentence 1. </span><span id="s2">Sentence 2</span>';
+
+            const setCursor = () => {
+                const selection = window.getSelection()!;
+                const spanElement = document.getElementById("s2")!;
+                const textNode = spanElement.firstChild!;
+                expect(textNode.nodeName).toBe(
+                    "#text",
+                    "Test setup error - wrong nodeName: " + textNode.nodeName
+                );
+
+                selection.collapse(textNode, 0);
             };
 
             runBackspacePreventionTest(
