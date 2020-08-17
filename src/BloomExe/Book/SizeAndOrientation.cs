@@ -80,7 +80,7 @@ namespace Bloom.Book
 			{
 				var fileName = link.GetStringAttribute("href");
 				if (fileName.ToLowerInvariant().Contains("mode") || fileName.ToLowerInvariant().Contains("page") ||
-					fileName.ToLowerInvariant().Contains("matter") || fileName.ToLowerInvariant().Contains("languagedisplay") ||
+					fileName.ToLowerInvariant().Contains("languagedisplay") ||
 					fileName.ToLowerInvariant().Contains("origami") || fileName.ToLowerInvariant().Contains("defaultlangstyles") ||
 					fileName.ToLowerInvariant().Contains("customcollectionstyles"))
 					continue;
@@ -179,7 +179,6 @@ namespace Bloom.Book
 				RemoveClassesContaining(pageDiv, "layout-");
 				RemoveClassesContaining(pageDiv, "Landscape");
 				RemoveClassesContaining(pageDiv, "Portrait");
-				RemoveClassesContaining(pageDiv, "bloom-fullBleed");
 
 				foreach (var cssClassName in layout.ClassNames)
 				{

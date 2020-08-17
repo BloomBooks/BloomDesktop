@@ -45,8 +45,9 @@ namespace Bloom.Publish.PDF
 		/// <param name="worker">If not null, the Background worker which is running this task, and may be queried to determine whether a cancel is being attempted</param>
 		/// <param name="doWorkEventArgs">The event passed to the worker when it was started. If a cancel is successful, it's Cancel property should be set true.</param>
 		/// <param name="owner">A control which can be used to invoke parts of the work which must be done on the ui thread.</param>
+		/// <param name="bleed>True if we want a bleed page size </param>
 		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, bool saveMemoryMode, bool layoutPagesForRightToLeft,
-			PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, Control owner)
+			PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, Control owner, bool bleed = false)
 		{
 			// Try up to 4 times. This is a last-resort attempt to handle BL-361.
 			// Most likely that was caused by a race condition in MakePdfUsingGeckofxHtmlToPdfComponent.MakePdf,
@@ -54,7 +55,7 @@ namespace Bloom.Publish.PDF
 			for (int i = 0; i < 4; i++)
 			{
 				new MakePdfUsingGeckofxHtmlToPdfProgram().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape, saveMemoryMode,
-					owner, worker, doWorkEventArgs);
+					owner, worker, doWorkEventArgs, bleed);
 
 				if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))
 					return;
@@ -77,10 +78,10 @@ namespace Bloom.Publish.PDF
 
 			try
 			{
-				if (bookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet)
+				if (bookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet || bleed);
 				{
 					//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
-					MakeBooklet(outputPdfPath, paperSizeName, booketLayoutMethod, layoutPagesForRightToLeft);
+					MakeBooklet(outputPdfPath, paperSizeName, booketLayoutMethod, layoutPagesForRightToLeft, bleed);
 				}
 				// Shrink the PDF file, especially if it has large color images.  (BL-3721)
 				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker);
@@ -190,7 +191,7 @@ namespace Bloom.Publish.PDF
 		/// <param name="incomingPaperSize"></param>
 		/// <param name="booketLayoutMethod"></param>
 		/// <param name="layoutPagesForRightToLeft"></param>
-		private void MakeBooklet(string pdfPath, string incomingPaperSize, PublishModel.BookletLayoutMethod booketLayoutMethod, bool layoutPagesForRightToLeft)
+		private void MakeBooklet(string pdfPath, string incomingPaperSize, PublishModel.BookletLayoutMethod booketLayoutMethod, bool layoutPagesForRightToLeft, bool bleed = false)
 		{
 			//TODO: we need to let the user chose the paper size, as they do in PdfDroplet.
 			//For now, just assume a size double the original
@@ -244,7 +245,7 @@ namespace Bloom.Publish.PDF
 				switch (booketLayoutMethod)
 				{
 					case PublishModel.BookletLayoutMethod.NoBooklet:
-						method = new NullLayoutMethod();
+						method = new NullLayoutMethod(bleed ? 3 : 0);
 						break;
 					case PublishModel.BookletLayoutMethod.SideFold:
 						// To keep the GUI simple, we assume that A6 page size for booklets
