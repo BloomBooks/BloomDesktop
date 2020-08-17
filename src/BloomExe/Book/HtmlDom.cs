@@ -878,6 +878,22 @@ namespace Bloom.Book
 			return result;
 		}
 
+		internal static void SetDataBubbleFromJsonObject(dynamic jsonObject, XmlElement textOverPictureElement)
+		{
+			if (jsonObject == null)
+				return;
+			try
+			{
+				var dataBubbleString = jsonObject.ToString().Replace("\"", "`");
+				if (!string.IsNullOrEmpty(dataBubbleString))
+					textOverPictureElement.SetAttribute("data-bubble", dataBubbleString);
+			}
+			catch (Exception)
+			{
+				Logger.WriteEvent("HtmlDom.SetDataBubbleFromJsonObject() failed to set data-bubble.");
+			}
+		}
+
 		private static string[] GetBackgroundColorsFromDataBubbleJsonObj(dynamic jsonObject)
 		{
 			if (jsonObject == null)

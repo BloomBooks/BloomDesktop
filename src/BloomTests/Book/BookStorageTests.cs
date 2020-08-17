@@ -1246,6 +1246,7 @@ namespace BloomTests.Book
 		<div class='bloom-imageContainer'>
 			<svg class='comical-generated'/>
 			<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:5.5,`tipY`:99,`midpointX`:5.1,`midpointY`:1.95,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`speech`,`order`:2}'/>
+			<div class='bloom-textOverPicture' data-bubble='{`version`:`1.0`,`tails`:[{`tipX`:6.5,`tipY`:99,`midpointX`:4.1,`midpointY`:1.8,`joiner`:true,`autoCurve`:true}],`level`:1,`style`:`exclamation`,`order`:3}'/>
 			<div class='bloom-textOverPicture' data-bubble='" + MinimalDataBubbleValue + @"'/>
 		</div>
 	</div>
@@ -1258,6 +1259,7 @@ namespace BloomTests.Book
 			var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
 			Assert.That(maintLevel, Is.GreaterThanOrEqualTo("2"));
 			Assert.That(storage.Dom.SafeSelectNodes("//*[@class='comical-generated']").Count, Is.EqualTo(1));
+			Assert.That(storage.Dom.SafeSelectNodes("//*[@class='bloom-textOverPicture' and contains(@data-bubble, 'transparent')]").Count, Is.EqualTo(3));
 		}
 
 		[Test]

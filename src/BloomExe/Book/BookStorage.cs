@@ -2357,9 +2357,11 @@ namespace Bloom.Book
 				// level) will only put comical-generated svgs in Bloom imageContainers if they are
 				// non-transparent. Since our test for whether a book is Comical for Publishing restrictions
 				// will now be a simple scan for these svgs, we here remove legacy svgs whose bubble style
-				// was "none", implying transparency.
+				// was "none", implying transparency. We also add 'transparent' as a background color to any
+				// "none" style bubbles to put them in the appropriate state for the new comical version.
 				var comicalSvgs = Dom.SafeSelectNodes(ComicalXpath).Cast<XmlElement>();
 				var elementsToSave = new HashSet<XmlElement>();
+				var dirty = false;
 				foreach (var svgElement in comicalSvgs)
 				{
 					var container = svgElement.ParentNode; // bloom-imageContainer div (not gonna be null)
@@ -2377,13 +2379,18 @@ namespace Bloom.Book
 							continue; // only happens if it fails to parse the "json"
 						var style = HtmlDom.GetStyleFromDataBubbleJsonObj(jsonObject);
 						if (style == "none")
+						{
+							jsonObject.backgroundColors = new[] {"transparent"};
+							HtmlDom.SetDataBubbleFromJsonObject(jsonObject, textOverPictureDiv);
+							dirty = true;
 							continue;
+						}
 						elementsToSave.Add(svgElement);
-						break;
+						// Avoid temptation to 'break' here, because we now need to process all
+						// style 'none' data-bubble elements.
 					}
 				}
 				// Now delete the SVGs that only have bubbles of style 'none'.
-				var dirty = false;
 				foreach (var svgElement in comicalSvgs.ToArray())
 				{
 					if (!elementsToSave.Contains(svgElement))
