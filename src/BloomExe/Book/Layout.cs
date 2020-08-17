@@ -45,6 +45,8 @@ namespace Bloom.Book
 		/// </summary>
 		public SizeAndOrientation SizeAndOrientation;
 
+		public Boolean IsFullBleed;
+
 		public IEnumerable<string> ClassNames
 		{
 			get
@@ -53,6 +55,11 @@ namespace Bloom.Book
 				if(!String.IsNullOrEmpty(Style))
 				{
 					yield return "layout-style-" + Style;
+				}
+
+				if (IsFullBleed)
+				{
+					yield return "bloom-fullBleed";
 				}
 			}
 
@@ -150,6 +157,11 @@ namespace Bloom.Book
 						part.Substring(startIndex,
 							part.Length -
 							startIndex); //reivew: this might let us suck up a style that is no longer listed in any css
+				}
+
+				if (part == "bloom-fullBleed")
+				{
+					layout.IsFullBleed = true;
 				}
 			}
 

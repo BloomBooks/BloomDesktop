@@ -179,6 +179,7 @@ namespace Bloom.Book
 				RemoveClassesContaining(pageDiv, "layout-");
 				RemoveClassesContaining(pageDiv, "Landscape");
 				RemoveClassesContaining(pageDiv, "Portrait");
+				RemoveClassesContaining(pageDiv, "bloom-fullBleed");
 
 				foreach (var cssClassName in layout.ClassNames)
 				{

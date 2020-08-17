@@ -7,6 +7,7 @@
 // ones that should supercede the normal rules
 
 @bloom-page-background: white;
+@bleed: 3mm;
 
 .Browser-Reset() {
     /*+init {*/
@@ -214,6 +215,14 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
         max-width: @A5Portrait-Width;
         min-height: @A5Portrait-Height;
         max-height: @A5Portrait-Height;
+        // Todo: for a full implementation, every page size needs this added
+        // (maybe a macro of some sort?).
+        &.bloom-fullBleed {
+            min-width: @A5Portrait-Width + @bleed + @bleed;
+            max-width: @A5Portrait-Width + @bleed + @bleed;
+            min-height: @A5Portrait-Height + @bleed + @bleed;
+            max-height: @A5Portrait-Height + @bleed + @bleed;
+        }
     }
     &.A5Landscape {
         min-width: @A5Landscape-Width;
@@ -343,6 +352,13 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
 .marginBox {
     position: absolute;
     top: @MarginTop;
+    // An alternative to this is to make the bleed a border. But then it is difficult
+    // to actually make the contents extend into the bleed area. Essentially this rul
+    // moves the standard margin box down by the bleed distance we added 'above' the
+    // main page content.
+    .bloom-fullBleed & {
+        top: @MarginTop + @bleed;
+    }
 }
 
 // Mixin for setting .marginBox margins.
@@ -433,6 +449,26 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
  {
         .marginBox {
             left: @MarginInner;
+        }
+    }
+}
+
+// This rule largely mimicks the one above, but adds @bleed to the left margin
+// to keep the standard marginBox the expected distance inside the extra page width
+// we added for bleed.
+:not(.calendarFold)
+    :not(.outsideFrontCover):not(.outsideBackCover):not(.screen-only).bloom-fullBleed {
+    &.side-left  // maintained by c#
+ {
+        .marginBox {
+            left: @MarginOuter + @bleed;
+        }
+    }
+
+    &.side-right // maintained by c#
+ {
+        .marginBox {
+            left: @MarginInner + @bleed;
         }
     }
 }

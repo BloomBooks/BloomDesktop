@@ -647,3 +647,13 @@ body.simulateColorBlindness {
         }
     }
 }
+
+// This is somewhat useful for seeing where the bleed is; however, it is 'underneath'
+// all content. (For seeing how it interacts with page background color,
+// you can use a partly transparent color; however, it gets doubled in the
+// top right and bottom left corners, and does not blend with children.)
+// Not sure whether to have this in production.
+@fbColor: #777;
+.bloom-fullBleed {
+    box-shadow: inset 3mm 3mm @fbColor, inset -3mm -3mm @fbColor;
+}
