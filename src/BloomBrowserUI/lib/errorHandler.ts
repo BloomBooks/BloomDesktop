@@ -9,22 +9,23 @@ import Axios from "axios";
 
 // This function is shared by code that wants to report errors but for some
 // reason shouldn't do so by throwing.
-export function reportError(message: string, stack: string) {
+export function reportError(message: string, stack: string | undefined) {
+    const stackStr = stack || "";
     if ((window as any).__karma__) {
         console.log(
             "skipping post to common/error because in unit tests: \r\n" +
                 message +
                 "\r\n" +
-                stack
+                stackStr
         );
         return;
     }
-    console.log("Posting to common/error " + message + " " + stack);
+    console.log("Posting to common/error " + message + " " + stackStr);
     // we don't want to use the error handling bloomapi wrapper here...
     // else we will recursively report errors about attempts to report errors
     Axios.post("/bloom/api/common/error", {
         message: message,
-        stack: stack
+        stack: stackStr
     }).catch(e => {
         console.log("*****Got error trying report error");
     });
