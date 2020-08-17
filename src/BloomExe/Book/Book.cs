@@ -2924,7 +2924,17 @@ namespace Bloom.Book
 				 default:
 					throw new ArgumentOutOfRangeException("bookletPortion");
 			}
-			AddCoverColor(printingDom, Color.White);
+			// Typically the cover color we show in preview and edit modes is not meant to be printed...it just gives
+			// the effect that might be produced in a real book by printing the cover on something colorful.
+			// We don't want to really print such color as it might clash with the actual paper color.
+			// Forcing cover color to white will cause no actual cover background to be printed. 
+			// However, in the case of full bleed printing, we may well be using a deliberate cover color
+			// that we DO want printed.
+			// Enhance: it's not certain that we won't want to suppress a cover color for full bleed books...
+			// so perhaps we need another way to control this. Or, perhaps full bleed books should not have
+			// a fake cover color...they should be fully WYSIWYG (printed).
+			if (!pageLayout.IsFullBleed)
+				AddCoverColor(printingDom, Color.White);
 			AddPreviewJavascript(printingDom);
 			return printingDom;
 		}

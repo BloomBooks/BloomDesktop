@@ -2,6 +2,14 @@
 
 @XMatterPackName: "Kyrgyz";
 
+/*These tell Bloom what choices to give the user as far as Page, Orientation, & Layout options.
+We will probably remove this when we have UI for full-bleed and support it for all page sizes.
+For now, Kyrgyz books are forced to be A5Portrait with full bleed.
+STARTLAYOUTS
+{"layouts":     ["A5Portrait Edge-to-edge"]  }
+ENDLAYOUTS
+*/
+
 div.bloom-page.outsideFrontCover,
 div.bloom-page.outsideBackCover {
     background-color: #193970 !important;

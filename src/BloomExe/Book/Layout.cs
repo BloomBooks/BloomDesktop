@@ -130,6 +130,23 @@ namespace Bloom.Book
 			}
 		}
 
+		// I'm not sure we want to display Layouts with the Edge-to-edge at the end...at least, changing them
+		// like that might have unexpected consequences and would need careful investigation. Currently, names in this
+		// form are only used in STARTLAYOUT blocks to specify the layouts a book supports.
+		public static Layout FromString(string name)
+		{
+			var fullBleed = false;
+			const string fbMarker = " edge-to-edge";
+			if (name.ToLowerInvariant().EndsWith(fbMarker))
+			{
+				name = name.Substring(0, name.Length - fbMarker.Length);
+				fullBleed = true;
+			}
+
+			return new Layout()
+				{SizeAndOrientation = SizeAndOrientation.FromString(name), IsFullBleed = fullBleed};
+		}
+
 		public static Layout FromDom(HtmlDom dom, Layout defaultIfMissing)
 		{
 			var firstPage = dom.SelectSingleNode("descendant-or-self::div[contains(@class,'bloom-page')]");
@@ -181,8 +198,13 @@ namespace Bloom.Book
 		private static Layout EnsureLayoutIsAmongValidChoices(HtmlDom dom, Layout layout, IFileLocator fileLocator)
 		{
 			var layoutChoices = SizeAndOrientation.GetLayoutChoices(dom, fileLocator);
-			if (layoutChoices.Any(l => l.SizeAndOrientation.ClassName == layout.SizeAndOrientation.ClassName))
+			if (layoutChoices.Any(l => l.SizeAndOrientation.ClassName == layout.SizeAndOrientation.ClassName && l.IsFullBleed == layout.IsFullBleed))
 				return layout;
+			// Is there one that is the same size, just different fullBleed option?
+			var sameSize = layoutChoices.FirstOrDefault(l =>
+				l.SizeAndOrientation.ClassName == layout.SizeAndOrientation.ClassName);
+			if (sameSize != null)
+				return sameSize;
 			return layoutChoices.Any() ?  layoutChoices.First() : layout;
 		}
 
@@ -207,7 +229,7 @@ namespace Bloom.Book
 				{
 					if (sizeAndOrientation is XmlText)
 					{
-						layouts.Add(new Layout() { SizeAndOrientation = SizeAndOrientation.FromString(((XmlText)sizeAndOrientation).InnerText) });
+						layouts.Add(Layout.FromString(((XmlText)sizeAndOrientation).InnerText));
 					}
 					else if (sizeAndOrientation is XmlElement)
 					{
