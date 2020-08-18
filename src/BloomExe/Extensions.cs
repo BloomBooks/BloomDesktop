@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 
@@ -12,6 +13,15 @@ namespace Bloom
 			if (fileName.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash)) return fileName;
 
 			return BloomServer.ServerUrlWithBloomPrefixEndingInSlash + fileName.EscapeCharsForHttp().Replace(System.IO.Path.DirectorySeparatorChar, '/');
+		}
+
+		// Escape everything in the filename (and previous URL) in a way suitable for Bloom Player, which
+		// first converts plus signs to spaces, then uses the javascript decodeURIComponent() function.
+		// Of various possible encoding functions, Uri.EscapeDataString seems to be the only one that will
+		// convert plus to an encoded form and then space to plus.
+		public static string ToLocalhostFullyEscaped(this string fileName)
+		{
+			return Uri.EscapeDataString(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + fileName.Replace(System.IO.Path.DirectorySeparatorChar, '/'));
 		}
 
 		public static string FromLocalhost(this string uri)
