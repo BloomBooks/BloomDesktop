@@ -46,7 +46,6 @@ import { getEditViewFrameExports } from "../../js/bloomFrames";
 import PlaybackOrderControls from "../../../react_components/playbackOrderControls";
 import Recordable from "./recordable";
 import { getMd5 } from "./md5Util";
-import { reportError } from "../../../lib/errorHandler";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -2263,8 +2262,6 @@ export default class AudioRecording {
     public async setupAndUpdateMarkupAsync(): Promise<void> {
         const recordables = this.getRecordableDivs();
 
-        this.checkValidiity();
-
         const asyncTasks: Promise<void>[] = recordables.map(async elem => {
             await new Recordable(elem).setMd5IfMissingAsync();
             return this.tryUpdateMarkupForTextBoxAsync(elem);
@@ -2277,28 +2274,6 @@ export default class AudioRecording {
         await this.resetCurrentAudioElementAsync();
 
         return this.changeStateAndSetExpectedAsync("record");
-    }
-
-    private checkValidiity() {
-        const idSet = {};
-
-        const audioElements = this.getAudioElements();
-        audioElements.forEach(element => {
-            if (element.id in idSet) {
-                // Unexpected! Another element already exists with the same id???
-                // We have received books from the field that had problems because of duplicate ID, but not sure how they got there.
-                // If this report is triggered, please investigate how this duplicate ID came about so that we can prevent that.
-                // ENHANCE: Delete this function after the problem is traced down.
-                const error = new Error(
-                    "BL-8852 Repro: Duplicate GUID! Please investigate how this came to be."
-                );
-
-                // Reports a non-fatal passive if on Alpha
-                reportError(error.message, error.stack);
-            } else {
-                idSet[element.id] = true;
-            }
-        });
     }
 
     // Entry point for TalkingBookTool's updateMarkup() function. Does similar but less work than setupAndUpdateMarkupAsync.
