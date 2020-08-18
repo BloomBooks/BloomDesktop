@@ -475,11 +475,14 @@ namespace Bloom.Publish
 
 		public void RefreshValuesUponActivation()
 		{
-			if (BookSelection.CurrentSelection != null)
-			{
-				PageLayout = BookSelection.CurrentSelection.GetLayout();
-			}
-
+			if (BookSelection.CurrentSelection == null)
+				return;
+			var currentBook = BookSelection.CurrentSelection;
+			PageLayout = currentBook.GetLayout();
+			// BL-8648: In case we have an older version of a book (downloaded, e.g.) and the user went
+			// straight to the Publish tab avoiding the Edit tab, we could arrive here needing to update
+			// things. If we end up doing "expensive" image updating, that puts up its own progress dialog.
+			currentBook.BringBookUpToDate(new NullProgress(), false);
 		}
 
 		[Import("GetPublishingMenuCommands")]//, AllowDefault = true)]
