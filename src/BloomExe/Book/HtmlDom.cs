@@ -2243,7 +2243,7 @@ namespace Bloom.Book
 				.Replace("<br>", Environment.NewLine);
 		}
 
-		private IEnumerable<XmlElement> GetContentPageElements()
+		public IEnumerable<XmlElement> GetContentPageElements()
 		{
 			return _dom.SafeSelectNodes(
 					"/html/body/div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]")
@@ -2625,6 +2625,46 @@ namespace Bloom.Book
 			var idx = xClass.IndexOf("bloom-content", StringComparison.Ordinal);
 			Debug.Assert(idx >= 0);
 			return xClass.Substring(idx);
+		}
+
+		// Returns true if the node a part of the bloomDataDiv
+		public static bool IsNodeInBloomDataDiv(XmlNode node)
+		{
+			// Check if self is the bloomDataDiv
+			if (node?.Attributes != null && node.GetOptionalStringAttribute("id", "") == "bloomDataDiv")
+			{
+				return true;
+			}
+
+			// Check if a subnode of the bloomDataDiv.
+			return AncestorHasId(node, "bloomDataDiv");
+		}
+
+		// Returns true if an ancestor of node (not including node itself) has an id attribute matching targetId
+		public static bool AncestorHasId(XmlNode node, string targetId)
+		{
+			if (node == null)
+			{
+				return false;
+			}
+
+			var ancestor = node.ParentNode;
+
+			while (ancestor != null)
+			{
+				if (ancestor.Attributes != null)
+				{
+					var ancestorId = ancestor.GetOptionalStringAttribute("id", null);
+					if (ancestorId == targetId)
+					{
+						return true;
+					}
+				}
+								
+				ancestor = ancestor.ParentNode;
+			}
+
+			return false;			
 		}
 	}
 }

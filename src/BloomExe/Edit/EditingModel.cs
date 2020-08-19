@@ -26,6 +26,7 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Reporting;
+using SIL.Xml;
 
 namespace Bloom.Edit
 {
@@ -663,7 +664,57 @@ namespace Bloom.Edit
 				_duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 				_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 
+				CheckForBL8852();
+
 				PageSelectModelChangesComplete?.Invoke(this, EventArgs.Empty);
+			}
+		}
+
+		private void CheckForBL8852()
+		{
+			var page = _pageSelection.CurrentSelection;
+			var contentPages = page.Book.OurHtmlDom.GetContentPageElements();
+			if (contentPages == null)
+			{
+				return;
+			}
+
+			var idSet = new HashSet<string>();
+			foreach (var contentPage in contentPages)
+			{
+				var nodeList = HtmlDom.SelectChildNarrationAudioElements(contentPage, true);
+				if (nodeList == null) {
+					return;
+				}
+
+				for (int i = 0; i < nodeList.Count; ++i)
+				{
+					var node = nodeList.Item(i);
+
+					// GetOptionalStringAttribute needs this to be non-null, or else an exception will happen
+					if (node.Attributes == null)
+					{
+						continue;
+					}
+										
+					var id = node.GetOptionalStringAttribute("id", null);
+					if (id != null)
+					{
+						var isNewlyAdded = idSet.Add(id);
+						if (!isNewlyAdded)
+						{
+							// Uh-oh. That means an element like this already exists?
+							var shortMsg = "Corrupt Book - Duplicate audio ID. Please report this issue (and to receive help fixing the audio IDs in this book).\nAudio files in this book may become lost or overwritten.";
+							var longMsg = $"Duplicate GUID {id} on recordable with text \"{node.InnerText}\". See BL-8852.";
+							NonFatalProblem.Report(ModalIf.All, PassiveIf.None, shortMsg, longMsg);
+
+							// Only it report it once per book (per time),
+							// No need to report multiple modals at the same time
+							return;
+						}
+					
+					}
+				}
 			}
 		}
 
