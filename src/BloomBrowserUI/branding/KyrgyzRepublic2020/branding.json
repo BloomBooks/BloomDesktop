@@ -3,12 +3,7 @@
         {
             "data-book": "outside-back-cover-branding-top-html",
             "lang": "*",
-            "content": "<img style='margin-top:1em' class='branding' src='Kyrgyz2020-back-top.png'/>",
-            "condition": "always"
-        },
-        {
-            "data-book": "trimbox",
-            "content": "{top:'3',bottom:'3',inside:'0',outside:'3'}",
+            "content": "<img  class='branding' src='Kyrgyz2020-back-top.png'/>",
             "condition": "always"
         },
         {

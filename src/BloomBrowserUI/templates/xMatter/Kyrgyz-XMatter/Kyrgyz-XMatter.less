@@ -1,6 +1,7 @@
 @import "../../xMatter/bloom-xmatter-common.less";
 
 @XMatterPackName: "Kyrgyz";
+@HeaderHeight: 3.5cm;
 
 div.bloom-page.outsideFrontCover,
 div.bloom-page.outsideBackCover {
@@ -54,7 +55,7 @@ div.bloom-page.outsideBackCover {
 .frontCover .bloom-translationGroup.bookTitle {
     color: black;
     background-color: white;
-    height: 3.5cm;
+    height: @HeaderHeight;
     /*flex-basis: content;*/
     flex-direction: unset;
     align-items: center;
@@ -62,10 +63,10 @@ div.bloom-page.outsideBackCover {
 
 /* basePage.css | http://localhost:8089/bloom/C%3A/Users/hatto/Documents/Bloom/Kyrgyz%20Branding%20Test/Book/basePage.css */
 
-.marginBox {
-    /* top: 15mm; */
-    top: 0;
-}
+// .marginBox {
+//     /* top: 15mm; */
+//     top: 0;
+// }
 
 .bloom-imageContainer img {
     /* width: 100%; */
@@ -95,6 +96,7 @@ div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
 [data-book="outside-back-cover-branding-top-html"] {
     background-color: white;
     margin-left: -15mm;
+    height: @HeaderHeight;
 }
 
 [data-book="back-cover-boilerplate"] {
@@ -103,6 +105,14 @@ div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
 [data-book="level-image"] {
     margin-top: auto;
     margin-right: auto;
-    height: 8cm;
+    height: 7cm;
     border: none !important;
+}
+
+/* only white makes sense, e.g. for the inside cover colors */
+div.bloom-page {
+    &.insideFrontCover,
+    &.insideBackCover {
+        background-color: white !important;
+    }
 }

@@ -34,6 +34,7 @@ Rules that format the branding go in branding-base.less, or in the branding.less
 .A6Portrait .portraitOnly {
     display: unset;
 }
+.Cm13Landscape .landscapeOnly,
 .Device16x9Landscape .landscapeOnly,
 .LetterLandscape .landscapeOnly,
 .LegalLandscape .landscapeOnly,
@@ -42,4 +43,8 @@ Rules that format the branding go in branding-base.less, or in the branding.less
 .A5Landscape .landscapeOnly,
 .A6Landscape .landscapeOnly {
     display: unset;
+}
+[data-book="outside-back-cover-branding-top-html"] img {
+    margin-top: auto;
+    margin-bottom: auto;
 }
