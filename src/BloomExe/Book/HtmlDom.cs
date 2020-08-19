@@ -2243,7 +2243,7 @@ namespace Bloom.Book
 				.Replace("<br>", Environment.NewLine);
 		}
 
-		private IEnumerable<XmlElement> GetContentPageElements()
+		public IEnumerable<XmlElement> GetContentPageElements()
 		{
 			return _dom.SafeSelectNodes(
 					"/html/body/div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]")
