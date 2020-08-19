@@ -218,7 +218,7 @@ namespace Bloom.Publish
 //			_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
 
 
-			_model.RefreshValuesUponActivation();
+			_model.UpdateModelUponActivation();
 
 			//reload items from extension(s), as they may differ by book (e.g. if the extension comes from the template of the book)
 			var toolStripItemCollection = new List<ToolStripItem>(from ToolStripItem x in _contextMenuStrip.Items select x);

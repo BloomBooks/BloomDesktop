@@ -1417,7 +1417,6 @@ namespace BloomTests.Publish
 				MakeFakeAudio(book.FolderPath.CombineForPath("audio", $"{expectedId}.mp3"));
 			}
 
-
 			// Cause the system under test to be executed.
 			MakeEpub("output", $"AddAudioOverlay_SentencePlaybackModes_ProducesCorrectOverlay_{audioRecordingMode}_{mergeAudio}", book,
 				extraInit: maker => maker.OneAudioPerPage = mergeAudio);

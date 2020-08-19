@@ -8,7 +8,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
@@ -21,6 +20,7 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Xml;
 using Bloom.ToPalaso;
+using Bloom.ToPalaso.Experimental;
 
 namespace Bloom.Publish
 {
@@ -109,37 +109,17 @@ namespace Bloom.Publish
 			}
 		}
 
-		public Book.Book LoadBookIfNeeded(IProgress progress)
-		{
-			if(_currentlyLoadedBook != BookSelection.CurrentSelection)
-			{
-				_currentlyLoadedBook = BookSelection.CurrentSelection;
-				// In case we have any new settings since the last time we were in the Edit tab (BL-3881)
-				// Note that this will (quietly) permanently shrink any overlarge images in the book, which
-				// will prolong the initial "Creating PDF" state of the overall progress dialog.
-				_currentlyLoadedBook.BringBookUpToDate(progress);
-			}
-			return _currentlyLoadedBook;
-		}
-
 		internal static string GetPreparingImageFilter()
 		{
 			var msgFmt = L10NSharp.LocalizationManager.GetString("ImageUtils.PreparingImage", "Preparing image: {0}", "{0} is a placeholder for the image file name");
 			var idx = msgFmt.IndexOf("{0}");
-			if (idx >= 0)
-				return msgFmt.Substring(0,idx);
-			else
-				return msgFmt;	// translated string is missing the filename placeholder?
+			return idx >= 0 ? msgFmt.Substring(0,idx) : msgFmt; // translated string is missing the filename placeholder?
 		}
 
 		public void LoadBook(BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
 		{
 			try
 			{
-				var workerProgress = new BackgroundWorkerProgressAdapter(worker);
-				workerProgress.AddFilter(GetPreparingImageFilter());
-				LoadBookIfNeeded(workerProgress);
-
 				using (var tempHtml = MakeFinalHtmlForPdfMaker())
 				{
 					if (doWorkEventArgs.Cancel)
@@ -154,7 +134,7 @@ namespace Bloom.Publish
 					// Check memory for the benefit of developers.  The user won't see anything.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
 					_pdfMaker.MakePdf(tempHtml.Key, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName,
-						PageLayout.SizeAndOrientation.IsLandScape, LoadBookIfNeeded(new NullProgress()).UserPrefs.ReducePdfMemoryUse,
+						PageLayout.SizeAndOrientation.IsLandScape, _currentlyLoadedBook.UserPrefs.ReducePdfMemoryUse,
 						LayoutPagesForRightToLeft, layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
 					// Warn the user if we're starting to use too much memory.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
@@ -173,7 +153,6 @@ namespace Bloom.Publish
 		private bool LayoutPagesForRightToLeft
 		{
 			get { return _collectionSettings.Language1.IsRightToLeft;  }
-
 		}
 
 		private SimulatedPageFile MakeFinalHtmlForPdfMaker()
@@ -473,13 +452,24 @@ namespace Bloom.Publish
 				SIL.Program.Process.SafeStart("xdg-open", '"' + htmlFilePath + '"');
 		}
 
-		public void RefreshValuesUponActivation()
+		public void UpdateModelUponActivation()
 		{
-			if (BookSelection.CurrentSelection != null)
+			if (BookSelection.CurrentSelection == null)
+				return;
+			_currentlyLoadedBook = BookSelection.CurrentSelection;
+			PageLayout = _currentlyLoadedBook.GetLayout();
+			// BL-8648: In case we have an older version of a book (downloaded, e.g.) and the user went
+			// straight to the Publish tab avoiding the Edit tab, we could arrive here needing to update
+			// things. We choose to do the original book update here (when the user clicks on the Publish tab),
+			// instead of the various places that we publish the book.
+			// Note that the BringBookUpToDate() called by PublishHelper.MakeDeviceXmatterTempBook() and
+			// called by BloomReaderFileMaker.PrepareBookForBloomReader() applies to a copy of the book
+			// and is done in a way that explicitly avoids updating images. This call updates the images,
+			// if needed, as a permanent fix.
+			using (var dlg = new ProgressDialogForeground())
 			{
-				PageLayout = BookSelection.CurrentSelection.GetLayout();
+				dlg.ShowAndDoWork(progress => _currentlyLoadedBook.BringBookUpToDate(progress));
 			}
-
 		}
 
 		[Import("GetPublishingMenuCommands")]//, AllowDefault = true)]
