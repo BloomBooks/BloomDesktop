@@ -1404,12 +1404,20 @@ namespace Bloom.Book
 			//we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
 			// Per BL-3571, if it's using a layout we don't know (e.g., from a newer Bloom) we switch to A5Portrait.
 			// Various things, especially publication, don't work with unknown page sizes.
-			Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, fileLocator);
+			// Typically by this point any xmatter stylesheet has been removed from the book itself, so to allow
+			// an xmatter stylesheet to specify layout choices, we have to pass it in separately.
+			Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, fileLocator, helper.PathToXMatterStylesheet);
 			XMatterHelper.RemoveExistingXMatter(bookDOM);
 			// this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
 			// still requiring it to be a valid layout.
-			layout = Layout.FromDomAndChoices(bookDOM, layout, fileLocator);
+			layout = Layout.FromDomAndChoices(bookDOM, layout, fileLocator, helper.PathToXMatterStylesheet);
 			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout, CollectionSettings.BrandingProjectKey, Storage.FolderPath);
+			// This layout might be something different, forced by the xmatter. If so we need to apply it to all pages.
+			// The xmatter pages are done as they are created.
+			foreach (var page in bookDOM.ContentPages())
+			{
+				SizeAndOrientation.UpdatePageSizeAndOrientationClasses(page, layout);
+			}
 
 			var dataBookLangs = bookDOM.GatherDataBookLanguages();
 			TranslationGroupManager.PrepareDataBookTranslationGroups(bookDOM.RawDom, dataBookLangs);

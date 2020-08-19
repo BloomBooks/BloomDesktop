@@ -143,6 +143,18 @@ namespace Bloom.Book
 			}
 		}
 
+		public IEnumerable<XmlElement> ContentPages()
+		{
+			return _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
+				.Cast<XmlElement>()
+				.Where(x =>
+				{
+					var classes = x.Attributes["class"].Value.Split(' ');
+					return classes.Contains("bloom-page") && !classes.Contains("bloom-frontMatter") &&
+					       !classes.Contains("bloom-backMatter");
+				});
+		}
+
 		private string _baseForRelativePaths = null;
 
 		/// <summary>

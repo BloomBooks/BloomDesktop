@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using Newtonsoft.Json;
 using SIL.Extensions;
@@ -73,16 +74,17 @@ namespace Bloom.Book
 			UpdatePageSizeAndOrientationClasses(dom.RawDom, layout);
 		}
 
-		public static IEnumerable<Layout> GetLayoutChoices(HtmlDom dom, IFileLocator fileLocator)
+		static IEnumerable<string> FilesThatMightContainLayoutChoices(HtmlDom dom, IFileLocator fileLocator)
 		{
 			//here we walk through all the stylesheets, looking for one with the special comment which tells us which page/orientations it supports
 			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
 				var fileName = link.GetStringAttribute("href");
 				if (fileName.ToLowerInvariant().Contains("mode") || fileName.ToLowerInvariant().Contains("page") ||
-					fileName.ToLowerInvariant().Contains("languagedisplay") ||
-					fileName.ToLowerInvariant().Contains("origami") || fileName.ToLowerInvariant().Contains("defaultlangstyles") ||
-					fileName.ToLowerInvariant().Contains("customcollectionstyles"))
+				    fileName.ToLowerInvariant().Contains("languagedisplay") ||
+				    fileName.ToLowerInvariant().Contains("origami") ||
+				    fileName.ToLowerInvariant().Contains("defaultlangstyles") ||
+				    fileName.ToLowerInvariant().Contains("customcollectionstyles"))
 					continue;
 
 				fileName = fileName.Replace("file://", "").Replace("%5C", "/").Replace("%20", " ");
@@ -90,16 +92,26 @@ namespace Bloom.Book
 				var path = fileLocator.LocateFile(fileName);
 				if (string.IsNullOrEmpty(path) && fileName.StartsWith("../"))
 					path = fileLocator.LocateFile(fileName.Substring(3));
-				if(string.IsNullOrEmpty(path))
+				if (string.IsNullOrEmpty(path))
 				{
 					// We're looking for a block of json that is typically found in Basic Book.css or a comparable place for
 					// a book based on some other template. Calling code is prepared for not finding this block.
 					// It seems safe to ignore a reference to some missing style sheet.
 					if (fileName.ToLowerInvariant().Contains("branding"))
 						continue; // these don't contain page size info, anyhow.
-					NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Could not find " + fileName + " while looking for size choices");
+					NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha,
+						"Could not find " + fileName + " while looking for size choices");
 					continue;
 				}
+
+				yield return path;
+			}
+		}
+
+		public static IEnumerable<Layout> GetLayoutChoices(HtmlDom dom, IFileLocator fileLocator, string firstStylesheetToSearch = null)
+		{
+			IEnumerable<string> firstSsList = (firstStylesheetToSearch == null) ? new string[0] : new [] {firstStylesheetToSearch};
+			foreach (var path in firstSsList.Concat(FilesThatMightContainLayoutChoices(dom, fileLocator))) {
 				var contents = RobustFile.ReadAllText(path);
 				var start = contents.IndexOf("STARTLAYOUTS", StringComparison.InvariantCulture);
 				if (start < 0)
@@ -116,7 +128,7 @@ namespace Bloom.Book
 				}
 				catch (Exception e)
 				{
-					throw new ApplicationException("Problem parsing the 'layouts' comment of " + fileName + ". The contents were\r\n" + s, e);
+					throw new ApplicationException("Problem parsing the 'layouts' comment of " + path + ". The contents were\r\n" + s, e);
 				}
 
 

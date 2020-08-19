@@ -170,6 +170,8 @@ namespace Bloom.Book
 				storage.BookInfo.MovePublisherToOriginalPublisher();
 			}
 
+			var sizeAndOrientation = Layout.FromDomAndChoices(storage.Dom, templateLayout ?? Layout.A5Portrait, _fileLocator);
+
 			XMatterHelper.RemoveExistingXMatter(storage.Dom);
 
 			// BL-4586 Some old books ended up with background-image urls containing XML img tags
@@ -182,8 +184,6 @@ namespace Bloom.Book
 			Book.RemoveImgTagInDataDiv(storage.Dom);
 
 			bookData.RemoveAllForms("ISBN");//ISBN number of the original doesn't apply to derivatives
-
-			var sizeAndOrientation = Layout.FromDomAndChoices(storage.Dom, templateLayout??Layout.A5Portrait, _fileLocator);
 
 			//Note that we do this *before* injecting frontmatter, which is more likely to have a good reason for having English
 			//Useful for things like Primers. Note that Lorem Ipsum and prefixing all text with "_" also work.

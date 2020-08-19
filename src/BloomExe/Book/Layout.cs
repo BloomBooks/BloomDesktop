@@ -185,19 +185,19 @@ namespace Bloom.Book
 			return layout;
 		}
 
-		public static Layout FromDomAndChoices(HtmlDom dom, Layout defaultIfMissing, IFileLocator fileLocator)
+		public static Layout FromDomAndChoices(HtmlDom dom, Layout defaultIfMissing, IFileLocator fileLocator, string firstStylesheetToSearch = null)
 		{
 			// If the stylesheet's special style which tells us which page/orientations it supports matches the default
 			// page size and orientation in the template's bloom-page class, we don't need this method.
 			// Otherwise, we need to make sure that the book's layout updates to something that really is a possibility.
 			var layout = FromDom(dom, defaultIfMissing);
-			layout = EnsureLayoutIsAmongValidChoices(dom, layout, fileLocator);
+			layout = EnsureLayoutIsAmongValidChoices(dom, layout, fileLocator, firstStylesheetToSearch);
 			return layout;
 		}
 
-		private static Layout EnsureLayoutIsAmongValidChoices(HtmlDom dom, Layout layout, IFileLocator fileLocator)
+		private static Layout EnsureLayoutIsAmongValidChoices(HtmlDom dom, Layout layout, IFileLocator fileLocator, string firstStylesheetToSearch = null)
 		{
-			var layoutChoices = SizeAndOrientation.GetLayoutChoices(dom, fileLocator);
+			var layoutChoices = SizeAndOrientation.GetLayoutChoices(dom, fileLocator, firstStylesheetToSearch);
 			if (layoutChoices.Any(l => l.SizeAndOrientation.ClassName == layout.SizeAndOrientation.ClassName && l.IsFullBleed == layout.IsFullBleed))
 				return layout;
 			// Is there one that is the same size, just different fullBleed option?
