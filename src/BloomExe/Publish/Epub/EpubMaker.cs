@@ -239,12 +239,7 @@ namespace Bloom.Publish.Epub
 				return;
 			}
 
-			// Note that the BringBookUpToDate() called by PublishHelper.MakeDeviceXmatterTempBook() applies to
-			// a copy of this book and is done in a way that explicitly avoids updating images.  This call, like
-			// the one in PublishModel.LoadBookIfNeeded(), updates the images if needed as a permanent fix.
-			var updateProgress = new WebProgressAdapter(progress);
-			updateProgress.AddFilter(PublishModel.GetPreparingImageFilter());	// the only slow operation that we really need progress for
-			Book.BringBookUpToDate(updateProgress);
+			// BringBookUpToDate() will already have been done on the original book on entering the Publish tab.
 
 			progress.Message("BuildingEPub", comment: "Shown in a progress box when Bloom is starting to create an ePUB",
 				message: "Building ePUB");

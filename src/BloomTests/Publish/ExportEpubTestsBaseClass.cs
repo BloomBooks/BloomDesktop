@@ -16,6 +16,7 @@ using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.Extensions;
+using SIL.Progress;
 
 namespace BloomTests.Publish
 {
@@ -141,6 +142,10 @@ namespace BloomTests.Publish
 		{
 			book.CollectionSettings.BrandingProjectKey = branding;
 
+			// BringBookUpToDate is done on entering the Publish tab, outside the scope of these tests.
+			// But note that it must be done AFTER setting the branding (which in Bloom will happen well before
+			// entering the Publish tab).
+			book.BringBookUpToDate(new NullProgress());
 			var epubFolder = new TemporaryFolder(folderName);
 			var epubName = mainFileName + ".epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
