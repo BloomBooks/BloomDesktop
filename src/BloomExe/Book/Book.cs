@@ -2688,7 +2688,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public bool FullBleed => BookData.GetVariableOrNull("bloom-fullBleed", "*") == "true";
+		public bool FullBleed => BookData.GetVariableOrNull("fullBleed", "*") == "true";
 
 		/// <summary>
 		/// Earlier, we handed out a single-page version of the document. Now it has been edited,

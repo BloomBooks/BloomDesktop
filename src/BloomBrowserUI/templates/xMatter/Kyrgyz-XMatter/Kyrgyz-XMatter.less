@@ -11,8 +11,8 @@ div.bloom-page.outsideBackCover {
 
 .bloom-translationGroup.bookTitle {
     margin-top: @bleed;
-    margin-left: 1cm;
-    margin-right: 1cm;
+    padding-left: 1cm;
+    padding-right: 1cm;
 }
 
 .outsideFrontCover .marginBox {
@@ -121,5 +121,16 @@ div.bloom-page {
     &.insideFrontCover,
     &.insideBackCover {
         background-color: white !important;
+    }
+}
+
+.bloom-mediaBox {
+    &::before {
+        // we're not expecting an edge-to-edge images, so no need ot show the transparent bleed area. Just make it black.
+        border-color: black !important;
+    }
+    &::after {
+        // don't show the trim area at all.
+        border: none;
     }
 }
