@@ -1,4 +1,4 @@
-﻿//#define MEMORYCHECK
+//#define MEMORYCHECK
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -693,6 +693,11 @@ namespace Bloom.Edit
 
 					// GetOptionalStringAttribute needs this to be non-null, or else an exception will happen
 					if (node.Attributes == null)
+					{
+						continue;
+					}
+
+					if (HtmlDom.IsNodePartOfDataBookOrDataCollection(node))
 					{
 						continue;
 					}

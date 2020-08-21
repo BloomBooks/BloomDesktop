@@ -2627,44 +2627,48 @@ namespace Bloom.Book
 			return xClass.Substring(idx);
 		}
 
-		// Returns true if the node a part of the bloomDataDiv
-		public static bool IsNodeInBloomDataDiv(XmlNode node)
+		public static bool IsNodePartOfDataBookOrDataCollection(XmlNode node)
 		{
-			// Check if self is the bloomDataDiv
-			if (node?.Attributes != null && node.GetOptionalStringAttribute("id", "") == "bloomDataDiv")
-			{
-				return true;
-			}
+			bool isMatch = DoesSelfOrAncestorMatchCondition(node, n => {
+				if (n.Attributes == null)
+				{
+					return false;
+				}
+				else if (n.GetOptionalStringAttribute("data-book", null) != null)
+				{
+					return true;
+				}
+				else if (n.GetOptionalStringAttribute("data-collection", null) != null)
+				{
+					return true;
+				}
 
-			// Check if a subnode of the bloomDataDiv.
-			return AncestorHasId(node, "bloomDataDiv");
+				return false;
+			});
+
+			return isMatch;
 		}
 
-		// Returns true if an ancestor of node (not including node itself) has an id attribute matching targetId
-		public static bool AncestorHasId(XmlNode node, string targetId)
+		public static bool DoesSelfOrAncestorMatchCondition(XmlNode node, Func<XmlNode, bool> matcher)
 		{
 			if (node == null)
 			{
 				return false;
 			}
 
-			var ancestor = node.ParentNode;
+			var ancestor = node;
 
 			while (ancestor != null)
 			{
-				if (ancestor.Attributes != null)
+				if (matcher(ancestor))
 				{
-					var ancestorId = ancestor.GetOptionalStringAttribute("id", null);
-					if (ancestorId == targetId)
-					{
-						return true;
-					}
+					return true;
 				}
 								
 				ancestor = ancestor.ParentNode;
 			}
 
 			return false;			
-		}
+		}		
 	}
 }
