@@ -2556,7 +2556,7 @@ namespace Bloom.Book
 
 		private void CopyAndRenameAudioFiles(XmlElement newpageDiv, string sourceBookFolder)
 		{
-			foreach (var audioElement in HtmlDom.SelectAudioSentenceElements(newpageDiv).Cast<XmlElement>().ToList())
+			foreach (var audioElement in HtmlDom.SelectRecordableDivOrSpans(newpageDiv).Cast<XmlElement>().ToList())
 			{
 				// The "i" makes sure that the ID does not start with digit. It's unnecessary but harmless
 				// if it already starts with a non-digit. The JS code that usually generates these only
