@@ -1,6 +1,7 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
 @import "../../bloomUI.less";
 @import "../sourceBubbles/sourceBubbles.less";
+@import (reference) "../../bookLayout/basePage.less"; // constants only
 
 @MediumGray: #c0b9b9;
 @ImageHoverOverlay: #d5d5e4;
@@ -23,6 +24,31 @@ body {
     background-color: @bloom-darkestBackground;
     transform-origin: top left; /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
     transition: transform 20ms; /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
+}
+
+// This is somewhat useful for seeing where the bleed is; however, it is 'underneath'
+// all content. (For seeing how it interacts with page background color,
+// you can use a partly transparent color; however, it gets doubled in the
+// top right and bottom left corners, and does not blend with children.)
+// Not sure whether to have this in production.
+@fbColor: #777;
+.bloom-mediaBox {
+    pointer-events: none; // we want all clicks to go through this to the child
+
+    & > * {
+        pointer-events: auto; // start up clicks again a the next level
+    }
+    //box-shadow: inset @bleed @bleed @fbColor, inset -@bleed -@bleed @fbColor;
+    &:after {
+        content: "";
+        position: absolute;
+        left: @bleed;
+        right: @bleed;
+        top: @bleed;
+        bottom: @bleed;
+        border: 1px solid red;
+        z-index: 1;
+    }
 }
 
 #labelAndLayoutPane {

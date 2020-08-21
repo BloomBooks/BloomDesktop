@@ -194,6 +194,35 @@ div#bloomDataDiv {
     text-align: center;
 }
 
+@bleed: 3mm;
+@RA5Portrait-Width: @A5Portrait-Width + @bleed + @bleed;
+@RA5Portrait-Height: @A5Portrait-Height + @bleed + @bleed;
+@RA5Portrait-Scale: unit(@RA5Portrait-Width / @A5Portrait-Width);
+@A5Portrait-HeightFB: @A5Portrait-Height * @RA5Portrait-Scale;
+@A5Portrait-Height-Excess: @A5Portrait-HeightFB - @RA5Portrait-Height;
+.bloom-fullBleed {
+    //background-color: green;
+    .bloom-page {
+        &.A5Portrait {
+            //background-color: yellow;
+            transform-origin: top left;
+            // NB: transform order is rightmost first
+            transform: translate(0, -@A5Portrait-Height-Excess / 2)
+                scale(@RA5Portrait-Scale);
+            transition: 0.5s ease-in-out;
+        }
+    }
+}
+
+.bloom-mediaBox {
+    overflow: hidden;
+    background-color: pink;
+    &.A5Portrait {
+        width: @RA5Portrait-Width;
+        height: @RA5Portrait-Height;
+    }
+}
+
 /*Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing
 these should be 14.8, but wkhtmltopdf shinks it
 The folowing are the values which work with a 1px border.  With 0px border, I could not get the pages to come out

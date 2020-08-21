@@ -2680,6 +2680,14 @@ namespace Bloom.Book
 
 		public BookData BookData => _bookData;
 
+		public void InsertFullBleedMarkup(XmlElement body)
+		{
+			if (BookData.GetVariableOrNull("bloom-fullBleed", "*") == "true")
+			{
+				HtmlDom.InsertFullBleedMarkup(body);
+			}
+		}
+
 		/// <summary>
 		/// Earlier, we handed out a single-page version of the document. Now it has been edited,
 		/// so we now we need to fold changes back in
