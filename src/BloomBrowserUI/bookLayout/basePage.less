@@ -214,9 +214,10 @@ div#bloomDataDiv {
     }
 }
 
+// In full bleed mode, this will be @bleed larger than the desired page size. The "media" here is the phsyical paper that
+// a printshow would have to work with. E.g. RA4, RA5
 .bloom-mediaBox {
     overflow: hidden;
-    background-color: pink;
     &.A5Portrait {
         width: @RA5Portrait-Width;
         height: @RA5Portrait-Height;
