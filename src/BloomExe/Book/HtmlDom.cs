@@ -2100,11 +2100,23 @@ namespace Bloom.Book
 			return element.SafeSelectNodes(".//div[contains(@class,'bloom-videoContainer')]/video/source");
 		}
 
+		private static readonly string kAudioSentenceElementsXPath = "descendant-or-self::node()[contains(@class,'audio-sentence') and string-length(@id) > 0]";
+		
+		public static XmlNodeList SelectRecordableDivOrSpans(XmlElement element)
+		{
+			string xpath1 = kAudioSentenceElementsXPath;
+			// We only want the ones with ids, so add check for string-length(@id)
+			string xpath2 = "descendant-or-self::node()[contains(@class,'bloom-editable') and not(contains(@class,'bloom-noAudio'))  and string-length(@id) > 0 ]";
+			// Also add on any other spans. (e.g., bloom-highlight segments, which won't be matched by xpath1.
+			string xpath3 = "descendant-or-self::node()[contains(@class,'bloom-editable') and not(contains(@class,'bloom-noAudio'))]//span[string-length(@id) > 0]";
+			return element.SafeSelectNodes($"{xpath1}|{xpath2}|{xpath3}");
+		}
+
 		public static XmlNodeList SelectAudioSentenceElements(XmlElement element)
 		{
 			// It's unexpected for a book to have nodes with class audio-sentence and no id to link them to a file, but
 			// if they do occur, it's better to ignore them than for other code to crash when looking for the ID.
-			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence') and string-length(@id) > 0]");
+			return element.SafeSelectNodes(kAudioSentenceElementsXPath);
 		}
 
 		public static XmlNodeList SelectAudioSentenceElementsWithDataDuration(XmlElement element)
