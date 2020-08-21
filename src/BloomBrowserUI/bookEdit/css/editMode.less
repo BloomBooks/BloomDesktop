@@ -26,28 +26,36 @@ body {
     transition: transform 20ms; /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
 }
 
-// This is somewhat useful for seeing where the bleed is; however, it is 'underneath'
-// all content. (For seeing how it interacts with page background color,
-// you can use a partly transparent color; however, it gets doubled in the
-// top right and bottom left corners, and does not blend with children.)
-// Not sure whether to have this in production.
-@fbColor: #777;
-.bloom-mediaBox {
+// See comments on .bloom-mediaBox in basePage.less for a description of the mediaBox.
+// Here, we are causing it to be visible when desired.
+.bloom-mediaBox.showPrinterMarks {
     pointer-events: none; // we want all clicks to go through this to the child
 
     & > * {
         pointer-events: auto; // start up clicks again a the next level
     }
-    //box-shadow: inset @bleed @bleed @fbColor, inset -@bleed -@bleed @fbColor;
-    &:after {
+    &::before {
+        // show bleed area
         content: "";
         position: absolute;
         left: 0;
         right: 0;
+
         top: 0;
         bottom: 0;
-        border: 3mm solid rgba(0, 0, 0, 0.4);
+        border: 3mm solid rgba(0, 0, 0, 0.4); // medium gray
         z-index: 1;
+    }
+    &:after {
+        // show safety area (the area inside of the trim box that still could get cut)
+        content: "";
+        position: absolute;
+        left: @bleed;
+        right: @bleed;
+        top: @bleed;
+        bottom: @bleed;
+        border: 3mm solid rgba(0, 0, 0, 0.1); // light gray
+        z-index: 2;
     }
 }
 
