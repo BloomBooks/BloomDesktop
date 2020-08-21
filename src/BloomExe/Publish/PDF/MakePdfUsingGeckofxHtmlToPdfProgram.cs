@@ -37,7 +37,7 @@ namespace Bloom.Publish.PDF
 		private BackgroundWorker _worker;
 
 		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName,
-			bool landscape, bool saveMemoryMode, Control owner, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
+			bool landscape, bool saveMemoryMode, Control owner, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, bool bleed)
 		{
 			_worker = worker;
 #if !__MonoCS__
@@ -127,7 +127,7 @@ namespace Bloom.Publish.PDF
 			{
 				exePath = filePath;
 			}
-			SetArguments(bldr, inputHtmlPath, outputPdfPath, paperSizeName, landscape, saveMemoryMode);
+			SetArguments(bldr, inputHtmlPath, outputPdfPath, paperSizeName, landscape, saveMemoryMode, bleed);
 			var arguments = bldr.ToString();
 			var progress = new NullProgress();
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGeckofxReporting);
@@ -164,6 +164,11 @@ namespace Bloom.Publish.PDF
 				@"Error message displayed in a message dialog box");
 		}
 
+		const int A4PortraitHeight = 297; // mm
+		private const int A4PortraitWidth = 210; // mm
+		const int bleedWidth = 3; // mm
+		private const int bleedExtra = bleedWidth * 2;
+
 		//BottomMarginInMillimeters = 0,
 		//TopMarginInMillimeters = 0,
 		//LeftMarginInMillimeters = 0,
@@ -174,28 +179,58 @@ namespace Bloom.Publish.PDF
 		//OutputPdfPath = tempOutput.Path,
 		//PageSizeName = paperSizeName
 		void SetArguments(StringBuilder bldr, string inputHtmlPath, string outputPdfPath,
-			string paperSizeName, bool landscape, bool saveMemoryMode)
+			string paperSizeName, bool landscape, bool saveMemoryMode, bool bleed)
 		{
 			bldr.AppendFormat("\"{0}\" \"{1}\"", inputHtmlPath, outputPdfPath);
 			bldr.Append(" --quiet");	// turn off its progress dialog (BL-3721)
 			bldr.Append(" -B 0 -T 0 -L 0 -R 0");
-			var match = Regex.Match(paperSizeName, @"^(cm|in)(\d+)$", RegexOptions.IgnoreCase|RegexOptions.CultureInvariant);
-			if (match.Success)
+			if (bleed)
 			{
-				// Irregular (square) paper size
-				var size = int.Parse(match.Groups[2].Value);
-				if (match.Groups[1].Value == "in")
-					size = (int)(size * 25.4);	// convert from inches to millimeters
-				else
-					size = size * 10;	// convert from cm to mm
-				bldr.AppendFormat(" -h {0} -w {0}", size);
+				// We will make a non-standard page size that is 6mm bigger in each dimension than the size indicated
+				// by the paperSizeName. Unfortunately doing that means we can't just pass the name, we have to figure
+				// out the size.
+				double height;
+				double width;
+				switch (paperSizeName.ToLowerInvariant())
+				{
+					
+					case "a5":
+						height = A4PortraitWidth + bleedExtra;
+						width = A4PortraitHeight / 2 + bleedExtra;
+						break;
+					default:
+						throw new ArgumentException("Full bleed printing of paper sizes other than A5 is not yet implemented");
+				}
+
+				if (landscape)
+				{
+					var temp = height;
+					height = width;
+					width = temp;
+				}
+				bldr.Append($" -h {height} -w {width}");
 			}
 			else
 			{
-				bldr.AppendFormat(" -s {0}", paperSizeName);
-				if (landscape)
-					bldr.Append(" -Landscape");
+				var match = Regex.Match(paperSizeName, @"^(cm|in)(\d+)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+				if (match.Success)
+				{
+					// Irregular (square) paper size
+					var size = int.Parse(match.Groups[2].Value);
+					if (match.Groups[1].Value == "in")
+						size = (int) (size * 25.4); // convert from inches to millimeters
+					else
+						size = size * 10; // convert from cm to mm
+					bldr.AppendFormat(" -h {0} -w {0}", size);
+				}
+				else
+				{
+					bldr.AppendFormat(" -s {0}", paperSizeName);
+					if (landscape)
+						bldr.Append(" -Landscape");
+				}
 			}
+
 			bldr.Append(" --graphite");
 			if (saveMemoryMode)
 				bldr.Append(" --reduce-memory-use");

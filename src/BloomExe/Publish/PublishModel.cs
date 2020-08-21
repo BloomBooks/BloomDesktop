@@ -135,7 +135,7 @@ namespace Bloom.Publish
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
 					_pdfMaker.MakePdf(tempHtml.Key, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName,
 						PageLayout.SizeAndOrientation.IsLandScape, _currentlyLoadedBook.UserPrefs.ReducePdfMemoryUse,
-						LayoutPagesForRightToLeft, layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
+						LayoutPagesForRightToLeft, layoutMethod, BookletPortion, worker, doWorkEventArgs, View, _currentlyLoadedBook.FullBleed);
 					// Warn the user if we're starting to use too much memory.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
 				}

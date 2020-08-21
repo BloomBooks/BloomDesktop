@@ -2682,11 +2682,13 @@ namespace Bloom.Book
 
 		public void InsertFullBleedMarkup(XmlElement body)
 		{
-			if (BookData.GetVariableOrNull("bloom-fullBleed", "*") == "true")
+			if (FullBleed)
 			{
 				HtmlDom.InsertFullBleedMarkup(body);
 			}
 		}
+
+		public bool FullBleed => BookData.GetVariableOrNull("bloom-fullBleed", "*") == "true";
 
 		/// <summary>
 		/// Earlier, we handed out a single-page version of the document. Now it has been edited,
@@ -2893,6 +2895,10 @@ namespace Bloom.Book
 			BookServer bookServer, bool orientationChanging, Layout pageLayout)
 		{
 			var printingDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
+			if (bookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && FullBleed)
+			{
+				InsertFullBleedMarkup(printingDom.Body);
+			}
 			AddCreationTypeAttribute(printingDom);
 
 			if (IsFolio)
@@ -2932,7 +2938,8 @@ namespace Bloom.Book
 				 default:
 					throw new ArgumentOutOfRangeException("bookletPortion");
 			}
-			AddCoverColor(printingDom, Color.White);
+			if (!FullBleed)
+				AddCoverColor(printingDom, Color.White);
 			AddPreviewJavascript(printingDom);
 			return printingDom;
 		}
