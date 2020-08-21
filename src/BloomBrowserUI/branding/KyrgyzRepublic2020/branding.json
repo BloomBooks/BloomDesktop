@@ -25,7 +25,9 @@
             "condition": "always"
         },
         {
-            "data-book": "bloom-fullBleed",
+            // note it would make more sense for this to be part of the Kyrgyz xmatter, but at the moment we have no way of having an xmatter
+            // define a data-book value.
+            "data-book": "fullBleed",
             "lang": "*",
             "content": "true",
             "condition": "always"
