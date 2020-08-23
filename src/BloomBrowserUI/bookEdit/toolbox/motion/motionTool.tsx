@@ -528,6 +528,8 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         if (images.length > 0) {
             const style = images[0].getAttribute("style");
             this.resizeOldStyle = style;
+            // THE FOLLOWING COMMENT IS OUT OF DATE, AS WE DON'T USE scaleImage ANYMORE.
+            // FROM READING pIctureSizeChanged() MAYBE ALL THIS CAN BE REMOVED NOW?
             // jquery's scaleImage function adjusts the position and size of the element to
             // keep it centered when the size of the image container changes.
             // margin-top and margin-left are only set using style; height and width
