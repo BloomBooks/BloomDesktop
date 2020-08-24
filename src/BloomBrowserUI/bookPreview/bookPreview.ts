@@ -1,9 +1,6 @@
 import * as $ from "jquery";
 import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
 import "errorHandler";
-//import theOneLocalizationManager from '../lib/localizationManager/localizationManager';
-import "../lib/jquery.myimgscale"; //scaleImage
-//import '../lib/jquery.i18n.custom.js';
 
 $.fn.CenterVerticallyInParent = function() {
     return this.each(function(i) {
@@ -21,9 +18,6 @@ $(document).ready(() => {
     $("textarea").focus(function() {
         $(this).attr("readonly", "readonly");
     });
-
-    //make images scale up to their container without distorting their proportions, while being centered within it.
-    $(".bloom-imageContainer img").scaleImage({ scale: "fit" }); //uses jquery.myimgscale.js
 
     // Preview is currently used for the main document window when not editing, but also for the template pages view.
     // We want the disabledVisual style for the main page when not editing, but not in the template pages chooser.
