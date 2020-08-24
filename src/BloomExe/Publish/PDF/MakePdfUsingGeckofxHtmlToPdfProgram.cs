@@ -36,8 +36,7 @@ namespace Bloom.Publish.PDF
 	{
 		private BackgroundWorker _worker;
 
-		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName,
-			bool landscape, bool saveMemoryMode, Control owner, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, bool bleed)
+		public void MakePdf(PdfMakingSpecs specs, Control owner, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
 		{
 			_worker = worker;
 #if !__MonoCS__
@@ -127,11 +126,11 @@ namespace Bloom.Publish.PDF
 			{
 				exePath = filePath;
 			}
-			SetArguments(bldr, inputHtmlPath, outputPdfPath, paperSizeName, landscape, saveMemoryMode, bleed);
+			SetArguments(bldr, specs);
 			var arguments = bldr.ToString();
 			var progress = new NullProgress();
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGeckofxReporting);
-			if (res.DidTimeOut || !RobustFile.Exists (outputPdfPath))
+			if (res.DidTimeOut || !RobustFile.Exists (specs.OutputPdfPath))
 			{
 				Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardOutput = "+res.StandardOutput);
 
@@ -144,7 +143,7 @@ namespace Bloom.Publish.PDF
 					"The book's images might have exceeded the amount of RAM memory available. Please turn on the \"Use Less Memory\" option which is slower but uses less memory.",
 					@"Error message displayed in a message dialog box");
 
-				var fullMsg = String.Format(msg, outputPdfPath, Environment.NewLine) + Environment.NewLine + msg2 + Environment.NewLine + res.StandardOutput;
+				var fullMsg = String.Format(msg, specs.OutputPdfPath, Environment.NewLine) + Environment.NewLine + msg2 + Environment.NewLine + res.StandardOutput;
 
 				var except = new ApplicationException(fullMsg);
 				// Note that if we're being run by a BackgroundWorker, it will catch the exception.
@@ -180,20 +179,19 @@ namespace Bloom.Publish.PDF
 		//InputHtmlPath = inputHtmlPath,
 		//OutputPdfPath = tempOutput.Path,
 		//PageSizeName = paperSizeName
-		void SetArguments(StringBuilder bldr, string inputHtmlPath, string outputPdfPath,
-			string paperSizeName, bool landscape, bool saveMemoryMode, bool bleed)
+		void SetArguments(StringBuilder bldr, PdfMakingSpecs specs)
 		{
-			bldr.AppendFormat("\"{0}\" \"{1}\"", inputHtmlPath, outputPdfPath);
+			bldr.AppendFormat("\"{0}\" \"{1}\"", specs.InputHtmlPath, specs.OutputPdfPath);
 			bldr.Append(" --quiet");	// turn off its progress dialog (BL-3721)
 			bldr.Append(" -B 0 -T 0 -L 0 -R 0");
-			if (bleed)
+			if (specs.Bleed)
 			{
 				// We will make a non-standard page size that is 6mm bigger in each dimension than the size indicated
 				// by the paperSizeName. Unfortunately doing that means we can't just pass the name, we have to figure
 				// out the size.
 				double height;
 				double width;
-				switch (paperSizeName.ToLowerInvariant())
+				switch (specs.PaperSizeName.ToLowerInvariant())
 				{
 					
 					case "a5":
@@ -208,7 +206,7 @@ namespace Bloom.Publish.PDF
 						throw new ArgumentException("Full bleed printing of paper sizes other than A5 is not yet implemented");
 				}
 
-				if (landscape)
+				if (specs.Landscape)
 				{
 					var temp = height;
 					height = width;
@@ -216,13 +214,13 @@ namespace Bloom.Publish.PDF
 				}
 				bldr.Append($" -h {height} -w {width}");
 			}
-			else if (paperSizeName == "Comic")
+			else if (specs.PaperSizeName == "Comic")
 			{
 				bldr.Append(" -h 266.7 -w 171.45");	// 10.5" x 6.75"
 			}
 			else
 			{
-				var match = Regex.Match(paperSizeName, @"^(cm|in)(\d+)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+				var match = Regex.Match(specs.PaperSizeName, @"^(cm|in)(\d+)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 				if (match.Success)
 				{
 					// Irregular (square) paper size
@@ -235,14 +233,14 @@ namespace Bloom.Publish.PDF
 				}
 				else
 				{
-					bldr.AppendFormat(" -s {0}", paperSizeName);
-					if (landscape)
+					bldr.AppendFormat(" -s {0}", specs.PaperSizeName);
+					if (specs.Landscape)
 						bldr.Append(" -Landscape");
 				}
 			}
 
 			bldr.Append(" --graphite");
-			if (saveMemoryMode)
+			if (specs.SaveMemoryMode)
 				bldr.Append(" --reduce-memory-use");
 		}
 
@@ -304,5 +302,18 @@ namespace Bloom.Publish.PDF
 				_worker.ReportProgress(percent, status);
 			}
 		}
+	}
+
+	public class PdfMakingSpecs
+	{
+		public string InputHtmlPath;
+		public string OutputPdfPath;
+		public string PaperSizeName; //A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,B0,B1,B10,B2,B3,B4,B5,B6,B7,B8,B9,C5E,Comm10E,DLE,Executive,Folio,Ledger,Legal,Letter,Tabloid,Cm13,Comic
+		public bool Landscape; //true if landscape orientation, false if portrait orientation
+		public PublishModel.BookletLayoutMethod BooketLayoutMethod; // NoBooklet,SideFold,CutAndStack,Calendar
+		public PublishModel.BookletPortions BookletPortion; // None,AllPagesNoBooklet,BookletCover,BookletPages,InnerContent
+		public bool LayoutPagesForRightToLeft; // true if RTL, false if LTR layout
+		public bool SaveMemoryMode; // true if PDF file is to be produced using less memory (but more time)
+		public bool Bleed; // True if we want a bleed page size
 	}
 }

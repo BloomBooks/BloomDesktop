@@ -133,9 +133,16 @@ namespace Bloom.Publish
 
 					// Check memory for the benefit of developers.  The user won't see anything.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
-					_pdfMaker.MakePdf(tempHtml.Key, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName,
-						PageLayout.SizeAndOrientation.IsLandScape, _currentlyLoadedBook.UserPrefs.ReducePdfMemoryUse,
-						LayoutPagesForRightToLeft, layoutMethod, BookletPortion, worker, doWorkEventArgs, View, _currentlyLoadedBook.FullBleed && layoutMethod == BookletLayoutMethod.NoBooklet);
+					_pdfMaker.MakePdf(new PdfMakingSpecs() {InputHtmlPath = tempHtml.Key,
+							OutputPdfPath=PdfFilePath,
+							PaperSizeName=PageLayout.SizeAndOrientation.PageSizeName,
+							Landscape=PageLayout.SizeAndOrientation.IsLandScape,
+							SaveMemoryMode=_currentlyLoadedBook.UserPrefs.ReducePdfMemoryUse,
+							LayoutPagesForRightToLeft=LayoutPagesForRightToLeft,
+							BooketLayoutMethod=layoutMethod,
+							BookletPortion=BookletPortion,
+							Bleed = _currentlyLoadedBook.FullBleed && layoutMethod == BookletLayoutMethod.NoBooklet},
+						worker, doWorkEventArgs, View );
 					// Warn the user if we're starting to use too much memory.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
 				}
