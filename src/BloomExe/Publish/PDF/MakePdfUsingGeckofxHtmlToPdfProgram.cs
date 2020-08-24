@@ -190,6 +190,10 @@ namespace Bloom.Publish.PDF
 					size = size * 10;	// convert from cm to mm
 				bldr.AppendFormat(" -h {0} -w {0}", size);
 			}
+			else if (paperSizeName == "Comic")
+			{
+				bldr.Append(" -h 266.7 -w 171.45");	// 10.5" x 6.75"
+			}
 			else
 			{
 				bldr.AppendFormat(" -s {0}", paperSizeName);
