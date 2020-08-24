@@ -168,6 +168,8 @@ namespace Bloom.Publish.PDF
 		private const int A4PortraitWidth = 210; // mm
 		const int bleedWidth = 3; // mm
 		private const int bleedExtra = bleedWidth * 2;
+		private const double ComicPortraitHeight = 10.5 * 25.4;
+		private const double ComicPortraitWidth = 6.75 * 25.4;
 
 		//BottomMarginInMillimeters = 0,
 		//TopMarginInMillimeters = 0,
@@ -197,6 +199,10 @@ namespace Bloom.Publish.PDF
 					case "a5":
 						height = A4PortraitWidth + bleedExtra;
 						width = A4PortraitHeight / 2 + bleedExtra;
+						break;
+					case "comic":
+						height = ComicPortraitHeight + bleedExtra;
+						width = ComicPortraitWidth + bleedExtra;
 						break;
 					default:
 						throw new ArgumentException("Full bleed printing of paper sizes other than A5 is not yet implemented");
