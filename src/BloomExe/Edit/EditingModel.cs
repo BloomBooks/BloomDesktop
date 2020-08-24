@@ -745,6 +745,7 @@ namespace Bloom.Edit
 			_featureRequirementsBeforeEdits = CurrentBook.OurHtmlDom.GetMetaValue("FeatureRequirement", "");
 			CheckForBL2634("setup");
 			SetupPageZoom();
+			CurrentBook.InsertFullBleedMarkup(_domForCurrentPage.Body);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
 			CheckForBL2634("made tags safe");
 			if (_currentPage != null)

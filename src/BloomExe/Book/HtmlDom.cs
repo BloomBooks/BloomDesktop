@@ -2681,6 +2681,19 @@ namespace Bloom.Book
 			}
 
 			return false;			
-		}		
+		}
+
+		public static void InsertFullBleedMarkup(XmlElement body)
+		{
+			AddClassIfMissing(body, "bloom-fullBleed");
+			foreach (XmlElement page in body.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToArray())
+			{
+				var mediaBoxDiv = page.OwnerDocument.CreateElement("div");
+				(page.ParentNode as XmlElement).ReplaceChild(mediaBoxDiv, page);
+				mediaBoxDiv.AppendChild(page);
+				// todo: copy page size class from page
+				mediaBoxDiv.SetAttribute("class", "bloom-mediaBox A5Portrait");
+			}
+		}
 	}
 }

@@ -1,6 +1,7 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
 @import "../../bloomUI.less";
 @import "../sourceBubbles/sourceBubbles.less";
+@import (reference) "../../bookLayout/basePage.less"; // constants only
 
 @MediumGray: #c0b9b9;
 @ImageHoverOverlay: #d5d5e4;
@@ -23,6 +24,39 @@ body {
     background-color: @bloom-darkestBackground;
     transform-origin: top left; /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
     transition: transform 20ms; /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
+}
+
+// See comments on .bloom-mediaBox in basePage.less for a description of the mediaBox.
+// Here, we are causing it to be visible when desired.
+.bloom-mediaBox {
+    pointer-events: none; // we want all clicks to go through this to the child
+
+    & > * {
+        pointer-events: auto; // start up clicks again a the next level
+    }
+    &::before {
+        // show bleed area
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+
+        top: 0;
+        bottom: 0;
+        border: 3mm solid rgba(0, 0, 0, 0.4); // medium gray
+        z-index: 1;
+    }
+    &:after {
+        // show safety area (the area inside of the trim box that still could get cut)
+        content: "";
+        position: absolute;
+        left: @bleed;
+        right: @bleed;
+        top: @bleed;
+        bottom: @bleed;
+        border: 3mm solid rgba(0, 0, 0, 0.1); // light gray
+        z-index: 2;
+    }
 }
 
 #labelAndLayoutPane {
