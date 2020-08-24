@@ -557,7 +557,6 @@ export class ReaderToolsModel {
 
             if (w.Name.length > longestWord.length) longestWord = w.Name;
         }
-        console.log("foo: " + JSON.stringify(theOneLanguageDataInstance));
         const div = $("div.wordList");
         div.css("font-family", this.fontName);
 
