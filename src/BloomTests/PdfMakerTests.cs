@@ -31,7 +31,7 @@ namespace BloomTestsThatAvoidTheSetupFixture
 			{
 				File.WriteAllText(input.Path, "<html><body>Hello</body></html>");
 				File.Delete(output.Path);
-				RunMakePdf(maker, input.Path, output.Path, "a5", false, false, false,
+				RunMakePdf(maker, input.Path, output.Path, "A5", false, false, false,
 					PublishModel.BookletLayoutMethod.SideFold, PublishModel.BookletPortions.AllPagesNoBooklet);
 				//we don't actually have a way of knowing it did a booklet
 				Assert.IsTrue(File.Exists(output.Path), "Failed to convert trivial HTML file to PDF (AllPagesNoBooklet)");
