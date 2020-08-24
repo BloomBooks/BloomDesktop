@@ -635,23 +635,6 @@ export default class AudioRecording {
             elemToCheck = parentEditable || elem;
         }
 
-        // Make sure to process user overrides first, before checking the code-generated ones
-        if (elemToCheck.classList.contains("bloom-visibility-user-on")) {
-            return true;
-        } else if (
-            elemToCheck.classList.contains("bloom-visibility-user-off")
-        ) {
-            return false;
-        } else if (elemToCheck.classList.contains("bloom-visibility-code-on")) {
-            return true;
-        } else if (
-            elemToCheck.classList.contains("bloom-visibility-code-off")
-        ) {
-            return false;
-        }
-
-        // Still not sure about the visibility. Check its display setting.
-        // (Note that getComputedStyle can sometimes be expensive, so we waited till last for this)
         const style = window.getComputedStyle(elemToCheck);
         return style.display !== "none";
     }
