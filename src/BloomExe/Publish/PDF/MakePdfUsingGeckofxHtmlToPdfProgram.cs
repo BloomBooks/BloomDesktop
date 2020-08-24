@@ -210,6 +210,10 @@ namespace Bloom.Publish.PDF
 				}
 				bldr.Append($" -h {height} -w {width}");
 			}
+			else if (paperSizeName == "Comic")
+			{
+				bldr.Append(" -h 266.7 -w 171.45");	// 10.5" x 6.75"
+			}
 			else
 			{
 				var match = Regex.Match(paperSizeName, @"^(cm|in)(\d+)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);

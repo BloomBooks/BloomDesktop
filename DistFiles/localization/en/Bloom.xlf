@@ -2843,6 +2843,10 @@
         <source xml:lang="en">13cm Square</source>
         <note>ID: LayoutChoices.Cm13Landscape</note>
       </trans-unit>
+      <trans-unit id="LayoutChoices.ComicPortrait" sil:dynamic="true">
+        <source xml:lang="en">Comic Portrait</source>
+        <note>ID: LayoutChoices.ComicPortrait</note>
+      </trans-unit>
       <trans-unit id="LicenseDialog.WindowTitle">
         <source xml:lang="en">Bloom {0}</source>
         <note>ID: LicenseDialog.WindowTitle</note>
