@@ -619,7 +619,23 @@ export default class AudioRecording {
     }
 
     private isVisible(elem: Element) {
-        const style = window.getComputedStyle(elem);
+        // Spans (and probably other inline elements?) can have display=inline even if they're inside a div that's display=none
+        let elemToCheck = elem;
+
+        if (elem.tagName === "SPAN") {
+            const parentEditable = elem.closest(".bloom-editable");
+
+            // Really not wanting this scenario to happen, because we may get inaccurate results, but...
+            // We ought to be able to continue on without anything terrible happening
+            console.assert(
+                parentEditable,
+                "isVisible(): Unexpected span that is not inside a bloom-editable. span = " +
+                    elem
+            );
+            elemToCheck = parentEditable || elem;
+        }
+
+        const style = window.getComputedStyle(elemToCheck);
         return style.display !== "none";
     }
 
@@ -1261,6 +1277,7 @@ export default class AudioRecording {
 
     // Moves the highlight to the next sub-element
     // startTimeInSecs is an optional fallback that will be used in case the currentTime cannot be determined from the audio player element.
+    // Note: May kick off some async work, but it's fairly inconsequential and no need to await it currently.
     private highlightNextSubElement(startTimeInSecs: number = 0) {
         // the item should not be popped off the stack until it's completely done with.
         const subElementCount = this.subElementsWithTimings.length;
@@ -1273,6 +1290,7 @@ export default class AudioRecording {
         const element = topTuple[0];
         const endTimeInSecs: number = topTuple[1];
 
+        // Kicks off some async work of minimal consequence, no need to await it currently.
         this.setHighlightToAsync(
             element,
             false // disableHighlightIfNoAudio: Should be false when playing sub-elements, because the highlighted sub-element doesn't have audio. The audio belongs to parent.
@@ -2537,10 +2555,17 @@ export default class AudioRecording {
         if (!pageDocBody) {
             return null;
         }
+
+        // Find the relevant audioSentences
+        // Note that we check they're descendants of bloom-translationGroup
+        // so that we exclude the qTip versions of these
         const audioSentenceElems = Array.from(
-            pageDocBody.getElementsByClassName(kAudioSentence),
+            pageDocBody.querySelectorAll(
+                `.bloom-translationGroup .${kAudioSentence}`
+            ),
             elem => <HTMLElement>elem
         );
+
         const visibleAudioSentenceElems = audioSentenceElems.filter(elem => {
             return this.isVisible(elem);
         });

@@ -175,7 +175,7 @@ describe("talking book tests", () => {
             }
         }
 
-        function setupPureSentenceModeHtml(checksums: string[]): string {
+        function getPureSentenceModeHtml(checksums: string[]): string {
             const div1Html = `<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent" recordingmd5="${
                 checksums[0]
             }">Sentence 1.1၊</span> <span id="1.2" class="audio-sentence" recordingmd5="${
@@ -189,7 +189,7 @@ describe("talking book tests", () => {
             return `${div1Html}${div2Html}`;
         }
 
-        function setupPreTextBoxModeHtml(checksums: string[]): string {
+        function getPreTextBoxModeHtml(checksums: string[]): string {
             const div1Html = `<div class="bloom-editable ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox"><p><span id="1.1" class="audio-sentence" recordingmd5="${
                 checksums[0]
             }">Sentence 1.1၊</span> <span id="1.2" class="audio-sentence" recordingmd5="${
@@ -213,7 +213,7 @@ describe("talking book tests", () => {
             return `${div1Html}${div2Html}`;
         }
 
-        function setupTextBoxHardSplitHtml(checksums: string[]): string {
+        function getTextBoxHardSplitHtml(checksums: string[]): string {
             let html = "";
             let checksumIndex = 0;
             for (let i = 1; i <= 2; ++i) {
@@ -232,7 +232,7 @@ describe("talking book tests", () => {
             return html;
         }
 
-        function setupTextBoxSoftSplitHtml(checksums: string[]): string {
+        function getTextBoxSoftSplitHtml(checksums: string[]): string {
             let html = "";
             for (let i = 1; i <= 2; ++i) {
                 const divStartHtml = `<div class="bloom-editable audio-sentence${
@@ -258,26 +258,26 @@ describe("talking book tests", () => {
         ): void {
             const checksums = getTestMd5s(checksumSetting, scenario);
 
-            let pageInnerHtml: string = "";
+            let innerHtml: string = "";
             switch (scenario) {
                 case AudioMode.PureSentence: {
-                    pageInnerHtml = setupPureSentenceModeHtml(checksums);
+                    innerHtml = getPureSentenceModeHtml(checksums);
                     break;
                 }
                 case AudioMode.PreTextBox: {
-                    pageInnerHtml = setupPreTextBoxModeHtml(checksums);
+                    innerHtml = getPreTextBoxModeHtml(checksums);
                     break;
                 }
                 case AudioMode.PureTextBox: {
-                    pageInnerHtml = setupPureTextBoxModeHtml(checksums);
+                    innerHtml = setupPureTextBoxModeHtml(checksums);
                     break;
                 }
                 case AudioMode.HardSplitTextBox: {
-                    pageInnerHtml = setupTextBoxHardSplitHtml(checksums);
+                    innerHtml = getTextBoxHardSplitHtml(checksums);
                     break;
                 }
                 case AudioMode.SoftSplitTextBox: {
-                    pageInnerHtml = setupTextBoxSoftSplitHtml(checksums);
+                    innerHtml = getTextBoxSoftSplitHtml(checksums);
                     break;
                 }
                 default: {
@@ -289,7 +289,9 @@ describe("talking book tests", () => {
                 }
             }
 
-            SetupIFrameFromHtml(`<div id="page1">${pageInnerHtml}</div>`);
+            SetupIFrameFromHtml(
+                `<div id="page1"><div class="bloom-translationGroup">${innerHtml}</div></div>`
+            );
 
             if (scenario === AudioMode.PureSentence) {
                 theOneAudioRecorder.audioRecordingMode =

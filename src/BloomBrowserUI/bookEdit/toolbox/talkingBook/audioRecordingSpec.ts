@@ -1752,6 +1752,32 @@ describe("audio recording tests", () => {
         }
     });
 
+    describe("- newPageReady()", () => {
+        it("sets current to correct 1st element upon newPageReady", async () => {
+            // Regression test to make sure we don't set it to the qTip element or a different language's text box.
+            const editable1 =
+                '<div id="div1" class="bloom-editable audio-sentence bloom-visibility-code-on" lang="es" data-audiorecordingmode="TextBox"><p>Uno. Dos.</p></div>';
+            const editable2 =
+                '<div id="div2" class="bloom-editable audio-sentence" lang="en" data-audiorecordingmode="TextBox"><p>One. Two.</p></div>';
+            const translationGroup = `<div class="bloom-translationGroup">${editable1}${editable2}</div>`;
+
+            // Note: Theoretically this should have ${editable2}${editable1} inside, but...
+            // For the test case, let's just use editable2 only so less chance of false negatives.
+            const qtip = `<div id="qtip-0" class="qtip qtip-default">${editable2}</div>`;
+            SetupIFrameFromHtml(translationGroup + qtip);
+
+            const recording = new AudioRecording();
+            recording.audioRecordingMode = AudioRecordingMode.TextBox;
+
+            // System under test
+            await recording.newPageReady();
+
+            // Verification
+            const firstDiv = getFrameElementById("page", "div1")!;
+            expect(firstDiv).toHaveClass("ui-audioCurrent");
+        });
+    });
+
     describe("- initializeAudioRecordingMode()", () => {
         it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Text Box)", () => {
             SetupIFrameFromHtml(
