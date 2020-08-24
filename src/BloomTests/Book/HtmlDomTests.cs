@@ -1683,5 +1683,26 @@ p {
 			Assert.That(resultNode.InnerXml.Contains(unexpectedStyle1), Is.False);
 			Assert.That(resultNode.InnerXml.Contains(unexpectedStyle2), Is.False);
 		}
+
+		[TestCase("A5Portrait")]
+		[TestCase("A5Landscape")]
+		public void InsertFullBleedMarkup_InsertsExpectedMarkup(string pageSizeClass)
+		{
+			var doc = new XmlDocument();
+			var input = @"
+<html>
+	<body>
+		<div class='bloom-page " + pageSizeClass + @" bloom-frontMatter'>this is a page</div>
+		<div class='bloom-page cover " + pageSizeClass + @" bloom-backMatter'>this is another page</div>
+	</body>
+</html>";
+
+			doc.LoadXml(input);
+			HtmlDom.InsertFullBleedMarkup(doc.DocumentElement.GetElementsByTagName("body").Cast<XmlElement>().First());
+
+			var assertThatDoc = AssertThatXmlIn.Dom(doc);
+			assertThatDoc.HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-mediaBox " + pageSizeClass + "']/div[contains(@class, 'bloom-page')]", 2);
+			assertThatDoc.HasSpecifiedNumberOfMatchesForXpath("//body[@class='bloom-fullBleed']",1);
+		}
 	}
 }

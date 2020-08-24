@@ -2691,8 +2691,12 @@ namespace Bloom.Book
 				var mediaBoxDiv = page.OwnerDocument.CreateElement("div");
 				(page.ParentNode as XmlElement).ReplaceChild(mediaBoxDiv, page);
 				mediaBoxDiv.AppendChild(page);
-				// todo: copy page size class from page
-				mediaBoxDiv.SetAttribute("class", "bloom-mediaBox A5Portrait");
+				// In an ideal world, the page size class would be on the body, and style rules for
+				// the media box could simply use it. As it is, the page size class is on the page,
+				// and to write style rules that use it, we need to copy it to the new container.
+				var pageSizeClass = page.Attributes["class"].Value.Split(' ')
+					.First(x => x.EndsWith("Portrait") || x.EndsWith("Landscape"));
+				mediaBoxDiv.SetAttribute("class", $"bloom-mediaBox {pageSizeClass}");
 			}
 		}
 	}

@@ -197,31 +197,42 @@ div#bloomDataDiv {
 @bleed: 3mm;
 @RA5Portrait-Width: @A5Portrait-Width + @bleed + @bleed;
 @RA5Portrait-Height: @A5Portrait-Height + @bleed + @bleed;
-@RA5Portrait-Scale: unit(@RA5Portrait-Width / @A5Portrait-Width);
-@A5Portrait-HeightFB: @A5Portrait-Height * @RA5Portrait-Scale;
+@RA5-Scale: unit(@RA5Portrait-Width / @A5Portrait-Width);
+@A5Portrait-HeightFB: @A5Portrait-Height * @RA5-Scale;
 @A5Portrait-Height-Excess: @A5Portrait-HeightFB - @RA5Portrait-Height;
 .bloom-fullBleed {
     //background-color: green;
     .bloom-page {
+        transform-origin: top left;
+        transition: 0.5s ease-in-out;
         &.A5Portrait {
-            //background-color: yellow;
-            transform-origin: top left;
             // NB: transform order is rightmost first
             transform: translate(0, -@A5Portrait-Height-Excess / 2)
-                scale(@RA5Portrait-Scale);
-            transition: 0.5s ease-in-out;
+                scale(@RA5-Scale);
+        }
+        &.A5Landscape {
+            // NB: transform order is rightmost first
+            transform: translate(-@A5Portrait-Height-Excess / 2, 0)
+                scale(@RA5-Scale);
         }
     }
 }
 
 // In full bleed mode, this will be @bleed larger than the desired page size. The "media" here is the phsyical paper that
-// a printshow would have to work with. E.g. RA4, RA5
+// a printshow would have to work with. E.g. RA4, RA5.
+// If bloom-fullBleed mode is off, this div, in the DOM, doesn't exist.
+// See editMode.less for more things that we do with this (it allows us to draw the bleed and safety areas).
 .bloom-mediaBox {
-    overflow: hidden;
+    overflow: hidden; // when the page is scaled, stuff in the longer dimension will actually exceed the bleed area. We want to clip that.
     &.A5Portrait {
         width: @RA5Portrait-Width;
         height: @RA5Portrait-Height;
     }
+    &.A5Landscape {
+        width: @RA5Portrait-Height;
+        height: @RA5Portrait-Width;
+    }
+    // Todo: this needs rules for every page size we support in full bleed (try to use a macro)
 }
 
 /*Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing

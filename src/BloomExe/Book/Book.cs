@@ -2682,7 +2682,7 @@ namespace Bloom.Book
 
 		public void InsertFullBleedMarkup(XmlElement body)
 		{
-			if (FullBleed)
+			if (FullBleed && CollectionSettings.HaveEnterpriseFeatures)
 			{
 				HtmlDom.InsertFullBleedMarkup(body);
 			}
