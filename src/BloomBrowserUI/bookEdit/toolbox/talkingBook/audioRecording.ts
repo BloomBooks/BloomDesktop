@@ -136,6 +136,7 @@ export default class AudioRecording {
     private currentAudioId: string;
     private elementsToPlayConsecutivelyStack: Element[] = []; // When we are playing audio, this holds the segments we haven't yet finished playing, including the one currently playing. Thus, when it's empty we are not playing audio at all
     private subElementsWithTimings: [Element, number][] = [];
+    private audioPlayStartTime: number | null = null; // milliseconds (since 1970/01/01, from new Date().getTime())
     private awaitingNewRecording: boolean;
 
     private audioSplitButton: HTMLButtonElement;
@@ -231,6 +232,8 @@ export default class AudioRecording {
             .click(e => this.togglePlaybackOrder());
 
         $("#player").off();
+        const player = this.getMediaPlayer();
+
         // The following speeds playback, ensures we get the durationchange event.
         $("#player").attr("preload", "auto");
         $("#player").bind("error", e => {
@@ -251,6 +254,11 @@ export default class AudioRecording {
 
         $("#player").bind("ended", e => this.playEndedAsync());
         $("#player").bind("durationchange", e => this.durationChanged());
+
+        // Note: If audio is playing, and then you change its src before it ends
+        //       you will get an "emptied" event but not an "ended" event.
+        player.onemptied = () => this.onAudioEndedOrEmptied();
+
         $("#audio-input-dev")
             .off()
             .click(e => this.selectInputDevice());
@@ -260,6 +268,18 @@ export default class AudioRecording {
         toastr.options.preventDuplicates = true;
 
         return this.pullDefaultRecordingModeAsync();
+    }
+
+    private getMediaPlayer(): HTMLMediaElement {
+        const player = document.getElementById(
+            "player"
+        ) as HTMLMediaElement | null;
+
+        if (!player) {
+            throw new Error(`HTMLMediaElement #player was not found.`);
+        }
+
+        return player;
     }
 
     // Updates our cached version of the default recording mode with the version from the Bloom API Server.
@@ -1241,6 +1261,11 @@ export default class AudioRecording {
                 return;
             }
 
+            // Regardless of whether we end up using timingsStr or not,
+            // we should reset this now in case the previous page used it and was still playing
+            // when the user flipped to the next page.
+            this.subElementsWithTimings = [];
+
             const timingsStr = currentTextBox.getAttribute(
                 kEndTimeAttributeName
             );
@@ -1254,7 +1279,6 @@ export default class AudioRecording {
                     childSpanElements.length
                 );
 
-                this.subElementsWithTimings = [];
                 for (let i = subElementCount - 1; i >= 0; --i) {
                     const durationSecs: number = Number(fields[i]);
                     if (isNaN(durationSecs)) {
@@ -1269,16 +1293,24 @@ export default class AudioRecording {
 
             // Start playing the audio first.
             mediaPlayer.play();
+            this.audioPlayStartTime = new Date().getTime();
 
             // Now set in motion what is needed to advance the highlighting (if applicable)
-            this.highlightNextSubElement();
+            this.highlightNextSubElement(this.audioPlayStartTime);
         }
     }
 
     // Moves the highlight to the next sub-element
     // startTimeInSecs is an optional fallback that will be used in case the currentTime cannot be determined from the audio player element.
     // Note: May kick off some async work, but it's fairly inconsequential and no need to await it currently.
-    private highlightNextSubElement(startTimeInSecs: number = 0) {
+    // audioPlayStartTime: The value of this.audioPlayStartTime at the time when the audio file was started.
+    //     This is used to check in the future if the timeouts we started are still applicable,
+    //     Or if the user has navigated to another page already.
+    //     Note: the timestamp is of the whole audio file, not the start of each of the sub-elements corresponding to that audio file
+    private highlightNextSubElement(
+        audioPlayStartTime: number,
+        startTimeInSecs: number = 0
+    ) {
         // the item should not be popped off the stack until it's completely done with.
         const subElementCount = this.subElementsWithTimings.length;
 
@@ -1310,13 +1342,22 @@ export default class AudioRecording {
         const durationInSecs = Math.max(endTimeInSecs - currentTimeInSecs, 0.1);
 
         setTimeout(() => {
-            this.onSubElementHighlightTimeEnded();
+            this.onSubElementHighlightTimeEnded(audioPlayStartTime);
         }, durationInSecs * 1000);
     }
 
     // Handles a timeout indicating that the expected time for highlighting the current subElement has ended.
     // If we've really played to the end of that subElement, highlight the next one (if any).
-    private onSubElementHighlightTimeEnded() {
+    // audioPlayStartTime: The value of this.audioPlayStartTime at the time when the audio file was started.
+    //     This is used to check in the future if the timeouts we started are still applicable,
+    //     Or if the user has navigated to another page already.
+    //     Note: the timestamp is of the whole audio file, not the start of each of the sub-elements corresponding to that audio file
+    private onSubElementHighlightTimeEnded(audioPlayStartTime: number) {
+        // Check if the user has changed pages since the original audio for this started playing.
+        if (audioPlayStartTime !== this.audioPlayStartTime) {
+            return;
+        }
+
         const subElementCount = this.subElementsWithTimings.length;
         if (subElementCount <= 0) {
             console.assert(
@@ -1349,7 +1390,7 @@ export default class AudioRecording {
             const minRemainingDurationInSecs =
                 nextStartTimeInSecs - playedDurationInSecs;
             setTimeout(() => {
-                this.onSubElementHighlightTimeEnded();
+                this.onSubElementHighlightTimeEnded(audioPlayStartTime);
             }, minRemainingDurationInSecs * 1000);
 
             return;
@@ -1357,7 +1398,7 @@ export default class AudioRecording {
 
         this.subElementsWithTimings.pop();
 
-        this.highlightNextSubElement(nextStartTimeInSecs);
+        this.highlightNextSubElement(audioPlayStartTime, nextStartTimeInSecs);
     }
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
@@ -1409,6 +1450,7 @@ export default class AudioRecording {
                 // Nothing left to play
                 this.elementsToPlayConsecutivelyStack = [];
                 this.subElementsWithTimings = [];
+                this.onAudioEndedOrEmptied();
 
                 if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
                     // The playback mode could've been playing in Sentence mode (and highlighted the Playback Segment: a sentence)
@@ -1436,6 +1478,11 @@ export default class AudioRecording {
         // TODO: Maybe we should fallback to Listen to Whole Page if Next is not available (A.k.a. you just checked the last thing)
         //  What if you reached here by listening to the whole page? Does it matter that we'll push them toward listening to it again?
         return this.changeStateAndSetExpectedAsync("split");
+    }
+
+    // This function will perform any cleanup of state necessary after an audio file ends.
+    private onAudioEndedOrEmptied(): void {
+        this.audioPlayStartTime = null;
     }
 
     private selectInputDevice(): void {
