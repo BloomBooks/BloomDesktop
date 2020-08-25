@@ -118,7 +118,18 @@ namespace Bloom.Book
 					var splitStyle = Regex.Replace(Style, @"([a-z])([A-Z])", @"$1 $2", RegexOptions.CultureInvariant);
 					englishName = englishName + " (" + splitStyle + ")";
 				}
+
+				if (englishName.ToLower() == "uscomic portrait")
+				{
+					englishName = "US Comic Portrait";
+				}
+
+				englishName = englishName.Replace("letter", " Letter");
+				englishName = englishName.Replace("legal", " Legal");
+				englishName = englishName.Replace("16x9", " 16x9");
+				englishName = englishName.Trim();
 				var displayName = L10NSharp.LocalizationManager.GetDynamicString("Bloom", id, englishName);
+				
 				return displayName;
 			}
 		}

@@ -152,7 +152,7 @@ namespace Bloom.Book
 			yield return new Layout { SizeAndOrientation = FromString("Device16x9Portrait") };
 			yield return new Layout { SizeAndOrientation = FromString("Device16x9Landscape") };
 			yield return new Layout { SizeAndOrientation = FromString("Cm13Landscape") };	// actually square, but acts more like landscape than portrait
-			yield return new Layout { SizeAndOrientation = FromString("ComicPortrait") };
+			yield return new Layout { SizeAndOrientation = FromString("USComicPortrait") };
 		}
 
 
