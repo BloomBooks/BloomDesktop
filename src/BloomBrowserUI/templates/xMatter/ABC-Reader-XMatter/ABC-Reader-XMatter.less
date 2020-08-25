@@ -2,11 +2,15 @@
 
 @XMatterPackName: "ABC Reader";
 
-@circleDiameter: 80px;
+@circleDiameter: 60px;
 @creditsLineSpacing: 14px;
+@halfLetterPageWidth: 5.5in;
+@halfLetterPageHeight: 8.5in;
+@outerBackCoverSpacing: 10px;
 
 body,
 div.bloomPlayer-page {
+    // the bloomPlayer line above allows the same rules to work in the Device xmatter.
     &.leveled-reader {
         .numberLabel::before {
             content: "Level";
@@ -17,7 +21,7 @@ div.bloomPlayer-page {
     }
     &.decodable-reader {
         .numberLabel::before {
-            content: "Stage";
+            content: "Level"; // Yes, this is now 'Level' as well.
         }
         .numberCircle {
             background-color: rgb(0, 47, 108);
@@ -35,6 +39,53 @@ div.bloomPlayer-page {
     }
 }
 
+body {
+    // this template is meant for half-letter portrait pages
+    .marginBox {
+        top: 0.4in !important; // leave room for inevitable font space above title
+        left: 0.5in !important;
+        width: (@halfLetterPageWidth - 1in) !important;
+        height: (@halfLetterPageHeight - 0.9in) !important;
+        .spacer {
+            flex: 3; // Create space at the right place
+        }
+    }
+    .HalfLetterPortrait.outsideFrontCover {
+        .marginBox div img {
+            max-width: 4.5in !important; // max out precedence to override a very persistent base rule.
+        }
+    }
+    .outsideBackCover .marginBox {
+        img {
+            max-width: 100% !important;
+        }
+        .abcTopic2,
+        .curricularTheme,
+        .decodableStageLettersRow,
+        .levelOrStageAndNumberRow {
+            margin-top: @outerBackCoverSpacing;
+            flex-direction: row;
+            display: flex;
+            .label {
+                flex: 1;
+                &.numberLabel::before {
+                    content: "Level:"; // back cover needs a colon
+                }
+            }
+            .bloom-translationGroup {
+                min-height: unset;
+                flex: 2.5;
+                .bloom-editable {
+                    text-align: start;
+                }
+            }
+            [data-book] {
+                flex: 2.5;
+            }
+        }
+    }
+}
+
 .cover {
     .titleAndNumberCircle {
         display: flex;
@@ -43,6 +94,7 @@ div.bloomPlayer-page {
         .bookTitle {
             flex: unset; // Unhelpful value inherited from Traditional xmatter
             min-width: 75%;
+            min-height: 1.3em;
             .bloom-editable {
                 // Ideally the customer would like the title left-justified (as here) if there is a number
                 // circle display, but centered if there is no circle (neither Decodable or Leveled reader).
@@ -52,16 +104,17 @@ div.bloomPlayer-page {
             }
             // It took some doing to figure out the specificity to overrule Bloom "normal" 250% title rule
             // and yet still allow the user-adjustable inline style to work. This should set titles
-            // to default to 36pt unless overridden by the user.
+            // to default to 26pt unless overridden by the user. But actually, there is code somewhere that
+            // makes reader template styles unchangeable.
             .Title-On-Cover-style[data-book="bookTitle"] {
-                font-size: 36pt;
+                font-size: 26pt;
             }
         }
     }
 
     // level or stage
     .numberCircle {
-        margin-top: -19px;
+        margin-top: 0.08in; // align with top of Title text
         width: @circleDiameter;
         height: @circleDiameter;
 
@@ -79,7 +132,7 @@ div.bloomPlayer-page {
 
         [data-book="levelOrStageNumber"] {
             width: @circleDiameter;
-            font-size: 24pt;
+            font-size: 22pt;
             font-weight: bold;
             min-height: 1em;
             line-height: 30px;
@@ -91,39 +144,42 @@ div.bloomPlayer-page {
     .descriptionAndTopicRow {
         font-weight: bold;
     }
-    .branding {
-        margin-right: 0 !important;
-    }
     [data-book="cover-branding-bottom-html"] {
         margin-top: 1em;
         img {
             margin-right: 0;
         }
     }
-    .originalAcknowledgments .bloom-editable p {
-        text-align: center;
-        font-weight: bold;
-    }
+}
+
+.originalAcknowledgments .bloom-editable p {
+    text-align: center;
+    font-weight: bold;
+    font-size: 14pt;
+}
+
+.levelOrStageAndNumberRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    margin-top: @outerBackCoverSpacing;
 }
 
 .titlePage {
     [data-book="bookTitle"] {
-        font-size: 28pt;
+        font-size: 26pt;
     }
     .levelOrStageAndNumberRow {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-    }
-    .decodableStageLettersRow {
-        display: flex;
-        flex-direction: row;
         justify-content: center;
     }
     .descriptionAndTopicRow {
         margin-top: auto; // push to bottom
         margin-bottom: 1em;
     }
+}
+
+.readerDescription {
+    text-align: center; // if alone on line (e.g. Title Page)
 }
 
 .descriptionAndTopicRow {
@@ -134,24 +190,27 @@ div.bloomPlayer-page {
     .readerDescription {
         min-width: 50%;
         text-align: start;
-        margin-right: 20px; // in case we get really big descriptions and topics and they run into each other
-    }
-    .abcTopic {
-        min-width: 25%;
-        text-align: end;
+        font-size: 14pt;
     }
 }
 
-#stageInformation {
-    margin: 10px;
-    border: solid thin black;
+.abcTopic {
+    position: absolute;
+    right: 0;
+    top: 70px;
+    min-width: 25%;
+    text-align: end;
+    font-size: 10pt;
+    z-index: 10;
 }
 
 .credits {
     .marginBox {
         display: flex;
         flex-direction: column;
-
+        [data-book="bookTitle"] {
+            font-size: 26pt;
+        }
         .levelOrStageAndNumberRow {
             display: flex;
             flex-direction: row;
@@ -169,10 +228,18 @@ div.bloomPlayer-page {
         }
         .originalAcknowledgments .bloom-editable {
             margin-bottom: 0;
+            p {
+                text-align: start;
+            }
         }
     }
 }
+
+.licenseDetails {
+    font-size: 8pt;
+}
+
 .licenseImage {
-    width: 120px;
+    width: 80px;
     margin-bottom: @creditsLineSpacing;
 }
