@@ -2,6 +2,10 @@ extends ../Traditional-XMatter/Traditional-XMatter.pug
 
 include ./ABC-Reader-common.pug
 
+mixin pageWithJustPageSize
+	.HalfLetterPortrait&attributes(attributes)
+		block
+
 mixin nonStandardTopic
 	//- e.g. "Cooking", but in vernacular
 	+field-prototypeDeclaredExplicity("V").abcTopic
@@ -17,7 +21,7 @@ mixin readerDescription
 mixin readerDescriptionAndNonStandardTopic
 	.descriptionAndTopicRow
 		+readerDescription
-		+nonStandardTopic
+	+nonStandardTopic
 
 block append stylesheets
 	+stylesheets('ABC-Reader-XMatter.css')
@@ -52,28 +56,33 @@ block titlePageContents
 		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style.bloom-padForOverflow(data-book='bookTitle')
 	.largeFlexGap
 
-	//- this is intentionally in Vernacular while the one on the Credits Page is intentionally in English
-	//- Also intentional (!) is that these same credits are on the cover, title page, and credits page.
+	//- This is intentionally in Vernacular on both the cover Page and here on the title page.
 	+field-acknowledgments-originalVersion("V","The author and the illustrator in {lang}")
 
-	.smallFlexGap
-	+standard-originalContributions
-
-	+decodableStageLettersRow
+	//- Push everything else to the bottom of the page.
+	.spacer
 
 	//- e.g. "Foobar Leveled Reader", will be in English only
-	+readerDescriptionAndNonStandardTopic
-	.levelOrStageAndNumberRow
-		+levelOrStageAndNumber
+	+readerDescription
+	+levelOrStageAndNumber
+	+title-page-branding-bottom
 
 //-------------- CREDITS PAGE ---------------
 
 block creditsContent
-	+field-mono-meta("V", 'bookTitle')
-			label.bubble Book title in {lang}
-	+readerDescriptionAndNonStandardTopic
-	+levelOrStageAndNumber
-	//- this is intentionally in English while the one on the Cover & Title Pages are intentionally in Vernacular
-	+field-acknowledgments-originalVersion("N1", "The author and the illustrator in {lang}")
-
+	//- English version of book title
+	+field-mono-meta("N1", 'bookTitle')
+		label.bubble Book title in {lang}
+	//- English version of Author/Illustrator
+	+field-acknowledgments-originalVersion("N1","The author and the illustrator in {lang}")
+	.spacer
 	+creditsBrandingAndLicenseImage
+
+//-------------- BACK COVER PAGE ---------------
+
+block outsideBackCoverContents
+	+levelOrStageAndNumber
+	+decodableStageLettersRow
+	+curricularTheme
+	+englishTopic
+	.spacer
