@@ -235,8 +235,9 @@ export default class AudioRecording {
         const player = this.getMediaPlayer();
 
         // The following speeds playback, ensures we get the durationchange event.
-        $("#player").attr("preload", "auto");
-        $("#player").bind("error", e => {
+        player.setAttribute("preload", "auto");
+
+        player.onerror = e => {
             if (this.playingAudio()) {
                 // during a "listen", we walk through each segment, but some (or all) may not have audio
                 this.playEndedAsync(); //move to the next one
@@ -250,10 +251,10 @@ export default class AudioRecording {
             // may just be because we haven't recorded it yet. A toast for that is excessive.
             // We could possibly arrange for a toast if we get an error while actually playing,
             // but it seems very unlikely.
-        });
+        };
 
-        $("#player").bind("ended", e => this.playEndedAsync());
-        $("#player").bind("durationchange", e => this.durationChanged());
+        player.onended = () => this.playEndedAsync();
+        player.ondurationchange = () => this.durationChanged();
 
         // Note: If audio is playing, and then you change its src before it ends
         //       you will get an "emptied" event but not an "ended" event.
@@ -995,8 +996,8 @@ export default class AudioRecording {
     private updatePlayerStatus() {
         console.assert(this.currentAudioId != null);
 
-        const player = $("#player");
-        player.attr(
+        const player = this.getMediaPlayer();
+        player.setAttribute(
             "src",
             this.currentAudioUrl(this.currentAudioId) +
                 "&nocache=" +
@@ -1129,7 +1130,7 @@ export default class AudioRecording {
 
         const current = this.getCurrentAudioSentence();
         if (current) {
-            const player = <HTMLMediaElement>document.getElementById("player")!;
+            const player = this.getMediaPlayer();
             current.setAttribute("data-duration", player.duration.toString());
         }
     }
@@ -1249,7 +1250,7 @@ export default class AudioRecording {
     }
 
     private async playCurrentInternalAsync(): Promise<void> {
-        const mediaPlayer = <HTMLMediaElement>document.getElementById("player");
+        const mediaPlayer = this.getMediaPlayer();
         if (mediaPlayer.error) {
             // We can no longer rely on the error event occurring after play() is called.
             // If we pre-load audio, the error event occurs on load (which will be before play).
@@ -1328,9 +1329,7 @@ export default class AudioRecording {
             false // disableHighlightIfNoAudio: Should be false when playing sub-elements, because the highlighted sub-element doesn't have audio. The audio belongs to parent.
         );
 
-        const mediaPlayer: HTMLMediaElement = document.getElementById(
-            "player"
-        )! as HTMLMediaElement;
+        const mediaPlayer: HTMLMediaElement = this.getMediaPlayer();
         let currentTimeInSecs: number = mediaPlayer.currentTime;
         if (currentTimeInSecs <= 0) {
             currentTimeInSecs = startTimeInSecs;
@@ -1367,9 +1366,7 @@ export default class AudioRecording {
             return;
         }
 
-        const mediaPlayer: HTMLMediaElement = document.getElementById(
-            "player"
-        )! as HTMLMediaElement;
+        const mediaPlayer: HTMLMediaElement = this.getMediaPlayer();
         if (mediaPlayer.ended || mediaPlayer.error) {
             return;
         }
@@ -1425,7 +1422,7 @@ export default class AudioRecording {
     // audio markup afterwards. If we use it in this tool, we need to do more,
     // such as setting the current state of controls.
     public stopListen(): void {
-        (<HTMLMediaElement>document.getElementById("player")).pause();
+        this.getMediaPlayer().pause();
     }
 
     private async playEndedAsync(): Promise<void> {
