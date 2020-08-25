@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
+using Bloom.Publish.Android;
 using Bloom.Publish.Epub;
 using Bloom.web;
 using BloomTemp;
@@ -315,7 +316,7 @@ namespace Bloom.CLI
 		[Option("thumbnailOutputInfoPath", HelpText = "Output destination path for a text file which contains path information for generated thumbnail files", Required = false)]
 		public string ThumbnailOutputInfoPath { get; set; }
 
-		[Option("creator", Required = false, Default = "harvester", HelpText = "The value of the \"creator\" meta tag passed along when creating the bloomdigital.")]
+		[Option("creator", Required = false, Default = BloomReaderFileMaker.kCreatorHarvester, HelpText = "The value of the \"creator\" meta tag passed along when creating the bloomdigital.")]
 		public string Creator{ get; set; }
 	}
 }
