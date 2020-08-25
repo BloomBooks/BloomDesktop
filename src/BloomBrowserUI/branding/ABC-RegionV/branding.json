@@ -9,7 +9,7 @@
         {
             "data-book": "cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='../ABC-BARMM/ABC-BARMM-front.svg'/>",
+            "content": "<img class='branding' src='ABC-BARMM-front.svg'/>",
             "condition": "always"
         },
         {
@@ -21,19 +21,19 @@
         {
             "data-book": "title-page-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='../ABC-BARMM/full-bloom-logo-grey.svg'/>",
+            "content": "<img class='branding' src='full-bloom-logo-grey.svg'/>",
             "condition": "always"
         },
         {
             "data-book": "outside-back-cover-branding-top-html",
             "lang": "*",
-            "content": "<img class='branding' src='../ABC-BARMM/ABC-BARMM-back-top.svg'/>",
+            "content": "<img class='branding' src='ABC-BARMM-back-top.svg'/>",
             "condition": "always"
         },
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='../ABC-BARMM/ABC-BARMM-back.svg'/>",
+            "content": "<img class='branding' src='ABC-BARMM-back.svg'/>",
             "condition": "always"
         },
         {
