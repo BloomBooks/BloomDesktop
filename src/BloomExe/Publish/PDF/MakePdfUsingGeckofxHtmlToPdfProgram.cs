@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -36,7 +36,8 @@ namespace Bloom.Publish.PDF
 	{
 		private BackgroundWorker _worker;
 
-		public void MakePdf(PdfMakingSpecs specs, Control owner, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
+		public void MakePdf(PdfMakingSpecs specs, Control owner, BackgroundWorker worker,
+			DoWorkEventArgs doWorkEventArgs)
 		{
 			_worker = worker;
 #if !__MonoCS__
@@ -86,7 +87,8 @@ namespace Bloom.Publish.PDF
 						errorMessage = string.Format(errorMessage, error.Message);
 					}
 				}
-				if (errorMessage !=null)
+
+				if (errorMessage != null)
 				{
 					var exception = new ApplicationException(errorMessage);
 					// Note that if we're being run by a BackgroundWorker, it will catch the exception.
@@ -126,13 +128,15 @@ namespace Bloom.Publish.PDF
 			{
 				exePath = filePath;
 			}
+
 			SetArguments(bldr, specs);
 			var arguments = bldr.ToString();
 			var progress = new NullProgress();
-			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGeckofxReporting);
-			if (res.DidTimeOut || !RobustFile.Exists (specs.OutputPdfPath))
+			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress,
+				ProcessGeckofxReporting);
+			if (res.DidTimeOut || !RobustFile.Exists(specs.OutputPdfPath))
 			{
-				Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardOutput = "+res.StandardOutput);
+				Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardOutput = " + res.StandardOutput);
 
 				var msg = L10NSharp.LocalizationManager.GetString(@"PublishTab.PDF.Error.Failed",
 					"Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.",
@@ -143,7 +147,8 @@ namespace Bloom.Publish.PDF
 					"The book's images might have exceeded the amount of RAM memory available. Please turn on the \"Use Less Memory\" option which is slower but uses less memory.",
 					@"Error message displayed in a message dialog box");
 
-				var fullMsg = String.Format(msg, specs.OutputPdfPath, Environment.NewLine) + Environment.NewLine + msg2 + Environment.NewLine + res.StandardOutput;
+				var fullMsg = String.Format(msg, specs.OutputPdfPath, Environment.NewLine) + Environment.NewLine +
+				              msg2 + Environment.NewLine + res.StandardOutput;
 
 				var except = new ApplicationException(fullMsg);
 				// Note that if we're being run by a BackgroundWorker, it will catch the exception.
@@ -182,45 +187,20 @@ namespace Bloom.Publish.PDF
 		void SetArguments(StringBuilder bldr, PdfMakingSpecs specs)
 		{
 			bldr.AppendFormat("\"{0}\" \"{1}\"", specs.InputHtmlPath, specs.OutputPdfPath);
-			bldr.Append(" --quiet");	// turn off its progress dialog (BL-3721)
+			bldr.Append(" --quiet"); // turn off its progress dialog (BL-3721)
 			bldr.Append(" -B 0 -T 0 -L 0 -R 0");
-			if (specs.Bleed)
+			if (specs.PrintWithFullBleed)
 			{
-				// We will make a non-standard page size that is 6mm bigger in each dimension than the size indicated
-				// by the paperSizeName. Unfortunately doing that means we can't just pass the name, we have to figure
-				// out the size.
-				double height;
-				double width;
-				switch (specs.PaperSizeName.ToLowerInvariant())
-				{
-					
-					case "a5":
-						height = A4PortraitWidth + bleedExtra;
-						width = A4PortraitHeight / 2 + bleedExtra;
-						break;
-					case "comic":
-						height = ComicPortraitHeight + bleedExtra;
-						width = ComicPortraitWidth + bleedExtra;
-						break;
-					default:
-						throw new ArgumentException("Full bleed printing of paper sizes other than A5 is not yet implemented");
-				}
-
-				if (specs.Landscape)
-				{
-					var temp = height;
-					height = width;
-					width = temp;
-				}
-				bldr.Append($" -h {height} -w {width}");
+				ConfigureFullBleedPageSize(bldr, specs);
 			}
 			else if (specs.PaperSizeName == "Comic")
 			{
-				bldr.Append(" -h 266.7 -w 171.45");	// 10.5" x 6.75"
+				bldr.Append(" -h 266.7 -w 171.45"); // 10.5" x 6.75"
 			}
 			else
 			{
-				var match = Regex.Match(specs.PaperSizeName, @"^(cm|in)(\d+)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+				var match = Regex.Match(specs.PaperSizeName, @"^(cm|in)(\d+)$",
+					RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 				if (match.Success)
 				{
 					// Irregular (square) paper size
@@ -242,6 +222,37 @@ namespace Bloom.Publish.PDF
 			bldr.Append(" --graphite");
 			if (specs.SaveMemoryMode)
 				bldr.Append(" --reduce-memory-use");
+		}
+
+		private static void ConfigureFullBleedPageSize(StringBuilder bldr, PdfMakingSpecs specs)
+		{
+			// We will make a non-standard page size that is 6mm bigger in each dimension than the size indicated
+			// by the paperSizeName. Unfortunately doing that means we can't just pass the name, we have to figure
+			// out the size.
+			double height;
+			double width;
+			switch (specs.PaperSizeName.ToLowerInvariant())
+			{
+				case "a5":
+					height = A4PortraitWidth + bleedExtra;
+					width = A4PortraitHeight / 2 + bleedExtra;
+					break;
+				case "comic":
+					height = ComicPortraitHeight + bleedExtra;
+					width = ComicPortraitWidth + bleedExtra;
+					break;
+				default:
+					throw new ArgumentException("Full bleed printing of paper sizes other than A5 is not yet implemented");
+			}
+
+			if (specs.Landscape)
+			{
+				var temp = height;
+				height = width;
+				width = temp;
+			}
+
+			bldr.Append($" -h {height} -w {width}");
 		}
 
 		// Progress report lines from GeckofxHtmlToPdf/BloomPdfMaker look like the following:
@@ -314,6 +325,8 @@ namespace Bloom.Publish.PDF
 		public PublishModel.BookletPortions BookletPortion; // None,AllPagesNoBooklet,BookletCover,BookletPages,InnerContent
 		public bool LayoutPagesForRightToLeft; // true if RTL, false if LTR layout
 		public bool SaveMemoryMode; // true if PDF file is to be produced using less memory (but more time)
-		public bool Bleed; // True if we want a bleed page size
+		public bool BookIsFullBleed; // True if the book is laid out for full-bleed printing (and Enterprise is enabled)
+		public bool PrintWithFullBleed; // True if (BookIsFullBleed and) full bleed is requested in the PdfOptions menu and we're not making a booklet
+		public bool Cmyk; // true if the Cmyk option is checked in the PdfOptions menu
 	}
 }

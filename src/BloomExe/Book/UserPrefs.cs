@@ -14,6 +14,8 @@ namespace Bloom.Book
 		private string _filePath;
 		private int _mostRecentPage;
 		private bool _reducePdfMemory;
+		private bool _cmykPdf;
+		private bool _fullBleed;
 
 		private UserPrefs() {}
 
@@ -76,6 +78,28 @@ namespace Bloom.Book
 			set
 			{
 				_reducePdfMemory = value;
+				Save();
+			}
+		}
+
+		[JsonProperty("cmykPdf")]
+		public bool CmykPdf
+		{
+			get { return _cmykPdf; }
+			set
+			{
+				_cmykPdf = value;
+				Save();
+			}
+		}
+
+		[JsonProperty("fullBleed")]
+		public bool FullBleed
+		{
+			get { return _fullBleed; }
+			set
+			{
+				_fullBleed = value;
 				Save();
 			}
 		}

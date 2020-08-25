@@ -69,7 +69,7 @@ namespace Bloom.Publish.PDF
 
 			try
 			{
-				if (specs.BookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet || specs.Bleed);
+				if (specs.BookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet || specs.PrintWithFullBleed);
 				{
 					//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
 					MakeBooklet(specs);
@@ -234,7 +234,7 @@ namespace Bloom.Publish.PDF
 				switch (specs.BooketLayoutMethod)
 				{
 					case PublishModel.BookletLayoutMethod.NoBooklet:
-						method = new NullLayoutMethod(specs.Bleed ? 3 : 0);
+						method = new NullLayoutMethod(specs.PrintWithFullBleed ? 3 : 0);
 						break;
 					case PublishModel.BookletLayoutMethod.SideFold:
 						// To keep the GUI simple, we assume that A6 page size for booklets
