@@ -22,7 +22,7 @@ Rules that format the branding go in branding-base.less, or in the branding.less
 .landscapeOnly {
     display: none;
 }
-.ComicPortrait .portraitOnly,
+.USComicPortrait .portraitOnly,
 .Device16x9Portrait .portraitOnly,
 .QuarterLetterPortrait .portraitOnly,
 .HalfLetterPortrait .portraitOnly,

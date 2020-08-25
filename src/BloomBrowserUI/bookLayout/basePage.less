@@ -371,11 +371,11 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
         min-height: @Cm13Square-Side;
         max-height: @Cm13Square-Side;
     }
-    &.ComicPortrait {
-        min-width: @ComicPortrait-Width;
-        max-width: @ComicPortrait-Width;
-        min-height: @ComicPortrait-Height;
-        max-height: @ComicPortrait-Height;
+    &.USComicPortrait {
+        min-width: @USComicPortrait-Width;
+        max-width: @USComicPortrait-Width;
+        min-height: @USComicPortrait-Height;
+        max-height: @USComicPortrait-Height;
     }
 }
 /*Margins*/
@@ -465,8 +465,8 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
     .Cm13Landscape & {
         .SetMarginBox(@Cm13Square-Side, @Cm13Square-Side);
     }
-    .ComicPortrait & {
-        .SetMarginBox(@ComicPortrait-Width, @ComicPortrait-Height);
+    .USComicPortrait & {
+        .SetMarginBox(@USComicPortrait-Width, @USComicPortrait-Height);
     }
 }
 
