@@ -2895,7 +2895,7 @@ namespace Bloom.Book
 			BookServer bookServer, bool orientationChanging, Layout pageLayout)
 		{
 			var printingDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
-			if (bookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && FullBleed)
+			if (FullBleed)
 			{
 				InsertFullBleedMarkup(printingDom.Body);
 			}
