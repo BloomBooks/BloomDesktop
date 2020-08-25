@@ -65,6 +65,7 @@ namespace Bloom.Book
 			//these are needed so that "HalfLetter" doesn't come out "Halfletter"
 			name = name.Replace("letter", "Letter");
 			name = name.Replace("legal", "Legal");
+			name = name.Replace("Uscomic", "USComic");
 			return name;
 		}
 
