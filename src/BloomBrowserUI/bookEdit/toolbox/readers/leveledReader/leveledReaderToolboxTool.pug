@@ -60,6 +60,40 @@ html
 					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.Average') avg per sentence
 					td.statistics-max#maxAverageWordsPerSentence
 					td.statistics-actual#actualAverageWordsPerSentence -
+				tr
+					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.AveragePerPage') avg per page
+					td.statistics-max#maxAverageWordsPerPage
+					td.statistics-actual#actualAverageWordsPerPage -
+			table.statistics.clear(style='margin-left: 6px')
+				tr
+					td.section(data-i18n='EditTab.Toolbox.LeveledReaderTool.WordLengths') Word Lengths
+				tr
+					td.statistics-label
+					td.statistics-max(data-i18n='EditTab.Toolbox.LeveledReaderTool.Max') Max
+					td.statistics-actual(data-i18n='EditTab.Toolbox.LeveledReaderTool.Actual') Actual
+				tr
+					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisPageLC') this page
+					td.statistics-max#maxLettersPerWord
+					td.statistics-actual#actualLettersPerWord -
+				tr
+					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.AverageInBook') avg in book
+					td.statistics-max#maxAverageGlyphsPerWord
+					td.statistics-actual#actualAverageGlyphsPerWord -
+			table.statistics.clear(style='margin-left: 6px')
+				tr
+					td.section(data-i18n='EditTab.Toolbox.LeveledReaderTool.SentenceCounts') Sentence Counts
+				tr
+					td.statistics-label
+					td.statistics-max(data-i18n='EditTab.Toolbox.LeveledReaderTool.Max') Max
+					td.statistics-actual(data-i18n='EditTab.Toolbox.LeveledReaderTool.Actual') Actual
+				tr
+					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisPageLC') this page
+					td.statistics-max#maxSentencesPerPage
+					td.statistics-actual#actualSentencesPerPage -
+				tr
+					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.AverageInBook') avg in book
+					td.statistics-max#maxAverageSentencesPerPage
+					td.statistics-actual#actualAverageSentencesPerPage -
 			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
 			.section(style='clear: both; margin-left: 8px;')
 				span(data-i18n='EditTab.Toolbox.LeveledReaderTool.FoThisLevel') For this Level

@@ -2179,6 +2179,12 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Average" sil:dynamic="true">
         <source xml:lang="en">avg per sentence</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Average</note>
+        <note>a label, needs to fit in about half toolbox width.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.AveragePerPage" sil:dynamic="true">
+        <source xml:lang="en">avg per page</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.AveragePerPage</note>
+        <note>a label, needs to fit in about half toolbox width.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic" sil:dynamic="true">
         <source xml:lang="en">Choice of Topic</source>

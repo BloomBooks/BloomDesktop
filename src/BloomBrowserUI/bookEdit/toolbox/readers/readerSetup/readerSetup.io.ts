@@ -13,6 +13,79 @@ import { ReaderStage, ReaderLevel, ReaderSettings } from "../ReaderSettings";
 import "../../../../lib/jquery.onSafe.js";
 import * as _ from "underscore";
 
+// Data to help configure the things that differ for each level setting.
+// columnLabel is not yet used, as it only appears in pug and I don't know
+// how to use it there. However, if we redo in React, we could use it, so I'm keeping it.
+export const levelSettings = [
+    {
+        columnLabel: "w/s",
+        cellClass: "words-per-sentence",
+        getter: level => level.maxWordsPerSentence,
+        setter: (level: ReaderLevel, v: number) =>
+            (level.maxWordsPerSentence = v)
+    },
+    {
+        columnLabel: "w/p",
+        cellClass: "words-per-page",
+        getter: level => level.maxWordsPerPage,
+        setter: (level: ReaderLevel, v: number) => (level.maxWordsPerPage = v)
+    },
+    {
+        columnLabel: "w/b",
+        cellClass: "words-per-book",
+        getter: level => level.maxWordsPerBook,
+        setter: (level: ReaderLevel, v: number) => (level.maxWordsPerBook = v)
+    },
+    {
+        columnLabel: "uw/b",
+        cellClass: "unique-words-per-book",
+        getter: level => level.maxUniqueWordsPerBook,
+        setter: (level: ReaderLevel, v: number) =>
+            (level.maxUniqueWordsPerBook = v)
+    },
+    {
+        columnLabel: "l/w",
+        cellClass: "glyphs-per-word",
+        getter: level => level.maxGlyphsPerWord,
+        setter: (level: ReaderLevel, v: number) => (level.maxGlyphsPerWord = v)
+    },
+    {
+        columnLabel: "s/p",
+        cellClass: "sentences-per-page",
+        getter: level => level.maxSentencesPerPage,
+        setter: (level: ReaderLevel, v: number) =>
+            (level.maxSentencesPerPage = v)
+    },
+    {
+        columnLabel: "w/s",
+        cellClass: "average-words-per-sentence",
+        getter: level => level.maxAverageWordsPerSentence,
+        setter: (level: ReaderLevel, v: number) =>
+            (level.maxAverageWordsPerSentence = v)
+    },
+    {
+        columnLabel: "w/p",
+        cellClass: "average-words-per-page",
+        getter: level => level.maxAverageWordsPerPage,
+        setter: (level: ReaderLevel, v: number) =>
+            (level.maxAverageWordsPerPage = v)
+    },
+    {
+        columnLabel: "s/p",
+        cellClass: "average-sentences-per-page",
+        getter: level => level.maxAverageSentencesPerPage,
+        setter: (level: ReaderLevel, v: number) =>
+            (level.maxAverageSentencesPerPage = v)
+    },
+    {
+        columnLabel: "l/w",
+        cellClass: "average-glyphs-per-word",
+        getter: level => level.maxAverageGlyphsPerWord,
+        setter: (level: ReaderLevel, v: number) =>
+            (level.maxAverageGlyphsPerWord = v)
+    }
+];
+
 let previousMoreWords: string;
 
 window.addEventListener("message", process_IO_Message, false);
@@ -133,17 +206,16 @@ function loadReaderSetupData(jsonData: string): void {
         tbodyLevels.append(
             '<tr class="linked"><td>' +
                 (j + 1) +
-                '</td><td class="words-per-sentence">' +
-                setLevelValue(level.maxWordsPerSentence) +
-                '</td><td class="words-per-page">' +
-                setLevelValue(level.maxWordsPerPage) +
-                '</td><td class="words-per-book">' +
-                setLevelValue(level.maxWordsPerBook) +
-                '</td><td class="unique-words-per-book">' +
-                setLevelValue(level.maxUniqueWordsPerBook) +
-                '</td><td class="average-words-per-sentence">' +
-                setLevelValue(level.maxAverageWordsPerSentence) +
-                '</td><td style="display: none">' +
+                "</td>" +
+                levelSettings
+                    .map(
+                        s =>
+                            `<td class="${s.cellClass}">${setLevelValue(
+                                s.getter(level)
+                            )}</td>`
+                    )
+                    .join("") +
+                '<td style="display: none">' +
                 level.thingsToRemember.join("\n") +
                 "</td></tr>"
         );
@@ -241,23 +313,16 @@ function getChangedSettings(): ReaderSettings {
         const level: ReaderLevel = new ReaderLevel((j + 1).toString());
         delete level.name; //I don't know why this has a name, but it's apparently just part of the UI that we don't want to save
         const row: HTMLTableRowElement = <HTMLTableRowElement>levels[j];
-        level.maxWordsPerSentence = getLevelValue(
-            (<HTMLTableCellElement>row.cells[1]).innerHTML
-        );
-        level.maxWordsPerPage = getLevelValue(
-            (<HTMLTableCellElement>row.cells[2]).innerHTML
-        );
-        level.maxWordsPerBook = getLevelValue(
-            (<HTMLTableCellElement>row.cells[3]).innerHTML
-        );
-        level.maxUniqueWordsPerBook = getLevelValue(
-            (<HTMLTableCellElement>row.cells[4]).innerHTML
-        );
-        level.maxAverageWordsPerSentence = getLevelValue(
-            (<HTMLTableCellElement>row.cells[5]).innerHTML
-        );
+        for (let k = 0; k < levelSettings.length; k++) {
+            levelSettings[k].setter(
+                level,
+                getLevelValue(
+                    (<HTMLTableCellElement>row.cells[k + 1]).innerHTML
+                )
+            );
+        }
         level.thingsToRemember = (<HTMLTableCellElement>(
-            row.cells[6]
+            row.cells[levelSettings.length + 1]
         )).innerHTML.split("\n");
         settings.levels.push(level);
     }
