@@ -1434,7 +1434,11 @@ namespace BloomTests.Book
 		[TestCase("nsk-Latn-easy", "Naskapi-Latn-easy (Naskapi)")]
 		[TestCase("nsk-Latn-easy-AB", "Naskapi-Latn-easy-AB (Naskapi)")]
 		[TestCase("nsk-", "Naskapi")]
+#if __MonoCS__
+		[TestCase("zh-CN", "Chinese (Simplified)")]
+#else
 		[TestCase("zh-CN", "Chinese (Simplified, PRC)")]
+#endif
 		public void PrettyPrintLanguage_ShowsScriptVariantDistinctions(string lg3Code, string expectedResult)
 		{
 			var htmlDom = new HtmlDom();
