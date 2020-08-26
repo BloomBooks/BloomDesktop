@@ -7,7 +7,8 @@ import {
     cleanSpaceDelimitedList,
     toolboxWindow,
     setPreviousMoreWords,
-    getPreviousMoreWords
+    getPreviousMoreWords,
+    levelSettings
 } from "./readerSetup.io";
 import { DataWord } from "../libSynphony/bloomSynphonyExtensions";
 import axios from "axios";
@@ -82,7 +83,7 @@ function process_UI_Message(event: MessageEvent): void {
             else displayWordsForSelectedStage(params[1]);
             return;
 
-        case "SetupType":
+        case "ConfigureActiveTab":
             //noinspection JSJQueryEfficiency
             const tabs: JQuery = $("#dlstabs");
             if (params[1] === "stages") {
@@ -395,17 +396,15 @@ export function selectLevel(tr: HTMLTableRowElement) {
         .addClass("selected");
 
     // check boxes and text boxes
-    setLevelCheckBoxValue("words-per-sentence", getCellInnerHTML(tr, 1));
-    setLevelCheckBoxValue("words-per-page", getCellInnerHTML(tr, 2));
-    setLevelCheckBoxValue("words-per-book", getCellInnerHTML(tr, 3));
-    setLevelCheckBoxValue("unique-words-per-book", getCellInnerHTML(tr, 4));
-    setLevelCheckBoxValue(
-        "average-words-per-sentence",
-        getCellInnerHTML(tr, 5)
-    );
+    for (let i = 0; i < levelSettings.length; i++) {
+        setLevelCheckBoxValue(
+            levelSettings[i].cellClass,
+            getCellInnerHTML(tr, i + 1)
+        );
+    }
 
     // things to remember
-    const vals = getCellInnerHTML(tr, 6).split("\n");
+    const vals = getCellInnerHTML(tr, levelSettings.length + 1).split("\n");
     const val = vals.join('</li><li contenteditable="true">');
     const thingsToRemember = <HTMLElement>(
         document.getElementById("things-to-remember")
@@ -561,7 +560,11 @@ function addNewLevel(): void {
     tbody.append(
         '<tr class="linked"><td>' +
             (tbody.children().length + 1) +
-            '</td><td class="words-per-sentence">-</td><td class="words-per-page">-</td><td class="words-per-book">-</td><td class="unique-words-per-book">-</td><td class="average-words-per-sentence">-</td><td style="display: none"></td></tr>'
+            "</td>" +
+            levelSettings
+                .map(s => `<td class="${s.cellClass}">-</td>`)
+                .join("") +
+            '<td style="display: none"></td></tr>'
     );
 
     // click event for stage rows
@@ -775,11 +778,9 @@ function resetLevelDetail(): void {
     (<HTMLElement>document.getElementById("setup-level-number")).innerHTML =
         "0";
 
-    setLevelCheckBoxValue("words-per-sentence", "-");
-    setLevelCheckBoxValue("words-per-page", "-");
-    setLevelCheckBoxValue("words-per-book", "-");
-    setLevelCheckBoxValue("unique-words-per-book", "-");
-    setLevelCheckBoxValue("average-words-per-sentence", "-");
+    for (let i = 0; i < levelSettings.length; i++) {
+        setLevelCheckBoxValue(levelSettings[i].cellClass, "-");
+    }
     (<HTMLElement>document.getElementById("things-to-remember")).innerHTML =
         '<li contenteditable="true"></li>';
 }
@@ -804,7 +805,7 @@ function storeThingsToRemember(): void {
 
     // store
     $("#levels-table")
-        .find("tbody tr.selected td:nth-child(7)")
+        .find(`tbody tr.selected td:nth-child(${levelSettings.length + 2})`)
         .html(vals.join("\n"));
 }
 

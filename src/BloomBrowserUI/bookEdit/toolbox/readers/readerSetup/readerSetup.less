@@ -138,7 +138,7 @@ div.scrolling-table-container-inner {
             color: black;
             height: 26px;
             white-space: nowrap;
-            min-width: 26px;
+            //min-width: 26px;
         }
         tr:nth-child(even) {
             background-color: #e0e0e0;
@@ -149,11 +149,29 @@ div.scrolling-table-container-inner {
     }
 }
 
-/* height of header = 26px */
+/* There's a trick going on here. If we get more than about 10 levels,
+the table will start to scroll. We don't want the header to move.
+So, we do the following:
+  - force the real header to have height zero
+  - leave space here, as padding, for one (or two, if two-rows-header is present)
+    rows of heading
+  - make this element's position relative, so it becomes a parent for anything
+    absolutely positioned
+  - leave the position of all the intermediate table components at default,
+    so they do NOT affect the origin for absolute positioning
+  - make the divs inside the th elements be positioned absolutely
+    (so their position is relative to this element, however the table scrolls).
+I'm not sure this is the best way to handle things, especially with the added
+complication of two-line-headers and now that the list on the right is long
+enough so the whole dialog contents needs to scroll anyway. But there may have
+been a good reason for it so I didn't want to just rip it out. */
 div.scrolling-table-container {
     position: relative;
     padding-top: 26px;
     width: 100%;
+    &.two-rows-header {
+        padding-top: 52px;
+    }
 }
 div.scrolling-table-header {
     background-color: #ddd;
@@ -163,6 +181,9 @@ div.scrolling-table-header {
     right: 0;
     left: 0;
     border-bottom: 1px solid #666;
+    .two-rows-header & {
+        height: 52px;
+    }
 }
 div.scrolling-table-container-inner table th div {
     position: absolute;
@@ -170,6 +191,10 @@ div.scrolling-table-container-inner table th div {
     line-height: 26px;
     text-align: left;
     white-space: nowrap;
+}
+
+div.scrolling-table-container-inner table tr.second-row th div {
+    top: 26px;
 }
 
 div.rs-letters {
