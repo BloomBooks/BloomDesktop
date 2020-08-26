@@ -3,12 +3,19 @@ html
 	body
 		h3#toolbox-settings-header(data-order='999', data-i18n='EditTab.Toolbox.More') More...
 		#toolbox-settings
+			//- Add new tools in alphabetical order
+			.checkbox-and-label
+				.checkbox.clear#comicCheck(data-tool='comicTool', onclick='FrameExports.showOrHideTool_click(this);')
+				.checkbox-label(data-i18n='EditTab.Toolbox.ComicTool') Comic Tool
 			.checkbox-and-label
 				.checkbox.clear#decodableReaderCheck(data-tool='decodableReaderTool', onclick='FrameExports.showOrHideTool_click(this);')
 				.checkbox-label(data-i18n='EditTab.Toolbox.DecodableReaderTool') Decodable Reader Tool
 			.checkbox-and-label
 				.checkbox.clear#imageDescriptionCheck(data-tool='imageDescriptionTool', onclick='FrameExports.showOrHideTool_click(this);')
 				.checkbox-label(data-i18n='EditTab.Toolbox.ImageDescriptionTool') Image Description Tool
+			.checkbox-and-label
+				.checkbox.clear#impairmentVisualizerCheck(data-tool='impairmentVisualizer', onclick='FrameExports.showOrHideTool_click(this);')
+				.checkbox-label(data-i18n='EditTab.Toolbox.ImpairmentVisualizer') Impairment Visualizer
 			.checkbox-and-label
 				.checkbox.clear#leveledReaderCheck(data-tool='leveledReaderTool', onclick='FrameExports.showOrHideTool_click(this);')
 				.checkbox-label(data-i18n='EditTab.Toolbox.LeveledReaderTool') Leveled Reader Tool
@@ -21,9 +28,3 @@ html
 			.checkbox-and-label
 				.checkbox.clear#signLanguageCheck(data-tool='signLanguageTool', onclick='FrameExports.showOrHideTool_click(this);')
 				.checkbox-label.enterprise-only-flag(data-i18n='EditTab.Toolbox.SignLanguageTool') Sign Language Tool
-			.checkbox-and-label
-				.checkbox.clear#impairmentVisualizerCheck(data-tool='impairmentVisualizer', onclick='FrameExports.showOrHideTool_click(this);')
-				.checkbox-label(data-i18n='EditTab.Toolbox.ImpairmentVisualizer') Impairment Visualizer
-			.checkbox-and-label
-				.checkbox.clear#comicCheck(data-tool='comicTool', onclick='FrameExports.showOrHideTool_click(this);')
-				.checkbox-label(data-i18n='EditTab.Toolbox.ComicTool') Comic Tool
