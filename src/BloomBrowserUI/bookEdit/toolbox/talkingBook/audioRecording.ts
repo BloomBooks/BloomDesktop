@@ -256,10 +256,6 @@ export default class AudioRecording {
         player.onended = () => this.playEndedAsync();
         player.ondurationchange = () => this.durationChanged();
 
-        // Note: If audio is playing, and then you change its src before it ends
-        //       you will get an "emptied" event but not an "ended" event.
-        player.onemptied = () => this.onAudioEndedOrEmptied();
-
         $("#audio-input-dev")
             .off()
             .click(e => this.selectInputDevice());
@@ -1447,7 +1443,7 @@ export default class AudioRecording {
                 // Nothing left to play
                 this.elementsToPlayConsecutivelyStack = [];
                 this.subElementsWithTimings = [];
-                this.onAudioEndedOrEmptied();
+                this.audioPlayStartTime = null;
 
                 if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
                     // The playback mode could've been playing in Sentence mode (and highlighted the Playback Segment: a sentence)
@@ -1475,11 +1471,6 @@ export default class AudioRecording {
         // TODO: Maybe we should fallback to Listen to Whole Page if Next is not available (A.k.a. you just checked the last thing)
         //  What if you reached here by listening to the whole page? Does it matter that we'll push them toward listening to it again?
         return this.changeStateAndSetExpectedAsync("split");
-    }
-
-    // This function will perform any cleanup of state necessary after an audio file ends.
-    private onAudioEndedOrEmptied(): void {
-        this.audioPlayStartTime = null;
     }
 
     private selectInputDevice(): void {
@@ -2282,6 +2273,9 @@ export default class AudioRecording {
     }
 
     public async newPageReady(): Promise<void> {
+        // Changing the page causes the previous page's audio to stop playing (be "emptied").
+        this.audioPlayStartTime = null;
+
         // ENHANCE: Optimization? I think the pageDocBody could be safely cached upon newPageReady and placed in a member variable.
         //          Then we wouldn't need to find the body element so many times
         this.hiddenSourceBubbles = this.getPageDocBodyJQuery().find(
