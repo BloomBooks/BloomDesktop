@@ -1,0 +1,34 @@
+@import "../branding-base.less";
+
+// they have very precise measurements for where the want the branding logos on front/back covers.
+.frontCover {
+    [data-book="cover-branding-bottom-html"] {
+        margin-right: 0 !important;
+        margin-bottom: 8px;
+    }
+    [data-book="cover-branding-bottom2-html"] {
+        // Donated Property notice
+        position: absolute;
+        bottom: -20px;
+        left: 0;
+        font-size: 8pt;
+    }
+}
+
+.titlePage {
+    [data-book="title-page-branding-bottom-html"] {
+        flex: 0 !important;
+        margin-top: 30px;
+        img {
+            max-width: 80px;
+        }
+    }
+}
+
+.brandingCredits {
+    font-size: 8pt;
+}
+
+.outsideBackCover [data-book="outside-back-cover-branding-bottom-html"] {
+    margin-bottom: 30px;
+}
