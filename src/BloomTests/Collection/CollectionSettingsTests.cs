@@ -149,7 +149,7 @@ namespace BloomTests.Collection
 		[TestCase("", "2")] // default
 		[TestCase("Decimal", "2")]
 		[TestCase("Devanagari", "२")]
-		[TestCase("Khmer", "២", ExcludePlatform = "Linux", Reason = "Fails until BL-4796 provides a better implementation")]
+		[TestCase("Khmer", "២")]
 		[TestCase("Cjk-Decimal", "二")]
 		public void CharactersForDigitsForPageNumbers_Tests(string numberStyleName, string digitForNumber2)
 		{

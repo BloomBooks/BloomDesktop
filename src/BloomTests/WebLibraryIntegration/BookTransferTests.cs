@@ -120,7 +120,6 @@ namespace BloomTests.WebLibraryIntegration
 			// The only omitted one that messes up current unit tests is meta.bak
 			var filesToUpload = Directory.GetFiles(originalBookFolder).Where(p => !p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles));
 			int fileCount = filesToUpload.Count();
-
 			Login();
 			//HashSet<string> notifications = new HashSet<string>();
 
@@ -133,7 +132,7 @@ namespace BloomTests.WebLibraryIntegration
 #if DEBUG
 			++expectedFileCount;	// and if in debug mode, then plus one for S3 ID
 #endif
-			Assert.That(uploadMessages.Length, Is.EqualTo(expectedFileCount));
+			Assert.That(uploadMessages.Length, Is.EqualTo(expectedFileCount), "Uploaded file counts do not match");
 			Assert.That(progress.Text, Does.Contain(
 				LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata",
 				"In this step, Bloom is uploading things like title, languages, & topic tags to the bloomlibrary.org database.")));
@@ -146,7 +145,7 @@ namespace BloomTests.WebLibraryIntegration
 			var url = BookTransfer.BloomS3UrlPrefix + BloomS3Client.UnitTestBucketName + "/" + s3Id;
 			var newBookFolder = _transfer.HandleDownloadWithoutProgress(url, dest);
 
-			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount + 1)); // book order is added during upload
+			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount + 1), "Book order was not added during upload"); // book order is added during upload
 
 			Assert.That(_downloadedBooks.Count, Is.EqualTo(1));
 			Assert.That(_downloadedBooks[0].FolderPath,Is.EqualTo(newBookFolder));
@@ -186,7 +185,6 @@ namespace BloomTests.WebLibraryIntegration
 		}
 
 		[Test]
-		[Platform(Exclude="Linux", Reason="Currently hangs on Linux on Jenkins (BL-831)")]
 		public void UploadBooks_SimilarIds_DoNotOverwrite()
 		{
 			var firstPair = UploadAndDownLoadNewBook("first", "book1", "Jack", "Jack's data");
@@ -237,7 +235,6 @@ namespace BloomTests.WebLibraryIntegration
 		}
 
 		[Test]
-		[Platform(Exclude="Linux", Reason="Currently hangs on Linux on Jenkins (BL-831)")]
 		public void UploadBook_SameId_Replaces()
 		{
 			var bookFolder = MakeBook("unittest", "myId", "me", "something");
