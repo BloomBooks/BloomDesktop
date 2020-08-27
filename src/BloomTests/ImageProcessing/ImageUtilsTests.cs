@@ -72,8 +72,7 @@ namespace BloomTests.ImageProcessing
 
 		// See BL-3646 which showed we were blacking out the image when converting from png to jpg
 		[Test]
-		[Platform(Exclude = "Linux",
-			Reason = "This test throws a low-level warning which TC is currently treating as an error")]
+		[Platform(Exclude = "SkipOnTeamCityLinux", Reason = "This test throws a low-level warning on Linux which TC is currently treating as an error")]
 		public static void
 			ProcessAndSaveImageIntoFolder_SimpleImageHasTransparentBackground_ImageNotConvertedAndFileSizeNotIncreased()
 		{
