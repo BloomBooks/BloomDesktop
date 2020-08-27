@@ -1419,7 +1419,6 @@ namespace Bloom.Book
 				// So let's do the filtering this way instead, to make sure we don't get any extensions that start with "htm" but aren't exact matches.
 				.Where(name => name.EndsWith(".htm") || name.EndsWith(".html"))
 				);
-
 			var decoyMarkers = new[] {"configuration",
 				PrefixForCorruptHtmFiles, // Used to rename corrupt htm files before restoring backup
 				"_conflict", // owncloud
