@@ -1222,7 +1222,10 @@ describe("audio recording tests", () => {
             recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, toggleRecordingMode() will flip the state
 
             const div2 = getFrameElementById("page", "div2")!;
-            recording.moveCurrentHighlightToTextBox(div2);
+            await recording.setSoundAndHighlightAsync({
+                newElement: div2,
+                shouldScrollToElement: false
+            });
 
             // System under test
             try {
@@ -1402,7 +1405,10 @@ describe("audio recording tests", () => {
             recording.audioRecordingMode = AudioRecordingMode.Sentence; // Should be the old state, toggleRecordingMode() will flip the state
 
             const div2 = getFrameElementById("page", "div2")!;
-            recording.moveCurrentHighlightToTextBox(div2);
+            await recording.setSoundAndHighlightAsync({
+                newElement: div2,
+                shouldScrollToElement: false
+            });
 
             // System under test
             try {
