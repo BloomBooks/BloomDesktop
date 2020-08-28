@@ -125,7 +125,17 @@ namespace BloomTestsThatAvoidTheSetupFixture
 			// really matter much in the test situation since NUnit would catch the exception.  But I'd rather
 			// have a nice test failure message than an unexpected exception caught message.
 			var eventArgs = new DoWorkEventArgs(null);
-			maker.MakePdf(input, output, paperSize, landscape, saveMemoryMode, rightToLeft, layout, portion, null, eventArgs, null);
+			maker.MakePdf(new PdfMakingSpecs()
+			{
+				InputHtmlPath = input,
+				OutputPdfPath = output,
+				PaperSizeName = paperSize,
+				Landscape = landscape,
+				SaveMemoryMode = saveMemoryMode,
+				LayoutPagesForRightToLeft = rightToLeft,
+				BooketLayoutMethod = layout,
+				BookletPortion = portion
+			},null, eventArgs, null);
 		}
 	}
 }

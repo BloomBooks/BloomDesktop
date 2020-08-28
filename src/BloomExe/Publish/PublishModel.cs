@@ -125,17 +125,22 @@ namespace Bloom.Publish
 					if (doWorkEventArgs.Cancel)
 						return;
 
-					BookletLayoutMethod layoutMethod;
-					if (this.BookletPortion == BookletPortions.AllPagesNoBooklet)
-						layoutMethod = BookletLayoutMethod.NoBooklet;
-					else
-						layoutMethod = BookSelection.CurrentSelection.GetBookletLayoutMethod(PageLayout);
+					BookletLayoutMethod layoutMethod = GetBookletLayoutMethod();
 
 					// Check memory for the benefit of developers.  The user won't see anything.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
-					_pdfMaker.MakePdf(tempHtml.Key, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName,
-						PageLayout.SizeAndOrientation.IsLandScape, _currentlyLoadedBook.UserPrefs.ReducePdfMemoryUse,
-						LayoutPagesForRightToLeft, layoutMethod, BookletPortion, worker, doWorkEventArgs, View, _currentlyLoadedBook.FullBleed);
+					_pdfMaker.MakePdf(new PdfMakingSpecs() {InputHtmlPath = tempHtml.Key,
+							OutputPdfPath=PdfFilePath,
+							PaperSizeName=PageLayout.SizeAndOrientation.PageSizeName,
+							Landscape=PageLayout.SizeAndOrientation.IsLandScape,
+							SaveMemoryMode=_currentlyLoadedBook.UserPrefs.ReducePdfMemoryUse,
+							LayoutPagesForRightToLeft=LayoutPagesForRightToLeft,
+							BooketLayoutMethod=layoutMethod,
+							BookletPortion=BookletPortion,
+							BookIsFullBleed = _currentlyLoadedBook.FullBleed,
+							PrintWithFullBleed = PrintCurrentBookWithFullBleed(),
+							Cmyk = _currentlyLoadedBook.UserPrefs.CmykPdf},
+						worker, doWorkEventArgs, View );
 					// Warn the user if we're starting to use too much memory.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
 				}
@@ -148,6 +153,23 @@ namespace Bloom.Publish
 				//                SetDisplayMode(DisplayModes.WaitForUserToChooseSomething);
 				//                return;
 			}
+		}
+
+		private BookletLayoutMethod GetBookletLayoutMethod()
+		{
+			BookletLayoutMethod layoutMethod;
+			if (this.BookletPortion == BookletPortions.AllPagesNoBooklet)
+				layoutMethod = BookletLayoutMethod.NoBooklet;
+			else
+				layoutMethod = BookSelection.CurrentSelection.GetBookletLayoutMethod(PageLayout);
+			return layoutMethod;
+		}
+
+		public bool IsCurrentBookFullBleed => _currentlyLoadedBook.FullBleed;
+
+		private bool PrintCurrentBookWithFullBleed()
+		{
+			return _currentlyLoadedBook.FullBleed && GetBookletLayoutMethod() == BookletLayoutMethod.NoBooklet && _currentlyLoadedBook.UserPrefs.FullBleed;
 		}
 
 		private bool LayoutPagesForRightToLeft
@@ -167,10 +189,30 @@ namespace Bloom.Publish
 			AddStylesheetClasses(dom.RawDom);
 
 			PageLayout.UpdatePageSplitMode(dom.RawDom);
+			if (_currentlyLoadedBook.FullBleed && !PrintCurrentBookWithFullBleed())
+			{
+				ClipBookToRemoveFullBleed(dom);
+			}
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
 			dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
 			return BloomServer.MakeSimulatedPageFileInBookFolder(dom, source:BloomServer.SimulatedPageFileSource.Pub);
+		}
+
+		private void ClipBookToRemoveFullBleed(HtmlDom dom)
+		{
+			// example: A5 book is full bleed. What the user saw and configured in Edit mode is RA5 paper, 3mm larger on each side.
+			// But we're not printing for full bleed. We will create an A5 page with no inset trim box.
+			// We want it to hold the trim box part of the RA5 page.
+			// to do this, we simply need to move the bloom-page element up and left by 3mm. Clipping to the page will do the rest.
+			// It would be more elegant to do this by introducing a CSS rule involving .bloom-page, but to introduce a new stylesheet
+			// we have to make it findable in the book folder, which is messy. Or, we could add a stylesheet element to the DOM;
+			// but that's messy, too, we need stuff like /*<![CDATA[*/ to make the content survive the trip from XML to HTML.
+			// So it's easiest just to stick it in the style attribute of each page.
+			foreach (var page in dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>())
+			{
+				page.SetAttribute("style", "margin-left: -3mm; margin-top: -3mm;");
+			}
 		}
 
 		private void AddStylesheetClasses(XmlDocument dom)
@@ -326,31 +368,30 @@ namespace Bloom.Publish
 						default:
 							throw new ArgumentOutOfRangeException();
 					}
-					string suggestedName = string.Format("{0}-{1}-{2}.pdf", Path.GetFileName(_currentlyLoadedBook.FolderPath),
-														 _collectionSettings.GetFilesafeLanguage1Name("en"), portion);
-					dlg.FileName = suggestedName;
-					var rgb = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.PdfWithRGB",
-						"PDF with RGB color",
-						@"displayed as file type for Save File dialog. 'RGB' may not be translatable, it is a standard.");
-					var swopv2 = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.PdfWithCmykSwopV2",
-						"PDF with CMYK color (U.S. Web Coated (SWOP) v2)",
-						@"displayed as file type for Save File dialog, the content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.");
 
-					rgb = rgb.Replace("|", "");
-					swopv2 = swopv2.Replace("|", "");
-					dlg.Filter = String.Format("{0}|*.pdf|{1}|*.pdf", rgb, swopv2);
+					string forPrintShop =
+						_currentlyLoadedBook.UserPrefs.CmykPdf || _currentlyLoadedBook.UserPrefs.FullBleed
+							? "-printshop"
+							: "";
+					string suggestedName = string.Format($"{Path.GetFileName(_currentlyLoadedBook.FolderPath)}-{_collectionSettings.GetFilesafeLanguage1Name("en")}-{portion}{forPrintShop}.pdf");
+					dlg.FileName = suggestedName;
+					var pdfFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.PdfFile",
+						"PDF File",
+						@"displayed as file type for Save File dialog.");
+
+					pdfFileLabel = pdfFileLabel.Replace("|", "");
+					dlg.Filter = String.Format("{0}|*.pdf", pdfFileLabel);
 					dlg.OverwritePrompt = true;
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
 						_lastDirectory = Path.GetDirectoryName(dlg.FileName);
-						switch (dlg.FilterIndex)
+						if (_currentlyLoadedBook.UserPrefs.CmykPdf)
 						{
-						case 1:	// PDF for Desktop Printing
-							RobustFile.Copy(PdfFilePath, dlg.FileName, true);
-							break;
-						case 2:	// PDF for Printshop (CMYK US Web Coated V2)
+							// PDF for Printshop (CMYK US Web Coated V2)
 							ProcessPdfFurtherAndSave(ProcessPdfWithGhostscript.OutputType.Printshop, dlg.FileName);
-							break;
+						} else {
+							// we want the simple PDF we already made.
+							RobustFile.Copy(PdfFilePath, dlg.FileName, true);
 						}
 						Analytics.Track("Save PDF", new Dictionary<string, string>()
 							{

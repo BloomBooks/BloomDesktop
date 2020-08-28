@@ -2682,13 +2682,13 @@ namespace Bloom.Book
 
 		public void InsertFullBleedMarkup(XmlElement body)
 		{
-			if (FullBleed && CollectionSettings.HaveEnterpriseFeatures)
+			if (FullBleed)
 			{
 				HtmlDom.InsertFullBleedMarkup(body);
 			}
 		}
 
-		public bool FullBleed => BookData.GetVariableOrNull("fullBleed", "*") == "true";
+		public bool FullBleed => BookData.GetVariableOrNull("fullBleed", "*") == "true" && CollectionSettings.HaveEnterpriseFeatures;
 
 		/// <summary>
 		/// Earlier, we handed out a single-page version of the document. Now it has been edited,
@@ -2895,7 +2895,7 @@ namespace Bloom.Book
 			BookServer bookServer, bool orientationChanging, Layout pageLayout)
 		{
 			var printingDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
-			if (bookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && FullBleed)
+			if (FullBleed)
 			{
 				InsertFullBleedMarkup(printingDom.Body);
 			}

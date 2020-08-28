@@ -200,6 +200,13 @@ div#bloomDataDiv {
 @RA5-Scale: unit(@RA5Portrait-Width / @A5Portrait-Width);
 @A5Portrait-HeightFB: @A5Portrait-Height * @RA5-Scale;
 @A5Portrait-Height-Excess: @A5Portrait-HeightFB - @RA5Portrait-Height;
+
+@RUSComicPortrait-Width: @USComicPortrait-Width + @bleed + @bleed;
+@RUSComicPortrait-Height: @USComicPortrait-Height + @bleed + @bleed;
+@RUSComic-Scale: unit(@RUSComicPortrait-Width / @USComicPortrait-Width);
+@USComicPortrait-HeightFB: @USComicPortrait-Height * @RUSComic-Scale;
+@USComicPortrait-Height-Excess: @USComicPortrait-HeightFB -
+    @RUSComicPortrait-Height;
 .bloom-fullBleed {
     //background-color: green;
     .bloom-page {
@@ -214,6 +221,11 @@ div#bloomDataDiv {
             // NB: transform order is rightmost first
             transform: translate(-@A5Portrait-Height-Excess / 2, 0)
                 scale(@RA5-Scale);
+        }
+        &.USComicPortrait {
+            // NB: transform order is rightmost first
+            transform: translate(0, -@USComicPortrait-Height-Excess / 2)
+                scale(@RUSComic-Scale);
         }
     }
 }
@@ -231,6 +243,10 @@ div#bloomDataDiv {
     &.A5Landscape {
         width: @RA5Portrait-Height;
         height: @RA5Portrait-Width;
+    }
+    &.USComicPortrait {
+        width: @RUSComicPortrait-Width;
+        height: @RUSComicPortrait-Height;
     }
     // Todo: this needs rules for every page size we support in full bleed (try to use a macro)
 }

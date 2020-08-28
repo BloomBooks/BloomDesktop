@@ -3560,14 +3560,21 @@
         <note>ID: PublishTab.OpenThePDFInTheSystemPDFViewer</note>
       </trans-unit>
       <trans-unit id="PublishTab.Options">
-        <source xml:lang="en">Options</source>
+        <source xml:lang="en">PDF Options</source>
         <note>ID: PublishTab.Options</note>
         <note>menu header in the Publish tab</note>
+        <note>was previously just "Options"</note>
       </trans-unit>
       <trans-unit id="PublishTab.OptionsMenu.SizeLayout">
         <source xml:lang="en">Size/Orientation</source>
         <note>ID: PublishTab.OptionsMenu.SizeLayout</note>
         <note>Header for a region of the menu which lists various standard page sizes and orientations</note>
+        <note>obsolete as of Bloom 4.9</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.OptionsMenu.PreparePrintshop">
+        <source xml:lang="en">Prepare for Printshop</source>
+        <note>ID: PublishTab.OptionsMenu.PreparePrintshop</note>
+        <note>Header for a region of the menu which lists various options useful for jobs that will be printed at a commercial printshop</note>
       </trans-unit>
       <trans-unit id="PublishTab.Options_ToolTip_">
         <source xml:lang="en">Choose a page size and orientation</source>
@@ -3641,6 +3648,11 @@
         <note>ID: PublishTab.PdfMaker.Finished</note>
         <note>Message displayed in a progress report dialog box</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.FullBleed">
+        <source xml:lang="en">Full Bleed</source>
+        <note>ID: PublishTab.PdfMaker.FullBleed</note>
+        <note>displayed as an option in the PDF Options menu in Publish tab. Be careful, "full bleed" is a technical term in printing, meaning to print into an area outside the main page content that is ideally trimmed off; do not translate literally</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
         <source xml:lang="en">Making PDF from HTML</source>
         <note>ID: PublishTab.PdfMaker.MakingFromHtml</note>
@@ -3651,20 +3663,34 @@
         <note>ID: PublishTab.PdfMaker.MakingPageOfPdf</note>
         <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.NoFullBleed">
+        <source xml:lang="en">Full Bleed has not been set up for this book</source>
+        <note>ID: PublishTab.PdfMaker.NoFullBleed</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.NoFullBleedBooklet">
+        <source xml:lang="en">Full Bleed is not applicable to booklet printing</source>
+        <note>ID: PublishTab.PdfMaker.NoFullBleedBooklet</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.OutOfMemory">
         <source xml:lang="en">Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.</source>
         <note>ID: PublishTab.PdfMaker.OutOfMemory</note>
         <note>{0} and {1} are HTML link markup.  You can think of them as fancy quotation marks.</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.PdfFile">
+        <source xml:lang="en">PDF file</source>
+        <note>ID: PublishTab.PdfMaker.PdfFile</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
-        <source xml:lang="en">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</source>
+        <source xml:lang="en">CMYK color (U.S. Web Coated (SWOP) v2)</source>
         <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
-        <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
+        <note>displayed as a checkable menu option for the Publish tab, PDF options menu. The content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
+        <note>Previously this item was "PDF with CMYK ..." and it occurred as an option within the Save dialog for PDF files</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithRGB">
         <source xml:lang="en">PDF with RGB color</source>
         <note>ID: PublishTab.PdfMaker.PdfWithRGB</note>
         <note>displayed as file type for Save File dialog. 'RGB' may not be translatable, it is a standard.</note>
+        <note>obsolete as of Bloom 4.9</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Saving">
         <source xml:lang="en">Saving PDF...</source>
