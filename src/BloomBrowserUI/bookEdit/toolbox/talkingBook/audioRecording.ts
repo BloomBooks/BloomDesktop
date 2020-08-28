@@ -117,6 +117,13 @@ interface IPlaybackOrderInfo {
     myPosition: number;
 }
 
+interface ISetHighlightParams {
+    newElement: Element;
+    shouldScrollToElement: boolean;
+    disableHighlightIfNoAudio?: boolean;
+    oldElement?: Element | null | undefined; // Optional. Provides some minor optimization if set.
+}
+
 // Terminology //
 // AudioSegment: the smallest unit of text to playback at a time.
 // CurrentTextBox: The text box (div) which is either currently highlighted itself or contains the currently highlighted element. CurrentTextBox never points to a audio-sentence span.
@@ -693,7 +700,10 @@ export default class AudioRecording {
         const next = this.getNextAudioElement();
         if (!next) return;
 
-        await this.setSoundAndHighlightAsync(next);
+        await this.setSoundAndHighlightAsync({
+            newElement: next,
+            shouldScrollToElement: true
+        });
         return this.changeStateAndSetExpectedAsync("record");
     }
 
@@ -702,7 +712,10 @@ export default class AudioRecording {
         const prev = this.getPreviousAudioElement();
         if (prev == null) return;
 
-        await this.setSoundAndHighlightAsync(prev);
+        await this.setSoundAndHighlightAsync({
+            newElement: prev,
+            shouldScrollToElement: true
+        });
         return this.changeStateAndSetExpectedAsync("record"); // Enhance: I think it'd actually be better to dynamically assign Expected based on what audio is available etc., instead of based on state transitions. Especially when doing Prev.
     }
 
@@ -876,30 +889,39 @@ export default class AudioRecording {
     }
 
     public async setSoundAndHighlightAsync(
-        elementToChangeTo: Element,
-        disableHighlightIfNoAudio?: boolean,
-        currentElement: Element | null | undefined = undefined // Optional. Provides some minor optimization if set.
+        setHighlightParams: ISetHighlightParams
     ): Promise<void> {
         // Note: setHighlightToAsync() should be run first so that ui-audioCurrent points to the correct element when setSoundFrom() is run.
-        await this.setHighlightToAsync(
-            elementToChangeTo,
-            disableHighlightIfNoAudio,
-            currentElement
-        );
-        this.setSoundFrom(elementToChangeTo);
+        await this.setHighlightToAsync(setHighlightParams);
+        this.setSoundFrom(setHighlightParams.newElement);
     }
 
     // Changes the visually highlighted element (i.e, the element corresponding to .ui-audioCurrent) to the specified element.
-    public async setHighlightToAsync(
-        newElement: Element,
-        disableHighlightIfNoAudio?: boolean,
-        oldElement: Element | null | undefined = undefined // Optional. Provides some minor optimization if set.
-    ): Promise<void> {
+    private async setHighlightToAsync({
+        newElement,
+        // If true, causes the element to be scrolled into view in addition to being highlighted.
+        // Our general philosophy/recommendation about when this should be true is when it's clear the user is interacting with the Talking Book tool,
+        // it's ok to scroll it into view.  If they're going to record it/etc., they'll probably want to read it too.
+        // However, when the Talking Book tool opens automatically upon opening a book or upon opening the toolbox, it's not very clear whether
+        // it's desirable to scroll the element into view. For now, the philosophy is that it should not be scrolled into view at those times.
+        // Also, don't scroll while the user is typing: 1) something else already takes care of that well and
+        // 2) in Record by Sentence mode, it's easily possible for the current highlight to be the 1st span while the user is typing into the last span.
+        shouldScrollToElement,
+        disableHighlightIfNoAudio,
+        oldElement // Optional. Provides some minor optimization if set.
+    }: ISetHighlightParams): Promise<void> {
         if (!oldElement) {
             oldElement = this.getCurrentHighlight();
         }
 
-        if (oldElement == newElement) {
+        // This should happen even if oldElement and newElement are the same.
+        // e.g. the user could navigate (with arrows or mousewheel) such that oldElement is out of view, then press Play.
+        // It would be worthwhile to scroll it back into view in that case.
+        if (shouldScrollToElement) {
+            this.scrollElementIntoView(newElement);
+        }
+
+        if (oldElement === newElement) {
             // No need to do much, and better not to so we can avoid any temporary flashes as the highlight is removed and re-applied
             return;
         }
@@ -933,6 +955,27 @@ export default class AudioRecording {
                 );
             }
         }
+    }
+
+    // Scrolls an element into view.
+    // Disclaimer: You probably don't want to call this while the user's typing. It'll be very annoying.
+    private scrollElementIntoView(element: Element) {
+        // In Bloom Player, scrollIntoView can interfere with page swipes,
+        // so Bloom Player needs some smarts about when to call it...
+        // But here, there shouldn't be any interference. So no smarts needed.
+
+        element.scrollIntoView({
+            // Animated instead of sudden
+            behavior: "smooth",
+
+            // "nearest" setting does lots of smarts for us (compared to us deciding when to use "start" or "end")
+            // Seems to reduce unnecessary scrolling compared to start (aka true) or end (aka false).
+            // Refer to https://drafts.csswg.org/cssom-view/#scroll-an-element-into-view,
+            // which seems to imply that it won't do any scrolling if the two relevant edges are already inside.
+            block: "nearest"
+
+            // horizontal alignment is controlled by "inline". We'll leave it as its default ("nearest")
+        });
     }
 
     // Given the specified element, updates the audio player's source and other necessary things in order to make the specified element's audio the next audio to play
@@ -1224,22 +1267,24 @@ export default class AudioRecording {
                         .reverse();
                 } else {
                     // Nope, no audio-sentence elements within it. Uses 4.6 Format (Soft Split)
-                    this.elementsToPlayConsecutivelyStack.push(currentTextBox);
+                    this.elementsToPlayConsecutivelyStack = [currentTextBox];
                 }
             }
         } else {
+            // Pure Sentence mode.
             const currentHighlight = this.getCurrentHighlight();
             if (currentHighlight) {
-                this.elementsToPlayConsecutivelyStack.push(currentHighlight);
+                this.elementsToPlayConsecutivelyStack = [currentHighlight];
             }
         }
 
-        await this.setSoundAndHighlightAsync(
-            this.elementsToPlayConsecutivelyStack[
+        await this.setSoundAndHighlightAsync({
+            newElement: this.elementsToPlayConsecutivelyStack[
                 this.elementsToPlayConsecutivelyStack.length - 1
             ],
-            true
-        );
+            shouldScrollToElement: true,
+            disableHighlightIfNoAudio: true
+        });
         this.removeExpectedStatusFromAll();
         this.setStatus("play", Status.Active);
         return this.playCurrentInternalAsync();
@@ -1320,10 +1365,11 @@ export default class AudioRecording {
         const endTimeInSecs: number = topTuple[1];
 
         // Kicks off some async work of minimal consequence, no need to await it currently.
-        this.setHighlightToAsync(
-            element,
-            false // disableHighlightIfNoAudio: Should be false when playing sub-elements, because the highlighted sub-element doesn't have audio. The audio belongs to parent.
-        );
+        this.setHighlightToAsync({
+            newElement: element,
+            shouldScrollToElement: true,
+            disableHighlightIfNoAudio: false // Should be false when playing sub-elements, because the highlighted sub-element doesn't have audio. The audio belongs to parent.
+        });
 
         const mediaPlayer: HTMLMediaElement = this.getMediaPlayer();
         let currentTimeInSecs: number = mediaPlayer.currentTime;
@@ -1409,7 +1455,11 @@ export default class AudioRecording {
             stackSize - 1
         ]; // Remember to pop it when you're done playing it. (i.e., in playEnded)
 
-        await this.setSoundAndHighlightAsync(firstElementToPlay, true);
+        await this.setSoundAndHighlightAsync({
+            newElement: firstElementToPlay,
+            shouldScrollToElement: true,
+            disableHighlightIfNoAudio: true
+        });
         this.setStatus("listen", Status.Active);
         return this.playCurrentInternalAsync();
     }
@@ -1433,11 +1483,12 @@ export default class AudioRecording {
                 const nextElement = this.elementsToPlayConsecutivelyStack[
                     newStackCount - 1
                 ];
-                await this.setSoundAndHighlightAsync(
-                    nextElement,
-                    true,
-                    currentElement
-                );
+                await this.setSoundAndHighlightAsync({
+                    newElement: nextElement,
+                    shouldScrollToElement: true,
+                    disableHighlightIfNoAudio: true,
+                    oldElement: currentElement
+                });
                 return this.playCurrentInternalAsync();
             } else {
                 // Nothing left to play
@@ -2264,14 +2315,6 @@ export default class AudioRecording {
         }
     }
 
-    // Moves the currently highlighted element to specified text box
-    // Note: as name promises, this moves it to a text box (a div) not an element (either an audio-sentence div or audio-sentence span).
-    // This happens even if audioRecordingMode=Sentence. It is caller's responsibility to either ensure that this operation is valid,
-    // or to be able to handle the resulting state (possibly in Sentence mode but a div is selected), for example by calling updateMarkupForCurrentText() to re-update the state.
-    public moveCurrentHighlightToTextBox(newSelectedTextBox): void {
-        this.setSoundAndHighlightAsync(newSelectedTextBox);
-    }
-
     public async newPageReady(): Promise<void> {
         // Changing the page causes the previous page's audio to stop playing (be "emptied").
         this.audioPlayStartTime = null;
@@ -2387,8 +2430,15 @@ export default class AudioRecording {
         }
 
         // Enhance: it would be nice/significantly more intuitive if this (or a stripped-down version that just moves the highlight/audio recording mode) could run when the mouse focus changes.
-        if (currentTextBox != selectedTextBox) {
-            this.moveCurrentHighlightToTextBox(selectedTextBox);
+        if (selectedTextBox && currentTextBox != selectedTextBox) {
+            this.setSoundAndHighlightAsync({
+                newElement: selectedTextBox,
+                // No need to scroll in this case... if it's changed becasue the user typed, something else (maybe CKEditor?) brings the text box into view.
+                // And if it changed for some other reason, it's just some automatic setting of the current upon initialization.
+                // We don't want to scroll in that case because may not be explicit user interaction
+                shouldScrollToElement: false
+            });
+
             // We need to redo initialization
             this.initializeAudioRecordingMode();
             return true;
@@ -2531,11 +2581,12 @@ export default class AudioRecording {
         }
         const changeTo = this.getTextBoxOfElement(element);
         if (changeTo) {
-            return this.setSoundAndHighlightAsync(
-                changeTo,
-                undefined,
-                audioCurrent
-            );
+            return this.setSoundAndHighlightAsync({
+                newElement: changeTo,
+                // Don't automatically scroll because tool is possibly being initialized (we only want it to scroll on explicit user interaction like Next/Prev)
+                shouldScrollToElement: false,
+                oldElement: audioCurrent
+            });
         }
     }
 
@@ -2584,7 +2635,11 @@ export default class AudioRecording {
         }
 
         if (changeTo) {
-            await this.setSoundAndHighlightAsync(changeTo);
+            await this.setSoundAndHighlightAsync({
+                newElement: changeTo,
+                // Don't automatically scroll because tool is possibly being initialized (we only want it to scroll on explicit user interaction like Next/Prev)
+                shouldScrollToElement: false
+            });
         }
     }
 
@@ -2628,7 +2683,11 @@ export default class AudioRecording {
                 nextHighlight = textBoxOfFirst;
             }
         }
-        await this.setSoundAndHighlightAsync(nextHighlight);
+        await this.setSoundAndHighlightAsync({
+            newElement: nextHighlight,
+            // Don't automatically scroll because tool is possibly being initialized (we only want it to scroll on explicit user interaction like Next/Prev)
+            shouldScrollToElement: false
+        });
 
         // In Sentence/Sentence mode: OK to move.
         // Text/Sentence mode: Ok to swap.
