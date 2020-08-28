@@ -41,11 +41,16 @@ export class ReaderLevel {
     public thingsToRemember: string[] = [];
 
     // For each of these, 0 signifies unlimited.
-    public maxWordsPerPage: number = 0;
     public maxWordsPerSentence: number = 0;
+    public maxWordsPerPage: number = 0;
     public maxWordsPerBook: number = 0;
     public maxUniqueWordsPerBook: number = 0;
+    public maxGlyphsPerWord: number = 0;
+    public maxSentencesPerPage: number = 0;
     public maxAverageWordsPerSentence: number = 0;
+    public maxAverageWordsPerPage: number = 0;
+    public maxAverageSentencesPerPage: number = 0;
+    public maxAverageGlyphsPerWord: number = 0;
 
     constructor(name: string) {
         this.name = name;
@@ -73,5 +78,25 @@ export class ReaderLevel {
 
     public getMaxAverageWordsPerSentence(): number {
         return this.maxAverageWordsPerSentence || 0;
+    }
+
+    public getMaxAverageWordsPerPage(): number {
+        return this.maxAverageWordsPerPage || 0;
+    }
+
+    public getMaxAverageGlyphsPerWord(): number {
+        return this.maxAverageGlyphsPerWord || 0;
+    }
+
+    public getMaxAverageSentencesPerPage(): number {
+        return this.maxAverageSentencesPerPage || 0;
+    }
+
+    public getMaxSentencesPerPage(): number {
+        return this.maxSentencesPerPage || 0;
+    }
+
+    public getMaxGlyphsPerWord(): number {
+        return this.maxGlyphsPerWord || 0;
     }
 }

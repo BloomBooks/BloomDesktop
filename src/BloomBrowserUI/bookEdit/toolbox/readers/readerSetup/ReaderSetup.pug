@@ -150,18 +150,28 @@ html
 							td(style='vertical-align: baseline; white-space: nowrap'): span.rs-heading(style='margin: auto 0', data-i18n='ReaderSetup.Levels') Reader Levels
 				#level-list-container.floating.tab-list-container
 					#level-list.tab-list
-						.scrolling-table-container
+						.scrolling-table-container.two-rows-header
 							.scrolling-table-header
 							.scrolling-table-container-inner
 								table#levels-table(style='border-collapse: collapse; width: 100%')
 									thead
 										tr
-											th(style='width: 15%'): div(data-i18n='ReaderSetup.LevelHeader') Level
-											th(style='width: 22%'): div(data-i18n='ReaderSetup.SentenceHeader') Sentence
-											th(style='width: 15%'): div(data-i18n='ReaderSetup.PageHeader') Page
-											th(style='width: 15%'): div(data-i18n='ReaderSetup.BookHeader') Book
-											th(style='width: 23%'): div(data-i18n='ReaderSetup.UniqueHeader') Unique
-											th(style='width: 10%'): div(data-i18n='ReaderSetup.AverageHeader') Avg
+											th(style='width: 9%'): div(data-i18n='ReaderSetup.LevelHeader') Level
+											th(style='width: 54%' colspan="6"): div(data-i18n='ReaderSetup.MaxHeader') Max
+											th(style='width: 36%' colspan="4"): div(data-i18n='ReaderSetup.MaxAverageHeader') Max Average
+										tr.second-row
+											th(style='width: 9%')
+											th(style='width: 9%'): div(data-i18n='ReaderSetup.WSHeader') w/s
+											th(style='width: 9%'): div(data-i18n='ReaderSetup.WPHeader') w/p
+											th(style='width: 9%'): div(data-i18n='ReaderSetup.WBHeader') w/b
+											th(style='width: 9%'): div(data-i18n='ReaderSetup.UWBHeader') uw/b
+											th(style='width: 9%'): div(data-i18n='ReaderSetup.GWHeader') l/w
+											th(style='width: 9%'): div(data-i18n='ReaderSetup.SPHeader') s/p
+
+											th(style='width: 9%'): div(data-i18n='ReaderSetup.AWSHeader') w/s
+											th(style='width: 9%'): div(data-i18n='ReaderSetup.AWPHeader') w/p
+											th(style='width: 9%'): div(data-i18n='ReaderSetup.ASPHeader') s/p
+											th(style='width: 9%'): div(data-i18n='ReaderSetup.AGWHeader') l/w
 											th(style='display: none')
 									tbody
 									tfoot
@@ -192,9 +202,29 @@ html
 							td: label(for='use-unique-words-per-book', data-i18n='ReaderSetup.MaxUniqueWords') Maximum Unique Words in Book
 							td: input#max-unique-words-per-book.level-textbox(type='text')
 						tr
+							td: input#use-glyphs-per-word.level-checkbox(type='checkbox')
+							td: label(for='use-glyphs-per-word', data-i18n='ReaderSetup.MaxGlyphsPerWord') Maximum Letters in Word
+							td: input#max-glyphs-per-word.level-textbox(type='text')
+						tr
+							td: input#use-sentences-per-page.level-checkbox(type='checkbox')
+							td: label(for='use-sentences-per-page', data-i18n='ReaderSetup.MaxSentencesPerPage') Maximum Sentences on each Page
+							td: input#max-sentences-per-page.level-textbox(type='text')
+						tr
 							td: input#use-average-words-per-sentence.level-checkbox(type='checkbox')
 							td: label(for='use-average-words-per-sentence', data-i18n='ReaderSetup.MaxAverageWords') Maximum Average Length of Sentences in Book
 							td: input#max-average-words-per-sentence.level-textbox(type='text')
+						tr
+							td: input#use-average-words-per-page.level-checkbox(type='checkbox')
+							td: label(for='use-average-words-per-page', data-i18n='ReaderSetup.MaxAverageWordsPerPage') Maximum Average Words per Page
+							td: input#max-average-words-per-page.level-textbox(type='text')
+						tr
+							td: input#use-average-sentences-per-page.level-checkbox(type='checkbox')
+							td: label(for='use-average-sentences-per-page', data-i18n='ReaderSetup.MaxAverageSentencesPerPage') Maximum Average Sentences per Page
+							td: input#max-average-sentences-per-page.level-textbox(type='text')
+						tr
+							td: input#use-average-glyphs-per-word.level-checkbox(type='checkbox')
+							td: label(for='use-average-glyphs-per-word', data-i18n='ReaderSetup.MaxAverageGlyphsPerWord') Maximum Average Letters per Word in Book
+							td: input#max-average-glyphs-per-word.level-textbox(type='text')
 					#things-to-remember-container
 						label(for='things-to-remember', data-i18n='ReaderSetup.ToRemember') Things to remember for this level:
 						ul#things-to-remember

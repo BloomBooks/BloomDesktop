@@ -47,13 +47,13 @@ function getSetupDialogWindow(): Window | null {
  */
 function processDLRMessage(event: MessageEvent): void {
     const params = event.data.split("\n");
-    const window = getSetupDialogWindow();
+    const setupDialogWindow = getSetupDialogWindow();
 
     switch (params[0]) {
         case "Texts": // request from setup dialog for the list of sample texts
             if (getTheOneReaderToolsModel().texts) {
-                if (window) {
-                    window.postMessage(
+                if (setupDialogWindow) {
+                    setupDialogWindow.postMessage(
                         "Files\n" +
                             getTheOneReaderToolsModel().texts.join("\r"),
                         "*"
@@ -81,15 +81,19 @@ function processDLRMessage(event: MessageEvent): void {
                 );
             }
 
-            if (window) {
-                window.postMessage("Words\n" + JSON.stringify(words), "*");
+            if (setupDialogWindow) {
+                setupDialogWindow.postMessage(
+                    "Words\n" + JSON.stringify(words),
+                    "*"
+                );
             }
             return;
 
         case "SetupType":
-            if (window) {
-                window.postMessage(
-                    "SetupType\n" + getTheOneReaderToolsModel().setupType,
+            if (setupDialogWindow) {
+                setupDialogWindow.postMessage(
+                    "ConfigureActiveTab\n" +
+                        getTheOneReaderToolsModel().setupType,
                     "*"
                 );
             }
