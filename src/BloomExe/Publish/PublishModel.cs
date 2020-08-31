@@ -415,7 +415,7 @@ namespace Bloom.Publish
 				!Bloom.Properties.Settings.Default.AdobeColorProfileEula2003Accepted)
 			{
 				var prolog = L10NSharp.LocalizationManager.GetString(@"PublishTab.PrologToAdobeEula",
-					"Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a \"PDF for Printshop\".  You must agree to the following license in order to perform this task in Bloom.",
+					"Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a \"PDF for a print shop\".  You must agree to the following license in order to perform this task in Bloom.",
 					@"Brief explanation of what this license is and why the user needs to agree to it");
 				using (var dlg = new Bloom.Registration.LicenseDialog("AdobeColorProfileEULA.htm", prolog))
 				{
@@ -424,7 +424,7 @@ namespace Bloom.Publish
 					if (dlg.ShowDialog() != DialogResult.OK)
 					{
 						var msg = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfNotSavedWhy",
-							"The PDF file has not been saved because you chose not to allow producing a \"PDF for Printshop\".",
+							"The PDF file has not been saved because you chose not to allow producing a \"PDF for print shop\".",
 							@"explanation that file was not saved displayed in a message box");
 						var heading = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfNotSaved",
 							"PDF Not Saved", @"title for the message box");

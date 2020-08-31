@@ -408,7 +408,7 @@ namespace Bloom.Publish
 			//	item.Click += OnLayoutChosen;
 			//}
 
-			var headerText = LocalizationManager.GetString(@"PublishTab.OptionsMenu.PreparePrintshop", "Prepare for Printshop");
+			var headerText = LocalizationManager.GetString(@"PublishTab.OptionsMenu.PreparePrintshop", "Prepare for Print Shop:");
 			var headerItem2 = (ToolStripMenuItem)_pdfOptions.DropDownItems.Add(headerText);
 			headerItem2.Enabled = false;
 
