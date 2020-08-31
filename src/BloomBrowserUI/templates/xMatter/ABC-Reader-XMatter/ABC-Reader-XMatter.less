@@ -73,15 +73,21 @@ div.bloomPlayer-page {
 
 body {
     // this template is meant for half-letter portrait pages
-    .marginBox {
-        top: 0.4in !important; // leave room for inevitable font space above title
-        left: 0.5in !important;
-        width: (@halfLetterPageWidth - 1in) !important;
-        height: (@halfLetterPageHeight - 0.9in) !important;
-    }
-    .HalfLetterPortrait.outsideFrontCover {
-        .marginBox div img {
-            max-width: 4.5in !important; // max out precedence to override a very persistent base rule.
+    .HalfLetterPortrait {
+        .marginBox {
+            top: 0.5in !important;
+            left: 0.5in !important;
+            width: (@halfLetterPageWidth - 1in) !important;
+            height: (@halfLetterPageHeight - 0.9in) !important;
+            img {
+                // Override a rather persistent base rule that wanted to take into account gutter
+                // margins that we aren't using. This would have made the image skinnier and left-justified,
+                // instead of full width and centered, like we want.
+                max-width: unset;
+            }
+        }
+        &.frontCover .marginBox {
+            top: 0.4in !important; // leave room for inevitable font space above title
         }
     }
 }
@@ -165,6 +171,10 @@ body {
     margin-top: @outerBackCoverSpacing;
 }
 
+.outsideBackCover .levelOrStageAndNumberRow div[data-book]:empty:after {
+    content: "Kindergarten";
+}
+
 .titlePage {
     [data-book="bookTitle"] {
         font-size: 26pt;
@@ -209,7 +219,8 @@ body {
         display: flex;
         flex-direction: column;
         [data-book="bookTitle"] {
-            font-size: 26pt;
+            font-size: 12pt;
+            font-weight: bold;
         }
         .levelOrStageAndNumberRow {
             display: flex;
@@ -230,6 +241,7 @@ body {
             margin-bottom: 0;
             p {
                 text-align: start;
+                font-size: 12pt;
             }
         }
     }

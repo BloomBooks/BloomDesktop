@@ -4,13 +4,13 @@ using System.Drawing;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Web;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.PlatformUtilities;
+using SIL.Reporting;
 
 namespace Bloom.web.controllers
 {
@@ -85,7 +85,22 @@ namespace Bloom.web.controllers
 				.Concat(_sourceCollectionsList.GetCollectionFolders()) // add all other source collections
 				.Distinct() //seems to be needed in case a shortcut points to a folder that's already in the list.
 				.SelectMany(Directory.GetDirectories) // get all the (book) folders in those collections
-					.Select(BookStorage.FindBookHtmlInFolder); // and get the book from each
+					.Select(FindBookHtmlInFolder); // and get the book from each
+		}
+
+		private string FindBookHtmlInFolder(string folderPath)
+		{
+			// BL-8893 Sometimes users can get into a state where a template directory Bloom thinks it should
+			// look is closed to Bloom by system permissions. In that case, skip that directory.
+			try
+			{
+				return BookStorage.FindBookHtmlInFolder(folderPath);
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				Logger.WriteEvent("*** Bloom folder access problem: " + ex.Message);
+				return string.Empty;
+			}
 		}
 
 		/// <summary>
