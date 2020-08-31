@@ -43,6 +43,9 @@ const ComicToolControls: React.FunctionComponent = () => {
     );
     const [bubbleActive, setBubbleActive] = useState(false);
     const [showTailChecked, setShowTailChecked] = useState(false);
+    const [isRoundedCornersChecked, setIsRoundedCornersChecked] = useState(
+        false
+    );
 
     const [isXmatter, setIsXmatter] = useState(true);
 
@@ -115,6 +118,12 @@ const ComicToolControls: React.FunctionComponent = () => {
             setShowTailChecked(
                 currentBubbleSpec.tails && currentBubbleSpec.tails.length > 0
             );
+            setIsRoundedCornersChecked(
+                !!currentBubbleSpec.cornerRadiusX &&
+                    !!currentBubbleSpec.cornerRadiusY &&
+                    currentBubbleSpec.cornerRadiusX > 0 &&
+                    currentBubbleSpec.cornerRadiusY > 0
+            );
             setOutlineColor(currentBubbleSpec.outerBorderColor);
             setBubbleActive(true);
             // N.B. Don't forget to add spec opacity to call to 'getSwatchFromHex' (and maybe rename the method).
@@ -172,6 +181,21 @@ const ComicToolControls: React.FunctionComponent = () => {
         if (bubbleMgr) {
             bubbleMgr.updateSelectedItemBubbleSpec({
                 tails: value ? [bubbleMgr.getDefaultTailSpec() as TailSpec] : []
+            });
+        }
+    };
+
+    // Callback for rounded corners checkbox changed
+    const handleRoundedCornersChanged = (newValue: boolean | undefined) => {
+        setIsRoundedCornersChecked(newValue || false);
+
+        // Update the Comical canvas on the page frame
+        const bubbleMgr = ComicTool.bubbleManager();
+        if (bubbleMgr) {
+            const radius = newValue ? 8 : undefined;
+            bubbleMgr.updateSelectedItemBubbleSpec({
+                cornerRadiusX: radius,
+                cornerRadiusY: radius
             });
         }
     };
@@ -329,6 +353,27 @@ const ComicToolControls: React.FunctionComponent = () => {
                 return false;
             default:
                 return true;
+        }
+    };
+
+    const styleSupportsRoundedCorners = (
+        currentBubbleSpec: BubbleSpec | undefined
+    ) => {
+        if (!currentBubbleSpec) {
+            return false;
+        }
+
+        switch (currentBubbleSpec.style) {
+            case "caption":
+                return true;
+            case "none":
+                // Just text - rounded corners applicable if it has a background color
+                return (
+                    currentBubbleSpec.backgroundColors &&
+                    currentBubbleSpec.backgroundColors.length > 0
+                );
+            default:
+                return false;
         }
     };
 
@@ -494,11 +539,29 @@ const ComicToolControls: React.FunctionComponent = () => {
                         <div className="showTailCheckbox">
                             <MuiCheckbox
                                 label="Show Tail"
-                                l10nKey="EditTab.Toolbox.ComicTool.Options.Style.ShowTail"
+                                l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
                                 disabled={!styleSupportsShowTail(style)}
                                 checked={showTailChecked}
                                 onCheckChanged={v => {
                                     handleShowTailChanged(v as boolean);
+                                }}
+                            />
+                        </div>
+                        <div
+                            className={
+                                // If rounded corners is not supported, the hidden class will make it not display,
+                                // instead of merely disabled but still there (as with the MuiCheckbox disabled parameter).
+                                styleSupportsRoundedCorners(currentBubbleSpec)
+                                    ? ""
+                                    : "hidden"
+                            }
+                        >
+                            <MuiCheckbox
+                                label="Rounded Corners"
+                                l10nKey="EditTab.Toolbox.ComicTool.Options.RoundedCorners"
+                                checked={isRoundedCornersChecked}
+                                onCheckChanged={newValue => {
+                                    handleRoundedCornersChanged(newValue);
                                 }}
                             />
                         </div>

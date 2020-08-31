@@ -1859,6 +1859,16 @@
         <source xml:lang="en">None</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.RoundedCorners" sil:dynamic="true">
+        <source xml:lang="en">Rounded Corners</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.RoundedCorners</note>
+        <note>This checkbox indicates whether a text box has rounded corners instead of square corners.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowTail" sil:dynamic="true">
+        <source xml:lang="en">Show Tail</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.ShowTail</note>
+        <note>This checkbox indicates if a line tail should be shown or not.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style" sil:dynamic="true">
         <source xml:lang="en">Style</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
@@ -1887,12 +1897,6 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style.JustText</note>
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style does not have any bubble at all.</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.ShowTail" sil:dynamic="true">
-        <source xml:lang="en">Show Tail</source>
-        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.ShowTail</note>
-        <note>Refers to the style of bubble used by the callout</note>
-        <note>This checkbox indicates if a line tail should be shown or not.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Speech" sil:dynamic="true">
         <source xml:lang="en">Speech</source>
