@@ -143,7 +143,7 @@ export default class AudioRecording {
     private currentAudioId: string;
     private elementsToPlayConsecutivelyStack: Element[] = []; // When we are playing audio, this holds the segments we haven't yet finished playing, including the one currently playing. Thus, when it's empty we are not playing audio at all
     private subElementsWithTimings: [Element, number][] = [];
-    private audioPlayStartTime: number | null = null; // milliseconds (since 1970/01/01, from new Date().getTime())
+    private audioPlayOriginalStartTime: number | null = null; // milliseconds (since 1970/01/01, from new Date().getTime())
     private awaitingNewRecording: boolean;
 
     private audioSplitButton: HTMLButtonElement;
@@ -1335,22 +1335,22 @@ export default class AudioRecording {
 
             // Start playing the audio first.
             mediaPlayer.play();
-            this.audioPlayStartTime = new Date().getTime();
+            this.audioPlayOriginalStartTime = new Date().getTime();
 
             // Now set in motion what is needed to advance the highlighting (if applicable)
-            this.highlightNextSubElement(this.audioPlayStartTime);
+            this.highlightNextSubElement(this.audioPlayOriginalStartTime);
         }
     }
 
     // Moves the highlight to the next sub-element
-    // startTimeInSecs is an optional fallback that will be used in case the currentTime cannot be determined from the audio player element.
     // Note: May kick off some async work, but it's fairly inconsequential and no need to await it currently.
-    // audioPlayStartTime: The value of this.audioPlayStartTime at the time when the audio file was started.
-    //     This is used to check in the future if the timeouts we started are still applicable,
-    //     Or if the user has navigated to another page already.
+    // originalStartTime: The value of this.audioPlayOriginalStartTime at the time when the audio file started playing.
+    //     This is used to check in the future if the timeouts we started are still applicable or not
+    //     (e.g. navigating to another page invalidates them).
     //     Note: the timestamp is of the whole audio file, not the start of each of the sub-elements corresponding to that audio file
+    // startTimeInSecs is an optional fallback that will be used in case the currentTime cannot be determined from the audio player element.
     private highlightNextSubElement(
-        audioPlayStartTime: number,
+        originalStartTime: number,
         startTimeInSecs: number = 0
     ) {
         // the item should not be popped off the stack until it's completely done with.
@@ -1383,19 +1383,19 @@ export default class AudioRecording {
         const durationInSecs = Math.max(endTimeInSecs - currentTimeInSecs, 0.1);
 
         setTimeout(() => {
-            this.onSubElementHighlightTimeEnded(audioPlayStartTime);
+            this.onSubElementHighlightTimeEnded(originalStartTime);
         }, durationInSecs * 1000);
     }
 
     // Handles a timeout indicating that the expected time for highlighting the current subElement has ended.
     // If we've really played to the end of that subElement, highlight the next one (if any).
-    // audioPlayStartTime: The value of this.audioPlayStartTime at the time when the audio file was started.
-    //     This is used to check in the future if the timeouts we started are still applicable,
-    //     Or if the user has navigated to another page already.
+    // originalStartTime: The value of this.audioPlayOriginalStartTime at the time when the audio file started playing.
+    //     This is used to check in the future if the timeouts we started are still applicable or not
+    //     (e.g. navigating to another page invalidates them).
     //     Note: the timestamp is of the whole audio file, not the start of each of the sub-elements corresponding to that audio file
-    private onSubElementHighlightTimeEnded(audioPlayStartTime: number) {
+    private onSubElementHighlightTimeEnded(originalStartTime: number) {
         // Check if the user has changed pages since the original audio for this started playing.
-        if (audioPlayStartTime !== this.audioPlayStartTime) {
+        if (originalStartTime !== this.audioPlayOriginalStartTime) {
             return;
         }
 
@@ -1429,7 +1429,7 @@ export default class AudioRecording {
             const minRemainingDurationInSecs =
                 nextStartTimeInSecs - playedDurationInSecs;
             setTimeout(() => {
-                this.onSubElementHighlightTimeEnded(audioPlayStartTime);
+                this.onSubElementHighlightTimeEnded(originalStartTime);
             }, minRemainingDurationInSecs * 1000);
 
             return;
@@ -1437,7 +1437,7 @@ export default class AudioRecording {
 
         this.subElementsWithTimings.pop();
 
-        this.highlightNextSubElement(audioPlayStartTime, nextStartTimeInSecs);
+        this.highlightNextSubElement(originalStartTime, nextStartTimeInSecs);
     }
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
@@ -1494,7 +1494,7 @@ export default class AudioRecording {
                 // Nothing left to play
                 this.elementsToPlayConsecutivelyStack = [];
                 this.subElementsWithTimings = [];
-                this.audioPlayStartTime = null;
+                this.audioPlayOriginalStartTime = null;
 
                 if (this.audioRecordingMode == AudioRecordingMode.TextBox) {
                     // The playback mode could've been playing in Sentence mode (and highlighted the Playback Segment: a sentence)
@@ -2317,7 +2317,7 @@ export default class AudioRecording {
 
     public async newPageReady(): Promise<void> {
         // Changing the page causes the previous page's audio to stop playing (be "emptied").
-        this.audioPlayStartTime = null;
+        this.audioPlayOriginalStartTime = null;
 
         // ENHANCE: Optimization? I think the pageDocBody could be safely cached upon newPageReady and placed in a member variable.
         //          Then we wouldn't need to find the body element so many times
