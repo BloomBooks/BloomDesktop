@@ -59,7 +59,7 @@ export function showSetupDialog(showWhat) {
                     "Set up Leveled Reader Tool"
                 );
 
-            var h = 580;
+            var h = 600;
             var w = 720;
             var size = getAppropriateDialogSize(h, w);
             h = size[0];

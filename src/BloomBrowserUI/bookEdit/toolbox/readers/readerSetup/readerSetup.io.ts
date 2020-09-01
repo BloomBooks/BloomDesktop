@@ -13,76 +13,76 @@ import { ReaderStage, ReaderLevel, ReaderSettings } from "../ReaderSettings";
 import "../../../../lib/jquery.onSafe.js";
 import * as _ from "underscore";
 
+interface ILevelSetting {
+    // in the right hand panel, the span for editing the value has this ID prefixed with "max-",
+    // and the check box for enabling it has this ID prefixed with "use-"
+    // In the left pane, this is the class for the span containing the value
+    cellClass: string;
+    // functions to get and set the value in the level object
+    getter: (level: ReaderLevel) => number;
+    setter: (level: ReaderLevel, v: number) => number;
+    // Value in parens in same cell; a subcell setting may not have further subcells.
+    subcell?: ILevelSetting;
+}
+
 // Data to help configure the things that differ for each level setting.
-// columnLabel is not yet used, as it only appears in pug and I don't know
-// how to use it there. However, if we redo in React, we could use it, so I'm keeping it.
-export const levelSettings = [
+export const levelSettings: ILevelSetting[] = [
     {
-        columnLabel: "w/s",
+        cellClass: "glyphs-per-word",
+        getter: level => level.maxGlyphsPerWord,
+        setter: (level: ReaderLevel, v: number) => (level.maxGlyphsPerWord = v),
+        subcell: {
+            cellClass: "average-glyphs-per-word",
+            getter: level => level.maxAverageGlyphsPerWord,
+            setter: (level: ReaderLevel, v: number) =>
+                (level.maxAverageGlyphsPerWord = v)
+        }
+    },
+    {
         cellClass: "words-per-sentence",
         getter: level => level.maxWordsPerSentence,
         setter: (level: ReaderLevel, v: number) =>
-            (level.maxWordsPerSentence = v)
+            (level.maxWordsPerSentence = v),
+        subcell: {
+            cellClass: "average-words-per-sentence",
+            getter: level => level.maxAverageWordsPerSentence,
+            setter: (level: ReaderLevel, v: number) =>
+                (level.maxAverageWordsPerSentence = v)
+        }
     },
     {
-        columnLabel: "w/p",
         cellClass: "words-per-page",
         getter: level => level.maxWordsPerPage,
-        setter: (level: ReaderLevel, v: number) => (level.maxWordsPerPage = v)
+        setter: (level: ReaderLevel, v: number) => (level.maxWordsPerPage = v),
+        subcell: {
+            cellClass: "average-words-per-page",
+            getter: level => level.maxAverageWordsPerPage,
+            setter: (level: ReaderLevel, v: number) =>
+                (level.maxAverageWordsPerPage = v)
+        }
     },
     {
-        columnLabel: "w/b",
         cellClass: "words-per-book",
         getter: level => level.maxWordsPerBook,
-        setter: (level: ReaderLevel, v: number) => (level.maxWordsPerBook = v)
+        setter: (level: ReaderLevel, v: number) => (level.maxWordsPerBook = v),
+        subcell: {
+            cellClass: "unique-words-per-book",
+            getter: level => level.maxUniqueWordsPerBook,
+            setter: (level: ReaderLevel, v: number) =>
+                (level.maxUniqueWordsPerBook = v)
+        }
     },
     {
-        columnLabel: "uw/b",
-        cellClass: "unique-words-per-book",
-        getter: level => level.maxUniqueWordsPerBook,
-        setter: (level: ReaderLevel, v: number) =>
-            (level.maxUniqueWordsPerBook = v)
-    },
-    {
-        columnLabel: "l/w",
-        cellClass: "glyphs-per-word",
-        getter: level => level.maxGlyphsPerWord,
-        setter: (level: ReaderLevel, v: number) => (level.maxGlyphsPerWord = v)
-    },
-    {
-        columnLabel: "s/p",
         cellClass: "sentences-per-page",
         getter: level => level.maxSentencesPerPage,
         setter: (level: ReaderLevel, v: number) =>
-            (level.maxSentencesPerPage = v)
-    },
-    {
-        columnLabel: "w/s",
-        cellClass: "average-words-per-sentence",
-        getter: level => level.maxAverageWordsPerSentence,
-        setter: (level: ReaderLevel, v: number) =>
-            (level.maxAverageWordsPerSentence = v)
-    },
-    {
-        columnLabel: "w/p",
-        cellClass: "average-words-per-page",
-        getter: level => level.maxAverageWordsPerPage,
-        setter: (level: ReaderLevel, v: number) =>
-            (level.maxAverageWordsPerPage = v)
-    },
-    {
-        columnLabel: "s/p",
-        cellClass: "average-sentences-per-page",
-        getter: level => level.maxAverageSentencesPerPage,
-        setter: (level: ReaderLevel, v: number) =>
-            (level.maxAverageSentencesPerPage = v)
-    },
-    {
-        columnLabel: "l/w",
-        cellClass: "average-glyphs-per-word",
-        getter: level => level.maxAverageGlyphsPerWord,
-        setter: (level: ReaderLevel, v: number) =>
-            (level.maxAverageGlyphsPerWord = v)
+            (level.maxSentencesPerPage = v),
+        subcell: {
+            cellClass: "average-sentences-per-page",
+            getter: level => level.maxAverageSentencesPerPage,
+            setter: (level: ReaderLevel, v: number) =>
+                (level.maxAverageSentencesPerPage = v)
+        }
     }
 ];
 
@@ -133,6 +133,36 @@ export function setPreviousMoreWords(words: string) {
 }
 export function getPreviousMoreWords(): string {
     return previousMoreWords;
+}
+
+// Return the standard span HTML for displaying the specified setting of the given level.
+// Format as a subcell (surround with parens) if it has a value and subcell is true.
+function spanForLevelSetting(
+    level: ReaderLevel,
+    s: ILevelSetting,
+    subcell: boolean
+): string {
+    return spanForSettingWithText(s, setLevelValue(s.getter(level)), subcell);
+}
+// Return the standard span HTML for displaying the specified setting, given its
+// value as content. Format as a subcell if that argument is true.
+// Note: the keyUp handler attached to .level-textbox by attachEventHandlers() in
+// readerSetup.ui.ts unfortunately also has detailed knowledge of how setting
+// spans and subcells are formatted.
+export function spanForSettingWithText(
+    s: ILevelSetting,
+    content: string,
+    subcell: boolean
+): string {
+    // In subcells we don't display the "-" if the value is not set.
+    const adjustedContent = subcell && content === "-" ? "" : content;
+    // We want the span even if it is empty. It marks where content will
+    // be inserted if the user types it on the right.
+    const span = `<span class="${s.cellClass}">${adjustedContent}</span>`;
+    if (subcell && adjustedContent) {
+        return " (" + span + ")";
+    }
+    return span;
 }
 
 /**
@@ -208,12 +238,16 @@ function loadReaderSetupData(jsonData: string): void {
                 (j + 1) +
                 "</td>" +
                 levelSettings
-                    .map(
-                        s =>
-                            `<td class="${s.cellClass}">${setLevelValue(
-                                s.getter(level)
-                            )}</td>`
-                    )
+                    .map(s => {
+                        const subcell = s.subcell
+                            ? `${spanForLevelSetting(level, s.subcell, true)}`
+                            : "";
+                        return `<td>${spanForLevelSetting(
+                            level,
+                            s,
+                            false
+                        )}${subcell}</td>`;
+                    })
                     .join("") +
                 '<td style="display: none">' +
                 level.thingsToRemember.join("\n") +
@@ -314,12 +348,11 @@ function getChangedSettings(): ReaderSettings {
         delete level.name; //I don't know why this has a name, but it's apparently just part of the UI that we don't want to save
         const row: HTMLTableRowElement = <HTMLTableRowElement>levels[j];
         for (let k = 0; k < levelSettings.length; k++) {
-            levelSettings[k].setter(
-                level,
-                getLevelValue(
-                    (<HTMLTableCellElement>row.cells[k + 1]).innerHTML
-                )
-            );
+            const levelSetting = levelSettings[k];
+            extractSettingValue(row, levelSetting, level);
+            if (levelSetting.subcell) {
+                extractSettingValue(row, levelSetting.subcell, level);
+            }
         }
         level.thingsToRemember = (<HTMLTableCellElement>(
             row.cells[levelSettings.length + 1]
@@ -327,6 +360,15 @@ function getChangedSettings(): ReaderSettings {
         settings.levels.push(level);
     }
     return settings;
+}
+
+function extractSettingValue(
+    row: HTMLTableRowElement,
+    levelSetting: ILevelSetting,
+    level: ReaderLevel
+) {
+    const val = row.getElementsByClassName(levelSetting.cellClass)[0];
+    levelSetting.setter(level, getLevelValue(val.innerHTML));
 }
 
 function getLevelValue(innerHTML: string): number {
