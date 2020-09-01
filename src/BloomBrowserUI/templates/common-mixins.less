@@ -41,10 +41,8 @@
 @PictureStoryLandscape-Height: @Device16x9Landscape-Height;
 @PictureStoryLandscape-Width: @Device16x9Landscape-Width;
 
-// We seem to have a 1/2 pixel overflow that gradually shifts each page down when we make PDF
-@OverflowPreventFudge: 0.1;
 @A4Portrait-Height: 297mm;
-@A4Portrait-Width: 210mm - @OverflowPreventFudge;
+@A4Portrait-Width: 210mm;
 @A4Landscape-Height: @A4Portrait-Width;
 @A4Landscape-Width: @A4Portrait-Height;
 
