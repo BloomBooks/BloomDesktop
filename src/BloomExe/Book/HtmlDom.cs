@@ -621,7 +621,11 @@ namespace Bloom.Book
 		/// </summary>
 		public static void AddPublishClassToBody(XmlDocument dom)
 		{
-			AddClass((XmlElement) dom.SelectSingleNode("//body"), "publishMode");
+			AddClassToBody(dom, "publishMode");
+		}
+		public static void AddClassToBody(XmlDocument dom,string className)
+		{
+			AddClass((XmlElement)dom.SelectSingleNode("//body"), className);
 		}
 
 		public static void AddRightToLeftClassToBody(XmlDocument dom)

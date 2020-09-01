@@ -208,6 +208,10 @@ div#bloomDataDiv {
 @USComicPortrait-Height-Excess: @USComicPortrait-HeightFB -
     @RUSComicPortrait-Height;
 .bloom-fullBleed {
+    .marginBox {
+        //        position: relative;
+        display: none;
+    }
     //background-color: green;
     .bloom-page {
         transform-origin: top left;
@@ -237,18 +241,37 @@ div#bloomDataDiv {
 .bloom-mediaBox {
     overflow: hidden; // when the page is scaled, stuff in the longer dimension will actually exceed the bleed area. We want to clip that.
     &.A5Portrait {
-        width: @RA5Portrait-Width;
-        height: @RA5Portrait-Height;
+        width: @A5Portrait-Width;
+        height: @A5Portrait-Height;
     }
     &.A5Landscape {
-        width: @RA5Portrait-Height;
-        height: @RA5Portrait-Width;
+        width: @A5Portrait-Height;
+        height: @A5Portrait-Width;
     }
     &.USComicPortrait {
-        width: @RUSComicPortrait-Width;
-        height: @RUSComicPortrait-Height;
+        width: @USComicPortrait-Width;
+        height: @USComicPortrait-Height;
     }
     // Todo: this needs rules for every page size we support in full bleed (try to use a macro)
+}
+
+body.publishingWithFullBleed {
+    .bloom-mediaBox {
+        overflow: hidden; // when the page is scaled, stuff in the longer dimension will actually exceed the bleed area. We want to clip that.
+        &.A5Portrait {
+            width: @RA5Portrait-Width;
+            height: @RA5Portrait-Height;
+        }
+        &.A5Landscape {
+            width: @RA5Portrait-Height;
+            height: @RA5Portrait-Width;
+        }
+        &.USComicPortrait {
+            width: @RUSComicPortrait-Width;
+            height: @RUSComicPortrait-Height;
+        }
+        // Todo: this needs rules for every page size we support in full bleed (try to use a macro)
+    }
 }
 
 /*Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing

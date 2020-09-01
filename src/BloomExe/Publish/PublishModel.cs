@@ -138,7 +138,7 @@ namespace Bloom.Publish
 							BooketLayoutMethod=layoutMethod,
 							BookletPortion=BookletPortion,
 							BookIsFullBleed = _currentlyLoadedBook.FullBleed,
-							PrintWithFullBleed = PrintCurrentBookWithFullBleed(),
+							PrintWithFullBleed = GetPrintingWithFullBleed(),
 							Cmyk = _currentlyLoadedBook.UserPrefs.CmykPdf},
 						worker, doWorkEventArgs, View );
 					// Warn the user if we're starting to use too much memory.
@@ -167,7 +167,7 @@ namespace Bloom.Publish
 
 		public bool IsCurrentBookFullBleed => _currentlyLoadedBook.FullBleed;
 
-		private bool PrintCurrentBookWithFullBleed()
+		private bool GetPrintingWithFullBleed()
 		{
 			return _currentlyLoadedBook.FullBleed && GetBookletLayoutMethod() == BookletLayoutMethod.NoBooklet && _currentlyLoadedBook.UserPrefs.FullBleed;
 		}
@@ -189,7 +189,7 @@ namespace Bloom.Publish
 			AddStylesheetClasses(dom.RawDom);
 
 			PageLayout.UpdatePageSplitMode(dom.RawDom);
-			if (_currentlyLoadedBook.FullBleed && !PrintCurrentBookWithFullBleed())
+			if (_currentlyLoadedBook.FullBleed && !GetPrintingWithFullBleed())
 			{
 				ClipBookToRemoveFullBleed(dom);
 			}
@@ -217,7 +217,13 @@ namespace Bloom.Publish
 
 		private void AddStylesheetClasses(XmlDocument dom)
 		{
+			if (this.GetPrintingWithFullBleed())
+			{
+				HtmlDom.AddClassToBody(dom, "publishingWithFullBleed");
+			}
 			HtmlDom.AddPublishClassToBody(dom);
+			
+
 			if (LayoutPagesForRightToLeft)
 				HtmlDom.AddRightToLeftClassToBody(dom);
 			HtmlDom.AddHidePlaceHoldersClassToBody(dom);
