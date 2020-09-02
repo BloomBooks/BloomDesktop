@@ -2895,10 +2895,6 @@ namespace Bloom.Book
 			BookServer bookServer, bool orientationChanging, Layout pageLayout)
 		{
 			var printingDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
-			if (FullBleed)
-			{
-				InsertFullBleedMarkup(printingDom.Body);
-			}
 			AddCreationTypeAttribute(printingDom);
 
 			if (IsFolio)
@@ -2937,6 +2933,11 @@ namespace Bloom.Book
 					break;
 				 default:
 					throw new ArgumentOutOfRangeException("bookletPortion");
+			}
+			// Do this after we remove unwanted pages; otherwise, the page removal code must also remove the media boxes.
+			if (FullBleed)
+			{
+				InsertFullBleedMarkup(printingDom.Body);
 			}
 			if (!FullBleed)
 				AddCoverColor(printingDom, Color.White);

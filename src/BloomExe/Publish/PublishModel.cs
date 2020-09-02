@@ -455,7 +455,7 @@ namespace Bloom.Publish
 				progress.BackgroundWorker = new BackgroundWorker();
 				progress.BackgroundWorker.DoWork += (object sender, DoWorkEventArgs e) => {
 					var pdfProcess = new ProcessPdfWithGhostscript(type, sender as BackgroundWorker);
-					pdfProcess.ProcessPdfFile(PdfFilePath, outputPath);
+					pdfProcess.ProcessPdfFile(PdfFilePath, outputPath, _currentlyLoadedBook.FullBleed);
 				};
 				progress.BackgroundWorker.ProgressChanged += (object sender, ProgressChangedEventArgs e) => {
 					progress.Progress = e.ProgressPercentage;

@@ -168,10 +168,10 @@ namespace Bloom.Publish.PDF
 				@"Error message displayed in a message dialog box");
 		}
 
-		const int A4PortraitHeight = 297; // mm
-		private const int A4PortraitWidth = 210; // mm
-		const int bleedWidth = 3; // mm
-		private const int bleedExtra = bleedWidth * 2;
+		const double A4PortraitHeight = 297; // mm
+		private const double A4PortraitWidth = 210; // mm
+		const double bleedWidth = 3; // mm
+		private const double bleedExtra = bleedWidth * 2;
 		private const double USComicPortraitHeight = 10.5 * 25.4;
 		private const double USComicPortraitWidth = 6.75 * 25.4;
 
@@ -235,7 +235,8 @@ namespace Bloom.Publish.PDF
 			{
 				case "a5":
 					height = A4PortraitWidth + bleedExtra;
-					width = A4PortraitHeight / 2 + bleedExtra;
+					// we floor because that actually gives us the 148mm that is official
+					width = Math.Floor(A4PortraitHeight / 2) + bleedExtra;
 					break;
 				case "uscomic":
 					height = USComicPortraitHeight + bleedExtra;

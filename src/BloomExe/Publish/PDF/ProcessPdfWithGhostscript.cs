@@ -43,7 +43,7 @@ namespace Bloom.Publish.PDF
 		/// Process the input PDF file by compressing images and/or by converting color to CMYK.  The operations
 		/// to perform are established by the constructor.
 		/// </summary>
-		public void ProcessPdfFile(string inputFile, string outputFile)
+		public void ProcessPdfFile(string inputFile, string outputFile, bool bookIsFullBleed = false)
 		{
 			_inputPdfPath = inputFile;
 			_outputPdfPath = outputFile;
@@ -57,7 +57,7 @@ namespace Bloom.Publish.PDF
 				using (var tempPdfFile = TempFile.WithExtension(".pdf"))
 				{
 					var runner = new CommandLineRunner();
-					var arguments = GetArguments(tempPdfFile.Path);
+					var arguments = GetArguments(tempPdfFile.Path, null, bookIsFullBleed);
 					var fromDirectory = String.Empty;
 					var progress = new NullProgress();	// I can't figure out how to use any IProgress based code, but we show progress okay as is.
 					var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
@@ -167,7 +167,7 @@ namespace Bloom.Publish.PDF
 			return null;
 		}
 
-		private string GetArguments(string tempFile, string inputFile = null)
+		private string GetArguments(string tempFile, string inputFile = null, bool bookIsFullBleed = false)
 		{
 			var bldr = new StringBuilder();
 			// CompatibilityLevel=1.4 - Acrobat 5.0
@@ -201,6 +201,25 @@ namespace Bloom.Publish.PDF
 			bldr.Append(" -dDownsampleColorImages=true -dColorImageDownsampleThreshold=1.0");
 			bldr.Append(" -dDownsampleGrayImages=true -dGrayImageDownsampleThreshold=1.0");
 			bldr.Append(" -dDownsampleMonoImages=true -dMonoImageDownsampleThreshold=1.0");
+			if (bookIsFullBleed)
+			{
+				// Our full-bleed PDF page generation currently produces a spurious almost-blank page after each real
+				// page, even if we aren't printing the bleed area. Delete them.
+				// (This is a hack. We don't understand why we get these blank pages. There were fewer of them
+				// before we set media-box to be break-page-after="always", but then we could find no way to
+				// get rid of the remaining ones. Setting the background color of the media box typically reveals one pixel of
+				// that color on the otherwise blank pages, so it appears that some measurement may be off.
+				// Possibly it is related to the fact that when GeckoFx 60 is told to print a 154x216 (RA5) page,
+				// it actually makes one 153.8 x 215.9. (We suspect a conversion to 96dpi pixels followed by rounding
+				// down.) Then the extra fraction of a pixel in the HTML media box, which is also exactly 154x216,
+				// gets drawn on the next page. However, even if right, this is not the whole story; we could not
+				// get rid of all the blank pages by making the media box a pixel or so smaller, and attempts to
+				// do so mysteriously caused the marginBox and all its contents not to be rendered in body pages.
+				// We have no idea what did, or could have, caused that. Nor any idea why we only have this problem
+				// when doing full bleed. #NextGecko make sure we don't start losing half the pages!)
+				bldr.Append(" -sPageList=odd");
+			}
+
 			if (String.IsNullOrEmpty(inputFile))
 				inputFile = _inputPdfPath;
 			bldr.AppendFormat($" -sOutputFile=\"{tempFile}\" \"{DoubleBracesInInputPath(inputFile)}\"");
