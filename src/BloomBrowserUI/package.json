@@ -48,7 +48,7 @@
         "abcdevicepug": "pug templates/xMatter/ABC-Reader-Device-XMatter/ABC-Reader-Device-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/ABC-Reader-Device-XMatter --pretty",
         "watch-abc": "npm-run-all --parallel abcpug abcdevicepug watchTemplatesLess",
         "watch-kyrgyz": "npm-run-all --parallel kyrgyzpug watchTemplatesLess",
-        "kyrgyzpug": "pug templates/xMatter/Kyrgyz-XMatter/Kyrgyz-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/Kyrgyz-XMatter --pretty",
+        "kyrgyzpug": "pug templates/xMatter/Kyrgyz2020-XMatter/Kyrgyz2020-Xmatter.pug --pretty --watch -o ../../output/browser/templates/xMatter/Kyrgyz2020-XMatter --pretty",
         "// Afghan xmatter development": "",
         "afghanpug": "pug templates/customXMatter/ --pretty --watch -o ../../output/browser/templates/customXMatter --pretty",
         "daripug": "pug templates/customXMatter/Dari-XMatter/ --pretty --watch -o ../../output/browser/templates/customXMatter/Dari-XMatter --pretty",

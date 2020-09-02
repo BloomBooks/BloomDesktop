@@ -52,11 +52,10 @@ div.bloom-page.outsideBackCover {
     margin-bottom: 1cm;
 }
 
+// don't show second language on cover
 .frontCover
     .bloom-translationGroup.bookTitle
-    .bloom-editable.bloom-contentNational1 {
-    /* font-size: 120%; */
-    font-size: 226%;
+    .bloom-editable.bloom-contentNational1:not(.bloom-content1) {
     display: none;
 }
 
