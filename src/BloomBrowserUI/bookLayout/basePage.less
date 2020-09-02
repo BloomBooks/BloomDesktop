@@ -230,41 +230,43 @@ div#bloomDataDiv {
     }
 }
 
-// In full bleed mode, this will be @bleed larger than the desired page size. The "media" here is the phsyical paper that
-// a printshow would have to work with. E.g. RA4, RA5.
-// If bloom-fullBleed mode is off, this div, in the DOM, doesn't exist.
-// See editMode.less for more things that we do with this (it allows us to draw the bleed and safety areas).
+// overridden when publishingWithoutFullBleed
 .bloom-mediaBox {
     overflow: hidden; // when the page is scaled, stuff in the longer dimension will actually exceed the bleed area. We want to clip that.
     &.A5Portrait {
-        width: @A5Portrait-Width;
-        height: @A5Portrait-Height;
+        width: @RA5Portrait-Width;
+        height: @RA5Portrait-Height;
     }
     &.A5Landscape {
-        width: @A5Portrait-Height;
-        height: @A5Portrait-Width;
+        width: @RA5Portrait-Height;
+        height: @RA5Portrait-Width;
     }
     &.USComicPortrait {
-        width: @USComicPortrait-Width;
-        height: @USComicPortrait-Height;
+        width: @RUSComicPortrait-Width;
+        height: @RUSComicPortrait-Height;
     }
     // Todo: this needs rules for every page size we support in full bleed (try to use a macro)
 }
 
-body.publishingWithFullBleed {
+// In full bleed mode, this will be @bleed larger than the desired page size. The "media" here is the phsyical paper that
+// a printshow would have to work with. E.g. RA4, RA5.
+// If bloom-fullBleed mode is off, this div, in the DOM, doesn't exist.
+// See editMode.less for more things that we do with this (it allows us to draw the bleed and safety areas).
+body.publishingWithoutFullBleed {
     .bloom-mediaBox {
-        overflow: hidden; // when the page is scaled, stuff in the longer dimension will actually exceed the bleed area. We want to clip that.
+        overflow: hidden; // when the page is scaled and not printing bleed, stuff in the both dimensions
+        // will actually exceed the bleed area. We want to clip that.
         &.A5Portrait {
-            width: @RA5Portrait-Width;
-            height: @RA5Portrait-Height;
+            width: @A5Portrait-Width;
+            height: @A5Portrait-Height;
         }
         &.A5Landscape {
-            width: @RA5Portrait-Height;
-            height: @RA5Portrait-Width;
+            width: @A5Portrait-Height;
+            height: @A5Portrait-Width;
         }
         &.USComicPortrait {
-            width: @RUSComicPortrait-Width;
-            height: @RUSComicPortrait-Height;
+            width: @USComicPortrait-Width;
+            height: @USComicPortrait-Height;
         }
         // Todo: this needs rules for every page size we support in full bleed (try to use a macro)
     }

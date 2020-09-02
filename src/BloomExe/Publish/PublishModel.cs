@@ -221,6 +221,10 @@ namespace Bloom.Publish
 			{
 				HtmlDom.AddClassToBody(dom, "publishingWithFullBleed");
 			}
+			else
+			{
+				HtmlDom.AddClassToBody(dom, "publishingWithoutFullBleed");
+			}
 			HtmlDom.AddPublishClassToBody(dom);
 			
 
