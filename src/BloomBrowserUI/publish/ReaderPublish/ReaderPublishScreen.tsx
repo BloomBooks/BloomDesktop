@@ -123,7 +123,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                         url={
                             pathToOutputBrowser +
                             "bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
-                            bookUrl
+                            bookUrl +
+                            "&independent=false&host=bloomdesktop"
                         }
                         showRefresh={true}
                         highlightRefreshIcon={highlightRefresh}
