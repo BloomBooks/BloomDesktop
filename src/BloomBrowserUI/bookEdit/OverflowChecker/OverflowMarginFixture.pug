@@ -23,30 +23,35 @@ body
 	// Test#0
 	-var margins="width:25em;height:45px";
 	-var styles="font-family:'Andika New Basic', Andika;font-size:20pt";
-	.marginBox(style=margins)
-		.bloom-translationGroup
-			+standardTestField(name="Test that expanding vertically past margins overflows", style=styles).expectToOverflow Too much test text to put on one line at 20pt font.
+	.bloom-page
+		.marginBox(style=margins)
+			.bloom-translationGroup
+				+standardTestField(name="Test that expanding vertically past margins overflows", style=styles).expectToOverflow Too much test text to put on one line at 20pt font.
 
 	// Test#1
-	.marginBox(style=margins)
-		.bloom-translationGroup
-			+standardTestField(name="Test that not expanding vertically past margins does not overflow", style=styles) Just enough text.
+	.bloom-page
+		.marginBox(style=margins)
+			.bloom-translationGroup
+				+standardTestField(name="Test that not expanding vertically past margins does not overflow", style=styles) Just enough text.
 
 	// Test#2
 	-margins = "width:25em;height:90px";
-	.marginBox(style=margins)
-		+standardTranslationGroup(style=styles) Just enough text.
-		.bloom-translationGroup
-			+standardTestField(name="Test that multiple translation groups don't necessarily overflow", style=styles) Just enough text.
+	.bloom-page
+		.marginBox(style=margins)
+			+standardTranslationGroup(style=styles) Just enough text.
+			.bloom-translationGroup
+				+standardTestField(name="Test that multiple translation groups don't necessarily overflow", style=styles) Just enough text.
 
 	// Test#3
-	.marginBox(style=margins)
-		+standardTranslationGroup(style=styles) Just enough text.
-		.bloom-translationGroup
-			+standardTestField(name="Test that multiple translation groups expanding vertically past margins overflows", style=styles).expectToOverflow Too much test text to put on one line at 20pt font.
+	.bloom-page
+		.marginBox(style=margins)
+			+standardTranslationGroup(style=styles) Just enough text.
+			.bloom-translationGroup
+				+standardTestField(name="Test that multiple translation groups expanding vertically past margins overflows", style=styles).expectToOverflow Too much test text to put on one line at 20pt font.
 
 	// Test#4
-	.marginBox(style=margins)
-		+standardTranslationGroup(style=styles) Too much test text to put on one line at 20pt font.
-		.bloom-translationGroup
-			+standardTestField(name="Test that earlier translation group makes this one expand vertically past margins", style=styles).expectToOverflow Just enough text.
+	.bloom-page
+		.marginBox(style=margins)
+			+standardTranslationGroup(style=styles) Too much test text to put on one line at 20pt font.
+			.bloom-translationGroup
+				+standardTestField(name="Test that earlier translation group makes this one expand vertically past margins", style=styles).expectToOverflow Just enough text.
