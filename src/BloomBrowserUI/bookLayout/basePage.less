@@ -181,7 +181,7 @@ span.bloom-linebreak {
 
 div.bloom-page {
     display: block;
-    page-break-after: auto;
+
     background-color: @bloom-page-background;
 }
 div#bloomDataDiv {
@@ -207,6 +207,7 @@ div#bloomDataDiv {
 @USComicPortrait-HeightFB: @USComicPortrait-Height * @RUSComic-Scale;
 @USComicPortrait-Height-Excess: @USComicPortrait-HeightFB -
     @RUSComicPortrait-Height;
+
 .bloom-fullBleed {
     //background-color: green;
     .bloom-page {
@@ -232,6 +233,7 @@ div#bloomDataDiv {
 
 // overridden when publishingWithoutFullBleed
 .bloom-mediaBox {
+    page-break-after: always;
     overflow: hidden; // when the page is scaled, stuff in the longer dimension will actually exceed the bleed area. We want to clip that.
     &.A5Portrait {
         width: @RA5Portrait-Width;
