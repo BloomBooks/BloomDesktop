@@ -69,14 +69,20 @@ namespace Bloom.Publish.PDF
 
 			try
 			{
-				if (specs.BookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet || specs.PrintWithFullBleed);
+				// Shrink the PDF file, especially if it has large color images.  (BL-3721)
+				// Also if the book is full bleed we need to remove some spurious pages.
+				// Removing spurious pages must be done BEFORE we switch pages around to make a booklet!
+				// Note: previously compression was the last step, after making a booklet. We moved it before for
+				// the reason above. Seems like it would also have performance benefits, if anything, to shrink
+				// the file before manipulating it further. Just noting it in case there are unexpected issues.
+				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker);
+				fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath, specs.BookIsFullBleed);
+				if (specs.BookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet || specs.PrintWithFullBleed)
 				{
 					//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
 					MakeBooklet(specs);
 				}
-				// Shrink the PDF file, especially if it has large color images.  (BL-3721)
-				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker);
-				fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath);
+
 				// Check that we got a valid, readable PDF.
 				// If we get a reliable fix to BL-932 we can take this out altogether.
 				// It's probably redundant, since the compression process would probably fail with this
