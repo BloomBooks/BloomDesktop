@@ -419,6 +419,7 @@ namespace Bloom.Publish
 			cmykItem.Click += (sender, args) =>
 				{
 					_model.BookSelection.CurrentSelection.UserPrefs.CmykPdf = cmykItem.Checked;
+					SetModelFromButtons(); // this calls for updating the preview so the user won't think it's done already
 				};
 
 			var fullBleedText = LocalizationManager.GetString("PublishTab.PdfMaker.FullBleed", "Full Bleed");
