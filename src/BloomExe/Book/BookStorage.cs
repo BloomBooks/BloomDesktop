@@ -2286,7 +2286,7 @@ namespace Bloom.Book
 			var useTitle = titles.FirstOrDefault(t => t.Attributes["lang"]?.Value == "en");
 			if (useTitle == null)
 				return;
-			var content = BookData.TextOfInnerHtml(useTitle.InnerText);
+			var content = useTitle.InnerText;
 			if (string.IsNullOrEmpty(content))
 				return;
 			var newElt = dataDiv.OwnerDocument.CreateElement("div");

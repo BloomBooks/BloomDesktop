@@ -1510,7 +1510,7 @@ namespace Bloom.Book
 		/// This might have markup, e.g., making a word italic. It will also have the amp, lt, and gt escaped.
 		/// We want to reduce it to plain text to store in bookInfo.
 		/// </summary>
-		/// <param name="input"></param>
+		/// <param name="input">Must be HTML-encoded.</param>
 		/// <returns></returns>
 		internal static string TextOfInnerHtml(string input)
 		{
