@@ -785,16 +785,18 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(GetPathToHtml(folderPath)).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='tpi' and text()='Tambu Sut']", 1);
 		}
 
-		[Test]
-		public void CreateBookOnDiskFromTemplate_ShellHasNoOriginalTitle_CopyFromEnglish()
+		[TestCase("Vaccinations")]
+		[TestCase("Vaccinations & Immunizations")]	// Test characters which have special meaning in HTML (the "&")
+		[TestCase("<p><span id=\"s1\" class=\"audio-sentence\">Vaccinations & Immunizations.</span> <span id=\"s2\" class=\"audio-sentence\">Prevention > Treatment</span>", "Vaccinations & Immunizations. Prevention > Treatment")]	// Talking Book
+		public void CreateBookOnDiskFromTemplate_ShellHasNoOriginalTitle_CopyFromEnglish(string englishTitle, string expectedOriginalTitle = null)
 		{
 			var shellFolderPath = GetShellBookFolder(
-				@" <div id='bloomDataDiv'>
+				$@" <div id='bloomDataDiv'>
 					  <div data-book='bookTitle' lang='tpi'>Tambu Sut</div>
-					  <div data-book='bookTitle' lang='en'>Vaccinations</div>
+					  <div data-book='bookTitle' lang='en'>{englishTitle}</div>
 					</div>", null);
 			string folderPath = _starter.CreateBookOnDiskFromTemplate(shellFolderPath, _projectFolder.Path);
-			AssertThatXmlIn.HtmlFile(GetPathToHtml(folderPath)).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalTitle' and @lang='*' and text()='Vaccinations']", 1);
+			AssertThatXmlIn.HtmlFile(GetPathToHtml(folderPath)).HasSpecifiedNumberOfMatchesForXpath($"//div[@id='bloomDataDiv']/div[@data-book='originalTitle' and @lang='*' and text()='{expectedOriginalTitle ?? englishTitle}']", 1);
 			AssertThatXmlIn.HtmlFile(GetPathToHtml(folderPath)).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='originalTitle']", 1);
 		}
 
