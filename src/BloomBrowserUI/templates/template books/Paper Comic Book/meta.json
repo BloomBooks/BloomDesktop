@@ -1,0 +1,15 @@
+{
+    "bookInstanceId": "8ed5e1fc-ca25-4a67-a7bf-f2dd2ca4e7F8",
+    "experimental": "false",
+    "suitableForVernacularLibrary": "true",
+    "suitableForMakingShells": "true",
+    "tools": [
+        {
+            "name": "comic",
+            "enabled": true,
+            "state": null
+        }
+    ],
+    "currentTool": "comicTool",
+    "toolboxIsOpen": true
+}
