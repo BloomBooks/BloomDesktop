@@ -118,7 +118,8 @@ namespace Bloom.Collection
 		private void LoadBooks()
 		{
 			_bookInfos = new List<Book.BookInfo>();
-			var bookFolders =  new DirectoryInfo(_path).GetDirectories();//although NTFS may already sort them, that's an implementation detail
+			var bookFolders = ProjectContext.SafeGetDirectories(_path).Select(dir => new DirectoryInfo(dir)).ToArray();
+			
 			//var orderedBookFolders = bookFolders.OrderBy(f => f.Name);
 			var orderedBookFolders = bookFolders.OrderBy(f => f.Name, new NaturalSortComparer<string>());
 			foreach (var folder in orderedBookFolders)
