@@ -118,7 +118,19 @@ namespace Bloom.Collection
 		private void LoadBooks()
 		{
 			_bookInfos = new List<Book.BookInfo>();
-			var bookFolders =  new DirectoryInfo(_path).GetDirectories();//although NTFS may already sort them, that's an implementation detail
+			// BL-8893 Sometimes users can get into a state where a template directory Bloom thinks it should
+			// look in is closed to Bloom by system permissions. In that case, skip that directory.
+			DirectoryInfo[] bookFolders;
+			try
+			{
+				bookFolders = new DirectoryInfo(_path).GetDirectories();//although NTFS may already sort them, that's an implementation detail
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				Logger.WriteEvent("*** Bloom folder access problem: " + ex.Message);
+				return;
+			}
+			
 			//var orderedBookFolders = bookFolders.OrderBy(f => f.Name);
 			var orderedBookFolders = bookFolders.OrderBy(f => f.Name, new NaturalSortComparer<string>());
 			foreach (var folder in orderedBookFolders)
