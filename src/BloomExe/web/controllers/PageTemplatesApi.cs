@@ -83,23 +83,8 @@ namespace Bloom.web.controllers
 			return new [] {_bookSelection.CurrentSelection.CollectionSettings.FolderPath} // Start with the current collection
 				.Concat(_sourceCollectionsList.GetCollectionFolders()) // add all other source collections
 				.Distinct() //seems to be needed in case a shortcut points to a folder that's already in the list.
-				.SelectMany(Directory.GetDirectories) // get all the (book) folders in those collections
-					.Select(FindBookHtmlInFolder); // and get the book from each
-		}
-
-		private string FindBookHtmlInFolder(string folderPath)
-		{
-			// BL-8893 Sometimes users can get into a state where a template directory Bloom thinks it should
-			// look is closed to Bloom by system permissions. In that case, skip that directory.
-			try
-			{
-				return BookStorage.FindBookHtmlInFolder(folderPath);
-			}
-			catch (UnauthorizedAccessException ex)
-			{
-				Logger.WriteEvent("*** Bloom folder access problem: " + ex.Message);
-				return string.Empty;
-			}
+				.SelectMany(ProjectContext.SafeGetDirectories) // get all the (book) folders in those collections
+					.Select(BookStorage.FindBookHtmlInFolder); // and get the book from each
 		}
 
 		/// <summary>
