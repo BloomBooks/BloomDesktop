@@ -451,12 +451,12 @@ namespace Bloom
 			}
 			catch (UnauthorizedAccessException uaex)
 			{
-				Logger.WriteEvent("*** Bloom folder access problem: " + uaex.Message);
+				Logger.WriteError("Bloom folder access problem: ", uaex);
 				return new List<string>();
 			}
-			catch (DirectoryNotFoundException nfex)
+			catch (DirectoryNotFoundException dnfex)
 			{
-				Logger.WriteEvent("*** Bloom couldn't find a folder: " + nfex.Message);
+				Logger.WriteError("Bloom couldn't find a folder: ", dnfex);
 				return new List<string>();
 			}
 		}
