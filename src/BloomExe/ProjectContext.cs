@@ -216,7 +216,7 @@ namespace Bloom
 						var librarySettings = c.Resolve<CollectionSettings>();
 						var preferredSourceLanguagesInOrder = new List<string>();
 						preferredSourceLanguagesInOrder.Add(librarySettings.Language2Iso639Code);
-						if (!string.IsNullOrEmpty(librarySettings.Language3Iso639Code)
+						if (!String.IsNullOrEmpty(librarySettings.Language3Iso639Code)
 						    && librarySettings.Language3Iso639Code != librarySettings.Language2Iso639Code)
 							preferredSourceLanguagesInOrder.Add(librarySettings.Language3Iso639Code);
 
@@ -399,7 +399,7 @@ namespace Bloom
 
 			yield return templatesDir;
 
-			foreach (var templateDir in Directory.GetDirectories(templatesDir))
+			foreach (var templateDir in SafeGetDirectories(templatesDir))
 			{
 				yield return templateDir;
 			}
@@ -414,7 +414,7 @@ namespace Bloom
 		{
 			if (Directory.Exists(BloomFileLocator.SampleShellsDirectory))
 			{
-				foreach (var dir in Directory.GetDirectories(BloomFileLocator.SampleShellsDirectory))
+				foreach (var dir in SafeGetDirectories(BloomFileLocator.SampleShellsDirectory))
 				{
 					yield return dir;
 				}
@@ -440,6 +440,26 @@ namespace Bloom
 			return info.IsSuitableForMakingShells || info.IsSuitableForMakingTemplates;
 		}
 
+		// BL-8893 Sometimes users can get into a state where a template directory Bloom thinks it should
+		// look in is closed to Bloom by system permissions. In that case, skip that directory.
+		internal static IEnumerable<string> SafeGetDirectories(string pathToSearch)
+		{
+			try
+			{
+				return Directory.GetDirectories(pathToSearch);
+			}
+			catch (UnauthorizedAccessException uaex)
+			{
+				Logger.WriteError("Bloom folder access problem: ", uaex);
+				return new List<string>();
+			}
+			catch (DirectoryNotFoundException dnfex)
+			{
+				Logger.WriteError("Bloom couldn't find a folder: ", dnfex);
+				return new List<string>();
+			}
+		}
+
 		public static IEnumerable<string> GetUserInstalledDirectories()
 		{
 //Note: This is ordering may no be sufficient. The intent is to use the versino of a css from
@@ -452,12 +472,13 @@ namespace Bloom
 			//a users's existing just-fine document. We have to somehow address that, too.
 			if (Directory.Exists(GetInstalledCollectionsDirectory()))
 			{
-				foreach (var dir in Directory.GetDirectories(GetInstalledCollectionsDirectory()))
+				
+				foreach (var dir in SafeGetDirectories(GetInstalledCollectionsDirectory()))
 				{
 					yield return dir;
 
 					//more likely, what we're looking for will be found in the book folders of the collection
-					foreach (var templateDirectory in Directory.GetDirectories(dir))
+					foreach (var templateDirectory in SafeGetDirectories(dir))
 					{
 						// Per discussion in BL-6031, we only want to search template books.
 						// For example, if the user downloads a new version of Story Primer,
@@ -476,7 +497,7 @@ namespace Bloom
 					var collectionDirectory = ResolveShortcut.Resolve(shortcut);
 					if (Directory.Exists(collectionDirectory))
 					{
-						foreach (var templateDirectory in Directory.GetDirectories(collectionDirectory))
+						foreach (var templateDirectory in SafeGetDirectories(collectionDirectory))
 						{
 							if (ProjectContext.IsTemplateBookFolder(templateDirectory))
 								yield return templateDirectory;
@@ -618,15 +639,14 @@ namespace Bloom
 			}
 			catch (ApplicationException e)
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), e.Message);
+				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), e.Message);
 			}
 			catch (Exception e)
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
+				ErrorReport.NotifyUserOfProblem(e,
 					"Could not add a link for this shell library in the user collections directory");
 			}
 
 		}
-
 	}
 }
