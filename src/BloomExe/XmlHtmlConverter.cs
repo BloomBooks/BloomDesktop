@@ -147,7 +147,7 @@ namespace Bloom
 					catch (Exception e)
 					{
 						var exceptionWithHtmlContents = new Exception(string.Format("{0}{2}{2}{1}",
-							e.Message, newContents, Environment.NewLine));
+							e.Message, newContents, Environment.NewLine), innerException: e);
 						throw exceptionWithHtmlContents;
 					}
 				}
