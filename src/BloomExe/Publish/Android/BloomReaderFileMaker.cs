@@ -67,7 +67,7 @@ namespace Bloom.Publish.Android
 
 			BookCompressor.MakeSizedThumbnail(modifiedBook, backColor, modifiedBook.FolderPath, 256);
 
-			BookCompressor.CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
+			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
 				pathToFileForSha: BookStorage.FindBookHtmlInFolder(bookFolderPath));
 
 			return modifiedBook.FolderPath;

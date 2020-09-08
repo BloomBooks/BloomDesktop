@@ -60,7 +60,7 @@ namespace BloomTests.CollectionTab
 		// Imitate LibraryModel.MakeBloomPack() without the user interaction
 		private void MakeTestBloomPack(string bloomPackName, bool forReaderTools)
 		{
-			_testLibraryModel.RunCompressDirectoryTest(bloomPackName, forReaderTools);
+			_testLibraryModel.RunCompressCollectionDirectoryTest(bloomPackName, forReaderTools);
 		}
 
 		// Don't do anything with the zip file except read in the filenames
