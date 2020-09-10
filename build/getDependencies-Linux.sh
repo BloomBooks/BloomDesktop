@@ -105,7 +105,7 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"L10NSharp.dll*"=>"lib/dotnet/", "CheckOrFixXliff.exe*"=>"lib/dotnet/"}
 #     VCS: https://github.com/sillsdev/l10nsharp [refs/heads/master]
-# [5] build: PdfDroplet-Linux-Dev-Continuous (bt344)
+# [5] build: PdfDroplet-Linux-master-Continuous (bt344)
 #     project: PdfDroplet
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt344
 #     clean: false
