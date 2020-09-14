@@ -15,7 +15,7 @@
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "*",
-            "content": "<img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "content": "<div lang='en' class='USAID'>This publication is made possible by the support of the American People through the United States Agency for International Development (USAID) under Contract No. 72011519C00004 IBE-KR. The content does not necessarily reflect the views of USAID or the U.S. Government.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
             "condition": "always"
         },
         {

@@ -4,16 +4,14 @@
 @HeaderHeight: 3.5cm;
 @bleed: 3mm;
 
+// When we convert the pdf to cmyk, white and even #fefefe come out seemingly transparent,
+// which is wrong since there is a background color
+//@white: #fdfdfd;
+@white: white;
+
 div.bloom-page.outsideFrontCover,
 div.bloom-page.outsideBackCover {
     background-color: #193970 !important;
-}
-
-.bloom-translationGroup.bookTitle {
-    // padding here instead of margin so that it's still white in these areas instead of blue
-    padding-top: @bleed;
-    padding-left: 1cm;
-    padding-right: 1cm;
 }
 
 .outsideFrontCover .marginBox {
@@ -22,10 +20,11 @@ div.bloom-page.outsideBackCover {
     height: 100% !important;
     width: 100% !important;
 }
+
 .outsideBackCover .marginBox {
     top: 0;
     height: calc(100% - 15mm) !important;
-    width: calc(100% - 15mm) !important;
+    // width: calc(100% - 15mm) !important;
 
     [data-book="outside-back-cover-branding-bottom-html"] {
         display: none;
@@ -61,11 +60,19 @@ div.bloom-page.outsideBackCover {
 
 .frontCover .bloom-translationGroup.bookTitle {
     color: black;
-    background-color: white;
-    height: @HeaderHeight;
+    background-color: @white;
+    height: calc(
+        @HeaderHeight - @bleed
+            // if you touch this make sure the header is the same height one front and back covers!
+    );
     /*flex-basis: content;*/
     flex-direction: unset;
     align-items: center;
+
+    // padding here instead of margin so that it's still white in these areas instead of blue
+    padding-top: @bleed;
+    padding-left: 1cm;
+    padding-right: 1cm;
 }
 
 .frontCover .creditsRow:after {
@@ -74,14 +81,22 @@ div.bloom-page.outsideBackCover {
     font-size: 7px;
     letter-spacing: -2px;
 }
-.outsideBackCover [data-book="back-cover-boilerplate"] p:last-of-type {
+.outsideBackCover [data-book="outsideBackCover"] p:last-of-type {
     margin-bottom: 4em;
 }
-.outsideBackCover [data-book="back-cover-boilerplate"]:after {
-    content: "◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇";
+.outsideBackCover {
+    .Outside-Back-Cover-style {
+        margin-top: 8mm; // 15mm wasn't enough room for text 15mm;
+        text-align: left !important;
+        font-size: 9pt;
+    }
+}
+.outsideBackCover .divider {
     color: #97c955;
     font-size: 7px;
     letter-spacing: -2px;
+    margin-top: 8mm;
+    margin-bottom: 8mm; // wasn't enough room for text 15mm;
 }
 .frontCover {
     .coverBottomLangName,
@@ -90,7 +105,7 @@ div.bloom-page.outsideBackCover {
     }
 }
 div.bloom-page.coverColor {
-    color: white;
+    color: @white;
 }
 
 /* Element | http://localhost:8089/bloom/C%3A/Users/hatto/Documents/Bloom/Kyrgyz%20Branding%20Test/Book/8444a5b9-4b6a-476a-90da-cc003fbc1fea-memsim-Preview.html */
@@ -103,19 +118,21 @@ div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
     object-fit: contain;
 
     /* white border that fits the image, not its container*/
-    filter: drop-shadow(0 -3px 0 white) drop-shadow(0 3px 0 white)
-        drop-shadow(-3px 0 0 white) drop-shadow(3px 0 0 white);
+    filter: drop-shadow(0 -3px 0 @white) drop-shadow(0 3px 0 @white)
+        drop-shadow(-3px 0 0 @white) drop-shadow(3px 0 0 @white);
 }
 
 [data-book="outside-back-cover-branding-top-html"] {
-    background-color: white;
-    margin-left: -15mm;
+    background-color: @white;
+    margin-left: -18mm; // margin + 3mm of bleed
+    margin-right: -18mm; // margin + 3mm of bleed
     height: @HeaderHeight;
 }
 
-[data-book="back-cover-boilerplate"] {
+[data-book="outside-back-cover"] {
     margin-top: 10mm;
 }
+
 [data-book="level-image"] {
     margin-top: auto;
     margin-right: auto;
@@ -127,7 +144,7 @@ div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
 div.bloom-page {
     &.insideFrontCover,
     &.insideBackCover {
-        background-color: white !important;
+        background-color: @white !important;
     }
 }
 
