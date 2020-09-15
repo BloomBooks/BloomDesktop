@@ -2287,6 +2287,18 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
         <target xml:lang="te" state="needs-translation">None</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.RoundedCorners" sil:dynamic="true">
+        <source xml:lang="en">Rounded Corners</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.RoundedCorners</note>
+        <note>This checkbox indicates whether a text box has rounded corners instead of square corners.</note>
+        <target xml:lang="te" state="needs-translation">Rounded Corners</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ShowTail" sil:dynamic="true">
+        <source xml:lang="en">Show Tail</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.ShowTail</note>
+        <note>This checkbox indicates if a line tail should be shown or not.</note>
+        <target xml:lang="te" state="needs-translation">Show Tail</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style" sil:dynamic="true">
         <source xml:lang="en">Style</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
@@ -2320,13 +2332,6 @@
         <note>Refers to the style of bubble used by the callout</note>
         <note>This style does not have any bubble at all.</note>
         <target xml:lang="te" state="needs-translation">Just Text</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.ShowTail" sil:dynamic="true">
-        <source xml:lang="en">Show Tail</source>
-        <note>ID: EditTab.Toolbox.ComicTool.Options.Style.ShowTail</note>
-        <note>Refers to the style of bubble used by the callout</note>
-        <note>This checkbox indicates if a line tail should be shown or not.</note>
-        <target xml:lang="te" state="needs-translation">Show Tail</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Speech" sil:dynamic="true">
         <source xml:lang="en">Speech</source>
@@ -2679,7 +2684,20 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Average" sil:dynamic="true">
         <source xml:lang="en">avg per sentence</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Average</note>
+        <note>a label, needs to fit in about half toolbox width.</note>
         <target xml:lang="te" state="needs-translation">avg per sentence</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.AverageInBook" sil:dynamic="true">
+        <source xml:lang="en">avg in book</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.AverageInBook</note>
+        <note>a label, needs to fit in about half toolbox width.</note>
+        <target xml:lang="te" state="needs-translation">avg in book</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.AveragePerPage" sil:dynamic="true">
+        <source xml:lang="en">avg per page</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.AveragePerPage</note>
+        <note>a label, needs to fit in about half toolbox width.</note>
+        <target xml:lang="te" state="needs-translation">avg per page</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choice of Topic</source>
@@ -2743,6 +2761,11 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.SetUpLevels</note>
         <target xml:lang="te" state="final">అప్ సెట్ స్థాయిలు</target>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SentenceCounts" sil:dynamic="true">
+        <source xml:lang="en">Sentence Counts</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.SentenceCounts</note>
+        <target xml:lang="te" state="needs-translation">Sentence Counts</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisBook" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This Book</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.ThisBook</note>
@@ -2752,6 +2775,12 @@
         <source xml:lang="en">This Page</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.ThisPage</note>
         <target xml:lang="te" state="final">ఈ పేజీని</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisPageLC" sil:dynamic="true">
+        <source xml:lang="en">this page</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.ThisPageLC</note>
+        <note>lower case version of ThisPage</note>
+        <target xml:lang="te" state="needs-translation">this page</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true" approved="yes">
         <source xml:lang="en">total</source>
@@ -2772,6 +2801,11 @@
         <source xml:lang="en">Word Counts</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.WordCounts</note>
         <target xml:lang="te" state="final">పద కౌంట్స్</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WordLengths" sil:dynamic="true">
+        <source xml:lang="en">Word Lengths</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.WordLengths</note>
+        <target xml:lang="te" state="needs-translation">Word Lengths</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.More" sil:dynamic="true" approved="yes">
         <source xml:lang="en">More...</source>
@@ -3399,94 +3433,104 @@
         <target xml:lang="te" state="needs-translation">This script requires taller lines</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A3Landscape" sil:dynamic="true">
-        <source xml:lang="en">A3Landscape</source>
+        <source xml:lang="en">A3 Landscape</source>
         <note>ID: LayoutChoices.A3Landscape</note>
-        <target xml:lang="te" state="needs-translation">A3Landscape</target>
+        <target xml:lang="te" state="needs-translation">A3 Landscape</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">A4Landscape</source>
+      <trans-unit id="LayoutChoices.A4Landscape" sil:dynamic="true">
+        <source xml:lang="en">A4 Landscape</source>
         <note>ID: LayoutChoices.A4Landscape</note>
-        <target xml:lang="te" state="final">A4ప్రకృతి దృశ్యం</target>
+        <target xml:lang="te" state="translated">A4ప్రకృతి దృశ్యం</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">A4Landscape SideBySide</source>
+      <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true">
+        <source xml:lang="en">A4 Landscape (Side By Side)</source>
         <note>ID: LayoutChoices.A4Landscape SideBySide</note>
-        <target xml:lang="te" state="final">A4ఇరువర్గాలు భూభాగం వైపు</target>
+        <target xml:lang="te" state="translated">A4ఇరువర్గాలు భూభాగం వైపు</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">A4Landscape SplitAcrossPages</source>
+      <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true">
+        <source xml:lang="en">A4 Landscape (Split Across Pages)</source>
         <note>ID: LayoutChoices.A4Landscape SplitAcrossPages</note>
-        <target xml:lang="te" state="final">A4పేజీలు అంతటా భూభాగం స్ప్లిట్</target>
+        <target xml:lang="te" state="translated">A4పేజీలు అంతటా భూభాగం స్ప్లిట్</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">A4Portrait</source>
+      <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true">
+        <source xml:lang="en">A4 Portrait</source>
         <note>ID: LayoutChoices.A4Portrait</note>
-        <target xml:lang="te" state="final">A4చిత్తరువు</target>
+        <target xml:lang="te" state="translated">A4చిత్తరువు</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A5Landscape" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">A5Landscape</source>
+      <trans-unit id="LayoutChoices.A5Landscape" sil:dynamic="true">
+        <source xml:lang="en">A5 Landscape</source>
         <note>ID: LayoutChoices.A5Landscape</note>
-        <target xml:lang="te" state="final">A5 భూభాగం</target>
+        <target xml:lang="te" state="translated">A5 భూభాగం</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A5Portrait" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">A5Portrait</source>
+      <trans-unit id="LayoutChoices.A5Portrait" sil:dynamic="true">
+        <source xml:lang="en">A5 Portrait</source>
         <note>ID: LayoutChoices.A5Portrait</note>
-        <target xml:lang="te" state="final">A5చిత్తరువు</target>
+        <target xml:lang="te" state="translated">A5చిత్తరువు</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A6Landscape" sil:dynamic="true">
-        <source xml:lang="en">A6Landscape</source>
+        <source xml:lang="en">A6 Landscape</source>
         <note>ID: LayoutChoices.A6Landscape</note>
-        <target xml:lang="te" state="needs-translation">A6Landscape</target>
+        <target xml:lang="te" state="needs-translation">A6 Landscape</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A6Portrait" sil:dynamic="true">
-        <source xml:lang="en">A6Portrait</source>
+        <source xml:lang="en">A6 Portrait</source>
         <note>ID: LayoutChoices.A6Portrait</note>
-        <target xml:lang="te" state="needs-translation">A6Portrait</target>
+        <target xml:lang="te" state="needs-translation">A6 Portrait</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">B5Portrait</source>
+      <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true">
+        <source xml:lang="en">B5 Portrait</source>
         <note>ID: LayoutChoices.B5Portrait</note>
-        <target xml:lang="te" state="final">B5చిత్తరువు</target>
+        <target xml:lang="te" state="translated">B5చిత్తరువు</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true">
-        <source xml:lang="en">Device16x9Landscape</source>
+        <source xml:lang="en">Device16x9 Landscape</source>
         <note>ID: LayoutChoices.Device16x9Landscape</note>
-        <target xml:lang="te" state="needs-translation">Device16x9Landscape</target>
+        <target xml:lang="te" state="needs-translation">Device16x9 Landscape</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.Device16x9Portrait" sil:dynamic="true">
-        <source xml:lang="en">Device16x9Portrait</source>
+        <source xml:lang="en">Device16x9 Portrait</source>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
-        <target xml:lang="te" state="needs-translation">Device16x9Portrait</target>
+        <target xml:lang="te" state="needs-translation">Device16x9 Portrait</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterLandscape" sil:dynamic="true">
-        <source xml:lang="en">HalfLetterLandscape</source>
+        <source xml:lang="en">HalfLetter Landscape</source>
         <note>ID: LayoutChoices.HalfLetterLandscape</note>
-        <target xml:lang="te" state="needs-translation">HalfLetterLandscape</target>
+        <target xml:lang="te" state="needs-translation">HalfLetter Landscape</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterPortrait" sil:dynamic="true">
-        <source xml:lang="en">HalfLetterPortrait</source>
+        <source xml:lang="en">HalfLetter Portrait</source>
         <note>ID: LayoutChoices.HalfLetterPortrait</note>
-        <target xml:lang="te" state="needs-translation">HalfLetterPortrait</target>
+        <target xml:lang="te" state="needs-translation">HalfLetter Portrait</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.LetterLandscape" sil:dynamic="true">
-        <source xml:lang="en">LetterLandscape</source>
+        <source xml:lang="en">Letter Landscape</source>
         <note>ID: LayoutChoices.LetterLandscape</note>
-        <target xml:lang="te" state="needs-translation">LetterLandscape</target>
+        <target xml:lang="te" state="needs-translation">Letter Landscape</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.LetterPortrait" sil:dynamic="true">
-        <source xml:lang="en">LetterPortrait</source>
+        <source xml:lang="en">Letter Portrait</source>
         <note>ID: LayoutChoices.LetterPortrait</note>
-        <target xml:lang="te" state="needs-translation">LetterPortrait</target>
+        <target xml:lang="te" state="needs-translation">Letter Portrait</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.QuarterLetterLandscape" sil:dynamic="true">
-        <source xml:lang="en">QuarterLetterLandscape</source>
+        <source xml:lang="en">QuarterLetter Landscape</source>
         <note>ID: LayoutChoices.QuarterLetterLandscape</note>
-        <target xml:lang="te" state="needs-translation">QuarterLetterLandscape</target>
+        <target xml:lang="te" state="needs-translation">QuarterLetter Landscape</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.QuarterLetterPortrait" sil:dynamic="true">
-        <source xml:lang="en">QuarterLetterPortrait</source>
+        <source xml:lang="en">QuarterLetter Portrait</source>
         <note>ID: LayoutChoices.QuarterLetterPortrait</note>
-        <target xml:lang="te" state="needs-translation">QuarterLetterPortrait</target>
+        <target xml:lang="te" state="needs-translation">QuarterLetter Portrait</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.Cm13Landscape" sil:dynamic="true">
+        <source xml:lang="en">13cm Square</source>
+        <note>ID: LayoutChoices.Cm13Landscape</note>
+        <target xml:lang="te" state="needs-translation">13cm Square</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.ComicPortrait" sil:dynamic="true">
+        <source xml:lang="en">Comic Portrait</source>
+        <note>ID: LayoutChoices.ComicPortrait</note>
+        <target xml:lang="te" state="needs-translation">Comic Portrait</target>
       </trans-unit>
       <trans-unit id="LicenseDialog.WindowTitle">
         <source xml:lang="en">Bloom {0}</source>
@@ -3533,10 +3577,10 @@
         <note>ID: LoginDialog.ShowTerms</note>
         <target xml:lang="te" state="final">ఉపయోగం షో నిబంధనలు</target>
       </trans-unit>
-      <trans-unit id="LoginDialog.WindowTitle" approved="yes">
-        <source xml:lang="en">Log in to BloomLibrary.org</source>
+      <trans-unit id="LoginDialog.WindowTitle">
+        <source xml:lang="en">Sign in to BloomLibrary.org</source>
         <note>ID: LoginDialog.WindowTitle</note>
-        <target xml:lang="te" state="final">bloomlibrary.org లాగిన్</target>
+        <target xml:lang="te" state="translated">bloomlibrary.org లాగిన్</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName" approved="yes">
         <source xml:lang="en">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</source>
@@ -4365,16 +4409,24 @@
         <target xml:lang="te" state="final">డిఫాల్ట్ వ్యవస్థ PDF వ్యూయర్ PDF తెరువు</target>
       </trans-unit>
       <trans-unit id="PublishTab.Options">
-        <source xml:lang="en">Options</source>
+        <source xml:lang="en">PDF Options</source>
         <note>ID: PublishTab.Options</note>
         <note>menu header in the Publish tab</note>
-        <target xml:lang="te" state="needs-translation">Options</target>
+        <note>was previously just "Options"</note>
+        <target xml:lang="te" state="needs-translation">PDF Options</target>
       </trans-unit>
       <trans-unit id="PublishTab.OptionsMenu.SizeLayout">
         <source xml:lang="en">Size/Orientation</source>
         <note>ID: PublishTab.OptionsMenu.SizeLayout</note>
         <note>Header for a region of the menu which lists various standard page sizes and orientations</note>
+        <note>obsolete as of Bloom 4.9</note>
         <target xml:lang="te" state="needs-translation">Size/Orientation</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.OptionsMenu.PreparePrintshop">
+        <source xml:lang="en">Prepare for Print Shop:</source>
+        <note>ID: PublishTab.OptionsMenu.PreparePrintshop</note>
+        <note>Header for a region of the menu which lists various options useful for jobs that will be printed at a commercial print shop</note>
+        <target xml:lang="te" state="needs-translation">Prepare for Print Shop:</target>
       </trans-unit>
       <trans-unit id="PublishTab.Options_ToolTip_">
         <source xml:lang="en">Choose a page size and orientation</source>
@@ -4463,6 +4515,12 @@
         <note>Message displayed in a progress report dialog box</note>
         <target xml:lang="te" state="needs-translation">Finished making PDF from HTML</target>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.FullBleed">
+        <source xml:lang="en">Full Bleed</source>
+        <note>ID: PublishTab.PdfMaker.FullBleed</note>
+        <note>displayed as an option in the PDF Options menu in Publish tab. Be careful, "full bleed" is a technical term in printing, meaning to print into an area outside the main page content that is ideally trimmed off; do not translate literally</note>
+        <target xml:lang="te" state="needs-translation">Full Bleed</target>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
         <source xml:lang="en">Making PDF from HTML</source>
         <note>ID: PublishTab.PdfMaker.MakingFromHtml</note>
@@ -4475,22 +4533,39 @@
         <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
         <target xml:lang="te" state="needs-translation">Making Page {0} of the PDF</target>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.NoFullBleed">
+        <source xml:lang="en">Full Bleed has not been set up for this book</source>
+        <note>ID: PublishTab.PdfMaker.NoFullBleed</note>
+        <target xml:lang="te" state="needs-translation">Full Bleed has not been set up for this book</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.NoFullBleedBooklet">
+        <source xml:lang="en">Full Bleed is not applicable to booklet printing</source>
+        <note>ID: PublishTab.PdfMaker.NoFullBleedBooklet</note>
+        <target xml:lang="te" state="needs-translation">Full Bleed is not applicable to booklet printing</target>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.OutOfMemory">
         <source xml:lang="en">Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.</source>
         <note>ID: PublishTab.PdfMaker.OutOfMemory</note>
         <note>{0} and {1} are HTML link markup.  You can think of them as fancy quotation marks.</note>
         <target xml:lang="te" state="needs-translation">Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.</target>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.PdfFile">
+        <source xml:lang="en">PDF file</source>
+        <note>ID: PublishTab.PdfMaker.PdfFile</note>
+        <target xml:lang="te" state="needs-translation">PDF file</target>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
-        <source xml:lang="en">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</source>
+        <source xml:lang="en">CMYK color (U.S. Web Coated (SWOP) v2)</source>
         <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
-        <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
-        <target xml:lang="te" state="needs-translation">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</target>
+        <note>displayed as a checkable menu option for the Publish tab, PDF options menu. The content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
+        <note>Previously this item was "PDF with CMYK ..." and it occurred as an option within the Save dialog for PDF files</note>
+        <target xml:lang="te" state="needs-translation">CMYK color (U.S. Web Coated (SWOP) v2)</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithRGB">
         <source xml:lang="en">PDF with RGB color</source>
         <note>ID: PublishTab.PdfMaker.PdfWithRGB</note>
         <note>displayed as file type for Save File dialog. 'RGB' may not be translatable, it is a standard.</note>
+        <note>obsolete as of Bloom 4.9</note>
         <target xml:lang="te" state="needs-translation">PDF with RGB color</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Saving">
@@ -4594,6 +4669,11 @@
         <note>ID: PublishTab.Upload.Cancelled</note>
         <target xml:lang="te" state="needs-translation">Upload was cancelled</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.CheckEmail">
+        <source xml:lang="en">Please check your email and click on the link there, then sign in again.</source>
+        <note>ID: PublishTab.Upload.CheckEmail</note>
+        <target xml:lang="te" state="needs-translation">Please check your email and click on the link there, then sign in again.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.CcLink">
         <source xml:lang="en">CC-BY-NC</source>
         <note>ID: PublishTab.Upload.CcLink</note>
@@ -4682,11 +4762,12 @@
         <note>ID: PublishTab.Upload.Login.AccountAlreadyExists</note>
         <target xml:lang="te" state="final">ఖాతా ఇప్పటికే ఉనికిలో</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount" approved="yes">
-        <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</source>
+      <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount">
+        <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address.  Would you like to sign in instead?</source>
         <note>ID: PublishTab.Upload.Login.AlreadyHaveAccount</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added space): We cannot sign you up with that address, because we already have an account with that address. Would you like to log in instead?</note>
-        <target xml:lang="te" state="final">మేము ఇప్పటికే ఆ చిరునామాతో ఒక ఖాతాను కలిగి ఎందుకంటే మేము, ఆ చిరునామాతో మీరు సైన్ అప్ చేయలేరు. మీరు బదులుగా లాగిన్ అనుకుంటున్నారా?</target>
+        <note xml:lang="en">OLD TEXT (before 4.9, changed log in to sign in): We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</note>
+        <target xml:lang="te" state="translated">మేము ఇప్పటికే ఆ చిరునామాతో ఒక ఖాతాను కలిగి ఎందుకంటే మేము, ఆ చిరునామాతో మీరు సైన్ అప్ చేయలేరు. మీరు బదులుగా లాగిన్ అనుకుంటున్నారా?</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.LoginConnectFailed" approved="yes">
         <source xml:lang="en">Bloom could not connect to the server to verify your login. Please check your network connection.</source>
@@ -4753,30 +4834,28 @@
         <note>ID: PublishTab.Upload.Login.SendingResetPassword</note>
         <target xml:lang="te" state="final">మేము మీ పాస్వర్డ్ను రీసెట్ చేయడానికి ఎలా సూచనలతో {0} కు ఒక ఇమెయిల్ పంపుతున్నారు.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.Signup" approved="yes">
-        <source xml:lang="en">Sign up for Bloom Library.</source>
-        <note>ID: PublishTab.Upload.Login.Signup</note>
-        <target xml:lang="te" state="final">బ్లూమ్ లైబ్రరీ కోసం సైన్ అప్</target>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.UnknownUser" approved="yes">
         <source xml:lang="en">Unknown user</source>
         <note>ID: PublishTab.Upload.Login.UnknownUser</note>
         <target xml:lang="te" state="final">తెలియని వినియోగదారు</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.LoginFailure" approved="yes">
-        <source xml:lang="en">Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.</source>
+      <trans-unit id="PublishTab.Upload.LoginFailure">
+        <source xml:lang="en">Bloom could not sign in to BloomLibrary.org using your saved credentials. Please check your network connection.</source>
         <note>ID: PublishTab.Upload.LoginFailure</note>
-        <target xml:lang="te" state="final">బ్లూమ్ మీ సేవ్ ఆధారాలను ఉపయోగించి బ్లూమ్ లైబ్రరీ .org లోకి లాగిన్ కాలేదు. మీ నెట్వర్క్ కనెక్షన్ను తనిఖీ చెయ్యండి.</target>
+        <target xml:lang="te" state="translated">బ్లూమ్ మీ సేవ్ ఆధారాలను ఉపయోగించి బ్లూమ్ లైబ్రరీ .org లోకి లాగిన్ కాలేదు. మీ నెట్వర్క్ కనెక్షన్ను తనిఖీ చెయ్యండి.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.LoginLink" approved="yes">
-        <source xml:lang="en">Log in to BloomLibrary.org</source>
+      <trans-unit id="PublishTab.Upload.LoginLink">
+        <source xml:lang="en">Sign up or sign in to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.LoginLink</note>
-        <target xml:lang="te" state="final">BLOOMLibrary .org లాగిన్</target>
+        <note xml:lang="en">OLD TEXT (before 4.9, added "sign in" and changed "log in" to "sign in"): Log in to BloomLibrary.org</note>
+        <note>We have kept the old message ID since a translation of that will be better than nothing. The terminology should ideally match the buttons in the dialog,
+          which we don't control, such as "Sign in with Google", but so far we haven't been able to get those localized.</note>
+        <target xml:lang="te" state="translated">BLOOMLibrary .org లాగిన్</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Logout" approved="yes">
-        <source xml:lang="en">Log out of BloomLibrary.org</source>
+      <trans-unit id="PublishTab.Upload.Logout">
+        <source xml:lang="en">Sign out of BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.Logout</note>
-        <target xml:lang="te" state="final">BLOOMLibrary నుండి లాగ్ అవుట్. ఆర్గ్</target>
+        <target xml:lang="te" state="translated">BLOOMLibrary నుండి లాగ్ అవుట్. ఆర్గ్</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.MakingPdf" approved="yes">
         <source xml:lang="en">Making PDF Preview...</source>
@@ -4803,10 +4882,10 @@
         <note>ID: PublishTab.Upload.OldVersion</note>
         <target xml:lang="te" state="final">క్షమించండి, బ్లూమ్ డెస్క్టాప్ యొక్క ఈ వెర్షన్ బ్లూమ్ library.org ప్రస్తుత వెర్షన్ అనుకూలత లేదు.ఒక కొత్త వెర్షన్కు దయచేసి అప్గ్రేడ్ చేయండి</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.PleaseLogIn" approved="yes">
-        <source xml:lang="en">Please log in to BloomLibrary.org (or sign up) before uploading</source>
+      <trans-unit id="PublishTab.Upload.PleaseLogIn">
+        <source xml:lang="en">Please sign in to BloomLibrary.org (or sign up) before uploading</source>
         <note>ID: PublishTab.Upload.PleaseLogIn</note>
-        <target xml:lang="te" state="final">దయచేసి లాగిన్ బ్లూమ్ Library.org</target>
+        <target xml:lang="te" state="translated">దయచేసి లాగిన్ బ్లూమ్ Library.org</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.PleaseSetThis" approved="yes">
         <source xml:lang="en">Please set this from the edit tab</source>
@@ -4824,10 +4903,15 @@
         <note>ID: PublishTab.Upload.SignLanguage</note>
         <target xml:lang="te" state="needs-translation">Sign Language</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SignupLink" approved="yes">
-        <source xml:lang="en">Sign up for BloomLibrary.org</source>
-        <note>ID: PublishTab.Upload.SignupLink</note>
-        <target xml:lang="te" state="final">బ్లూమ్ లైబ్రరీ కోసం సైన్ అప్</target>
+      <trans-unit id="PublishTab.Upload.SignInSignUp">
+        <source xml:lang="en">Sign In / Sign Up to BloomLibrary.org</source>
+        <note>ID: PublishTab.Upload.SignUpLogin</note>
+        <target xml:lang="te" state="needs-translation">Sign In / Sign Up to BloomLibrary.org</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SomethingWrong">
+        <source xml:lang="en">Oops, something went wrong when trying to sign you into our database.</source>
+        <note>ID: PublishTab.Upload.SomethingWrong</note>
+        <target xml:lang="te" state="needs-translation">Oops, something went wrong when trying to sign you into our database.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Step1" approved="yes">
         <source xml:lang="en">Step 1: Confirm Metadata</source>
@@ -4964,7 +5048,14 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Maximum Words in Book</source>
         <note>ID: ReaderSetup.BookMaxWords</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Maximum Words per Book</note>
+        <note>obsolete as of 4.9</note>
         <target xml:lang="te" state="final">పుస్తకం ప్రకారం గరిష్ట పదాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.BookMaxWords2" sil:dynamic="true">
+        <source xml:lang="en">Per <g id="bmw-1" ctype="x-html-strong">Book</g></source>
+        <note>ID: ReaderSetup.BookMaxWords2</note>
+        <note>follows headings "maximum" and "words" to convey "maximum words per book. The "g" markup may be used for the important word.</note>
+        <target xml:lang="te" state="needs-translation">Per <g id="bmw-1" ctype="x-html-strong">Book</g></target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
@@ -5004,6 +5095,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Letters" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters</source>
         <note>ID: ReaderSetup.Letters</note>
+        <note>Subheading for settings related to maximum letters in a word</note>
         <target xml:lang="te" state="final">అక్షరాలు</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.Header" sil:dynamic="true" approved="yes">
@@ -5050,7 +5142,14 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Level </source>
         <note>ID: ReaderSetup.LevelLabel</note>
         <note xml:lang="en">OLD TEXT (before 3.9, use literal NBSP character): Level&amp;nbsp;</note>
+        <note>obsolete as of 4.9. New LevelLabelMax replaces it</note>
         <target xml:lang="te" state="final">స్థాయి</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LevelLabelMax" sil:dynamic="true">
+        <source xml:lang="en">Level {0} Maximums</source>
+        <note>ID: ReaderSetup.LevelLabelMax</note>
+        <note xml:lang="en">{0} is a number. A heading for several items each of which specfies a maximum for a different quantity for a reader of the level specified by the number.</note>
+        <target xml:lang="te" state="needs-translation">Level {0} Maximums</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Levels" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Reader Levels</source>
@@ -5062,16 +5161,75 @@ Do you want to go ahead?</note>
         <note>ID: ReaderSetup.MatchingWords</note>
         <target xml:lang="te" state="final">మ్యాచింగ్ పదాలు</target>
       </trans-unit>
+      <trans-unit id="ReaderSetup.MaxAverageGlyphsPerWord" sil:dynamic="true">
+        <source xml:lang="en">
+          Average per Word in <g id="magpw-1" ctype="x-html-strong">Book</g>
+        </source>
+        <note>ID: ReaderSetup.MaxAverageGlyphsPerWord</note>
+        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <target xml:lang="te" state="needs-translation">
+          
+          Average per Word in <g id="magpw-1" ctype="x-html-strong">Book</g>
+        
+        </target>
+      </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true">
-        <source xml:lang="en">Maximum Average Length of Sentences in Book</source>
+        <source xml:lang="en">Average per <g id="maw-1" ctype="x-html-strong">Sentence</g> in <g id="maw-2" ctype="x-html-strong">Book</g></source>
         <note>ID: ReaderSetup.MaxAverageWords</note>
-        <target xml:lang="te" state="needs-translation">Maximum Average Length of Sentences in Book</target>
+        <note>Prior to 4.9, was "Maximum Average Length of Sentences in Book"</note>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum averate sentence length in book". The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <target xml:lang="te" state="needs-translation">Average per <g id="maw-1" ctype="x-html-strong">Sentence</g> in <g id="maw-2" ctype="x-html-strong">Book</g></target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true">
+        <source xml:lang="en">
+          Average per <g id="mawpp-1" ctype="x-html-strong">Page</g></source>
+        <note>ID: ReaderSetup.MaxAverageWordsPerPage</note>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average words per page" (in book is implied). The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <target xml:lang="te" state="needs-translation">
+          
+          Average per <g id="mawpp-1" ctype="x-html-strong">Page</g></target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true">
+        <source xml:lang="en">
+          Average per <g id="maspp-1" ctype="x-html-strong">Page</g>
+        </source>
+        <note>ID: ReaderSetup.MaxAverageSentencesPerPage</note>
+        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <target xml:lang="te" state="needs-translation">
+          
+          Average per <g id="maspp-1" ctype="x-html-strong">Page</g>
+        
+        </target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MaxGlyphsPerWord" sil:dynamic="true">
+        <source xml:lang="en">In any <g id="mgpw-1" ctype="x-html-strong">Word</g></source>
+        <note>ID: ReaderSetup.MaxGlyphsPerWord</note>
+        <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <target xml:lang="te" state="needs-translation">In any <g id="mgpw-1" ctype="x-html-strong">Word</g></target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true">
+        <source xml:lang="en">
+          Per <g id="mspp-1" ctype="x-html-strong">Page</g>
+        </source>
+        <note>ID: ReaderSetup.MaxSentencesPerPage</note>
+        <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <target xml:lang="te" state="needs-translation">
+          
+          Per <g id="mspp-1" ctype="x-html-strong">Page</g>
+        
+        </target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Unique Words in Book</source>
         <note>ID: ReaderSetup.MaxUniqueWords</note>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): Maximum Unique Words per Book</note>
         <target xml:lang="te" state="final">పుస్తకం ప్రకారం గరిష్ట ఏకైక పదాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MaxUniqueWords2" sil:dynamic="true">
+        <source xml:lang="en"><g id="muw-1" ctype="x-html-strong">Unique</g> in <g id="muw-2" ctype="x-html-strong">Book</g></source>
+        <note>ID: ReaderSetup.MaxUniqueWords2</note>
+        <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum unique words in book". The "g" markup may be used to mark whatever should be strongly emphasized</note>
+        <target xml:lang="te" state="needs-translation"><g id="muw-1" ctype="x-html-strong">Unique</g> in <g id="muw-2" ctype="x-html-strong">Book</g></target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page</source>
@@ -5081,7 +5239,37 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.PageMaxWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Words on each Page</source>
         <note>ID: ReaderSetup.PageMaxWords</note>
+        <note>obsolete as of Bloom 4.9</note>
         <target xml:lang="te" state="final">ప్రతి పేజీలో గరిష్ట పదాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PageMaxWords2" sil:dynamic="true">
+        <source xml:lang="en">Per <g id="pmw-1" ctype="x-html-strong">Page</g></source>
+        <note>ID: ReaderSetup.PageMaxWords2</note>
+        <target xml:lang="te" state="needs-translation">Per <g id="pmw-1" ctype="x-html-strong">Page</g></target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PerBookHeader" sil:dynamic="true">
+        <source xml:lang="en">Per Book (Unique)</source>
+        <note>ID: ReaderSetup.PerBookHeader</note>
+        <note>This is a header in a table, under another heading "Words". Table cells contain values like 23(10) indicating that 23 is the maximum number of words allowed in a book (counting repeated words), and 10 is the maximum number of unique words (not counting repeats).</note>
+        <target xml:lang="te" state="needs-translation">Per Book (Unique)</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PerPageHeader" sil:dynamic="true">
+        <source xml:lang="en">Per Page (Average)</source>
+        <note>ID: ReaderSetup.PerPageHeader</note>
+        <note>This is a header in a table, under another heading "Words" or "Sentences". Table cells contain values like 7(5) indicating that 7 is the maximum number of words (or sentences) on a page, and 5 is the maximum average number across all pages.</note>
+        <target xml:lang="te" state="needs-translation">Per Page (Average)</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PerSentenceHeader" sil:dynamic="true">
+        <source xml:lang="en">Per Sentence (Average)</source>
+        <note>ID: ReaderSetup.PerSentenceHeader</note>
+        <note>This is a header in a table, under another heading "Words". Table cells contain values like 3(2) indicating that 3 is the maximum number of words in any sentence, and 2 is the maximum average words per sentence.</note>
+        <target xml:lang="te" state="needs-translation">Per Sentence (Average)</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PerWordHeader" sil:dynamic="true">
+        <source xml:lang="en">Per Word (Average)</source>
+        <note>ID: ReaderSetup.PerWordHeader</note>
+        <note>This is a header in a table, under another heading "Letters". Table cells contain values like 7(5) indicating that 7 is the maximum length of any word, and 5 is the maximum average length of words.</note>
+        <target xml:lang="te" state="needs-translation">Per Word (Average)</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PoweredBy" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Powered by </source>
@@ -5143,10 +5331,22 @@ Do you want to go ahead?</note>
         <note>ID: ReaderSetup.SentenceHeader</note>
         <target xml:lang="te" state="final">వాక్యం</target>
       </trans-unit>
+      <trans-unit id="ReaderSetup.Sentences" sil:dynamic="true">
+        <source xml:lang="en">Sentences</source>
+        <note>ID: ReaderSetup.Sentences</note>
+        <target xml:lang="te" state="needs-translation">Sentences</target>
+      </trans-unit>
       <trans-unit id="ReaderSetup.SentenceMaxWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Words in each Sentence</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
+        <note>obsolete as of Bloom 4.9</note>
         <target xml:lang="te" state="final">ప్రతి వాక్యం లో గరిష్ట పదాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true">
+        <source xml:lang="en">Per <g id="mgpw-1" ctype="x-html-strong">Sentence</g></source>
+        <note>ID: ReaderSetup.SentenceMaxWords</note>
+        <note>follows headings "maximum" and "words" to convey "maximum words per sentence. The "g" markup may be used for the important word.</note>
+        <target xml:lang="te" state="needs-translation">Per <g id="mgpw-1" ctype="x-html-strong">Sentence</g></target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
@@ -5212,6 +5412,12 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Unique</source>
         <note>ID: ReaderSetup.UniqueHeader</note>
         <target xml:lang="te" state="final">ఏకైక</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words" sil:dynamic="true">
+        <source xml:lang="en">Words</source>
+        <note>ID: ReaderSetup.Words</note>
+        <note>Header for a series of items giving maximum values for various word counts</note>
+        <target xml:lang="te" state="needs-translation">Words</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</source>
