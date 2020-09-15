@@ -4143,6 +4143,7 @@ Do you want to go ahead?</note>
       <trans-unit id="ReaderSetup.Letters" sil:dynamic="true">
         <source xml:lang="en">Letters</source>
         <note>ID: ReaderSetup.Letters</note>
+        <note>Subheading for settings related to maximum letters in a word</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.Header" sil:dynamic="true">
         <source xml:lang="en">Letters and Letter Combinations</source>
@@ -4186,11 +4187,6 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Level {0} Maximums</source>
         <note>ID: ReaderSetup.LevelLabelMax</note>
         <note xml:lang="en">{0} is a number. A heading for several items each of which specfies a maximum for a different quantity for a reader of the level specified by the number.</note>
-      </trans-unit>
-      <trans-unit id="ReaderSetup.Letters" sil:dynamic="true">
-        <source xml:lang="en">Letters</source>
-        <note>ID: ReaderSetup.Letters</note>
-        <note>Subheading for settings related to maximum letters in a word</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.Levels" sil:dynamic="true">
         <source xml:lang="en">Reader Levels</source>
@@ -4242,17 +4238,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Maximum Unique Words in Book</source>
         <note>ID: ReaderSetup.MaxUniqueWords</note>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): Maximum Unique Words per Book</note>
-        <note>obsolete as of 4.9</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxUniqueWords2" sil:dynamic="true">
         <source xml:lang="en"><g id="muw-1" ctype="x-html-strong">Unique</g> in <g id="muw-2" ctype="x-html-strong">Book</g></source>
         <note>ID: ReaderSetup.MaxUniqueWords2</note>
         <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum unique words in book". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-      </trans-unit>
-      <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true">
-        <source xml:lang="en">Maximum Unique Words in Book</source>
-        <note>ID: ReaderSetup.MaxUniqueWords</note>
-        <note xml:lang="en">OLD TEXT (before 3.9, reworded): Maximum Unique Words per Book</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true">
         <source xml:lang="en">Page</source>
