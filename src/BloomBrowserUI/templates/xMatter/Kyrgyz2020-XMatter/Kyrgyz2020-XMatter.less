@@ -1,4 +1,5 @@
 @import "../../xMatter/bloom-xmatter-common.less";
+@import (reference) "../../../bookLayout/basePage.less";
 
 @XMatterPackName: "Kyrgyz";
 @HeaderHeight: 3.5cm;
@@ -61,18 +62,34 @@ div.bloom-page.outsideBackCover {
 .frontCover .bloom-translationGroup.bookTitle {
     color: black;
     background-color: @white;
-    height: calc(
-        @HeaderHeight - @bleed
-            // if you touch this make sure the header is the same height one front and back covers!
-    );
+    // if you touch this make sure the header is the same height on front and back covers!;
+    height: @HeaderHeight;
+    box-sizing: border-box; // padding doesn't affect height.
     /*flex-basis: content;*/
-    flex-direction: unset;
-    align-items: center;
+    flex-direction: column;
+    justify-content: center;
 
     // padding here instead of margin so that it's still white in these areas instead of blue
-    padding-top: @bleed;
+    padding-top: @bleed; // center it calculating the height below the bleed
     padding-left: 1cm;
     padding-right: 1cm;
+
+    // repeat to make more specific than other rules
+    .bloom-editable.bloom-editable.bloom-content1 {
+        margin-bottom: 0; // don't want this to mess with vertical centering
+        flex-grow: 0; // center it, don't grow it
+    }
+}
+
+// This much of the translation group will be trimmed off if the printer
+// achieves the ideal trim cut: the bleed area plus the amount of the original
+// A5 page that is cut off when we scale the width to RA4 which makes the height
+// a bit more than RA5. And similarly for other sizes.
+.frontCover.A5Portrait .bloom-translationGroup.bookTitle {
+    padding-top: @bleed + @A5Portrait-Height-Excess / 2;
+}
+.frontCover.USComicPortrait .bloom-translationGroup.bookTitle {
+    padding-top: @bleed + @USComicPortrait-Height-Excess / 2;
 }
 
 .frontCover .creditsRow:after {
