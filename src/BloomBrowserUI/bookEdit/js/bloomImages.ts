@@ -63,7 +63,7 @@ export function SetupImagesInContainer(container) {
         });
 }
 
-export function SetupImage(image) {
+export function SetupImage(image: JQuery) {
     // Remove any obsolete explicit image size and position left over from earlier versions of Bloom, before we had object-fit:contain.
     if (image.style) {
         image.style.width = "";
@@ -71,11 +71,11 @@ export function SetupImage(image) {
         image.style.marginLeft = "";
         image.style.marginTop = "";
     }
-    if (image.getAttribute("style") === "") {
+    if (image.removeAttribute) {
         image.removeAttribute("style");
+        image.removeAttribute("width");
+        image.removeAttribute("height");
     }
-    image.removeAttribute("width");
-    image.removeAttribute("height");
 }
 
 export function GetButtonModifier(container) {
