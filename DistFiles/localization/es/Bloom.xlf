@@ -206,7 +206,7 @@
         <note>ID: BookEditor.CharacterMap.Instructions</note>
         <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): To select, use your mouse wheel or point at what you want, then release the key.</note>
-        <target xml:lang="es-ES" state="final">Para seleccionar, utilice la rueda del ratón, apunte a lo que quiere, o apriete la tecla mostrada en color púrpura.
+        <target xml:lang="es-ES" state="final">Para seleccionar, utilice la rueda del ratón, apunte a lo que quiere, o apriete la tecla mostrada en color púrpura. 
 Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true" approved="yes">
@@ -1285,6 +1285,11 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note xml:lang="en">OLD TEXT (before 3.9): (no template file found)</note>
         <target xml:lang="es-ES" state="final">No se pudo encontrar {0}</target>
       </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.NumberOfPagesTooltip" sil:dynamic="true">
+        <source xml:lang="en">Number of pages to add</source>
+        <note>ID: EditTab.AddPageDialog.NumberOfPagesTooltip</note>
+        <target xml:lang="es-ES" state="translated">Número de páginas que se debe agregar</target>
+      </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Page...</source>
         <note>ID: EditTab.AddPageDialog.Title</note>
@@ -1961,6 +1966,12 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: EditTab.Image.CopyImageFailed</note>
         <target xml:lang="es-ES" state="final">Bloom no pudo utilizar el portapapeles de su computadora. Es posible que haya un conflicto con otro programa.</target>
       </trans-unit>
+      <trans-unit id="EditTab.Image.Corrupt" sil:dynamic="true">
+        <source xml:lang="en">Bloom was not able to load {0}. The file may be corrupted. Please try another image. Here are some technical details: </source>
+        <note>ID: EditTab.Image.Corrupt</note>
+        <note>{0} is required, and will be replaced with a file path. After the message Bloom will append a further message.</note>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo cargar {0}. El archivo puede estar corrompido. Por favor, intente con otra imagen. Aquí hay algunos detalles técnicos: </target>
+      </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cut Image</source>
         <note>ID: EditTab.Image.CutImage</note>
@@ -1981,6 +1992,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">Paste Image</source>
         <note>ID: EditTab.Image.PasteImage</note>
         <target xml:lang="es-ES" state="final">Pegar la imagen</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
+        <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
+        <note>ID: EditTab.Image.TooLarge</note>
+        <target xml:lang="es-ES" state="translated">Bloom se quedó sin memoria cargando esta imagen ({0}), que es bastante grande ({1} por {2} píxeles). Haga clic en Ayuda para sugerencias.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
@@ -2045,6 +2061,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
         <target xml:lang="es-ES" state="final">Antes de poder pegar una imagen, copie una en su "portapapeles" desde de otro programa.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.NoValidImageFoundOnClipboard">
+        <source xml:lang="en">Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else.</source>
+        <note>ID: EditTab.NoValidImageFoundOnClipboard</note>
+        <target xml:lang="es-ES" state="translated">Bloom no interpretó el contenido del portapapeles como una imagen. Posiblemente era un archivo dañado, o es demasiado grande. Intente copiar otra imagen.</target>
       </trans-unit>
       <trans-unit id="EditTab.NoOtherLayouts" approved="yes">
         <source xml:lang="en">There are no other options for this template.</source>
@@ -2299,7 +2320,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">Show Tail</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ShowTail</note>
         <note>This checkbox indicates if a line tail should be shown or not.</note>
-        <target xml:lang="es-ES" state="translated">Mostrar el puntero</target>
+        <target xml:lang="es-ES" state="translated">Agregar cola</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Style</source>
@@ -2689,17 +2710,17 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>a label, needs to fit in about half toolbox width.</note>
         <target xml:lang="es-ES" state="final">prom. por oración</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.AverageInBook" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.AverageInBook" sil:dynamic="true" approved="yes">
         <source xml:lang="en">avg in book</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.AverageInBook</note>
         <note>a label, needs to fit in about half toolbox width.</note>
-        <target xml:lang="es-ES" state="translated">prom en libro</target>
+        <target xml:lang="es-ES" state="final">prom en el libro</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.AveragePerPage" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.AveragePerPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">avg per page</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.AveragePerPage</note>
         <note>a label, needs to fit in about half toolbox width.</note>
-        <target xml:lang="es-ES" state="translated">prom por página</target>
+        <target xml:lang="es-ES" state="final">prom por página</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choice of Topic</source>
@@ -2763,10 +2784,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.SetUpLevels</note>
         <target xml:lang="es-ES" state="final">Configurar Niveles</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SentenceCounts" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SentenceCounts" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sentence Counts</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.SentenceCounts</note>
-        <target xml:lang="es-ES" state="translated">Conteos de frases</target>
+        <target xml:lang="es-ES" state="final">Conteos de frases</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisBook" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This Book</source>
@@ -3454,45 +3475,45 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: LayoutChoices.A4Landscape SplitAcrossPages</note>
         <target xml:lang="es-ES" state="final">A4 Horizontal (dividir páginas)</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4 Portrait</source>
         <note>ID: LayoutChoices.A4Portrait</note>
-        <target xml:lang="es-ES" state="translated">A4 Vertical</target>
+        <target xml:lang="es-ES" state="final">A4 Vertical</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A5Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A5 Landscape</source>
         <note>ID: LayoutChoices.A5Landscape</note>
         <target xml:lang="es-ES" state="final">A5 Horizontal</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A5Portrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.A5Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A5 Portrait</source>
         <note>ID: LayoutChoices.A5Portrait</note>
-        <target xml:lang="es-ES" state="translated">A5 Vertical</target>
+        <target xml:lang="es-ES" state="final">A5 Vertical</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A6Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A6 Landscape</source>
         <note>ID: LayoutChoices.A6Landscape</note>
         <target xml:lang="es-ES" state="final">A6 Horizontal</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A6Portrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.A6Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A6 Portrait</source>
         <note>ID: LayoutChoices.A6Portrait</note>
-        <target xml:lang="es-ES" state="translated">A6 Vertical</target>
+        <target xml:lang="es-ES" state="final">A6 Vertical</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">B5 Portrait</source>
         <note>ID: LayoutChoices.B5Portrait</note>
-        <target xml:lang="es-ES" state="translated">B5 Vertical</target>
+        <target xml:lang="es-ES" state="final">B5 Vertical</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Device16x9 Landscape</source>
         <note>ID: LayoutChoices.Device16x9Landscape</note>
         <target xml:lang="es-ES" state="final">Dispositivo 16x9 Horizontal</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.Device16x9Portrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.Device16x9Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Device16x9 Portrait</source>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
-        <target xml:lang="es-ES" state="translated">Dispositivo 16x9 Vertical</target>
+        <target xml:lang="es-ES" state="final">Dispositivo 16x9 Vertical</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterLandscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HalfLetter Landscape</source>
@@ -3509,30 +3530,30 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: LayoutChoices.LetterLandscape</note>
         <target xml:lang="es-ES" state="final">Carta Horizontal</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.LetterPortrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.LetterPortrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letter Portrait</source>
         <note>ID: LayoutChoices.LetterPortrait</note>
-        <target xml:lang="es-ES" state="translated">Carta Vertical</target>
+        <target xml:lang="es-ES" state="final">Carta Vertical</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.QuarterLetterLandscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">QuarterLetter Landscape</source>
         <note>ID: LayoutChoices.QuarterLetterLandscape</note>
         <target xml:lang="es-ES" state="final">1/4 carta Horizontal</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.QuarterLetterPortrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.QuarterLetterPortrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">QuarterLetter Portrait</source>
         <note>ID: LayoutChoices.QuarterLetterPortrait</note>
-        <target xml:lang="es-ES" state="translated">1/4 carta Vertical</target>
+        <target xml:lang="es-ES" state="final">1/4 carta Vertical</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.Cm13Landscape" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.Cm13Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">13cm Square</source>
         <note>ID: LayoutChoices.Cm13Landscape</note>
-        <target xml:lang="es-ES" state="translated">Cuadro de 13cm</target>
+        <target xml:lang="es-ES" state="final">Cuadro de 13cm</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.ComicPortrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.ComicPortrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Comic Portrait</source>
         <note>ID: LayoutChoices.ComicPortrait</note>
-        <target xml:lang="es-ES" state="translated">Cómic Vertical</target>
+        <target xml:lang="es-ES" state="final">Cómic Vertical</target>
       </trans-unit>
       <trans-unit id="LicenseDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom {0}</source>
@@ -3579,10 +3600,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: LoginDialog.ShowTerms</note>
         <target xml:lang="es-ES" state="final">Mostrar términos de uso</target>
       </trans-unit>
-      <trans-unit id="LoginDialog.WindowTitle">
+      <trans-unit id="LoginDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Sign in to BloomLibrary.org</source>
         <note>ID: LoginDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Iniciar sesión en BloomLibrary.org</target>
+        <target xml:lang="es-ES" state="final">Iniciar sesión en BloomLibrary.org</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName" approved="yes">
         <source xml:lang="en">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</source>
@@ -3846,8 +3867,8 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To Send via USB, you may need to get the right
-        cable, install phone drivers on your computer, or
-        modify settings on your phone.</source>
+                            cable, install phone drivers on your computer, or
+                            modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note/>
         <target xml:lang="es-ES" state="final">Para enviar a través de USB, es posible que tenga que obtener el cable correcto, instalar los controladores de teléfono en su computadora, o modificar la configuración de su teléfono.</target>
@@ -4413,7 +4434,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.Options</note>
         <note>menu header in the Publish tab</note>
         <note>was previously just "Options"</note>
-        <target xml:lang="es-ES" state="translated">Opciones</target>
+        <target xml:lang="es-ES" state="translated">Opciones de PDF</target>
       </trans-unit>
       <trans-unit id="PublishTab.OptionsMenu.SizeLayout" approved="yes">
         <source xml:lang="en">Size/Orientation</source>
@@ -4422,11 +4443,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>obsolete as of Bloom 4.9</note>
         <target xml:lang="es-ES" state="final">Tamaño/Diseño</target>
       </trans-unit>
-      <trans-unit id="PublishTab.OptionsMenu.PreparePrintshop">
+      <trans-unit id="PublishTab.OptionsMenu.PreparePrintshop" approved="yes">
         <source xml:lang="en">Prepare for Print Shop:</source>
         <note>ID: PublishTab.OptionsMenu.PreparePrintshop</note>
         <note>Header for a region of the menu which lists various options useful for jobs that will be printed at a commercial print shop</note>
-        <target xml:lang="es-ES" state="translated">Preparar para la imprenta:</target>
+        <target xml:lang="es-ES" state="final">Preparar para la imprenta:</target>
       </trans-unit>
       <trans-unit id="PublishTab.Options_ToolTip_" approved="yes">
         <source xml:lang="en">Choose a page size and orientation</source>
@@ -4448,25 +4469,25 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</source>
         <note>ID: PublishTab.PDF.Error.Failed</note>
         <note>Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character.</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo crear el archivo PDF ({0}).{1}{1}Detalles: BloomPdfMaker (command line) no produjo el documento esperado.</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo crear el archivo PDF ({0}).{1}{1}Detalles: BloomPdfMaker (línea de comando) no produjo el documento esperado.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Error.PrinterError">
+      <trans-unit id="PublishTab.PDF.Error.PrinterError" approved="yes">
         <source xml:lang="en">Bloom requires access to a printer in order to make a PDF, even though you are not printing.  Windows gave this error when Bloom tried to access the default printer: {0}</source>
         <note>ID: PublishTab.PDF.Error.PrinterError</note>
         <note>Error message displayed in a message dialog box.  {0} is replaced by a Windows error message at runtime</note>
-        <target xml:lang="es-ES" state="translated">Bloom requiere acceso a una impresora para hacer un PDF, aunque no esté imprimiendo.  Windows dio este error cuando Bloom intentó acceder a la impresora predeterminada: {0}</target>
+        <target xml:lang="es-ES" state="final">Bloom requiere acceso a una impresora para hacer un PDF, aunque no esté imprimiendo.  Windows dio este error cuando Bloom intentó acceder a la impresora predeterminada: {0}</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Error.NoPrinter">
+      <trans-unit id="PublishTab.PDF.Error.NoPrinter" approved="yes">
         <source xml:lang="en">Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you might not have a printer set as the default.  Please go to Devices and Printers and select a printer as a default. If you don't have a real printer attached, just select the Microsoft XPS or PDF printers.</source>
         <note>ID: PublishTab.PDF.Error.NoPrinter</note>
         <note>Error message displayed in a message dialog box.</note>
-        <target xml:lang="es-ES" state="translated">Bloom necesita que se seleccione una impresora en este computadora antes de que pueda hacer un PDF, aunque no esté imprimiendo.  Parece que no tiene una impresora configurada como predeterminada.  Por favor, ve a Dispositivos e impresoras y seleccione una impresora como predeterminada. Si no tiene una impresora real conectada, simplemente seleccione las impresoras XPS o PDF de Microsoft.</target>
+        <target xml:lang="es-ES" state="final">Bloom necesita que tenga seleccionada una impresora en esta computadora antes de que pueda crear un PDF, aunque no esté imprimiendo.  Parece que no tiene una impresora configurada como predeterminada.  Por favor, ve a Dispositivos e impresoras y seleccione una impresora como predeterminada. Si no tiene una impresora real conectada, simplemente seleccione las impresoras XPS o PDF de Microsoft.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Error.TrySinglePage">
+      <trans-unit id="PublishTab.PDF.Error.TrySinglePage" approved="yes">
         <source xml:lang="en">The book's images might have exceeded the amount of RAM memory available. Please turn on the "Use Less Memory" option which is slower but uses less memory.</source>
         <note>ID: PublishTab.PDF.Error.TrySinglePage</note>
         <note>Error message displayed in a message dialog box.</note>
-        <target xml:lang="es-ES" state="translated">Las imágenes del libro podrían haber excedido la cantidad de memoria RAM disponible. Por favor, activa la opción "Usar menos memoria" que es más lenta pero usa menos memoria.</target>
+        <target xml:lang="es-ES" state="final">Las imágenes del libro podrían haber excedido la cantidad de memoria RAM disponible. Por favor, activa la opción "Usar menos memoria" que es más lenta pero usa menos memoria.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.BadPdf" approved="yes">
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
@@ -4515,11 +4536,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>Message displayed in a progress report dialog box</note>
         <target xml:lang="es-ES" state="final">Se terminó la conversión de HTML a PDF</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.FullBleed">
+      <trans-unit id="PublishTab.PdfMaker.FullBleed" approved="yes">
         <source xml:lang="en">Full Bleed</source>
         <note>ID: PublishTab.PdfMaker.FullBleed</note>
         <note>displayed as an option in the PDF Options menu in Publish tab. Be careful, "full bleed" is a technical term in printing, meaning to print into an area outside the main page content that is ideally trimmed off; do not translate literally</note>
-        <target xml:lang="es-ES" state="translated">Sangría completa</target>
+        <target xml:lang="es-ES" state="final">Sangría completa</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml" approved="yes">
         <source xml:lang="en">Making PDF from HTML</source>
@@ -4533,15 +4554,15 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
         <target xml:lang="es-ES" state="final">Creando página {0} del PDF</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.NoFullBleed">
+      <trans-unit id="PublishTab.PdfMaker.NoFullBleed" approved="yes">
         <source xml:lang="en">Full Bleed has not been set up for this book</source>
         <note>ID: PublishTab.PdfMaker.NoFullBleed</note>
-        <target xml:lang="es-ES" state="translated">Sangría completa no se ha establecido para este libro</target>
+        <target xml:lang="es-ES" state="final">Sangría completa no se ha establecido para este libro</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.NoFullBleedBooklet">
+      <trans-unit id="PublishTab.PdfMaker.NoFullBleedBooklet" approved="yes">
         <source xml:lang="en">Full Bleed is not applicable to booklet printing</source>
         <note>ID: PublishTab.PdfMaker.NoFullBleedBooklet</note>
-        <target xml:lang="es-ES" state="translated">Sangría completa no es aplicable para la impresión de libritos</target>
+        <target xml:lang="es-ES" state="final">Sangría completa no es aplicable para la impresión de libritos</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.OutOfMemory" approved="yes">
         <source xml:lang="en">Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.</source>
@@ -4595,8 +4616,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>title for the message box</note>
         <target xml:lang="es-ES" state="final">PDF no guardado</target>
       </trans-unit>
-
-      <trans-unit id="PublishTab.PdfNotSavedWhy" approved="yes">
+      <trans-unit id="PublishTab.PdfNotSavedWhy">
         <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
@@ -4611,7 +4631,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
-        <target xml:lang="es-ES" state="translated">Bloom utiliza perfiles de color del programa Adobe para convertir los archivos PDF a color CMYK en vez de color RGB.  Esto es parte de preparar un "PDF para la imprenta". Debe aceptar la siguiente licencia para realizar este proceso en Bloom.</target>
+        <target xml:lang="es-ES" state="final">Bloom utiliza perfiles de color del programa Adobe para convertir los archivos PDF a color CMYK en vez de color RGB.  Esto es parte de preparar un "PDF para la imprenta". Debe aceptar la siguiente licencia para realizar este proceso en Bloom.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Publish" approved="yes">
         <source xml:lang="en">Publish</source>
@@ -4673,7 +4693,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="PublishTab.Upload.CheckEmail">
         <source xml:lang="en">Please check your email and click on the link there, then sign in again.</source>
         <note>ID: PublishTab.Upload.CheckEmail</note>
-        <target xml:lang="es-ES" state="translated">Por favor, revise su correo electrónico y haga clic en el enlace en el mensaje que le enviamos allí, luego inicie sesión de nuevo.</target>
+        <target xml:lang="es-ES" state="translated">Por favor, revise su correo electrónico y haga clic en el enlace que le enviamos allí, luego inicie sesión de nuevo.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CcLink" approved="yes">
         <source xml:lang="en">CC-BY-NC</source>
@@ -4768,7 +4788,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.Upload.Login.AlreadyHaveAccount</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added space): We cannot sign you up with that address, because we already have an account with that address. Would you like to log in instead?</note>
         <note xml:lang="en">OLD TEXT (before 4.9, changed log in to sign in): We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</note>
-        <target xml:lang="es-ES" state="translated">No podemos crear una nueva cuenta con esa dirección, porque ya tenemos una cuenta con esa dirección. ¿Le gustaría iniciar sesión con su cuenta actual?</target>
+        <target xml:lang="es-ES" state="translated">No podemos crear una nueva cuenta con esa dirección, porque ya está registrada. ¿Le gustaría ir a iniciar sesión?</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.LoginConnectFailed" approved="yes">
         <source xml:lang="en">Bloom could not connect to the server to verify your login. Please check your network connection.</source>
@@ -4840,23 +4860,23 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.Upload.Login.UnknownUser</note>
         <target xml:lang="es-ES" state="final">Usuario desconocido</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.LoginFailure">
+      <trans-unit id="PublishTab.Upload.LoginFailure" approved="yes">
         <source xml:lang="en">Bloom could not sign in to BloomLibrary.org using your saved credentials. Please check your network connection.</source>
         <note>ID: PublishTab.Upload.LoginFailure</note>
-        <target xml:lang="es-ES" state="translated">Bloom no podo entrar a BloomLibrary.org utilizando las credenciales guardadas. Por favor, compruebe su conexión de red.</target>
+        <target xml:lang="es-ES" state="final">Bloom no pudo entrar a BloomLibrary.org utilizando las credenciales guardadas. Por favor, compruebe su conexión de red.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.LoginLink">
+      <trans-unit id="PublishTab.Upload.LoginLink" approved="yes">
         <source xml:lang="en">Sign up or sign in to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.LoginLink</note>
         <note xml:lang="en">OLD TEXT (before 4.9, added "sign in" and changed "log in" to "sign in"): Log in to BloomLibrary.org</note>
         <note>We have kept the old message ID since a translation of that will be better than nothing. The terminology should ideally match the buttons in the dialog,
           which we don't control, such as "Sign in with Google", but so far we haven't been able to get those localized.</note>
-        <target xml:lang="es-ES" state="translated">Iniciar sesión en BloomLibrary.org</target>
+        <target xml:lang="es-ES" state="final">Iniciar sesión en BloomLibrary.org</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Logout">
+      <trans-unit id="PublishTab.Upload.Logout" approved="yes">
         <source xml:lang="en">Sign out of BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.Logout</note>
-        <target xml:lang="es-ES" state="translated">Cerrar sesión en BloomLibrary.org</target>
+        <target xml:lang="es-ES" state="final">Cerrar sesión en BloomLibrary.org</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.MakingPdf" approved="yes">
         <source xml:lang="en">Making PDF Preview...</source>
@@ -4883,10 +4903,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.Upload.OldVersion</note>
         <target xml:lang="es-ES" state="final">Lo sentimos, esta versión de Bloom Desktop no es compatible con la versión actual de BloomLibrary.org. Por favor, actualice a una versión más reciente.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.PleaseLogIn">
+      <trans-unit id="PublishTab.Upload.PleaseLogIn" approved="yes">
         <source xml:lang="en">Please sign in to BloomLibrary.org (or sign up) before uploading</source>
         <note>ID: PublishTab.Upload.PleaseLogIn</note>
-        <target xml:lang="es-ES" state="translated">Por favor, inicie sesión en BloomLibrary.org (o cree una cuenta) antes de cargar</target>
+        <target xml:lang="es-ES" state="final">Por favor, inicie sesión en BloomLibrary.org (o cree una cuenta) antes de cargar</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.PleaseSetThis" approved="yes">
         <source xml:lang="en">Please set this from the edit tab</source>
@@ -4904,15 +4924,15 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.Upload.SignLanguage</note>
         <target xml:lang="es-ES" state="final">Lenguaje de señas</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SignInSignUp">
+      <trans-unit id="PublishTab.Upload.SignInSignUp" approved="yes">
         <source xml:lang="en">Sign In / Sign Up to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.SignUpLogin</note>
-        <target xml:lang="es-ES" state="translated">Ingrese / Regístrese en BloomLibrary.org</target>
+        <target xml:lang="es-ES" state="final">Ingrese / Regístrese en BloomLibrary.org</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SomethingWrong">
+      <trans-unit id="PublishTab.Upload.SomethingWrong" approved="yes">
         <source xml:lang="en">Oops, something went wrong when trying to sign you into our database.</source>
         <note>ID: PublishTab.Upload.SomethingWrong</note>
-        <target xml:lang="es-ES" state="translated">Vaya, algo ha fallado al intentar registrarle en nuestra base de datos.</target>
+        <target xml:lang="es-ES" state="final">Vaya, algo ha fallado al intentar registrarle en nuestra base de datos.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Step1" approved="yes">
         <source xml:lang="en">Step 1: Confirm Metadata</source>
@@ -5052,11 +5072,11 @@ Do you want to go ahead?</note>
         <note>obsolete as of 4.9</note>
         <target xml:lang="es-ES" state="final">Cantidad máxima de palabras por libro</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.BookMaxWords2" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.BookMaxWords2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per <g id="bmw-1" ctype="x-html-strong">Book</g></source>
         <note>ID: ReaderSetup.BookMaxWords2</note>
         <note>follows headings "maximum" and "words" to convey "maximum words per book. The "g" markup may be used for the important word.</note>
-        <target xml:lang="es-ES" state="translated">Por <g id="bmw-1" ctype="x-html-strong">libro</g></target>
+        <target xml:lang="es-ES" state="final">Por <g id="bmw-1" ctype="x-html-strong">libro</g></target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose...</source>
@@ -5162,13 +5182,13 @@ Do you want to go ahead?</note>
         <note>ID: ReaderSetup.MatchingWords</note>
         <target xml:lang="es-ES" state="final">palabras coincidentes</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxAverageGlyphsPerWord" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MaxAverageGlyphsPerWord" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Average per Word in <g id="magpw-1" ctype="x-html-strong">Book</g>
         </source>
         <note>ID: ReaderSetup.MaxAverageGlyphsPerWord</note>
         <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="es-ES" state="translated">
+        <target xml:lang="es-ES" state="final">
           
           Promedio por palabra en <g id="magpw-1" ctype="x-html-strong">libro</g>        
         </target>
@@ -5180,31 +5200,31 @@ Do you want to go ahead?</note>
         <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum averate sentence length in book". The "g" markup may be used to mark whatever should be strongly emphasized</note>
         <target xml:lang="es-ES" state="translated">Promedio máximo de longitud de las oraciones en el libro</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Average per <g id="mawpp-1" ctype="x-html-strong">Page</g></source>
         <note>ID: ReaderSetup.MaxAverageWordsPerPage</note>
         <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum average words per page" (in book is implied). The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="es-ES" state="translated">
+        <target xml:lang="es-ES" state="final">
           
           Promedio por <g id="mawpp-1" ctype="x-html-strong">página</g></target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Average per <g id="maspp-1" ctype="x-html-strong">Page</g>
         </source>
         <note>ID: ReaderSetup.MaxAverageSentencesPerPage</note>
         <note>follows headings like "Level 1 Maximum" and "Sentences". Should combine with those to convey "Maximum sentences per page". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="es-ES" state="translated">
+        <target xml:lang="es-ES" state="final">
           
 Promedio por<g id="maspp-1" ctype="x-html-strong">página</g>        
         </target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxGlyphsPerWord" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MaxGlyphsPerWord" sil:dynamic="true" approved="yes">
         <source xml:lang="en">In any <g id="mgpw-1" ctype="x-html-strong">Word</g></source>
         <note>ID: ReaderSetup.MaxGlyphsPerWord</note>
         <note>follows headings like "Level 1 Maximum" and "Letters". Should combine with those to convey "Maximum letters in any word". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="es-ES" state="translated">En cualquier <g id="mgpw-1" ctype="x-html-strong">palabra</g></target>
+        <target xml:lang="es-ES" state="final">En cualquier <g id="mgpw-1" ctype="x-html-strong">palabra</g></target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">
@@ -5223,11 +5243,11 @@ En <g id="mspp-1" ctype="x-html-strong">página</g>
         <note xml:lang="en">OLD TEXT (before 3.9, reworded): Maximum Unique Words per Book</note>
         <target xml:lang="es-ES" state="final">Cantidad máxima de palabras únicas por libro</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxUniqueWords2" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MaxUniqueWords2" sil:dynamic="true" approved="yes">
         <source xml:lang="en"><g id="muw-1" ctype="x-html-strong">Unique</g> in <g id="muw-2" ctype="x-html-strong">Book</g></source>
         <note>ID: ReaderSetup.MaxUniqueWords2</note>
         <note>follows headings like "Level 1 Maximum" and "Words". Should combine with those to convey "Maximum unique words in book". The "g" markup may be used to mark whatever should be strongly emphasized</note>
-        <target xml:lang="es-ES" state="translated"><g id="muw-1" ctype="x-html-strong">Únicas</g> en <g id="muw-2" ctype="x-html-strong">libro</g></target>
+        <target xml:lang="es-ES" state="final"><g id="muw-1" ctype="x-html-strong">Únicas</g> en <g id="muw-2" ctype="x-html-strong">libro</g></target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page</source>
@@ -5240,34 +5260,34 @@ En <g id="mspp-1" ctype="x-html-strong">página</g>
         <note>obsolete as of Bloom 4.9</note>
         <target xml:lang="es-ES" state="final">Cantidad máxima de palabras en cada página</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.PageMaxWords2" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.PageMaxWords2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per <g id="pmw-1" ctype="x-html-strong">Page</g></source>
         <note>ID: ReaderSetup.PageMaxWords2</note>
-        <target xml:lang="es-ES" state="translated">Por <g id="pmw-1" ctype="x-html-strong">página</g></target>
+        <target xml:lang="es-ES" state="final">Por <g id="pmw-1" ctype="x-html-strong">página</g></target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.PerBookHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.PerBookHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per Book (Unique)</source>
         <note>ID: ReaderSetup.PerBookHeader</note>
         <note>This is a header in a table, under another heading "Words". Table cells contain values like 23(10) indicating that 23 is the maximum number of words allowed in a book (counting repeated words), and 10 is the maximum number of unique words (not counting repeats).</note>
-        <target xml:lang="es-ES" state="translated">Por libro (únicas)</target>
+        <target xml:lang="es-ES" state="final">Por libro (únicas)</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.PerPageHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.PerPageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per Page (Average)</source>
         <note>ID: ReaderSetup.PerPageHeader</note>
         <note>This is a header in a table, under another heading "Words" or "Sentences". Table cells contain values like 7(5) indicating that 7 is the maximum number of words (or sentences) on a page, and 5 is the maximum average number across all pages.</note>
-        <target xml:lang="es-ES" state="translated">Por libro (promedio)</target>
+        <target xml:lang="es-ES" state="final">Por libro (promedio)</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.PerSentenceHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.PerSentenceHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per Sentence (Average)</source>
         <note>ID: ReaderSetup.PerSentenceHeader</note>
         <note>This is a header in a table, under another heading "Words". Table cells contain values like 3(2) indicating that 3 is the maximum number of words in any sentence, and 2 is the maximum average words per sentence.</note>
-        <target xml:lang="es-ES" state="translated">Por frase (promedio)</target>
+        <target xml:lang="es-ES" state="final">Por frase (promedio)</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.PerWordHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.PerWordHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per Word (Average)</source>
         <note>ID: ReaderSetup.PerWordHeader</note>
         <note>This is a header in a table, under another heading "Letters". Table cells contain values like 7(5) indicating that 7 is the maximum length of any word, and 5 is the maximum average length of words.</note>
-        <target xml:lang="es-ES" state="translated">Por palabra (promedio)</target>
+        <target xml:lang="es-ES" state="final">Por palabra (promedio)</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PoweredBy" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Powered by </source>
@@ -5329,10 +5349,10 @@ En <g id="mspp-1" ctype="x-html-strong">página</g>
         <note>ID: ReaderSetup.SentenceHeader</note>
         <target xml:lang="es-ES" state="final">Oración</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Sentences" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Sentences" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sentences</source>
         <note>ID: ReaderSetup.Sentences</note>
-        <target xml:lang="es-ES" state="translated">Frases</target>
+        <target xml:lang="es-ES" state="final">Frases</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentenceMaxWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Words in each Sentence</source>
@@ -5340,11 +5360,11 @@ En <g id="mspp-1" ctype="x-html-strong">página</g>
         <note>obsolete as of Bloom 4.9</note>
         <target xml:lang="es-ES" state="final">Cantidad máxima de palabras en cada oración</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SentenceMaxWords2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Per <g id="mgpw-1" ctype="x-html-strong">Sentence</g></source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
         <note>follows headings "maximum" and "words" to convey "maximum words per sentence. The "g" markup may be used for the important word.</note>
-        <target xml:lang="es-ES" state="translated">Por <g id="mgpw-1" ctype="x-html-strong">frase</g></target>
+        <target xml:lang="es-ES" state="final">Por <g id="mgpw-1" ctype="x-html-strong">frase</g></target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
@@ -5411,11 +5431,11 @@ En <g id="mspp-1" ctype="x-html-strong">página</g>
         <note>ID: ReaderSetup.UniqueHeader</note>
         <target xml:lang="es-ES" state="final">Único</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Words" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Words" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Words</source>
         <note>ID: ReaderSetup.Words</note>
         <note>Header for a series of items giving maximum values for various word counts</note>
-        <target xml:lang="es-ES" state="translated">Palabras</target>
+        <target xml:lang="es-ES" state="final">Palabras</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</source>

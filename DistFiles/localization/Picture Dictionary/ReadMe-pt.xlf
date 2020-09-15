@@ -2,24 +2,24 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="pt-PT">
     <body>
-      <trans-unit id="picture.dictionary">
+      <trans-unit id="picture.dictionary" approved="yes">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="pt-PT" state="translated">Sobre o Modelo de Dicionário de Imagens</target>
+        <target xml:lang="pt-PT" state="final">Sobre o Modelo de Dicionário de Imagens</target>
         <note>ID: picture.dictionary</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.use">
+      <trans-unit id="picture.dictionary.use" approved="yes">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
-        <target xml:lang="pt-PT" state="translated">Use este modelo para fazer um dicionário de imagens que é monolíngue, bilíngue ou trilingue.</target>
+        <target xml:lang="pt-PT" state="final">Use este modelo para fazer um dicionário de imagens que seja monolíngue, bilíngue ou trilíngue.</target>
         <note>ID: picture.dictionary.use</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.limits">
+      <trans-unit id="picture.dictionary.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="pt-PT" state="translated">Limitações desta versão</target>
+        <target xml:lang="pt-PT" state="final">Limitações desta versão</target>
         <note>ID: picture.dictionary.limits</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.stillexperimental">
+      <trans-unit id="picture.dictionary.stillexperimental" approved="yes">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
-        <target xml:lang="pt-PT" state="translated">Este livro é atualmente marcado "experimental" porque sabemos de vários problemas na configuração e de conveniência.</target>
+        <target xml:lang="pt-PT" state="final">Este livro está atualmente marcado como "experimental" porque há de vários problemas na configuração e de conveniência.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
       </trans-unit>
     </body>

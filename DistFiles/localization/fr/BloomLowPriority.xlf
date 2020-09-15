@@ -26,6 +26,11 @@
         <note>After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file.</note>
         <target xml:lang="fr" state="final">Suite de la conversion orthographique:</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.CheckEmailFailed" approved="yes">
+        <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
+        <note>ID: PublishTab.Upload.CheckEmailFailed</note>
+        <target xml:lang="fr" state="final">Bloom doit vérifier votre courriel, mais notre tentative de renvoyer la demande a échoué, peut-être parce que vous avez fait trop de demandes trop rapprochées. Veuillez vérifier vos courriels et, si vous ne trouvez pas le message, réessayez plus tard.</target>
+      </trans-unit>
       <trans-unit id="Settings.Enterprise.Community" approved="yes">
         <source xml:lang="en">Funded by the local community only</source>
         <note>ID: Settings.Enterprise.Community</note>

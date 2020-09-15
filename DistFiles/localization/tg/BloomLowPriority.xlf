@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="tg">
+    <body>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
+        <source xml:lang="en">Conversion file used:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
+        <note>After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specificies a mapping which is used to convert the script for one language into the script for another.</note>
+        <target xml:lang="tg" state="needs-translation">Conversion file used:</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
+        <source xml:lang="en">eSpeak failed.</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
+        <note>This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
+        <target xml:lang="tg" state="needs-translation">eSpeak failed.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed">
+        <source xml:lang="en">eSpeak language:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed</note>
+        <note>After this text, the program will display the language code of the language settings that eSpeak used. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
+        <target xml:lang="tg" state="needs-translation">eSpeak language:</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion">
+        <source xml:lang="en">Result of orthography conversion:</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
+        <note>After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file.</note>
+        <target xml:lang="tg" state="needs-translation">Result of orthography conversion:</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.CheckEmailFailed">
+        <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
+        <note>ID: PublishTab.Upload.CheckEmailFailed</note>
+        <target xml:lang="tg" state="needs-translation">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Community">
+        <source xml:lang="en">Funded by the local community only</source>
+        <note>ID: Settings.Enterprise.Community</note>
+        <target xml:lang="tg" state="needs-translation">Funded by the local community only</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.CheckUpdates">
+        <source xml:lang="en">Check for updates</source>
+        <note>ID: Settings.Enterprise.CheckUpdates</note>
+        <target xml:lang="tg" state="needs-translation">Check for updates</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Expiration">
+        <source xml:lang="en">Expires:</source>
+        <note>ID: Settings.Enterprise.Expiration</note>
+        <target xml:lang="tg" state="needs-translation">Expires:</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Expired">
+        <source xml:lang="en">That code has expired.</source>
+        <note>ID: Settings.Enterprise.Expired</note>
+        <target xml:lang="tg" state="needs-translation">That code has expired.</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Incomplete">
+        <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
+        <note>ID: Settings.Enterprise.Incomplete</note>
+        <target xml:lang="tg" state="needs-translation"> The code should look like SOMENAME-123456-7890</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.LearnMore">
+        <source xml:lang="en">Learn More</source>
+        <note>ID: Settings.Enterprise.LearnMore</note>
+        <target xml:lang="tg" state="needs-translation">Learn More</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Overview">
+        <source xml:lang="en">
+            Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
+        </source>
+        <note>ID: Settings.Enterprise.Overview</note>
+        <target xml:lang="tg" state="needs-translation">
+            Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
+        </target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.None">
+        <source xml:lang="en">None. Enterprise features will be unavailable.</source>
+        <note>ID: Settings.Enterprise.None</note>
+        <target xml:lang="tg" state="needs-translation">None. Enterprise features will be unavailable.</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.NeedsCode">
+        <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
+        <note>ID: Settings.Enterprise.NeedsCode</note>
+        <note>%0 will be replaced with the name of the branding. Keep surrounding **...**. [here](%1) will become a hot link; %1 will not be seen, but will be the URL for the destination page. Translate "here" and keep the [](%1) around it.</note>
+        <target xml:lang="tg" state="needs-translation">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.NotValid">
+        <source xml:lang="en">That code appears to be incorrect.</source>
+        <note>ID: Settings.Enterprise.NotValid</note>
+        <target xml:lang="tg" state="needs-translation">That code appears to be incorrect.</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Status">
+        <source xml:lang="en">Bloom Enterprise Status</source>
+        <note>ID: Settings.Enterprise.Status</note>
+        <target xml:lang="tg" state="needs-translation">Bloom Enterprise Status</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.Subscription">
+        <source xml:lang="en">Enterprise Subscription</source>
+        <note>ID: Settings.Enterprise.Subscription</note>
+        <target xml:lang="tg" state="needs-translation">Enterprise Subscription</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.SubscriptionCode">
+        <source xml:lang="en">Subscription Code:</source>
+        <note>ID: Settings.Enterprise.SubscriptionCode</note>
+        <target xml:lang="tg" state="needs-translation">Subscription Code:</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.UnknownCode">
+        <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
+        <note>ID: Settings.Enterprise.UnknownCode</note>
+        <target xml:lang="tg" state="needs-translation">This version of Bloom does not have the artwork that goes with that subscription.</target>
+      </trans-unit>
+      <trans-unit id="Settings.Enterprise.WhatsThis">
+        <source xml:lang="en">What's This?</source>
+        <note>ID: Settings.Enterprise.WhatsThis</note>
+        <note>A link offering more information about the Funded Local Community Only option</note>
+        <target xml:lang="tg" state="needs-translation">What's This?</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
