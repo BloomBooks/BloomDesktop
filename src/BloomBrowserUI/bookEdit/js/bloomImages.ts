@@ -72,7 +72,9 @@ export function SetupImage(image: JQuery) {
         image.style.marginTop = "";
     }
     if (image.removeAttribute) {
-        image.removeAttribute("style");
+        if (image.getAttribute && image.getAttribute("style") === "") {
+            image.removeAttribute("style");
+        }
         image.removeAttribute("width");
         image.removeAttribute("height");
     }
