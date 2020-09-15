@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="publish.help.tips.tempWiFi.title">
         <source xml:lang="en">Ways to make a temporary Wi-Fi Network</source>
-        <target xml:lang="sw" state="needs-translation">Ways to make a temporary Wi-Fi Network</target>
+        <target xml:lang="sw" state="translated">Njia za kutengeneza Mtandao wa Wi-Fi wa muda mfupi</target>
         <note>ID: publish.help.tips.tempWiFi.title</note>
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hotspot">
@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="publish.help.tips.tempWiFi.hostednetwork">
         <source xml:lang="en">Start a network using your laptop</source>
-        <target xml:lang="sw" state="needs-translation">Start a network using your laptop</target>
+        <target xml:lang="sw" state="translated">Anza mtandao ukitumia kompyuta yako ndogo</target>
         <note>ID: publish.help.tips.tempWiFi.hostednetwork</note>
       </trans-unit>
     </body>

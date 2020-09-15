@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="uz">
+    <body>
+      <trans-unit id="leveled.definition">
+        <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
+        <target xml:lang="uz" state="needs-translation">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</target>
+        <note>ID: leveled.definition</note>
+      </trans-unit>
+      <trans-unit id="leveled.levels">
+        <source xml:lang="en">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
+        <target xml:lang="uz" state="needs-translation">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</target>
+        <note>ID: leveled.levels</note>
+      </trans-unit>
+      <trans-unit id="leveled.templates">
+        <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-3" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
+        <target xml:lang="uz" state="needs-translation">You can also make a Bloom Pack of <g id="genid-3" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</target>
+        <note>ID: leveled.templates</note>
+      </trans-unit>
+      <trans-unit id="leveled.learn">
+        <source xml:lang="en">To learn about using Leveled Readers in Bloom, you can:</source>
+        <target xml:lang="uz" state="needs-translation">To learn about using Leveled Readers in Bloom, you can:</target>
+        <note>ID: leveled.learn</note>
+      </trans-unit>
+      <trans-unit id="leveled.learn.videos">
+        <source xml:lang="en">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
+        <target xml:lang="uz" state="needs-translation">Watch <g id="genid-4" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</target>
+        <note>ID: leveled.learn.videos</note>
+      </trans-unit>
+      <trans-unit id="leveled.learn.helpindex">
+        <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</source>
+        <target xml:lang="uz" state="needs-translation">Go to the Help menu, choose 'Documentation', and look in the index under "Leveled Readers".</target>
+        <note>ID: leveled.learn.helpindex</note>
+      </trans-unit>
+      <trans-unit id="leveled.learn.helpmenu">
+        <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
+        <target xml:lang="uz" state="needs-translation">Go to the Help menu and choose: "Building Reader Templates".</target>
+        <note>ID: leveled.learn.helpmenu</note>
+      </trans-unit>
+      <trans-unit id="leveled.vs.decodable">
+        <source xml:lang="en">Relationship to Decodable Readers</source>
+        <target xml:lang="uz" state="needs-translation">Relationship to Decodable Readers</target>
+        <note>ID: leveled.vs.decodable</note>
+      </trans-unit>
+      <trans-unit id="leveled.and.decodable">
+        <source xml:lang="en">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</source>
+        <target xml:lang="uz" state="needs-translation">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</target>
+        <note>ID: leveled.and.decodable</note>
+      </trans-unit>
+      <trans-unit id="leveled.reader.level">
+        <source xml:lang="en">Leveled Reader Level</source>
+        <target xml:lang="uz" state="needs-translation">Leveled Reader Level</target>
+        <note>ID: leveled.reader.level</note>
+      </trans-unit>
+      <trans-unit id="decodable.stage">
+        <source xml:lang="en">Decodable Stage</source>
+        <target xml:lang="uz" state="needs-translation">Decodable Stage</target>
+        <note>ID: decodable.stage</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

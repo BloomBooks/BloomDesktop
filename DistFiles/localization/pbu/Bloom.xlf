@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="pbu">
     <body>
@@ -1284,6 +1284,11 @@
         <note xml:lang="en">OLD TEXT (before 3.9): (no template file found)</note>
         <target xml:lang="pbu" state="final">{0}هېڅ نمونوي فايل ونه موندل شو</target>
       </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.NumberOfPagesTooltip" sil:dynamic="true">
+        <source xml:lang="en">Number of pages to add</source>
+        <note>ID: EditTab.AddPageDialog.NumberOfPagesTooltip</note>
+        <target xml:lang="pbu" state="needs-translation">Number of pages to add</target>
+      </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Page...</source>
         <note>ID: EditTab.AddPageDialog.Title</note>
@@ -1959,6 +1964,12 @@
         <note>ID: EditTab.Image.CopyImageFailed</note>
         <target xml:lang="pbu" state="final">بلوم ستاسې د کمپيوټر د کلېپ بورډ له کارولو سره ستونزه درلوده. ځينې نور پروګرامونه ممکن پکې مداخله وکړي.</target>
       </trans-unit>
+      <trans-unit id="EditTab.Image.Corrupt" sil:dynamic="true">
+        <source xml:lang="en">Bloom was not able to load {0}. The file may be corrupted. Please try another image. Here are some technical details: </source>
+        <note>ID: EditTab.Image.Corrupt</note>
+        <note>{0} is required, and will be replaced with a file path. After the message Bloom will append a further message.</note>
+        <target xml:lang="pbu" state="needs-translation">Bloom was not able to load {0}. The file may be corrupted. Please try another image. Here are some technical details: </target>
+      </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cut Image</source>
         <note>ID: EditTab.Image.CutImage</note>
@@ -1979,6 +1990,11 @@
         <source xml:lang="en">Paste Image</source>
         <note>ID: EditTab.Image.PasteImage</note>
         <target xml:lang="pbu" state="final">انځور ونښلوئ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
+        <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
+        <note>ID: EditTab.Image.TooLarge</note>
+        <target xml:lang="pbu" state="needs-translation">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
@@ -2043,6 +2059,11 @@
         <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
         <target xml:lang="pbu" state="final">مخکې له دې چې تاسې یو انځور ونښلوئ (Paste), کړای شئ، یو دانه د بل پروګرام څخه خپل ‎'کلیپ بورډ‎'‏ ته کاپي کړئ،</target>
+      </trans-unit>
+      <trans-unit id="EditTab.NoValidImageFoundOnClipboard">
+        <source xml:lang="en">Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else.</source>
+        <note>ID: EditTab.NoValidImageFoundOnClipboard</note>
+        <target xml:lang="pbu" state="needs-translation">Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else.</target>
       </trans-unit>
       <trans-unit id="EditTab.NoOtherLayouts" approved="yes">
         <source xml:lang="en">There are no other options for this template.</source>
@@ -3844,13 +3865,13 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To Send via USB, you may need to get the right
-        cable, install phone drivers on your computer, or
-        modify settings on your phone.</source>
+                            cable, install phone drivers on your computer, or
+                            modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note />
         <target xml:lang="pbu" state="final">د USB له لارې لیږلو لپاره، تاسو شاید اړتیا ولرئ چی سم
-        کیبل ترلاسه کړئ، په خپل کمپیوټر کې د تلیفون ډرایور نصب کړئ ، یا
-        په خپل تلیفون کې تنظیمات بدل کړئ.</target>
+                             کیبل ترلاسه کړئ، په خپل کمپیوټر کې د تلیفون ډرایور نصب کړئ ، یا
+                             په خپل تلیفون کې تنظیمات بدل کړئ.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No Wi-Fi Network?</source>
@@ -4595,7 +4616,7 @@
         <note>title for the message box</note>
         <target xml:lang="pbu" state="final">PDF خوندي نه شو</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfNotSavedWhy" approved="yes">
+      <trans-unit id="PublishTab.PdfNotSavedWhy">
         <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
@@ -4606,7 +4627,7 @@
         <note>ID: PublishTab.PrintButton</note>
         <target xml:lang="pbu" state="final">&amp;چاپ...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PrologToAdobeEula" approved="yes">
+      <trans-unit id="PublishTab.PrologToAdobeEula">
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>

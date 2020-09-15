@@ -6,7 +6,7 @@
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
         <note>{0} is the date the application was built</note>
-        <target xml:lang="ru" state="needs-translation">Built on {0}</target>
+        <target xml:lang="ru" state="translated">Построено на {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
@@ -17,7 +17,7 @@
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
         <note>{0} is the application name</note>
-        <target xml:lang="ru" state="needs-translation">About {0}</target>
+        <target xml:lang="ru" state="translated">О {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
@@ -65,7 +65,7 @@
       <trans-unit id="Common.AbortButton">
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
-        <target xml:lang="ru" state="needs-translation">&amp;Abort</target>
+        <target xml:lang="ru" state="translated">&amp;Прервать</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
@@ -75,7 +75,7 @@
       <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="ru" state="needs-translation">&amp;Ignore</target>
+        <target xml:lang="ru" state="translated">&amp;Игнорировать</target>
       </trans-unit>
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
@@ -85,7 +85,7 @@
       <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
-        <target xml:lang="ru" state="needs-translation">&amp;No</target>
+        <target xml:lang="ru" state="translated">&amp;Нет</target>
       </trans-unit>
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
@@ -95,7 +95,7 @@
       <trans-unit id="Common.RetryButton">
         <source xml:lang="en">&amp;Retry</source>
         <note>ID: Common.RetryButton</note>
-        <target xml:lang="ru" state="needs-translation">&amp;Retry</target>
+        <target xml:lang="ru" state="translated">&amp;Повторить</target>
       </trans-unit>
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
@@ -105,19 +105,19 @@
       <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="ru" state="needs-translation">&amp;Yes</target>
+        <target xml:lang="ru" state="translated">&amp;Да</target>
       </trans-unit>
       <trans-unit id="CustomIdentifierView.betterLabel1">
         <source xml:lang="en">RFC5646 code:</source>
         <note>ID: CustomIdentifierView.betterLabel1</note>
         <note>label describes the code for a custom identifier. Translate only 'code'</note>
-        <target xml:lang="ru" state="needs-translation">RFC5646 code:</target>
+        <target xml:lang="ru" state="translated">Код RFC5646:</target>
       </trans-unit>
       <trans-unit id="CustomIdentifierView.linkLabel1">
         <source xml:lang="en">Read about language identifiers on the web</source>
         <note>ID: CustomIdentifierView.linkLabel1</note>
         <note>text used in the link to a webpage that describes the language identifiers</note>
-        <target xml:lang="ru" state="needs-translation">Read about language identifiers on the web</target>
+        <target xml:lang="ru" state="translated">Читать об идентификаторах языка в Интернете</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -198,12 +198,12 @@
         <source xml:lang="en">Choose Picture File</source>
         <note>ID: ImageToolbox.FileChooserTitle</note>
         <note>Title shown for a file chooser dialog brought up by the ImageToolbox</note>
-        <target xml:lang="ru" state="needs-translation">Choose Picture File</target>
+        <target xml:lang="ru" state="translated">Выберите файл изображения</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Galleries">
         <source xml:lang="en">Galleries</source>
         <note>ID: ImageToolbox.Galleries</note>
-        <target xml:lang="ru" state="needs-translation">Galleries</target>
+        <target xml:lang="ru" state="translated">Галереи</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericGettingImageProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
@@ -223,12 +223,12 @@
       <trans-unit id="ImageToolbox.ImageGalleries">
         <source xml:lang="en">Image Galleries</source>
         <note>ID: ImageToolbox.ImageGalleries</note>
-        <target xml:lang="ru" state="needs-translation">Image Galleries</target>
+        <target xml:lang="ru" state="translated">Галереи изображений</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="ru" state="needs-translation">Image Toolbox</target>
+        <target xml:lang="ru" state="translated">Панель инструментов изображения</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.InstallArtOfReading" approved="yes">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
@@ -255,7 +255,7 @@
       <trans-unit id="ImageToolbox.NoGalleries">
         <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
         <note>ID: ImageToolbox.NoGalleries</note>
-        <target xml:lang="ru" state="needs-translation">This computer doesn't appear to have any galleries installed yet.</target>
+        <target xml:lang="ru" state="translated">Похоже, что в этом компьютере еще не установлено ни одной галереи.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
@@ -308,13 +308,13 @@
         <source xml:lang="en">Purpose:</source>
         <note>ID: IpaIdentifierView.betterLabel1</note>
         <note>In writing system setup when IPA special option is selected: Label for the purpose combo box</note>
-        <target xml:lang="ru" state="needs-translation">Purpose:</target>
+        <target xml:lang="ru" state="translated">Цель:</target>
       </trans-unit>
       <trans-unit id="IpaIdentifierView.linkLabel1">
         <source xml:lang="en">Read about IPA transcription on the web</source>
         <note>ID: IpaIdentifierView.linkLabel1</note>
         <note>In writing system setup when IPA special option is selected: text used in link to a webpage describing IPA transcription</note>
-        <target xml:lang="ru" state="needs-translation">Read about IPA transcription on the web</target>
+        <target xml:lang="ru" state="translated">Читать о IPA транскрипции в сети</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
@@ -330,7 +330,7 @@
         <source xml:lang="en">Ethnologue.com</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
-        <target xml:lang="ru" state="needs-translation">Ethnologue.com</target>
+        <target xml:lang="ru" state="translated">Ethnologue.com</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
@@ -391,12 +391,12 @@
       <trans-unit id="LanguageLookup._scriptsAndVariantsLabel">
         <source xml:lang="en">my script variant label</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLabel</note>
-        <target xml:lang="ru" state="needs-translation">my script variant label</target>
+        <target xml:lang="ru" state="translated">метка моего варианта сценария</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLink">
         <source xml:lang="en">Script and Variant</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLink</note>
-        <target xml:lang="ru" state="needs-translation">Script and Variant</target>
+        <target xml:lang="ru" state="translated">Сценарий и Вариант</target>
       </trans-unit>
       <trans-unit id="MemoryWarning" approved="yes">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
@@ -458,7 +458,7 @@
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="ru" state="needs-translation">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</target>
+        <target xml:lang="ru" state="translated">Вы можете копировать, изменять, распространять эту работу даже в коммерческих целях, и не запрашивая разрешения.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
@@ -489,17 +489,17 @@
       <trans-unit id="MetadataEditor.CopyrightYear">
         <source xml:lang="en">Copyright Year</source>
         <note>ID: MetadataEditor.CopyrightYear</note>
-        <target xml:lang="ru" state="needs-translation">Copyright Year</target>
+        <target xml:lang="ru" state="translated">Год авторского права</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
-        <target xml:lang="ru" state="needs-translation">Creative Commons</target>
+        <target xml:lang="ru" state="translated">Творческое Достояние</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental">
         <source xml:lang="en">Intergovernmental Version</source>
         <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
-        <target xml:lang="ru" state="needs-translation">Intergovernmental Version</target>
+        <target xml:lang="ru" state="translated">Межправительственная версия</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
@@ -514,12 +514,12 @@
       <trans-unit id="MetadataEditor.License">
         <source xml:lang="en">License</source>
         <note>ID: MetadataEditor.License</note>
-        <target xml:lang="ru" state="needs-translation">License</target>
+        <target xml:lang="ru" state="translated">Лицензия</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.PublicDomain">
         <source xml:lang="en">The copyright holder waives all rights</source>
         <note>ID: MetadataEditor.PublicDomain</note>
-        <target xml:lang="ru" state="needs-translation">The copyright holder waives all rights</target>
+        <target xml:lang="ru" state="translated">Владелец авторского права отказывается от всех прав</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
@@ -557,7 +557,7 @@
         <source xml:lang="en">about {0} Public Domain</source>
         <note>ID: MetadataEditor.linkToPublicDomainCC0</note>
         <note>{0} is replaced by an untranslatable abbreviation functioning as an adjective ("CC0")</note>
-        <target xml:lang="ru" state="needs-translation">about {0} Public Domain</target>
+        <target xml:lang="ru" state="translated">о {0} публичном домене</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons" approved="yes">
         <source xml:lang="en">Not Enforceable</source>
@@ -568,17 +568,17 @@
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton">
         <source xml:lang="en">Cancel</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton</note>
-        <target xml:lang="ru" state="needs-translation">Cancel</target>
+        <target xml:lang="ru" state="translated">Отменить</target>
       </trans-unit>
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._okButton">
         <source xml:lang="en">OK</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._okButton</note>
-        <target xml:lang="ru" state="needs-translation">OK</target>
+        <target xml:lang="ru" state="translated">Ок</target>
       </trans-unit>
       <trans-unit id="ScriptsAndVariantsDialog.ScriptsAndVariants">
         <source xml:lang="en">Script and Variant</source>
         <note>ID: ScriptsAndVariantsDialog.ScriptsAndVariants</note>
-        <target xml:lang="ru" state="needs-translation">Script and Variant</target>
+        <target xml:lang="ru" state="translated">Сценарий и Вариант</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
@@ -631,7 +631,7 @@
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
         <note>ID: SettingsProtection.PasswordNoticeWithSupportUrl</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNotice". Param 0: Factory password; Param 1: product name; Param 2: URL of support page</note>
-        <target xml:lang="ru" state="needs-translation">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</target>
+        <target xml:lang="ru" state="translated">Заводской пароль для этих настроек - «{0}». Если вы его забудете, вы всегда можете посетить {1} страницу поддержки: {2}</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
@@ -646,13 +646,13 @@
       <trans-unit id="ShowReleaseNotesDialog.WindowTitle">
         <source xml:lang="en">Release Notes</source>
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
-        <target xml:lang="ru" state="needs-translation">Release Notes</target>
+        <target xml:lang="ru" state="translated">Заметки к Релизу</target>
       </trans-unit>
       <trans-unit id="VoiceIdentifierView.betterLabel1">
         <source xml:lang="en">In applications which support this option, fields with this input system will be able to play and record voice.</source>
         <note>ID: VoiceIdentifierView.betterLabel1</note>
         <note>Displayed if a user selects the voice special option in writing system setup</note>
-        <target xml:lang="ru" state="needs-translation">In applications which support this option, fields with this input system will be able to play and record voice.</target>
+        <target xml:lang="ru" state="translated">В приложениях, поддерживающих эту опцию, поля с этой системой ввода смогут воспроизводить и записывать голос.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
@@ -683,31 +683,31 @@
         <source xml:lang="en">Abbreviation</source>
         <note>ID: WSIdentifierView.betterLabel4</note>
         <note>In writing system setup general tab: label before abbreviation text box</note>
-        <target xml:lang="ru" state="needs-translation">Abbreviation</target>
+        <target xml:lang="ru" state="translated">Аббревиатура</target>
       </trans-unit>
       <trans-unit id="WSIdentifierView.betterLabel5">
         <source xml:lang="en">Special:</source>
         <note>ID: WSIdentifierView.betterLabel5</note>
         <note>In writing system setup general tab:  Label before combo box with 'Special' choices</note>
-        <target xml:lang="ru" state="needs-translation">Special:</target>
+        <target xml:lang="ru" state="translated">Особые:</target>
       </trans-unit>
       <trans-unit id="WSIdentifiers.IpaIdentifierView.Default">
         <source xml:lang="en">Default</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Default</note>
         <note>Choice for most users</note>
-        <target xml:lang="ru" state="needs-translation">Default</target>
+        <target xml:lang="ru" state="translated">По умолчанию</target>
       </trans-unit>
       <trans-unit id="WSIdentifiers.IpaIdentifierView.Emic">
         <source xml:lang="en">Emic (uses phonology of the language)</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Emic</note>
         <note>Only translate text inside of the parentheses ()</note>
-        <target xml:lang="ru" state="needs-translation">Emic (uses phonology of the language)</target>
+        <target xml:lang="ru" state="translated">Эмик (использует фонологию языка)</target>
       </trans-unit>
       <trans-unit id="WSIdentifiers.IpaIdentifierView.Etic">
         <source xml:lang="en">Etic (raw phonetic transcription)</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Etic</note>
         <note>Only translate text inside of the parentheses ()</note>
-        <target xml:lang="ru" state="needs-translation">Etic (raw phonetic transcription)</target>
+        <target xml:lang="ru" state="translated">Этик (сырая фонетическая транскрипция)</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
@@ -747,7 +747,7 @@
       <trans-unit id="WSKeyboardControl.SetupKeyboards">
         <source xml:lang="en">Set up keyboards</source>
         <note>ID: WSKeyboardControl.SetupKeyboards</note>
-        <target xml:lang="ru" state="needs-translation">Set up keyboards</target>
+        <target xml:lang="ru" state="translated">Настроить клавиатуру</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
@@ -772,7 +772,7 @@
       <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
         <source xml:lang="en">[Missing] {0} ({1})</source>
         <note>ID: XkbKeyboardAdaptor.MissingKeyboard</note>
-        <target xml:lang="ru" state="needs-translation">[Missing] {0} ({1})</target>
+        <target xml:lang="ru" state="translated">[Missing] {0} ({1})</target>
       </trans-unit>
     </body>
   </file>

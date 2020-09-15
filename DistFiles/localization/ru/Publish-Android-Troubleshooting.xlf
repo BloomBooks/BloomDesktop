@@ -4,74 +4,74 @@
     <body>
       <trans-unit id="android.publish.trouble.tips">
         <source xml:lang="en">Troubleshooting Tips for Android Publishing</source>
-        <target xml:lang="ru" state="needs-translation">Troubleshooting Tips for Android Publishing</target>
+        <target xml:lang="ru" state="translated">Советы по устранению неполадок при публикации на Android</target>
         <note>ID: android.publish.trouble.tips</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi">
         <source xml:lang="en">Share over Wi-Fi</source>
-        <target xml:lang="ru" state="needs-translation">Share over Wi-Fi</target>
+        <target xml:lang="ru" state="translated">Поделиться через Wi-Fi</target>
         <note>ID: android.publish.wifi</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.unseen">
         <source xml:lang="en">Problem: Android Device is not seeing book advertisements</source>
-        <target xml:lang="ru" state="needs-translation">Problem: Android Device is not seeing book advertisements</target>
+        <target xml:lang="ru" state="translated">Проблема: устройство Android не видит рекламу книг</target>
         <note>ID: android.publish.wifi.unseen</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive">
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</source>
-        <target xml:lang="ru" state="needs-translation">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from Wi-Fi".</target>
+        <target xml:lang="ru" state="translated">При использовании этого метода необходимо запустить Bloom Reader, открыть его меню и выбрать «Получать через Wi-Fi».</target>
         <note>ID: android.publish.wifi.run.receive</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from">
         <source xml:lang="en">Make sure the device is in the "Receive from Wi-Fi" screen</source>
-        <target xml:lang="ru" state="needs-translation">Make sure the device is in the "Receive from Wi-Fi" screen</target>
+        <target xml:lang="ru" state="translated">Убедитесь, что устройство находится в режиме «Получать с помощью Wi-Fi»</target>
         <note>ID: android.publish.wifi.receive.from</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.same.network">
         <source xml:lang="en">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
-        <target xml:lang="ru" state="needs-translation">Make sure the computer and device are on the same Wi-Fi network. A computer plugged in via cable to the Wi-Fi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as Wi-Fi, but the Bloom team will not be able to provide any help in setting that up, sorry.</target>
+        <target xml:lang="ru" state="translated">Убедитесь, что компьютер и устройство находятся в одной сети Wi-Fi. Компьютер, подключенный к маршрутизатору Wi-Fi с помощью кабеля, все еще может находиться в собственной сети. Технически возможно подключить проводные сети, чтобы иметь возможность находиться в той же локальной подсети, что и Wi-Fi, но команда Bloom не сможет оказать какую-либо помощь в настройке, извините.</target>
         <note>ID: android.publish.wifi.same.network</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.firewalls">
         <source xml:lang="en">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</source>
-        <target xml:lang="ru" state="needs-translation">Make sure your computer doesn't have a firewall that is interfering. The windows Firewall will display when you first start advertising a book. If you said "No" to that, it might not ever ask you again. If you have additional 3rd party firewalls installed, try disabling them. Bloom advertises a book by broadcasting on the local net via UDP on port 5913, and Bloom Reader requests a book via port 5915.</target>
+        <target xml:lang="ru" state="translated">Убедитесь, что на вашем компьютере нет межсетевого экрана. Межсетевой экран Windows отобразится, когда вы впервые начнете рекламировать книгу. Если вы ответите на это «Нет», он больше никогда вас не спросит. Если у вас установлены дополнительные сторонние межсетевые экраны, попробуйте отключить их. Bloom рекламирует книгу, транслируя ее в локальной сети через UDP-порт 5913, а Bloom Reader запрашивает книгу через порт 5915.</target>
         <note>ID: android.publish.wifi.firewalls</note>
       </trans-unit>
       <trans-unit id="android.publish.usb">
         <source xml:lang="en">Send Over USB Cable</source>
-        <target xml:lang="ru" state="needs-translation">Send Over USB Cable</target>
+        <target xml:lang="ru" state="translated">Отправить через USB-кабель</target>
         <note>ID: android.publish.usb</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.not.connect">
         <source xml:lang="en">Problem: Bloom is not connecting to my device</source>
-        <target xml:lang="ru" state="needs-translation">Problem: Bloom is not connecting to my device</target>
+        <target xml:lang="ru" state="translated">Проблема: Bloom не подключается к моему устройству</target>
         <note>ID: android.publish.usb.not.connect</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.consider.wifi">
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the Wi-Fi method even if you are only working with a single device.</g>
         </source>
-        <target xml:lang="ru" state="needs-translation"><g id="genid-1" ctype="x-html-p">We have found this method to be problematic with many devices, so consider using the Wi-Fi method even if you are only working with a single device.</g></target>
+        <target xml:lang="ru" state="translated"><g id="genid-1" ctype="x-html-p">Мы обнаружили, что этот метод является проблематичным с большим количеством устройств, поэтому используйте метод Wi-Fi, даже если вы работаете только с одним устройством.</g></target>
         <note>ID: android.publish.usb.consider.wifi</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.automatic">
         <source xml:lang="en">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</source>
-        <target xml:lang="ru" state="needs-translation">When using this method, you do not have to go into any special mode to receive books. Just run Bloom Reader. Books should automatically appear when they are transferred.</target>
+        <target xml:lang="ru" state="translated">При использовании этого метода вам не нужно заходить в специальный режим для получения книг. Просто запустите Bloom Reader. Книги появятся автоматически после их передачи.</target>
         <note>ID: android.publish.usb.automatic</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.uses.mtp">
         <source xml:lang="en">Some Android devices have multiple modes they can be in when connected to a computer. Some will ask you as soon as you connect the cable to the computer. Bloom will be trying to talk to the device using a protocol called "MTP". If you're not sure that your device is connecting using MTP, try googling the name of your device + "MTP".</source>
-        <target xml:lang="ru" state="needs-translation">Some Android devices have multiple modes they can be in when connected to a computer. Some will ask you as soon as you connect the cable to the computer. Bloom will be trying to talk to the device using a protocol called "MTP". If you're not sure that your device is connecting using MTP, try googling the name of your device + "MTP".</target>
+        <target xml:lang="ru" state="translated">Некоторые устройства Android имеют несколько режимов при подключении к компьютеру. Некоторые будут спрашивать вас, как только вы подключите кабель к компьютеру. Bloom будет пытаться говорить с устройством, используя протокол «MTP». Если вы не уверены, что ваше устройство подключается через MTP, попробуйте найти в Google имя вашего устройства + "MTP".</target>
         <note>ID: android.publish.usb.uses.mtp</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.windows">
         <source xml:lang="en">The device should be showing up in Windows File Explorer (this feature is Windows-only)</source>
-        <target xml:lang="ru" state="needs-translation">The device should be showing up in Windows File Explorer (this feature is Windows-only)</target>
+        <target xml:lang="ru" state="translated">Устройство должно отображаться в Проводнике Файлов (эта функция только для Windows)</target>
         <note>ID: android.publish.usb.windows</note>
       </trans-unit>
       <trans-unit id="android.publish.usb.cable.or.port">
         <source xml:lang="en">Try a different cable, or a different USB port.</source>
-        <target xml:lang="ru" state="needs-translation">Try a different cable, or a different USB port.</target>
+        <target xml:lang="ru" state="translated">Попробуйте другой кабель или другой USB-порт.</target>
         <note>ID: android.publish.usb.cable.or.port</note>
       </trans-unit>
     </body>
