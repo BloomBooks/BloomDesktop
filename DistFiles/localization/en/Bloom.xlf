@@ -3806,6 +3806,10 @@
         <source xml:lang="en">Please check your email and click on the link there, then sign in again.</source>
         <note>ID: PublishTab.Upload.CheckEmail</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.CheckEmailFailed">
+        <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
+        <note>ID: PublishTab.Upload.CheckEmailFailed</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.CcLink">
         <source xml:lang="en">CC-BY-NC</source>
         <note>ID: PublishTab.Upload.CcLink</note>
