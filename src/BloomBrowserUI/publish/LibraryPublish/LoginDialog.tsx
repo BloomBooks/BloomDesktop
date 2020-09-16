@@ -17,6 +17,7 @@ import { DialogTitle, Typography, Dialog } from "@material-ui/core";
 import "./LoginDialog.less";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProblemKind } from "../../problemDialog/ProblemDialog";
+import { ErrorBoundary } from "../../react_components/ErrorBoundary";
 
 // This component supports logging in using Firebase. In addition to support
 // for showing the dialog, it supports being loaded into a browser (but not
@@ -73,20 +74,41 @@ export const LoginDialog: React.FunctionComponent<{}> = props => {
                 // account automatically with an existing parse server one for the same
                 // email.
                 if (!authResult.user.emailVerified) {
-                    authResult.user.sendEmailVerification().then(() => {
-                        theOneLocalizationManager
-                            .asyncGetTextInLang(
-                                "PublishTab.Upload.CheckEmail",
-                                "Please check your email and click on the link there, then log in again.",
-                                "UI",
-                                ""
-                            )
-                            .done(translation => {
-                                alert(translation);
-                                setDone(true);
-                            });
-                    });
-                    firebase.auth().signOut();
+                    authResult.user.sendEmailVerification().then(
+                        () => {
+                            theOneLocalizationManager
+                                .asyncGetTextInLang(
+                                    "PublishTab.Upload.CheckEmail",
+                                    "Please check your email and click on the link there, then log in again.",
+                                    "UI",
+                                    ""
+                                )
+                                .done(translation => {
+                                    alert(translation);
+                                    setDone(true);
+                                });
+                        },
+                        reason => {
+                            theOneLocalizationManager
+                                .asyncGetTextInLang(
+                                    "PublishTab.Upload.CheckEmailFailed",
+                                    "Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.",
+                                    "UI",
+                                    ""
+                                )
+                                .done(translation => {
+                                    alert(translation + " (" + reason + ")");
+                                    setDone(true);
+                                });
+                        }
+                    );
+                    firebase
+                        .auth()
+                        .signOut()
+                        .catch(reason => {
+                            // Really don't expect a problem here.
+                            console.error(reason);
+                        });
                     return;
                 }
                 // get token from parse, return to desktop
@@ -153,37 +175,40 @@ export const LoginDialog: React.FunctionComponent<{}> = props => {
         }
     }, [done]);
     return (
-        // The box is plenty big enough for its contents, and the browser indicates
-        // they are actually not big enough to overflow; but we get a scroll bar.
-        // It appears some descendent, perhaps a hidden one, overflows greatly,
-        // somewhere in the StyledFirebaseAuth. Hiding overflow is the only way
-        // I've found to get rid of the scroll bar.
-        <div style={{ overflow: "hidden" }}>
-            {done || (
-                <Dialog
-                    className="login-dialog"
-                    open={true}
-                    // the behavior of fullWidth/maxWidth is very strange
-                    //fullWidth={true}
-                    maxWidth={"md"}
-                    fullScreen={true}
-                    onClose={() => setDone(true)}
-                >
-                    <DialogTitle className="dialog-title">
-                        <Typography variant="h6">{dialogTitle}</Typography>
-                    </DialogTitle>
+        <ErrorBoundary>
+            // The box is plenty big enough for its contents, and the browser
+            indicates // they are actually not big enough to overflow; but we
+            get a scroll bar. // It appears some descendent, perhaps a hidden
+            one, overflows greatly, // somewhere in the StyledFirebaseAuth.
+            Hiding overflow is the only way // I've found to get rid of the
+            scroll bar.
+            <div style={{ overflow: "hidden" }}>
+                {done || (
+                    <Dialog
+                        className="login-dialog"
+                        open={true}
+                        // the behavior of fullWidth/maxWidth is very strange
+                        //fullWidth={true}
+                        maxWidth={"md"}
+                        fullScreen={true}
+                        onClose={() => setDone(true)}
+                    >
+                        <DialogTitle className="dialog-title">
+                            <Typography variant="h6">{dialogTitle}</Typography>
+                        </DialogTitle>
 
-                    <div>
-                        {done || (
-                            <StyledFirebaseAuth
-                                uiConfig={uiConfig as any}
-                                firebaseAuth={firebase.auth()}
-                            />
-                        )}
-                    </div>
-                </Dialog>
-            )}
-        </div>
+                        <div>
+                            {done || (
+                                <StyledFirebaseAuth
+                                    uiConfig={uiConfig as any}
+                                    firebaseAuth={firebase.auth()}
+                                />
+                            )}
+                        </div>
+                    </Dialog>
+                )}
+            </div>
+        </ErrorBoundary>
     );
 };
 
