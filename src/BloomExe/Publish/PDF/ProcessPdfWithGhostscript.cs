@@ -81,10 +81,10 @@ namespace Bloom.Publish.PDF
 							RobustFile.Copy(_inputPdfPath, _outputPdfPath, true);
 						return;
 					}
-					// If the process made the file larger and didn't change the color scheme, ignore the result.
+					// If the process made the file larger and didn't change the color scheme and we're not removing blank pages, ignore the result.
 					var oldInfo = new FileInfo(_inputPdfPath);
 					var newInfo = new FileInfo(tempPdfFile.Path);
-					if (newInfo.Length < oldInfo.Length || _type == OutputType.Printshop)
+					if (newInfo.Length < oldInfo.Length || _type == OutputType.Printshop || bookIsFullBleed)
 						RobustFile.Copy(tempPdfFile.Path, _outputPdfPath, true);
 					else if (_inputPdfPath != _outputPdfPath)
 						RobustFile.Copy(_inputPdfPath, _outputPdfPath, true);
