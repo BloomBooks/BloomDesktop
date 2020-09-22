@@ -165,7 +165,7 @@ namespace Bloom.Publish
 			return layoutMethod;
 		}
 
-		public bool IsCurrentBookFullBleed => _currentlyLoadedBook.FullBleed;
+		public bool IsCurrentBookFullBleed => _currentlyLoadedBook != null && _currentlyLoadedBook.FullBleed;
 
 		private bool GetPrintingWithFullBleed()
 		{

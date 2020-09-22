@@ -462,12 +462,23 @@ namespace Bloom
 		{
 			try
 			{
+				var program = Application.ExecutablePath;
+				if (SIL.PlatformUtilities.Platform.IsLinux)
+				{
+					// This is needed until the day comes (if it ever does) when we can use the
+					// system mono on Linux.
+					program = "/opt/mono5-sil/bin/mono";
+					if (args == null)
+						args = "\"" + Application.ExecutablePath + "\"";
+					else
+						args = "\"" + Application.ExecutablePath + "\" " + args;
+				}
 				if (args == null)
-					Process.Start(Application.ExecutablePath);
+					Process.Start(program);
 				else
-					Process.Start(Application.ExecutablePath, args);
+					Process.Start(program, args);
 
-				//give some time for that process.start to finish staring the new instance, which will see
+				//give some time for that process.start to finish starting the new instance, which will see
 				//we have a mutex and wait for us to die.
 				
 				Thread.Sleep(2000);
