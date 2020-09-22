@@ -91,12 +91,14 @@ import { ReaderToolsModel } from "../readerToolsModel";
                     const words = theOneLibSynphony.getWordsFromHtmlString(
                         cleanText
                     );
-                    for (const w of words) {
-                        if (
-                            ReaderToolsModel.getWordLength(w) >
-                            opts.maxGlyphsPerWord
-                        ) {
-                            longWords.push(w);
+                    if (opts.maxGlyphsPerWord > 0) {
+                        for (const w of words) {
+                            if (
+                                ReaderToolsModel.getWordLength(w) >
+                                opts.maxGlyphsPerWord
+                            ) {
+                                longWords.push(w);
+                            }
                         }
                     }
                     var sentenceWordCount = words.length;
