@@ -496,7 +496,7 @@ namespace BloomTests.Publish
 				switch (node.InnerXml)
 				{
 				case "synchronizedAudioText": foundSynchronizedAudio = true; break;
-				case "displayTransformability/resizeText": foundResizeText = true; break;
+				case "displayTransformability": foundResizeText = true; break;
 				case "printPageNumbers": foundPageNumbers = true; break;
 				case "unlocked": foundUnlocked = true; break;
 				case "readingOrder": foundReadingOrder = true; break;
