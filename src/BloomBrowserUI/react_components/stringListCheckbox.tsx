@@ -64,6 +64,9 @@ export class StringListCheckbox extends LocalizableElement<IProps, {}> {
         ) {
             return false;
         }
+        if (!this.props.tristateItemOffName) {
+            return false;
+        }
         return undefined; // indeterminate
     }
 
