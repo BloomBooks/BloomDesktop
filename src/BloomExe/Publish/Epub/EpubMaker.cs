@@ -1733,10 +1733,11 @@ namespace Bloom.Publish.Epub
 			// we consider putting this are usually on the title or credits page. In case they are not, I'm
 			// uncomfortable with removing a useful annotation because of such a rule. So let's wait until someone
 			// complains.
-			if (divInternal != null && !String.IsNullOrWhiteSpace(divInternal.InnerText) && divInternal.AncestorWithAttributeValue("role", "contentinfo") == null)
+			if (divInternal != null && !String.IsNullOrWhiteSpace(divInternal.InnerText))
 			{
 				string languageIdUsed;
-				divInternal.SetAttribute("role", "contentinfo");
+				if (divInternal.AncestorWithAttributeValue("role", "contentinfo") == null)
+					divInternal.SetAttribute("role", "contentinfo");
 				var label = L10NSharp.LocalizationManager.GetString(labelId, labelEnglish, "", _langsForLocalization, out languageIdUsed);
 				divInternal.SetAttribute("aria-label", label);
 				return true;
@@ -1747,10 +1748,11 @@ namespace Bloom.Publish.Epub
 		private bool SetRoleAndLabelForClass(XmlElement div, string desiredClass, string labelId, string labelEnglish)
 		{
 			// ACE by DAISY for epub 3.2 says contentinfo should not be nested. (Also not more than one... but see comment in SetRoleAndLabelForMatchingDiv).
-			if (PublishHelper.HasClass(div, desiredClass) && div.AncestorWithAttributeValue("role", "contentinfo") == null)
+			if (PublishHelper.HasClass(div, desiredClass))
 			{
 				string languageIdUsed;
-				div.SetAttribute("role", "contentinfo");
+				if (div.AncestorWithAttributeValue("role", "contentinfo") == null)
+					div.SetAttribute("role", "contentinfo");
 				var label = L10NSharp.LocalizationManager.GetString (labelId, labelEnglish, "", _langsForLocalization, out languageIdUsed);
 				div.SetAttribute("aria-label", label);
 				return true;
