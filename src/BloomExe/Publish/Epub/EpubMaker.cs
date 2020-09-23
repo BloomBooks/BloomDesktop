@@ -616,7 +616,9 @@ namespace Bloom.Publish.Epub
 			if (hasAudio)	// REVIEW: should this be hasFullAudio?
 				metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "synchronizedAudioText"));
 			// Note: largePrint description says "The property is not set if the font size can be increased. See displayTransformability."
-			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "displayTransformability/resizeText"));
+			// https://www.w3.org/wiki/WebSchemas/Accessibility does not list resizeText as a possible modifier for displayTransformability,
+			// and the 3.2 ACE by DAISY checker objects, so I have removed it. A blanket statement that the reader may change things seems fine.
+			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "displayTransformability"));
 			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "printPageNumbers"));
 			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "unlocked"));
 			metadataElt.Add(new XElement(opf + "meta", new XAttribute("property", "schema:accessibilityFeature"), "readingOrder"));
@@ -1059,6 +1061,7 @@ namespace Bloom.Publish.Epub
 			RemoveBloomUiElements(pageDom);
 			RemoveSpuriousLinks(pageDom);
 			RemoveScripts(pageDom);
+			RemoveUnwantedAttributes(pageDom);
 			FixIllegalIds(pageDom);
 			FixPictureSizes(pageDom);
 
@@ -1651,6 +1654,8 @@ namespace Bloom.Publish.Epub
 			var div = pageDom.Body.SelectSingleNode("//div[@data-page='required singleton']") as XmlElement;
 			if (div != null)
 			{
+				// MUST do these outer elements first, as inner ones are prevented from getting the contentinfo role if
+				// embedded in another contentinfo (ACE by DAISY says contentinfo should not be nested).
 				SetRoleAndLabelForClass(div, "frontCover", "TemplateBooks.PageLabel.Front Cover", "Front Cover");
 				SetRoleAndLabelForClass(div, "titlePage", "TemplateBooks.PageLabel.Title Page", "Title Page");
 				SetRoleAndLabelForClass(div, "credits", "TemplateBooks.PageLabel.Credits Page", "Credits Page");
@@ -1720,7 +1725,15 @@ namespace Bloom.Publish.Epub
 		private bool SetRoleAndLabelForMatchingDiv(XmlElement div, string attributeValue, string labelId, string labelEnglish)
 		{
 			var divInternal = div.SelectSingleNode (".//div[" + attributeValue + "]") as XmlElement;
-			if (divInternal != null && !String.IsNullOrWhiteSpace(divInternal.InnerText))
+			// ACE by DAISY for epub 3.2 says contentinfo should not be nested. That makes some sense...if you're skipping the
+			// whole title page as being info about the content rather than actual content, you don't need to skip
+			// elements within it as well. That means this function will rarely do anything, as these elements are usually
+			// within pages that get marked contentinfo.
+			// Another rule says not more than one per page. That's unlikely to happen because the elements on which
+			// we consider putting this are usually on the title or credits page. In case they are not, I'm
+			// uncomfortable with removing a useful annotation because of such a rule. So let's wait until someone
+			// complains.
+			if (divInternal != null && !String.IsNullOrWhiteSpace(divInternal.InnerText) && divInternal.AncestorWithAttributeValue("role", "contentinfo") == null)
 			{
 				string languageIdUsed;
 				divInternal.SetAttribute("role", "contentinfo");
@@ -1733,7 +1746,8 @@ namespace Bloom.Publish.Epub
 
 		private bool SetRoleAndLabelForClass(XmlElement div, string desiredClass, string labelId, string labelEnglish)
 		{
-			if (PublishHelper.HasClass(div, desiredClass))
+			// ACE by DAISY for epub 3.2 says contentinfo should not be nested. (Also not more than one... but see comment in SetRoleAndLabelForMatchingDiv).
+			if (PublishHelper.HasClass(div, desiredClass) && div.AncestorWithAttributeValue("role", "contentinfo") == null)
 			{
 				string languageIdUsed;
 				div.SetAttribute("role", "contentinfo");
@@ -2330,6 +2344,14 @@ namespace Bloom.Publish.Epub
 		{
 			foreach (var elt in pageDom.RawDom.SafeSelectNodes ("//script").Cast<XmlElement> ().ToArray ()) {
 				elt.ParentNode.RemoveChild (elt);
+			}
+		}
+
+		private void RemoveUnwantedAttributes(HtmlDom pageDom)
+		{
+			foreach (var elt in pageDom.RawDom.SafeSelectNodes("//*[@tabindex]").Cast<XmlElement>().ToArray())
+			{
+				elt.RemoveAttribute("tabindex");
 			}
 		}
 
