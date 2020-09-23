@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -69,8 +70,27 @@ namespace Bloom.web.controllers
 
 		private void CopyFile(ApiRequest request)
 		{
-			dynamic jsonData = DynamicJson.Parse(request.RequiredPostJson());
-			RobustFile.Copy(jsonData.from, jsonData.to, true);
+			dynamic jsonData;
+			try
+			{
+				jsonData = DynamicJson.Parse(request.RequiredPostJson());
+			}
+			catch (Exception e)
+			{
+				request.Failed(HttpStatusCode.BadRequest, $"BadRequest: {e.ToString()}");
+				return;
+			}
+
+			try
+			{
+				RobustFile.Copy(jsonData.from, jsonData.to, true);
+			}
+			catch (Exception e)
+			{
+				request.Failed(HttpStatusCode.InternalServerError, "InternalServerError while copying file. " + e.ToString());
+				return;
+			}
+
 			request.PostSucceeded();
 		}
 	}

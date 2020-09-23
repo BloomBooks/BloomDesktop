@@ -3976,8 +3976,8 @@ export default class AudioRecording {
                     BloomApi.postData(
                         "fileIO/copyFile",
                         {
-                            from: importPath,
-                            to: targetPath
+                            from: encodeURIComponent(importPath),
+                            to: encodeURIComponent(targetPath)
                         },
                         this.finishNewRecordingOrImportAsync.bind(this)
                     );
