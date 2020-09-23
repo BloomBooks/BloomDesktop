@@ -168,6 +168,12 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             // in case we miss a notification.
             setSelectedPageId(response.data.selectedPageId);
             setRealPageList(response.data.pages);
+            // The current page may need to be refreshed as well for new or retitled books.
+            // See https://issues.bloomlibrary.org/youtrack/issue/BL-9039.
+            const callback = pageIdToRefreshMap.get(
+                response.data.selectedPageId
+            );
+            if (callback) callback();
         });
     }, [reloadValue]);
 
