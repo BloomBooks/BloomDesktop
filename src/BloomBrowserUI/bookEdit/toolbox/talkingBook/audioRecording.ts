@@ -3945,7 +3945,7 @@ export default class AudioRecording {
         confirmButtonLabelL10nKey: "Common.Replace",
         onDialogClose: dialogResult => {
             if (dialogResult === DialogResult.Confirm) {
-                this.importRecording();
+                this.importRecordingAsync();
             }
         }
     };
@@ -3955,35 +3955,38 @@ export default class AudioRecording {
                 this.confirmReplaceProps
             );
         } else {
-            this.importRecording();
+            this.importRecordingAsync();
         }
     }
 
-    private importRecording(): void {
-        BloomApi.get("fileIO/chooseFile", result => {
-            const importPath: string = result.data;
-            if (!importPath) return;
+    public async importRecordingAsync(): Promise<void> {
+        const result = await BloomApi.getWithPromise("fileIO/chooseFile");
+        if (!result) {
+            return;
+        }
 
-            BloomApi.postJson(
-                "fileIO/getSpecialLocation",
-                "CurrentBookAudioDirectory",
-                resultAudioDir => {
-                    const targetPath =
-                        resultAudioDir.data +
-                        "/" +
-                        this.getCurrentAudioId() +
-                        ".mp3";
-                    BloomApi.postData(
-                        "fileIO/copyFile",
-                        {
-                            from: encodeURIComponent(importPath),
-                            to: encodeURIComponent(targetPath)
-                        },
-                        this.finishNewRecordingOrImportAsync.bind(this)
-                    );
-                }
-            );
-        });
+        const importPath: string = result.data;
+        if (!importPath) return;
+
+        const resultAudioDir = await BloomApi.postJson(
+            "fileIO/getSpecialLocation",
+            "CurrentBookAudioDirectory"
+        );
+
+        if (!resultAudioDir) {
+            return;
+        }
+
+        const targetPath =
+            resultAudioDir.data + "/" + this.getCurrentAudioId() + ".mp3";
+        await BloomApi.postData(
+            "fileIO/copyFile",
+            {
+                from: encodeURIComponent(importPath),
+                to: encodeURIComponent(targetPath)
+            },
+            this.finishNewRecordingOrImportAsync.bind(this)
+        );
     }
 }
 

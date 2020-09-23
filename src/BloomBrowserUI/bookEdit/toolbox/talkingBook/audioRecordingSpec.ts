@@ -2148,6 +2148,86 @@ describe("audio recording tests", () => {
 
         expect(result).toBe(false);
     });
+
+    describe("- importRecordingAsync()", () => {
+        function simulateBloomApiResponses(
+            audioToCopyFilePath: string,
+            bookPath: string
+        ) {
+            spyOn(axios, "get").and.callFake((url: string, config) => {
+                if (url.endsWith("fileIO/chooseFile")) {
+                    return Promise.resolve({ data: audioToCopyFilePath });
+                } else {
+                    return Promise.reject("Fake 404 Error");
+                }
+            });
+
+            spyOn(axios, "post").and.callFake((url: string, config) => {
+                if (url.endsWith("fileIO/getSpecialLocation")) {
+                    return Promise.resolve({ data: `${bookPath}/audio` });
+                } else if (url.endsWith("fileIO/copyFile")) {
+                    return Promise.resolve({});
+                } else {
+                    return Promise.reject("Fake 404 Error");
+                }
+            });
+        }
+
+        function encodeFilenameForHttpRequest(
+            filename: string,
+            baseName: string,
+            encodedBaseName: string
+        ) {
+            return replaceAll(filename, baseName, encodedBaseName)
+                .replace(/ /g, "%20")
+                .replace(/:/g, "%3A")
+                .replace(/\//g, "%2F");
+        }
+
+        // Also Refer to BloomExe tests "CopyFile_InputWithSpecialChars_CompletesSuccessfully"
+        it("importRecording() encodes special characters", async done => {
+            // Setup
+            const div1 =
+                '<div class="bloom-editable audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox" id="div1"><p>One. Two. Three.</p></div>';
+            SetupIFrameFromHtml(div1);
+
+            const recording = new AudioRecording();
+            recording.audioRecordingMode = AudioRecordingMode.TextBox; // Should be the old state, toggleRecordingMode() will flip the state
+
+            const baseName = "A`B~C!D@E#F$G%H^I&J(K)L-M_N=O+P[Q{R]S}T;U'V,W.X";
+            const audioFilename = `${baseName} audio.mp3`;
+            const audioToCopyFilePath = `${baseName} Folder/${audioFilename}`;
+            const bookPath = `C:/${baseName} Collection/${baseName} Book`;
+            simulateBloomApiResponses(audioToCopyFilePath, bookPath);
+
+            // System under test
+            await recording.importRecordingAsync();
+
+            // Verification
+            const encodedBaseName =
+                "A%60B~C!D%40E%23F%24G%25H%5EI%26J(K)L-M_N%3DO%2BP%5BQ%7BR%5DS%7DT%3BU'V%2CW.X";
+            const encodedAudioToCopyFilePath = encodeFilenameForHttpRequest(
+                audioToCopyFilePath,
+                baseName,
+                encodedBaseName
+            );
+            const destPath = `${bookPath}/audio/div1.mp3`;
+            const encodedDestPath = encodeFilenameForHttpRequest(
+                destPath,
+                baseName,
+                encodedBaseName
+            );
+            expect(axios.post).toHaveBeenCalledWith(
+                "/bloom/api/fileIO/copyFile",
+                {
+                    from: encodedAudioToCopyFilePath,
+                    to: encodedDestPath
+                }
+            );
+
+            done();
+        });
+    });
 });
 
 function StripEmptyClasses(html) {
@@ -2267,4 +2347,18 @@ export function getFrameElementById(
     return (frame as HTMLIFrameElement).contentDocument!.getElementById(
         elementId
     );
+}
+
+// Replaces all occurrences of pattern {within} {input} with {replacement}
+function replaceAll(input: string, pattern: string, replacement: string) {
+    // If pattern has punctuation, and you want to replace all,
+    // then you need to create a regex version of the pattern,
+    // except creating the regex version of the pattern isn't trivial if the pattern has punctuation...
+    // How can it be so convoluted to do such a simple task?
+    const escapedPattern = escapeRegExp(pattern);
+    return input.replace(new RegExp(escapedPattern, "g"), replacement);
+}
+
+function escapeRegExp(regexPattern) {
+    return regexPattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 }
