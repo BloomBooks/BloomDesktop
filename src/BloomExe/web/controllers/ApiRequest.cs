@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.ExceptionServices;
 using System.Windows.Forms;
 using Bloom.Collection;
@@ -121,16 +122,23 @@ namespace Bloom.Api
 		/// Use this one in cases where the error has already been output to a progress box,
 		/// and repeating the error is just noise.
 		/// </summary>
-		public void Failed()
+		public void Failed(string text = null)
 		{
-			_requestInfo.ContentType = "text/plain";
-			_requestInfo.WriteError(503);
+			Failed(HttpStatusCode.ServiceUnavailable, text);
 		}
 
-		public void Failed(string text)
-		{
+		public void Failed(HttpStatusCode statusCode, string text = null)
+		{			
 			_requestInfo.ContentType = "text/plain";
-			_requestInfo.WriteError(503, text);
+			int statusCodeInt = (int)statusCode;
+			if (text == null)
+			{
+				_requestInfo.WriteError(statusCodeInt);
+			}
+			else
+			{
+				_requestInfo.WriteError(statusCodeInt, text);
+			}
 		}
 
 		public static bool Handle(EndpointRegistration endpointRegistration, IRequestInfo info, CollectionSettings collectionSettings, Book.Book currentBook)

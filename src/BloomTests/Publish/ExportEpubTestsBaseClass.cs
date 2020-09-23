@@ -499,7 +499,7 @@ namespace BloomTests.Publish
 			// Check accessibilityFeature section
 			foundOther = false;
 			var foundSynchronizedAudio = false;
-			var foundResizeText = false;
+			var foundDisplayTransformability = false;
 			var foundPageNumbers = false;
 			var foundUnlocked = false;
 			var foundReadingOrder = false;
@@ -511,7 +511,7 @@ namespace BloomTests.Publish
 				switch (node.InnerXml)
 				{
 				case "synchronizedAudioText": foundSynchronizedAudio = true; break;
-				case "displayTransformability/resizeText": foundResizeText = true; break;
+				case "displayTransformability": foundDisplayTransformability = true; break;
 				case "printPageNumbers": foundPageNumbers = true; break;
 				case "unlocked": foundUnlocked = true; break;
 				case "readingOrder": foundReadingOrder = true; break;
@@ -523,7 +523,7 @@ namespace BloomTests.Publish
 			}
 			Assert.IsFalse(foundOther, "Unrecognized accessibilityFeature value in manifest");
 			Assert.AreEqual(hasAudio, foundSynchronizedAudio, "Bloom Audio is synchronized iff it exists (which it does{0}) [manifest accessibilityFeature]", hasAudio ? "" : " not");
-			Assert.IsTrue(foundResizeText, "Bloom text should always be resizable [manifest accessibilityFeature]");
+			Assert.IsTrue(foundDisplayTransformability, "Bloom text should always be displayTransformability [manifest accessibilityFeature]");
 			Assert.IsTrue(foundPageNumbers, "Bloom books provide page number mapping to the print edition [manifest accessibilityFeature]");
 			Assert.IsTrue(foundUnlocked, "Bloom books are always unlocked [manifest accessibilityFeature]");
 			Assert.IsTrue(foundReadingOrder, "Bloom books have simple formats that are always in reading order [manifest accessibilityFeature]");
