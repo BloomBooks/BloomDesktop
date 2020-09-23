@@ -23,5 +23,18 @@ namespace Bloom.ToPalaso
 				current = current.ParentNode as XmlElement;
 			return current;
 		}
+
+		/// <summary>
+		/// Find the closest ancestor (not 'start' itself) that has the specified value for the specified attribute.
+		/// If no parent does, answer null.
+		/// </summary>
+		/// <returns></returns>
+		public static XmlElement AncestorWithAttributeValue(this XmlElement start, string targetAttr, string targetVal)
+		{
+			var current = start.ParentNode as XmlElement;
+			while (current != null && current.Attributes[targetAttr]?.Value != targetVal)
+				current = current.ParentNode as XmlElement;
+			return current;
+		}
 	}
 }
