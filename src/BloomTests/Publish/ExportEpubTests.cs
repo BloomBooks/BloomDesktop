@@ -766,49 +766,6 @@ namespace BloomTests.Publish
 		}
 
 		[Test]
-		public void ContentInfo_IsAddedToTitleAndCredits_ButNotToChildren()
-		{
-			var book = SetupBookLong("normal content.", "xyz",
-				extraPageClass: " bloom-frontMatter titlePage' data-page='required singleton",
-				extraContentOutsideTranslationGroup: "<div class='bloom-translationGroup' id='originalContributions'><div class='bloom-editable' lang='xyz'>this is a original contributions that would get contentinfo if not inside title page</div></div>",
-				extraPages:
-				@"<div class='bloom-page bloom-frontMatter credits' data-page='required singleton'>
-							<div class='bloom-translationGroup' data-derived='copyright'>
-							<div class='bloom-editable' lang='xyz'>this is a copyright message that would get contentinfo if not inside credits page</div></div></div>",
-				defaultLanguages: "V,N1");
-
-			MakeEpub("output", "ContentInfo_IsAddedToTitleAndCredits_ButNotToChildren", book);
-			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
-			assertThatPage1.HasAtLeastOneMatchForXpath("//div[@id='originalContributions']");
-			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page') and @role='contentinfo']", 1);
-			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//div[@role='contentinfo']", 1);
-			var page2Data = GetPageNData(2);
-			var assertThatPage2 = AssertThatXmlIn.String(page2Data);
-			assertThatPage2.HasAtLeastOneMatchForXpath("//div[@data-derived='copyright']");
-			assertThatPage2.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page') and @role='contentinfo']",1);
-			assertThatPage2.HasSpecifiedNumberOfMatchesForXpath("//div[@role='contentinfo']", 1);
-		}
-
-		[Test]
-		public void ContentInfo_IsAddedToInfoElementsNotInInfoPages()
-		{
-			var book = SetupBookLong("normal content.", "xyz",
-				extraPageClass: " bloom-frontMatter insideFrontCover' data-page='required singleton",
-				extraContentOutsideTranslationGroup: @"<div class='bloom-translationGroup' id='originalContributions'><div class='bloom-editable' lang='xyz'>this is a original contributions that should get contentinfo</div></div>
-					<div class='bloom-translationGroup' data-derived='copyright'>
-							<div class='bloom-editable' lang='xyz'>this is a copyright message that should get contentinfo</div></div>",
-				extraPages:
-				@"<div class='bloom-page bloom-frontMatter credits' data-page='required singleton'>
-							</div>",
-				defaultLanguages: "V,N1");
-
-			MakeEpub("output", "ContentInfo_IsAddedToInfoElementsNotInInfoPages", book);
-			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
-			assertThatPage1.HasAtLeastOneMatchForXpath("//div[@id='originalContributions' and @role='contentinfo']");
-			assertThatPage1.HasAtLeastOneMatchForXpath("//div[@data-derived='copyright' and @role='contentinfo']");
-		}
-
-		[Test]
 		public void RemoveFontSizes_CausesFontSizesInEmbeddedStylesheets_ToBeRemoved()
 		{
 			var userStyleSheet = @"/*<![CDATA[*/
