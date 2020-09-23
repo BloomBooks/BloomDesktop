@@ -22,6 +22,14 @@
         text-align: center;
         color: white;
         background-color: @bloom-red;
+        // Hide a problem where if there are multiple lines, the browser thinks there is overflow.
+        // https://issues.bloomlibrary.org/youtrack/issue/BL-9021
+        // We can make the scroll bar go away in at least 3 ways:
+        // overflow-y: visible !important;
+        // padding-bottom: 2px;
+        // line-height: 1.6em;
+
+        padding-bottom: 2px; // I like this one because it's so minimal
     }
     .checkbox-and-textbox-choice {
         display: flex; // horizontal;
