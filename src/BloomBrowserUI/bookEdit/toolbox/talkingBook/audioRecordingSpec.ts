@@ -2148,6 +2148,61 @@ describe("audio recording tests", () => {
 
         expect(result).toBe(false);
     });
+
+    describe("- importRecordingAsync()", () => {
+        function simulateBloomApiResponses(
+            audioToCopyFilePath: string,
+            bookPath: string
+        ) {
+            spyOn(axios, "get").and.callFake((url: string, config) => {
+                if (url.endsWith("fileIO/chooseFile")) {
+                    return Promise.resolve({ data: audioToCopyFilePath });
+                } else {
+                    return Promise.reject("Fake 404 Error");
+                }
+            });
+
+            spyOn(axios, "post").and.callFake((url: string, config) => {
+                if (url.endsWith("fileIO/getSpecialLocation")) {
+                    return Promise.resolve({ data: `${bookPath}/audio` });
+                } else if (url.endsWith("fileIO/copyFile")) {
+                    return Promise.resolve({});
+                } else {
+                    return Promise.reject("Fake 404 Error");
+                }
+            });
+        }
+
+        it("importRecording() encodes special characters", async done => {
+            // Setup
+            const div1 =
+                '<div class="bloom-editable audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox" id="div1"><p>One. Two. Three.</p></div>';
+            SetupIFrameFromHtml(div1);
+
+            const recording = new AudioRecording();
+            recording.audioRecordingMode = AudioRecordingMode.TextBox; // Should be the old state, toggleRecordingMode() will flip the state
+
+            const audioFilename = "2+2=4_audio.mp3";
+            const audioToCopyFilePath = `math+me_audio/${audioFilename}`;
+            const bookPath = `C:/John&JaneDoeCollection/math+me`;
+            simulateBloomApiResponses(audioToCopyFilePath, bookPath);
+
+            // System under test
+            await recording.importRecordingAsync();
+
+            // Verification
+            expect(axios.post).toHaveBeenCalledWith(
+                "/bloom/api/fileIO/copyFile",
+                {
+                    from: "math%2Bme_audio%2F2%2B2%3D4_audio.mp3",
+                    to:
+                        "C%3A%2FJohn%26JaneDoeCollection%2Fmath%2Bme%2Faudio%2Fdiv1.mp3"
+                }
+            );
+
+            done();
+        });
+    });
 });
 
 function StripEmptyClasses(html) {
