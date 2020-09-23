@@ -43,6 +43,7 @@ namespace Bloom.WebLibraryIntegration
 				settings.Language1.Iso639Code = "en";
 				settings.Language1.SetName("English", false);
 				CollectionSettings.CreateNewCollection(settings);
+				ProjectContext.ClearUserInstalledDirectoriesCache();
 			}
 		}
 
