@@ -216,13 +216,13 @@ namespace BloomTests.Publish
 		{
 			var pageData = GetPageNData(3);
 			// Verify the ARIA roles and labels for the Bloom title page.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 3);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 1);
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 4);
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Title Page']", _ns, 1);
 
 			// Check our standard subsections of the title page as well.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Original Contributions']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Funding']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@aria-label='Original Contributions']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[ @aria-label='Funding']", _ns, 1);
 
 			// Check the page break references.
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
@@ -237,15 +237,15 @@ namespace BloomTests.Publish
 		{
 			var pageData = GetPageNData(4);
 			// Verify the ARIA roles and labels for the Bloom credits page.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 5);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 1);
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 6);
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Credits Page']", _ns, 1);
 
 			// Check our standard subsections of the credits page as well.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Copyright']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Version Acknowledgments']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Original Copyright']", _ns, 1);
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Original Acknowledgments']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@aria-label='Copyright']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@aria-label='Version Acknowledgments']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@aria-label='Original Copyright']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@aria-label='Original Acknowledgments']", _ns, 1);
 
 			// Check the page break references.
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:span[@role='doc-pagebreak']", _ns, 1);
