@@ -954,14 +954,16 @@ function attachEventHandlers(): void {
 
         const levelDetail = $("#level-detail");
         levelDetail.find(".level-checkbox").onSafe("change", function() {
-            const id = this.id.replace(/^use-/, "");
+            const mainTableSpanClass = this.id.replace(/^use-/, "");
             const txtBox: HTMLInputElement = <HTMLInputElement>(
-                document.getElementById("max-" + id)
+                document.getElementById("max-" + mainTableSpanClass)
             );
             txtBox.disabled = !this.checked;
-            $("#levels-table")
-                .find("tbody tr.selected td." + id)
-                .html(this.checked ? txtBox.value : "-");
+
+            updateMainTableWithValue(
+                mainTableSpanClass,
+                this.checked ? txtBox.value : "-"
+            );
         });
 
         levelDetail.find(".level-textbox").onSafe("keyup", function() {
@@ -969,34 +971,7 @@ function attachEventHandlers(): void {
             // always "max-" appended to the class used to mark the corresponding elements
             // (one per row, so we can't use ID there) in the main table.
             const mainTableSpanClass = this.id.replace(/^max-/, "");
-            // The logic here is designed to maintain the same cell content
-            // as is originally produced by spanForSettingWithText() in readerSetup.io.ts.
-            const mainTableSpan = $("#levels-table").find(
-                "tbody tr.selected td span." + mainTableSpanClass
-            )[0];
-            const newVal = this.value;
-            const isSubCell = !!mainTableSpan.previousSibling;
-            if (isSubCell) {
-                // maintain the expectation that subcell values are surrounded
-                // by parentheses, unless we don't have a value, when nothing
-                // at all is shown.
-                const parent = mainTableSpan.parentElement!;
-                if (newVal && !mainTableSpan.innerText) {
-                    // add parens
-                    parent.insertBefore(
-                        document.createTextNode(" ("),
-                        mainTableSpan
-                    );
-                    parent.appendChild(document.createTextNode(")"));
-                } else if (mainTableSpan.innerText && !newVal) {
-                    // remove parens
-                    parent.removeChild(mainTableSpan.previousSibling!);
-                    parent.removeChild(mainTableSpan.nextSibling!);
-                }
-                mainTableSpan.innerText = newVal;
-            } else {
-                mainTableSpan.innerText = newVal || "-";
-            }
+            updateMainTableWithValue(mainTableSpanClass, this.value);
         });
 
         $('input[name="words-or-letters"]').onSafe("change", () => {
@@ -1041,6 +1016,40 @@ function attachEventHandlers(): void {
                 .hide();
         });
     }
+}
+
+function updateMainTableWithValue(mainTableSpanClass: string, newVal: string) {
+    const mainTableSpan = getMainTableSpan(mainTableSpanClass);
+
+    // The logic here is designed to maintain the same cell content
+    // as is originally produced by spanForSettingWithText() in readerSetup.io.ts.
+    const isSubCell = !!mainTableSpan.previousSibling;
+    if (isSubCell) {
+        // maintain the expectation that subcell values are surrounded
+        // by parentheses, unless we don't have a value, when nothing
+        // at all is shown.
+        const parent = mainTableSpan.parentElement!;
+        if (newVal && !mainTableSpan.innerText) {
+            // add parens
+            parent.insertBefore(document.createTextNode(" ("), mainTableSpan);
+            parent.appendChild(document.createTextNode(")"));
+        } else if (mainTableSpan.innerText && !newVal) {
+            // remove parens
+            parent.removeChild(mainTableSpan.previousSibling!);
+            parent.removeChild(mainTableSpan.nextSibling!);
+        }
+        mainTableSpan.innerText = newVal;
+    } else {
+        mainTableSpan.innerText = newVal || "-";
+    }
+}
+
+function getMainTableSpan(spanClassName: string): HTMLSpanElement {
+    const mainTableSpan = $("#levels-table").find(
+        "tbody tr.selected td span." + spanClassName
+    )[0];
+
+    return mainTableSpan as HTMLSpanElement;
 }
 
 function setAllowedWordsFile(fileName: string): void {
