@@ -91,6 +91,18 @@ namespace BloomTests.Publish
 		</div>
 	</div>
 </div>
+<div class='bloom-page numberedPage' data-page-number='2' data-page=""required singleton"">
+	<div class=""marginBox"">
+		<div class=""bloom-translationGroup"" data-default-languages=""N1"" id=""originalContributions"">
+			<div class=""bloom-editable credits bloom-copyFromOtherLanguageIfNecessary Content-On-Title-Page-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" lang=""en"" contenteditable=""true"">
+				<p>This element would normally be on the title page but put here where contentinfo should be added</p>
+			</div>
+		</div>
+		<div class=""copyright Credits-Page-style"" data-derived=""copyright"" lang=""*"">
+			Copyright © 2018, Stephen R. McConnel...this would not normally be on a content page
+		</div>	
+	</div>
+</div>
 <div class=""bloom-page titlePage bloom-backMatter A5Portrait layout-style-Default side-left"" data-page=""required singleton"" id=""60ae9f18-b7b8-405b-8dd0-2cb5926eacde"" data-page-number=""10"">
 	<div class=""marginBox"">
 		<div class=""bloom-translationGroup"" data-default-languages=""V,N1"" id=""titlePageTitleBlock"">
@@ -238,7 +250,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckTitlePageAccessibility()
 		{
-			var pageData = GetPageNData(3);
+			var pageData = GetPageNData(4);
 			// Verify the ARIA roles and labels for the Bloom title page.
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 1);
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 4);
@@ -257,9 +269,20 @@ namespace BloomTests.Publish
 		}
 
 		[Test]
+		public void CheckContentInfoOnChildElementsOutsideContentInfoPages()
+		{
+			// These elements would not normally be on a numbered page, and a numbered page would not normally be data-page="requiredSingleton".
+			// I set up some unusual data to test that these elements, in the right circumstances, get given their own contentinfo and label.
+			// The contentinfo is NOT added when, as usual and as tested elsewhere, they are on a page like title page that is ALL contentinfo.
+			var pageData = GetPageNData(3);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Original Contributions']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Copyright']", _ns, 1);
+		}
+
+		[Test]
 		public void CheckCreditsPageAccessibility()
 		{
-			var pageData = GetPageNData(4);
+			var pageData = GetPageNData(5);
 			// Verify the ARIA roles and labels for the Bloom credits page.
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 1);
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 6);
@@ -282,7 +305,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckEndPageAccessibility()
 		{
-			var pageData = GetPageNData(5);
+			var pageData = GetPageNData(6);
 			// Verify the ARIA roles and labels for the End Page.
 			// currently one thing gets role attr, a doc-pageBreak.
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role]", _ns, 1);
@@ -324,7 +347,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckEpubManifestPropertiesValidity()
 		{
-			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='f3' and @properties='svg']");
+			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='f4' and @properties='svg']");
 			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@properties='svg']", 1);
 
 			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='epub-thumbnail' and @properties='cover-image']");
