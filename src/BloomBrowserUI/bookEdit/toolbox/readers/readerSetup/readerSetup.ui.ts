@@ -923,11 +923,6 @@ function attachEventHandlers(): void {
             return false;
         });
 
-        $("#define-sight-words").onSafe("click", () => {
-            alert("What are sight words?");
-            return false;
-        });
-
         $("#setup-stage-sight-words").onSafe("keyup", function() {
             updateSightWords(this);
             requestWordsForSelectedStage();
