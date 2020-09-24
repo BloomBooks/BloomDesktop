@@ -56,6 +56,26 @@ describe("averageWordsInPage tests", () => {
     });
 });
 
+describe("averageWordsInSentence tests", () => {
+    it("computes average sentence length, ignoring empty ones", () => {
+        const data = [
+            [
+                { words: ["one", "two", "three", "four"] } as TextFragment,
+                { words: ["five", "six"] } as TextFragment
+            ],
+            [
+                { words: ["seven", "eight", "nine"] } as TextFragment,
+                { words: [] as string[] } as TextFragment
+            ],
+            [
+                { words: [] as string[] } as TextFragment,
+                { words: [] as string[] } as TextFragment
+            ]
+        ];
+        expect(ReaderToolsModel.averageWordsInSentence(data)).toBe(3);
+    });
+});
+
 describe("averageGlyphsInWord tests", () => {
     it("exact average", () => {
         // Simple four letter wordss
