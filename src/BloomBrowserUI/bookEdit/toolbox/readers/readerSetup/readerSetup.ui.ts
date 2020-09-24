@@ -1040,11 +1040,10 @@ function updateMainTableWithValue(mainTableSpanClass: string, newVal: string) {
 }
 
 function getMainTableSpan(spanClassName: string): HTMLSpanElement {
-    const mainTableSpan = $("#levels-table").find(
-        "tbody tr.selected td span." + spanClassName
-    )[0];
-
-    return mainTableSpan as HTMLSpanElement;
+    const levelsTable = document.getElementById("levels-table")!;
+    return levelsTable.querySelector(
+        `tbody tr.selected td span.${spanClassName}`
+    )! as HTMLSpanElement;
 }
 
 function setAllowedWordsFile(fileName: string): void {
