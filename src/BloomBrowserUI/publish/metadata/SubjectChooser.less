@@ -15,7 +15,7 @@
             // Setting the maximum width causes the chosen subject labels to scroll
             // instead of just passing out of sight when overflowing the button.
             // (The width value here and below was determined empirically.)
-            max-width: 333px;
+            max-width: 375px;
             display: flex;
             flex-grow: 1;
             border: none;
@@ -52,11 +52,14 @@
             // the top of dialog content rather than expand the dialog vertically.
             position: absolute;
             left: 0;
-            height: 240px;
-            width: 333px;
+            // This height and width is maximal to prevent outer dialog table scrollbars
+            // from appearing.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9022.
+            height: 236px; // determined empirically
+            width: 375px;
             overflow-y: scroll;
             display: flex;
             flex-grow: 1;
+            z-index: 100; // allow dropdown to grab clicks instead of controls beneath it (see BL-9022)
         }
     }
 
