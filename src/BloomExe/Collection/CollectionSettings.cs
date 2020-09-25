@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
@@ -392,7 +393,7 @@ namespace Bloom.Collection
 				{
 					// Validate branding, so things can't be circumvented by just typing something into settings
 					var expirationDate = CollectionSettingsApi.GetExpirationDate(SubscriptionCode);
-					if (expirationDate < DateTime.Now || BrandingProject.GetProjectChoices().All(bp => bp.Key != BrandingProjectKey))
+					if (expirationDate < DateTime.Now || !BrandingProject.HaveFilesForBranding(BrandingProjectKey))
 					{
 						InvalidBranding = BrandingProjectKey;
 						BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.
@@ -531,7 +532,18 @@ namespace Bloom.Collection
 
 		public string PageNumberStyle { get; set; }
 
-		public string BrandingProjectKey { get; set; }
+		// e.g. "ABC2020" or "Kyrgyzstan2020[English]"
+		public string BrandingProjectKey { get;  set; }
+		public string GetBrandingFlavor()
+		{
+			BrandingSettings.ParseBrandingKey(BrandingProjectKey, out var baseKey, out var flavor);
+			return flavor;
+		}
+		public string GetBrandingFolderName()
+		{
+			BrandingSettings.ParseBrandingKey(BrandingProjectKey, out var folderName, out var flavor);
+			return folderName;
+		}
 
 		public string SubscriptionCode { get; set; }
 

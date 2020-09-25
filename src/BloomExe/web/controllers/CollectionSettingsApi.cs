@@ -102,11 +102,8 @@ namespace Bloom.web.controllers
 					branding = "Local-Community";
 				else if (_enterpriseStatus == EnterpriseStatus.Subscription)
 					branding = _enterpriseExpiry == DateTime.MinValue ? "" : GetBrandingFromCode(SubscriptionCode);
-				var summaryFile = BloomFileLocator.GetOptionalBrandingFile(branding, "summary.htm");
-				if (summaryFile == null)
-					request.ReplyWithText("");
-				else
-					request.ReplyWithText(File.ReadAllText(summaryFile, Encoding.UTF8));
+				var html = GetSummaryHtml(branding);
+				request.ReplyWithText(html);
 			}, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "enterpriseExpiry", request =>
 			{
@@ -127,6 +124,19 @@ namespace Bloom.web.controllers
 					request.ReplyWithText("unknown");
 				}
 			}, false);
+		}
+
+		public static string GetSummaryHtml(string branding)
+		{
+			BrandingSettings.ParseBrandingKey(branding, out var baseKey, out var flavor);
+			var summaryFile = BloomFileLocator.GetOptionalBrandingFile(baseKey, "summary.htm");
+			if (summaryFile == null)
+				return "";
+			else
+			{
+				var html = File.ReadAllText(summaryFile, Encoding.UTF8);
+				return html.Replace("{flavor}", flavor);
+			}
 		}
 
 		public static void PrepareForFixEnterpriseBranding(string invalidBranding, string subscriptionCode)

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Bloom.Api;
 using L10NSharp;
 using SIL.IO;
 
@@ -20,14 +22,13 @@ namespace Bloom.Collection
 	{
 		public string Key;
 
-		public static IEnumerable<BrandingProject> GetProjectChoices()
+		public static bool HaveFilesForBranding(string fullBrandKey)
 		{
+			BrandingSettings.ParseBrandingKey(fullBrandKey, out var baseKey, out var flavor);
+
 			var brandingDirectory = BloomFileLocator.GetBrowserDirectory("branding");
-			foreach (var brandDirectory in Directory.GetDirectories(brandingDirectory))
-			{
-				var brand = new BrandingProject {Key = Path.GetFileName(brandDirectory)};
-				yield return brand;
-			}
+			return Directory.GetDirectories(brandingDirectory)
+				.Any(brandDirectory => Path.GetFileName(brandDirectory) == baseKey);
 		}
 
 		// "none" is a better localization id than "default"
