@@ -781,10 +781,9 @@ namespace Bloom.Publish.Epub
 
 					string[] timingFields = timingsStr.Split(' ');
 					var segmentEndTimesSecs = new List<float>(timingFields.Length);
-					for (int i = 0; i < timingFields.Length; ++i)
+					foreach (var timing in timingFields)
 					{
-						float time;
-						if (!float.TryParse(timingFields[i], out time))
+						if (!float.TryParse(timing, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var time))
 						{
 							time = float.NaN;
 						}
