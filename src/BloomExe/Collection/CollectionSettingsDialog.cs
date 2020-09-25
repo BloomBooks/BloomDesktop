@@ -599,15 +599,20 @@ namespace Bloom.Collection
 		{
 			if (BrandingProject.HaveFilesForBranding(fullBrandingName))
 			{
-				BrandingSettings.ParseBrandingKey(fullBrandingName,out var folderName, out var flavor);
-					if (DifferentSubscriptionCodes(subscriptionCode, _subscriptionCode))
+				if (DifferentSubscriptionCodes(subscriptionCode, _subscriptionCode))
+				{
+					Invoke((Action) (ChangeThatRequiresRestart));
+					_brand = fullBrandingName;
+					_subscriptionCode = subscriptionCode;
+					// if the branding.json specifies an xmatter, set the default for this collection to that.
+					var correspondingXMatterPack = BrandingSettings.GetSettings(fullBrandingName).GetXmatterToUse();
+					if (!string.IsNullOrEmpty((correspondingXMatterPack)))
 					{
-						Invoke((Action) (ChangeThatRequiresRestart));
-						_brand = fullBrandingName;
-						_subscriptionCode = subscriptionCode;
+						_collectionSettings.XMatterPackName = correspondingXMatterPack;
 					}
+				}
 
-					return true;
+				return true;
 			}
 			return false;
 		}

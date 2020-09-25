@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Bloom.Book;
 using Bloom.Collection;
 using Newtonsoft.Json;
@@ -87,6 +88,12 @@ namespace Bloom.Api
 		{
 			[JsonProperty("presets")]
 			public PresetItem[] Presets;
+
+			public string GetXmatterToUse()
+			{
+				var x = this.Presets.FirstOrDefault(p => p.DataBook == "xmatter");
+				return x?.Content;
+			}
 		}
 
 
