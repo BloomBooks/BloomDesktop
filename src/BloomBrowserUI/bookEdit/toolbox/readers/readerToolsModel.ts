@@ -1132,7 +1132,7 @@ export class ReaderToolsModel {
             .filter(x => x.isSentence);
         const sentenceFragmentsByPage = this.getSentences(pageStrings);
         this.updateActualCount(
-            this.countSentences(sentences),
+            ReaderToolsModel.countSentences(sentences),
             this.maxSentencesPerPage(),
             "actualSentencesPerPage"
         );
@@ -1321,7 +1321,7 @@ export class ReaderToolsModel {
         let sentenceCount = 0;
         for (let i = 0; i < sentenceFragmentsByPage.length; i++) {
             const fragments = sentenceFragmentsByPage[i];
-            sentenceCount += fragments.length;
+            sentenceCount += ReaderToolsModel.countSentences(fragments);
         }
         if (sentenceFragmentsByPage.length == 0) {
             return 0;
@@ -1339,8 +1339,8 @@ export class ReaderToolsModel {
         this.setPresenceOfClass(id, !acceptable, "tooLarge");
     }
 
-    public countSentences(sentences: TextFragment[]): number {
-        return sentences.length;
+    public static countSentences(sentences: TextFragment[]): number {
+        return sentences.filter(f => f.words.length > 0).length;
     }
 
     public static maxWordLength(text: string): number {
