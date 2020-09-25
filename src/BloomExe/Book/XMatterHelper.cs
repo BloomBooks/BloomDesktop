@@ -72,7 +72,7 @@ namespace Bloom.Book
 				throw new ApplicationException();
 			}
 			PathToXMatterStylesheet = directoryPath.CombineForPath(GetStyleSheetFileName());
-			if (!RobustFile.Exists(PathToXMatterHtml))
+			if (!RobustFile.Exists(PathToXMatterStylesheet))
 			{
 				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), "Could not locate the file {0} in {1}", GetStyleSheetFileName(), directoryPath);
 				throw new ApplicationException();

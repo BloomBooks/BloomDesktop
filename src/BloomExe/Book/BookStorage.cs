@@ -2049,7 +2049,7 @@ namespace Bloom.Book
 				// we can just remove this wrong meta element.
 				dom.RemoveMetaElement("xmatter");
 			}
-			return nameOfXMatterPack;
+			return currentXmatterName;
 		}
 
 		private void EnsureDoesntHaveLinkToStyleSheet(HtmlDom dom, string path)
