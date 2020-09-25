@@ -1849,19 +1849,37 @@ namespace Bloom.Book
 			}
 		}
 
-		private string PathToXMatterStylesheet
+		private XMatterHelper _xMatterHelper;
+		private string _cachedXmatterPackName;
+		private HtmlDom _cachedXmatterDom;
+		private BookInfo _cachedXmatterBookInfo;
+
+		private XMatterHelper XMatterHelper
 		{
 			get
 			{
 				var nameOfCollectionXMatterPack = _collectionSettings.XMatterPackName;
-
-				nameOfCollectionXMatterPack = HandleRetiredXMatterPacks(Dom, nameOfCollectionXMatterPack);
-
-				//Here the xmatter Helper may come back loaded with the xmatter from the collection settings, but if the book
-				//specifies a different one, it will come back with that (if it can be found).
-				return new XMatterHelper(Dom, nameOfCollectionXMatterPack, _fileLocator, BookInfo.UseDeviceXMatter).PathToXMatterStylesheet;
+				// _fileLocator, BookInfo, and BookInfo.UseDeviceXMatter are never changed after being set in
+				// constructors, so we don't need to consider that they might be different.
+				// The other two things the helper depends on are also unlikely to change, but it may be
+				// possible, so we'll play safe.
+				if (_cachedXmatterPackName != nameOfCollectionXMatterPack || _cachedXmatterDom != Dom || _cachedXmatterBookInfo != BookInfo)
+				{
+					_cachedXmatterPackName = nameOfCollectionXMatterPack; // before mod, to match check above
+					nameOfCollectionXMatterPack = HandleRetiredXMatterPacks(Dom, nameOfCollectionXMatterPack);
+					//Here the xmatter Helper may come back loaded with the xmatter from the collection settings, but if the book
+					//specifies a different one, it will come back with that (if it can be found).
+					_xMatterHelper = new XMatterHelper(Dom, nameOfCollectionXMatterPack, _fileLocator,
+						BookInfo.UseDeviceXMatter);
+					_cachedXmatterDom = Dom;
+					_cachedXmatterBookInfo = BookInfo;
+				}
+				return _xMatterHelper;
 			}
 		}
+
+
+		private string PathToXMatterStylesheet => XMatterHelper.PathToXMatterStylesheet;
 
 		private bool IsPathReadonly(string path)
 		{
@@ -2031,7 +2049,7 @@ namespace Bloom.Book
 				// we can just remove this wrong meta element.
 				dom.RemoveMetaElement("xmatter");
 			}
-			return nameOfXMatterPack;
+			return currentXmatterName;
 		}
 
 		private void EnsureDoesntHaveLinkToStyleSheet(HtmlDom dom, string path)

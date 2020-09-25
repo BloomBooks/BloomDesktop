@@ -56,6 +56,26 @@ describe("averageWordsInPage tests", () => {
     });
 });
 
+describe("averageWordsInSentence tests", () => {
+    it("computes average sentence length, ignoring empty ones", () => {
+        const data = [
+            [
+                { words: ["one", "two", "three", "four"] } as TextFragment,
+                { words: ["five", "six"] } as TextFragment
+            ],
+            [
+                { words: ["seven", "eight", "nine"] } as TextFragment,
+                { words: [] as string[] } as TextFragment
+            ],
+            [
+                { words: [] as string[] } as TextFragment,
+                { words: [] as string[] } as TextFragment
+            ]
+        ];
+        expect(ReaderToolsModel.averageWordsInSentence(data)).toBe(3);
+    });
+});
+
 describe("averageGlyphsInWord tests", () => {
     it("exact average", () => {
         // Simple four letter wordss
@@ -88,7 +108,7 @@ describe("averageGlyphsInWord tests", () => {
 });
 
 describe("averageSentencesInPage tests", () => {
-    it("exact average", () => {
+    fit("exact average", () => {
         // Two pages, each with one sentence
         const data = [
             [{ words: ["one", "two", "three"] } as TextFragment],
@@ -96,7 +116,7 @@ describe("averageSentencesInPage tests", () => {
         ];
         expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(1);
     });
-    it("multiple sentences on page, rounding 0.5 up", () => {
+    fit("multiple sentences on page, rounding 0.5 up", () => {
         // Two pages, first with two sentences
         const data = [
             [
@@ -109,7 +129,7 @@ describe("averageSentencesInPage tests", () => {
         ];
         expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(2);
     });
-    it("multiple sentences on page, rounding down", () => {
+    fit("multiple sentences on page, rounding down", () => {
         // Three pages, seven sentences
         const data = [
             [
@@ -127,6 +147,35 @@ describe("averageSentencesInPage tests", () => {
             [{ words: ["four", "five"] } as TextFragment]
         ];
         expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(2);
+    });
+    fit("computes max average sentence length, ignoring empty sentences", () => {
+        const data = [
+            // total of three non-empty sentences on three pages.
+            [
+                {
+                    words: ["one", "two", "three", "four"]
+                } as TextFragment,
+                { words: ["five", "six"] } as TextFragment
+            ],
+            [
+                {
+                    words: ["seven", "eight", "nine"]
+                } as TextFragment,
+                { words: [] as string[] } as TextFragment
+            ],
+            [
+                { words: [] as string[] } as TextFragment,
+                { words: [] as string[] } as TextFragment,
+                { words: [] as string[] } as TextFragment,
+                { words: [] as string[] } as TextFragment,
+                { words: [] as string[] } as TextFragment
+            ]
+        ];
+        expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(1);
+    });
+    fit("computes max average sentence length when no pages", () => {
+        const data = [];
+        expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(0);
     });
 });
 

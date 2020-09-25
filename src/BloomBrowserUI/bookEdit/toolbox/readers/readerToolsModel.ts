@@ -1089,46 +1089,68 @@ export class ReaderToolsModel {
 
     public getTextOfWholeBook(): void {
         BloomApi.get("readers/io/textOfContentPages", result => {
+            this.gettingTextOfWholeBook = false;
             //result.data looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.}
             this.pageIDToText = result.data as any[];
             this.doMarkup();
         });
     }
 
+    public clearWholeBookCache() {
+        this.pageIDToText = [];
+    }
+
+    private gettingTextOfWholeBook = false;
+
     public displayBookTotals(): void {
+        if (this.gettingTextOfWholeBook) {
+            return;
+        }
         if (this.pageIDToText.length === 0) {
+            this.gettingTextOfWholeBook = true;
+            // The gettingTextOfWholeBook test is meant to stop repeated requests
+            // getting the same data. In case we somehow don't get a result...
+            // perhaps we deleted a page or something before it arrived?...
+            // don't stop getting it forever.
+            window.setTimeout(
+                () => (this.gettingTextOfWholeBook = false),
+                1000
+            );
             this.getTextOfWholeBook();
             return;
         }
 
         const pageStrings = _.values(this.pageIDToText);
 
-        const elementsToCheck = this.getElementsToCheck();
-        const bookText = elementsToCheck.text();
+        const pageElementsToCheck = this.getElementsToCheck();
+        const pageText = pageElementsToCheck
+            .toArray()
+            .map(x => x.innerText) // this has newlines between paragraph content, text has none
+            .join(" ");
         const sentences = theOneLibSynphony
-            .stringToSentences(bookText)
+            .stringToSentences(pageText)
             .filter(x => x.isSentence);
         const sentenceFragmentsByPage = this.getSentences(pageStrings);
         this.updateActualCount(
-            this.countSentences(sentences),
+            ReaderToolsModel.countSentences(sentences),
             this.maxSentencesPerPage(),
             "actualSentencesPerPage"
         );
 
         this.updateActualCount(
-            ReaderToolsModel.maxWordLength(bookText),
+            ReaderToolsModel.maxWordLength(pageText),
             this.maxGlyphsPerWord(),
             "actualLettersPerWord"
         );
 
         this.updateActualCount(
-            elementsToCheck.getTotalWordCount(),
+            pageElementsToCheck.getTotalWordCount(),
             this.maxWordsPerPage(),
             "actualWordsPerPage"
         );
 
         this.updateActualCount(
-            elementsToCheck.getMaxSentenceLength(),
+            pageElementsToCheck.getMaxSentenceLength(),
             this.maxWordsPerSentenceOnThisPage(),
             "actualWordsPerSentence"
         );
@@ -1149,7 +1171,7 @@ export class ReaderToolsModel {
             "actualUniqueWords"
         );
         this.updateActualCount(
-            this.averageWordsInSentence(sentenceFragmentsByPage),
+            ReaderToolsModel.averageWordsInSentence(sentenceFragmentsByPage),
             this.maxAverageWordsPerSentence(),
             "actualAverageWordsPerSentence"
         );
@@ -1234,7 +1256,7 @@ export class ReaderToolsModel {
         return maxWords;
     }
 
-    public averageWordsInSentence(
+    public static averageWordsInSentence(
         sentenceFragmentsByPage: TextFragment[][]
     ): number {
         let sentenceCount = 0;
@@ -1242,8 +1264,12 @@ export class ReaderToolsModel {
         for (let i = 0; i < sentenceFragmentsByPage.length; i++) {
             const fragments = sentenceFragmentsByPage[i];
             for (let j = 0; j < fragments.length; j++) {
-                wordCount += fragments[j].words.length;
-                sentenceCount++;
+                const wordsInSentence = fragments[j].words.length;
+                if (wordsInSentence > 0) {
+                    // if no words, not really a sentence...maybe an empty paragraph?
+                    wordCount += wordsInSentence;
+                    sentenceCount++;
+                }
             }
         }
         if (sentenceCount == 0) {
@@ -1295,7 +1321,7 @@ export class ReaderToolsModel {
         let sentenceCount = 0;
         for (let i = 0; i < sentenceFragmentsByPage.length; i++) {
             const fragments = sentenceFragmentsByPage[i];
-            sentenceCount += fragments.length;
+            sentenceCount += ReaderToolsModel.countSentences(fragments);
         }
         if (sentenceFragmentsByPage.length == 0) {
             return 0;
@@ -1313,8 +1339,8 @@ export class ReaderToolsModel {
         this.setPresenceOfClass(id, !acceptable, "tooLarge");
     }
 
-    public countSentences(sentences: TextFragment[]): number {
-        return sentences.length;
+    public static countSentences(sentences: TextFragment[]): number {
+        return sentences.filter(f => f.words.length > 0).length;
     }
 
     public static maxWordLength(text: string): number {
