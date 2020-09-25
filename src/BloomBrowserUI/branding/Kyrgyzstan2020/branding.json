@@ -1,9 +1,21 @@
 {
     "presets": [
         {
-            "data-book": "outside-back-cover-branding-top-html",
+            "data-book": "xmatter",
             "lang": "*",
-            "content": "<img  class='branding' src='Kyrgyzstan2020-{flavor}-back-top.png'/>",
+            "content": "Kyrgyzstan2020",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-top-left-html",
+            "lang": "*",
+            "content": "<img  class='branding' src='Kyrgyzstan2020-{flavor}-USAID.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-top-right-html",
+            "lang": "*",
+            "content": "<img  class='branding' src='Kyrgyzstan2020-{flavor}-government-seal.png'/>",
             "condition": "always"
         },
         {
