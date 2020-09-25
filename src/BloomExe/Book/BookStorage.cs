@@ -1852,6 +1852,7 @@ namespace Bloom.Book
 		private XMatterHelper _xMatterHelper;
 		private string _cachedXmatterPackName;
 		private HtmlDom _cachedXmatterDom;
+		private BookInfo _cachedXmatterBookInfo;
 
 		private XMatterHelper XMatterHelper
 		{
@@ -1862,7 +1863,7 @@ namespace Bloom.Book
 				// constructors, so we don't need to consider that they might be different.
 				// The other two things the helper depends on are also unlikely to change, but it may be
 				// possible, so we'll play safe.
-				if (_cachedXmatterPackName != nameOfCollectionXMatterPack || _cachedXmatterDom != Dom)
+				if (_cachedXmatterPackName != nameOfCollectionXMatterPack || _cachedXmatterDom != Dom || _cachedXmatterBookInfo != BookInfo)
 				{
 					_cachedXmatterPackName = nameOfCollectionXMatterPack; // before mod, to match check above
 					nameOfCollectionXMatterPack = HandleRetiredXMatterPacks(Dom, nameOfCollectionXMatterPack);
@@ -1871,6 +1872,7 @@ namespace Bloom.Book
 					_xMatterHelper = new XMatterHelper(Dom, nameOfCollectionXMatterPack, _fileLocator,
 						BookInfo.UseDeviceXMatter);
 					_cachedXmatterDom = Dom;
+					_cachedXmatterBookInfo = BookInfo;
 				}
 				return _xMatterHelper;
 			}
