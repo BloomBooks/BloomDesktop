@@ -108,7 +108,7 @@ describe("averageGlyphsInWord tests", () => {
 });
 
 describe("averageSentencesInPage tests", () => {
-    fit("exact average", () => {
+    it("exact average", () => {
         // Two pages, each with one sentence
         const data = [
             [{ words: ["one", "two", "three"] } as TextFragment],
@@ -116,7 +116,7 @@ describe("averageSentencesInPage tests", () => {
         ];
         expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(1);
     });
-    fit("multiple sentences on page, rounding 0.5 up", () => {
+    it("multiple sentences on page, rounding 0.5 up", () => {
         // Two pages, first with two sentences
         const data = [
             [
@@ -129,7 +129,7 @@ describe("averageSentencesInPage tests", () => {
         ];
         expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(2);
     });
-    fit("multiple sentences on page, rounding down", () => {
+    it("multiple sentences on page, rounding down", () => {
         // Three pages, seven sentences
         const data = [
             [
@@ -148,7 +148,7 @@ describe("averageSentencesInPage tests", () => {
         ];
         expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(2);
     });
-    fit("computes max average sentence length, ignoring empty sentences", () => {
+    it("computes max average sentence length, ignoring empty sentences", () => {
         const data = [
             // total of three non-empty sentences on three pages.
             [
@@ -173,7 +173,7 @@ describe("averageSentencesInPage tests", () => {
         ];
         expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(1);
     });
-    fit("computes max average sentence length when no pages", () => {
+    it("computes max average sentence length when no pages", () => {
         const data = [];
         expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(0);
     });

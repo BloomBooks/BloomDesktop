@@ -139,11 +139,25 @@ div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
         drop-shadow(-3px 0 0 @white) drop-shadow(3px 0 0 @white);
 }
 
-[data-book="outside-back-cover-branding-top-html"] {
+.outside-back-cover-branding-top-block {
     background-color: @white;
     margin-left: -18mm; // margin + 3mm of bleed
     margin-right: -18mm; // margin + 3mm of bleed
-    height: @HeaderHeight;
+    padding-left: 18mm;
+    padding-right: 18mm;
+    padding-top: @bleed; // nudge down because of 3mm bleed
+    height: calc(
+        @HeaderHeight - @bleed
+    ); // the subtraction here makes up for the padding-top
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    img {
+        height: 15mm;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
 }
 
 [data-book="outside-back-cover"] {
