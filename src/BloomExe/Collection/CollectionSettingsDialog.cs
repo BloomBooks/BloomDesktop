@@ -10,6 +10,7 @@ using SIL.Windows.Forms.WritingSystems;
 using SIL.Extensions;
 using SIL.WritingSystems;
 using System.Collections.Generic;
+using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.web.controllers;
 
@@ -362,7 +363,7 @@ namespace Bloom.Collection
 
 		bool IsSubscriptionCodeKnown()
 		{
-			return BrandingProject.GetProjectChoices().Any(bp => bp.Key == _brand);
+			return BrandingProject.HaveFilesForBranding(_brand);
 		}
 
 		/// <summary>
@@ -591,26 +592,23 @@ namespace Bloom.Collection
 		/// including the "need to reload" message and the Ok/Cancel buttons) of changes the user makes
 		/// in the Enterprise tab.
 		/// </summary>
-		/// <param name="brand"></param>
+		/// <param name="fullBrandingName"></param>
 		/// <param name="subscriptionCode"></param>
 		/// <returns></returns>
-		public bool ChangeBranding(string brand, string subscriptionCode)
+		public bool ChangeBranding(string fullBrandingName, string subscriptionCode)
 		{
-			foreach (var item in BrandingProject.GetProjectChoices())
+			if (BrandingProject.HaveFilesForBranding(fullBrandingName))
 			{
-				if (item.Key.ToUpperInvariant() == brand.ToUpperInvariant())
-				{
-					if (item.Key != _brand || DifferentSubscriptionCodes(subscriptionCode, _subscriptionCode))
+				BrandingSettings.ParseBrandingKey(fullBrandingName,out var folderName, out var flavor);
+					if (DifferentSubscriptionCodes(subscriptionCode, _subscriptionCode))
 					{
 						Invoke((Action) (ChangeThatRequiresRestart));
-						_brand = item.Key;
+						_brand = fullBrandingName;
 						_subscriptionCode = subscriptionCode;
 					}
 
 					return true;
-				}
 			}
-
 			return false;
 		}
 

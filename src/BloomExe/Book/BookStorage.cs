@@ -2073,7 +2073,7 @@ namespace Bloom.Book
 			dom.AddStyleSheet("langVisibility.css");
 
 			// only add brandingCSS is there is one for the current branding
-			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", _collectionSettings.BrandingProjectKey, "branding.css");
+			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", _collectionSettings.GetBrandingFolderName(), "branding.css");
 			if (!String.IsNullOrEmpty(brandingCssPath))
 			{
 				dom.AddStyleSheet("branding.css");

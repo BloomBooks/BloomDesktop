@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
@@ -310,13 +311,14 @@ namespace Bloom
 				return fileName;
 			return BloomFileLocator.GetBrowserFile(true, "branding", brandingNameOrFolderPath, fileName);
 		}
-		public static string GetBrandingFolder(string brandingName)
+		public static string GetBrandingFolder(string fullBrandingName)
 		{
-			return BloomFileLocator.GetBrowserDirectory("branding", brandingName);
+			BrandingSettings.ParseBrandingKey(fullBrandingName, out var brandingFolderName, out var flavor);
+			return BloomFileLocator.GetBrowserDirectory("branding", brandingFolderName);
 		}
 		public string GetBrandingFile(Boolean optional, string fileName)
 		{
-			return BloomFileLocator.GetBrowserFile(optional, "branding", _collectionSettings.BrandingProjectKey, fileName);
+			return BloomFileLocator.GetBrowserFile(optional, "branding", _collectionSettings.GetBrandingFolderName(), fileName);
 		}
 
 		//-----------------------------------------------------

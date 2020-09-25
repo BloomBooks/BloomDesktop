@@ -133,7 +133,7 @@ export class PageChooser {
         ReactDOM.render(
             React.createElement(
                 ThemeProvider,
-                { theme: theme },
+                { theme: theme } as any,
                 React.createElement(SelectedTemplatePageControls, {
                     enterpriseAvailable: this._enterpriseAvailable,
                     caption: englishCaptionText ? englishCaptionText : "",
