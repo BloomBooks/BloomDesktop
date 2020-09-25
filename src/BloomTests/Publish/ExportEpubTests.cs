@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -1439,22 +1440,32 @@ namespace BloomTests.Publish
 		/// <summary>
 		/// Tests that the correct audio overlay is produced for a text box that has been Soft Split
 		/// </summary>
-		[TestCase(true)]
-		[TestCase(false)]
-		public void AddAudioOverlay_SubElementPlaybackModes_ProducesCorrectTimings(bool mergeAudio)
+		[TestCase(true, false)]
+		[TestCase(false, false)]
+		[TestCase(true, true)]
+		[TestCase(false, true)]
+		public void AddAudioOverlay_SubElementPlaybackModes_ProducesCorrectTimings(bool mergeAudio, bool switchCulture)
 		{
+			var originalCulture = CultureInfo.CurrentCulture;
+			if (switchCulture)
+			{
+				// This culture -- English (Sweden) -- is one of many which uses a comma for the decimal separator,
+				// hence its significance in this case. See https://issues.bloomlibrary.org/youtrack/issue/BL-9079.
+				CultureInfo.CurrentCulture = new CultureInfo("en-SE", false);
+			}
+
 			// Setup //
 			double expectedDurationPerClip = GetFakeAudioDurationSecs();
 			double expectedDurationPerSegment = expectedDurationPerClip / 2;
 
-			var extraEditDivClassesAndAttributes = $"audio-sentence' id='audio1' data-audiorecordingendtimes='{expectedDurationPerSegment} {expectedDurationPerClip}";  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
+			var extraEditDivClassesAndAttributes = FormattableString.Invariant($"audio-sentence' id='audio1' data-audiorecordingendtimes='{expectedDurationPerSegment} {expectedDurationPerClip}");  // Injecting other attributes into the "class" field as well in order to create the ID attribute simultaneously
 			string firstDivContents =
 @"<p>
 	<span id='text1' class='bloom-highlightSegment'>Sentence 1</span>
 	<span id='text2' class='bloom-highlightSegment'>Sentence 2</span>
 </p>";
 
-			string secondDivHtml =
+			string secondDivHtml = FormattableString.Invariant(
 $@"<div class='bloom-translationGroup'>
 	<div lang='xyz' class='bloom-editable audio-sentence' id='audio2' data-audiorecordingendtimes='{expectedDurationPerSegment} {expectedDurationPerClip}'>
 		<p>
@@ -1462,7 +1473,7 @@ $@"<div class='bloom-translationGroup'>
 			<span id='text4' class='bloom-highlightSegment'>Sentence 4.</span>
 		</p>
 	</div>
-</div>";
+</div>");
 
 			var book = SetupBookLong(
 				text: firstDivContents,
@@ -1475,7 +1486,7 @@ $@"<div class='bloom-translationGroup'>
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", $"audio2.mp3"));
 
 			// Cause the system under test to be executed.
-			MakeEpub("output", $"AddAudioOverlay_SubElementPlaybackModes_ProducesCorrectTimings_{mergeAudio}", book,
+			MakeEpub("output", $"AddAudioOverlay_SubElementPlaybackModes_ProducesCorrectTimings_{mergeAudio}_{switchCulture}", book,
 				extraInit: maker => maker.OneAudioPerPage = mergeAudio);
 
 			// Verification //
@@ -1494,14 +1505,16 @@ $@"<div class='bloom-translationGroup'>
 					int expectedIndex = (divIndex) * 2 + j + 1;
 					double expectedClipBegin = divStartTime + expectedDurationPerSegment * j;
 					double expectedClipEnd = expectedClipBegin + expectedDurationPerSegment;
-					string expectedClipBeginFormatted = "0:00:0" + expectedClipBegin.ToString("0.000");
-					string expectedClipEndFormatted = "0:00:0" + expectedClipEnd.ToString("0.000");
+					string expectedClipBeginFormatted = "0:00:0" + expectedClipBegin.ToString("0.000", CultureInfo.InvariantCulture);
+					string expectedClipEndFormatted = "0:00:0" + expectedClipEnd.ToString("0.000", CultureInfo.InvariantCulture);
 
 					assertSmil.HasAtLeastOneMatchForXpath($"smil:smil/smil:body/smil:seq/smil:par[@id='s{expectedIndex}']/smil:text[@src='1.xhtml#text{expectedIndex}']", _ns);
 					assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s{expectedIndex}']/smil:audio[@src='{kAudioSlash}{expectedFilename}.mp3'][@clipBegin='{expectedClipBeginFormatted}'][@clipEnd='{expectedClipEndFormatted}']", _ns);
 				}
 				VerifyEpubItemExists($"content/{EpubMaker.kAudioFolder}/{expectedFilename}.mp3");
 			}
+
+			CultureInfo.CurrentCulture = originalCulture;
 		}
 		#endregion
 
