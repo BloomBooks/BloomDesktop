@@ -33,6 +33,14 @@ export const PublishProgressDialog: React.FunctionComponent<{
                 props.setProgressState(() =>
                     errorEncountered ? ProgressState.Done : ProgressState.Closed
                 );
+                // Although we may be in state 'Done' and thus not actually closed yet,
+                // we're no longer in the state that closePending is meant to handle,
+                // where we've finished but don't yet have enough information to know
+                // whether to close automatically or wait to let the user see any errors.
+                // In case the dialog is used again (e.g., to update a preview with
+                // different parameters), we need to turn this off so the useEffect will notice
+                // the next time it is turned on.
+                props.setClosePending(false);
             } else {
                 // set up for next time
                 setAccumulatedMessages("");
