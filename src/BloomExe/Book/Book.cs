@@ -452,8 +452,10 @@ namespace Bloom.Book
 			{
 				pageDom.AddStyleSheet(cssFileName);
 			}
-			// only add brandingCSS is there is one for the current branding
-			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", CollectionSettings.BrandingProjectKey, "branding.css");
+			// Only add brandingCSS is there is one for the current branding
+			// Note: it would be a fine enhancement here to first check for "branding-{flavor}.css",
+			// but we'll leave that until we need it.
+			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", CollectionSettings.GetBrandingFolderName(), "branding.css");
 			if (!string.IsNullOrEmpty(brandingCssPath))
 			{
 				pageDom.AddStyleSheet("branding.css");
