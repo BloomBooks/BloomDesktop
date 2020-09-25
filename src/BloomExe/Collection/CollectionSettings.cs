@@ -393,7 +393,7 @@ namespace Bloom.Collection
 				{
 					// Validate branding, so things can't be circumvented by just typing something into settings
 					var expirationDate = CollectionSettingsApi.GetExpirationDate(SubscriptionCode);
-					if (expirationDate < DateTime.Now || null==BrandingProject.HaveFilesForBranding(BrandingProjectKey))
+					if (expirationDate < DateTime.Now || !BrandingProject.HaveFilesForBranding(BrandingProjectKey))
 					{
 						InvalidBranding = BrandingProjectKey;
 						BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.

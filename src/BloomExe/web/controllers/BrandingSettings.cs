@@ -134,7 +134,11 @@ namespace Bloom.Api
 				// But if we needed to have different boilerplate text, well then we would need to
 				// either use this here mechanism (separate json) or implement the ability to add
 				// "flavor:" to the rules.
-				var settingsPath = BloomFileLocator.GetOptionalBrandingFile(brandingFolderName, "branding["+flavor+"].json");
+				string settingsPath=null;
+				if (!string.IsNullOrEmpty(flavor))
+				{
+					settingsPath= BloomFileLocator.GetOptionalBrandingFile(brandingFolderName, "branding["+flavor+"].json");
+				}
 
 				// if not, fall bck to just "branding.json"
 				if (string.IsNullOrEmpty(settingsPath))
