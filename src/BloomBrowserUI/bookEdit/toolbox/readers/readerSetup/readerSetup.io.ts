@@ -345,6 +345,7 @@ function getChangedSettings(): ReaderSettings {
     const levels: JQuery = $("#levels-table").find("tbody tr");
     for (let j: number = 0; j < levels.length; j++) {
         const level: ReaderLevel = new ReaderLevel((j + 1).toString());
+        // @ts-ignore
         delete level.name; //I don't know why this has a name, but it's apparently just part of the UI that we don't want to save
         const row: HTMLTableRowElement = <HTMLTableRowElement>levels[j];
         for (let k = 0; k < levelSettings.length; k++) {

@@ -434,7 +434,7 @@ export function selectLevel(tr: HTMLTableRowElement) {
 }
 
 // prevent pasting anything but plain text into the contenteditable children of the argument
-export function forcePlainTextPaste(parent: NodeSelector): void {
+export function forcePlainTextPaste(parent: ParentNode): void {
     [].forEach.call(parent.querySelectorAll('[contenteditable="true"]'), el => {
         el.addEventListener(
             "paste",
