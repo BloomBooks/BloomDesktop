@@ -190,6 +190,8 @@ namespace Bloom.Publish.PDF
 				// This reduces images to 300dpi, converting the color to CMYK.
 				bldr.Append(" -dPDFSETTINGS=/prepress");
 				bldr.Append(" -sColorConversionStrategy=CMYK");
+				bldr.Append(" -sColorConversionStrategyForImages=CMYK");
+				bldr.Append(" -sProcessColorModel=DeviceCMYK");
 				bldr.Append(" -dOverrideICC=true");
 				var rgbProfile = FileLocationUtilities.GetFileDistributedWithApplication("ColorProfiles/RGB/AdobeRGB1998.icc");
 				var cmykProfile = FileLocationUtilities.GetFileDistributedWithApplication("ColorProfiles/CMYK/USWebCoatedSWOP.icc");
@@ -201,6 +203,17 @@ namespace Bloom.Publish.PDF
 			bldr.Append(" -dDownsampleColorImages=true -dColorImageDownsampleThreshold=1.0");
 			bldr.Append(" -dDownsampleGrayImages=true -dGrayImageDownsampleThreshold=1.0");
 			bldr.Append(" -dDownsampleMonoImages=true -dMonoImageDownsampleThreshold=1.0");
+			// Ghostscript uses JPEG compression by default on all images when compressing a PDF file.
+			// The value in imageCompressDict provides the highest quality image using JPEG compression: best picture, least compression.
+			// See https://files.lfpp.csa.canon.com/media/Assets/PDFs/TSS/external/DPS400/Distillerpdfguide_v1_m56577569830529783.pdf#G5.1030935.
+			// The default setting here can result in visibly mottled areas of what should be solid colors.
+			// (See https://issues.bloomlibrary.org/youtrack/issue/BL-8928.)  Increasing the quality to the maximum
+			// does not totally eliminate this mottling effect, but makes it much less noticeable.
+			var imageCompressDict = "/QFactor 0.1 /Blend 1 /HSamples [1 1 1 1] /VSamples [1 1 1 1]";
+			bldr.AppendFormat(" -sColorACSImageDict=\"{0}\"", imageCompressDict);
+			bldr.AppendFormat(" -sColorImageDict=\"{0}\"", imageCompressDict);
+			bldr.AppendFormat(" -sGrayACSImageDict=\"{0}\"", imageCompressDict);
+			bldr.AppendFormat(" -sGrayImageDict=\"{0}\"", imageCompressDict);
 			if (String.IsNullOrEmpty(inputFile))
 				inputFile = _inputPdfPath;
 			bldr.AppendFormat($" -sOutputFile=\"{tempFile}\" \"{DoubleBracesInInputPath(inputFile)}\"");
