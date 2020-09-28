@@ -229,7 +229,7 @@ namespace Bloom.Api
 		}
 		public string RequiredPostJson()
 		{
-			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
+			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post, "Expected HttpMethod to be Post but instead got: " + _requestInfo.HttpMethod.ToString());
 			var json = _requestInfo.GetPostJson();
 			if (!string.IsNullOrWhiteSpace(json))
 			{

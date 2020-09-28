@@ -8,7 +8,7 @@ namespace BloomTests
 		public enum ContentType  {Text, JSON}
 
 		public static string GetString(BloomServer server, string endPoint, string query = "",
-			ContentType returnType = ContentType.Text, EndpointHandler handler = null, string endOfUrlForTest = null)
+			ContentType returnType = ContentType.Text, EndpointHandler handler = null, string endOfUrlForTest = null, int? timeoutInMilliseconds = null)
 		{
 			if(handler != null)
 			{
@@ -17,7 +17,7 @@ namespace BloomTests
 			server.StartListening();
 			var client = new WebClientWithTimeout
 			{
-				Timeout = 3000,
+				Timeout = timeoutInMilliseconds ?? 3000,
 			};
 			client.Headers[HttpRequestHeader.ContentType] = returnType == ContentType.Text ? "text/plain" : "application/json";
 
@@ -34,16 +34,16 @@ namespace BloomTests
 		}
 
 		public static string PostString(BloomServer server, string endPoint, string data, ContentType returnType,
-			EndpointHandler handler = null)
+			EndpointHandler handler = null, int? timeoutInMilliseconds = null)
 		{
 			if(handler != null)
 			{
 				server.ApiHandler.RegisterEndpointHandler(endPoint, handler, true);
 			}
-			server.StartListening();
+			server.EnsureListening();			
 			var client = new WebClientWithTimeout
 			{
-				Timeout = 3000
+				Timeout = timeoutInMilliseconds ?? 3000
 			};
 			client.Headers[HttpRequestHeader.ContentType] = returnType == ContentType.Text ? "text/plain" : "application/json";
 
