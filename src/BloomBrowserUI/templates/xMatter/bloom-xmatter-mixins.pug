@@ -60,13 +60,16 @@ mixin cover-branding-bottom-left
 	div(data-book='cover-branding-left-html' lang="*")
 
 mixin credits-page-branding-top
-	div(data-book='credits-page-branding-top-html' lang="*")
+	block credits-page-branding-top
+		div(data-book='credits-page-branding-top-html' lang="*")
 
 mixin credits-page-branding-bottom
-	div(data-book='credits-page-branding-bottom-html' lang="*")
+	block credits-page-branding-bottom
+		div(data-book='credits-page-branding-bottom-html' lang="*")
 
 mixin title-page-branding-bottom
-	div(data-book='title-page-branding-bottom-html' lang="*")
+	block title-page-branding-bottom
+		div(data-book='title-page-branding-bottom-html' lang="*")
 
 mixin outside-back-cover-branding-top
 	block outside-back-cover-branding-top-block
