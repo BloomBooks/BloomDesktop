@@ -85,11 +85,30 @@ namespace Bloom.Book
 			if (xmatterName.EndsWith("Device"))
 				return xmatterName;
 
+			// Look to see if there is a special Device version of this xmatter
 			var deviceXmatterName = $"{xmatterName}-Device";
 			var directoryPath = GetXMatterDirectory(deviceXmatterName, fileLocator, null, false, true);
+			if (directoryPath != null)
+				return deviceXmatterName;
 
-			// if "{xmatterName}-Device" is unavailable, use the default Device xmatter which is just named "Device"
-			return directoryPath != null ? deviceXmatterName : "Device";
+			// Look in the stylesheet and see if it already handles device layout
+			try
+			{
+				var plainXmatterDirectory = GetXMatterDirectory(xmatterName, fileLocator, null, false, true);
+				if (plainXmatterDirectory != null)
+				{
+					var cssPath = Path.Combine(plainXmatterDirectory, GetStyleSheetFileName(xmatterName));
+					if (RobustFile.ReadAllText(cssPath).Contains(".Device16x9"))
+						return xmatterName;
+				}
+			}
+			catch (Exception)
+			{
+				// swallow and fall back to dedicated device xmatter
+			}
+			
+			// use the default Device xmatter which is just named "Device"
+			return  "Device";
 		}
 
 		public static string GetXMatterDirectory(string nameOfXMatterPack, IFileLocator fileLocator, string errorMsg, bool throwIfError, bool silent = false)
@@ -113,11 +132,12 @@ namespace Bloom.Book
 
 		public string GetStyleSheetFileName()
 		{
-//			var layout = SizeAndOrientation.FromDom(_dom);
-//			return layout.PageSizeName + "-" + layout.OrientationName + "-" + _nameOfXMatterPack + "-XMatter.css";
-			return _nameOfXMatterPack + "-XMatter.css";
+			return GetStyleSheetFileName(_nameOfXMatterPack);
 		}
-
+		public static string GetStyleSheetFileName(string xmatterName)
+		{
+			return xmatterName + "-XMatter.css";
+		}
 		/// <summary>
 		/// Set this if you want the xmatter stuff copied into a document folder. This makes sense when setting up or
 		/// modifying one of the users books, but not when just displaying a book from a shell collection.
