@@ -243,6 +243,16 @@ div#bloomDataDiv {
         width: @RA5Portrait-Height;
         height: @RA5Portrait-Width;
     }
+
+    // review: we don't actually need full-bleed on devices... how does that play out?
+    &.Device16x9Portrait {
+        width: @Device16x9Portrait-Width;
+        height: @Device16x9Portrait-Height;
+    }
+    &.Device16x9Landscape {
+        width: @Device16x9Portrait-Height;
+        height: @Device16x9Portrait-Width;
+    }
     &.USComicPortrait {
         width: @RUSComicPortrait-Width;
         height: @RUSComicPortrait-Height;

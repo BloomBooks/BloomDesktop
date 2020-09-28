@@ -40,12 +40,15 @@ div.bloom-page.outsideBackCover {
     display: flex;
 }
 
-.outsideFrontCover .marginBox img,
-.outsideBackCover .marginBox img {
+.outsideFrontCover .marginBox img
+//.outsideBackCover .marginBox img
+ {
     margin-left: auto;
     margin-right: auto;
 }
-
+.outsideBackCover [data-book="level-image"] img {
+    width: unset; // allow it to left-align
+}
 .frontCover .bottomBlock {
     margin-left: 1cm;
     margin-right: 1cm;
@@ -111,7 +114,9 @@ div.bloom-page.outsideBackCover {
 .outsideBackCover .divider {
     color: #97c955;
     font-size: 7px;
+    height: 3em; // I don't know why this is necessary. Without it, even overflow-x:hidden cuts off the diamonds.
     letter-spacing: -2px;
+    overflow: hidden;
     margin-top: 8mm;
     margin-bottom: 8mm; // wasn't enough room for text 15mm;
 }
@@ -154,7 +159,7 @@ div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
     justify-content: space-between;
 
     img {
-        height: 15mm;
+        // height is per page size, below
         margin-top: auto;
         margin-bottom: auto;
     }
@@ -187,5 +192,29 @@ div.bloom-page {
     &::after {
         // don't show the trim area at all.
         border: none;
+    }
+}
+
+/* --------- SIZING ------------- */
+
+.A5Portrait {
+    .outside-back-cover-branding-top-block {
+        img {
+            height: 15mm;
+        }
+    }
+}
+// NOTE. The existence of this selector tells XMatterHelper that we can handle device layout, so don't revert to a specialized one.
+.Device16x9Portrait {
+    .outsideBackCover {
+        .marginBox {
+            left: 15px !important;
+            width: 90mm;
+        }
+        .outside-back-cover-branding-top-block {
+            img {
+                height: 10mm;
+            }
+        }
     }
 }
