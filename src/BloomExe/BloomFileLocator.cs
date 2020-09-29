@@ -59,11 +59,13 @@ namespace Bloom
 		public void AddPath(string path)
 		{
 			_bookSpecificSearchPaths.Add(path);
+			ClearLocateDirectoryCache();
 		}
 
 		public void RemovePath(string path)
 		{
 			_bookSpecificSearchPaths.Remove(path);
+			ClearLocateDirectoryCache();
 		}
 
 		public string LocateFile(string fileName)
@@ -325,14 +327,29 @@ namespace Bloom
 		// Copied mostly unchanged from libpalaso/FileLocationUtilities. Bloom may not actually need all of these.
 		//----------------------------------------------------
 
+		Dictionary<string, string> _mapDirectoryNameToPath = new Dictionary<string, string>();
+
+		private void ClearLocateDirectoryCache()
+		{
+			_mapDirectoryNameToPath.Clear();
+		}
 		public string LocateDirectory(string directoryName)
 		{
+			if (_mapDirectoryNameToPath.TryGetValue(directoryName, out string result))
+				return result;
+			// Because GetSearchPaths is not being passed a file name, it won't search
+			// in the user-installed directories, and the other places is searches shouldn't
+			// change without restarting Bloom or calling things that clear the cache.
 			foreach (var path in GetSearchPaths())
 			{
 				var fullPath = Path.Combine(path, directoryName);
 				if (Directory.Exists(fullPath))
+				{
+					_mapDirectoryNameToPath[directoryName] = fullPath;
 					return fullPath;
+				}
 			}
+			_mapDirectoryNameToPath[directoryName] = string.Empty;
 			return string.Empty;
 		}
 		public string LocateDirectory(string directoryName, string descriptionForErrorMessage)

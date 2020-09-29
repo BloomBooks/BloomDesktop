@@ -113,9 +113,27 @@ namespace Bloom.Book
 
 		public static string GetXMatterDirectory(string nameOfXMatterPack, IFileLocator fileLocator, string errorMsg, bool throwIfError, bool silent = false)
 		{
+			var directoryName = nameOfXMatterPack + "-XMatter";
+			if (silent)
+			{
+				// Using LocateDirectoryWithThrow is quite expensive for directories we don't find...the Exception it creates, which we don't use,
+				// includes a concatenation of a long list of paths it searched in. (It's quite common now to search for an xmatter directory
+				// we don't often find, such as looking for one called Traditional-Device when publishing something with Traditional xmatter
+				// on a device.
+				try
+				{
+					var result = fileLocator.LocateDirectory(directoryName);
+					if (result == null || !Directory.Exists(result))
+						return null;
+					return result;
+				}
+				catch (ApplicationException)
+				{
+					return null;
+				}
+			}
 			try
 			{
-				var directoryName = nameOfXMatterPack + "-XMatter";
 				return fileLocator.LocateDirectoryWithThrow(directoryName);
 			}
 			catch (ApplicationException error)
