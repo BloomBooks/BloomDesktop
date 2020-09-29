@@ -871,11 +871,24 @@ namespace BloomTests.Book
 			Assert.IsTrue(File.Exists(_fixtureFolder.Combine("b loom test", "b loom test.htm")));
 		}
 
-		[Test]
-		public void SetBookName_NameHasTrailingPeriods_UsesSanitizedName()
+		[TestCase("...Whenever")]
+		[TestCase(". ..Whenever")]
+		[TestCase(".. .Whenever")]
+		[TestCase(" ...Whenever")]
+		[TestCase(" . . . Whenever")]
+		[TestCase("\t . . . Whenever")]
+		[TestCase(" \t . . . Whenever")]
+		[TestCase(".\t . . . Whenever")]
+		[TestCase(" . \t . . . Whenever")]
+		[TestCase("Whenever...")]
+		[TestCase("Whenever. ..")]
+		[TestCase("Whenever.. .")]
+		[TestCase("Whenever... ")]
+		[TestCase("Whenever.. . ")]
+		public void SetBookName_NameHasLeadingOrTrailingPeriods_UsesSanitizedName(string bookTitle)
 		{
 			var storage = GetInitialStorage();
-			storage.SetBookName("Whenever...");
+			storage.SetBookName(bookTitle);
 			Assert.IsTrue(Directory.Exists(_fixtureFolder.Combine("Whenever")));
 			Assert.IsTrue(File.Exists(_fixtureFolder.Combine("Whenever", "Whenever.htm")));
 			Assert.That(Path.GetFileName(storage.FolderPath), Is.EqualTo("Whenever"));
