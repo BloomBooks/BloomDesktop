@@ -1412,13 +1412,26 @@ namespace Bloom.Book
 			//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
 			// BL-3572 when the only file in the directory is "Big Book.html", it matches both filters in Windows (tho' not in Linux?)
 			// so Union works better here. (And we'll change the name of the book too.)
-			var candidates = new List<string>(
-				Directory.GetFiles(folderPath)
+			// BL-8893 Sometimes users can get into a state where a template directory Bloom thinks it should
+			// look in is closed to Bloom by system permissions. In that case, skip that directory.
+			// This is the location that threw an exception in the case of the original user's problem.
+			List<string> candidates = null;
+			try
+			{
+				candidates = new List<string>(
+					Directory.GetFiles(folderPath)
 
-				// Although GetFiles supports simple pattern matching, it doesn't support enforcing end-of-string matches...
-				// So let's do the filtering this way instead, to make sure we don't get any extensions that start with "htm" but aren't exact matches.
-				.Where(name => name.EndsWith(".htm") || name.EndsWith(".html"))
+						// Although GetFiles supports simple pattern matching, it doesn't support enforcing end-of-string matches...
+						// So let's do the filtering this way instead, to make sure we don't get any extensions that start with "htm" but aren't exact matches.
+						.Where(name => name.EndsWith(".htm") || name.EndsWith(".html"))
 				);
+			}
+			catch (UnauthorizedAccessException uaex)
+			{
+				Logger.WriteError("Bloom folder access problem: ", uaex);
+				return string.Empty;
+			}
+
 			var decoyMarkers = new[] {"configuration",
 				PrefixForCorruptHtmFiles, // Used to rename corrupt htm files before restoring backup
 				"_conflict", // owncloud
@@ -2106,12 +2119,14 @@ namespace Bloom.Book
 			{
 				name = name.Replace(c, ' ');
 			}
-			name = name.TrimStart('.', ' ', '\t');
+			// Remove leading whitespace and periods.
+			name = Regex.Replace(name, "^[\\s.]*", "", RegexOptions.Compiled);
+			// Remove trailing whitespace and periods.
 			// Windows does not allow directory names ending in period.
 			// If we give it a chance, it will make a directory without the dots,
-			// but all our code that thinks the folder name has the dots will break (e.g., BL-
-			name = name.TrimEnd('.');
-			return name.Trim();
+			// but all our code that thinks the folder name has the dots will break (e.g., BL-3402, BL-9040)
+			name = Regex.Replace(name, "[\\s.]*$", "", RegexOptions.Compiled);
+			return name;
 		}
 
 		/// <summary>
