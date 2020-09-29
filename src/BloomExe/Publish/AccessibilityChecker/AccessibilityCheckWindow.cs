@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
-using Bloom.Api;
+using SIL.Program;
 
 namespace Bloom.Publish.AccessibilityChecker
 {
@@ -35,6 +35,18 @@ namespace Bloom.Publish.AccessibilityChecker
 
 			var path = BloomFileLocator.GetBrowserFile(false, "publish", "accessibilityCheck", "accessibilityCheckScreen.html");
 			_browser.Navigate(path.ToLocalhost(),false);
+
+			_browser.GeckoReady += (sender, args) =>
+			{
+				// There are some external links in the checker report.
+				// They will attempt to open a new window which has loading and display issues.
+				// Just open them in the system browser instead. See BL-9026.
+				_browser.WebBrowser.CreateWindow += (geckoBrowser, eventArgs) =>
+				{
+					eventArgs.Cancel = true;
+					Process.SafeStart(eventArgs.Uri);
+				};
+			};
 		}
 
 		private void AccessibilityCheckWindow_FormClosed(object sender, FormClosedEventArgs e)
