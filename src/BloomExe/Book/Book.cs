@@ -2182,7 +2182,9 @@ namespace Bloom.Book
 
 		public void InitCoverColor()
 		{
-			// for digital comic template, we want a black cover. 
+			// for digital comic template, we want a black cover.
+			// NOTE as this writing, at least, xmatter cannot set <meta> values, so this isn't a complete solution. It's only
+			// useful for starting off a book from a template book.
 			var preserve = this.OurHtmlDom.GetMetaValue("preserveCoverColor", "false");
 			if ( preserve == "false")
 			{
