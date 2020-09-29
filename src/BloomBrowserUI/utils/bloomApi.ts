@@ -301,8 +301,8 @@ export class BloomApi {
         data: any,
         successCallback?: (r: AxiosResponse) => void,
         errorCallback?: (r: AxiosResponse) => void
-    ) {
-        BloomApi.wrapAxios(
+    ): Promise<void | AxiosResponse<any>> {
+        return BloomApi.wrapAxios(
             axios
                 .post(this.kBloomApiPrefix + urlSuffix, data)
                 .then(successCallback ? successCallback : () => {})
@@ -317,17 +317,25 @@ export class BloomApi {
     }
 
     // This method is used to post something from Bloom with data and params.
+    // You can do follow-up work either using the older callback pattern (successCallback/errorCallback)
+    //    or you can use the returned Promise to use the newer promise-chain or async/await patterns.
     public static postDataWithConfig(
         urlSuffix: string,
         data: any,
         config: AxiosRequestConfig,
         successCallback?: (r: AxiosResponse) => void,
         errorCallback?: (r: AxiosResponse) => void
-    ) {
-        BloomApi.wrapAxios(
+    ): Promise<void | AxiosResponse<any>> {
+        return BloomApi.wrapAxios(
             axios
                 .post(this.kBloomApiPrefix + urlSuffix, data, config)
-                .then(successCallback ? successCallback : () => {})
+                .then(
+                    successCallback
+                        ? successCallback
+                        : r => {
+                              return r; // Need to return the response (instead of having an empty body) so that the returned promise contains the AxiosResponse
+                          }
+                )
                 .catch(r => {
                     if (errorCallback) {
                         errorCallback(r);
@@ -338,13 +346,15 @@ export class BloomApi {
         );
     }
 
+    // You can do follow-up work either using the older callback pattern (successCallback/errorCallback)
+    //    or you can use the returned Promise to use the newer promise-chain or async/await patterns.
     public static postJson(
         urlSuffix: string,
         data: any,
         successCallback?: (r: AxiosResponse) => void,
         errorCallback?: (r: AxiosResponse) => void
-    ) {
-        BloomApi.postDataWithConfig(
+    ): Promise<void | AxiosResponse<any>> {
+        return BloomApi.postDataWithConfig(
             urlSuffix,
             data,
             {

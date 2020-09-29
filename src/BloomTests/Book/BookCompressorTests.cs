@@ -10,7 +10,7 @@ using SIL.TestUtilities;
 
 namespace BloomTests.Book
 {
-	class BookCompressorTests//: BookTestsBase
+	class BookCompressorTests
 	{
 		private const string kMinimumValidBookHtml =
 			@"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css'></link></head><body>

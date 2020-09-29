@@ -870,6 +870,16 @@ namespace Bloom.Api
 
 		#region Startup
 
+		/// <summary>
+		/// If the server is not already listening, then starts it.
+		/// Otherwise, does nothing, thereby avoiding an exception from starting listening multiple times.
+		/// </summary>
+		public virtual void EnsureListening()
+		{
+			if (_listener?.IsListening != true)
+				StartListening();
+		}
+
 		public virtual void StartListening()
 		{
 			const int kStartingPort = 8089;
