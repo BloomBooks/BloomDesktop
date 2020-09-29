@@ -476,12 +476,14 @@ namespace Bloom.Publish.Android
 				progress.Message("CompressingAudio", "Compressing audio files");
 				AudioProcessor.TryCompressingAudioAsNeeded(book.FolderPath, book.RawDom);
 			}
+			// BringBookUpToDate() will already have been done on the original book on entering the Publish tab.
+
 			// We don't use the folder found here, but this method does some checks we want done.
 			BookStorage.FindBookHtmlInFolder(book.FolderPath);
 			_stagingFolder = new TemporaryFolder(StagingFolder);
 			var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book.FolderPath, bookServer, _stagingFolder, progress, settings: settings);
 			progress.Message("Common.Done", "Shown in a list of messages when Bloom has completed a task.", "Done");
-			return modifiedBook.FolderPath.ToLocalhost();
+			return modifiedBook.FolderPath.ToLocalhostFullyEscaped();
 		}
 
 		/// <summary>

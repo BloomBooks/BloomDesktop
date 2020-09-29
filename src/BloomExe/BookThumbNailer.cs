@@ -106,13 +106,79 @@ namespace Bloom
 		}
 
 		/// <summary>
+		/// Generates the cover image for a book, e.g. the thumbnail used on Bloom Library
+		/// </summary>
+		/// <param name="book"></param>
+		/// <param name="requestedSize">The maximum size of either dimension</param>
+		public static string GenerateCoverImageOfRequestedMaxSize(Book.Book book, int requestedSize)
+		{
+			HtmlThumbNailer.ThumbnailOptions thumbnailOptions = BookThumbNailer.GetCoverThumbnailOptions(requestedSize, new Guid());
+			BookThumbNailer.CreateThumbnailOfCoverImage(book, thumbnailOptions, null);
+
+			string thumbnailDestination = Path.Combine(book.FolderPath, thumbnailOptions.FileName);
+			return thumbnailDestination;
+		}
+
+		/// <summary>
+		/// Generates a thumbnail suitable for sharing on Facebook
+		/// </summary>
+		/// <param name="book"></param>
+		/// <returns></returns>
+		public static string GenerateSocialMediaSharingThumbnail(Book.Book book)
+		{
+			// 300 x 300 is picked so that FB will consistently generate a thumbnail that is:
+			// * to the left of the link
+			// * a fixed aspect ratio (happens to be square)
+			// * has enough pixels to work with high res screens with devicePixelRatio up to 4. (FB Mobile App was showing it as 75 CSS pixels)
+			// See BL-8406
+			int size = 300;
+			var options = new HtmlThumbNailer.ThumbnailOptions
+			{
+				CenterImageUsingTransparentPadding = true,
+				RequestId = new Guid(),
+				Height = size,
+				Width = size,
+			};
+
+			options.FileName = $"thumbnail-{options.Width}x{options.Height}.png";
+
+			BookThumbNailer.CreateThumbnailOfCoverImage(book, options, null);
+
+			string thumbnailDestination = Path.Combine(book.FolderPath, options.FileName);
+			return thumbnailDestination;
+		}
+
+		/// <summary>
+		/// Check if the cover image is valid
+		/// </summary>
+		/// <returns>True if it's valid. It may be invalid if imageSrc is missing. In certain scenarios, if the imageSrc is "placeHolder.png", that's not valid either.</returns>
+		internal static bool IsCoverImageSrcValid(string imageSrc, HtmlThumbNailer.ThumbnailOptions options)
+		{
+			if (string.IsNullOrEmpty(imageSrc))
+				return false;
+			else if (Path.GetFileName(imageSrc) == "placeHolder.png")
+			{
+				// Valid examples:
+				// thumbnail.png
+				// thumbnail-256.png
+				// thumbnail-300x300.png
+				if (Regex.IsMatch(options.FileName, "thumbnail(-[0-9]+(x[0-9]+)?)?\\.png"))
+					return true;
+				else
+					return false;
+			}
+			else
+				return true;
+		}
+
+		/// <summary>
 		/// Creates a thumbnail of just the cover image (no title, language name, etc.)
 		/// </summary>
 		/// <returns>Returns true if successful; false otherwise. </returns>
 		internal static bool CreateThumbnailOfCoverImage(Book.Book book, HtmlThumbNailer.ThumbnailOptions options, Action<Image> callback = null)
 		{
 			var imageSrc = book.GetCoverImagePath();
-			if (string.IsNullOrEmpty(imageSrc) || (Path.GetFileName(imageSrc) == "placeHolder.png" && !Regex.IsMatch(options.FileName, "thumbnail(-[0-9]+)?\\.png")))
+			if (!IsCoverImageSrcValid(imageSrc, options))
 			{
 				Debug.WriteLine(book.StoragePageFolder + " does not have a cover image.");
 				return false;
@@ -209,12 +275,7 @@ namespace Bloom
 		///
 		///   The result is cached for possible future use so the caller should not dispose of it.
 		///   </summary>
-		/// <param name="book"></param>
-		/// <param name="page"></param>
-		/// <param name="isLandscape"></param>
-		/// <param name="mustRegenerate"></param>
-		/// <returns></returns>
-		public Image GetThumbnailForPage(Book.Book book, IPage page, bool isLandscape, bool mustRegenerate = false)
+		public Image GetThumbnailForPage(Book.Book book, IPage page, bool isLandscape, bool isSquare, bool mustRegenerate = false)
 		{
 			var pageDom = book.GetThumbnailXmlDocumentForPage(page);
 			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
@@ -230,7 +291,13 @@ namespace Bloom
 			// preview box on the right as well as giving exactly the ratio we want.
 			// We need to make the image the right shape to avoid some sort of shadow/box effects
 			// that I can't otherwise find a way to get rid of.
-			if (isLandscape)
+			if (isSquare)
+			{
+				thumbnailOptions.Width = 210;	// Image is square, but otherwise displayed similarly to Landscape
+				thumbnailOptions.Height = 210;
+				pageDiv.SetAttribute("class", pageDiv.Attributes["class"].Value.Replace("Portrait", "Landscape"));
+			}
+			else if (isLandscape)
 			{
 				thumbnailOptions.Width = 297;
 				thumbnailOptions.Height = 210;

@@ -9,6 +9,8 @@ using System.Threading;
 using Bloom.ImageProcessing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using Bloom.Api;
+using Bloom.Collection;
 using Bloom.Edit;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -17,6 +19,7 @@ using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using Bloom.Properties;
+using SIL.Text;
 
 namespace Bloom.Book
 {
@@ -635,6 +638,26 @@ namespace Bloom.Book
 			var bi = new BookInfo(currentFolder, false);
 			var id = bi.Id;
 			SafelyAddToIdSet(id, metaFileLastWriteTime, currentFolder, idToSortedFilepathsMap);
+		}
+
+		internal string GetBestTitleForUserDisplay(CollectionSettings settings)
+		{
+			try
+			{
+				// JSON parsing requires newlines to be double quoted with backslashes inside string values.
+				var jsonString = AllTitles == null ? "{}" : AllTitles.Replace("\r", "\\r").Replace("\n", "\\n");
+				dynamic titles = DynamicJson.Parse(jsonString);
+				IEnumerable<string> langs = titles.GetDynamicMemberNames();
+				var multiText = new MultiTextBase();
+				foreach (var lang in langs)
+					multiText[lang] = titles[lang].Trim();
+				return Book.GetBestTitleForDisplay(multiText, settings, IsEditable);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e);
+			}
+			return Title;
 		}
 
 		private static void SafelyAddToIdSet(string bookId, DateTime lastWriteTime, string bookFolder,

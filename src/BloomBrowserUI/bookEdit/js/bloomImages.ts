@@ -1,5 +1,4 @@
-﻿///<reference path="../../lib/jquery.myimgscale.d.ts" />
-import "../../lib/jquery.resize"; // makes jquery resize work on all elements
+﻿import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { BloomApi } from "../../utils/bloomApi";
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
@@ -64,13 +63,20 @@ export function SetupImagesInContainer(container) {
         });
 }
 
-export function SetupImage(image) {
-    // Remove any obsolete explicit image size and position left over from earlier versions of Bloom.
+export function SetupImage(image: JQuery) {
+    // Remove any obsolete explicit image size and position left over from earlier versions of Bloom, before we had object-fit:contain.
     if (image.style) {
         image.style.width = "";
         image.style.height = "";
         image.style.marginLeft = "";
         image.style.marginTop = "";
+    }
+    if (image.removeAttribute) {
+        if (image.getAttribute && image.getAttribute("style") === "") {
+            image.removeAttribute("style");
+        }
+        image.removeAttribute("width");
+        image.removeAttribute("height");
     }
 }
 
@@ -373,12 +379,13 @@ function SetAlternateTextOnImages(element) {
         const englishText =
             "This picture, {0}, is missing or was loading too slowly."; // Also update HtmlDom.cs::IsPlaceholderImageAltText
         const nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
+        const decodedName = decodeURI(nameWithoutQueryString);
         theOneLocalizationManager
             .asyncGetText(
                 "EditTab.Image.AltMsg",
                 englishText,
                 "message displayed when the picture image cannot be displayed",
-                nameWithoutQueryString
+                decodedName
             )
             .done(translation => {
                 $(element).attr("alt", translation);
@@ -387,7 +394,7 @@ function SetAlternateTextOnImages(element) {
                 $(element).attr(
                     "alt",
                     theOneLocalizationManager.simpleDotNetFormat(englishText, [
-                        nameWithoutQueryString
+                        decodedName
                     ])
                 );
             });
@@ -423,10 +430,7 @@ export function SetupResizableElement(element) {
         $(element).resizable({
             handles: "nw, ne, sw, se",
             containment: "parent",
-            alsoResize: childImgContainer,
-            resize: (event, ui) => {
-                img.scaleImage({ scale: "fit" });
-            }
+            alsoResize: childImgContainer
         });
     }
     //An Image Container div (which must have an inner <img>
@@ -434,10 +438,7 @@ export function SetupResizableElement(element) {
         const img = $(element).find("img");
         $(element).resizable({
             handles: "nw, ne, sw, se",
-            containment: "parent",
-            resize: (event, ui) => {
-                img.scaleImage({ scale: "fit" });
-            }
+            containment: "parent"
         });
     }
     // some other kind of resizable

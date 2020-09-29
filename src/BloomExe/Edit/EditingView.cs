@@ -1,3 +1,4 @@
+//#define MEMORYCHECK
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -488,12 +489,12 @@ namespace Bloom.Edit
 				return;
 			}
 
+#if MEMORYCHECK
+			// Check memory for the benefit of developers.
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - about to update the displayed page", false);
+#endif
 			if(_model.HaveCurrentEditableBook)
 			{
-#if MEMORYCHECK
-	// Check memory for the benefit of developers.
-				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "EditingView - about to change the page", false);
-#endif
 				_pageListView.SelectThumbnailWithoutSendingEvent(page);
 				_pageListView.UpdateThumbnailAsync(page);
 				_model.SetupServerWithCurrentPageIframeContents();
@@ -535,7 +536,7 @@ namespace Bloom.Edit
 				// never happens.
 				_browser1.WebBrowser.DocumentCompleted += WebBrowser_ReadyStateChanged;
 				_browser1.WebBrowser.ReadyStateChange += WebBrowser_ReadyStateChanged;
-//#if __MonoCS__	// See https://issues.bloomlibrary.org/youtrack/issue/BL-8619 for why we need this for Version4.8 on Windows.
+#if __MonoCS__
 				// On Linux/Mono, the user can click between pages too fast in Edit mode, resulting
 				// in a warning dialog popping up.  I've never seen this happen on Windows, but it's
 				// happening fairly often on Linux when I just try to move around a book.  The fix
@@ -543,12 +544,20 @@ namespace Bloom.Edit
 				// further page selecting until the current page has finished loading.
 				_model.PageSelectionStarted();
 				_browser1.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
-//#endif
+#endif
 			}
+#if MEMORYCHECK
+			// Check memory for the benefit of developers.
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - UpdateSingleDisplayedPage() about to call UpdateDisplay()", false);
+#endif
 			UpdateDisplay();
+#if MEMORYCHECK
+			// Check memory for the benefit of developers.
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - UpdateSingleDisplayedPage() finished", false);
+#endif
 		}
 
-//#if __MonoCS__	// See https://issues.bloomlibrary.org/youtrack/issue/BL-8619 for why we need this for Version4.8 on Windows.
+#if __MonoCS__
 		/// <summary>
 		/// Flag the PageSelection object that the current (former?) page selection has completed,
 		/// so it's safe to select another page now.
@@ -558,7 +567,7 @@ namespace Bloom.Edit
 			_model.PageSelectionFinished();
 			_browser1.WebBrowser.DocumentCompleted -= WebBrowser_DocumentCompleted;
 		}
-//#endif
+#endif
 
 		void WebBrowser_ReadyStateChanged(object sender, EventArgs e)
 		{
@@ -569,10 +578,12 @@ namespace Bloom.Edit
 			ChangingPages = false;
 			_model.DocumentCompleted();
 			_browser1.Focus(); //fix BL-3078 No Initial Insertion Point when any page shown
-
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			MemoryService.MinimizeHeap(true);
 #if MEMORYCHECK
-	// Check memory for the benefit of developers.
-			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "EditingView - page change completed", false);
+			// Check memory for the benefit of developers.
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "EditingView - display page updated", false);
 #endif
 		}
 
@@ -1013,6 +1024,7 @@ namespace Bloom.Edit
 
 			var imageInfo = new PalasoImage();
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
+			string newImagePath = null;
 
 			//don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
 			if(!currentPath.ToLowerInvariant().Contains("placeholder") && RobustFile.Exists(existingImagePath))
@@ -1025,7 +1037,7 @@ namespace Bloom.Edit
 					// later when the book is reopened for editing.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3689.
 					var folder = Path.GetDirectoryName(existingImagePath);
 					var newFilename = ImageUtils.GetUnusedFilename(folder, Path.GetFileNameWithoutExtension(existingImagePath), Path.GetExtension(existingImagePath));
-					var newImagePath = Path.Combine(folder, newFilename);
+					newImagePath = Path.Combine(folder, newFilename);
 					RobustFile.Copy(existingImagePath, newImagePath);
 					Debug.WriteLine("Created image copy: " + newImagePath);
 					Logger.WriteEvent("Created image copy: " + newImagePath);
@@ -1037,8 +1049,10 @@ namespace Bloom.Edit
 				}
 			}
 			Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
+#if MEMORYCHECK
 			// Check memory for the benefit of developers.  The user won't see anything.
-			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to choose picture", false);
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "about to choose picture", false);
+#endif
 			// Deep in the ImageToolboxDialog, when the user asks to see images from the ArtOfReading,
 			// We need to use the Gecko version of the thumbnail viewer, since the original ListView
 			// one has a sticky scroll bar in applications that are using Gecko.
@@ -1065,14 +1079,22 @@ namespace Bloom.Edit
 
 				dlg.SearchLanguage = searchLanguage;
 				var result = dlg.ShowDialog();
+#if MEMORYCHECK
 				// Check memory for the benefit of developers.  The user won't see anything.
-				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen or canceled", false);
-				if(DialogResult.OK == result && dlg.ImageInfo != null)
+				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "picture chosen or canceled", false);
+#endif
+				if (DialogResult.OK == result && dlg.ImageInfo != null)
 				{
-					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
+					// Save the possibly modified (by cropping) image to the file.
+					// The code for ensuring non-transparency uses GraphicsMagick on the file content if possible, so the
+					// file must be in sync with the imageInfo.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8638.
+					if (newImagePath != null && dlg.ImageInfo.OriginalFilePath == newImagePath)
+						dlg.ImageInfo.Save(newImagePath);
 					SaveChangedImage(imageElement, dlg.ImageInfo, "Bloom had a problem including that image");
+#if MEMORYCHECK
 					// Warn the user if we're starting to use too much memory.
-					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen and saved", true);
+					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "picture chosen and saved", true);
+#endif
 				}
 
 				// If the user changed the search language for art of reading, remember their change. But if they didn't
@@ -1251,7 +1273,7 @@ namespace Bloom.Edit
 				var layoutChoices = _model.GetLayoutChoices();
 				foreach(var l in layoutChoices)
 				{
-					var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + l.ToString(), l.ToString());
+					var text = l.DisplayName;
 					var item = AddDropdownItemSafely(_layoutChoices, text);
 					item.Tag = l;
 					//we don't allow the split options here
@@ -1275,7 +1297,7 @@ namespace Bloom.Edit
 					item.Enabled = false;
 				}
 
-				_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
+				_layoutChoices.Text = layout.DisplayName;
 
 				switch(_model.NumberOfDisplayedLanguages)
 				{

@@ -460,10 +460,53 @@ namespace Bloom.CollectionTab
 
 			var button = buttonRefreshInfo.Button;
 			var bookInfo = GetBookInfoFromButton(button);
-			Book.Book book;
+			if (bookInfo == null)
+				return;	// without a valid BookInfo, there's nothing we can do: we can't even report an error for the book.
+
+			Book.Book book = null;	// This is really expensive to initialize, so we won't unless we really need it.
+			bool badBook = false;	// Helps us not to try to load an invalid book twice.
+
+			//Only go looking for a better title if the book hasn't already been localized when we first showed it.
+			//The idea is, if we already have a localization mapping for this name, then
+			// we're not going to get a better title by digging into the document itself and overriding what the localizer
+			// chose to call it.
+			// Note: currently (August 2014) the books that will have been localized are are those in the main "templates" section: Basic Book, Calendar, etc.
+			if (button.Text == ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay, button))
+			{
+				var bestTitle = bookInfo.GetBestTitleForUserDisplay(_model.CollectionSettings);
+				if (String.IsNullOrEmpty(bestTitle))
+				{
+					// Getting the book can be very slow for large books: do we really want to update the title enough to make the user wait?
+					book = LoadBookAndBringItUpToDate(bookInfo, out badBook);
+					if (book != null)
+						bestTitle = book.TitleBestForUserDisplay;
+					else
+						bestTitle = bookInfo.QuickTitleUserDisplay;
+				}
+				var titleBestForUserDisplay = ShortenTitleIfNeeded(bestTitle, button);
+				if (titleBestForUserDisplay != button.Text)
+				{
+					Debug.WriteLine(button.Text + " --> " + titleBestForUserDisplay);
+					button.Text = titleBestForUserDisplay;
+					toolTip1.SetToolTip(button, bestTitle);
+				}
+			}
+			if (buttonRefreshInfo.ThumbnailRefreshNeeded)
+			{
+				// This is relatively rare, so we'll risk the really slow loading of the book.
+				if (book == null && !badBook)
+					book = LoadBookAndBringItUpToDate(bookInfo, out badBook);
+				if (book != null)
+					ScheduleRefreshOfOneThumbnail(book);
+			}
+		}
+
+		private Book.Book LoadBookAndBringItUpToDate(BookInfo bookInfo, out bool badBook)
+		{
 			try
 			{
-				book = _model.GetBookFromBookInfo(bookInfo);
+				badBook = false;
+				return _model.GetBookFromBookInfo(bookInfo);
 			}
 			catch (Exception error)
 			{
@@ -474,29 +517,13 @@ namespace Bloom.CollectionTab
 				if (!_alreadyReportedErrorDuringImproveAndRefreshBookButtons)
 				{
 					_alreadyReportedErrorDuringImproveAndRefreshBookButtons = true;
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at {0}. \r\n\r\nClick the 'Details' button for more information.\r\n\r\nThis error may effect other books, but this is the only notice you will receive.\r\n\r\nSee 'Help:Show Event Log' for any further errors.", bookInfo.FolderPath);
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
+						"There was a problem with the book at {0}. \r\n\r\nClick the 'Details' button for more information.\r\n\r\nOther books may have this problem, but this is the only notice you will receive.\r\n\r\nSee 'Help:Show Event Log' for any further errors.",
+						bookInfo.FolderPath);
 				}
-				return;
+				badBook = true;
+				return null;
 			}
-
-			//Only go looking for a better title if the book hasn't already been localized when we first showed it.
-			//The idea is, if we already have a localization mapping for this name, then
-			// we're not going to get a better title by digging into the document itself and overriding what the localizer
-			// chose to call it.
-			// Note: currently (August 2014) the books that will have been localized are are those in the main "templates" section: Basic Book, Calendar, etc.
-			if (button.Text == ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay, button))
-			{
-				var bestTitle = book.TitleBestForUserDisplay;
-				var titleBestForUserDisplay = ShortenTitleIfNeeded(bestTitle, button);
-				if (titleBestForUserDisplay != button.Text)
-				{
-					Debug.WriteLine(button.Text + " --> " + titleBestForUserDisplay);
-					button.Text = titleBestForUserDisplay;
-					toolTip1.SetToolTip(button, bestTitle);
-				}
-			}
-			if (buttonRefreshInfo.ThumbnailRefreshNeeded)//!bookInfo.TryGetPremadeThumbnail(out unusedImage))
-				ScheduleRefreshOfOneThumbnail(book);
 		}
 
 		void OnBloomLibrary_Click(object sender, EventArgs e)

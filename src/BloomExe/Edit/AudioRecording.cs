@@ -104,6 +104,7 @@ namespace Bloom.Edit
 			// a consistent state of the audio folder, and therefore should NOT run on the UI thread.
 			// Also, explicitly setting requiresSync to true (even tho that's default anyway) to make concurrency less complicated to think about
 			apiHandler.RegisterEndpointHandler("audio/checkForAnyRecording", HandleCheckForAnyRecording, false, true);
+			apiHandler.RegisterEndpointHandler("audio/checkForAllRecording", HandleCheckForAllRecording, false, true);
 			apiHandler.RegisterEndpointHandler("audio/deleteSegment", HandleDeleteSegment, false, true);
 			apiHandler.RegisterEndpointHandler("audio/checkForSegment", HandleCheckForSegment, false, true);
 			apiHandler.RegisterEndpointHandler("audio/wavFile", HandleAudioFileRequest, false, true);
@@ -141,6 +142,27 @@ namespace Bloom.Edit
 				}
 			}
 			request.Failed("no audio");
+		}
+
+		private void HandleCheckForAllRecording(ApiRequest request)
+		{
+			var ids = request.RequiredParam("ids");
+			var idList = ids.Split(',');
+
+			if (idList.Any())
+			{
+				WaitForRecordingToComplete();	// More straightforward to test for the existence of the files by waiting until all the files have been written.
+			}
+
+			foreach (var id in idList)
+			{
+				if (!RobustFile.Exists(GetPathToRecordableAudioForSegment(id)) && !RobustFile.Exists(GetPathToPublishableAudioForSegment(id)))
+				{
+					request.ReplyWithBoolean(false);
+					return;
+				}
+			}
+			request.ReplyWithBoolean(true);
 		}
 
 		/// <summary>

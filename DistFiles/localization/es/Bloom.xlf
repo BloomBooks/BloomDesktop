@@ -206,7 +206,7 @@
         <note>ID: BookEditor.CharacterMap.Instructions</note>
         <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): To select, use your mouse wheel or point at what you want, then release the key.</note>
-        <target xml:lang="es-ES" state="final">Para seleccionar, utilice la rueda del ratón, apunte a lo que quiere, o apriete la tecla mostrada en color púrpura. 
+        <target xml:lang="es-ES" state="final">Para seleccionar, utilice la rueda del ratón, apunte a lo que quiere, o apriete la tecla mostrada en color púrpura.
 Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true" approved="yes">
@@ -3846,8 +3846,8 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</source>
+        cable, install phone drivers on your computer, or
+        modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note/>
         <target xml:lang="es-ES" state="final">Para enviar a través de USB, es posible que tenga que obtener el cable correcto, instalar los controladores de teléfono en su computadora, o modificar la configuración de su teléfono.</target>
@@ -4597,7 +4597,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
 
       <trans-unit id="PublishTab.PdfNotSavedWhy" approved="yes">
-        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
+        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
         <target xml:lang="es-ES" state="translated">No se guardó el archivo PDF porque usted no permitió la producción de un "PDF para la imprenta".</target>
@@ -4608,7 +4608,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">&amp;Imprimir...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrologToAdobeEula" approved="yes">
-        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
+        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
         <target xml:lang="es-ES" state="translated">Bloom utiliza perfiles de color del programa Adobe para convertir los archivos PDF a color CMYK en vez de color RGB.  Esto es parte de preparar un "PDF para la imprenta". Debe aceptar la siguiente licencia para realizar este proceso en Bloom.</target>

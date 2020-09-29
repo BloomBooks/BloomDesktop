@@ -52,6 +52,9 @@ export class LeveledReaderToolboxTool implements ITool {
     }
 
     public newPageReady() {
+        // Often we could get away without reloading this, but we might
+        // have just deleted a page, or duplicated one, or pasted one...
+        getTheOneReaderToolsModel().clearWholeBookCache();
         // Most cases don't require setMarkupType(), but when switching pages
         // it will have been set to 0 by detachFromPage() on the old page.
         getTheOneReaderToolsModel().setMarkupType(2);
@@ -61,6 +64,10 @@ export class LeveledReaderToolboxTool implements ITool {
 
     public updateMarkup() {
         getTheOneReaderToolsModel().doMarkup();
+    }
+
+    public isUpdateMarkupAsync(): boolean {
+        return false;
     }
 
     public id() {

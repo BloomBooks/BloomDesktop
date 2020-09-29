@@ -3844,13 +3844,13 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
         <source xml:lang="en">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</source>
+        cable, install phone drivers on your computer, or
+        modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note/>
         <target xml:lang="ta" state="needs-translation">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</target>
+        cable, install phone drivers on your computer, or
+        modify settings on your phone.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">No Wi-Fi Network?</source>
@@ -4213,7 +4213,7 @@
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
         <note xml:lang="en">OLD TEXT (before 3.9, add newline): Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</note>
         <target xml:lang="ta" state="final">உள்ளே இருந்து ஒரு கையேடு ஏற்படுத்து புத்தகத்தின் பக்கங்கள்.
- பக்கங்கள் வைக்கப்பட்டிருப்பதை மற்றும் அதனால் போது நீங்கள் அதை fold, நீங்கள் ஒரு கையேடு அவகாசம் இருக்கும் reordered இருக்கும்.(-999)</target>
+	பக்கங்கள் வைக்கப்பட்டிருப்பதை மற்றும் அதனால் போது நீங்கள் அதை fold, நீங்கள் ஒரு கையேடு அவகாசம் இருக்கும் reordered இருக்கும்.(-999)</target>
       </trans-unit>
       <trans-unit id="PublishTab.BookMetadata">
         <source xml:lang="en">Book Metadata</source>
@@ -4597,10 +4597,10 @@
         <target xml:lang="ta" state="needs-translation">PDF Not Saved</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfNotSavedWhy">
-        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
+        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
-        <target xml:lang="ta" state="needs-translation">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</target>
+        <target xml:lang="ta" state="needs-translation">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrintButton" approved="yes">
         <source xml:lang="en">&amp;Print...</source>
@@ -4608,10 +4608,10 @@
         <target xml:lang="ta" state="final">அச்சிடு...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrologToAdobeEula">
-        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
+        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
-        <target xml:lang="ta" state="needs-translation">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</target>
+        <target xml:lang="ta" state="needs-translation">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Publish" approved="yes">
         <source xml:lang="en">Publish</source>

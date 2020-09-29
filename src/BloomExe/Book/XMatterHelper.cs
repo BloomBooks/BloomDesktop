@@ -72,7 +72,7 @@ namespace Bloom.Book
 				throw new ApplicationException();
 			}
 			PathToXMatterStylesheet = directoryPath.CombineForPath(GetStyleSheetFileName());
-			if (!RobustFile.Exists(PathToXMatterHtml))
+			if (!RobustFile.Exists(PathToXMatterStylesheet))
 			{
 				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), "Could not locate the file {0} in {1}", GetStyleSheetFileName(), directoryPath);
 				throw new ApplicationException();
@@ -85,18 +85,55 @@ namespace Bloom.Book
 			if (xmatterName.EndsWith("Device"))
 				return xmatterName;
 
+			// Look to see if there is a special Device version of this xmatter
 			var deviceXmatterName = $"{xmatterName}-Device";
 			var directoryPath = GetXMatterDirectory(deviceXmatterName, fileLocator, null, false, true);
+			if (directoryPath != null)
+				return deviceXmatterName;
 
-			// if "{xmatterName}-Device" is unavailable, use the default Device xmatter which is just named "Device"
-			return directoryPath != null ? deviceXmatterName : "Device";
+			// Look in the stylesheet and see if it already handles device layout
+			try
+			{
+				var plainXmatterDirectory = GetXMatterDirectory(xmatterName, fileLocator, null, false, true);
+				if (plainXmatterDirectory != null)
+				{
+					var cssPath = Path.Combine(plainXmatterDirectory, GetStyleSheetFileName(xmatterName));
+					if (RobustFile.ReadAllText(cssPath).Contains(".Device16x9"))
+						return xmatterName;
+				}
+			}
+			catch (Exception)
+			{
+				// swallow and fall back to dedicated device xmatter
+			}
+			
+			// use the default Device xmatter which is just named "Device"
+			return  "Device";
 		}
 
 		public static string GetXMatterDirectory(string nameOfXMatterPack, IFileLocator fileLocator, string errorMsg, bool throwIfError, bool silent = false)
 		{
+			var directoryName = nameOfXMatterPack + "-XMatter";
+			if (silent)
+			{
+				// Using LocateDirectoryWithThrow is quite expensive for directories we don't find...the Exception it creates, which we don't use,
+				// includes a concatenation of a long list of paths it searched in. (It's quite common now to search for an xmatter directory
+				// we don't often find, such as looking for one called Traditional-Device when publishing something with Traditional xmatter
+				// on a device.
+				try
+				{
+					var result = fileLocator.LocateDirectory(directoryName);
+					if (result == null || !Directory.Exists(result))
+						return null;
+					return result;
+				}
+				catch (ApplicationException)
+				{
+					return null;
+				}
+			}
 			try
 			{
-				var directoryName = nameOfXMatterPack + "-XMatter";
 				return fileLocator.LocateDirectoryWithThrow(directoryName);
 			}
 			catch (ApplicationException error)
@@ -113,11 +150,12 @@ namespace Bloom.Book
 
 		public string GetStyleSheetFileName()
 		{
-//			var layout = SizeAndOrientation.FromDom(_dom);
-//			return layout.PageSizeName + "-" + layout.OrientationName + "-" + _nameOfXMatterPack + "-XMatter.css";
-			return _nameOfXMatterPack + "-XMatter.css";
+			return GetStyleSheetFileName(_nameOfXMatterPack);
 		}
-
+		public static string GetStyleSheetFileName(string xmatterName)
+		{
+			return xmatterName + "-XMatter.css";
+		}
 		/// <summary>
 		/// Set this if you want the xmatter stuff copied into a document folder. This makes sense when setting up or
 		/// modifying one of the users books, but not when just displaying a book from a shell collection.
@@ -162,6 +200,9 @@ namespace Bloom.Book
 			//makes it easy to drop into a css editor and fix it up with the content we're looking at.
 			//TODO:But then later, we want to save it so that these are found in the same dir as the book.
 			_bookDom.AddStyleSheet(PathToXMatterStylesheet.ToLocalhost());
+			// Get the xMatter stylesheet link in the proper place rather than at the end.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-8845.
+			_bookDom.SortStyleSheetLinks();
 
 			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
 			//REVIEW: I think all stylesheets now get sorted once they are all added: see HtmlDoc.SortStyleSheetLinks()

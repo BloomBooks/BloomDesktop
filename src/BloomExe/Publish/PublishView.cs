@@ -20,6 +20,7 @@ using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
+using SIL.Progress;
 
 namespace Bloom.Publish
 {
@@ -30,7 +31,6 @@ namespace Bloom.Publish
 		private bool _activated;
 		private BloomLibraryUploadControl _uploadControl;
 		private BookTransfer _bookTransferrer;
-		private LoginDialog _loginDialog;
 		private PictureBox _previewBox;
 		private HtmlPublishPanel _htmlControl;
 		private NavigationIsolator _isolator;
@@ -42,11 +42,10 @@ namespace Bloom.Publish
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator,
+			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, NavigationIsolator isolator,
 			PublishToAndroidApi publishApi, PublishEpubApi publishEpubApi, BloomWebSocketServer webSocketServer)
 		{
 			_bookTransferrer = bookTransferrer;
-			_loginDialog = login;
 			_isolator = isolator;
 			_publishApi = publishApi;
 			_publishEpubApi = publishEpubApi;
@@ -92,7 +91,7 @@ namespace Bloom.Publish
 //			linkLabel.Click+=new EventHandler((x,y)=>_model.DebugCurrentPDFLayout());
 //        	tableLayoutPanel1.Controls.Add(linkLabel);
 //#endif
-			_menusToolStrip.BackColor = _layoutChoices.BackColor = tableLayoutPanel1.BackColor = Palette.GeneralBackground;
+			_menusToolStrip.BackColor = _pdfOptions.BackColor = tableLayoutPanel1.BackColor = Palette.GeneralBackground;
 			if (SIL.PlatformUtilities.Platform.IsMono)
 			{
 				BackgroundColorsForLinux();
@@ -109,7 +108,7 @@ namespace Bloom.Publish
 			localizationChangedEvent.Subscribe(o =>
 			{
 				SetupLocalization();
-				UpdateLayoutChoiceLabels();
+				UpdatePdfOptions();
 				UpdateSaveButton();
 			});
 
@@ -219,7 +218,7 @@ namespace Bloom.Publish
 //			_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
 
 
-			_model.RefreshValuesUponActivation();
+			_model.UpdateModelUponActivation();
 
 			//reload items from extension(s), as they may differ by book (e.g. if the extension comes from the template of the book)
 			var toolStripItemCollection = new List<ToolStripItem>(from ToolStripItem x in _contextMenuStrip.Items select x);
@@ -382,42 +381,87 @@ namespace Bloom.Publish
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
 			//_showCropMarks.Checked = _model.ShowCropMarks;
 
-			UpdateLayoutChoiceLabels();
+			UpdatePdfOptions();
 		}
 
-		private void UpdateLayoutChoiceLabels()
+		private void UpdatePdfOptions()
 		{
 			if (_model == null || _model.BookSelection == null || _model.BookSelection.CurrentSelection == null)
 				return; // May get called when localization changes even though tab is not visible.
 			var layout = _model.PageLayout;
 			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
-			_layoutChoices.DropDownItems.Clear();
-			_layoutChoices.DropDownItems.Add(new ToolStripSeparator());
-			var headerText = LocalizationManager.GetString(@"PublishTab.OptionsMenu.SizeLayout", "Size/Orientation",
-				@"Header for a region of the menu which lists various standard page sizes and orientations");
-			var headerItem2 = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(headerText);
+			_pdfOptions.DropDownItems.Clear();
+			// Disabled as requested in BL-8872. We are waiting to see if anyone misses these.
+			//_pdfOptions.DropDownItems.Add(new ToolStripSeparator());
+			//var headerText = LocalizationManager.GetString(@"PublishTab.OptionsMenu.SizeLayout", "Size/Orientation",
+			//	@"Header for a region of the menu which lists various standard page sizes and orientations");
+			//var headerItem2 = (ToolStripMenuItem) _pdfOptions.DropDownItems.Add(headerText);
+			//headerItem2.Enabled = false;
+			//foreach (var lc in layoutChoices)
+			//{
+			//	var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + lc, lc.ToString());
+			//	ToolStripMenuItem item = (ToolStripMenuItem) _pdfOptions.DropDownItems.Add(text);
+			//	item.Tag = lc;
+			//	item.Text = text;
+			//	item.Checked = lc.ToString() == layout.ToString();
+			//	item.CheckOnClick = true;
+			//	item.Click += OnLayoutChosen;
+			//}
+
+			var headerText = LocalizationManager.GetString(@"PublishTab.OptionsMenu.PreparePrintshop", "Prepare for Print Shop:");
+			var headerItem2 = (ToolStripMenuItem)_pdfOptions.DropDownItems.Add(headerText);
 			headerItem2.Enabled = false;
-			foreach (var lc in layoutChoices)
+
+			var cmykText = LocalizationManager.GetString("PublishTab.PdfMaker.PdfWithCmykSwopV2", "CMYK color (U.S. Web Coated (SWOP) v2)");
+			var cmykItem = (ToolStripMenuItem)_pdfOptions.DropDownItems.Add(cmykText);
+			cmykItem.Checked = _model.BookSelection.CurrentSelection.UserPrefs.CmykPdf;
+			cmykItem.CheckOnClick = true;
+			cmykItem.Click += (sender, args) =>
+				{
+					_model.BookSelection.CurrentSelection.UserPrefs.CmykPdf = cmykItem.Checked;
+					SetModelFromButtons(); // this calls for updating the preview so the user won't think it's done already
+				};
+
+			var fullBleedText = LocalizationManager.GetString("PublishTab.PdfMaker.FullBleed", "Full Bleed");
+			var fullBleedItem = (ToolStripMenuItem)_pdfOptions.DropDownItems.Add(fullBleedText);
+			fullBleedItem.Checked = _model.BookSelection.CurrentSelection.UserPrefs.FullBleed;
+			fullBleedItem.CheckOnClick = true;
+			if (!_model.IsCurrentBookFullBleed)
 			{
-				var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + lc, lc.ToString());
-				ToolStripMenuItem item = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(text);
-				item.Tag = lc;
-				item.Text = text;
-				item.Checked = lc.ToString() == layout.ToString();
-				item.CheckOnClick = true;
-				item.Click += OnLayoutChosen;
+				fullBleedItem.Checked = false;
+				fullBleedItem.Enabled = false;
+				fullBleedItem.ToolTipText = LocalizationManager.GetString("PublishTab.PdfMaker.NoFullBleed", "Full Bleed has not been set up for this book");
 			}
 
-			_layoutChoices.DropDownItems.Add(new ToolStripSeparator());
+			if (_bookletCoverRadio.Checked || _bookletBodyRadio.Checked)
+			{
+				// Can't do full-bleed printing for booklets (the bleed areas at the junction of the pages would overlap the page on the other half of the paper).
+				// (Conceivably we could print bleed on the other three sides of the page only; but this is complicated as it differs from page to page
+				// so we will wait and see whether anyone wants it.)
+				// I'm only disabling the item if the actual booklet buttons are chosen so the user can e.g. turn it on before choosing the No Booklet button.
+				// I'm intentionally not turning the check box off so any previous setting will be remembered if they go back to No Booklet.
+				fullBleedItem.Enabled = false;
+				fullBleedItem.ToolTipText = LocalizationManager.GetString("PublishTab.PdfMaker.NoFullBleedBooklet", "Full Bleed is not applicable to booklet printing");
+			}
+			fullBleedItem.Click += (sender, args) =>
+			{
+				_model.BookSelection.CurrentSelection.UserPrefs.FullBleed = fullBleedItem.Checked;
+				SetModelFromButtons(); // this calls for updating the preview
+			};
+
+			_pdfOptions.DropDownItems.Add(new ToolStripSeparator());
 			var textItem = LocalizationManager.GetString("PublishTab.LessMemoryPdfMode", "Use less memory (slower)");
-			var menuItem = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(textItem);
+			var menuItem = (ToolStripMenuItem) _pdfOptions.DropDownItems.Add(textItem);
 			menuItem.Checked = _model.BookSelection.CurrentSelection.UserPrefs.ReducePdfMemoryUse;
 			menuItem.CheckOnClick = true;
 			menuItem.CheckedChanged += OnSinglePageModeChanged;
 
+			// Something like this might want to be restored if we reinstate the layout options,
+			// but the menu now has other important commands.
 			// "EditTab" because it is the same text.  No sense in having it listed twice.
-			_layoutChoices.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip",
-				"Choose a page size and orientation");
+			//_pdfOptions.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip",
+			//	"Choose a page size and orientation");
+
 		}
 
 		private void OnLayoutChosen(object sender, EventArgs e)
@@ -581,7 +625,7 @@ namespace Bloom.Publish
 			}
 
 			var libaryPublishModel = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
-			_uploadControl = new BloomLibraryUploadControl(this, libaryPublishModel, _loginDialog);
+			_uploadControl = new BloomLibraryUploadControl(this, libaryPublishModel, _webSocketServer);
 			_uploadControl.Dock = DockStyle.Fill;
 			var saveBackColor = _uploadControl.BackColor;
 			Controls.Add(_uploadControl); // somehow this changes the backcolor
@@ -901,7 +945,7 @@ namespace Bloom.Publish
 		/// <summary>
 		/// Make the preview required for publishing the book.
 		/// </summary>
-		internal void MakePublishPreview()
+		internal void MakePublishPreview(IProgress progress)
 		{
 			if (IsMakingPdf)
 			{
@@ -918,6 +962,10 @@ namespace Bloom.Publish
 				MessageBox.Show(message, LocalizationManager.GetString("Common.Warning", "Warning"));
 				return;
 			}
+
+			_previewProgress = progress;
+			_makePdfBackgroundWorker.ProgressChanged += UpdatePreviewProgress;
+
 			// Usually these will have been set by SetModelFromButtons, but the publish button might already be showing when we go to this page.
 			_model.ShowCropMarks = false; // don't want in online preview
 			_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet; // has all the pages and cover in form suitable for online use
@@ -928,6 +976,24 @@ namespace Bloom.Publish
 				Thread.Sleep(100);
 				Application.DoEvents(); // Wish we didn't need this, but without it bulk upload freezes making 'preview' which is really the PDF to upload.
 			}
+			_makePdfBackgroundWorker.ProgressChanged -= UpdatePreviewProgress;
+			_previewProgress = null;
+			_previousStatus = null;
+		}
+
+		IProgress _previewProgress;
+		string _previousStatus;
+		private void UpdatePreviewProgress(object sender, ProgressChangedEventArgs e)
+		{
+			if (_previewProgress == null)
+				return;
+			if (_previewProgress.ProgressIndicator != null)
+				_previewProgress.ProgressIndicator.PercentCompleted = e.ProgressPercentage;
+			var status = e.UserState as string;
+			// Don't repeat a status message, even if modified by trailing spaces or periods or ellipses.
+			if (status != null && status != _previousStatus && status.Trim(new[] {' ', '.', '\u2026'}) != _previousStatus)
+				_previewProgress.WriteStatus(status);
+			_previousStatus = status;
 		}
 
 		private void ExportAudioFiles1PerPageToolStripMenuItem_Click(object sender, EventArgs e)

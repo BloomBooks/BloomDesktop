@@ -248,7 +248,6 @@ namespace Bloom
 					// Enhance: may need some way to test a release build in the sandbox.
 					builder.Register(c => CreateBloomS3Client()).AsSelf().SingleInstance();
 					builder.RegisterType<BookTransfer>().AsSelf().SingleInstance();
-					builder.RegisterType<LoginDialog>().AsSelf();
 
 					//TODO: this gave a stackoverflow exception
 //				builder.Register<WorkspaceModel>(c => c.Resolve<WorkspaceModel.Factory>()(rootDirectoryPath)).InstancePerLifetimeScope();
@@ -435,10 +434,20 @@ namespace Bloom
 //			}
 		}
 
+		static Dictionary<string, bool> _mapPathToIsTemplateFolder = new Dictionary<string, bool>();
 		static bool IsTemplateBookFolder(string path)
 		{
+			// Whether a particular book is a template can only change once it's created if a user
+			// messes with the files. If they do that and this causes a problem they should be savvy
+			// enough to restart Bloom. We possibly do this test on a lot of books, so caching the
+			// results is a significant help.
+			bool result;
+			if (_mapPathToIsTemplateFolder.TryGetValue(path, out result))
+				return result;
 			var info = new BookInfo(path, false);
-			return info.IsSuitableForMakingShells || info.IsSuitableForMakingTemplates;
+			result = info.IsSuitableForMakingShells || info.IsSuitableForMakingTemplates;
+			_mapPathToIsTemplateFolder[path] = result;
+			return result;
 		}
 
 		// BL-8893 Sometimes users can get into a state where a template directory Bloom thinks it should
@@ -461,7 +470,28 @@ namespace Bloom
 			}
 		}
 
+		private static List<string> _userInstalledDirectories;
+
+		public static void ClearUserInstalledDirectoriesCache()
+		{
+			_userInstalledDirectories = null;
+		}
+
 		public static IEnumerable<string> GetUserInstalledDirectories()
+		{
+			if (_userInstalledDirectories == null)
+			{
+				_userInstalledDirectories = GetUserInstalledDirectoriesInternal().ToList();
+			}
+
+			// We do this rather than just returning the list so that if something makes it necessary
+			// to clear the cache, we can give a different answer the next time the enumeration
+			// is evaluated.
+			foreach (var d in _userInstalledDirectories)
+				yield return d;
+		}
+
+		private static IEnumerable<string> GetUserInstalledDirectoriesInternal()
 		{
 //Note: This is ordering may no be sufficient. The intent is to use the versino of a css from
 			//the template directory, to aid the template developer (he/she will want to make tweaks in the

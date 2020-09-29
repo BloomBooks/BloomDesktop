@@ -31,7 +31,7 @@ namespace BloomTestsThatAvoidTheSetupFixture
 			{
 				File.WriteAllText(input.Path, "<html><body>Hello</body></html>");
 				File.Delete(output.Path);
-				RunMakePdf(maker, input.Path, output.Path, "a5", false, false, false,
+				RunMakePdf(maker, input.Path, output.Path, "A5", false, false, false,
 					PublishModel.BookletLayoutMethod.SideFold, PublishModel.BookletPortions.AllPagesNoBooklet);
 				//we don't actually have a way of knowing it did a booklet
 				Assert.IsTrue(File.Exists(output.Path), "Failed to convert trivial HTML file to PDF (AllPagesNoBooklet)");
@@ -125,7 +125,17 @@ namespace BloomTestsThatAvoidTheSetupFixture
 			// really matter much in the test situation since NUnit would catch the exception.  But I'd rather
 			// have a nice test failure message than an unexpected exception caught message.
 			var eventArgs = new DoWorkEventArgs(null);
-			maker.MakePdf(input, output, paperSize, landscape, saveMemoryMode, rightToLeft, layout, portion, null, eventArgs, null);
+			maker.MakePdf(new PdfMakingSpecs()
+			{
+				InputHtmlPath = input,
+				OutputPdfPath = output,
+				PaperSizeName = paperSize,
+				Landscape = landscape,
+				SaveMemoryMode = saveMemoryMode,
+				LayoutPagesForRightToLeft = rightToLeft,
+				BooketLayoutMethod = layout,
+				BookletPortion = portion
+			},null, eventArgs, null);
 		}
 	}
 }

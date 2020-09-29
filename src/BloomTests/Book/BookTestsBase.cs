@@ -56,10 +56,12 @@ namespace BloomTests.Book
 			return storage;
 		}
 
+		protected virtual string GetTestFolderName() => "BookTests";
+
 		[SetUp]
 		public virtual void Setup()
 		{
-			_testFolder = new TemporaryFolder("BookTests");
+			_testFolder = new TemporaryFolder(GetTestFolderName());
 			_tempFolder = new TemporaryFolder(_testFolder, "book");
 
 			_bookDom = new HtmlDom(GetThreePageDom()); // a default, many tests replace this
@@ -110,6 +112,11 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateDirectoryWithThrow("BigBook-XMatter")).Returns(xMatter.CombineForPath("BigBook-XMatter"));
 			_fileLocator.Setup(x => x.LocateDirectory("BigBook-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("BigBook-XMatter"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("BigBook-XMatter".CombineForPath("BigBook-XMatter.htm"))).Returns(xMatter.CombineForPath("BigBook-XMatter", "BigBook-XMatter.htm"));
+
+			_fileLocator.Setup(x => x.LocateDirectory("Device-XMatter")).Returns(xMatter.CombineForPath("Device-XMatter"));
+			_fileLocator.Setup(x => x.LocateDirectoryWithThrow("Device-XMatter")).Returns(xMatter.CombineForPath("Device-XMatter"));
+			_fileLocator.Setup(x => x.LocateDirectory("Device-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("Device-XMatter"));
+			_fileLocator.Setup(x => x.LocateFileWithThrow("Device-XMatter".CombineForPath("Device-XMatter.htm"))).Returns(xMatter.CombineForPath("Device-XMatter", "Device-XMatter.htm"));
 
 			//warning: we're neutering part of what the code under test is trying to do here:
 			_fileLocator.Setup(x => x.CloneAndCustomize(It.IsAny<IEnumerable<string>>())).Returns(_fileLocator.Object);
@@ -183,9 +190,9 @@ namespace BloomTests.Book
 			});
 		}
 
-		protected void MakeSamplePngImageWithMetadata(string path)
+		protected void MakeSamplePngImageWithMetadata(string path, int width = 10, int height = 10)
 		{
-			var x = new Bitmap(10, 10);
+			var x = new Bitmap(width, height);
 			RobustImageIO.SaveImage(x, path, ImageFormat.Png);
 			x.Dispose();
 			using (var img = PalasoImage.FromFileRobustly(path))

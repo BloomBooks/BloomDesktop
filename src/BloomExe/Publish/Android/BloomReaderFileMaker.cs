@@ -24,6 +24,11 @@ namespace Bloom.Publish.Android
 	{
 		public const string kQuestionFileName = "questions.json";
 		public const string BRExportFolder = "BloomReaderExport";
+		internal const string kDistributionFileName = ".distribution";
+		internal const string kDistributionBloomDirect = "bloom-direct";
+		internal const string kDistributionBloomWeb = "bloom-web";
+		internal const string kCreatorBloom = "bloom";
+		internal const string kCreatorHarvester = "harvester";
 
 		public static Control ControlForInvoke { get; set; }
 
@@ -34,12 +39,11 @@ namespace Bloom.Publish.Android
 
 		// Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
 		public static void CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
-			WebSocketProgress progress, string tempFolderName = BRExportFolder, AndroidPublishSettings settings = null)
+			WebSocketProgress progress, string tempFolderName = BRExportFolder, string creator = kCreatorBloom, AndroidPublishSettings settings = null)
 		{
 			using (var temp = new TemporaryFolder(tempFolderName))
 			{
-				CreateBloomDigitalBook(outputPath, bookFolderPath, bookServer, backColor, progress, temp,
-					settings: settings);
+				CreateBloomDigitalBook(outputPath, bookFolderPath, bookServer, backColor, progress, temp, creator, settings);
 			}
 		}
 
@@ -55,7 +59,7 @@ namespace Bloom.Publish.Android
 		/// <param name="creator">value for &lt;meta name="creator" content="..."/&gt; (defaults to "bloom")</param>
 		/// <returns>Path to the unzipped .bloomd</returns>
 		public static string CreateBloomDigitalBook(string outputPath, string bookFolderPath, BookServer bookServer, Color backColor,
-			WebSocketProgress progress, TemporaryFolder tempFolder, string creator="bloom", AndroidPublishSettings settings = null)
+			WebSocketProgress progress, TemporaryFolder tempFolder, string creator=kCreatorBloom, AndroidPublishSettings settings = null)
 		{
 			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, creator, settings);
 			// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
@@ -63,14 +67,14 @@ namespace Bloom.Publish.Android
 
 			BookCompressor.MakeSizedThumbnail(modifiedBook, backColor, modifiedBook.FolderPath, 256);
 
-			BookCompressor.CompressDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
+			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
 				pathToFileForSha: BookStorage.FindBookHtmlInFolder(bookFolderPath));
 
 			return modifiedBook.FolderPath;
 		}
 
 		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer, TemporaryFolder temp,
-			WebSocketProgress progress, string creator="bloom", AndroidPublishSettings settings = null)
+			WebSocketProgress progress, string creator=kCreatorBloom, AndroidPublishSettings settings = null)
 		{
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
 			// And bloom-player expects folder name to match html file name.
@@ -153,9 +157,31 @@ namespace Bloom.Publish.Android
 				Path.Combine(modifiedBookFolderPath, "readerStyles.css"));
 			ConvertImagesToBackground(modifiedBook.RawDom);
 
+			AddDistributionFile(modifiedBookFolderPath, creator);
+
 			modifiedBook.Save();
 
 			return modifiedBook;
+		}
+
+		/// <summary>
+		/// Add a `.distribution` file to the zip which will be reported on for analytics from Bloom Reader.
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-8875.
+		/// </summary>
+		private static void AddDistributionFile(string bookFolder, string creator)
+		{
+			string distributionValue;
+			switch (creator)
+			{
+				case kCreatorHarvester:
+					distributionValue = kDistributionBloomWeb;
+					break;
+				case kCreatorBloom:
+					distributionValue = kDistributionBloomDirect;
+					break;
+				default: throw new ArgumentException("Unknown creator", creator);
+			}
+			RobustFile.WriteAllText(Path.Combine(bookFolder, kDistributionFileName), distributionValue);
 		}
 
 		private static void ProcessQuizzes(string bookFolderPath, XmlDocument bookDom)

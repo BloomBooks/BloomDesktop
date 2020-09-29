@@ -206,7 +206,7 @@
         <note>ID: BookEditor.CharacterMap.Instructions</note>
         <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): To select, use your mouse wheel or point at what you want, then release the key.</note>
-        <target xml:lang="hi" state="final">चयन करने के लिए, अपने माउस व्हील का उपयोग करें या आप जिसे खोलना चाहते हैं उस पर रखें, या बैंगनी key दबाएँ। 
+        <target xml:lang="hi" state="final">चयन करने के लिए, अपने माउस व्हील का उपयोग करें या आप जिसे खोलना चाहते हैं उस पर रखें, या बैंगनी key दबाएँ।
 अंत में, सूची को देखने के लिए आपने जिस key को दबाए रखा है उसे छोड़ दें।</target>
       </trans-unit>
       <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true" approved="yes">
@@ -3845,13 +3845,13 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
         <source xml:lang="en">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</source>
+        cable, install phone drivers on your computer, or
+        modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note/>
         <target xml:lang="hi" state="needs-translation">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</target>
+        cable, install phone drivers on your computer, or
+        modify settings on your phone.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">No Wi-Fi Network?</source>
@@ -4597,7 +4597,7 @@
         <target xml:lang="hi" state="final">पीडीएफ सेव नहीं हुई है</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfNotSavedWhy" approved="yes">
-        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
+        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
         <target xml:lang="hi" state="translated">पीडीएफ फाइल सेव नहीं हुई है क्योंकि आपने "Printshop के लिए PDF" के निर्माण की अनुमति नहीं दी है।</target>
@@ -4608,7 +4608,7 @@
         <target xml:lang="hi" state="final">&amp;प्रिंट करें...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrologToAdobeEula" approved="yes">
-        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
+        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
         <target xml:lang="hi" state="translated">आरजीबी रंग के बजाय CMYK रंग का उपयोग करने में पीडीएफ फाइलों को बदलने के लिए ब्लूम एडोब रंग प्रोफाइल का उपयोग करता है । यह "पीडीएफ के लिए Printshop" तैयार करने का एक भाग है। ब्लूम में इस कार्य को करने के लिए आपको निम्न लायसेंस से सहमत होना होगा।</target>

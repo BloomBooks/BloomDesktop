@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
+using Bloom.Publish.Android;
 using Bloom.Publish.Epub;
 using Bloom.web;
 using BloomTemp;
@@ -268,18 +269,13 @@ namespace Bloom.CLI
 				//
 				// For now, we'll just create the thumbnail every time
 				// It makes the code simpler than having fallback logic not to mention the complications of determining which folder the ePub is in, whether it's really up-to-date, etc.
-				HtmlThumbNailer.ThumbnailOptions thumbnailOptions = BookThumbNailer.GetCoverThumbnailOptions(height, new Guid());
+				string thumbnailPath = BookThumbNailer.GenerateCoverImageOfRequestedMaxSize(_book, height);
 
-				BookThumbNailer.CreateThumbnailOfCoverImage(_book, thumbnailOptions, null);
-
-				// The thumbnail has now been saved in the book's storage folder.
-				// Copy it over to the requested output destination
-				string thumbnailPath = Path.Combine(_book.FolderPath, thumbnailOptions.FileName);
-				if (RobustFile.Exists(thumbnailPath))
-				{
-					outputPaths.Add(thumbnailPath);
-				}
+				AppendPathIfExists(thumbnailPath, outputPaths);
 			}
+
+			string shareThumbnail = BookThumbNailer.GenerateSocialMediaSharingThumbnail(_book);
+			AppendPathIfExists(shareThumbnail, outputPaths);
 
 			using (var writer = new StreamWriter(parameters.ThumbnailOutputInfoPath, append: false))
 			{
@@ -287,6 +283,14 @@ namespace Bloom.CLI
 				{
 					writer.WriteLine(path);
 				}
+			}
+		}
+
+		private static void AppendPathIfExists(string path, IList<string> listToAppendTo)
+		{
+			if (RobustFile.Exists(path))
+			{
+				listToAppendTo.Add(path);
 			}
 		}
 	}
@@ -312,7 +316,7 @@ namespace Bloom.CLI
 		[Option("thumbnailOutputInfoPath", HelpText = "Output destination path for a text file which contains path information for generated thumbnail files", Required = false)]
 		public string ThumbnailOutputInfoPath { get; set; }
 
-		[Option("creator", Required = false, Default = "harvester", HelpText = "The value of the \"creator\" meta tag passed along when creating the bloomdigital.")]
+		[Option("creator", Required = false, Default = BloomReaderFileMaker.kCreatorHarvester, HelpText = "The value of the \"creator\" meta tag passed along when creating the bloomdigital.")]
 		public string Creator{ get; set; }
 	}
 }

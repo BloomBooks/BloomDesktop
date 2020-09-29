@@ -10,6 +10,7 @@
 import * as _ from "underscore";
 import { theOneLibSynphony, LibSynphony } from "./synphony_lib";
 import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
+import { ReaderToolsModel } from "../readerToolsModel";
 
 /**
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().
@@ -22,6 +23,7 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
     var cssPossibleWord = "possible-word";
     var cssDesiredGrapheme = "desired-grapheme";
     var cssTooManyWordsOnPage = "page-too-many-words";
+    const cssWordTooLong = "word-too-long";
 
     /**
      * Checks the innerHTML of an HTML entity (div) using the selected options
@@ -30,9 +32,14 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
      */
     $.fn.checkLeveledReader = function(options) {
         var allWords = "";
+        const longWords: string[] = [];
 
         const opts = $.extend(
-            { maxWordsPerSentence: Infinity, maxWordsPerPage: Infinity },
+            {
+                maxWordsPerSentence: Infinity,
+                maxWordsPerPage: Infinity,
+                maxGlyphsPerWord: Infinity
+            },
             options
         );
 
@@ -84,6 +91,16 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
                     const words = theOneLibSynphony.getWordsFromHtmlString(
                         cleanText
                     );
+                    if (opts.maxGlyphsPerWord > 0) {
+                        for (const w of words) {
+                            if (
+                                ReaderToolsModel.getWordLength(w) >
+                                opts.maxGlyphsPerWord
+                            ) {
+                                longWords.push(w);
+                            }
+                        }
+                    }
                     var sentenceWordCount = words.length;
                     totalWordCount += sentenceWordCount;
                     allWords += cleanText;
@@ -107,6 +124,14 @@ import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
             // If this element represents a paragraph, then the overall page text needs a paragraph break here.
             if (leaf.tagName === "P") {
                 allWords += "\r\n";
+            }
+            if (longWords.length) {
+                newHtml = theOneLibSynphony.wrap_words_extra(
+                    newHtml,
+                    longWords,
+                    cssWordTooLong,
+                    ' data-segment="word"'
+                );
             }
 
             // set the html

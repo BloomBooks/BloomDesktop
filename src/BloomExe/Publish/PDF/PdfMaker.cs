@@ -34,34 +34,26 @@ namespace Bloom.Publish.PDF
 		///  <summary>
 		///
 		///  </summary>
-		/// <param name="inputHtmlPath"></param>
-		/// <param name="outputPdfPath"></param>
-		/// <param name="paperSizeName">A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,B0,B1,B10,B2,B3,B4,B5,B6,B7,B8,B9,C5E,Comm10E,DLE,Executive,Folio,Ledger,Legal,Letter,Tabloid</param>
-		/// <param name="landscape">true if landscape orientation, false if portrait orientation</param>
-		/// <param name="saveMemoryMode">true if PDF file is to be produced using less memory (but more time)</param>
-		/// <param name="layoutPagesForRightToLeft">true if RTL, false if LTR layout</param>
-		/// <param name="booketLayoutMethod">NoBooklet,SideFold,CutAndStack,Calendar</param>
-		/// <param name="bookletPortion">None,AllPagesNoBooklet,BookletCover,BookletPages,InnerContent</param>
+		/// <param name="specs">All the information about what sort of PDF file to make where</param>
 		/// <param name="worker">If not null, the Background worker which is running this task, and may be queried to determine whether a cancel is being attempted</param>
 		/// <param name="doWorkEventArgs">The event passed to the worker when it was started. If a cancel is successful, it's Cancel property should be set true.</param>
 		/// <param name="owner">A control which can be used to invoke parts of the work which must be done on the ui thread.</param>
-		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, bool saveMemoryMode, bool layoutPagesForRightToLeft,
-			PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, Control owner)
+		public void MakePdf(PdfMakingSpecs specs, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, Control owner)
 		{
 			// Try up to 4 times. This is a last-resort attempt to handle BL-361.
 			// Most likely that was caused by a race condition in MakePdfUsingGeckofxHtmlToPdfComponent.MakePdf,
 			// but as it was an intermittent problem and we're not sure that was the cause, this might help.
 			for (int i = 0; i < 4; i++)
 			{
-				new MakePdfUsingGeckofxHtmlToPdfProgram().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape, saveMemoryMode,
+				new MakePdfUsingGeckofxHtmlToPdfProgram().MakePdf(specs,
 					owner, worker, doWorkEventArgs);
 
 				if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))
 					return;
-				if (RobustFile.Exists(outputPdfPath))
+				if (RobustFile.Exists(specs.OutputPdfPath))
 					break; // normally the first time
 			}
-			if (!RobustFile.Exists(outputPdfPath) && owner != null)
+			if (!RobustFile.Exists(specs.OutputPdfPath) && owner != null)
 			{
 				// Should never happen, but...
 				owner.Invoke((Action) (() =>
@@ -77,21 +69,27 @@ namespace Bloom.Publish.PDF
 
 			try
 			{
-				if (bookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet)
+				// Shrink the PDF file, especially if it has large color images.  (BL-3721)
+				// Also if the book is full bleed we need to remove some spurious pages.
+				// Removing spurious pages must be done BEFORE we switch pages around to make a booklet!
+				// Note: previously compression was the last step, after making a booklet. We moved it before for
+				// the reason above. Seems like it would also have performance benefits, if anything, to shrink
+				// the file before manipulating it further. Just noting it in case there are unexpected issues.
+				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker);
+				fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath, specs.BookIsFullBleed);
+				if (specs.BookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet || specs.PrintWithFullBleed)
 				{
 					//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
-					MakeBooklet(outputPdfPath, paperSizeName, booketLayoutMethod, layoutPagesForRightToLeft);
+					MakeBooklet(specs);
 				}
-				// Shrink the PDF file, especially if it has large color images.  (BL-3721)
-				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker);
-				fixPdf.ProcessPdfFile(outputPdfPath, outputPdfPath);
+
 				// Check that we got a valid, readable PDF.
 				// If we get a reliable fix to BL-932 we can take this out altogether.
 				// It's probably redundant, since the compression process would probably fail with this
 				// sort of corruption, and we are many generations beyond gecko29 where we observed it.
 				// However, we don't have data to reliably reproduce the BL-932, and the check doesn't take
 				// long, so leaving it in for now.
-				CheckPdf(outputPdfPath);
+				CheckPdf(specs.OutputPdfPath);
 			}
 			catch (KeyNotFoundException e)
 			{
@@ -115,7 +113,7 @@ namespace Bloom.Publish.PDF
 						+ Environment.NewLine + "- "
 						+ LocalizationManager.GetString("PublishTab.PdfMaker.TryMoreMemory", "Try doing this on a computer with more memory"));
 
-				RobustFile.Move(outputPdfPath, outputPdfPath + "-BAD");
+				RobustFile.Move(specs.OutputPdfPath, specs.OutputPdfPath + "-BAD");
 				doWorkEventArgs.Result = MakingPdfFailedException.CreatePdfException();
 			}
 
@@ -183,17 +181,12 @@ namespace Bloom.Publish.PDF
 			return 1.04;
 		}
 
-		///  <summary>
-		///
-		///  </summary>
-		/// <param name="pdfPath">this is the path where it already exists, and the path where we leave the transformed version</param>
-		/// <param name="incomingPaperSize"></param>
-		/// <param name="booketLayoutMethod"></param>
-		/// <param name="layoutPagesForRightToLeft"></param>
-		private void MakeBooklet(string pdfPath, string incomingPaperSize, PublishModel.BookletLayoutMethod booketLayoutMethod, bool layoutPagesForRightToLeft)
+		private void MakeBooklet(PdfMakingSpecs specs)
 		{
 			//TODO: we need to let the user chose the paper size, as they do in PdfDroplet.
 			//For now, just assume a size double the original
+
+			var incomingPaperSize = specs.PaperSizeName;
 
 			PageSize pageSize;
 			switch (incomingPaperSize)
@@ -228,6 +221,12 @@ namespace Bloom.Publish.PDF
 				case "HalfLegal":
 					pageSize = PageSize.Legal;
 					break;
+				case "Cm13":
+					pageSize = PageSize.A3;
+					break;
+				case "USComic":
+					pageSize = PageSize.A3;	// Ledger would work as well.
+					break;
 				default:
 					throw new ApplicationException("PdfMaker.MakeBooklet() does not contain a map from " + incomingPaperSize + " to a PdfSharp paper size.");
 			}
@@ -235,13 +234,13 @@ namespace Bloom.Publish.PDF
 			using (var incoming = new TempFile())
 			{
 				RobustFile.Delete(incoming.Path);
-				RobustFile.Move(pdfPath, incoming.Path);
+				RobustFile.Move(specs.OutputPdfPath, incoming.Path);
 
 				LayoutMethod method;
-				switch (booketLayoutMethod)
+				switch (specs.BooketLayoutMethod)
 				{
 					case PublishModel.BookletLayoutMethod.NoBooklet:
-						method = new NullLayoutMethod();
+						method = new NullLayoutMethod(specs.PrintWithFullBleed ? 3 : 0);
 						break;
 					case PublishModel.BookletLayoutMethod.SideFold:
 						// To keep the GUI simple, we assume that A6 page size for booklets
@@ -259,6 +258,10 @@ namespace Bloom.Publish.PDF
 							method = new SideFold4UpBookletLayouter();
 							pageSize = PageSize.Letter;
 						}
+						else if (incomingPaperSize == "Cm13")
+						{
+							method = new Square6UpBookletLayouter();
+						}
 						else
 						{
 							method = new SideFoldBookletLayouter();
@@ -275,7 +278,7 @@ namespace Bloom.Publish.PDF
 				}
 				var paperTarget = new PaperTarget("ZZ"/*we're not displaying this anyhwere, so we don't need to know the name*/, pageSize);
 				var pdf = XPdfForm.FromFile(incoming.Path);//REVIEW: this whole giving them the pdf and the file too... I checked once and it wasn't wasting effort...the path was only used with a NullLayout option
-				method.Layout(pdf, incoming.Path, pdfPath, paperTarget, layoutPagesForRightToLeft, ShowCropMarks);
+				method.Layout(pdf, incoming.Path, specs.OutputPdfPath, paperTarget, specs.LayoutPagesForRightToLeft, ShowCropMarks);
 			}
 		}
 	}

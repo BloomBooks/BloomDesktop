@@ -1001,6 +1001,100 @@ namespace BloomTests.Book
 			Assert.That(File.ReadAllText(newVideoPath), Is.EqualTo("This is a fake video"));
 		}
 
+		[TestCase(@"<div id='id-div1' class='bloom-editable' data-audiorecordingmode='Sentence' >
+						<p>
+							<span id='id-span1' class='audio-sentence'>Sentence 1.</span>
+							<span id='id-span2' class='audio-sentence'>Sentence 2.</span>
+						</p>
+					</div>",
+			TestName = "DuplicatePage_WithAudioWhichWasTextBoxModeButNowSentenceMode_CopiesAudioAndAssignsNewId")]
+		[TestCase(@"<div id='id-div1' class='bloom-editable' data-audiorecordingmode='Sentence' >
+						<p>
+							<span id='id-span1' class='bloom-highlightSegment'>Sentence 1.</span>
+							<span id='id-span2' class='bloom-highlightSegment'>Sentence 2.</span>
+						</p>
+					</div>",
+			TestName = "DuplicatePage_WithAudioWhichWasSoftSplit_CopiesAudioAndAssignsNewId")]
+		public void DuplicatePage_TalkingBookTests(string pageInnerHtml)
+		{
+			var divId = "id-div1";
+			var span1Id = "id-span1";
+			var span2Id = "id-span2";
+			
+			var htmlSourceBook = $@"<html><head></head><body>
+					<div class='bloom-page numberedPage' id='page1' data-page-number='1'>
+						{pageInnerHtml}
+					</div>
+				</body></html>";
+
+			using (var tempFolder = new SIL.TestUtilities.TemporaryFolder(_testFolder, "DuplicatePage_WithAudioWhichWasTextBoxModeButNowSentenceMode_CopiesAudioAndAssignsNewId"))
+			{
+				var doc = new XmlDocument();
+				doc.LoadXml(htmlSourceBook);
+				var dom = new HtmlDom(doc);
+				var storage = MakeMockStorage(tempFolder.Path, () => dom);
+				var book = new Bloom.Book.Book(storage.Object.BookInfo, storage.Object, _templateFinder.Object,
+					CreateDefaultCollectionsSettings(),
+					_pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
+
+				//var book = CreateBook(); // has pages from  BookTestsBase.GetThreePageDom()
+				var originalPageCount = book.GetPages().Count();
+				var existingPage = book.GetPages().Last();
+
+				var existingDivNode = existingPage.GetDivNodeForThisPage();
+				var existingTextDiv = existingDivNode.ChildNodes.Cast<XmlElement>().First();
+				Assert.That(existingTextDiv.Attributes["id"]?.Value, Is.EqualTo(divId));
+				var existingP = existingTextDiv.ChildNodes[0];
+				var existingSpan1 = existingP.ChildNodes[0];
+				Assert.That(existingSpan1.Attributes?["id"]?.Value, Is.EqualTo(span1Id));
+				var existingSpan2 = existingP.ChildNodes[1];
+				Assert.That(existingSpan2.Attributes?["id"]?.Value, Is.EqualTo(span2Id));
+
+				var audioFolder = Path.Combine(book.FolderPath, "audio");
+				Directory.CreateDirectory(audioFolder);
+				var audioFilePath = Path.Combine(audioFolder, "id-span1.mp3");
+				File.WriteAllText(audioFilePath, @"This is a fake mp3 for span 1");
+				var audioFilePath2 = Path.Combine(audioFolder, "id-span2.mp3");
+				File.WriteAllText(audioFilePath2, @"This is a fake mp3 for span 2");
+
+				book.DuplicatePage(existingPage);
+
+				AssertPageCount(book, originalPageCount + 1);
+
+				var newPage = book.GetPages().Last();
+				Assert.AreNotEqual(existingPage, newPage);
+				Assert.AreNotEqual(existingPage.Id, newPage.Id);
+
+				var newDivNode = newPage.GetDivNodeForThisPage();
+
+				var newTextDiv = newDivNode.ChildNodes.Cast<XmlElement>().First();
+				var id = newTextDiv.Attributes["id"]?.Value;
+				Assert.That(id, Is.Not.Null.And.Not.Empty);
+				Assert.That(id, Is.Not.EqualTo(divId));
+
+				var newP = newTextDiv.ChildNodes[0];
+
+				var newSpan1 = newP.ChildNodes[0];
+				Assert.That(newSpan1.InnerText, Is.EqualTo("Sentence 1.")); // kept the text
+				var newSpan1Id = newSpan1.Attributes?["id"]?.Value;
+				Assert.That(newSpan1Id, Is.Not.Null.And.Not.Empty);
+				Assert.That(newSpan1Id, Is.Not.EqualTo(span1Id));
+				var newAudioFolder = Path.Combine(book.FolderPath, "audio");
+				var newMp3Path = Path.Combine(newAudioFolder, newSpan1Id + ".mp3");
+				Assert.That(File.Exists(newMp3Path));
+				Assert.That(File.ReadAllText(newMp3Path), Is.EqualTo("This is a fake mp3 for span 1"));
+
+				var newSpan2 = newP.ChildNodes[1];
+				Assert.That(newSpan2.InnerText, Is.EqualTo("Sentence 2.")); // kept the text
+				var newSpan2Id = newSpan2.Attributes?["id"]?.Value;
+				Assert.That(newSpan2Id, Is.Not.Null.And.Not.Empty);
+				Assert.That(newSpan2Id, Is.Not.EqualTo(span2Id));
+				var newMp3Path2 = Path.Combine(newAudioFolder, newSpan2Id + ".mp3");
+				Assert.That(File.Exists(newMp3Path2));
+				Assert.That(File.ReadAllText(newMp3Path2), Is.EqualTo("This is a fake mp3 for span 2"));
+			}
+		}
+
 		// If we're actually copying from another book, renaming the files is not important.
 		// But we need that when copying from the SAME book, so we always do it, and this
 		// test can cover that case also.
@@ -1966,9 +2060,11 @@ namespace BloomTests.Book
 					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
 				</head>
 				<body>
-					<div id='comicalItem' class='bloom-textOverPicture' data-bubble='`style`:`speech`'>my bubble</div>
 					<div class='bloom-page' id='guid3'>
-					   <div class='bloom-translationGroup bloom-trailingElement'>
+						<div class='bloom-imageContainer'>
+							<svg id='comicalItem' class='comical-generated' />
+						</div>
+						<div class='bloom-translationGroup bloom-trailingElement'>
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='de'>
 								Some German.
 							</div>
@@ -1996,7 +2092,7 @@ namespace BloomTests.Book
 			Assert.That(allLanguages["xyz"], Is.True);
 			Assert.That(allLanguages, Has.Count.EqualTo(1));
 
-			var comicalItem = book.OurHtmlDom.RawDom.SelectSingleNode("//div[@id='comicalItem']"); // GetElementById("comicalItem");
+			var comicalItem = book.OurHtmlDom.RawDom.SelectSingleNode("//svg[@id='comicalItem']"); // GetElementById("comicalItem");
 			comicalItem.ParentNode.RemoveChild(comicalItem);
 
 			allLanguages = book.AllPublishableLanguages(true);
@@ -2727,9 +2823,9 @@ namespace BloomTests.Book
 	<body>
 		<div class='bloom-page'>
 			<div class='bloom-imageContainer'>
-				<div class='bloom-textOverPicture' data-bubble='{`style`:`caption`'>
+				<svg class='comical-generated'>
 					<!-- Stuff goes here -->
-				</div>
+				</svg>
 			</div>
 		</div>
 	</body>

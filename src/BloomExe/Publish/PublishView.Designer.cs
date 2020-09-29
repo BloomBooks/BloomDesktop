@@ -70,7 +70,7 @@ namespace Bloom.Publish
 			this._androidRadio = new System.Windows.Forms.RadioButton();
 			this._uploadRadio = new System.Windows.Forms.RadioButton();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
-			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
+			this._pdfOptions = new System.Windows.Forms.ToolStripDropDownButton();
 			this._bookletCoverRadio = new System.Windows.Forms.RadioButton();
 			this.label1 = new System.Windows.Forms.Label();
 			this._bookletBodyRadio = new System.Windows.Forms.RadioButton();
@@ -291,7 +291,7 @@ namespace Bloom.Publish
 			this._menusToolStrip.CanOverflow = false;
 			this._menusToolStrip.Dock = System.Windows.Forms.DockStyle.None;
 			this._menusToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._layoutChoices});
+            this._pdfOptions});
 			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._menusToolStrip, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._menusToolStrip, null);
@@ -302,20 +302,20 @@ namespace Bloom.Publish
 			this._menusToolStrip.Size = new System.Drawing.Size(100, 24);
 			this._menusToolStrip.TabIndex = 13;
 			// 
-			// _layoutChoices
+			// _pdfOptions
 			// 
-			this._layoutChoices.BackColor = System.Drawing.Color.Magenta;
-			this._layoutChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			this._layoutChoices.ForeColor = System.Drawing.Color.White;
-			this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._layoutChoices, "Choose a page size and orientation");
-			this._L10NSharpExtender.SetLocalizationComment(this._layoutChoices, "menu header in the Publish tab");
-			this._L10NSharpExtender.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._layoutChoices, "PublishTab.Options");
-			this._layoutChoices.Name = "_layoutChoices";
-			this._layoutChoices.Size = new System.Drawing.Size(62, 19);
-			this._layoutChoices.Text = "Options";
-			this._layoutChoices.ToolTipText = "Choose a page size and orientation";
+			this._pdfOptions.BackColor = System.Drawing.Color.Magenta;
+			this._pdfOptions.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			this._pdfOptions.ForeColor = System.Drawing.Color.White;
+			this._pdfOptions.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._pdfOptions, "Choose a page size and orientation");
+			this._L10NSharpExtender.SetLocalizationComment(this._pdfOptions, "menu header in the Publish tab");
+			this._L10NSharpExtender.SetLocalizationPriority(this._pdfOptions, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this._pdfOptions, "PublishTab.Options");
+			this._pdfOptions.Name = "_pdfOptions";
+			this._pdfOptions.Size = new System.Drawing.Size(62, 19);
+			this._pdfOptions.Text = "PDF Options";
+			this._pdfOptions.ToolTipText = "Choose a page size and orientation";
 			// 
 			// _bookletCoverRadio
 			// 
@@ -531,7 +531,7 @@ namespace Bloom.Publish
 		private System.Windows.Forms.RadioButton _bookletCoverRadio;
 		private System.Windows.Forms.RadioButton _bookletBodyRadio;
 		private System.Windows.Forms.ToolStrip _menusToolStrip;
-		private System.Windows.Forms.ToolStripDropDownButton _layoutChoices;
+		private System.Windows.Forms.ToolStripDropDownButton _pdfOptions;
 		private SIL.Windows.Forms.SuperToolTip.SuperToolTip _superToolTip;
 		private System.Windows.Forms.ToolStripMenuItem _openPDF;
         private System.Windows.Forms.Label label1;

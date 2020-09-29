@@ -16,6 +16,7 @@ using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.MiscUI;
 using Bloom.Publish.Android;
+using Bloom.ToPalaso;
 using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
@@ -46,7 +47,7 @@ namespace Bloom.Book
 		string ErrorMessagesHtml { get; }
 		string GetBrokenBookRecommendationHtml();
 
-		// REQUIRE INTIALIZATION (AVOID UNLESS USER IS WORKING WITH THIS BOOK SPECIFICALLY)
+		// REQUIRE INITIALIZATION (AVOID UNLESS USER IS WORKING WITH THIS BOOK SPECIFICALLY)
 		bool GetLooksOk();
 		HtmlDom Dom { get; }
 		void Save();
@@ -77,6 +78,7 @@ namespace Bloom.Book
 		void EnsureOriginalTitle();
 
 		IEnumerable<string> GetActivityFolderNamesReferencedInBook();
+		void PerformNecessaryMaintenanceOnBook();
 	}
 
 	public class BookStorage : IBookStorage
@@ -106,6 +108,13 @@ namespace Bloom.Book
 		/// </summary>
 		internal const string kBloomFormatVersionToWrite = "2.1";
 		internal const string kMaxBloomFormatVersionToRead = "2.1";
+
+		/// <summary>
+		/// History of this number:
+		///   Bloom 4.9: 1 = Ensure that all images are opaque and no larger than our desired maximum size.
+		///              2 = Remove any 'comical-generated' svgs that are transparent.
+		/// </summary>
+		public const int kMaintenanceLevel = 2;
 
 		public const string PrefixForCorruptHtmFiles = "_broken_";
 		private IChangeableFileLocator _fileLocator;
@@ -675,7 +684,7 @@ namespace Bloom.Book
 		}
 
 		public static string ComicalXpath =
-			"//*[contains(@class, 'bloom-textOverPicture') and contains(@data-bubble, '`style`:') and not(contains(@data-bubble, '`style`:`none`'))]";
+			"//*[@class='comical-generated']";
 
 		static Feature[] _features =
 		{
@@ -697,9 +706,8 @@ namespace Bloom.Book
 				FeaturePhrase = "Support for Comics",
 				BloomDesktopMinVersion = "4.7",
 				BloomReaderMinVersion = "1.0",
-				// We're looking for a text-over-picture box with non-trivial data-bubble,
-				// but as a special case ones with style none are OK, as these can continue to work
-				// as old-style TOP boxes, with the data-bubble ignored.
+				// We've updated Bloom to only store SVGs in the file if they are non-transparent. So now a
+				// Bloom book is considered 'comical' for Publishing, etc. if it has a comical-generated SVG.
 				XPath = ComicalXpath
 			}
 		};
@@ -813,6 +821,7 @@ namespace Bloom.Book
 			//Remove from that list each image actually in use
 			var element = Dom.RawDom.DocumentElement;
 			var pathsToNotDelete = GetImagePathsRelativeToBook(element);
+			pathsToNotDelete.Add("epub-thumbnail.png");	// this may have been carefully crafted...
 
 			if (keepFilesForEditing)
 			{
@@ -1840,19 +1849,37 @@ namespace Bloom.Book
 			}
 		}
 
-		private string PathToXMatterStylesheet
+		private XMatterHelper _xMatterHelper;
+		private string _cachedXmatterPackName;
+		private HtmlDom _cachedXmatterDom;
+		private BookInfo _cachedXmatterBookInfo;
+
+		private XMatterHelper XMatterHelper
 		{
 			get
 			{
 				var nameOfCollectionXMatterPack = _collectionSettings.XMatterPackName;
-
-				nameOfCollectionXMatterPack = HandleRetiredXMatterPacks(Dom, nameOfCollectionXMatterPack);
-
-				//Here the xmatter Helper may come back loaded with the xmatter from the collection settings, but if the book
-				//specifies a different one, it will come back with that (if it can be found).
-				return new XMatterHelper(Dom, nameOfCollectionXMatterPack, _fileLocator, BookInfo.UseDeviceXMatter).PathToXMatterStylesheet;
+				// _fileLocator, BookInfo, and BookInfo.UseDeviceXMatter are never changed after being set in
+				// constructors, so we don't need to consider that they might be different.
+				// The other two things the helper depends on are also unlikely to change, but it may be
+				// possible, so we'll play safe.
+				if (_cachedXmatterPackName != nameOfCollectionXMatterPack || _cachedXmatterDom != Dom || _cachedXmatterBookInfo != BookInfo)
+				{
+					_cachedXmatterPackName = nameOfCollectionXMatterPack; // before mod, to match check above
+					nameOfCollectionXMatterPack = HandleRetiredXMatterPacks(Dom, nameOfCollectionXMatterPack);
+					//Here the xmatter Helper may come back loaded with the xmatter from the collection settings, but if the book
+					//specifies a different one, it will come back with that (if it can be found).
+					_xMatterHelper = new XMatterHelper(Dom, nameOfCollectionXMatterPack, _fileLocator,
+						BookInfo.UseDeviceXMatter);
+					_cachedXmatterDom = Dom;
+					_cachedXmatterBookInfo = BookInfo;
+				}
+				return _xMatterHelper;
 			}
 		}
+
+
+		private string PathToXMatterStylesheet => XMatterHelper.PathToXMatterStylesheet;
 
 		private bool IsPathReadonly(string path)
 		{
@@ -2006,6 +2033,7 @@ namespace Bloom.Book
 				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
 			else
 				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
+			dom.SortStyleSheetLinks();
 		}
 
 		public string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack)
@@ -2021,7 +2049,7 @@ namespace Bloom.Book
 				// we can just remove this wrong meta element.
 				dom.RemoveMetaElement("xmatter");
 			}
-			return nameOfXMatterPack;
+			return currentXmatterName;
 		}
 
 		private void EnsureDoesntHaveLinkToStyleSheet(HtmlDom dom, string path)
@@ -2063,7 +2091,7 @@ namespace Bloom.Book
 			dom.AddStyleSheet("langVisibility.css");
 
 			// only add brandingCSS is there is one for the current branding
-			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", _collectionSettings.BrandingProjectKey, "branding.css");
+			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", _collectionSettings.GetBrandingFolderName(), "branding.css");
 			if (!String.IsNullOrEmpty(brandingCssPath))
 			{
 				dom.AddStyleSheet("branding.css");
@@ -2276,7 +2304,7 @@ namespace Bloom.Book
 			var useTitle = titles.FirstOrDefault(t => t.Attributes["lang"]?.Value == "en");
 			if (useTitle == null)
 				return;
-			var content = BookData.TextOfInnerHtml(useTitle.InnerText);
+			var content = useTitle.InnerText;
 			if (string.IsNullOrEmpty(content))
 				return;
 			var newElt = dataDiv.OwnerDocument.CreateElement("div");
@@ -2293,6 +2321,99 @@ namespace Bloom.Book
 		internal static string GetActivityFolderPath(string bookFolderPath)
 		{
 			return Path.Combine(bookFolderPath, "activities");
+		}
+
+		/// <summary>
+		/// Perform expensive updates that new versions of Bloom can perform on older books that don't
+		/// involve actual book format changes.
+		/// </summary>
+		public void PerformNecessaryMaintenanceOnBook()
+		{
+			var levelString = Dom.GetMetaValue("maintenanceLevel", "0");
+			if (!int.TryParse(levelString, out int level))
+				level = 0;
+			if (level >= kMaintenanceLevel)
+				return;
+			if (level < 1 && ImageUtils.NeedToShrinkImages(FolderPath))
+			{
+				// If the book contains overlarge images, we want to fix those before editing because this can lead
+				// to thumbnails not being created properly and other bad behavior.  This is a one-time fix that can
+				// permanently change the images in the original book folder.  If any images must be shrunk, then a
+				// progress dialog pops up because that can be a very slow process.  If nothing needs to be done,
+				// nothing will appear on the screen, and it usually takes a small fraction of a second to determine
+				// this.
+
+				// Bloom 4.9 and later limit images used by Bloom books to be no larger than 3500x2550 in
+				// order to avoid out of memory errors that can happen with really large images.  Some older
+				// books have images larger than this that can cause these out of memory problems.  This
+				// method is used to fix these overlarge images before the user starts to edit or publish
+				// the book.  The method also ensures that the images are all opaque since some old versions
+				// of Bloom made all images transparent, which turned out to be a bad idea.
+				// This update can be very slow, so encourage the user that something is happening.
+				// NO images should have transparency removed.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8846.
+
+				if (Program.RunningUnitTests)
+				{
+					// TeamCity enforces not showing modal dialogs during unit tests on Windows 10.
+					ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, new List<string>(),  new NullProgress());
+				}
+				else
+				{
+					using (var dlg = new ProgressDialogBackground())
+					{
+						dlg.Text = "Updating Image Files";
+						dlg.ShowAndDoWork((progress, args) =>
+							ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, new List<string>(), progress));
+					}
+				}
+			}
+
+			if (level < 2)
+			{
+				// Bloom 4.9 and later (a bit later than the above 4.9 and therefore a separate maintenance
+				// level) will only put comical-generated svgs in Bloom imageContainers if they are
+				// non-transparent. Since our test for whether a book is Comical for Publishing restrictions
+				// will now be a simple scan for these svgs, we here remove legacy svgs whose bubble style
+				// was "none", implying transparency.
+				var comicalSvgs = Dom.SafeSelectNodes(ComicalXpath).Cast<XmlElement>();
+				var elementsToSave = new HashSet<XmlElement>();
+				foreach (var svgElement in comicalSvgs)
+				{
+					var container = svgElement.ParentNode; // bloom-imageContainer div (not gonna be null)
+					var textOverPictureDivs = container.SelectNodes("div[contains(@class, 'bloom-textOverPicture')]");
+					if (textOverPictureDivs == null) // unlikely, but maybe possible
+						continue;
+
+					foreach (XmlElement textOverPictureDiv in textOverPictureDivs)
+					{
+						var bubbleData = textOverPictureDiv.GetAttribute("data-bubble");
+						if (string.IsNullOrEmpty(bubbleData))
+							continue;
+						var jsonObject = HtmlDom.GetJsonObjectFromDataBubble(bubbleData);
+						if (jsonObject == null)
+							continue; // only happens if it fails to parse the "json"
+						var style = HtmlDom.GetStyleFromDataBubbleJsonObj(jsonObject);
+						if (style == "none")
+							continue;
+						elementsToSave.Add(svgElement);
+						break;
+					}
+				}
+				// Now delete the SVGs that only have bubbles of style 'none'.
+				var dirty = false;
+				foreach (var svgElement in comicalSvgs.ToArray())
+				{
+					if (!elementsToSave.Contains(svgElement))
+					{
+						svgElement.ParentNode.RemoveChild(svgElement);
+						dirty = true;
+					}
+				}
+				if (dirty)
+					Save();
+			}
+			// future additional levels will add additional "if (level < N)" blocks.
+			Dom.UpdateMetaElement("maintenanceLevel", kMaintenanceLevel.ToString(CultureInfo.InvariantCulture));
 		}
 	}
 }

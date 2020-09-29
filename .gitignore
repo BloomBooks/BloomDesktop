@@ -63,6 +63,7 @@ WebSite/
 lib/dotnet/Palaso*.*
 lib/dotnet/Chorus*.*
 lib/lame/*
+lib/gm/*
 DistFiles/exiftool.exe
 Copy*.bat
 !CopyLocalSquirrelToLocalBloom.bat
@@ -115,7 +116,11 @@ DistFiles/localization/*.htm
 
 src/BloomBrowserUI/yarn-error\.log
 
+src/BloomExe/Firefox/
+
 src/BloomBrowserUI/updateFiles.bat
 src/BloomBrowserUI/templates/template books/Digital Comic Book/Digital Comic Book.css
 
 src/BloomBrowserUI/branding/Nirmaan/branding.css
+
+src/BloomBrowserUI/branding/Kyrgyzstan2020-Kyrgyz/branding.css

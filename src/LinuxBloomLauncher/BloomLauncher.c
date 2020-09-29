@@ -154,7 +154,7 @@ static gchar ** GetArgvForBloom(int argcOrig, char ** argvOrig)
 	gchar ** argvNew = g_new(gchar *, argcOrig + 2);	// 1 new arg + terminating NULL
 
 	// On Linux, mono is the program that is running: Bloom.exe is just data for the program
-	// Bloom uses the debugged version of Mono 4.6.1 packaged by SIL/LSDev.
+	// Bloom uses the debugged version of Mono 5.16.0.1 packaged by SIL/LSDev.
 	argvNew[0] = g_strdup("/opt/mono5-sil/bin/mono");
 	// Sacrifice line numbers in stack dumps for speed -- often don't see them anyway.
 	// If we do reinstate the "--debug", then the "+ 2" and "1 new" above need to be

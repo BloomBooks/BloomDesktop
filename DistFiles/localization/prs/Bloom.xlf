@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="prs">
     <body>
@@ -3844,13 +3844,13 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</source>
+        cable, install phone drivers on your computer, or
+        modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note />
         <target xml:lang="prs" state="final">برای ارسال از طریق USB ، شاید لازم باشد حق ارسال را بدست آورید
-                             کیبل ، درایور تلفون را روی کمپیوتر خود نصب کنید ، یا
-                             تنظیمات را بر روی تلفون خود تغییر دهید.</target>
+        کیبل ، درایور تلفون را روی کمپیوتر خود نصب کنید ، یا
+        تنظیمات را بر روی تلفون خود تغییر دهید.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No Wi-Fi Network?</source>
@@ -4596,10 +4596,10 @@
         <target xml:lang="prs" state="final">PDF ذخیره نشده است</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfNotSavedWhy" approved="yes">
-        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
+        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
-        <target xml:lang="prs" state="final">فایل PDF ذخیره نشده است، زیرا شما تصمیم گرفتید "PDF for Printshop" را تولید نکنید.</target>
+        <target xml:lang="prs" state="final">فایل PDF ذخیره نشده است، زیرا شما تصمیم گرفتید "PDF for print shop" را تولید نکنید.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrintButton" approved="yes">
         <source xml:lang="en">&amp;Print...</source>
@@ -4607,10 +4607,10 @@
         <target xml:lang="prs" state="final">&amp;چاپ...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrologToAdobeEula" approved="yes">
-        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
+        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
-        <target xml:lang="prs" state="final">بلوم از پروفایل های رنگه Adobe برای تبدیل فایل های PDF از رنگ RGB برای استفاده به رنگ CMYK کار میگیرد. این بخشی از تهیه یک "PDF for Printshop" است. برای انجام این کار در بلوم باید با مجوز زیر موافقت کنید.</target>
+        <target xml:lang="prs" state="final">بلوم از پروفایل های رنگه Adobe برای تبدیل فایل های PDF از رنگ RGB برای استفاده به رنگ CMYK کار میگیرد. این بخشی از تهیه یک "PDF for print shop" است. برای انجام این کار در بلوم باید با مجوز زیر موافقت کنید.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Publish" approved="yes">
         <source xml:lang="en">Publish</source>

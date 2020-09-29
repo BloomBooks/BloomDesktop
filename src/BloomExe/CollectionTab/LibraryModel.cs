@@ -78,6 +78,11 @@ namespace Bloom.CollectionTab
 
 		}
 
+		internal CollectionSettings CollectionSettings
+		{
+			get { return _collectionSettings; }
+		}
+
 		public string LanguageName
 		{
 			get { return _collectionSettings.Language1.Name; }
@@ -346,7 +351,7 @@ namespace Bloom.CollectionTab
 
 						Logger.WriteEvent("BloomPack path will be " + path + ", made from " + dir + " with rootName " + Path.GetFileName(dir));
 						var excludeAudio = true; // don't want audio in bloompack
-						BookCompressor.CompressDirectory(path, dir, dirNamePrefix, forReaderTools, excludeAudio);
+						BookCompressor.CompressCollectionDirectory(path, dir, dirNamePrefix, forReaderTools, excludeAudio);
 
 						// show it
 						Logger.WriteEvent("Showing BloomPack on disk");

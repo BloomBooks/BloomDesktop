@@ -1,0 +1,191 @@
+@import "../../xMatter/bloom-xmatter-common.less";
+@import (reference) "../../../bookLayout/basePage.less";
+
+@XMatterPackName: "Kyrgyz";
+@HeaderHeight: 3.5cm;
+@bleed: 3mm;
+
+// When we convert the pdf to cmyk, white and even #fefefe come out seemingly transparent,
+// which is wrong since there is a background color
+//@white: #fdfdfd;
+@white: white;
+
+div.bloom-page.outsideFrontCover,
+div.bloom-page.outsideBackCover {
+    background-color: #193970 !important;
+}
+
+.outsideFrontCover .marginBox {
+    top: 0;
+    left: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+
+.outsideBackCover .marginBox {
+    top: 0;
+    height: calc(100% - 15mm) !important;
+    // width: calc(100% - 15mm) !important;
+
+    [data-book="outside-back-cover-branding-bottom-html"] {
+        display: none;
+    }
+}
+
+.frontCover .placeholder,
+.frontCover .bloom-imageContainer {
+    margin-left: 1cm;
+
+    margin-right: 1cm;
+    display: flex;
+}
+
+.outsideFrontCover .marginBox img,
+.outsideBackCover .marginBox img {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.frontCover .bottomBlock {
+    margin-left: 1cm;
+    margin-right: 1cm;
+    margin-bottom: 1cm;
+}
+
+// don't show second language on cover
+.frontCover
+    .bloom-translationGroup.bookTitle
+    .bloom-editable.bloom-contentNational1:not(.bloom-content1) {
+    display: none;
+}
+
+.frontCover .bloom-translationGroup.bookTitle {
+    color: black;
+    background-color: @white;
+    // if you touch this make sure the header is the same height on front and back covers!;
+    height: @HeaderHeight;
+    box-sizing: border-box; // padding doesn't affect height.
+    /*flex-basis: content;*/
+    flex-direction: column;
+    justify-content: center;
+
+    // padding here instead of margin so that it's still white in these areas instead of blue
+    padding-top: @bleed; // center it calculating the height below the bleed
+    padding-left: 1cm;
+    padding-right: 1cm;
+
+    // repeat to make more specific than other rules
+    .bloom-editable.bloom-editable.bloom-content1 {
+        margin-bottom: 0; // don't want this to mess with vertical centering
+        flex-grow: 0; // center it, don't grow it
+    }
+}
+
+// This much of the translation group will be trimmed off if the printer
+// achieves the ideal trim cut: the bleed area plus the amount of the original
+// A5 page that is cut off when we scale the width to RA4 which makes the height
+// a bit more than RA5. And similarly for other sizes.
+.frontCover.A5Portrait .bloom-translationGroup.bookTitle {
+    padding-top: @bleed + @A5Portrait-Height-Excess / 2;
+}
+.frontCover.USComicPortrait .bloom-translationGroup.bookTitle {
+    padding-top: @bleed + @USComicPortrait-Height-Excess / 2;
+}
+
+.frontCover .creditsRow:after {
+    content: "◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇";
+    color: #97c955;
+    font-size: 7px;
+    letter-spacing: -2px;
+}
+.outsideBackCover [data-book="outsideBackCover"] p:last-of-type {
+    margin-bottom: 4em;
+}
+.outsideBackCover {
+    .Outside-Back-Cover-style {
+        margin-top: 8mm; // 15mm wasn't enough room for text 15mm;
+        text-align: left !important;
+        font-size: 9pt;
+    }
+}
+.outsideBackCover .divider {
+    color: #97c955;
+    font-size: 7px;
+    letter-spacing: -2px;
+    margin-top: 8mm;
+    margin-bottom: 8mm; // wasn't enough room for text 15mm;
+}
+.frontCover {
+    .coverBottomLangName,
+    .coverBottomBookTopic {
+        display: none;
+    }
+}
+div.bloom-page.coverColor {
+    color: @white;
+}
+
+/* Element | http://localhost:8089/bloom/C%3A/Users/hatto/Documents/Bloom/Kyrgyz%20Branding%20Test/Book/8444a5b9-4b6a-476a-90da-cc003fbc1fea-memsim-Preview.html */
+
+div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
+    /* width: 446px; */
+    /* height: 367px; */
+    /* margin-left: 0px; */
+    /* margin-top: 84px; */
+    object-fit: contain;
+
+    /* white border that fits the image, not its container*/
+    filter: drop-shadow(0 -3px 0 @white) drop-shadow(0 3px 0 @white)
+        drop-shadow(-3px 0 0 @white) drop-shadow(3px 0 0 @white);
+}
+
+.outside-back-cover-branding-top-block {
+    background-color: @white;
+    margin-left: -18mm; // margin + 3mm of bleed
+    margin-right: -18mm; // margin + 3mm of bleed
+    padding-left: 18mm;
+    padding-right: 18mm;
+    padding-top: @bleed; // nudge down because of 3mm bleed
+    height: calc(
+        @HeaderHeight - @bleed
+    ); // the subtraction here makes up for the padding-top
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    img {
+        height: 15mm;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+}
+
+[data-book="outside-back-cover"] {
+    margin-top: 10mm;
+}
+
+[data-book="level-image"] {
+    margin-top: auto;
+    margin-right: auto;
+    height: 7cm;
+    border: none !important;
+}
+
+/* only white makes sense, e.g. for the inside cover colors */
+div.bloom-page {
+    &.insideFrontCover,
+    &.insideBackCover {
+        background-color: @white !important;
+    }
+}
+
+.bloom-mediaBox {
+    &::before {
+        // we're not expecting an edge-to-edge images, so no need ot show the transparent bleed area. Just make it black.
+        border-color: black !important;
+    }
+    &::after {
+        // don't show the trim area at all.
+        border: none;
+    }
+}

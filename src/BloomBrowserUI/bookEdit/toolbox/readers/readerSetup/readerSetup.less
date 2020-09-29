@@ -1,5 +1,12 @@
 @import "../../../../bloomUI.less";
 
+// Things are getting a little messy here. It's getting tricky to figure out what is
+// shared by decodable and leveled settings, and what is unique to one or the other.
+// We are hoping to reimplement in React soon, or at least the next time we need
+// major changes.
+
+@tableBackground: white;
+@tableRowContrast: #eee;
 /* Used by all tabs */
 * {
     font-size: 9pt;
@@ -18,6 +25,9 @@ td,
 th {
     padding: 0 8px;
 }
+#levels-table th {
+    padding: 0 5px;
+}
 .smaller,
 .smaller span, .smaller a /*Otherwise, was overridden by * above*/
  {
@@ -25,6 +35,9 @@ th {
 }
 label {
     font-weight: 700;
+    &.withBoldWords {
+        font-weight: initial;
+    }
 }
 div.floating {
     position: relative;
@@ -76,7 +89,8 @@ textarea {
 
 .tab-detail {
     border: 0;
-    background-color: #bbb;
+    background-color: @tableBackground;
+    border: 1px solid @bloom-darkestBackground;
     width: 100%;
     margin-top: 12px;
     margin-bottom: 8px;
@@ -126,22 +140,23 @@ div.scrolling-table-container {
     height: 100%;
     overflow-x: hidden;
 }
-div.scrolling-table-container-inner {
+div.scrolling-table-container-inner,
+#level-list {
     overflow-x: hidden;
     overflow-y: auto;
     height: 100%;
+    background-color: @tableBackground;
 
     table {
-        background-color: #eee;
-
         td {
             color: black;
             height: 26px;
             white-space: nowrap;
-            min-width: 26px;
+            //min-width: 26px;
         }
-        tr:nth-child(even) {
-            background-color: #e0e0e0;
+        tr:nth-child(even),
+        .first-row {
+            background-color: @tableRowContrast;
         }
         a {
             color: #2392db;
@@ -149,20 +164,93 @@ div.scrolling-table-container-inner {
     }
 }
 
-/* height of header = 26px */
+// This is tricky. Arguably we should just put .border-right exactly where we want it.
+// But the td cells are generated and the logic that generates them has no natural
+// knowledge of which tds should be followed by a border. After the first (level),
+// second (characters) and fifth (last words) columns is nearly always right.
+// The few exceptions are handled with the border-right and no-right-border classes.
+#levels-table {
+    th:nth-of-type(1),
+    td:nth-of-type(1),
+    th:nth-of-type(2),
+    td:nth-of-type(2),
+    th:nth-of-type(5),
+    td:nth-of-type(5),
+    .borderRight {
+        border-right: thin solid @bloom-darkestBackground;
+        &.no-right-border {
+            border-right: none;
+        }
+    }
+}
+
+/* There's a trick going on here. If we get more than about 10 levels or stages,
+the table will start to scroll. We don't want the header to move.
+So, we do the following:
+  - force the real header to have height zero
+  - leave space here, as padding, for one row of heading
+  - make this element's position relative, so it becomes a parent for anything
+    absolutely positioned
+  - leave the position of all the intermediate table components at default,
+    so they do NOT affect the origin for absolute positioning
+  - make the divs inside the th elements be positioned absolutely
+    (so their position is relative to this element, however the table scrolls).
+I was not able to get this working for the new leveled reader headings, which
+are mostly two lines long in English and might be more in translations. It's very
+tricky to get the header cells to wrap and optimize the column widths to fit them
+in as few lines as possible; even that I only managed by explicitly setting column
+widths. To make the trick above work with a potentially variable number of lines
+of heading is too complicated.
+Since the column widths are currently fixed, it might work to make two tables,
+one with the fixed (header) content and one with the scrolling content. Or it may be
+possible to make the tbody element scroll separately from the header, though
+I suspect not or this complicated trick would never have been created. We decided
+not to try to fix it for now, but rather hope to reimplement this with React and grid. */
+@headerLineHeight: 26px;
+@twoRowsHeight: @headerLineHeight * 3;
 div.scrolling-table-container {
     position: relative;
-    padding-top: 26px;
+    padding-top: @headerLineHeight;
     width: 100%;
+    &.two-rows-header {
+        padding-top: @twoRowsHeight;
+    }
 }
 div.scrolling-table-header {
     background-color: #ddd;
-    height: 26px;
+    height: @headerLineHeight;
     position: absolute;
     top: 0;
     right: 0;
     left: 0;
     border-bottom: 1px solid #666;
+    .two-rows-header & {
+        height: @twoRowsHeight;
+    }
+}
+#things-to-remember-container {
+    margin-top: 10px;
+}
+
+#levels-table th div {
+    text-align: left;
+}
+
+#levels-table th.centered div {
+    text-align: center;
+}
+
+#levels-table .first-row {
+    line-height: 26px;
+}
+// logically this belongs on the tr with class second-row, but padding on tr's is ignored.
+#levels-table .second-row th {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.detail-heading {
+    font-weight: bold;
 }
 div.scrolling-table-container-inner table th div {
     position: absolute;
@@ -170,6 +258,10 @@ div.scrolling-table-container-inner table th div {
     line-height: 26px;
     text-align: left;
     white-space: nowrap;
+}
+
+.second-row {
+    border-bottom: thin solid @bloom-darkestBackground;
 }
 
 div.rs-letters {
@@ -265,7 +357,7 @@ div.ui-tabs div.ui-tabs-panel ul.asterisk {
         width: 30px;
     }
     tr td {
-        padding-bottom: 8px;
+        padding-bottom: 2px;
         -moz-user-select: none;
         &:first-child {
             padding-right: 0;
@@ -278,7 +370,9 @@ div.ui-tabs div.ui-tabs-panel ul.asterisk {
 }
 
 #things-to-remember-container {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
     margin-left: 12px;
     width: ~"calc(100% - 24px)";
     height: ~"calc(100% - 200px)";
@@ -293,6 +387,7 @@ div.ui-tabs div.ui-tabs-panel ul.asterisk {
     padding-left: 20px;
     margin-top: 2px;
     overflow-y: auto;
+    flex-grow: 1;
 }
 
 .disableable {
@@ -424,16 +519,17 @@ table.hide-fourth-column {
         margin-right: 20px;
     }
     #level-list-container {
-        width: ~"calc(100% - 312px)";
+        width: ~"calc(100% - 272px)";
         min-height: 310px;
         height: ~"calc(100% - 50px)";
     }
     #level-detail {
-        width: 300px;
-        min-height: 310px;
-        height: ~"calc(100% - 50px)";
+        width: 260px;
+        min-height: ~"calc(100% - 50px)";
         margin-left: 12px;
         margin-top: 0;
+        display: flex;
+        flex-direction: column;
     }
     #level-detail div.sub-float {
         width: ~"calc(100% - 258px)";

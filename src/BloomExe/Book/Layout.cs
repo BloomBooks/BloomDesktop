@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Newtonsoft.Json;
 using SIL.Extensions;
@@ -88,6 +89,49 @@ namespace Bloom.Book
 			if (!String.IsNullOrEmpty(Style) && Style.ToLowerInvariant() != "default")
 				s = Style;
 			return (SizeAndOrientation.ToString() + " " + s).Trim();
+		}
+
+		public string DisplayName
+		{
+			get
+			{
+				var pageSizeName = SizeAndOrientation.PageSizeName;
+				var orientationName = SizeAndOrientation.OrientationName;
+				string englishName;
+				// This regex generalizes what is currently just one special case: the Cm13Landscape layout, which is actually square.
+				// Its display name should reflect that fact.  We have avoided giving it the internal name 13cmSquare 1) because far too
+				// much code in BloomPlayer (and elsewhere in Bloom) would have to be extended to handle three cases instead of just two
+				// and 2) because in various places where Cm13Landscape is used a name starting with a number would not work.  So we need
+				// to replace the orientationName with "Square" and the PageSizeName with a user-friendly version.  It remains to be seen
+				// whether we will have other page size classes that follow this pattern.  ("In5Layout/5in Square" is probably the prime
+				// candidate if any users want to print square booklets on Ledger paper instead of A3 paper.)
+				var match = Regex.Match(pageSizeName, @"^(cm|in)(\d+)$",
+					RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+				if (match.Success)
+					englishName = match.Groups[2].Value + match.Groups[1].Value.ToLowerInvariant() + " Square";
+				else
+					englishName = pageSizeName.ToUpperFirstLetter() + " " + orientationName.ToUpperFirstLetter();
+				var id = "LayoutChoices." + SizeAndOrientation.ClassName;
+				if (!String.IsNullOrEmpty(Style) && Style.ToLowerInvariant() != "default")
+				{
+					id = id + " " + Style;
+					var splitStyle = Regex.Replace(Style, @"([a-z])([A-Z])", @"$1 $2", RegexOptions.CultureInvariant);
+					englishName = englishName + " (" + splitStyle + ")";
+				}
+
+				if (englishName.ToLower() == "uscomic portrait")
+				{
+					englishName = "US Comic Portrait";
+				}
+
+				englishName = englishName.Replace("letter", " Letter");
+				englishName = englishName.Replace("legal", " Legal");
+				englishName = englishName.Replace("16x9", " 16x9");
+				englishName = englishName.Trim();
+				var displayName = L10NSharp.LocalizationManager.GetDynamicString("Bloom", id, englishName);
+				
+				return displayName;
+			}
 		}
 
 		public static Layout FromDom(HtmlDom dom, Layout defaultIfMissing)

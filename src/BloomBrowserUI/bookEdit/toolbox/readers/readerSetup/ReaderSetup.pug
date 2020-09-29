@@ -150,51 +150,113 @@ html
 							td(style='vertical-align: baseline; white-space: nowrap'): span.rs-heading(style='margin: auto 0', data-i18n='ReaderSetup.Levels') Reader Levels
 				#level-list-container.floating.tab-list-container
 					#level-list.tab-list
-						.scrolling-table-container
-							.scrolling-table-header
-							.scrolling-table-container-inner
-								table#levels-table(style='border-collapse: collapse; width: 100%')
-									thead
-										tr
-											th(style='width: 15%'): div(data-i18n='ReaderSetup.LevelHeader') Level
-											th(style='width: 22%'): div(data-i18n='ReaderSetup.SentenceHeader') Sentence
-											th(style='width: 15%'): div(data-i18n='ReaderSetup.PageHeader') Page
-											th(style='width: 15%'): div(data-i18n='ReaderSetup.BookHeader') Book
-											th(style='width: 23%'): div(data-i18n='ReaderSetup.UniqueHeader') Unique
-											th(style='width: 10%'): div(data-i18n='ReaderSetup.AverageHeader') Avg
-											th(style='display: none')
-									tbody
-									tfoot
-										tr
-											td(colspan='5'): a#setup-add-level(href='', data-i18n='ReaderSetup.AddLevel') Add Level
+						table#levels-table(style='border-collapse: collapse; width: 100%;table-layout:fixed')
+							colgroup
+								// These are fine-tuned for English, to make everything fit in three lines total
+								// at the narrowest width possible. Of course translations of the headings are
+								// not likely to have the same optimum lengths. But the variations are not large
+								// and a lot of our users work in English. We hope to reimplement this component
+								// in React and using grid, and hope the result will be more flexible.
+								col(width="10%")
+								col(width="18%")
+								col(width="21%")
+								col(width="15%")
+								col(width="18%")
+								col(width="18%")
+							thead
+								tr.first-row
+									th: div(data-i18n='ReaderSetup.LevelHeader') Level
+									th: div(data-i18n='ReaderSetup.Letters') Letters
+									th(colspan="3" class="borderRight centered"): div(data-i18n='ReaderSetup.Words') Words
+									th: div(data-i18n='ReaderSetup.Sentences') Sentences
+								tr.second-row
+									th
+									th: div(data-i18n='ReaderSetup.PerWordHeader') Per Word (Average)
+									th: div(data-i18n='ReaderSetup.PerSentenceHeader') Per Sentence (Average)
+									th: div(data-i18n='ReaderSetup.PerPageHeader') Per Page (Average)
+									th: div(data-i18n='ReaderSetup.PerBookHeader') Per Book (Unique)
+									th: div(data-i18n='ReaderSetup.PerPageHeader') Per Page (Average)
+									th(style='display: none')
+							tbody
+							tfoot
+								tr
+									td.no-right-border(colspan='6'): a#setup-add-level(href='', data-i18n='ReaderSetup.AddLevel') Add Level
 					div.smaller(style='float: left', data-i18n='ReaderSetup.ReorderLevels') Drag rows to reorder levels.
 					div(style='float: right')
 						a.blue-link#setup-remove-level.smaller(href='', data-i18n='ReaderSetup.RemoveLevel') Remove Level {0}
 				#level-detail.floating.tab-detail
 					div(style='display: block; margin: 0 10px 6px')
-						span.rs-subheading(style='margin: auto 0', data-i18n='ReaderSetup.LevelLabel') Level&nbsp;
-						span#setup-level-number.rs-subheading 1
+						span#setup-level-label.rs-subheading(style='margin: auto 0', data-i18n='ReaderSetup.LevelLabelMax') Level {0} Maximums;
 					table
 						tr
+							td(data-i18n='ReaderSetup.Letters' colspan="3" class="detail-heading") Letters
+						tr
+							td: input#use-glyphs-per-word.level-checkbox(type='checkbox')
+							td: label.withBoldWords(for='use-glyphs-per-word', data-i18n='ReaderSetup.MaxGlyphsPerWord') In any
+								= ' '
+								strong Word
+							td: input#max-glyphs-per-word.level-textbox(type='text')
+						tr
+							td: input#use-average-glyphs-per-word.level-checkbox(type='checkbox')
+							td: label.withBoldWords(for='use-average-glyphs-per-word', data-i18n='ReaderSetup.MaxAverageGlyphsPerWord') Average per Word in
+								= ' '
+								strong Book
+							td: input#max-average-glyphs-per-word.level-textbox(type='text')
+						tr
+							td(data-i18n='ReaderSetup.Words' colspan="3" class="detail-heading") Words
+						tr
 							td: input#use-words-per-sentence.level-checkbox(type='checkbox')
-							td(style='padding-left: 0'): label(for='use-words-per-sentence', data-i18n='ReaderSetup.SentenceMaxWords') Maximum Words in each Sentence
+							td(style='padding-left: 0'): label.withBoldWords(for='use-words-per-sentence', data-i18n='ReaderSetup.SentenceMaxWords2') Per
+								= ' '
+								strong Sentence
 							td: input#max-words-per-sentence.level-textbox(type='text')
 						tr
+							td: input#use-average-words-per-sentence.level-checkbox(type='checkbox')
+							td: label.withBoldWords(for='use-average-words-per-sentence', data-i18n='ReaderSetup.MaxAverageWords') Average per
+								= ' '
+								strong#problem Sentence
+								= ' in'
+								strong Book
+							td: input#max-average-words-per-sentence.level-textbox(type='text')
+						tr
 							td: input#use-words-per-page.level-checkbox(type='checkbox')
-							td: label(for='use-words-per-page', data-i18n='ReaderSetup.PageMaxWords') Maximum Words on each Page
+							td: label.withBoldWords(for='use-words-per-page', data-i18n='ReaderSetup.PageMaxWords2') Per
+								= ' '
+								strong Page
 							td: input#max-words-per-page.level-textbox(type='text')
 						tr
+							td: input#use-average-words-per-page.level-checkbox(type='checkbox')
+							td: label.withBoldWords(for='use-average-words-per-page', data-i18n='ReaderSetup.MaxAverageWordsPerPage') Average per
+								= ' '
+								strong Page
+							td: input#max-average-words-per-page.level-textbox(type='text')
+						tr
 							td: input#use-words-per-book.level-checkbox(type='checkbox')
-							td: label(for='use-words-per-book', data-i18n='ReaderSetup.BookMaxWords') Maximum Words in Book
+							td: label.withBoldWords(for='use-words-per-book', data-i18n='ReaderSetup.BookMaxWords2') Per
+								= ' '
+								strong Book
 							td: input#max-words-per-book.level-textbox(type='text')
 						tr
 							td: input#use-unique-words-per-book.level-checkbox(type='checkbox')
-							td: label(for='use-unique-words-per-book', data-i18n='ReaderSetup.MaxUniqueWords') Maximum Unique Words in Book
+							td: label.withBoldWords(for='use-unique-words-per-book', data-i18n='ReaderSetup.MaxUniqueWords2')
+								strong Unique
+								= ' in '
+								strong Book
 							td: input#max-unique-words-per-book.level-textbox(type='text')
 						tr
-							td: input#use-average-words-per-sentence.level-checkbox(type='checkbox')
-							td: label(for='use-average-words-per-sentence', data-i18n='ReaderSetup.MaxAverageWords') Maximum Average Length of Sentences in Book
-							td: input#max-average-words-per-sentence.level-textbox(type='text')
+							td(colspan="3" data-i18n='ReaderSetup.Sentences' class="detail-heading") Sentences
+						tr
+							td: input#use-sentences-per-page.level-checkbox(type='checkbox')
+							td: label.withBoldWords(for='use-sentences-per-page', data-i18n='ReaderSetup.MaxSentencesPerPage') Per
+								= ' '
+								strong Page
+							td: input#max-sentences-per-page.level-textbox(type='text')
+						tr
+							td: input#use-average-sentences-per-page.level-checkbox(type='checkbox')
+							td: label.withBoldWords(for='use-average-sentences-per-page', data-i18n='ReaderSetup.MaxAverageSentencesPerPage') Average per
+								= ' '
+								strong Page
+							td: input#max-average-sentences-per-page.level-textbox(type='text')
 					#things-to-remember-container
 						label(for='things-to-remember', data-i18n='ReaderSetup.ToRemember') Things to remember for this level:
 						ul#things-to-remember

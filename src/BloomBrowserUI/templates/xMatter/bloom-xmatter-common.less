@@ -94,6 +94,12 @@
             @QuarterLetterLandscape-Width
         );
     }
+    .Cm13Landscape& {
+        .SetMarginBoxCover(@Cm13Square-Side, @Cm13Square-Side);
+    }
+    .USComicPortrait& {
+        .SetMarginBoxCover(@USComicPortrait-Height, @USComicPortrait-Width);
+    }
 }
 
 .insideFrontCover {
@@ -309,6 +315,7 @@
         display: none;
     }
     @MarginBetweenBlocks_SmallPaper: 0.5em;
+    &.Cm13Landscape,
     &.A6Landscape,
     &.A6Portrait,
     &.QuarterLetterLandscape,

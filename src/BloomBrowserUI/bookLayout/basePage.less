@@ -181,7 +181,7 @@ span.bloom-linebreak {
 
 div.bloom-page {
     display: block;
-    page-break-after: auto;
+
     background-color: @bloom-page-background;
 }
 div#bloomDataDiv {
@@ -192,6 +192,86 @@ div#bloomDataDiv {
 }
 .centerJustify {
     text-align: center;
+}
+
+@bleed: 3mm;
+@RA5Portrait-Width: @A5Portrait-Width + @bleed + @bleed;
+@RA5Portrait-Height: @A5Portrait-Height + @bleed + @bleed;
+@RA5-Scale: unit(@RA5Portrait-Width / @A5Portrait-Width);
+@A5Portrait-HeightFB: @A5Portrait-Height * @RA5-Scale;
+@A5Portrait-Height-Excess: @A5Portrait-HeightFB - @RA5Portrait-Height;
+
+@RUSComicPortrait-Width: @USComicPortrait-Width + @bleed + @bleed;
+@RUSComicPortrait-Height: @USComicPortrait-Height + @bleed + @bleed;
+@RUSComic-Scale: unit(@RUSComicPortrait-Width / @USComicPortrait-Width);
+@USComicPortrait-HeightFB: @USComicPortrait-Height * @RUSComic-Scale;
+@USComicPortrait-Height-Excess: @USComicPortrait-HeightFB -
+    @RUSComicPortrait-Height;
+
+.bloom-fullBleed {
+    //background-color: green;
+    .bloom-page {
+        transform-origin: top left;
+        transition: 0.5s ease-in-out;
+        &.A5Portrait {
+            // NB: transform order is rightmost first
+            transform: translate(0, -@A5Portrait-Height-Excess / 2)
+                scale(@RA5-Scale);
+        }
+        &.A5Landscape {
+            // NB: transform order is rightmost first
+            transform: translate(-@A5Portrait-Height-Excess / 2, 0)
+                scale(@RA5-Scale);
+        }
+        &.USComicPortrait {
+            // NB: transform order is rightmost first
+            transform: translate(0, -@USComicPortrait-Height-Excess / 2)
+                scale(@RUSComic-Scale);
+        }
+    }
+}
+
+// overridden when publishingWithoutFullBleed
+.bloom-mediaBox {
+    page-break-after: always;
+    overflow: hidden; // when the page is scaled, stuff in the longer dimension will actually exceed the bleed area. We want to clip that.
+    &.A5Portrait {
+        width: @RA5Portrait-Width;
+        height: @RA5Portrait-Height;
+    }
+    &.A5Landscape {
+        width: @RA5Portrait-Height;
+        height: @RA5Portrait-Width;
+    }
+    &.USComicPortrait {
+        width: @RUSComicPortrait-Width;
+        height: @RUSComicPortrait-Height;
+    }
+    // Todo: this needs rules for every page size we support in full bleed (try to use a macro)
+}
+
+// In full bleed mode, this will be @bleed larger than the desired page size. The "media" here is the phsyical paper that
+// a printshow would have to work with. E.g. RA4, RA5.
+// If bloom-fullBleed mode is off, this div, in the DOM, doesn't exist.
+// See editMode.less for more things that we do with this (it allows us to draw the bleed and safety areas).
+body.publishingWithoutFullBleed {
+    .bloom-mediaBox {
+        overflow: hidden; // when the page is scaled and not printing bleed, stuff in the both dimensions
+        // will actually exceed the bleed area. We want to clip that.
+        &.A5Portrait {
+            width: @A5Portrait-Width;
+            height: @A5Portrait-Height;
+        }
+        &.A5Landscape {
+            width: @A5Portrait-Height;
+            height: @A5Portrait-Width;
+        }
+        &.USComicPortrait {
+            width: @USComicPortrait-Width;
+            height: @USComicPortrait-Height;
+        }
+        // Todo: this needs rules for every page size we support in full bleed (try to use a macro)
+    }
 }
 
 /*Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing
@@ -324,6 +404,18 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
         min-height: @LegalLandscape-Height;
         max-height: @LegalLandscape-Height;
     }
+    &.Cm13Landscape {
+        min-width: @Cm13Square-Side;
+        max-width: @Cm13Square-Side;
+        min-height: @Cm13Square-Side;
+        max-height: @Cm13Square-Side;
+    }
+    &.USComicPortrait {
+        min-width: @USComicPortrait-Width;
+        max-width: @USComicPortrait-Width;
+        min-height: @USComicPortrait-Height;
+        max-height: @USComicPortrait-Height;
+    }
 }
 /*Margins*/
 .textWholePage .marginBox {
@@ -408,6 +500,12 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
     }
     .LegalLandscape & {
         .SetMarginBox(@LegalLandscape-Width, @LegalLandscape-Height);
+    }
+    .Cm13Landscape & {
+        .SetMarginBox(@Cm13Square-Side, @Cm13Square-Side);
+    }
+    .USComicPortrait & {
+        .SetMarginBox(@USComicPortrait-Width, @USComicPortrait-Height);
     }
 }
 

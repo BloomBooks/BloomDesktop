@@ -50,9 +50,42 @@ namespace Bloom.Book
 			}
 		}
 
-		public static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
+		/// <summary>
+		/// Zips a directory containing a Bloom collection, along with all files and subdirectories
+		/// </summary>
+		/// <param name="outputPath">The location to which to create the output zip file</param>
+		/// <param name="directoryToCompress">The directory to add recursively</param>
+		/// <param name="dirNamePrefix">string to prefix to the zip entry name</param>
+		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
+		/// and leveled readers before they are added to the ZipStream</param>
+		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
+		public static void CompressCollectionDirectory(string outputPath, string directoryToCompress, string dirNamePrefix, bool forReaderTools, bool excludeAudio)
+		{
+			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, excludeAudio, depthFromCollection: 0);
+		}
+
+		/// <summary>
+		/// Zips a directory containing a Bloom book, along with all files and subdirectories
+		/// </summary>
+		/// <param name="outputPath">The location to which to create the output zip file</param>
+		/// <param name="directoryToCompress">The directory to add recursively</param>
+		/// <param name="dirNamePrefix">string to prefix to the zip entry name</param>
+		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
+		/// and leveled readers before they are added to the ZipStream</param>
+		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
+		/// <param name="reduceImages">If true, image files are reduced in size to no larger than the max size before saving</para>
+		/// <param name="omitMetaJson">If true, meta.json is excluded (typically for HTML readers).</param>
+		public static void CompressBookDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
 			bool forReaderTools = false, bool excludeAudio = false, bool reduceImages = false, bool omitMetaJson = false, bool wrapWithFolder = true,
 			string pathToFileForSha = null)
+		{
+			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, excludeAudio, reduceImages, omitMetaJson,
+				wrapWithFolder, pathToFileForSha, depthFromCollection: 1);
+		}
+
+		private static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
+			bool forReaderTools = false, bool excludeAudio = false, bool reduceImages = false, bool omitMetaJson = false, bool wrapWithFolder = true,
+			string pathToFileForSha = null, int depthFromCollection = 1)
 		{
 			using (var fsOut = RobustFile.Create(outputPath))
 			{
@@ -75,7 +108,7 @@ namespace Bloom.Book
 						// a zip, as with .bloomd files)
 						dirNameOffset = directoryToCompress.Length + 1;
 					}
-					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages, omitMetaJson, pathToFileForSha);
+					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, forReaderTools, excludeAudio, reduceImages, omitMetaJson, pathToFileForSha);
 
 					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
 					zipStream.Close();
@@ -91,23 +124,28 @@ namespace Bloom.Book
 		/// <param name="dirNameOffset">This number of characters will be removed from the full directory or file name
 		/// before creating the zip entry name</param>
 		/// <param name="dirNamePrefix">string to prefix to the zip entry name</param>
+		/// <param name="depthFromCollection">int with the number of folders away it is from the collection folder. The collection folder itself is 0,
+		/// a book is 1, a subfolder of the book is 2, etc.</param>
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
 		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
-		/// <param name="reduceImages">If true, images will be compressed before being added to the zip file</param>
+		/// <param name="reduceImages">If true, image files are reduced in size to no larger than the max size before saving</para>
 		/// <param name="omitMetaJson">If true, meta.json is excluded (typically for HTML readers).</param>
-		/// <para> name="reduceImages">If true, image files are reduced in size to no larger than 300x300 before saving</para>
-		/// <remarks>Protected for testing purposes</remarks>
 		private static void CompressDirectory(string directoryToCompress, ZipOutputStream zipStream, int dirNameOffset, string dirNamePrefix,
-			bool forReaderTools, bool excludeAudio, bool reduceImages, bool omitMetaJson = false, string pathToFileForSha = null)
+			int depthFromCollection, bool forReaderTools, bool excludeAudio, bool reduceImages, bool omitMetaJson = false, string pathToFileForSha = null)
 		{
 			if (excludeAudio && Path.GetFileName(directoryToCompress).ToLowerInvariant() == "audio")
 				return;
 			var files = Directory.GetFiles(directoryToCompress);
-			var bookFile = BookStorage.FindBookHtmlInFolder(directoryToCompress);
+
+			// Don't get distracted by HTML files in any folder other than the book folder.
+			// These HTML files in other locations aren't generated by Bloom. They may not have the format Bloom expects,
+			// causing needless parsing errors to be thrown if we attempt to read them using Bloom code.
+			bool shouldScanHtml = depthFromCollection == 1;	// 1 means 1 level below the collection level, i.e. this is the book level
+			var bookFile = shouldScanHtml ? BookStorage.FindBookHtmlInFolder(directoryToCompress) : null;
 			XmlDocument dom = null;
 			List<string> imagesToGiveTransparentBackgrounds = null;
-			// Tests can result in bookFile being null.
+			// Tests can also result in bookFile being null.
 			if (!String.IsNullOrEmpty(bookFile))
 			{
 				var originalContent = File.ReadAllText(bookFile, Encoding.UTF8);
@@ -235,7 +273,7 @@ namespace Bloom.Book
 				if ((dirName == null) || (dirName.ToLowerInvariant() == "sample texts"))
 					continue; // Don't want to bundle these up
 
-				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages);
+				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1, forReaderTools, excludeAudio, reduceImages);
 			}
 		}
 

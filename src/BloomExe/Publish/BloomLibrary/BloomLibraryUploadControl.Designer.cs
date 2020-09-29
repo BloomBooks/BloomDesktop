@@ -49,7 +49,6 @@ namespace Bloom.Publish.BloomLibrary
 			this._termsLink = new System.Windows.Forms.LinkLabel();
 			this._creditsLabel = new System.Windows.Forms.Label();
 			this._summaryBox = new System.Windows.Forms.TextBox();
-			this._signUpLink = new System.Windows.Forms.LinkLabel();
 			this._optional2 = new System.Windows.Forms.Label();
 			this._labelFeaturesOptional = new System.Windows.Forms.Label();
 			this._licenseSuggestion = new System.Windows.Forms.Label();
@@ -301,7 +300,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._loginLink.Size = new System.Drawing.Size(129, 13);
 			this._loginLink.TabIndex = 18;
 			this._loginLink.TabStop = true;
-			this._loginLink.Text = "Log in to BloomLibrary.org";
+			this._loginLink.Text = "Sign up or Sign in to BloomLibrary.org";
 			this._loginLink.TextAlign = System.Drawing.ContentAlignment.TopRight;
 			this._loginLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._loginLink_LinkClicked);
 			// 
@@ -347,22 +346,6 @@ namespace Bloom.Publish.BloomLibrary
 			this._summaryBox.Size = new System.Drawing.Size(604, 20);
 			this._summaryBox.TabIndex = 4;
 			this._summaryBox.TextChanged += new System.EventHandler(this._summaryBox_TextChanged);
-			// 
-			// _signUpLink
-			// 
-			this._signUpLink.AutoSize = true;
-			this._signUpLink.Dock = System.Windows.Forms.DockStyle.Right;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._signUpLink, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._signUpLink, null);
-			this._L10NSharpExtender.SetLocalizingId(this._signUpLink, "PublishTab.Upload.SignupLink");
-			this._signUpLink.Location = new System.Drawing.Point(465, 0);
-			this._signUpLink.Name = "_signUpLink";
-			this._signUpLink.Size = new System.Drawing.Size(139, 13);
-			this._signUpLink.TabIndex = 21;
-			this._signUpLink.TabStop = true;
-			this._signUpLink.Text = "Sign up for BloomLibrary.org";
-			this._signUpLink.TextAlign = System.Drawing.ContentAlignment.TopRight;
-			this._signUpLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._signUpLink_LinkClicked);
 			// 
 			// _optional2
 			// 
@@ -496,6 +479,8 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizationPriority(this._progressBox, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._progressBox, "PublishTab.Upload.BloomLibraryUploadControl._progressBox");
 			this._progressBox.Location = new System.Drawing.Point(3, 606);
+			this._progressBox.MaxLength = 715827882;
+			this._progressBox.MaxLengthErrorMessage = "Maximum length exceeded!";
 			this._progressBox.Name = "_progressBox";
 			this._progressBox.ProgressIndicator = null;
 			this._progressBox.ShowCopyToClipboardMenuItem = false;
@@ -514,7 +499,7 @@ namespace Bloom.Publish.BloomLibrary
 			this._L10NSharpExtender.SetLocalizationComment(this._userId, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._userId, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._userId, "PublishTab.Upload.BloomLibraryUploadControl._userId");
-			this._userId.Location = new System.Drawing.Point(439, 0);
+			this._userId.Location = new System.Drawing.Point(578, 0);
 			this._userId.Name = "_userId";
 			this._userId.Size = new System.Drawing.Size(26, 13);
 			this._userId.TabIndex = 22;
@@ -773,7 +758,6 @@ namespace Bloom.Publish.BloomLibrary
 			// 
 			this.panel1a.Controls.Add(this._userId);
 			this.panel1a.Controls.Add(this.label8);
-			this.panel1a.Controls.Add(this._signUpLink);
 			this.panel1a.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.panel1a.Location = new System.Drawing.Point(3, 508);
 			this.panel1a.Name = "panel1a";
@@ -888,7 +872,6 @@ namespace Bloom.Publish.BloomLibrary
 		private System.Windows.Forms.LinkLabel _loginLink;
 		private System.Windows.Forms.Label _creditsLabel;
 		private System.Windows.Forms.TextBox _summaryBox;
-		private System.Windows.Forms.LinkLabel _signUpLink;
 		private System.Windows.Forms.Label _optional2;
 		private System.Windows.Forms.Label _labelFeaturesOptional;
 		private System.Windows.Forms.Label _ccLabel;

@@ -7,7 +7,9 @@ import {
     cleanSpaceDelimitedList,
     toolboxWindow,
     setPreviousMoreWords,
-    getPreviousMoreWords
+    getPreviousMoreWords,
+    levelSettings,
+    spanForSettingWithText
 } from "./readerSetup.io";
 import { DataWord } from "../libSynphony/bloomSynphonyExtensions";
 import axios from "axios";
@@ -82,7 +84,7 @@ function process_UI_Message(event: MessageEvent): void {
             else displayWordsForSelectedStage(params[1]);
             return;
 
-        case "SetupType":
+        case "ConfigureActiveTab":
             //noinspection JSJQueryEfficiency
             const tabs: JQuery = $("#dlstabs");
             if (params[1] === "stages") {
@@ -367,6 +369,21 @@ export function selectLetters(tr: HTMLTableRowElement) {
         previous.removeClass("unselected-letter").addClass("previous-letter");
 }
 
+// Set the label at the top of the detail pane that shows the current level.
+// Tricky because we may see the original string which is (or is a translation of)
+// "Level {0} maximums", or we may see the result of a previous call to this
+// method, which replaces {0} with a span. A regular expression matches one
+// or the other, and it gets replaced with the current level.
+function setLevelLabel(level: string) {
+    const labelElt = <HTMLElement>document.getElementById("setup-level-label");
+    let innerHtml = labelElt.innerHTML;
+    innerHtml = innerHtml.replace(
+        /\{0\}|<span[^>]*>\d*<\/span>/,
+        `<span class="rs-subheading">${level}</span>`
+    );
+    labelElt.innerHTML = innerHtml;
+}
+
 /**
  * Update display when a different level is selected
  * @param tr
@@ -375,9 +392,7 @@ export function selectLevel(tr: HTMLTableRowElement) {
     if (tr.classList.contains("selected")) return;
 
     const currentLevel = getCellInnerHTML(tr, 0);
-    (<HTMLElement>(
-        document.getElementById("setup-level-number")
-    )).innerHTML = currentLevel;
+    setLevelLabel(currentLevel);
     (<HTMLElement>(
         document.getElementById("setup-remove-level")
     )).innerHTML = theOneLocalizationManager.getText(
@@ -395,17 +410,21 @@ export function selectLevel(tr: HTMLTableRowElement) {
         .addClass("selected");
 
     // check boxes and text boxes
-    setLevelCheckBoxValue("words-per-sentence", getCellInnerHTML(tr, 1));
-    setLevelCheckBoxValue("words-per-page", getCellInnerHTML(tr, 2));
-    setLevelCheckBoxValue("words-per-book", getCellInnerHTML(tr, 3));
-    setLevelCheckBoxValue("unique-words-per-book", getCellInnerHTML(tr, 4));
-    setLevelCheckBoxValue(
-        "average-words-per-sentence",
-        getCellInnerHTML(tr, 5)
-    );
+    for (let i = 0; i < levelSettings.length; i++) {
+        setLevelCheckBoxValue(
+            levelSettings[i].cellClass,
+            getSpanContent(tr, levelSettings[i].cellClass)
+        );
+        if (levelSettings[i].subcell) {
+            setLevelCheckBoxValue(
+                levelSettings[i].subcell!.cellClass,
+                getSpanContent(tr, levelSettings[i].subcell!.cellClass)
+            );
+        }
+    }
 
     // things to remember
-    const vals = getCellInnerHTML(tr, 6).split("\n");
+    const vals = getCellInnerHTML(tr, levelSettings.length + 1).split("\n");
     const val = vals.join('</li><li contenteditable="true">');
     const thingsToRemember = <HTMLElement>(
         document.getElementById("things-to-remember")
@@ -433,8 +452,23 @@ function getCellInnerHTML(tr: HTMLTableRowElement, cellIndex: number): string {
     return (<HTMLTableCellElement>tr.cells[cellIndex]).innerHTML;
 }
 
+// Get the content of the child of the row that has the specified class.
+// Throws if not found.
+function getSpanContent(tr: HTMLTableRowElement, childClass: string): string {
+    const child = tr.getElementsByClassName(childClass)[0];
+    if (!child) {
+        throw new Error(
+            "element with class " + childClass + " was unexpectedly not found"
+        );
+    }
+    return child.textContent || "";
+}
+
 function setLevelCheckBoxValue(id: string, value: string): void {
-    const checked: boolean = value !== "-";
+    // Empty values (in subcells) and hyphens both indicate that no value
+    // has been set for this setting, in which case the check box should
+    // be off and the text box disabled.
+    const checked: boolean = !!value && value !== "-";
     (<HTMLInputElement>document.getElementById("use-" + id)).checked = checked;
 
     const txt: HTMLInputElement = <HTMLInputElement>(
@@ -561,7 +595,20 @@ function addNewLevel(): void {
     tbody.append(
         '<tr class="linked"><td>' +
             (tbody.children().length + 1) +
-            '</td><td class="words-per-sentence">-</td><td class="words-per-page">-</td><td class="words-per-book">-</td><td class="unique-words-per-book">-</td><td class="average-words-per-sentence">-</td><td style="display: none"></td></tr>'
+            "</td>" +
+            levelSettings
+                .map(s => {
+                    const subcell = s.subcell
+                        ? spanForSettingWithText(s.subcell, "-", true)
+                        : "";
+                    return `<td>${spanForSettingWithText(
+                        s,
+                        "-",
+                        false
+                    )}${subcell}</td>`;
+                })
+                .join("") +
+            '<td style="display: none"></td></tr>'
     );
 
     // click event for stage rows
@@ -772,14 +819,14 @@ function removeLevel(): void {
 }
 
 function resetLevelDetail(): void {
-    (<HTMLElement>document.getElementById("setup-level-number")).innerHTML =
-        "0";
+    setLevelLabel("0");
 
-    setLevelCheckBoxValue("words-per-sentence", "-");
-    setLevelCheckBoxValue("words-per-page", "-");
-    setLevelCheckBoxValue("words-per-book", "-");
-    setLevelCheckBoxValue("unique-words-per-book", "-");
-    setLevelCheckBoxValue("average-words-per-sentence", "-");
+    for (let i = 0; i < levelSettings.length; i++) {
+        setLevelCheckBoxValue(levelSettings[i].cellClass, "-");
+        if (levelSettings[i].subcell) {
+            setLevelCheckBoxValue(levelSettings[i].subcell!.cellClass, "-");
+        }
+    }
     (<HTMLElement>document.getElementById("things-to-remember")).innerHTML =
         '<li contenteditable="true"></li>';
 }
@@ -804,7 +851,7 @@ function storeThingsToRemember(): void {
 
     // store
     $("#levels-table")
-        .find("tbody tr.selected td:nth-child(7)")
+        .find(`tbody tr.selected td:nth-child(${levelSettings.length + 2})`)
         .html(vals.join("\n"));
 }
 
@@ -816,9 +863,7 @@ function updateNumbers(tableId: string): void {
     const currentStage = tbody.find("tr.selected td:nth-child(1)").html();
 
     if (tableId === "levels-table") {
-        (<HTMLElement>(
-            document.getElementById("setup-level-number")
-        )).innerHTML = currentStage;
+        setLevelLabel(currentStage);
         (<HTMLElement>(
             document.getElementById("setup-remove-level")
         )).innerHTML = theOneLocalizationManager.getText(
@@ -878,11 +923,6 @@ function attachEventHandlers(): void {
             return false;
         });
 
-        $("#define-sight-words").onSafe("click", () => {
-            alert("What are sight words?");
-            return false;
-        });
-
         $("#setup-stage-sight-words").onSafe("keyup", function() {
             updateSightWords(this);
             requestWordsForSelectedStage();
@@ -909,21 +949,24 @@ function attachEventHandlers(): void {
 
         const levelDetail = $("#level-detail");
         levelDetail.find(".level-checkbox").onSafe("change", function() {
-            const id = this.id.replace(/^use-/, "");
+            const mainTableSpanClass = this.id.replace(/^use-/, "");
             const txtBox: HTMLInputElement = <HTMLInputElement>(
-                document.getElementById("max-" + id)
+                document.getElementById("max-" + mainTableSpanClass)
             );
             txtBox.disabled = !this.checked;
-            $("#levels-table")
-                .find("tbody tr.selected td." + id)
-                .html(this.checked ? txtBox.value : "-");
+
+            updateMainTableWithValue(
+                mainTableSpanClass,
+                this.checked ? txtBox.value : "-"
+            );
         });
 
         levelDetail.find(".level-textbox").onSafe("keyup", function() {
-            const id = this.id.replace(/^max-/, "");
-            $("#levels-table")
-                .find("tbody tr.selected td." + id)
-                .html(this.value);
+            // By design, the id of the .level-textbox element (in the detail pane) is
+            // always "max-" appended to the class used to mark the corresponding elements
+            // (one per row, so we can't use ID there) in the main table.
+            const mainTableSpanClass = this.id.replace(/^max-/, "");
+            updateMainTableWithValue(mainTableSpanClass, this.value);
         });
 
         $('input[name="words-or-letters"]').onSafe("change", () => {
@@ -968,6 +1011,39 @@ function attachEventHandlers(): void {
                 .hide();
         });
     }
+}
+
+function updateMainTableWithValue(mainTableSpanClass: string, newVal: string) {
+    const mainTableSpan = getMainTableSpan(mainTableSpanClass);
+
+    // The logic here is designed to maintain the same cell content
+    // as is originally produced by spanForSettingWithText() in readerSetup.io.ts.
+    const isSubCell = !!mainTableSpan.previousSibling;
+    if (isSubCell) {
+        // maintain the expectation that subcell values are surrounded
+        // by parentheses, unless we don't have a value, when nothing
+        // at all is shown.
+        const parent = mainTableSpan.parentElement!;
+        if (newVal && !mainTableSpan.innerText) {
+            // add parens
+            parent.insertBefore(document.createTextNode(" ("), mainTableSpan);
+            parent.appendChild(document.createTextNode(")"));
+        } else if (mainTableSpan.innerText && !newVal) {
+            // remove parens
+            parent.removeChild(mainTableSpan.previousSibling!);
+            parent.removeChild(mainTableSpan.nextSibling!);
+        }
+        mainTableSpan.innerText = newVal;
+    } else {
+        mainTableSpan.innerText = newVal || "-";
+    }
+}
+
+function getMainTableSpan(spanClassName: string): HTMLSpanElement {
+    const levelsTable = document.getElementById("levels-table")!;
+    return levelsTable.querySelector(
+        `tbody tr.selected td span.${spanClassName}`
+    )! as HTMLSpanElement;
 }
 
 function setAllowedWordsFile(fileName: string): void {

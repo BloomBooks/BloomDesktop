@@ -21,6 +21,8 @@ using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
+using Directory = System.IO.Directory;
+using File = System.IO.File;
 
 namespace BloomTests.Publish
 {
@@ -265,7 +267,7 @@ namespace BloomTests.Publish
                                     <p></p>
                                 </div>
 
-                                <div data-languagetipcontent='español' style='' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-contentNational1' contenteditable='true' lang='es'>
+                                <div data-languagetipcontent='espaÃ±ol' style='' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-contentNational1' contenteditable='true' lang='es'>
                                     <p></p>
                                 </div>
                             </div>
@@ -286,7 +288,7 @@ namespace BloomTests.Publish
                                 <p></p>
                             </div>
 
-                            <div data-languagetipcontent='español' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable normal-style bloom-contentNational1' contenteditable='true' lang='es'>
+                            <div data-languagetipcontent='espaÃ±ol' aria-label='false' role='textbox' spellcheck='true' tabindex='0' style='min-height: 24px;' class='bloom-editable normal-style bloom-contentNational1' contenteditable='true' lang='es'>
                                 <p></p>
                             </div>
 
@@ -417,6 +419,18 @@ namespace BloomTests.Publish
 				{
 					Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(entryContents));
 				});
+		}
+
+		[TestCase(BloomReaderFileMaker.kCreatorBloom, BloomReaderFileMaker.kDistributionBloomDirect)]
+		[TestCase(BloomReaderFileMaker.kCreatorHarvester, BloomReaderFileMaker.kDistributionBloomWeb)]
+		public void CompressBookForDevice_IncludesDistributionFile(string creator, string expectedContent)
+		{
+			TestHtmlAfterCompression(kMinimumValidBookHtml,
+				assertionsOnZipArchive: zipHtmlObj =>
+				{
+					Assert.AreEqual(expectedContent, GetEntryContents(zipHtmlObj.ZipFile, BloomReaderFileMaker.kDistributionFileName));
+				},
+				creator: creator);
 		}
 
 		const string kQuestionPagesHtml = @"<html>
@@ -1295,7 +1309,8 @@ namespace BloomTests.Publish
 			Action<ZipHtmlObj> assertionsOnZipArchive = null,
 			Action<ZipFile> assertionsOnRepeat = null,
 			string branding = "Default",
-			HashSet<string> languagesToInclude = null)
+			HashSet<string> languagesToInclude = null,
+			string creator = BloomReaderFileMaker.kCreatorBloom)
 		{
 			var testBook = CreateBookWithPhysicalFile(originalBookHtml, bringBookUpToDate: true);
 
@@ -1308,7 +1323,7 @@ namespace BloomTests.Publish
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
 			{
-				BloomReaderFileMaker.CreateBloomDigitalBook(bloomdTempFile.Path, testBook.FolderPath, _bookServer, Color.Azure, new NullWebSocketProgress(),
+				BloomReaderFileMaker.CreateBloomDigitalBook(bloomdTempFile.Path, testBook.FolderPath, _bookServer, Color.Azure, new NullWebSocketProgress(), creator: creator,
 					settings:new AndroidPublishSettings() {LanguagesToInclude = languagesToInclude});
 				var zip = new ZipFile(bloomdTempFile.Path);
 				var newHtml = GetEntryContents(zip, bookFileName);

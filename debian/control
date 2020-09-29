@@ -1,32 +1,36 @@
-Source: bloom-desktop-beta
+Source: bloom-desktop-alpha
 Section: x11
 Priority: optional
 Maintainer: Stephen McConnel <stephen_mcconnel@sil.org>
 Homepage: http://bloomlibrary.org/
 Vcs-Git: git://github.com/BloomBooks/BloomDesktop.git
 Vcs-Browser: https://github.com/BloomBooks/BloomDesktop
-Standards-Version: 3.9.7
+Standards-Version: 4.1.4
 Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
  wget, unzip, desktop-file-utils, curl, git,
  optipng, libsndfile1,
  mono5-sil, libgdiplus5-sil,
+ libgtk-3-0,
  libenchant-dev, libxklavier-dev, libdconf-dev,
  libicu-dev,
- libgtk2.0-cil (>= 2.12.10), libgtk2.0-dev (>= 2.14), libasound2-dev,
+ libgtk3.0-cil, libgtk-3-dev, libasound2-dev,
+ libgtk2.0-cil, libgtk2.0-dev,
  icu-devtools | libicu-dev (<< 52)
 
-Package: bloom-desktop-beta
+Package: bloom-desktop-alpha
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
  mono5-sil, libgdiplus5-sil, gtk-sharp5-sil, gtklp,
+ libgtk-3-0, libgtk3.0-cil,
+ libgtk2.0-0, libgtk2.0-cil,
  chmsee | xchm | kchmviewer, libtidy-sil,
  fonts-sil-andika-new-basic | fonts-sil-andikanewbasic,
  optipng, libsndfile1,
  wmctrl, lame, ghostscript,
- ffmpeg,
+ ffmpeg, graphicsmagick,
  python3-aeneas | python-aeneas
 Suggests: art-of-reading3
-Replaces: bloom-desktop, bloom-desktop-alpha, bloom-desktop-betainternal
+Replaces: bloom-desktop, bloom-desktop-beta, bloom-desktop-betainternal
 Conflicts: bloom-desktop-unstable
 Description: Literacy materials development for language communities
  Bloom Desktop is an application that dramatically "lowers the bar" for

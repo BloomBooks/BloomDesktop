@@ -247,7 +247,7 @@ namespace BloomTests.web
 		{
 			using (var server = CreateBloomServer())
 			{
-				var commonApi = new CommonApi(null, null);
+				var commonApi = new CommonApi(null, null,null);
 				commonApi.RegisterWithApiHandler(server.ApiHandler);
 				var transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + query);
 				server.MakeReply(transaction);

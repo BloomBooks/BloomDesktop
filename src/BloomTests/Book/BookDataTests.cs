@@ -1430,6 +1430,51 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		[TestCase("nsk-Latn", "Naskapi-Latn (Naskapi)")]
+		[TestCase("nsk-Latn-easy", "Naskapi-Latn-easy (Naskapi)")]
+		[TestCase("nsk-Latn-easy-AB", "Naskapi-Latn-easy-AB (Naskapi)")]
+		[TestCase("nsk-", "Naskapi")]
+#if __MonoCS__
+		[TestCase("zh-CN", "Chinese (Simplified)")]
+#else
+		[TestCase("zh-CN", "Chinese (Simplified, PRC)")]
+#endif
+		public void PrettyPrintLanguage_ShowsScriptVariantDistinctions(string lg3Code, string expectedResult)
+		{
+			var htmlDom = new HtmlDom();
+			var settings = CreateCollection(
+				Language1Iso639Code: "nsk",
+				Language1Name: "Naskapi",
+				Language2Iso639Code: "en",
+				Language3Iso639Code: lg3Code
+			);
+			var data = new BookData(htmlDom, settings, null);
+			Assert.That(data.PrettyPrintLanguage("nsk"), Is.EqualTo("Naskapi"));
+			Assert.That(data.PrettyPrintLanguage("en"), Is.EqualTo("English"));
+			Assert.That(data.PrettyPrintLanguage(lg3Code), Is.EqualTo(expectedResult));
+		}
+
+		[Test]
+		[TestCase("nsk-Latn", "Naskapi Roman", "Naskapi Roman (Naskapi)")]
+		// Check that additional codes don't affect the custom name
+		[TestCase("nsk-Latn-easy", "Simplified Naskapi", "Simplified Naskapi (Naskapi)")]
+		[TestCase("sok", "Songorong", "Songorong")] // test custom name with no additional Script/Region/Variant codes
+		[TestCase("zh-CN", "Mainland Chinese", "Mainland Chinese")] // special case for 'zh-CN'
+		public void PrettyPrintLanguage_WithCustomLanguageName_DoesNotInsertSubtags(
+			string lg1Code, string customName, string expectedResult)
+		{
+			var htmlDom = new HtmlDom();
+			var settings = CreateCollection(
+				Language1Iso639Code: lg1Code,
+				Language2Iso639Code: "en",
+				Language3Iso639Code: "fr"
+			);
+			settings.Language1.SetName(customName, true);
+			var data = new BookData(htmlDom, settings, null);
+			Assert.That(data.PrettyPrintLanguage(lg1Code), Is.EqualTo(expectedResult));
+		}
+
+		[Test]
 		public void MigrateData_TopicInTokPisinButNotEnglish_ChangesLangeToEnglish()
 		{
 			var bookDom = new HtmlDom(@"<html ><head></head><body>

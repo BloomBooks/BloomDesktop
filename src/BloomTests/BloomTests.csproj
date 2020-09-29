@@ -89,19 +89,11 @@
       <HintPath>..\..\packages\Castle.Core.3.3.3\lib\net45\Castle.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Geckofx-Core" Condition="'$(OS)'=='Windows_NT'">
-      <HintPath>..\..\packages\Geckofx45.45.0.18\lib\net40\Geckofx-Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'=='Windows_NT'">
-      <HintPath>..\..\packages\Geckofx45.45.0.18\lib\net40\Geckofx-Winforms.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Geckofx-Core" Condition="'$(OS)'!='Windows_NT'">
+    <Reference Include="Geckofx-Core">
       <HintPath>..\..\output\$(Configuration)\Geckofx-Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'!='Windows_NT'">
+    <Reference Include="Geckofx-Winforms">
       <HintPath>..\..\output\$(Configuration)\Geckofx-Winforms.dll</HintPath>
       <Private>True</Private>
     </Reference>
@@ -161,6 +153,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
@@ -172,10 +167,13 @@
   <ItemGroup>
     <Compile Include="BloomFileLocatorTests.cs" />
     <Compile Include="BloomZipFileTests.cs" />
+    <Compile Include="BookThumbnailerTests.cs" />
     <Compile Include="Book\BookCollectionTests.cs" />
+    <Compile Include="Book\BookCompressorTests.cs" />
     <Compile Include="Book\DataSetTests.cs" />
     <Compile Include="Book\BookStorage_ReplacePageTests.cs" />
     <Compile Include="Book\LicenseCheckerTests.cs" />
+    <Compile Include="CLI\CreateArtifactsCommandTests.cs" />
     <Compile Include="Edit\MakeActivityTests.cs" />
     <Compile Include="TestDoubles\Book\FakeBookServer.cs" />
     <Compile Include="CollectionTab\LibraryListViewTests.cs" />
@@ -283,7 +281,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

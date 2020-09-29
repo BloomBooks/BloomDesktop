@@ -1,10 +1,10 @@
 # Long lines in (minified?) javascript files in source files
-bloom-desktop-beta source: source-is-missing src/BloomBrowserUI/lib/jquery.alphanum.js *
-bloom-desktop-beta source: source-is-missing src/BloomBrowserUI/lib/jquery.hashchange.min.js
-bloom-desktop-beta source: source-is-missing src/BloomBrowserUI/Readium/scripts/readium-js-viewer_all_LITE.js
-bloom-desktop-beta source: source-is-missing src/BloomBrowserUI/lib/ckeditor/ckeditor.js *
-bloom-desktop-beta source: source-is-missing src/BloomBrowserUI/lib/jquery-ui-REMOVE/jquery-ui.min.js
-bloom-desktop-beta source: source-is-missing src/BloomBrowserUI/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js
-bloom-desktop-beta source: source-is-missing src/BloomBrowserUI/lib/ckeditor/adapters/jquery.js *
-bloom-desktop-beta source: source-is-missing src/BloomBrowserUI/lib/ckeditor/lang/*.js *
-bloom-desktop-beta source: source-is-missing src/BloomBrowserUI/bookEdit/toolbox/readers/libSynphony/jquery.text-markupSpec.js *
+bloom-desktop-alpha source: source-is-missing src/BloomBrowserUI/lib/jquery.alphanum.js *
+bloom-desktop-alpha source: source-is-missing src/BloomBrowserUI/lib/jquery.hashchange.min.js
+bloom-desktop-alpha source: source-is-missing src/BloomBrowserUI/Readium/scripts/readium-js-viewer_all_LITE.js
+bloom-desktop-alpha source: source-is-missing src/BloomBrowserUI/lib/ckeditor/ckeditor.js *
+bloom-desktop-alpha source: source-is-missing src/BloomBrowserUI/lib/jquery-ui-REMOVE/jquery-ui.min.js
+bloom-desktop-alpha source: source-is-missing src/BloomBrowserUI/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js
+bloom-desktop-alpha source: source-is-missing src/BloomBrowserUI/lib/ckeditor/adapters/jquery.js *
+bloom-desktop-alpha source: source-is-missing src/BloomBrowserUI/lib/ckeditor/lang/*.js *
+bloom-desktop-alpha source: source-is-missing src/BloomBrowserUI/bookEdit/toolbox/readers/libSynphony/jquery.text-markupSpec.js *

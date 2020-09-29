@@ -206,7 +206,7 @@
         <note>ID: BookEditor.CharacterMap.Instructions</note>
         <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): To select, use your mouse wheel or point at what you want, then release the key.</note>
-        <target xml:lang="quc" state="final">Chech uch'axik, chakojo ri setesik rech ri ch'o, chak'utu' ri kawaj, te'qne chapitz'a' ri cholnak'tz'ib' uk'utum ruk' ri raxkaqkoj q'o'b'al. 
+        <target xml:lang="quc" state="final">Chech uch'axik, chakojo ri setesik rech ri ch'o, chak'utu' ri kawaj, te'qne chapitz'a' ri cholnak'tz'ib' uk'utum ruk' ri raxkaqkoj q'o'b'al.
 K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'aj.</target>
       </trans-unit>
       <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true" approved="yes">
@@ -258,7 +258,7 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
       <trans-unit id="BookMetadata.a11yLevelAA" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level AA conformance</source>
         <note>ID: BookMetadata.a11yLevelAA</note>
-        <target xml:lang="quc" state="final">Junamam q’at AA 
+        <target xml:lang="quc" state="final">Junamam q’at AA
 
 </target>
       </trans-unit>
@@ -3848,8 +3848,8 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
         <source xml:lang="en">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</source>
+        cable, install phone drivers on your computer, or
+        modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note/>
         <target xml:lang="quc" state="translated">Rech utaqik pa USB, kaj ne rajawaxik uk'amil r k'a'm qas are',  ukujok chajinelab'  chcech ri  oyonib'al pa ri kematz'ib o uk'exik ri ilol rech ri oyonib'al.</target>
@@ -3949,7 +3949,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
         <note>{0} is a font name</note>
-        <target xml:lang="quc" state="final">We no'jwuj ri' k'o woktzij chi upam ruk ' jun kemuxe' ub'i' \"{0}\" xa are k'ut Bloom man xurij ta 
+        <target xml:lang="quc" state="final">We no'jwuj ri' k'o woktzij chi upam ruk ' jun kemuxe' ub'i' \"{0}\" xa are k'ut Bloom man xurij ta
  le kemuxe' pa we kematz'ib' ri'.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true" approved="yes">
@@ -4599,7 +4599,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="final">PDF man k'olom taj</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfNotSavedWhy" approved="yes">
-        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
+        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
         <target xml:lang="quc" state="translated">Man xk'ol ta ri k'olchak PDF xa rumal man xaya ta uq'ij le ub'anik rech jun "PDF rech ri tz'ajwokob'al".</target>
@@ -4610,7 +4610,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="final">&amp;tz'ajtz'ib'anik...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrologToAdobeEula" approved="yes">
-        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
+        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
         <target xml:lang="quc" state="translated">Bloom kukoj le cholupetik ruk' uq'o'b'al le kematal chak Adobe rech uq'exexik pa taq le k'olchak PDF ruk' uq'o'b'al CMYK chi uk'axwach le uq'o'b'al RGB. Wa' we ri' rech ujeqeb'axik jun "PDF chech le tz'ajwokob'al". Rajawaxik kuk'am uq'ab' le jun chik uwujil patanib'al rech ub'anik we ub'eyal pa Bloom.</target>

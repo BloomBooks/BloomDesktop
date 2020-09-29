@@ -122,8 +122,9 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                         canRotate={canRotate}
                         url={
                             pathToOutputBrowser +
-                            "bloom-player/dist/bloomplayer.htm?url=" +
-                            bookUrl
+                            "bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
+                            bookUrl +
+                            "&independent=false&host=bloomdesktop"
                         }
                         showRefresh={true}
                         highlightRefreshIcon={highlightRefresh}

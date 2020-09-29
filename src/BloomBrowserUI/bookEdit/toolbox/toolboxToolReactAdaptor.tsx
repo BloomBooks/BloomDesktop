@@ -36,6 +36,9 @@ export default abstract class ToolboxToolReactAdaptor
     public showTool() {}
     public hideTool() {}
     public updateMarkup() {}
+    public isUpdateMarkupAsync(): boolean {
+        return false;
+    }
     public newPageReady() {}
     public detachFromPage() {}
     public configureElements(container: HTMLElement) {}

@@ -31,8 +31,9 @@ export interface ITool {
     configureElements(container: HTMLElement);
     showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
     hideTool(); // called when changing tools or hiding the toolbox.
-    updateMarkup(); // called on every keypress AND after newPageReady
-    newPageReady(); // called when a new page is displayed AND after showTool
+    updateMarkup(); // called on most keypresses (but notably, not on arrow navigation, also not Ctrl+C). It is called on typing letters (obviously), Ctrl+X, Ctrl+V, Ctrl+Z, Ctrl+Y etc... or even just pressing and releasing Ctrl or Shift.
+    isUpdateMarkupAsync(): boolean; // should return true if updateMarkup does any async work that we should wait for.
+    newPageReady(); // called when a new page is displayed or tool is activated (called after showTool completes)
     detachFromPage(); // called when a page is going away AND before hideTool
     id(): string; // without trailing "Tool"!
     hasRestoredSettings: boolean;
@@ -491,7 +492,9 @@ export function applyToolboxStateToUpdatedPage() {
         doWhenPageReady(() => {
             if (currentTool) {
                 currentTool.newPageReady();
-                currentTool.updateMarkup();
+                // We used to call updateMarkup() here
+                // Now we don't because it would mess up the Talking Book Tool
+                // if you really need it, add call to updateMarkup to currentTool's implementation of newPageReady.
             }
         });
     }
@@ -633,21 +636,11 @@ function activateTool(newTool: ITool) {
         if (!newTool.hasRestoredSettings) {
             newTool.hasRestoredSettings = true;
             newTool.beginRestoreSettings(savedSettings).then(() => {
-                if (toolElt) {
-                    newTool.finishToolLocalization(toolElt);
-                }
-                newTool.showTool();
-                newTool.newPageReady();
+                activateToolInternalAsync(newTool, toolElt);
             });
         } else {
-            if (toolElt) {
-                newTool.finishToolLocalization(toolElt);
-            }
-            newTool.showTool();
-            newTool.newPageReady();
+            activateToolInternalAsync(newTool, toolElt);
         }
-
-        ToolBox.insertLangAttributesIntoToolboxElements(); // allows language-specific CSS formatting to be applied.
     }
 }
 
@@ -667,6 +660,26 @@ function getToolElement(tool: ITool): HTMLElement | null {
     }
     return toolElement;
 }
+
+async function activateToolInternalAsync(
+    newTool: ITool,
+    toolElt: HTMLElement | null
+): Promise<void> {
+    if (toolElt) {
+        newTool.finishToolLocalization(toolElt);
+    }
+
+    // Await it so that we can guarantee that newPageReady() and insertLangAttributesIntoToolboxElements()
+    // happen after showTool.
+    await newTool.showTool();
+
+    // Note: Allowed to begin some async work too, but currently no need to await its result.
+    newTool.newPageReady();
+
+    // Note: Begins some async work too, but currently no need to await its result.
+    ToolBox.insertLangAttributesIntoToolboxElements();
+}
+
 /**
  * This function attempts to activate the tool whose "data-toolId" attribute is equal to the value
  * of "currentTool" (the last tool displayed).
@@ -848,7 +861,7 @@ function handleKeyboardInput(): void {
     //  this.keypressTimer.clearTimeout();
     //}
     if (keypressTimer) clearTimeout(keypressTimer);
-    keypressTimer = setTimeout(() => {
+    keypressTimer = setTimeout(async () => {
         // This happens 500ms after the user stops typing.
         const page: HTMLIFrameElement = <HTMLIFrameElement>(
             parent.window.document.getElementById("page")
@@ -908,13 +921,13 @@ function handleKeyboardInput(): void {
             // it's not true vernacular text and doesn't need markup. So all the code below is skipped
             // if we don't have one.
             if (ckeditorOfThisBox) {
-                const ckeditorSelection = ckeditorOfThisBox.getSelection();
+                let ckeditorSelection = ckeditorOfThisBox.getSelection();
 
                 // there is also createBookmarks2(), which avoids actually inserting anything. That has the
                 // advantage that changing a character in the middle of a word will allow the entire word to
                 // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
                 // actually go back to where it was: it gets shifted to the right.
-                const bookmarks = ckeditorSelection.createBookmarks(true);
+                let bookmarks = ckeditorSelection.createBookmarks(true);
 
                 // For some reason, we have cases, mostly (always?) on paste, where
                 // ckeditor is inserting tons of comments which are messing with our parsing
@@ -923,7 +936,24 @@ function handleKeyboardInput(): void {
 
                 // If there's no tool active, we don't need to update the markup.
                 if (currentTool && toolbox.toolboxIsShowing()) {
-                    currentTool.updateMarkup();
+                    if (currentTool.isUpdateMarkupAsync()) {
+                        // Set the selection now before starting off asynchronous work
+                        // Since we've possibly already modified the DOM, CKEditor's selection will be reset back to the beginning.
+                        // If you wait for async work to finish before resetting the selection, then there will be a brief flash
+                        // as the selection moves to the front (when the async work is kicked off) and then back to the final destination
+                        // (after the async work is finished).
+                        // To counteract that minor annoyance, we set the selection before async works gets kicked off.
+                        // (and then the code below sets it again after the async work finishes)
+                        ckeditorOfThisBox
+                            .getSelection()
+                            .selectBookmarks(bookmarks);
+                        ckeditorSelection = ckeditorOfThisBox.getSelection();
+                        bookmarks = ckeditorSelection.createBookmarks(true);
+
+                        await currentTool.updateMarkup();
+                    } else {
+                        currentTool.updateMarkup();
+                    }
                 }
 
                 //set the selection to wherever our bookmark node ended up

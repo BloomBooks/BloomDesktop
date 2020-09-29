@@ -1,4 +1,5 @@
-﻿using System;
+//#define MEMORYCHECK
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -25,6 +26,7 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Reporting;
+using SIL.Xml;
 
 namespace Bloom.Edit
 {
@@ -548,7 +550,7 @@ namespace Bloom.Edit
 
 		public void ViewVisibleNowDoSlowStuff()
 		{
-			if(_currentlyDisplayedBook != CurrentBook)
+			if (_currentlyDisplayedBook != CurrentBook)
 			{
 				if (_contentLanguages.Count == 0)
 				{
@@ -562,6 +564,12 @@ namespace Bloom.Edit
 				GetMultilingualContentLanguages(out lang2iso, out lang3iso);
 				CurrentBook.SetMultilingualContentLanguages(lang2iso, lang3iso);
 				CurrentBook.PrepareForEditing();
+				// As of 4.9, we are adding a hook here to do one-time maintenance to books, based on a
+				// metadata 'maintenanceLevel'.
+				// 0 -> 1 Deal with overlarge images.
+				// 1 -> 2 Remove comical SVGs associated with 'none' style textboxes.
+				// Takes almost no time if the maintenanceLevel has been set for this book.
+				CurrentBook.Storage.PerformNecessaryMaintenanceOnBook();
 			}
 
 			_currentlyDisplayedBook = CurrentBook;
@@ -656,7 +664,62 @@ namespace Bloom.Edit
 				_duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 				_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 
+				CheckForBL8852();
+
 				PageSelectModelChangesComplete?.Invoke(this, EventArgs.Empty);
+			}
+		}
+
+		private void CheckForBL8852()
+		{
+			var page = _pageSelection.CurrentSelection;
+			var contentPages = page.Book.OurHtmlDom.GetContentPageElements();
+			if (contentPages == null)
+			{
+				return;
+			}
+
+			var idSet = new HashSet<string>();
+			foreach (var contentPage in contentPages)
+			{
+				var nodeList = HtmlDom.SelectChildNarrationAudioElements(contentPage, true);
+				if (nodeList == null) {
+					return;
+				}
+
+				for (int i = 0; i < nodeList.Count; ++i)
+				{
+					var node = nodeList.Item(i);
+
+					// GetOptionalStringAttribute needs this to be non-null, or else an exception will happen
+					if (node.Attributes == null)
+					{
+						continue;
+					}
+
+					if (HtmlDom.IsNodePartOfDataBookOrDataCollection(node))
+					{
+						continue;
+					}
+										
+					var id = node.GetOptionalStringAttribute("id", null);
+					if (id != null)
+					{
+						var isNewlyAdded = idSet.Add(id);
+						if (!isNewlyAdded)
+						{
+							// Uh-oh. That means an element like this already exists?
+							var shortMsg = "Corrupt Book - Duplicate audio ID. Please report this issue (and to receive help fixing the audio IDs in this book).\nAudio files in this book may become lost or overwritten.";
+							var longMsg = $"Duplicate GUID {id} on recordable with text \"{node.InnerText}\". See BL-8852.";
+							NonFatalProblem.Report(ModalIf.All, PassiveIf.None, shortMsg, longMsg);
+
+							// Only it report it once per book (per time),
+							// No need to report multiple modals at the same time
+							return;
+						}
+					
+					}
+				}
 			}
 		}
 
@@ -682,6 +745,7 @@ namespace Bloom.Edit
 			_featureRequirementsBeforeEdits = CurrentBook.OurHtmlDom.GetMetaValue("FeatureRequirement", "");
 			CheckForBL2634("setup");
 			SetupPageZoom();
+			CurrentBook.InsertFullBleedMarkup(_domForCurrentPage.Body);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
 			CheckForBL2634("made tags safe");
 			if (_currentPage != null)
@@ -964,6 +1028,10 @@ namespace Bloom.Edit
 		{
 			if (_domForCurrentPage != null && !_inProcessOfSaving && !NavigatingSoSuspendSaving)
 			{
+#if MEMORYCHECK
+				// Check memory for the benefit of developers.
+				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "before EditingModel.SaveNow()", false);
+#endif
 				var watch = Stopwatch.StartNew();
 				try
 				{
@@ -1035,6 +1103,10 @@ namespace Bloom.Edit
 				}
 				watch.Stop();
 				TroubleShooterDialog.Report($"Saving changes took {watch.ElapsedMilliseconds} milliseconds");
+#if MEMORYCHECK
+				// Check memory for the benefit of developers.
+				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "after EditingModel.SaveNow()", false);
+#endif
 			}
 		}
 
@@ -1311,7 +1383,7 @@ namespace Bloom.Edit
 			RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let's redraw everything
 		}
 
-//#if __MonoCS__	// See https://issues.bloomlibrary.org/youtrack/issue/BL-8619 for why we need these for Version4.8 on Windows.
+#if __MonoCS__
 		/// <summary>
 		/// Flag that a page selection is currently under way.
 		/// </summary>
@@ -1327,7 +1399,7 @@ namespace Bloom.Edit
 		{
 			_pageSelection.ChangingPageFinished();
 		}
-//#endif
+#endif
 
 		public bool GetClipboardHasPage()
 		{

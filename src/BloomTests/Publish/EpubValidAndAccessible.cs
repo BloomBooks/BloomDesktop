@@ -27,6 +27,28 @@ namespace BloomTests.Publish
 <div id='bloomDataDiv'>
 	<div data-book='contentLanguage1' lang='*'>xyz</div>
 	<div data-book='contentLanguage2' lang='*'>en</div>
+	<div data-book='coverImage' lang='*' src='DevilsSlide.png' data-copyright='Copyright © 2015, Stephen McConnel' data-creator='Stephen McConnel' data-license='cc-by-sa'>DevilsSlide.png</div>
+	<div data-book='coverImageDescription' lang='xyz'><p>Photograph of a rock formation with two parallel spines coming down a hill</p></div>
+	<div data-book='bookTitle' lang='xyz'><p>New Book</p></div>
+	<div data-book='originalContributions' lang='en'>
+		<p>words <em>carefully</em> chosen by Stephen McConnel</p>
+		<p>Image on page Front Cover by Stephen McConnel, © 2012 Stephen McConnel. CC-BY-SA 4.0.</p>
+		<p>Image on page 1 by International Illustrations; The Art Of Reading 3.0, © 2009 SIL International. CC-BY-SA 4.0.</p>
+	</div>
+	<div data-book='copyright' lang='*'>Copyright © 2020, Dr. Steve Himself</div>
+	<div data-book='licenseUrl' lang='*'>http://creativecommons.org/licenses/by/4.0/</div>
+	<div data-book='licenseDescription' lang='xyz'>
+		http://creativecommons.org/licenses/by/4.0/<br />You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.
+	</div>
+	<div data-book='versionAcknowledgments' lang='en'>Dr. Stephen R. McConnel, Ph.D.</div>
+	<div data-book='originalLicenseUrl' lang='*'>http://creativecommons.org/licenses/by/4.0/</div>
+	<div data-book='originalCopyright' lang='*'>Copyright © 2017, Dr. Timothy I. McConnel, Ph.D.</div>
+	<div data-book='originalAcknowledgments' lang='en'>Dr. Timothy I. McConnel, Ph.D.</div>
+	<div data-book='funding' lang='xyz'><p>We gratefully acknowledge those who help fund the author in his work.  They know who they are.</p></div>
+	<div data-book='outside-back-cover-branding-top-html'></div>
+	<div data-book='outside-back-cover-branding-bottom-html' lang='*'>
+		<p>This book was created with Bloom Enterprise features freely enabled in order to support projects funded by the local community.</p><img class='branding' src='Bloom%20Against%20Light%20HD.png' alt=''></img>
+	</div>
 </div>
 ",
 				extraContentOutsideTranslationGroup: @"
@@ -67,6 +89,18 @@ namespace BloomTests.Publish
 				</div>
 			</div>
 		</div>
+	</div>
+</div>
+<div class='bloom-page numberedPage' data-page-number='2' data-page=""required singleton"">
+	<div class=""marginBox"">
+		<div class=""bloom-translationGroup"" data-default-languages=""N1"" id=""originalContributions"">
+			<div class=""bloom-editable credits bloom-copyFromOtherLanguageIfNecessary Content-On-Title-Page-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" lang=""en"" contenteditable=""true"">
+				<p>This element would normally be on the title page but put here where contentinfo should be added</p>
+			</div>
+		</div>
+		<div class=""copyright Credits-Page-style"" data-derived=""copyright"" lang=""*"">
+			Copyright © 2018, Stephen R. McConnel...this would not normally be on a content page
+		</div>	
 	</div>
 </div>
 <div class=""bloom-page titlePage bloom-backMatter A5Portrait layout-style-Default side-left"" data-page=""required singleton"" id=""60ae9f18-b7b8-405b-8dd0-2cb5926eacde"" data-page-number=""10"">
@@ -136,14 +170,16 @@ namespace BloomTests.Publish
 	<div class=""marginBox""><img class=""branding"" src=""back-cover-outside.svg"" type=""image/svg"" onerror=""this.style.display='none'""></img></div>
 </div>
 ");
-			MakeImageFiles(book, "DevilsSlide", "SteveAtMalad");
-			MakeSampleSvgImage(book.FolderPath.CombineForPath("back-cover-outside.svg"));
+			MakeImageFiles(book, "DevilsSlide", "SteveAtMalad", "Bloom Against Light HD.png");
+			// The end page is rebuilt using the xmatter and branding settings, so the xhtml referencing back-cover-outside.svg is thrown away.
+			// However, the title page with the given branding references BloomLocal.svg so we'll create that and test it.
+			MakeSampleSvgImage(book.FolderPath.CombineForPath("BloomLocal.svg"));
 			// Add some accessibility stuff from the ePUB metadata dialog
 			var metadata = book.BookInfo.MetaData;
 			metadata.Hazards = "flashingHazard,noMotionSimulationHazard";
 			metadata.A11yFeatures = "signLanguage";
 			// Without a branding, Bloom Enterprise-only features are removed
-			var branding = "Test";
+			string branding = "Local-Community";
 			// Currently, only in OnPage mode does the image description turn into an aside that can be linked to the image.
 			MakeEpub("output", "ExportEpubWithSvgTests", book, BookInfo.HowToPublishImageDescriptions.OnPage, branding);
 			GetPageOneData();
@@ -214,7 +250,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckTitlePageAccessibility()
 		{
-			var pageData = GetPageNData(3);
+			var pageData = GetPageNData(4);
 			// Verify the ARIA roles and labels for the Bloom title page.
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 1);
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 4);
@@ -233,9 +269,20 @@ namespace BloomTests.Publish
 		}
 
 		[Test]
+		public void CheckContentInfoOnChildElementsOutsideContentInfoPages()
+		{
+			// These elements would not normally be on a numbered page, and a numbered page would not normally be data-page="requiredSingleton".
+			// I set up some unusual data to test that these elements, in the right circumstances, get given their own contentinfo and label.
+			// The contentinfo is NOT added when, as usual and as tested elsewhere, they are on a page like title page that is ALL contentinfo.
+			var pageData = GetPageNData(3);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Original Contributions']", _ns, 1);
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo' and @aria-label='Copyright']", _ns, 1);
+		}
+
+		[Test]
 		public void CheckCreditsPageAccessibility()
 		{
-			var pageData = GetPageNData(4);
+			var pageData = GetPageNData(5);
 			// Verify the ARIA roles and labels for the Bloom credits page.
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 1);
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 6);
@@ -258,10 +305,10 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckEndPageAccessibility()
 		{
-			var pageData = GetPageNData(5);
+			var pageData = GetPageNData(6);
 			// Verify the ARIA roles and labels for the End Page.
-			// currently two things get role attrs, one doc-pageBreak, and currently one presentation, on an automatically inserted branding image.
-			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role]", _ns, 2);
+			// currently one thing gets role attr, a doc-pageBreak.
+			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role]", _ns, 1);
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 1);
 
 			// Check the page break references.
@@ -274,13 +321,9 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckEpubSvgValidity()
 		{
-			var svgData = GetFileData(EpubMaker.kImagesFolder+"/back-cover-outside.svg");
+			var svgData = GetFileData(EpubMaker.kImagesFolder + "/BloomLocal.svg");
 			var ns = new XmlNamespaceManager(new NameTable());
-			//ns.AddNamespace("", "http://www.w3.org/2000/svg");
-			//ns.AddNamespace("dc", "http://purl.org/dc/elements/1.1/");
-			//ns.AddNamespace("cc", "http://creativecommons.org/ns#");
 			ns.AddNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-			//ns.AddNamespace("svg", "http://www.w3.org/2000/svg");
 			ns.AddNamespace("sodipodi", "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd");
 			ns.AddNamespace("inkscape", "http://www.inkscape.org/namespaces/inkscape");
 
@@ -304,10 +347,10 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckEpubManifestPropertiesValidity()
 		{
-			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='f5' and @properties='scripted svg']");
-			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@properties='scripted svg']", 1);
+			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='f4' and @properties='svg']");
+			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@properties='svg']", 1);
 
-			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='thumbnail-256' and @properties='cover-image']");
+			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='epub-thumbnail' and @properties='cover-image']");
 			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@properties='cover-image']", 1);
 
 			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='nav' and @properties='nav']");

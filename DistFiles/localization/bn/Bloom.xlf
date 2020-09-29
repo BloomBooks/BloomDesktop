@@ -3844,8 +3844,8 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</source>
+        cable, install phone drivers on your computer, or
+        modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note/>
         <target xml:lang="bn" state="final">ইউএসবির মাধ্যমে প্রেরণ করতে, আপনার সঠিক তারের  প্রয়োজন হতে পারে, আপনার কম্পিউটারে ফোন ড্রাইভার ইনস্টল করুন, বা আপনার ফোনে সেটিংস পরিবর্তন করুন ।</target>
@@ -4594,7 +4594,7 @@
         <target xml:lang="bn" state="final">PDF সংরক্ষিত নয়</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfNotSavedWhy" approved="yes">
-        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
+        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
         <target xml:lang="bn" state="translated">PDF ফাইলটি সংরক্ষণ করা হয়নি কারণ আপনি "Printshop এর জন্য PDF" তৈরির অনুমতি প্রদান করেন নি।</target>
@@ -4605,7 +4605,7 @@
         <target xml:lang="bn" state="final">&amp;প্রিন্ট...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrologToAdobeEula" approved="yes">
-        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
+        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
         <target xml:lang="bn" state="translated">RGB রঙের ব্যবহারের পরিবর্তে CMYK রঙ ব্যবহার করে PDF ফাইল রুপান্তরিত করতে ব্লুম অ্যাডবি রঙ প্রোফাইল ব্যবহার করে।  এটি "Printshop-এর জন্য PDF" তৈরির অংশ।  ব্লুমে এই কাজটি সম্পাদন করার জন্য আপনাকে নিম্নোক্ত লাইসেন্সে সম্মত হতে হবে।</target>

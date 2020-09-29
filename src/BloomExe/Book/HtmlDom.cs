@@ -9,10 +9,12 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
 using System.Xml.Xsl;
+using Bloom.Api; // for DynamicJson
 using Bloom.Publish.Epub;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using Gecko;
+using Microsoft.CSharp.RuntimeBinder;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.Reporting;
@@ -128,14 +130,14 @@ namespace Bloom.Book
 			foreach (XmlElement node in _dom.SafeSelectNodes("/html/body/div[contains(concat(' ', normalize-space(@class), ' '),' bloom-page ') and contains(concat(' ', normalize-space(@class), ' '),' customPage ')and @data-page='']"))
 			{
 				node.SetAttribute("data-page", "extra");
-				foreach (XmlElement label in node.SafeSelectNodes("div[contains(concat(' ', normalize-space(@class), ' '), ' pageLabel ')]"))
+				foreach (XmlElement label in GetAllDivsWithClass(node, "pageLabel"))
 				{
 					label.RemoveAttribute("data-i18n");
 					break;
 				}
-				foreach (XmlElement description in node.SafeSelectNodes("div[contains(concat(' ', normalize-space(@class), ' '), ' pageDescription ')]"))
+				foreach (XmlElement description in GetAllDivsWithClass(node, "pageDescription"))
 				{
-					description.InnerText = String.Empty;
+					description.InnerText = string.Empty;
 					break;
 				}
 			}
@@ -619,7 +621,11 @@ namespace Bloom.Book
 		/// </summary>
 		public static void AddPublishClassToBody(XmlDocument dom)
 		{
-			AddClass((XmlElement) dom.SelectSingleNode("//body"), "publishMode");
+			AddClassToBody(dom, "publishMode");
+		}
+		public static void AddClassToBody(XmlDocument dom,string className)
+		{
+			AddClass((XmlElement)dom.SelectSingleNode("//body"), className);
 		}
 
 		public static void AddRightToLeftClassToBody(XmlDocument dom)
@@ -688,17 +694,15 @@ namespace Bloom.Book
 		/// <param name="didChange"></param>
 		internal string MigrateEditableData(XmlElement page, XmlElement template, string lineage, bool allowDataLoss, out bool didChange)
 		{
-			const string imageXpath = ".//div[contains(concat(' ', @class, ' '), ' bloom-imageContainer ')]";
-			const string videoXpath = ".//div[contains(concat(' ', @class, ' '), ' bloom-videoContainer ')]";
 			if (!allowDataLoss)
 			{
 				// See comment on GetTranslationGroupsInternal() below.
 				var oldTextCount = GetTranslationGroupCount(page);
 				var newTextCount = GetTranslationGroupCount(template);
-				var oldImageCount = page.SafeSelectNodes(imageXpath).Count;
-				var newImageCount = template.SafeSelectNodes(imageXpath).Count;
-				var oldVideoCount = page.SafeSelectNodes(videoXpath).Count;
-				var newVideoCount = template.SafeSelectNodes(videoXpath).Count;
+				var oldImageCount = GetAllDivsWithClass(page, "bloom-imageContainer").Count;
+				var newImageCount = GetAllDivsWithClass(template, "bloom-imageContainer").Count;
+				var oldVideoCount = GetAllDivsWithClass(page, "bloom-videoContainer").Count;
+				var newVideoCount = GetAllDivsWithClass(template, "bloom-videoContainer").Count;
 				if (newTextCount < oldTextCount || newImageCount < oldImageCount || newVideoCount < oldVideoCount)
 				{
 					didChange = false;
@@ -741,9 +745,9 @@ namespace Bloom.Book
 			// that currently hides them.
 			MigrateChildren(GetTranslationGroups(page), GetTranslationGroups(newPage));
 			// migrate images
-			MigrateChildrenWithCommonXpath(page, imageXpath, newPage);
+			MigrateChildrenWithCommonClass(page, "bloom-imageContainer", newPage);
 			// migrate videos
-			MigrateChildrenWithCommonXpath(page, videoXpath, newPage);
+			MigrateChildrenWithCommonClass(page, "bloom-videoContainer", newPage);
 			RemovePlaceholderVideoClass(newPage);
 			didChange = true;
 			return oldLineage;
@@ -801,6 +805,135 @@ namespace Bloom.Book
 
 				GetTranslationGroupsInternal(childElement, ref result);
 			}
+		}
+
+		/// <summary>
+		/// Gets a JSON string of colors used in the current book.
+		/// </summary>
+		public string GetColorsUsedInBookBubbleElements()
+		{
+			var colorElementList = new List<string>();
+			var textOverPictureElements = GetTextOverPictureElements(Body);
+			foreach (var node in textOverPictureElements)
+			{
+				var styleAttr = node.GetOptionalStringAttribute("style", "");
+				if (!string.IsNullOrEmpty(styleAttr))
+				{
+					// Possible bubble text color
+					var textColorValue = GetColorValueFromStyle(styleAttr);
+					if (!string.IsNullOrEmpty(textColorValue))
+					{
+						var textColorString = DynamicJson.Serialize(new
+						{
+							colors = new [] { textColorValue }
+						});
+						colorElementList.Add(textColorString);
+					}
+				}
+				var dataBubbleAttr = node.GetOptionalStringAttribute("data-bubble", "");
+				if (string.IsNullOrEmpty(dataBubbleAttr))
+					continue;
+
+				// Possible bubble background color
+				var jsonObject = GetJsonObjectFromDataBubble(dataBubbleAttr);
+				if (jsonObject == null)
+					continue; // only happens if it fails to parse the "json"
+				string[] backgroundColorArray = GetBackgroundColorsFromDataBubbleJsonObj(jsonObject);
+				if (backgroundColorArray == null || backgroundColorArray.Length == 0)
+					continue;
+
+				// Review: opacity doesn't yet exist in data-bubble, but it will when we do BL-8537.
+				// float.Parse() here keeps the opacity from being in quotes (and therefore a string)
+				// This is important for matching swatch opacity on the js end.
+				var opacityValue = GetOpacityFromDataBubbleJsonObj(jsonObject);
+				var backgroundColorString = DynamicJson.Serialize(new
+				{
+					colors = backgroundColorArray,
+					opacity = opacityValue
+				});
+
+				colorElementList.Add(backgroundColorString);
+			}
+
+			return "[" + string.Join(",", colorElementList) + "]";
+		}
+
+		private static string GetColorValueFromStyle(string styleAttrVal)
+		{
+			// Looking for something like "color: rgb(x,y,z);" or "color: #aaaaaa;"
+			var styleRegex = new Regex(@"\s*color\s*:\s*(.+)\s*;");
+			var match = styleRegex.Match(styleAttrVal);
+			// If successful, group 1 should be everything between "color: " and ";"
+			return match.Success ? match.Groups[1].Value : string.Empty;
+		}
+
+		internal static dynamic GetJsonObjectFromDataBubble(string dataBubbleAttrVal)
+		{
+			dynamic result;
+			try
+			{
+				result = DynamicJson.Parse(dataBubbleAttrVal.Replace("`", "\""));
+			}
+			catch (Exception)
+			{
+				Logger.WriteEvent("HtmlDom.GetJsonObjectFromDataBubble() failed to parse data-bubble: " + dataBubbleAttrVal);
+				result = null;
+			}
+			return result;
+		}
+
+		private static string[] GetBackgroundColorsFromDataBubbleJsonObj(dynamic jsonObject)
+		{
+			if (jsonObject == null)
+				return null;
+			try
+			{
+				return jsonObject.backgroundColors;
+			}
+			catch (RuntimeBinderException)
+			{
+				return null; // This is the 'normal' branch if backgroundColors aren't defined.
+			}
+		}
+
+		private static float GetOpacityFromDataBubbleJsonObj(dynamic jsonObject)
+		{
+			if (jsonObject == null)
+				return 1F;
+			try
+			{
+				return float.Parse(jsonObject.opacity);
+			}
+			catch (RuntimeBinderException)
+			{
+				return 1F;
+			}
+		}
+
+		internal static string GetStyleFromDataBubbleJsonObj(dynamic jsonObject)
+		{
+			if (jsonObject == null)
+				return "none";
+			try
+			{
+				return jsonObject.style;
+			}
+			catch (RuntimeBinderException)
+			{
+				return "none";
+			}
+		}
+
+		private static XmlNodeList GetAllDivsWithClass(XmlNode containerElement, string className)
+		{
+			const string xpath = ".//div[contains(concat(' ', normalize-space(@class), ' '), ' {0} ')]";
+			var classPath = xpath.Replace("{0}", className);
+			return containerElement.SafeSelectNodes(classPath);
+		}
+
+		private static IEnumerable<XmlElement> GetTextOverPictureElements(XmlNode bookBodyElement)
+		{
+			return GetAllDivsWithClass(bookBodyElement, "bloom-textOverPicture").Cast<XmlElement>();
 		}
 
 		/// <summary>
@@ -880,12 +1013,12 @@ namespace Bloom.Book
 		/// For translation groups, also updates the bloom-editable divs to have the expected class.
 		/// </summary>
 		/// <param name="page"></param>
-		/// <param name="xpath"></param>
+		/// <param name="className"></param>
 		/// <param name="newPage"></param>
-		private static void MigrateChildrenWithCommonXpath(XmlElement page, string xpath, XmlElement newPage)
+		private static void MigrateChildrenWithCommonClass(XmlElement page, string className, XmlElement newPage)
 		{
-			var oldParents = new List<XmlElement>(page.SafeSelectNodes(xpath).Cast<XmlElement>());
-			var newParents = new List<XmlElement>(newPage.SafeSelectNodes(xpath).Cast<XmlElement>());
+			var oldParents = new List<XmlElement>(GetAllDivsWithClass(page, className).Cast<XmlElement>());
+			var newParents = new List<XmlElement>(GetAllDivsWithClass(newPage, className).Cast<XmlElement>());
 			MigrateChildren(oldParents, newParents);
 		}
 
@@ -1083,8 +1216,7 @@ namespace Bloom.Book
 			foreach (var keyPair in keyDict)
 			{
 				var style = GetStyleNameFromRuleSelector(keyPair.Key);
-				var searchResult = domForInsertedPage.SafeSelectNodes(
-					"//div[contains(concat(' ', @class, ' '), ' " + style + " ')]");
+				var searchResult = GetAllDivsWithClass(domForInsertedPage.Body, style);
 				if (searchResult.Count > 0)
 					keysUsedOnPage.Add(keyPair.Key, keyPair.Value);
 			}
@@ -1972,11 +2104,23 @@ namespace Bloom.Book
 			return element.SafeSelectNodes(".//div[contains(@class,'bloom-videoContainer')]/video/source");
 		}
 
+		private static readonly string kAudioSentenceElementsXPath = "descendant-or-self::node()[contains(@class,'audio-sentence') and string-length(@id) > 0]";
+		
+		public static XmlNodeList SelectRecordableDivOrSpans(XmlElement element)
+		{
+			string xpath1 = kAudioSentenceElementsXPath;
+			// We only want the ones with ids, so add check for string-length(@id)
+			string xpath2 = "descendant-or-self::node()[contains(@class,'bloom-editable') and not(contains(@class,'bloom-noAudio'))  and string-length(@id) > 0 ]";
+			// Also add on any other spans. (e.g., bloom-highlight segments, which won't be matched by xpath1.
+			string xpath3 = "descendant-or-self::node()[contains(@class,'bloom-editable') and not(contains(@class,'bloom-noAudio'))]//span[string-length(@id) > 0]";
+			return element.SafeSelectNodes($"{xpath1}|{xpath2}|{xpath3}");
+		}
+
 		public static XmlNodeList SelectAudioSentenceElements(XmlElement element)
 		{
 			// It's unexpected for a book to have nodes with class audio-sentence and no id to link them to a file, but
 			// if they do occur, it's better to ignore them than for other code to crash when looking for the ID.
-			return element.SafeSelectNodes("descendant-or-self::node()[contains(@class,'audio-sentence') and string-length(@id) > 0]");
+			return element.SafeSelectNodes(kAudioSentenceElementsXPath);
 		}
 
 		public static XmlNodeList SelectAudioSentenceElementsWithDataDuration(XmlElement element)
@@ -2115,7 +2259,7 @@ namespace Bloom.Book
 				.Replace("<br>", Environment.NewLine);
 		}
 
-		private IEnumerable<XmlElement> GetContentPageElements()
+		public IEnumerable<XmlElement> GetContentPageElements()
 		{
 			return _dom.SafeSelectNodes(
 					"/html/body/div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]")
@@ -2497,6 +2641,67 @@ namespace Bloom.Book
 			var idx = xClass.IndexOf("bloom-content", StringComparison.Ordinal);
 			Debug.Assert(idx >= 0);
 			return xClass.Substring(idx);
+		}
+
+		public static bool IsNodePartOfDataBookOrDataCollection(XmlNode node)
+		{
+			bool isMatch = DoesSelfOrAncestorMatchCondition(node, n => {
+				if (n.Attributes == null)
+				{
+					return false;
+				}
+				else if (n.GetOptionalStringAttribute("data-book", null) != null)
+				{
+					return true;
+				}
+				else if (n.GetOptionalStringAttribute("data-collection", null) != null)
+				{
+					return true;
+				}
+
+				return false;
+			});
+
+			return isMatch;
+		}
+
+		public static bool DoesSelfOrAncestorMatchCondition(XmlNode node, Func<XmlNode, bool> matcher)
+		{
+			if (node == null)
+			{
+				return false;
+			}
+
+			var ancestor = node;
+
+			while (ancestor != null)
+			{
+				if (matcher(ancestor))
+				{
+					return true;
+				}
+								
+				ancestor = ancestor.ParentNode;
+			}
+
+			return false;			
+		}
+
+		public static void InsertFullBleedMarkup(XmlElement body)
+		{
+			AddClassIfMissing(body, "bloom-fullBleed");
+			foreach (XmlElement page in body.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToArray())
+			{
+				var mediaBoxDiv = page.OwnerDocument.CreateElement("div");
+				(page.ParentNode as XmlElement).ReplaceChild(mediaBoxDiv, page);
+				mediaBoxDiv.AppendChild(page);
+				// In an ideal world, the page size class would be on the body, and style rules for
+				// the media box could simply use it. As it is, the page size class is on the page,
+				// and to write style rules that use it, we need to copy it to the new container.
+				var pageSizeClass = page.Attributes["class"].Value.Split(' ')
+					.First(x => x.EndsWith("Portrait") || x.EndsWith("Landscape"));
+				mediaBoxDiv.SetAttribute("class", $"bloom-mediaBox {pageSizeClass}");
+			}
 		}
 	}
 }

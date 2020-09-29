@@ -44,15 +44,17 @@ namespace BloomTests.Publish
 			MakeImageFiles(book, "my_Image", "my image");
 #endif
 			MakeEpub("output", "HandlesWhiteSpaceInImageNames", book);
+			CheckBasicsInPage();
 #if __MonoCS__
 			CheckBasicsInManifest("my_Image", "my_Image1");
-			CheckBasicsInPage("my_Image", "my_Image1");
+			CheckBasicsInGivenPage(2, "my_Image", "my_Image1");
 #else
 			CheckBasicsInManifest("my_Image", "my_image1");
-			CheckBasicsInPage("my_Image", "my_image1");
+			CheckBasicsInGivenPage(2, "my_Image", "my_image1");
 #endif
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 		}
@@ -66,9 +68,11 @@ namespace BloomTests.Publish
 			MakeImageFiles(book, nonRomanName, "my image");
 			MakeEpub(nonRomanName, "HandlesNonRomanFileNames", book);
 			CheckBasicsInManifest(nonRomanName, "my_image");
-			CheckBasicsInPage(nonRomanName, "my_image");
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInPage();
+			CheckBasicsInGivenPage(2, nonRomanName, "my_image");
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 		}
@@ -87,9 +91,10 @@ namespace BloomTests.Publish
 			var book = SetupBookLong("This is a simple page", "xyz", images: new[] { "image1" },
 				imageDescriptions: new[] { "This describes image 1" });
 			MakeEpub("output", $"ImageDescriptions_NotBloomEnterprise_AreRemoved_{howToPublish}", book, howToPublish);
-			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
-			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("(//xhtml:div[contains(@class,'bloom-imageDescription')]|//xhtml:aside[contains(@class,'imageDescription')])", _ns, 1);
-			assertThatPageOneData.HasAtLeastOneMatchForXpath("(//xhtml:div[.='This describes image 1']|//xhtml:aside[.='This describes image 1'])", _ns);
+			var page2Data = GetPageNData(2);
+			var assertThatPageTwoData = AssertThatXmlIn.String(page2Data);
+			assertThatPageTwoData.HasSpecifiedNumberOfMatchesForXpath("(//xhtml:div[contains(@class,'bloom-imageDescription')]|//xhtml:aside[contains(@class,'imageDescription')])", _ns, 1);
+			assertThatPageTwoData.HasAtLeastOneMatchForXpath("(//xhtml:div[.='This describes image 1']|//xhtml:aside[.='This describes image 1'])", _ns);
 		}
 
 		// The original test here proved that we removed image descriptions when not displaying them.
@@ -101,7 +106,8 @@ namespace BloomTests.Publish
 			var book = SetupBookLong("This is a simple page", "xyz", images: new[] { "image1" },
 				imageDescriptions: new[] { "This describes image 1" });
 			MakeEpub("output", "ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsNone_AreNotRemoved", book, branding: "Test");
-			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns, 1);
+			var page2Data = GetPageNData(2);
+			AssertThatXmlIn.String(page2Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns, 1);
 		}
 
 		// Also checks for handling of branding images, to avoid another whole epub creation.
@@ -112,10 +118,11 @@ namespace BloomTests.Publish
 				imageDescriptions: new[] { "This describes image 1" }, extraContentOutsideTranslationGroup: "<img class='branding' src='back-cover.png'/>");
 			MakeImageFiles(book, "back-cover");
 			MakeEpub("output", "ImageDescriptions_BloomEnterprise_HowToPublishImageDescriptionsOnPage_ConvertedToAsides", book, BookInfo.HowToPublishImageDescriptions.OnPage, branding: "Test");
-			var assertThatPageOneData = AssertThatXmlIn.String(_page1Data);
-			assertThatPageOneData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
-			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside[.='This describes image 1']", _ns, 1);
-			assertThatPageOneData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@class='branding' and (@alt='' or @alt='Logo of the book sponsors') and @role='presentation']", _ns, 1);
+			var page2Data = GetPageNData(2);
+			var assertThatPageTwoData = AssertThatXmlIn.String(page2Data);
+			assertThatPageTwoData.HasNoMatchForXpath("//xhtml:div[contains(@class,'bloom-imageDescription')]", _ns);
+			assertThatPageTwoData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@class='marginBox']/xhtml:div/xhtml:aside[.='This describes image 1']", _ns, 1);
+			assertThatPageTwoData.HasSpecifiedNumberOfMatchesForXpath("//xhtml:img[@class='branding' and (@alt='' or @alt='Logo of the book sponsors') and @role='presentation']", _ns, 1);
 		}
 
 		[TestCase(TalkingBookApi.AudioRecordingMode.Sentence)]
@@ -290,25 +297,27 @@ namespace BloomTests.Publish
 			// But don't make a fake audio file for the second span
 			MakeEpub("output", $"Missing_Audio_Ignored_{audioRecordingMode}", book);	// Note: need to ensure they that multiple test cases do not use the same file
 			CheckBasicsInManifest("my_image");
-			CheckBasicsInPage("my_image");
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInPage();
+			CheckBasicsInGivenPage(2, "my_image");
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 
 			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
 			var assertManifest = AssertThatXmlIn.String(FixContentForXPathValueSlash(_manifestContent));
-			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
-			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f2' and @href='2.xhtml' and @media-overlay='f2_overlay']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f2_overlay' and @href='2_overlay.smil' and @media-type='application^slash^smil+xml']");
 
-			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
+			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/2_overlay.smil"));
 			var mgr = new XmlNamespaceManager(new NameTable());
 			mgr.AddNamespace("smil", "http://www.w3.org/ns/SMIL");
 			mgr.AddNamespace("epub", "http://www.idpf.org/2007/ops");
 			var assertSmil = AssertThatXmlIn.String(FixContentForXPathValueSlash(smilData));
-			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", mgr);
-			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#e993d14a-0ec3-4316-840b-ac9143d59a2c']", mgr);
-			assertSmil.HasNoMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#i0d8e9910-dfa3-4376-9373-a869e109b763']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='2.xhtml' and @epub:type='bodymatter chapter']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='2.xhtml#e993d14a-0ec3-4316-840b-ac9143d59a2c']", mgr);
+			assertSmil.HasNoMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='2.xhtml#i0d8e9910-dfa3-4376-9373-a869e109b763']", mgr);
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3']", mgr);
 			assertSmil.HasNoMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"i0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", mgr);
 
@@ -427,25 +436,27 @@ namespace BloomTests.Publish
 			MakeEpub("output", $"Missing_Audio_CreatedFromWav_{audioRecordingMode}", book);
 			CheckBasicsInManifest("my_image");
 			CheckAccessibilityInManifest(true, true, false, _defaultSourceValue);	// both sound and image files
-			CheckBasicsInPage("my_image");
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInPage();
+			CheckBasicsInGivenPage(2,"my_image");
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 
 			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
 			var assertManifest = AssertThatXmlIn.String(FixContentForXPathValueSlash(_manifestContent));
-			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
-			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f2' and @href='2.xhtml' and @media-overlay='f2_overlay']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f2_overlay' and @href='2_overlay.smil' and @media-type='application^slash^smil+xml']");
 
-			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
+			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/2_overlay.smil"));
 			var mgr = new XmlNamespaceManager(new NameTable());
 			mgr.AddNamespace("smil", "http://www.w3.org/ns/SMIL");
 			mgr.AddNamespace("epub", "http://www.idpf.org/2007/ops");
 			var assertSmil = AssertThatXmlIn.String(FixContentForXPathValueSlash(smilData));
-			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", mgr);
-			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#e993d14a-0ec3-4316-840b-ac9143d59a2c']", mgr);
-			assertSmil.HasNoMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#i0d8e9910-dfa3-4376-9373-a869e109b763']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='2.xhtml' and @epub:type='bodymatter chapter']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='2.xhtml#e993d14a-0ec3-4316-840b-ac9143d59a2c']", mgr);
+			assertSmil.HasNoMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='2.xhtml#i0d8e9910-dfa3-4376-9373-a869e109b763']", mgr);
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3']", mgr);
 			assertSmil.HasNoMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"i0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", mgr);
 
@@ -465,9 +476,11 @@ namespace BloomTests.Publish
 			MakeEpub("output", "ImageSrcQuery_IsIgnored", book);
 			CheckBasicsInManifest("myImage");
 			CheckAccessibilityInManifest(false, true, false, _defaultSourceValue);		// no sound files, but a nontrivial image file
-			CheckBasicsInPage("myImage");
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInPage();
+			CheckBasicsInGivenPage(2, "myImage");
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 		}
 
 		[Test]
@@ -488,20 +501,22 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckAccessibilityInManifest(false, false, false, _defaultSourceValue);	// neither sound nor image files
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
-
-			var page2Data = ExportEpubTestsBaseClass.GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
-			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:div[@id='anotherId']", _ns);
-			CheckPageBreakMarker(page2Data, "pg2", "2");
+			CheckBasicsInGivenPage(2);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
 			CheckEpubTypeAttributes(page2Data, null);
+
+			var page3Data = ExportEpubTestsBaseClass.GetZipContent(_epub, Path.GetDirectoryName(_manifestFile) + "/" + "3.xhtml");
+			AssertThatXmlIn.String(page3Data).HasAtLeastOneMatchForXpath("//xhtml:div[@id='anotherId']", _ns);
+			CheckPageBreakMarker(page3Data, "pg2", "2");
+			CheckEpubTypeAttributes(page3Data, null);
 			var navPageData = CheckNavPage();
 			AssertThatXmlIn.String(navPageData).HasNoMatchForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml']", _ns);
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='3.xhtml']", _ns);
 			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='1.xhtml#pg1']", _ns, 1);
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml#pg1']", _ns, 1);
 			AssertThatXmlIn.String(navPageData).HasSpecifiedNumberOfMatchesForXpath(
-				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='2.xhtml#pg2']", _ns, 1);
+				"xhtml:html/xhtml:body/xhtml:nav[@epub:type='page-list']/xhtml:ol/xhtml:li/xhtml:a[@href='3.xhtml#pg2']", _ns, 1);
 		}
 
 		[Test]
@@ -531,11 +546,15 @@ namespace BloomTests.Publish
 			MakeEpub("output", "OmitsNonPrintingPages", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInGivenPage(2);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 
-			var page2entry = _epub.GetEntry(Path.GetDirectoryName(_manifestFile) + "/" + "2.xhtml");
-			Assert.That(page2entry, Is.Null, "nonprinting and interactive pages should be omitted");
+			var page3Data = GetPageNData(3);
+			var assertThatPage3 = AssertThatXmlIn.String(page3Data);
+			assertThatPage3.HasNoMatchForXpath("//div[contains(@class,'bloom-nonprinting')]");
+			assertThatPage3.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page') and contains(@class,'titlePage')]", 1);
 		}
 
 		/// <summary>
@@ -554,11 +573,13 @@ namespace BloomTests.Publish
 			MakeEpub("output", "ImageMissing_IsRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInGivenPage(2);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 
 			AssertThatXmlIn.String(_manifestContent).HasNoMatchForXpath("package/manifest/item[@id='fmyImage' and @href='myImage.png']");
-			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//img");
+			AssertThatXmlIn.String(page2Data).HasNoMatchForXpath("//img");
 		}
 
 		[Test]
@@ -594,8 +615,10 @@ namespace BloomTests.Publish
 			MakeEpub("output", "BloomUi_IsRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInGivenPage(2);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 
 			AssertThatXmlIn.String(_manifestContent).HasNoMatchForXpath("package/manifest/item[@id='fmyImage' and @href='myImage.png']");
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//img[@src='myImage.png']");
@@ -621,12 +644,14 @@ namespace BloomTests.Publish
 			MakeEpub("output", "StandardStyleSheets_AreRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInGivenPage(2);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 			// Check that the standard stylesheet, not wanted in the ePUB, is removed.
-			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:head/xhtml:link[@href='basePage.css']", _ns); // standard stylesheet should be removed.
+			AssertThatXmlIn.String(page2Data).HasNoMatchForXpath("//xhtml:head/xhtml:link[@href='basePage.css']", _ns); // standard stylesheet should be removed.
 			Assert.That(_page1Data, Does.Not.Contain("basePage.css")); // make sure it's stripped completely
 			Assert.That(_epub.GetEntry("content/basePage.ss"),Is.Null);
 		}
@@ -688,20 +713,22 @@ namespace BloomTests.Publish
 			MakeEpub("output", "InvisibleAndUnwantedContentRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInGivenPage(2);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 
-			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
-			assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='pageDescription']", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='en']", _ns); // one language by default
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:label", _ns); // labels are hidden
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:script", _ns);
+			var assertThatPage2 = AssertThatXmlIn.String(page2Data);
+			assertThatPage2.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
+			assertThatPage2.HasNoMatchForXpath("//xhtml:div[@class='pageDescription']", _ns);
+			assertThatPage2.HasNoMatchForXpath("//xhtml:div[@lang='en']", _ns); // one language by default
+			assertThatPage2.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
+			assertThatPage2.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
+			assertThatPage2.HasNoMatchForXpath("//xhtml:label", _ns); // labels are hidden
+			assertThatPage2.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
+			assertThatPage2.HasNoMatchForXpath("//xhtml:script", _ns);
 		}
 
 		/// <summary>
@@ -737,49 +764,6 @@ namespace BloomTests.Publish
 			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
 			assertThatPage1.HasNoMatchForXpath("//xhtml:label", _ns); // labels are hidden
 			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
-		}
-
-		[Test]
-		public void ContentInfo_IsAddedToTitleAndCredits_ButNotToChildren()
-		{
-			var book = SetupBookLong("normal content.", "xyz",
-				extraPageClass: " bloom-frontMatter titlePage' data-page='required singleton",
-				extraContentOutsideTranslationGroup: "<div class='bloom-translationGroup' id='originalContributions'><div class='bloom-editable' lang='xyz'>this is a original contributions that would get contentinfo if not inside title page</div></div>",
-				extraPages:
-				@"<div class='bloom-page bloom-frontMatter credits' data-page='required singleton'>
-							<div class='bloom-translationGroup' data-derived='copyright'>
-							<div class='bloom-editable' lang='xyz'>this is a copyright message that would get contentinfo if not inside credits page</div></div></div>",
-				defaultLanguages: "V,N1");
-
-			MakeEpub("output", "ContentInfo_IsAddedToTitleAndCredits_ButNotToChildren", book);
-			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
-			assertThatPage1.HasAtLeastOneMatchForXpath("//div[@id='originalContributions']");
-			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page') and @role='contentinfo']", 1);
-			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//div[@role='contentinfo']", 1);
-			var page2Data = GetPageNData(2);
-			var assertThatPage2 = AssertThatXmlIn.String(page2Data);
-			assertThatPage2.HasAtLeastOneMatchForXpath("//div[@data-derived='copyright']");
-			assertThatPage2.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page') and @role='contentinfo']",1);
-			assertThatPage2.HasSpecifiedNumberOfMatchesForXpath("//div[@role='contentinfo']", 1);
-		}
-
-		[Test]
-		public void ContentInfo_IsAddedToInfoElementsNotInInfoPages()
-		{
-			var book = SetupBookLong("normal content.", "xyz",
-				extraPageClass: " bloom-frontMatter insideFrontCover' data-page='required singleton",
-				extraContentOutsideTranslationGroup: @"<div class='bloom-translationGroup' id='originalContributions'><div class='bloom-editable' lang='xyz'>this is a original contributions that should get contentinfo</div></div>
-					<div class='bloom-translationGroup' data-derived='copyright'>
-							<div class='bloom-editable' lang='xyz'>this is a copyright message that should get contentinfo</div></div>",
-				extraPages:
-				@"<div class='bloom-page bloom-frontMatter credits' data-page='required singleton'>
-							</div>",
-				defaultLanguages: "V,N1");
-
-			MakeEpub("output", "ContentInfo_IsAddedToInfoElementsNotInInfoPages", book);
-			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
-			assertThatPage1.HasAtLeastOneMatchForXpath("//div[@id='originalContributions' and @role='contentinfo']");
-			assertThatPage1.HasAtLeastOneMatchForXpath("//div[@data-derived='copyright' and @role='contentinfo']");
 		}
 
 		[Test]
@@ -832,14 +816,15 @@ namespace BloomTests.Publish
 
 			MakeEpub("output", "HeadingN_convertedToHN", book);
 			// This is a bit too strong, because some whitespace changes would be harmless.
-			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
-			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h1[contains(@class, 'bloom-editable') and contains(@class, 'Heading1') and contains(text(), 'Content of level 1 heading')]",_ns, 1);
-			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h2[contains(@class,'bloom-editable Heading2') and text()='Level 2 heading']", _ns, 1);
-			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h3[contains(@class,'bloom-editable Heading3') and text()=' 3 heading']", _ns, 1);
-			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h3[contains(@class,'bloom-editable Heading3') and text()=' 3 heading']/xhtml:span[@id='xyzzy' and text()='Level']", _ns, 1);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:h1/xhtml:p", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:h2/xhtml:p", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:h3/xhtml:p", _ns);
+			var page2Data = GetPageNData(2);
+			var assertThatPage2 = AssertThatXmlIn.String(page2Data);
+			assertThatPage2.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h1[contains(@class, 'bloom-editable') and contains(@class, 'Heading1') and contains(text(), 'Content of level 1 heading')]",_ns, 1);
+			assertThatPage2.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h2[contains(@class,'bloom-editable Heading2') and text()='Level 2 heading']", _ns, 1);
+			assertThatPage2.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h3[contains(@class,'bloom-editable Heading3') and text()=' 3 heading']", _ns, 1);
+			assertThatPage2.HasSpecifiedNumberOfMatchesForXpath("//xhtml:h3[contains(@class,'bloom-editable Heading3') and text()=' 3 heading']/xhtml:span[@id='xyzzy' and text()='Level']", _ns, 1);
+			assertThatPage2.HasNoMatchForXpath("//xhtml:h1/xhtml:p", _ns);
+			assertThatPage2.HasNoMatchForXpath("//xhtml:h2/xhtml:p", _ns);
+			assertThatPage2.HasNoMatchForXpath("//xhtml:h3/xhtml:p", _ns);
 		}
 
 		/// <summary>
@@ -861,14 +846,16 @@ namespace BloomTests.Publish
 			MakeEpub("output", "UserSpecifiedNoVernacular_VernacularRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInGivenPage(2);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 
-			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
-			assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='en']", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
+			var assertThatPage2 = AssertThatXmlIn.String(page2Data);
+			assertThatPage2.HasNoMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
+			assertThatPage2.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='en']", _ns);
+			assertThatPage2.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
+			assertThatPage2.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
 		}
 
 		/// <summary>
@@ -885,25 +872,40 @@ namespace BloomTests.Publish
 					@"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>acknowledgments in vernacular not displayed</div>
 							<div class='bloom-editable' lang='fr'>National 2 should not be displayed</div>
 							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
+				optionalDataDiv:
+				@"<div id=""bloomDataDiv"">
+						<div data-book=""contentLanguage1"" lang=""*"">en</div>
+						<div data-book=""originalAcknowledgments"" lang=""fr""><p>French Acknowledgments</p></div>
+						<div data-book=""originalAcknowledgments"" lang=""de""><p>German Acknowledgments</p></div>
+						<div data-book=""originalAcknowledgments"" lang=""es""><p>Spanish Acknowledgments</p></div>
+						<div data-book=""originalAcknowledgments"" lang=""en""><p>English Acknowledgments</p></div>
+					</div>",
 				extraEditGroupClasses: "originalAcknowledgments",
 				defaultLanguages: "N1");
 
 			MakeEpub("output", "OriginalAcknowledgments_InCreditsPage_InVernacular_IsRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data, "pgCreditsPage", "Credits Page");
-			CheckEpubTypeAttributes(_page1Data, null);
-			//Thread.Sleep(20000);
+			CheckBasicsInGivenPage(2);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data, "pgTitlePage", "Title Page");
+			CheckEpubTypeAttributes(page2Data, null, "titlepage");
 
-			//Console.WriteLine(XElement.Parse(_page1Data).ToString());
+			var page3Data = GetPageNData(3);
+			CheckPageBreakMarker(page3Data, "pgCreditsPage", "Credits Page");
+			CheckEpubTypeAttributes(page3Data, null);
 
-			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
-			assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='en']", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:label", _ns); // labels are hidden
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
+			var assertThatPage3 = AssertThatXmlIn.String(page3Data);
+			assertThatPage3.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@lang='xyz']", _ns, 1);
+			assertThatPage3.HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@lang='xyz' and contains(@class,'licenseAndCopyrightBlock')]", _ns, 1);
+			// The next two lines are what check that there is no actual text in lang='xyz' despite one parent div in that language.
+			assertThatPage3.HasNoMatchForXpath("//xhtml:div[@lang='xyz']/child::text()[normalize-space()!='']", _ns);
+			assertThatPage3.HasNoMatchForXpath("//xhtml:div[@lang='xyz']//xhtml:div[not(@lang)]/child::text()[normalize-space()!='']", _ns);
+			assertThatPage3.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='en']", _ns);
+			assertThatPage3.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
+			assertThatPage3.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
+			assertThatPage3.HasNoMatchForXpath("//xhtml:label", _ns); // labels are hidden
+			assertThatPage3.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
 		}
 
 		/// <summary>
@@ -950,6 +952,10 @@ namespace BloomTests.Publish
 						<div data-book=""contentLanguage1"" lang=""*"">en</div>
 						<div data-book=""ISBN"" lang=""*"">ABCDEFG</div>
 						<div data-book=""ISBN"" lang=""en"">ABCDEFG-en</div>
+						<div data-book=""copyright"" lang=""*"">Copyright © 2017, me</div>
+						<div data-book=""licenseUrl"" lang=""*"">http://creativecommons.org/licenses/by/4.0/</div>
+						<div data-book=""licenseDescription"" lang=""en"">http://creativecommons.org/licenses/by/4.0/<br></br>You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.</div>
+						<div data-book=""licenseImage"" lang=""*"">license.png</div>
 					</div>");
 			MakeImageFiles(book, "license");
 
@@ -957,16 +963,18 @@ namespace BloomTests.Publish
 			CheckBasicsInManifest();
 			CheckAccessibilityInManifest(false, false, false, "urn:isbn:ABCDEFG");	// no sound or nontrivial image files
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data, "pgCreditsPage", "Credits Page");
-			CheckEpubTypeAttributes(_page1Data, null, "copyright-page");
+			CheckBasicsInGivenPage(2);
+			var page2Data = GetPageNData(3);
+			CheckPageBreakMarker(page2Data, "pgCreditsPage", "Credits Page");
+			CheckEpubTypeAttributes(page2Data, null, "copyright-page");
 
-			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='ISBNContainer']", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='licenseUrl']", _ns);
-			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'licenseDescription')]", 1);
-			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//img[@class='licenseImage']", 1);
+			var assertThatPageTwo = AssertThatXmlIn.String(page2Data);
+			assertThatPageTwo.HasNoMatchForXpath("//xhtml:div[@class='ISBNContainer']", _ns);
+			assertThatPageTwo.HasNoMatchForXpath("//xhtml:div[@class='licenseUrl']", _ns);
+			assertThatPageTwo.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'licenseDescription')]", 1);
+			assertThatPageTwo.HasSpecifiedNumberOfMatchesForXpath("//img[@class='licenseImage']", 1);
 			// These temp Ids are added and removed during the creation process
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[contains(@id, '" + PublishHelper.kTempIdMarker + "')]", _ns);
+			assertThatPageTwo.HasNoMatchForXpath("//xhtml:div[contains(@id, '" + PublishHelper.kTempIdMarker + "')]", _ns);
 		}
 
 		[Test]
@@ -1065,8 +1073,10 @@ namespace BloomTests.Publish
 			MakeEpub("output", "ImageStyles_ConvertedToPercent" + sizeClass, book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data, "pg5", "5");
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInGivenPage(2);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data, "pg1", "1");	// BringBookUpToDate in MakeEpub fixes the page numbering back to reality...
+			CheckEpubTypeAttributes(page2Data, null);
 
 			// A5Portrait page is 297/2 mm wide
 			// Percent size however is relative to containing block, typically the marginBox,
@@ -1078,14 +1088,14 @@ namespace BloomTests.Publish
 			var widthPercent = Math.Round(picWidthInches/marginboxInches*1000)/10;
 			var picIndentInches = 34/96.0;
 			var picIndentPercent = Math.Round(picIndentInches / marginboxInches * 1000) / 10;
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='width:" + widthPercent.ToString("F1")
+			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='width:" + widthPercent.ToString("F1")
 				+ "%; height:auto; margin-left: " + picIndentPercent.ToString("F1") + "%; margin-top: 0px;']", _ns);
 
 			picWidthInches = 330 / 96.0;
 			widthPercent = Math.Round(picWidthInches / marginboxInches * 1000) / 10;
 			picIndentInches = 33 / 96.0;
 			picIndentPercent = Math.Round(picIndentInches / marginboxInches * 1000) / 10;
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='width:" + widthPercent.ToString("F1")
+			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='width:" + widthPercent.ToString("F1")
 				+ "%; height:auto; margin-left: " + picIndentPercent.ToString("F1") + "%; margin-top: 0px;']", _ns);
 		}
 
@@ -1102,18 +1112,20 @@ namespace BloomTests.Publish
 			MakeEpub("output", "ImageStyles_ConvertedToPercent_SpecialCases", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data, "pg3", "3");
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInGivenPage(2);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data, "pg1", "1");	// page numbers restored to reality by BringBookUpToDate in MakeEpub
+			CheckEpubTypeAttributes(page2Data, null);
 
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='margin-top: 0px;']", _ns);
+			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='margin-top: 0px;']", _ns);
 			var marginboxInches = (297.0/2.0 - 40) / 25.4;
 			var picWidthInches = 334 / 96.0;
 			var widthPercent = Math.Round(picWidthInches / marginboxInches * 1000) / 10;
 			var picIndentInches = 34 / 96.0;
 			var picIndentPercent = Math.Round(picIndentInches / marginboxInches * 1000) / 10;
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='height:auto; width:" + widthPercent.ToString("F1")
+			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='height:auto; width:" + widthPercent.ToString("F1")
 				+ "%; margin-left: " + picIndentPercent.ToString("F1") + "%; margin-top: 0px;']", _ns);
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='margin-top: 0px;']", _ns);
+			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='margin-top: 0px;']", _ns);
 		}
 
 		[Test]
@@ -1129,9 +1141,11 @@ namespace BloomTests.Publish
 			MakeImageFiles(book, "image1");
 			MakeEpub("output", "ImageStyles_PercentsAdjustForContainingPercentDivs", book);
 			CheckBasicsInManifest("image1");
-			CheckBasicsInPage("image1");
-			CheckPageBreakMarker(_page1Data, "pg99", "99");
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInPage();
+			CheckBasicsInGivenPage(2,"image1");
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data, "pg1", "1");	// fixed by BringBookUpToDate in MakeEpub
+			CheckEpubTypeAttributes(page2Data, null);
 
 			// A5Portrait page is 297/2 mm wide
 			// Percent size however is relative to containing block,
@@ -1145,7 +1159,7 @@ namespace BloomTests.Publish
 			var widthPercent = Math.Round(picWidthInches / parentWidthInches * 1000) / 10;
 			var picIndentInches = 14 / 96.0;
 			var picIndentPercent = Math.Round(picIndentInches / parentWidthInches * 1000) / 10;
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='width:" + widthPercent.ToString("F1")
+			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='width:" + widthPercent.ToString("F1")
 				+ "%; height:auto; margin-left: " + picIndentPercent.ToString("F1") + "%; margin-top: 0px;']", _ns);
 		}
 
@@ -1188,23 +1202,25 @@ namespace BloomTests.Publish
 			CheckAccessibilityInManifest(true, false, false, _defaultSourceValue, hasFullAudio: true);
 
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInGivenPage(2);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 
 			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
 			var assertThatManifest = AssertThatXmlIn.String(FixContentForXPathValueSlash(_manifestContent));
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f2' and @href='2.xhtml' and @media-overlay='f2_overlay']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f2_overlay' and @href='2_overlay.smil' and @media-type='application^slash^smil+xml']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='a23' and @href='" + kAudioSlash + "a23.mp3' and @media-type='audio^slash^mpeg']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='a123' and @href='" + kAudioSlash + "a123.mp3' and @media-type='audio^slash^mpeg']");
 
-			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
+			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/2_overlay.smil"));
 			var assertThatSmil = AssertThatXmlIn.String(FixContentForXPathValueSlash(smilData));
-			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", _ns);
-			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#a123']", _ns);
-			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#a23']", _ns);
+			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='2.xhtml' and @epub:type='bodymatter chapter']", _ns);
+			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='2.xhtml#a123']", _ns);
+			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='2.xhtml#a23']", _ns);
 			if (Platform.IsLinux)
 			{
 				// Ffmpeg based audio time calculations on Linux don't quite match what NAudio produces on Windows.
@@ -1219,11 +1235,11 @@ namespace BloomTests.Publish
 
 			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
 			{
-				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//span[@id='a123' and not(@recordingmd5)]");
+				AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//span[@id='a123' and not(@recordingmd5)]");
 			}
 			else if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
 			{
-				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//div[@id='a123' and not(@recordingmd5)]");
+				AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//div[@id='a123' and not(@recordingmd5)]");
 			}
 
 			VerifyEpubItemExists("content/" + EpubMaker.kAudioFolder + "/a123.mp3");
@@ -1263,33 +1279,34 @@ namespace BloomTests.Publish
 
 			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
 			var assertThatManifest = AssertThatXmlIn.String(FixContentForXPathValueSlash(_manifestContent));
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='page1' and @href='"+kAudioSlash+"page1.mp3' and @media-type='audio^slash^mpeg']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f2' and @href='2.xhtml' and @media-overlay='f2_overlay']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f2_overlay' and @href='2_overlay.smil' and @media-type='application^slash^smil+xml']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='page2' and @href='"+kAudioSlash+"page2.mp3' and @media-type='audio^slash^mpeg']");
 
-			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
+			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/2_overlay.smil"));
 			var assertThatSmil = AssertThatXmlIn.String(FixContentForXPathValueSlash(smilData));
-			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", _ns);
-			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#a123']", _ns);
-			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#a23']", _ns);
+			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='2.xhtml' and @epub:type='bodymatter chapter']", _ns);
+			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='2.xhtml#a123']", _ns);
+			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='2.xhtml#a23']", _ns);
 			if (Platform.IsLinux)
 			{
 				// Ffmpeg based audio time calculations on Linux don't quite match what NAudio produces on Windows.
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"page1.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.600']", _ns);
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"page1.mp3' and @clipBegin='0:00:01.600' and @clipEnd='0:00:03.200']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"page2.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.600']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"page2.mp3' and @clipBegin='0:00:01.600' and @clipEnd='0:00:03.200']", _ns);
 			}
 			else
 			{
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"page1.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.672']", _ns);
-				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"page1.mp3' and @clipBegin='0:00:01.672' and @clipEnd='0:00:03.344']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+"page2.mp3' and @clipBegin='0:00:00.000' and @clipEnd='0:00:01.672']", _ns);
+				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+"page2.mp3' and @clipBegin='0:00:01.672' and @clipEnd='0:00:03.344']", _ns);
 			}
 
+			var page2Data = GetPageNData(2);
 			if (audioRecordingMode == TalkingBookApi.AudioRecordingMode.Sentence)
-				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//span[@id='a123' and not(@recordingmd5)]");
+				AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//span[@id='a123' and not(@recordingmd5)]");
 			else if(audioRecordingMode == TalkingBookApi.AudioRecordingMode.TextBox)
-				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//div[@id='a123' and not(@recordingmd5)]");
+				AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//div[@id='a123' and not(@recordingmd5)]");
 
-			VerifyEpubItemExists("content/"+EpubMaker.kAudioFolder+"/page1.mp3");
+			VerifyEpubItemExists("content/"+EpubMaker.kAudioFolder+"/page2.mp3");
 		}
 
 		/// <summary>
@@ -1329,26 +1346,28 @@ namespace BloomTests.Publish
 			MakeEpub("output", $"AudioWithParagraphsAndRealGuids_ProducesOverlay_{audioRecordingMode}_{startWithWav}", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInGivenPage(2);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 
 			var assertManifest = AssertThatXmlIn.String(FixContentForXPathValueSlash(_manifestContent));
-			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
-			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f2' and @href='2.xhtml' and @media-overlay='f2_overlay']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f2_overlay' and @href='2_overlay.smil' and @media-type='application^slash^smil+xml']");
 
 			double totalExpectedDuration = GetFakeAudioDurationSecs() * 2;
 			string expectedDurationFormatted = "00:00:0" + totalExpectedDuration.ToString("0.0000000");
 			assertManifest.HasAtLeastOneMatchForXpath($"package/metadata/meta[@property='media:duration' and not(@refines) and text()='{expectedDurationFormatted}']");
-			assertManifest.HasAtLeastOneMatchForXpath($"package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='{expectedDurationFormatted}']");
+			assertManifest.HasAtLeastOneMatchForXpath($"package/metadata/meta[@property='media:duration' and @refines='#f2_overlay' and text()='{expectedDurationFormatted}']");
 
-			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
+			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/2_overlay.smil"));
 			var assertSmil = AssertThatXmlIn.String(FixContentForXPathValueSlash(smilData));
 			string smilSeqPrefix = "smil:smil/smil:body/smil:seq";
-			assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", _ns);
-			assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s1']/smil:text[@src='1.xhtml#e993d14a-0ec3-4316-840b-ac9143d59a2c']", _ns);
-			assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s2']/smil:text[@src='1.xhtml#i0d8e9910-dfa3-4376-9373-a869e109b763']", _ns);
+			assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}[@epub:textref='2.xhtml' and @epub:type='bodymatter chapter']", _ns);
+			assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s1']/smil:text[@src='2.xhtml#e993d14a-0ec3-4316-840b-ac9143d59a2c']", _ns);
+			assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s2']/smil:text[@src='2.xhtml#i0d8e9910-dfa3-4376-9373-a869e109b763']", _ns);
 
 			assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s1']/smil:audio[@src='{kAudioSlash}e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3']", _ns);
 			assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s2']/smil:audio[@src='{kAudioSlash}i0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", _ns);
@@ -1415,8 +1434,8 @@ namespace BloomTests.Publish
 			MakeEpub("output", $"AddAudioOverlay_SentencePlaybackModes_ProducesCorrectOverlay_{audioRecordingMode}_{mergeAudio}", book,
 				extraInit: maker => maker.OneAudioPerPage = mergeAudio);
 
-			// Verification //
-			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
+			// Verification // note that the content page is page 2 of the epub: the title page is page 1.
+			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/2_overlay.smil"));
 			var assertSmil = AssertThatXmlIn.String(FixContentForXPathValueSlash(smilData));
 
 			string smilSeqPrefix = "smil:smil/smil:body/smil:seq";
@@ -1425,13 +1444,13 @@ namespace BloomTests.Publish
 			for (int i = 0; i < expectedIds.Length; ++i)
 			{
 				string expectedId = expectedIds[i];
-				string expectedFilename = mergeAudio ? "page1" : expectedId;
+				string expectedFilename = mergeAudio ? "page2" : expectedId;
 				double expectedClipBegin = mergeAudio ? (expectedDurationPerClip * i) : 0;
 				double expectedClipEnd = expectedClipBegin + expectedDurationPerClip;
 				string expectedClipBeginFormatted = "0:00:0" + expectedClipBegin.ToString("0.000");
 				string expectedClipEndFormatted = "0:00:0" + expectedClipEnd.ToString("0.000");
 
-				assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s{i + 1}']/smil:text[@src='1.xhtml#{expectedId}']", _ns);
+				assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s{i + 1}']/smil:text[@src='2.xhtml#{expectedId}']", _ns);
 				assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s{i + 1}']/smil:audio[@src='{kAudioSlash}{expectedFilename}.mp3'][@clipBegin='{expectedClipBeginFormatted}'][@clipEnd='{expectedClipEndFormatted}']", _ns);
 				VerifyEpubItemExists($"content/{EpubMaker.kAudioFolder}/{expectedFilename}.mp3");
 			}
@@ -1485,19 +1504,20 @@ $@"<div class='bloom-translationGroup'>
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", $"audio1.mp3"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", $"audio2.mp3"));
 
+
 			// Cause the system under test to be executed.
 			MakeEpub("output", $"AddAudioOverlay_SubElementPlaybackModes_ProducesCorrectTimings_{mergeAudio}_{switchCulture}", book,
 				extraInit: maker => maker.OneAudioPerPage = mergeAudio);
 
 			// Verification //
-			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/1_overlay.smil"));
+			var smilData = StripXmlHeader(ExportEpubTestsBaseClass.GetZipContent(_epub, "content/2_overlay.smil"));
 			var assertSmil = AssertThatXmlIn.String(FixContentForXPathValueSlash(smilData));
 
 			string smilSeqPrefix = "smil:smil/smil:body/smil:seq";
 
 			for (int divIndex = 0; divIndex < 2; ++divIndex)
 			{
-				string expectedFilename = mergeAudio ? "page1" : $"audio{divIndex+1}";
+				string expectedFilename = mergeAudio ? "page2" : $"audio{divIndex+1}";
 				double divStartTime = mergeAudio ? (divIndex * expectedDurationPerClip) : 0;
 
 				for (int j = 0; j < 2; ++j)
@@ -1508,7 +1528,7 @@ $@"<div class='bloom-translationGroup'>
 					string expectedClipBeginFormatted = "0:00:0" + expectedClipBegin.ToString("0.000", CultureInfo.InvariantCulture);
 					string expectedClipEndFormatted = "0:00:0" + expectedClipEnd.ToString("0.000", CultureInfo.InvariantCulture);
 
-					assertSmil.HasAtLeastOneMatchForXpath($"smil:smil/smil:body/smil:seq/smil:par[@id='s{expectedIndex}']/smil:text[@src='1.xhtml#text{expectedIndex}']", _ns);
+					assertSmil.HasAtLeastOneMatchForXpath($"smil:smil/smil:body/smil:seq/smil:par[@id='s{expectedIndex}']/smil:text[@src='2.xhtml#text{expectedIndex}']", _ns);
 					assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s{expectedIndex}']/smil:audio[@src='{kAudioSlash}{expectedFilename}.mp3'][@clipBegin='{expectedClipBeginFormatted}'][@clipEnd='{expectedClipEndFormatted}']", _ns);
 				}
 				VerifyEpubItemExists($"content/{EpubMaker.kAudioFolder}/{expectedFilename}.mp3");
@@ -1577,11 +1597,13 @@ $@"<div class='bloom-translationGroup'>
 			MakeEpub("output", "IllegalIds_AreFixed", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			CheckBasicsInGivenPage(2);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 
 			// This is possibly too strong; see comment where we remove them.
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//div[@id='i12']");
+			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//div[@id='i12']");
 		}
 
 		[Test]
@@ -1595,8 +1617,9 @@ $@"<div class='bloom-translationGroup'>
 			CheckFolderStructure();
 			CheckBasicsInManifest(); // don't check the file stuff here, we're looking at special cases
 			CheckBasicsInPage();
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 
@@ -1605,8 +1628,8 @@ $@"<div class='bloom-translationGroup'>
 			assertThatManifest.HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@id='f121' and @href='"+kImagesSlash+"f12.png']", 1);
 			assertThatManifest.HasNoMatchForXpath("package/manifest/item[@href='"+kImagesSlash+"f121.png']"); // What it would typically generate if it made another copy.
 
-			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//img[@src='"+kImagesSlash+"12.png']");
-			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//img[@src='"+kImagesSlash+"f12.png']", 2);
+			AssertThatXmlIn.String(page2Data).HasAtLeastOneMatchForXpath("//img[@src='"+kImagesSlash+"12.png']");
+			AssertThatXmlIn.String(page2Data).HasSpecifiedNumberOfMatchesForXpath("//img[@src='"+kImagesSlash+"f12.png']", 2);
 
 			VerifyEpubItemExists("content/"+EpubMaker.kImagesFolder+"/12.png");
 			VerifyEpubItemExists("content/"+EpubMaker.kImagesFolder+"/f12.png");
@@ -1631,15 +1654,17 @@ $@"<div class='bloom-translationGroup'>
 #endif
 			MakeEpub("output", "FilesThatMapToSameSafeName_AreNotConfused", book);
 			CheckFolderStructure();
+			CheckBasicsInPage();
 #if __MonoCS__
 			CheckBasicsInManifest("my_3dimage", "my_3dimage1", "my_image", "my_image1");
-			CheckBasicsInPage("my_3dimage", "my_3dimage1", "my_image", "my_image1");
+			CheckBasicsInGivenPage(2, "my_3dimage", "my_3dimage1", "my_image", "my_image1");
 #else
 			CheckBasicsInManifest("my_3dimage", "my_3Dimage1", "my_image", "my_image1");
-			CheckBasicsInPage("my_3dimage", "my_3Dimage1", "my_image", "my_image1");
+			CheckBasicsInGivenPage(2,"my_3dimage", "my_3Dimage1", "my_image", "my_image1");
 #endif
-			CheckPageBreakMarker(_page1Data);
-			CheckEpubTypeAttributes(_page1Data, null);
+			var page2Data = GetPageNData(2);
+			CheckPageBreakMarker(page2Data);
+			CheckEpubTypeAttributes(page2Data, null);
 			CheckNavPage();
 			CheckFontStylesheet();
 		}
@@ -1860,9 +1885,10 @@ $@"<div class='bloom-translationGroup'>
 			CheckFolderStructure();
 			CheckBasicsInManifest();
 			CheckAccessibilityInManifest(true, true, false, _defaultSourceValue, hasFullAudio);
-			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@data-cke-hidden-sel]");
-			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath($"//aside/p/{elementName}", 1);
-			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//aside/div");
+			var page2Data = GetPageNData(2);
+			AssertThatXmlIn.String(page2Data).HasNoMatchForXpath("//*[@data-cke-hidden-sel]");
+			AssertThatXmlIn.String(page2Data).HasSpecifiedNumberOfMatchesForXpath($"//aside/p/{elementName}", 1);
+			AssertThatXmlIn.String(page2Data).HasNoMatchForXpath("//aside/div");
 		}
 	}
 

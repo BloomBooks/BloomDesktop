@@ -239,6 +239,8 @@ namespace Bloom.Publish.Epub
 				return;
 			}
 
+			// BringBookUpToDate() will already have been done on the original book on entering the Publish tab.
+
 			progress.Message("BuildingEPub", comment: "Shown in a progress box when Bloom is starting to create an ePUB",
 				message: "Building ePUB");
 			if (String.IsNullOrEmpty(Book.CollectionSettings.Language3Iso639Code))
@@ -345,45 +347,51 @@ namespace Bloom.Publish.Epub
 				}
 			}
 
-			string coverPageImageFile = "thumbnail-256.png";
-			// This thumbnail is otherwise only made when uploading, so it may be out of date.
-			// Just remake it every time.
-			ApplicationException thumbNailException = null;
-			try
+			var epubThumbnailImagePath = Path.Combine(Book.FolderPath, "epub-thumbnail.png");
+			// If we don't have an epub thumbnail, create a nice large thumbnail of the cover image
+			// with the desired name.  This is a temporary file stored only in the staged book folder
+			// before being added to the epub.
+			if (!RobustFile.Exists(epubThumbnailImagePath))
 			{
-				_thumbnailRequestId = Guid.NewGuid();
-				_thumbNailer.MakeThumbnailOfCover(Book, 256,_thumbnailRequestId);
-				_thumbnailRequestId = Guid.Empty;
-			}
-			catch (ApplicationException e)
-			{
-				thumbNailException = e;
-			}
-
-			if (AbortRequested)
-				return; // especially to avoid reporting problems making thumbnail, e.g., because aborted.
-
-			var coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-			if (thumbNailException != null || !RobustFile.Exists(coverPageImagePath))
-			{
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
-					"Bloom failed to make a high-quality cover page for your book (BL-3209)",
-					"We will try to make the book anyway, but you may want to try again.",
-					thumbNailException);
-
-				coverPageImageFile = "thumbnail.png"; // Try a low-res image, which should always exist
-				coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-				if (!RobustFile.Exists(coverPageImagePath))
+				string coverPageImageFile = "thumbnail-256.png";	// name created by _thumbNailer
+				ApplicationException thumbNailException = null;
+				try
 				{
-					// I don't think we can make an epub without a cover page so at this point we've had it.
-					// I suppose we could recover without actually crashing but it doesn't seem worth it unless this
-					// actually happens to real users.
-					throw new FileNotFoundException("Could not find or create thumbnail for cover page (BL-3209)",
-						coverPageImageFile);
+					_thumbnailRequestId = Guid.NewGuid();
+					_thumbNailer.MakeThumbnailOfCover(Book, 256, _thumbnailRequestId);
+					_thumbnailRequestId = Guid.Empty;
 				}
+				catch (ApplicationException e)
+				{
+					thumbNailException = e;
+				}
+
+				if (AbortRequested)
+					return; // especially to avoid reporting problems making thumbnail, e.g., because aborted.
+
+				var coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
+				if (thumbNailException != null || !RobustFile.Exists(coverPageImagePath))
+				{
+					NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
+						"Bloom failed to make a high-quality cover page for your book (BL-3209)",
+						"We will try to make the book anyway, but you may want to try again.",
+						thumbNailException);
+
+					coverPageImageFile = "thumbnail.png"; // Try a low-res image, which should always exist
+					coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
+					if (!RobustFile.Exists(coverPageImagePath))
+					{
+						// I don't think we can make an epub without a cover page so at this point we've had it.
+						// I suppose we could recover without actually crashing but it doesn't seem worth it unless this
+						// actually happens to real users.
+						throw new FileNotFoundException("Could not find or create thumbnail for cover page (BL-3209)",
+							coverPageImageFile);
+					}
+				}
+				RobustFile.Move(coverPageImagePath, epubThumbnailImagePath);
 			}
 
-			CopyFileToEpub(coverPageImagePath, true, true, kImagesFolder);
+			CopyFileToEpub(epubThumbnailImagePath, true, true, kImagesFolder);
 
 			EmbedFonts(); // must call after copying stylesheets
 			MakeNavPage();
@@ -403,7 +411,7 @@ namespace Bloom.Publish.Epub
 					</rootfiles>
 					</container>");
 
-			MakeManifest(kImagesFolder + "/" + coverPageImageFile);
+			MakeManifest(kImagesFolder + "/" + Path.GetFileName(epubThumbnailImagePath));
 
 			foreach (var filename in Directory.EnumerateFiles(Path.Combine(_contentFolder, kImagesFolder), "*.*"))
 			{
@@ -1828,7 +1836,8 @@ namespace Bloom.Publish.Epub
 			if(string.IsNullOrEmpty (BookInStagingFolder)) {
 				StageEpub(progress);
 			}
-			ZipAndSaveEpub (destinationEpubPath, progress);
+			if (!AbortRequested)
+				ZipAndSaveEpub (destinationEpubPath, progress);
 		}
 
 		/// <summary>

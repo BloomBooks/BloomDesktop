@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -114,8 +114,8 @@
     <Reference Include="DesktopAnalytics, Version=1.2.4.11, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\DesktopAnalytics.1.2.4.11\lib\net40\DesktopAnalytics.dll</HintPath>
     </Reference>
-    <Reference Include="DialogAdapters, Version=0.1.10.0, Culture=neutral, PublicKeyToken=7dc842182b0626dc, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DialogAdapters.Gtk2.0.1.10\lib\net461\DialogAdapters.dll</HintPath>
+    <Reference Include="DialogAdapters, Version=0.1.10.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DialogAdapters.0.1.10\lib\net461\DialogAdapters.dll</HintPath>
     </Reference>
     <Reference Include="EasyHttp, Version=1.6.86.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\EasyHttp.1.6.86.0\lib\net40\EasyHttp.dll</HintPath>
@@ -125,19 +125,17 @@
       <HintPath>..\..\packages\Fleck.0.14.0.59\lib\net40\Fleck.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Geckofx-Core" Condition="'$(OS)'=='Windows_NT'">
-      <HintPath>..\..\packages\Geckofx45.45.0.28\lib\net45\Geckofx-Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'=='Windows_NT'">
-      <HintPath>..\..\packages\Geckofx45.45.0.28\lib\net45\Geckofx-Winforms.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Geckofx-Core" Condition="'$(OS)'!='Windows_NT'">
-      <HintPath>..\..\output\$(Configuration)\Geckofx-Core.dll</HintPath>
+      <HintPath>..\..\packages\Geckofx60.64.Linux.60.0.44\lib\net40\Geckofx-Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Geckofx-Core, Version=60.0.44.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86" Condition="'$(OS)'=='Windows_NT'">
+      <HintPath>..\..\packages\Geckofx60.32.60.0.44\lib\net45\Geckofx-Core.dll</HintPath>
     </Reference>
     <Reference Include="Geckofx-Winforms" Condition="'$(OS)'!='Windows_NT'">
-      <HintPath>..\..\output\$(Configuration)\Geckofx-Winforms.dll</HintPath>
+      <HintPath>..\..\packages\Geckofx60.64.Linux.60.0.44\lib\net40\Geckofx-Winforms.dll</HintPath>
+    </Reference>
+    <Reference Include="Geckofx-Winforms, Version=60.0.44.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86" Condition="'$(OS)'=='Windows_NT'">
+      <HintPath>..\..\packages\Geckofx60.32.60.0.44\lib\net45\Geckofx-Winforms.dll</HintPath>
     </Reference>
     <Reference Include="Glob, Version=0.4.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Glob.0.4.0\lib\net46\Glob.dll</HintPath>
@@ -283,7 +281,6 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="gtk-sharp" Condition="'$(OS)'!='Windows_NT'" />
     <Reference Include="AxInterop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
     </Reference>
@@ -369,6 +366,9 @@
     <Compile Include="Publish\Android\usb\UsbPublisher.cs" />
     <Compile Include="Publish\Epub\EpubPublishUiSettings.cs" />
     <Compile Include="Publish\Epub\PublishEpubApi.cs" />
+    <Compile Include="ToPalaso\BackgroundWorkerProgressAdapter.cs" />
+    <Compile Include="WebLibraryIntegration\FirebaseLoginDialog.cs" />
+    <Compile Include="web\WebProgressAdapter.cs" />
     <Compile Include="Publish\HtmlPublishPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -691,12 +691,6 @@
     <Compile Include="WebLibraryIntegration\BookDownloadedEventArgs.cs" />
     <Compile Include="WebLibraryIntegration\BookTransfer.cs" />
     <Compile Include="WebLibraryIntegration\AccessKeys.cs" />
-    <Compile Include="WebLibraryIntegration\LoginDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WebLibraryIntegration\LoginDialog.Designer.cs">
-      <DependentUpon>LoginDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -940,9 +934,6 @@
     <EmbeddedResource Include="CollectionCreating\NewCollectionWizard.resx">
       <DependentUpon>NewCollectionWizard.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="WebLibraryIntegration\LoginDialog.resx">
-      <DependentUpon>LoginDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="WebLibraryIntegration\OverwriteWarningDialog.resx">
       <DependentUpon>OverwriteWarningDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -1012,6 +1003,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="ClassDiagram1.cd" />
+    <None Include="Firefox\omni.ja" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
@@ -1325,6 +1317,7 @@
 "$(DevEnvDir)..\..\VC\bin\editbin.exe" /largeaddressaware "$(TargetPath)"
 copy /Y "$(SolutionDir)\lib\msvcr120.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
+xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
@@ -1339,16 +1332,16 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="BeforeBuild" Condition="'$(OS)'=='Windows_NT'">
     <Exec Command="mkdir $(OutDir)Firefox" Condition="!Exists('$(OutDir)Firefox')" />
-    <Exec Command="copy /Y $(SolutionDir)packages\Geckofx45.45.0.28\content\Firefox\*.* $(OutDir)Firefox" />
+    <Exec Command="copy /Y $(SolutionDir)packages\Geckofx60.32.60.0.44\content\Firefox\*.* $(OutDir)Firefox" />
   </Target>
   <!-- these operations cannot all be done BeforeBuild, because the nuget download occurs as part of Build after BeforeBuild -->
   <Target Name="BeforeResolveReferences" Condition="'$(OS)'!='Windows_NT'">
     <!-- compile the various typescript, jade, and less files in BloomBrowserUI. -->
     <Exec Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; ( [ -f node_modules/typescript/package.json ] || yarn) &amp;&amp; ( [ -f ../../output/browser/commonBundle.js ] || yarn build)" />
-    <!-- copy the appropriate Geckofx45 files to the output directory, first creating it if necessary -->
+    <!-- copy the appropriate Geckofx60 files to the output directory, first creating it if necessary -->
     <Exec Command="mkdir -p $(OutDir)" />
     <Exec Command="rm -rf $(OutDir)Firefox" />
-    <Exec Command="if [ &quot;`arch`&quot; = &quot;x86_64&quot; ]; then find $(SolutionDir)packages/Geckofx45.64.Linux.45.0.23.0 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx45.64.Linux.45.0.23.0 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; else find $(SolutionDir)packages/Geckofx45.32.Linux.45.0.23.0 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx45.32.Linux.45.0.23.0 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; fi" />
+    <Exec Command="find $(SolutionDir)packages/Geckofx60.64.Linux.60.0.44 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx60.64.Linux.60.0.44 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';';" />
   </Target>
   <ItemGroup>
     <BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />
@@ -1397,17 +1390,21 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   </ItemGroup>
   <ItemGroup>
     <Content Include="bloom.ico" />
+    <Content Include="Firefox\AccessibleHandler.dll" />
     <Content Include="Firefox\AccessibleMarshal.dll" />
     <Content Include="Firefox\breakpadinjector.dll" />
     <Content Include="Firefox\D3DCompiler_43.dll" />
     <Content Include="Firefox\d3dcompiler_47.dll" />
     <Content Include="Firefox\freebl3.dll" />
+    <Content Include="Firefox\IA2Marshal.dll" />
     <Content Include="Firefox\icudt56.dll" />
     <Content Include="Firefox\icuin56.dll" />
     <Content Include="Firefox\icuuc56.dll" />
     <Content Include="Firefox\lgpllibs.dll" />
     <Content Include="Firefox\libEGL.dll" />
     <Content Include="Firefox\libGLESv2.dll" />
+    <Content Include="Firefox\mozavcodec.dll" />
+    <Content Include="Firefox\mozavutil.dll" />
     <Content Include="Firefox\mozglue.dll" />
     <Content Include="Firefox\msvcp120.dll" />
     <Content Include="Firefox\msvcr120.dll" />
@@ -1416,6 +1413,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Content Include="Firefox\nssdbm3.dll" />
     <Content Include="Firefox\plugin-container.exe" />
     <Content Include="Firefox\plugin-hang-ui.exe" />
+    <Content Include="Firefox\qipcap.dll" />
     <Content Include="Firefox\sandboxbroker.dll" />
     <Content Include="Firefox\softokn3.dll" />
     <Content Include="Firefox\xul.dll" />
@@ -1450,5 +1448,14 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
     <Copy SourceFiles="@(BloomPdfMakerArgs)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
+  </Target>
+  <Import Project="..\..\packages\Geckofx60.32.60.0.44\build\Geckofx60.32.targets" Condition="Exists('..\..\packages\Geckofx60.32.60.0.44\build\Geckofx60.32.targets')" />
+  <Import Project="../../packages/Geckofx60.64.Linux.60.0.44/build/Geckofx60.64.Linux.targets" Condition="Exists('../../packages/Geckofx60.64.Linux.60.0.44/build/Geckofx60.64.Linux.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\Geckofx60.32.60.0.44\build\Geckofx60.32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Geckofx60.32.60.0.44\build\Geckofx60.32.targets'))" />
+    <Error Condition="'$(OS)'!='Windows_NT' AND !Exists('../../packages/Geckofx60.64.Linux.60.0.44/build/Geckofx60.64.Linux.targets')" Text="$([System.String]::Format('$(ErrorText)', '../../packages/Geckofx60.64.Linux.60.0.44/build/Geckofx60.64.Linux.targets'))" />
   </Target>
 </Project>

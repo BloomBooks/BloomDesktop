@@ -299,7 +299,8 @@ namespace Bloom
 						Browser.SetUpXulRunner();
 						Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 #if DEBUG
-						StartDebugServer();
+						if (SIL.PlatformUtilities.Platform.IsWindows)
+							StartDebugServer();
 #endif
 
 						if (!BloomIntegrityDialog.CheckIntegrity())
@@ -322,6 +323,9 @@ namespace Bloom
 						// it will have been installed already as part of the allUsers install.
 						if (!InstallerSupport.SharedByAllUsers() && FontInstaller.InstallFont("AndikaNewBasic"))
 							return 1;
+
+						// This has served its purpose on Linux, and with Geckofx60 it interferes with CommandLineRunner.
+						Environment.SetEnvironmentVariable("LD_PRELOAD", null);
 
 						Run();
 					}
@@ -458,12 +462,23 @@ namespace Bloom
 		{
 			try
 			{
+				var program = Application.ExecutablePath;
+				if (SIL.PlatformUtilities.Platform.IsLinux)
+				{
+					// This is needed until the day comes (if it ever does) when we can use the
+					// system mono on Linux.
+					program = "/opt/mono5-sil/bin/mono";
+					if (args == null)
+						args = "\"" + Application.ExecutablePath + "\"";
+					else
+						args = "\"" + Application.ExecutablePath + "\" " + args;
+				}
 				if (args == null)
-					Process.Start(Application.ExecutablePath);
+					Process.Start(program);
 				else
-					Process.Start(Application.ExecutablePath, args);
+					Process.Start(program, args);
 
-				//give some time for that process.start to finish staring the new instance, which will see
+				//give some time for that process.start to finish starting the new instance, which will see
 				//we have a mutex and wait for us to die.
 				
 				Thread.Sleep(2000);
@@ -903,9 +918,9 @@ namespace Bloom
 			}
 		}
 
-		static nsILocalFile toNsFile(string file)
+		static Gecko.nsILocalFileWin toNsFile(string file)
 		{
-			var nsfile = Xpcom.CreateInstance<nsILocalFile>("@mozilla.org/file/local;1");
+			var nsfile = Xpcom.CreateInstance<nsILocalFileWin>("@mozilla.org/file/local;1");
 			nsfile.InitWithPath(new nsAString(file));
 			return nsfile;
 		}

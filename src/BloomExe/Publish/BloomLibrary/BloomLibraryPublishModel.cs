@@ -136,12 +136,6 @@ namespace Bloom.Publish.BloomLibrary
 		internal string WebUserId { get { return Settings.Default.WebUserId; } }
 
 		/// <summary>
-		/// Stored Web password.
-		/// </summary>
-		///  Best not to store its own value, because the username/password can be changed if the user logs into a different account.
-		private string StoredWebPassword { get { return Settings.Default.WebPassword; } }
-
-		/// <summary>
 		/// We would like users to be able to publish picture books that don't have any text.  Historically, we've required
 		/// non-empty books with text unless the book is marked as being a template.  This restriction is too severe, so for
 		/// now, we require either a template or a pure picture book.  (No text boxes apart from image description boxes on
@@ -168,9 +162,7 @@ namespace Bloom.Publish.BloomLibrary
 		/// <returns></returns>
 		internal void LogIn()
 		{
-			if (string.IsNullOrEmpty(WebUserId))
-				return;
-			_transferrer.LogIn(WebUserId, StoredWebPassword);
+			FirebaseLoginDialog.FirebaseUpdateToken();
 		}
 
 		internal void Logout()

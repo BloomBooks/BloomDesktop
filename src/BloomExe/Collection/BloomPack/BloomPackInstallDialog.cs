@@ -60,7 +60,7 @@ namespace Bloom.Collection.BloomPack
 			Logger.WriteEvent("BloomPackInstallDialog.BeginInstall. _folderName is " + _folderName);
 			if (_folderName == null)
 				return;
-
+			ProjectContext.ClearUserInstalledDirectoriesCache(); // we're about to make a new collection it needs to notice
 			_rootDestFolder = ProjectContext.GetInstalledCollectionsDirectory();
 			if (_folderName.ToLowerInvariant().Contains("xmatter"))
 				_rootDestFolder = ProjectContext.XMatterAppDataFolder;

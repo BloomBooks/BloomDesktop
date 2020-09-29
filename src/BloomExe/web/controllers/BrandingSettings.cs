@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Bloom.Book;
 using Bloom.Collection;
 using Newtonsoft.Json;
@@ -38,7 +39,8 @@ namespace Bloom.Api
 		/// <remarks>
 		/// This method is used by EpubMaker as well as here in BrandingApi.
 		/// </remarks>
-		public static string FindBrandingImageFileIfPossible(string branding, string filename, Layout layout)
+		/* JDH Sep 2020 commenting out because I found this to be unused by anything
+		 public static string FindBrandingImageFileIfPossible(string branding, string filename, Layout layout)
 		{
 			string path;
 			if (layout.SizeAndOrientation.IsLandScape)
@@ -68,6 +70,7 @@ namespace Bloom.Api
 
 			return path;
 		}
+		*/
 
 		public class PresetItem
 		{
@@ -85,6 +88,30 @@ namespace Bloom.Api
 		{
 			[JsonProperty("presets")]
 			public PresetItem[] Presets;
+
+			public string GetXmatterToUse()
+			{
+				var x = this.Presets.FirstOrDefault(p => p.DataBook == "xmatter");
+				return x?.Content;
+			}
+		}
+
+
+		/// <summary>
+		/// extract the base and flavor parts of a Branding name
+		/// </summary>
+		/// <param name="fullBrandingName">the full key</param>
+		/// <param name="folderName">the name before any branding; this will match the folder holding all the files.</param>
+		/// <param name="flavor">a name or empty string</param>
+		public static void ParseBrandingKey(String fullBrandingName, out String folderName, out String flavor)
+		{
+			// A Branding may optionally have a suffix of the form "[FLAVOR]" where flavor is typically
+			// a language name. This is used to select different logo files without having to create
+			// a completely separate branding folder (complete with summary, stylesheets, etc) for each
+			// language in a project that is publishing in a situation with multiple major languages.
+			var parts = fullBrandingName.Split('[');
+			folderName = parts[0];
+			flavor = parts.Length > 1 ? parts[1].Replace("]","") : "";
 		}
 
 		/// <summary>
@@ -97,8 +124,29 @@ namespace Bloom.Api
 		{
 			try
 			{
-				var settingsPath = BloomFileLocator.GetOptionalBrandingFile(brandingNameOrFolderPath, "branding.json");
-				if(!string.IsNullOrEmpty(settingsPath))
+				ParseBrandingKey(brandingNameOrFolderPath, out var brandingFolderName, out var flavor);
+
+				// check to see if we have a special branding.json just for this flavor.
+				// Note that we could instead add code that allows a single branding.json to
+				// have rules that apply only on a flavor basis. As of 4.9, all we have is the
+				// ability for a branding.json (and anything else) to use "{flavor}" anywhere in the
+				// name of an image; this will often be enough to avoid making a new branding.json.
+				// But if we needed to have different boilerplate text, well then we would need to
+				// either use this here mechanism (separate json) or implement the ability to add
+				// "flavor:" to the rules.
+				string settingsPath=null;
+				if (!string.IsNullOrEmpty(flavor))
+				{
+					settingsPath= BloomFileLocator.GetOptionalBrandingFile(brandingFolderName, "branding["+flavor+"].json");
+				}
+
+				// if not, fall bck to just "branding.json"
+				if (string.IsNullOrEmpty(settingsPath))
+				{
+					settingsPath = BloomFileLocator.GetOptionalBrandingFile(brandingFolderName, "branding.json");
+				}
+
+				if (!string.IsNullOrEmpty(settingsPath))
 				{
 					var content = RobustFile.ReadAllText(settingsPath);
 					var settings = JsonConvert.DeserializeObject<Settings>(content);
@@ -117,7 +165,5 @@ namespace Bloom.Api
 			}
 			return null;
 		}
-
-		public const string kApiBrandingImage = "/bloom/api/branding/image";
 	}
 }

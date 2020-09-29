@@ -1,0 +1,1 @@
+Supports full-bleed cover color (but not images), and a place to paste a graphic on the back which is used to show what level this book is.

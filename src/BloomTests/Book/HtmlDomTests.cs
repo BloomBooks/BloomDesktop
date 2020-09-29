@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
@@ -1547,6 +1547,162 @@ p {
 
 			// Verification
 			Assert.AreEqual(expectedLangCode, langCode);
+		}
+
+		[Test]
+		[TestCase(" color : rgb(98, 19, 45);", ",`backgroundColors`: [`white`,`#7b8eb8`] ", "",
+				"", "",
+				"", "", 0)]
+		[TestCase("", "", "",
+			"color: #000000;", ",`backgroundColors`:[`oldLace`]",
+			"", "", 1)]
+		[TestCase("", ",`backgroundColors`:[`gray`]", ", `opacity` : `0.66`",
+			"", "",
+			"color: #000000;", ",`backgroundColors`:[`purple`]", 2)]
+		public void GetColorsUsedInBook_works(
+			string textColorLoc1, string backColorLoc1, string opacityLoc1,
+			string textColorLoc2, string backColorLoc2,
+			string textColorLoc3, string backColorLoc3, int responseIndex)
+		{
+			var jsonResponses = new[] {
+				"[{\"colors\":[\"rgb(98, 19, 45)\"]},{\"colors\":[\"white\",\"#7b8eb8\"],\"opacity\":1}]",
+				"[{\"colors\":[\"#000000\"]},{\"colors\":[\"oldLace\"],\"opacity\":1}]",
+				"[{\"colors\":[\"gray\"],\"opacity\":0.66},{\"colors\":[\"#000000\"]},{\"colors\":[\"purple\"],\"opacity\":1}]"
+			};
+			var bookDom = new HtmlDom(@"<html><head></head><body>
+				<div class='bloom-page' id='pageGuid'>
+					<div class='split-pane-component-inner'>
+						<div class='bloom-translationGroup'>
+							<div class='bloom-editable'>First text contents</div>
+						</div>
+						<div class='bloom-imageContainer'>
+							<div class='bloom-textOverPicture' style='left: 8.50603%; " + textColorLoc1 + @"'
+								data-bubble='{`version`:`1.0`" + backColorLoc1 + opacityLoc1 + @"}'>
+								<div class='bloom-translationGroup'>
+									<div class='bloom-editable'>
+										<p>Text over picture text</p>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class='bloom-imageContainer'>
+							<div class='bloom-textOverPicture' style='left: 8.50603%; " + textColorLoc2 + @"'
+								data-bubble='{`version`:`1.0`" + backColorLoc2 + @"}'>
+								<div class='bloom-translationGroup'>
+									<div class='bloom-editable'>
+										<p>Text over picture text</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class='bloom-page' id='pageGuid2'>
+					<div class='split-pane-component-inner'>
+						<div class='bloom-imageContainer'>
+							<div class='bloom-textOverPicture' style='left: 8.50603%; " + textColorLoc3 + @"'
+								data-bubble='{`version`:`1.0`" + backColorLoc3 + @"}'>
+								<div class='bloom-translationGroup'>
+									<div class='bloom-editable'>
+										<p>Text over picture text</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				</body></html>");
+
+			// SUT
+			var jsonString = bookDom.GetColorsUsedInBookBubbleElements();
+
+			// Verification
+			Assert.That(jsonString, Is.EqualTo(jsonResponses[responseIndex]));
+		}
+
+		[Test]
+		[TestCase("{`version`:`1.0`,`backgroundColors`:[`white`,`#7b8eb8`],`style`:`none`}", "none")]
+		[TestCase("{`style`:`caption`,`version`:`1.0`,`backgroundColors`:[`white`,`#7b8eb8`],`opacity`:`0.66`}", "caption")]
+		[TestCase("{`version`:`1.0`,`backgroundColors`:[`white`,`#7b8eb8`]}", "none")]
+		[TestCase("{`version`:`1.0`,`backgroundColors`:[`white`,`#7b8eb8`],`style`:`exclamation`}", "exclamation")]
+		public void GetStyleFromDataBubble_Works(string dataBubbleAttrVal, string result)
+		{
+			// SUT
+			var obj = HtmlDom.GetJsonObjectFromDataBubble(dataBubbleAttrVal);
+			var jsonString = HtmlDom.GetStyleFromDataBubbleJsonObj(obj);
+
+			Assert.That(jsonString, Is.EqualTo(result));
+		}
+
+		[Test]
+		public void GetUserModifiableStylesUsedOnPage_works()
+		{
+			var domForTestingInsertedPage = new HtmlDom(
+@"<html>
+	<head>
+		<meta charset='UTF-8' />
+		<style type='text/css' title='userModifiedStyles'>
+.BigWords-style { font-size: 45pt !important; text-align: center !important; }
+.QuizAnswer-style { font-size: 12pt !important;}
+.QuizQuestion-style {font-size: 12pt !important; font-weight: bold !important;}
+		</style>
+	</head>
+	<body>
+		<div class='A5Portrait bloom-page simple-comprehension-quiz bloom-interactive-page enterprise-only numberedPage bloom-monolingual' id='F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D' data-page='extra' data-analyticscategories='comprehension' data-reader-version='2'>
+			<div class='marginBox'>
+				<div class='quiz'>
+					<div class='bloom-translationGroup QuizHeader-style ' data-default-languages='auto'>
+						<div class='bloom-editable bloom-contentNational1' lang='en'>Check Your Understanding</div>
+					</div>
+					<div class='bloom-translationGroup QuizQuestion-style' data-default-languages='auto'>
+						<div class='bloom-editable' lang='z' contenteditable='true' />
+					</div>
+					<div class='checkbox-and-textbox-choice'>
+						<input class='styled-check-box' type='checkbox' name='Correct' />
+						<div class='bloom-translationGroup QuizAnswer-style' data-default-languages='auto'>
+							<div class='bloom-editable' lang='z' />
+						</div>
+						<div class='placeToPutVariableCircle' />
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>");
+
+			// SUT
+			var resultNode = HtmlDom.GetUserModifiableStylesUsedOnPage(domForTestingInsertedPage);
+
+			// Verification
+			const string expectedStyle1 = ".QuizAnswer-style";
+			const string expectedStyle2 = ".QuizQuestion-style";
+			const string unexpectedStyle1 = ".BigWords-style";
+			const string unexpectedStyle2 = ".QuizHeader-style";
+			Assert.That(resultNode.InnerXml.Contains(expectedStyle1), Is.True);
+			Assert.That(resultNode.InnerXml.Contains(expectedStyle2), Is.True);
+			Assert.That(resultNode.InnerXml.Contains(unexpectedStyle1), Is.False);
+			Assert.That(resultNode.InnerXml.Contains(unexpectedStyle2), Is.False);
+		}
+
+		[TestCase("A5Portrait")]
+		[TestCase("A5Landscape")]
+		public void InsertFullBleedMarkup_InsertsExpectedMarkup(string pageSizeClass)
+		{
+			var doc = new XmlDocument();
+			var input = @"
+<html>
+	<body>
+		<div class='bloom-page " + pageSizeClass + @" bloom-frontMatter'>this is a page</div>
+		<div class='bloom-page cover " + pageSizeClass + @" bloom-backMatter'>this is another page</div>
+	</body>
+</html>";
+
+			doc.LoadXml(input);
+			HtmlDom.InsertFullBleedMarkup(doc.DocumentElement.GetElementsByTagName("body").Cast<XmlElement>().First());
+
+			var assertThatDoc = AssertThatXmlIn.Dom(doc);
+			assertThatDoc.HasSpecifiedNumberOfMatchesForXpath("//div[@class='bloom-mediaBox " + pageSizeClass + "']/div[contains(@class, 'bloom-page')]", 2);
+			assertThatDoc.HasSpecifiedNumberOfMatchesForXpath("//body[@class='bloom-fullBleed']",1);
 		}
 	}
 }

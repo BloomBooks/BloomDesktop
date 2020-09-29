@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="pbu">
     <body>
@@ -3844,13 +3844,13 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To Send via USB, you may need to get the right
-                            cable, install phone drivers on your computer, or
-                            modify settings on your phone.</source>
+        cable, install phone drivers on your computer, or
+        modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note />
         <target xml:lang="pbu" state="final">د USB له لارې لیږلو لپاره، تاسو شاید اړتیا ولرئ چی سم
-                             کیبل ترلاسه کړئ، په خپل کمپیوټر کې د تلیفون ډرایور نصب کړئ ، یا
-                             په خپل تلیفون کې تنظیمات بدل کړئ.</target>
+        کیبل ترلاسه کړئ، په خپل کمپیوټر کې د تلیفون ډرایور نصب کړئ ، یا
+        په خپل تلیفون کې تنظیمات بدل کړئ.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No Wi-Fi Network?</source>
@@ -4596,7 +4596,7 @@
         <target xml:lang="pbu" state="final">PDF خوندي نه شو</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfNotSavedWhy" approved="yes">
-        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
+        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
         <target xml:lang="pbu" state="translated">د PDF دوسیه نه ده خوندي شوی ځکه چې تاسو غوره نه کړه چې "Printshop for PDF" تولید کړي.</target>
@@ -4607,7 +4607,7 @@
         <target xml:lang="pbu" state="final">&amp;چاپ...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrologToAdobeEula" approved="yes">
-        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
+        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
         <target xml:lang="pbu" state="translated">بلوم د Adobe رنګ پروفایل کاروي ترڅو د PDF دوسۍ د RGB رنګ کارولو څخه د CMYK رنګ کارولو ته بدل کړي. دا د "Printshop لپاره PDF" چمتو کولو یوه برخه ده. تاسو باید بلوم سره د دې کار ترسره کولو لپاره لاندې لايسنس سره موافقه وکړئ.</target>

@@ -6,12 +6,16 @@ html
 		meta(charset="UTF-8")
 		meta(name="BloomFormatVersion", content="2.0")
 		title Device Front &amp; Back Matter
-		//- NB: this has no effect on books using this stylesheet; it only does anything if you're viewing the xmatter html by itself
-		+stylesheets("Device-XMatter.css")
+		//- Make the stylesheets section available to extending .pug files.
+		block stylesheets
+			//- NB: this has no effect on books using this stylesheet; it only does anything if you're viewing the xmatter html by itself
+			+stylesheets("Device-XMatter.css")
 
 	body
 
 		+factoryStandard-outsideFrontCover
+
+		block optionalAddition
 
 		//- Credits at the end
 

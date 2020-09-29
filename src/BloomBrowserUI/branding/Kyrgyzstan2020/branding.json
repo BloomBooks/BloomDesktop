@@ -1,0 +1,42 @@
+{
+    "presets": [
+        {
+            "data-book": "xmatter",
+            "lang": "*",
+            "content": "Kyrgyzstan2020",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-top-left-html",
+            "lang": "*",
+            "content": "<img  class='branding' src='Kyrgyzstan2020-{flavor}-USAID.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-top-right-html",
+            "lang": "*",
+            "content": "<img  class='branding' src='Kyrgyzstan2020-{flavor}-government-seal.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<div/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<div lang='en' class='USAID'>This publication is made possible by the support of the American People through the United States Agency for International Development (USAID) under Contract No. 72011519C00004 IBE-KR. The content does not necessarily reflect the views of USAID or the U.S. Government.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "condition": "always"
+        },
+        {
+            // note it would make more sense for this to be part of the Kyrgyz xmatter, but at the moment we have no way of having an xmatter
+            // define a data-book value.
+            "data-book": "fullBleed",
+            "lang": "*",
+            "content": "true",
+            "condition": "always"
+        }
+    ]
+}

@@ -54,5 +54,13 @@ namespace BloomTests.web.controllers
 			var result = CollectionSettingsApi.SubscriptionCodeLooksIncomplete(input);
 			Assert.That(result, Is.EqualTo(incomplete));
 		}
+
+		[TestCase("Juarez-Guatemala", "Juarez-Guatemala", "")]
+		[TestCase("Kyrgyzstan2020[English]","Kyrgyzstan2020","English")]
+		public void SummaryHtmlGetsFlavorVariablesFilledIn(string fullEnterpriseCode, string expectedFolderName, string expectedFlavor)
+		{
+			var result = CollectionSettingsApi.GetSummaryHtml(fullEnterpriseCode);
+			Assert.That(result, Contains.Substring(expectedFlavor));
+		}
 	}
 }

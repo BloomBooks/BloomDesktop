@@ -7,14 +7,10 @@
 export MONO_PREFIX = /opt/mono5-sil
 export BUILD = Release
 
-PACKAGE = bloom-desktop-beta
+PACKAGE = bloom-desktop-alpha
 DESTDIR = debian/$(PACKAGE)
 LIB     = usr/lib/$(PACKAGE)
 SHARE   = usr/share/$(PACKAGE)
-
-# NOTE: make the third (and fourth?) number match changelog if you are
-# building the package manually.
-FULL_BUILD_NUMBER ?= 0.0.0.0
 
 %:
 	dh $@ --with=cli --parallel
@@ -69,13 +65,13 @@ override_dh_auto_install:
 	find $(DESTDIR)/$(LIB) -name 'GeckofxHtmlToPdf.*' -print0 | xargs -0 rm -f
 	# Install wrapper script
 	install -d $(DESTDIR)/usr/bin
-	install debian/bloom-beta $(DESTDIR)/usr/bin
+	install debian/bloom-alpha $(DESTDIR)/usr/bin
 	# Add to Applications menu
 	install -d $(DESTDIR)/usr/share/pixmaps
-	install -m 644 debian/bloom.png $(DESTDIR)/usr/share/pixmaps/bloom-beta.png
-	install -m 644 debian/bloom.svg $(DESTDIR)/usr/share/pixmaps/bloom-beta.svg
+	install -m 644 debian/bloom.png $(DESTDIR)/usr/share/pixmaps/bloom-alpha.png
+	install -m 644 debian/bloom.svg $(DESTDIR)/usr/share/pixmaps/bloom-alpha.svg
 	install -d $(DESTDIR)/usr/share/applications
-	desktop-file-install --dir $(DESTDIR)/usr/share/applications debian/bloom-beta.desktop
+	desktop-file-install --dir $(DESTDIR)/usr/share/applications debian/bloom-alpha.desktop
 	# Install icon for our mime type so that it shows up as icon for a bloompack
 	# NOTE: mime type installation is handled by dh_installmime
 	install -d $(DESTDIR)/usr/share/icons/hicolor/48x48/mimetypes/
@@ -86,8 +82,10 @@ override_dh_auto_install:
 	install -m 644 debian/bloom-collection.png $(DESTDIR)/usr/share/icons/hicolor/48x48/mimetypes/application-bloom-collection.png
 	install -m 644 debian/bloom-collection.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/mimetypes/application-bloom-collection.svg
 	# Add AppStream metadata file
-	install -d $(DESTDIR)/usr/share/metainfo
-	install -m 644 debian/bloom-beta.appdata.xml $(DESTDIR)/usr/share/metainfo
+	# REVIEW: the specs are not completely clear where the file should go: /usr/share/appdata,
+	# /usr/share/app-info/xmls, or /usr/share/metainfo.
+	install -d $(DESTDIR)/usr/share/appdata
+	install -m 644 debian/bloom-alpha.appdata.xml $(DESTDIR)/usr/share/appdata
 
 # Don't export any assemblies to other packages
 override_dh_makeclilibs:

@@ -306,7 +306,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public bool LogIn(string account, string password)
 		{
-			return _parseClient.LogIn(account, password);
+			return _parseClient.LegacyLogIn(account, password);
 		}
 
 		public void Logout()
@@ -623,13 +623,39 @@ namespace Bloom.WebLibraryIntegration
 				}
 				Console.WriteLine("Uploading books as user {0}", user);
 			}
-			else if (!LogIn(Settings.Default.WebUserId, Settings.Default.WebPassword))
+			else
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem("Could not log you in using user='" + Settings.Default.WebUserId + "' and pwd='" + Settings.Default.WebPassword+"'."+System.Environment.NewLine+
-					"For some reason, from the command line, we cannot get these credentials out of Settings.Default. However if you place your command line arguments in the properties of the project in visual studio and run from there, it works. If you are already doing that and get this message, then try running Bloom normally (gui), go to publish, and make sure you are logged in. Then quit and try this again.");
-				Console.WriteLine("\nFailed to login.");
-				return;
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+					"Command line upload currently requires an old-style username and password.");
+
+				// This seems as though it should work, but we get a message, apparently from Gecko,
+				// saying "Access to the port number given has been disabled for security reasons."
+				// Could not find any reason for this to happen while we execute the same code as
+				// getting a fresh token while running normally. We decided it was not worth further
+				// effort at present.
+				// I tried showing a dialog while attempting to connect with the last saved credentials,
+				// but it didn't help. We could try actually displaying the full login dialog.
+				//bool done = false;
+				//FirebaseLoginDialog.FirebaseUpdateToken(() =>
+				//{
+				//	if (!_parseClient.LoggedIn)
+				//	{
+				//		SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+				//			"Could not connect using saved credentials. You need to run Bloom normally (gui), go to publish, and make sure you are logged in. Then quit and try this again.");
+				//		Console.WriteLine("\nFailed to login.");
+				//		return;
+				//	}
+
+				//	done = true;
+				//});
+				//// Now we have to wait for it to happen;
+				//while (!done)
+				//{
+				//	Thread.Sleep(30);
+				//	Application.DoEvents();
+				//}
 			}
+
 			_singleBookshelfLevel = singleBookshelfLevel;
 			using (var dlg = new BulkUploadProgressDlg())
 			{
@@ -642,7 +668,7 @@ namespace Bloom.WebLibraryIntegration
 						throw args.Error;
 					dlg.Close();
 				};
-				worker.RunWorkerAsync(new object[] { folder, dlg, container, excludeNarrationAudio, preserveThumbnails });
+				worker.RunWorkerAsync(new object[] {folder, dlg, container, excludeNarrationAudio, preserveThumbnails});
 				dlg.ShowDialog(); // waits until worker completed closes it.
 			}
 		}
@@ -798,7 +824,7 @@ namespace Bloom.WebLibraryIntegration
 
 				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, context.Settings, server, _thumbnailer);
 				publishModel.PageLayout = book.GetLayout();
-				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null, null, null, null, null);
+				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null, null, null, null);
 				var blPublishModel = new BloomLibraryPublishModel(this, book, publishModel);
 				string dummy;
 
@@ -920,7 +946,7 @@ namespace Bloom.WebLibraryIntegration
 			if (!FileHelper.IsLocked(uploadPdfPath))
 			{
 				progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview..."));
-				publishView.MakePublishPreview();
+				publishView.MakePublishPreview(progressBox);
 				if (RobustFile.Exists(publishView.PdfPreviewPath))
 				{
 					RobustFile.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
