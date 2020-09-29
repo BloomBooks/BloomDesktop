@@ -1637,7 +1637,9 @@ namespace Bloom.Book
 							else continue;
 						}
 					}
-					Set(item.DataBook, item.Content, item.Lang);
+
+					var content = item.Content.Replace("{flavor}",_collectionSettings.GetBrandingFlavor());
+					Set(item.DataBook, content, item.Lang);
 				}
 			}
 		}
