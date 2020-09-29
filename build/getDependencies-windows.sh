@@ -77,7 +77,7 @@ cd -
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false
 #     revision: bloom-4.9.tcbuildtag
-#     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "optipng-0.7.4-win32/optipng.exe"=>"DistFiles", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame", "gm.zip!**"=>"lib"}
+#     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "optipng-0.7.4-win32/optipng.exe"=>"DistFiles", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame", "gm.zip!**"=>"lib", "FirefoxDependencies.zip!**"=>"lib/FirefoxDependencies"}
 # [1] build: PortableDevices (from PodcastUtilities) (Bloom_PortableDevicesFromPodcastUtitlies)
 #     project: Bloom
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=Bloom_PortableDevicesFromPodcastUtitlies
@@ -162,6 +162,7 @@ mkdir -p ../DistFiles/pdf
 mkdir -p ../Downloads
 mkdir -p ../build
 mkdir -p ../lib
+mkdir -p ../lib/FirefoxDependencies
 mkdir -p ../lib/dotnet
 mkdir -p ../lib/dotnet/
 mkdir -p ../lib/lame
@@ -174,6 +175,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-4.9.
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-4.9.tcbuildtag/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-4.9.tcbuildtag/Lame.zip ../Downloads/Lame.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-4.9.tcbuildtag/gm.zip ../Downloads/gm.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-4.9.tcbuildtag/FirefoxDependencies.zip ../Downloads/FirefoxDependencies.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/bloom-4.9.tcbuildtag/PodcastUtilities.PortableDevices.dll ../lib/dotnet/PodcastUtilities.PortableDevices.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/bloom-4.9.tcbuildtag/PodcastUtilities.PortableDevices.pdb ../lib/dotnet/PodcastUtilities.PortableDevices.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/bloom-4.9.tcbuildtag/Interop.PortableDeviceApiLib.dll ../lib/dotnet/Interop.PortableDeviceApiLib.dll
@@ -239,5 +241,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_Palaso
 unzip -uqo ../Downloads/ghostscript-win32.zip -d "../DistFiles/ghostscript"
 unzip -uqo ../Downloads/Lame.zip -d "../lib/lame"
 unzip -uqo ../Downloads/gm.zip -d "../lib"
+unzip -uqo ../Downloads/FirefoxDependencies.zip -d "../lib/FirefoxDependencies"
 unzip -uqo ../Downloads/pdfjs-viewer.zip -d "../DistFiles/pdf"
 # End of script
