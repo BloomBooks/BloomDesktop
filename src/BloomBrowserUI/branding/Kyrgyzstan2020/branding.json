@@ -33,13 +33,13 @@
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "ky",
-            "content": "<div lang='ky' class='USAID'>Бул басылма АКШнын эл аралык өнүктүрүү боюнча агенттиги (USAID) аркылуу көрсөтүлгөн Америка элинин колдоосу менен түзүлдү. Басылманын мазмуну USAIDдин же АКШ Өкмөтүнүн пикирин милдеттүү түрдө чагылдырбайт.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "content": "<div lang='ky' class='USAID'>Авторлукту сактап калуу шартында, сиз бул ишти коммерциялык максаттарда колдоно аласыз, адаптациялап, өзгөртүүлөрдү киргизсеңиз болот.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
             "condition": "always"
         },
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "ru",
-            "content": "<div lang='ru' class='USAID'>This will be the disclaimer in Russian</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "content": "<div lang='ru' class='USAID'>Вы можете использовать эту работу в коммерческих целях, адаптировать и вносить в нее изменения с условием сохранения авторства.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
             "condition": "always"
         },
         {

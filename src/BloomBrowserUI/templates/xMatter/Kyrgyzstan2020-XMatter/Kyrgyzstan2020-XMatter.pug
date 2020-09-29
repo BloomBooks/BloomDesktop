@@ -1,15 +1,24 @@
 extends ../../xMatter/Traditional-XMatter/Traditional-XMatter.pug
 
+mixin divider
+	.divider
+		//- has to be long enough for the largest page/layout we might use
+		| ◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇
 
-block outside-back-cover-branding-top-block
+block cover-bottom-row
+	.bottomRow
+		+divider
+
+block outsideBackCover
 	div.outside-back-cover-branding-top-block
 		div(data-book='outside-back-cover-branding-top-left-html' lang="*")
 		div(data-book='outside-back-cover-branding-top-right-html' lang="*")
-
-block outsideBackCoverContentsBottom
-	.divider ◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇
-	+image-xmatter('level-image')
-		label.bubble Paste the level diagram here.
+	div.bottomHalfGrid
+		+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style
+			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.
+		+divider
+		+image-xmatter('level-image')
+			label.bubble Paste the level diagram here.
 
 
 //- The standard template uses "*", but we need to put different disclaimers in for each of the 5 languages
