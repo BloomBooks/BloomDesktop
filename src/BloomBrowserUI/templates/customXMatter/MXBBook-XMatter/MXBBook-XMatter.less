@@ -5,9 +5,13 @@
 @MarginBetweenMajorItems: 3em;
 @contentMinimumHeight: 1em;
 
-// moving the license and copyright block to a new place, it needs some top space
-.licenseAndCopyrightBlock {
-    margin-bottom: @MarginBetweenMajorItems;
+// trying to snug things up a bit around the license
+.credits .licenseAndCopyrightBlock {
+    margin-bottom: 0;
+    .copyright,
+    .licenseBlock {
+        margin-bottom: @contentMinimumHeight;
+    }
 }
 
 .titlePage {
