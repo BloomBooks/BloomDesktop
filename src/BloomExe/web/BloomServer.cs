@@ -342,15 +342,6 @@ namespace Bloom.Api
 			}
 		}
 
-		protected string GetPathWithBrandingFlavor(string path)
-		{
-			if (!String.IsNullOrEmpty(CurrentCollectionSettings?.GetBrandingFlavor()))
-			{
-				path = path.Replace("{flavor}", CurrentCollectionSettings.GetBrandingFlavor());
-			}
-			return path;
-		}
-
 		// Every path should return false or send a response.
 		// Otherwise we can get a timeout error as the browser waits for a response.
 		//
@@ -446,7 +437,7 @@ namespace Bloom.Api
 			if (!_useCache)
 				return false;
 
-			var imageFile = GetPathWithBrandingFlavor(GetLocalPathWithoutQuery(info));
+			var imageFile = GetLocalPathWithoutQuery(info);
 
 			// only process images
 			var isSvg = imageFile.EndsWith(".svg", StringComparison.OrdinalIgnoreCase);

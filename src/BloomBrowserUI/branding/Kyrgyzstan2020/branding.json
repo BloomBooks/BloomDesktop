@@ -26,8 +26,32 @@
         },
         {
             "data-book": "credits-page-branding-bottom-html",
-            "lang": "*",
+            "lang": "en",
             "content": "<div lang='en' class='USAID'>This publication is made possible by the support of the American People through the United States Agency for International Development (USAID) under Contract No. 72011519C00004 IBE-KR. The content does not necessarily reflect the views of USAID or the U.S. Government.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-bottom-html",
+            "lang": "ky",
+            "content": "<div lang='ky' class='USAID'>Авторлукту сактап калуу шартында, сиз бул ишти коммерциялык максаттарда колдоно аласыз, адаптациялап, өзгөртүүлөрдү киргизсеңиз болот.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-bottom-html",
+            "lang": "ru",
+            "content": "<div lang='ru' class='USAID'>Вы можете использовать эту работу в коммерческих целях, адаптировать и вносить в нее изменения с условием сохранения авторства.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-bottom-html",
+            "lang": "uz",
+            "content": "<div lang='uz' class='USAID'>This will be the disclaimer in Uzbek</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-bottom-html",
+            "lang": "tg",
+            "content": "<div lang='ky' class='USAID'>This will be the disclaimer in Tajik</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
             "condition": "always"
         },
         {

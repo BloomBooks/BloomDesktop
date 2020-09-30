@@ -443,6 +443,8 @@ LibSynphony.prototype.getWordsFromHtmlString = function(textHTML, letters) {
         "g"
     );
     s = XRegExp.replace(s, regex, " ");
+    s = s.trim();
+    if (!s) return [];
 
     // Split into words using Separator and SOME Control characters
     // Originally the code had p{C} (all Control characters), but this was too all-encompassing.
@@ -469,7 +471,7 @@ LibSynphony.prototype.getWordsFromHtmlString = function(textHTML, letters) {
             "]+",
         "xg"
     );
-    return XRegExp.split(s.trim(), regex);
+    return XRegExp.split(s, regex);
 };
 
 /**

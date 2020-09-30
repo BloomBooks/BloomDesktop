@@ -2,16 +2,31 @@
 @import (reference) "../../../bookLayout/basePage.less";
 
 @XMatterPackName: "Kyrgyz";
-@HeaderHeight: 3.5cm;
 @bleed: 3mm;
+:root {
+    --HeaderHeight: 3.5cm;
+    --OutsideBackCoverLogoHeight: 15mm;
+    --OutsideBackCoverCreditsFontSize: 9pt;
+    --DividerDiamondsFontSize: 7px;
+}
+.A3Portrait {
+    --HeaderHeight: 6cm;
+    --OutsideBackCoverLogoHeight: 30mm;
+    --DividerDiamondsFontSize: 20pt;
+    --OutsideBackCoverCreditsFontSize: 14pt;
+}
+.A5Landscape {
+    --OutsideBackCoverLogoHeight: 14mm;
+}
+.Device16x9Portrait {
+    --HeaderHeight: 20mm;
+    --OutsideBackCoverLogoHeight: 10mm;
+    --OutsideBackCoverCreditsFontSize: 9pt;
+}
 
-// When we convert the pdf to cmyk, white and even #fefefe come out seemingly transparent,
-// which is wrong since there is a background color
-//@white: #fdfdfd;
-@white: white;
-
-div.bloom-page.outsideFrontCover,
-div.bloom-page.outsideBackCover {
+// we need a lot of classes here to overcome the unfortunately "!important" class put in by Bloom at runtime
+div.bloom-page.outsideFrontCover.coverColor,
+div.bloom-page.outsideBackCover.coverColor {
     background-color: #193970 !important;
 }
 
@@ -40,16 +55,17 @@ div.bloom-page.outsideBackCover {
     display: flex;
 }
 
-.outsideFrontCover .marginBox img,
-.outsideBackCover .marginBox img {
-    margin-left: auto;
-    margin-right: auto;
+.outsideBackCover [data-book="level-image"] img {
+    width: unset; // allow it to left-align
 }
-
 .frontCover .bottomBlock {
     margin-left: 1cm;
     margin-right: 1cm;
     margin-bottom: 1cm;
+}
+.frontCover .bottomRow {
+    display: grid !important;
+    overflow: hidden;
 }
 
 // don't show second language on cover
@@ -61,9 +77,9 @@ div.bloom-page.outsideBackCover {
 
 .frontCover .bloom-translationGroup.bookTitle {
     color: black;
-    background-color: @white;
+    background-color: white;
     // if you touch this make sure the header is the same height on front and back covers!;
-    height: @HeaderHeight;
+    height: var(--HeaderHeight);
     box-sizing: border-box; // padding doesn't affect height.
     /*flex-basis: content;*/
     flex-direction: column;
@@ -92,26 +108,67 @@ div.bloom-page.outsideBackCover {
     padding-top: @bleed + @USComicPortrait-Height-Excess / 2;
 }
 
-.frontCover .creditsRow:after {
-    content: "◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇◇";
-    color: #97c955;
-    font-size: 7px;
-    letter-spacing: -2px;
-}
 .outsideBackCover [data-book="outsideBackCover"] p:last-of-type {
     margin-bottom: 4em;
 }
+
 .outsideBackCover {
     .Outside-Back-Cover-style {
-        margin-top: 8mm; // 15mm wasn't enough room for text 15mm;
+        margin-top: 8mm; // 15mm wasn't enough room for text 15mm;  In Landscape mode, we remove this
         text-align: left !important;
-        font-size: 9pt;
+        font-size: var(--OutsideBackCoverCreditsFontSize);
     }
 }
+
+@A5Landscape-column2-left: 11.5mm;
+// Landscape has a VERY different layout. We use CSS Grid display to move the items around.
+.A5Landscape {
+    [data-book="outside-back-cover-branding-top-right-html"] img {
+        //     position: absolute;
+        //     left: @A5Landscape-column2-left;
+        //     top: 4mm;
+        margin-left: 75px; // Note: this must cause the lft edge of the logo to align with the text below
+    }
+
+    .outsideBackCover {
+        .bottomHalfGrid {
+            height: 100%;
+            display: grid;
+            grid-template-columns: 260px auto; // Note: this must cause the left edge of the text to align with the Kyrgyzstan logo above.
+            grid-template-rows: auto 3em;
+            margin-top: 1cm;
+            .divider {
+                grid-row: 2;
+                grid-column: 1 / span 2;
+            }
+            .bloom-translationGroup {
+                margin-top: unset;
+                grid-row: 1;
+                grid-column: 2 / span 1;
+            }
+            [data-book="level-image"] {
+                grid-row: 1;
+                grid-column: 1;
+                margin-top: 0;
+            }
+        }
+    }
+}
+
+.frontCover,
+.outsideBackCover {
+    .divider {
+        color: #97c955;
+        font-size: var(--DividerDiamondsFontSize);
+        height: 3em; // I don't know why this is necessary. Without it, even overflow-x:hidden cuts off the diamonds.
+        letter-spacing: -2px;
+        overflow: hidden;
+    }
+}
+.frontCover .divider {
+    margin-top: 2em;
+}
 .outsideBackCover .divider {
-    color: #97c955;
-    font-size: 7px;
-    letter-spacing: -2px;
     margin-top: 8mm;
     margin-bottom: 8mm; // wasn't enough room for text 15mm;
 }
@@ -122,7 +179,7 @@ div.bloom-page.outsideBackCover {
     }
 }
 div.bloom-page.coverColor {
-    color: @white;
+    color: white;
 }
 
 /* Element | http://localhost:8089/bloom/C%3A/Users/hatto/Documents/Bloom/Kyrgyz%20Branding%20Test/Book/8444a5b9-4b6a-476a-90da-cc003fbc1fea-memsim-Preview.html */
@@ -135,26 +192,32 @@ div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
     object-fit: contain;
 
     /* white border that fits the image, not its container*/
-    filter: drop-shadow(0 -3px 0 @white) drop-shadow(0 3px 0 @white)
-        drop-shadow(-3px 0 0 @white) drop-shadow(3px 0 0 @white);
+    filter: drop-shadow(0 -3px 0 white) drop-shadow(0 3px 0 white)
+        drop-shadow(-3px 0 0 white) drop-shadow(3px 0 0 white);
 }
 
+.A5Portrait,
+.A3Portrait,
+.Device16x9Portrait {
+    .outside-back-cover-branding-top-block {
+        justify-content: space-between;
+    }
+}
 .outside-back-cover-branding-top-block {
-    background-color: @white;
+    display: flex;
+    flex-direction: row;
+    background-color: white;
     margin-left: -18mm; // margin + 3mm of bleed
     margin-right: -18mm; // margin + 3mm of bleed
     padding-left: 18mm;
     padding-right: 18mm;
     padding-top: @bleed; // nudge down because of 3mm bleed
     height: calc(
-        @HeaderHeight - @bleed
+        var(--HeaderHeight) - @bleed
     ); // the subtraction here makes up for the padding-top
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
 
     img {
-        height: 15mm;
+        // height is per page size, below
         margin-top: auto;
         margin-bottom: auto;
     }
@@ -175,7 +238,7 @@ div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
 div.bloom-page {
     &.insideFrontCover,
     &.insideBackCover {
-        background-color: @white !important;
+        background-color: white !important;
     }
 }
 
@@ -187,5 +250,74 @@ div.bloom-page {
     &::after {
         // don't show the trim area at all.
         border: none;
+    }
+}
+
+.outside-back-cover-branding-top-block {
+    img {
+        height: var(--OutsideBackCoverLogoHeight);
+    }
+}
+
+.A5Landscape {
+    .Outside-Back-Cover-style {
+        margin-top: unset; // In portrait, there is a margin mode, we remove this
+    }
+}
+// NOTE. The existence of this selector tells XMatterHelper that we can handle device layout, so don't revert to a specialized one.
+.Device16x9Portrait {
+    .outsideBackCover {
+        .marginBox {
+            left: 19px !important;
+            width: 89mm;
+            top: 10px;
+            height: calc(100% - 8mm) !important;
+
+            .outside-back-cover-branding-top-block {
+                height: var(--HeaderHeight);
+                padding-top: unset;
+            }
+            [data-book="outside-back-cover-branding-top-right-html"] img {
+                margin-left: 75px;
+            }
+
+            .bottomHalfGrid {
+                height: 600px;
+                display: grid;
+                grid-template-columns: auto;
+                grid-template-rows: 250px 30px auto;
+                [data-book="level-image"] {
+                    grid-row: 2;
+                    grid-column: 1;
+                }
+
+                .bloom-translationGroup {
+                    grid-row: 1;
+                }
+                .divider {
+                    grid-row: 2;
+                }
+                [data-book="level-image"] {
+                    padding-top: 20px;
+                    grid-row: 3;
+                    // grid-column: 1;
+                    img {
+                        height: 250px;
+                    }
+                }
+            }
+        }
+    }
+}
+.A3Portrait {
+    .divider {
+        height: 3em; // I don't know why this is necessary. Without it, even overflow-x:hidden cuts off the diamonds.
+        letter-spacing: -7px;
+    }
+    [data-book="level-image"] {
+        padding-top: 20px;
+        img {
+            height: 17cm;
+        }
     }
 }

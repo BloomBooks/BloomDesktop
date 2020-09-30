@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
-using Bloom.Api;
+using SIL.Program;
 
 namespace Bloom.Publish.AccessibilityChecker
 {
@@ -35,6 +35,7 @@ namespace Bloom.Publish.AccessibilityChecker
 
 			var path = BloomFileLocator.GetBrowserFile(false, "publish", "accessibilityCheck", "accessibilityCheckScreen.html");
 			_browser.Navigate(path.ToLocalhost(),false);
+			_browser.OnBrowserClick += Browser.HandleExternalLinkClick; // See BL-9026
 		}
 
 		private void AccessibilityCheckWindow_FormClosed(object sender, FormClosedEventArgs e)

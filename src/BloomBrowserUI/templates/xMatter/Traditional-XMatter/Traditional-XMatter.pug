@@ -3,9 +3,9 @@ include ../bloom-xmatter-mixins.pug
 doctype html
 html
 	head
-		meta(charset='UTF-8')
-		meta(name='BloomFormatVersion', content='2.0')
-		title Traditional Front & Back Matter
+		+metadata-standard
+		block XMatterTitle
+			title Traditional Front & Back Matter
 		//- Make the stylesheets section available to extending .pug files.
 		block stylesheets
 			+stylesheets('Traditional-XMatter.css')
