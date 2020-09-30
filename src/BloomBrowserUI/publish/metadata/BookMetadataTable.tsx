@@ -20,10 +20,11 @@ interface IProps {
 
 // The BookMetadataTable shows some elements of https://docs.google.com/document/d/e/2PACX-1vREQ7fUXgSE7lGMl9OJkneddkWffO4sDnMG5Vn-IleK35fJSFqnC-6ulK1Ss3eoETCHeLn0wPvcxJOf/pub
 
-// @observer means mobx will automatically track which observables this component uses
-// in its render() function, and then re-render when they change. The "observable" here is the
-// metadata prop, and it's observable because it is marked as such back where it is created in our parent component.
-@mobxReact.observer
+// BookMetadataTable should not be marked with @mobxReact.observer because this causes problems tabbing
+// between TextField elements: re-rendering the entire table resets the tab position to the beginning, so
+// editing a text field and trying to tab to the next field would send the user to the initial (picture?)
+// field instead of the next field.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9022.
+
 export default class BookMetadataTable extends React.Component<IProps> {
     constructor(props) {
         super(props);
@@ -155,64 +156,89 @@ export default class BookMetadataTable extends React.Component<IProps> {
         );
     }
 
+    // <mobxReact.Observer> means mobx will automatically track which observables this component uses
+    // in its render attribute function, and then re-render when they change. The "observable" here is
+    // the metadata.hazards prop, and it's observable because metadata is marked as such back where it
+    // is created in our parent component.
     private makeHazardControls() {
         return (
-            <div className="checkbox-list">
-                {/* from https://www.w3.org/wiki/WebSchemas/Accessibility*/}
-                {/* "Sound Hazard" is too hard to explain (BL-6947) */}
-                {["flashingHazard", "motionSimulationHazard"].map(
-                    hazardName => {
-                        return (
-                            <StringListCheckbox
-                                key={hazardName}
-                                l10nKey={"BookMetadata." + hazardName}
-                                alreadyLocalized={true}
-                                list={this.props.metadata.hazards.value}
-                                itemName={hazardName}
-                                tristateItemOffName={
-                                    "no" + this.capitalizeFirstChar(hazardName)
-                                }
-                                onChange={list =>
-                                    (this.props.metadata.hazards.value = list)
-                                }
-                                label={
-                                    this.props.translatedControlStrings[
-                                        hazardName
-                                    ]
-                                }
-                            />
-                        );
-                    }
+            <mobxReact.Observer
+                render={() => (
+                    <div className="checkbox-list">
+                        {/* from https://www.w3.org/wiki/WebSchemas/Accessibility*/}
+                        {/* "Sound Hazard" is too hard to explain (BL-6947) */}
+                        {["flashingHazard", "motionSimulationHazard"].map(
+                            hazardName => {
+                                return (
+                                    <StringListCheckbox
+                                        key={hazardName}
+                                        l10nKey={"BookMetadata." + hazardName}
+                                        alreadyLocalized={true}
+                                        list={this.props.metadata.hazards.value}
+                                        itemName={hazardName}
+                                        tristateItemOffName={
+                                            "no" +
+                                            this.capitalizeFirstChar(hazardName)
+                                        }
+                                        onChange={list =>
+                                            (this.props.metadata.hazards.value = list)
+                                        }
+                                        label={
+                                            this.props.translatedControlStrings[
+                                                hazardName
+                                            ]
+                                        }
+                                    />
+                                );
+                            }
+                        )}
+                    </div>
                 )}
-            </div>
+            />
         );
     }
     private capitalizeFirstChar(hazardName: string): string {
         let uc = hazardName[0].toUpperCase();
         return uc + hazardName.substr(1, hazardName.length - 1);
     }
+
+    // <mobxReact.Observer> means mobx will automatically track which observables this component uses
+    // in its render attribute function, and then re-render when they change. The "observable" here is
+    // the metadata.a11yFeatures prop, and it's observable because metadata is marked as such back where
+    // it is created in our parent component.
     private makeA11yFeaturesControls() {
         return (
-            <div className="checkbox-list">
-                {/* from https://www.w3.org/wiki/WebSchemas/Accessibility*/}
-                {["alternativeText", "signLanguage"].map(featureName => {
-                    return (
-                        <StringListCheckbox
-                            key={featureName}
-                            l10nKey={"BookMetadata." + featureName}
-                            alreadyLocalized={true}
-                            list={this.props.metadata.a11yFeatures.value}
-                            itemName={featureName}
-                            onChange={list =>
-                                (this.props.metadata.a11yFeatures.value = list)
+            <mobxReact.Observer
+                render={() => (
+                    <div className="checkbox-list">
+                        {/* from https://www.w3.org/wiki/WebSchemas/Accessibility*/}
+                        {["alternativeText", "signLanguage"].map(
+                            featureName => {
+                                return (
+                                    <StringListCheckbox
+                                        key={featureName}
+                                        l10nKey={"BookMetadata." + featureName}
+                                        alreadyLocalized={true}
+                                        list={
+                                            this.props.metadata.a11yFeatures
+                                                .value
+                                        }
+                                        itemName={featureName}
+                                        onChange={list =>
+                                            (this.props.metadata.a11yFeatures.value = list)
+                                        }
+                                        label={
+                                            this.props.translatedControlStrings[
+                                                featureName
+                                            ]
+                                        }
+                                    />
+                                );
                             }
-                            label={
-                                this.props.translatedControlStrings[featureName]
-                            }
-                        />
-                    );
-                })}
-            </div>
+                        )}
+                    </div>
+                )}
+            />
         );
     }
 }
