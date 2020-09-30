@@ -183,7 +183,7 @@ namespace Bloom.Book
 			InjectXMatter(writingSystemCodes, layout, null, null);
 		}
 
-		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout, string branding, string bookFolderPath)
+		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout, string branding, string bookFolderPath, bool orderXmatterForDeviceUse = false)
 		{
 			//don't want to pollute shells with this content
 			if (!string.IsNullOrEmpty(FolderPathForCopyingXMatterFiles))
@@ -204,7 +204,7 @@ namespace Bloom.Book
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-8845.
 			_bookDom.SortStyleSheetLinks();
 
-			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
+			//it's important that we append *after* this, so that these values take precedence (the template will just have empty values for this stuff)
 			//REVIEW: I think all stylesheets now get sorted once they are all added: see HtmlDoc.SortStyleSheetLinks()
 			XmlNode divBeforeNextFrontMattterPage = _bookDom.RawDom.SelectSingleNode("//body/div[@id='bloomDataDiv']");
 
@@ -214,7 +214,7 @@ namespace Bloom.Book
 				//give a new id, else thumbnail caches get messed up becuase every book has, for example, the same id for the cover.
 				newPageDiv.SetAttribute("id", Guid.NewGuid().ToString());
 
-				if (IsBackMatterPage(xmatterPage))
+				if (IsBackMatterPage(xmatterPage) || (orderXmatterForDeviceUse && ShouldBeInBackForDeviceUse(xmatterPage)))
 				{
 					//note: this is redundant unless this is the 1st backmatterpage in the list
 					divBeforeNextFrontMattterPage = _bookDom.RawDom.SelectSingleNode("//body/div[last()]");
@@ -311,6 +311,11 @@ namespace Bloom.Book
 		public static bool IsBackMatterPage(XmlElement pageDiv)
 		{
 			return pageDiv.SelectSingleNode("self::div[contains(@class, 'bloom-backMatter')]") != null;
+		}
+
+		public static bool ShouldBeInBackForDeviceUse(XmlElement pageDiv)
+		{
+			return pageDiv.SelectSingleNode("self::div[contains(@class, 'frontCover')]") == null;
 		}
 
 
