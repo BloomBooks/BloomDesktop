@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -7,6 +8,7 @@ namespace Bloom
 {
 	public static class Extensions
 	{
+		[Obsolete("Use ToLocalhostForBloomPlayer() instead, which should happen more punctuation characters correctly.")]
 		public static string ToLocalhost(this string fileName)
 		{
 			// don't do this if it is done already
@@ -15,13 +17,24 @@ namespace Bloom
 			return BloomServer.ServerUrlWithBloomPrefixEndingInSlash + fileName.EscapeCharsForHttp().Replace(System.IO.Path.DirectorySeparatorChar, '/');
 		}
 
-		// Escape everything in the filename (and previous URL) in a way suitable for Bloom Player, which
-		// first converts plus signs to spaces, then uses the javascript decodeURIComponent() function.
-		// Of various possible encoding functions, Uri.EscapeDataString seems to be the only one that will
-		// convert plus to an encoded form and then space to plus.
-		public static string ToLocalhostFullyEscaped(this string fileName)
+		private static readonly char[] kDirectorySeparators = new char[] { '\\', '/' };
+
+		/// <summary>
+		/// Returns a localhost URL to a file
+		/// Honestly, I think this would be a good generic implementation of ToLocalhost,
+		/// but that function name is already used with slightly different implementation and had 37 references,
+		/// so I just made a new one rather than affect so many different places.
+		/// It is preferable to use this version of the function unless you specifically need the result to be
+		/// decoded by UnescapeCharsForHttp (which we hope to retire in version 5.0) and not by Uri.UnescapeDataString / JS's decodeUriComponent
+		/// </summary>
+		/// <param name="fileName">The raw filename used by the operating system</param>
+		/// <returns>A well-formed, singly-encoded URL</returns>
+		public static string ToLocalhostProperlyEncoded(this string fileName)
 		{
-			return Uri.EscapeDataString(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + fileName.Replace(System.IO.Path.DirectorySeparatorChar, '/'));
+			var escapedPathComponents = fileName.Split(kDirectorySeparators).Select(Uri.EscapeDataString);
+			string escapedFileName = String.Join("/", escapedPathComponents);
+			string url = BloomServer.ServerUrlWithBloomPrefixEndingInSlash + escapedFileName;
+			return url;
 		}
 
 		public static string FromLocalhost(this string uri)

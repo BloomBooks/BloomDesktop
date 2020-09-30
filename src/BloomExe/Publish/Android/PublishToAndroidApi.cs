@@ -357,6 +357,12 @@ namespace Bloom.Publish.Android
 			}
 		}
 
+		/// <summary>
+		/// Updates the BloomReader preview. The URL of the BloomReader preview will be sent over the web socket.
+		/// The format of the URL is a valid ("single" encoded) URL.
+		/// If the caller wants to insert this URL as a query parameter to another URL (e.g. like what is often done with Bloom Player),
+		/// it's the caller's responsibility to apply another layer of URL encoding to make the URL suitable to be passed as data inside another URL.
+		/// </summary>
 		private void UpdatePreview(ApiRequest request)
 		{
 			InitializeLanguagesInBook(request);
@@ -457,6 +463,15 @@ namespace Bloom.Publish.Android
 
 		private static TemporaryFolder _stagingFolder;
 
+		/// <summary>
+		/// Generates a .bloomd file (bloompub) from the book
+		/// </summary>
+		/// <param name="book"></param>
+		/// <param name="bookServer"></param>
+		/// <param name="progress"></param>
+		/// <param name="backColor"></param>
+		/// <param name="settings"></param>
+		/// <returns>A valid, well-formed URL on localhost that points to the bloomd</returns>
 		public static string StageBloomD(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, AndroidPublishSettings settings = null)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");	// message shared with Epub publishing
@@ -483,7 +498,7 @@ namespace Bloom.Publish.Android
 			_stagingFolder = new TemporaryFolder(StagingFolder);
 			var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book.FolderPath, bookServer, _stagingFolder, progress, settings: settings);
 			progress.Message("Common.Done", "Shown in a list of messages when Bloom has completed a task.", "Done");
-			return modifiedBook.FolderPath.ToLocalhostFullyEscaped();
+			return modifiedBook.FolderPath.ToLocalhostProperlyEncoded();
 		}
 
 		/// <summary>

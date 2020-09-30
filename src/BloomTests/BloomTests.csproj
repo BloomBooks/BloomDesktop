@@ -175,6 +175,7 @@
     <Compile Include="Book\LicenseCheckerTests.cs" />
     <Compile Include="CLI\CreateArtifactsCommandTests.cs" />
     <Compile Include="Edit\MakeActivityTests.cs" />
+    <Compile Include="ExtensionsTests.cs" />
     <Compile Include="TestDoubles\Book\FakeBookServer.cs" />
     <Compile Include="CollectionTab\LibraryListViewTests.cs" />
     <Compile Include="Publish\BloomReaderPublishTests.cs" />
