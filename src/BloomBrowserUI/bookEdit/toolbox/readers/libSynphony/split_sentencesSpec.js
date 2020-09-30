@@ -116,6 +116,13 @@ describe("Splitting text into sentences", function() {
         expect(words.length).toBe(25);
     });
 
+    it("Get total word count of whitespace", function() {
+        var inputText = " ";
+        var words = theOneLibSynphony.getWordsFromHtmlString(inputText);
+
+        expect(words.length).toBe(0);
+    });
+
     it("Get unique word count", function() {
         var inputText =
             'This is sentence 1. "This is \'sentence 2.\'" this is sentence.3. This is the 4th sentence! Is this the 5th sentence? Is "this" "sentence 6?"';
