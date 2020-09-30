@@ -214,7 +214,16 @@ namespace Bloom.Book
 				//give a new id, else thumbnail caches get messed up becuase every book has, for example, the same id for the cover.
 				newPageDiv.SetAttribute("id", Guid.NewGuid().ToString());
 
-				if (IsBackMatterPage(xmatterPage) || (orderXmatterForDeviceUse && ShouldBeInBackForDeviceUse(xmatterPage)))
+				// We have some xmatters that don't know about devices, and these we replace with the
+				// standard Device Xmatter as needed.
+				// There is a second type where we have explicitly made a special xmatter just for devices:
+				// ABC, Dari, and Pasti are examples of these. 
+				// Finally, we have other xmatters that deal with device formatting via a stylesheet, without having
+				// a second folder and html for devices (e.g. Kyrgyzstan 2020). For this last one, we want to
+				// just automatically reorder the pages, when we are preparing the document for publishing
+				// to device contexts.
+				var moveNonCoverToBack = orderXmatterForDeviceUse && !PathToXMatterStylesheet.Contains("Device-XMatter");
+				if (IsBackMatterPage(xmatterPage) || (moveNonCoverToBack && ShouldBeInBackForDeviceUse(xmatterPage)))
 				{
 					//note: this is redundant unless this is the 1st backmatterpage in the list
 					divBeforeNextFrontMattterPage = _bookDom.RawDom.SelectSingleNode("//body/div[last()]");
