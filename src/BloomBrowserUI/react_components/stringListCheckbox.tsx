@@ -1,5 +1,4 @@
 import * as React from "react";
-import * as mobxReact from "mobx-react";
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
 import { MuiCheckbox } from "./muiCheckBox";
 
@@ -18,7 +17,6 @@ interface IProps extends ILocalizationProps {
 // something is not true, and just be silent on the matter. In the case of the "something is not true",
 // a "tristateItemOffName" is used, e.g. "noMotionHazard".
 
-@mobxReact.observer
 export class StringListCheckbox extends LocalizableElement<IProps, {}> {
     public constructor(props: IProps) {
         super(props);
