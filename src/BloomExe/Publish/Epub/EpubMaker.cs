@@ -303,6 +303,8 @@ namespace Bloom.Publish.Epub
 			_fontsUsedInBook.Clear();
 			ISet<string> warningMessages = new HashSet<string>();
 
+			Book.OurHtmlDom.AddPublishClassToBody("epub");
+
 			HandleImageDescriptions(Book.OurHtmlDom);
 			if (string.IsNullOrEmpty(SignLanguageApi.FfmpegProgram))
 			{
@@ -1058,7 +1060,7 @@ namespace Bloom.Publish.Epub
 			_fontsUsedInBook.UnionWith(_publishHelper.FontsUsed);	// filled in as side-effect of removing unwanted content
 
 			pageDom.SortStyleSheetLinks();
-			pageDom.AddPublishClassToBody();
+			pageDom.AddPublishClassToBody("epub");
 			if (RemoveFontSizes)
 			{
 				DoRemoveFontSizes(pageDom);

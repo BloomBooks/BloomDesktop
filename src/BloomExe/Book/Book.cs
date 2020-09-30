@@ -733,7 +733,7 @@ namespace Bloom.Book
 			TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, CollectionSettings, primaryLanguage, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
 
 			AddPreviewJavascript(previewDom);
-			previewDom.AddPublishClassToBody();
+			previewDom.AddPublishClassToBody("preview");
 			return previewDom;
 		}
 

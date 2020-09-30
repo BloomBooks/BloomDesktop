@@ -610,18 +610,20 @@ namespace Bloom.Book
 		}
 
 
-		public void AddPublishClassToBody()
+		public void AddPublishClassToBody(string kindOfPublication=null)
 		{
-			AddPublishClassToBody(_dom);
+			AddPublishClassToBody(_dom, kindOfPublication);
 		}
 
 
 		/// <summary>
 		/// By including this class, we help stylesheets do something different for edit vs. publish mode.
 		/// </summary>
-		public static void AddPublishClassToBody(XmlDocument dom)
+		public static void AddPublishClassToBody(XmlDocument dom, string kindOfPublication = null)
 		{
 			AddClassToBody(dom, "publishMode");
+			if(null!=kindOfPublication)
+				AddClassToBody(dom, kindOfPublication);
 		}
 		public static void AddClassToBody(XmlDocument dom,string className)
 		{
