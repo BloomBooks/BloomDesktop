@@ -56,6 +56,9 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     const [closePending, setClosePending] = useState(false);
     const [highlightRefresh, setHighlightRefresh] = useState(false);
     const [progressState, setProgressState] = useState(ProgressState.Working);
+
+    // bookUrl is expected to be a normal, well-formed URL.
+    // (that is, one that you can directly copy/paste into your browser and it would work fine)
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
             ? window.location.protocol +
@@ -123,7 +126,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                         url={
                             pathToOutputBrowser +
                             "bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
-                            bookUrl +
+                            encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
                             "&independent=false&host=bloomdesktop"
                         }
                         showRefresh={true}
