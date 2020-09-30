@@ -704,9 +704,10 @@ namespace Bloom.Publish.Epub
 			int index = 1;
 			TimeSpan pageDuration = new TimeSpan();
 			string mergedAudioPath = null;
-			if (OneAudioPerPage && audioSentenceElementsWithRecordedAudio.Count() > 1)
-				mergedAudioPath = MergeAudioElements(audioSentenceElementsWithRecordedAudio);
-			foreach(var audioSentenceElement in audioSentenceElementsWithRecordedAudio)
+			var orderedAudioSentenceElements = OrderByTabindex(audioSentenceElementsWithRecordedAudio).ToList();
+			if (OneAudioPerPage && orderedAudioSentenceElements.Count > 1)
+				mergedAudioPath = MergeAudioElements(orderedAudioSentenceElements);
+			foreach(var audioSentenceElement in orderedAudioSentenceElements)
 			{
 				// These are going to be the same regardless of whether this audio sentence has sub-elements to highlight.
 				var audioId = audioSentenceElement.Attributes["id"].Value;
@@ -827,6 +828,22 @@ namespace Bloom.Publish.Epub
 			using(var writer = XmlWriter.Create(overlayPath))
 				root.WriteTo(writer);
 
+		}
+
+		// This ordering by tabindex doesn't currently preview correctly in Readium preview,
+		// but it DOES play correctly in the Simply Reading app.
+		private static IEnumerable<XmlElement> OrderByTabindex(IEnumerable<XmlElement> elementsWithAudio)
+		{
+			return elementsWithAudio.OrderBy(GetNearestTabindex);
+		}
+
+		private static int GetNearestTabindex(XmlElement elementWithAudio)
+		{
+			// tabindex, if it is going to occur, should be on the nearest 'bloom-translationGroup' element
+			var translationGroupElement = elementWithAudio.ParentWithClass("bloom-translationGroup");
+			if (translationGroupElement == null || !translationGroupElement.HasAttribute("tabindex"))
+				return 0;
+			return int.Parse(translationGroupElement.Attributes["tabindex"].Value);
 		}
 
 		/// <summary>
@@ -1060,7 +1077,6 @@ namespace Bloom.Publish.Epub
 			RemoveBloomUiElements(pageDom);
 			RemoveSpuriousLinks(pageDom);
 			RemoveScripts(pageDom);
-			RemoveUnwantedAttributes(pageDom);
 			FixIllegalIds(pageDom);
 			FixPictureSizes(pageDom);
 
@@ -1094,6 +1110,7 @@ namespace Bloom.Publish.Epub
 			if(!PublishWithoutAudio)
 				AddAudioOverlay(pageDom, pageDocName);
 
+			RemoveUnwantedAttributes(pageDom); // We need the tabindex to order the above audio overlay.
 			StoreTableOfContentInfo(pageElement, pageDocName);
 
 			// for now, at least, all Bloom book pages currently have the same stylesheets, so we only neeed
