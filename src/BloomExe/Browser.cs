@@ -1471,5 +1471,51 @@ namespace Bloom
 				yield return "Andika New Basic";
 			}
 		}
+
+		/// <summary>
+		/// Detect clicks on anchor elements and handle them by passing the href to the default system browser.
+		/// </summary>
+		/// <remarks>
+		/// Enhance: There is much work to do in bringing together all the various places we try to handle external links.
+		/// However, I can't tackle that with this change because I'm trying to make the safest change possible for 4.8 on
+		/// the eve of its release. So for now, I just moved this method from HtmlPublishPanel and reused it in AccessibilityCheckWindow (BL-9026).
+		/// See similar logic in Browser.HandleLinkClick and EditingView._browser1_OnBrowserClick among other places.
+		/// One potential way forward is to use (and perhaps enhance) this method on all browser objects instead of
+		/// having each client subscribe to OnBrowserClick.
+		/// 
+		/// Original remarks when this was only in HtmlPublishPanel:
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7569.
+		/// Note that Readium handles these clicks internally and we never get to see them.  The relevant Readium
+		/// code is apparently in readium-js-viewer/readium-js/readium-shared-js/js/views/internal_links_support.js
+		/// in the function this.processLinkElements.
+		/// </remarks>
+		public static void HandleExternalLinkClick(object sender, EventArgs e)
+		{
+			var ge = e as DomEventArgs;
+			if (ge == null || ge.Target == null)
+				return;
+			GeckoHtmlElement target;
+			try
+			{
+				target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
+			}
+			catch (InvalidCastException)
+			{
+				return;
+			}
+			var anchor = target as GeckoAnchorElement;
+			if (anchor == null)
+				anchor = target.Parent as GeckoAnchorElement;   // Might be a span inside an anchor
+			if (anchor != null && !String.IsNullOrEmpty(anchor.Href) &&
+			    // Handle only http(s) and mailto protocols.
+			    (anchor.Href.ToLowerInvariant().StartsWith("http") || anchor.Href.ToLowerInvariant().StartsWith("mailto")) &&
+			    // Don't try to handle localhost Bloom requests.
+			    !anchor.Href.ToLowerInvariant().StartsWith(Api.BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
+			{
+				SIL.Program.Process.SafeStart(anchor.Href);
+				ge.Handled = true;
+			}
+			// All other clicks get normal processing...
+		}
 	}
 }

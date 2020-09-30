@@ -228,7 +228,7 @@ function beginLoadSynphonySettings(): JQueryPromise<void> {
     );
     BloomApi.get("readers/io/readerToolSettings", settingsFileContent => {
         initializeSynphony(settingsFileContent.data);
-        console.log("done synphony init");
+        //console.log("done synphony init");
         result.resolve();
     });
     return result;

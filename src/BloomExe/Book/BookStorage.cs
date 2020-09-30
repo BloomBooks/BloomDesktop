@@ -15,7 +15,6 @@ using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.MiscUI;
-using Bloom.Publish.Android;
 using Bloom.ToPalaso;
 using Bloom.web;
 using Bloom.web.controllers;
@@ -432,10 +431,9 @@ namespace Bloom.Book
 
 		private static string GetBloomFormatVersionToWrite(string existingVersion)
 		{
-			float existingVersionFloat;
-			if (!Single.TryParse(existingVersion, out existingVersionFloat))
+			if (!float.TryParse(existingVersion, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var existingVersionFloat))
 				return kBloomFormatVersionToWrite;
-			if (existingVersionFloat > Single.Parse(kBloomFormatVersionToWrite))
+			if (existingVersionFloat > float.Parse(kBloomFormatVersionToWrite, CultureInfo.InvariantCulture))
 				return existingVersion;
 			return kBloomFormatVersionToWrite;
 		}

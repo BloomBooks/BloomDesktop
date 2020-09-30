@@ -1024,7 +1024,7 @@ namespace BloomTests.Book
 		{
 			// Setup
 			var storage = GetInitialStorage();
-			var higherFormatVersion = (float.Parse(BookStorage.kBloomFormatVersionToWrite) + 1).ToString(CultureInfo.InvariantCulture);
+			var higherFormatVersion = (float.Parse(BookStorage.kBloomFormatVersionToWrite, CultureInfo.InvariantCulture) + 1).ToString(CultureInfo.InvariantCulture);
 			storage.BookInfo.FormatVersion = higherFormatVersion;
 			// Verify setup
 			Assert.That(storage.BookInfo.FormatVersion, Is.EqualTo(higherFormatVersion));
