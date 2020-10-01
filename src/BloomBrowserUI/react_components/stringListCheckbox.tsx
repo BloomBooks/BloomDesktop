@@ -72,7 +72,7 @@ export class StringListCheckbox extends LocalizableElement<IProps, {}> {
         const checkStatus = this.getCheckStatus();
         return (
             <MuiCheckbox
-                tristate={true} //this.props.tristateItemOffName !== undefined}
+                tristate={!!this.props.tristateItemOffName}
                 l10nKey={this.props.l10nKey}
                 alreadyLocalized={this.props.alreadyLocalized}
                 checked={checkStatus}
