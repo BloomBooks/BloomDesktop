@@ -655,9 +655,10 @@ LibSynphony.prototype.array_sort_length = function(arr) {
 };
 
 // function to escape special characters before performing a regular expression check
+// # is required when using XRegEx with the 'x' option, which makes # a line comment delimiter
 if (!RegExp.quote) {
     RegExp.quote = function(str) {
-        return (str + "").replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
+        return (str + "").replace(/([#.?*+^$[\]\\(){}|-])/g, "\\$1");
     };
 }
 
