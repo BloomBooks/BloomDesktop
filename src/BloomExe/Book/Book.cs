@@ -733,7 +733,7 @@ namespace Bloom.Book
 			TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, CollectionSettings, primaryLanguage, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
 
 			AddPreviewJavascript(previewDom);
-			previewDom.AddPublishClassToBody();
+			previewDom.AddPublishClassToBody("preview");
 			return previewDom;
 		}
 
@@ -1411,7 +1411,8 @@ namespace Bloom.Book
 			// this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
 			// still requiring it to be a valid layout.
 			layout = Layout.FromDomAndChoices(bookDOM, layout, fileLocator);
-			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout, CollectionSettings.BrandingProjectKey, Storage.FolderPath);
+			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout, CollectionSettings.BrandingProjectKey, Storage.FolderPath, BookInfo.UseDeviceXMatter);
+			//if (BookInfo.UseDeviceXMatter)
 
 			var dataBookLangs = bookDOM.GatherDataBookLanguages();
 			TranslationGroupManager.PrepareDataBookTranslationGroups(bookDOM.RawDom, dataBookLangs);

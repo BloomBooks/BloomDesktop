@@ -599,14 +599,15 @@ namespace Bloom.Collection
 		{
 			if (BrandingProject.HaveFilesForBranding(fullBrandingName))
 			{
-				if (DifferentSubscriptionCodes(subscriptionCode, _subscriptionCode))
+				if (_brand != fullBrandingName || DifferentSubscriptionCodes(subscriptionCode, _subscriptionCode))
 				{
-					Invoke((Action) (ChangeThatRequiresRestart));
+					Invoke((Action) ChangeThatRequiresRestart);
 					_brand = fullBrandingName;
 					_subscriptionCode = subscriptionCode;
+
 					// if the branding.json specifies an xmatter, set the default for this collection to that.
 					var correspondingXMatterPack = BrandingSettings.GetSettings(fullBrandingName).GetXmatterToUse();
-					if (!string.IsNullOrEmpty((correspondingXMatterPack)))
+					if (!string.IsNullOrEmpty(correspondingXMatterPack))
 					{
 						_collectionSettings.XMatterPackName = correspondingXMatterPack;
 					}
