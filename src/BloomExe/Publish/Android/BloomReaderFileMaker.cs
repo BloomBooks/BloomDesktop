@@ -138,10 +138,12 @@ namespace Bloom.Publish.Android
 
 			// We want these to run after RemoveUnwantedContent() so that the metadata will more accurately reflect
 			// the subset of contents that are included in the .bloomd
+			// Note that we generally want to disable features here, but not enable them!
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-8995.
 			modifiedBook.UpdateMetadataFeatures(
-				isBlindEnabled: true,
-				isSignLanguageEnabled: true,
-				isTalkingBookEnabled: true);
+				isBlindEnabled: modifiedBook.BookInfo.MetaData.Feature_Blind,
+				isSignLanguageEnabled: modifiedBook.BookInfo.MetaData.Feature_SignLanguage,
+				isTalkingBookEnabled: true);	// talkingBook is only ever set automatically as far as I can tell.
 
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
 
