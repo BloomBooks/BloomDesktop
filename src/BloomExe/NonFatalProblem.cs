@@ -89,6 +89,7 @@ namespace Bloom
 				}
 				catch (Exception err)
 				{
+					// will only "do something" if we're testing reporting and have thus turned off checking for dev
 					Debug.Fail(err.Message);
 				}
 

@@ -1226,6 +1226,8 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 					}
 					catch (Exception err)
 					{
+						// Will only "do something" if we're testing reporting and have thus turned off checking for dev.
+						// // Else we're swallowing.
 						Debug.Fail(err.Message);
 					}
 				});
