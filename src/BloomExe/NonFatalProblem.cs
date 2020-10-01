@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using Bloom.MiscUI;
 using Bloom.web.controllers;
 using DesktopAnalytics;
+using Sentry;
 using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
 
@@ -33,9 +34,11 @@ namespace Bloom
 			string moreDetails = null,
 			Exception exception = null, bool showSendReport = true)
 		{
+			var originalException = exception;
 			s_expectedByUnitTest?.ProblemWasReported();
 
 			var channel = ApplicationUpdateSupport.ChannelName.ToLowerInvariant();
+			
 			try
 			{
 				shortUserLevelMessage = shortUserLevelMessage ?? "";
@@ -61,6 +64,32 @@ namespace Bloom
 					//would just be a help, not really necessary for getting the test to fail.
 					//So, for now I'm going to just go with doing nothing.
 					return;
+				}
+
+				try
+				{
+					if (!ApplicationUpdateSupport.IsDev)
+					{
+						if (originalException != null)
+						{
+							SentrySdk.WithScope(scope =>
+							{
+								scope.SetTag("fullDetailedMessage", fullDetailedMessage);
+								SentrySdk.CaptureException(originalException);
+							});
+						}
+						else
+						{
+							var evt = new SentryEvent() {Message = shortUserLevelMessage};
+							evt.SetExtra("fullDetailedMessage", fullDetailedMessage);
+							evt.SetExtra("stackTrace", (new StackTrace()).ToString());
+							SentrySdk.CaptureEvent(evt);
+						}
+					}
+				}
+				catch (Exception err)
+				{
+					Debug.Fail(err.Message);
 				}
 
 				//if this isn't going modal even for devs, it's just background noise and we don't want the

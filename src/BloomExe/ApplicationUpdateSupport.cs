@@ -176,6 +176,14 @@ namespace Bloom
 				return channel.Contains("developer") || channel.Contains("alpha") || channel.Contains("unstable");
 			}
 		}
+		public static bool IsDev
+		{
+			get
+			{
+				var channel = ApplicationUpdateSupport.ChannelName.ToLowerInvariant();
+				return channel.Contains("developer");
+			}
+		}
 		public static string ChannelName
 		{
 			get
