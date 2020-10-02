@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom.Book;
+using Bloom.Publish.AccessibilityChecker;
 using Bloom.ToPalaso;
 using Bloom.web;
 using Bloom.web.controllers;
@@ -314,27 +315,39 @@ namespace Bloom.Publish.Epub
 			var nsManager = new XmlNamespaceManager(Book.RawDom.NameTable);
 			nsManager.AddNamespace("svg", "http://www.w3.org/2000/svg");
 
-			var pageLabelProgress = progress.WithL10NPrefix("TemplateBooks.PageLabel.");			
-			foreach (XmlElement pageElement in Book.GetPageElements())
+			var pageLabelProgress = progress.WithL10NPrefix("TemplateBooks.PageLabel.");
+			// For some unknown reason, if the accessibility window is showing, some of the browser navigation
+			// that is needed to accurately determine which content is visible simply doesn't happen.
+			// So, hide the window while we do the part of the task that includes this. See BL-7807.
+			AccessibilityCheckWindow.HideTemporarily(() =>
 			{
-				var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
-				
-				var comicalMatches = pageElement.SafeSelectNodes(".//svg:svg[contains(@class, 'comical-generated')]", nsManager);
-				if (comicalMatches.Count > 0)
+				foreach (XmlElement pageElement in Book.GetPageElements())
 				{
-					progress.Message("Common.Error", "Error", MessageKind.Error, false);
-					progress.MessageWithParams("PublishTab.Epub.NoComicSupport", "Error shown if book contains comic bubbles.", "Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.", MessageKind.Error, pageLabelEnglish);
-					AbortRequested = true;
-				}
+					var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
 
-				// We could check for this in a few more places, but once per page seems enough in practice.
-				if (AbortRequested)
-					break;
-				if (MakePageFile(pageElement, warningMessages))
-				{
-					pageLabelProgress.Message(pageLabelEnglish, pageLabelEnglish);
-				};
-			}
+					var comicalMatches =
+						pageElement.SafeSelectNodes(".//svg:svg[contains(@class, 'comical-generated')]", nsManager);
+					if (comicalMatches.Count > 0)
+					{
+						progress.Message("Common.Error", "Error", MessageKind.Error, false);
+						progress.MessageWithParams("PublishTab.Epub.NoComicSupport",
+							"Error shown if book contains comic bubbles.",
+							"Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.",
+							MessageKind.Error, pageLabelEnglish);
+						AbortRequested = true;
+					}
+
+					// We could check for this in a few more places, but once per page seems enough in practice.
+					if (AbortRequested)
+						break;
+					if (MakePageFile(pageElement, warningMessages))
+					{
+						pageLabelProgress.Message(pageLabelEnglish, pageLabelEnglish);
+					}
+
+					;
+				}
+			});
 			
 			PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 
