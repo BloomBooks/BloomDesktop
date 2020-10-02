@@ -76,6 +76,15 @@ namespace Bloom.ImageProcessing
 		public static string ProcessAndSaveImageIntoFolder(PalasoImage imageInfo, string bookFolderPath, bool isSameFile)
 		{
 			LogMemoryUsage();
+
+			// If we go through all the processing and saving machinations for the placeholder image,
+			// we just get more and more placeholders when we cut images (BL-9011).
+			// And the normal update process that a book goes through when selecting it (in the Collection tab)
+			// for editing ensures that the placeHolder.png file is present in the book.
+			if (imageInfo.OriginalFilePath.ToLowerInvariant().EndsWith("placeholder.png"))
+			{
+				return Path.GetFileName(imageInfo.OriginalFilePath);
+			}
 			bool isEncodedAsJpeg = false;
 			try
 			{

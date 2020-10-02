@@ -795,6 +795,9 @@ namespace Bloom.Edit
 			if(CopyImageToClipboard(ge, bookFolderPath)) // returns 'true' if successful
 			{
 				// Replace current image with placeHolder.png
+				// N.B. It is unnecessary to check for the existence of this file, since selecting a book in
+				// collection view triggers an automatic book update process that ensures that the file
+				// is put there if not already present.
 				var path = Path.Combine(bookFolderPath, "placeHolder.png");
 				using(var palasoImage = PalasoImage.FromFileRobustly(path))
 				{
