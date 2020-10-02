@@ -143,12 +143,13 @@ namespace Bloom.Publish.PDF
 					@"Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character.");
 
 				// This message string is intentionally separate because it was added after the previous string had already been localized in most languages.
-				var msg2 = L10NSharp.LocalizationManager.GetString(@"PublishTab.PDF.Error.TrySinglePage",
+				// It's not useful to add if we're already in save memory mode.
+				var msg2 = specs.SaveMemoryMode ? "" : L10NSharp.LocalizationManager.GetString(@"PublishTab.PDF.Error.TrySinglePage",
 					"The book's images might have exceeded the amount of RAM memory available. Please turn on the \"Use Less Memory\" option which is slower but uses less memory.",
-					@"Error message displayed in a message dialog box");
+					@"Error message displayed in a message dialog box") + Environment.NewLine;
 
 				var fullMsg = String.Format(msg, specs.OutputPdfPath, Environment.NewLine) + Environment.NewLine +
-				              msg2 + Environment.NewLine + res.StandardOutput;
+				              msg2 + res.StandardOutput;
 
 				var except = new ApplicationException(fullMsg);
 				// Note that if we're being run by a BackgroundWorker, it will catch the exception.
