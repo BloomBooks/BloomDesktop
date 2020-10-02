@@ -138,10 +138,14 @@ namespace Bloom.Publish.Android
 
 			// We want these to run after RemoveUnwantedContent() so that the metadata will more accurately reflect
 			// the subset of contents that are included in the .bloomd
+			// Note that we generally want to disable features here, but not enable them, especially while
+			// running harvester!  See https://issues.bloomlibrary.org/youtrack/issue/BL-8995.
+			var enableBlind = modifiedBook.BookInfo.MetaData.Feature_Blind || !Program.RunningHarvesterMode;
+			var enableSignLanguage = modifiedBook.BookInfo.MetaData.Feature_SignLanguage || !Program.RunningHarvesterMode;
 			modifiedBook.UpdateMetadataFeatures(
-				isBlindEnabled: true,
-				isSignLanguageEnabled: true,
-				isTalkingBookEnabled: true);
+				isBlindEnabled: enableBlind,
+				isSignLanguageEnabled: enableSignLanguage,
+				isTalkingBookEnabled: true);	// talkingBook is only ever set automatically as far as I can tell.
 
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
 
