@@ -1136,6 +1136,7 @@ namespace Bloom.Book
 				AddFeaturesToList(features, "talkingBook", Feature_TalkingBook_LangCodes);
 				AddFeaturesToList(features, "signLanguage", Feature_SignLanguage_LangCodes);
 
+				if (Feature_Video) features.Add("video");
 				if (Feature_Motion) features.Add("motion");
 				if (Feature_Quiz) features.Add("quiz");
 				if (Feature_Comic) features.Add("comic");
@@ -1149,6 +1150,7 @@ namespace Bloom.Book
 				Feature_Quiz = value.Contains("quiz");
 				Feature_Comic = value.Contains("comic");
 				Feature_Activity = value.Contains("activity");
+				Feature_Video = value.Contains("video");
 
 				Feature_Blind_LangCodes = new HashSet<string>();
 				Feature_TalkingBook_LangCodes = new HashSet<string>();
@@ -1234,6 +1236,8 @@ namespace Bloom.Book
 		public bool Feature_TalkingBook { get { return Feature_TalkingBook_LangCodes?.Any() == true; } }
 		[JsonIgnore]
 		public bool Feature_SignLanguage { get { return Feature_SignLanguage_LangCodes?.Any() == true; } }
+		[JsonIgnore]
+		public bool Feature_Video { get; set; }
 		[JsonIgnore]
 		public bool Feature_Motion { get; set; }
 		[JsonIgnore]
