@@ -1734,7 +1734,7 @@ export default class AudioRecording {
         for (let i = 0; i < translationGroups.length; i++) {
             const currentTranslationGroup = translationGroups[i];
             const newDiv = `<div class="bloom-ui ${kPlaybackOrderContainerClass}"></div>`;
-            currentTranslationGroup.insertAdjacentHTML("beforebegin", newDiv);
+            currentTranslationGroup.insertAdjacentHTML("afterbegin", newDiv);
             const containerDivs = currentTranslationGroup.parentElement!.getElementsByClassName(
                 kPlaybackOrderContainerClass
             );
