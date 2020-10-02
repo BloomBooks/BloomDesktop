@@ -439,6 +439,7 @@ namespace Bloom.Workspace
 			var tag = (LanguageItem)item.Tag;
 
 			LocalizationManager.SetUILanguage(tag.IsoCode, true);
+			Browser.SetBrowserLanguage(tag.IsoCode);
 			Settings.Default.UserInterfaceLanguage = tag.IsoCode;
 			Settings.Default.UserInterfaceLanguageSetExplicitly = true;
 			Settings.Default.Save();

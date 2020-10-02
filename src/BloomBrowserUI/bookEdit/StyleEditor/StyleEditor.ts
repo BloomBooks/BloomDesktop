@@ -835,7 +835,11 @@ export default class StyleEditor {
         });
     }
 
+    private uiLang: string;
+
     public AttachToBox(targetBox: HTMLElement) {
+        this.uiLang = theOneLocalizationManager.getCurrentUILocale();
+
         // This method is called when the window gets focus. This may be before CkEditor has finished loading.
         // Somewhere in the course of loading, it detects editable divs that are empty except for our gear icon.
         // It decides to insert some content...typically <p><br></p>, and in doing so, replaces the gear icon div.
@@ -1521,7 +1525,7 @@ export default class StyleEditor {
             let text = sortedItems[i];
             if (useNumericSort) {
                 // get localized version (e.g. with different decimal separator)
-                text = parseFloat(text).toLocaleString();
+                text = parseFloat(text).toLocaleString(this.uiLang);
             }
             if (maxlength && text.length > maxlength) {
                 text = text.substring(0, maxlength) + "...";
