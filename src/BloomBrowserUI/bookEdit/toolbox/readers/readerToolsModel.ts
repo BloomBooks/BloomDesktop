@@ -1625,6 +1625,8 @@ export class ReaderToolsModel {
         const words: string[] = this.selectWordsFromAllowedLists(stageNumber);
         const returnVal: DataWord[] = [];
 
+        const uiLang = theOneLocalizationManager.getCurrentUILocale();
+
         for (let i = 0; i < words.length; i++) {
             returnVal.push(new DataWord(words[i]));
         }
@@ -1642,7 +1644,7 @@ export class ReaderToolsModel {
                     $(toolbox)
                         .find("#allowed_word_list_truncated_text")
                         .html(),
-                    [this.maxAllowedWords.toLocaleString()]
+                    [this.maxAllowedWords.toLocaleString(uiLang)]
                 )
             );
         }
