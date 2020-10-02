@@ -8,57 +8,43 @@ namespace Bloom
 {
 	public static class Extensions
 	{
-		[Obsolete("Use ToLocalhostForBloomPlayer() instead, which should happen more punctuation characters correctly.")]
+		/// <summary>
+		/// Returns a localhost URL to a file
+		/// </summary>
+		/// <param name="fileName">The raw filename used by the operating system</param>
+		/// <returns>A well-formed, singly-encoded URL (special characters in the filename will be duly escaped, except for directory separators, which will be converted to '/' (if necessary))</returns>
+
 		public static string ToLocalhost(this string fileName)
 		{
 			// don't do this if it is done already
 			if (fileName.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash)) return fileName;
 
-			return BloomServer.ServerUrlWithBloomPrefixEndingInSlash + fileName.EscapeCharsForHttp().Replace(System.IO.Path.DirectorySeparatorChar, '/');
-		}
-
-		private static readonly char[] kDirectorySeparators = new char[] { '\\', '/' };
-
-		/// <summary>
-		/// Returns a localhost URL to a file
-		/// Honestly, I think this would be a good generic implementation of ToLocalhost,
-		/// but that function name is already used with slightly different implementation and had 37 references,
-		/// so I just made a new one rather than affect so many different places.
-		/// It is preferable to use this version of the function unless you specifically need the result to be
-		/// decoded by UnescapeCharsForHttp (which we hope to retire in version 5.0) and not by Uri.UnescapeDataString / JS's decodeUriComponent
-		/// </summary>
-		/// <param name="fileName">The raw filename used by the operating system</param>
-		/// <returns>A well-formed, singly-encoded URL</returns>
-		public static string ToLocalhostProperlyEncoded(this string fileName)
-		{
-			var escapedPathComponents = fileName.Split(kDirectorySeparators).Select(Uri.EscapeDataString);
-			string escapedFileName = String.Join("/", escapedPathComponents);
-			string url = BloomServer.ServerUrlWithBloomPrefixEndingInSlash + escapedFileName;
-			return url;
+			return BloomServer.ServerUrlWithBloomPrefixEndingInSlash + fileName.EscapeFileNameForHttp();
 		}
 
 		public static string FromLocalhost(this string uri)
 		{
 			if (uri.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
-				uri = uri.Substring(BloomServer.ServerUrlWithBloomPrefixEndingInSlash.Length).UnescapeCharsForHttp();
+				uri = uri.Substring(BloomServer.ServerUrlWithBloomPrefixEndingInSlash.Length).UnescapeFileNameForHttp();
 			return uri;
 		}
+
+		private static readonly char[] kDirectorySeparators = new char[] { '\\', '/' };
 
 		/// <summary>
 		/// Escapes a number of characters that need it for our url/http processing.
 		/// </summary>
 		/// <remarks>
-		/// Note that calls to EscapeCharsForHttp() must be matched by an equal number of
-		/// subsequent calls to UnescapeCharsForHttp().  (Normally each is called once.)
+		/// Note that calls to EscapeFileNameForHttp() must be matched by an equal number of
+		/// subsequent calls to UnescapeFileNameForHttp().  (Normally each is called once.)
 		/// </remarks>
-		public static string EscapeCharsForHttp(this string fileName)
+		public static string EscapeFileNameForHttp(this string fileName)
 		{
-			fileName = fileName.Replace("%","%25");
-
-			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
-			fileName = fileName.Replace("(", "%28").Replace(")", "%29");
-
-			return fileName.Replace(":", "%3A").Replace("#","%23").Replace("?","%3F");
+			// Our original implementation manually escaped the following characters: '%', ':', '#', '?', and '(', ')' (In BL-117, parenthesis in the URL was not working correctly)
+			// Now we rely on a System.Uri function, which is more thorough about escaping characters.
+			var escapedPathComponents = fileName.Split(kDirectorySeparators).Select(Uri.EscapeDataString);
+			string escapedFileName = String.Join("/", escapedPathComponents);
+			return escapedFileName;
 		}
 
 		/// <summary>
@@ -66,13 +52,15 @@ namespace Bloom
 		/// a valid file pathname.
 		/// </summary>
 		/// <remarks>
-		/// Note that calls to UnescapeCharsForHttp() must be matched by an equal number of
-		/// previous calls to EscapeCharsForHttp().  (Normally each is called once.)
+		/// Note that calls to UnescapeFileNameForHttp() must be matched by an equal number of
+		/// previous calls to EscapeFileNameForHttp().  (Normally each is called once.)
 		/// </remarks>
-		public static string UnescapeCharsForHttp(this string uri)
+		public static string UnescapeFileNameForHttp(this string uri)
 		{
-			// Include the quoting for space in case someone wants to unescape a raw url string.
-			return uri.Replace("%20", " ").Replace("%3A", ":").Replace("%23","#").Replace("%3F","?").Replace("%28","(").Replace("%29",")").Replace("%25","%");
+			// Our original implementation manually unescaped the escape sequences for the following characters: ' ', ':', '#', '?', '(', ')', and '%'
+			// Now we just wrap a System.Uri function (which is more thorough about unescaping escape sequences)
+			// and convert it into an extension method
+			return Uri.UnescapeDataString(uri);
 		}
 
 		public static int ToInt(this bool value)

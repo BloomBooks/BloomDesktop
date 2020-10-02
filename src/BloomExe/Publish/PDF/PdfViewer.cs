@@ -112,12 +112,12 @@ namespace Bloom.Publish.PDF
 			// with having a # in the query (file path) there without any problem.  You may
 			// regard this double escaping as a hack to get around the Linux xulrunner which
 			// behaves differently than the Windows xulrunner.  It is an exception to the rule
-			// of matching EscapeCharsForHttp() with UnescapeCharsForHttp().  See a comment in
+			// of matching EscapeFileNameForHttp() with UnescapeFileNameForHttp().  See a comment in
 			// https://jira.sil.org/browse/BL-951 for a description of the buggy program
 			// behavior without this hack.
 			var file = pdfFile;
 			if (SIL.PlatformUtilities.Platform.IsUnix)
-				file = file.EscapeCharsForHttp().EscapeCharsForHttp();
+				file = file.EscapeFileNameForHttp().EscapeFileNameForHttp();
 			var url = string.Format("{0}{1}?file=/bloom/{2}",
 				Api.BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
 				FileLocationUtilities.GetFileDistributedWithApplication("pdf/web/viewer.html"),

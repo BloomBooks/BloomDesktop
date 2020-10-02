@@ -242,7 +242,7 @@ namespace Bloom.web.controllers
 
 				// The html client is set to treat a text reply as a url of the report. Make sure it's valid for being a URL.
 				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6197.
-				request.ReplyWithText("/bloom/" + answerPath.EscapeCharsForHttp().Replace(Path.DirectorySeparatorChar, '/'));
+				request.ReplyWithText("/bloom/" + answerPath.EscapeFileNameForHttp());
 				return;
 			}
 
