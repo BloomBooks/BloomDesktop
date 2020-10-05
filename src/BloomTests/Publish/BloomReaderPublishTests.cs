@@ -909,7 +909,8 @@ namespace BloomTests.Publish
 					// 100000 here is a semi-random quantification of 'considerably'.
 					Assert.Less(entry.Size, originalCrowSize - 100000, "Should have trimmed the file considerably.");
 					var meta = BookMetaData.FromString(GetEntryContents(zip,"meta.json"));
-					Assert.That(meta.Feature_SignLanguage, Is.True);
+					Assert.That(meta.Feature_SignLanguage, Is.False);
+					Assert.That(meta.Feature_Video, Is.True);
 
 				},
 				assertionsOnResultingHtmlString: html =>
