@@ -28,6 +28,15 @@ namespace Bloom.Publish.AccessibilityChecker
 			}
 		}
 
+		public static void StaticHide()
+		{
+			if (_sTheOneAccessibilityCheckerWindow != null)
+			{
+				_sTheOneAccessibilityCheckerWindow.Close();
+				_sTheOneAccessibilityCheckerWindow = null;
+			}
+		}
+
 		public AccessibilityCheckWindow(Action onWindowActivated)
 		{
 			_onWindowActivated = onWindowActivated;
