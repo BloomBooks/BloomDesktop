@@ -11,6 +11,32 @@ namespace BloomTests
 	[TestFixture]
 	class ExtensionsTests
 	{
+		[Test]
+		public static void ToLocalhost_GivenALocalhostUrl_ReturnsUnchanged()
+		{
+			// Setup
+			string input = $"http://localhost:{BloomServer.portForHttp}/bloom/C%3A/Directory/filename.txt";
+
+			// System under test
+			string result = input.ToLocalhost();
+
+			// Verification
+			Assert.That(result, Is.EqualTo(input));
+		}
+
+		[Test]
+		public static void ToLocalhost_GivenSimpleFilename_ConvertsToUrl()
+		{
+			// Setup
+			string fileName = $@"C:\Directory\Book Title\Book Title.htm";
+
+			// System under test
+			string result = fileName.ToLocalhost();
+
+			// Verification
+			Assert.That(result, Is.EqualTo($@"http://localhost:{BloomServer.portForHttp}/bloom/C%3A/Directory/Book%20Title/Book%20Title.htm"));
+		}
+
 		[TestCase("Guitar #14", "Guitar%20%2314")]	// Test for BL-8652.
 		[TestCase("a %+", "a%20%25%2B")]	// A test with multiple punctuation chars that gets past some earlier implementations
 		// Test every punctuation on a standard US QWERTY keyboard that is allowed in filenames.
@@ -33,13 +59,13 @@ namespace BloomTests
 		[TestCase("A'", "A%27")]
 		[TestCase("A,", "A%2C")]
 		[TestCase("A.", "A.")]
-		public static void ToLocalhostProperlyEncoded_AndroidPreviewBookTitleWithPunc_GeneratesWellFormedUrl(string bookTitle, string expectedEscapedTitle)
+		public static void ToLocalhost_AndroidPreviewBookTitleWithPunc_GeneratesWellFormedUrl(string bookTitle, string expectedEscapedTitle)
 		{
 			// Setup
-			string filename = $@"C:\PathToTemp\PlaceForStagingBook\{bookTitle}\meta.json";
+			string fileName = $@"C:\PathToTemp\PlaceForStagingBook\{bookTitle}\meta.json";
 
 			// System under test
-			string result = filename.ToLocalhostProperlyEncoded();
+			string result = fileName.ToLocalhost();
 
 			// Verification
 			string expectedResult = $@"http://localhost:{BloomServer.portForHttp}/bloom/C%3A/PathToTemp/PlaceForStagingBook/{expectedEscapedTitle}/meta.json";

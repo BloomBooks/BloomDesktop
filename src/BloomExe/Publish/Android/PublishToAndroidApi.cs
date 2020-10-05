@@ -498,7 +498,7 @@ namespace Bloom.Publish.Android
 			_stagingFolder = new TemporaryFolder(StagingFolder);
 			var modifiedBook = BloomReaderFileMaker.PrepareBookForBloomReader(book.FolderPath, bookServer, _stagingFolder, progress, settings: settings);
 			progress.Message("Common.Done", "Shown in a list of messages when Bloom has completed a task.", "Done");
-			return modifiedBook.FolderPath.ToLocalhostProperlyEncoded();
+			return modifiedBook.FolderPath.ToLocalhost();
 		}
 
 		/// <summary>
