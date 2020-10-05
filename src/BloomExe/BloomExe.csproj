@@ -1332,7 +1332,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="BeforeBuild" Condition="'$(OS)'=='Windows_NT'">
     <Exec Command="mkdir $(OutDir)Firefox" Condition="!Exists('$(OutDir)Firefox')" />
-    <Exec Command="copy /Y $(SolutionDir)packages\Geckofx60.32.60.0.44\content\Firefox\*.* $(OutDir)Firefox" />
+    <Exec Command="copy /Y &quot;$(SolutionDir)packages\Geckofx60.32.60.0.44\content\Firefox\*.*&quot; $(OutDir)Firefox" />
 	<!-- Firefox relies on some dlls (namely msvcp140.dll and vcruntime140.dll) from the Visual C++ Redistributable.
 		The Geckofx package doesn't include them. I tried to get them included but got outvoted. (Note that Firefox itself installs them.)
 		The other option, and what some of our products do, is include the Redistributable in the installer.
@@ -1340,16 +1340,16 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
 		Be careful if you ever think about getting rid of this. The problem only shows up on machines
 		which don't already have Visual Studio or the Redistributable and thus don't have these dlls in \Windows\System32.
 		In that case, the app crashes on load. BL-9065 -->
-    <Exec Command="copy /Y $(SolutionDir)lib\FirefoxDependencies\*.* $(OutDir)Firefox" />
+    <Exec Command="copy /Y &quot;$(SolutionDir)lib\FirefoxDependencies\*.*&quot; $(OutDir)Firefox" />
   </Target>
   <!-- these operations cannot all be done BeforeBuild, because the nuget download occurs as part of Build after BeforeBuild -->
   <Target Name="BeforeResolveReferences" Condition="'$(OS)'!='Windows_NT'">
     <!-- compile the various typescript, jade, and less files in BloomBrowserUI. -->
-    <Exec Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; ( [ -f node_modules/typescript/package.json ] || yarn) &amp;&amp; ( [ -f ../../output/browser/commonBundle.js ] || yarn build)" />
+    <Exec Command="cd &quot;$(SolutionDir)/src/BloomBrowserUI&quot; &amp;&amp; ( [ -f node_modules/typescript/package.json ] || yarn) &amp;&amp; ( [ -f ../../output/browser/commonBundle.js ] || yarn build)" />
     <!-- copy the appropriate Geckofx60 files to the output directory, first creating it if necessary -->
     <Exec Command="mkdir -p $(OutDir)" />
     <Exec Command="rm -rf $(OutDir)Firefox" />
-    <Exec Command="find $(SolutionDir)packages/Geckofx60.64.Linux.60.0.44 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx60.64.Linux.60.0.44 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';';" />
+    <Exec Command="find &quot;$(SolutionDir)packages/Geckofx60.64.Linux.60.0.44&quot; -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find &quot;$(SolutionDir)packages/Geckofx60.64.Linux.60.0.44&quot; -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';';" />
   </Target>
   <ItemGroup>
     <BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />
