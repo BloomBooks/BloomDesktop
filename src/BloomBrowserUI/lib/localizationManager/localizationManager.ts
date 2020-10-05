@@ -77,6 +77,11 @@ export class LocalizationManager {
         });
     }
 
+    public getCurrentUILocale(): string {
+        // This is set in C# code by setting the "intl.accept_languages" preference.
+        return navigator.language;
+    }
+
     /**
      * Set dictionary values from an object.
      * Used in Bloom 2.0
@@ -174,7 +179,7 @@ export class LocalizationManager {
      *      .done(translation => {
      *          $(this).text(translation);
      *      });
-    */
+     */
     public asyncGetTextInLang(
         id: string,
         englishText: string,
@@ -206,7 +211,7 @@ export class LocalizationManager {
      *      .done(translation => {
      *          $(this).text(translation);
      *      });
-    */
+     */
     public asyncGetText(
         id: string,
         englishText: string,
