@@ -314,6 +314,7 @@ namespace Bloom
 						}
 
 						LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
+						Browser.SetBrowserLanguage(Settings.Default.UserInterfaceLanguage);
 
 						DialogAdapters.CommonDialogAdapter.ForceKeepAbove = true;
 						DialogAdapters.CommonDialogAdapter.UseMicrosoftPositioning = true;

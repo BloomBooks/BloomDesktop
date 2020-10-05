@@ -48,6 +48,8 @@ namespace Bloom
 		// generated.
 		internal Point ContextMenuLocation;
 
+		public static string DefaultBrowserLangs;
+
 		// TODO: refactor to use same initialization code as Palaso
 		public static void SetUpXulRunner()
 		{
@@ -163,6 +165,29 @@ namespace Bloom
 			// This setting is needed only on Linux as far as we can tell.
 			if (SIL.PlatformUtilities.Platform.IsLinux)
 				GeckoPreferences.User["layers.acceleration.force-enabled"] = true;
+
+			// Save the default system language tags for later use.
+			DefaultBrowserLangs = GeckoPreferences.User["intl.accept_languages"].ToString();
+		}
+
+		public static void SetBrowserLanguage(string langId)
+		{
+			var defaultLangs = DefaultBrowserLangs.Split(',');
+			if (defaultLangs.Contains(langId))
+			{
+				var newLangs = new StringBuilder();
+				newLangs.Append(langId);
+				foreach (var lang in defaultLangs)
+				{
+					if (lang != langId)
+						newLangs = newLangs.AppendFormat(",{0}",lang);
+				}
+				GeckoPreferences.User["intl.accept_languages"] = newLangs.ToString();
+			}
+			else
+			{
+				GeckoPreferences.User["intl.accept_languages"] = langId + "," + DefaultBrowserLangs;
+			}
 		}
 
 		public Browser()
