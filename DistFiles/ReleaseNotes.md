@@ -10,11 +10,21 @@ The Talking Book tool no longer treats "Myanmar signed little section" (U+104A) 
 
 The list of page sizes now includes _13cm Square_ as one of the possibilities. This requires printing with A3 paper if you wish to produces booklets using this new page size. (Each printing would create 3 copies of the booklet.)
 
+When you open a large book, the thumbnail representing the current page is now automatically scrolled into view.
+
+In the Comic Tool, you can now set custom background colors for text boxes.
+
+In the Comic Tool, you can now click a button to duplicate the current bubble.
+
 ## Publish Tab
 
 Login to BloomLibrary is now through next.bloomlibrary.org, which allows you to just click the Google button to use your Google identity (include sil.org accounts, for those of you who have that).
 
-# 4.8 
+You can now provide a custom thumbnail for Epub publications. Place a file labeled `epub-thumbnail.png` in the books folder.
+
+We can now provide custom "Full Bleed" layouts to Enterprise projects that need edge-to-edge printing at commercial print shops.
+
+# 4.8
 
 ## Edit Tab
 
