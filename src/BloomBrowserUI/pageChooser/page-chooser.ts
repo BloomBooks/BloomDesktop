@@ -1,4 +1,4 @@
-﻿/// <reference path="../lib/localizationManager/localizationManager.ts" />
+/// <reference path="../lib/localizationManager/localizationManager.ts" />
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
@@ -378,7 +378,7 @@ export class PageChooser {
             return; // no more to get
         }
         axios
-            .get("/bloom/" + order.templateBookPath)
+            .get("/bloom/" + encodeURIComponent(order.templateBookPath))
             .then(result => {
                 const pageData: HTMLElement = new DOMParser().parseFromString(
                     result.data,
@@ -701,16 +701,16 @@ export class PageChooser {
         templateBookFolderUrl: string,
         pageLabel: string
     ): string {
-        const label = pageLabel.replace("&", "+"); //ampersands confuse the url system
+        const label = pageLabel.replace("&", "+"); //ampersands confuse the url system (if you don't handle them), so the template files were originally named with "+" instead of "&"
         // The result may actually be a png file or an svg, and there may be some delay while the png is generated.
 
         //NB:  without the generateThumbnaiIfNecessary=true, we can run out of worker threads and get deadlocked.
         //See EnhancedImageServer.IsRecursiveRequestContext
         return (
             "/bloom/api/pageTemplateThumbnail/" +
-            templateBookFolderUrl +
+            encodeURIComponent(templateBookFolderUrl) +
             "/template/" +
-            label +
+            encodeURIComponent(label) +
             (this._orientation === "landscape"
                 ? "-landscape"
                 : this._orientation === "square"
