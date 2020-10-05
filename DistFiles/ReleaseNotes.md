@@ -1,4 +1,4 @@
-# 4.9 (Currently in Alpha)
+# 4.9 (Beta)
 
 ## Edit Tab
 
@@ -14,7 +14,7 @@ The list of page sizes now includes _13cm Square_ as one of the possibilities. T
 
 Login to BloomLibrary is now through next.bloomlibrary.org, which allows you to just click the Google button to use your Google identity (include sil.org accounts, for those of you who have that).
 
-# 4.8 (Currently in Beta-test)
+# 4.8 
 
 ## Edit Tab
 
@@ -32,7 +32,7 @@ If you hold down "o", the menu of special characters that pops up now offers ◌
 
 ⭐**Widget Activities** ([Feature Request](https://community.software.sil.org/t/bloom-widgets/2528/6))
 
-You can now embed little interactive activities in digital publications (web, Bloom Reader, RAB App). Many of these widgets already exist (they work with Apple's IBooks and the Kotobee book software). You may also be able to make your own or commission a programmer. If this approach gains popularity, we'll have a set of them to share within the Bloom community. To learn about "book widgets", please see [this blog](https://blog.kotobee.com/book-widgets-everything-you-need-to-know/). To enable this feature, you need to go to Collection Tab/Settings/Advanced Program Settings and tick "Show Experimental Features".
+You can now embed little interactive activities in digital publications (web, Bloom Reader, RAB App). Many of these widgets already exist (they work with Apple's IBooks and the Kotobee book software). You may also be able to make your own or commission a programmer. If this approach gains popularity, we'll have a set of them to share within the Bloom community. To learn about "book widgets", please see [this blog](https://blog.kotobee.com/book-widgets-everything-you-need-to-know/). To enable this feature, you need to go to Collection Tab/Settings/Advanced Program Settings and tick "Show Experimental Features". Bloom requires that the widget be a zipped set of files ending in ".wdgt". The files must include a file named "index.html". We will be making this a bit easier in Bloom 5.0.
 
 # 4.7
 
