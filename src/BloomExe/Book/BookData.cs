@@ -873,10 +873,14 @@ namespace Bloom.Book
 					}
 
 					string value;
+					// BL-9111 The same key can be processed multiple times, but we only want to modify
+					// KeysOfVariablesThatAreUrlEncoded, if we actually insert a value into data.TextVariables.
+					// This flag lets us check later.
+					var isVariableUrlEncoded = false;
 					if (HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
 					{
 						value = HtmlDom.GetImageElementUrl(new ElementProxy(node)).UrlEncoded;
-						KeysOfVariablesThatAreUrlEncoded.Add(key);
+						isVariableUrlEncoded = true;
 					}
 					else
 					{
@@ -947,6 +951,8 @@ namespace Bloom.Book
 
 						if (added)
 						{
+							if (isVariableUrlEncoded)
+								KeysOfVariablesThatAreUrlEncoded.Add(key);
 							dsv.SetAttributeList(lang, GetAttributesToSave(node));
 						}
 					}
@@ -1266,7 +1272,11 @@ namespace Bloom.Book
 			if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
 				return false;
 
-			var newImageUrl = UrlPathString.CreateFromUrlEncodedString(data.TextVariables[key].TextAlternatives.GetFirstAlternative());
+			var getFirstAlt = data.TextVariables[key].TextAlternatives.GetFirstAlternative();
+			// Make sure we don't re-encode the new image url.
+			var newImageUrl = KeysOfVariablesThatAreUrlEncoded.Contains(key) ?
+				UrlPathString.CreateFromUrlEncodedString(getFirstAlt) :
+				UrlPathString.CreateFromHtmlXmlEncodedString(getFirstAlt);
 			var oldImageUrl = HtmlDom.GetImageElementUrl(node);
 			var imgOrDivWithBackgroundImage = new ElementProxy(node);
 			HtmlDom.SetImageElementUrl(imgOrDivWithBackgroundImage,newImageUrl);
