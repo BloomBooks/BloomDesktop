@@ -3569,8 +3569,10 @@ namespace Bloom.Book
 			UpdateBlindFeature(isBlindEnabled, allowedLanguages);
 			UpdateTalkingBookFeature(isTalkingBookEnabled, allowedLanguages);
 
-			// Sign Language is a special case - the SL videos are not marekd up with lang attributes
+			// Sign Language is a special case - the SL videos are not marked up with lang attributes
 			UpdateSignLanguageFeature(isSignLanguageEnabled);
+
+			UpdateVideoFeature();
 
 			// Language-independent features
 			UpdateQuizFeature();
@@ -3649,6 +3651,11 @@ namespace Bloom.Book
 				BookInfo.MetaData.Feature_SignLanguage_LangCodes = new string[] { this.CollectionSettings.SignLanguageIso639Code };
 			else
 				BookInfo.MetaData.Feature_SignLanguage_LangCodes = Enumerable.Empty<string>();
+		}
+
+		private void UpdateVideoFeature()
+		{
+			BookInfo.MetaData.Feature_Video = HasVideos();
 		}
 
 		/// <summary>
