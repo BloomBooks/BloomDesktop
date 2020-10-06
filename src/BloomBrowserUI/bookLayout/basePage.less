@@ -234,6 +234,11 @@ div#bloomDataDiv {
             transform: translate(0, -@A3Portrait-Height-Excess / 2)
                 scale(@RA3-Scale);
         }
+        &.A3Landscape {
+            // NB: transform order is rightmost first
+            transform: translate(-@A3Portrait-Height-Excess / 2, 0)
+                scale(@RA3-Scale);
+        }
         &.USComicPortrait {
             // NB: transform order is rightmost first
             transform: translate(0, -@USComicPortrait-Height-Excess / 2)
@@ -257,6 +262,10 @@ div#bloomDataDiv {
     &.A3Portrait {
         width: @RA3Portrait-Width;
         height: @RA3Portrait-Height;
+    }
+    &.A3Landscape {
+        width: @RA3Portrait-Height;
+        height: @RA3Portrait-Width;
     }
     // review: we don't actually need full-bleed on devices... how does that play out?
     &.Device16x9Portrait {
