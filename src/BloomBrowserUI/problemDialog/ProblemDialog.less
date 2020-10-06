@@ -93,6 +93,15 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        // This section contains the detailed log of the error, as well as the privacy details.
+        // We'd like to allow the user to select this in case it's necessary to paste it
+        // into an email (or for developers). The rule that normally prevents this in bloomUI.less
+        // applies to each specific element, so it's not enough for this rule to apply to the
+        // privacyDetails itself; it won't be inherited.
+        * {
+            -moz-user-select: text; // Firefox before v69
+            user-select: text;
+        }
         .buttonWrapper {
             margin-bottom: 20px;
         }
