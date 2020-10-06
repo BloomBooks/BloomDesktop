@@ -59,7 +59,9 @@ namespace Bloom
 		/// </summary>
 		internal static UpdateVersionTable.UpdateTableLookupResult LookupUrlOfSquirrelUpdate()
 		{
-			if (_updateTableLookupResult == null)
+			// If we got an error last time, check again...maybe we were offline and are now connected
+			// again. Or perhaps the server was offline and is now back.
+			if (_updateTableLookupResult == null || _updateTableLookupResult.Error != null)
 			{
 				_updateTableLookupResult = new UpdateVersionTable().LookupURLOfUpdate();
 			}

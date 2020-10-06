@@ -24,10 +24,13 @@ using SIL.Windows.Forms.Reporting;
 using SIL.Windows.Forms.UniqueToken;
 using System.Linq;
 using System.Xml;
+using Bloom.Book;
 using Bloom.CLI;
 using Bloom.MiscUI;
 using Bloom.web;
 using CommandLine;
+using Sentry;
+using Sentry.Protocol;
 using SIL.Windows.Forms.HtmlBrowser;
 using SIL.WritingSystems;
 using SIL.Xml;
@@ -337,6 +340,8 @@ namespace Bloom
 				// Check memory one final time for the benefit of developers.  The user won't see anything.
 				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
 				UniqueToken.ReleaseToken();
+
+				_sentry?.Dispose();
 			}
 			Settings.Default.FirstTimeRun = false;
 			Settings.Default.Save();
@@ -1161,12 +1166,40 @@ namespace Bloom
 		}
 
 		private static bool _errorHandlingHasBeenSetUp;
+		private static IDisposable _sentry;
 
 		/// ------------------------------------------------------------------------------------
 		internal static void SetUpErrorHandling()
 		{
 			if (_errorHandlingHasBeenSetUp)
 				return;
+
+			if (!ApplicationUpdateSupport.IsDev)
+			{
+				try
+				{
+					_sentry = SentrySdk.Init("https://bba22972ad6b4c2ab03a056f549cc23d@sentry.keyman.com/23");
+					SentrySdk.ConfigureScope(scope =>
+					{
+						scope.SetExtra("channel", ApplicationUpdateSupport.ChannelName);
+						scope.SetExtra("version", ErrorReport.VersionNumberString);
+						scope.User = new User
+						{
+							Email = SIL.Windows.Forms.Registration.Registration.Default.Email,
+							Username = SIL.Windows.Forms.Registration.Registration.Default.FirstName,
+							//Other = {Organization:SIL.Windows.Forms.Registration.Registration.Default.Organization}
+						};
+						scope.User.Other.Add("Organization",
+							SIL.Windows.Forms.Registration.Registration.Default.Organization);
+					});
+				}
+				catch (Exception err)
+				{
+					Debug.Fail(err.Message);
+				}
+			}
+
+
 			string issueTrackingUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystem);
 			ExceptionReportingDialog.PrivacyNotice = string.Format(@"If you don't care who reads your bug report, you can skip this notice.
 
@@ -1184,6 +1217,22 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			SIL.Reporting.ExceptionHandler.Init(new FatalExceptionHandler());
 
 			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception));
+			if (!ApplicationUpdateSupport.IsDev)
+			{
+				ExceptionHandler.AddDelegate((w, e) =>
+				{
+					try
+					{
+							SentrySdk.CaptureException(e.Exception);
+					}
+					catch (Exception err)
+					{
+						// Will only "do something" if we're testing reporting and have thus turned off checking for dev.
+						// // Else we're swallowing.
+						Debug.Fail(err.Message);
+					}
+				});
+			}
 			_errorHandlingHasBeenSetUp = true;
 		}
 

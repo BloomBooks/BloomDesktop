@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -114,8 +114,8 @@
     <Reference Include="DesktopAnalytics, Version=1.2.4.11, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\DesktopAnalytics.1.2.4.11\lib\net40\DesktopAnalytics.dll</HintPath>
     </Reference>
-    <Reference Include="DialogAdapters, Version=0.1.10.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DialogAdapters.0.1.10\lib\net461\DialogAdapters.dll</HintPath>
+    <Reference Include="DialogAdapters, Version=0.1.11.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DialogAdapters.0.1.11\lib\net461\DialogAdapters.dll</HintPath>
     </Reference>
     <Reference Include="EasyHttp, Version=1.6.86.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\EasyHttp.1.6.86.0\lib\net40\EasyHttp.dll</HintPath>
@@ -223,6 +223,15 @@
       <HintPath>..\..\packages\RestSharp.105.2.3\lib\net46\RestSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Sentry, Version=2.1.6.0, Culture=neutral, PublicKeyToken=fba2ec45388e2af0, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Sentry.2.1.6\lib\net461\Sentry.dll</HintPath>
+    </Reference>
+    <Reference Include="Sentry.PlatformAbstractions, Version=1.1.1.0, Culture=neutral, PublicKeyToken=fba2ec45388e2af0, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Sentry.PlatformAbstractions.1.1.1\lib\net45\Sentry.PlatformAbstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Sentry.Protocol, Version=2.1.6.0, Culture=neutral, PublicKeyToken=fba2ec45388e2af0, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Sentry.Protocol.2.1.6\lib\net46\Sentry.Protocol.dll</HintPath>
+    </Reference>
     <Reference Include="SharpFont, Version=3.1.0, Culture=neutral, processorArchitecture=MSIL" Condition="'$(OS)'!='Windows_NT'">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>../../packages/SharpFont.3.1.0/lib/net20/SharpFont.dll</HintPath>
@@ -266,6 +275,9 @@
     <Reference Include="System.Management" Condition="'$(OS)'=='Windows_NT'" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Printing" Condition="'$(OS)'=='Windows_NT'" />
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" Condition="'$(OS)'=='Windows_NT'">
@@ -1333,7 +1345,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <Target Name="BeforeBuild" Condition="'$(OS)'=='Windows_NT'">
     <Exec Command="mkdir $(OutDir)Firefox" Condition="!Exists('$(OutDir)Firefox')" />
     <Exec Command="copy /Y &quot;$(SolutionDir)packages\Geckofx60.32.60.0.44\content\Firefox\*.*&quot; $(OutDir)Firefox" />
-	<!-- Firefox relies on some dlls (namely msvcp140.dll and vcruntime140.dll) from the Visual C++ Redistributable.
+    <!-- Firefox relies on some dlls (namely msvcp140.dll and vcruntime140.dll) from the Visual C++ Redistributable.
 		The Geckofx package doesn't include them. I tried to get them included but got outvoted. (Note that Firefox itself installs them.)
 		The other option, and what some of our products do, is include the Redistributable in the installer.
 		But that is even more complicated and inflates the installer by 14MB.
