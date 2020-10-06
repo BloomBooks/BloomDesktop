@@ -1100,11 +1100,13 @@ export function bootstrap() {
 
     // attach ckeditor to the contenteditable="true" class="bloom-content1"
     // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
-    // but skip any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup)
-    let complicatedFind =
-        ".bloom-content1[contenteditable='true'],.bloom-content2[contenteditable='true'],";
-    complicatedFind +=
-        ".bloom-content3[contenteditable='true'],.bloom-contentNational1[contenteditable='true']";
+    // as well as Equation-style (Used by ArithmeticTemplate.pug, these are language neutral and don't have a content language)
+    // attachToCkEditor will skip any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup)
+    const complicatedFind =
+        ".bloom-content1[contenteditable='true'],.bloom-content2[contenteditable='true']," +
+        ".bloom-content3[contenteditable='true'],.bloom-contentNational1[contenteditable='true']," +
+        ".Equation-style[contenteditable='true']";
+
     $("div.bloom-page")
         .find(complicatedFind)
         .each((index: number, element: Element) => {
@@ -1268,9 +1270,7 @@ export function attachToCkEditor(element) {
         return;
     }
 
-    // attach ckeditor to the contenteditable="true" class="bloom-content1"
-    // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
-    // but skip any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup)
+    // Skip any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup)
     if (
         $(element).hasClass("bloom-userCannotModifyStyles") ||
         $(element)
