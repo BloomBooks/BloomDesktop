@@ -4,11 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Edit;
 using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Reporting;
 
 namespace Bloom.Publish
 {
@@ -143,23 +145,100 @@ namespace Bloom.Publish
 				ffmpeg = Path.Combine(BloomFileLocator.GetCodeBaseFolder(), "ffmpeg.exe");
 			if (RobustFile.Exists(ffmpeg))
 			{
-				var argsBuilder = new StringBuilder("-i \"concat:");
-				foreach (var path in mergeFiles)
-					argsBuilder.Append(path + "|");
-				argsBuilder.Length--;
-
-				argsBuilder.Append($"\" -c copy \"{combinedAudioPath}\"");
-				var result = CommandLineRunner.Run(ffmpeg, argsBuilder.ToString(), "", 60 * 10, new NullProgress());
-				var output = result.ExitCode != 0 ? result.StandardError : null;
-				if (output != null)
+				// A command something like
+				//   ffmpeg -i "concat:stereo1.mp3|monaural2.mp3|stereo3.mp3" -c:a libmp3lame output.mp3
+				// might work okay except that the output file characteristics appear to depend on the
+				// first file in the list, and stereo recorded on only one side does come out only on
+				// that one side if the file ends up being stereo, but not if the file ends up monaural.
+				// This may or may not be preferable to flattening all of the files to monaural at the
+				// standard recording rate before concatenating them.  The current approach at least
+				// has deterministic output for all files.
+				var monoFiles = TryEnsureConsistentInputFiles(ffmpeg, mergeFiles);
+				try
 				{
-					RobustFile.Delete(combinedAudioPath);
+					var argsBuilder = new StringBuilder("-i \"concat:");
+					argsBuilder.Append(string.Join("|", monoFiles));
+					argsBuilder.Append($"\" -c copy \"{combinedAudioPath}\"");
+					var result = CommandLineRunner.Run(ffmpeg, argsBuilder.ToString(), "", 60 * 10, new NullProgress());
+					var output = result.ExitCode != 0 ? result.StandardError : null;
+					if (output != null)
+					{
+						RobustFile.Delete(combinedAudioPath);
+					}
+					return output;
 				}
-
-				return output;
+				finally
+				{
+					foreach (var file in monoFiles)
+					{
+						if (!mergeFiles.Contains(file))
+							RobustFile.Delete(file);
+					}
+				}
 			}
 
 			return "Could not find ffmpeg";
+		}
+
+		/// <summary>
+		/// Epub preview cannot play an audio file that contains a mixture of stereo and monaural
+		/// sections.  It also cannot play an audio file that contains segments recorded at
+		/// different rates.  We concatenate all narration files used on a page together for epubs
+		/// to use, so we need to ensure that resulting audio file is all of one type at one rate.
+		/// (which we default to monaural at 44100 Hz, which seems to be a standard default)
+		/// Scan through the input file list, checking whether each file has been recorded in stereo
+		/// or mono.  If it was recorded in stereo, create a monaural version of the file for
+		/// concatenating with the other files in the list.  If the file was recorded at a rate
+		/// other than 44100 Hz, create a version with that recording rate.
+		/// If there's only one file in the list, just return the input list.
+		/// If any file fails to convert for any reason, it is returned in the output list.  So the
+		/// files in the output list may not really be consistent in reality...
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-9051
+		/// and https://issues.bloomlibrary.org/youtrack/issue/BL-9100.
+		/// </remarks>
+		private static IEnumerable<string> TryEnsureConsistentInputFiles(string ffmpeg, IEnumerable<string> mergeFiles)
+		{
+			if (mergeFiles.Count() < 2)
+				return mergeFiles;
+			var monoFiles = new List<string>();
+			var argsBuilder = new StringBuilder();
+			foreach (var file in mergeFiles)
+			{
+				var args = $"-hide_banner -i \"{file}\" -f null -";
+				var result = CommandLineRunner.Run(ffmpeg, args, "", 60, new NullProgress());
+				var output = result.StandardError;
+				var match = Regex.Match(output, "Audio: [^,]*, ([0-9]+) Hz, ([a-z]+), [^,]*, ([0-9]+) kb/s");
+				if (match.Success)
+				{
+					// Get a mono version at 44100 Hz of the sound file, trying to preserve its quality.
+					var recordRate = match.Groups[1].ToString();
+					var recordType = match.Groups[2].ToString();
+					var bitRate = match.Groups[3].ToString();
+					if (recordType == "stereo" || recordRate != "44100")
+					{
+						var tempFile = TempFile.CreateAndGetPathButDontMakeTheFile();
+						tempFile.Detach();
+						args = $"-i \"{file}\" -ac 1 -ar 44100 -b:a {bitRate}k \"{tempFile.Path}.mp3\"";
+						Debug.WriteLine($"DEBUG: ffmpeg {args}");
+						result = CommandLineRunner.Run(ffmpeg, args, "", 120, new NullProgress());
+						if (result.ExitCode == 0)
+						{
+							monoFiles.Add(tempFile.Path + ".mp3");
+							continue;
+						}
+						else
+						{
+							Logger.WriteEvent($"Error converting {file} to monaural at 44100 Hz" + Environment.NewLine + result.StandardError);
+							Debug.WriteLine($"Error converting {file} to monaural at 44100 Hz");
+							Debug.WriteLine(result.StandardError);
+						}
+					}
+				}
+				monoFiles.Add(file);
+			}
+			return monoFiles;
 		}
 
 		public static bool HasAudioFileExtension(string fileName)
