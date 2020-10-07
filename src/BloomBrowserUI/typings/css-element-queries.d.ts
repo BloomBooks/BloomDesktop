@@ -1,5 +1,5 @@
-declare module 'css-element-queries' {
-        module ElementQueries {
-                        export function init(): void;
-         }
+declare module "css-element-queries" {
+    module ElementQueries {
+        export function init(): void;
+    }
 }

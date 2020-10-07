@@ -20,9 +20,9 @@ interface ISelectedTemplatePageProps {
 }
 
 // Displays a large preview of a template page in the Add Page or Change Layout dialog.
-export const SelectedTemplatePageControls: React.FunctionComponent<
-    ISelectedTemplatePageProps
-> = (props: ISelectedTemplatePageProps) => {
+export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemplatePageProps> = (
+    props: ISelectedTemplatePageProps
+) => {
     const [continueChecked, setContinueChecked] = useState(false);
     const [convertWholeBookChecked, setConvertWholeBookChecked] = useState(
         false
