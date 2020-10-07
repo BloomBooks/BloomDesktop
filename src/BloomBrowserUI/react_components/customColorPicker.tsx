@@ -21,9 +21,7 @@ interface ICustomPicker {
     swatchColors: ISwatchDefn[];
 }
 
-export const CustomColorPicker: React.FunctionComponent<
-    ICustomPicker
-> = props => {
+export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props => {
     const [colorChoice, setColorChoice] = useState(props.currentColor);
 
     // Handler for when the user picks a color by manipulating the ChromePicker.

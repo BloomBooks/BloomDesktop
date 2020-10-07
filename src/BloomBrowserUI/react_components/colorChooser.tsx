@@ -12,9 +12,7 @@ interface IColorChooserProps {
 }
 
 // A reusable color chooser.
-export const ColorChooser: React.FunctionComponent<
-    IColorChooserProps
-> = props => {
+export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props => {
     const [colorsVisible, setColorsVisible] = useState(
         !!props.colorsVisibleByDefault
     );

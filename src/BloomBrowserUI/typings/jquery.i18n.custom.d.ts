@@ -3,5 +3,5 @@
  */
 // Informs typescript that jquery.i18n.custom extends JQuery with function localize
 interface JQuery {
-        localize(callbackDone?: Function): void;
+    localize(callbackDone?: Function): void;
 }

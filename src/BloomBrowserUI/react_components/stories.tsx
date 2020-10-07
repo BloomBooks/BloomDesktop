@@ -400,9 +400,7 @@ storiesOf("Custom Color Chooser", module)
             const handleColorChange = (color: ISwatchDefn) => {
                 console.log("Color change:");
                 console.log(
-                    `  ${color.name}: ${color.colors[0]}, ${color.colors[1]}, ${
-                        color.opacity
-                    }`
+                    `  ${color.name}: ${color.colors[0]}, ${color.colors[1]}, ${color.opacity}`
                 );
                 // set background color
                 setOverDivStyles({

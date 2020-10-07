@@ -3,5 +3,5 @@
  */
 // Informs typescript that jquery.qtipSecondary extends JQuery with function qtipSecondary
 interface JQuery {
-        qtipSecondary(options: any): JQuery;
+    qtipSecondary(options: any): JQuery;
 }
