@@ -10,6 +10,32 @@ import "../lib/jquery.i18n.custom.ts"; //localize()
 import "errorHandler";
 import { theOneBubbleManager, BubbleManager } from "./js/bubbleManager";
 
+// This allows strong typing to be done for exported functions
+export interface IPageFrameExports {
+    pageSelectionChanging(): void;
+    prepareToSavePage(): void;
+    pageUnloading(): void;
+    disconnectForGarbageCollection(): void;
+    makeElement(
+        html: string,
+        parent?: JQuery,
+        resizableArgs?,
+        draggableArgs?
+    ): JQuery;
+    SetupElements(container: HTMLElement): void;
+    attachToCkEditor(element: any): void;
+
+    origamiCanUndo(): boolean;
+    origamiUndo(): void;
+
+    getTheOneBubbleManager(): BubbleManager;
+
+    ckeditorCanUndo(): boolean;
+    ckeditorUndo(): void;
+
+    SayHello(): void;
+}
+
 // This exports the functions that should be accessible from other IFrames or from C#.
 // For example, FrameExports.getPageFrameExports().pageSelectionChanging() can be called.
 import {

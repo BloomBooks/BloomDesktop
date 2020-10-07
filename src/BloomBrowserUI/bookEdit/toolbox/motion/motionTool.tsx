@@ -201,7 +201,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             };
             // Unless the element is created and made draggable and resizable in the page iframe's execution context,
             // the dragging and resizing just don't work.
-            return getPageFrameExports().makeElement(
+            return getPageFrameExports()!.makeElement(
                 htmlForDraggable,
                 $(firstImage),
                 argsForResizable,
@@ -693,7 +693,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const animationPageHeight =
             (pageWidth / this.animationPreviewAspectRatio) * scale;
         const animationPageWidth = pageWidth * scale;
-        this.animationRootDiv = getPageFrameExports().makeElement(
+        this.animationRootDiv = getPageFrameExports()!.makeElement(
             "<div " +
                 "style='background-color:black; " +
                 "height:" +
@@ -712,7 +712,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // It wraps a div that will move (by being scaled larger) and be clipped (to animationWrapDiv)
         // which in turn wraps a modified clone of firstImage, the content that gets panned and zoomed.
         // Enhance: when we change the signature of makeElement, we can get rid of the vestiges of JQuery here and above.
-        this.animationWrapDiv = getPageFrameExports().makeElement(
+        this.animationWrapDiv = getPageFrameExports()!.makeElement(
             "<div class='" +
                 this.wrapperClassName +
                 " bloom-animationWrapper' " +

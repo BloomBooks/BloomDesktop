@@ -1,4 +1,4 @@
-﻿import "../../lib/jquery.resize"; // makes jquery resize work on all elements
+import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { BloomApi } from "../../utils/bloomApi";
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
@@ -168,7 +168,7 @@ function SetupImageContainer(containerDiv: any) {
                 // Only show this button if the toolbox is also offering it. It might not offer it
                 // if it's experimental and that settings isn't on, or for Bloom Enterprise reasons, or whatever.
                 getToolboxFrameExports()
-                    .getTheOneToolbox()
+                    ?.getTheOneToolbox()
                     .getToolIfOffered(ImageDescriptionAdapter.kToolID)
             ) {
                 $this.prepend(
@@ -182,7 +182,7 @@ function SetupImageContainer(containerDiv: any) {
                 );
                 $this.find(".imageDescriptionButton").click(() => {
                     getToolboxFrameExports()
-                        .getTheOneToolbox()
+                        ?.getTheOneToolbox()
                         .activateToolFromId(ImageDescriptionAdapter.kToolID);
                 });
             }

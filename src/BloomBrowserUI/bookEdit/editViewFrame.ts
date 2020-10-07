@@ -8,6 +8,18 @@ import {
 } from "../react_components/colorPickerDialog";
 import "jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 
+export interface IEditViewFrameExports {
+    showDialog(dialogContents: string | JQuery, options: any): JQuery;
+    closeDialog(id: string): void;
+    toolboxIsShowing(): boolean;
+    doWhenToolboxLoaded(
+        task: (toolboxFrameExports: IToolboxFrameExports) => any
+    );
+    getModalDialogContainer(): HTMLElement | null;
+    showConfirmDialog(props: IConfirmDialogProps): void;
+    showColorPickerDialog(props: IColorPickerDialogProps): void;
+}
+
 export function SayHello() {
     alert("Hello from editViewFrame");
 }
@@ -22,19 +34,20 @@ import { showAddPageDialog } from "../pageChooser/launch-page-chooser";
 export { showAddPageDialog };
 import "errorHandler";
 import { reportError } from "../lib/errorHandler";
+import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 
 //Called by c# using FrameExports.handleUndo()
 export function handleUndo(): void {
     // First see if origami is active and knows about something we can undo.
     var contentWindow = getPageFrameExports();
-    if (contentWindow && (<any>contentWindow).origamiCanUndo()) {
-        (<any>contentWindow).origamiUndo();
+    if (contentWindow && contentWindow.origamiCanUndo()) {
+        contentWindow.origamiUndo();
     }
     // Undoing changes made by commands and dialogs in the toolbox can't be undone using
     // ckeditor, and has its own mechanism. Look next to see whether we know about any Undos there.
     var toolboxWindow = getToolboxFrameExports();
-    if (toolboxWindow && (<any>toolboxWindow).canUndo()) {
-        (<any>toolboxWindow).undo();
+    if (toolboxWindow && toolboxWindow.canUndo()) {
+        toolboxWindow.undo();
     } else if (contentWindow && contentWindow.ckeditorCanUndo()) {
         contentWindow.ckeditorUndo();
     }
@@ -72,7 +85,7 @@ export function switchContentPage(newSource: string) {
     const handler = () => {
         handlerCalled = true;
         iframe.removeEventListener("load", handler);
-        getToolboxFrameExports().applyToolboxStateToPage();
+        getToolboxFrameExports()!.applyToolboxStateToPage();
     };
     iframe.removeEventListener("load", handler);
     iframe.addEventListener("load", handler);
@@ -94,7 +107,10 @@ export function switchContentPage(newSource: string) {
 // This function allows code in the toolbox (or other) frame to create a dialog with dynamic content in the root frame
 // (so that it can be dragged anywhere in the gecko window). The dialog() function behaves strangely (e.g., draggable doesn't work)
 // if the jquery wrapper for the element is created in a different frame than the parent of the dialog element.
-export function showDialog(dialogContents: string, options: any): JQuery {
+export function showDialog(
+    dialogContents: string | JQuery,
+    options: any
+): JQuery {
     var dialogElement = $(dialogContents).appendTo($("body"));
     dialogElement.dialog(options);
     return dialogElement;
@@ -115,8 +131,10 @@ export function toolboxIsShowing() {
 // Do this task when the toolbox is loaded. If it isn't already, we set a timeout and do it when we can.
 // (The value passed to the task function will be the value from getToolboxFrameExports(). Unfortunately we
 // haven't yet managed to declare a type for that, so I can't easily specify it here.)
-export function doWhenToolboxLoaded(task: (toolboxFrameExports: any) => any) {
-    let toolboxWindow = getToolboxFrameExports();
+export function doWhenToolboxLoaded(
+    task: (toolboxFrameExports: IToolboxFrameExports) => any
+) {
+    const toolboxWindow = getToolboxFrameExports();
     if (toolboxWindow) {
         task(toolboxWindow);
     } else {
@@ -129,16 +147,12 @@ export function doWhenToolboxLoaded(task: (toolboxFrameExports: any) => any) {
 //Called by c# using FrameExports.canUndo()
 export function canUndo(): string {
     // See comments on handleUndo()
-    var contentWindow = getPageFrameExports();
+    const contentWindow = getPageFrameExports();
     if (contentWindow && (<any>contentWindow).origamiCanUndo()) {
         return "yes";
     }
-    var toolboxWindow = getToolboxFrameExports();
-    if (
-        toolboxWindow &&
-        (<any>toolboxWindow).canUndo &&
-        (<any>toolboxWindow).canUndo()
-    ) {
+    const toolboxWindow = getToolboxFrameExports();
+    if (toolboxWindow && toolboxWindow.canUndo && toolboxWindow.canUndo()) {
         return "yes";
     }
     if (contentWindow && contentWindow.ckeditorCanUndo()) {

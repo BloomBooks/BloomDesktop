@@ -173,7 +173,7 @@ function SetupClickToShowSignLanguageTool(containerDiv: Element) {
     // bring up the sign language tool
     $(containerDiv).click(() => {
         getToolboxFrameExports()
-            .getTheOneToolbox()
+            ?.getTheOneToolbox()
             .activateToolFromId(SignLanguageToolControls.kToolID);
     });
 }

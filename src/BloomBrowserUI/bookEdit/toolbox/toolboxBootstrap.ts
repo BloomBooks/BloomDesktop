@@ -21,6 +21,22 @@ import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 import "errorHandler";
 import { ComicTool } from "./comic/comicTool";
 
+export interface IToolboxFrameExports {
+    addWordListChangedListener(
+        listenerNameAndContext: string,
+        callback: () => void
+    ): void;
+
+    loadLongpressInstructions(jQuerySetOfMatchedElements): void;
+
+    getTheOneToolbox(): ToolBox;
+
+    canUndo(): boolean;
+    undo(): void;
+
+    applyToolboxStateToPage(): void;
+}
+
 // each of these exports shows up under this window's FrameExports object (see bloomFrames.ts)
 export { removeToolboxMarkup, showOrHideTool_click };
 export {
