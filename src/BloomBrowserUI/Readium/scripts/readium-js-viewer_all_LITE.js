@@ -301,10 +301,10 @@ if (
                                 ("null" === n
                                     ? null
                                     : +n + "" === n
-                                        ? +n
-                                        : Se.test(n)
-                                            ? ie.parseJSON(n)
-                                            : n));
+                                    ? +n
+                                    : Se.test(n)
+                                    ? ie.parseJSON(n)
+                                    : n));
                     } catch (e) {}
                     Te.set(e, t, n);
                 } else n = void 0;
@@ -345,8 +345,8 @@ if (
                 void 0 !== e.getElementsByTagName
                     ? e.getElementsByTagName(t || "*")
                     : void 0 !== e.querySelectorAll
-                        ? e.querySelectorAll(t || "*")
-                        : [];
+                    ? e.querySelectorAll(t || "*")
+                    : [];
             return void 0 === t || (t && ie.nodeName(e, t))
                 ? ie.merge([e], n)
                 : n;
@@ -622,8 +622,8 @@ if (
                         n === (r ? "border" : "content")
                             ? 4
                             : "width" === t
-                                ? 1
-                                : 0,
+                            ? 1
+                            : 0,
                     a = 0;
                 o < 4;
                 o += 2
@@ -1216,8 +1216,8 @@ if (
                     return null == e
                         ? e + ""
                         : "object" == typeof e || "function" == typeof e
-                            ? ee[te.call(e)] || "object"
-                            : typeof e;
+                        ? ee[te.call(e)] || "object"
+                        : typeof e;
                 },
                 globalEval: function(e) {
                     var t,
@@ -1801,11 +1801,11 @@ if (
                     return r !== r || n
                         ? t
                         : r < 0
-                            ? String.fromCharCode(r + 65536)
-                            : String.fromCharCode(
-                                  (r >> 10) | 55296,
-                                  (1023 & r) | 56320
-                              );
+                        ? String.fromCharCode(r + 65536)
+                        : String.fromCharCode(
+                              (r >> 10) | 55296,
+                              (1023 & r) | 56320
+                          );
                 },
                 _e = function() {
                     P();
@@ -1898,8 +1898,8 @@ if (
                                     return void 0 !== t.getElementsByTagName
                                         ? t.getElementsByTagName(e)
                                         : y.qsa
-                                            ? t.querySelectorAll(e)
-                                            : void 0;
+                                        ? t.querySelectorAll(e)
+                                        : void 0;
                                 }
                               : function(e, t) {
                                     var n,
@@ -2029,13 +2029,13 @@ if (
                                                 : t === O ||
                                                   (t.ownerDocument === F &&
                                                       M(F, t))
-                                                    ? 1
-                                                    : k
-                                                        ? Y(k, e) - Y(k, t)
-                                                        : 0
+                                                ? 1
+                                                : k
+                                                ? Y(k, e) - Y(k, t)
+                                                : 0
                                             : 4 & n
-                                                ? -1
-                                                : 1)
+                                            ? -1
+                                            : 1)
                                     );
                                 }
                               : function(e, t) {
@@ -2050,14 +2050,14 @@ if (
                                         return e === O
                                             ? -1
                                             : t === O
-                                                ? 1
-                                                : i
-                                                    ? -1
-                                                    : o
-                                                        ? 1
-                                                        : k
-                                                            ? Y(k, e) - Y(k, t)
-                                                            : 0;
+                                            ? 1
+                                            : i
+                                            ? -1
+                                            : o
+                                            ? 1
+                                            : k
+                                            ? Y(k, e) - Y(k, t)
+                                            : 0;
                                     if (i === o) return a(e, t);
                                     for (n = e; (n = n.parentNode); )
                                         s.unshift(n);
@@ -2067,10 +2067,10 @@ if (
                                     return r
                                         ? a(s[r], l[r])
                                         : s[r] === F
-                                            ? -1
-                                            : l[r] === F
-                                                ? 1
-                                                : 0;
+                                        ? -1
+                                        : l[r] === F
+                                        ? 1
+                                        : 0;
                                 }),
                           O)
                         : O;
@@ -2112,10 +2112,10 @@ if (
                     return void 0 !== r
                         ? r
                         : y.attributes || !N
-                            ? e.getAttribute(t)
-                            : (r = e.getAttributeNode(t)) && r.specified
-                                ? r.value
-                                : null;
+                        ? e.getAttribute(t)
+                        : (r = e.getAttributeNode(t)) && r.specified
+                        ? r.value
+                        : null;
                 }),
                 (t.error = function(e) {
                     throw new Error(
@@ -2252,38 +2252,23 @@ if (
                                           "=" === n
                                               ? o === r
                                               : "!=" === n
-                                                  ? o !== r
-                                                  : "^=" === n
-                                                      ? r && 0 === o.indexOf(r)
-                                                      : "*=" === n
-                                                          ? r &&
-                                                            o.indexOf(r) > -1
-                                                          : "$=" === n
-                                                              ? r &&
-                                                                o.slice(
-                                                                    -r.length
-                                                                ) === r
-                                                              : "~=" === n
-                                                                  ? (
-                                                                        " " +
-                                                                        o.replace(
-                                                                            ie,
-                                                                            " "
-                                                                        ) +
-                                                                        " "
-                                                                    ).indexOf(
-                                                                        r
-                                                                    ) > -1
-                                                                  : "|=" ===
-                                                                        n &&
-                                                                    (o === r ||
-                                                                        o.slice(
-                                                                            0,
-                                                                            r.length +
-                                                                                1
-                                                                        ) ===
-                                                                            r +
-                                                                                "-"));
+                                              ? o !== r
+                                              : "^=" === n
+                                              ? r && 0 === o.indexOf(r)
+                                              : "*=" === n
+                                              ? r && o.indexOf(r) > -1
+                                              : "$=" === n
+                                              ? r && o.slice(-r.length) === r
+                                              : "~=" === n
+                                              ? (
+                                                    " " +
+                                                    o.replace(ie, " ") +
+                                                    " "
+                                                ).indexOf(r) > -1
+                                              : "|=" === n &&
+                                                (o === r ||
+                                                    o.slice(0, r.length + 1) ===
+                                                        r + "-"));
                             };
                         },
                         CHILD: function(e, t, n, r, i) {
@@ -2409,25 +2394,23 @@ if (
                             return o[L]
                                 ? o(n)
                                 : o.length > 1
-                                    ? ((i = [e, e, "", n]),
-                                      _.setFilters.hasOwnProperty(
-                                          e.toLowerCase()
-                                      )
-                                          ? r(function(e, t) {
-                                                for (
-                                                    var r,
-                                                        i = o(e, n),
-                                                        a = i.length;
-                                                    a--;
+                                ? ((i = [e, e, "", n]),
+                                  _.setFilters.hasOwnProperty(e.toLowerCase())
+                                      ? r(function(e, t) {
+                                            for (
+                                                var r,
+                                                    i = o(e, n),
+                                                    a = i.length;
+                                                a--;
 
-                                                )
-                                                    (r = Y(e, i[a])),
-                                                        (e[r] = !(t[r] = i[a]));
-                                            })
-                                          : function(e) {
-                                                return o(e, 0, i);
-                                            })
-                                    : o;
+                                            )
+                                                (r = Y(e, i[a])),
+                                                    (e[r] = !(t[r] = i[a]));
+                                        })
+                                      : function(e) {
+                                            return o(e, 0, i);
+                                        })
+                                : o;
                         }
                     },
                     pseudos: {
@@ -2764,8 +2747,8 @@ if (
                             return !0 === e[t]
                                 ? t.toLowerCase()
                                 : (r = e.getAttributeNode(t)) && r.specified
-                                    ? r.value
-                                    : null;
+                                ? r.value
+                                : null;
                     }),
                 t
             );
@@ -2895,15 +2878,14 @@ if (
             return e.nodeType
                 ? ((this.context = this[0] = e), (this.length = 1), this)
                 : ie.isFunction(e)
-                    ? void 0 !== n.ready
-                        ? n.ready(e)
-                        : e(ie)
-                    : (void 0 !== e.selector &&
-                          ((this.selector = e.selector),
-                          (this.context = e.context)),
-                      ie.makeArray(e, this));
-        }).prototype =
-            ie.fn),
+                ? void 0 !== n.ready
+                    ? n.ready(e)
+                    : e(ie)
+                : (void 0 !== e.selector &&
+                      ((this.selector = e.selector),
+                      (this.context = e.context)),
+                  ie.makeArray(e, this));
+        }).prototype = ie.fn),
             (me = ie(K));
         var ve = /^(?:parents|prev(?:Until|All))/,
             be = { children: !0, contents: !0, next: !0, prev: !0 };
@@ -2948,8 +2930,8 @@ if (
                         ? Z.call(ie(e), this[0])
                         : Z.call(this, e.jquery ? e[0] : e)
                     : this[0] && this[0].parentNode
-                        ? this.first().prevAll().length
-                        : -1;
+                    ? this.first().prevAll().length
+                    : -1;
             },
             add: function(e, t) {
                 return this.pushStack(
@@ -3514,14 +3496,14 @@ if (
                         arguments.length < n
                             ? ie.queue(this[0], e)
                             : void 0 === t
-                                ? this
-                                : this.each(function() {
-                                      var n = ie.queue(this, e, t);
-                                      ie._queueHooks(this, e),
-                                          "fx" === e &&
-                                              "inprogress" !== n[0] &&
-                                              ie.dequeue(this, e);
-                                  })
+                            ? this
+                            : this.each(function() {
+                                  var n = ie.queue(this, e, t);
+                                  ie._queueHooks(this, e),
+                                      "fx" === e &&
+                                          "inprogress" !== n[0] &&
+                                          ie.dequeue(this, e);
+                              })
                     );
                 },
                 dequeue: function(e) {
@@ -3866,8 +3848,8 @@ if (
                         (this.fixHooks[i] = a = Le.test(i)
                             ? this.mouseHooks
                             : Me.test(i)
-                                ? this.keyHooks
-                                : {}),
+                            ? this.keyHooks
+                            : {}),
                         r = a.props ? this.props.concat(a.props) : this.props,
                         e = new ie.Event(o),
                         t = r.length;
@@ -4564,8 +4546,8 @@ if (
                             : 1 !== e.elem.nodeType ||
                               (null == e.elem.style[ie.cssProps[e.prop]] &&
                                   !ie.cssHooks[e.prop])
-                                ? (e.elem[e.prop] = e.now)
-                                : ie.style(e.elem, e.prop, e.now + e.unit);
+                            ? (e.elem[e.prop] = e.now)
+                            : ie.style(e.elem, e.prop, e.now + e.unit);
                     }
                 }
             }),
@@ -4626,10 +4608,10 @@ if (
                     (r.duration = ie.fx.off
                         ? 0
                         : "number" == typeof r.duration
-                            ? r.duration
-                            : r.duration in ie.fx.speeds
-                                ? ie.fx.speeds[r.duration]
-                                : ie.fx.speeds._default),
+                        ? r.duration
+                        : r.duration in ie.fx.speeds
+                        ? ie.fx.speeds[r.duration]
+                        : ie.fx.speeds._default),
                     (null != r.queue && !0 !== r.queue) || (r.queue = "fx"),
                     (r.old = r.complete),
                     (r.complete = function() {
@@ -4819,14 +4801,14 @@ if (
                                       : i &&
                                         "set" in i &&
                                         void 0 !== (r = i.set(e, n, t))
-                                          ? r
-                                          : (e.setAttribute(t, n + ""), n)
+                                      ? r
+                                      : (e.setAttribute(t, n + ""), n)
                                   : i &&
                                     "get" in i &&
                                     null !== (r = i.get(e, t))
-                                      ? r
-                                      : ((r = ie.find.attr(e, t)),
-                                        null == r ? void 0 : r));
+                                  ? r
+                                  : ((r = ie.find.attr(e, t)),
+                                    null == r ? void 0 : r));
                 },
                 attrHooks: {
                     type: {
@@ -4908,8 +4890,8 @@ if (
                                     ? r
                                     : (e[t] = n)
                                 : i && "get" in i && null !== (r = i.get(e, t))
-                                    ? r
-                                    : e[t]
+                                ? r
+                                : e[t]
                         );
                 },
                 propHooks: {
@@ -4920,8 +4902,8 @@ if (
                                 ? parseInt(t, 10)
                                 : lt.test(e.nodeName) ||
                                   (ut.test(e.nodeName) && e.href)
-                                    ? 0
-                                    : -1;
+                                ? 0
+                                : -1;
                         }
                     }
                 },
@@ -5027,40 +5009,33 @@ if (
                         ? this.addClass(e)
                         : this.removeClass(e)
                     : ie.isFunction(e)
-                        ? this.each(function(n) {
-                              ie(this).toggleClass(
-                                  e.call(this, n, z(this), t),
-                                  t
-                              );
-                          })
-                        : this.each(function() {
-                              var t, r, i, o;
-                              if ("string" === n)
-                                  for (
-                                      r = 0,
-                                          i = ie(this),
-                                          o = e.match(ye) || [];
-                                      (t = o[r++]);
+                    ? this.each(function(n) {
+                          ie(this).toggleClass(e.call(this, n, z(this), t), t);
+                      })
+                    : this.each(function() {
+                          var t, r, i, o;
+                          if ("string" === n)
+                              for (
+                                  r = 0, i = ie(this), o = e.match(ye) || [];
+                                  (t = o[r++]);
 
-                                  )
-                                      i.hasClass(t)
-                                          ? i.removeClass(t)
-                                          : i.addClass(t);
-                              else
-                                  (void 0 !== e && "boolean" !== n) ||
-                                      ((t = z(this)),
-                                      t && Ee.set(this, "__className__", t),
-                                      this.setAttribute &&
-                                          this.setAttribute(
-                                              "class",
-                                              t || !1 === e
-                                                  ? ""
-                                                  : Ee.get(
-                                                        this,
-                                                        "__className__"
-                                                    ) || ""
-                                          ));
-                          });
+                              )
+                                  i.hasClass(t)
+                                      ? i.removeClass(t)
+                                      : i.addClass(t);
+                          else
+                              (void 0 !== e && "boolean" !== n) ||
+                                  ((t = z(this)),
+                                  t && Ee.set(this, "__className__", t),
+                                  this.setAttribute &&
+                                      this.setAttribute(
+                                          "class",
+                                          t || !1 === e
+                                              ? ""
+                                              : Ee.get(this, "__className__") ||
+                                                    ""
+                                      ));
+                      });
             },
             hasClass: function(e) {
                 var t,
@@ -5096,13 +5071,11 @@ if (
                                     null == i
                                         ? (i = "")
                                         : "number" == typeof i
-                                            ? (i += "")
-                                            : ie.isArray(i) &&
-                                              (i = ie.map(i, function(e) {
-                                                  return null == e
-                                                      ? ""
-                                                      : e + "";
-                                              })),
+                                        ? (i += "")
+                                        : ie.isArray(i) &&
+                                          (i = ie.map(i, function(e) {
+                                              return null == e ? "" : e + "";
+                                          })),
                                     ((t =
                                         ie.valHooks[this.type] ||
                                         ie.valHooks[
@@ -5124,8 +5097,8 @@ if (
                               "string" == typeof n
                                   ? n.replace(dt, "")
                                   : null == n
-                                      ? ""
-                                      : n);
+                                  ? ""
+                                  : n);
                 }
             }
         }),
@@ -5451,11 +5424,11 @@ if (
                                   204 === t || "HEAD" === f.type
                                       ? (E = "nocontent")
                                       : 304 === t
-                                          ? (E = "notmodified")
-                                          : ((E = y.state),
-                                            (d = y.data),
-                                            (b = y.error),
-                                            (u = !b)))
+                                      ? (E = "notmodified")
+                                      : ((E = y.state),
+                                        (d = y.data),
+                                        (b = y.error),
+                                        (u = !b)))
                                 : ((b = E),
                                   (!t && E) ||
                                       ((E = "error"), t < 0 && (t = 0))),
@@ -5606,9 +5579,9 @@ if (
                             "Accept",
                             f.dataTypes[0] && f.accepts[f.dataTypes[0]]
                                 ? f.accepts[f.dataTypes[0]] +
-                                  ("*" !== f.dataTypes[0]
-                                      ? ", " + St + "; q=0.01"
-                                      : "")
+                                      ("*" !== f.dataTypes[0]
+                                          ? ", " + St + "; q=0.01"
+                                          : "")
                                 : f.accepts["*"]
                         );
                     for (d in f.headers) x.setRequestHeader(d, f.headers[d]);
@@ -5784,16 +5757,16 @@ if (
                             return null == n
                                 ? null
                                 : ie.isArray(n)
-                                    ? ie.map(n, function(e) {
-                                          return {
-                                              name: t.name,
-                                              value: e.replace(Pt, "\r\n")
-                                          };
-                                      })
-                                    : {
+                                ? ie.map(n, function(e) {
+                                      return {
                                           name: t.name,
-                                          value: n.replace(Pt, "\r\n")
+                                          value: e.replace(Pt, "\r\n")
                                       };
+                                  })
+                                : {
+                                      name: t.name,
+                                      value: n.replace(Pt, "\r\n")
+                                  };
                         })
                         .get();
                 }
@@ -5839,27 +5812,23 @@ if (
                                         "abort" === e
                                             ? s.abort()
                                             : "error" === e
-                                                ? "number" != typeof s.status
-                                                    ? o(0, "error")
-                                                    : o(s.status, s.statusText)
-                                                : o(
-                                                      Nt[s.status] || s.status,
-                                                      s.statusText,
-                                                      "text" !==
-                                                          (s.responseType ||
-                                                              "text") ||
+                                            ? "number" != typeof s.status
+                                                ? o(0, "error")
+                                                : o(s.status, s.statusText)
+                                            : o(
+                                                  Nt[s.status] || s.status,
+                                                  s.statusText,
+                                                  "text" !==
+                                                      (s.responseType ||
+                                                          "text") ||
                                                       "string" !=
                                                           typeof s.responseText
-                                                          ? {
-                                                                binary:
-                                                                    s.response
-                                                            }
-                                                          : {
-                                                                text:
-                                                                    s.responseText
-                                                            },
-                                                      s.getAllResponseHeaders()
-                                                  ));
+                                                      ? { binary: s.response }
+                                                      : {
+                                                            text: s.responseText
+                                                        },
+                                                  s.getAllResponseHeaders()
+                                              ));
                                 };
                             }),
                                 (s.onload = n()),
@@ -6213,17 +6182,17 @@ if (
                                               "client" + e
                                           ]
                                         : 9 === t.nodeType
-                                            ? ((i = t.documentElement),
-                                              Math.max(
-                                                  t.body["scroll" + e],
-                                                  i["scroll" + e],
-                                                  t.body["offset" + e],
-                                                  i["offset" + e],
-                                                  i["client" + e]
-                                              ))
-                                            : void 0 === r
-                                                ? ie.css(t, n, a)
-                                                : ie.style(t, n, r, a);
+                                        ? ((i = t.documentElement),
+                                          Math.max(
+                                              t.body["scroll" + e],
+                                              i["scroll" + e],
+                                              t.body["offset" + e],
+                                              i["offset" + e],
+                                              i["client" + e]
+                                          ))
+                                        : void 0 === r
+                                        ? ie.css(t, n, a)
+                                        : ie.style(t, n, r, a);
                                 },
                                 t,
                                 o ? r : void 0,
@@ -6277,15 +6246,15 @@ if (
         "object" == typeof exports && "undefined" != typeof module
             ? (module.exports = e())
             : "function" == typeof define && define.amd
-                ? define("eventEmitter", [], e)
-                : (("undefined" != typeof window
-                      ? window
-                      : "undefined" != typeof global
-                          ? global
-                          : "undefined" != typeof self
-                              ? self
-                              : this
-                  ).EventEmitter3 = e());
+            ? define("eventEmitter", [], e)
+            : (("undefined" != typeof window
+                  ? window
+                  : "undefined" != typeof global
+                  ? global
+                  : "undefined" != typeof self
+                  ? self
+                  : this
+              ).EventEmitter3 = e());
     })(function() {
         return (function e(t, n, r) {
             function i(a, s) {
@@ -6621,8 +6590,8 @@ if (
         "function" == typeof define && define.amd
             ? define("es6-shim", t)
             : "object" == typeof exports
-                ? (module.exports = t())
-                : (e.returnExports = t());
+            ? (module.exports = t())
+            : (e.returnExports = t());
     })(this, function() {
         "use strict";
         var e,
@@ -6918,16 +6887,16 @@ if (
                     return W(t)
                         ? 0
                         : 0 !== t && G(t)
-                            ? (t > 0 ? 1 : -1) * N(R(t))
-                            : t;
+                        ? (t > 0 ? 1 : -1) * N(R(t))
+                        : t;
                 },
                 ToLength: function(e) {
                     var t = ae.ToInteger(e);
                     return t <= 0
                         ? 0
                         : t > Number.MAX_SAFE_INTEGER
-                            ? Number.MAX_SAFE_INTEGER
-                            : t;
+                        ? Number.MAX_SAFE_INTEGER
+                        : t;
                 },
                 SameValue: function(e, t) {
                     return e === t ? 0 !== e || 1 / e == 1 / t : W(e) && W(t);
@@ -7455,8 +7424,8 @@ if (
                                 "key" === o
                                     ? (i = t)
                                     : "value" === o
-                                        ? (i = n[t])
-                                        : "entry" === o && (i = [t, n[t]]),
+                                    ? (i = n[t])
+                                    : "entry" === o && (i = [t, n[t]]),
                                 (this.i = t + 1),
                                 Ve(i)
                             );
@@ -7736,8 +7705,8 @@ if (
                             dt(n)
                                 ? (n = parseInt(C(n, 2), 2))
                                 : ft(n)
-                                    ? (n = parseInt(C(n, 2), 8))
-                                    : (ht(n) || mt(n)) && (n = NaN));
+                                ? (n = parseInt(C(n, 2), 8))
+                                : (ht(n) || mt(n)) && (n = NaN));
                         var r = this,
                             i = a(function() {
                                 return lt.prototype.valueOf.call(r), !0;
@@ -8190,10 +8159,10 @@ if (
                 return W(t) || e < 1
                     ? NaN
                     : 1 === t
-                        ? 0
-                        : t === 1 / 0
-                            ? t
-                            : j(t / nn + (M(t + 1) * M(t - 1)) / nn) + 1;
+                    ? 0
+                    : t === 1 / 0
+                    ? t
+                    : j(t / nn + (M(t + 1) * M(t - 1)) / nn) + 1;
             },
             asinh: function e(t) {
                 var n = Number(t);
@@ -8208,12 +8177,12 @@ if (
                 return W(t) || t < -1 || t > 1
                     ? NaN
                     : -1 === t
-                        ? -1 / 0
-                        : 1 === t
-                            ? 1 / 0
-                            : 0 === t
-                                ? t
-                                : 0.5 * j((1 + t) / (1 - t));
+                    ? -1 / 0
+                    : 1 === t
+                    ? 1 / 0
+                    : 0 === t
+                    ? t
+                    : 0.5 * j((1 + t) / (1 - t));
             },
             cbrt: function(e) {
                 var t = Number(e);
@@ -8234,19 +8203,19 @@ if (
                 return 0 === n
                     ? 32
                     : an
-                        ? ae.Call(an, n)
-                        : 31 - N(j(n + 0.5) * rn);
+                    ? ae.Call(an, n)
+                    : 31 - N(j(n + 0.5) * rn);
             },
             cosh: function(e) {
                 var t = Number(e);
                 return 0 === t
                     ? 1
                     : W(t)
-                        ? NaN
-                        : x(t)
-                            ? (t < 0 && (t = -t),
-                              t > 21 ? D(t) / 2 : (D(t) + D(-t)) / 2)
-                            : 1 / 0;
+                    ? NaN
+                    : x(t)
+                    ? (t < 0 && (t = -t),
+                      t > 21 ? D(t) / 2 : (D(t) + D(-t)) / 2)
+                    : 1 / 0;
             },
             expm1: function(e) {
                 var t = Number(e);
@@ -8277,12 +8246,12 @@ if (
                 return t < -1 || W(t)
                     ? NaN
                     : 0 === t || t === 1 / 0
-                        ? t
-                        : -1 === t
-                            ? -1 / 0
-                            : 1 + t - 1 == 0
-                                ? t
-                                : t * (j(1 + t) / (1 + t - 1));
+                    ? t
+                    : -1 === t
+                    ? -1 / 0
+                    : 1 + t - 1 == 0
+                    ? t
+                    : t * (j(1 + t) / (1 + t - 1));
             },
             sign: X,
             sinh: function(e) {
@@ -8298,10 +8267,10 @@ if (
                 return W(t) || 0 === t
                     ? t
                     : t >= 20
-                        ? 1
-                        : t <= -20
-                            ? -1
-                            : (Math.expm1(t) - Math.expm1(-t)) / (D(t) + D(-t));
+                    ? 1
+                    : t <= -20
+                    ? -1
+                    : (Math.expm1(t) - Math.expm1(-t)) / (D(t) + D(-t));
             },
             trunc: function(e) {
                 var t = Number(e);
@@ -8428,22 +8397,22 @@ if (
                     a = ae.IsCallable(w.setImmediate)
                         ? w.setImmediate
                         : "object" == typeof process && process.nextTick
-                            ? process.nextTick
-                            : (function() {
-                                  var e = w.Promise,
-                                      t = e && e.resolve && e.resolve();
-                                  return (
-                                      t &&
-                                      function(e) {
-                                          return t.then(e);
-                                      }
-                                  );
-                              })() ||
-                              (ae.IsCallable(t)
-                                  ? t()
-                                  : function(t) {
-                                        e(t, 0);
-                                    }),
+                        ? process.nextTick
+                        : (function() {
+                              var e = w.Promise,
+                                  t = e && e.resolve && e.resolve();
+                              return (
+                                  t &&
+                                  function(e) {
+                                      return t.then(e);
+                                  }
+                              );
+                          })() ||
+                          (ae.IsCallable(t)
+                              ? t()
+                              : function(t) {
+                                    e(t, 0);
+                                }),
                     s = function(e) {
                         return e;
                     },
@@ -8863,14 +8832,14 @@ if (
                         ? oe(e)
                             ? "^" + ae.ToString(e)
                             : "string" == typeof e
-                                ? "$" + e
-                                : "number" == typeof e
-                                    ? Pn
-                                        ? e
-                                        : "n" + e
-                                    : "boolean" == typeof e
-                                        ? "b" + e
-                                        : null
+                            ? "$" + e
+                            : "number" == typeof e
+                            ? Pn
+                                ? e
+                                : "n" + e
+                            : "boolean" == typeof e
+                            ? "b" + e
+                            : null
                         : null;
                 },
                 An = function() {
@@ -8990,8 +8959,8 @@ if (
                                                 "key" === t
                                                     ? e.key
                                                     : "value" === t
-                                                        ? e.value
-                                                        : [e.key, e.value]),
+                                                    ? e.value
+                                                    : [e.key, e.value]),
                                             (this.i = e),
                                             Ve(r)
                                         );
@@ -9234,10 +9203,10 @@ if (
                                     return "$" === n
                                         ? C(t, 1)
                                         : "n" === n
-                                            ? +C(t, 1)
-                                            : "b" === n
-                                                ? "btrue" === t
-                                                : +t;
+                                        ? +C(t, 1)
+                                        : "b" === n
+                                        ? "btrue" === t
+                                        : +t;
                                 }
                             },
                             s = function(e) {
@@ -9571,8 +9540,8 @@ if (
                     return "value" in r
                         ? r.value
                         : r.get
-                            ? ae.Call(r.get, n)
-                            : void 0;
+                        ? ae.Call(r.get, n)
+                        : void 0;
                 },
                 ir = function(e, t, r, i) {
                     var o = Object.getOwnPropertyDescriptor(e, t);
@@ -9846,10 +9815,10 @@ if (
             return e - 48 < 10
                 ? e - 22
                 : e - 65 < 26
-                    ? e - 65
-                    : e - 97 < 26
-                        ? e - 97
-                        : y;
+                ? e - 65
+                : e - 97 < 26
+                ? e - 97
+                : y;
         }
         function s(e, t) {
             return e + 22 + 75 * (e < 26) - ((0 != t) << 5);
@@ -10023,8 +9992,8 @@ if (
         "object" == typeof module && module.exports
             ? (module.exports = t())
             : "function" == typeof define && define.amd
-                ? define("IPv6", t)
-                : (e.IPv6 = t(e));
+            ? define("IPv6", t)
+            : (e.IPv6 = t(e));
     })(this, function(e) {
         "use strict";
         function t(e) {
@@ -10035,8 +10004,8 @@ if (
             "" === n[0] && "" === n[1] && "" === n[2]
                 ? (n.shift(), n.shift())
                 : "" === n[0] && "" === n[1]
-                    ? n.shift()
-                    : "" === n[r - 1] && "" === n[r - 2] && n.pop(),
+                ? n.shift()
+                : "" === n[r - 1] && "" === n[r - 2] && n.pop(),
                 (r = n.length),
                 -1 !== n[r - 1].indexOf(".") && (i = 7);
             var o;
@@ -10084,8 +10053,8 @@ if (
         "object" == typeof module && module.exports
             ? (module.exports = t())
             : "function" == typeof define && define.amd
-                ? define("SecondLevelDomains", t)
-                : (e.SecondLevelDomains = t(e));
+            ? define("SecondLevelDomains", t)
+            : (e.SecondLevelDomains = t(e));
     })(this, function(e) {
         "use strict";
         var t = e && e.SecondLevelDomains,
@@ -10301,12 +10270,12 @@ if (
                   require("./SecondLevelDomains")
               ))
             : "function" == typeof define && define.amd
-                ? define("URIjs", [
-                      "./punycode",
-                      "./IPv6",
-                      "./SecondLevelDomains"
-                  ], t)
-                : (e.URI = t(e.punycode, e.IPv6, e.SecondLevelDomains, e));
+            ? define("URIjs", [
+                  "./punycode",
+                  "./IPv6",
+                  "./SecondLevelDomains"
+              ], t)
+            : (e.URI = t(e.punycode, e.IPv6, e.SecondLevelDomains, e));
     })(this, function(e, t, n, r) {
         "use strict";
         function i(e, t) {
@@ -10626,9 +10595,9 @@ if (
                           t.protocol && !t.protocol.match(i.protocol_expression)
                               ? (t.protocol = void 0)
                               : "//" === e.substring(n + 1, n + 3)
-                                  ? ((e = e.substring(n + 3)),
-                                    (e = i.parseAuthority(e, t)))
-                                  : ((e = e.substring(n + 1)), (t.urn = !0))),
+                              ? ((e = e.substring(n + 3)),
+                                (e = i.parseAuthority(e, t)))
+                              : ((e = e.substring(n + 1)), (t.urn = !0))),
                     (t.path = e),
                     t
                 );
@@ -10814,8 +10783,8 @@ if (
                                 ? (e[t] = void 0)
                                 : (e[t] = u(e[t], n))
                             : e[t] !== String(n) || (l(n) && 1 !== n.length)
-                                ? l(e[t]) && (e[t] = u(e[t], n))
-                                : (e[t] = void 0)
+                            ? l(e[t]) && (e[t] = u(e[t], n))
+                            : (e[t] = void 0)
                         : (e[t] = void 0);
                 }
             }),
@@ -11919,8 +11888,8 @@ if (
         "object" == typeof exports && "undefined" != typeof module
             ? t(exports)
             : "function" == typeof define && define.amd
-                ? define("readium_cfi_js", ["exports"], t)
-                : t((e.EPUBcfi = {}));
+            ? define("readium_cfi_js", ["exports"], t)
+            : t((e.EPUBcfi = {}));
     })(this, function(e) {
         "use strict";
         function t(e, t) {
@@ -11951,8 +11920,8 @@ if (
                     ? St
                     : Tt
                 : Ct && Ct in Object(e)
-                    ? n(e)
-                    : r(e);
+                ? n(e)
+                : r(e);
         }
         function o(e) {
             var t = typeof e;
@@ -12252,8 +12221,8 @@ if (
                 ? t.split(/\s/)
                 : "object" === (void 0 === t ? "undefined" : it(t)) &&
                   "baseVal" in t
-                    ? t.baseVal.split(/\s/)
-                    : [];
+                ? t.baseVal.split(/\s/)
+                : [];
         }
         function re(e, t, n, r) {
             if (t && t.length) {
@@ -12347,11 +12316,11 @@ if (
                       this.nodeType === Node.PROCESSING_INSTRUCTION_NODE
                           ? (a = !0)
                           : a || this.nodeType !== Node.ELEMENT_NODE
-                              ? a &&
-                                this.nodeType !== Node.TEXT_NODE &&
-                                this !== s.lastChild &&
-                                ((o += 1), (a = !1))
-                              : ((o += 1), (a = !0)),
+                          ? a &&
+                            this.nodeType !== Node.TEXT_NODE &&
+                            this !== s.lastChild &&
+                            ((o += 1), (a = !1))
+                          : ((o += 1), (a = !0)),
                       !1);
             });
             if (0 === u.length) throw new dt(l, o, "Index out of range");
@@ -13035,9 +13004,10 @@ if (
                 Ie = function() {
                     return "^";
                 },
-                Pe = function(e) {
+                Pe = (n('"', !1),
+                function(e) {
                     return e;
-                },
+                }),
                 Oe = "(",
                 Ae = n("(", !1),
                 Ne = function(e) {
@@ -13448,8 +13418,8 @@ if (
                         (u.length
                             ? e.setEnd(u, u.length)
                             : u.hasChildNodes()
-                                ? e.setEnd(u, u.childNodes.length)
-                                : e.setEnd(u, 1));
+                            ? e.setEnd(u, u.childNodes.length)
+                            : e.setEnd(u, 1));
                 }
             }
         }
@@ -13468,14 +13438,14 @@ if (
                         this.nodeType === Node.ELEMENT_NODE
                             ? ((l = !1), (u = void 0), (d = 0))
                             : this.nodeType === Node.COMMENT_NODE
-                                ? (d = d + this.length + 7)
-                                : this.nodeType ===
-                                      Node.PROCESSING_INSTRUCTION_NODE &&
-                                  (d =
-                                      d +
-                                      this.data.length +
-                                      this.target.length +
-                                      5);
+                            ? (d = d + this.length + 7)
+                            : this.nodeType ===
+                                  Node.PROCESSING_INSTRUCTION_NODE &&
+                              (d =
+                                  d +
+                                  this.data.length +
+                                  this.target.length +
+                                  5);
                     else if (this.nodeType === Node.TEXT_NODE) {
                         if (this === e[0])
                             return l ? ((o = u), (f = d)) : (o = c), !1;
@@ -13486,18 +13456,18 @@ if (
                         this.nodeType === Node.ELEMENT_NODE
                             ? (c += 1)
                             : this.nodeType === Node.COMMENT_NODE
-                                ? ((l = !0),
-                                  (d = d + this.length + 7),
-                                  void 0 === u && (u = c))
-                                : this.nodeType ===
-                                      Node.PROCESSING_INSTRUCTION_NODE &&
-                                  ((l = !0),
-                                  (d =
-                                      d +
-                                      this.data.length +
-                                      this.target.length +
-                                      5),
-                                  void 0 === u && (u = c));
+                            ? ((l = !0),
+                              (d = d + this.length + 7),
+                              void 0 === u && (u = c))
+                            : this.nodeType ===
+                                  Node.PROCESSING_INSTRUCTION_NODE &&
+                              ((l = !0),
+                              (d =
+                                  d +
+                                  this.data.length +
+                                  this.target.length +
+                                  5),
+                              void 0 === u && (u = c));
                     return !0;
                 }),
                 "/" + (2 * o + 1) + ":" + (f + t)
@@ -13526,8 +13496,8 @@ if (
             return ("string" == typeof t && te(u[0], t)) || te(e[0], t)
                 ? a
                 : u[0] === t || e[0] === t
-                    ? a
-                    : We(u, t, n, r, i) + a;
+                ? a
+                : We(u, t, n, r, i) + a;
         }
         function Ge(e, t, n, r) {
             He(e);
@@ -13636,10 +13606,10 @@ if (
                 "undefined" != typeof window
                     ? window
                     : "undefined" != typeof global
-                        ? global
-                        : "undefined" != typeof self
-                            ? self
-                            : {},
+                    ? global
+                    : "undefined" != typeof self
+                    ? self
+                    : {},
             rt = (function(e, t) {
                 return (t = { exports: {} }), e(t, t.exports), t.exports;
             })(function(e) {
@@ -13666,8 +13636,8 @@ if (
                         return null == e
                             ? e + ""
                             : "object" == typeof e || "function" == typeof e
-                                ? fe[pe.call(e)] || "object"
-                                : typeof e;
+                            ? fe[pe.call(e)] || "object"
+                            : typeof e;
                     }
                     function i(e) {
                         var t = !!e && "length" in e && e.length,
@@ -13692,14 +13662,14 @@ if (
                                   return !!t.call(e, r, e) !== n;
                               })
                             : t.nodeType
-                                ? we.grep(e, function(e) {
-                                      return (e === t) !== n;
-                                  })
-                                : "string" != typeof t
-                                    ? we.grep(e, function(e) {
-                                          return de.call(t, e) > -1 !== n;
-                                      })
-                                    : we.filter(t, e, n);
+                            ? we.grep(e, function(e) {
+                                  return (e === t) !== n;
+                              })
+                            : "string" != typeof t
+                            ? we.grep(e, function(e) {
+                                  return de.call(t, e) > -1 !== n;
+                              })
+                            : we.filter(t, e, n);
                     }
                     function s(e, t) {
                         for (; (e = e[t]) && 1 !== e.nodeType; );
@@ -13729,8 +13699,8 @@ if (
                                       .done(t)
                                       .fail(n)
                                 : e && be((i = e.then))
-                                    ? i.call(e, t, n)
-                                    : t.apply(void 0, [e].slice(r));
+                                ? i.call(e, t, n)
+                                : t.apply(void 0, [e].slice(r));
                         } catch (e) {
                             n.apply(void 0, [e]);
                         }
@@ -13756,10 +13726,10 @@ if (
                                 ("null" === e
                                     ? null
                                     : e === +e + ""
-                                        ? +e
-                                        : Be.test(e)
-                                            ? JSON.parse(e)
-                                            : e))
+                                    ? +e
+                                    : Be.test(e)
+                                    ? JSON.parse(e)
+                                    : e))
                         );
                     }
                     function v(e, t, n) {
@@ -13853,8 +13823,8 @@ if (
                                 void 0 !== e.getElementsByTagName
                                     ? e.getElementsByTagName(t || "*")
                                     : void 0 !== e.querySelectorAll
-                                        ? e.querySelectorAll(t || "*")
-                                        : []),
+                                    ? e.querySelectorAll(t || "*")
+                                    : []),
                             void 0 === t || (t && o(e, t))
                                 ? we.merge([e], n)
                                 : n
@@ -14530,8 +14500,8 @@ if (
                         return Array.isArray(e)
                             ? e
                             : "string" == typeof e
-                                ? e.match(Ne) || []
-                                : [];
+                            ? e.match(Ne) || []
+                            : [];
                     }
                     function Z(e, t, n, i) {
                         var o;
@@ -14724,8 +14694,8 @@ if (
                             return null == e
                                 ? le.call(this)
                                 : e < 0
-                                    ? this[e + this.length]
-                                    : this[e];
+                                ? this[e + this.length]
+                                : this[e];
                         },
                         pushStack: function(e) {
                             var t = we.merge(this.constructor(), e);
@@ -15519,11 +15489,11 @@ if (
                                 return r !== r || n
                                     ? t
                                     : r < 0
-                                        ? String.fromCharCode(r + 65536)
-                                        : String.fromCharCode(
-                                              (r >> 10) | 55296,
-                                              (1023 & r) | 56320
-                                          );
+                                    ? String.fromCharCode(r + 65536)
+                                    : String.fromCharCode(
+                                          (r >> 10) | 55296,
+                                          (1023 & r) | 56320
+                                      );
                             },
                             ye = /([\0-\x1f\x7f]|^-?\d)|^-$|[^\0-\x1f\x7f-\uFFFF\w-]/g,
                             _e = function(e, t) {
@@ -15696,8 +15666,8 @@ if (
                                                     t.getElementsByTagName
                                                     ? t.getElementsByTagName(e)
                                                     : _.qsa
-                                                        ? t.querySelectorAll(e)
-                                                        : void 0;
+                                                    ? t.querySelectorAll(e)
+                                                    : void 0;
                                             }
                                           : function(e, t) {
                                                 var n,
@@ -15888,14 +15858,13 @@ if (
                                                               (t.ownerDocument ===
                                                                   U &&
                                                                   L(U, t))
-                                                                ? 1
-                                                                : I
-                                                                    ? Y(I, e) -
-                                                                      Y(I, t)
-                                                                    : 0
+                                                            ? 1
+                                                            : I
+                                                            ? Y(I, e) - Y(I, t)
+                                                            : 0
                                                         : 4 & n
-                                                            ? -1
-                                                            : 1)
+                                                        ? -1
+                                                        : 1)
                                                 );
                                             }
                                           : function(e, t) {
@@ -15910,21 +15879,14 @@ if (
                                                     return e === A
                                                         ? -1
                                                         : t === A
-                                                            ? 1
-                                                            : i
-                                                                ? -1
-                                                                : o
-                                                                    ? 1
-                                                                    : I
-                                                                        ? Y(
-                                                                              I,
-                                                                              e
-                                                                          ) -
-                                                                          Y(
-                                                                              I,
-                                                                              t
-                                                                          )
-                                                                        : 0;
+                                                        ? 1
+                                                        : i
+                                                        ? -1
+                                                        : o
+                                                        ? 1
+                                                        : I
+                                                        ? Y(I, e) - Y(I, t)
+                                                        : 0;
                                                 if (i === o) return a(e, t);
                                                 for (
                                                     n = e;
@@ -15942,10 +15904,10 @@ if (
                                                 return r
                                                     ? a(s[r], l[r])
                                                     : s[r] === U
-                                                        ? -1
-                                                        : l[r] === U
-                                                            ? 1
-                                                            : 0;
+                                                    ? -1
+                                                    : l[r] === U
+                                                    ? 1
+                                                    : 0;
                                             }),
                                       A)
                                     : A;
@@ -15992,11 +15954,10 @@ if (
                                 return void 0 !== r
                                     ? r
                                     : _.attributes || !R
-                                        ? e.getAttribute(t)
-                                        : (r = e.getAttributeNode(t)) &&
-                                          r.specified
-                                            ? r.value
-                                            : null;
+                                    ? e.getAttribute(t)
+                                    : (r = e.getAttributeNode(t)) && r.specified
+                                    ? r.value
+                                    : null;
                             }),
                             (t.escape = function(e) {
                                 return (e + "").replace(ye, _e);
@@ -16162,49 +16123,34 @@ if (
                                                       "=" === n
                                                           ? o === r
                                                           : "!=" === n
-                                                              ? o !== r
-                                                              : "^=" === n
-                                                                  ? r &&
-                                                                    0 ===
-                                                                        o.indexOf(
-                                                                            r
-                                                                        )
-                                                                  : "*=" === n
-                                                                      ? r &&
-                                                                        o.indexOf(
-                                                                            r
-                                                                        ) > -1
-                                                                      : "$=" ===
-                                                                        n
-                                                                          ? r &&
-                                                                            o.slice(
-                                                                                -r.length
-                                                                            ) ===
-                                                                                r
-                                                                          : "~=" ===
-                                                                            n
-                                                                              ? (
-                                                                                    " " +
-                                                                                    o.replace(
-                                                                                        ie,
-                                                                                        " "
-                                                                                    ) +
-                                                                                    " "
-                                                                                ).indexOf(
-                                                                                    r
-                                                                                ) >
-                                                                                -1
-                                                                              : "|=" ===
-                                                                                    n &&
-                                                                                (o ===
-                                                                                    r ||
-                                                                                    o.slice(
-                                                                                        0,
-                                                                                        r.length +
-                                                                                            1
-                                                                                    ) ===
-                                                                                        r +
-                                                                                            "-"));
+                                                          ? o !== r
+                                                          : "^=" === n
+                                                          ? r &&
+                                                            0 === o.indexOf(r)
+                                                          : "*=" === n
+                                                          ? r &&
+                                                            o.indexOf(r) > -1
+                                                          : "$=" === n
+                                                          ? r &&
+                                                            o.slice(
+                                                                -r.length
+                                                            ) === r
+                                                          : "~=" === n
+                                                          ? (
+                                                                " " +
+                                                                o.replace(
+                                                                    ie,
+                                                                    " "
+                                                                ) +
+                                                                " "
+                                                            ).indexOf(r) > -1
+                                                          : "|=" === n &&
+                                                            (o === r ||
+                                                                o.slice(
+                                                                    0,
+                                                                    r.length + 1
+                                                                ) ===
+                                                                    r + "-"));
                                         };
                                     },
                                     CHILD: function(e, t, n, r, i) {
@@ -16390,32 +16336,26 @@ if (
                                         return o[F]
                                             ? o(n)
                                             : o.length > 1
-                                                ? ((i = [e, e, "", n]),
-                                                  w.setFilters.hasOwnProperty(
-                                                      e.toLowerCase()
-                                                  )
-                                                      ? r(function(e, t) {
-                                                            for (
-                                                                var r,
-                                                                    i = o(e, n),
-                                                                    a =
-                                                                        i.length;
-                                                                a--;
+                                            ? ((i = [e, e, "", n]),
+                                              w.setFilters.hasOwnProperty(
+                                                  e.toLowerCase()
+                                              )
+                                                  ? r(function(e, t) {
+                                                        for (
+                                                            var r,
+                                                                i = o(e, n),
+                                                                a = i.length;
+                                                            a--;
 
-                                                            )
-                                                                (r = Y(
-                                                                    e,
-                                                                    i[a]
-                                                                )),
-                                                                    (e[r] = !(t[
-                                                                        r
-                                                                    ] =
-                                                                        i[a]));
-                                                        })
-                                                      : function(e) {
-                                                            return o(e, 0, i);
-                                                        })
-                                                : o;
+                                                        )
+                                                            (r = Y(e, i[a])),
+                                                                (e[r] = !(t[r] =
+                                                                    i[a]));
+                                                    })
+                                                  : function(e) {
+                                                        return o(e, 0, i);
+                                                    })
+                                            : o;
                                     }
                                 },
                                 pseudos: {
@@ -16673,8 +16613,8 @@ if (
                                 return n
                                     ? s.length
                                     : s
-                                        ? t.error(e)
-                                        : $(e, l).slice(0);
+                                    ? t.error(e)
+                                    : $(e, l).slice(0);
                             }),
                             (S = t.compile = function(e, t) {
                                 var n,
@@ -16809,8 +16749,8 @@ if (
                                             ? t.toLowerCase()
                                             : (r = e.getAttributeNode(t)) &&
                                               r.specified
-                                                ? r.value
-                                                : null;
+                                            ? r.value
+                                            : null;
                                 }),
                             t
                         );
@@ -16940,12 +16880,11 @@ if (
                         return e.nodeType
                             ? ((this[0] = e), (this.length = 1), this)
                             : be(e)
-                                ? void 0 !== n.ready
-                                    ? n.ready(e)
-                                    : e(we)
-                                : we.makeArray(e, this);
-                    }).prototype =
-                        we.fn),
+                            ? void 0 !== n.ready
+                                ? n.ready(e)
+                                : e(we)
+                            : we.makeArray(e, this);
+                    }).prototype = we.fn),
                         (Ie = we(ae));
                     var Oe = /^(?:parents|prev(?:Until|All))/,
                         Ae = { children: !0, contents: !0, next: !0, prev: !0 };
@@ -16991,8 +16930,8 @@ if (
                                     ? de.call(we(e), this[0])
                                     : de.call(this, e.jquery ? e[0] : e)
                                 : this[0] && this[0].parentNode
-                                    ? this.first().prevAll().length
-                                    : -1;
+                                ? this.first().prevAll().length
+                                : -1;
                         },
                         add: function(e, t) {
                             return this.pushStack(
@@ -17748,15 +17687,14 @@ if (
                                     arguments.length < n
                                         ? we.queue(this[0], e)
                                         : void 0 === t
-                                            ? this
-                                            : this.each(function() {
-                                                  var n = we.queue(this, e, t);
-                                                  we._queueHooks(this, e),
-                                                      "fx" === e &&
-                                                          "inprogress" !==
-                                                              n[0] &&
-                                                          we.dequeue(this, e);
-                                              })
+                                        ? this
+                                        : this.each(function() {
+                                              var n = we.queue(this, e, t);
+                                              we._queueHooks(this, e),
+                                                  "fx" === e &&
+                                                      "inprogress" !== n[0] &&
+                                                      we.dequeue(this, e);
+                                          })
                                 );
                             },
                             dequeue: function(e) {
@@ -18321,14 +18259,14 @@ if (
                                         : !e.which &&
                                           void 0 !== t &&
                                           nt.test(e.type)
-                                            ? 1 & t
-                                                ? 1
-                                                : 2 & t
-                                                    ? 3
-                                                    : 4 & t
-                                                        ? 2
-                                                        : 0
-                                            : e.which;
+                                        ? 1 & t
+                                            ? 1
+                                            : 2 & t
+                                            ? 3
+                                            : 4 & t
+                                            ? 2
+                                            : 0
+                                        : e.which;
                                 }
                             },
                             we.event.addProp
@@ -18978,12 +18916,12 @@ if (
                                                   we.cssProps[e.prop]
                                               ] &&
                                               !we.cssHooks[e.prop])
-                                            ? (e.elem[e.prop] = e.now)
-                                            : we.style(
-                                                  e.elem,
-                                                  e.prop,
-                                                  e.now + e.unit
-                                              );
+                                        ? (e.elem[e.prop] = e.now)
+                                        : we.style(
+                                              e.elem,
+                                              e.prop,
+                                              e.now + e.unit
+                                          );
                                 }
                             }
                         }),
@@ -19259,18 +19197,15 @@ if (
                                                     "set" in i &&
                                                     void 0 !==
                                                         (r = i.set(e, n, t))
-                                                      ? r
-                                                      : (e.setAttribute(
-                                                            t,
-                                                            n + ""
-                                                        ),
-                                                        n)
+                                                  ? r
+                                                  : (e.setAttribute(t, n + ""),
+                                                    n)
                                               : i &&
                                                 "get" in i &&
                                                 null !== (r = i.get(e, t))
-                                                  ? r
-                                                  : ((r = we.find.attr(e, t)),
-                                                    null == r ? void 0 : r));
+                                              ? r
+                                              : ((r = we.find.attr(e, t)),
+                                                null == r ? void 0 : r));
                             },
                             attrHooks: {
                                 type: {
@@ -19364,8 +19299,8 @@ if (
                                             : i &&
                                               "get" in i &&
                                               null !== (r = i.get(e, t))
-                                                ? r
-                                                : e[t]
+                                            ? r
+                                            : e[t]
                                     );
                             },
                             propHooks: {
@@ -19376,8 +19311,8 @@ if (
                                             ? parseInt(t, 10)
                                             : Et.test(e.nodeName) ||
                                               (Tt.test(e.nodeName) && e.href)
-                                                ? 0
-                                                : -1;
+                                            ? 0
+                                            : -1;
                                     }
                                 }
                             },
@@ -19502,46 +19437,44 @@ if (
                                         ? this.addClass(e)
                                         : this.removeClass(e)
                                     : be(e)
-                                        ? this.each(function(n) {
-                                              we(this).toggleClass(
-                                                  e.call(this, n, Q(this), t),
-                                                  t
-                                              );
-                                          })
-                                        : this.each(function() {
-                                              var t, i, o, a;
-                                              if (r)
-                                                  for (
-                                                      i = 0,
-                                                          o = we(this),
-                                                          a = Y(e);
-                                                      (t = a[i++]);
+                                    ? this.each(function(n) {
+                                          we(this).toggleClass(
+                                              e.call(this, n, Q(this), t),
+                                              t
+                                          );
+                                      })
+                                    : this.each(function() {
+                                          var t, i, o, a;
+                                          if (r)
+                                              for (
+                                                  i = 0, o = we(this), a = Y(e);
+                                                  (t = a[i++]);
 
-                                                  )
-                                                      o.hasClass(t)
-                                                          ? o.removeClass(t)
-                                                          : o.addClass(t);
-                                              else
-                                                  (void 0 !== e &&
-                                                      "boolean" !== n) ||
-                                                      ((t = Q(this)),
-                                                      t &&
-                                                          Ue.set(
-                                                              this,
-                                                              "__className__",
-                                                              t
-                                                          ),
-                                                      this.setAttribute &&
-                                                          this.setAttribute(
-                                                              "class",
-                                                              t || !1 === e
-                                                                  ? ""
-                                                                  : Ue.get(
-                                                                        this,
-                                                                        "__className__"
-                                                                    ) || ""
-                                                          ));
-                                          });
+                                              )
+                                                  o.hasClass(t)
+                                                      ? o.removeClass(t)
+                                                      : o.addClass(t);
+                                          else
+                                              (void 0 !== e &&
+                                                  "boolean" !== n) ||
+                                                  ((t = Q(this)),
+                                                  t &&
+                                                      Ue.set(
+                                                          this,
+                                                          "__className__",
+                                                          t
+                                                      ),
+                                                  this.setAttribute &&
+                                                      this.setAttribute(
+                                                          "class",
+                                                          t || !1 === e
+                                                              ? ""
+                                                              : Ue.get(
+                                                                    this,
+                                                                    "__className__"
+                                                                ) || ""
+                                                      ));
+                                      });
                             },
                             hasClass: function(e) {
                                 var t,
@@ -19580,17 +19513,15 @@ if (
                                                 null == i
                                                     ? (i = "")
                                                     : "number" == typeof i
-                                                        ? (i += "")
-                                                        : Array.isArray(i) &&
-                                                          (i = we.map(
-                                                              i,
-                                                              function(e) {
-                                                                  return null ==
-                                                                      e
-                                                                      ? ""
-                                                                      : e + "";
-                                                              }
-                                                          )),
+                                                    ? (i += "")
+                                                    : Array.isArray(i) &&
+                                                      (i = we.map(i, function(
+                                                          e
+                                                      ) {
+                                                          return null == e
+                                                              ? ""
+                                                              : e + "";
+                                                      })),
                                                 ((t =
                                                     we.valHooks[this.type] ||
                                                     we.valHooks[
@@ -19619,8 +19550,8 @@ if (
                                           "string" == typeof n
                                               ? n.replace(St, "")
                                               : null == n
-                                                  ? ""
-                                                  : n);
+                                              ? ""
+                                              : n);
                             }
                         }
                     }),
@@ -19934,22 +19865,19 @@ if (
                                         return null == n
                                             ? null
                                             : Array.isArray(n)
-                                                ? we.map(n, function(e) {
-                                                      return {
-                                                          name: t.name,
-                                                          value: e.replace(
-                                                              Nt,
-                                                              "\r\n"
-                                                          )
-                                                      };
-                                                  })
-                                                : {
+                                            ? we.map(n, function(e) {
+                                                  return {
                                                       name: t.name,
-                                                      value: n.replace(
+                                                      value: e.replace(
                                                           Nt,
                                                           "\r\n"
                                                       )
                                                   };
+                                              })
+                                            : {
+                                                  name: t.name,
+                                                  value: n.replace(Nt, "\r\n")
+                                              };
                                     })
                                     .get();
                             }
@@ -20041,11 +19969,11 @@ if (
                                               204 === t || "HEAD" === h.type
                                                   ? (x = "nocontent")
                                                   : 304 === t
-                                                      ? (x = "notmodified")
-                                                      : ((x = _.state),
-                                                        (f = _.data),
-                                                        (p = _.error),
-                                                        (u = !p)))
+                                                  ? (x = "notmodified")
+                                                  : ((x = _.state),
+                                                    (f = _.data),
+                                                    (p = _.error),
+                                                    (u = !p)))
                                             : ((p = x),
                                               (!t && x) ||
                                                   ((x = "error"),
@@ -20235,11 +20163,11 @@ if (
                                     E.setRequestHeader(
                                         "Accept",
                                         h.dataTypes[0] &&
-                                        h.accepts[h.dataTypes[0]]
+                                            h.accepts[h.dataTypes[0]]
                                             ? h.accepts[h.dataTypes[0]] +
-                                              ("*" !== h.dataTypes[0]
-                                                  ? ", " + Ht + "; q=0.01"
-                                                  : "")
+                                                  ("*" !== h.dataTypes[0]
+                                                      ? ", " + Ht + "; q=0.01"
+                                                      : "")
                                             : h.accepts["*"]
                                     );
                                 for (f in h.headers)
@@ -20423,33 +20351,32 @@ if (
                                                     "abort" === e
                                                         ? s.abort()
                                                         : "error" === e
-                                                            ? "number" !=
-                                                              typeof s.status
-                                                                ? o(0, "error")
-                                                                : o(
-                                                                      s.status,
-                                                                      s.statusText
-                                                                  )
+                                                        ? "number" !=
+                                                          typeof s.status
+                                                            ? o(0, "error")
                                                             : o(
-                                                                  Wt[
-                                                                      s.status
-                                                                  ] || s.status,
-                                                                  s.statusText,
-                                                                  "text" !==
-                                                                      (s.responseType ||
-                                                                          "text") ||
+                                                                  s.status,
+                                                                  s.statusText
+                                                              )
+                                                        : o(
+                                                              Wt[s.status] ||
+                                                                  s.status,
+                                                              s.statusText,
+                                                              "text" !==
+                                                                  (s.responseType ||
+                                                                      "text") ||
                                                                   "string" !=
                                                                       typeof s.responseText
-                                                                      ? {
-                                                                            binary:
-                                                                                s.response
-                                                                        }
-                                                                      : {
-                                                                            text:
-                                                                                s.responseText
-                                                                        },
-                                                                  s.getAllResponseHeaders()
-                                                              ));
+                                                                  ? {
+                                                                        binary:
+                                                                            s.response
+                                                                    }
+                                                                  : {
+                                                                        text:
+                                                                            s.responseText
+                                                                    },
+                                                              s.getAllResponseHeaders()
+                                                          ));
                                             };
                                         }),
                                             (s.onload = n()),
@@ -20517,7 +20444,7 @@ if (
                                                         e &&
                                                             i(
                                                                 "error" ===
-                                                                e.type
+                                                                    e.type
                                                                     ? 404
                                                                     : 200,
                                                                 e.type
@@ -20898,27 +20825,17 @@ if (
                                                               "client" + e
                                                           ]
                                                     : 9 === t.nodeType
-                                                        ? ((o =
-                                                              t.documentElement),
-                                                          Math.max(
-                                                              t.body[
-                                                                  "scroll" + e
-                                                              ],
-                                                              o["scroll" + e],
-                                                              t.body[
-                                                                  "offset" + e
-                                                              ],
-                                                              o["offset" + e],
-                                                              o["client" + e]
-                                                          ))
-                                                        : void 0 === i
-                                                            ? we.css(t, n, s)
-                                                            : we.style(
-                                                                  t,
-                                                                  n,
-                                                                  i,
-                                                                  s
-                                                              );
+                                                    ? ((o = t.documentElement),
+                                                      Math.max(
+                                                          t.body["scroll" + e],
+                                                          o["scroll" + e],
+                                                          t.body["offset" + e],
+                                                          o["offset" + e],
+                                                          o["client" + e]
+                                                      ))
+                                                    : void 0 === i
+                                                    ? we.css(t, n, s)
+                                                    : we.style(t, n, i, s);
                                             },
                                             t,
                                             a ? i : void 0,
@@ -21485,8 +21402,8 @@ if (
                 return e instanceof p
                     ? e
                     : this instanceof p
-                        ? void (this._wrapped = e)
-                        : new p(e);
+                    ? void (this._wrapped = e)
+                    : new p(e);
             };
         "undefined" == typeof exports || exports.nodeType
             ? (e._ = p)
@@ -21521,12 +21438,12 @@ if (
                 return p.iteratee !== h
                     ? p.iteratee(e, t)
                     : null == e
-                        ? p.identity
-                        : p.isFunction(e)
-                            ? m(e, t, n)
-                            : p.isObject(e) && !p.isArray(e)
-                                ? p.matcher(e)
-                                : p.property(e);
+                    ? p.identity
+                    : p.isFunction(e)
+                    ? m(e, t, n)
+                    : p.isObject(e) && !p.isArray(e)
+                    ? p.matcher(e)
+                    : p.property(e);
             };
         p.iteratee = h = function(e, t) {
             return g(e, t, 1 / 0);
@@ -21829,10 +21746,10 @@ if (
                 ? p.isArray(e)
                     ? a.call(e)
                     : p.isString(e)
-                        ? e.match(k)
-                        : T(e)
-                            ? p.map(e, p.identity)
-                            : p.values(e)
+                    ? e.match(k)
+                    : T(e)
+                    ? p.map(e, p.identity)
+                    : p.values(e)
                 : [];
         }),
             (p.size = function(e) {
@@ -21847,8 +21764,8 @@ if (
                         ? void 0
                         : []
                     : null == t || n
-                        ? e[0]
-                        : p.initial(e, e.length - t);
+                    ? e[0]
+                    : p.initial(e, e.length - t);
             }),
             (p.initial = function(e, t, n) {
                 return a.call(
@@ -21863,8 +21780,8 @@ if (
                         ? void 0
                         : []
                     : null == t || n
-                        ? e[e.length - 1]
-                        : p.rest(e, Math.max(0, e.length - t));
+                    ? e[e.length - 1]
+                    : p.rest(e, Math.max(0, e.length - t));
             }),
             (p.rest = p.tail = p.drop = function(e, t, n) {
                 return a.call(e, null == t || n ? 1 : t);
@@ -21899,8 +21816,8 @@ if (
                     t && !n
                         ? ((a && o === u) || i.push(l), (o = u))
                         : n
-                            ? p.contains(o, u) || (o.push(u), i.push(l))
-                            : p.contains(i, l) || i.push(l);
+                        ? p.contains(o, u) || (o.push(u), i.push(l))
+                        : p.contains(i, l) || i.push(l);
                 }
                 return i;
             }),
@@ -22325,8 +22242,8 @@ if (
                         return +e != +e
                             ? +t != +t
                             : 0 == +e
-                                ? 1 / +e == 1 / t
-                                : +e == +t;
+                            ? 1 / +e == 1 / t
+                            : +e == +t;
                     case "[object Date]":
                     case "[object Boolean]":
                         return +e == +t;
@@ -22577,8 +22494,8 @@ if (
                               n +
                               "))==null?'':_.escape(__t))+\n'")
                         : r
-                            ? (o += "'+\n((__t=(" + r + "))==null?'':__t)+\n'")
-                            : a && (o += "';\n" + a + "\n__p+='"),
+                        ? (o += "'+\n((__t=(" + r + "))==null?'':__t)+\n'")
+                        : a && (o += "';\n" + a + "\n__p+='"),
                     t
                 );
             }),
@@ -22947,18 +22864,18 @@ if (
                 n == e.POSITION_LEFT
                     ? (s.leftItem = t)
                     : n == e.POSITION_RIGHT
-                        ? (s.rightItem = t)
-                        : (n != e.POSITION_CENTER &&
-                              console.error("Unrecognized position value"),
-                          (s.centerItem = t));
+                    ? (s.rightItem = t)
+                    : (n != e.POSITION_CENTER &&
+                          console.error("Unrecognized position value"),
+                      (s.centerItem = t));
             }
             function o(t) {
                 return l
                     ? t.isLeftPage()
                         ? e.POSITION_LEFT
                         : t.isRightPage()
-                            ? e.POSITION_RIGHT
-                            : e.POSITION_CENTER
+                        ? e.POSITION_RIGHT
+                        : e.POSITION_CENTER
                     : e.POSITION_CENTER;
             }
             function a(e) {
@@ -22967,10 +22884,10 @@ if (
                         ? s.spine.prevItem(e)
                         : s.spine.nextItem(e)
                     : e.isRightPage()
-                        ? s.spine.isRightToLeft()
-                            ? s.spine.nextItem(e)
-                            : s.spine.prevItem(e)
-                        : void 0;
+                    ? s.spine.isRightToLeft()
+                        ? s.spine.nextItem(e)
+                        : s.spine.prevItem(e)
+                    : void 0;
             }
             var s = this;
             (this.spine = t),
@@ -23053,18 +22970,18 @@ if (
         "function" == typeof define && define.amd
             ? define("jquerySizes", ["jquery"], e)
             : "object" == typeof module && module.exports
-                ? (module.exports = function(t, n) {
-                      return (
-                          void 0 === n &&
-                              (n =
-                                  "undefined" != typeof window
-                                      ? require("jquery")
-                                      : require("jquery")(t)),
-                          e(n),
-                          n
-                      );
-                  })
-                : e(jQuery);
+            ? (module.exports = function(t, n) {
+                  return (
+                      void 0 === n &&
+                          (n =
+                              "undefined" != typeof window
+                                  ? require("jquery")
+                                  : require("jquery")(t)),
+                      e(n),
+                      n
+                  );
+              })
+            : e(jQuery);
     })(function(e) {
         "use strict";
         var t = function(e) {
@@ -23289,8 +23206,8 @@ if (
                 return t === e.SPREAD_LEFT
                     ? e.SPREAD_RIGHT
                     : t === e.SPREAD_RIGHT
-                        ? e.SPREAD_LEFT
-                        : t;
+                    ? e.SPREAD_LEFT
+                    : t;
             }),
             e
         );
@@ -23331,8 +23248,8 @@ if (
                     ? e instanceof File
                         ? e.name
                         : e instanceof Blob
-                            ? "readium-ebook.epub"
-                            : e
+                        ? "readium-ebook.epub"
+                        : e
                     : e;
             }),
             (a.getURLQueryParams = function(e) {
@@ -24012,8 +23929,8 @@ if (
                 return i.visibleContentOffsetsGetter
                     ? i.visibleContentOffsetsGetter()
                     : m() && i.paginationOffsetsGetter
-                        ? i.paginationOffsetsGetter()
-                        : { top: 0, left: 0 };
+                    ? i.paginationOffsetsGetter()
+                    : { top: 0, left: 0 };
             }
             function y() {
                 return i.paginationOffsetsGetter
@@ -24023,6 +23940,15 @@ if (
             function _(e, t, n, r) {
                 (n = n || b()), (r = r || d());
                 var i = S(e, n);
+                for (
+                    looper = e;
+                    looper.length &&
+                    0 === i.length &&
+                    ((looper = looper.parent()),
+                    "BODY" !== looper.prop("tagName"));
+
+                )
+                    i = S(looper, n);
                 if (0 === i.length) return null;
                 var o = 0;
                 if (1 === i.length) {
@@ -24035,19 +23961,14 @@ if (
                                           (100 * (a.height + a.top)) / a.height
                                       )
                                     : t && a.bottom > r.height
-                                        ? Math.floor(
-                                              (100 * (r.height - a.top)) /
-                                                  a.height
-                                          )
-                                        : t && a.left < 0 && a.right > 0
-                                            ? Math.floor(
-                                                  (100 * a.right) / a.width
-                                              )
-                                            : t && a.left < 0 && a.right > 0
-                                                ? Math.floor(
-                                                      (100 * a.right) / a.width
-                                                  )
-                                                : 100);
+                                    ? Math.floor(
+                                          (100 * (r.height - a.top)) / a.height
+                                      )
+                                    : t && a.left < 0 && a.right > 0
+                                    ? Math.floor((100 * a.right) / a.width)
+                                    : t && a.left < 0 && a.right > 0
+                                    ? Math.floor((100 * a.right) / a.width)
+                                    : 100);
                 } else
                     for (var s = 0, l = i.length; s < l; ++s)
                         if (g(i[s], !1, r)) {
@@ -24269,16 +24190,16 @@ if (
                           ["MathJax_Message", "MathJax_SVG_Hidden"]
                       )
                     : e.collapsed
-                        ? ie.getCfiForElement(e.startContainer)
-                        : r.generateRangeComponent(
-                              e.startContainer,
-                              e.startOffset,
-                              e.endContainer,
-                              e.endOffset,
-                              ie.getClassBlacklist(),
-                              ie.getElementBlacklist(),
-                              ie.getIdBlacklist()
-                          );
+                    ? ie.getCfiForElement(e.startContainer)
+                    : r.generateRangeComponent(
+                          e.startContainer,
+                          e.startOffset,
+                          e.endContainer,
+                          e.endOffset,
+                          ie.getClassBlacklist(),
+                          ie.getElementBlacklist(),
+                          ie.getIdBlacklist()
+                      );
             }
             function V(e) {
                 return "epubcfi(/99!" + e + ")";
@@ -24489,9 +24410,8 @@ if (
                         1 === m.length && 1 === h.startOffset
                             ? ((d = 0), (p = 1))
                             : h.startOffset === m.length
-                                ? ((d = h.startOffset - 1), (p = h.startOffset))
-                                : ((d = h.startOffset),
-                                  (p = h.startOffset + 1));
+                            ? ((d = h.startOffset - 1), (p = h.startOffset))
+                            : ((d = h.startOffset), (p = h.startOffset + 1));
                         var v = {
                             startContainer: m,
                             endContainer: m,
@@ -24702,10 +24622,10 @@ if (
                             : (i = X(l)
                                   ? l
                                   : X(n.previousElementSibling)
-                                      ? n.previousElementSibling
-                                      : X(n.nextElementSibling)
-                                          ? n.nextElementSibling
-                                          : n.parentNode),
+                                  ? n.previousElementSibling
+                                  : X(n.nextElementSibling)
+                                  ? n.nextElementSibling
+                                  : n.parentNode),
                         o)
                     ) {
                         var u = i.ownerDocument.createRange();
@@ -24840,6 +24760,7 @@ if (
                     return r([t[0]]), i;
                 }),
                 (this.getLeafNodeElements = function(t) {
+                    if (0 === t.length) return [];
                     if (se) {
                         var n = ae.leafNodeElements.get(t);
                         if (n) return n;
@@ -24930,8 +24851,8 @@ if (
                                         : (r.nodeType !== Node.TEXT_NODE ||
                                               K(r)) &&
                                           _(e(r), !0, t, n)
-                                            ? NodeFilter.FILTER_ACCEPT
-                                            : NodeFilter.FILTER_REJECT;
+                                        ? NodeFilter.FILTER_ACCEPT
+                                        : NodeFilter.FILTER_REJECT;
                                 },
                                 !1
                             );
@@ -24992,8 +24913,8 @@ if (
                                         : (r.nodeType !== Node.TEXT_NODE ||
                                               K(r)) &&
                                           _(e(r), !0, t, n)
-                                            ? NodeFilter.FILTER_ACCEPT
-                                            : NodeFilter.FILTER_REJECT;
+                                        ? NodeFilter.FILTER_ACCEPT
+                                        : NodeFilter.FILTER_REJECT;
                                 },
                                 !1
                             );
@@ -25104,8 +25025,8 @@ if (
         "function" == typeof define && define.amd
             ? define("ResizeSensor", t)
             : "object" == typeof exports
-                ? (module.exports = t())
-                : (e.ResizeSensor = t());
+            ? (module.exports = t())
+            : (e.ResizeSensor = t());
     })("undefined" != typeof window ? window : this, function() {
         function e(e, t) {
             var n = Object.prototype.toString.call(e),
@@ -26214,11 +26135,11 @@ if (
                         "fit-width" == A.style
                             ? (p = d)
                             : "fit-height" == A.style
-                                ? (p = f)
-                                : "user" == A.style
-                                    ? (p = A.scale)
-                                    : ((p = Math.min(d, f)),
-                                      I.css("overflow", "hidden")),
+                            ? (p = f)
+                            : "user" == A.style
+                            ? (p = A.scale)
+                            : ((p = Math.min(d, f)),
+                              I.css("overflow", "hidden")),
                             (C = p);
                         var h = { width: F.width * p, height: F.height * p },
                             m = {
@@ -26325,25 +26246,25 @@ if (
                           (F.height = j.meta_height()),
                           (F.separatorPosition = 0))
                         : R.isDisplaying() && D.isDisplaying()
-                            ? R.meta_height() == D.meta_height()
-                                ? ((F.width = R.meta_width() + D.meta_width()),
-                                  (F.height = R.meta_height()),
-                                  (F.separatorPosition = R.meta_width()))
-                                : ((F.width =
-                                      R.meta_width() +
-                                      D.meta_width() *
-                                          (R.meta_height() / D.meta_height())),
-                                  (F.height = R.meta_height()),
-                                  (F.separatorPosition = R.meta_width()))
-                            : R.isDisplaying()
-                                ? ((F.width = 2 * R.meta_width()),
-                                  (F.height = R.meta_height()),
-                                  (F.separatorPosition = R.meta_width()))
-                                : D.isDisplaying()
-                                    ? ((F.width = 2 * D.meta_width()),
-                                      (F.height = D.meta_height()),
-                                      (F.separatorPosition = D.meta_width()))
-                                    : (F = void 0);
+                        ? R.meta_height() == D.meta_height()
+                            ? ((F.width = R.meta_width() + D.meta_width()),
+                              (F.height = R.meta_height()),
+                              (F.separatorPosition = R.meta_width()))
+                            : ((F.width =
+                                  R.meta_width() +
+                                  D.meta_width() *
+                                      (R.meta_height() / D.meta_height())),
+                              (F.height = R.meta_height()),
+                              (F.separatorPosition = R.meta_width()))
+                        : R.isDisplaying()
+                        ? ((F.width = 2 * R.meta_width()),
+                          (F.height = R.meta_height()),
+                          (F.separatorPosition = R.meta_width()))
+                        : D.isDisplaying()
+                        ? ((F.width = 2 * D.meta_width()),
+                          (F.height = D.meta_height()),
+                          (F.separatorPosition = D.meta_width()))
+                        : (F = void 0);
             }
             function w() {
                 L = u.Margins.fromElement(S);
@@ -26487,10 +26408,10 @@ if (
                                 0 === t
                                     ? 0
                                     : U.spine.isRightToLeft()
-                                        ? 1 === t
-                                            ? 2
-                                            : 1
-                                        : t,
+                                    ? 1 === t
+                                        ? 2
+                                        : 1
+                                    : t,
                                 a
                             ),
                             p(e.initiator, e);
@@ -26525,8 +26446,8 @@ if (
                     return e.length > 0
                         ? e[0].getFirstVisibleCfi()
                         : t.length > 0
-                            ? new i(this.getLoadedSpineItems()[0].idref, null)
-                            : void 0;
+                        ? new i(this.getLoadedSpineItems()[0].idref, null)
+                        : void 0;
                 }),
                 (this.getLoadedSpineItems = function() {
                     return U.validItems();
@@ -27418,9 +27339,12 @@ if (
                             console.debug(
                                 "onSeeked() FAIL => retry again (timeout)"
                             ),
-                        setTimeout(function() {
-                            h(t);
-                        }, g ? 1e3 : 200),
+                        setTimeout(
+                            function() {
+                                h(t);
+                            },
+                            g ? 1e3 : 200
+                        ),
                         setTimeout(function() {
                             b.pause();
                             try {
@@ -27887,10 +27811,10 @@ if (
                 i.top - r.bottom > se
                     ? (T(n), t("updateLoadedViewsBottom 1"), h(e, t))
                     : i.bottom - r.bottom < se
-                        ? x(n, function(n) {
-                              t("updateLoadedViewsBottom 2"), n ? h(e, t) : e();
-                          })
-                        : e();
+                    ? x(n, function(n) {
+                          t("updateLoadedViewsBottom 2"), n ? h(e, t) : e();
+                      })
+                    : e();
             }
             function m(e) {
                 if (d) {
@@ -28176,8 +28100,8 @@ if (
                             t.spineItemPageIndex < 0
                                 ? 0
                                 : t.spineItemPageIndex >= n
-                                    ? n - 1
-                                    : t.spineItemPageIndex),
+                                ? n - 1
+                                : t.spineItemPageIndex),
                         (a = s * F());
                 } else if (e && t.elementId) {
                     if (
@@ -28867,8 +28791,8 @@ if (
                                 _ && _.smil && _.smil.spineItemId
                                     ? _.smil.spineItemId
                                     : D && D.spineItem && D.spineItem.idref
-                                        ? D.spineItem.idref
-                                        : void 0;
+                                    ? D.spineItem.idref
+                                    : void 0;
                         if (
                             s &&
                             l &&
@@ -29025,8 +28949,8 @@ if (
                     L
                         ? void (L = !1)
                         : _ && _.currentPar
-                            ? void h(_.currentPar.audio.clipEnd + 0.1, 5)
-                            : void A.reset()
+                        ? void h(_.currentPar.audio.clipEnd + 0.1, 5)
+                        : void A.reset()
                 );
             }
             function y() {
@@ -29377,25 +29301,20 @@ if (
                                           i.element.innerHTML_original[s])))
                                 : n.indexOf(i.element.innerHTML_original[s]) >
                                   -1
-                                    ? (r(o, i),
+                                ? (r(o, i),
+                                  (o.wordStart = o.html.length),
+                                  (o.wordEnd = o.html.length + 1),
+                                  (o.word += i.element.innerHTML_original[s]),
+                                  (o.html += i.element.innerHTML_original[s]),
+                                  r(o, i))
+                                : "<" == i.element.innerHTML_original[s]
+                                ? ((o.inTag = !0),
+                                  (o.html += i.element.innerHTML_original[s]))
+                                : (0 == o.word.length &&
                                       (o.wordStart = o.html.length),
-                                      (o.wordEnd = o.html.length + 1),
-                                      (o.word +=
-                                          i.element.innerHTML_original[s]),
-                                      (o.html +=
-                                          i.element.innerHTML_original[s]),
-                                      r(o, i))
-                                    : "<" == i.element.innerHTML_original[s]
-                                        ? ((o.inTag = !0),
-                                          (o.html +=
-                                              i.element.innerHTML_original[s]))
-                                        : (0 == o.word.length &&
-                                              (o.wordStart = o.html.length),
-                                          (o.wordEnd = o.html.length + 1),
-                                          (o.word +=
-                                              i.element.innerHTML_original[s]),
-                                          (o.html +=
-                                              i.element.innerHTML_original[s]));
+                                  (o.wordEnd = o.html.length + 1),
+                                  (o.word += i.element.innerHTML_original[s]),
+                                  (o.html += i.element.innerHTML_original[s]));
                         s++;
                     }
                     return (
@@ -29721,12 +29640,10 @@ if (
                         M
                             ? this.resetBlankPage()
                             : k
-                                ? ((k = !1),
-                                  I && I.pause(),
-                                  u({ isPlaying: !1 }))
-                                : x
-                                    ? $()
-                                    : w.pause(),
+                            ? ((k = !1), I && I.pause(), u({ isPlaying: !1 }))
+                            : x
+                            ? $()
+                            : w.pause(),
                         N.reset();
                 }),
                 (this.isMediaOverlayAvailable = function() {
@@ -29751,8 +29668,8 @@ if (
                     return A.isPlaying()
                         ? void A.pause()
                         : _
-                            ? void A.play()
-                            : void this.toggleMediaOverlayRefresh(void 0);
+                        ? void A.play()
+                        : void this.toggleMediaOverlayRefresh(void 0);
                 });
             var q = !1;
             (this.toggleMediaOverlayRefresh = function(e) {
@@ -30293,11 +30210,11 @@ if (
                                 "text" == d.nodeType
                                     ? (r.text = d)
                                     : "audio" == d.nodeType
-                                        ? (r.audio = d)
-                                        : console.error(
-                                              "Unexpected smil node type: " +
-                                                  d.nodeType
-                                          );
+                                    ? (r.audio = d)
+                                    : console.error(
+                                          "Unexpected smil node type: " +
+                                              d.nodeType
+                                      );
                             }
                             if (!r.audio) {
                                 var f = new t.AudioNode(r);
@@ -30867,9 +30784,9 @@ if (
                     e.firstPage
                         ? (t = 0)
                         : e.lastPage
-                            ? (t = se.columnCount - 1)
-                            : (console.debug("No criteria in pageRequest"),
-                              (t = 0));
+                        ? (t = se.columnCount - 1)
+                        : (console.debug("No criteria in pageRequest"),
+                          (t = 0));
                 return (
                     (t < 0 || t > se.columnCount) &&
                         (console.log(
@@ -31031,9 +30948,9 @@ if (
                         j
                             ? x()
                             : ee
-                                ? ((se.currentPageIndex = 0),
-                                  q.restoreCurrentPosition())
-                                : ue(q, D),
+                            ? ((se.currentPageIndex = 0),
+                              q.restoreCurrentPosition())
+                            : ue(q, D),
                         I();
                 }
             }
@@ -31672,14 +31589,14 @@ if (
                 return "scroll-doc" == $.scroll
                     ? x.VIEW_TYPE_SCROLLED_DOC
                     : "scroll-continuous" == $.scroll
-                        ? x.VIEW_TYPE_SCROLLED_CONTINUOUS
-                        : e.isFixedLayout()
-                            ? x.VIEW_TYPE_FIXED
-                            : e.isFlowScrolledDoc()
-                                ? x.VIEW_TYPE_SCROLLED_DOC
-                                : e.isFlowScrolledContinuous()
-                                    ? x.VIEW_TYPE_SCROLLED_CONTINUOUS
-                                    : x.VIEW_TYPE_COLUMNIZED;
+                    ? x.VIEW_TYPE_SCROLLED_CONTINUOUS
+                    : e.isFixedLayout()
+                    ? x.VIEW_TYPE_FIXED
+                    : e.isFlowScrolledDoc()
+                    ? x.VIEW_TYPE_SCROLLED_DOC
+                    : e.isFlowScrolledContinuous()
+                    ? x.VIEW_TYPE_SCROLLED_CONTINUOUS
+                    : x.VIEW_TYPE_COLUMNIZED;
             }
             function S(t, r) {
                 var i = T(t);
@@ -31890,14 +31807,12 @@ if (
                         return U instanceof p
                             ? x.VIEW_TYPE_COLUMNIZED
                             : U instanceof i
-                                ? x.VIEW_TYPE_FIXED
-                                : U instanceof h
-                                    ? U.isContinuousScroll()
-                                        ? x.VIEW_TYPE_SCROLLED_CONTINUOUS
-                                        : x.VIEW_TYPE_SCROLLED_DOC
-                                    : void console.error(
-                                          "Unrecognized view type"
-                                      );
+                            ? x.VIEW_TYPE_FIXED
+                            : U instanceof h
+                            ? U.isContinuousScroll()
+                                ? x.VIEW_TYPE_SCROLLED_CONTINUOUS
+                                : x.VIEW_TYPE_SCROLLED_DOC
+                            : void console.error("Unrecognized view type");
                 }),
                 (this.getCurrentView = function() {
                     return U;
@@ -31959,12 +31874,12 @@ if (
                                           F
                                       )
                                     : r.elementCfi
-                                        ? !F.openSpineItemElementCfi(
-                                              r.idref,
-                                              r.elementCfi,
-                                              F
-                                          )
-                                        : !F.openSpineItemPage(r.idref, 0, F)
+                                    ? !F.openSpineItemElementCfi(
+                                          r.idref,
+                                          r.elementCfi,
+                                          F
+                                      )
+                                    : !F.openSpineItemPage(r.idref, 0, F)
                                 : !F.openContentUrl(
                                       r.contentRefUrl,
                                       r.sourceFileHref,
@@ -32716,116 +32631,110 @@ if (
                       }
                   }))
                 : "xhr" === g.env || (!g.env && r.createXhr())
-                    ? (r.get = function(e, t, n, i) {
-                          var o,
-                              a = r.createXhr();
-                          if ((a.open("GET", e, !0), i))
-                              for (o in i)
-                                  i.hasOwnProperty(o) &&
-                                      a.setRequestHeader(o.toLowerCase(), i[o]);
-                          g.onXhr && g.onXhr(a, e),
-                              (a.onreadystatechange = function(r) {
-                                  var i, o;
-                                  4 === a.readyState &&
-                                      ((i = a.status || 0),
-                                      i > 399 && i < 600
-                                          ? ((o = new Error(
-                                                e + " HTTP status: " + i
-                                            )),
-                                            (o.xhr = a),
-                                            n && n(o))
-                                          : t(a.responseText),
-                                      g.onXhrComplete && g.onXhrComplete(a, e));
-                              }),
-                              a.send(null);
-                      })
-                    : "rhino" === g.env ||
-                      (!g.env &&
-                          "undefined" != typeof Packages &&
-                          "undefined" != typeof java)
-                        ? (r.get = function(e, t) {
-                              var n,
-                                  r,
-                                  i = new java.io.File(e),
-                                  o = java.lang.System.getProperty(
-                                      "line.separator"
-                                  ),
-                                  a = new java.io.BufferedReader(
-                                      new java.io.InputStreamReader(
-                                          new java.io.FileInputStream(i),
-                                          "utf-8"
-                                      )
-                                  ),
-                                  s = "";
-                              try {
-                                  for (
-                                      n = new java.lang.StringBuffer(),
-                                          r = a.readLine(),
-                                          r &&
-                                              r.length() &&
-                                              65279 === r.charAt(0) &&
-                                              (r = r.substring(1)),
-                                          null !== r && n.append(r);
-                                      null !== (r = a.readLine());
-
-                                  )
-                                      n.append(o), n.append(r);
-                                  s = String(n.toString());
-                              } finally {
-                                  a.close();
-                              }
-                              t(s);
-                          })
-                        : ("xpconnect" === g.env ||
-                              (!g.env &&
-                                  "undefined" != typeof Components &&
-                                  Components.classes &&
-                                  Components.interfaces)) &&
-                          ((o = Components.classes),
-                          (a = Components.interfaces),
-                          Components.utils.import(
-                              "resource://gre/modules/FileUtils.jsm"
+                ? (r.get = function(e, t, n, i) {
+                      var o,
+                          a = r.createXhr();
+                      if ((a.open("GET", e, !0), i))
+                          for (o in i)
+                              i.hasOwnProperty(o) &&
+                                  a.setRequestHeader(o.toLowerCase(), i[o]);
+                      g.onXhr && g.onXhr(a, e),
+                          (a.onreadystatechange = function(r) {
+                              var i, o;
+                              4 === a.readyState &&
+                                  ((i = a.status || 0),
+                                  i > 399 && i < 600
+                                      ? ((o = new Error(
+                                            e + " HTTP status: " + i
+                                        )),
+                                        (o.xhr = a),
+                                        n && n(o))
+                                      : t(a.responseText),
+                                  g.onXhrComplete && g.onXhrComplete(a, e));
+                          }),
+                          a.send(null);
+                  })
+                : "rhino" === g.env ||
+                  (!g.env &&
+                      "undefined" != typeof Packages &&
+                      "undefined" != typeof java)
+                ? (r.get = function(e, t) {
+                      var n,
+                          r,
+                          i = new java.io.File(e),
+                          o = java.lang.System.getProperty("line.separator"),
+                          a = new java.io.BufferedReader(
+                              new java.io.InputStreamReader(
+                                  new java.io.FileInputStream(i),
+                                  "utf-8"
+                              )
                           ),
-                          (s = "@mozilla.org/windows-registry-key;1" in o),
-                          (r.get = function(e, t) {
-                              var n,
-                                  r,
-                                  i,
-                                  l = {};
-                              s && (e = e.replace(/\//g, "\\")),
-                                  (i = new FileUtils.File(e));
-                              try {
-                                  (n = o[
-                                      "@mozilla.org/network/file-input-stream;1"
-                                  ].createInstance(a.nsIFileInputStream)),
-                                      n.init(i, 1, 0, !1),
-                                      (r = o[
-                                          "@mozilla.org/intl/converter-input-stream;1"
-                                      ].createInstance(
-                                          a.nsIConverterInputStream
-                                      )),
-                                      r.init(
-                                          n,
-                                          "utf-8",
-                                          n.available(),
-                                          a.nsIConverterInputStream
-                                              .DEFAULT_REPLACEMENT_CHARACTER
-                                      ),
-                                      r.readString(n.available(), l),
-                                      r.close(),
-                                      n.close(),
-                                      t(l.value);
-                              } catch (e) {
-                                  throw new Error(
-                                      ((i && i.path) || "") + ": " + e
-                                  );
-                              }
-                          })),
+                          s = "";
+                      try {
+                          for (
+                              n = new java.lang.StringBuffer(),
+                                  r = a.readLine(),
+                                  r &&
+                                      r.length() &&
+                                      65279 === r.charAt(0) &&
+                                      (r = r.substring(1)),
+                                  null !== r && n.append(r);
+                              null !== (r = a.readLine());
+
+                          )
+                              n.append(o), n.append(r);
+                          s = String(n.toString());
+                      } finally {
+                          a.close();
+                      }
+                      t(s);
+                  })
+                : ("xpconnect" === g.env ||
+                      (!g.env &&
+                          "undefined" != typeof Components &&
+                          Components.classes &&
+                          Components.interfaces)) &&
+                  ((o = Components.classes),
+                  (a = Components.interfaces),
+                  Components.utils.import(
+                      "resource://gre/modules/FileUtils.jsm"
+                  ),
+                  (s = "@mozilla.org/windows-registry-key;1" in o),
+                  (r.get = function(e, t) {
+                      var n,
+                          r,
+                          i,
+                          l = {};
+                      s && (e = e.replace(/\//g, "\\")),
+                          (i = new FileUtils.File(e));
+                      try {
+                          (n = o[
+                              "@mozilla.org/network/file-input-stream;1"
+                          ].createInstance(a.nsIFileInputStream)),
+                              n.init(i, 1, 0, !1),
+                              (r = o[
+                                  "@mozilla.org/intl/converter-input-stream;1"
+                              ].createInstance(a.nsIConverterInputStream)),
+                              r.init(
+                                  n,
+                                  "utf-8",
+                                  n.available(),
+                                  a.nsIConverterInputStream
+                                      .DEFAULT_REPLACEMENT_CHARACTER
+                              ),
+                              r.readString(n.available(), l),
+                              r.close(),
+                              n.close(),
+                              t(l.value);
+                      } catch (e) {
+                          throw new Error(((i && i.path) || "") + ": " + e);
+                      }
+                  })),
             r
         );
     }),
     define("text!version.json", [], function() {
-        return '{"readiumJsViewer":{"sha":"4ab8dab28e7ae0a74f2b1716ea09d90f7cf399a4","clean":false,"version":"0.31.1","chromeVersion":"2.31.1","tag":"0.31.1-0-g4ab8dab","branch":"master","release":false,"timestamp":1540849887340},"readiumJs":{"sha":"999d7c32bcdd1184bcc248312267c6e744d737b9","clean":false,"version":"0.31.1","tag":"0.31.1-0-g999d7c3","branch":"999d7c32bcdd1184bcc248312267c6e744d737b9","release":false,"timestamp":1540849887673},"readiumSharedJs":{"sha":"7f245beba1ed97eaabce0aa5e9cf2f3b23e8f8f6","clean":false,"version":"0.31.1","tag":"0.31.1-0-g7f245be","branch":"7f245beba1ed97eaabce0aa5e9cf2f3b23e8f8f6","release":false,"timestamp":1540849887978}}';
+        return '{"readiumJsViewer":{"sha":"57a5a47379acae01ad3c26ca8a31d22586f2a7be","clean":false,"version":"0.32.0-alpha","chromeVersion":"2.32.0-alpha","tag":"0.32.0-alpha-0-g57a5a47","branch":"develop","release":false,"timestamp":1602104430374},"readiumJs":{"sha":"9facb57dc4dc6df75eb24c0be982d0d1fd675988","clean":false,"version":"0.32.0-alpha","tag":"0.31.1-3-g9facb57","branch":"develop","release":false,"timestamp":1602104431396},"readiumSharedJs":{"sha":"15412a0b8b9c98d060885fa98584a8205dce6a8d","clean":false,"version":"0.32.0-alpha","tag":"0.31.1-4-g15412a0","branch":"develop","release":false,"timestamp":1602104432277}}';
     }),
     define("readium_js/epub-fetch/markup_parser", [], function() {
         return function() {
@@ -32980,12 +32889,12 @@ if (
             return e.slice
                 ? e.slice(t, t + n)
                 : e.webkitSlice
-                    ? e.webkitSlice(t, t + n)
-                    : e.mozSlice
-                        ? e.mozSlice(t, t + n)
-                        : e.msSlice
-                            ? e.msSlice(t, t + n)
-                            : void 0;
+                ? e.webkitSlice(t, t + n)
+                : e.mozSlice
+                ? e.mozSlice(t, t + n)
+                : e.msSlice
+                ? e.msSlice(t, t + n)
+                : void 0;
         }
         function i(e, t) {
             var n, r;
@@ -35815,23 +35724,23 @@ if (
                                   )
                               )
                             : i.directory
-                                ? r(
-                                      new Error(
-                                          c +
-                                              "Entry " +
-                                              e +
-                                              " is a directory while a file has been expected"
-                                      )
+                            ? r(
+                                  new Error(
+                                      c +
+                                          "Entry " +
+                                          e +
+                                          " is a directory while a file has been expected"
                                   )
-                                : t(i);
+                              )
+                            : t(i);
                     },
                     function() {
                         var r = arguments
                             ? arguments.length && arguments[0] instanceof Error
                                 ? arguments[0]
                                 : arguments instanceof Error
-                                    ? arguments
-                                    : void 0
+                                ? arguments
+                                : void 0
                             : void 0;
                         if (
                             (!!r && 0 == r.message.indexOf(c)) ||
@@ -36269,8 +36178,8 @@ if (
         "object" == typeof exports
             ? (module.exports = exports = t())
             : "function" == typeof define && define.amd
-                ? define("cryptoJs/core", [], t)
-                : (e.CryptoJS = t());
+            ? define("cryptoJs/core", [], t)
+            : (e.CryptoJS = t());
     })(this, function() {
         var e =
             e ||
@@ -36522,8 +36431,8 @@ if (
         "object" == typeof exports
             ? (module.exports = exports = t(require("./core")))
             : "function" == typeof define && define.amd
-                ? define("cryptoJs/sha1", ["./core"], t)
-                : t(e.CryptoJS);
+            ? define("cryptoJs/sha1", ["./core"], t)
+            : t(e.CryptoJS);
     })(this, function(e) {
         return (
             (function() {
@@ -36569,13 +36478,11 @@ if (
                                     u < 20
                                         ? 1518500249 + ((i & o) | (~i & s))
                                         : u < 40
-                                            ? 1859775393 + (i ^ o ^ s)
-                                            : u < 60
-                                                ? ((i & o) |
-                                                      (i & s) |
-                                                      (o & s)) -
-                                                  1894007588
-                                                : (i ^ o ^ s) - 899497514),
+                                        ? 1859775393 + (i ^ o ^ s)
+                                        : u < 60
+                                        ? ((i & o) | (i & s) | (o & s)) -
+                                          1894007588
+                                        : (i ^ o ^ s) - 899497514),
                                     (l = s),
                                     (s = o),
                                     (o = (i << 30) | (i >>> 2)),
@@ -36869,20 +36776,20 @@ if (
                     T
                         ? t(T)
                         : S
-                            ? S.done(t)
-                            : ((S = e.Deferred()),
-                              S.done(t),
-                              b.getPackageFullPath(function(e) {
-                                  (x = e),
-                                      (E = _.resolveURI(x)),
-                                      console.debug("PACKAGE: "),
-                                      console.log(x),
-                                      console.log(E),
-                                      e && "/" != e.charAt(0) && (e = "/" + e),
-                                      b.getXmlFileDom(e, function(e) {
-                                          (T = e), S.resolve(e), (S = void 0);
-                                      });
-                              }, n));
+                        ? S.done(t)
+                        : ((S = e.Deferred()),
+                          S.done(t),
+                          b.getPackageFullPath(function(e) {
+                              (x = e),
+                                  (E = _.resolveURI(x)),
+                                  console.debug("PACKAGE: "),
+                                  console.log(x),
+                                  console.log(E),
+                                  e && "/" != e.charAt(0) && (e = "/" + e),
+                                  b.getXmlFileDom(e, function(e) {
+                                      (T = e), S.resolve(e), (S = void 0);
+                                  });
+                          }, n));
                 }),
                 (this.convertPathRelativeToPackageToRelativeToBase = function(
                     e
@@ -36906,8 +36813,8 @@ if (
                                   arguments[0] instanceof Error
                                     ? arguments[0]
                                     : arguments instanceof Error
-                                        ? arguments
-                                        : void 0
+                                    ? arguments
+                                    : void 0
                                 : void 0,
                             t =
                                 0 ==
@@ -37069,8 +36976,8 @@ if (
                     return "rtl" === d
                         ? "rtl"
                         : "default" === d
-                            ? "default"
-                            : "ltr";
+                        ? "default"
+                        : "ltr";
                 }),
                 (this.spineLength = function() {
                     return s.length;
@@ -37821,8 +37728,8 @@ if (
         "undefined" != typeof module && module.exports
             ? (module.exports = n())
             : "function" == typeof define && define.amd
-                ? define("bowser", n)
-                : (e.bowser = n());
+            ? define("bowser", n)
+            : (e.bowser = n());
     })(this, 0, function() {
         function e(e) {
             function t(t) {
@@ -37860,393 +37767,228 @@ if (
                       version: w || t(/(?:opera|opr|opios)[\s\/](\d+(\.\d+)?)/i)
                   })
                 : /opr\/|opios/i.test(e)
-                    ? (i = {
-                          name: "Opera",
-                          opera: a,
-                          version: t(/(?:opr|opios)[\s\/](\d+(\.\d+)?)/i) || w
-                      })
-                    : /SamsungBrowser/i.test(e)
-                        ? (i = {
-                              name: "Samsung Internet for Android",
-                              samsungBrowser: a,
-                              version:
-                                  w ||
-                                  t(/(?:SamsungBrowser)[\s\/](\d+(\.\d+)?)/i)
-                          })
-                        : /Whale/i.test(e)
-                            ? (i = {
-                                  name: "NAVER Whale browser",
-                                  whale: a,
-                                  version: t(/(?:whale)[\s\/](\d+(?:\.\d+)+)/i)
-                              })
-                            : /MZBrowser/i.test(e)
-                                ? (i = {
-                                      name: "MZ Browser",
-                                      mzbrowser: a,
-                                      version: t(
-                                          /(?:MZBrowser)[\s\/](\d+(?:\.\d+)+)/i
-                                      )
-                                  })
-                                : /coast/i.test(e)
-                                    ? (i = {
-                                          name: "Opera Coast",
-                                          coast: a,
-                                          version:
-                                              w ||
-                                              t(/(?:coast)[\s\/](\d+(\.\d+)?)/i)
-                                      })
-                                    : /focus/i.test(e)
-                                        ? (i = {
-                                              name: "Focus",
-                                              focus: a,
-                                              version: t(
-                                                  /(?:focus)[\s\/](\d+(?:\.\d+)+)/i
-                                              )
-                                          })
-                                        : /yabrowser/i.test(e)
-                                            ? (i = {
-                                                  name: "Yandex Browser",
-                                                  yandexbrowser: a,
-                                                  version:
-                                                      w ||
-                                                      t(
-                                                          /(?:yabrowser)[\s\/](\d+(\.\d+)?)/i
-                                                      )
-                                              })
-                                            : /ucbrowser/i.test(e)
-                                                ? (i = {
-                                                      name: "UC Browser",
-                                                      ucbrowser: a,
-                                                      version: t(
-                                                          /(?:ucbrowser)[\s\/](\d+(?:\.\d+)+)/i
-                                                      )
-                                                  })
-                                                : /mxios/i.test(e)
-                                                    ? (i = {
-                                                          name: "Maxthon",
-                                                          maxthon: a,
-                                                          version: t(
-                                                              /(?:mxios)[\s\/](\d+(?:\.\d+)+)/i
-                                                          )
-                                                      })
-                                                    : /epiphany/i.test(e)
-                                                        ? (i = {
-                                                              name: "Epiphany",
-                                                              epiphany: a,
-                                                              version: t(
-                                                                  /(?:epiphany)[\s\/](\d+(?:\.\d+)+)/i
-                                                              )
-                                                          })
-                                                        : /puffin/i.test(e)
-                                                            ? (i = {
-                                                                  name:
-                                                                      "Puffin",
-                                                                  puffin: a,
-                                                                  version: t(
-                                                                      /(?:puffin)[\s\/](\d+(?:\.\d+)?)/i
-                                                                  )
-                                                              })
-                                                            : /sleipnir/i.test(
-                                                                  e
-                                                              )
-                                                                ? (i = {
-                                                                      name:
-                                                                          "Sleipnir",
-                                                                      sleipnir: a,
-                                                                      version: t(
-                                                                          /(?:sleipnir)[\s\/](\d+(?:\.\d+)+)/i
-                                                                      )
-                                                                  })
-                                                                : /k-meleon/i.test(
-                                                                      e
-                                                                  )
-                                                                    ? (i = {
-                                                                          name:
-                                                                              "K-Meleon",
-                                                                          kMeleon: a,
-                                                                          version: t(
-                                                                              /(?:k-meleon)[\s\/](\d+(?:\.\d+)+)/i
-                                                                          )
-                                                                      })
-                                                                    : g
-                                                                        ? ((i = {
-                                                                              name:
-                                                                                  "Windows Phone",
-                                                                              osname:
-                                                                                  "Windows Phone",
-                                                                              windowsphone: a
-                                                                          }),
-                                                                          _
-                                                                              ? ((i.msedge = a),
-                                                                                (i.version = _))
-                                                                              : ((i.msie = a),
-                                                                                (i.version = t(
-                                                                                    /iemobile\/(\d+(\.\d+)?)/i
-                                                                                ))))
-                                                                        : /msie|trident/i.test(
-                                                                              e
-                                                                          )
-                                                                            ? (i = {
-                                                                                  name:
-                                                                                      "Internet Explorer",
-                                                                                  msie: a,
-                                                                                  version: t(
-                                                                                      /(?:msie |rv:)(\d+(\.\d+)?)/i
-                                                                                  )
-                                                                              })
-                                                                            : d
-                                                                                ? (i = {
-                                                                                      name:
-                                                                                          "Chrome",
-                                                                                      osname:
-                                                                                          "Chrome OS",
-                                                                                      chromeos: a,
-                                                                                      chromeBook: a,
-                                                                                      chrome: a,
-                                                                                      version: t(
-                                                                                          /(?:chrome|crios|crmo)\/(\d+(\.\d+)?)/i
-                                                                                      )
-                                                                                  })
-                                                                                : /edg([ea]|ios)/i.test(
-                                                                                      e
-                                                                                  )
-                                                                                    ? (i = {
-                                                                                          name:
-                                                                                              "Microsoft Edge",
-                                                                                          msedge: a,
-                                                                                          version: _
-                                                                                      })
-                                                                                    : /vivaldi/i.test(
-                                                                                          e
-                                                                                      )
-                                                                                        ? (i = {
-                                                                                              name:
-                                                                                                  "Vivaldi",
-                                                                                              vivaldi: a,
-                                                                                              version:
-                                                                                                  t(
-                                                                                                      /vivaldi\/(\d+(\.\d+)?)/i
-                                                                                                  ) ||
-                                                                                                  w
-                                                                                          })
-                                                                                        : p
-                                                                                            ? (i = {
-                                                                                                  name:
-                                                                                                      "Sailfish",
-                                                                                                  osname:
-                                                                                                      "Sailfish OS",
-                                                                                                  sailfish: a,
-                                                                                                  version: t(
-                                                                                                      /sailfish\s?browser\/(\d+(\.\d+)?)/i
-                                                                                                  )
-                                                                                              })
-                                                                                            : /seamonkey\//i.test(
-                                                                                                  e
-                                                                                              )
-                                                                                                ? (i = {
-                                                                                                      name:
-                                                                                                          "SeaMonkey",
-                                                                                                      seamonkey: a,
-                                                                                                      version: t(
-                                                                                                          /seamonkey\/(\d+(\.\d+)?)/i
-                                                                                                      )
-                                                                                                  })
-                                                                                                : /firefox|iceweasel|fxios/i.test(
-                                                                                                      e
-                                                                                                  )
-                                                                                                    ? ((i = {
-                                                                                                          name:
-                                                                                                              "Firefox",
-                                                                                                          firefox: a,
-                                                                                                          version: t(
-                                                                                                              /(?:firefox|iceweasel|fxios)[ \/](\d+(\.\d+)?)/i
-                                                                                                          )
-                                                                                                      }),
-                                                                                                      /\((mobile|tablet);[^\)]*rv:[\d\.]+\)/i.test(
-                                                                                                          e
-                                                                                                      ) &&
-                                                                                                          ((i.firefoxos = a),
-                                                                                                          (i.osname =
-                                                                                                              "Firefox OS")))
-                                                                                                    : f
-                                                                                                        ? (i = {
-                                                                                                              name:
-                                                                                                                  "Amazon Silk",
-                                                                                                              silk: a,
-                                                                                                              version: t(
-                                                                                                                  /silk\/(\d+(\.\d+)?)/i
-                                                                                                              )
-                                                                                                          })
-                                                                                                        : /phantom/i.test(
-                                                                                                              e
-                                                                                                          )
-                                                                                                            ? (i = {
-                                                                                                                  name:
-                                                                                                                      "PhantomJS",
-                                                                                                                  phantom: a,
-                                                                                                                  version: t(
-                                                                                                                      /phantomjs\/(\d+(\.\d+)?)/i
-                                                                                                                  )
-                                                                                                              })
-                                                                                                            : /slimerjs/i.test(
-                                                                                                                  e
-                                                                                                              )
-                                                                                                                ? (i = {
-                                                                                                                      name:
-                                                                                                                          "SlimerJS",
-                                                                                                                      slimer: a,
-                                                                                                                      version: t(
-                                                                                                                          /slimerjs\/(\d+(\.\d+)?)/i
-                                                                                                                      )
-                                                                                                                  })
-                                                                                                                : /blackberry|\bbb\d+/i.test(
-                                                                                                                      e
-                                                                                                                  ) ||
-                                                                                                                  /rim\stablet/i.test(
-                                                                                                                      e
-                                                                                                                  )
-                                                                                                                    ? (i = {
-                                                                                                                          name:
-                                                                                                                              "BlackBerry",
-                                                                                                                          osname:
-                                                                                                                              "BlackBerry OS",
-                                                                                                                          blackberry: a,
-                                                                                                                          version:
-                                                                                                                              w ||
-                                                                                                                              t(
-                                                                                                                                  /blackberry[\d]+\/(\d+(\.\d+)?)/i
-                                                                                                                              )
-                                                                                                                      })
-                                                                                                                    : m
-                                                                                                                        ? ((i = {
-                                                                                                                              name:
-                                                                                                                                  "WebOS",
-                                                                                                                              osname:
-                                                                                                                                  "WebOS",
-                                                                                                                              webos: a,
-                                                                                                                              version:
-                                                                                                                                  w ||
-                                                                                                                                  t(
-                                                                                                                                      /w(?:eb)?osbrowser\/(\d+(\.\d+)?)/i
-                                                                                                                                  )
-                                                                                                                          }),
-                                                                                                                          /touchpad\//i.test(
-                                                                                                                              e
-                                                                                                                          ) &&
-                                                                                                                              (i.touchpad = a))
-                                                                                                                        : /bada/i.test(
-                                                                                                                              e
-                                                                                                                          )
-                                                                                                                            ? (i = {
-                                                                                                                                  name:
-                                                                                                                                      "Bada",
-                                                                                                                                  osname:
-                                                                                                                                      "Bada",
-                                                                                                                                  bada: a,
-                                                                                                                                  version: t(
-                                                                                                                                      /dolfin\/(\d+(\.\d+)?)/i
-                                                                                                                                  )
-                                                                                                                              })
-                                                                                                                            : h
-                                                                                                                                ? (i = {
-                                                                                                                                      name:
-                                                                                                                                          "Tizen",
-                                                                                                                                      osname:
-                                                                                                                                          "Tizen",
-                                                                                                                                      tizen: a,
-                                                                                                                                      version:
-                                                                                                                                          t(
-                                                                                                                                              /(?:tizen\s?)?browser\/(\d+(\.\d+)?)/i
-                                                                                                                                          ) ||
-                                                                                                                                          w
-                                                                                                                                  })
-                                                                                                                                : /qupzilla/i.test(
-                                                                                                                                      e
-                                                                                                                                  )
-                                                                                                                                    ? (i = {
-                                                                                                                                          name:
-                                                                                                                                              "QupZilla",
-                                                                                                                                          qupzilla: a,
-                                                                                                                                          version:
-                                                                                                                                              t(
-                                                                                                                                                  /(?:qupzilla)[\s\/](\d+(?:\.\d+)+)/i
-                                                                                                                                              ) ||
-                                                                                                                                              w
-                                                                                                                                      })
-                                                                                                                                    : /chromium/i.test(
-                                                                                                                                          e
-                                                                                                                                      )
-                                                                                                                                        ? (i = {
-                                                                                                                                              name:
-                                                                                                                                                  "Chromium",
-                                                                                                                                              chromium: a,
-                                                                                                                                              version:
-                                                                                                                                                  t(
-                                                                                                                                                      /(?:chromium)[\s\/](\d+(?:\.\d+)?)/i
-                                                                                                                                                  ) ||
-                                                                                                                                                  w
-                                                                                                                                          })
-                                                                                                                                        : /chrome|crios|crmo/i.test(
-                                                                                                                                              e
-                                                                                                                                          )
-                                                                                                                                            ? (i = {
-                                                                                                                                                  name:
-                                                                                                                                                      "Chrome",
-                                                                                                                                                  chrome: a,
-                                                                                                                                                  version: t(
-                                                                                                                                                      /(?:chrome|crios|crmo)\/(\d+(\.\d+)?)/i
-                                                                                                                                                  )
-                                                                                                                                              })
-                                                                                                                                            : l
-                                                                                                                                                ? (i = {
-                                                                                                                                                      name:
-                                                                                                                                                          "Android",
-                                                                                                                                                      version: w
-                                                                                                                                                  })
-                                                                                                                                                : /safari|applewebkit/i.test(
-                                                                                                                                                      e
-                                                                                                                                                  )
-                                                                                                                                                    ? ((i = {
-                                                                                                                                                          name:
-                                                                                                                                                              "Safari",
-                                                                                                                                                          safari: a
-                                                                                                                                                      }),
-                                                                                                                                                      w &&
-                                                                                                                                                          (i.version = w))
-                                                                                                                                                    : o
-                                                                                                                                                        ? ((i = {
-                                                                                                                                                              name:
-                                                                                                                                                                  "iphone" ==
-                                                                                                                                                                  o
-                                                                                                                                                                      ? "iPhone"
-                                                                                                                                                                      : "ipad" ==
-                                                                                                                                                                        o
-                                                                                                                                                                          ? "iPad"
-                                                                                                                                                                          : "iPod"
-                                                                                                                                                          }),
-                                                                                                                                                          w &&
-                                                                                                                                                              (i.version = w))
-                                                                                                                                                        : (i = /googlebot/i.test(
-                                                                                                                                                              e
-                                                                                                                                                          )
-                                                                                                                                                              ? {
-                                                                                                                                                                    name:
-                                                                                                                                                                        "Googlebot",
-                                                                                                                                                                    googlebot: a,
-                                                                                                                                                                    version:
-                                                                                                                                                                        t(
-                                                                                                                                                                            /googlebot\/(\d+(\.\d+))/i
-                                                                                                                                                                        ) ||
-                                                                                                                                                                        w
-                                                                                                                                                                }
-                                                                                                                                                              : {
-                                                                                                                                                                    name: t(
-                                                                                                                                                                        /^(.*)\/(.*) /
-                                                                                                                                                                    ),
-                                                                                                                                                                    version: n(
-                                                                                                                                                                        /^(.*)\/(.*) /
-                                                                                                                                                                    )
-                                                                                                                                                                }),
+                ? (i = {
+                      name: "Opera",
+                      opera: a,
+                      version: t(/(?:opr|opios)[\s\/](\d+(\.\d+)?)/i) || w
+                  })
+                : /SamsungBrowser/i.test(e)
+                ? (i = {
+                      name: "Samsung Internet for Android",
+                      samsungBrowser: a,
+                      version: w || t(/(?:SamsungBrowser)[\s\/](\d+(\.\d+)?)/i)
+                  })
+                : /Whale/i.test(e)
+                ? (i = {
+                      name: "NAVER Whale browser",
+                      whale: a,
+                      version: t(/(?:whale)[\s\/](\d+(?:\.\d+)+)/i)
+                  })
+                : /MZBrowser/i.test(e)
+                ? (i = {
+                      name: "MZ Browser",
+                      mzbrowser: a,
+                      version: t(/(?:MZBrowser)[\s\/](\d+(?:\.\d+)+)/i)
+                  })
+                : /coast/i.test(e)
+                ? (i = {
+                      name: "Opera Coast",
+                      coast: a,
+                      version: w || t(/(?:coast)[\s\/](\d+(\.\d+)?)/i)
+                  })
+                : /focus/i.test(e)
+                ? (i = {
+                      name: "Focus",
+                      focus: a,
+                      version: t(/(?:focus)[\s\/](\d+(?:\.\d+)+)/i)
+                  })
+                : /yabrowser/i.test(e)
+                ? (i = {
+                      name: "Yandex Browser",
+                      yandexbrowser: a,
+                      version: w || t(/(?:yabrowser)[\s\/](\d+(\.\d+)?)/i)
+                  })
+                : /ucbrowser/i.test(e)
+                ? (i = {
+                      name: "UC Browser",
+                      ucbrowser: a,
+                      version: t(/(?:ucbrowser)[\s\/](\d+(?:\.\d+)+)/i)
+                  })
+                : /mxios/i.test(e)
+                ? (i = {
+                      name: "Maxthon",
+                      maxthon: a,
+                      version: t(/(?:mxios)[\s\/](\d+(?:\.\d+)+)/i)
+                  })
+                : /epiphany/i.test(e)
+                ? (i = {
+                      name: "Epiphany",
+                      epiphany: a,
+                      version: t(/(?:epiphany)[\s\/](\d+(?:\.\d+)+)/i)
+                  })
+                : /puffin/i.test(e)
+                ? (i = {
+                      name: "Puffin",
+                      puffin: a,
+                      version: t(/(?:puffin)[\s\/](\d+(?:\.\d+)?)/i)
+                  })
+                : /sleipnir/i.test(e)
+                ? (i = {
+                      name: "Sleipnir",
+                      sleipnir: a,
+                      version: t(/(?:sleipnir)[\s\/](\d+(?:\.\d+)+)/i)
+                  })
+                : /k-meleon/i.test(e)
+                ? (i = {
+                      name: "K-Meleon",
+                      kMeleon: a,
+                      version: t(/(?:k-meleon)[\s\/](\d+(?:\.\d+)+)/i)
+                  })
+                : g
+                ? ((i = {
+                      name: "Windows Phone",
+                      osname: "Windows Phone",
+                      windowsphone: a
+                  }),
+                  _
+                      ? ((i.msedge = a), (i.version = _))
+                      : ((i.msie = a),
+                        (i.version = t(/iemobile\/(\d+(\.\d+)?)/i))))
+                : /msie|trident/i.test(e)
+                ? (i = {
+                      name: "Internet Explorer",
+                      msie: a,
+                      version: t(/(?:msie |rv:)(\d+(\.\d+)?)/i)
+                  })
+                : d
+                ? (i = {
+                      name: "Chrome",
+                      osname: "Chrome OS",
+                      chromeos: a,
+                      chromeBook: a,
+                      chrome: a,
+                      version: t(/(?:chrome|crios|crmo)\/(\d+(\.\d+)?)/i)
+                  })
+                : /edg([ea]|ios)/i.test(e)
+                ? (i = { name: "Microsoft Edge", msedge: a, version: _ })
+                : /vivaldi/i.test(e)
+                ? (i = {
+                      name: "Vivaldi",
+                      vivaldi: a,
+                      version: t(/vivaldi\/(\d+(\.\d+)?)/i) || w
+                  })
+                : p
+                ? (i = {
+                      name: "Sailfish",
+                      osname: "Sailfish OS",
+                      sailfish: a,
+                      version: t(/sailfish\s?browser\/(\d+(\.\d+)?)/i)
+                  })
+                : /seamonkey\//i.test(e)
+                ? (i = {
+                      name: "SeaMonkey",
+                      seamonkey: a,
+                      version: t(/seamonkey\/(\d+(\.\d+)?)/i)
+                  })
+                : /firefox|iceweasel|fxios/i.test(e)
+                ? ((i = {
+                      name: "Firefox",
+                      firefox: a,
+                      version: t(
+                          /(?:firefox|iceweasel|fxios)[ \/](\d+(\.\d+)?)/i
+                      )
+                  }),
+                  /\((mobile|tablet);[^\)]*rv:[\d\.]+\)/i.test(e) &&
+                      ((i.firefoxos = a), (i.osname = "Firefox OS")))
+                : f
+                ? (i = {
+                      name: "Amazon Silk",
+                      silk: a,
+                      version: t(/silk\/(\d+(\.\d+)?)/i)
+                  })
+                : /phantom/i.test(e)
+                ? (i = {
+                      name: "PhantomJS",
+                      phantom: a,
+                      version: t(/phantomjs\/(\d+(\.\d+)?)/i)
+                  })
+                : /slimerjs/i.test(e)
+                ? (i = {
+                      name: "SlimerJS",
+                      slimer: a,
+                      version: t(/slimerjs\/(\d+(\.\d+)?)/i)
+                  })
+                : /blackberry|\bbb\d+/i.test(e) || /rim\stablet/i.test(e)
+                ? (i = {
+                      name: "BlackBerry",
+                      osname: "BlackBerry OS",
+                      blackberry: a,
+                      version: w || t(/blackberry[\d]+\/(\d+(\.\d+)?)/i)
+                  })
+                : m
+                ? ((i = {
+                      name: "WebOS",
+                      osname: "WebOS",
+                      webos: a,
+                      version: w || t(/w(?:eb)?osbrowser\/(\d+(\.\d+)?)/i)
+                  }),
+                  /touchpad\//i.test(e) && (i.touchpad = a))
+                : /bada/i.test(e)
+                ? (i = {
+                      name: "Bada",
+                      osname: "Bada",
+                      bada: a,
+                      version: t(/dolfin\/(\d+(\.\d+)?)/i)
+                  })
+                : h
+                ? (i = {
+                      name: "Tizen",
+                      osname: "Tizen",
+                      tizen: a,
+                      version: t(/(?:tizen\s?)?browser\/(\d+(\.\d+)?)/i) || w
+                  })
+                : /qupzilla/i.test(e)
+                ? (i = {
+                      name: "QupZilla",
+                      qupzilla: a,
+                      version: t(/(?:qupzilla)[\s\/](\d+(?:\.\d+)+)/i) || w
+                  })
+                : /chromium/i.test(e)
+                ? (i = {
+                      name: "Chromium",
+                      chromium: a,
+                      version: t(/(?:chromium)[\s\/](\d+(?:\.\d+)?)/i) || w
+                  })
+                : /chrome|crios|crmo/i.test(e)
+                ? (i = {
+                      name: "Chrome",
+                      chrome: a,
+                      version: t(/(?:chrome|crios|crmo)\/(\d+(\.\d+)?)/i)
+                  })
+                : l
+                ? (i = { name: "Android", version: w })
+                : /safari|applewebkit/i.test(e)
+                ? ((i = { name: "Safari", safari: a }), w && (i.version = w))
+                : o
+                ? ((i = {
+                      name:
+                          "iphone" == o
+                              ? "iPhone"
+                              : "ipad" == o
+                              ? "iPad"
+                              : "iPod"
+                  }),
+                  w && (i.version = w))
+                : (i = /googlebot/i.test(e)
+                      ? {
+                            name: "Googlebot",
+                            googlebot: a,
+                            version: t(/googlebot\/(\d+(\.\d+))/i) || w
+                        }
+                      : {
+                            name: t(/^(.*)\/(.*) /),
+                            version: n(/^(.*)\/(.*) /)
+                        }),
                 !i.msedge && /(apple)?webkit/i.test(e)
                     ? (/(apple)?webkit\/537\.36/i.test(e)
                           ? ((i.name = i.name || "Blink"), (i.blink = a))
@@ -38261,12 +38003,12 @@ if (
                     ? !i.windowsphone && o
                         ? ((i[o] = a), (i.ios = a), (i.osname = "iOS"))
                         : b
-                            ? ((i.mac = a), (i.osname = "macOS"))
-                            : T
-                                ? ((i.xbox = a), (i.osname = "Xbox"))
-                                : v
-                                    ? ((i.windows = a), (i.osname = "Windows"))
-                                    : y && ((i.linux = a), (i.osname = "Linux"))
+                        ? ((i.mac = a), (i.osname = "macOS"))
+                        : T
+                        ? ((i.xbox = a), (i.osname = "Xbox"))
+                        : v
+                        ? ((i.windows = a), (i.osname = "Windows"))
+                        : y && ((i.linux = a), (i.osname = "Linux"))
                     : ((i.android = a), (i.osname = "Android"));
             var S = "";
             i.windows
@@ -38297,27 +38039,22 @@ if (
                       }
                   })(t(/Windows ((NT|XP)( \d\d?.\d)?)/i)))
                 : i.windowsphone
-                    ? (S = t(/windows phone (?:os)?\s?(\d+(\.\d+)*)/i))
-                    : i.mac
-                        ? ((S = t(/Mac OS X (\d+([_\.\s]\d+)*)/i)),
-                          (S = S.replace(/[_\s]/g, ".")))
-                        : o
-                            ? ((S = t(/os (\d+([_\s]\d+)*) like mac os x/i)),
-                              (S = S.replace(/[_\s]/g, ".")))
-                            : l
-                                ? (S = t(/android[ \/-](\d+(\.\d+)*)/i))
-                                : i.webos
-                                    ? (S = t(/(?:web|hpw)os\/(\d+(\.\d+)*)/i))
-                                    : i.blackberry
-                                        ? (S = t(
-                                              /rim\stablet\sos\s(\d+(\.\d+)*)/i
-                                          ))
-                                        : i.bada
-                                            ? (S = t(/bada\/(\d+(\.\d+)*)/i))
-                                            : i.tizen &&
-                                              (S = t(
-                                                  /tizen[\/\s](\d+(\.\d+)*)/i
-                                              )),
+                ? (S = t(/windows phone (?:os)?\s?(\d+(\.\d+)*)/i))
+                : i.mac
+                ? ((S = t(/Mac OS X (\d+([_\.\s]\d+)*)/i)),
+                  (S = S.replace(/[_\s]/g, ".")))
+                : o
+                ? ((S = t(/os (\d+([_\s]\d+)*) like mac os x/i)),
+                  (S = S.replace(/[_\s]/g, ".")))
+                : l
+                ? (S = t(/android[ \/-](\d+(\.\d+)*)/i))
+                : i.webos
+                ? (S = t(/(?:web|hpw)os\/(\d+(\.\d+)*)/i))
+                : i.blackberry
+                ? (S = t(/rim\stablet\sos\s(\d+(\.\d+)*)/i))
+                : i.bada
+                ? (S = t(/bada\/(\d+(\.\d+)*)/i))
+                : i.tizen && (S = t(/tizen[\/\s](\d+(\.\d+)*)/i)),
                 S && (i.osversion = S);
             var C = !i.windows && S.split(".")[0];
             return (
@@ -38359,8 +38096,8 @@ if (
                       (i.opera && i.version < 10) ||
                       (i.ios && i.osversion && i.osversion.split(".")[0] < 6) ||
                       (i.chromium && i.version < 20)
-                        ? (i.c = a)
-                        : (i.x = a),
+                    ? (i.c = a)
+                    : (i.x = a),
                 i
             );
         }
@@ -38667,8 +38404,8 @@ if (
                         m
                             ? t.setAttribute("src", d)
                             : h
-                                ? t.setAttribute("srcdoc", u)
-                                : t.contentWindow.document.close();
+                            ? t.setAttribute("srcdoc", u)
+                            : t.contentWindow.document.close();
                 });
         };
         return o;
@@ -39189,8 +38926,8 @@ if (
                     "number" == typeof t
                         ? i.to(t)
                         : a
-                            ? i[a]()
-                            : o.interval && i.pause().cycle();
+                        ? i[a]()
+                        : o.interval && i.pause().cycle();
             });
         }
         var n = function(t, n) {
@@ -39281,11 +39018,11 @@ if (
                               t.to(e);
                           })
                         : n == e
-                            ? this.pause().cycle()
-                            : this.slide(
-                                  e > n ? "next" : "prev",
-                                  this.$items.eq(e)
-                              );
+                        ? this.pause().cycle()
+                        : this.slide(
+                              e > n ? "next" : "prev",
+                              this.$items.eq(e)
+                          );
             }),
             (n.prototype.pause = function(t) {
                 return (
@@ -40035,7 +39772,7 @@ if (
                                       this.$element
                                   )
                                 : this.options.viewport.selector ||
-                                  this.options.viewport
+                                      this.options.viewport
                         )),
                     (this.inState = { click: !1, hover: !1, focus: !1 }),
                     this.$element[0] instanceof document.constructor &&
@@ -40214,12 +39951,12 @@ if (
                             "bottom" == s && c.bottom + f > h.bottom
                                 ? "top"
                                 : "top" == s && c.top - f < h.top
-                                    ? "bottom"
-                                    : "right" == s && c.right + d > h.width
-                                        ? "left"
-                                        : "left" == s && c.left - d < h.left
-                                            ? "right"
-                                            : s),
+                                ? "bottom"
+                                : "right" == s && c.right + d > h.width
+                                ? "left"
+                                : "left" == s && c.left - d < h.left
+                                ? "right"
+                                : s),
                             o.removeClass(p).addClass(s);
                     }
                     var m = this.getCalculatedOffset(s, c, d, f);
@@ -40354,16 +40091,13 @@ if (
                           left: t.left + t.width / 2 - n / 2
                       }
                     : "top" == e
-                        ? { top: t.top - r, left: t.left + t.width / 2 - n / 2 }
-                        : "left" == e
-                            ? {
-                                  top: t.top + t.height / 2 - r / 2,
-                                  left: t.left - n
-                              }
-                            : {
-                                  top: t.top + t.height / 2 - r / 2,
-                                  left: t.left + t.width
-                              };
+                    ? { top: t.top - r, left: t.left + t.width / 2 - n / 2 }
+                    : "left" == e
+                    ? { top: t.top + t.height / 2 - r / 2, left: t.left - n }
+                    : {
+                          top: t.top + t.height / 2 - r / 2,
+                          left: t.left + t.width
+                      };
             }),
             (n.prototype.getViewportAdjustedDelta = function(e, t, n, r) {
                 var i = { top: 0, left: 0 };
@@ -40443,8 +40177,8 @@ if (
                         ? ((n.inState.click = !n.inState.click),
                           n.isInStateTrue() ? n.enter(n) : n.leave(n))
                         : n.tip().hasClass("in")
-                            ? n.leave(n)
-                            : n.enter(n);
+                        ? n.leave(n)
+                        : n.enter(n);
             }),
             (n.prototype.destroy = function() {
                 var e = this;
@@ -40896,8 +40630,8 @@ if (
                     : (/input|select|textarea|button|object/.test(s)
                           ? !t.disabled
                           : "a" === s
-                              ? t.href || n
-                              : n) && r(t);
+                          ? t.href || n
+                          : n) && r(t);
             },
             r = function(t) {
                 return (
@@ -41501,8 +41235,8 @@ if (
         "object" == typeof module && module.exports
             ? (module.exports = t())
             : "function" == typeof define && define.amd
-                ? define("spin", t)
-                : (e.Spinner = t());
+            ? define("spin", t)
+            : (e.Spinner = t());
     })(this, function() {
         "use strict";
         function e(e, t) {
@@ -42342,45 +42076,44 @@ var Hogan = {};
                         ? r(y, i, v)
                             ? (--v, a(), (c = 1))
                             : "\n" == i.charAt(v)
-                                ? l(g)
-                                : (p += i.charAt(v))
+                            ? l(g)
+                            : (p += i.charAt(v))
                         : 1 == c
-                            ? ((v += y.length - 1),
-                              (f = e.tags[i.charAt(v + 1)]),
-                              (d = f ? i.charAt(v + 1) : "_v"),
-                              "=" == d
-                                  ? ((v = (function(e, t) {
-                                        var r = "=" + _,
-                                            i = e.indexOf(r, t),
-                                            o = n(
-                                                e.substring(
-                                                    e.indexOf("=", t) + 1,
-                                                    i
-                                                )
-                                            ).split(" ");
-                                        return (
-                                            (y = o[0]),
-                                            (_ = o[o.length - 1]),
-                                            i + r.length - 1
-                                        );
-                                    })(i, v)),
-                                    (c = 0))
-                                  : (f && v++, (c = 2)),
-                              (g = v))
-                            : r(_, i, v)
-                                ? (m.push({
-                                      tag: d,
-                                      n: n(p),
-                                      otag: y,
-                                      ctag: _,
-                                      i: "/" == d ? g - y.length : v + _.length
-                                  }),
-                                  (p = ""),
-                                  (v += _.length - 1),
-                                  (c = 0),
-                                  "{" == d &&
-                                      ("}}" == _ ? v++ : t(m[m.length - 1])))
-                                : (p += i.charAt(v));
+                        ? ((v += y.length - 1),
+                          (f = e.tags[i.charAt(v + 1)]),
+                          (d = f ? i.charAt(v + 1) : "_v"),
+                          "=" == d
+                              ? ((v = (function(e, t) {
+                                    var r = "=" + _,
+                                        i = e.indexOf(r, t),
+                                        o = n(
+                                            e.substring(
+                                                e.indexOf("=", t) + 1,
+                                                i
+                                            )
+                                        ).split(" ");
+                                    return (
+                                        (y = o[0]),
+                                        (_ = o[o.length - 1]),
+                                        i + r.length - 1
+                                    );
+                                })(i, v)),
+                                (c = 0))
+                              : (f && v++, (c = 2)),
+                          (g = v))
+                        : r(_, i, v)
+                        ? (m.push({
+                              tag: d,
+                              n: n(p),
+                              otag: y,
+                              ctag: _,
+                              i: "/" == d ? g - y.length : v + _.length
+                          }),
+                          (p = ""),
+                          (v += _.length - 1),
+                          (c = 0),
+                          "{" == d && ("}}" == _ ? v++ : t(m[m.length - 1])))
+                        : (p += i.charAt(v));
                 return l(g, !0), m;
             });
         var w = { _t: !0, "\n": !0, $: !0, "/": !0 };
@@ -44255,72 +43988,40 @@ var Hogan = {};
                     "initKeyEvent" in s
                         ? s.initKeyEvent(e, w, x, S, c, f, d, p, y, _)
                         : n && "initKeyboardEvent" in s
-                            ? 1 == n
-                                ? s.initKeyboardEvent(
-                                      e,
-                                      w,
-                                      x,
-                                      S,
-                                      g,
-                                      b,
-                                      c,
-                                      d,
-                                      f,
-                                      p,
-                                      h
-                                  )
-                                : 2 == n
-                                    ? s.initKeyboardEvent(
-                                          e,
-                                          w,
-                                          x,
-                                          S,
-                                          c,
-                                          f,
-                                          d,
-                                          p,
-                                          y,
-                                          _
-                                      )
-                                    : 3 == n
-                                        ? s.initKeyboardEvent(
-                                              e,
-                                              w,
-                                              x,
-                                              S,
-                                              g,
-                                              b,
-                                              c,
-                                              f,
-                                              d,
-                                              p,
-                                              h
-                                          )
-                                        : 4 == n
-                                            ? s.initKeyboardEvent(
-                                                  e,
-                                                  w,
-                                                  x,
-                                                  S,
-                                                  g,
-                                                  b,
-                                                  m,
-                                                  E,
-                                                  T
-                                              )
-                                            : s.initKeyboardEvent(
-                                                  e,
-                                                  w,
-                                                  x,
-                                                  S,
-                                                  v,
-                                                  g,
-                                                  b,
-                                                  m,
-                                                  E,
-                                                  T
-                                              )
-                            : s.initEvent(e, w, x);
+                        ? 1 == n
+                            ? s.initKeyboardEvent(
+                                  e,
+                                  w,
+                                  x,
+                                  S,
+                                  g,
+                                  b,
+                                  c,
+                                  d,
+                                  f,
+                                  p,
+                                  h
+                              )
+                            : 2 == n
+                            ? s.initKeyboardEvent(e, w, x, S, c, f, d, p, y, _)
+                            : 3 == n
+                            ? s.initKeyboardEvent(
+                                  e,
+                                  w,
+                                  x,
+                                  S,
+                                  g,
+                                  b,
+                                  c,
+                                  f,
+                                  d,
+                                  p,
+                                  h
+                              )
+                            : 4 == n
+                            ? s.initKeyboardEvent(e, w, x, S, g, b, m, E, T)
+                            : s.initKeyboardEvent(e, w, x, S, v, g, b, m, E, T)
+                        : s.initEvent(e, w, x);
                 for (l in r)
                     if (i(r, l) && s[l] != u[l])
                         try {
@@ -44352,8 +44053,8 @@ var Hogan = {};
                                         ? 1
                                         : 3
                                     : e.shiftKey
-                                        ? 2
-                                        : 4)) ||
+                                    ? 2
+                                    : 4)) ||
                                 9
                         );
                     } catch (e) {
@@ -44952,44 +44653,44 @@ var Hogan = {};
                                               !0
                                           )
                                         : "single" == t.syntheticSpread
-                                            ? $("#one-up-option input").prop(
-                                                  "checked",
-                                                  !0
-                                              )
-                                            : $(
-                                                  "#spread-default-option input"
-                                              ).prop("checked", !0),
+                                        ? $("#one-up-option input").prop(
+                                              "checked",
+                                              !0
+                                          )
+                                        : $(
+                                              "#spread-default-option input"
+                                          ).prop("checked", !0),
                                     "scroll-doc" == t.scroll
                                         ? $("#scroll-doc-option input").prop(
                                               "checked",
                                               !0
                                           )
                                         : "scroll-continuous" == t.scroll
-                                            ? $(
-                                                  "#scroll-continuous-option input"
-                                              ).prop("checked", !0)
-                                            : $(
-                                                  "#scroll-default-option input"
-                                              ).prop("checked", !0),
+                                        ? $(
+                                              "#scroll-continuous-option input"
+                                          ).prop("checked", !0)
+                                        : $(
+                                              "#scroll-default-option input"
+                                          ).prop("checked", !0),
                                     0 === t.pageTransition
                                         ? $(
                                               "#pageTransition-1-option input"
                                           ).prop("checked", !0)
                                         : 1 === t.pageTransition
-                                            ? $(
-                                                  "#pageTransition-2-option input"
-                                              ).prop("checked", !0)
-                                            : 2 === t.pageTransition
-                                                ? $(
-                                                      "#pageTransition-3-option input"
-                                                  ).prop("checked", !0)
-                                                : 3 === t.pageTransition
-                                                    ? $(
-                                                          "#pageTransition-4-option input"
-                                                      ).prop("checked", !0)
-                                                    : $(
-                                                          "#pageTransition-none-option input"
-                                                      ).prop("checked", !0),
+                                        ? $(
+                                              "#pageTransition-2-option input"
+                                          ).prop("checked", !0)
+                                        : 2 === t.pageTransition
+                                        ? $(
+                                              "#pageTransition-3-option input"
+                                          ).prop("checked", !0)
+                                        : 3 === t.pageTransition
+                                        ? $(
+                                              "#pageTransition-4-option input"
+                                          ).prop("checked", !0)
+                                        : $(
+                                              "#pageTransition-none-option input"
+                                          ).prop("checked", !0),
                                     t.theme && u($previewText, t.theme),
                                     $previewText.css({
                                         fontSize: t.fontSize / 100 + "em"
@@ -45022,16 +44723,16 @@ var Hogan = {};
                             : $("#pageTransition-2-option input").prop(
                                   "checked"
                               )
-                                ? (r.pageTransition = 1)
-                                : $("#pageTransition-3-option input").prop(
-                                      "checked"
-                                  )
-                                    ? (r.pageTransition = 2)
-                                    : $("#pageTransition-4-option input").prop(
-                                          "checked"
-                                      )
-                                        ? (r.pageTransition = 3)
-                                        : (r.pageTransition = -1),
+                            ? (r.pageTransition = 1)
+                            : $("#pageTransition-3-option input").prop(
+                                  "checked"
+                              )
+                            ? (r.pageTransition = 2)
+                            : $("#pageTransition-4-option input").prop(
+                                  "checked"
+                              )
+                            ? (r.pageTransition = 3)
+                            : (r.pageTransition = -1),
                         (r.theme = $previewText.attr("data-theme")),
                         l && c(l, r);
                     var i = n.saveKeys();
@@ -47348,7 +47049,7 @@ var Hogan = {};
                             navigator.userAgent
                         )
                             ? t[i]()
-                            : t[i](n ? Element.ALLOW_KEYBOARD_INPUT : {});
+                            : t[i](n && Element.ALLOW_KEYBOARD_INPUT);
                 },
                 exit: function() {
                     e[r.exitFullscreen]();
@@ -47559,102 +47260,95 @@ var Hogan = {};
                                   !0
                               )
                             : "2" === e
-                                ? t.reader.setStyles(
-                                      [
-                                          {
-                                              selector: ".mo-active-default",
-                                              declarations: {
-                                                  "background-color":
-                                                      "black !important",
-                                                  color: "white !important",
-                                                  "border-color":
-                                                      "transparent !important",
-                                                  "border-radius":
-                                                      "0.4em !important"
-                                              }
+                            ? t.reader.setStyles(
+                                  [
+                                      {
+                                          selector: ".mo-active-default",
+                                          declarations: {
+                                              "background-color":
+                                                  "black !important",
+                                              color: "white !important",
+                                              "border-color":
+                                                  "transparent !important",
+                                              "border-radius":
+                                                  "0.4em !important"
                                           }
-                                      ],
-                                      !0
-                                  )
-                                : "3" === e
-                                    ? t.reader.setStyles(
-                                          [
-                                              {
-                                                  selector:
-                                                      ".mo-active-default",
-                                                  declarations: {
-                                                      "background-color":
-                                                          "orange !important",
-                                                      color: "black !important",
-                                                      "border-color":
-                                                          "transparent !important",
-                                                      "border-radius":
-                                                          "0.4em !important"
-                                                  }
-                                              }
-                                          ],
-                                          !0
-                                      )
-                                    : "4" === e
-                                        ? t.reader.setStyles(
-                                              [
-                                                  {
-                                                      selector:
-                                                          ".mo-active-default",
-                                                      declarations: {
-                                                          "background-color":
-                                                              "blue !important",
-                                                          color:
-                                                              "white !important",
-                                                          "border-color":
-                                                              "transparent !important",
-                                                          "border-radius":
-                                                              "0.4em !important"
-                                                      }
-                                                  }
-                                              ],
-                                              !0
-                                          )
-                                        : "5" === e
-                                            ? t.reader.setStyles(
-                                                  [
-                                                      {
-                                                          selector:
-                                                              ".mo-active-default",
-                                                          declarations: {
-                                                              "background-color":
-                                                                  "magenta !important",
-                                                              color:
-                                                                  "black !important",
-                                                              "border-color":
-                                                                  "transparent !important",
-                                                              "border-radius":
-                                                                  "0.4em !important"
-                                                          }
-                                                      }
-                                                  ],
-                                                  !0
-                                              )
-                                            : "6" === e &&
-                                              t.reader.setStyles(
-                                                  [
-                                                      {
-                                                          selector:
-                                                              ".mo-active-default",
-                                                          declarations: {
-                                                              "background-color":
-                                                                  "#00FF00 !important",
-                                                              color:
-                                                                  "black !important",
-                                                              "border-color":
-                                                                  "transparent !important",
-                                                              "border-radius":
-                                                                  "0.4em !important"
-                                                          }
-                                                      }
-                                                  ],
-                                                  !0
-                                              );
+                                      }
+                                  ],
+                                  !0
+                              )
+                            : "3" === e
+                            ? t.reader.setStyles(
+                                  [
+                                      {
+                                          selector: ".mo-active-default",
+                                          declarations: {
+                                              "background-color":
+                                                  "orange !important",
+                                              color: "black !important",
+                                              "border-color":
+                                                  "transparent !important",
+                                              "border-radius":
+                                                  "0.4em !important"
+                                          }
+                                      }
+                                  ],
+                                  !0
+                              )
+                            : "4" === e
+                            ? t.reader.setStyles(
+                                  [
+                                      {
+                                          selector: ".mo-active-default",
+                                          declarations: {
+                                              "background-color":
+                                                  "blue !important",
+                                              color: "white !important",
+                                              "border-color":
+                                                  "transparent !important",
+                                              "border-radius":
+                                                  "0.4em !important"
+                                          }
+                                      }
+                                  ],
+                                  !0
+                              )
+                            : "5" === e
+                            ? t.reader.setStyles(
+                                  [
+                                      {
+                                          selector: ".mo-active-default",
+                                          declarations: {
+                                              "background-color":
+                                                  "magenta !important",
+                                              color: "black !important",
+                                              "border-color":
+                                                  "transparent !important",
+                                              "border-radius":
+                                                  "0.4em !important"
+                                          }
+                                      }
+                                  ],
+                                  !0
+                              )
+                            : "6" === e &&
+                              t.reader.setStyles(
+                                  [
+                                      {
+                                          selector: ".mo-active-default",
+                                          declarations: {
+                                              "background-color":
+                                                  "#00FF00 !important",
+                                              color: "black !important",
+                                              "border-color":
+                                                  "transparent !important",
+                                              "border-radius":
+                                                  "0.4em !important"
+                                          }
+                                      }
+                                  ],
+                                  !0
+                              );
                 }),
                     c.on(
                         c.MediaOverlaysEscape,
@@ -48457,12 +48151,12 @@ var Hogan = {};
             return e === t
                 ? Pe
                 : me(e) >= me(t)
-                    ? e < 0
-                        ? Oe
-                        : Ae
-                    : t < 0
-                        ? Ne
-                        : Re;
+                ? e < 0
+                    ? Oe
+                    : Ae
+                : t < 0
+                ? Ne
+                : Re;
         }
         function R(e, t, n) {
             n || (n = Le);
@@ -48597,23 +48291,23 @@ var Hogan = {};
             return e & ft
                 ? "cancel"
                 : e & ct
-                    ? "end"
-                    : e & ut
-                        ? "move"
-                        : e & lt
-                            ? "start"
-                            : "";
+                ? "end"
+                : e & ut
+                ? "move"
+                : e & lt
+                ? "start"
+                : "";
         }
         function Q(e) {
             return e == Re
                 ? "down"
                 : e == Ne
-                    ? "up"
-                    : e == Oe
-                        ? "left"
-                        : e == Ae
-                            ? "right"
-                            : "";
+                ? "up"
+                : e == Oe
+                ? "left"
+                : e == Ae
+                ? "right"
+                : "";
         }
         function Y(e, t) {
             var n = t.manager;
@@ -48961,8 +48655,8 @@ var Hogan = {};
                 return a && o
                     ? void 0
                     : i || (o && n & De) || (a && n & je)
-                        ? this.preventSrc(t)
-                        : void 0;
+                    ? this.preventSrc(t)
+                    : void 0;
             },
             preventSrc: function(e) {
                 (this.manager.session.prevented = !0), e.preventDefault();
@@ -49066,12 +48760,12 @@ var Hogan = {};
                     return r && (n & Ie || !i)
                         ? t | ft
                         : r || i
-                            ? n & ke
-                                ? t | ct
-                                : t & lt
-                                    ? t | ut
-                                    : lt
-                            : 32;
+                        ? n & ke
+                            ? t | ct
+                            : t & lt
+                            ? t | ut
+                            : lt
+                        : 32;
                 }
             }),
             l(ee, Z, {
@@ -49217,8 +48911,8 @@ var Hogan = {};
                         n & (De | je)
                             ? (t = e.overallVelocity)
                             : n & De
-                                ? (t = e.overallVelocityX)
-                                : n & je && (t = e.overallVelocityY),
+                            ? (t = e.overallVelocityX)
+                            : n & je && (t = e.overallVelocityY),
                         this._super.attrTest.call(this, e) &&
                             n & e.offsetDirection &&
                             e.distance > this.options.threshold &&
@@ -49478,23 +49172,23 @@ var Hogan = {};
             ((void 0 !== e
                 ? e
                 : "undefined" != typeof self
-                    ? self
-                    : {}
+                ? self
+                : {}
             ).Hammer = ae),
             "function" == typeof define && define.amd
                 ? define("hammerjs", [], function() {
                       return ae;
                   })
                 : "undefined" != typeof module && module.exports
-                    ? (module.exports = ae)
-                    : (e.Hammer = ae);
+                ? (module.exports = ae)
+                : (e.Hammer = ae);
     })(window, document),
     (function(e) {
         "function" == typeof define && define.amd
             ? define("jquery_hammer", ["jquery", "hammerjs"], e)
             : "object" == typeof exports
-                ? e(require("jquery"), require("hammerjs"))
-                : e(jQuery, Hammer);
+            ? e(require("jquery"), require("hammerjs"))
+            : e(jQuery, Hammer);
     })(function(e, t) {
         function n(n, r) {
             var i = e(n);
@@ -50036,11 +49730,11 @@ var Hogan = {};
                 return r(e).find(":hover").length > 0
                     ? void K()
                     : r("#audioplayer").hasClass("expanded-audio")
-                        ? void K()
-                        : (r(
-                              "nav *[title], #readium-page-btns *[title]"
-                          ).tooltip("destroy"),
-                          void r(document.body).addClass("hide-ui"));
+                    ? void K()
+                    : (r("nav *[title], #readium-page-btns *[title]").tooltip(
+                          "destroy"
+                      ),
+                      void r(document.body).addClass("hide-ui"));
             },
             K = function(e, t) {
                 W && (window.clearTimeout(W), (W = null)),
@@ -50424,25 +50118,22 @@ var Hogan = {};
                                                   h.spineItemPageIndex
                                           })
                                         : h.elementCfi
-                                            ? ((j = new S(
-                                                  h.idref,
-                                                  h.elementCfi
-                                              )),
-                                              (m = {
-                                                  idref: h.idref,
-                                                  elementCfi: h.elementCfi
-                                              }))
-                                            : (m = { idref: h.idref })
-                                    : h.contentRefUrl && h.sourceFileHref
-                                        ? (m = {
-                                              contentRefUrl: h.contentRefUrl,
-                                              sourceFileHref: h.sourceFileHref
-                                          })
-                                        : h.spineItemCfi &&
+                                        ? ((j = new S(h.idref, h.elementCfi)),
                                           (m = {
-                                              spineItemCfi: h.spineItemCfi,
+                                              idref: h.idref,
                                               elementCfi: h.elementCfi
-                                          }),
+                                          }))
+                                        : (m = { idref: h.idref })
+                                    : h.contentRefUrl && h.sourceFileHref
+                                    ? (m = {
+                                          contentRefUrl: h.contentRefUrl,
+                                          sourceFileHref: h.sourceFileHref
+                                      })
+                                    : h.spineItemCfi &&
+                                      (m = {
+                                          spineItemCfi: h.spineItemCfi,
+                                          elementCfi: h.elementCfi
+                                      }),
                                     m &&
                                         ((a = m),
                                         console.debug(
