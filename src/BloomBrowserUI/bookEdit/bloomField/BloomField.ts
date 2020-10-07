@@ -440,7 +440,7 @@ export default class BloomField {
         // if the user types (ctrl+a, 'blah'), then we get blah outside of any paragraph
 
         $(field).keyup(e => {
-            if ($(this).find("p").length === 0) {
+            if ($(field).find("p").length === 0) {
                 BloomField.EnsureParagraphsPresent(field);
 
                 // Now put the cursor in the paragraph, *after* the character they may have just typed or the
@@ -455,12 +455,12 @@ export default class BloomField {
     // inadvertently remove the embedded images. So we introduced the "bloom-preventRemoval" class, and this
     // tries to safeguard elements bearing that class.
     private static PreventRemovalOfSomeElements(field: HTMLElement) {
-        var numberThatShouldBeThere = $(field).find(".bloom-preventRemoval")
+        const numberThatShouldBeThere = $(field).find(".bloom-preventRemoval")
             .length;
         if (numberThatShouldBeThere > 0) {
             $(field).keyup(e => {
                 if (
-                    $(this).find(".bloom-preventRemoval").length <
+                    $(field).find(".bloom-preventRemoval").length <
                     numberThatShouldBeThere
                 ) {
                     document.execCommand("undo");
