@@ -178,6 +178,8 @@ namespace Bloom.Publish.PDF
 
 		const double A4PortraitHeight = 297; // mm
 		private const double A4PortraitWidth = 210; // mm
+		private const double A3PortraitWidth = A4PortraitHeight;
+		private const double A3PortraitHeight = A4PortraitWidth * 2d;
 		const double bleedWidth = 3; // mm
 		private const double bleedExtra = bleedWidth * 2;
 		private const double USComicPortraitHeight = 10.5 * 25.4;
@@ -246,12 +248,16 @@ namespace Bloom.Publish.PDF
 					// we floor because that actually gives us the 148mm that is official
 					width = Math.Floor(A4PortraitHeight / 2) + bleedExtra;
 					break;
+				case "a3":
+					height = A3PortraitHeight + bleedExtra;
+					width = A3PortraitWidth + bleedExtra;
+					break;
 				case "uscomic":
 					height = USComicPortraitHeight + bleedExtra;
 					width = USComicPortraitWidth + bleedExtra;
 					break;
 				default:
-					throw new ArgumentException("Full bleed printing of paper sizes other than A5 and USComic is not yet implemented");
+					throw new ArgumentException("Full bleed printing of paper sizes other than A5, A3, and USComic is not yet implemented");
 			}
 
 			if (specs.Landscape)

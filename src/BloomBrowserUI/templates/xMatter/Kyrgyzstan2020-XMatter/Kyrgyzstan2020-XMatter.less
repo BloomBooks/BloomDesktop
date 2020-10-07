@@ -19,7 +19,7 @@
     --OutsideBackCoverLogoHeight: 14mm;
 }
 .Device16x9Portrait {
-    --HeaderHeight: 20mm;
+    --HeaderHeight: 3cm; // enough for two lines
     --OutsideBackCoverLogoHeight: 10mm;
     --OutsideBackCoverCreditsFontSize: 9pt;
 }
@@ -28,6 +28,7 @@
 div.bloom-page.outsideFrontCover.coverColor,
 div.bloom-page.outsideBackCover.coverColor {
     background-color: #193970 !important;
+    color: white;
 }
 
 .outsideFrontCover .marginBox {
@@ -178,9 +179,6 @@ div.bloom-page.outsideBackCover.coverColor {
         display: none;
     }
 }
-div.bloom-page.coverColor {
-    color: white;
-}
 
 /* Element | http://localhost:8089/bloom/C%3A/Users/hatto/Documents/Bloom/Kyrgyz%20Branding%20Test/Book/8444a5b9-4b6a-476a-90da-cc003fbc1fea-memsim-Preview.html */
 
@@ -266,7 +264,13 @@ div.bloom-page {
 }
 // NOTE. The existence of this selector tells XMatterHelper that we can handle device layout, so don't revert to a specialized one.
 .Device16x9Portrait {
-    .outsideBackCover {
+    &.frontCover {
+        .bloom-translationGroup.bookTitle {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+    }
+    &.outsideBackCover {
         .marginBox {
             left: 19px !important;
             width: 89mm;
