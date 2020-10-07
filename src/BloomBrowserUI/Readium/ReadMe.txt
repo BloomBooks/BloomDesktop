@@ -1,10 +1,35 @@
 The files in this folder make up the Readium cloud-reader-lite. They are used in the epub preview panel.
 The version here was produced from Readium 0.3.2, obtained as follows:
-- clone https://github.com/readium/readium-js-viewer.git
-- cd to the directory
-- set to tag 0.32.0 alpha, (commit 33d123a2044aa65d78f375d88aaab9dcf3a0a5ac).
+- git clone --recursive -b master https://github.com/readium/readium-js-viewer.git readium-js-viewer
+- cd readium-js-viewer
 - git submodule update --init --recursive
-- yarn run prepare:yarn:all
+- npm run prepare:all
+- git checkout develop && git submodule foreach --recursive "git checkout develop"
+Add two patches: in readium-js/readium-shared-js/views/cfi_navigation_logic.js, at the start of the function getLeafNodeElements, Add
+			if ($root.length === 0) {
+				return [];
+			}
+(This prevents a crash when testing the visibility of an element with display:none and no siblings)
+
+In the function checkVisibilityByRectangles, after the line
+    var clientRectangles = getNormalizedRectangles($element,visibleContentOffsets);
+insert
+    looper = $element;
+      while (looper.length && clientRectangles.length === 0) {
+        looper = looper.parent();
+        if (looper.prop("tagName") === "BODY") {
+          break;
+        }
+        clientRectangles = getNormalizedRectangles(looper,visibleContentOffsets);
+      }
+(This allows an element to be considered visible, for purposes of choosing the first element to play audio for,
+if it is display:none but one of its parents is visible. This is often true of our image descriptions. It's
+possible that it would be better to more carefully restrict this change to the one context where we want it,
+but all seems to be well with this simple change and the more restrictive one would involve changing many
+more places. I don't think it's worth it unless we decide to fully fork readium and all its submodules. All
+These changes are just helping us hold on until Readium 2 is stable.)
+(I would like to check this in, but am having trouble with the submodules. When I work my way to this point
+GitKraken tells me the submodule is in a detached head state.)
 - npm run dist
 
 This produces a directory dist, containing one called cloud-reader-lite.
@@ -33,3 +58,14 @@ See the comments in that file for what we tweak and why.
 
 I think I read that it is possible to set some kind of flag to produce a non-minified version,
 but don't remember the details.
+
+Hints for working on this code:
+If you are only changing javascript, it is easier to just copy scripts/readium-js-viewer_all_LITE.js to Readium/scripts.
+If you want to debug with source code, also copy cloud-reader-lite_sourcemap/readium-js-viewer_all_LITE.js.map
+to the same place as the js. Don't check this in.
+If you want to debug one of our own books using the Readium repo debug setup (npm run html, or npm run http:watch),
+- unzip the book
+- add the book folder to Readium's epub_content folder
+- edit epub_library.opds and create another entry for your book. I often copy an existing one
+and just change the title and, critically, the href of the application/epub link, which must
+match the name of your folder.
