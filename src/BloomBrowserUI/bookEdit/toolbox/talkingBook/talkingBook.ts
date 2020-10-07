@@ -1,4 +1,4 @@
-﻿import { ITool } from "../toolbox";
+﻿import { getTheOneToolbox, ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";
 import * as AudioRecorder from "./audioRecording";
 
@@ -45,8 +45,9 @@ export default class TalkingBookTool implements ITool {
 
     // Called when a new page is loaded.
     public async newPageReady(): Promise<void> {
-        // if this class eventually extends our React Adaptor, this can be removed.
-        return AudioRecorder.theOneAudioRecorder.newPageReady();
+        return AudioRecorder.theOneAudioRecorder.newPageReady(
+            this.isImageDescriptionToolActive()
+        );
     }
 
     public hideTool() {
@@ -77,11 +78,18 @@ export default class TalkingBookTool implements ITool {
         return true;
     }
 
+    private isImageDescriptionToolActive(): boolean {
+        return getTheOneToolbox().isToolActive("imageDescriptionTool");
+    }
+
     private showImageDescriptionsIfAny() {
         // If we have any image descriptions we need to show them so we can record them.
-        // (Also because we WILL select them, which is confusing if they are not visible.)
+        // (BL-8515) Unless the image description tool is not currently active.
         const page = ToolBox.getPage();
         if (!page) {
+            return;
+        }
+        if (!this.isImageDescriptionToolActive()) {
             return;
         }
         const imageContainers = page.getElementsByClassName(
