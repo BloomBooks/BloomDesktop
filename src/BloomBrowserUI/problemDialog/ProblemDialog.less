@@ -119,4 +119,10 @@
             white-space: pre;
         }
     }
+
+    .allowSelect,
+    .allowSelect * {
+        -moz-user-select: text; // Firefox before v69
+        user-select: text;
+    }
 }
