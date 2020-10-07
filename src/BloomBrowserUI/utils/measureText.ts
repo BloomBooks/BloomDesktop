@@ -62,7 +62,7 @@ export class MeasureText {
             bottomOfTextWithDefaultLineSpace -
             baselineOfTextWithDefaultLineSpace;
 
-        if (lineHeight) div.style.lineHeight = lineHeight;
+        if (lineHeight != null) div.style.lineHeight = lineHeight;
         const bottomOfTextWithActualLineSpace = div.getBoundingClientRect()
             .bottom;
         const baselineOfTextWithActualLineSpace = block.getBoundingClientRect()
