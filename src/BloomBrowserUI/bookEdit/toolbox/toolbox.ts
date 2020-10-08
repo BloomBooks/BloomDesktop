@@ -401,6 +401,15 @@ export class ToolBox {
         return getITool(toolId);
     }
 
+    // Returns 'true' if the checkbox in the More... tab for the requested tool (w/"Tool" suffix!) is checked.
+    public isToolActive(toolId: string): boolean {
+        const tools = $("*[data-toolId]");
+        const filteredTools = tools.filter(function() {
+            return $(this).attr("data-toolId") === toolId;
+        });
+        return filteredTools.length > 0;
+    }
+
     public activateToolFromId(toolId: string) {
         if (!getITool(toolId)) {
             // Normally we won't even give a way to see this tool if it's

@@ -1490,9 +1490,7 @@ describe("audio recording tests", () => {
             expect(sentence1.id.length).toBeGreaterThan(31);
 
             expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
-                `http://localhost:9876/bloom/api/audio/wavFile?id=audio/${
-                    sentence1.id
-                }.wav`
+                `http://localhost:9876/bloom/api/audio/wavFile?id=audio/${sentence1.id}.wav`
             );
 
             const parentDiv = myDoc.getElementById("numberedPage")!;
@@ -1776,7 +1774,7 @@ describe("audio recording tests", () => {
             recording.audioRecordingMode = AudioRecordingMode.TextBox;
 
             // System under test
-            await recording.newPageReady();
+            await recording.newPageReady(true);
 
             // Verification
             const firstDiv = getFrameElementById("page", "div1")!;
@@ -2270,9 +2268,7 @@ export async function SetupIFrameAsync(
     if (element) {
         if (element.tagName.toLowerCase() !== "iframe") {
             throw new Error(
-                `An element with the id ${id} already exists, but it is a ${
-                    element.tagName
-                } not an iframe.`
+                `An element with the id ${id} already exists, but it is a ${element.tagName} not an iframe.`
             );
         } else {
             iframe = element as HTMLIFrameElement;
