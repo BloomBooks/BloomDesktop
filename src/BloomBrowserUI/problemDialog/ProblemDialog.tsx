@@ -274,7 +274,7 @@ export const ProblemDialog: React.FunctionComponent<{
                                 return (
                                     <>
                                         {issueLink !== "" && (
-                                            <Typography>
+                                            <Typography className="allowSelect">
                                                 {localizedFailureMsg}
                                             </Typography>
                                         )}
