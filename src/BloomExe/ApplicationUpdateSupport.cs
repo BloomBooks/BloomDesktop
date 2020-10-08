@@ -67,7 +67,11 @@ namespace Bloom
 				}
 				else
 				{
-					var result = InstallerSupport.LookupUrlOfSquirrelUpdate();
+					// Mostly, we're willing to use a cached value for this URL. But if verbosity is Verbose,
+					// which means the user has asked us to check for updates and we're going to report even
+					// if there is nothing to update, we need to know whether we are online NOW. If not,
+					// the failure report we get when Squirrel fails would be misleading.
+					var result = InstallerSupport.LookupUrlOfSquirrelUpdate(verbosity == BloomUpdateMessageVerbosity.Verbose);
 
 					if (result.Error != null || string.IsNullOrEmpty(result.URL))
 					{
