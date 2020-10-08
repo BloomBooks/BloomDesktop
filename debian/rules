@@ -112,6 +112,8 @@ override_dh_clideps:
 		--exclude-moduleref=mspatcha.dll --exclude-moduleref=mspatchc.dll \
 		--exclude-moduleref=libdl.so --exclude-moduleref=ntdll \
 		--exclude-moduleref=MAPI32.DLL --exclude-moduleref=__Internal \
+		--exclude-moduleref=api-ms-win-core-sysinfo-l1-1-0.dll \
+		--exclude-moduleref=api-ms-win-core-sysinfo-l1-2-0.dll \
 		--exclude-moduleref=ole32.dll --exclude-moduleref=version.dll && \
 	rm -rf debian/tmp/usr && \
 	mv DistFiles/connections.delel DistFiles/connections.dll && \
