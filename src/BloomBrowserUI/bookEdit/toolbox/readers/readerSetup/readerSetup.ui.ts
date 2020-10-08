@@ -192,9 +192,7 @@ export function displayLetters(): void {
     for (let i = 0; i < letters.length; i++) {
         div.append(
             $(
-                `<div class="lang1InATool book-font unselected-letter rs-letters rs-letters-${suffix}">${
-                    letters[i]
-                }</div>`
+                `<div class="lang1InATool book-font unselected-letter rs-letters rs-letters-${suffix}">${letters[i]}</div>`
             )
         );
     }
@@ -1181,7 +1179,7 @@ $(document).ready(() => {
     $("body")
         .find("*[data-i18n]")
         .localize(finishInitializing);
-    getToolboxFrameExports().addWordListChangedListener(
+    getToolboxFrameExports()!.addWordListChangedListener(
         "wordListChanged.ReaderSetup",
         wordListChangedCallback
     );
@@ -1190,7 +1188,7 @@ $(document).ready(() => {
     const container = $("body");
     //   const pageIframe = parent.frames['page'];
     //   pageIframe.FrameExports.loadLongpressInstructions(container.find('textarea'));
-    getToolboxFrameExports().loadLongpressInstructions(
+    getToolboxFrameExports()!.loadLongpressInstructions(
         container.find("textarea")
     );
 });
