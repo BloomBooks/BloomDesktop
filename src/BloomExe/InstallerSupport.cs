@@ -57,13 +57,15 @@ namespace Bloom
 		/// <summary>
 		/// Note: this actually has to go out over the web to get the answer, and so it may fail
 		/// </summary>
-		internal static UpdateVersionTable.UpdateTableLookupResult LookupUrlOfSquirrelUpdate()
+		internal static UpdateVersionTable.UpdateTableLookupResult LookupUrlOfSquirrelUpdate(bool forceReload = false)
 		{
 			// If we got an error last time, check again...maybe we were offline and are now connected
-			// again. Or perhaps the server was offline and is now back.
-			if (_updateTableLookupResult == null || _updateTableLookupResult.Error != null)
+			// again. Or perhaps the server was offline and is now back. Also if forceReload is
+			// true...in this case the user is asking us to check, we're going to report a Squirrel
+			// failure to update, so we need to know if we can get to the internet NOW.
+			if (_updateTableLookupResult == null || _updateTableLookupResult.Error != null || forceReload)
 			{
-				_updateTableLookupResult = new UpdateVersionTable().LookupURLOfUpdate();
+				_updateTableLookupResult = new UpdateVersionTable().LookupURLOfUpdate(forceReload);
 			}
 			return _updateTableLookupResult;
 		}
