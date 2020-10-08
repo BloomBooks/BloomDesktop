@@ -170,6 +170,8 @@ export default class AudioRecording {
     private playbackOrderCache: IPlaybackOrderInfo[] = [];
     private disablingOverlay: HTMLDivElement;
 
+    private isImageDescriptionActive: boolean = false;
+
     constructor() {
         this.audioSplitButton = <HTMLButtonElement>(
             document.getElementById(kAudioSplitId)!
@@ -551,6 +553,7 @@ export default class AudioRecording {
     // And BL-5457: Check that we actually have recordable text in the divs we return.
     // And now (BL-7883) we want to optionally order the divs by the tabindex attribute
     // on their parent translationGroup div.
+    // And also (BL-8515) filter out image description text, if that tool is not active.
     private getRecordableDivs(
         includeCheckForText: boolean = true,
         includeCheckForPlaybackOrder: boolean = true
@@ -567,12 +570,20 @@ export default class AudioRecording {
             elem => <HTMLElement>elem
         );
         const recordableDivs = editableDivs.filter(elt => {
-            if (!this.isVisible(elt)) {
+            if (!$this.isVisible(elt)) {
                 return false;
             }
             const transgroup = elt.closest(".bloom-translationGroup");
-            if (transgroup && transgroup.classList.contains("box-header-off")) {
-                return false;
+            if (transgroup) {
+                if (transgroup.classList.contains("box-header-off")) {
+                    return false;
+                }
+                if (
+                    !$this.isImageDescriptionActive &&
+                    transgroup.classList.contains("bloom-imageDescription")
+                ) {
+                    return false;
+                }
             }
             if (!includeCheckForText) {
                 return true;
@@ -873,9 +884,9 @@ export default class AudioRecording {
 
     private removeAudioCurrent(parentElement: Element) {
         // Note that HTMLCollectionOf's length can change if you change the number of elements matching the selector.
-        const audioCurrentCollection: HTMLCollectionOf<
-            Element
-        > = parentElement.getElementsByClassName(kAudioCurrent);
+        const audioCurrentCollection: HTMLCollectionOf<Element> = parentElement.getElementsByClassName(
+            kAudioCurrent
+        );
 
         // Convert to an array whose length won't be changed
         const audioCurrentArray: Element[] = Array.from(audioCurrentCollection);
@@ -2311,9 +2322,11 @@ export default class AudioRecording {
         }
     }
 
-    public async newPageReady(): Promise<void> {
+    public async newPageReady(imageDescToolActive: boolean): Promise<void> {
         // Changing the page causes the previous page's audio to stop playing (be "emptied").
         ++this.currentAudioSessionNum;
+
+        this.isImageDescriptionActive = imageDescToolActive;
 
         // ENHANCE: Optimization? I think the pageDocBody could be safely cached upon newPageReady and placed in a member variable.
         //          Then we wouldn't need to find the body element so many times
