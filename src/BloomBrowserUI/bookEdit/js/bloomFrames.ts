@@ -19,7 +19,20 @@ interface WindowWithExports extends Window {
 export function getToolboxFrameExports() {
     return getFrameExports("toolbox");
 }
-export function getPageFrameExports() {
+
+export function getTheOneToolboxThen(doThis: (x: any) => void) {
+    const frameExports = getToolboxFrameExports();
+    if (frameExports) {
+        const theOneToolbox = frameExports.getTheOneToolbox();
+        if (theOneToolbox) {
+            doThis(theOneToolbox);
+            return;
+        }
+    }
+    // If the toolbox isn't ready yet, try later.
+    setTimeout(() => getTheOneToolboxThen(doThis), 200);
+}
+export function getPageFrameExports(): any | undefined {
     return getFrameExports("page");
 }
 export function getEditViewFrameExports() {
@@ -30,11 +43,17 @@ function getRootWindow(): Window {
     //if parent is null, we're the root
     return window.parent || window;
 }
-function getFrame(id: string): WindowWithExports {
+function getFrame(id: string): WindowWithExports | undefined {
     // Enhance: This needs a plan for what happens if getElementById returns null.
-    return (<HTMLIFrameElement>getRootWindow().document.getElementById(id))
-        .contentWindow as WindowWithExports;
+    const iframe = <HTMLIFrameElement>(
+        getRootWindow().document.getElementById(id)
+    );
+    if (iframe) {
+        return iframe.contentWindow as WindowWithExports;
+    }
+    return undefined;
 }
-function getFrameExports(id: string): any {
-    return getFrame(id).FrameExports;
+function getFrameExports(id: string): any | undefined {
+    const frame = getFrame(id);
+    return frame ? frame.FrameExports : undefined;
 }

@@ -6,6 +6,7 @@ import { BloomApi } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { ImageDescriptionAdapter } from "../toolbox/imageDescription/imageDescription";
 import { getToolboxFrameExports } from "../editViewFrame";
+import { getTheOneToolboxThen } from "./bloomFrames";
 
 declare function ResetRememberedSize(element: HTMLElement);
 
@@ -164,28 +165,30 @@ function SetupImageContainer(containerDiv: any) {
                     '"></button>'
             );
 
-            if (
-                // Only show this button if the toolbox is also offering it. It might not offer it
-                // if it's experimental and that settings isn't on, or for Bloom Enterprise reasons, or whatever.
-                getToolboxFrameExports()
-                    .getTheOneToolbox()
-                    .getToolIfOffered(ImageDescriptionAdapter.kToolID)
-            ) {
-                $this.prepend(
-                    '<button class="imageDescriptionButton imageButton imageOverlayButton ' +
-                        buttonModifier +
-                        '" title="' +
-                        theOneLocalizationManager.getText(
-                            "EditTab.Toolbox.ImageDescriptionTool" // not quite the "Show Image Description Tool", but... feeling parsimonious
-                        ) +
-                        '"></button>'
-                );
-                $this.find(".imageDescriptionButton").click(() => {
-                    getToolboxFrameExports()
-                        .getTheOneToolbox()
-                        .activateToolFromId(ImageDescriptionAdapter.kToolID);
-                });
-            }
+            getTheOneToolboxThen(toolbox => {
+                if (
+                    // Only show this button if the toolbox is also offering it. It might not offer it
+                    // if it's experimental and that settings isn't on, or for Bloom Enterprise reasons, or whatever.
+                    toolbox.getToolIfOffered(ImageDescriptionAdapter.kToolID)
+                ) {
+                    $this.prepend(
+                        '<button class="imageDescriptionButton imageButton imageOverlayButton ' +
+                            buttonModifier +
+                            '" title="' +
+                            theOneLocalizationManager.getText(
+                                "EditTab.Toolbox.ImageDescriptionTool" // not quite the "Show Image Description Tool", but... feeling parsimonious
+                            ) +
+                            '"></button>'
+                    );
+                    $this.find(".imageDescriptionButton").click(() => {
+                        getToolboxFrameExports()
+                            .getTheOneToolbox()
+                            .activateToolFromId(
+                                ImageDescriptionAdapter.kToolID
+                            );
+                    });
+                }
+            });
 
             SetImageTooltip(containerDiv, img);
 
