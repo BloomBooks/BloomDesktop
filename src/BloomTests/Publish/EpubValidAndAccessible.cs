@@ -8,20 +8,33 @@ using SIL.Extensions;
 
 namespace BloomTests.Publish
 {
+	/// <summary>
+	/// This part of the class implements several tests in the ExportEpubTests group on a single,
+	/// more complicated book that tests accessibility.  The code tries to minimize how often the
+	/// book gets created.
+	/// </summary>
+	/// <remarks>
+	/// This started as a separate subclass, which explains the base class.  The CreateAccessibleEpub
+	/// method was essentially the subclass's override of the OneTimeSetup method.  However, this
+	/// implementation was subject to sporadic (actually more than sporadic) failures on Linux
+	/// with the message
+	/// System.ApplicationException: Failure to completely load visibility document in RemoveUnwantedContent
+	/// in the MakeEpub method call.  Presumably this was due to parallel calls into the browser
+	/// due to the architecture of the NUnit test runner.  Making all this into a single class
+	/// reduced the number of times this error happened in 10 runs of the three classes (or three
+	/// parts of the same class) from 7 to 0.  Trying a lock around the content of the OneTimeSetup
+	/// method reduced the count to 3 failures in 10 tries.  Trying a lock around the content of the
+	/// MakeEpub method resulted in 5 failures in 10 tries.
+	/// </remarks>
 	[TestFixture]
-	// This class implements what is conceptually one or two tests in the ExportEpubTests group.
-	// But as there are many different outcomes to verify, and a much more complicated book to
-	// create, it's cleaner to make a distinct class, and do the complete book creation setup in
-	// OneTimeSetup.
-	public class EpubValidAndAccessible : ExportEpubTestsBaseClass
+	public partial class ExportEpubTests : ExportEpubTestsBaseClass
 	{
+		bool _accessibleEpubExists;
 
-		[OneTimeSetUp]
-		public override void OneTimeSetup()
+		public void CreateAccessibleEpub()
 		{
-			base.OneTimeSetup();
-			base.Setup(); // since this class represents just one test, we can do it here.
-
+			if (_accessibleEpubExists)
+				return;
 			var book = SetupBookLong("This is some text", "xyz", " bloom-frontMatter frontCover' data-page='required singleton",
 				optionalDataDiv: @"
 <div id='bloomDataDiv'>
@@ -146,30 +159,14 @@ namespace BloomTests.Publish
 			var branding = "Test";
 			// Currently, only in OnPage mode does the image description turn into an aside that can be linked to the image.
 			MakeEpub("output", "ExportEpubWithSvgTests", book, BookInfo.HowToPublishImageDescriptions.OnPage, branding);
-			GetPageOneData();
 			_ns = GetNamespaceManager();
-		}
-
-		[OneTimeTearDown]
-		public override void OneTimeTearDown()
-		{
-			base.TearDown(); // since we did Setup in OneTimeSetup
-			base.OneTimeTearDown();
-		}
-
-		public override void Setup()
-		{
-			// do nothing; we call base.Setup() for this class in OneTimeSetup().
-		}
-
-		public override void TearDown()
-		{
-			// do nothing; we call base.TearDown() for this class in OneTimeTearDown().
+			_accessibleEpubExists = true;
 		}
 
 		[Test]
-		public void CheckEpubBasics()
+		public void CheckAccessibleEpubBasics()
 		{
+			CreateAccessibleEpub();
 			CheckBasicsInPage("DevilsSlide");
 			CheckBasicsInManifest();
 			CheckAccessibilityInManifest(false, true, false, _defaultSourceValue, false); // no sound files, but some image files
@@ -178,6 +175,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckFrontCoverAccessibility()
 		{
+			CreateAccessibleEpub();
 			// Verify the ARIA role and labels for the front cover page.
 			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:div[@role='contentinfo']", _ns, 1);
 			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@aria-label]", _ns, 2);
@@ -195,6 +193,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckContentPageAccessibility()
 		{
+			CreateAccessibleEpub();
 			var pageData = GetPageNData(2);
 			// Verify the ARIA role and labels for the content page.
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='main']", _ns, 1);
@@ -214,6 +213,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckTitlePageAccessibility()
 		{
+			CreateAccessibleEpub();
 			var pageData = GetPageNData(3);
 			// Verify the ARIA roles and labels for the Bloom title page.
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 1);
@@ -235,6 +235,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckCreditsPageAccessibility()
 		{
+			CreateAccessibleEpub();
 			var pageData = GetPageNData(4);
 			// Verify the ARIA roles and labels for the Bloom credits page.
 			AssertThatXmlIn.String(pageData).HasSpecifiedNumberOfMatchesForXpath("//xhtml:*[@role='contentinfo']", _ns, 1);
@@ -258,6 +259,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckEndPageAccessibility()
 		{
+			CreateAccessibleEpub();
 			var pageData = GetPageNData(5);
 			// Verify the ARIA roles and labels for the End Page.
 			// currently two things get role attrs, one doc-pageBreak, and currently one presentation, on an automatically inserted branding image.
@@ -274,6 +276,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckEpubSvgValidity()
 		{
+			CreateAccessibleEpub();
 			var svgData = GetFileData(EpubMaker.kImagesFolder+"/back-cover-outside.svg");
 			var ns = new XmlNamespaceManager(new NameTable());
 			//ns.AddNamespace("", "http://www.w3.org/2000/svg");
@@ -304,6 +307,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckEpubManifestPropertiesValidity()
 		{
+			CreateAccessibleEpub();
 			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/manifest/item[@id='f5' and @properties='scripted svg']");
 			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("package/manifest/item[@properties='scripted svg']", 1);
 
@@ -318,6 +322,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckEpubPagesValidity()
 		{
+			CreateAccessibleEpub();
 			CheckPageForEpubValidity(1);
 			CheckPageForEpubValidity(2);
 			CheckPageForEpubValidity(3);
@@ -466,6 +471,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckEpubFolderStructure()
 		{
+			CreateAccessibleEpub();
 			CheckFolderStructure();
 		}
 	}
