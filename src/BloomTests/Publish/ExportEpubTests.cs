@@ -1449,9 +1449,9 @@ namespace BloomTests.Publish
 			var originalCulture = CultureInfo.CurrentCulture;
 			if (switchCulture)
 			{
-				// This culture -- English (Sweden) -- is one of many which uses a comma for the decimal separator,
+				// This culture -- Swedish (Sweden) -- is one of many which uses a comma for the decimal separator,
 				// hence its significance in this case. See https://issues.bloomlibrary.org/youtrack/issue/BL-9079.
-				CultureInfo.CurrentCulture = new CultureInfo("en-SE", false);
+				CultureInfo.CurrentCulture = new CultureInfo("se-SE", false);
 			}
 
 			// Setup //
