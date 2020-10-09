@@ -447,9 +447,17 @@ namespace Bloom.Publish.Epub
 				new XElement(dc + "language", Book.CollectionSettings.Language1Iso639Code),
 				new XElement(dc + "identifier",
 					new XAttribute("id", "I" + Book.ID), "bloomlibrary.org." + Book.ID),
-					new XElement(dc + "source", source));
+				new XElement(dc + "source", source));
+			if (!string.IsNullOrEmpty(Book.BookInfo.Isbn))
+			{
+				var isbnContents = StripOffTag(Book.BookInfo.Isbn);
+				metadataElt.Add(new XElement(dc + "identifier",
+					"urn:isbn:" + isbnContents));
+			}
+
 			if (!string.IsNullOrEmpty(bookMetaData.Author))
 				metadataElt.Add(new XElement(dc + "creator", new XAttribute("id", "author"), bookMetaData.Author));
+
 			if (!string.IsNullOrEmpty(bookMetaData.Summary))
 				metadataElt.Add(new XElement(dc + "description", bookMetaData.Summary));
 			// Per BL-6438 and a reply from the GDL (Global Digital Library), it is better to put
@@ -461,6 +469,13 @@ namespace Bloom.Publish.Epub
 			// Last modified datetime like 2012-03-20T11:37:00Z
 			metadataElt.Add(new XElement(opf + "meta",
 				new XAttribute("property", "dcterms:modified"), new FileInfo(Storage.FolderPath).LastWriteTimeUtc.ToString("s") + "Z"));
+			var copyrightYear = ParseCopyright(Book.BookInfo.Copyright, out string rightsHolder);
+			if (!string.IsNullOrEmpty(copyrightYear))
+				metadataElt.Add(new XElement(opf + "meta",
+					new XAttribute("property", "dcterms:dateCopyrighted"), copyrightYear));
+			if (!string.IsNullOrEmpty(rightsHolder))
+				metadataElt.Add(new XElement(opf + "meta",
+					new XAttribute("property", "dcterms:rightsHolder"), rightsHolder));
 			if (!string.IsNullOrEmpty(bookMetaData.TypicalAgeRange))
 				metadataElt.Add(new XElement(opf + "meta",
 					new XAttribute("property", "schema:typicalAgeRange"), bookMetaData.TypicalAgeRange));
@@ -532,6 +547,32 @@ namespace Bloom.Publish.Epub
 			}
 
 			MakeSpine(opf, rootElt, manifestPath);
+		}
+
+		private object StripOffTag(string isbn)
+		{
+			// ISBN, if there is one, comes to us with surrounding XML para tags.
+			var result = isbn;
+			var endOfStartTag = result.IndexOf(">", StringComparison.InvariantCulture);
+			if (endOfStartTag < 0)
+				return result;
+			result = result.Substring(endOfStartTag + 1);
+			var startOfEndTag = result.IndexOf("<", StringComparison.InvariantCulture);
+			return startOfEndTag < 0 ? result : result.Substring(0, startOfEndTag);
+		}
+
+		private const string COPYRIGHT = "Copyright © ";
+		private static string ParseCopyright(string copyrightString, out string rightsHolder)
+		{
+			rightsHolder = "";
+			if (!copyrightString.StartsWith(COPYRIGHT))
+				return copyrightString; // Punt!
+			var stripped = copyrightString.Substring(COPYRIGHT.Length);
+			var comma = stripped.IndexOf(","); // Is this field localized at all? Comma may be culture-specific.
+			if (comma < 0)
+				return stripped;
+			rightsHolder = stripped.Substring(comma + 1).Trim();
+			return stripped.Substring(0, comma);
 		}
 
 		/// <summary>
