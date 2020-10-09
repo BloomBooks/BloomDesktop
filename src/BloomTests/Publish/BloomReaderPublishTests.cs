@@ -21,6 +21,7 @@ using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
+using SIL.PlatformUtilities;
 
 namespace BloomTests.Publish
 {
@@ -990,7 +991,16 @@ namespace BloomTests.Publish
 			byte[] reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path,true);
 			Assert.That(reducedBytes, Is.Not.EqualTo(originalBytes)); // no easy way to check it was made transparent, but should be changed.
 			// Size should not change much.
-			Assert.That(reducedBytes.Length, Is.LessThan(originalBytes.Length * 11/10));
+			if (Platform.IsLinux)
+			{
+				// Linux graphics code isn't as sophisticated as Windows: the file size seems to
+				// grow a lot more.
+				Assert.That(reducedBytes.Length, Is.LessThan(originalBytes.Length * 2));
+			}
+			else
+			{
+				Assert.That(reducedBytes.Length, Is.LessThan(originalBytes.Length * 11 / 10));
+			}
 			Assert.That(reducedBytes.Length, Is.GreaterThan(originalBytes.Length * 9 / 10));
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
