@@ -447,9 +447,18 @@ namespace Bloom.Publish.Epub
 				new XElement(dc + "language", Book.CollectionSettings.Language1Iso639Code),
 				new XElement(dc + "identifier",
 					new XAttribute("id", "I" + Book.ID), "bloomlibrary.org." + Book.ID),
-					new XElement(dc + "source", source));
+				new XElement(dc + "source", source));
+			if (!string.IsNullOrEmpty(Book.BookInfo.Isbn))
+			{
+				var isbnContents = GetIsbnContents();
+				if (!string.IsNullOrEmpty(isbnContents))
+					metadataElt.Add(new XElement(dc + "identifier",
+					"urn:isbn:" + isbnContents));
+			}
+
 			if (!string.IsNullOrEmpty(bookMetaData.Author))
 				metadataElt.Add(new XElement(dc + "creator", new XAttribute("id", "author"), bookMetaData.Author));
+
 			if (!string.IsNullOrEmpty(bookMetaData.Summary))
 				metadataElt.Add(new XElement(dc + "description", bookMetaData.Summary));
 			// Per BL-6438 and a reply from the GDL (Global Digital Library), it is better to put
@@ -461,6 +470,13 @@ namespace Bloom.Publish.Epub
 			// Last modified datetime like 2012-03-20T11:37:00Z
 			metadataElt.Add(new XElement(opf + "meta",
 				new XAttribute("property", "dcterms:modified"), new FileInfo(Storage.FolderPath).LastWriteTimeUtc.ToString("s") + "Z"));
+			var yearRightsTuple = ParseCopyright(Book.BookInfo.Copyright);
+			if (!string.IsNullOrEmpty(yearRightsTuple.Item1))
+				metadataElt.Add(new XElement(opf + "meta",
+					new XAttribute("property", "dcterms:dateCopyrighted"), yearRightsTuple.Item1));
+			if (!string.IsNullOrEmpty(yearRightsTuple.Item2))
+				metadataElt.Add(new XElement(opf + "meta",
+					new XAttribute("property", "dcterms:rightsHolder"), yearRightsTuple.Item2));
 			if (!string.IsNullOrEmpty(bookMetaData.TypicalAgeRange))
 				metadataElt.Add(new XElement(opf + "meta",
 					new XAttribute("property", "schema:typicalAgeRange"), bookMetaData.TypicalAgeRange));
@@ -532,6 +548,39 @@ namespace Bloom.Publish.Epub
 			}
 
 			MakeSpine(opf, rootElt, manifestPath);
+		}
+
+		private string GetIsbnContents()
+		{
+			string isbnContents;
+			try
+			{
+				isbnContents = XElement.Parse(Book.BookInfo.Isbn).GetInnerText();
+			}
+			catch (ArgumentException)
+			{
+				// apparently non-valid XML input; try just using what's given
+				isbnContents = Book.BookInfo.Isbn;
+			}
+
+			return isbnContents;
+		}
+
+		private const string COPYRIGHT = "Copyright © ";
+		private static Tuple<string, string> ParseCopyright(string copyrightString)
+		{
+			var rightsHolder = "";
+			if (!copyrightString.StartsWith(COPYRIGHT))
+			{
+				return new Tuple<string, string>(copyrightString, rightsHolder); // Punt!
+			}
+
+			var stripped = copyrightString.Substring(COPYRIGHT.Length);
+			var commaIndex = stripped.IndexOf(","); // Put in by ClearShare; not localized.
+			if (commaIndex < 0)
+				return new Tuple<string, string> (stripped, rightsHolder);
+			rightsHolder = stripped.Substring(commaIndex + 1).Trim();
+			return new Tuple<string, string>(stripped.Substring(0, commaIndex), rightsHolder);
 		}
 
 		/// <summary>
