@@ -1,4 +1,4 @@
-Source: bloom-desktop-beta
+Source: bloom-desktop
 Section: x11
 Priority: optional
 Maintainer: Stephen McConnel <stephen_mcconnel@sil.org>
@@ -15,7 +15,7 @@ Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
  libgtk2.0-cil (>= 2.12.10), libgtk2.0-dev (>= 2.14), libasound2-dev,
  icu-devtools | libicu-dev (<< 52)
 
-Package: bloom-desktop-beta
+Package: bloom-desktop
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
  mono5-sil, libgdiplus5-sil, gtk-sharp5-sil, gtklp,
@@ -26,7 +26,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  ffmpeg,
  python3-aeneas | python-aeneas
 Suggests: art-of-reading3
-Replaces: bloom-desktop, bloom-desktop-alpha, bloom-desktop-betainternal
+Replaces: bloom-desktop-beta, bloom-desktop-alpha, bloom-desktop-betainternal
 Conflicts: bloom-desktop-unstable
 Description: Literacy materials development for language communities
  Bloom Desktop is an application that dramatically "lowers the bar" for
