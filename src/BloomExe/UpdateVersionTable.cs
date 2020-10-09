@@ -44,9 +44,9 @@ namespace Bloom
 		/// Note! This will propagate network exceptions, so client can catch them and warn or not warn the user.
 		/// </summary>
 		/// <returns></returns>
-		public UpdateTableLookupResult LookupURLOfUpdate()
+		public UpdateTableLookupResult LookupURLOfUpdate(bool forceReload = false)
 		{
-			if(string.IsNullOrEmpty(TextContentsOfTable))
+			if(string.IsNullOrEmpty(TextContentsOfTable) || forceReload)
 			{
 				Logger.WriteEvent("Enter LookupURLOfUpdate()");
 				var client = new BloomWebClient();
