@@ -8,33 +8,20 @@ using SIL.Xml;
 
 namespace BloomTests.Publish
 {
-	/// <summary>
-	/// This part of the class implements several tests in the ExportEpubTests group on a single,
-	/// more complicated book that tests having video.  The code tries to minimize how often the
-	/// book gets created.
-	/// </summary>
-	/// <remarks>
-	/// This started as a separate subclass, which explains the base class.  The CreateEpubWithVideo
-	/// method was essentially the subclass's override of the OneTimeSetup method.  However, this
-	/// implementation was subject to sporadic (actually more than sporadic) failures on Linux
-	/// with the message
-	/// System.ApplicationException: Failure to completely load visibility document in RemoveUnwantedContent
-	/// in the MakeEpub method call.  Presumably this was due to parallel calls into the browser
-	/// due to the architecture of the NUnit test runner.  Making all this into a single class
-	/// reduced the number of times this error happened in 10 runs of the three classes (or three
-	/// parts of the same class) from 7 to 0.  Trying a lock around the content of the OneTimeSetup
-	/// method reduced the count to 3 failures in 10 tries.  Trying a lock around the content of the
-	/// MakeEpub method resulted in 5 failures in 10 tries.
-	/// </remarks>
 	[TestFixture]
-	public partial class ExportEpubTests : ExportEpubTestsBaseClass
+	// This class implements what is conceptually one or two tests in the ExportEpubTests group.
+	// But as there are many different outcomes to verify, and a much more complicated book to
+	// create, it's cleaner to make a distinct class, and do the complete book creation setup in
+	// OneTimeSetup.
+	public class ExportEpubWithVideoTests : ExportEpubTestsBaseClass
 	{
-		bool _epubWithVideoExists;
 
-		public void CreateEpubWithVideo()
+		[OneTimeSetUp]
+		public override void OneTimeSetup()
 		{
-			if (_epubWithVideoExists)
-				return;
+			base.OneTimeSetup();
+			base.Setup(); // since this class represents just one test, we can do it here.
+
 			var book = SetupBookLong("This is some text", "xyz", " bloom-frontMatter frontCover' data-page='required singleton",
 				extraContentOutsideTranslationGroup: @"
 <div class='bloom-imageContainer'>
@@ -228,14 +215,30 @@ namespace BloomTests.Publish
 			// Without a branding, Bloom Enterprise-only features are removed
 			var branding = "Test";
 			MakeEpub("output", "ExportEpubWithVideo", book, BookInfo.HowToPublishImageDescriptions.OnPage, branding);
+			GetPageOneData();
 			_ns = GetNamespaceManager();
-			_epubWithVideoExists = true;
+		}
+
+		[OneTimeTearDown]
+		public override void OneTimeTearDown()
+		{
+			base.TearDown(); // since we did Setup in OneTimeSetup
+			base.OneTimeTearDown();
+		}
+
+		public override void Setup()
+		{
+			// do nothing; we call base.Setup() for this class in OneTimeSetup().
+		}
+
+		public override void TearDown()
+		{
+			// do nothing; we call base.TearDown() for this class in OneTimeTearDown().
 		}
 
 		[Test]
-		public void CheckVideoEpubBasics()
+		public void CheckEpubBasics()
 		{
-			CreateEpubWithVideo();
 			CheckBasicsInPage("DevilsSlide");
 			CheckBasicsInManifest();
 			CheckAccessibilityInManifest(false, true, false, _defaultSourceValue, false); // no sound files, but some image files
@@ -245,7 +248,6 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckPageWithVideoAndText()
 		{
-			CreateEpubWithVideo();
 			var pageData = GetPageNData(2);
 			var doc = new XmlDocument();
 			doc.LoadXml(pageData);
@@ -261,7 +263,6 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckPageWithTextButNoVideo()
 		{
-			CreateEpubWithVideo();
 			var pageData = GetPageNData(3);
 			var doc = new XmlDocument();
 			doc.LoadXml(pageData);
@@ -278,7 +279,6 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckPageWithVideoButNoText()
 		{
-			CreateEpubWithVideo();
 			var pageData = GetPageNData(4);
 			var doc = new XmlDocument();
 			doc.LoadXml(pageData);
@@ -294,7 +294,6 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckPageWithTextAndDeletedVideo()
 		{
-			CreateEpubWithVideo();
 			var pageData = GetPageNData(5);
 			var doc = new XmlDocument();
 			doc.LoadXml(pageData);
@@ -309,7 +308,6 @@ namespace BloomTests.Publish
 		[Test]
 		public void CheckPageWithNeitherVideoNorText()
 		{
-			CreateEpubWithVideo();
 			// This page should not exist.
 			VerifyThatPageNDoesNotExist(6);
 		}

@@ -19,11 +19,8 @@ using SIL.PlatformUtilities;
 
 namespace BloomTests.Publish
 {
-	/// <summary>
-	/// This part of the class implements a variety of tests on simple books.
-	/// </summary>
 	[TestFixture]
-	public partial class ExportEpubTests : ExportEpubTestsBaseClass
+	public class ExportEpubTests : ExportEpubTestsBaseClass
 	{
 		public override void Setup()
 		{
@@ -256,8 +253,6 @@ namespace BloomTests.Publish
 			BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.None,
 			string branding = "Default", Action<EpubMaker> extraInit = null)
 		{
-			_epubWithVideoExists = false;
-			_accessibleEpubExists = false;
 			var result = base.MakeEpub(mainFileName, folderName, book, howToPublishImageDescriptions, branding, extraInit);
 			GetPageOneData();
 			return result;
