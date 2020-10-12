@@ -145,7 +145,8 @@ namespace BloomTests.Publish
 			// Without a branding, Bloom Enterprise-only features are removed
 			var branding = "Test";
 			// Currently, only in OnPage mode does the image description turn into an aside that can be linked to the image.
-			MakeEpub("output", "ExportEpubWithSvgTests", book, BookInfo.HowToPublishImageDescriptions.OnPage, branding);
+			// Try up to four times to make the epub without an exception for failing to complete loading the document.
+			MakeEpubWithRetries(4, "output", "ExportEpubWithSvgTests", book, BookInfo.HowToPublishImageDescriptions.OnPage, branding);
 			GetPageOneData();
 			_ns = GetNamespaceManager();
 		}
