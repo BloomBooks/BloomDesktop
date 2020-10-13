@@ -81,7 +81,7 @@ namespace Bloom.ImageProcessing
 			// we just get more and more placeholders when we cut images (BL-9011).
 			// And the normal update process that a book goes through when selecting it (in the Collection tab)
 			// for editing ensures that the placeHolder.png file is present in the book.
-			if (imageInfo.OriginalFilePath.ToLowerInvariant().EndsWith("placeholder.png"))
+			if (!string.IsNullOrEmpty(imageInfo.OriginalFilePath) && imageInfo.OriginalFilePath.ToLowerInvariant().EndsWith("placeholder.png"))
 			{
 				return Path.GetFileName(imageInfo.OriginalFilePath);
 			}

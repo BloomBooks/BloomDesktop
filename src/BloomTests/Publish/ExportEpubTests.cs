@@ -256,11 +256,12 @@ namespace BloomTests.Publish
 		/// Make an ePUB out of the specified book. Sets up several instance variables with commonly useful parts of the results.
 		/// </summary>
 		/// <returns></returns>
-		protected override ZipFile MakeEpub(string mainFileName, string folderName, BloomBook book,
+		protected new ZipFile MakeEpub(string mainFileName, string folderName, BloomBook book,
 			BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.None,
 			string branding = "Default", Action<EpubMaker> extraInit = null)
 		{
-			var result = base.MakeEpub(mainFileName, folderName, book, howToPublishImageDescriptions, branding, extraInit);
+			// May need to try more than once on Linux to make the epub without an exception for failing to complete loading the document.
+			var result = MakeEpubWithRetries(kMakeEpubTrials, mainFileName, folderName, book, howToPublishImageDescriptions, branding, extraInit);
 			GetPageOneData();
 			return result;
 		}
