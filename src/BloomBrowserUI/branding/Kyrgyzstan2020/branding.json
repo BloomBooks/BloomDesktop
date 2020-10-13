@@ -9,13 +9,13 @@
         {
             "data-book": "outside-back-cover-branding-top-left-html",
             "lang": "*",
-            "content": "<img  class='branding' src='Kyrgyzstan2020-{flavor}-USAID.png'/>",
+            "content": "<img class='branding' src='Kyrgyzstan2020-{flavor}-USAID.png'/>",
             "condition": "always"
         },
         {
             "data-book": "outside-back-cover-branding-top-right-html",
             "lang": "*",
-            "content": "<img  class='branding' src='Kyrgyzstan2020-{flavor}-government-seal.png'/>",
+            "content": "<img class='branding' src='Kyrgyzstan2020-{flavor}-government-seal.png'/>",
             "condition": "always"
         },
         {
@@ -45,13 +45,13 @@
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "uz",
-            "content": "<div lang='uz' class='USAID'>This will be the disclaimer in Uzbek</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "content": "<div lang='uz' class='USAID'></div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
             "condition": "always"
         },
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "tg",
-            "content": "<div lang='ky' class='USAID'>This will be the disclaimer in Tajik</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "content": "<div lang='ky' class='USAID'></div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
             "condition": "always"
         },
         {
