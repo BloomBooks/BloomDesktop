@@ -48,6 +48,12 @@ namespace BloomTests.Publish
 		protected const string kImagesSlash = EpubMaker.kImagesFolder+"^slash^";
 		protected const string kVideoSlash = EpubMaker.kVideoFolder+"^slash^";
 
+#if __MonoCS__
+		protected const int kMakeEpubTrials = 2;		// try twice: that should be enough for the tests.
+#else
+		protected const int kMakeEpubTrials = 1;		// try only once
+#endif
+
 		[OneTimeSetUp]
 		public virtual void OneTimeSetup()
 		{
@@ -163,6 +169,50 @@ namespace BloomTests.Publish
 			_manifestDoc = XDocument.Parse(_manifestContent);
 			_defaultSourceValue = $"created from Bloom book on {DateTime.Now:yyyy-MM-dd} with page size A5 Portrait";
 			return _epub;
+		}
+
+		/// <summary>
+		/// Try the number of times given to make the ePUB before letting an ApplicationException be thrown.
+		/// </summary>
+		/// <remarks>
+		/// The ExportEpubTests (including ExportEpubWithVideoTests and EpubValidAndAccessible) fail rather
+		/// consistently (but not always) on Linux even though they always succeed on Windows.  The failure
+		/// mode is always having an ApplicationException thrown from inside PublishHelper.IsDisplayed
+		/// while making the ePUB with the message "Failure to completely load visibility document in
+		/// RemoveUnwantedContent".  Converting all three subclasses to single class removed this failure
+		/// mode on Linux, but introduced a failure mode on Windows where every test run reported two
+		/// failures in this set of tests.  Various attempts with lock on Mutex on the MakeEpub method
+		/// had little to no effect.  Implementing this retry method is the only solution that I've come
+		/// up with that appears to work on both platforms.  A test run of 20 times through all the export
+		/// ePUB tests showed that no more than two tries were ever needed to succeed, but two tries were
+		/// needed at least once per run on average.
+		/// </remarks>
+		protected ZipFile MakeEpubWithRetries(int maxRetry, string mainFileName, string folderName, Bloom.Book.Book book,
+			BookInfo.HowToPublishImageDescriptions howToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.None,
+			string branding = "Default", Action<EpubMaker> extraInit = null)
+		{
+			ZipFile zipFile = null;
+			for (int i = 1; i <= maxRetry; ++i)
+			{
+				try
+				{
+					zipFile = MakeEpub(mainFileName, folderName, book, howToPublishImageDescriptions, branding, extraInit);
+					if (i > 1)
+						Console.WriteLine($"MakeEpub(\"{mainFileName}\",\"{folderName}\",...) succeeded on try number {i} to load the visibility document.");
+					break;
+				}
+				catch (ApplicationException e)
+				{
+					if (e.Message == "Failure to completely load visibility document in RemoveUnwantedContent")
+					{
+						if (i < maxRetry)
+							continue;
+						Console.WriteLine($"MakeEpub(\"{mainFileName}\",\"{folderName}\",...) failed {maxRetry} times to complete loading the visibility document.");
+					}
+					throw;
+				}
+			}
+			return zipFile;
 		}
 
 		public string FixContentForXPathValueSlash(string content)
