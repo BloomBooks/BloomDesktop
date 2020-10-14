@@ -1661,6 +1661,10 @@
         <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
       </trans-unit>
+      <trans-unit id="EditTab.NoValidImageFoundOnClipboard">
+        <source xml:lang="en">Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else.</source>
+        <note>ID: EditTab.NoValidImageFoundOnClipboard</note>
+      </trans-unit>
       <trans-unit id="EditTab.NoOtherLayouts">
         <source xml:lang="en">There are no other options for this template.</source>
         <note>ID: EditTab.NoOtherLayouts</note>
