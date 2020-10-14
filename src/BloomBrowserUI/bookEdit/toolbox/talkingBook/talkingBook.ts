@@ -1,4 +1,4 @@
-﻿import { getTheOneToolbox, ITool } from "../toolbox";
+import { getTheOneToolbox, ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";
 import * as AudioRecorder from "./audioRecording";
 
@@ -27,7 +27,7 @@ export default class TalkingBookTool implements ITool {
     // Some scenarios:
     // * Open the toolbox and Talking Book shows up  - showTool, newPageReady
     // * Open a book and Talking Book tool automatically opens - showTool, newPageReady
-    // * Creating a new page while tool is open - newPageReady, updateMarkup, newPageReady (again), updateMarkup (again)
+    // * Creating a new page while tool is open - newPageReady, newPageReady (again)
     // * Changing to an existing page while tool is open - same as above.
     // * Typing in a text box while tool is open - updateMarkup
     // * Close the toolbox: hideTool()
@@ -39,12 +39,12 @@ export default class TalkingBookTool implements ITool {
         // the initialize function had completed, now that it isn't there we need to treat the initialize
         // as the asynchronous method it is.
         await AudioRecorder.initializeTalkingBookToolAsync();
-        this.showImageDescriptionsIfAny();
         await AudioRecorder.theOneAudioRecorder.setupForRecordingAsync();
     }
 
     // Called when a new page is loaded.
     public async newPageReady(): Promise<void> {
+        this.showImageDescriptionsIfAny();
         return AudioRecorder.theOneAudioRecorder.newPageReady(
             this.isImageDescriptionToolActive()
         );
