@@ -590,7 +590,6 @@ namespace BloomTests.Publish
 			book.CollectionSettings.Language1.IsRightToLeft = false;
 			MakeEpub("output", "SpineDoesNotDeclareDirection", book);
 			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("//spine[not(@page-progression-direction)]", 1);
-			;
 		}
 
 		[Test]
@@ -600,6 +599,42 @@ namespace BloomTests.Publish
 			book.CollectionSettings.Language1.IsRightToLeft = true;
 			MakeEpub("output", "SpineDeclaresRtlDirection", book);
 			AssertThatXmlIn.String(_manifestContent).HasSpecifiedNumberOfMatchesForXpath("//spine[@page-progression-direction='rtl']", 1);;
+		}
+
+		[Test]
+		public void Manifest_IncludesCopyrightAndIsbnInfo()
+		{
+			const string copyrightString = "Copyright © 2020, some copyright holder";
+			const string isbnContents = "<p>123456ISBN</p>";
+			var book = SetupBookLong("This is some text", "xyz",
+				optionalDataDiv:
+					@"<div id='bloomDataDiv'>
+						<div data-book='contentLanguage1' lang='*'>xyz</div>
+						<div data-book='contentLanguage2' lang='*'>en</div>
+						<div data-book='copyright' lang='*'>" + copyrightString + @"</div>
+						<div data-book='ISBN' lang='xyz'>" + isbnContents + @"</div>
+					</div>"
+				);
+			book.BookInfo.Isbn = isbnContents;
+			book.BookInfo.Copyright = copyrightString;
+			MakeEpub("output", "CopyrightAndISBN", book);
+			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath(
+				"opf:package/opf:metadata/dc:identifier[text()='urn:isbn:123456ISBN']",
+				GetNamespaceManager());
+			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/metadata/meta[@property='dcterms:dateCopyrighted' and text()='2020']");
+			AssertThatXmlIn.String(_manifestContent).HasAtLeastOneMatchForXpath("package/metadata/meta[@property='dcterms:rightsHolder' and text()='some copyright holder']");
+		}
+
+		[Test]
+		public void Manifest_HandlesEmptyCopyrightAndIsbnInfo()
+		{
+			var book = SetupBook("This is some text", "xyz");
+			MakeEpub("output", "NonCopyrightAndISBN", book);
+			AssertThatXmlIn.String(_manifestContent).HasNoMatchForXpath(
+				"opf:package/opf:metadata/dc:identifier[contains(text(),'urn:isbn:')]",
+				GetNamespaceManager());
+			AssertThatXmlIn.String(_manifestContent).HasNoMatchForXpath("package/metadata/meta[@property='dcterms:dateCopyrighted']");
+			AssertThatXmlIn.String(_manifestContent).HasNoMatchForXpath("package/metadata/meta[@property='dcterms:rightsHolder']");
 		}
 
 		/// <summary>
