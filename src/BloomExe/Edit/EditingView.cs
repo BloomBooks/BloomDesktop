@@ -29,6 +29,7 @@ using SIL.Windows.Forms.Widgets;
 using System.Globalization;
 using Bloom.web;
 using ICSharpCode.SharpZipLib.Zip;
+using SIL.Extensions;
 
 namespace Bloom.Edit
 {
@@ -1070,6 +1071,10 @@ namespace Bloom.Edit
 			using(var dlg = new ImageToolboxDialog(imageInfo, null))
 			{
 				var searchLanguage = Settings.Default.ImageSearchLanguage;
+				dlg.ImageLoadingExceptionReporter = (path, ex, msg) =>
+				{
+					ReportFailureToLoadImage(path, ex);
+				};
 				if(String.IsNullOrWhiteSpace(searchLanguage))
 				{
 					// Pass in the current UI language.  We want only the main language part of the tag.
@@ -1115,6 +1120,50 @@ namespace Bloom.Edit
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
 			Cursor = Cursors.Default;
 			imageInfo.Dispose(); // ensure memory doesn't leak
+		}
+
+		void ReportFailureToLoadImage(string path, Exception ex)
+		{
+			var caption = LocalizationManager.GetString("EditTab.Image.ImageFailed", "Failed to load image");
+			var form = Form.ActiveForm;
+			var oom = ex as OutOfMemoryException;
+			if (oom != null)
+			{
+				// It should be very unusual not to get imageSize...LibPalaso is not supposed to send OOM
+				// exceptions for this function without providing the information. Conceivably Bloom
+				// ran out of memory at some other point than trying to load the image? Anyway I don't
+				// think it's worth another version of the message for this case.
+				Tuple<int, int> imageSize = ex.Data["imageSize"] as Tuple<int, int>;
+				var width = imageSize == null ? "unknown" : imageSize.Item1.ToString();
+				var height = imageSize == null ? "unknown" : imageSize.Item2.ToString(); ;
+				try
+				{
+					if (form != null)
+						form.HelpRequested += FormOnHelpRequested;
+					var msgFmt = LocalizationManager.GetString("EditTab.Image.TooLarge",
+						"Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.");
+					var msg = String.Format(msgFmt, path, width, height);
+					MessageBox.Show(msg, caption, MessageBoxButtons.OK, MessageBoxIcon.Information,
+						MessageBoxDefaultButton.Button1, 0, form != null);
+				}
+				finally
+				{
+					if (form != null)
+						form.HelpRequested -= FormOnHelpRequested;
+				}
+			}
+			else
+			{
+				var msgFmt = LocalizationManager.GetString("EditTab.Image.Corrupt",
+					"Bloom was not able to load {0}. The file may be corrupted. Please try another image. Here are some technical details: ");
+				var msg = String.Format(msgFmt, path) + Environment.NewLine + Environment.NewLine + ex.Message;
+				MessageBox.Show(msg, caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
+			}
+		}
+
+		private void FormOnHelpRequested(object sender, HelpEventArgs hlpevent)
+		{
+			System.Diagnostics.Process.Start("http://community.bloomlibrary.org/t/running-out-of-memory-loading-images/3956.");
 		}
 
 		void SaveChangedImage(GeckoHtmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
