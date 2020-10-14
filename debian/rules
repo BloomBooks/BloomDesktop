@@ -48,6 +48,7 @@ override_dh_auto_install:
 	cp -rv output/$(BUILD)/* $(DESTDIR)/$(LIB)
 	find $(DESTDIR)/$(LIB) -type f -print0 | xargs -0 chmod 644
 	chmod +x $(DESTDIR)/$(LIB)/BloomLauncher
+	chmod +x $(DESTDIR)/$(LIB)/*.sh
 	find $(DESTDIR)/$(LIB) -type d -print0 | xargs -0 chmod 755
 	install -d $(DESTDIR)/$(SHARE)
 	install -m 644 environ* $(DESTDIR)/$(SHARE)

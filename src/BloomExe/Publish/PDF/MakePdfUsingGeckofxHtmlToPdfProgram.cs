@@ -121,15 +121,7 @@ namespace Bloom.Publish.PDF
 			}
 			if (Platform.IsMono)
 			{
-				exePath = "mono";
-				bldr.AppendFormat("--debug \"{0}\" ", filePath);
-				// I don't understand why the following is needed for Bloom 4.9, but wasn't needed for earlier
-				// versions of Bloom.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9069.
-				if (execDir.StartsWith("/usr/lib/", StringComparison.InvariantCulture))
-				{
-					var shareDir = execDir.Replace("/usr/lib/", "/usr/share/");
-					Environment.SetEnvironmentVariable("MONO_ENVIRON", Path.Combine(shareDir, "environ"));
-				}
+				exePath = Path.ChangeExtension(filePath, "sh");
 			}
 			else
 			{
