@@ -119,8 +119,7 @@ namespace Bloom.Publish.PDF
 			}
 			if (Platform.IsMono)
 			{
-				exePath = "mono";
-				bldr.AppendFormat("--debug \"{0}\" ", filePath);
+				exePath = Path.ChangeExtension(filePath, "sh");
 			}
 			else
 			{
