@@ -1337,6 +1337,7 @@ copy /Y "$(SolutionDir)lib\dotnet\GeckofxHtmlToPdf.exe" "$(OutDir)BloomPdfMaker.
 copy /Y "$(SolutionDir)lib\dotnet\GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfMaker.exe.config"
     </PostBuildEvent>
     <PostBuildEvent Condition="'$(OS)'!='Windows_NT'">
+cp -p "$(SolutionDir)lib/BloomPdfMaker.sh" "$(OutDir)BloomPdfMaker.sh"
 cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe" "$(OutDir)BloomPdfMaker.exe"
 cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfMaker.exe.config"
     </PostBuildEvent>
