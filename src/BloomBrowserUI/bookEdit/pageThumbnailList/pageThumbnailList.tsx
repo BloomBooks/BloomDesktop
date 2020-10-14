@@ -182,7 +182,9 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
     useEffect(() => {
         if (selectedPageId) {
             const pageElement = window.document.getElementById(selectedPageId);
-            if (pageElement) pageElement.scrollIntoView();
+            // nearest causes the minimum possible scroll to make it visible,
+            // importantly including not scrolling at all if it's already visible.
+            if (pageElement) pageElement.scrollIntoView({ block: "nearest" });
         }
     }, [realPageList]);
 
