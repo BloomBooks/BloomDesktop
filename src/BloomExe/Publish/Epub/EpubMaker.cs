@@ -562,6 +562,11 @@ namespace Bloom.Publish.Epub
 				// apparently non-valid XML input; try just using what's given
 				isbnContents = Book.BookInfo.Isbn;
 			}
+			catch (XmlException)
+			{
+				// tests don't always wrap ISBN in XML like Bloom does
+				isbnContents = Book.BookInfo.Isbn;
+			}
 
 			return isbnContents;
 		}
