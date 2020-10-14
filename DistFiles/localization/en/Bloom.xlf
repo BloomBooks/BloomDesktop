@@ -1592,6 +1592,11 @@
         <source xml:lang="en">Bloom had problems using your computer's clipboard. Some other program may be interfering.</source>
         <note>ID: EditTab.Image.CopyImageFailed</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.Corrupt" sil:dynamic="true">
+        <source xml:lang="en">Bloom was not able to load {0}. The file may be corrupted. Please try another image. Here are some technical details: </source>
+        <note>ID: EditTab.Image.Corrupt</note>
+        <note>{0} is required, and will be replaced with a file path. After the message Bloom will append a further message.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true">
         <source xml:lang="en">Cut Image</source>
         <note>ID: EditTab.Image.CutImage</note>
@@ -1608,6 +1613,10 @@
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
         <source xml:lang="en">Paste Image</source>
         <note>ID: EditTab.Image.PasteImage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
+        <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
+        <note>ID: EditTab.Image.TooLarge</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true">
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
