@@ -827,7 +827,18 @@ namespace Bloom.Edit
 			PalasoImage clipboardImage = null;
 			try
 			{
-				clipboardImage = GetImageFromClipboard();
+				try
+				{
+					clipboardImage = PortableClipboard.GetImageFromClipboardWithExceptions();
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show(
+						LocalizationManager.GetString("EditTab.NoValidImageFoundOnClipboard",
+							"Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else."));
+					return;
+				}
+
 				if(clipboardImage == null)
 				{
 					MessageBox.Show(
