@@ -1163,7 +1163,7 @@ namespace Bloom.Edit
 
 		private void FormOnHelpRequested(object sender, HelpEventArgs hlpevent)
 		{
-			System.Diagnostics.Process.Start("http://community.bloomlibrary.org/t/running-out-of-memory-loading-images/3956.");
+			System.Diagnostics.Process.Start("http://community.bloomlibrary.org/t/running-out-of-memory-loading-images/3956");
 		}
 
 		void SaveChangedImage(GeckoHtmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
