@@ -662,6 +662,33 @@ namespace BloomTests.Book
 				1);
 		}
 
+		[Test]
+		public void
+			SuckInDataFromEditedDom_DataBookElementAddedToXmatterPage_ElementWithAttributesAddedToBookDataAndDataDiv()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html><head></head><body>
+				<div id='bloomDataDiv'>
+				</div>
+				<div class='bloom-page frontCover' id='guid2'>
+				</div>
+			 </body></html>");
+
+			var data = new BookData(bookDom, _collectionSettings, null);
+
+			HtmlDom editedPageDom = new HtmlDom(@"<html><head></head><body>
+				<div class='bloom-page frontCover' id='guid2'>
+					<div data-book='coverImageDescription' lang='en' id='aNiceId' data-backgroundaudio='SoundTrack0.mp3' ><p>a bird</p></div>
+				</div>
+			 </body></html>");
+
+			data.SuckInDataFromEditedDom(editedPageDom);
+
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@id='bloomDataDiv']/div[@data-book='coverImageDescription' " +
+				"and @data-backgroundaudio='SoundTrack0.mp3' and @id='aNiceId']",
+				1);
+		}
+
 		//[Test] TODO - this test doesn't work because SuckInDataFromEditedDom first updates the page from the data div before updating the data div from the page.
 		// I couldn't get it worked out, but the production code does do things correctly. I attempted to add this test for BL-5409.
 		public void
