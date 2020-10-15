@@ -33,25 +33,25 @@
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "ky",
-            "content": "<div lang='ky' class='USAID'>Авторлукту сактап калуу шартында, сиз бул ишти коммерциялык максаттарда колдоно аласыз, адаптациялап, өзгөртүүлөрдү киргизсеңиз болот.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "content": "<div lang='ky' class='USAID'>Бул басылма АКШнын эл аралык өнүктүрүү боюнча агенттиги (USAID) аркылуу көрсөтүлгөн Америка элинин колдоосу менен түзүлдү. Басылманын мазмуну USAIDдин же АКШ Өкмөтүнүн пикирин милдеттүү түрдө чагылдырбайт.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
             "condition": "always"
         },
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "ru",
-            "content": "<div lang='ru' class='USAID'>Вы можете использовать эту работу в коммерческих целях, адаптировать и вносить в нее изменения с условием сохранения авторства.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "content": "<div lang='ru' class='USAID'>Данная публикация разработана благодаря помощи Американского народа, оказанной через Агентство США по международному развитию (USAID). Содержание публикации не обязательно отражает позицию USAID или Правительства США.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
             "condition": "always"
         },
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "uz",
-            "content": "<div lang='uz' class='USAID'></div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "content": "<div lang='uz' class='USAID'>Бу нусха АҚШнинг халқаро ривожлантириш бўйича агентлиги (USAID) орқали кўрсатилган Америка халқининг қўллови билан тузилди. Нусханинг мазмуни USAIDнинг ёки АҚШ ҳукуматининг фикрларини расмий турда ифодаламайди.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
             "condition": "always"
         },
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "tg",
-            "content": "<div lang='ky' class='USAID'></div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+            "content": "<div lang='ky' class='USAID'>Маводи методии мазкур бо кӯмаки мардуми Амрико эҷод шудааст, ки он аз тариқи Оҷонсии ИМА оид ба рушди байналмилалӣ (USAID) расонида мешавад. Мазмун ва  мундариҷаи ин эҷод метавонад бо нуқтаи назари USAID ва Ҳукумати ИМА мувофиқат накунад.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
             "condition": "always"
         },
         {
