@@ -58,7 +58,7 @@ namespace Bloom.Edit
 		public EditingView(EditingModel model, PageListView pageListView, CutCommand cutCommand, CopyCommand copyCommand,
 			PasteCommand pasteCommand, UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
 			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent,
-			SignLanguageApi signLanguageApi, CommonApi commonApi, EditingViewApi editingViewApi, PageListApi pageListApi)
+			SignLanguageApi signLanguageApi, CommonApi commonApi, EditingViewApi editingViewApi, PageListApi pageListApi, BookRenamedEvent bookRenamedEvent)
 		{
 			_model = model;
 			_pageListView = pageListView;
@@ -103,6 +103,10 @@ namespace Bloom.Edit
 			//we're giving it to the parent control through the TopBarControls property
 			Controls.Remove(_topBarPanel);
 			SetupBrowserContextMenu();
+			bookRenamedEvent.Subscribe((book) =>
+			{
+				UpdatePageList(true);
+			});
 #if __MonoCS__
 // The inactive button images look garishly pink on Linux/Mono, but look okay on Windows.
 // Merely introducing an "identity color matrix" to the image attributes appears to fix
