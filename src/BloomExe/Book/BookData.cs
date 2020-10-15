@@ -221,7 +221,7 @@ namespace Bloom.Book
 			foreach (var v in incomingData.TextVariables)
 			{
 				if (!v.Value.IsCollectionValue)
-					UpdateSingleTextVariableInDataDiv(v.Key,v.Value.TextAlternatives);
+					UpdateSingleTextVariableInDataDiv(v.Key,v.Value);
 			}
 			foreach (var tuple in itemsToDelete)
 				UpdateSingleTextVariableInDataDiv(tuple.Item1, tuple.Item2, "");
@@ -544,9 +544,10 @@ namespace Bloom.Book
 		/// <remarks>I (jh) found this labelled UpdateSingleTextVariableThrougoutDom but it actually only updated the datadiv, so I changed the name.</remarks>
 		/// <param name="key"></param>
 		/// <param name="multiText"></param>
-		private void UpdateSingleTextVariableInDataDiv(string key, MultiTextBase multiText)
+		private void UpdateSingleTextVariableInDataDiv(string key, DataSetElementValue v)
 		{
 			//Debug.WriteLine("before: " + dataDiv.OuterXml);
+			var multiText = v.TextAlternatives;
 
 			if(multiText.Count==0)
 			{
@@ -555,7 +556,8 @@ namespace Bloom.Book
 			foreach (LanguageForm languageForm in multiText.Forms)
 			{
 				string writingSystemId = languageForm.WritingSystemId;
-				UpdateSingleTextVariableInDataDiv(key, writingSystemId, languageForm.Form);
+				var attrs = v.GetAttributeList(writingSystemId);
+				UpdateSingleTextVariableInDataDiv(key, writingSystemId, languageForm.Form, attrs);
 			}
 		}
 
@@ -566,7 +568,7 @@ namespace Bloom.Book
 		/// <param name="key"></param>
 		/// <param name="writingSystemId"></param>
 		/// <param name="form"></param>
-		private void UpdateSingleTextVariableInDataDiv(string key, string writingSystemId, string form)
+		private void UpdateSingleTextVariableInDataDiv(string key, string writingSystemId, string form, List<Tuple<string, string>> attrs = null)
 		{
 			XmlNode node =
 				_dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", key,
@@ -580,7 +582,8 @@ namespace Bloom.Book
 				{
 					//Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", key, writingSystemId, form);
 					//Debug.WriteLine("nop: " + _dataDiv.OuterXml);
-					AddDataDivElementContainingBookVariable(key, writingSystemId, form);
+					var newElement = AddDataDivElementContainingBookVariable(key, writingSystemId, form);
+					MergeAttrsIntoElement(attrs, newElement);
 				}
 			}
 			else
@@ -592,6 +595,7 @@ namespace Bloom.Book
 				else
 				{
 					SetNodeXml(key, form, node);
+					MergeAttrsIntoElement(attrs, node as XmlElement);
 				}
 				//Debug.WriteLine("updating in datadiv: {0}[{1}]={2}", key, languageForm.WritingSystemId,
 				//				languageForm.Form);
@@ -621,9 +625,9 @@ namespace Bloom.Book
 			}
 		}
 
-		public void AddDataDivElementContainingBookVariable(string key, string lang, string form)
+		public XmlElement AddDataDivElementContainingBookVariable(string key, string lang, string form)
 		{
-			AddDataDivElement("data-book", key, lang, form);
+			return AddDataDivElement("data-book", key, lang, form);
 		}
 
 		public XmlElement AddDataDivElement(string type, string key, string lang = null, string form = "")
@@ -640,7 +644,7 @@ namespace Bloom.Book
 		public void Set(string key, string value, bool isCollectionValue)
 		{
 			_dataset.UpdateGenericLanguageString(key, value, isCollectionValue);
-			UpdateSingleTextVariableInDataDiv(key, _dataset.TextVariables[key].TextAlternatives);
+			UpdateSingleTextVariableInDataDiv(key, _dataset.TextVariables[key]);
 			if (key == "contentLanguage2")
 				_cachedMcl2 = value;
 			else if (key == "contentLanguage3")
@@ -652,7 +656,7 @@ namespace Bloom.Book
 			_dataset.UpdateLanguageString(key, value, lang, false);
 			if(_dataset.TextVariables.ContainsKey(key))
 			{
-				UpdateSingleTextVariableInDataDiv(key,_dataset.TextVariables[key].TextAlternatives);
+				UpdateSingleTextVariableInDataDiv(key,_dataset.TextVariables[key]);
 			}
 			else //we go this path if we just removed the last value from the multitext
 			{
@@ -1173,6 +1177,8 @@ namespace Bloom.Book
 
 		internal void MergeAttrsIntoElement(List<Tuple<string, string>> attrs, XmlElement node)
 		{
+			if (attrs == null)
+				return;
 			var attrsToRemove = new HashSet<string>(_attributesToRemoveIfAbsent);
 			foreach (var tuple in attrs)
 			{
@@ -1507,7 +1513,7 @@ namespace Bloom.Book
 				// _dataset.TextVariables is expected to contain an ENCODED string!
 				// info.OriginalTitle is expected to contain a DECODED string
 				_dataset.UpdateGenericLanguageString("originalTitle", encodedOriginalTitle, false);
-				UpdateSingleTextVariableInDataDiv("originalTitle", _dataset.TextVariables["originalTitle"].TextAlternatives);
+				UpdateSingleTextVariableInDataDiv("originalTitle", _dataset.TextVariables["originalTitle"]);
 				if (info != null)
 				{
 					info.OriginalTitle = unecodedOriginalTitle;
