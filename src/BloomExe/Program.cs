@@ -1199,6 +1199,8 @@ namespace Bloom
 				}
 			}
 
+			ErrorReport.SetErrorReporter(new NotifyUserOfProblemLogger());
+
 
 			string issueTrackingUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystem);
 			ExceptionReportingDialog.PrivacyNotice = string.Format(@"If you don't care who reads your bug report, you can skip this notice.
