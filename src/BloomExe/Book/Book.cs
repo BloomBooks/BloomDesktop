@@ -1081,7 +1081,7 @@ namespace Bloom.Book
 		}
 
 		const string kCustomStyles = "customCollectionStyles.css";
-		const string kOldCollectionStyles = "settingsCollectionStyles.css";
+		public const string kOldCollectionStyles = "settingsCollectionStyles.css";
 		/// <summary>
 		/// Adjust several external stylesheet links and associated files.  Also adjust some book level
 		/// settings (in json or html) to match current collection settings.
