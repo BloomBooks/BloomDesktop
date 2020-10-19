@@ -83,7 +83,9 @@ namespace Bloom.Book
 				if (fileName.ToLowerInvariant().Contains("mode") || fileName.ToLowerInvariant().Contains("page") ||
 					fileName.ToLowerInvariant().Contains("matter") || fileName.ToLowerInvariant().Contains("languagedisplay") ||
 					fileName.ToLowerInvariant().Contains("origami") || fileName.ToLowerInvariant().Contains("defaultlangstyles") ||
-					fileName.ToLowerInvariant().Contains("customcollectionstyles"))
+					fileName.ToLowerInvariant().Contains("customcollectionstyles") ||
+					// Ignore this obsolete styles file as well.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9128.
+					fileName.ToLowerInvariant().EndsWith(Book.kOldCollectionStyles.ToLowerInvariant(), StringComparison.InvariantCulture))
 					continue;
 
 				fileName = fileName.Replace("file://", "").Replace("%5C", "/").Replace("%20", " ");
@@ -96,7 +98,7 @@ namespace Bloom.Book
 					// We're looking for a block of json that is typically found in Basic Book.css or a comparable place for
 					// a book based on some other template. Calling code is prepared for not finding this block.
 					// It seems safe to ignore a reference to some missing style sheet.
-					if (fileName.ToLowerInvariant().Contains("branding"))
+					if (fileName.ToLowerInvariant().Contains("branding") || fileName.ToLowerInvariant().Contains("readerstyles"))
 						continue; // these don't contain page size info, anyhow.
 					NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Could not find " + fileName + " while looking for size choices");
 					continue;
