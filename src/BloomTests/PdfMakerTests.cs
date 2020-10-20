@@ -17,7 +17,6 @@ namespace BloomTestsThatAvoidTheSetupFixture
 	[TestFixture]
 #if __MonoCS__
 	[RequiresSTA]
-	[Platform(Exclude="Linux", Reason="Currently hanging on Linux when run with Jenkins (BL-831)")]
 #endif
 	[NUnit.Framework.Category("RequiresUI")]
 	public class PdfMakerTests
