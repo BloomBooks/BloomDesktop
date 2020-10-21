@@ -62,9 +62,9 @@ export class EditableDivUtils {
             return true;
         }
 
-        var i = 0;
-        var childNode;
-        var len;
+        let i = 0;
+        let childNode;
+        let len;
 
         for (; i < node.childNodes.length && offset >= 0; i++) {
             childNode = node.childNodes[i];
@@ -133,12 +133,12 @@ export class EditableDivUtils {
         gearIcon: JQuery
     ): void {
         // A zoom on the body affects offset but not outerHeight, which messes things up if we don't account for it.
-        var scale =
+        const scale =
             dialogBox[0].getBoundingClientRect().height /
             dialogBox[0].offsetHeight;
-        var adjustmentFactor = 30;
-        var pxAdjToScale = (adjustmentFactor / scale).toFixed(); // rounded to nearest integer
-        var myOptionValue = "left+" + pxAdjToScale + " top-" + pxAdjToScale;
+        const adjustmentFactor = 30;
+        const pxAdjToScale = (adjustmentFactor / scale).toFixed(); // rounded to nearest integer
+        const myOptionValue = "left+" + pxAdjToScale + " top-" + pxAdjToScale;
 
         // Set the dialog 30px (adjusted for 'scale') to the right and up from the gear icon.
         // If it won't fit there for some reason, .position() will 'fit' it in by moving it away from the viewport edges.
@@ -168,18 +168,39 @@ export class EditableDivUtils {
 
     // The body of the editable page, a root for searching for document content.
     public static getPage(): JQuery {
-        var page = this.getPageFrame();
+        const page = this.getPageFrame();
         if (!page || !page.contentWindow) return $();
         return $(page.contentWindow.document.body);
     }
 
     // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
     public static getPageScale(): number {
-        let scale = 1.0;
         const page = this.getPage();
+
+        // With full bleed, we have a transform on the page in addition to the possible scaling using the zoom control.
+        // This calculation gets the scale experimentally. Because offsetWidth is an integer,
+        // it can be slightly less accurate than just reading the scale from the page-scaling-container style as we do below.
+        // That's why I made this two code paths rather than just changing everything to use the upper calc.
+        // I also tried getting the scale from the page's transform and multiplying it by the one on the page-scaling-container.
+        // But due to rounding before multiplying, it actually ended up with less precision than this.
+        if (page.hasClass("bloom-fullBleed")) {
+            const bloomPage = page.find("div.bloom-page")?.get()[0];
+            if (!bloomPage || !bloomPage.offsetWidth) {
+                return 1.0;
+            }
+            return (
+                // Both values include padding and borders (though I don't think we have either)
+                // as long as box-sizing is set to the default (content-box).
+                bloomPage.getBoundingClientRect().width / bloomPage.offsetWidth
+            );
+        }
+
+        let scale = 1.0;
         if (page.length === 0) return scale;
-        var styleString = page.find("div#page-scaling-container").attr("style");
-        var searchData = /transform: *scale\(([0-9.]*)/.exec(styleString);
+        const styleString = page
+            .find("div#page-scaling-container")
+            .attr("style");
+        const searchData = /transform: *scale\(([0-9.]*)/.exec(styleString);
         if (searchData) {
             scale = parseFloat(searchData[1]);
         }
@@ -211,9 +232,9 @@ export class EditableDivUtils {
     }
 
     public static pasteImageCredits() {
-        var activeElement = document.activeElement;
+        const activeElement = document.activeElement;
         BloomApi.get("image/imageCreditsForWholeBook", result => {
-            var data = result.data;
+            const data = result.data;
             if (!data) return; // nothing to insert: no images apparently...
 
             // This is a global method, called from an href attribute of an <a> element.
@@ -223,12 +244,12 @@ export class EditableDivUtils {
             // that refers to the div.qtip's id.
             if (activeElement == null || activeElement.parentElement == null)
                 return;
-            var bubble = activeElement.parentElement.parentElement;
+            const bubble = activeElement.parentElement.parentElement;
             if (bubble == null) return;
-            var query =
+            const query =
                 "[aria-describedby='" + bubble.getAttribute("id") + "']";
             let artists: Element | null = null;
-            var credits = document.querySelectorAll(query);
+            const credits = document.querySelectorAll(query);
             if (credits.length > 0) {
                 artists = credits[0];
             } else {
@@ -252,9 +273,9 @@ export class EditableDivUtils {
                 // information, I'd be happy to learn what it is.  data is a string consisting
                 // of one or more <p> elements properly terminated by </p> and separated by
                 // newlines.
-                var d2 = document.createElement("div");
+                const d2 = document.createElement("div");
                 d2.innerHTML = data;
-                var paras = d2.getElementsByTagName("p");
+                const paras = d2.getElementsByTagName("p");
                 // Note that when the p element is appended to the div element, it gets removed from the list.
                 while (paras.length > 0) {
                     artists.appendChild(paras[0]);
