@@ -102,7 +102,17 @@ namespace Bloom.web.controllers
 			string locateCmd = Platform.IsLinux ? "/usr/bin/which" : "WHERE";
 			string workingDir = Platform.IsLinux ? "/tmp" : kWorkingDirectory;
 			string stdout;
-			if (DoesCommandCauseError($"{locateCmd} python", out stdout, workingDir))
+			var findPythonCommand = $"{locateCmd} python";
+			if (Platform.IsLinux && !DoesCommandCauseError("/usr/bin/lsb_release -r", out stdout, workingDir))
+			{
+				// Ubuntu 20.04 installs python3 by default without any /usr/bin/python, and python3-aeneas is
+				// installed instead of python-aeneas (which depends on python2.7).
+				// Earlier versions of Ubuntu installed /usr/bin/python as a symbolic link to /usr/bin/python2.7
+				// (the regex pattern matches 20.04 through 98.04, which is the current pattern of LTS releases)
+				if (System.Text.RegularExpressions.Regex.IsMatch(stdout.Trim(), "[2-9][02468]\\.04$"))
+					findPythonCommand = $"{locateCmd} python3";
+			}
+			if (DoesCommandCauseError(findPythonCommand, out stdout, workingDir))
 			{
 				message = "Python";
 				Logger.WriteEvent("Discovered a missing dependency for AutoSegment function: " + message);
