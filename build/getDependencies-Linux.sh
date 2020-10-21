@@ -1,4 +1,5 @@
 #!/bin/bash
+# HAND EDITED AGAINST ALL ADVICE TO GET 4.9 TAG OF GeckofxHtmlToPdf INSTEAD OF THE 4.8 TAG.
 # server=build.palaso.org
 # project=Bloom
 # build=Bloom-4.8-Linux64-Continuous
@@ -95,7 +96,7 @@ cd -
 #     project: GeckofxHtmlToPdf
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous
 #     clean: false
-#     revision: bloom-4.8.tcbuildtag
+#     revision: bloom-4.9.tcbuildtag
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/geckofxHtmlToPdf [refs/heads/master]
 # [4] build: L10NSharp master Mono continuous (L10NSharp_L10NSharpMasterMonoContinuous)
@@ -148,9 +149,9 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-4.8.
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-4.8.tcbuildtag/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp48/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/bloom-4.8.tcbuildtag/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
-copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/bloom-4.8.tcbuildtag/Args.dll ../lib/dotnet/Args.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/bloom-4.8.tcbuildtag/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/bloom-4.8.tcbuildtag/GeckofxHtmlToPdf.exe.config ../lib/dotnet/GeckofxHtmlToPdf.exe.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/bloom-4.9.tcbuildtag/Args.dll ../lib/dotnet/Args.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/bloom-4.9.tcbuildtag/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/bloom-4.9.tcbuildtag/GeckofxHtmlToPdf.exe.config ../lib/dotnet/GeckofxHtmlToPdf.exe.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterMonoContinuous/bloom-4.8.tcbuildtag/L10NSharp.dll ../lib/dotnet/L10NSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterMonoContinuous/bloom-4.8.tcbuildtag/L10NSharp.dll.config ../lib/dotnet/L10NSharp.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/L10NSharp_L10NSharpMasterMonoContinuous/bloom-4.8.tcbuildtag/CheckOrFixXliff.exe ../lib/dotnet/CheckOrFixXliff.exe
