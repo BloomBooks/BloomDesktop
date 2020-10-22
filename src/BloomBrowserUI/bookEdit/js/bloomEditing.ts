@@ -34,6 +34,7 @@ import { getEditViewFrameExports } from "./bloomFrames";
 import axios from "axios";
 import { BloomApi } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
+import { fixUpDownArrowEventHandler } from "./arrowKeyWorkaroundManager";
 
 /**
  * Fires an event for C# to handle
@@ -854,46 +855,48 @@ export function SetupElements(container: HTMLElement) {
         }
     });
 
-    loadLongpressInstructions($(container).find(".bloom-editable"));
+    const editableJQuery = $(container).find(".bloom-editable");
+
+    loadLongpressInstructions(editableJQuery);
 
     //When we do a CTRL+A DEL, FF leaves us with a <br></br> at the start. When the first key is then pressed,
     //a blank line is shown and the letter pressed shows up after that.
     //This detects that situation when we type the first key after the deletion, and first deletes the <br></br>.
-    $(container)
-        .find(".bloom-editable")
-        .keypress(event => {
-            // this is causing a worse problem, (preventing us from typing empty lines to move the start of the
-            // text down), so we're going to live with the empty space for now.
-            // TODO: perhaps we can act when the DEL or Backspace occurs and then detect this situation and clean it up.
-            //         if ($(event.target).text() == "") { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
-            //            event.target.innerHTML = "";
-            //        }
-        });
+    editableJQuery.keypress(event => {
+        // this is causing a worse problem, (preventing us from typing empty lines to move the start of the
+        // text down), so we're going to live with the empty space for now.
+        // TODO: perhaps we can act when the DEL or Backspace occurs and then detect this situation and clean it up.
+        //         if ($(event.target).text() == "") { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
+        //            event.target.innerHTML = "";
+        //        }
+    });
     //This detects that situation when we do CTRL+A and then type a letter, instead of DEL
-    $(container)
-        .find(".bloom-editable")
-        .keyup(function(event) {
-            //console.log(event.target.innerHTML);
-            // If they pressed a letter instead of DEL, we get this case:
-            //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
-            if ($(event.target).find("#formatButton").length === 0) {
-                // they have also deleted the formatButton, so put it back in
+    editableJQuery.keyup(function(event) {
+        //console.log(event.target.innerHTML);
+        // If they pressed a letter instead of DEL, we get this case:
+        //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
+        if ($(event.target).find("#formatButton").length === 0) {
+            // they have also deleted the formatButton, so put it back in
 
-                // REVIEW: this shows that we're doing the attaching on the first character entered,
-                // even though it appears the editor was already attached.
-                // So we actually attach twice. That's ok, the editor handles that, but I don't know why
-                // we're passing the if, and it could be improved.
-                // console.log('attaching');
-                if (
-                    $(this).closest(".bloom-userCannotModifyStyles").length ===
-                    0
-                )
-                    editor.AttachToBox(this);
-            } else {
-                // already have a format cog, better make sure it's in the right place
-                editor.AdjustFormatButton(this);
-            }
-        });
+            // REVIEW: this shows that we're doing the attaching on the first character entered,
+            // even though it appears the editor was already attached.
+            // So we actually attach twice. That's ok, the editor handles that, but I don't know why
+            // we're passing the if, and it could be improved.
+            // console.log('attaching');
+            if ($(this).closest(".bloom-userCannotModifyStyles").length === 0)
+                editor.AttachToBox(this);
+        } else {
+            // already have a format cog, better make sure it's in the right place
+            editor.AdjustFormatButton(this);
+        }
+    });
+
+    // Up and down arrow navigation don't work in editables with paragraphs that are flexboxes.
+    //   (See bug report: https://bugzilla.mozilla.org/show_bug.cgi?id=1414884)
+    // So add our own custom handler to intercept the event and if applicable, fix it ourselves.
+    editableJQuery.each((dummy, element) => {
+        element.addEventListener("keydown", fixUpDownArrowEventHandler);
+    });
 
     // make any added text-over-picture bubbles draggable and clickable
     if (theOneBubbleManager) {
