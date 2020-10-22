@@ -1,12 +1,12 @@
 import * as React from "react";
-import { BloomSelect } from "../../react_components/bloomSelect";
+import { BloomSelect, IOption } from "../../react_components/bloomSelect";
 
 export interface IProps {
     // I don't know how to express exact types in Typescript here and it doesn't seem worth a lot of effort.
-    a11yLevel: any;
+    a11yLevel: IOption;
 }
 
-const levelOptions = [
+const levelOptions: IOption[] = [
     {
         value: "none",
         label: "None",
