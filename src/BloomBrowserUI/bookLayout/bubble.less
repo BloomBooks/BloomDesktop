@@ -258,3 +258,59 @@
         right: calc(100% + 2.8px) !important;
     }
 }
+
+// Set vertical alignment to center
+// Working prototype using flexboxes.
+.bloom-imageContainer {
+    // We exclude "Just Text" bubbles because
+    // 1) Visually there's not a lot of profit to it
+    // 2) So for existing books there won't be a subtle movement in the text position
+    .bloom-textOverPicture[data-bubble]:not([data-bubble*="`style`:`none`"]) {
+        // Center the translationGroup within the textOverPic box,
+        // instead of having the 2 px difference all at the bottom.
+        display: flex;
+        align-items: center;
+
+        // Note: Needs a bit of specificity to beat display: block rule in langVisibility.css
+        // However, also need to make sure you don't accidentall change display: none to display: flex
+        .bloom-editable.bloom-visibility-code-on,
+        .bloom-editable.bloom-visibility-user-on {
+            display: flex;
+
+            // We use direction=row, wrap, and item's basis=100% in order to layout the paragraphs (flex-item)
+            // one paragraph after another vertically.
+            // The benefit of Row instead of Column is that OverflowChecker already resizes these items well.
+            // With Column, I found that in the align-bottom case, OverflowChecker doesn't get the required height right
+            // and consequently the boxes won't be grown big enough.
+            flex-direction: row;
+            flex-wrap: wrap;
+
+            color: blue;
+
+            // Vertical alignment
+            // Note: If the flex-container is much larger than the space required for the flex-items,
+            //       there will be extra space inserted between the items (paragraphs)
+            align-items: center;
+
+            // Paragraphs are the expected flex-items
+            p {
+                // Set to 100% so that two paragraphs can't share a line in the flex layout
+                flex-basis: 100%;
+                flex-grow: 0;
+            }
+        }
+
+        // bloom-vertical-align should be on the translation group
+        .bloom-vertical-align-top .bloom-editable {
+            align-items: flex-start;
+        }
+
+        .bloom-vertical-align-center .bloom-editable {
+            align-items: center;
+        }
+
+        .bloom-vertical-align-bottom .bloom-editable {
+            align-items: flex-end;
+        }
+    }
+}
