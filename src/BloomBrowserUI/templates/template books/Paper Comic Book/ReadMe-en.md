@@ -6,7 +6,6 @@ This template tells Bloom that this book is a candidate for "[full bleed](https:
 ## Limitations of Bloom’s current comic book support
 
 -   Epub readers will not show comics correctly. These comics are intended for publishing on the web, Bloom Reader, and Reading App Builder.
--   While Bloom 4.7 does allow recording audio for comic bubbles, it does not have a way of letting you define the playback order of the bubbles. We will get to that in Bloom 4.8.
 -   If you change the paper-size or layout of a book, bubbles will get messed up and you’ll have to fix them.
 -   The text in bubbles is currently limited to a rectangle, rather than conforming to the actual outlines of the bubble. You can use &lt;enter&gt; to manually break lines. Your comic will look more professional if you take the time to resize bubbles to be as tight as possible.
 -   Comics are monolingual.
