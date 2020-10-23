@@ -174,8 +174,10 @@ namespace Bloom.Publish.PDF
 		private const double A3PortraitHeight = A4PortraitWidth * 2d;
 		const double bleedWidth = 3; // mm
 		private const double bleedExtra = bleedWidth * 2;
-		private const double USComicPortraitHeight = 10.5 * 25.4;
-		private const double USComicPortraitWidth = 6.75 * 25.4;
+
+		// Trim size from Kingstone: 10.25 x 6.625 inches
+		private const double USComicPortraitHeight = 10.25 * 25.4;
+		private const double USComicPortraitWidth = 6.625 * 25.4;
 
 		//BottomMarginInMillimeters = 0,
 		//TopMarginInMillimeters = 0,
@@ -197,7 +199,7 @@ namespace Bloom.Publish.PDF
 			}
 			else if (specs.PaperSizeName == "USComic")
 			{
-				bldr.Append(" -h 266.7 -w 171.45"); // 10.5" x 6.75"
+				bldr.Append($" -h {USComicPortraitHeight} -w {USComicPortraitWidth}");
 			}
 			else
 			{
