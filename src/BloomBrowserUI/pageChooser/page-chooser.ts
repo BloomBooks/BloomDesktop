@@ -278,7 +278,8 @@ export class PageChooser {
         templateBookPath: string,
         convertAnywayChecked: boolean,
         willLoseData: boolean,
-        convertWholeBookChecked: boolean
+        convertWholeBookChecked: boolean,
+        numberToAdd: number
     ): void {
         if (forChangeLayout) {
             if (willLoseData && !convertAnywayChecked) {
@@ -299,7 +300,8 @@ export class PageChooser {
                 {
                     templateBookPath: templateBookPath,
                     pageId: pageId,
-                    convertWholeBook: false
+                    convertWholeBook: false,
+                    numberToAdd: numberToAdd
                 },
                 PageChooser.closeup
             );
@@ -656,7 +658,8 @@ export class PageChooser {
                     this.willLoseData(),
                     convertWholeBookCheckbox
                         ? convertWholeBookCheckbox.checked
-                        : false
+                        : false,
+                    this._forChooseLayout ? -1 : 1
                 );
             }); // invisibleThumbCover double click handler
 
@@ -729,7 +732,8 @@ export function handleAddPageOrChooseLayoutButtonClick(
     templateBookPath: string,
     convertAnywayChecked: boolean,
     willLoseData: boolean,
-    convertWholeBookChecked: boolean
+    convertWholeBookChecked: boolean,
+    numberToAdd: number
 ) {
     PageChooser.handleAddPageOrChooseLayoutButtonClick(
         forChangeLayout,
@@ -737,6 +741,7 @@ export function handleAddPageOrChooseLayoutButtonClick(
         templateBookPath,
         convertAnywayChecked,
         willLoseData,
-        convertWholeBookChecked
+        convertWholeBookChecked,
+        numberToAdd
     );
 }

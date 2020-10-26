@@ -5,6 +5,8 @@ import { Checkbox } from "../react_components/checkbox";
 import BloomButton from "../react_components/bloomButton";
 import { RequiresBloomEnterprise } from "../react_components/requiresBloomEnterprise";
 import { handleAddPageOrChooseLayoutButtonClick } from "./page-chooser";
+import SmallNumberPicker from "../react_components/smallNumberPicker";
+import { useL10n } from "../react_components/l10nHooks";
 
 interface ISelectedTemplatePageProps {
     enterpriseAvailable: boolean;
@@ -28,6 +30,10 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
         false
     );
 
+    const minimumPagesToAdd = 1;
+    const maximumPagesToAdd = 99;
+    const [numberToAdd, setNumberToAdd] = useState<number>(minimumPagesToAdd);
+
     const captionKey = "TemplateBooks.PageLabel." + props.caption;
     const descriptionKey =
         "TemplateBooks.PageDescription." + props.pageDescription;
@@ -49,6 +55,12 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
     const isAddOrChoosePageButtonEnabled = (): boolean => {
         return !props.forChangeLayout || !props.willLoseData || continueChecked;
     };
+
+    const numberOfPagesTooltip = useL10n(
+        "Number of pages to add",
+        "EditTab.AddPageDialog.NumberOfPagesTooltip",
+        "For the number to the left of the ADD PAGE button"
+    );
 
     return (
         <div className="previewWrapper">
@@ -112,24 +124,35 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                 )}
             {!enterpriseSubscriptionFault(props.pageIsEnterpriseOnly) && (
                 <div className="pushToBottom">
-                    <BloomButton
-                        l10nKey={buttonKey}
-                        id="addOrChoosePageButton"
-                        hasText={true}
-                        enabled={isAddOrChoosePageButtonEnabled()}
-                        onClick={() =>
-                            handleAddPageOrChooseLayoutButtonClick(
-                                !!props.forChangeLayout,
-                                props.pageId,
-                                props.templateBookPath,
-                                continueChecked,
-                                !!props.willLoseData,
-                                convertWholeBookChecked
-                            )
-                        }
-                    >
-                        {buttonEnglishText}
-                    </BloomButton>
+                    <div className="previewControlsContainer">
+                        <BloomButton
+                            l10nKey={buttonKey}
+                            id="addOrChoosePageButton"
+                            hasText={true}
+                            enabled={isAddOrChoosePageButtonEnabled()}
+                            onClick={() =>
+                                handleAddPageOrChooseLayoutButtonClick(
+                                    !!props.forChangeLayout,
+                                    props.pageId,
+                                    props.templateBookPath,
+                                    continueChecked,
+                                    !!props.willLoseData,
+                                    convertWholeBookChecked,
+                                    !!props.forChangeLayout ? -1 : numberToAdd
+                                )
+                            }
+                        >
+                            {buttonEnglishText}
+                        </BloomButton>
+                        {!props.forChangeLayout && (
+                            <SmallNumberPicker
+                                minLimit={minimumPagesToAdd}
+                                maxLimit={maximumPagesToAdd}
+                                handleChange={setNumberToAdd}
+                                tooltip={numberOfPagesTooltip}
+                            />
+                        )}
+                    </div>
                 </div>
             )}
             {enterpriseSubscriptionFault(props.pageIsEnterpriseOnly) && (

@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Web;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Microsoft.CSharp.RuntimeBinder;
 
 namespace Bloom.web.controllers
 {
@@ -37,16 +39,14 @@ namespace Bloom.web.controllers
 
 		private void HandleAddPage(ApiRequest request)
 		{
-			bool unused;
-			var templatePage = GetPageTemplateAndUserStyles(request, out unused);
-			if (templatePage != null)
-			{
-				CopyVideoPlaceHolderIfNeeded(templatePage);
-				_templateInsertionCommand.Insert(templatePage as Page);
-				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay); // needed to get the styles updated
-				request.PostSucceeded();
+			(IPage templatePage, bool dummy, int numberOfPagesToAdd) = GetPageTemplateAndUserStyles(request);
+			if (templatePage == null || numberOfPagesToAdd < 1) // just in case
 				return;
-			}
+			CopyVideoPlaceHolderIfNeeded(templatePage);
+			_templateInsertionCommand.Insert(templatePage as Page, numberOfPagesToAdd);
+
+			_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay); // needed to get the styles updated
+			request.PostSucceeded();
 		}
 
 		/// <summary>
@@ -70,22 +70,20 @@ namespace Bloom.web.controllers
 
 		private void HandleChangeLayout(ApiRequest request)
 		{
-			bool changeWholeBook;
-			var templatePage = GetPageTemplateAndUserStyles(request, out changeWholeBook);
-			if (templatePage != null)
-			{
-				CopyVideoPlaceHolderIfNeeded(templatePage);
-				var pageToChange = _pageSelection.CurrentSelection;
-				if (templatePage.Book != null) // may be null in unit tests that are unconcerned with stylesheets
-					HtmlDom.AddStylesheetFromAnotherBook(templatePage.Book.OurHtmlDom, pageToChange.Book.OurHtmlDom);
-				if (changeWholeBook)
-					ChangeSimilarPagesInEntireBook(pageToChange, templatePage);
-				else
-					pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(pageToChange, templatePage);
+			(IPage templatePage, bool changeWholeBook, int dummy) = GetPageTemplateAndUserStyles(request);
+			if (templatePage == null)
+				return;
+			CopyVideoPlaceHolderIfNeeded(templatePage);
+			var pageToChange = _pageSelection.CurrentSelection;
+			if (templatePage.Book != null) // may be null in unit tests that are unconcerned with stylesheets
+				HtmlDom.AddStylesheetFromAnotherBook(templatePage.Book.OurHtmlDom, pageToChange.Book.OurHtmlDom);
+			if (changeWholeBook)
+				ChangeSimilarPagesInEntireBook(pageToChange, templatePage);
+			else
+				pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(pageToChange, templatePage);
 
-				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
-				request.PostSucceeded();
-			}
+			_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
+			request.PostSucceeded();
 		}
 
 		private static void ChangeSimilarPagesInEntireBook(IPage currentSelectedPage, IPage newTemplatePage)
@@ -102,30 +100,40 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		private IPage GetPageTemplateAndUserStyles(ApiRequest request, out bool convertWholeBook)
+		private (IPage templatePage, bool convertWholeBook, int numberToAdd) GetPageTemplateAndUserStyles(ApiRequest request)
 		{
-			convertWholeBook = false;
+			var convertWholeBook = false;
 			var requestData = DynamicJson.Parse(request.RequiredPostJson());
-			//var templateBookUrl = request.RequiredParam("templateBookUrl");
 			var templateBookPath = HttpUtility.HtmlDecode(requestData.templateBookPath);
 			var templateBook = _sourceCollectionsList.FindAndCreateTemplateBookByFullPath(templateBookPath);
 			if(templateBook == null)
 			{
 				request.Failed("Could not find template book " + templateBookPath);
-				return null;
+				return (null, false, -1);
 			}
 
 			var pageDictionary = templateBook.GetTemplatePagesIdDictionary();
-			IPage page = null;
-			if(!pageDictionary.TryGetValue(requestData.pageId, out page))
+			if(!pageDictionary.TryGetValue(requestData.pageId, out IPage page))
 			{
 				request.Failed("Could not find the page " + requestData.pageId + " in the template book " + requestData.templateBookUrl);
-				return null;
+				return (null, false, -1);
 			}
 
 			if (requestData.convertWholeBook)
 				convertWholeBook = true;
-			return page;
+
+			int addNum;
+			// Unfortunately, a try-catch is the only reliable way to know if 'numberToAdd' is defined or not.
+			try
+			{
+				addNum = (int)requestData.numberToAdd;
+			}
+			catch (RuntimeBinderException)
+			{
+				addNum = 1;
+			}
+				
+			return (page, convertWholeBook, addNum);
 		}
 	}
 }
