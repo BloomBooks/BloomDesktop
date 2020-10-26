@@ -315,7 +315,7 @@ namespace Bloom.Edit
 		/// </summary>
 		private void OnInsertPage(object page, PageInsertEventArgs e)
 		{
-			CurrentBook.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), page as Page);
+			CurrentBook.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), page as Page, e.NumberToAdd);
 			//_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
 			//_pageSelection.SelectPage(newPage);
 			if(e.FromTemplate)

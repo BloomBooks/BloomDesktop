@@ -152,23 +152,24 @@ namespace Bloom
 		public event EventHandler<PageInsertEventArgs> InsertPage;
 		public Page MostRecentInsertedTemplatePage;
 
-		public void Insert(Page page)
+		public void Insert(Page page, int numberToAdd = 1)
 		{
-			if (InsertPage != null)
-			{
-				MostRecentInsertedTemplatePage = page;
-				InsertPage.Invoke(page, new PageInsertEventArgs(true));
-			}
+			if (InsertPage == null)
+				return;
+			MostRecentInsertedTemplatePage = page;
+			InsertPage.Invoke(page, new PageInsertEventArgs(true, numberToAdd));
 		}
 	}
 
 	public class PageInsertEventArgs : EventArgs
 	{
 		public bool FromTemplate;
+		public int NumberToAdd;
 
-		public PageInsertEventArgs(bool fromTemplate)
+		public PageInsertEventArgs(bool fromTemplate, int numberToAdd = 1)
 		{
 			FromTemplate = fromTemplate;
+			NumberToAdd = numberToAdd;
 		}
 	}
 }

@@ -1042,6 +1042,10 @@
         <note>Seen when the book's main template page file is missing.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): (no template file found)</note>
       </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.NumberOfPagesTooltip" sil:dynamic="true">
+        <source xml:lang="en">Number of pages to add</source>
+        <note>ID: EditTab.AddPageDialog.NumberOfPagesTooltip</note>
+      </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true">
         <source xml:lang="en">Add Page...</source>
         <note>ID: EditTab.AddPageDialog.Title</note>

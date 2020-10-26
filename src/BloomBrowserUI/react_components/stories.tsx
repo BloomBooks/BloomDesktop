@@ -16,6 +16,7 @@ import {
     showColorPickerDialog,
     IColorPickerDialogProps
 } from "./colorPickerDialog";
+import SmallNumberPicker from "./smallNumberPicker";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -172,28 +173,98 @@ const confirmDialogProps: IConfirmDialogProps = {
     }
 };
 
-storiesOf("Misc", module).add("ConfirmDialog", () =>
-    React.createElement(() => (
-        <div>
-            <div id="modal-container" />
-            <BloomButton
-                onClick={() =>
-                    showConfirmDialog(
-                        confirmDialogProps,
-                        document.getElementById("modal-container")
-                    )
-                }
-                enabled={true}
-                hasText={true}
-                l10nKey={"dummyKey"}
-            >
-                Open Confirm Dialog
-            </BloomButton>
-        </div>
-    ))
-);
+// Try to simulate the environment of the page preview
+const containerDivStyles: React.CSSProperties = {
+    width: "500px",
+    height: "100%",
+    border: "1px solid green",
+    flexDirection: "column",
+    display: "flex",
+    alignItems: "center"
+};
 
-const divStyles: React.CSSProperties = {
+const moveToBottomStyles: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "flex-end",
+    flex: 1,
+    border: "1px solid red",
+    width: 200
+};
+
+const previewControlsStyles: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "row",
+    paddingBottom: "20px"
+};
+
+const pickerStyles: React.CSSProperties = {
+    marginTop: "-10px",
+    marginLeft: "-15px",
+    position: "absolute"
+};
+
+storiesOf("Misc", module)
+    .add("ConfirmDialog", () =>
+        React.createElement(() => (
+            <div>
+                <div id="modal-container" />
+                <BloomButton
+                    onClick={() =>
+                        showConfirmDialog(
+                            confirmDialogProps,
+                            document.getElementById("modal-container")
+                        )
+                    }
+                    enabled={true}
+                    hasText={true}
+                    l10nKey={"dummyKey"}
+                >
+                    Open Confirm Dialog
+                </BloomButton>
+            </div>
+        ))
+    )
+    .add("Small Number Picker", () =>
+        React.createElement(() => {
+            const numberOfPagesTooltip = "Number of pages to add";
+            const onHandleChange = (newNumber: number) => {
+                console.log("We handled change!");
+                console.log(`  result was ${newNumber}`);
+            };
+            const min = 1;
+            const max = 15;
+
+            return (
+                <div style={containerDivStyles}>
+                    <div style={moveToBottomStyles}>
+                        <div style={previewControlsStyles}>
+                            <BloomButton
+                                l10nKey="dummyKey"
+                                hasText={true}
+                                enabled={false}
+                                onClick={() => {
+                                    console.log("Does nothing");
+                                }}
+                            >
+                                My Button
+                            </BloomButton>
+                            <div style={pickerStyles}>
+                                <SmallNumberPicker
+                                    minLimit={min}
+                                    maxLimit={max}
+                                    handleChange={onHandleChange}
+                                    tooltip={numberOfPagesTooltip}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        })
+    );
+
+const playbackControlsDivStyles: React.CSSProperties = {
     width: "150px",
     height: "80px",
     border: "1px solid red",
@@ -216,7 +287,7 @@ const bumpDown = (whichPositionToBump: number): void => {
 storiesOf("PlaybackOrderControls", module).add("PlaybackOrder buttons", () =>
     React.createElement(() => (
         <>
-            <div style={divStyles}>
+            <div style={playbackControlsDivStyles}>
                 <PlaybackOrderControls
                     maxOrder={3}
                     orderOneBased={2}
@@ -224,7 +295,7 @@ storiesOf("PlaybackOrderControls", module).add("PlaybackOrder buttons", () =>
                     onDecrease={bumpDown}
                 />
             </div>
-            <div style={divStyles}>
+            <div style={playbackControlsDivStyles}>
                 <PlaybackOrderControls
                     maxOrder={3}
                     orderOneBased={1}
@@ -232,7 +303,7 @@ storiesOf("PlaybackOrderControls", module).add("PlaybackOrder buttons", () =>
                     onDecrease={bumpDown}
                 />
             </div>
-            <div style={divStyles}>
+            <div style={playbackControlsDivStyles}>
                 <PlaybackOrderControls
                     maxOrder={3}
                     orderOneBased={3}
