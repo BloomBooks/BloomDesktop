@@ -2379,7 +2379,7 @@ namespace Bloom.Book
 			return pageElement as XmlElement;
 		}
 
-		public void InsertPageAfter(IPage pageBefore, IPage templatePage)
+		public void InsertPageAfter(IPage pageBefore, IPage templatePage, int numberToAdd = 1)
 		{
 			Guard.Against(HasFatalError, "Insert page failed: " + FatalErrorDescription);
 			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
@@ -2407,20 +2407,26 @@ namespace Bloom.Book
 			XmlDocument dom = OurHtmlDom.RawDom;
 			var templatePageDiv = templatePage.GetDivNodeForThisPage();
 			var newPageDiv = dom.ImportNode(templatePageDiv, true) as XmlElement;
-
-			BookStarter.SetupIdAndLineage(templatePageDiv, newPageDiv);
 			BookStarter.SetupPage(newPageDiv, CollectionSettings, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);//, LockedExceptForTranslation);
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, GetLayout());
-
-
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]C:\dev\Bloom\src\BloomExe\StyleSheetService.cs
 			// If we're a template, make the new page a template one.
 			HtmlDom.MakePageWithTemplateStatus(IsSuitableForMakingShells, newPageDiv);
 			var elementOfPageBefore = FindPageDiv(pageBefore);
-			elementOfPageBefore.ParentNode.InsertAfter(newPageDiv, elementOfPageBefore);
 
-			CopyAndRenameAudioFiles(newPageDiv, templatePage.Book.FolderPath);
-			CopyAndRenameVideoFiles(newPageDiv, templatePage.Book.FolderPath);
+			// This is the only part that needs repeating if we're adding multiple pages at a time.
+			var firstPageAdded = newPageDiv; // temporarily
+			for (var i = 0; i < numberToAdd; i++)
+			{
+				var clonedDiv = (XmlElement)newPageDiv.CloneNode(true);
+				if (i == 0)
+					firstPageAdded = clonedDiv;
+				BookStarter.SetupIdAndLineage(templatePageDiv, clonedDiv);
+				elementOfPageBefore.ParentNode.InsertAfter(clonedDiv, elementOfPageBefore);
+
+				CopyAndRenameAudioFiles(clonedDiv, templatePage.Book.FolderPath);
+				CopyAndRenameVideoFiles(clonedDiv, templatePage.Book.FolderPath);
+			}
 			// Why audio and video but not image or widget? The logic is that within Bloom
 			// someone can record over the audio or video, and it will replace the file,
 			// and it would be unexpected for this to alter the audio or video on another page,
@@ -2436,7 +2442,7 @@ namespace Bloom.Book
 
 			OrderOrNumberOfPagesChanged();
 			BuildPageCache();
-			var newPage = GetPages().First(p=>p.GetDivNodeForThisPage() == newPageDiv);
+			var newPage = GetPages().First(p=>p.GetDivNodeForThisPage() == firstPageAdded);
 			Guard.AgainstNull(newPage,"could not find the page we just added");
 
 			//_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _collectionSettings.Language1Iso639Code));

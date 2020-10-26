@@ -3,11 +3,17 @@ import Select from "react-select";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import * as mobxReact from "mobx-react";
 
+// Only the first two properties of IOption are used by BloomSelect.
+export interface IOption {
+    value: string;
+    label: string;
+    l10nKey?: string;
+    comment?: string;
+}
 export interface IProps {
-    // I don't know how to express exact types in Typescript here and it doesn't seem worth a lot of effort.
-    currentOption: any; // { key, value }, only value is used here
-    options: any; // { value, label, l10nKey, comment }, first two used by Select.
-    nullOption: string; // option .value key associated with not having chosen one of the real options
+    currentOption: IOption; // Only currentOption.value is used in BloomSelect.
+    options: IOption[];
+    nullOption: string; // The IOption .value associated with not having chosen one of the real options
     className: string;
 }
 
@@ -18,7 +24,7 @@ export interface IProps {
 // control's data.  If nothing is set as an observable, then there won't be automatic re-rendering.
 @mobxReact.observer
 export class BloomSelect extends React.Component<IProps> {
-    constructor(props) {
+    constructor(props: IProps) {
         super(props);
 
         this.props.options.map(item => {
