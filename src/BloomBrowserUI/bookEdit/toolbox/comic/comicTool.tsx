@@ -72,9 +72,9 @@ const ComicToolControls: React.FunctionComponent = () => {
     );
 
     // if bubbleActive is true, corresponds to the active bubble. Otherwise, corresponds to the most recently active bubble.
-    const [currentBubbleSpec, setCurrentBubbleSpec] = useState(undefined as (
-        | BubbleSpec
-        | undefined));
+    const [currentBubbleSpec, setCurrentBubbleSpec] = useState(
+        undefined as BubbleSpec | undefined
+    );
 
     // Callback to initialize bubbleEditing and get the initial bubbleSpec
     const bubbleSpecInitialization = () => {
@@ -539,7 +539,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                                 </Div>
                             </MenuItem>
                         </Select>
-                        <div className="showTailCheckbox">
+                        <div className="comicCheckbox">
                             <MuiCheckbox
                                 label="Show Tail"
                                 l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
@@ -550,7 +550,7 @@ const ComicToolControls: React.FunctionComponent = () => {
                                 }}
                             />
                         </div>
-                        <div>
+                        <div className="comicCheckbox">
                             <MuiCheckbox
                                 label="Rounded Corners"
                                 l10nKey="EditTab.Toolbox.ComicTool.Options.RoundedCorners"
