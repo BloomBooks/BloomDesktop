@@ -1,0 +1,15 @@
+// A separate .less file seems to be the only way apply styles to a Material-ui 'input' element directly.
+// The Textfield api has an InputProps, but this applies a layer up where it does no good in this case.
+
+@pickerWidth: 30px;
+@pickerTopMargin: 15px;
+
+.smallNumberPicker {
+    max-width: @pickerWidth;
+    position: absolute;
+    margin-left: -@pickerWidth;
+    margin-top: @pickerTopMargin;
+    input {
+        text-align: right;
+    }
+}
