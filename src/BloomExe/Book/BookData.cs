@@ -428,6 +428,27 @@ namespace Bloom.Book
 			}
 		}
 
+		// Just like languagesOfBook above, we need languageLocation to be set to the national language
+		// so it gets the correct font.
+		//
+		// ENHANCE: It's probably possible to combine this with SetupDisplayOfLanguagesOfBook, perhaps with a new class name to key on.
+		// I'm not attempting that right now because I'm trying to make a safe fix for the beta. 
+		private void SetupDisplayOfLanguageLocation(DataSet dataSet)
+		{
+			if (!dataSet.TextVariables.TryGetValue("languageLocation", out var dataSetElementValue))
+				return;
+			var value = dataSetElementValue.TextAlternatives.GetExactAlternative("*");
+			if (string.IsNullOrEmpty(value))
+				return;
+			var elements = _dom.SafeSelectNodes("//div[@data-library='languageLocation']");
+
+			foreach (var element in elements.Cast<XmlElement>().ToList())
+			{
+				element.SetAttribute("lang", _collectionSettings.Language2.Iso639Code);
+				element.InnerText = value;
+			}
+		}
+
 		/// <summary>
 		/// Topics are uni-directional value, react™-style. The UI tells the book to change the topic
 		/// key, and then eventually the page/book is re-evaluated and the appropriate topic is displayed
@@ -728,6 +749,7 @@ namespace Bloom.Book
 			// calls below are possibly redundant).
 			UpdateTitle();
 			SetupDisplayOfLanguagesOfBook(_dataset);
+			SetupDisplayOfLanguageLocation(_dataset);
 			SetUpDisplayOfTopicInBook(_dataset);
 			return data;
 		}
