@@ -56,6 +56,15 @@ namespace BloomTests.Book
 			Assert.AreEqual("Factory-XMatter.css",CreatePaperSaverHelper().GetStyleSheetFileName());
 		}
 
+		[TestCase("Device-XMatter.css", "Device")]
+		[TestCase("Kyrgyzstan2020-XMatter.css", "Kyrgyzstan2020")]
+		[TestCase("garbageInput.css", null)]
+		public void GetXMatterFromStyleSheetFileName_AllDefaults_ExtractsPrefix(string filename, string expectedXMatterName)
+		{
+			string actual = XMatterHelper.GetXMatterFromStyleSheetFileName(filename);
+			Assert.AreEqual(expectedXMatterName, actual, "XMatterName did not match.");
+		}
+
 		[Test]
 		public void InjectXMatter_AllDefaults_Inserts3PagesBetweenDataDivAndFirstPage()
 		{
