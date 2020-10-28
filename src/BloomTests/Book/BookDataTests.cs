@@ -1000,7 +1000,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void SynchronizeDataItemsThroughoutDOM_DataLibraryFieldsGetLanguage2Code()
+		public void SynchronizeDataItemsThroughoutDOM_LanguageLocationGetsLanguage2Code()
 		{
 			var dom = new HtmlDom(@"<html><head></head><body>
 					<div class='bloom-page titlePage'>
