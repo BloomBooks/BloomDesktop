@@ -16,11 +16,12 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
     function runArrowKeyTest(
         setup: () => HTMLElement,
         verify: () => void,
-        key: "ArrowUp" | "ArrowDown"
+        key: "ArrowUp" | "ArrowDown",
+        sendShift: boolean = false
     ) {
         const elementToSendEventTo = setup();
 
-        sendKeyboardEvent(elementToSendEventTo, key);
+        sendKeyboardEvent(elementToSendEventTo, key, sendShift);
 
         verify();
 
@@ -41,7 +42,7 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
         };
 
         // System under test
-        sendKeyboardEvent(element, direction, spySetup);
+        sendKeyboardEvent(element, direction, false, spySetup);
 
         // Verification
         if (expectation) {
@@ -142,6 +143,7 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
     function sendKeyboardEvent(
         element: HTMLElement,
         key: "ArrowUp" | "ArrowDown",
+        sendShift: boolean,
         // If defined, eventSpySetup will be called after keyEvent is created.
         // This gives you an opportunity to attach a spy to it if you wish to observe what happesn to it
         // e.g if a certain function was called on it, etc.
@@ -150,7 +152,8 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
         element.onkeydown = fixUpDownArrowEventHandler;
 
         const event = new KeyboardEvent("keydown", {
-            key
+            key,
+            shiftKey: sendShift
         });
         if (eventSpySetup) {
             eventSpySetup(event);
@@ -162,7 +165,9 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
     function verifySelection(
         selection: Selection | null,
         expectedNode: Node,
-        expectedOffset?: number
+        expectedOffset?: number,
+        expectedFocusNode?: Node,
+        expectedFocusOffset?: number
     ) {
         expect(selection).not.toBeNull();
         if (selection) {
@@ -174,6 +179,19 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
                 expect(selection.anchorOffset).toEqual(
                     expectedOffset,
                     "anchorOffset does not match."
+                );
+            }
+
+            if (expectedFocusNode) {
+                expect(selection.focusNode).toEqual(
+                    expectedFocusNode,
+                    "FocusNode does not match."
+                );
+            }
+            if (expectedFocusOffset !== undefined) {
+                expect(selection.focusOffset).toEqual(
+                    expectedFocusOffset,
+                    "FocusOffset does not match."
                 );
             }
         }
@@ -360,6 +378,7 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
     const getS2b = () => getFirstTextNodeOfElement("s2b")!;
     const getS3a = () => getFirstTextNodeOfElement("s3a")!;
     const getS3b = () => getFirstTextNodeOfElement("s3b")!;
+    const getS4 = () => getFirstTextNodeOfElement("s4")!;
 
     describe("Given ArrowUp on non talking book", () => {
         const l2Start = 13;
@@ -755,6 +774,38 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
             });
         });
     });
+
+    describe("Selection tests", () => {
+        const sendShift = true;
+
+        it("Given Shift+ArrowDown on boundary, highlights text to the point one line down", () => {
+            const setup = () => setupS1AndMoveTo(kSentence, "s1", 15); // 2nd line of span 1
+            const verify = () => {
+                const sel = window.getSelection();
+                verifySelection(sel, getS1(), 15, getS3b(), 0);
+            };
+            runArrowKeyTest(setup, verify, "ArrowDown", sendShift);
+        });
+
+        it("Given Shift+ArrowDown when already selected, highlights text to the point one line down", () => {
+            const setup = () => {
+                const editable = setupScenario1(kSentence);
+
+                // Reminder: the default event doesn't move anything in the unit tests.
+                //   So this was specifically selected so that the focusNode (end of the current selection)
+                //   is on a boundary line
+                const s1 = getS1();
+                setSelectionTo(s1, 0, s1, 15);
+
+                return editable;
+            };
+            const verify = () => {
+                const sel = window.getSelection();
+                verifySelection(sel, getS1(), 0, getS3b(), 0);
+            };
+            runArrowKeyTest(setup, verify, "ArrowDown", sendShift);
+        });
+    });
 });
 
 describe("Anchor Tests", () => {
@@ -830,9 +881,19 @@ function cleanupDocument() {
     }
 }
 
-function setSelectionTo(node: Node, offset: number) {
+function setSelectionTo(
+    startNode: Node,
+    startOffset: number,
+    endNode?: Node,
+    endOffset?: number
+) {
     const sel1 = window.getSelection()!;
-    sel1.setBaseAndExtent(node, offset, node, offset);
+    sel1.setBaseAndExtent(
+        startNode,
+        startOffset,
+        endNode ?? startNode,
+        endOffset ?? startOffset
+    );
 }
 
 function getFirstTextNodeOfElement(id: string) {

@@ -30,10 +30,12 @@ export class ArrowKeyWorkaroundManager {
     public handleUpDownArrowsInFlexboxEditables(keyEvent: KeyboardEvent): void {
         // Avoid modifying the keydown behavior by returning early unless it's the specific problem case
         if (keyEvent.key !== "ArrowUp" && keyEvent.key !== "ArrowDown") {
+            // this.log("Skipping " + keyEvent.key);
             return;
         }
 
         // this.log("Handling " + keyEvent.key);
+        // this.log("isShiftOn: " + keyEvent.shiftKey);
 
         const targetElem = keyEvent.target as Element;
         if (!targetElem) {
@@ -53,31 +55,31 @@ export class ArrowKeyWorkaroundManager {
     }
 
     // Moves the anchor by one line according to this.direction
-    private moveAnchor(event: Event): void {
+    private moveAnchor(event: KeyboardEvent): void {
         console.assert(
             this.direction,
             "ArrowKeyWorkaroundManager.direction must be set"
         );
         const sel = window.getSelection();
-        if (!sel) {
-            // this.log("SKIP - Could not get selection.");
+        if (!sel?.anchorNode || !sel?.focusNode) {
+            // this.log("SKIP - Could not get selection or anchor/focus nodes.");
             return;
         }
 
         let oldAnchor: Anchor;
-        if (sel.anchorNode?.nodeType === Node.TEXT_NODE) {
-            oldAnchor = new Anchor(sel.anchorNode, sel.anchorOffset);
-        } else if (sel.anchorNode?.nodeType === Node.ELEMENT_NODE) {
+        if (sel.focusNode?.nodeType === Node.TEXT_NODE) {
+            oldAnchor = new Anchor(sel.focusNode, sel.focusOffset);
+        } else if (sel.focusNode?.nodeType === Node.ELEMENT_NODE) {
             // When you first load up a page, it may be pointing to an elementNode instead.
             // (It's also sometimes possible to arrive at an elementNode by using the arrow keys to navigate,
             // e.g. pressing down arrow to the very end was sometimes observed to do the trick)
             // Force it to point to a text node instead.
-            if (sel.anchorOffset >= sel.anchorNode.childNodes.length) {
+            if (sel.focusOffset >= sel.focusNode.childNodes.length) {
                 // this.log("ABORT - anchorOffset > length.");
                 return;
             }
-            const pointedToNode = sel.anchorNode.childNodes.item(
-                sel.anchorOffset
+            const pointedToNode = sel.focusNode.childNodes.item(
+                sel.focusOffset
             );
             const firstLeafNode = this.getFirstLeafNode(pointedToNode);
             if (!firstLeafNode) {
@@ -87,7 +89,7 @@ export class ArrowKeyWorkaroundManager {
                 oldAnchor = new Anchor(firstLeafNode, 0);
             }
         } else {
-            // this.log("SKIP - Invalid nodeType: " + sel.anchorNode?.nodeType);
+            // this.log("SKIP - Invalid nodeType: " + sel.focusNode?.nodeType);
             return;
         }
 
@@ -126,7 +128,17 @@ export class ArrowKeyWorkaroundManager {
             return;
         }
 
-        this.setSelectionTo(sel, newAnchor.node, newAnchor.offset);
+        let startAnchor: Anchor;
+        let endAnchor: Anchor;
+        if (event.shiftKey) {
+            // Changing selected text using shift+arrows.
+            startAnchor = new Anchor(sel.anchorNode, sel.anchorOffset);
+            endAnchor = newAnchor;
+        } else {
+            // Normal case... just navigating.
+            startAnchor = endAnchor = newAnchor;
+        }
+        this.setSelectionTo(sel, startAnchor, endAnchor);
 
         // Hmm, for some reason, after modifying the selection, now the default seems to work
         // so now we need to prevent it in order to avoiding moving twice the desired amount.
@@ -134,10 +146,10 @@ export class ArrowKeyWorkaroundManager {
         event.preventDefault();
     }
 
-    private setSelectionTo(sel: Selection, node: Node, offset: number): void {
-        // this.log(`setSelectionTo offset ${offset} within node: `);
-        // this.printNode(node);
-        sel.setBaseAndExtent(node, offset, node, offset);
+    private setSelectionTo(sel: Selection, start: Anchor, end: Anchor): void {
+        // this.log(`setSelectionTo offset ${end.offset} within node: `);
+        // this.printNode(end.node);
+        sel.setBaseAndExtent(start.node, start.offset, end.node, end.offset);
     }
 
     // Return the first leaf, even if it's not a text node.
