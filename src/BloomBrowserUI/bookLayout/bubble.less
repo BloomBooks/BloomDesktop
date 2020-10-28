@@ -286,9 +286,9 @@
             flex-wrap: wrap;
 
             // Vertical alignment
-            // Note: If the flex-container is much larger than the space required for the flex-items,
-            //       there will be extra space inserted between the items (paragraphs)
             align-items: center;
+            // the default for align-content is stretch, but that overrides our Paragraph Spacing setting and can create big gaps between the flex-items (paragraphs).
+            align-content: center;
 
             // Paragraphs are the expected flex-items
             p {
@@ -301,14 +301,17 @@
         // bloom-vertical-align should be on the translation group
         .bloom-vertical-align-top .bloom-editable {
             align-items: flex-start;
+            align-content: flex-start;
         }
 
         .bloom-vertical-align-center .bloom-editable {
             align-items: center;
+            align-content: center;
         }
 
         .bloom-vertical-align-bottom .bloom-editable {
             align-items: flex-end;
+            align-content: flex-end;
         }
     }
 }
