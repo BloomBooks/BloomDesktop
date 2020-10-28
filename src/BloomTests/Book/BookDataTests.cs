@@ -1027,6 +1027,24 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_LanguageLocationGetsLanguage2Code()
+		{
+			var dom = new HtmlDom(@"<html><head></head><body>
+					<div class='bloom-page titlePage'>
+						<div class='langName bloom-writeOnly' data-library='languageLocation'></div>
+					</div>
+				</body></html>");
+			var collectionSettings = CreateCollection(Language2Iso639Code: "ru", CountryName: "Russia");
+			var data = new BookData(dom, collectionSettings, null);
+
+			data.SynchronizeDataItemsThroughoutDOM();
+
+			XmlElement languageLocationDiv = dom.SelectSingleNode("//div[@data-library='languageLocation']");
+			Assert.That(languageLocationDiv.InnerText, Is.EqualTo("Russia"));
+			Assert.That(languageLocationDiv.Attributes["lang"].Value, Is.EqualTo("ru"));
+		}
+
+		[Test]
 		public void GetMultilingualContentLanguage_ContentLanguageSpecifiedInHtml_ReadsIt()
 		{
 			var dom = new HtmlDom(@"<html ><head></head><body>
@@ -2043,7 +2061,8 @@ namespace BloomTests.Book
 			string Language2Iso639Code = null,
 			string Language2Name = null,
 			string Language3Iso639Code = null,
-			string Language3Name = null
+			string Language3Name = null,
+			string CountryName = null
 		)
 		{
 			var c = new CollectionSettings();
@@ -2075,6 +2094,11 @@ namespace BloomTests.Book
 			if (Language3Name != null)
 			{
 				c.Language3.SetName(Language3Name, false);
+			}
+			
+			if (CountryName != null)
+			{
+				c.Country = CountryName;
 			}
 
 			return c;

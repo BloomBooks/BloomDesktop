@@ -57,7 +57,9 @@ div.bloom-page.outsideBackCover.coverColor {
 }
 
 .outsideBackCover [data-book="level-image"] img {
-    width: unset; // allow it to left-align
+    // This unset was used to allow left-align, but we were subsequently asked to (re-)center it.
+    // Leaving this for if/when they change their mind.
+    //width: unset; // allow it to left-align
 }
 .frontCover .bottomBlock {
     margin-left: 1cm;
@@ -128,7 +130,7 @@ div.bloom-page.outsideBackCover.coverColor {
         //     position: absolute;
         //     left: @A5Landscape-column2-left;
         //     top: 4mm;
-        margin-left: 75px; // Note: this must cause the lft edge of the logo to align with the text below
+        margin-left: 75px; // Note: this must cause the left edge of the logo to align with the text below
     }
 
     .outsideBackCover {
@@ -150,7 +152,10 @@ div.bloom-page.outsideBackCover.coverColor {
             [data-book="level-image"] {
                 grid-row: 1;
                 grid-column: 1;
-                margin-top: 0;
+                margin-left: auto;
+                margin-right: auto;
+                margin-top: auto;
+                margin-bottom: auto;
             }
         }
     }

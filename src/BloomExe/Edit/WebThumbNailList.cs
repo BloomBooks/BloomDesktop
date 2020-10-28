@@ -240,8 +240,11 @@ namespace Bloom.Edit
 			}
 			OnPaneContentsChanging(result.Any());
 
-			if (result.FirstOrDefault(p => p.Book != null) == null)
+			if (result.FirstOrDefault(p => p.Book != null) == null || _browser.WebBrowser == null)
 			{
+				// If we don't already have a GeckoWebBrowser, we'll crash below (BL-9167).  But if we
+				// haven't already been initialized, then we don't have a thumbnail display to update
+				// anyway.
 				_browser.Navigate(@"about:blank", false); // no pages, we just want a blank screen, if anything.
 				return new List<IPage>();
 			}
@@ -274,7 +277,6 @@ namespace Bloom.Edit
 				OptimizeForLinux(pageListDom);
 
 			pageListDom = Model.CurrentBook.GetHtmlDomReadyToAddPages(pageListDom);
-
 			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 
 			_baseForRelativePaths = pageListDom.BaseForRelativePaths;
