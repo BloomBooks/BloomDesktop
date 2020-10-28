@@ -428,24 +428,23 @@ namespace Bloom.Book
 			}
 		}
 
-		// Just like languagesOfBook above, we need languageLocation to be set to the national language
+		// Like languagesOfBook above, we need languageLocation to be set to the national language
 		// so it gets the correct font.
 		//
-		// ENHANCE: It's probably possible to combine this with SetupDisplayOfLanguagesOfBook, perhaps with a new class name to key on.
-		// I'm not attempting that right now because I'm trying to make a safe fix for the beta. 
+		// ENHANCE: It may be possible to combine this with SetupDisplayOfLanguagesOfBook, perhaps with a new class name to key on.
+		// I'm not attempting that right now because I'm trying to make a safe fix for the beta.
+		// However, note that if we set the InnerText here, we actually cause a problem. Changing the
+		// location values in the settings does not get reflected in Edit mode immediately. That's because
+		// dataSet actually has the old value at this point. I started off setting it to mimic SetupDisplayOfLanguagesOfBook
+		// but when that problem was discovered, I realized we don't need to set the value, just the lang attribute.
 		private void SetupDisplayOfLanguageLocation(DataSet dataSet)
 		{
-			if (!dataSet.TextVariables.TryGetValue("languageLocation", out var dataSetElementValue))
-				return;
-			var value = dataSetElementValue.TextAlternatives.GetExactAlternative("*");
-			if (string.IsNullOrEmpty(value))
-				return;
 			var elements = _dom.SafeSelectNodes("//div[@data-library='languageLocation']");
 
+			// As far as I know, there will only ever be one. But this seems like the safest thing to do.
 			foreach (var element in elements.Cast<XmlElement>().ToList())
 			{
 				element.SetAttribute("lang", _collectionSettings.Language2.Iso639Code);
-				element.InnerText = value;
 			}
 		}
 
