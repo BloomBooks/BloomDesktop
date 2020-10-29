@@ -4,6 +4,7 @@
 
 import "jasmine-jquery";
 import OverflowChecker from "../../bookEdit/OverflowChecker/OverflowChecker";
+import { removeTestRoot } from "../../utils/testHelper";
 
 var consoleDef = false;
 
@@ -92,11 +93,17 @@ function RunAncestorMarginTest(index: number, value: HTMLElement) {
 describe("Overflow Tests", () => {
     jasmine.getFixtures().fixturesPath = "base/bookEdit/OverflowChecker";
 
+    // Clean up before running the test. Other test's divs can affect the font size and hence the overflow.
+    beforeAll(removeTestRoot);
+
     // these tests are only reliable when tested with Firefox
     if (navigator.userAgent.indexOf("Firefox") === -1) {
         console.log("Overflow tests are only run on Firefox.");
         return;
     }
+
+    // Note: Ideally, nothing else should run between loadFixtures and actually running the test.
+    // That means loadFixtures() needs to be inside the it().
 
     it("Check test page for Self overflows", () => {
         loadFixtures("OverflowFixture.html");

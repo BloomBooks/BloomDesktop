@@ -1,5 +1,6 @@
 ///<reference path="BloomField.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
+import { getTestRoot, removeTestRoot } from "../../utils/testHelper";
 import BloomField from "./BloomField";
 
 function WireUp() {
@@ -10,10 +11,13 @@ function WireUp() {
 
 describe("BloomField", () => {
     beforeEach(() => {
-        $("body").html(
-            '<head></head><div id="simple" contenteditable="true" class="bloom-editable"></div>'
-        );
+        const root = getTestRoot();
+        root.innerHTML =
+            '<div id="simple" contenteditable="true" class="bloom-editable"></div>';
     });
+
+    // Politely clean up for the next test suite.
+    afterAll(removeTestRoot);
 
     it("convertStandardFormatVerseMarkersToSuperscript creates superscript when text includes SFM verse marker", () => {
         const result = BloomField.convertStandardFormatVerseMarkersToSuperscript(
