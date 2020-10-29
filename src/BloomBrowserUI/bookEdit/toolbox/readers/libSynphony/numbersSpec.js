@@ -100,7 +100,6 @@ describe("NumberTests", function() {
 
         var numbers = storyResults.getNumbers();
         var badWords = _.difference(remainingWords, numbers);
-        console.log(numbers);
         // check badWords
         expect(badWords.length).toBe(4);
         expect(badWords[0]).toBe("qwerty");
