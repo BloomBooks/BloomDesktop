@@ -172,6 +172,7 @@ LibSynphony.prototype.stringToSentences = function(textHTML) {
 
     // We require at least one space between sentences, unless things have been configured so that
     // space IS a sentence-ending punctuation. In that case, zero or more.
+
     var intersentenceSpace =
         "([\\s\\p{PEP}\\u0006\\u0007\\u0008]" +
         (LibSynphony.prototype.extraSentencePunct &&
@@ -179,14 +180,31 @@ LibSynphony.prototype.stringToSentences = function(textHTML) {
             ? "*"
             : "+") +
         ")";
+    // Note that categories Pf and Pi can both act as either Ps or Pe
+    // (See https://issues.bloomlibrary.org/youtrack/issue/BL-5063.)
+    // characters that can follow the SEP: single or double quotes,
+    // Pe: close punctuation (closing brackets),
+    // Pf: final punctuation (closing quotes)
+    // Pi: Initial punctuation (opening quotes)
+    // \\u0005: private shorthand for a closing HTML tag
+    var trailingPunct = "['\"\\p{Pe}\\p{Pf}\\p{Pi}\\u0005]";
+    // What can follow the separator and be considered part of the preceding sentence.
+    // These kinds of spaces are allowed, but only before a trailingPunct; otherwise,
+    // they are considered part of the inter-sentence white space.
+    // \\u0008: private shorthand for NBSP
+    // \\u202F: narrow non-breaking space that our long-press inserts for non-breaking space.
+    // Using a non-capturing group here, because it's only to allow the space+trailing
+    // sequence to repeat; we don't want to use it separately in the result.
+    var afterSEP = "(?:[\\u0008\\u202F]*" + trailingPunct + ")*";
 
     // regex to find sentence ending sequences and inter-sentence space
+    // \p{SEP} is defined as a list of sentence ending punctuation characters by a call to XRegExp.addUnicodeData
+    // in LibSynphony.prototype.setExtraSentencePunctuation (or perhaps elsewhere in tests?)
     regex = XRegExp(
         "([\\p{SEP}]+" + // sentence ending punctuation (SEP)
-        // Note that categories Pf and Pi can both act as either Ps or Pe
-        // (See https://issues.bloomlibrary.org/youtrack/issue/BL-5063.)
-        "['\"\\p{Pe}\\p{Pf}\\p{Pi}\\u0005]*)" + // characters that can follow the SEP
-        "([\\u0004]*)" + // opening tag between sentences
+        afterSEP + // what can follow SEP in same sentence,
+        ")" + // then end group for the sentence
+        "([\\u0004]*)" + // private shorthand for opening tag between sentences
         intersentenceSpace +
         "([\\u0005]*)" + // closing tag between sentences
         "(?![^\\p{L}]*" + // may be followed by non-letter chars
