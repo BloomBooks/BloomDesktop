@@ -1,4 +1,10 @@
 import {
+    getTestRoot,
+    cleanTestRoot,
+    removeTestRoot,
+    ensureIdsDontExist
+} from "../../utils/testHelper";
+import {
     Anchor,
     fixUpDownArrowEventHandler,
     ArrowKeyWorkaroundManager
@@ -12,20 +18,25 @@ const kSentence = "Sentence";
 describe("ArrowKeyWorkaroundManager Tests", () => {
     // Debugging tip: ArrowKeyWorkaroundManager.printCharPositions(editable) can help you see if the test case is line-wrapping the way you want it to.
 
-    // Runs the test and notably, remembers to perform cleanup.
+    afterAll(() => {
+        // Make sure to clean up at the end of all these... in particular, OverflowSpec is affected if testRoot is still there.
+        removeTestRoot();
+    });
+
+    // Runs a standard test that sends an up or down arrow
     function runArrowKeyTest(
         setup: () => HTMLElement,
         verify: () => void,
         key: "ArrowUp" | "ArrowDown",
         sendShift: boolean = false
     ) {
+        setupCleanSlate();
+
         const elementToSendEventTo = setup();
 
         sendKeyboardEvent(elementToSendEventTo, key, sendShift);
 
         verify();
-
-        cleanupDocument();
     }
 
     function runPreventDefaultTest(
@@ -33,6 +44,8 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
         setup: () => HTMLElement,
         expectation: boolean
     ) {
+        setupCleanSlate();
+
         const element = setup();
 
         let myEvent: KeyboardEvent | undefined;
@@ -50,9 +63,6 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
         } else {
             expect(myEvent!.preventDefault).not.toHaveBeenCalled();
         }
-
-        // Cleanup
-        cleanupDocument();
     }
 
     function runScenarioTest(
@@ -63,6 +73,8 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
         expectedText: string,
         talkingBookSetting: "NoAudio" | "Sentence"
     ) {
+        setupCleanSlate();
+
         const setup = () => {
             let editable: HTMLElement;
             if (scenario === 1) {
@@ -213,6 +225,7 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
         talkingBookSetting: "NoAudio" | "Sentence",
         isFlex: boolean = true
     ) {
+        ensureIdsDontExist(["p1", "p2", "s1", "s3a", "s3b", "s4"]);
         const phrase1 = "111111111111";
         const phrase2 = "222.";
         const p1Text = `${phrase1} ${phrase2}`;
@@ -239,6 +252,17 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
         talkingBookSetting: "NoAudio" | "Sentence",
         isFlex: boolean = true
     ) {
+        ensureIdsDontExist([
+            "p1",
+            "p2",
+            "s1",
+            "s2a",
+            "s2b",
+            "s3a",
+            "s3b",
+            "s4"
+        ]);
+
         const phrase1 = "111111111111";
         const phrase2A = "2A2A";
         const phrase2B = "2B2B.";
@@ -265,6 +289,7 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
         talkingBookSetting: "NoAudio" | "Sentence",
         isFlex: boolean = true
     ) {
+        ensureIdsDontExist(["p1", "p2", "s1", "s2"]);
         const p1Text = "1111";
         const p2Text = "2222.";
 
@@ -290,6 +315,8 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
         if (talkingBookSetting !== "NoAudio") {
             throw new Error("Not implemented.");
         }
+
+        ensureIdsDontExist(["p1", "p2", "p3"]);
         const pInnerHtmls = ["1111\n<br>", "<br>", "3333."];
 
         return setupFromParagraphInnerHtml(pInnerHtmls, true);
@@ -299,6 +326,7 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
         if (talkingBookSetting !== "NoAudio") {
             throw new Error("Not implemented.");
         }
+        ensureIdsDontExist(["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8"]);
         const pInnerHtmls = [
             "1111", // ends at 66px
             "22222", // last 2 is from 63-72px. The LEFT edge is closer to 66.
@@ -378,7 +406,6 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
     const getS2b = () => getFirstTextNodeOfElement("s2b")!;
     const getS3a = () => getFirstTextNodeOfElement("s3a")!;
     const getS3b = () => getFirstTextNodeOfElement("s3b")!;
-    const getS4 = () => getFirstTextNodeOfElement("s4")!;
 
     describe("Given ArrowUp on non talking book", () => {
         const l2Start = 13;
@@ -810,6 +837,8 @@ describe("ArrowKeyWorkaroundManager Tests", () => {
 
 describe("Anchor Tests", () => {
     it("Given paragraph with no spans and cursor at start, returns offset as indexFromStart", () => {
+        setupCleanSlate();
+
         const html = '<div class="bloom-editable"><p id="p1">S1. S2.</p></div>';
         setupElementFromHtml(html);
         const paragraph = document.getElementById("p1")!;
@@ -819,11 +848,11 @@ describe("Anchor Tests", () => {
         const result = anchor.convertToIndexFromStart(paragraph);
 
         expect(result).toBe(0);
-
-        cleanupDocument();
     });
 
     it("Given paragraph with no spans, returns offset as indexFromStart", () => {
+        setupCleanSlate();
+
         const html = '<div class="bloom-editable"><p id="p1">S1. S2.</p></div>';
         setupElementFromHtml(html);
         const paragraph = document.getElementById("p1")!;
@@ -833,11 +862,11 @@ describe("Anchor Tests", () => {
         const result = anchor.convertToIndexFromStart(paragraph);
 
         expect(result).toBe(5);
-
-        cleanupDocument();
     });
 
     it("Given 2nd span inside paragraph, calculates indexFromStart correctly", () => {
+        setupCleanSlate();
+
         const html =
             '<div class="bloom-editable"><p id="p1"><span id="s1">S1.</span> <span id="s2">S2.</span></p></div>';
         setupElementFromHtml(html);
@@ -848,17 +877,18 @@ describe("Anchor Tests", () => {
         const result = anchor.convertToIndexFromStart(paragraph);
 
         expect(result).toBe(4);
-
-        cleanupDocument();
     });
 });
 
-function setupElementFromHtml(html: string): Element {
-    const body = document.createElement("body");
-    body.classList.add("toClean");
-    body.innerHTML = html;
-    document.firstElementChild!.appendChild(body); // FYI, firstElementChild = the <html> tag
-    return body.firstElementChild!;
+// Restores to a blank state
+// Ideally should be run before the unit tests, so that previosu HTML (including things from other test suites) are removed.
+function setupCleanSlate() {
+    cleanTestRoot();
+}
+
+function setupElementFromHtml(html: string) {
+    const root = getTestRoot();
+    root.innerHTML = html;
 }
 
 function createImageContainer(
@@ -867,18 +897,11 @@ function createImageContainer(
     top = 0,
     width = 1000,
     height = 1000
-): Element {
+) {
     // For test purposes, we set the image container position using absolute so that they can be manually positioned in such a way to produce easy numbers to work with.
     const textOverPicHtml = `<div class="bloom-textOverPicture" data-bubble="{\'style\':\'caption\'}" style="left: 0%; top: 0%; width: 10%; height: 20%; position: absolute;">${editableHtml}</div>`;
     const html = `<div class="bloom-page customPage"><div class="bloom-imageContainer" style="width: ${width}px; height: ${height}px; left: ${left}px; top: ${top}px; position: absolute;">${textOverPicHtml}</div></div>`;
-    return setupElementFromHtml(html);
-}
-
-function cleanupDocument() {
-    const collection = document.getElementsByClassName("toClean");
-    for (let i = 0; i < collection.length; ++i) {
-        collection[i].remove();
-    }
+    setupElementFromHtml(html);
 }
 
 function setSelectionTo(
