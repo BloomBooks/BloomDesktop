@@ -15,6 +15,7 @@ using Microsoft.CSharp.RuntimeBinder;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.Linq;
+using SIL.Reporting;
 using SIL.Text;
 using SIL.Xml;
 using TagLib;
@@ -977,7 +978,18 @@ namespace Bloom.Book
 						if (added)
 						{
 							if (isVariableUrlEncoded)
+							{
+								if (value.Contains("%20%20"))
+								{
+									// This can be catastrophic. See BL-9145. Tidy will reduce the double space to a single space, and then it won't be the string
+									// we tried to save. UrlEncoded things are often filenames or other resource locators, so removing a space means we won't find it.
+									// Currently, the only data we think gets this urlencoded behavior is image sources, and we're preventing them from having
+									// names with multiple spaces. Need to do the same for any other data where exactly preserving the content is essential.
+									ErrorReport.ReportNonFatalMessageWithStackTrace($"Trying to save URL-encoded value '{value}' for {key} with multiple spaces. This will probably cause problems. Please report it and, if possible, avoid the multiple spaces.");
+								}
 								KeysOfVariablesThatAreUrlEncoded.Add(key);
+							}
+
 							dsv.SetAttributeList(lang, GetAttributesToSave(node));
 						}
 					}
