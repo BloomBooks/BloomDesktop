@@ -28,7 +28,9 @@ namespace Bloom
 
 				//default to InstancePerDependency, i.e., they it will make a new
 				//one each time someone asks for one
-				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly());
+				// We filter classes that don't have any (public) constructors because, where earlier versions just
+				// ignored them, Autofac 6 crashes.
+				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly()).Where(t=> t.GetConstructors().Any());
 
 				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
 					.Where(t => t.GetInterfaces().Contains(typeof(ICommand))).InstancePerLifetimeScope();
