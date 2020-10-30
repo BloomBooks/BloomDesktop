@@ -993,7 +993,12 @@ namespace Bloom.Book
 			var widgetElements = Dom.SafeSelectNodes("//*[contains(@class, 'bloom-widgetContainer')]/iframe");
 			foreach (XmlElement elt in widgetElements)
 			{
-				var src = elt.GetAttribute("src");
+				// Saved as a relative URL, which means it's supposed to be encoded.
+				var encodedSrc = elt.GetAttribute("src");
+
+				// Decode the percent-encodings.
+				var src = UrlPathString.CreateFromUrlEncodedString(encodedSrc).NotEncoded;
+				
 				yield return Path.GetFileName(Path.GetDirectoryName(src));
 			}
 		}

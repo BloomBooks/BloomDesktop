@@ -377,36 +377,37 @@ namespace BloomTests.Book
 			Assert.AreEqual(!isForPublish, File.Exists(timingsFilepath));
 		}
 
+		private (string indexPath, string cssPath) makeDummyActivity(string activityRootPath, string activityName)
+		{
+			var myActivityPath = Path.Combine(activityRootPath, activityName);
+			var indexPath = Path.Combine(myActivityPath, "index.htm");
+			Directory.CreateDirectory(myActivityPath);
+			File.WriteAllText(indexPath, @"nonsense for testing");
+			var cssPath = Path.Combine(myActivityPath, "rubbish.css");
+			File.WriteAllText(cssPath, "rubbish css");
+
+			return (indexPath, cssPath);
+		}
+
 		[Test]
-		public void CleanupUnusedActivities_BookHadUnusedActivities_UnusedOnesRemoved()
+		public void CleanupUnusedActivities_BookHadUsedAndUnusedActivities_OnlyUnusedOnesRemoved()
 		{
 			var activityPath = BookStorage.GetActivityFolderPath(_folder.Path);
 			Directory.CreateDirectory(activityPath);
 
-			var ballActivityPath = Path.Combine(activityPath, "ball");
-			var ballIndexPath = Path.Combine(ballActivityPath, "index.htm");
-			Directory.CreateDirectory(ballActivityPath);
-			File.WriteAllText(ballIndexPath, @"nonsense for testing");
-			var ballCssPath = Path.Combine(ballActivityPath, "rubbish.css");
-			File.WriteAllText(ballCssPath, "rubbish css");
-
-			var unusedActivityPath = Path.Combine(activityPath, "unused");
-			var unusedIndexPath = Path.Combine(unusedActivityPath, "index.htm");
-			Directory.CreateDirectory(unusedActivityPath);
-			File.WriteAllText(unusedIndexPath, @"nonsense for testing");
-			var unusedCssPath = Path.Combine(unusedActivityPath, "rubbish.css");
-			File.WriteAllText(unusedCssPath, "rubbish css");
+			var ball = makeDummyActivity(activityPath, "ball #1");	// includes a space and punc to test URL decoding.
+			var unused = makeDummyActivity(activityPath, "unused");
 
 			// Verify setup
-			Assert.IsTrue(File.Exists(ballIndexPath));
-			Assert.IsTrue(File.Exists(ballCssPath));
-			Assert.IsTrue(File.Exists(unusedIndexPath));
-			Assert.IsTrue(File.Exists(unusedCssPath));
+			Assert.IsTrue(File.Exists(ball.indexPath));
+			Assert.IsTrue(File.Exists(ball.cssPath));
+			Assert.IsTrue(File.Exists(unused.indexPath));
+			Assert.IsTrue(File.Exists(unused.cssPath));
 
 			var storage =
 				GetInitialStorageWithCustomHtml(
 					$"<html><body><div class='bloom-page'><div class='bloom-widgetContainer'>" +
-					"    <iframe src='activities/ball/index.htm'/>" +
+					"    <iframe src='activities/ball%20%231/index.htm'/>" +
 					$"</div></div>" +
 					"</body></html>");
 
@@ -417,10 +418,10 @@ namespace BloomTests.Book
 			storage.CleanupUnusedActivities();
 
 
-			Assert.IsTrue(File.Exists(ballIndexPath), "ballIndex");
-			Assert.IsTrue(File.Exists(ballCssPath), "ball CSS");
-			Assert.IsFalse(File.Exists(unusedIndexPath), "Unused activity file");
-			Assert.IsFalse(File.Exists(unusedCssPath), "Unused aux file");
+			Assert.IsTrue(File.Exists(ball.indexPath), "ballIndex should be preserved");
+			Assert.IsTrue(File.Exists(ball.cssPath), "ball CSS should be preserved");
+			Assert.IsFalse(File.Exists(unused.indexPath), "unused index file should've been removed");
+			Assert.IsFalse(File.Exists(unused.cssPath), "unused CSS file  should've been removed");
 		}
 
 		[Test]
