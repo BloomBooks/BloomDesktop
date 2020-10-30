@@ -44,6 +44,10 @@ export const ProblemDialog: React.FunctionComponent<{
     const [mode, setMode] = useState(Mode.gather);
     const [includeBook, setIncludeBook] = useState(true);
     const [includeScreenshot, setIncludeScreenshot] = useState(true);
+    const [reportHeading, setReportHeading] = BloomApi.useApiString(
+        "problemReport/reportHeading",
+        ""
+    );
     const [email, setEmail] = BloomApi.useApiString(
         "problemReport/emailAddress",
         ""
@@ -292,6 +296,7 @@ export const ProblemDialog: React.FunctionComponent<{
                             case Mode.gather:
                                 return (
                                     <>
+                                        <div>{reportHeading}</div>
                                         <Typography id="please_help_us">
                                             {localizedPleaseHelpUs}
                                         </Typography>
