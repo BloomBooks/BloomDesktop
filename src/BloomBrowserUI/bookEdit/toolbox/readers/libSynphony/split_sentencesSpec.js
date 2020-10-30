@@ -271,4 +271,23 @@ describe("Splitting text into sentences", function() {
         expect(fragments[13].text).toBe(" ");
         expect(fragments[14].text).toBe("(So is this.)"); // okay, parentheses aren't usually quotation marks...
     });
+
+    it("Split into sentences, nbsp between sentence-ending punct and other punct puts other punct in previous", function() {
+        var inputText = "« Et toi&nbsp;?&nbsp;»&nbsp;' What next?";
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
+        var sentences = _.filter(fragments, function(frag) {
+            return frag.isSentence;
+        });
+        expect(sentences[0].text).toBe("« Et toi&nbsp;?&nbsp;»&nbsp;'");
+        expect(sentences[1].text).toBe("What next?");
+    });
+    it("Split into sentences, narrow NBSP between sentence-ending punct and other punct puts other punct in previous", function() {
+        var inputText = "« Et toi\u202F?\u202F»\u202F'\u202F What next?";
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
+        var sentences = _.filter(fragments, function(frag) {
+            return frag.isSentence;
+        });
+        expect(sentences[0].text).toBe("« Et toi\u202F?\u202F»\u202F'");
+        expect(sentences[1].text).toBe("What next?");
+    });
 });
