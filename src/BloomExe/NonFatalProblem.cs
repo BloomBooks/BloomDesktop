@@ -127,7 +127,7 @@ namespace Bloom
 						{
 							// N.B.: We should be more careful than ever about when we want 'showSendReport' to be 'true',
 							// since this new "nonfatal" UI doesn't have a "Cancel" button.
-							ProblemReportApi.ShowProblemDialog(Form.ActiveForm, exception, fullDetailedMessage, "nonfatal");
+							ProblemReportApi.ShowProblemDialog(Form.ActiveForm, exception, fullDetailedMessage, "nonfatal", shortUserLevelMessage);
 						}
 						else
 						{
@@ -193,7 +193,7 @@ namespace Bloom
 				toast.ToastClicked +=
 					(s, e) =>
 					{
-						ProblemReportApi.ShowProblemDialog(formForSynchronizing, exception, fullDetailedMessage, "nonfatal");
+						ProblemReportApi.ShowProblemDialog(formForSynchronizing, exception, fullDetailedMessage, "nonfatal", shortUserLevelMessage);
 					};
 				callToAction = "Report";
 			}

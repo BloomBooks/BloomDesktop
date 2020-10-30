@@ -29,6 +29,7 @@ namespace Bloom.web.controllers
 		protected string YouTrackProjectKey = "BL";
 		private static Exception _currentException;
 		private static string _detailedMessage; // usually from Bloom itself
+		private static string _reportHeading; // What shows at the top of the dialog to indicate the nature of the problem.
 
 		/// <summary>
 		/// We want this name "different" enough that it's not likely to be supplied by a user in a book,
@@ -45,6 +46,12 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
+			// ProblemDialog.tsx uses this endpoint to get the string to show at the top of the main dialog
+			apiHandler.RegisterEndpointHandler("problemReport/reportHeading",
+				(ApiRequest request) =>
+				{
+					request.ReplyWithText(_reportHeading ?? "");
+				}, false);
 			// ProblemDialog.tsx uses this endpoint to get the screenshot image.
 			apiHandler.RegisterEndpointHandler("problemReport/screenshot",
 				(ApiRequest request) =>
@@ -283,7 +290,7 @@ namespace Bloom.web.controllers
 		/// <param name="detailedMessage"></param>
 		/// <param name="levelOfProblem"></param>
 		public static void ShowProblemDialog(Control controlForScreenshotting, Exception exception,
-			string detailedMessage = "", string levelOfProblem = "user")
+			string detailedMessage = "", string levelOfProblem = "user", string shortUserLevelMessage = "")
 		{
 			// Before we do anything that might be "risky", put the problem in the log.
 			LogProblem(exception, detailedMessage, levelOfProblem);
@@ -307,6 +314,11 @@ namespace Bloom.web.controllers
 			_showingProblemReport = true;
 			_currentException = exception;
 			_detailedMessage = detailedMessage;
+			_reportHeading = shortUserLevelMessage;
+			if (string.IsNullOrEmpty(_reportHeading))
+				_reportHeading = detailedMessage;
+			if (string.IsNullOrEmpty(_reportHeading) && exception != null)
+				_reportHeading = exception.Message;
 			if (controlForScreenshotting == null)
 				controlForScreenshotting = Form.ActiveForm;
 			if (controlForScreenshotting == null) // still possible if we come from a "Details" button
@@ -330,6 +342,8 @@ namespace Bloom.web.controllers
 					// Precondition: we must be on the UI thread for Gecko to work.
 					using (var dlg = new BrowserDialog(url))
 					{
+						// The default height is not quite enough to show the contents without scrolling.
+						dlg.Height += 30;
 						dlg.ShowDialog();
 					}
 				}
