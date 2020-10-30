@@ -35,17 +35,19 @@ function inEditMode(): boolean {
     return false;
 }
 
-// The value we store to indicate that at some point the user
-// chose this answer. We don't really need the value, because if the key for
-// that answer has a value, it will be this. But may as well
-// be consistent, in case we later add other options.
-const kwasSelectedAtOnePoint = "wasSelectedAtOnePoint";
 //------------ Code for managing the choice widgets-------
 
 // Initialize the choice widgets, arranging for the appropriate click actions
 // and for maintaining the class that indicates empty choice.
 // Assumes the code that sets up the editMode class on the body element if appropriate has already been run.
 function initChoiceWidgets(): void {
+    // The value we store to indicate that at some point the user
+    // chose this answer. We don't really need the value, because if the key for
+    // that answer has a value, it will be this. But may as well
+    // be consistent, in case we later add other options.
+    // Unfortunately, when Typescript was upgraded, books with > 1 quiz page started reporting that
+    // this constant was "redeclared", so we had to move the declaration inside each function that needed it.
+    const kwasSelectedAtOnePoint = "wasSelectedAtOnePoint";
     markEmptyChoices();
     const observer = new MutationObserver(markEmptyChoices);
     observer.observe(document.body, { characterData: true, subtree: true });
@@ -124,6 +126,8 @@ function getStorageKeyForChoice(choice: HTMLElement): string {
 }
 
 function handleReadModeClick(evt: Event): void {
+    // (See declaration inside initChoiceWidgets().)
+    const kwasSelectedAtOnePoint = "wasSelectedAtOnePoint";
     // prevent the browser messing with the check box checked state
     evt.stopPropagation();
     evt.preventDefault();
@@ -150,6 +154,8 @@ function handleReadModeClick(evt: Event): void {
 // and we need to make it look like it looked last time we were on this
 // page
 function choiceWasClicked(choice: HTMLElement): void {
+    // (See declaration inside initChoiceWidgets().)
+    const kwasSelectedAtOnePoint = "wasSelectedAtOnePoint";
     const classes = choice.classList;
     classes.add(kwasSelectedAtOnePoint);
     // Make the state of the hidden input conform. Only if the
