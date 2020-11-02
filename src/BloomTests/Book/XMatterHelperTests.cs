@@ -174,7 +174,7 @@ namespace BloomTests.Book
 			elementsToCheck.ForEach(elementToCheck =>
 			{
 				string lang = languageLocationDiv.Attributes["lang"]?.Value;
-				while (lang.IsNullOrEmpty() || lang == "*")
+				while (string.IsNullOrEmpty(lang) || lang == "*")
 				{
 					elementToCheck = (XmlElement)elementToCheck.ParentNode;
 					lang = elementToCheck.Attributes["lang"]?.Value;
