@@ -3,8 +3,8 @@ using System.Xml;
 using Bloom;
 using Bloom.Book;
 using NUnit.Framework;
-
 using SIL.IO;
+using SIL.Linq;
 
 namespace BloomTests.Book
 {
@@ -68,7 +68,7 @@ namespace BloomTests.Book
 		[Test]
 		public void InjectXMatter_AllDefaults_Inserts3PagesBetweenDataDivAndFirstPage()
 		{
-			CreatePaperSaverHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
+			CreatePaperSaverHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait, false, "en");
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[2][contains(@class,'cover')]", 1);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[3][contains(@class,'credits')]", 1);
@@ -86,10 +86,10 @@ namespace BloomTests.Book
 		[Test]
 		public void InjectXMatter_AllDefaults_FirstPageHasNewIdInsteadOfCopying()
 		{
-			CreatePaperSaverHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
+			CreatePaperSaverHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait, false, "en");
 			var id1 = _dom.SelectSingleNode("//div[contains(@class,'cover')]").GetAttribute("id");
 			Setup(); //reset for another round
-			CreatePaperSaverHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
+			CreatePaperSaverHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait, false, "en");
 			var id2 = _dom.SelectSingleNode("//div[contains(@class,'cover')]").GetAttribute("id");
 
 			Assert.AreNotEqual(id1,id2);
@@ -106,7 +106,7 @@ namespace BloomTests.Book
 			var helper = CreatePaperSaverHelper();
 			helper.XMatterDom = frontMatterDom;
 
-			helper.InjectXMatter( _dataSet.WritingSystemAliases, Layout.A5Portrait);
+			helper.InjectXMatter( _dataSet.WritingSystemAliases, Layout.A5Portrait, false, "en");
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/span[@lang='en']", 1);
 			//NB: it's not this class's job to actually fill in the value (e.g. English, in this case). Just to set it up so that a future process will do that.
 		}
@@ -131,13 +131,70 @@ namespace BloomTests.Book
 			var helper = CreatePaperSaverHelper();
 			helper.XMatterDom = xMatterDom;
 
-			helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
+			helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait, false, "en");
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[2][contains(@class,'cover')]", 1);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[3][@id='firstPage']", 1);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[4][contains(@class,'bloom-backMatter')]", 1);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[5][contains(@class,'bloom-backMatter')]", 1);
 			//NB: it's not this class's job to actually fill in the value (e.g. English, in this case). Just to set it up so that a future process will do that.
+		}
+
+
+
+		[Test]
+		public void InjectXMatter_GenericLanguageFieldsHaveCorrectEffectiveLangAttribute()
+		{
+			var xMatterDom = new XmlDocument();
+			var dom = new HtmlDom(@"<html><head></head><body>
+					<div class='bloom-page titlePage bloom-frontMatter'>
+		                <div class='bloom-editable' lang='en' data-book='bookTitle'>
+		                    <p>The Moon and the Cap</p>
+		                </div>
+						<div class='langName bloom-writeOnly' data-library='languageLocation'></div>
+					</div>
+					<div class='bloom-page credits bloom-frontMatter'>
+						<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense' lang='*'>
+			                Adapted from original, <cite data-book='originalTitle'>The Moon and the Cap</cite>, Copyright © 2007, Pratham Books. Licensed under CC BY 4.0.
+			            </div>
+					</div>
+				</body></html>");
+			var helper = new XMatterHelper(dom, "Factory", new FileLocator(new[] { _factoryXMatter }));
+			xMatterDom.LoadXml(@"<html><head></head><body>
+					<div class='bloom-page titlePage bloom-frontMatter' data-page='required'>
+		                <div class='bloom-editable' lang='en' data-book='bookTitle'>
+		                </div>
+						<div class='langName bloom-writeOnly' data-library='languageLocation'></div>
+					</div>
+					<div class='bloom-page credits bloom-frontMatter' data-page='required'>
+						<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense' lang='*'>
+			            </div>
+					</div>
+				</body></html>");
+			helper.XMatterDom = xMatterDom;
+
+			// SUT
+			helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait, false, "ru");
+
+			// The closest parent with a meaningful lang needs to have language2. Then we get the proper font. See BL-8545.
+			XmlElement languageLocationDiv = dom.SelectSingleNode("//div[@data-library='languageLocation']");
+			XmlElement originalCopyrightAndLicenseDiv = dom.SelectSingleNode("//div[@data-derived='originalCopyrightAndLicense']");
+			XmlElement[] elementsToCheck = { languageLocationDiv, originalCopyrightAndLicenseDiv };
+			elementsToCheck.ForEach(elementToCheck =>
+			{
+				string lang = languageLocationDiv.Attributes["lang"]?.Value;
+				while (string.IsNullOrEmpty(lang) || lang == "*")
+				{
+					elementToCheck = (XmlElement)elementToCheck.ParentNode;
+					lang = elementToCheck.Attributes["lang"]?.Value;
+				}
+
+				Assert.That(lang, Is.EqualTo("ru"));
+			});
+
+			// Verify we didn't break other fields
+			XmlElement titleDiv = dom.SelectSingleNode("//div[@data-book='bookTitle']");
+			Assert.That(titleDiv.Attributes["lang"]?.Value, Is.EqualTo("en"));
 		}
 
 
@@ -158,7 +215,7 @@ namespace BloomTests.Book
 		[Test]
 		public void PaperSaver_BookDoesNotRequireFacingPages_FlyleafNotInserted()
 		{
-			CreatePaperSaverHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
+			CreatePaperSaverHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait, false, "en");
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[contains(@class, 'bloom-flyleaf')]", 0);
 		}
 
@@ -179,7 +236,7 @@ namespace BloomTests.Book
 									</body></html>");
 
 			var helper = CreatePaperSaverHelper(xmatterPackName);
-			helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
+			helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait, false, "en");
 		}
 
 		[TestCase("Factory", false, "Factory-XMatter.css")]

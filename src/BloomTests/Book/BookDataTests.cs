@@ -1027,24 +1027,6 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void SynchronizeDataItemsThroughoutDOM_LanguageLocationGetsLanguage2Code()
-		{
-			var dom = new HtmlDom(@"<html><head></head><body>
-					<div class='bloom-page titlePage'>
-						<div class='langName bloom-writeOnly' data-library='languageLocation'></div>
-					</div>
-				</body></html>");
-			var collectionSettings = CreateCollection(Language2Iso639Code: "ru", CountryName: "Russia");
-			var data = new BookData(dom, collectionSettings, null);
-
-			data.SynchronizeDataItemsThroughoutDOM();
-
-			XmlElement languageLocationDiv = dom.SelectSingleNode("//div[@data-library='languageLocation']");
-			Assert.That(languageLocationDiv.InnerText, Is.EqualTo("Russia"));
-			Assert.That(languageLocationDiv.Attributes["lang"].Value, Is.EqualTo("ru"));
-		}
-
-		[Test]
 		public void GetMultilingualContentLanguage_ContentLanguageSpecifiedInHtml_ReadsIt()
 		{
 			var dom = new HtmlDom(@"<html ><head></head><body>

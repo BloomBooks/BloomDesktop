@@ -197,13 +197,7 @@ namespace Bloom.Book
 		/// </summary>
 		public XmlDocument XMatterDom { get; set; }
 
-		// for testing. Real code should supply the bookFolderPath argument.
-		internal void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout)
-		{
-			InjectXMatter(writingSystemCodes, layout, null, null);
-		}
-
-		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout, string branding, string bookFolderPath, bool orderXmatterForDeviceUse = false)
+		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout, bool orderXmatterForDeviceUse, string language2IsoCode)
 		{
 			//don't want to pollute shells with this content
 			if (!string.IsNullOrEmpty(FolderPathForCopyingXMatterFiles))
@@ -226,13 +220,19 @@ namespace Bloom.Book
 
 			//it's important that we append *after* this, so that these values take precedence (the template will just have empty values for this stuff)
 			//REVIEW: I think all stylesheets now get sorted once they are all added: see HtmlDoc.SortStyleSheetLinks()
-			XmlNode divBeforeNextFrontMattterPage = _bookDom.RawDom.SelectSingleNode("//body/div[@id='bloomDataDiv']");
+			XmlNode divBeforeNextFrontMatterPage = _bookDom.RawDom.SelectSingleNode("//body/div[@id='bloomDataDiv']");
 
 			foreach (XmlElement xmatterPage in XMatterDom.SafeSelectNodes("/html/body/div[contains(@data-page,'required')]"))
 			{
 				var newPageDiv = _bookDom.RawDom.ImportNode(xmatterPage, true) as XmlElement;
-				//give a new id, else thumbnail caches get messed up becuase every book has, for example, the same id for the cover.
+				//give a new id, else thumbnail caches get messed up because every book has, for example, the same id for the cover.
 				newPageDiv.SetAttribute("id", Guid.NewGuid().ToString());
+
+				// Various fields don't have a useful lang attribute value (doesn't exist or is "*") but we need a lang attribute to set the font properly.
+				// By setting it on the page, all those fields can properly inherit the language 2 code and thus use its font. See BL-8545.
+				// Since we are only doing this for xmatter, we don't have to worry about the lang attribute staying around when it shouldn't.
+				// Old Blooms will effectively remove it when injecting xmatter. New Blooms will always set it to the current language 2 code.
+				newPageDiv.SetAttribute("lang", language2IsoCode);
 
 				// We have some xmatters that don't know about devices, and these we replace with the
 				// standard Device Xmatter as needed.
@@ -246,7 +246,7 @@ namespace Bloom.Book
 				if (IsBackMatterPage(xmatterPage) || (moveNonCoverToBack && ShouldBeInBackForDeviceUse(xmatterPage)))
 				{
 					//note: this is redundant unless this is the 1st backmatterpage in the list
-					divBeforeNextFrontMattterPage = _bookDom.RawDom.SelectSingleNode("//body/div[last()]");
+					divBeforeNextFrontMatterPage = _bookDom.RawDom.SelectSingleNode("//body/div[last()]");
 				}
 
 				//we want the xmatter pages to match what we found in the source book
@@ -264,8 +264,8 @@ namespace Bloom.Book
 					}
 				}
 
-				_bookDom.RawDom.SelectSingleNode("//body").InsertAfter(newPageDiv, divBeforeNextFrontMattterPage);
-				divBeforeNextFrontMattterPage = newPageDiv;
+				_bookDom.RawDom.SelectSingleNode("//body").InsertAfter(newPageDiv, divBeforeNextFrontMatterPage);
+				divBeforeNextFrontMatterPage = newPageDiv;
 
 				//enhance... this is really ugly. I'm just trying to clear out any remaining "{blah}" left over from the template
 				foreach (XmlElement e in newPageDiv.SafeSelectNodes("//*[starts-with(text(),'{')]"))
