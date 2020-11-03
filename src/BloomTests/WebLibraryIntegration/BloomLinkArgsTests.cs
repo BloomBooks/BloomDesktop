@@ -1,6 +1,6 @@
-﻿using Bloom.WebLibraryIntegration;
+﻿using System.Web;
+using Bloom.WebLibraryIntegration;
 using NUnit.Framework;
-using RestSharp.Extensions.MonoHttp;
 
 namespace BloomTests.WebLibraryIntegration
 {

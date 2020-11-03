@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 using NUnit.Framework;
 
 // General Information about an assembly is controlled through the following
@@ -15,7 +16,7 @@ using NUnit.Framework;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: RequiresSTA] // GeckoFx insists on this
+[assembly: ApartmentAttribute(ApartmentState.STA)] // GeckoFx insists on this
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from

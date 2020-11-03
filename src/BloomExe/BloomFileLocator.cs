@@ -9,7 +9,6 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
-using XliffForHtml;
 using SIL.IO;
 using SIL.Reporting;
 
