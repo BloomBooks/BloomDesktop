@@ -5,7 +5,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Publish;
-using Glob;
+using GlobExpressions;
 
 namespace Bloom.web.controllers
 {

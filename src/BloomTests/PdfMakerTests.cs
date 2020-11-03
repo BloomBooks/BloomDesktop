@@ -16,7 +16,7 @@ namespace BloomTestsThatAvoidTheSetupFixture
 {
 	[TestFixture]
 #if __MonoCS__
-	[RequiresSTA]
+	[Apartment(System.Threading.ApartmentState.STA)]
 #endif
 	[NUnit.Framework.Category("RequiresUI")]
 	public class PdfMakerTests

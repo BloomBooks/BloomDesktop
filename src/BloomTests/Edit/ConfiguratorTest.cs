@@ -18,7 +18,7 @@ namespace BloomTests.Edit
 {
 	[TestFixture]
 #if __MonoCS__
-	[RequiresSTA]
+	[Apartment(System.Threading.ApartmentState.STA)]
 #endif
 	public class ConfiguratorTest
 	{
