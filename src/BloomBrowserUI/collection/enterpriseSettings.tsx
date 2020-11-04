@@ -466,7 +466,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
 
     private updateSubscriptionCode(code: string) {
         BloomApi.postJson("settings/subscriptionCode", {
-            subscriptionCode: code
+            subscriptionCode: code.trim()
         });
         this.setState({ legacyBrandingName: "" });
         this.setControlState(this.state.enterpriseStatus, code, "");
