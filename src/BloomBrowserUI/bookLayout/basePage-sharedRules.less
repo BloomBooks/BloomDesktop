@@ -22,6 +22,9 @@ body {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    &.bloom-imageObjectFit-cover {
+        object-fit: cover; // if we don't have the proportions exactly right, object-fit:"contain" will make black borders
+    }
 }
 
 // overridden if it is also nested in bloom-showImageDescriptions, but this can't be shared,
