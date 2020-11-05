@@ -12,6 +12,7 @@ using SIL.IO;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Collection;
+using System.Threading;
 
 namespace Bloom.Api
 {
@@ -161,13 +162,40 @@ namespace Bloom.Api
 							syncOn = ThumbnailsAndPreviewsSyncObj;
 						else if (localPathLc.StartsWith("api/i18n/"))
 							syncOn = I18NLock;
-						lock (syncOn)
+
+						// Basically what lock(syncObj) {} is syntactic sugar for (see its documentation),
+						// but we wrap RegisterThreadBlocking/Unblocked around acquiring the lock.
+						// We need the more complicated structure because we would like RegisterThreadUnblocked
+						// to be called immediately after acquiring the lock (notably, before Handle() is called),
+						// but we also want to handle the case where Monitor.Enter throws an exception.
+						bool lockAcquired = false;
+						try						
 						{
+							// Try to acquire lock
+							BloomServer._theOneInstance.RegisterThreadBlocking();
+							try
+							{
+								Monitor.Enter(syncOn, ref lockAcquired);
+							}
+							finally
+							{
+								BloomServer._theOneInstance.RegisterThreadUnblocked();
+							}
+
+							// Lock has been acquired.
+
 							ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
 							// Even if ApiRequest.Handle() fails, return true to indicate that the request was processed and there
 							// is no further need for the caller to continue trying to process the request as a filename.
 							// See https://issues.bloomlibrary.org/youtrack/issue/BL-6763.
-							return true;
+							return true;							
+						}
+						finally
+						{
+							if (lockAcquired)
+							{
+								Monitor.Exit(syncOn);
+							}
 						}
 					}
 					else
@@ -182,6 +210,6 @@ namespace Bloom.Api
 				}
 			}
 			return false;
-		}
+		}		
 	}
 }

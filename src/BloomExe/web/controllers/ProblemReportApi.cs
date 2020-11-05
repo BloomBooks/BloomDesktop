@@ -416,7 +416,17 @@ namespace Bloom.web.controllers
 					{
 						// The default height is not quite enough to show the contents without scrolling.
 						dlg.Height += 30;
-						dlg.ShowDialog();
+
+						// ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
+						BloomServer._theOneInstance.RegisterThreadBlocking();
+						try
+						{
+							dlg.ShowDialog();
+						}
+						finally
+						{
+							BloomServer._theOneInstance.RegisterThreadUnblocked();
+						}
 					}
 				}
 				catch (Exception problemReportException)
