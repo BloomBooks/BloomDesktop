@@ -196,6 +196,10 @@ namespace Bloom.Api
 			Form formForSynchronizing, ApiRequest request)
 		{
 			Exception handlerException = null;
+
+			BloomServer._theOneInstance.RegisterThreadBlocking();
+
+			// This will block until the UI thread is done invoking this.
 			formForSynchronizing.Invoke(new Action<ApiRequest>((req) =>
 			{
 				try
@@ -207,6 +211,9 @@ namespace Bloom.Api
 					handlerException = error;
 				}
 			}), request);
+
+			BloomServer._theOneInstance.RegisterThreadUnblocked();
+
 			if (handlerException != null)
 			{
 				ExceptionDispatchInfo.Capture(handlerException).Throw();

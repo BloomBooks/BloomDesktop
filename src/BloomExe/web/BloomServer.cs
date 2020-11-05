@@ -53,6 +53,8 @@ namespace Bloom.Api
 		/// </summary>
 		internal const string BloomUrlPrefix = "/bloom/";
 
+		internal const string WorkerThreadNamePrefix = "Server Worker Thread ";
+
 		public static string ServerUrlEndingInSlash
 		{
 			get { return ServerUrl + "/"; }
@@ -122,6 +124,15 @@ namespace Bloom.Api
 		/// Notifies threads in the _workers pool that there is a request in the _queue
 		/// </summary>
 		private readonly ManualResetEvent _ready;
+
+		/// <summary>
+		/// Keeps track of the number of worker threads that are blocked
+		/// Note: This is NOT automatically computed. Other code should call RegisterThreadAboutToBlock() and RegisterThreadUnblocked()
+		///        whenever it causes a thread which is or potentially is a server worker thread to block.
+		/// Note: This is different than _busyThreads, because a thread may be busy but not blocked.
+		/// </summary>
+		private int _countBlockedThreads = 0;
+
 		public const string OriginalImageMarker = "OriginalImages"; // Inserted into paths to suppress image processing (for simulated pages and PDF creation)
 		private RuntimeImageProcessor _cache;
 		private bool _useCache;
@@ -138,7 +149,7 @@ namespace Bloom.Api
 		// This is useful for debugging.
 		public static Dictionary<string, string> SimulatedPageContent => _urlToSimulatedPageContent;
 
-		private static BloomServer _theOneInstance;
+		internal static BloomServer _theOneInstance { get; private set; }
 
 		/// <summary>
 		/// This is only used in a few special cases where we need one to pass as an argument but it won't be fully used.
@@ -169,7 +180,6 @@ namespace Bloom.Api
 			Dispose(false);
 		}
 #endif
-
 
 		private static string _keyToCurrentPage;
 
@@ -1008,7 +1018,7 @@ namespace Bloom.Api
 		private void SpinUpAWorker()
 		{
 			var thread = new Thread(RequestProcessorLoop);
-			thread.Name = "Server Worker Thread " + _workers.Count;
+			thread.Name = WorkerThreadNamePrefix + _workers.Count;
 			_workers.Add(thread);
 			_workers.Last().Start();
 		}
@@ -1047,6 +1057,19 @@ namespace Bloom.Api
 			lock (_queue)
 			{
 				_queue.Enqueue(_listener.EndGetContext(ar));
+
+				// Deal with a situation where all the workers are blocked,
+				// but there is a request in the queue that would unblock the current workers
+				// but that request can't run because it's stuck in queue
+				// and none of the existing worker threads are able to make progress anymore
+				if (_countBlockedThreads >= _workers.Count)
+				{
+					// The worker should be spun up such that it can receive _ready.Set()
+					SpinUpAWorker();
+
+					// Note: Currently these workers are never stopped, so as not to complicate the code any further
+				}
+
 				_ready.Set();
 			}
 		}
@@ -1079,6 +1102,8 @@ namespace Bloom.Api
 						_ready.Reset();
 						continue;
 					}
+					
+					// ENHANCE: May not be necessary if we convert it to update _countBlockedThreads?
 					isRecursiveRequestContext = IsRecursiveRequestContext(context);
 					if (isRecursiveRequestContext)
 					{
@@ -1151,6 +1176,8 @@ namespace Bloom.Api
 				finally
 				{
 					Thread.CurrentThread.Priority = ThreadPriority.Normal;
+
+					// ENHANCE: I think this can be safely re-written to only acquire the lock once?
 					if (isRecursiveRequestContext)
 					{
 						lock (_queue)
@@ -1335,6 +1362,46 @@ namespace Bloom.Api
 			default: return "application/octet-stream";
 			}
 		}
+
+		/// <summary>
+		/// Registers that the current thread is about to block.
+		/// This function should be called immediately before any server thread blocks
+		/// (e.g. waits for a lock, wait for a modal dialog to close, etc.)
+		/// Must be paired with RegisterThreadUnblocked() when done.
+		/// 
+		/// This can be called by any code that at least sometimes (if not always)
+		/// is called by a BloomServer worker thread. The caller need not guarantee that
+		/// the current thread is a server thread. This method will check for that.
+		/// </summary>
+		internal void RegisterThreadBlocking()
+		{
+			// Check if the current thread looks like a Server Worker
+			// If not, we can just ignore this request.
+			// Notably, ProblemReportApi can be invoked by both server and non-server code
+			if (IsWorkerThread(Thread.CurrentThread))
+			{
+				// ENHANCE: So far only BloomApiHandler and problem report dialog have been done.
+				//    Could potentially replace the thumbnail-specific code with this?
+				Interlocked.Increment(ref _countBlockedThreads);
+			}			
+		}
+
+		/// <summary>
+		/// Registers that the current thread is no longer blocked.
+		/// Should be called as a pair with RegisterThreadBlocking(), after any blocking work returns.
+		/// </summary>
+		internal void RegisterThreadUnblocked()
+		{
+			// Check if the current thread looks like a Server Worker
+			// If not, we can just ignore this request.
+			// Notably, ProblemReportApi can be invoked by both server and non-server code
+			if (IsWorkerThread(Thread.CurrentThread))
+			{
+				Interlocked.Decrement(ref _countBlockedThreads);
+			}			
+		}
+
+		private bool IsWorkerThread(Thread thread) => thread?.Name?.IndexOf(WorkerThreadNamePrefix) == 0;
 
 #region Disposable stuff
 
