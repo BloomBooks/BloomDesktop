@@ -114,6 +114,15 @@ namespace Bloom.Book
 		public static string GetXMatterDirectory(string nameOfXMatterPack, IFileLocator fileLocator, string errorMsg, bool throwIfError, bool silent = false)
 		{
 			var directoryName = nameOfXMatterPack + "-XMatter";
+
+			if (Program.RunningHarvesterMode)
+			{
+				// Get a new file locator that also searches the Custom XMatter directory.
+				// This allows the Harvseter to preserve custom branding if those books are uploaded to web. (See BL-BL-9084)
+				var extraSearchPaths = new string[]  { BloomFileLocator.GetCustomXMatterDirectory() };
+				fileLocator = fileLocator.CloneAndCustomize(extraSearchPaths);
+			}
+
 			if (silent)
 			{
 				// Using LocateDirectoryWithThrow is quite expensive for directories we don't find...the Exception it creates, which we don't use,
