@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -193,6 +193,11 @@ namespace Bloom
 		public static string GetInstalledXMatterDirectory()
 		{
 			return BloomFileLocator.GetBrowserDirectory("templates","xMatter");
+		}
+
+		public static string GetCustomXMatterDirectory()
+		{
+			return BloomFileLocator.GetBrowserDirectory("templates","customXMatter");
 		}
 
 		public static string FactoryTemplateBookDirectory
