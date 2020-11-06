@@ -20,7 +20,12 @@ namespace Bloom.Publish
 			int page = 0;
 			foreach (XmlElement pageDiv in dom.SafeSelectNodes("/html/body//div[contains(@class,'bloom-page')]"))
 			{
-				var term = pageDiv.SelectSingleNode("//div[contains(@data-book,'term')]").InnerText.Trim();
+				// Since this will be run on any collection with "Guide" in the name, we must assume that
+				// some occurences won't actually be SHRP books.
+				var termNode = pageDiv.SelectSingleNode("//div[contains(@data-book,'term')]");
+				if (termNode == null)
+					continue;
+				var term = termNode.InnerText.Trim();
 				XmlNode weekDataNode = pageDiv.SelectSingleNode("//div[contains(@data-book,'week')]");
 				if(weekDataNode==null)
 					continue; // term intro books don't have weeks
