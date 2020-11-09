@@ -21,18 +21,6 @@ mixin dari-text
 
 mixin dari-messagePage
 	+afg-messagePage
-		+dari-text
-			p ﻣـﺎ ﮐـــﻮدﮐـﺎن ﻣﯿــﻬﻦ
-			p ﻣـﺎ ﺑﻠﺒـــﻼن ﮔﻠـــﺸﻦ
-			p ﻣﯽﺧﻮاﻧﯿﻢ درس و ﺳﺒﻖ
-			p ﻣﯽزﻧـــــﯿﻢ ورق ورق
-			p ﻣﯽﺧــﻮاﻧـﯿﻢ داﻧـﻪ داﻧﻪ
-			p ﻫﻢ ﺷــﻌﺮ و ﻫﻢ ﺗــﺮاﻧﻪ
-			p ﻣﯽﮐﻨﯿﻢ ﻣﺸﻖ و ﺗﻤﺮﯾﻦ
-			p ﺑـﺎ ﻗــﻠﻢﻫـﺎي رﻧﮕـﯿﻦ
-			p ﻣـﯽﺧﻮاﻧـــﯿﻢ درس اﻧﺎر
-			p ﻗـﻮ ﻗـﻮ ﻗـﻮ ﺑـﺮگِ ﭼﻨﺎر
-			p ﻣـﯽﻧﻮﯾﺴـــﯿﻢ ﻣﺤـﺒﺖ
-			p درس زﯾــــﺒﺎي ﻣﮑﺘـﺐ
-			p ﻣﯽﮔﻮﯾــﯿﻢ اﻓﻐﺎﻧــﺴﺘﺎن
-			p ﭘـﺎﯾــــﻨﺪه و ﺟــﺎودان
+		+field-prototypeDeclaredExplicity("N1").message
+			//-+hint-bubble(langForBubbles,'','','Message, in {lang}')
+			+editable(kLanguageForPrototypeOnly).message.Message-Page-style(data-book="message")

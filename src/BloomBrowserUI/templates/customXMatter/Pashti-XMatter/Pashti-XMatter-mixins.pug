@@ -21,16 +21,6 @@ mixin pashti-text
 
 mixin pashti-messagePage
 	+afg-messagePage
-		+pashti-text
-			p ګرانو شاګردانو
-			p نجونو هلکانو
-			p ګل ګل ماشومانو
-			p ښکلو بلبلانو
-			p ولولئ او ولولئ
-			p ولیکئ او ولیکئ
-			p ولولئ کتاب کتاب
-			p شي به مو هر سوال ځواب
-			p کړي به مو پوره ارمان
-			p ژوند به مو وي ښه روان
-			p کړئ افغانستان ودان
-			p ځان ودان جهان ودان
+		+field-prototypeDeclaredExplicity("N1").message
+			//-+hint-bubble(langForBubbles,'','','Message, in {lang}')
+			+editable(kLanguageForPrototypeOnly).message.Message-Page-style(data-book="message")
