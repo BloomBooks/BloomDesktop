@@ -2,19 +2,19 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="pt-PT">
     <body>
-      <trans-unit id="wall.calendar">
+      <trans-unit id="wall.calendar" approved="yes">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="pt-PT" state="translated">Sobre o Modelo de Calendário</target>
+        <target xml:lang="pt-PT" state="final">Sobre o Modelo de Calendário</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.use">
+      <trans-unit id="wall.calendar.use" approved="yes">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="pt-PT" state="translated">Usando este modelo, você pode fazer um calendário tamanho A5 de 12 meses, com uma imagem e uma citação no topo da página e os dias na parte inferior. O calendário usará os nomes dos meses e dias em seu idioma.</target>
+        <target xml:lang="pt-PT" state="final">Usando este modelo, você pode fazer um calendário tamanho A5 de 12 meses, com uma imagem e uma citação no topo da página e os dias na parte inferior. O calendário usará os nomes dos meses e dias em seu idioma.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.limits">
+      <trans-unit id="wall.calendar.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="pt-PT" state="translated">Limitações desta versão</target>
+        <target xml:lang="pt-PT" state="final">Limitações desta versão</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells">
@@ -22,14 +22,14 @@
         <target xml:lang="pt-PT" state="translated">Atualmente, você não pode fazer um "shell" que pode ser utilizado em outros idiomas.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.credits">
+      <trans-unit id="wall.calendar.credits" approved="yes">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="pt-PT" state="translated">Créditos</target>
+        <target xml:lang="pt-PT" state="final">Créditos</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.thanks">
+      <trans-unit id="wall.calendar.thanks" approved="yes">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="pt-PT" state="translated">Obrigado ao Bruce Cox (SIL Camarões) por iniciar este modelo.</target>
+        <target xml:lang="pt-PT" state="final">Agradecemos Bruce Cox (SIL Camarões) por iniciar este modelo.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>

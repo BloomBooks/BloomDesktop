@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="wall.calendar">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="ru" state="needs-translation">About the Wall Calendar Template</target>
+        <target xml:lang="ru" state="translated">О шаблоне Календаря Стены</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="ru" state="needs-translation">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</target>
+        <target xml:lang="ru" state="translated">С помощью этого шаблона вы можете создать календарь на 12 месяцев формата A5 с картинкой и цитатой вверху страницы и днями внизу страницы. Календарь будет использовать названия месяцев и дней на вашем языке.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="ru" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="ru" state="translated">Ограничения этой версии</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="ru" state="needs-translation">Currently, you cannot make a "shell" for other languages to use.</target>
+        <target xml:lang="ru" state="translated">В настоящее время вы не можете сделать "оболочку" для использования на других языках.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="ru" state="needs-translation">Credits</target>
+        <target xml:lang="ru" state="translated">Благодарность</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="ru" state="needs-translation">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</target>
+        <target xml:lang="ru" state="translated">Благодарим Bruce Cox (SIL Cameroon) за запуск данного шаблона.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>

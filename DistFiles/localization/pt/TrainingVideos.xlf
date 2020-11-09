@@ -24,11 +24,11 @@
         <target xml:lang="pt-PT" state="final">Vídeos Introdutórios</target>
         <note>ID: training.videos.intro</note>
       </trans-unit>
-      <trans-unit id="training.videos.whofor">
+      <trans-unit id="training.videos.whofor" approved="yes">
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
-        <target xml:lang="pt-PT" state="translated"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Para quem é</g></target>
+        <target xml:lang="pt-PT" state="final"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Para quem é</g></target>
         <note>ID: training.videos.whofor</note>
       </trans-unit>
       <trans-unit id="training.videos.templates">

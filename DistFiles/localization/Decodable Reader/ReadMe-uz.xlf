@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="uz">
+    <body>
+      <trans-unit id="decodable.definition">
+        <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
+        <target xml:lang="uz" state="needs-translation">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</target>
+        <note>ID: decodable.definition</note>
+      </trans-unit>
+      <trans-unit id="decodable.stages">
+        <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
+        <target xml:lang="uz" state="needs-translation">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</target>
+        <note>ID: decodable.stages</note>
+      </trans-unit>
+      <trans-unit id="decodable.templates">
+        <source xml:lang="en">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</source>
+        <target xml:lang="uz" state="needs-translation">You can also make a Bloom Pack of <g id="genid-6" ctype="x-html-em">templates</g> that others can use to quickly create books based on the levels and stages that have been prepared by a literacy specialist.</target>
+        <note>ID: decodable.templates</note>
+      </trans-unit>
+      <trans-unit id="decodable.learn">
+        <source xml:lang="en">To learn about using Decodable Readers in Bloom, you can:</source>
+        <target xml:lang="uz" state="needs-translation">To learn about using Decodable Readers in Bloom, you can:</target>
+        <note>ID: decodable.learn</note>
+      </trans-unit>
+      <trans-unit id="decodable.learn.videos">
+        <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
+        <target xml:lang="uz" state="needs-translation">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</target>
+        <note>ID: decodable.learn.videos</note>
+      </trans-unit>
+      <trans-unit id="decodable.learn.helpindex">
+        <source xml:lang="en">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</source>
+        <target xml:lang="uz" state="needs-translation">Go to the Help menu, choose 'Documentation', and look in the index under "Decodable Readers".</target>
+        <note>ID: decodable.learn.helpindex</note>
+      </trans-unit>
+      <trans-unit id="decodable.learn.helpmenu">
+        <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
+        <target xml:lang="uz" state="needs-translation">Go to the Help menu and choose: "Building Reader Templates".</target>
+        <note>ID: decodable.learn.helpmenu</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

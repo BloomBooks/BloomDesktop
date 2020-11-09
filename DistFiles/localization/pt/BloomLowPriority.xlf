@@ -26,6 +26,11 @@
         <note>After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file.</note>
         <target xml:lang="pt-PT" state="translated">Resultado da conversão da ortografia:</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.CheckEmailFailed">
+        <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
+        <note>ID: PublishTab.Upload.CheckEmailFailed</note>
+        <target xml:lang="pt-PT" state="translated">Bloom precisa verificar seu e-mail, mas nossa tentativa de reenviar a solicitação falhou, possivelmente porque você fez muitos solicitações muito próximas uma da outra. Por favor, verifique seu e-mail e se você não conseguir encontrar a mensagem, tente novamente mais tarde.</target>
+      </trans-unit>
       <trans-unit id="Settings.Enterprise.Community">
         <source xml:lang="en">Funded by the local community only</source>
         <note>ID: Settings.Enterprise.Community</note>
@@ -61,14 +66,14 @@
             Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
         </source>
         <note>ID: Settings.Enterprise.Overview</note>
-        <target xml:lang="pt-PT" state="needs-translation">
-            Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
+        <target xml:lang="pt-PT" state="translated">
+            Bloom Enterprise adiciona recursos e serviços que são importantes para os editores, governos e organizações internacionais. Esta assinatura paga atende às suas necessidades exclusivas enquanto apoia o desenvolvimento e o apoio ao usuário do Bloom para a comunidade em geral.
         </target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None">
         <source xml:lang="en">None. Enterprise features will be unavailable.</source>
         <note>ID: Settings.Enterprise.None</note>
-        <target xml:lang="pt-PT" state="needs-translation">None. Enterprise features will be unavailable.</target>
+        <target xml:lang="pt-PT" state="translated">Nenhuma. Os recursos do Enterprise não estarão disponíveis.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NeedsCode">
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
@@ -79,12 +84,12 @@
       <trans-unit id="Settings.Enterprise.NotValid">
         <source xml:lang="en">That code appears to be incorrect.</source>
         <note>ID: Settings.Enterprise.NotValid</note>
-        <target xml:lang="pt-PT" state="needs-translation">That code appears to be incorrect.</target>
+        <target xml:lang="pt-PT" state="translated">Esse código parece estar incorreto.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Status">
         <source xml:lang="en">Bloom Enterprise Status</source>
         <note>ID: Settings.Enterprise.Status</note>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom Enterprise Status</target>
+        <target xml:lang="pt-PT" state="translated">Status do Bloom Enterprise</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Subscription">
         <source xml:lang="en">Enterprise Subscription</source>
@@ -94,7 +99,7 @@
       <trans-unit id="Settings.Enterprise.SubscriptionCode">
         <source xml:lang="en">Subscription Code:</source>
         <note>ID: Settings.Enterprise.SubscriptionCode</note>
-        <target xml:lang="pt-PT" state="needs-translation">Subscription Code:</target>
+        <target xml:lang="pt-PT" state="translated">Código de Registro:</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.UnknownCode">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
