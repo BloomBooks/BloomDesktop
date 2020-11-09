@@ -136,14 +136,13 @@ namespace Bloom
 			}
 			catch (WebException e)
 			{
-				Logger.WriteEvent("***Error in LookupURLOfUpdate: " + e.Message);
+				Logger.WriteEvent("***Error (WebException) in CanGetVersionTableFromWeb: " + e.Message);
 				if (e.Status == WebExceptionStatus.ProtocolError)
 				{
-					var resp = e.Response as HttpWebResponse;
-					if (resp != null && resp.StatusCode == HttpStatusCode.NotFound)
+					if (e.Response is HttpWebResponse resp && resp.StatusCode == HttpStatusCode.NotFound)
 					{
-						Logger.WriteEvent(String.Format("***Error: UpdateVersionTable failed to find a file at {0} (channel='{1}'",
-							GetUrlOfTable(), ApplicationUpdateSupport.ChannelName));
+						Logger.WriteEvent(
+							$"***Error: UpdateVersionTable failed to find a file at {GetUrlOfTable()} (channel='{ApplicationUpdateSupport.ChannelName}'");
 					}
 				}
 				else if (IsConnectionError(e))
@@ -151,6 +150,16 @@ namespace Bloom
 					Logger.WriteEvent("***Error: UpdateVersionTable could not connect to the server");
 				}
 				errorResult = new UpdateTableLookupResult() {Error = e};
+				return false;
+			}
+			catch (Exception e)
+			{
+				// We're getting some kind of exception thrown on some alpha users' machines, but we don't know why (BL-9211).
+				// It isn't a WebException. I'm adding this catch block at least long enough to diagnose the problem,
+				// but it is probably better to be here, anyway, since without it, Bloom crashes silently.
+				Logger.WriteError("***Error (Exception) in CanGetVersionTableFromWeb:", e);
+
+				errorResult = new UpdateTableLookupResult() { Error = new WebException(e.Message) };
 				return false;
 			}
 			return true; // no error yet anyway!
