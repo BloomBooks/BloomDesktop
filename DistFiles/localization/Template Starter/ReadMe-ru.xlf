@@ -4,104 +4,105 @@
     <body>
       <trans-unit id="template.starter">
         <source xml:lang="en">How to use the Template Starter</source>
-        <target xml:lang="ru" state="needs-translation">How to use the Template Starter</target>
+        <target xml:lang="ru" state="translated">Как использовать Шаблон Стартер</target>
         <note>ID: template.starter</note>
       </trans-unit>
       <trans-unit id="template.starter.firstusage">
         <source xml:lang="en">This special template lets you make your own templates. A template provides a set of related page layouts that an author can choose from in writing an original book. Usually the text blocks and picture blocks on template pages will be empty, ready for an author to fill in. Sometimes there may be standard text or pictures that should be on every copy of the page.
 There are two ways people can use your template. The first way is to start new books. For example, imagine student books that have one page for each school day of the week. You could make a template with 5 pages, each with places to type in text and choose pictures. Curriculum authors could select your template and make a new book, one for each week<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</source>
-        <target xml:lang="ru" state="needs-translation">This special template lets you make your own templates. A template provides a set of related page layouts that an author can choose from in writing an original book. Usually the text blocks and picture blocks on template pages will be empty, ready for an author to fill in. Sometimes there may be standard text or pictures that should be on every copy of the page.
-There are two ways people can use your template. The first way is to start new books. For example, imagine student books that have one page for each school day of the week. You could make a template with 5 pages, each with places to type in text and choose pictures. Curriculum authors could select your template and make a new book, one for each week<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
+        <target xml:lang="ru" state="translated">Этот специальный шаблон позволяет создавать собственные шаблоны. Шаблон предоставляет набор связанных макетов страниц, из которых автор может выбирать при написании оригинальной книги. Обычно текстовые блоки и блоки изображений на страницах шаблонов будут пустыми, готовыми для заполнения автором. Иногда может быть стандартный текст или изображения, которые должны быть на каждой копии страницы.
+Есть два способа использования вашего шаблона. Первый способ - начать новые книги. Например, представьте книги для учеников, в которых есть одна страница на каждый учебный день недели. Вы можете создать шаблон из 5 страниц, на каждой из которых есть места для ввода текста и выбора изображений. Авторы учебного плана могут выбрать ваш шаблон и создать новую книгу, по одной на каждую неделю <g id="genid-1" ctype="x-html-sup"> <g id="genid-2" ctype="x-html-a" html:href="#note1"> 1 </g> </g>.</target>
         <note>ID: template.starter.firstusage</note>
       </trans-unit>
       <trans-unit id="template.starter.secondusage">
         <source xml:lang="en">The second way people can use templates is as source of new pages, regardless of how they started the book. For example, in some places, each book requires a page as part of a government approval process. You might make a template containing that page and give it to others in your country. Then, when people translate a shellbook, they go to the end of the book and click “Add Page”. The page you made will appear in their list of choices. Some other ideas for templates are alphabet charts, glossaries, and instructions on how to use the book in a classroom. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></source>
-        <target xml:lang="ru" state="needs-translation">The second way people can use templates is as source of new pages, regardless of how they started the book. For example, in some places, each book requires a page as part of a government approval process. You might make a template containing that page and give it to others in your country. Then, when people translate a shellbook, they go to the end of the book and click “Add Page”. The page you made will appear in their list of choices. Some other ideas for templates are alphabet charts, glossaries, and instructions on how to use the book in a classroom. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
+        <target xml:lang="ru" state="translated">Второй способ использования шаблонов - создание новых страниц, независимо от того, как книга начиналась. Например, в некоторых местах для каждой книги требуется страница в рамках процесса утверждения правительством. Вы можете создать шаблон, содержащий эту страницу, и передать его другим в своей стране. Затем, когда люди переводят книжные полки, они идут до конца книги и щелкают «Добавить страницу». Созданная вами страница появится в их списке выбора. Некоторые другие идеи для шаблонов - это алфавитные таблицы, словари и инструкции по использованию книги в классе.
+<g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
         <note>ID: template.starter.secondusage</note>
       </trans-unit>
       <trans-unit id="template.starter.waystohelp">
         <source xml:lang="en">Making templates is just like making any other custom book; all the same controls are available for making and customizing pages. But since you will probably be sharing with other people, there are a number of things you can do to help users of your template:</source>
-        <target xml:lang="ru" state="needs-translation">Making templates is just like making any other custom book; all the same controls are available for making and customizing pages. But since you will probably be sharing with other people, there are a number of things you can do to help users of your template:</target>
+        <target xml:lang="ru" state="translated">Создание шаблонов похоже на создание любой другой книги; все те же элементы управления доступны для создания и настройки страниц. Но поскольку вы, вероятно, будете делиться с другими людьми, вы можете сделать несколько вещей, чтобы помочь пользователям вашего шаблона:</target>
         <note>ID: template.starter.waystohelp</note>
       </trans-unit>
       <trans-unit id="template.starter.labelpages">
         <source xml:lang="en">Label Your Pages</source>
-        <target xml:lang="ru" state="needs-translation">Label Your Pages</target>
+        <target xml:lang="ru" state="translated">Маркируйте свои страницы</target>
         <note>ID: template.starter.labelpages</note>
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage">
         <source xml:lang="en">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</source>
-        <target xml:lang="ru" state="needs-translation">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
+        <target xml:lang="ru" state="translated">Когда вы добавляете страницы в шаблон, убедитесь, что вы даете каждому полезную метку<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</target>
         <note>ID: template.starter.labeleachpage</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails">
         <source xml:lang="en">Check Your Thumbnails</source>
-        <target xml:lang="ru" state="needs-translation">Check Your Thumbnails</target>
+        <target xml:lang="ru" state="translated">Проверьте свои эскизы</target>
         <note>ID: template.starter.thumbnails</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails.onlyonce">
         <source xml:lang="en">To speed things up, Bloom only makes this thumbnail once, and stores it in the "template" subdirectory of your template:</source>
-        <target xml:lang="ru" state="needs-translation">To speed things up, Bloom only makes this thumbnail once, and stores it in the "template" subdirectory of your template:</target>
+        <target xml:lang="ru" state="translated">Чтобы ускорить работу, Bloom делает этот эскиз только один раз, и сохраняет его в подкаталоге "шаблон" вашего шаблона:</target>
         <note>ID: template.starter.thumbnails.onlyonce</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails.update">
         <source xml:lang="en">If you later make a change to the page, the thumbnail will be out of date. To fix that, click the "Add Page" button, and Bloom will regenerate those thumbnails. If the automatically generated thumbnail doesn't convey the purpose of the page, you can make your own. Just make sure to mark the file as "Read Only" so that Bloom doesn't overwrite it. You can also make your thumbnails as svgs, if you like (that's what we do for templates we ship with Bloom).  In any case, make sure to click "Add Page" at least once before distributing your template, so that all the thumbnails are already generated.</source>
-        <target xml:lang="ru" state="needs-translation">If you later make a change to the page, the thumbnail will be out of date. To fix that, click the "Add Page" button, and Bloom will regenerate those thumbnails. If the automatically generated thumbnail doesn't convey the purpose of the page, you can make your own. Just make sure to mark the file as "Read Only" so that Bloom doesn't overwrite it. You can also make your thumbnails as svgs, if you like (that's what we do for templates we ship with Bloom).  In any case, make sure to click "Add Page" at least once before distributing your template, so that all the thumbnails are already generated.</target>
+        <target xml:lang="ru" state="translated">Если позже вы измените страницу, эскиз будет устаревшим. Чтобы исправить это, нажмите кнопку «Добавить страницу», и Bloom восстановит эти эскизы. Если автоматически сгенерированный эскиз не передает смысл страницы, вы можете создать свой собственный. Просто не забудьте пометить файл как «Только для чтения», чтобы Bloom не перезаписывал его. Вы также можете сделать свои эскизы как svgs, если хотите (это то, что мы делаем для шаблонов, которые поставляем вместе с Bloom). В любом случае не забудьте нажать «Добавить страницу» хотя бы один раз перед распространением вашего шаблона, чтобы все эскизы уже были созданы.</target>
         <note>ID: template.starter.thumbnails.update</note>
       </trans-unit>
       <trans-unit id="template.starter.document">
         <source xml:lang="en">Document Your Template</source>
-        <target xml:lang="ru" state="needs-translation">Document Your Template</target>
+        <target xml:lang="ru" state="translated">Задокументировать ваш шаблон</target>
         <note>ID: template.starter.document</note>
       </trans-unit>
       <trans-unit id="template.starter.describeyours">
         <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
-        <target xml:lang="ru" state="needs-translation">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</target>
+        <target xml:lang="ru" state="translated">Также подумайте о добавлении описания вашего шаблона, похожего на тот, который вы сейчас читаете. Для этого поместите текстовый файл с именем <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> в папку шаблона. Этот файл должен следовать <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Чтобы предоставить инструкции на других языках, создайте версии этого файла, в которых «en» заменяется на двухбуквенный код каждого языка. Например, <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> будет показано, когда Bloom будет отображать метки на французском языке. Вы также можете включить скриншоты, как у нас в этом документе. Размещайте любые изображения, которые вы используете в папке под названием "ReadMeImages", так что ссылки на изображения:</target>
         <note>ID: template.starter.describeyours</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnailsshown">
         <source xml:lang="en">When the Add Page dialog box shows your template pages, it will show a thumbnail:</source>
-        <target xml:lang="ru" state="needs-translation">When the Add Page dialog box shows your template pages, it will show a thumbnail:</target>
+        <target xml:lang="ru" state="translated">Когда в диалоговом окне «Добавить страницу» отображаются страницы с шаблоном, отображается эскиз:</target>
         <note>ID: template.starter.thumbnailsshown</note>
       </trans-unit>
       <trans-unit id="template.starter.share">
         <source xml:lang="en">Share Your Template</source>
-        <target xml:lang="ru" state="needs-translation">Share Your Template</target>
+        <target xml:lang="ru" state="translated">Поделиться вашим шаблоном</target>
         <note>ID: template.starter.share</note>
       </trans-unit>
       <trans-unit id="template.starter.share.publish">
         <source xml:lang="en">Remember that Bloom is about planting seeds, about sharing. So plan to share your template on the BloomLibrary for people around the world to find. This takes just a few clicks in the Publish Tab.</source>
-        <target xml:lang="ru" state="needs-translation">Remember that Bloom is about planting seeds, about sharing. So plan to share your template on the BloomLibrary for people around the world to find. This takes just a few clicks in the Publish Tab.</target>
+        <target xml:lang="ru" state="translated">Помните, что Bloom - это посадка семян, это о том, чтобы делиться. Так что планируйте делиться вашим шаблоном на BloomLibrary с людьми по всему миру и чтобы они имели возможность найти этот шаблон. Это займет всего несколько щелчков в разделе Публикации.</target>
         <note>ID: template.starter.share.publish</note>
       </trans-unit>
       <trans-unit id="template.starter.share.bloompack">
         <source xml:lang="en">For local colleagues, an easy way to distribute your template is via a Bloom Pack. In the collections tab, right-click on your template's thumbnail. Choose 'Make Bloom Pack'. Save that somewhere, for example to a USB Key. Then take it to another computer, double click on the file you made, and your template will be added to the "Sources for New Books" on that computer.</source>
-        <target xml:lang="ru" state="needs-translation">For local colleagues, an easy way to distribute your template is via a Bloom Pack. In the collections tab, right-click on your template's thumbnail. Choose 'Make Bloom Pack'. Save that somewhere, for example to a USB Key. Then take it to another computer, double click on the file you made, and your template will be added to the "Sources for New Books" on that computer.</target>
+        <target xml:lang="ru" state="translated">Для местных коллег есть простой способ распространения вашего шаблона через Bloom Pack. На вкладке коллекций щелкните правой кнопкой мыши на миниатюру шаблона. Выберите 'Сделать Bloom Pack'. Сохраните это, например, на USB-ключ. Затем возьмите его на другой компьютер, дважды щелкните на созданный файл, и ваш шаблон будет добавлен в "Источник новых книг" на этом компьютере.</target>
         <note>ID: template.starter.share.bloompack</note>
       </trans-unit>
       <trans-unit id="template.starter.notes">
         <source xml:lang="en">Notes</source>
-        <target xml:lang="ru" state="needs-translation">Notes</target>
+        <target xml:lang="ru" state="translated">Заметки</target>
         <note>ID: template.starter.notes</note>
       </trans-unit>
       <trans-unit id="template.starter.nothingautomatic">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
-        <target xml:lang="ru" state="needs-translation"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</target>
+        <target xml:lang="ru" state="translated"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>Эти книги впоследствии можно будет объединить с помощью предстоящей функции Folio. Обратите внимание, что Bloom еще не дает вам возможности указать, что страница должна автоматически включаться в новые книги; автору нужно будет добавить каждую из них в диалоговом окне «Добавить страницу».</target>
         <note>ID: template.starter.nothingautomatic</note>
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
-        <target xml:lang="ru" state="needs-translation"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</target>
+        <target xml:lang="ru" state="translated"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: Если вы не хотите, чтобы страницы в вашем шаблоне отображались в диалоговом окне «Добавить страницу», вы можете указать это Bloom, создав файл NotForAddPage.txt в папке шаблона книги.</target>
         <note>ID: template.starter.nametonotaddpage</note>
       </trans-unit>
       <trans-unit id="template.starter.labelsnottranslatable">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
-        <target xml:lang="ru" state="needs-translation"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</target>
+        <target xml:lang="ru" state="translated"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: Люди не смогут перевести ваши метки и описания на другие национальные языки. Если это проблема, свяжитесь с командой Bloom.</target>
         <note>ID: template.starter.labelsnottranslatable</note>
       </trans-unit>
       <trans-unit id="template.starter.editrawhtml">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
-        <target xml:lang="ru" state="needs-translation"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        <target xml:lang="ru" state="translated"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: Если вы хотите, чтобы экран Добавить страницу, также предоставил краткое описание страницы, вам нужно выйти из Bloom и отредактировать html шаблон в Notepad, следующим образом: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
       </trans-unit>
     </body>

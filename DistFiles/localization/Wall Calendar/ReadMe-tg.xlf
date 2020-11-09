@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="tg">
+    <body>
+      <trans-unit id="wall.calendar">
+        <source xml:lang="en">About the Wall Calendar Template</source>
+        <target xml:lang="tg" state="needs-translation">About the Wall Calendar Template</target>
+        <note>ID: wall.calendar</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.use">
+        <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
+        <target xml:lang="tg" state="needs-translation">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</target>
+        <note>ID: wall.calendar.use</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.limits">
+        <source xml:lang="en">Limitations of this version</source>
+        <target xml:lang="tg" state="needs-translation">Limitations of this version</target>
+        <note>ID: wall.calendar.limits</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.noshells">
+        <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
+        <target xml:lang="tg" state="needs-translation">Currently, you cannot make a "shell" for other languages to use.</target>
+        <note>ID: wall.calendar.noshells</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.credits">
+        <source xml:lang="en">Credits</source>
+        <target xml:lang="tg" state="needs-translation">Credits</target>
+        <note>ID: wall.calendar.credits</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.thanks">
+        <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
+        <target xml:lang="tg" state="needs-translation">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</target>
+        <note>ID: wall.calendar.thanks</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

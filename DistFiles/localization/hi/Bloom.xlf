@@ -206,7 +206,7 @@
         <note>ID: BookEditor.CharacterMap.Instructions</note>
         <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): To select, use your mouse wheel or point at what you want, then release the key.</note>
-        <target xml:lang="hi" state="final">चयन करने के लिए, अपने माउस व्हील का उपयोग करें या आप जिसे खोलना चाहते हैं उस पर रखें, या बैंगनी key दबाएँ।
+        <target xml:lang="hi" state="final">चयन करने के लिए, अपने माउस व्हील का उपयोग करें या आप जिसे खोलना चाहते हैं उस पर रखें, या बैंगनी key दबाएँ। 
 अंत में, सूची को देखने के लिए आपने जिस key को दबाए रखा है उसे छोड़ दें।</target>
       </trans-unit>
       <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true" approved="yes">
@@ -1285,6 +1285,11 @@
         <note xml:lang="en">OLD TEXT (before 3.9): (no template file found)</note>
         <target xml:lang="hi" state="final">{0} नहीं मिला</target>
       </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.NumberOfPagesTooltip" sil:dynamic="true">
+        <source xml:lang="en">Number of pages to add</source>
+        <note>ID: EditTab.AddPageDialog.NumberOfPagesTooltip</note>
+        <target xml:lang="hi" state="needs-translation">Number of pages to add</target>
+      </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Page...</source>
         <note>ID: EditTab.AddPageDialog.Title</note>
@@ -1960,6 +1965,12 @@
         <note>ID: EditTab.Image.CopyImageFailed</note>
         <target xml:lang="hi" state="final">ब्लूम को आपके कंप्यूटर के क्लिपबोर्ड का उपयोग करने में समस्या आई है। हो सकता है कोई अन्य प्रोग्राम हस्तक्षेप कर रहा है।</target>
       </trans-unit>
+      <trans-unit id="EditTab.Image.Corrupt" sil:dynamic="true">
+        <source xml:lang="en">Bloom was not able to load {0}. The file may be corrupted. Please try another image. Here are some technical details: </source>
+        <note>ID: EditTab.Image.Corrupt</note>
+        <note>{0} is required, and will be replaced with a file path. After the message Bloom will append a further message.</note>
+        <target xml:lang="hi" state="needs-translation">Bloom was not able to load {0}. The file may be corrupted. Please try another image. Here are some technical details: </target>
+      </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cut Image</source>
         <note>ID: EditTab.Image.CutImage</note>
@@ -1980,6 +1991,11 @@
         <source xml:lang="en">Paste Image</source>
         <note>ID: EditTab.Image.PasteImage</note>
         <target xml:lang="hi" state="final">चित्र चिपकाएँ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
+        <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
+        <note>ID: EditTab.Image.TooLarge</note>
+        <target xml:lang="hi" state="needs-translation">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
@@ -2044,6 +2060,11 @@
         <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
         <target xml:lang="hi" state="final">इससे पहले कि आप एक चित्र चिपकाएँ, अन्य प्रोग्राम से, उसे आपके 'क्लिपबोर्ड' पर कॉपी कर लें।</target>
+      </trans-unit>
+      <trans-unit id="EditTab.NoValidImageFoundOnClipboard">
+        <source xml:lang="en">Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else.</source>
+        <note>ID: EditTab.NoValidImageFoundOnClipboard</note>
+        <target xml:lang="hi" state="needs-translation">Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else.</target>
       </trans-unit>
       <trans-unit id="EditTab.NoOtherLayouts">
         <source xml:lang="en">There are no other options for this template.</source>
@@ -3845,13 +3866,13 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
         <source xml:lang="en">To Send via USB, you may need to get the right
-        cable, install phone drivers on your computer, or
-        modify settings on your phone.</source>
+                            cable, install phone drivers on your computer, or
+                            modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note/>
         <target xml:lang="hi" state="needs-translation">To Send via USB, you may need to get the right
-        cable, install phone drivers on your computer, or
-        modify settings on your phone.</target>
+                            cable, install phone drivers on your computer, or
+                            modify settings on your phone.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">No Wi-Fi Network?</source>
@@ -4596,7 +4617,7 @@
         <note>title for the message box</note>
         <target xml:lang="hi" state="final">पीडीएफ सेव नहीं हुई है</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfNotSavedWhy" approved="yes">
+      <trans-unit id="PublishTab.PdfNotSavedWhy">
         <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
@@ -4607,7 +4628,7 @@
         <note>ID: PublishTab.PrintButton</note>
         <target xml:lang="hi" state="final">&amp;प्रिंट करें...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PrologToAdobeEula" approved="yes">
+      <trans-unit id="PublishTab.PrologToAdobeEula">
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>

@@ -206,7 +206,7 @@
         <note>ID: BookEditor.CharacterMap.Instructions</note>
         <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
         <note xml:lang="en">OLD TEXT (before 3.9): To select, use your mouse wheel or point at what you want, then release the key.</note>
-        <target xml:lang="quc" state="final">Chech uch'axik, chakojo ri setesik rech ri ch'o, chak'utu' ri kawaj, te'qne chapitz'a' ri cholnak'tz'ib' uk'utum ruk' ri raxkaqkoj q'o'b'al.
+        <target xml:lang="quc" state="final">Chech uch'axik, chakojo ri setesik rech ri ch'o, chak'utu' ri kawaj, te'qne chapitz'a' ri cholnak'tz'ib' uk'utum ruk' ri raxkaqkoj q'o'b'al. 
 K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'aj.</target>
       </trans-unit>
       <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true" approved="yes">
@@ -258,7 +258,7 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
       <trans-unit id="BookMetadata.a11yLevelAA" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level AA conformance</source>
         <note>ID: BookMetadata.a11yLevelAA</note>
-        <target xml:lang="quc" state="final">Junamam q’at AA
+        <target xml:lang="quc" state="final">Junamam q’at AA 
 
 </target>
       </trans-unit>
@@ -1287,6 +1287,11 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <note xml:lang="en">OLD TEXT (before 3.9): (no template file found)</note>
         <target xml:lang="quc" state="final">Man xriqitaj taj {0}</target>
       </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.NumberOfPagesTooltip" sil:dynamic="true">
+        <source xml:lang="en">Number of pages to add</source>
+        <note>ID: EditTab.AddPageDialog.NumberOfPagesTooltip</note>
+        <target xml:lang="quc" state="needs-translation">Number of pages to add</target>
+      </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Page...</source>
         <note>ID: EditTab.AddPageDialog.Title</note>
@@ -1963,6 +1968,12 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <note>ID: EditTab.Image.CopyImageFailed</note>
         <target xml:lang="quc" state="final">Bloom man xkowin ta chech ukojik le k'olk'iwuj pa le akematz'ib'. Kraj ne xa k'o jun k'axk'olil ruk' jun kematal chak chik.</target>
       </trans-unit>
+      <trans-unit id="EditTab.Image.Corrupt" sil:dynamic="true">
+        <source xml:lang="en">Bloom was not able to load {0}. The file may be corrupted. Please try another image. Here are some technical details: </source>
+        <note>ID: EditTab.Image.Corrupt</note>
+        <note>{0} is required, and will be replaced with a file path. After the message Bloom will append a further message.</note>
+        <target xml:lang="quc" state="needs-translation">Bloom was not able to load {0}. The file may be corrupted. Please try another image. Here are some technical details: </target>
+      </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cut Image</source>
         <note>ID: EditTab.Image.CutImage</note>
@@ -1983,6 +1994,11 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <source xml:lang="en">Paste Image</source>
         <note>ID: EditTab.Image.PasteImage</note>
         <target xml:lang="quc" state="final">Unak'ik le wachib'al</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
+        <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
+        <note>ID: EditTab.Image.TooLarge</note>
+        <target xml:lang="quc" state="needs-translation">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
@@ -2047,6 +2063,11 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
         <target xml:lang="quc" state="final">Chi uxe' kanoq unak'ik jun wachib'al, chawesaj uwach k'ate k'u ri' chaya jun pa ri "k'olk'iwuj" pa jun chik kematal chak.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.NoValidImageFoundOnClipboard">
+        <source xml:lang="en">Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else.</source>
+        <note>ID: EditTab.NoValidImageFoundOnClipboard</note>
+        <target xml:lang="quc" state="needs-translation">Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else.</target>
       </trans-unit>
       <trans-unit id="EditTab.NoOtherLayouts" approved="yes">
         <source xml:lang="en">There are no other options for this template.</source>
@@ -3848,8 +3869,8 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint" sil:dynamic="true">
         <source xml:lang="en">To Send via USB, you may need to get the right
-        cable, install phone drivers on your computer, or
-        modify settings on your phone.</source>
+                            cable, install phone drivers on your computer, or
+                            modify settings on your phone.</source>
         <note>ID: PublishTab.Android.USB.Hint</note>
         <note/>
         <target xml:lang="quc" state="translated">Rech utaqik pa USB, kaj ne rajawaxik uk'amil r k'a'm qas are',  ukujok chajinelab'  chcech ri  oyonib'al pa ri kematz'ib o uk'exik ri ilol rech ri oyonib'al.</target>
@@ -3949,7 +3970,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
         <note>{0} is a font name</note>
-        <target xml:lang="quc" state="final">We no'jwuj ri' k'o woktzij chi upam ruk ' jun kemuxe' ub'i' \"{0}\" xa are k'ut Bloom man xurij ta
+        <target xml:lang="quc" state="final">We no'jwuj ri' k'o woktzij chi upam ruk ' jun kemuxe' ub'i' \"{0}\" xa are k'ut Bloom man xurij ta 
  le kemuxe' pa we kematz'ib' ri'.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true" approved="yes">
@@ -4598,7 +4619,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <note>title for the message box</note>
         <target xml:lang="quc" state="final">PDF man k'olom taj</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfNotSavedWhy" approved="yes">
+      <trans-unit id="PublishTab.PdfNotSavedWhy">
         <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
@@ -4609,7 +4630,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <note>ID: PublishTab.PrintButton</note>
         <target xml:lang="quc" state="final">&amp;tz'ajtz'ib'anik...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PrologToAdobeEula" approved="yes">
+      <trans-unit id="PublishTab.PrologToAdobeEula">
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>

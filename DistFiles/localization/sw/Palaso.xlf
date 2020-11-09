@@ -65,7 +65,7 @@
       <trans-unit id="Common.AbortButton">
         <source xml:lang="en">&amp;Abort</source>
         <note>ID: Common.AbortButton</note>
-        <target xml:lang="sw" state="needs-translation">&amp;Abort</target>
+        <target xml:lang="sw" state="translated">&amp;Katisha</target>
       </trans-unit>
       <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
@@ -75,7 +75,7 @@
       <trans-unit id="Common.IgnoreButton">
         <source xml:lang="en">&amp;Ignore</source>
         <note>ID: Common.IgnoreButton</note>
-        <target xml:lang="sw" state="needs-translation">&amp;Ignore</target>
+        <target xml:lang="sw" state="translated">&amp;Puuza</target>
       </trans-unit>
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
@@ -85,7 +85,7 @@
       <trans-unit id="Common.NoButton">
         <source xml:lang="en">&amp;No</source>
         <note>ID: Common.NoButton</note>
-        <target xml:lang="sw" state="needs-translation">&amp;No</target>
+        <target xml:lang="sw" state="translated">&amp;Hakuna</target>
       </trans-unit>
       <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
@@ -105,19 +105,19 @@
       <trans-unit id="Common.YesButton">
         <source xml:lang="en">&amp;Yes</source>
         <note>ID: Common.YesButton</note>
-        <target xml:lang="sw" state="needs-translation">&amp;Yes</target>
+        <target xml:lang="sw" state="translated">&amp;Ndio</target>
       </trans-unit>
       <trans-unit id="CustomIdentifierView.betterLabel1">
         <source xml:lang="en">RFC5646 code:</source>
         <note>ID: CustomIdentifierView.betterLabel1</note>
         <note>label describes the code for a custom identifier. Translate only 'code'</note>
-        <target xml:lang="sw" state="needs-translation">RFC5646 code:</target>
+        <target xml:lang="sw" state="translated">Msimbo:</target>
       </trans-unit>
       <trans-unit id="CustomIdentifierView.linkLabel1">
         <source xml:lang="en">Read about language identifiers on the web</source>
         <note>ID: CustomIdentifierView.linkLabel1</note>
         <note>text used in the link to a webpage that describes the language identifiers</note>
-        <target xml:lang="sw" state="needs-translation">Read about language identifiers on the web</target>
+        <target xml:lang="sw" state="translated">Soma kuhusu vitambulisho vya lugha kwenye wavuti</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -198,7 +198,7 @@
         <source xml:lang="en">Choose Picture File</source>
         <note>ID: ImageToolbox.FileChooserTitle</note>
         <note>Title shown for a file chooser dialog brought up by the ImageToolbox</note>
-        <target xml:lang="sw" state="needs-translation">Choose Picture File</target>
+        <target xml:lang="sw" state="translated">Chagua faili ya picha</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Galleries">
         <source xml:lang="en">Galleries</source>
@@ -223,7 +223,7 @@
       <trans-unit id="ImageToolbox.ImageGalleries">
         <source xml:lang="en">Image Galleries</source>
         <note>ID: ImageToolbox.ImageGalleries</note>
-        <target xml:lang="sw" state="needs-translation">Image Galleries</target>
+        <target xml:lang="sw" state="translated">Kichanja cha picha</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle" approved="yes">
         <source xml:lang="en">Image Toolbox</source>
@@ -255,7 +255,7 @@
       <trans-unit id="ImageToolbox.NoGalleries">
         <source xml:lang="en">This computer doesn't appear to have any galleries installed yet.</source>
         <note>ID: ImageToolbox.NoGalleries</note>
-        <target xml:lang="sw" state="needs-translation">This computer doesn't appear to have any galleries installed yet.</target>
+        <target xml:lang="sw" state="translated">Kompyuta hii haionekani kuwa na kichanja chochote kilicho sakinishwa.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
@@ -308,13 +308,13 @@
         <source xml:lang="en">Purpose:</source>
         <note>ID: IpaIdentifierView.betterLabel1</note>
         <note>In writing system setup when IPA special option is selected: Label for the purpose combo box</note>
-        <target xml:lang="sw" state="needs-translation">Purpose:</target>
+        <target xml:lang="sw" state="translated">Lengo:</target>
       </trans-unit>
       <trans-unit id="IpaIdentifierView.linkLabel1">
         <source xml:lang="en">Read about IPA transcription on the web</source>
         <note>ID: IpaIdentifierView.linkLabel1</note>
         <note>In writing system setup when IPA special option is selected: text used in link to a webpage describing IPA transcription</note>
-        <target xml:lang="sw" state="needs-translation">Read about IPA transcription on the web</target>
+        <target xml:lang="sw" state="translated">Soma juu ya nakala ya IPA kwenye wavuti</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
@@ -330,7 +330,7 @@
         <source xml:lang="en">Ethnologue.com</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
-        <target xml:lang="sw" state="needs-translation">Ethnologue.com</target>
+        <target xml:lang="sw" state="translated">Ethnologue.com</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
@@ -391,7 +391,7 @@
       <trans-unit id="LanguageLookup._scriptsAndVariantsLabel">
         <source xml:lang="en">my script variant label</source>
         <note>ID: LanguageLookup._scriptsAndVariantsLabel</note>
-        <target xml:lang="sw" state="needs-translation">my script variant label</target>
+        <target xml:lang="sw" state="translated">lebo yangu tofauti ya hati</target>
       </trans-unit>
       <trans-unit id="LanguageLookup._scriptsAndVariantsLink">
         <source xml:lang="en">Script and Variant</source>
@@ -458,7 +458,7 @@
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="sw" state="needs-translation">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</target>
+        <target xml:lang="sw" state="translated">Unaweza kunakili, kurekebisha, na kusambaza kazi hii, hata kwa sababu za kibiashara, yote bila kuomba ruhusa.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
@@ -489,7 +489,7 @@
       <trans-unit id="MetadataEditor.CopyrightYear">
         <source xml:lang="en">Copyright Year</source>
         <note>ID: MetadataEditor.CopyrightYear</note>
-        <target xml:lang="sw" state="needs-translation">Copyright Year</target>
+        <target xml:lang="sw" state="translated">Mwaka wa Haki miliki</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons">
         <source xml:lang="en">Creative Commons</source>
@@ -514,12 +514,12 @@
       <trans-unit id="MetadataEditor.License">
         <source xml:lang="en">License</source>
         <note>ID: MetadataEditor.License</note>
-        <target xml:lang="sw" state="needs-translation">License</target>
+        <target xml:lang="sw" state="translated">Leseni</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.PublicDomain">
         <source xml:lang="en">The copyright holder waives all rights</source>
         <note>ID: MetadataEditor.PublicDomain</note>
-        <target xml:lang="sw" state="needs-translation">The copyright holder waives all rights</target>
+        <target xml:lang="sw" state="translated">Mmiliki wa hakimiliki anaachilia haki zote</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
@@ -557,7 +557,7 @@
         <source xml:lang="en">about {0} Public Domain</source>
         <note>ID: MetadataEditor.linkToPublicDomainCC0</note>
         <note>{0} is replaced by an untranslatable abbreviation functioning as an adjective ("CC0")</note>
-        <target xml:lang="sw" state="needs-translation">about {0} Public Domain</target>
+        <target xml:lang="sw" state="translated">kuhusu{0} Kikoa cha umma</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons" approved="yes">
         <source xml:lang="en">Not Enforceable</source>
@@ -568,12 +568,12 @@
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton">
         <source xml:lang="en">Cancel</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton</note>
-        <target xml:lang="sw" state="needs-translation">Cancel</target>
+        <target xml:lang="sw" state="translated">Batilisha</target>
       </trans-unit>
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._okButton">
         <source xml:lang="en">OK</source>
         <note>ID: ScriptsAndVariants.ScriptsAndVariantsDialog._okButton</note>
-        <target xml:lang="sw" state="needs-translation">OK</target>
+        <target xml:lang="sw" state="translated">Sawa</target>
       </trans-unit>
       <trans-unit id="ScriptsAndVariantsDialog.ScriptsAndVariants">
         <source xml:lang="en">Script and Variant</source>
@@ -631,7 +631,7 @@
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</source>
         <note>ID: SettingsProtection.PasswordNoticeWithSupportUrl</note>
         <note>The localization for this should be kept in sync with "SettingsProtection.PasswordNotice". Param 0: Factory password; Param 1: product name; Param 2: URL of support page</note>
-        <target xml:lang="sw" state="needs-translation">Factory password for these settings is "{0}". If you forget it, you can always visit the {1} support page: {2}</target>
+        <target xml:lang="sw" state="translated">Nenosiri la kiwanda la mipangilio hii ni "{0}". Ukisahau, unaweza kutembelea kila wakati {1} ukurasa wa msaada: {2}</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
@@ -652,7 +652,7 @@
         <source xml:lang="en">In applications which support this option, fields with this input system will be able to play and record voice.</source>
         <note>ID: VoiceIdentifierView.betterLabel1</note>
         <note>Displayed if a user selects the voice special option in writing system setup</note>
-        <target xml:lang="sw" state="needs-translation">In applications which support this option, fields with this input system will be able to play and record voice.</target>
+        <target xml:lang="sw" state="translated">Katika programu zinazounga mkono chaguo hili, sehemu zilizo na mfumo huu wa kuingiza zitaweza kucheza na kurekodi sauti.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
@@ -683,25 +683,25 @@
         <source xml:lang="en">Abbreviation</source>
         <note>ID: WSIdentifierView.betterLabel4</note>
         <note>In writing system setup general tab: label before abbreviation text box</note>
-        <target xml:lang="sw" state="needs-translation">Abbreviation</target>
+        <target xml:lang="sw" state="translated">Kifupisho</target>
       </trans-unit>
       <trans-unit id="WSIdentifierView.betterLabel5">
         <source xml:lang="en">Special:</source>
         <note>ID: WSIdentifierView.betterLabel5</note>
         <note>In writing system setup general tab:  Label before combo box with 'Special' choices</note>
-        <target xml:lang="sw" state="needs-translation">Special:</target>
+        <target xml:lang="sw" state="translated">Maalum:</target>
       </trans-unit>
       <trans-unit id="WSIdentifiers.IpaIdentifierView.Default">
         <source xml:lang="en">Default</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Default</note>
         <note>Choice for most users</note>
-        <target xml:lang="sw" state="needs-translation">Default</target>
+        <target xml:lang="sw" state="translated">Chaguo-msingi</target>
       </trans-unit>
       <trans-unit id="WSIdentifiers.IpaIdentifierView.Emic">
         <source xml:lang="en">Emic (uses phonology of the language)</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Emic</note>
         <note>Only translate text inside of the parentheses ()</note>
-        <target xml:lang="sw" state="needs-translation">Emic (uses phonology of the language)</target>
+        <target xml:lang="sw" state="translated">(hutumia fonolojia ya lugha)</target>
       </trans-unit>
       <trans-unit id="WSIdentifiers.IpaIdentifierView.Etic">
         <source xml:lang="en">Etic (raw phonetic transcription)</source>
@@ -747,7 +747,7 @@
       <trans-unit id="WSKeyboardControl.SetupKeyboards">
         <source xml:lang="en">Set up keyboards</source>
         <note>ID: WSKeyboardControl.SetupKeyboards</note>
-        <target xml:lang="sw" state="needs-translation">Set up keyboards</target>
+        <target xml:lang="sw" state="translated">Anzisha kibodi</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
@@ -772,7 +772,7 @@
       <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
         <source xml:lang="en">[Missing] {0} ({1})</source>
         <note>ID: XkbKeyboardAdaptor.MissingKeyboard</note>
-        <target xml:lang="sw" state="needs-translation">[Missing] {0} ({1})</target>
+        <target xml:lang="sw" state="translated">[Imekosekana){0}{1}</target>
       </trans-unit>
     </body>
   </file>

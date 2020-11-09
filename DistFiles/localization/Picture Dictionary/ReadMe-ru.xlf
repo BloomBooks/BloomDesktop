@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="picture.dictionary">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="ru" state="needs-translation">About the Picture Dictionary Template</target>
+        <target xml:lang="ru" state="translated">О шаблоне словаря изображений</target>
         <note>ID: picture.dictionary</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.use">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
-        <target xml:lang="ru" state="needs-translation">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</target>
+        <target xml:lang="ru" state="translated">Используйте этот шаблон для создания одноязычного, двуязычного или трёхъязычного словаря.</target>
         <note>ID: picture.dictionary.use</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="ru" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="ru" state="translated">Ограничения этой версии</target>
         <note>ID: picture.dictionary.limits</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.stillexperimental">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
-        <target xml:lang="ru" state="needs-translation">This book is currently marked "experimental" because we know of several problems in layout and convenience.</target>
+        <target xml:lang="ru" state="translated">Эта книга в настоящее время отмечена как "экспериментальная", потому что мы знаем о нескольких проблемах в макете и удобстве.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
       </trans-unit>
     </body>
