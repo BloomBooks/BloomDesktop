@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using Bloom.Utils;
 using SIL.IO;
 using SIL.Xml;
 using TidyManaged;
@@ -330,7 +331,15 @@ namespace Bloom
 		public static string SaveDOMAsHtml5(XmlDocument dom, string targetPath)
 		{
 			var html = ConvertDomToHtml5(dom);
-			RobustFile.WriteAllText(targetPath, html, Encoding.UTF8);
+			try
+			{
+				RobustFile.WriteAllText(targetPath, html, Encoding.UTF8);
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				// Re-throw with some additional debugging info.
+				throw new BloomUnauthorizedAccessException(targetPath, e);
+			}
 
 			return targetPath;
 		}

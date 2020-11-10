@@ -27,6 +27,7 @@ using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Xml;
+using Bloom.Utils;
 
 namespace Bloom.Book
 {
@@ -1636,8 +1637,11 @@ namespace Bloom.Book
 				}
 
 				// delete any existing branding css so that if they change to one without one, the old one isn't sticking around
-				if (RobustFile.Exists(Path.Combine(FolderPath, "branding.css")))
-					RobustFile.Delete(Path.Combine(FolderPath, "branding.css"));
+				string brandingPath = Path.Combine(FolderPath, "branding.css");
+				if (RobustFile.Exists(brandingPath))
+				{
+					RobustFile.Delete(brandingPath);
+				}
 
 				Dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 				// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
@@ -1853,7 +1857,15 @@ namespace Bloom.Book
 					foreach (var sourcePath in filesToCopy)
 					{
 						var fileName = Path.GetFileName(sourcePath);
-						RobustFile.Copy(sourcePath, Path.Combine(FolderPath, fileName), true);
+						var destPath = Path.Combine(FolderPath, fileName);
+						try
+						{
+							RobustFile.Copy(sourcePath, destPath, true);
+						}
+						catch (UnauthorizedAccessException err)
+						{
+							throw new BloomUnauthorizedAccessException(destPath, err);
+						}
 						_brandingImageNames.Add(fileName);
 					}
 				}

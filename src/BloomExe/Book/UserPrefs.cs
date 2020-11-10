@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using System.IO;
 using SIL.IO;
 using SIL.Reporting;
-
+using Bloom.Utils;
 
 namespace Bloom.Book
 {
@@ -119,10 +119,26 @@ namespace Bloom.Book
 				if(!string.IsNullOrWhiteSpace(prefs))
 				{
 					var temp = new TempFileForSafeWriting(_filePath);
-					RobustFile.WriteAllText(temp.TempFilePath, prefs);
-					temp.WriteWasSuccessful();
+					try
+					{
+						RobustFile.WriteAllText(temp.TempFilePath, prefs);
+					}
+					catch (UnauthorizedAccessException error)
+					{
+						throw new BloomUnauthorizedAccessException(temp.TempFilePath, error);
+					}
+
+					// This can fail if there isn't permission to write to the book folder.
+					try
+					{
+						temp.WriteWasSuccessful();
+					}
+					catch(UnauthorizedAccessException error)
+					{
+						throw new BloomUnauthorizedAccessException(_filePath, error);
+					}
 				}
-			}
+			}	
 			catch(Exception error)
 			{
 				//For https://silbloom.myjetbrains.com/youtrack/issue/BL-3222  we did a real fix for 3.6.
