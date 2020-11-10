@@ -230,7 +230,16 @@ namespace Bloom.Book
 
 			storage.UpdateSupportFiles();	// Copy branding files etc.
 			storage.PerformNecessaryMaintenanceOnBook();	// Fix image files as needed etc.
-			storage.Save();
+
+			try
+			{
+				storage.Save();
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				BookStorage.ShowAccessDeniedErrorReport(e);
+				// Well, not sure what else to return here, so I guess just let it continue and return storage.FolderPath
+			}
 
 			//REVIEW this actually undoes the setting of the initial files name:
 			//      storage.UpdateBookFileAndFolderName(_librarySettings);
