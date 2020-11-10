@@ -33,13 +33,13 @@
         {
             "data-book": "cover-branding-top-left-html",
             "lang": "*",
-            "content": "<img class='branding' src='logo.png'/>",
+            "content": "<img src='logo.png'/>",
             "condition": "always"
         },
         {
             "data-book": "title-page-branding-top-left-html",
             "lang": "*",
-            "content": "<img class='branding' src='logo.png'/>",
+            "content": "<img src='logo.png'/>",
             "condition": "always"
         },
         {
@@ -52,6 +52,24 @@
             "data-book": "message",
             "lang": "prs",
             "content": "<p>ﻣـﺎ ﮐـــﻮدﮐـﺎن ﻣﯿــﻬﻦ</p><p>ﻣـﺎ ﺑﻠﺒـــﻼن ﮔﻠـــﺸﻦ</p><p>ﻣﯽﺧﻮاﻧﯿﻢ درس و ﺳﺒﻖ</p><p>ﻣﯽزﻧـــــﯿﻢ ورق ورق</p><p>ﻣﯽﺧــﻮاﻧـﯿﻢ داﻧـﻪ داﻧﻪ</p><p>ﻫﻢ ﺷــﻌﺮ و ﻫﻢ ﺗــﺮاﻧﻪ</p><p>ﻣﯽﮐﻨﯿﻢ ﻣﺸﻖ و ﺗﻤﺮﯾﻦ</p><p>ﺑـﺎ ﻗــﻠﻢﻫـﺎي رﻧﮕـﯿﻦ</p><p>ﻣـﯽﺧﻮاﻧـــﯿﻢ درس اﻧﺎر</p><p>ﻗـﻮ ﻗـﻮ ﻗـﻮ ﺑـﺮگِ ﭼﻨﺎر</p><p>ﻣـﯽﻧﻮﯾﺴـــﯿﻢ ﻣﺤـﺒﺖ</p><p>درس زﯾــــﺒﺎي ﻣﮑﺘـﺐ</p><p>ﻣﯽﮔﻮﯾــﯿﻢ اﻓﻐﺎﻧــﺴﺘﺎن</p>            <p>ﭘـﺎﯾــــﻨﺪه و ﺟــﺎودان</p>",
+            "condition": "ifEmpty"
+        },
+        {
+            "data-book": "logo-text",
+            "lang": "en",
+            "content": "<p>Ministry of Education</p>",
+            "condition": "ifEmpty"
+        },
+        {
+            "data-book": "logo-text",
+            "lang": "ps",
+            "content": "<p>د پوهنې وزارت</p>",
+            "condition": "ifEmpty"
+        },
+        {
+            "data-book": "logo-text",
+            "lang": "prs",
+            "content": "<p>وزارت معارف</p>",
             "condition": "ifEmpty"
         }
     ]

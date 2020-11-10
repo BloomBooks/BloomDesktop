@@ -18,9 +18,3 @@ mixin pashti-text
 	//-.text(lang=kPashtiLanguageCode, dir="rtl")&attributes(attributes)
 	.text(lang="*", dir="rtl")&attributes(attributes)
 		block
-
-mixin pashti-messagePage
-	+afg-messagePage
-		+field-prototypeDeclaredExplicity("N1").message
-			//-+hint-bubble(langForBubbles,'','','Message, in {lang}')
-			+editable(kLanguageForPrototypeOnly).message.Message-Page-style(data-book="message")

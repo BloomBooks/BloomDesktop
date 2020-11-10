@@ -72,7 +72,11 @@ mixin afg-field-email(langForBubbles)
 		div.bloom-editable(data-book="email", lang="*").Credits-Page-style.bloom-padForOverflow
 
 mixin cover-branding-top-left
-	div(data-book='cover-branding-top-left-html' lang="*")
+	.logo-and-text
+		div(data-book='cover-branding-top-left-html' lang="*")
+		+field-prototypeDeclaredExplicity("N1").logo-text
+			+hint-bubble(langForBubbles,'وزارت معارف','د پوهنې وزارت','Ministry of Education')
+			+editable(kLanguageForPrototypeOnly).logo-text.Logo-Text-On-Cover-style.bloom-padForOverflow(data-book="logo-text")
 
 mixin afg-outsideFrontCover(langForBubbles)
 	// FRONT COVER
@@ -117,7 +121,11 @@ mixin afg-nationalAnthem-device
 		+inside-front-cover-branding-top
 
 mixin title-page-branding-top-left
-	div(data-book='title-page-branding-top-left-html' lang="*")
+	.logo-and-text
+		div(data-book='title-page-branding-top-left-html' lang="*")
+		+field-prototypeDeclaredExplicity("N1").logo-text
+			+hint-bubble(langForBubbles,'وزارت معارف','د پوهنې وزارت','Ministry of Education')
+			+editable(kLanguageForPrototypeOnly).logo-text.Logo-Text-On-Cover-style.bloom-padForOverflow(data-book="logo-text")
 
 mixin afg-titlePage(langForBubbles)
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#5db161c1-bfc0-4d4e-aeb6-c415a1ab6da2
@@ -157,4 +165,6 @@ mixin afg-credits(langForBubbles)
 
 mixin afg-messagePage
 	+page-xmatter('Message').message.bloom-frontMatter.bloom-force-publish(data-export='front-matter-message', data-xmatter-page='message')&attributes(attributes)#875d1eee-3509-4d12-9e6f-b4423b8786c0
-		block
+		+field-prototypeDeclaredExplicity("N1").message
+			//-+hint-bubble(langForBubbles,'','','Message, in {lang}')
+			+editable(kLanguageForPrototypeOnly).message.Message-Page-style(data-book="message")
